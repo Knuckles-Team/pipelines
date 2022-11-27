@@ -37,14 +37,12 @@ jobs:
       id: increment_version
       run: |
          version=( ${CURRENT_VERSION//./ } ) 
-         echo "Starting Version: ${version[@]}"
          COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
          echo "Commit Message: $COMMIT_MESSAGE"
          if [[ "$COMMIT_MESSAGE" == *"patch"* ]]; then
            (( version[2]=version[2]+1 ))
            echo "Incrementing Patch Version: ${version[@]}"
          elif [[ "$COMMIT_MESSAGE" == *"minor"* ]]; then
-           echo "Attempt minor increase"
            (( version[1]=version[1]+1 ))
            version[2]=0
            echo "Incrementing Minor Version: ${version[@]}"
@@ -54,12 +52,9 @@ jobs:
            version[1]=0
            echo "Incrementing Major Version: ${version[@]}"
          else
-           echo "Attempt minor else increase"
-           echo "Version: ${version[1]}"
            (( version[1]=version[1]+1 ))
            echo "To: ${version[1]}"
            version[2]=0
-           echo "Set [2]: 0"
            echo "Incrementing Minor Version: ${version[@]}"
          fi         
          NEW_VERSION="${version[0]}.${version[1]}.${version[2]}"
