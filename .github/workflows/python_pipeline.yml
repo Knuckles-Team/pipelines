@@ -37,16 +37,16 @@ jobs:
       run: |
          version=( ${CURRENT_VERSION//./ } ) 
          echo "Starting Version: ${version[@]}"
-         COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
-         COMMIT_MESSAGE=${COMMIT_MESSAGE//$'\n'/} 
-         if [[ "${COMMIT_MESSAGE}" == *"patch"* ]]; then
+         COMMIT_MESSAGE=${${{ github.event.head_commit.message }}//$'\n'/} 
+         echo "Commit Message: $COMMIT_MESSAGE"
+         if [[ "$COMMIT_MESSAGE" == *"patch"* ]]; then
            ((version[2]++))
            echo "Incrementing Patch Version: ${version[@]}"
-         elif [[ "${COMMIT_MESSAGE}" == *"minor"* ]]; then
+         elif [[ "$COMMIT_MESSAGE" == *"minor"* ]]; then
            ((version[1]++))
            version[2]=0
            echo "Incrementing Minor Version: ${version[@]}"
-         elif [[ "${COMMIT_MESSAGE}" == *"major"* ]]; then
+         elif [[ "$COMMIT_MESSAGE" == *"major"* ]]; then
            ((version[0]++))
            version[2]=0
            version[1]=0
