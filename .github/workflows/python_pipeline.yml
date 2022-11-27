@@ -23,7 +23,7 @@ jobs:
          REPO_NAME=$(echo ${{ github.event.repository.name }})
          FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')
          CURRENT_RELEASE=$(git tag | tail -n1 | sed 's/v//')     
-         CURRENT_VERSION=$(cat ${REPO_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
+         CURRENT_VERSION=$(cat ${FOLDER_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
          echo "TAG: $TAG"
          if [[ $TAG == '' ]]; then
            CURRENT_RELEASE=${CURRENT_VERSION}
