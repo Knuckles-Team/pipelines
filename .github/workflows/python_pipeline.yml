@@ -20,7 +20,8 @@ jobs:
          echo "Fetching Latest Tags"
          git fetch
          TAG=$(git tag | tail -n1)
-         REPO_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')
+         REPO_NAME=$(echo ${{ github.event.repository.name }})
+         FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')
          CURRENT_RELEASE=$(git tag | tail -n1 | sed 's/v//')     
          CURRENT_VERSION=$(cat ${REPO_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
          echo "TAG: $TAG"
@@ -29,7 +30,7 @@ jobs:
          fi
          echo "CURRENT RELEASE: $CURRENT_RELEASE"
          echo "CURRENT VERSION: $CURRENT_VERSION"
-         echo -e "TAG=$TAG\nREPO_NAME=$REPO_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nCURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+         echo -e "TAG=$TAG\nREPO_NAME=$REPO_NAME\nFOLDER_NAME=$FOLDER_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nCURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
          
     - name: Increment Version
       if: ${{ env.CURRENT_RELEASE == env.CURRENT_VERSION }}
@@ -43,6 +44,7 @@ jobs:
            ((version[2]++))
            echo "Incrementing Patch Version: ${version[@]}"
          elif [[ "$COMMIT_MESSAGE" == *"minor"* ]]; then
+           echo "Attempt minor increase"
            ((version[1]++))
            version[2]=0
            echo "Incrementing Minor Version: ${version[@]}"
@@ -52,6 +54,7 @@ jobs:
            version[1]=0
            echo "Incrementing Major Version: ${version[@]}"
          else
+           echo "Attempt minor else increase"
            ((version[1]++))
            version[2]=0
            echo "Incrementing Minor Version: ${version[@]}"
@@ -59,7 +62,7 @@ jobs:
          NEW_VERSION="${version[0]}.${version[1]}.${version[2]}"
          echo -e "Old Version: $CURRENT_RELEASE\nNew Version: $NEW_VERSION"
          sed -i "s/CURRENT_VERSION=.*$/CURRENT_VERSION=$NEW_VERSION/" $GITHUB_ENV
-         sed -i "s/__version__ = .*$/__version__ = '$NEW_VERSION'/" $REPO_NAME/version.py
+         sed -i "s/__version__ = .*$/__version__ = '$NEW_VERSION'/" $FOLDER_NAME/version.py
          sed -i "s/^\*Version: [0-9][0-9]*.[0-9][0-9]*.[0-9][0-9]*\*.*$/*Version: $NEW_VERSION*/" README.md
      
     - name: Commit Repository Changes
