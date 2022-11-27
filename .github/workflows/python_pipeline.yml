@@ -55,8 +55,11 @@ jobs:
            echo "Incrementing Major Version: ${version[@]}"
          else
            echo "Attempt minor else increase"
+           echo "Version: $version[1]"
            ((version[1]++))
+           echo "To: $version[1]"
            version[2]=0
+           echo "Set [2]: 0"
            echo "Incrementing Minor Version: ${version[@]}"
          fi         
          NEW_VERSION="${version[0]}.${version[1]}.${version[2]}"
