@@ -1,9 +1,10 @@
 name: Build|Upload|Release Python Package
 
 on:
-  push:
-    branches:
-      - 'main'
+  workflow_call:
+    secrets:
+      token:
+        required: true
 
 jobs:
   publish:
