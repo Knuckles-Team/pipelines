@@ -19,6 +19,7 @@ jobs:
       run: |
          echo "Fetching Latest Tags"
          git fetch
+         git reset --hard origin/main
          TAG=$(git tag | tail -n1)
          REPO_NAME=$(echo ${{ github.event.repository.name }})
          FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')
