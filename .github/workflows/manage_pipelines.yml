@@ -30,7 +30,9 @@ jobs:
     - name: Delete Latest Tag
       if: ${{ env.TAG != '' }}
       id: delete_tag
-      run: git push --delete origin ${{ env.TAG }}
+      run: |
+        git tag -d ${{ env.TAG }}
+        git push --delete origin ${{ env.TAG }} || echo "Unable to Delete - Tag Not Found"
          
     - name: Create Release
       id: create_release
