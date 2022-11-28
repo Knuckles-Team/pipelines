@@ -25,4 +25,3 @@ jobs:
     - name: Bring Up Services
       id: services_up
       run: docker-compose up -d --runners=${RUNNERS}
-  
