@@ -41,6 +41,6 @@ jobs:
         release_name: Release Commit - ${{ env.TAG }}
         body: |
           Changes in this Release - ${{ github.ref }}
-          $COMMIT_MESSAGE
+          ${{ env.COMMIT_MESSAGE }}
         draft: false
         prerelease: false
