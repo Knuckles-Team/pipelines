@@ -17,7 +17,9 @@ jobs:
       id: delete_tag
       run: |
          git fetch
-         git push --delete origin tagname
+         git reset --hard origin/main
+         TAG=$(git tag | tail -n1)
+         git push --delete origin $TAG
          
     - name: Create Release
       id: create_release
