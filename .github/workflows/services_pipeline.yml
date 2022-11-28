@@ -24,4 +24,4 @@ jobs:
       run: docker-compose down
     - name: Bring Up Services
       id: services_up
-      run: docker-compose up -d --runners=${RUNNERS}
+      run: docker-compose up -d --runners=${{ env.RUNNERS }}
