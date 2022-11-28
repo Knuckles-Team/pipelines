@@ -1,4 +1,4 @@
-name: Build|Upload|Release Python Package
+name: Release Python Package
 
 on:
   workflow_call:
