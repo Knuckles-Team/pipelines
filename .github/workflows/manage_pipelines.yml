@@ -20,7 +20,11 @@ jobs:
         git reset --hard origin/main
         git pull
         TAG=$(git tag | tail -n1)
-        echo -e "TAG=$TAG" | tee -a $GITHUB_ENV
+        CURRENT_COMMIT=$(git rev-list -n 1 $TAG)
+        LATEST_COMMIT=$(git rev-parse --verify HEAD)
+        COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
+        COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT)
+        echo -e "TAG=$TAG\LATEST_COMMIT=$LATEST_COMMIT\nCOMMIT_MESSAGE="$COMMIT_MESSAGE"\nCURRENT_COMMIT=$CURRENT_COMMIT" | tee -a $GITHUB_ENV
       
     - name: Delete Latest Tag
       if: ${{ env.TAG != '' }}
@@ -34,8 +38,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: latest
-        release_name: "Release Commit: $GITHUB_SHA"
+        release_name: Release Commit - ${{ env.TAG }}
         body: |
           Changes in this Release - ${{ github.ref }}
+          $COMMIT_MESSAGE
         draft: false
         prerelease: false
