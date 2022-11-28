@@ -1,0 +1,32 @@
+
+name: Tag Latest Release
+
+on:
+  workflow_call:
+
+jobs:
+  tag:
+    runs-on: self-hosted
+    permissions: write-all    
+    steps:    
+    - name: Checkout Repository
+      uses: actions/checkout@v2.3.4
+      
+    - name: Delete Latest Tag
+      id: delete_tag
+      run: |
+         git fetch
+         git push --delete origin tagname
+         
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: latest
+        release_name: Release Commit: $GITHUB_SHA
+        body: |
+          Changes in this Release - ${{ github.ref }}
+        draft: false
+        prerelease: false
