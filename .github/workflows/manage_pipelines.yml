@@ -1,7 +1,9 @@
 name: Tag Latest Release
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - 'main'
 
 jobs:
   tag:
