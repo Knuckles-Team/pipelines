@@ -24,7 +24,7 @@ jobs:
         LATEST_COMMIT=$(git rev-parse --verify HEAD)
         COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
         COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT)
-        echo -e "TAG=$TAG\LATEST_COMMIT=$LATEST_COMMIT\nCOMMIT_MESSAGE="$COMMIT_MESSAGE"\nCURRENT_COMMIT=$CURRENT_COMMIT" | tee -a $GITHUB_ENV
+        echo -e "TAG=$TAG\nLATEST_COMMIT=$LATEST_COMMIT\nCOMMIT_MESSAGE="$COMMIT_MESSAGE"\nCURRENT_COMMIT=$CURRENT_COMMIT" | tee -a $GITHUB_ENV
       
     - name: Delete Latest Tag
       if: ${{ env.TAG != '' }}
