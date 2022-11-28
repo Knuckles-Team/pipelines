@@ -17,14 +17,15 @@ jobs:
       id: latest_tag
       run: |
         TAG=$(git tag | tail -n1)
-        echo -e "TAG=$TAG" >> $GITHUB_ENV
+        echo -e "TAG=$TAG" | tee -a $GITHUB_ENV
       
     - name: Delete Latest Tag
       if: ${{ env.TAG != '' }}
       id: delete_tag
       run: |
-         git fetch
+         git fetch         
          git reset --hard origin/main
+         git pull
          git push --delete origin $TAG
          
     - name: Create Release
