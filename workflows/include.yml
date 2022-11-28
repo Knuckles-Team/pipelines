@@ -1,3 +1,0 @@
-jobs:
-  Python Pipeline:
-    uses: Knuckles-Team/pipelines/python_pipeline.yml
