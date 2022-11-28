@@ -1,0 +1,15 @@
+name: Deploy Service
+
+on:
+  workflow_call:
+    secrets:
+      RUNNERS:
+        required: true
+
+jobs:
+  services:
+    runs-on: self-hosted
+    permissions: write-all    
+    steps:    
+    - name: Checkout Repository
+      uses: actions/checkout@v2.3.4

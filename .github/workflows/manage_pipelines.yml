@@ -25,7 +25,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: latest
-        release_name: Release Commit: $GITHUB_SHA
+        release_name: "Release Commit: $GITHUB_SHA"
         body: |
           Changes in this Release - ${{ github.ref }}
         draft: false
