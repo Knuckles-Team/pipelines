@@ -12,13 +12,19 @@ jobs:
     steps:    
     - name: Checkout Repository
       uses: actions/checkout@v2.3.4
+
+    - name: Get Latest Tag
+      id: latest_tag
+      run: |
+        TAG=$(git tag | tail -n1)
+        echo -e "TAG=$TAG" >> $GITHUB_ENV
       
     - name: Delete Latest Tag
+      if: ${{ env.TAG != '' }}
       id: delete_tag
       run: |
          git fetch
          git reset --hard origin/main
-         TAG=$(git tag | tail -n1)
          git push --delete origin $TAG
          
     - name: Create Release
