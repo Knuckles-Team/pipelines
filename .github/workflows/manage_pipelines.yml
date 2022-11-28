@@ -43,8 +43,9 @@ jobs:
         tag_name: latest
         release_name: Release - ${{ env.COMMIT_DATETIME }}
         body: |
-          Changes in this Release: ${{ env.COMMIT_DATETIME }}
+          Released: ${{ env.COMMIT_DATETIME }}
           Commit: ${{ env.LATEST_COMMIT }}
+          Changes: 
           ${{ env.COMMIT_MESSAGE }}
         draft: false
         prerelease: false
