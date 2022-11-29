@@ -21,10 +21,9 @@ jobs:
       - name: Get Latest Tag
         id: latest_tag
         run: |
-          git fetch         
+          git fetch --tags       
           git reset --hard origin/main
           git pull
-          git fetch   
           TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
           echo "DEBUG: $(git tag)"
           if [[ $TAG == '' ]]; then

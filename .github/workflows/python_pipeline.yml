@@ -18,7 +18,7 @@ jobs:
       id: verify_version
       run: |
         echo "Fetching Latest Tags"
-        git fetch         
+        git fetch --tags  
         git reset --hard origin/main
         git pull
         TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
