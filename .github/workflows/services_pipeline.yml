@@ -17,7 +17,7 @@ jobs:
       uses: actions/download-artifact@master
       with:
         name: environment_file
-        path: ./.env
+        path: .
     - name: Extract Environment Artifact
       id: pull_image
       run: unzip ./*.zip
