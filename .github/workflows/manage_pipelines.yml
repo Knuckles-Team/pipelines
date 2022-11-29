@@ -9,51 +9,55 @@ jobs:
   release_latest:
     runs-on: self-hosted
     permissions: write-all    
-    steps:    
-    - name: Checkout Repository
-      uses: actions/checkout@v2.3.4
+    steps:
+      - name: Cleanup
+        id: cleanup
+        run: |
+          cd ..
+          rm -rf ${{ github.event.repository.name }} || echo "All clean"
 
-    - name: Get Latest Tag
-      id: latest_tag
-      run: |
-        git fetch         
-        git reset --hard origin/main
-        git pull
-        TAG=$(git tag | tail -n1)
-        echo "DEBUG: $(git tag | tail -n1)"
-        CURRENT_COMMIT=$(git rev-list -n 1 $TAG) || echo "Did not find commit for Tag: $TAG"
-        LATEST_COMMIT=$(git rev-parse --verify HEAD)
-        COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
-        COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT)
-        COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
-        echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE" | tee -a $GITHUB_ENV
-      
-    - name: Delete Latest Tag
-      if: ${{ env.TAG != '' }}
-      id: delete_tag
-      run: |        
-        git push --delete origin ${{ env.TAG }} || echo "Unable to Delete - Tag Not Found"
-        git tag -d ${{ env.TAG }}
-        git push
-         
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: latest
-        release_name: Release - ${{ env.COMMIT_DATETIME }}
-        body: |
-          Released: ${{ env.COMMIT_DATETIME }}
-          Commit: ${{ env.LATEST_COMMIT }}
-          Changes: 
-          ${{ env.COMMIT_MESSAGE }}
-        draft: false
-        prerelease: false
+      - name: Checkout Repository
+        uses: actions/checkout@v2.3.4
 
-    - name: Cleanup
-      id: cleanup
-      run: |
-        cd ..
-        rm -rf ${{ github.event.repository.name }}
+      - name: Get Latest Tag
+        id: latest_tag
+        run: |
+          git fetch         
+          git reset --hard origin/main
+          git pull
+          TAG=$(git tag | tail -n1)
+          echo "DEBUG: $(git tag | tail -n1)"
+          CURRENT_COMMIT=$(git rev-list -n 1 $TAG) || echo "Did not find commit for Tag: $TAG"
+          LATEST_COMMIT=$(git rev-parse --verify HEAD)
+          COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
+          COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT)
+          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
+          echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE" | tee -a $GITHUB_ENV
+
+      - name: Delete Latest Tag
+        if: ${{ env.TAG != '' }}
+        id: delete_tag
+        run: |        
+          git push --delete origin ${{ env.TAG }} || echo "Unable to Delete - Tag Not Found"
+          git tag -d ${{ env.TAG }}
+          git push
+          echo "Cleaning Up"
+          cd ..
+          rm -rf ${{ github.event.repository.name }} || echo "Unable to delete repository folder"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          release_name: Release - ${{ env.COMMIT_DATETIME }}
+          body: |
+            Released: ${{ env.COMMIT_DATETIME }}
+            Commit: ${{ env.LATEST_COMMIT }}
+            Changes: 
+            ${{ env.COMMIT_MESSAGE }}
+          draft: false
+          prerelease: false
+
