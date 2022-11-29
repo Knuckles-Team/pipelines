@@ -26,6 +26,15 @@ jobs:
         cat ./.env | tee -a $GITHUB_ENV
         source ./.env
 
+    - name: Cleanup Artifacts
+      id: cleanup
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+      run: |
+        echo "::add-mask::$GITHUB_TOKEN"
+        curl --verbose --fail --show-error --location --request POST "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" --header "Authorization: token $GITHUB_TOKEN" --header 'Content-Type: application/json' --header 'Accept: application/vnd.github.everest-preview+json' --data-raw "{ \"event_type\": \"delete_all_artifacts\", \"client_payload\": {\"parent_runid\": \"$GITHUB_RUN_ID\", \"parent_repo\": \"$GITHUB_REPOSITORY\"} }"
+        echo "Cleaned artifacts"
+
     - name: Pull Image
       id: pull_image
       run: docker compose pull
@@ -40,13 +49,5 @@ jobs:
 
     - name: Bring Up Services
       id: services_up
-      run: docker compose up --build --scale runner=$RUNNERS -d
+      run: docker compose up --build --scale runner=${{ secrets.RUNNERS }} -d
 
-    - name: Cleanup Artifacts
-      id: cleanup
-      env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
-      run: |
-        echo "::add-mask::$GITHUB_TOKEN"
-        curl --verbose --fail --show-error --location --request POST "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" --header "Authorization: token $GITHUB_TOKEN" --header 'Content-Type: application/json' --header 'Accept: application/vnd.github.everest-preview+json' --data-raw "{ \"event_type\": \"delete_all_artifacts\", \"client_payload\": {\"parent_runid\": \"$GITHUB_RUN_ID\", \"parent_repo\": \"$GITHUB_REPOSITORY\"} }"
-        echo "Cleaned artifacts"
