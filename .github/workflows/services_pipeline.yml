@@ -19,7 +19,7 @@ jobs:
         name: environment_file
         path: .
     - name: Extract Environment Artifact
-      id: pull_image
+      id: extract_image
       run: unzip ./*.zip
     - name: Pull Image
       id: pull_image
