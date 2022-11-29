@@ -10,11 +10,6 @@ jobs:
     runs-on: self-hosted
     permissions: write-all    
     steps:
-      - name: Cleanup
-        id: cleanup
-        run: |
-          rm -rf ${{ github.event.repository.name }} || echo "All clean"
-
       - name: Checkout Repository
         uses: actions/checkout@v2.3.4
 
@@ -45,9 +40,6 @@ jobs:
           git push --delete origin ${{ env.TAG }} || echo "Unable to Delete - Tag Not Found"
           git tag -d ${{ env.TAG }}
           git push
-          echo "Cleaning Up"
-          cd ..
-          rm -rf ${{ github.event.repository.name }} || echo "Unable to delete repository folder"
 
       - name: Create Release
         id: create_release
@@ -64,4 +56,3 @@ jobs:
             ${{ env.COMMIT_MESSAGE }}
           draft: false
           prerelease: false
-
