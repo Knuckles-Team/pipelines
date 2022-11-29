@@ -13,6 +13,10 @@ jobs:
     steps:    
     - name: Checkout Repository
       uses: actions/checkout@v2.3.4
+    - uses: actions/download-artifact@master
+      with:
+        name: environment_file
+        path: .env
     - name: Pull Image
       id: pull_image
       run: docker compose pull
