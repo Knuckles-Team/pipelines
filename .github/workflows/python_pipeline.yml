@@ -12,7 +12,7 @@ jobs:
     permissions: write-all    
     steps:    
     - name: Checkout Repository
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v3
       
     - name: Verify Latest Build Version
       id: verify_version
