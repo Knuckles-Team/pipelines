@@ -20,7 +20,6 @@ jobs:
           git reset --hard origin/main
           git pull
           TAG=$(git tag | tail -n1)
-          echo "DEBUG: $(git tag)"
           if [[ $TAG == '' ]]; then
             CURRENT_COMMIT=''
             COMMIT_DIFFERENCE='1'
