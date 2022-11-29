@@ -21,7 +21,7 @@ jobs:
         git fetch         
         git reset --hard origin/main
         git pull
-        TAG=$(git tag | tail -n1)
+        TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
         CURRENT_COMMIT=$(git rev-list -n 1 $TAG)
         LATEST_COMMIT=$(git rev-parse --verify HEAD)
         COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)

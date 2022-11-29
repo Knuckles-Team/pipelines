@@ -24,12 +24,13 @@ jobs:
           git fetch         
           git reset --hard origin/main
           git pull
-          TAG=$(git tag | tail -n1)
+          git fetch   
+          TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
           echo "DEBUG: $(git tag)"
           if [[ $TAG == '' ]]; then
             CURRENT_COMMIT=''
             COMMIT_DIFFERENCE='1'
-          else;
+          else
             CURRENT_COMMIT=$(git rev-list -n 1 $TAG) || echo "Did not find commit for Tag: $TAG"
             COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
           fi
