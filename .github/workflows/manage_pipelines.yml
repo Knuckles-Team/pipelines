@@ -19,7 +19,7 @@ jobs:
           git fetch --tags       
           git reset --hard origin/main
           git pull
-          TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+          TAG=$(git tag | tail -n1)
           echo "DEBUG: $(git tag)"
           if [[ $TAG == '' ]]; then
             CURRENT_COMMIT=''
