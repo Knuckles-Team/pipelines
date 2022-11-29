@@ -23,7 +23,8 @@ jobs:
       run: |
         pwd
         ls -la
-        unzip ./.env.zip
+        cat .env
+        unzip ./.env
     - name: Pull Image
       id: pull_image
       run: docker compose pull
