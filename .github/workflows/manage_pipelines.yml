@@ -51,3 +51,9 @@ jobs:
           ${{ env.COMMIT_MESSAGE }}
         draft: false
         prerelease: false
+
+    - name: Cleanup
+      id: cleanup
+      run: |
+        cd ..
+        rm -rf ${{ github.event.repository.name }}
