@@ -49,5 +49,7 @@ jobs:
 
     - name: Bring Up Services
       id: services_up
-      run: docker compose up --build --scale runner=${{ secrets.RUNNERS }} -d
+      run: |
+        echo "Running ${{ secrets.RUNNERS }} instances"
+        docker compose up --build --scale runner=${{ secrets.RUNNERS }} -d
 
