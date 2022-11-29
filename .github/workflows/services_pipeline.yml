@@ -26,7 +26,7 @@ jobs:
       run: docker compose build
     - name: Bring Down Services
       id: services_down
-      run: docker compose down
+      run: docker compose down || echo "Services Appear to be Down Already"
     - name: Bring Up Services
       id: services_up
       run: docker compose up -d --runners=${{ env.RUNNERS }}
