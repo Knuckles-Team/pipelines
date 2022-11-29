@@ -28,12 +28,9 @@ jobs:
 
     - name: Cleanup Artifacts
       id: cleanup
-      env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
-      run: |
-        echo "::add-mask::$GITHUB_TOKEN"
-        curl --verbose --fail --show-error --location --request POST "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" --header "Authorization: token $GITHUB_TOKEN" --header 'Content-Type: application/json' --header 'Accept: application/vnd.github.everest-preview+json' --data-raw "{ \"event_type\": \"delete_all_artifacts\", \"client_payload\": {\"parent_runid\": \"$GITHUB_RUN_ID\", \"parent_repo\": \"$GITHUB_REPOSITORY\"} }"
-        echo "Cleaned artifacts"
+      uses: geekyeggo/delete-artifact@v2
+      with:
+        name: environment_file
 
     - name: Pull Image
       id: pull_image
