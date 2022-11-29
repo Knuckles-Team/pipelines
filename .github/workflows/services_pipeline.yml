@@ -20,7 +20,7 @@ jobs:
         path: .
     - name: Extract Environment Artifact
       id: extract_image
-      run: unzip ./*.zip
+      run: unzip ./.env.zip
     - name: Pull Image
       id: pull_image
       run: docker compose pull
