@@ -13,28 +13,35 @@ jobs:
     steps:    
     - name: Checkout Repository
       uses: actions/checkout@v3
+
     - name: Download Environment Artifact
       uses: actions/download-artifact@master
       with:
         name: environment_file
         path: .
+
     - name: Set Environment Variables
       id: env_vars
       run: |
-        source .env
-        cat .env | tee -a $GITHUB_ENV
+        cat ./.env | tee -a $GITHUB_ENV
+        source ./.env
+
     - name: Pull Image
       id: pull_image
       run: docker compose pull
+
     - name: Build Image
       id: build_image
       run: docker compose build
+
     - name: Bring Down Services
       id: services_down
       run: docker compose down || echo "Services Appear to be Down Already"
+
     - name: Bring Up Services
       id: services_up
       run: docker compose up --build --scale runner=$RUNNERS -d
+
     - name: Cleanup Artifacts
       id: cleanup
       env:
