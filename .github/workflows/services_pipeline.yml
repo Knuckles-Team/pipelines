@@ -23,7 +23,7 @@ jobs:
     - name: Set Environment Variables
       id: env_vars
       run: |
-        cat ./.env | tee -a $GITHUB_ENV
+        cat ./.env >> $GITHUB_ENV
         source ./.env
 
     - name: Cleanup Artifacts
