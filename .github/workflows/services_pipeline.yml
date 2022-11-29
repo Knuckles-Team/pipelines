@@ -18,13 +18,6 @@ jobs:
       with:
         name: environment_file
         path: .
-    - name: Extract Environment Artifact
-      id: extract_image
-      run: |
-        pwd
-        ls -la
-        cat .env
-        unzip ./.env
     - name: Pull Image
       id: pull_image
       run: docker compose pull
