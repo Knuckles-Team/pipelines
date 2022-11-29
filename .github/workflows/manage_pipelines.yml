@@ -13,7 +13,6 @@ jobs:
       - name: Cleanup
         id: cleanup
         run: |
-          cd ..
           rm -rf ${{ github.event.repository.name }} || echo "All clean"
 
       - name: Checkout Repository
