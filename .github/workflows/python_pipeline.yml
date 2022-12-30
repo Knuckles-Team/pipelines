@@ -80,7 +80,7 @@ jobs:
         git config --global user.email 'GitHub@users.noreply.github.com'
         git add -A
         git commit -am "Automated Version Increment to $NEW_VERSION"
-        git push
+        git push origin main --force
          
     - name: Build package
       if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION && env.CURRENT_RELEASE != '' }}
