@@ -27,10 +27,10 @@ jobs:
         TAG=$(git tag | tail -n1)
         LATEST_COMMIT=$(git rev-parse --verify HEAD)
         if [[ $TAG != '' ]]; then          
-          CURRENT_COMMIT=$(git rev-list -n 1 $TAG)          
-          $TAG='v0.0.1'
+          CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
           CURRENT_RELEASE=$(git tag | tail -n1 | sed 's/v//')   
         else
+          $TAG=''
           CURRENT_COMMIT=${LATEST_COMMIT}
           CURRENT_RELEASE=${CURRENT_VERSION}
         fi
