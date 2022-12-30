@@ -30,7 +30,7 @@ jobs:
           CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
           CURRENT_RELEASE=$(git tag | tail -n1 | sed 's/v//')   
         else
-          $TAG=''
+          TAG=''
           CURRENT_COMMIT=${LATEST_COMMIT}
           CURRENT_RELEASE=${CURRENT_VERSION}
         fi
