@@ -24,11 +24,11 @@ jobs:
         REPO_NAME=$(echo ${{ github.event.repository.name }})
         FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')
         CURRENT_VERSION=$(cat ${FOLDER_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
-        TAG=$(git tag | tail -n1)
+        TAG=$(git tag -l | sort -V | tail -n1)
         LATEST_COMMIT=$(git rev-parse --verify HEAD)
         if [[ $TAG != '' ]]; then          
           CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
-          CURRENT_RELEASE=$(git tag | tail -n1 | sed 's/v//')   
+          CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')   
         else
           TAG=''
           CURRENT_COMMIT=${LATEST_COMMIT}
