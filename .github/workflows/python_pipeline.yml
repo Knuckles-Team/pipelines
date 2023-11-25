@@ -104,7 +104,10 @@ jobs:
         git add -A
         git commit -am "Automated Version Increment to $NEW_VERSION"
         git push origin main --force
-         
+
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      
     - name: Build package
       if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION && env.CURRENT_RELEASE != '' }}
       id: build_package
