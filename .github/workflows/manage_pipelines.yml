@@ -28,8 +28,8 @@ jobs:
             COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
           fi
           LATEST_COMMIT=$(git rev-parse --verify HEAD)          
-          COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT)
-          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
+          COMMIT_MESSAGE="$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT)"
+          COMMIT_DATETIME="$(date "+%m/%d/%Y %H:%M:%S")"
           echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE" | tee -a $GITHUB_ENV
 
       - name: Delete Latest Tag
