@@ -21,11 +21,15 @@ jobs:
         git fetch --tags  
         git reset --hard origin/main
         git pull
+        echo "Pulled latest repo changes"
         REPO_NAME=$(echo ${{ github.event.repository.name }})
         FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')
         CURRENT_VERSION=$(cat ${FOLDER_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
+        echo "Current Version: ${CURRENT_VERSION}"
         TAG=$(git tag -l | sort -V | tail -n1)
+        echo "Tag: ${TAG}"
         LATEST_COMMIT=$(git rev-parse --verify HEAD)
+        echo "Last Commit: ${LATEST_COMMIT}"
         if [[ $TAG != '' ]]; then          
           CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
           CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')   
@@ -35,9 +39,9 @@ jobs:
           CURRENT_RELEASE=${CURRENT_VERSION}
         fi
         COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
+        echo "Commit Difference: ${COMMIT_DIFFERENCE}"
         COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
         COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")   
-        echo "TAG: $TAG"                
         echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nREPO_NAME=$REPO_NAME\nFOLDER_NAME=$FOLDER_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nCURRENT_VERSION=$CURRENT_VERSION\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE" | tee -a $GITHUB_ENV
 
     - name: Increment Version
