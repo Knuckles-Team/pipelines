@@ -22,8 +22,10 @@ jobs:
         git reset --hard origin/main
         git pull
         echo "Pulled latest repo changes"
-        REPO_NAME=$(echo ${{ github.event.repository.name }})
-        FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')
+        REPO_NAME=$(echo ${{ github.event.repository.name }})        
+        echo "Repository Name: ${REPO_NAME}"
+        FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')        
+        echo "Folder Name: ${FOLDER_NAME}"
         CURRENT_VERSION=$(cat ${FOLDER_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
         echo "Current Version: ${CURRENT_VERSION}"
         TAG=$(git tag -l | sort -V | tail -n1)
