@@ -44,6 +44,7 @@ jobs:
       if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION }}
       id: increment_version
       run: |
+        python -m pip install --upgrade autoversioner
         autoversioner -v "${CURRENT_VERSION}" | tee -a VERSION
         COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
         echo "Commit Message: $COMMIT_MESSAGE"
