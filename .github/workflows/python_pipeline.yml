@@ -52,7 +52,7 @@ jobs:
       run: |        
         export PATH=$PATH:~/.local/bin
         python -m pip install --upgrade autoversioner
-        python -m autoversioner -v "${CURRENT_VERSION}" | tee -a VERSION
+        autoversioner -v "${CURRENT_VERSION}" | tee -a VERSION
         COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
         echo "Commit Message: $COMMIT_MESSAGE"
         NEW_VERSION="$(cat VERSION)"
