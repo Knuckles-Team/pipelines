@@ -49,7 +49,8 @@ jobs:
     - name: Increment Version
       if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION }}
       id: increment_version
-      run: |
+      run: |        
+        export PATH=$PATH:~/.local/bin
         python -m pip install --upgrade autoversioner
         python -m autoversioner -v "${CURRENT_VERSION}" | tee -a VERSION
         COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
