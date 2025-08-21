@@ -66,9 +66,11 @@ jobs:
           COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
           echo "Commit Difference: ${COMMIT_DIFFERENCE}"
           COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
-          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")   
+          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S") 
+          echo "Determining version increment needed..."
           # Determine if version increment is needed
           NEEDS_INCREMENT="false"
+          set -x
           if [[ $COMMIT_DIFFERENCE -gt 0 ]]; then
             version_compare "$CURRENT_VERSION" "$CURRENT_RELEASE"
             result=$?
