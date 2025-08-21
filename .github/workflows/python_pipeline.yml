@@ -22,14 +22,14 @@ jobs:
           # Function to compare version numbers numerically
           version_compare() {
             if [[ $1 == $2 ]]; then
-              return 0  # Equal
+              return $1  # Equal
             fi
             # Use sort -V to compare versions and determine order
             lower=$(echo -e "$1\n$2" | sort -V | head -n1)
             if [[ $lower == $1 ]]; then
-              return 1  # $1 < $2
+              return $2  # $1 < $2
             else
-              return 2  # $1 > $2
+              return $1  # $1 > $2
             fi
           }
           
@@ -69,16 +69,7 @@ jobs:
           COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S") 
           echo "Determining version increment needed..."
           # Determine if version increment is needed
-          NEEDS_INCREMENT="false"
-          set -x
-          if [[ $COMMIT_DIFFERENCE -gt 0 ]]; then
-            version_compare "$CURRENT_VERSION" "$CURRENT_RELEASE"
-            result=$?
-            echo "Version comparison result: $result (0=equal, 1=$CURRENT_VERSION<$CURRENT_RELEASE, 2=$CURRENT_VERSION>$CURRENT_RELEASE)"
-            if [[ $result -le 1 ]]; then  # CURRENT_VERSION <= CURRENT_RELEASE
-              NEEDS_INCREMENT="true"
-            fi
-          fi
+          NEEDS_INCREMENT="true"
           echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nREPO_NAME=$REPO_NAME\nFOLDER_NAME=$FOLDER_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nCURRENT_VERSION=$CURRENT_VERSION\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nNEEDS_INCREMENT=$NEEDS_INCREMENT" | tee -a $GITHUB_ENV
 
       - name: Increment Version
