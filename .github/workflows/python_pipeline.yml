@@ -9,108 +9,131 @@ on:
 jobs:
   publish:
     runs-on: self-hosted
-    permissions: write-all    
-    steps:    
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-      
-    - name: Verify Latest Build Version
-      id: verify_version
-      run: |
-        echo "Fetching Latest Tags"
-        git fetch --tags  
-        git reset --hard origin/main
-        git pull
-        echo "Pulled latest repo changes"
-        REPO_NAME=$(echo ${{ github.event.repository.name }})        
-        echo "Repository Name: ${REPO_NAME}"
-        FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')        
-        echo "Folder Name: ${FOLDER_NAME}"
-        CURRENT_VERSION=$(cat ${FOLDER_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
-        echo "Current Version: ${CURRENT_VERSION}"
-        TAG=$(git tag -l | sort -V | tail -n1)
-        echo "Tag: ${TAG}"
-        LATEST_COMMIT=$(git rev-parse --verify HEAD)
-        echo "Last Commit: ${LATEST_COMMIT}"
-        if [[ $TAG != '' ]]; then          
-          CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
-          CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')   
-        else
-          TAG=''
-          CURRENT_COMMIT=${LATEST_COMMIT}
-          CURRENT_RELEASE=${CURRENT_VERSION}
-        fi
-        COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
-        echo "Commit Difference: ${COMMIT_DIFFERENCE}"
-        COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
-        COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")   
-        echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nREPO_NAME=$REPO_NAME\nFOLDER_NAME=$FOLDER_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nCURRENT_VERSION=$CURRENT_VERSION\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE" | tee -a $GITHUB_ENV
+    permissions: write-all
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Increment Version
-      if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION }}
-      id: increment_version
-      run: |        
-        export PATH=$PATH:~/.local/bin
-        python -m pip install --upgrade autoversioner
-        autoversioner -v "${CURRENT_VERSION}" | tee -a VERSION
-        COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
-        echo "Commit Message: $COMMIT_MESSAGE"
-        NEW_VERSION="$(cat VERSION)"
-        rm -rf ./VERSION
-        echo -e "Old Version: $CURRENT_RELEASE\nNew Version: $NEW_VERSION"
-        sed -i "s/CURRENT_VERSION=.*$/CURRENT_VERSION=$NEW_VERSION/" $GITHUB_ENV
-        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-        sed -i "s/__version__ = .*$/__version__ = \"$NEW_VERSION\"/" $FOLDER_NAME/version.py
-        sed -i "s/^\*Version: [0-9][0-9]*.[0-9][0-9]*.[0-9][0-9]*\*.*$/*Version: $NEW_VERSION*/" README.md
-     
-    - name: Commit Repository Changes
-      if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION && env.CURRENT_RELEASE != '' }}
-      id: commit_repository
-      run: |
-        git config --global user.name 'GitHub Pipeline'
-        git config --global user.email 'GitHub@users.noreply.github.com'
-        git add -A
-        git commit -am "Automated Version Increment to $NEW_VERSION"
-        git push origin main --force
-         
-    - name: Build package
-      if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION && env.CURRENT_RELEASE != '' }}
-      id: build_package
-      run: |    
-        echo "Installing dependencies"
-        python -m pip install -r requirements.txt
-        echo "Building package"
-        python setup.py bdist_wheel --universal
-        BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
-        echo "BUILD VERSION: $BUILD_VERSION"
-        echo -e "BUILD_VERSION=$BUILD_VERSION" | tee -a $GITHUB_ENV
-                
-    - name: Upload Artifact
-      if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION && env.CURRENT_RELEASE != '' }}
-      id: upload_artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ github.event.repository.name }}-${{ env.VERSION }}
-        path: dist/${{ github.event.repository.name }}*.whl
-        
-    - name: Create Release
-      if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION && env.CURRENT_RELEASE != '' }}
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ env.BUILD_VERSION }}
-        release_name: Release v${{ env.BUILD_VERSION }}
-        body: |
-          Released: ${{ env.COMMIT_DATETIME }}
-          Commit: ${{ env.LATEST_COMMIT }}
-          Changes: 
-          ${{ env.COMMIT_MESSAGE }}
-        draft: false
-        prerelease: false
-        
-    - name: Publish package
-      if: ${{ env.CURRENT_RELEASE <= env.CURRENT_VERSION && env.CURRENT_RELEASE != '' }}
-      run: |
-        twine upload dist/* --verbose -u "__token__" -p "${{ secrets.PYPI_API_TOKEN }}"
+      - name: Verify Latest Build Version
+        id: verify_version
+        run: |
+          # Function to compare version numbers numerically
+          version_compare() {
+            if [[ $1 == $2 ]]; then
+              return 0  # Equal
+            fi
+            # Use sort -V to compare versions and determine order
+            lower=$(echo -e "$1\n$2" | sort -V | head -n1)
+            if [[ $lower == $1 ]]; then
+              return 1  # $1 < $2
+            else
+              return 2  # $1 > $2
+            fi
+          }
+          
+          echo "Fetching Latest Tags"
+          git fetch --tags  
+          git reset --hard origin/main
+          git pull
+          echo "Pulled latest repo changes"
+          REPO_NAME=$(echo ${{ github.event.repository.name }})        
+          echo "Repository Name: ${REPO_NAME}"
+          FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')        
+          echo "Folder Name: ${FOLDER_NAME}"
+          CURRENT_VERSION=$(cat ${FOLDER_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
+          echo "Current Version: ${CURRENT_VERSION}"
+          TAG=$(git tag -l | sort -V | tail -n1)
+          echo "Tag: ${TAG}"
+          LATEST_COMMIT=$(git rev-parse --verify HEAD)
+          echo "Last Commit: ${LATEST_COMMIT}"
+          if [[ $TAG != '' ]]; then          
+            CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
+            CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')   
+          else
+            TAG=''
+            CURRENT_COMMIT=${LATEST_COMMIT}
+            CURRENT_RELEASE=${CURRENT_VERSION}
+          fi
+          COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
+          echo "Commit Difference: ${COMMIT_DIFFERENCE}"
+          COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
+          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")   
+          # Determine if version increment is needed
+          NEEDS_INCREMENT="false"
+          if [[ $COMMIT_DIFFERENCE -gt 0 ]]; then
+            version_compare "$CURRENT_VERSION" "$CURRENT_RELEASE"
+            result=$?
+            if [[ $result -le 1 ]]; then  # CURRENT_VERSION <= CURRENT_RELEASE
+              NEEDS_INCREMENT="true"
+            fi
+          fi
+          echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nREPO_NAME=$REPO_NAME\nFOLDER_NAME=$FOLDER_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nCURRENT_VERSION=$CURRENT_VERSION\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nNEEDS_INCREMENT=$NEEDS_INCREMENT" | tee -a $GITHUB_ENV
+
+      - name: Increment Version
+        if: ${{ env.NEEDS_INCREMENT == 'true' }}
+        id: increment_version
+        run: |
+          export PATH=$PATH:~/.local/bin
+          python -m pip install --upgrade autoversioner
+          autoversioner -v "${CURRENT_VERSION}" | tee -a VERSION
+          COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
+          echo "Commit Message: $COMMIT_MESSAGE"
+          NEW_VERSION="$(cat VERSION)"
+          rm -rf ./VERSION
+          echo -e "Old Version: $CURRENT_RELEASE\nNew Version: $NEW_VERSION"
+          sed -i "s/CURRENT_VERSION=.*$/CURRENT_VERSION=$NEW_VERSION/" $GITHUB_ENV
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          sed -i "s/__version__ = .*$/__version__ = \"$NEW_VERSION\"/" $FOLDER_NAME/version.py
+          sed -i "s/^\*Version: [0-9][0-9]*.[0-9][0-9]*.[0-9][0-9]*\*.*$/*Version: $NEW_VERSION*/" README.md
+
+      - name: Commit Repository Changes
+        if: ${{ env.NEEDS_INCREMENT == 'true' }}
+        id: commit_repository
+        run: |
+          git config --global user.name 'GitHub Pipeline'
+          git config --global user.email 'GitHub@users.noreply.github.com'
+          git add -A
+          git commit -am "Automated Version Increment to $NEW_VERSION"
+          git push origin main --force
+
+      - name: Build package
+        if: ${{ env.NEEDS_INCREMENT == 'true' }}
+        id: build_package
+        run: |
+          echo "Installing dependencies"
+          python -m pip install -r requirements.txt
+          echo "Building package"
+          python setup.py bdist_wheel --universal
+          BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
+          echo "BUILD VERSION: $BUILD_VERSION"
+          echo -e "BUILD_VERSION=$BUILD_VERSION" | tee -a $GITHUB_ENV
+
+      - name: Upload Artifact
+        if: ${{ env.NEEDS_INCREMENT == 'true' }}
+        id: upload_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ env.VERSION }}
+          path: dist/${{ github.event.repository.name }}*.whl
+
+      - name: Create Release
+        if: ${{ env.NEEDS_INCREMENT == 'true' }}
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.BUILD_VERSION }}
+          release_name: Release v${{ env.BUILD_VERSION }}
+          body: |
+            Released: ${{ env.COMMIT_DATETIME }}
+            Commit: ${{ env.LATEST_COMMIT }}
+            Changes: 
+            ${{ env.COMMIT_MESSAGE }}
+          draft: false
+          prerelease: false
+
+      - name: Publish package
+        if: ${{ env.NEEDS_INCREMENT == 'true' }}
+        run: |
+          twine upload dist/* --verbose -u "__token__" -p "${{ secrets.PYPI_API_TOKEN }}"
