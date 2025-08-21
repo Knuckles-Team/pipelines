@@ -12,10 +12,12 @@ jobs:
     permissions: write-all
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Verify Latest Build Version
         id: verify_version
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
           # Function to compare version numbers numerically
           version_compare() {
@@ -36,11 +38,18 @@ jobs:
           git reset --hard origin/main
           git pull
           echo "Pulled latest repo changes"
-          REPO_NAME=$(echo ${{ github.event.repository.name }})        
           echo "Repository Name: ${REPO_NAME}"
-          FOLDER_NAME=$(echo ${{ github.event.repository.name }} | sed 's/-/_/g')        
+          FOLDER_NAME=$(echo "${REPO_NAME}" | sed 's/-/_/g')        
           echo "Folder Name: ${FOLDER_NAME}"
-          CURRENT_VERSION=$(cat ${FOLDER_NAME}/version.py | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
+          if [[ ! -f "${FOLDER_NAME}/version.py" ]]; then
+            echo "Error: ${FOLDER_NAME}/version.py does not exist"
+            exit 1
+          fi
+          CURRENT_VERSION=$(cat "${FOLDER_NAME}/version.py" | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
+          if [[ -z "$CURRENT_VERSION" ]]; then
+            echo "Error: Could not extract version from ${FOLDER_NAME}/version.py"
+            exit 1
+          fi
           echo "Current Version: ${CURRENT_VERSION}"
           TAG=$(git tag -l | sort -V | tail -n1)
           echo "Tag: ${TAG}"
@@ -52,7 +61,7 @@ jobs:
           else
             TAG=''
             CURRENT_COMMIT=${LATEST_COMMIT}
-            CURRENT_RELEASE=${CURRENT_VERSION}
+            CURRENT_RELEASE="0.0.0"  # Default for no tags
           fi
           COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
           echo "Commit Difference: ${COMMIT_DIFFERENCE}"
@@ -63,6 +72,7 @@ jobs:
           if [[ $COMMIT_DIFFERENCE -gt 0 ]]; then
             version_compare "$CURRENT_VERSION" "$CURRENT_RELEASE"
             result=$?
+            echo "Version comparison result: $result (0=equal, 1=$CURRENT_VERSION<$CURRENT_RELEASE, 2=$CURRENT_VERSION>$CURRENT_RELEASE)"
             if [[ $result -le 1 ]]; then  # CURRENT_VERSION <= CURRENT_RELEASE
               NEEDS_INCREMENT="true"
             fi
@@ -119,7 +129,7 @@ jobs:
       - name: Create Release
         if: ${{ env.NEEDS_INCREMENT == 'true' }}
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
