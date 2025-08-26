@@ -71,7 +71,7 @@ jobs:
         run: |
           export PATH=$PATH:~/.local/bin
           python -m pip install --upgrade autoversioner
-          autoversioner -v "${TAG}" | tee -a VERSION
+          autoversioner -v "${CURRENT_RELEASE}" | tee -a VERSION
           COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
           echo "Commit Message: $COMMIT_MESSAGE"
           NEW_VERSION="$(cat VERSION)"
@@ -79,13 +79,13 @@ jobs:
           echo -e "Old Version: $CURRENT_RELEASE\nNew Version: $NEW_VERSION"
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-      #      - name: Log in to Docker registry
-      #        if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
-      #        uses: docker/login-action@v3
-      #        with:
-      #          registry: ${{ secrets.DOCKER_REGISTRY || 'docker.io' }}
-      #          username: ${{ secrets.DOCKER_USERNAME }}
-      #          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker registry
+        if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY || 'docker.io' }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up Docker Buildx
         if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
