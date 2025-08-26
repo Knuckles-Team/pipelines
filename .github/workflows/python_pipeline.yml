@@ -150,7 +150,7 @@ jobs:
           twine upload dist/* --verbose -u "__token__" -p "${{ secrets.PYPI_API_TOKEN }}"
 
       - name: Log in to Docker registry
-        if: ${{ env.NEEDS_INCREMENT == 'true' && exists('Dockerfile') }}
+        if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.DOCKER_REGISTRY }}
@@ -158,7 +158,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Extract metadata for Docker
-        if: ${{ env.NEEDS_INCREMENT == 'true' && exists('Dockerfile') }}
+        if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -169,7 +169,7 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Docker image
-        if: ${{ env.NEEDS_INCREMENT == 'true' && exists('Dockerfile') }}
+        if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
         uses: docker/build-push-action@v6
         with:
           context: .
