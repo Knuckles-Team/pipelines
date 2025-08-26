@@ -89,6 +89,13 @@ jobs:
       #          username: ${{ secrets.DOCKER_USERNAME }}
       #          password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set up Docker Buildx
+        if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          install: true
+
       - name: Extract metadata for Docker
         if: ${{ env.NEEDS_INCREMENT == 'true' && hashFiles('Dockerfile') != '' }}
         id: meta
