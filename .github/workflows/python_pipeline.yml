@@ -43,21 +43,7 @@ jobs:
           
           echo "Fetching Latest Tags"
           git fetch --tags  
-          git reset --hard origin/main
-          git pull
-          echo "Pulled latest repo changes"
           echo "Repository Name: ${REPO_NAME}"
-          FOLDER_NAME=$(echo "${REPO_NAME}" | sed 's/-/_/g')        
-          echo "Folder Name: ${FOLDER_NAME}"
-          if [[ ! -f "${FOLDER_NAME}/version.py" ]]; then
-            echo "Error: ${FOLDER_NAME}/version.py does not exist"
-            exit 1
-          fi
-          CURRENT_VERSION=$(cat "${FOLDER_NAME}/version.py" | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
-          if [[ -z "$CURRENT_VERSION" ]]; then
-            echo "Error: Could not extract version from ${FOLDER_NAME}/version.py"
-            exit 1
-          fi
           echo "Current Version: ${CURRENT_VERSION}"
           TAG=$(git tag -l | sort -V | tail -n1)
           echo "Tag: ${TAG}"
@@ -94,18 +80,6 @@ jobs:
           echo -e "Old Version: $CURRENT_RELEASE\nNew Version: $NEW_VERSION"
           sed -i "s/CURRENT_VERSION=.*$/CURRENT_VERSION=$NEW_VERSION/" $GITHUB_ENV
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          sed -i "s/__version__ = .*$/__version__ = \"$NEW_VERSION\"/" $FOLDER_NAME/version.py
-          sed -i "s/^\*Version: [0-9][0-9]*.[0-9][0-9]*.[0-9][0-9]*\*.*$/*Version: $NEW_VERSION*/" README.md
-
-      - name: Commit Repository Changes
-        if: ${{ env.NEEDS_INCREMENT == 'true' }}
-        id: commit_repository
-        run: |
-          git config --global user.name 'GitHub Pipeline'
-          git config --global user.email 'GitHub@users.noreply.github.com'
-          git add -A
-          git commit -am "Automated Version Increment to $NEW_VERSION"
-          git push origin main --force
 
       - name: Build package
         if: ${{ env.NEEDS_INCREMENT == 'true' }}
