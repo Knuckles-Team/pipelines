@@ -44,7 +44,6 @@ jobs:
           echo "Fetching Latest Tags"
           git fetch --tags  
           echo "Repository Name: ${REPO_NAME}"
-          echo "Current Version: ${CURRENT_VERSION}"
           TAG=$(git tag -l | sort -V | tail -n1)
           echo "Tag: ${TAG}"
           LATEST_COMMIT=$(git rev-parse --verify HEAD)
@@ -64,7 +63,7 @@ jobs:
           echo "Determining version increment needed..."
           # Determine if version increment is needed
           NEEDS_INCREMENT="true"
-          echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nREPO_NAME=$REPO_NAME\nFOLDER_NAME=$FOLDER_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nCURRENT_VERSION=$CURRENT_VERSION\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nNEEDS_INCREMENT=$NEEDS_INCREMENT" | tee -a $GITHUB_ENV
+          echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nREPO_NAME=$REPO_NAME\nFOLDER_NAME=$FOLDER_NAME\nCURRENT_RELEASE=$CURRENT_RELEASE\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nNEEDS_INCREMENT=$NEEDS_INCREMENT" | tee -a $GITHUB_ENV
 
       - name: Increment Version
         if: ${{ env.NEEDS_INCREMENT == 'true' }}
@@ -72,13 +71,12 @@ jobs:
         run: |
           export PATH=$PATH:~/.local/bin
           python -m pip install --upgrade autoversioner
-          autoversioner -v "${CURRENT_VERSION}" | tee -a VERSION
+          autoversioner -v "${TAG}" | tee -a VERSION
           COMMIT_MESSAGE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n')
           echo "Commit Message: $COMMIT_MESSAGE"
           NEW_VERSION="$(cat VERSION)"
           rm -rf ./VERSION
           echo -e "Old Version: $CURRENT_RELEASE\nNew Version: $NEW_VERSION"
-          sed -i "s/CURRENT_VERSION=.*$/CURRENT_VERSION=$NEW_VERSION/" $GITHUB_ENV
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
       #      - name: Log in to Docker registry
