@@ -101,7 +101,7 @@ jobs:
         with:
           images: ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.DOCKER_REPOSITORY }}
           tags: |
-            type=raw,value=${{ env.BUILD_VERSION }}
+            type=raw,value=${{ env.NEW_VERSION }}
             type=sha
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
