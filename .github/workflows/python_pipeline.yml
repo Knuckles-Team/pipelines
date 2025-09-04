@@ -29,7 +29,7 @@ jobs:
           python -m pip install -r requirements.txt --no-warn-script-location
           echo "Building package"
           python -m build
-          BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*')
+          BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
           LATEST_COMMIT=$(git rev-parse --verify HEAD)
           echo "Last Commit: ${LATEST_COMMIT}"
           if [[ $TAG != '' ]]; then          
