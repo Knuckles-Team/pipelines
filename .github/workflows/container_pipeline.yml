@@ -1,15 +1,19 @@
 name: Build and Push Docker Image
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_call:
+    secrets:
+      DOCKER_REGISTRY:
+        required: false
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+      DOCKER_REPOSITORY:
+        required: false
 
 jobs:
-  build-and-push:
+  publish-docker:
     runs-on: self-hosted
 
     steps:
