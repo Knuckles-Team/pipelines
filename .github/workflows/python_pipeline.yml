@@ -17,6 +17,9 @@ jobs:
       - name: Build package
         id: build_package
         run: |
+          echo "Creating virtual environment"
+          uv venv .venv                
+          source .venv/bin/activate
           echo "Installing dependencies"
           uv pip install -r requirements.txt
           echo "Building package"
