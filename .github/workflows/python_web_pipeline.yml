@@ -37,6 +37,8 @@ jobs:
 
       - name: Build Frontend
         if: hashFiles('package.json') != ''
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
           if [ -f pnpm-lock.yaml ]; then
             pnpm run build
