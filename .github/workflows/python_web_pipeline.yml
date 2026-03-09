@@ -23,8 +23,6 @@ jobs:
       - name: Install pnpm
         if: hashFiles('pnpm-lock.yaml') != ''
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Install Frontend Dependencies
         if: hashFiles('package.json') != ''
