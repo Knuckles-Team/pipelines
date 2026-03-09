@@ -1,0 +1,101 @@
+name: Release Python Web Package
+
+on:
+  workflow_call:
+    secrets:
+      PYPI_API_TOKEN:
+        required: true
+
+jobs:
+  publish-pypi:
+    runs-on: self-hosted
+    permissions: write-all
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        if: hashFiles('pnpm-lock.yaml') != ''
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Frontend Dependencies
+        if: hashFiles('package.json') != ''
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build Frontend
+        if: hashFiles('package.json') != ''
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm run build
+          else
+            npm run build
+          fi
+
+      - name: Build package
+        id: build_package
+        run: |
+          echo "Creating virtual environment"
+          uv venv .venv                
+          source .venv/bin/activate
+          echo "Installing dependencies"
+          uv pip install -r requirements.txt || true
+          echo "Building package"
+          uv build
+          BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
+          LATEST_COMMIT=$(git rev-parse --verify HEAD)
+          echo "Last Commit: ${LATEST_COMMIT}"
+          if [[ $TAG != '' ]]; then          
+            CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
+            CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')   
+          else
+            TAG=''
+            CURRENT_COMMIT=${LATEST_COMMIT}
+            CURRENT_RELEASE="0.0.0"  # Default for no tags
+          fi
+          COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
+          COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
+          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S") 
+          echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nBUILD_VERSION=$BUILD_VERSION" | tee -a $GITHUB_ENV
+
+      - name: Upload Artifact
+        id: upload_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ env.BUILD_VERSION }}
+          path: dist/*.whl
+          if-no-files-found: error
+
+      - name: Publish package
+        run: |
+          twine upload dist/* --verbose -u "__token__" -p "${{ secrets.PYPI_API_TOKEN }}"
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.BUILD_VERSION }}
+          name: Release v${{ env.BUILD_VERSION }}
+          body: |
+            Released: ${{ env.COMMIT_DATETIME }}
+            Commit: ${{ env.LATEST_COMMIT }}
+            Changes: 
+            ${{ env.COMMIT_MESSAGE }}
+          draft: false
+          prerelease: false
