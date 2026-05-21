@@ -1,9 +1,10 @@
+# Version: 0.9.9
 name: Tag Latest Release
 
 on:
   push:
-    branches:
-      - 'main'
+    tags:
+      - 'v*'
 
 jobs:
   release_latest:
@@ -13,45 +14,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Get Latest Tag
-        id: latest_tag
+      - name: Update Latest Tag
         run: |
-          git fetch --tags       
-          git reset --hard origin/main
-          git pull
-          TAG=$(git tag | tail -n1)
-          if [[ $TAG == '' ]]; then
-            CURRENT_COMMIT=''
-            COMMIT_DIFFERENCE='1'
-          else
-            CURRENT_COMMIT=$(git rev-list -n 1 $TAG) || echo "Did not find commit for Tag: $TAG"
-            COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
-          fi
-          LATEST_COMMIT=$(git rev-parse --verify HEAD)          
-          COMMIT_MESSAGE="$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT)"
-          COMMIT_DATETIME="$(date "+%m/%d/%Y %H:%M:%S")"
-          echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nTAG=$TAG\nLATEST_COMMIT=$LATEST_COMMIT\nCURRENT_COMMIT=$CURRENT_COMMIT\nCOMMIT_DIFFERENCE=$COMMIT_DIFFERENCE\nCOMMIT_MESSAGE=$COMMIT_MESSAGE" | tee -a $GITHUB_ENV
-
-      - name: Delete Latest Tag
-        if: ${{ env.TAG != '' }}
-        id: delete_tag
-        run: |        
-          git push --delete origin ${{ env.TAG }} || echo "Unable to Delete - Tag Not Found"
-          git tag -d ${{ env.TAG }}
-          git push
-
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git push --delete origin latest || true
+          git tag -f latest
+          git push origin latest
+          
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: latest
-          release_name: Release - ${{ env.COMMIT_DATETIME }}
+          name: Latest Release (${{ github.ref_name }})
+          target_commitish: ${{ github.ref_name }}
           body: |
-            Released: ${{ env.COMMIT_DATETIME }}
-            Commit: ${{ env.LATEST_COMMIT }}
-            Changes: 
-            ${{ env.COMMIT_MESSAGE }}
-          draft: false
-          prerelease: false
+            Automatically generated release pointing to the latest version (${{ github.ref_name }}).
