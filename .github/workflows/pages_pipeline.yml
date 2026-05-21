@@ -1,0 +1,56 @@
+name: Deploy GitHub Pages
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install MkDocs
+        run: |
+          pip install mkdocs-material mkdocs-awesome-pages-plugin
+          
+      - name: Build Docs
+        run: |
+          if [ -f "mkdocs.yml" ]; then
+            mkdocs build
+          else
+            # Create a simple mkdocs.yml if it doesn't exist
+            echo "site_name: Project Documentation" > mkdocs.yml
+            echo "theme:" >> mkdocs.yml
+            echo "  name: material" >> mkdocs.yml
+            mkdocs build
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
