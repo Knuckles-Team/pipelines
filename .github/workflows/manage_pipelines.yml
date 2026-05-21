@@ -28,8 +28,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: latest
-          name: Latest Release (${{ github.ref_name }})
-          target_commitish: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body: |
-            Automatically generated release pointing to the latest version (${{ github.ref_name }}).
+            Automatically generated release for version ${{ github.ref_name }}.

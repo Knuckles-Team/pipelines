@@ -1,0 +1,88 @@
+diff --git a/.bumpversion.cfg b/.bumpversion.cfg
+index 8ba9a9f..32fbfc9 100644
+--- a/.bumpversion.cfg
++++ b/.bumpversion.cfg
+@@ -1,5 +1,5 @@
+ [bumpversion]
+-current_version = 0.9.10
++current_version = 1.0.0
+ commit = True
+ tag = True
+ 
+diff --git a/.github/workflows/container_pipeline.yml b/.github/workflows/container_pipeline.yml
+index 07dcdb2..f55588e 100644
+--- a/.github/workflows/container_pipeline.yml
++++ b/.github/workflows/container_pipeline.yml
+@@ -1,4 +1,4 @@
+-# Version: 0.9.10
++# Version: 1.0.0
+ name: Build and Push Docker Image
+ 
+ on:
+diff --git a/.github/workflows/manage_pipelines.yml b/.github/workflows/manage_pipelines.yml
+index 1abf35a..07095e9 100644
+--- a/.github/workflows/manage_pipelines.yml
++++ b/.github/workflows/manage_pipelines.yml
+@@ -1,4 +1,4 @@
+-# Version: 0.9.10
++# Version: 1.0.0
+ name: Tag Latest Release
+ 
+ on:
+diff --git a/.github/workflows/pages_pipeline.yml b/.github/workflows/pages_pipeline.yml
+index eb7fbde..69e9c17 100644
+--- a/.github/workflows/pages_pipeline.yml
++++ b/.github/workflows/pages_pipeline.yml
+@@ -1,4 +1,4 @@
+-# Version: 0.9.10
++# Version: 1.0.0
+ name: Deploy GitHub Pages
+ 
+ on:
+diff --git a/.github/workflows/python_pipeline.yml b/.github/workflows/python_pipeline.yml
+index a6f0405..db15337 100644
+--- a/.github/workflows/python_pipeline.yml
++++ b/.github/workflows/python_pipeline.yml
+@@ -1,4 +1,4 @@
+-# Version: 0.9.10
++# Version: 1.0.0
+ name: Release Python Package
+ 
+ on:
+diff --git a/.github/workflows/python_web_pipeline.yml b/.github/workflows/python_web_pipeline.yml
+index 8412082..63cc353 100644
+--- a/.github/workflows/python_web_pipeline.yml
++++ b/.github/workflows/python_web_pipeline.yml
+@@ -1,4 +1,4 @@
+-# Version: 0.9.10
++# Version: 1.0.0
+ name: Release Python Web Package
+ 
+ on:
+diff --git a/.github/workflows/services_pipeline.yml b/.github/workflows/services_pipeline.yml
+index 380ee19..2b9cc45 100644
+--- a/.github/workflows/services_pipeline.yml
++++ b/.github/workflows/services_pipeline.yml
+@@ -1,4 +1,4 @@
+-# Version: 0.9.10
++# Version: 1.0.0
+ name: Deploy Service
+ 
+ on:
+diff --git a/.github/workflows/test_workflow.yml b/.github/workflows/test_workflow.yml
+index 05fb9dc..8c83cd4 100644
+--- a/.github/workflows/test_workflow.yml
++++ b/.github/workflows/test_workflow.yml
+@@ -1,4 +1,4 @@
+-# Version: 0.9.10
++# Version: 1.0.0
+ name: Deploy Service
+ 
+ on:
+diff --git a/VERSION b/VERSION
+index 56f3151..3eefcb9 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-0.9.10
++1.0.0
