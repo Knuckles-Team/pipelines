@@ -1,0 +1,143 @@
+name: Desktop Release Pipeline
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build & Package (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv and dependencies
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          export PATH="$HOME/.local/bin:$PATH"
+          uv venv
+          . .venv/bin/activate
+          uv pip install -r requirements.txt
+          uv pip install pyinstaller
+
+      - name: Compile Standalone Linux Binary
+        run: |
+          . .venv/bin/activate
+          pyinstaller --name geniusbot \
+            --onefile --windowed \
+            --paths "./geniusbot" \
+            ./geniusbot/geniusbot.py
+
+      - name: Build Debian (.deb) Package
+        run: |
+          mkdir -p pkg/DEBIAN
+          mkdir -p pkg/usr/bin
+          mkdir -p pkg/usr/share/applications
+          mkdir -p pkg/usr/share/pixmaps
+
+          # Copy metadata and binary assets
+          cp packaging/linux/control pkg/DEBIAN/control
+          cp dist/geniusbot pkg/usr/bin/geniusbot
+          cp packaging/linux/geniusbot.desktop pkg/usr/share/applications/geniusbot.desktop
+          
+          # Use default icon if present, otherwise generic
+          if [ -f geniusbot/img/geniusbot.png ]; then
+            cp geniusbot/img/geniusbot.png pkg/usr/share/pixmaps/geniusbot.png
+          else
+            touch pkg/usr/share/pixmaps/geniusbot.png
+          fi
+
+          # Build package
+          dpkg-deb --build pkg dist/geniusbot_3.29.6_amd64.deb
+
+      - name: Convert to RedHat (.rpm) Package
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y alien
+          # Convert deb to rpm using alien
+          sudo alien --to-rpm --scripts dist/geniusbot_3.29.6_amd64.deb
+          # Move generated rpm to dist
+          mv *.rpm dist/
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: |
+            dist/geniusbot
+            dist/*.deb
+            dist/*.rpm
+
+  build-windows:
+    name: Build & Package (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv and dependencies
+        run: |
+          powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://astral.sh/uv/install.ps1'))"
+          uv venv
+          .venv\Scripts\activate
+          uv pip install -r requirements.txt
+          uv pip install pyinstaller
+
+      - name: Compile Standalone Windows Binary
+        run: |
+          .venv\Scripts\activate
+          pyinstaller --name geniusbot `
+            --onefile --windowed `
+            --paths "./geniusbot" `
+            --icon="./geniusbot/img/geniusbot.ico" `
+            ./geniusbot/geniusbot.py
+
+      - name: Compile Windows Installer (Inno Setup)
+        run: |
+          # ISCC is pre-installed on GitHub windows-latest runners
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifacts
+          path: |
+            dist/geniusbot.exe
+            dist/geniusbot-setup-x64.exe
+
+  publish-release:
+    name: Publish Production Release
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Restructure files for Release
+        run: |
+          mkdir release-assets
+          cp linux-artifacts/* release-assets/ || true
+          cp windows-artifacts/* release-assets/ || true
+
+      - name: Create Production Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

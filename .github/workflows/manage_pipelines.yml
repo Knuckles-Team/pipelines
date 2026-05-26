@@ -12,15 +12,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-
       - name: Update Latest Tag
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git push --delete origin latest || true
           git tag -f latest
-          git push origin latest
-          
+          git push origin latest --force
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
