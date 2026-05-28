@@ -1,4 +1,6 @@
 # pipelines
+Version: 1.5.0
+
 All GitHub Action Workflows
 
 
@@ -12,7 +14,7 @@ on:
 
 jobs:
   publish:
-    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@latest
+    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main
     secrets:
       PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 ```
