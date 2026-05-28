@@ -1,5 +1,5 @@
 # pipelines
-Version: 1.5.0
+Version: 1.5.1
 
 All GitHub Action Workflows
 
