@@ -30,7 +30,7 @@ jobs:
       - name: Install MkDocs
         run: |
           pip install mkdocs-material mkdocs-awesome-pages-plugin
-          
+
       - name: Build Docs
         run: |
           if [ -f "mkdocs.yml" ]; then
@@ -45,12 +45,12 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './site'
-          
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

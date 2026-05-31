@@ -47,7 +47,7 @@ jobs:
           cp packaging/linux/control pkg/DEBIAN/control
           cp dist/geniusbot pkg/usr/bin/geniusbot
           cp packaging/linux/geniusbot.desktop pkg/usr/share/applications/geniusbot.desktop
-          
+
           # Use default icon if present, otherwise generic
           if [ -f geniusbot/img/geniusbot.png ]; then
             cp geniusbot/img/geniusbot.png pkg/usr/share/pixmaps/geniusbot.png

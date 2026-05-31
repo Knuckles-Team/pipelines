@@ -8,7 +8,7 @@ on:
 jobs:
   release_latest:
     runs-on: self-hosted
-    permissions: write-all    
+    permissions: write-all
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3

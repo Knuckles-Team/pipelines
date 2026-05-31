@@ -9,8 +9,8 @@ on:
 jobs:
   services:
     runs-on: self-hosted
-    permissions: write-all    
-    steps:    
+    permissions: write-all
+    steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
@@ -49,4 +49,3 @@ jobs:
       run: |
         echo "Running ${{ secrets.RUNNERS }} instances"
         docker compose up --build --scale runner=${{ secrets.RUNNERS }} -d
-

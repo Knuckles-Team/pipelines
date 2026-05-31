@@ -18,7 +18,7 @@ jobs:
         id: build_package
         run: |
           echo "Creating virtual environment"
-          uv venv .venv                
+          uv venv .venv
           source .venv/bin/activate
           echo "Installing dependencies"
           uv pip install -r requirements.txt
@@ -27,9 +27,9 @@ jobs:
           BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
           LATEST_COMMIT=$(git rev-parse --verify HEAD)
           echo "Last Commit: ${LATEST_COMMIT}"
-          if [[ $TAG != '' ]]; then          
-            CURRENT_COMMIT=$(git rev-list -n 1 $TAG)                    
-            CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')   
+          if [[ $TAG != '' ]]; then
+            CURRENT_COMMIT=$(git rev-list -n 1 $TAG)
+            CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')
           else
             TAG=''
             CURRENT_COMMIT=${LATEST_COMMIT}
@@ -37,7 +37,7 @@ jobs:
           fi
           COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
           COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
-          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S") 
+          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
           echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nBUILD_VERSION=$BUILD_VERSION" | tee -a $GITHUB_ENV
 
       - name: Upload Artifact
@@ -63,7 +63,7 @@ jobs:
           body: |
             Released: ${{ env.COMMIT_DATETIME }}
             Commit: ${{ env.LATEST_COMMIT }}
-            Changes: 
+            Changes:
             ${{ env.COMMIT_MESSAGE }}
           draft: false
           prerelease: false

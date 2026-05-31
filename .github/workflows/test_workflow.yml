@@ -9,7 +9,7 @@ on:
 jobs:
   services:
     runs-on: self-hosted
-    permissions: write-all    
-    steps:    
+    permissions: write-all
+    steps:
     - name: Checkout Repository
       uses: actions/checkout@v2.3.4
