@@ -19,10 +19,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install uv and dependencies
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          export PATH="$HOME/.local/bin:$PATH"
           uv venv
           . .venv/bin/activate
           uv pip install -r requirements.txt
@@ -55,15 +56,17 @@ jobs:
             touch pkg/usr/share/pixmaps/geniusbot.png
           fi
 
-          # Build package
-          dpkg-deb --build pkg dist/geniusbot_3.29.6_amd64.deb
+          # Build package (version read from pyproject.toml, not hardcoded)
+          VERSION=$(grep -m1 -E '^version' pyproject.toml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          dpkg-deb --build pkg "dist/geniusbot_${VERSION}_amd64.deb"
 
       - name: Convert to RedHat (.rpm) Package
         run: |
           sudo apt-get update
           sudo apt-get install -y alien
-          # Convert deb to rpm using alien
-          sudo alien --to-rpm --scripts dist/geniusbot_3.29.6_amd64.deb
+          # Convert deb to rpm using alien (dynamic version)
+          VERSION=$(grep -m1 -E '^version' pyproject.toml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          sudo alien --to-rpm --scripts "dist/geniusbot_${VERSION}_amd64.deb"
           # Move generated rpm to dist
           mv *.rpm dist/
 
@@ -88,9 +91,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install uv and dependencies
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
         run: |
-          powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://astral.sh/uv/install.ps1'))"
           uv venv
           .venv\Scripts\activate
           uv pip install -r requirements.txt
