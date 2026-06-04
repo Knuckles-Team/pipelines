@@ -43,7 +43,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.DOCKER_REPOSITORY }}
+          # Image = <docker-hub-user>/<repo-name>, e.g. knucklessg1/openbao-mcp
+          # (matches the *-mcp Portainer stack image refs). Derived from the repo
+          # name so no per-repo DOCKER_REPOSITORY secret is needed — the previous
+          # ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY} produced an invalid "***/:tag"
+          # when DOCKER_REPOSITORY was unset.
+          images: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
