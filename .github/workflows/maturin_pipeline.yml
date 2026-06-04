@@ -25,11 +25,6 @@ jobs:
         with:
           target: ${{ matrix.target }}-unknown-linux-gnu
           manylinux: "2_28"
-          # Ensure cmake is present in the manylinux container: rdkafka builds
-          # its bundled librdkafka via CMake (cmake-build feature). No-op for
-          # pure-Python maturin packages.
-          before-script-linux: |
-            (command -v cmake >/dev/null 2>&1) || dnf install -y cmake || yum install -y cmake || true
           args: --release --out dist
 
       - uses: actions/upload-artifact@v4
