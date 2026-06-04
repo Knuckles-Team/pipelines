@@ -50,7 +50,7 @@ jobs:
 
       - name: Publish package
         run: |
-          twine upload dist/* --verbose -u "__token__" -p "${{ secrets.PYPI_API_TOKEN }}"
+          twine upload --skip-existing dist/* --verbose -u "__token__" -p "${{ secrets.PYPI_API_TOKEN }}"
 
       - name: Create Release
         id: create_release

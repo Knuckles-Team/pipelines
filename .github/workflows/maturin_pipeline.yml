@@ -139,7 +139,9 @@ jobs:
           MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         with:
           command: upload
-          args: --non-interactive dist/*
+          # --skip-existing: re-running a build whose version is already on PyPI
+          # is a no-op instead of a hard failure (idempotent re-triggers).
+          args: --non-interactive --skip-existing dist/*
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
