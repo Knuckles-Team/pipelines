@@ -25,6 +25,11 @@ jobs:
         with:
           target: ${{ matrix.target }}-unknown-linux-gnu
           manylinux: "2_28"
+          # Ensure cmake is present in the manylinux container: rdkafka builds
+          # its bundled librdkafka via CMake (cmake-build feature). No-op for
+          # pure-Python maturin packages.
+          before-script-linux: |
+            (command -v cmake >/dev/null 2>&1) || dnf install -y cmake || yum install -y cmake || true
           args: --release --out dist
 
       - uses: actions/upload-artifact@v4
@@ -57,12 +62,26 @@ jobs:
           path: dist
 
   # ── Windows Wheels ─────────────────────────────────────────────
-  # Intentionally omitted: the only maturin consumer (epistemic-graph) links
-  # rdkafka, whose bundled librdkafka builds via a unix ./configure script that
-  # cannot run on Windows MSVC ("%1 is not a valid Win32 application"). It is a
-  # linux/macOS server engine — its wheels are consumed by linux Docker images —
-  # so Windows wheels are not a target. Re-add a windows job (with an rdkafka
-  # cmake/vcpkg build) here if a Windows-targeting maturin package is ever added.
+  # rdkafka builds its bundled librdkafka via CMake (cmake-build feature) so it
+  # compiles under MSVC; cmake ships on the windows-latest runner.
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-${{ matrix.target }}
+          path: dist
 
   # ── Source Distribution ────────────────────────────────────────
   sdist:
@@ -83,7 +102,7 @@ jobs:
 
   # ── Publish + Release ──────────────────────────────────────────
   publish:
-    needs: [linux, macos, sdist]
+    needs: [linux, macos, windows, sdist]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
