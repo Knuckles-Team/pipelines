@@ -38,8 +38,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: x86_64-apple-darwin
-            runner: macos-13
+          # x86_64-apple-darwin (macos-13, Intel) omitted: GitHub's Intel-Mac
+          # hosted runners are heavily queue-starved and Apple Silicon is the
+          # current target. Re-add { target: x86_64-apple-darwin, runner: macos-13 }
+          # if Intel-Mac wheels are needed and runner availability allows.
           - target: aarch64-apple-darwin
             runner: macos-14
     steps:
