@@ -37,9 +37,7 @@ jobs:
             mkdocs build
           else
             # Create a simple mkdocs.yml if it doesn't exist
-            echo "site_name: Project Documentation" > mkdocs.yml
-            echo "theme:" >> mkdocs.yml
-            echo "  name: material" >> mkdocs.yml
+            printf 'site_name: Project Documentation\ntheme:\n  name: material\nmarkdown_extensions:\n  - pymdownx.highlight:\n      anchor_linenums: true\n  - pymdownx.superfences:\n      custom_fences:\n        - name: mermaid\n          class: mermaid\n          format: !!python/name:pymdownx.superfences.fence_code_format\n' > mkdocs.yml
             mkdocs build
           fi
 
