@@ -64,5 +64,14 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Layer cache lives in the image registry, NOT type=gha. The GitHub
+          # Actions cache hands buildx a SAS token with a fixed ~1h lifetime;
+          # any Docker build slower than that fails the cache export with
+          # "403 AuthenticationFailed / Signature not valid in the specified
+          # time frame". Builds here routinely exceed 1h when cold, so the
+          # export always failed -> the cache never persisted -> every build
+          # ran cold -> always >1h: a self-reinforcing failure loop. Registry
+          # cache has no SAS expiry and is SHARED across all self-hosted
+          # runners (type=local would be per-runner and miss after scale-out).
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache,mode=max
