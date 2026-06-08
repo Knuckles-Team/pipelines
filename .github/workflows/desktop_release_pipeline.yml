@@ -44,8 +44,14 @@ jobs:
           mkdir -p pkg/usr/share/applications
           mkdir -p pkg/usr/share/pixmaps
 
-          # Copy metadata and binary assets
+          # Version from pyproject.toml (single source of truth)
+          VERSION=$(grep -m1 -E '^version' pyproject.toml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+
+          # Copy metadata and binary assets; inject the real Version into the control
+          # file so the installed .deb (and the alien-derived .rpm, which reads the deb's
+          # internal Version field) reflect the release tag — not the hardcoded default.
           cp packaging/linux/control pkg/DEBIAN/control
+          sed -i "s/^Version:.*/Version: ${VERSION}/" pkg/DEBIAN/control
           cp dist/geniusbot pkg/usr/bin/geniusbot
           cp packaging/linux/geniusbot.desktop pkg/usr/share/applications/geniusbot.desktop
 
@@ -56,8 +62,6 @@ jobs:
             touch pkg/usr/share/pixmaps/geniusbot.png
           fi
 
-          # Build package (version read from pyproject.toml, not hardcoded)
-          VERSION=$(grep -m1 -E '^version' pyproject.toml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
           dpkg-deb --build pkg "dist/geniusbot_${VERSION}_amd64.deb"
 
       - name: Convert to RedHat (.rpm) Package
@@ -112,8 +116,12 @@ jobs:
 
       - name: Compile Windows Installer (Inno Setup)
         run: |
-          # ISCC is pre-installed on GitHub windows-latest runners
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+          # ISCC is pre-installed on GitHub windows-latest runners.
+          # Inject the real version from pyproject.toml so the installer's AppVersion
+          # matches the release tag (setup.iss guards MyAppVersion with #ifndef).
+          $VERSION = (Select-String -Path pyproject.toml -Pattern '^version\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)"').Matches[0].Groups[1].Value
+          Write-Host "Building installer for version $VERSION"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$VERSION" setup.iss
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
