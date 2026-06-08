@@ -64,5 +64,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
+          # ignore-error: a flaky GHA-cache backend (Azure SAS token expiring on long
+          # builds → "Signature not valid in the specified time frame", or transient cache
+          # auth) must NOT fail an otherwise-successful image build/push. Cache is an
+          # optimization, never a gate.
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,ignore-error=true
