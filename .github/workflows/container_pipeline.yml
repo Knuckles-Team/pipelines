@@ -55,7 +55,17 @@ jobs:
             type=sha
             type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
-      - name: Build and push Docker image
+      # Build + push with up to 3 attempts. Docker Hub intermittently 400s a layer
+      # blob PUT ("400 Bad request" HTML from the CDN edge) on an otherwise-healthy
+      # push; a clean retry succeeds. The GHA layer cache holds the already-built
+      # layers, so retry attempts skip the rebuild and only re-push — cheap and fast.
+      # ignore-error on cache-to: a flaky GHA-cache backend (Azure SAS token expiring
+      # on long builds → "Signature not valid in the specified time frame", or
+      # transient cache auth) must NOT fail an otherwise-successful build/push. Cache
+      # is an optimization, never a gate.
+      - name: Build and push Docker image (attempt 1)
+        id: buildx1
+        continue-on-error: true
         uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.build_context }}
@@ -64,9 +74,41 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          # ignore-error: a flaky GHA-cache backend (Azure SAS token expiring on long
-          # builds → "Signature not valid in the specified time frame", or transient cache
-          # auth) must NOT fail an otherwise-successful image build/push. Cache is an
-          # optimization, never a gate.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max,ignore-error=true
+
+      - name: Wait before retry
+        if: steps.buildx1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Build and push Docker image (attempt 2)
+        id: buildx2
+        if: steps.buildx1.outcome == 'failure'
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.build_context }}
+          file: ${{ inputs.dockerfile }}
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          no-cache: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max,ignore-error=true
+
+      - name: Wait before final retry
+        if: steps.buildx1.outcome == 'failure' && steps.buildx2.outcome == 'failure'
+        run: sleep 60
+
+      - name: Build and push Docker image (final attempt)
+        if: steps.buildx1.outcome == 'failure' && steps.buildx2.outcome == 'failure'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.build_context }}
+          file: ${{ inputs.dockerfile }}
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          no-cache: false
           cache-from: type=gha
           cache-to: type=gha,mode=max,ignore-error=true
