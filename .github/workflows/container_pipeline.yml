@@ -57,12 +57,13 @@ jobs:
 
       # Build + push with up to 3 attempts. Docker Hub intermittently 400s a layer
       # blob PUT ("400 Bad request" HTML from the CDN edge) on an otherwise-healthy
-      # push; a clean retry succeeds. The GHA layer cache holds the already-built
-      # layers, so retry attempts skip the rebuild and only re-push — cheap and fast.
-      # ignore-error on cache-to: a flaky GHA-cache backend (Azure SAS token expiring
-      # on long builds → "Signature not valid in the specified time frame", or
-      # transient cache auth) must NOT fail an otherwise-successful build/push. Cache
-      # is an optimization, never a gate.
+      # push; a clean retry succeeds. The layer cache holds the already-built layers,
+      # so retry attempts skip the rebuild and only re-push — cheap and fast.
+      # Cache backend = REGISTRY (Docker Hub `:buildcache` tag), NOT `type=gha`: the
+      # GHA cache backend's Azure SAS token expires on long builds → "Signature not
+      # valid in the specified time frame", which intermittently fails the build. The
+      # registry cache reuses the already-authenticated Docker login (no SAS token),
+      # so it's durable. ignore-error on cache-to keeps cache an optimization, never a gate.
       - name: Build and push Docker image (attempt 1)
         id: buildx1
         continue-on-error: true
@@ -74,8 +75,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max,ignore-error=true
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache,mode=max,ignore-error=true
 
       - name: Wait before retry
         if: steps.buildx1.outcome == 'failure'
@@ -93,8 +94,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max,ignore-error=true
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache,mode=max,ignore-error=true
 
       - name: Wait before final retry
         if: steps.buildx1.outcome == 'failure' && steps.buildx2.outcome == 'failure'
@@ -110,5 +111,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max,ignore-error=true
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache,mode=max,ignore-error=true
