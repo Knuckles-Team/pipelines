@@ -133,15 +133,17 @@ jobs:
       - name: List artifacts
         run: ls -la dist/
 
+      # `maturin upload`/`publish` are deprecated (PyO3/maturin#2334). The
+      # future-proof path is build-then-publish: maturin builds the wheels (the
+      # build jobs above, --out dist) and the official PyPA action uploads them
+      # via twine. Same PYPI_API_TOKEN secret, so publishing keeps working.
+      # skip-existing keeps idempotent re-triggers a no-op.
       - name: Publish to PyPI
-        uses: PyO3/maturin-action@v1
-        env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          command: upload
-          # --skip-existing: re-running a build whose version is already on PyPI
-          # is a no-op instead of a hard failure (idempotent re-triggers).
-          args: --non-interactive --skip-existing dist/*
+          packages-dir: dist/
+          skip-existing: true
+          password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
