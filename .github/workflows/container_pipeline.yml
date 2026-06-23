@@ -25,6 +25,24 @@ jobs:
   publish-docker:
     runs-on: self-hosted
 
+    # Two right-sized images from the ONE multi-stage docker/Dockerfile, one matrix
+    # leg per build target:
+    #   - agent  (DEFAULT, full runtime): tags latest / <branch> / sha-<sha>
+    #   - mcp    (slim, MCP-server only):  tags mcp / <branch>-mcp / sha-<sha>-mcp
+    # The agent image overlaps latest/main; mcp is the slimmed variant tag. fail-fast is
+    # off so one leg failing (e.g. a single-server package without that target) never
+    # cancels the other.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: agent
+            suffix: ''
+            main_tag: latest
+          - target: mcp
+            suffix: '-mcp'
+            main_tag: mcp
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,15 +63,15 @@ jobs:
         with:
           # Image = <docker-hub-user>/<repo-name>, e.g. knucklessg1/openbao-mcp
           # (matches the *-mcp Portainer stack image refs). Derived from the repo
-          # name so no per-repo DOCKER_REPOSITORY secret is needed — the previous
-          # ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY} produced an invalid "***/:tag"
-          # when DOCKER_REPOSITORY was unset.
+          # name so no per-repo DOCKER_REPOSITORY secret is needed.
           images: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
+          # Per-target tagging: the agent leg gets the bare tags (latest/<branch>/sha),
+          # the mcp leg gets the same set suffixed with -mcp, plus its `mcp` main tag.
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha
-            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=ref,event=branch,suffix=${{ matrix.suffix }}
+            type=ref,event=pr,suffix=${{ matrix.suffix }}
+            type=sha,suffix=${{ matrix.suffix }}
+            type=raw,value=${{ matrix.main_tag }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       # Build + push with up to 3 attempts. Docker Hub intermittently 400s a layer
       # blob PUT ("400 Bad request" HTML from the CDN edge) on an otherwise-healthy
@@ -64,6 +82,7 @@ jobs:
       # valid in the specified time frame", which intermittently fails the build. The
       # registry cache reuses the already-authenticated Docker login (no SAS token),
       # so it's durable. ignore-error on cache-to keeps cache an optimization, never a gate.
+      # Per-target buildcache tag so the agent/mcp legs don't clobber each other's cache.
       - name: Build and push Docker image (attempt 1)
         id: buildx1
         continue-on-error: true
@@ -71,12 +90,13 @@ jobs:
         with:
           context: ${{ inputs.build_context }}
           file: ${{ inputs.dockerfile }}
+          target: ${{ matrix.target }}
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache,mode=max,ignore-error=true
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }},mode=max,ignore-error=true
 
       - name: Wait before retry
         if: steps.buildx1.outcome == 'failure'
@@ -90,12 +110,13 @@ jobs:
         with:
           context: ${{ inputs.build_context }}
           file: ${{ inputs.dockerfile }}
+          target: ${{ matrix.target }}
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache,mode=max,ignore-error=true
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }},mode=max,ignore-error=true
 
       - name: Wait before final retry
         if: steps.buildx1.outcome == 'failure' && steps.buildx2.outcome == 'failure'
@@ -107,9 +128,10 @@ jobs:
         with:
           context: ${{ inputs.build_context }}
           file: ${{ inputs.dockerfile }}
+          target: ${{ matrix.target }}
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache,mode=max,ignore-error=true
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }},mode=max,ignore-error=true
