@@ -47,7 +47,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Single-surface packages ship only one stage (e.g. an agent-only or mcp-only
+      # package). If this leg's target stage isn't in the Dockerfile, skip the build
+      # so the missing leg is a clean no-op instead of failing the run. A genuinely
+      # broken build of a stage that DOES exist still fails (below).
+      - name: Detect build target
+        id: target
+        run: |
+          if grep -qE "AS ${{ matrix.target }}([[:space:]]|\$)" "${{ inputs.dockerfile }}"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Dockerfile has no '${{ matrix.target }}' stage — skipping this leg (single-surface package)."
+          fi
+
       - name: Set up Docker Buildx
+        if: steps.target.outputs.exists == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker registry
@@ -85,6 +100,7 @@ jobs:
       # Per-target buildcache tag so the agent/mcp legs don't clobber each other's cache.
       - name: Build and push Docker image (attempt 1)
         id: buildx1
+        if: steps.target.outputs.exists == 'true'
         continue-on-error: true
         uses: docker/build-push-action@v6
         with:
