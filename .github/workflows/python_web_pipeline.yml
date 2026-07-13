@@ -50,7 +50,9 @@ jobs:
         id: build_package
         run: |
           echo "Creating virtual environment"
-          uv venv .venv
+          # Pin to 3.13: Python 3.14 breaks native builds of transitive deps
+          # (e.g. litellm's PyO3 chain caps at cp313), failing release CI fleet-wide.
+          uv venv --python 3.13 .venv
           source .venv/bin/activate
           echo "Installing dependencies"
           uv pip install -r requirements.txt || true
