@@ -9,7 +9,8 @@ on:
 jobs:
   publish-pypi:
     runs-on: self-hosted
-    permissions: write-all
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4

@@ -101,7 +101,8 @@ jobs:
   publish:
     needs: [linux, macos, windows, sdist]
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
