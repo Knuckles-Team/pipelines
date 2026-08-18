@@ -21,8 +21,12 @@ references, and checks generated-output bounds. It then copies source Markdown
 to each declared fallback and copies the canonical `llms.txt` hierarchy into
 the uploaded site. Existing `.well-known` files from the strict MkDocs output
 are retained. Only after all mirrors exist does it add Markdown alternate links
-to the corresponding HTML, emit bounded `robots.txt` and `sitemap.xml`, and
-write `.nojekyll` so Pages serves the static `.md` files.
+and the non-executable HTML-only `agent-utilities-markdown` directive (pointing
+to that page's Markdown alternate and the canonical `llms.txt`) to the
+corresponding HTML, emit bounded `robots.txt` and `sitemap.xml`, and write
+`.nojekyll` so Pages serves the static `.md` files. The helper preserves an
+existing UTF-8 `robots.txt` policy and adds exactly one validated sitemap line;
+when no policy exists it emits only the sitemap directive.
 
 Existing HTML `noindex` and deprecated markers are retained. Such pages remain
 available as explicit fallbacks but are omitted from the generated sitemap.
@@ -33,7 +37,9 @@ RFC 8288 headers, cache variants, and security headers belong to the separately
 owned edge route; GitHub Pages receives only static assets here.
 
 The helper has `build`, `check`, and `tck` modes. `build` is deterministic and
-atomic; `check`/`tck` are read-only and require a current artifact tree. The
+atomic; `check`/`tck` are read-only and require a current artifact tree. Every
+JSON result identifies `pages-readiness-tck/v1`, `agent-readiness/v1`, and
+`mkdocs-static/v2` explicitly. The
 workflow checks out its own helper at the exact reusable-workflow commit using
 the GitHub `job.workflow_repository`/`job.workflow_sha` identity, and all
 third-party actions are immutable SHA references. Results contain only bounded

@@ -29,6 +29,7 @@ from urllib.parse import unquote, urlsplit, urlunsplit
 SCHEMA_ID = "https://agent-utilities.invalid/schemas/agent-readiness-v1.json"
 SCHEMA_VERSION = "agent-readiness/v1"
 MIRROR_CONTRACT = "mkdocs-static/v2"
+CHECKER_VERSION = "pages-readiness-tck/v1"
 
 MAX_ENTRIES = 512
 MAX_SOURCE_BYTES = 2_000_000
@@ -72,6 +73,13 @@ DEPRECATED_DATA_PATTERN = re.compile(
     re.IGNORECASE,
 )
 LINK_TAG_PATTERN = re.compile(r"<link\b[^>]*>", re.IGNORECASE)
+DIRECTIVE_MARKER_PATTERN = re.compile(r"agent-utilities-markdown", re.IGNORECASE)
+DIRECTIVE_PATTERN = re.compile(
+    r"<!--\s*agent-utilities-markdown\s+"
+    r'alternate="(?P<alternate>[^"]+)"\s+'
+    r'llms="(?P<llms>[^"]+)"\s*-->',
+    re.IGNORECASE,
+)
 ATTRIBUTE_PATTERN = re.compile(
     r"(?P<name>[a-z][a-z0-9:-]*)\s*=\s*(?P<quote>[\"'])(?P<value>[^\"']*)(?P=quote)",
     re.IGNORECASE,
@@ -664,6 +672,8 @@ def _source_manifest_pages(
             source_text = source_bytes.decode("utf-8")
         except UnicodeDecodeError:
             _fail("source-invalid-encoding")
+        if DIRECTIVE_MARKER_PATTERN.search(source_text):
+            _fail("source-agent-directive")
         _scan_safe_text(source_text, "source")
         if (
             len(source_bytes) != size
@@ -766,7 +776,9 @@ def _markdown_alternate_hrefs(text: str) -> list[str]:
     return hrefs
 
 
-def _html_with_alternate(page: MirrorPage, payload: bytes) -> tuple[bytes, str]:
+def _html_with_alternate(
+    page: MirrorPage, payload: bytes, llms_url: str
+) -> tuple[bytes, str]:
     try:
         text = payload.decode("utf-8")
     except UnicodeDecodeError:
@@ -777,13 +789,44 @@ def _html_with_alternate(page: MirrorPage, payload: bytes) -> tuple[bytes, str]:
         value != page.markdown_url and value != expected for value in matches
     ):
         _fail("html-alternate-conflict")
-    if page.markdown_url in matches or expected in matches:
+    has_alternate = page.markdown_url in matches or expected in matches
+
+    directive_matches = list(DIRECTIVE_PATTERN.finditer(text))
+    if DIRECTIVE_MARKER_PATTERN.search(text):
+        if (
+            len(directive_matches) != 1
+            or len(DIRECTIVE_MARKER_PATTERN.findall(text)) != 1
+        ):
+            _fail("html-directive-invalid")
+        directive = directive_matches[0]
+        if directive.group("alternate") != expected or directive.group(
+            "llms"
+        ) != html.escape(llms_url, quote=True):
+            _fail("html-directive-conflict")
+        has_directive = True
+    else:
+        has_directive = False
+
+    additions: list[str] = []
+    if not has_alternate:
+        additions.append(
+            f'  <link rel="alternate" type="text/markdown" href="{expected}">\n'
+        )
+    if not has_directive:
+        additions.append(
+            "  <!-- agent-utilities-markdown "
+            f'alternate="{expected}" llms="{html.escape(llms_url, quote=True)}" -->\n'
+        )
+    if not additions:
         return payload, _html_state(payload)
     if re.search(r"</head\s*>", text, re.IGNORECASE) is None:
         _fail("html-head-missing")
-    link = f'  <link rel="alternate" type="text/markdown" href="{expected}">\n'
     updated = re.sub(
-        r"</head\s*>", link + "</head>", text, count=1, flags=re.IGNORECASE
+        r"</head\s*>",
+        "".join(additions) + "</head>",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
     )
     return updated.encode("utf-8"), _html_state(payload)
 
@@ -802,6 +845,42 @@ def _common_site_base(pages: Iterable[MirrorPage]) -> str:
             length += 1
         prefix = prefix[:length]
     return "/" + "/".join(prefix) + ("/" if prefix else "")
+
+
+def _robots_with_sitemap(site: Path, sitemap_url: str) -> bytes:
+    sitemap_line = f"Sitemap: {sitemap_url}\n"
+    robots_path = site / "robots.txt"
+    if robots_path.is_symlink():
+        _fail("robots-policy-symlink")
+    if not robots_path.exists():
+        return sitemap_line.encode("utf-8")
+    payload = _regular_bytes(robots_path, "robots-policy", MAX_GENERATED_FILE_BYTES)
+    try:
+        text = payload.decode("utf-8")
+    except UnicodeDecodeError:
+        _fail("robots-policy-invalid-encoding")
+    _scan_safe_text(text, "robots-policy")
+    lines = text.splitlines(keepends=True)
+    sitemap_indexes: list[int] = []
+    for index, line in enumerate(lines):
+        body = line.rstrip("\r\n")
+        match = re.fullmatch(r"\s*sitemap\s*:\s*(.*?)\s*", body, re.IGNORECASE)
+        if match is None:
+            continue
+        value = match.group(1)
+        if not value:
+            _fail("robots-sitemap-invalid")
+        _public_url(value, "robots-sitemap")
+        if value != sitemap_url:
+            _fail("robots-sitemap-conflict")
+        sitemap_indexes.append(index)
+    if len(sitemap_indexes) > 1:
+        _fail("robots-sitemap-duplicate")
+    if sitemap_indexes:
+        lines[sitemap_indexes[0]] = sitemap_line
+        return "".join(lines).encode("utf-8")
+    separator = "" if not text or text.endswith(("\n", "\r")) else "\n"
+    return (text + separator + sitemap_line).encode("utf-8")
 
 
 def _derived_assets(
@@ -825,7 +904,7 @@ def _derived_assets(
         + "\n".join(sitemap_rows)
         + "\n</urlset>\n"
     ).encode("utf-8")
-    robots = (f"User-agent: *\nAllow: /\nSitemap: {sitemap_url}\n").encode("utf-8")
+    robots = _robots_with_sitemap(site, sitemap_url)
     return (
         (site / ".nojekyll", b""),
         (site / "robots.txt", robots),
@@ -874,10 +953,14 @@ def _prepare(
     pages = _source_manifest_pages(root, site, mirror_manifest, readiness_manifest)
 
     mirrors = tuple((page.markdown_path, page.source_bytes) for page in pages)
+    first = urlsplit(pages[0].canonical_url)
+    base = _common_site_base(pages)
+    llms_url = urlunsplit((first.scheme, first.netloc, f"{base}llms.txt", "", ""))
+    _public_url(llms_url, "llms")
     html_outputs: list[tuple[Path, bytes]] = []
     for page in pages:
         payload = _regular_bytes(page.html_path, "html-output", MAX_HTML_BYTES)
-        updated, _ = _html_with_alternate(page, payload)
+        updated, _ = _html_with_alternate(page, payload, llms_url)
         html_outputs.append((page.html_path, updated))
 
     # Derived robots/sitemap/nojekyll assets are planned only after every source
@@ -968,6 +1051,9 @@ def build(
         _assert_current(plan)
     return {
         "ok": True,
+        "checker_version": CHECKER_VERSION,
+        "schema_version": SCHEMA_VERSION,
+        "mirror_contract": MIRROR_CONTRACT,
         "entries": len(plan.pages),
         "mirrors": len(plan.mirrors),
         "derived_assets": len(plan.assets),
@@ -1006,7 +1092,18 @@ def main(argv: list[str] | None = None) -> int:
             check=args.command in {"check", "tck"},
         )
     except ReadinessTckError as exc:
-        print(json.dumps({"ok": False, "error_code": str(exc)}, sort_keys=True))
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "checker_version": CHECKER_VERSION,
+                    "schema_version": SCHEMA_VERSION,
+                    "mirror_contract": MIRROR_CONTRACT,
+                    "error_code": str(exc),
+                },
+                sort_keys=True,
+            )
+        )
         return 1
     print(json.dumps(result, sort_keys=True))
     return 0

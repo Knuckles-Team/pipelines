@@ -39,6 +39,7 @@ def test_actions_are_immutable_and_permissions_are_least_privilege() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     refs = re.findall(r"uses:\s+[^\s@]+@([0-9a-f]{40})(?:\s|$|#)", text)
     assert len(refs) == 6
+    assert "python-version: 3.14.7" in text
     assert "mkdocs-material==9.7.6" in text
     assert "mkdocs-awesome-pages-plugin==2.10.1" in text
     assert "contents: write" not in text

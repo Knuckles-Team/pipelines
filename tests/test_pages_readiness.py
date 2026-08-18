@@ -202,11 +202,23 @@ def test_build_publishes_source_markdown_and_served_mime(
     assert (site / "llms-sections/guides/llms.txt").read_bytes() == (
         root / "llms-sections/guides/llms.txt"
     ).read_bytes()
+    assert result["checker_version"] == pages_readiness.CHECKER_VERSION
+    assert result["schema_version"] == pages_readiness.SCHEMA_VERSION
+    assert result["mirror_contract"] == pages_readiness.MIRROR_CONTRACT
     assert mimetypes.guess_type("index.md")[0] == "text/markdown"
-    assert '<link rel="alternate" type="text/markdown"' in (
-        site / "index.html"
-    ).read_text(encoding="utf-8")
-    assert (site / "robots.txt").read_text(encoding="utf-8").startswith("User-agent: *")
+    index_html = (site / "index.html").read_text(encoding="utf-8")
+    assert '<link rel="alternate" type="text/markdown"' in index_html
+    assert (
+        "<!-- agent-utilities-markdown "
+        'alternate="https://docs.example.test/index.md" '
+        'llms="https://docs.example.test/llms.txt" -->'
+    ) in index_html
+    assert "agent-utilities-markdown" not in (site / "index.md").read_text(
+        encoding="utf-8"
+    )
+    assert (site / "robots.txt").read_text(encoding="utf-8") == (
+        "Sitemap: https://docs.example.test/sitemap.xml\n"
+    )
     assert "<loc>https://docs.example.test/</loc>" in (site / "sitemap.xml").read_text(
         encoding="utf-8"
     )
@@ -245,6 +257,9 @@ def test_second_build_and_offline_tck_are_idempotent(tmp_path: Path) -> None:
     checked = pages_readiness.build(root, site, check=True)
 
     assert before == after
+    assert (site / "index.html").read_text(encoding="utf-8").count(
+        "agent-utilities-markdown"
+    ) == 1
     assert checked["ok"] is True
 
 
@@ -266,6 +281,52 @@ def test_noindex_and_deprecated_html_state_is_preserved_and_not_sitemapped(
     assert 'content="deprecated"' in guide
     assert "https://docs.example.test/guide/" not in sitemap
     assert "text/markdown" in guide
+    assert "agent-utilities-markdown" in guide
+
+
+def test_conflicting_html_directive_fails_closed(tmp_path: Path) -> None:
+    root, site, _ = _fixture(tmp_path)
+    index = site / "index.html"
+    index.write_text(
+        "<html><head><!-- agent-utilities-markdown "
+        'alternate="https://docs.example.test/wrong/index.md" '
+        'llms="https://docs.example.test/llms.txt" -->'
+        "</head></html>",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="html-directive-conflict"
+    ):
+        pages_readiness.build(root, site)
+
+
+def test_robot_policy_is_preserved_and_conflicting_sitemap_rejected(
+    tmp_path: Path,
+) -> None:
+    root, site, _ = _fixture(tmp_path)
+    robots = site / "robots.txt"
+    robots.write_text(
+        "User-agent: ExampleBot\nDisallow: /private\n# operator policy\n",
+        encoding="utf-8",
+    )
+
+    pages_readiness.build(root, site)
+    policy = robots.read_text(encoding="utf-8")
+    assert "User-agent: ExampleBot\nDisallow: /private\n# operator policy\n" in policy
+    assert policy.count("Sitemap: https://docs.example.test/sitemap.xml\n") == 1
+    assert "Allow: /" not in policy
+    pages_readiness.build(root, site)
+    assert robots.read_text(encoding="utf-8") == policy
+
+    root, site, _ = _fixture(tmp_path / "conflict")
+    (site / "robots.txt").write_text(
+        "Sitemap: https://other.example.test/sitemap.xml\n", encoding="utf-8"
+    )
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="robots-sitemap-conflict"
+    ):
+        pages_readiness.build(root, site)
 
 
 def test_stale_source_digest_fails_closed(tmp_path: Path) -> None:
@@ -275,6 +336,20 @@ def test_stale_source_digest_fails_closed(tmp_path: Path) -> None:
 
     with pytest.raises(pages_readiness.ReadinessTckError, match="source-digest-stale"):
         pages_readiness.build(root, site, check=True)
+
+
+def test_cli_failure_result_is_versioned(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root, _, _ = _fixture(tmp_path)
+    (root / "docs/index.md").write_text("# Changed\n", encoding="utf-8")
+
+    assert pages_readiness.main(["check", "--root", str(root), "--site", "site"]) == 1
+    result = json.loads(capsys.readouterr().out)
+    assert result["checker_version"] == pages_readiness.CHECKER_VERSION
+    assert result["schema_version"] == pages_readiness.SCHEMA_VERSION
+    assert result["mirror_contract"] == pages_readiness.MIRROR_CONTRACT
+    assert result["error_code"] == "source-digest-stale"
 
 
 @pytest.mark.parametrize(
