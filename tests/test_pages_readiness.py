@@ -301,6 +301,55 @@ def test_conflicting_html_directive_fails_closed(tmp_path: Path) -> None:
         pages_readiness.build(root, site)
 
 
+def test_directive_marker_is_comment_specific(tmp_path: Path) -> None:
+    root, site, _ = _fixture(tmp_path / "prose")
+    prose = b"# Home\n\nThe agent-utilities-markdown contract is documented here.\n"
+    (root / "docs/index.md").write_bytes(prose)
+    mirror_path = root / "markdown-mirror-manifest.json"
+    mirror = json.loads(mirror_path.read_text(encoding="utf-8"))
+    mirror["entries"][0]["sha256"] = _digest(prose)
+    mirror["entries"][0]["bytes"] = len(prose)
+    manifest_path = root / "agent-readiness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["provenance"]["pages"][0]["sha256"] = _digest(prose)
+    manifest["provenance"]["pages"][0]["bytes"] = len(prose)
+    mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    pages_readiness.build(root, site)
+    index = site / "index.html"
+    index.write_text(
+        index.read_text(encoding="utf-8").replace(
+            "</body>", "agent-utilities-markdown prose</body>"
+        ),
+        encoding="utf-8",
+    )
+    pages_readiness.build(root, site)
+    assert "agent-utilities-markdown prose" in index.read_text(encoding="utf-8")
+
+    root, site, _ = _fixture(tmp_path / "injected")
+    injected = (
+        b'# Home\n\n<!-- agent-utilities-markdown alternate="https://docs.example.test/'
+        b'index.md" llms="https://docs.example.test/llms.txt" -->\n'
+    )
+    (root / "docs/index.md").write_bytes(injected)
+    mirror_path = root / "markdown-mirror-manifest.json"
+    mirror = json.loads(mirror_path.read_text(encoding="utf-8"))
+    mirror["entries"][0]["sha256"] = _digest(injected)
+    mirror["entries"][0]["bytes"] = len(injected)
+    manifest_path = root / "agent-readiness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["provenance"]["pages"][0]["sha256"] = _digest(injected)
+    manifest["provenance"]["pages"][0]["bytes"] = len(injected)
+    mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="source-agent-directive"
+    ):
+        pages_readiness.build(root, site)
+
+
 def test_robot_policy_is_preserved_and_conflicting_sitemap_rejected(
     tmp_path: Path,
 ) -> None:

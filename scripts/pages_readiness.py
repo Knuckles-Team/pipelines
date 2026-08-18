@@ -73,7 +73,9 @@ DEPRECATED_DATA_PATTERN = re.compile(
     re.IGNORECASE,
 )
 LINK_TAG_PATTERN = re.compile(r"<link\b[^>]*>", re.IGNORECASE)
-DIRECTIVE_MARKER_PATTERN = re.compile(r"agent-utilities-markdown", re.IGNORECASE)
+DIRECTIVE_MARKER_PATTERN = re.compile(
+    r"<!--\s*agent-utilities-markdown\b", re.IGNORECASE
+)
 DIRECTIVE_PATTERN = re.compile(
     r"<!--\s*agent-utilities-markdown\s+"
     r'alternate="(?P<alternate>[^"]+)"\s+'
