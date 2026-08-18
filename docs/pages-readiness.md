@@ -18,9 +18,11 @@ canonical universal-skills artifacts:
 `scripts/pages_readiness.py` validates those exact artifacts, re-hashes every
 declared source, rejects traversal/symlink/hardlink/private capability
 references, and checks generated-output bounds. It then copies source Markdown
-to each declared fallback. Only after all mirrors exist does it add Markdown
-alternate links to the corresponding HTML, emit bounded `robots.txt` and
-`sitemap.xml`, and write `.nojekyll` so Pages serves the static `.md` files.
+to each declared fallback and copies the canonical `llms.txt` hierarchy into
+the uploaded site. Existing `.well-known` files from the strict MkDocs output
+are retained. Only after all mirrors exist does it add Markdown alternate links
+to the corresponding HTML, emit bounded `robots.txt` and `sitemap.xml`, and
+write `.nojekyll` so Pages serves the static `.md` files.
 
 Existing HTML `noindex` and deprecated markers are retained. Such pages remain
 available as explicit fallbacks but are omitted from the generated sitemap.

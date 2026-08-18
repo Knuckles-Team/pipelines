@@ -151,6 +151,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         },
         "generated": [
             "llms.txt",
+            "llms-sections/guides/llms.txt",
             "markdown-mirror-manifest.json",
         ],
         "provenance": {
@@ -171,6 +172,9 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         json.dumps(readiness_manifest, sort_keys=True) + "\n", encoding="utf-8"
     )
     (root / "llms.txt").write_text("# Fixture\n", encoding="utf-8")
+    section_index = root / "llms-sections" / "guides" / "llms.txt"
+    section_index.parent.mkdir(parents=True)
+    section_index.write_text("# Guides\n", encoding="utf-8")
     return root, site, readiness
 
 
@@ -193,6 +197,10 @@ def test_build_publishes_source_markdown_and_served_mime(
     assert (site / "index.md").read_bytes() == (root / "docs/index.md").read_bytes()
     assert (site / "guide/index.md").read_bytes() == (
         root / "docs/guide.md"
+    ).read_bytes()
+    assert (site / "llms.txt").read_bytes() == (root / "llms.txt").read_bytes()
+    assert (site / "llms-sections/guides/llms.txt").read_bytes() == (
+        root / "llms-sections/guides/llms.txt"
     ).read_bytes()
     assert mimetypes.guess_type("index.md")[0] == "text/markdown"
     assert '<link rel="alternate" type="text/markdown"' in (

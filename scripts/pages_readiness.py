@@ -501,7 +501,9 @@ def _validate_readiness_input(
     }
 
 
-def _validate_generated_outputs(root: Path, manifest: Mapping[str, Any]) -> None:
+def _validate_generated_outputs(
+    root: Path, manifest: Mapping[str, Any]
+) -> tuple[tuple[str, bytes], ...]:
     generated = manifest.get("generated")
     if not isinstance(generated, list) or not generated or len(generated) > 256:
         _fail("generated-list-invalid")
@@ -527,6 +529,7 @@ def _validate_generated_outputs(root: Path, manifest: Mapping[str, Any]) -> None
     if "agent-readiness-manifest.json" in normalized:
         _fail("generated-path-invalid")
     total = 0
+    published: list[tuple[str, bytes]] = []
     for relative in normalized:
         path = root.joinpath(*PurePosixPath(relative).parts)
         payload = _regular_bytes(path, "generated-output", MAX_GENERATED_FILE_BYTES)
@@ -536,8 +539,15 @@ def _validate_generated_outputs(root: Path, manifest: Mapping[str, Any]) -> None
             _fail("generated-output-invalid-encoding")
         _scan_safe_text(text, "generated-output")
         total += len(payload)
+        if (
+            relative == "llms.txt"
+            or relative == "llms-full.txt"
+            or relative.startswith("llms-sections/")
+        ):
+            published.append((relative, payload))
     if total > MAX_TOTAL_GENERATED_BYTES:
         _fail("generated-output-oversize")
+    return tuple(published)
 
 
 def _validate_capability_paths(root: Path, value: Mapping[str, Any]) -> None:
@@ -859,7 +869,7 @@ def _prepare(
     if not isinstance(capabilities, Mapping) or set(capabilities) != CAPABILITY_KEYS:
         _fail("readiness-capabilities-invalid")
     _scan_safe_text(capabilities, "readiness-capabilities")
-    _validate_generated_outputs(root, readiness_manifest)
+    generated_outputs = _validate_generated_outputs(root, readiness_manifest)
     mirror_manifest = _read_json(mirror_manifest_path, "mirror-manifest")
     pages = _source_manifest_pages(root, site, mirror_manifest, readiness_manifest)
 
@@ -872,7 +882,14 @@ def _prepare(
 
     # Derived robots/sitemap/nojekyll assets are planned only after every source
     # digest, fallback path, and HTML target has passed the mirror gate.
-    assets = _derived_assets(pages, site)
+    generated_assets = tuple(
+        (
+            _safe_output_path(site, relative, "generated-site-output"),
+            payload,
+        )
+        for relative, payload in generated_outputs
+    )
+    assets = generated_assets + _derived_assets(pages, site)
     manifest_digest = hashlib.sha256(
         json.dumps(readiness_manifest, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
