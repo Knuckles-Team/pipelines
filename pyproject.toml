@@ -85,12 +85,7 @@ deploy = "reusable workflow: builds and deploys the caller's GitHub Pages site i
 [tool.pipelines_hooks.ci_replica.workflows."python_pipeline.yml"]
 blocking = true
 [tool.pipelines_hooks.ci_replica.workflows."python_pipeline.yml".skip_reasons]
-publish-pypi = "reusable workflow: builds and publishes the caller's package to PyPI with the caller's token"
-
-[tool.pipelines_hooks.ci_replica.workflows."python_web_pipeline.yml"]
-blocking = true
-[tool.pipelines_hooks.ci_replica.workflows."python_web_pipeline.yml".skip_reasons]
-publish-pypi = "reusable workflow: builds the caller's web assets and publishes the package to PyPI"
+publish-pypi = "reusable workflow: builds (optionally, the caller's web assets first) and publishes the caller's package to PyPI with the caller's token"
 
 [tool.pipelines_hooks.ci_replica.workflows."services_pipeline.yml"]
 blocking = true

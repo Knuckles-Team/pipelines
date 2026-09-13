@@ -29,10 +29,11 @@ supply-chain chokepoint: the reusable workflows here run in every calling
 repository's fleet-wide CI with that repository's checkout and secrets, so a
 mutable ref here is a mutable ref everywhere.
 
-- **From another repository** (the normal case — `python_pipeline.yml`,
-  `python_web_pipeline.yml`, `container_pipeline.yml`,
-  `desktop_release_pipeline.yml`, `maturin_pipeline.yml`,
-  `services_pipeline.yml`, `pages_pipeline.yml`, …): pin the full
+- **From another repository** (the normal case — `python_pipeline.yml`
+  (`web-assets: true` for a package with a Node/pnpm frontend to build),
+  `container_pipeline.yml`, `desktop_release_pipeline.yml`,
+  `maturin_pipeline.yml`, `services_pipeline.yml`, `pages_pipeline.yml`, …):
+  pin the full
   `owner/repo/.github/workflows/<file>.yml@<full-commit-sha> # vX.Y.Z` form, as
   in the example above. Resolve the SHA from the real tag before pinning —
   never invent or guess one:

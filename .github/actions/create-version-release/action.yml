@@ -3,8 +3,8 @@ description: >-
   Create a GitHub release named after the calling job's BUILD_VERSION,
   COMMIT_DATETIME, LATEST_COMMIT and COMMIT_MESSAGE environment variables
   (set by a preceding build step). Shared by python_pipeline.yml (via
-  publish-python-package), python_web_pipeline.yml (via publish-python-package)
-  and maturin_pipeline.yml, which all release from the same four variables.
+  publish-python-package, for both its plain and web-assets variants) and
+  maturin_pipeline.yml, which all release from the same four variables.
 inputs:
   github-token:
     description: Token used to create the release.

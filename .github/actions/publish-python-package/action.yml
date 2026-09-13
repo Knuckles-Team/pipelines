@@ -2,9 +2,10 @@ name: Build, publish and release a Python package
 description: >-
   Build a Python package with uv, upload the wheel as a workflow artifact,
   publish it to PyPI with twine, and create a matching GitHub release.
-  Shared by python_pipeline.yml and python_web_pipeline.yml, which differ
-  only in whether a missing requirements.txt is tolerated and whether twine
-  skips an already-published version.
+  Called by python_pipeline.yml's single job for both its plain and
+  web-assets (`web-assets: true`) variants, which differ only in whether a
+  missing requirements.txt is tolerated and whether twine skips an
+  already-published version.
 inputs:
   pypi-token:
     description: PyPI API token used by twine.
