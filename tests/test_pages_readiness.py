@@ -87,6 +87,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
     docs = root / "docs"
     site = root / "site"
     docs.mkdir(parents=True)
+    (root / "pages").mkdir(parents=True)
     (site / "guide").mkdir(parents=True)
     sources = {
         "docs/index.md": b"# Home\n\nSource home.\n",
@@ -105,10 +106,10 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         encoding="utf-8",
     )
     readiness = _readiness()
-    (root / "docs" / "agent-readiness.schema.json").write_text(
+    (root / "pages" / "agent-readiness.schema.json").write_text(
         json.dumps(SCHEMA, sort_keys=True) + "\n", encoding="utf-8"
     )
-    (root / "docs" / "agent-readiness.json").write_text(
+    (root / "pages" / "agent-readiness.json").write_text(
         json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
     )
     entries = [
@@ -423,7 +424,7 @@ def test_malformed_or_private_capability_reference_is_rejected(
         json.dumps({"applicable": True, "surface": "api", "source": "docs/index.md"}),
         encoding="utf-8",
     )
-    (root / "docs/agent-readiness.json").write_text(
+    (root / "pages/agent-readiness.json").write_text(
         json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
     )
 
@@ -510,3 +511,40 @@ def test_source_markdown_secret_is_not_published(tmp_path: Path) -> None:
         pages_readiness.ReadinessTckError, match="source-secret-like-value"
     ):
         pages_readiness.build(root, site)
+
+
+def test_omitted_readiness_paths_default_to_the_pages_layout(tmp_path: Path) -> None:
+    """No explicit readiness_input/schema resolves under the new pages/ layout."""
+
+    root, site, _ = _fixture(tmp_path)
+
+    result = pages_readiness.build(root, site)
+
+    assert result["ok"] is True
+    assert (root / "pages" / "agent-readiness.json").is_file()
+
+
+def test_content_source_declares_a_legacy_docs_layout_explicitly(
+    tmp_path: Path,
+) -> None:
+    """A repository still on docs/ must declare content_source explicitly.
+
+    There is no fallback probing between layouts: moving the readiness
+    artifacts to docs/ without also declaring content_source="docs" fails
+    closed exactly like any other missing input, rather than silently
+    falling back to check docs/ after pages/ comes up empty.
+    """
+
+    root, site, _ = _fixture(tmp_path)
+    (root / "pages" / "agent-readiness.json").rename(
+        root / "docs" / "agent-readiness.json"
+    )
+    (root / "pages" / "agent-readiness.schema.json").rename(
+        root / "docs" / "agent-readiness.schema.json"
+    )
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match="readiness-input-"):
+        pages_readiness.build(root, site)
+
+    result = pages_readiness.build(root, site, content_source="docs")
+    assert result["ok"] is True

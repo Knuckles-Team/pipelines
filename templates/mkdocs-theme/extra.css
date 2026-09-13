@@ -1,0 +1,44 @@
+/*
+ * Shared GitHub Pages theme CSS (CONCEPT:ECO-4.DOCS-DELIVERY / RF-ADR-009 D3-D5).
+ *
+ * Applied identically to every repository that opts into
+ * `shared_theme_enabled: true` on the `pages_pipeline.yml` reusable
+ * workflow, so EG, the connector SDK, AU, graph-os and the UIs read as one
+ * product rather than N differently-styled sites. HTML/CSS only -- no
+ * scripts, no diagram libraries.
+ */
+
+:root {
+  --pipelines-content-max-width: 52rem;
+}
+
+.md-grid {
+  max-width: 61rem;
+}
+
+.md-content__inner {
+  max-width: var(--pipelines-content-max-width);
+}
+
+/* Layered information architecture (RF-ADR-009 D4): the deepest tier is
+   man-page-style reference material. Give it a visibly distinct, monospace
+   treatment so a reader always knows which tier they are in. */
+.md-typeset .man-page {
+  font-family: var(--md-code-font-family, "Roboto Mono", monospace);
+  border-left: 0.2rem solid var(--md-accent-fg-color, #526cfe);
+  padding-left: 1rem;
+}
+
+.md-typeset table:not([class]) {
+  font-size: 0.7rem;
+}
+
+.md-typeset .admonition.architecture,
+.md-typeset details.architecture {
+  border-color: var(--md-accent-fg-color, #526cfe);
+}
+
+.md-typeset .admonition.architecture > .admonition-title,
+.md-typeset details.architecture > summary {
+  background-color: var(--md-accent-fg-color--transparent, rgba(82, 108, 254, 0.1));
+}

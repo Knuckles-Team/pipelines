@@ -1020,14 +1020,29 @@ def build(
     root: str | Path = ".",
     site: str | Path = "site",
     *,
-    readiness_input: str = "docs/agent-readiness.json",
-    schema: str = "docs/agent-readiness.schema.json",
+    content_source: str = "pages",
+    readiness_input: str | None = None,
+    schema: str | None = None,
     readiness_manifest: str = "agent-readiness-manifest.json",
     mirror_manifest: str = "markdown-mirror-manifest.json",
     check: bool = False,
 ) -> dict[str, Any]:
-    """Build or verify Pages delivery from canonical readiness artifacts."""
+    """Build or verify Pages delivery from canonical readiness artifacts.
 
+    ``content_source`` names the repository's declared documentation source
+    directory (mkdocs's ``docs_dir``; the same value the ``pages_pipeline.yml``
+    caller declares via its ``content_source`` input). It defaults to the
+    ``pages/`` layout. ``readiness_input``/``schema`` default to
+    ``<content_source>/agent-readiness.json`` /
+    ``<content_source>/agent-readiness.schema.json`` when omitted; pass them
+    explicitly for a repository whose readiness files live somewhere else
+    (for example, one still declaring ``content_source="docs"``). There is no
+    fallback probing between layouts -- an omitted path is derived from
+    ``content_source`` alone, and an explicit path is used exactly as given.
+    """
+
+    resolved_readiness_input = readiness_input or f"{content_source}/agent-readiness.json"
+    resolved_schema = schema or f"{content_source}/agent-readiness.schema.json"
     workspace = _safe_root(root)
     site_root = _safe_site(workspace, site)
     if not site_root.is_dir() or site_root.is_symlink():
@@ -1036,9 +1051,9 @@ def build(
         workspace,
         site_root,
         readiness_input_path=_safe_existing_path(
-            workspace, readiness_input, "readiness-input"
+            workspace, resolved_readiness_input, "readiness-input"
         ),
-        schema_path=_safe_existing_path(workspace, schema, "schema"),
+        schema_path=_safe_existing_path(workspace, resolved_schema, "schema"),
         readiness_manifest_path=_safe_existing_path(
             workspace, readiness_manifest, "readiness-manifest"
         ),
@@ -1070,8 +1085,9 @@ def _parser() -> argparse.ArgumentParser:
         subparser = subparsers.add_parser(command)
         subparser.add_argument("--root", default=".")
         subparser.add_argument("--site", default="site")
-        subparser.add_argument("--readiness-input", default="docs/agent-readiness.json")
-        subparser.add_argument("--schema", default="docs/agent-readiness.schema.json")
+        subparser.add_argument("--content-source", default="pages")
+        subparser.add_argument("--readiness-input", default=None)
+        subparser.add_argument("--schema", default=None)
         subparser.add_argument(
             "--readiness-manifest", default="agent-readiness-manifest.json"
         )
@@ -1087,8 +1103,9 @@ def main(argv: list[str] | None = None) -> int:
         result = build(
             args.root,
             args.site,
-            readiness_input=args.readiness_input,
-            schema=args.schema,
+            content_source=args.content_source,
+            readiness_input=args.readiness_input or None,
+            schema=args.schema or None,
             readiness_manifest=args.readiness_manifest,
             mirror_manifest=args.mirror_manifest,
             check=args.command in {"check", "tck"},
