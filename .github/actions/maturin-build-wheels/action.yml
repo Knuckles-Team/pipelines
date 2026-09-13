@@ -7,23 +7,28 @@ inputs:
   target:
     description: Rust/Python target triple passed to PyO3/maturin-action.
     required: true
+  manylinux:
+    description: Maturin manylinux policy; use auto for non-Linux targets.
+    required: false
+    default: auto
   artifact-name:
     description: Name of the uploaded artifact.
     required: true
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-        persist-credentials: false
+    - name: Checkout and bind source commit
+      uses: ./.pipeline-contract/.github/actions/checkout-verified-source
 
     - name: Build wheels
       uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
       with:
         target: ${{ inputs.target }}
+        manylinux: ${{ inputs.manylinux }}
         args: --release --out dist
 
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+    - name: Verify source and upload artifact
+      uses: ./.pipeline-contract/.github/actions/verify-and-upload-artifact
       with:
-        name: ${{ inputs.artifact-name }}
-        path: dist
+        artifact-name: ${{ inputs.artifact-name }}
+        artifact-path: dist

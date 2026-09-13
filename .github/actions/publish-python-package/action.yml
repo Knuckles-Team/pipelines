@@ -26,6 +26,11 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Bind source commit
+      uses: ./.pipeline-contract/.github/actions/verify-source-commit
+      with:
+        phase: before
+
     - name: Build package
       id: build_package
       shell: bash
@@ -41,23 +46,28 @@ runs:
         else
           uv pip install -r requirements.txt
         fi
+        # Keep the publisher available for packages whose requirements file
+        # contains only runtime dependencies (or is intentionally absent for
+        # the web-assets variant).
+        uv pip install --require-hashes -r "${{ github.action_path }}/twine-requirements.txt"
         echo "Building package"
         uv build
         BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
-        LATEST_COMMIT=$(git rev-parse --verify HEAD)
+        LATEST_COMMIT="$SOURCE_COMMIT"
         echo "Last Commit: ${LATEST_COMMIT}"
-        if [[ $TAG != '' ]]; then
-          CURRENT_COMMIT=$(git rev-list -n 1 $TAG)
-          CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')
-        else
-          TAG=''
-          CURRENT_COMMIT=${LATEST_COMMIT}
-          CURRENT_RELEASE="0.0.0"  # Default for no tags
-        fi
-        COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
-        COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
+        COMMIT_MESSAGE=$(git log -1 --format=%B "$LATEST_COMMIT" | tr '\n' ' ')
         COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
-        echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nBUILD_VERSION=$BUILD_VERSION" | tee -a "$GITHUB_ENV"
+        {
+          echo "COMMIT_DATETIME=$COMMIT_DATETIME"
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE"
+          echo "BUILD_VERSION=$BUILD_VERSION"
+          echo "LATEST_COMMIT=$LATEST_COMMIT"
+        } >> "$GITHUB_ENV"
+
+    - name: Verify source commit after build
+      uses: ./.pipeline-contract/.github/actions/verify-source-commit
+      with:
+        phase: after
 
     - name: Upload Artifact
       id: upload_artifact
@@ -71,12 +81,12 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.twine-skip-existing }}" = "true" ]; then
-          twine upload --skip-existing dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
+          .venv/bin/twine upload --skip-existing dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
         else
-          twine upload dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
+          .venv/bin/twine upload dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
         fi
 
     - name: Create Release
-      uses: ./.github/actions/create-version-release
+      uses: ./.pipeline-contract/.github/actions/create-version-release
       with:
         github-token: ${{ inputs.github-token }}

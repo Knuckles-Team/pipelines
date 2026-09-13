@@ -1,0 +1,23 @@
+name: Verify source and upload artifact
+description: Verify the source and pipeline commits, then upload a build artifact.
+inputs:
+  artifact-name:
+    description: Name assigned to the uploaded workflow artifact.
+    required: true
+  artifact-path:
+    description: File or directory passed to upload-artifact.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Verify source commit after build
+      uses: ./.pipeline-contract/.github/actions/verify-source-commit
+      with:
+        phase: after
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.artifact-path }}
+        if-no-files-found: error
