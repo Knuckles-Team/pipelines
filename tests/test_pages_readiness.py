@@ -1469,6 +1469,38 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
             '{"reference":"https://public.example/path?note=%GG"}\n',
             "generated-output-url-invalid",
         ),
+        (
+            '{"reference":"https://public.example/token%3Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://public.example/path#api_key%3Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://public.example/bearer%20abcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"reference":"https://public.example/to%256ben%253Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://user%2540public.example/path"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://user%25252540public.example/path"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"https://public.example/https%3A%2F%2F2130706433/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https://public.example/?next=https%253A%252F%252F127.0.0.1"}\n',
+            "generated-output-private-url",
+        ),
     ],
 )
 def test_generated_discovery_scans_decoded_json_values(
@@ -1487,6 +1519,10 @@ def test_generated_discovery_scans_decoded_json_values(
         "https://public.example/path?no%74e=abcdefghijklmnop",
         "https://public.example/users/user%40example.test",
         "https://public.example/caf%C3%A9",
+        "https://public.example/path#release%3Dv1",
+        "https://public.example/caf%25C3%25A9",
+        "https://public.example/discount%2525",
+        "https://public.example/?next=https%3A%2F%2Fpublic.example%2Fdocs",
     ],
 )
 def test_generated_discovery_allows_benign_percent_encoding(

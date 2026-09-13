@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 from urllib.parse import SplitResult, unquote, urlsplit, urlunsplit
 
 from .errors import _fail
-from .privacy import _reject_private_host
+from .url_security import _reject_private_host
 
 
 def _invalid_origin(parsed: SplitResult, host: str, port: int | None) -> bool:
