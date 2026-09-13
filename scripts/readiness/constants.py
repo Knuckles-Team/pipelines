@@ -72,7 +72,7 @@ SECRET_PATTERN = re.compile(
     r"[\"']?[A-Za-z0-9_./+=:-]{12,}[\"']?"
 )
 BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{12,}")
-URL_PATTERN = re.compile(r"https?://[^\s)\]>\"']+", re.IGNORECASE)
+URL_PATTERN = re.compile(r"https?://[^\s)>\"']+", re.IGNORECASE)
 META_TAG_PATTERN = re.compile(r"<meta\b[^>]*>", re.IGNORECASE)
 DEPRECATED_DATA_PATTERN = re.compile(
     r"data-(?:agent-)?document-state\s*=\s*[\"']deprecated[\"']",

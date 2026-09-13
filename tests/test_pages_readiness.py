@@ -1515,7 +1515,7 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
         ),
         (
             '{"reference":"https%3A%2F%2Fpublic.example%2Ftoken%253Dabcdefghijklmnop"}\n',
-            "generated-output-credential-url",
+            "generated-output-secret-like-value",
         ),
         (
             '{"reference":"https%2525253A%2525252F%2525252Fpublic.example/path"}\n',
@@ -1524,6 +1524,26 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
         (
             '{"reference":"%25252568%25252574%25252574%25252570%25252573%2525253A%2525252F%2525252Fpublic.example"}\n',
             "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"token%3Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"api_key%3Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"bearer%20abcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"reference":"https://[::1]/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https%3A%2F%2F%5B%3A%3A1%5D/private"}\n',
+            "generated-output-private-url",
         ),
     ],
 )
@@ -1551,6 +1571,10 @@ def test_generated_discovery_scans_decoded_json_values(
         "discount%2525",
         "progress 100% complete",
         "literal%GG",
+        "https://[2606:4700:4700::1111]/dns-query",
+        "https%3A%2F%2F%5B2606%3A4700%3A4700%3A%3A1111%5D/dns-query",
+        "https://public.example/discount%25",
+        "https://public.example/?next=https%3A%2F%2Fpublic.example%2Fdiscount%2525",
     ],
 )
 def test_generated_discovery_allows_benign_percent_encoding(

@@ -100,10 +100,18 @@ def _validated_components(raw: str, label: str) -> tuple[str, ...]:
     return components
 
 
+def _trim_candidate(raw: str) -> str:
+    """Remove prose punctuation while preserving a bracketed IPv6 authority."""
+
+    candidate = raw.rstrip(".,;:")
+    extra_brackets = max(candidate.count("]") - candidate.count("["), 0)
+    return candidate[:-extra_brackets] if extra_brackets else candidate
+
+
 def _scan_url(raw: str, label: str) -> None:
     """Validate one URL and any URLs revealed by component decoding."""
 
-    pending = [raw]
+    pending = [_trim_candidate(raw)]
     seen: set[str] = set()
     while pending:
         candidate = pending.pop()
@@ -115,4 +123,9 @@ def _scan_url(raw: str, label: str) -> None:
         components = _validated_components(candidate, label)
         for component in components:
             _reject_component_credentials(component, label)
-            pending.extend(match.group(0) for match in URL_PATTERN.finditer(component))
+            pending.extend(
+                _INVALID_PERCENT_PATTERN.sub(
+                    "%25", _trim_candidate(match.group(0))
+                )
+                for match in URL_PATTERN.finditer(component)
+            )

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from urllib.parse import unquote
 
-from .constants import URL_PATTERN
+from .constants import BEARER_PATTERN, SECRET_PATTERN, URL_PATTERN
 from .errors import _fail
 from .url_security import _scan_url
 
@@ -47,6 +47,13 @@ def _canonical_scalar(raw: str, label: str) -> str:
     return current
 
 
+def _reject_decoded_secrets(value: str, label: str) -> None:
+    """Reject secrets revealed in canonical scalar text without recursing."""
+
+    if SECRET_PATTERN.search(value) or BEARER_PATTERN.search(value):
+        _fail(f"{label}-secret-like-value")
+
+
 def _scan_urls(raw: str, label: str) -> None:
     """Scan raw URLs and canonicalize only the text outside their spans."""
 
@@ -60,5 +67,6 @@ def _scan_urls(raw: str, label: str) -> None:
     segments.append(raw[cursor:])
     for segment in segments:
         canonical = _canonical_scalar(segment, label)
+        _reject_decoded_secrets(canonical, label)
         for match in URL_PATTERN.finditer(canonical):
             _scan_url(match.group(0).rstrip(".,;:"), label)
