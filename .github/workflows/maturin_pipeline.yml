@@ -22,17 +22,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
-      - name: Verify source commit before build
-        shell: bash
-        env:
-          EXPECTED_COMMIT: ${{ github.sha }}
-        run: |
-          SOURCE_COMMIT=$(git rev-parse --verify HEAD)
-          if [ -z "$EXPECTED_COMMIT" ] || [ "$SOURCE_COMMIT" != "$EXPECTED_COMMIT" ]; then
-            echo "checked-out commit ${SOURCE_COMMIT} does not match github.sha ${EXPECTED_COMMIT}" >&2
-            exit 1
-          fi
-          echo "SOURCE_COMMIT=$SOURCE_COMMIT" >> "$GITHUB_ENV"
+      - name: Bind source commit
+        uses: ./.github/actions/verify-source-commit
+        with:
+          phase: before
 
       - name: Setup QEMU
         if: matrix.target == 'aarch64'
@@ -46,12 +39,9 @@ jobs:
           args: --release --out dist
 
       - name: Verify source commit after build
-        shell: bash
-        run: |
-          if [ "$(git rev-parse --verify HEAD)" != "$SOURCE_COMMIT" ]; then
-            echo "HEAD changed while building the wheel" >&2
-            exit 1
-          fi
+        uses: ./.github/actions/verify-source-commit
+        with:
+          phase: after
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -99,17 +89,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
-      - name: Verify source commit before build
-        shell: bash
-        env:
-          EXPECTED_COMMIT: ${{ github.sha }}
-        run: |
-          SOURCE_COMMIT=$(git rev-parse --verify HEAD)
-          if [ -z "$EXPECTED_COMMIT" ] || [ "$SOURCE_COMMIT" != "$EXPECTED_COMMIT" ]; then
-            echo "checked-out commit ${SOURCE_COMMIT} does not match github.sha ${EXPECTED_COMMIT}" >&2
-            exit 1
-          fi
-          echo "SOURCE_COMMIT=$SOURCE_COMMIT" >> "$GITHUB_ENV"
+      - name: Bind source commit
+        uses: ./.github/actions/verify-source-commit
+        with:
+          phase: before
 
       - name: Build sdist
         uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
@@ -118,12 +101,9 @@ jobs:
           args: --out dist
 
       - name: Verify source commit after build
-        shell: bash
-        run: |
-          if [ "$(git rev-parse --verify HEAD)" != "$SOURCE_COMMIT" ]; then
-            echo "HEAD changed while building the source distribution" >&2
-            exit 1
-          fi
+        uses: ./.github/actions/verify-source-commit
+        with:
+          phase: after
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -142,27 +122,26 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Bind source commit
+        uses: ./.github/actions/verify-source-commit
+        with:
+          phase: before
+
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: wheels-*
           path: dist
           merge-multiple: true
 
+      - name: Verify source commit after artifact download
+        uses: ./.github/actions/verify-source-commit
+        with:
+          phase: after
+
       - name: Determine version
         id: version
-        env:
-          EXPECTED_COMMIT: ${{ github.sha }}
         run: |
-          SOURCE_COMMIT=$(git rev-parse --verify HEAD)
-          if [ -z "$EXPECTED_COMMIT" ] || [ "$SOURCE_COMMIT" != "$EXPECTED_COMMIT" ]; then
-            echo "checked-out commit ${SOURCE_COMMIT} does not match github.sha ${EXPECTED_COMMIT}" >&2
-            exit 1
-          fi
           BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | sort -V | tail -n 1)
-          if [ "$(git rev-parse --verify HEAD)" != "$SOURCE_COMMIT" ]; then
-            echo "HEAD changed while preparing release metadata" >&2
-            exit 1
-          fi
           LATEST_COMMIT="$SOURCE_COMMIT"
           COMMIT_MESSAGE=$(git log -1 --format=%B "$LATEST_COMMIT" | tr '\n' ' ')
           COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")

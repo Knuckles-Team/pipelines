@@ -1,0 +1,24 @@
+name: Verify source commit
+description: Verify that checkout HEAD matches the workflow SHA and remains unchanged.
+inputs:
+  phase:
+    description: Run the before-build binding or the after-build integrity check.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Verify source commit on Unix
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        EXPECTED_COMMIT: ${{ github.sha }}
+      run: |
+        python3 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"
+
+    - name: Verify source commit on Windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        EXPECTED_COMMIT: ${{ github.sha }}
+      run: |
+        python "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"

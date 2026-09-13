@@ -26,18 +26,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Bind source commit
+      uses: ./.github/actions/verify-source-commit
+      with:
+        phase: before
+
     - name: Build package
       id: build_package
       shell: bash
-      env:
-        EXPECTED_COMMIT: ${{ github.sha }}
       run: |
-        SOURCE_COMMIT=$(git rev-parse --verify HEAD)
-        if [ -z "$EXPECTED_COMMIT" ] || [ "$SOURCE_COMMIT" != "$EXPECTED_COMMIT" ]; then
-          echo "checked-out commit ${SOURCE_COMMIT} does not match github.sha ${EXPECTED_COMMIT}" >&2
-          exit 1
-        fi
-        echo "Building from commit: ${SOURCE_COMMIT}"
         echo "Creating virtual environment"
         # Pin to 3.13: Python 3.14 breaks native builds of transitive deps
         # (e.g. litellm's PyO3 chain caps at cp313), failing release CI fleet-wide.
@@ -55,10 +52,6 @@ runs:
         uv pip install --require-hashes -r "${{ github.action_path }}/twine-requirements.txt"
         echo "Building package"
         uv build
-        if [ "$(git rev-parse --verify HEAD)" != "$SOURCE_COMMIT" ]; then
-          echo "HEAD changed while building the package" >&2
-          exit 1
-        fi
         BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
         LATEST_COMMIT="$SOURCE_COMMIT"
         echo "Last Commit: ${LATEST_COMMIT}"
@@ -70,6 +63,11 @@ runs:
           echo "BUILD_VERSION=$BUILD_VERSION"
           echo "LATEST_COMMIT=$LATEST_COMMIT"
         } >> "$GITHUB_ENV"
+
+    - name: Verify source commit after build
+      uses: ./.github/actions/verify-source-commit
+      with:
+        phase: after
 
     - name: Upload Artifact
       id: upload_artifact
