@@ -1,6 +1,23 @@
+# pipelines runs its own shared hooks (.pre-commit-hooks.yaml) on itself, as
+# local hooks over the locked project environment, with the identical
+# `pipelines-hook <gate>` entries consumers get (tests/hooks/test_catalogue.py
+# holds the two in lockstep).
+#
+# Shared hooks NOT run here, and why:
+#   supply-chain  -- the reusable workflows carry pre-existing unpinned actions
+#                    and undeclared permissions, including pages_pipeline.yml,
+#                    which another lane owns; adopting the hook is blocked on
+#                    pinning them (reported, not exempted).
+#   stdout-writes -- this repository serves no stdio JSON-RPC surface; the hook
+#                    package is a CLI whose output is its interface.
+#   ci-gate-replica (full replay) -- every workflow is a reusable
+#                    `workflow_call` definition with no locally executable job;
+#                    ci-gate-replica-consistency still classifies every job.
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
   hooks:
   - id: trailing-whitespace
   - id: end-of-file-fixer
@@ -13,3 +30,167 @@ repos:
     entry: '^\s*permissions:\s*write-all\s*$'
     language: pygrep
     files: ^\.github/workflows/.*\.ya?ml$
+  - id: pytest
+    name: pytest (full suite)
+    entry: uv run --frozen python -m pytest -q
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push, manual]
+  # --- shared hooks, run on this repository -------------------------------
+  - id: complexity-staged
+    name: Complexity (cccc) - no new or worsened function over 10/15
+    entry: uv run --frozen --quiet pipelines-hook complexity-staged
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+  - id: complexity-census
+    name: Complexity census (cccc) - absolute zero outside the terms of acceptance
+    entry: uv run --frozen --quiet pipelines-hook complexity-census
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-push, manual]
+  - id: kiss-staged
+    name: KISS - staged package source, diff-scoped
+    entry: uv run --frozen --quiet pipelines-hook kiss-staged
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+  - id: kiss-census
+    name: KISS census - every package file plus orphan modules
+    entry: uv run --frozen --quiet pipelines-hook kiss-census
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-push, manual]
+  - id: dupehound-changed
+    name: Clone gate - changed functions (dupehound)
+    entry: uv run --frozen --quiet pipelines-hook dupehound-changed
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+  - id: jscpd-differential
+    name: Clone gate - new blocks (jscpd, merged-tree differential)
+    entry: uv run --frozen --quiet pipelines-hook jscpd-differential
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-push, manual]
+  - id: jscpd-census
+    name: Clone census - tracked tree (jscpd, advisory)
+    entry: uv run --frozen --quiet pipelines-hook jscpd-census
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-push, manual]
+  - id: scanner-versions
+    name: Pinned native scanners are installed at their exact versions
+    entry: uv run --frozen --quiet pipelines-hook scanner-versions
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push, manual]
+  - id: secret-history
+    name: Credential-shaped content in the unpublished commit range
+    entry: uv run --frozen --quiet pipelines-hook secret-history
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push, manual]
+  - id: security-sanitizer
+    name: Security and garbage sanitizer
+    entry: uv run --frozen --quiet pipelines-hook security-sanitizer
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: tracked-privacy
+    name: Tracked artifacts contain no host-specific data, local or model identities
+    entry: uv run --frozen --quiet pipelines-hook tracked-privacy
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: dependency-audit
+    name: Dependency CVE audit (OSV)
+    entry: uv run --frozen --quiet pipelines-hook dependency-audit
+    language: system
+    pass_filenames: false
+    files: ^(uv\.lock|pyproject\.toml|\.security-audit-allow\.txt)$
+  - id: root-hygiene
+    name: Repository root hygiene (declared entries only)
+    entry: uv run --frozen --quiet pipelines-hook root-hygiene
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: gitignore-convergence
+    name: .gitignore carries the fleet-shared REQUIRED set
+    entry: uv run --frozen --quiet pipelines-hook gitignore-convergence
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: sprawl
+    name: Anti-sprawl
+    entry: uv run --frozen --quiet pipelines-hook sprawl
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: pre-commit-patch-safety
+    name: No live uncommitted work parked in the pre-commit patch cache
+    entry: uv run --frozen --quiet pipelines-hook pre-commit-patch-safety
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push, manual]
+  - id: mermaid
+    name: Mermaid diagram syntax
+    entry: uv run --frozen --quiet pipelines-hook mermaid
+    language: system
+    types: [markdown]
+  - id: no-stub
+    name: No production stub markers or unmarked NotImplementedError
+    entry: uv run --frozen --quiet pipelines-hook no-stub
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: stubs
+    name: No stub bodies and no deferred-work comments
+    entry: uv run --frozen --quiet pipelines-hook stubs
+    language: system
+    types: [python]
+  - id: swallowed-errors
+    name: Swallowed errors - no cause-dropping handler added
+    entry: uv run --frozen --quiet pipelines-hook swallowed-errors
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: event-loop-blocking
+    name: Event-loop blocking - no blocking call added in async code
+    entry: uv run --frozen --quiet pipelines-hook event-loop-blocking
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: import-cycles
+    name: Import cycles - zero eager cycles
+    entry: uv run --frozen --quiet pipelines-hook import-cycles
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: env-sprawl
+    name: Configuration - environment read only in core/settings.py
+    entry: uv run --frozen --quiet pipelines-hook env-sprawl
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: ci-gate-replica-consistency
+    name: CI gate replica - every workflow and job classified
+    entry: uv run --frozen --quiet pipelines-hook ci-gate-replica --consistency-check
+    language: system
+    pass_filenames: false
+    always_run: true

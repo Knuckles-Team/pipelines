@@ -1,0 +1,103 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipelines-hooks"
+version = "2.0.2"
+description = "Shared, repository-agnostic pre-commit quality gates for the Knuckles-Team fleet"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "networkx==3.6.1",
+    "platformdirs==4.11.8",
+    "PyYAML==6.0.3",
+]
+
+[project.scripts]
+pipelines-hook = "pipelines_hooks.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pipelines_hooks*"]
+
+[tool.setuptools.package-data]
+pipelines_hooks = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"
+
+# Configuration of the shared hooks for THIS repository. Every consumer carries
+# the same table; see README.md "Shared pre-commit hooks".
+[tool.pipelines_hooks]
+packages = ["pipelines_hooks"]
+
+[tool.pipelines_hooks.complexity]
+census_paths = ["pipelines_hooks", "tests/hooks"]
+
+[tool.pipelines_hooks.env_sprawl]
+allow_files = ["pipelines_hooks/core/settings.py"]
+
+# Every workflow here is a reusable `workflow_call` definition executed in the
+# calling repository with that repository's secrets and checkout; none has a
+# job that can run meaningfully in this repository, so each job carries its
+# reason. The consistency hook still fails on any new, renamed or removed job.
+[tool.pipelines_hooks.ci_replica]
+build_affecting = ["pyproject.toml", "uv.lock", ".github/workflows/**", ".pre-commit-config.yaml", ".pre-commit-hooks.yaml"]
+
+[tool.pipelines_hooks.ci_replica.workflows."container_pipeline.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."container_pipeline.yml".skip_reasons]
+publish-docker = "reusable workflow: builds and pushes the caller's image with the caller's registry secrets"
+
+[tool.pipelines_hooks.ci_replica.workflows."desktop_release_pipeline.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."desktop_release_pipeline.yml".skip_reasons]
+build-linux = "reusable workflow: builds the caller's desktop application on a hosted Linux runner"
+build-windows = "reusable workflow: builds the caller's desktop application on a hosted Windows runner"
+publish-release = "reusable workflow: publishes the caller's GitHub release with the caller's token"
+
+[tool.pipelines_hooks.ci_replica.workflows."manage_pipelines.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."manage_pipelines.yml".skip_reasons]
+release_latest = "moves this repository's published release tag on GitHub; never from a local hook"
+
+[tool.pipelines_hooks.ci_replica.workflows."maturin_pipeline.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."maturin_pipeline.yml".skip_reasons]
+linux = "reusable workflow: builds the caller's native wheels on hosted Linux runners"
+macos = "reusable workflow: builds the caller's native wheels on hosted macOS runners"
+publish = "reusable workflow: publishes the caller's wheels to PyPI with the caller's credentials"
+sdist = "reusable workflow: builds the caller's source distribution"
+windows = "reusable workflow: builds the caller's native wheels on hosted Windows runners"
+
+[tool.pipelines_hooks.ci_replica.workflows."pages_pipeline.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."pages_pipeline.yml".skip_reasons]
+deploy = "reusable workflow: builds and deploys the caller's GitHub Pages site into the caller's Pages environment"
+
+[tool.pipelines_hooks.ci_replica.workflows."python_pipeline.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."python_pipeline.yml".skip_reasons]
+publish-pypi = "reusable workflow: builds and publishes the caller's package to PyPI with the caller's token"
+
+[tool.pipelines_hooks.ci_replica.workflows."python_web_pipeline.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."python_web_pipeline.yml".skip_reasons]
+publish-pypi = "reusable workflow: builds the caller's web assets and publishes the package to PyPI"
+
+[tool.pipelines_hooks.ci_replica.workflows."services_pipeline.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."services_pipeline.yml".skip_reasons]
+services = "reusable workflow: deploys the caller's service stack on the self-hosted runner"
+
+[tool.pipelines_hooks.ci_replica.workflows."test_workflow.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."test_workflow.yml".skip_reasons]
+services = "reusable workflow: deploys a service on the self-hosted runner with the caller's RUNNERS secret"

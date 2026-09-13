@@ -1,0 +1,184 @@
+# Shared, repository-agnostic quality gates. Every hook runs `pipelines-hook <gate>`
+# (pipelines_hooks.cli); per-repository inputs live in the consumer's
+# pyproject.toml [tool.pipelines_hooks] table, never in these definitions.
+# Exit codes: 0 clean, 1 findings, 2 the gate could not run.
+#
+# Consumers pin `rev:` to a full commit SHA and choose each hook's stages.
+# Native scanners (cccc, kiss, dupehound, jscpd) must already be installed at
+# the pinned versions; hooks never install them.
+
+# --- complexity (cccc 1.6.0) ------------------------------------------------
+- id: complexity-staged
+  name: Complexity (cccc) - no new or worsened function over cyclomatic 10 / cognitive 15
+  entry: pipelines-hook complexity-staged
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: complexity-census
+  name: Complexity census (cccc) - absolute zero outside the terms of acceptance
+  entry: pipelines-hook complexity-census
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+# --- KISS (0.4.10) ----------------------------------------------------------
+- id: kiss-staged
+  name: KISS - staged Python/Rust, diff-scoped
+  entry: pipelines-hook kiss-staged
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: kiss-census
+  name: KISS census - every tracked file plus orphan modules, enforced
+  entry: pipelines-hook kiss-census
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+# --- clones (dupehound 0.1.2, jscpd 5.0.16) --------------------------------
+- id: dupehound-changed
+  name: Clone gate - changed functions (dupehound)
+  entry: pipelines-hook dupehound-changed
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: jscpd-differential
+  name: Clone gate - new blocks (jscpd, merged-tree differential)
+  entry: pipelines-hook jscpd-differential
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: jscpd-census
+  name: Clone census - tracked tree (jscpd, advisory)
+  entry: pipelines-hook jscpd-census
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: scanner-versions
+  name: Pinned native scanners are installed at their exact versions
+  entry: pipelines-hook scanner-versions
+  language: python
+  pass_filenames: false
+  always_run: true
+# --- security, privacy, supply chain ---------------------------------------
+- id: secret-history
+  name: Credential-shaped content in the unpublished commit range
+  entry: pipelines-hook secret-history
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: security-sanitizer
+  name: Security and garbage sanitizer
+  entry: pipelines-hook security-sanitizer
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: tracked-privacy
+  name: Tracked artifacts contain no host-specific data, local or model identities
+  entry: pipelines-hook tracked-privacy
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: dependency-audit
+  name: Dependency CVE audit (OSV) against the risk-acceptance ledger
+  entry: pipelines-hook dependency-audit
+  language: python
+  pass_filenames: false
+  files: ^(uv\.lock|pyproject\.toml|\.security-audit-allow\.txt)$
+- id: supply-chain
+  name: Immutable workflow, container and dependency sources
+  entry: pipelines-hook supply-chain
+  language: python
+  pass_filenames: false
+  always_run: true
+# --- repository hygiene -----------------------------------------------------
+- id: root-hygiene
+  name: Repository root hygiene (declared entries only)
+  entry: pipelines-hook root-hygiene
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: gitignore-convergence
+  name: .gitignore carries the fleet-shared REQUIRED set
+  entry: pipelines-hook gitignore-convergence
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: sprawl
+  name: Anti-sprawl (versioned clones, merge artifacts, tracked binaries)
+  entry: pipelines-hook sprawl
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: pre-commit-patch-safety
+  name: No live uncommitted work parked in the pre-commit patch cache
+  entry: pipelines-hook pre-commit-patch-safety
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: mermaid
+  name: Mermaid diagram syntax
+  entry: pipelines-hook mermaid
+  language: python
+  types: [markdown]
+# --- code shape -------------------------------------------------------------
+- id: no-stub
+  name: No production stub markers or unmarked NotImplementedError
+  entry: pipelines-hook no-stub
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: stubs
+  name: No stub bodies and no deferred-work comments
+  entry: pipelines-hook stubs
+  language: python
+  types: [python]
+- id: swallowed-errors
+  name: Swallowed errors - no cause-dropping handler added
+  entry: pipelines-hook swallowed-errors
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: event-loop-blocking
+  name: Event-loop blocking - no blocking call added in async code
+  entry: pipelines-hook event-loop-blocking
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: import-cycles
+  name: Import cycles - zero eager cycles
+  entry: pipelines-hook import-cycles
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: env-sprawl
+  name: Configuration - environment read only in the declared module
+  entry: pipelines-hook env-sprawl
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: stdout-writes
+  name: Stdio JSON-RPC purity (no stdout writes in the served surface)
+  entry: pipelines-hook stdout-writes
+  language: python
+  pass_filenames: false
+  always_run: true
+# --- CI replica -------------------------------------------------------------
+- id: ci-gate-replica-consistency
+  name: CI gate replica - every workflow and job classified
+  entry: pipelines-hook ci-gate-replica --consistency-check
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: ci-gate-replica
+  name: CI gate replica - replay the executable workflow jobs locally
+  entry: pipelines-hook ci-gate-replica
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
