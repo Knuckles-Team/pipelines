@@ -51,18 +51,33 @@ canonical universal-skills artifacts:
   `<content_source>/agent-readiness.json` (default `pages/…`) — the versioned
   input authority and its explicit applicability policy.
 
-`scripts/pages_readiness.py` validates those exact artifacts, re-hashes every
-declared source, rejects traversal/symlink/hardlink/private capability
-references, and checks generated-output bounds. It then copies source Markdown
-to each declared fallback and copies the canonical `llms.txt` hierarchy into
-the uploaded site. Existing `.well-known` files from the strict MkDocs output
-are retained. Only after all mirrors exist does it add Markdown alternate links
+The `scripts/pages_readiness.py` entry and its bounded `scripts/readiness/`
+package validate those exact artifacts, re-hash every declared source, reject
+traversal/symlink/hardlink/private capability references, and check
+generated-output bounds. They then copy source Markdown
+to each declared fallback and copies the canonical `llms.txt` hierarchy and the
+generated `.well-known` discovery documents into the uploaded site. Other
+existing `.well-known` files from the strict MkDocs output are retained. Only
+after all mirrors exist does it add Markdown alternate links
 and the non-executable HTML-only `agent-utilities-markdown` directive (pointing
 to that page's Markdown alternate and the canonical `llms.txt`) to the
 corresponding HTML, emit bounded `robots.txt` and `sitemap.xml`, and write
 `.nojekyll` so Pages serves the static `.md` files. The helper preserves an
 existing UTF-8 `robots.txt` policy and adds exactly one validated sitemap line;
 when no policy exists it emits only the sitemap directive.
+
+Privacy validation decodes non-URL scalar text at most three times before
+checking it for secret, bearer, and encoded URL structure. One additional
+bounded probe is used only to prove that the scalar reached the boundary: if
+that probe changes the value, validation fails with the stable
+`*-url-invalid` error (or `*-secret-like-value` when the probe directly exposes
+a secret). The probe's output is never accepted or decoded again. Malformed or
+ordinary percent text that has no syntactically valid byte escape remains
+valid. A syntactically valid percent-byte transition that cannot decode as
+UTF-8 fails immediately with `*-url-invalid` at every accepted pass and at the
+proof-only probe. Recognized URL spans use their separate three-pass component
+validator, which preserves a valid encoded literal percent while checking
+canonical authority, path, query, and fragment values.
 
 Existing HTML `noindex` and deprecated markers are retained. Such pages remain
 available as explicit fallbacks but are omitted from the generated sitemap.
@@ -71,6 +86,69 @@ No Content Signals are inferred: `policy: unset` emits no signal, while an
 not widened by this workflow. Negotiated `Accept: text/markdown` responses,
 RFC 8288 headers, cache variants, and security headers belong to the separately
 owned edge route; GitHub Pages receives only static assets here.
+
+### Site root and output paths
+
+`mkdocs build --site-dir site` always writes the site root at `site/`; GitHub
+Pages adds a project page's `/<repository>/` prefix only when it serves the
+site. The helper therefore reads `site_url` from the repository's `mkdocs.yml`
+(the same value the generator derives every URL from; it is required) and
+maps each page with one rule, `site_output_path`: strip the `site_url` base
+path, then serve a directory URL from `<path>/index.html`, a `*.html` URL
+(`use_directory_urls: false`) from itself, and an `index.md` fallback from
+itself. A URL on another origin or outside the base path fails closed. The
+same base supplies the `llms.txt` and `sitemap.xml` URLs. This holds for a
+project page (`https://<owner>.github.io/<repository>/`), a root user or
+organization page (`https://<owner>.github.io/`), and a custom domain.
+
+### One readiness contract with the generator
+
+The TCK accepts exactly what the universal-skills generator
+(`agent-package-builder/scripts/agent_readiness.py`) is designed to accept and
+emit, with the same error codes:
+
+- **Discovery outputs.** Besides `llms.txt`, `llms-full.txt`,
+  `llms-sections/*/llms.txt` and `markdown-mirror-manifest.json`, the
+  `generated` list may name only `.well-known/agent-skills.json`,
+  `.well-known/mcp-server-card.json` and `.well-known/api-catalog` (never an
+  open `.well-known/` directory). `agent-skills.json` must be present exactly
+  when `discoverability` and `skills` are both applicable; the server card and
+  API catalog may appear only for an applicable MCP/A2A surface that is not
+  declared `local` or `in-cluster`. Each must be a bounded, secret-free JSON
+  object, and is published into the site.
+- **Capability entries.** `api`/`mcp`/`a2a` accept `artifact`, an optional
+  public HTTPS `endpoint` and the optional OAuth metadata references
+  (`.well-known/oauth-protected-resource`,
+  `.well-known/oauth-authorization-server`); a `library` or `docs-only`
+  project cannot declare a served capability. A capability artifact may carry
+  `http_transport` (MCP only). An applicable `skills` path must contain at
+  least one `<skill>/SKILL.md`.
+- **Manifest comparison.** The generator records `applicable`, `artifact`,
+  `path`, `transport` and `reachability` in `agent-readiness-manifest.json`
+  and omits `endpoint`, `service_identity` and OAuth references; the TCK
+  compares the manifest against that same projection
+  (`normalized_capabilities`).
+
+### Non-public MCP and A2A surfaces
+
+A connector usually serves MCP over stdio or in-cluster HTTP, with no public
+endpoint. `mcp` and `a2a` declare that honestly with `transport` and
+`reachability`. They are optional; once either is present, both are required
+and must agree:
+
+| `reachability` | `transport` | Required | Forbidden |
+|---|---|---|---|
+| `local` | `stdio` (MCP only) | — | `endpoint`, `service_identity` |
+| `in-cluster` | MCP `streamable-http`/`sse`; A2A `jsonrpc`/`http-json`/`grpc` | `service_identity` (a `<service>.<namespace>`-style DNS name, never a URL or address) | `endpoint` |
+| `public` | same network transports | a verifiable public HTTPS `endpoint` | `service_identity` |
+
+An MCP surface declaring `streamable-http` or `sse` must be backed by a
+capability artifact with `"http_transport": true`. A stdio connector that also
+ships skills marks both capabilities applicable, binds MCP to its artifact with
+the `stdio`/`local` pair, and names the directory containing its skills.
+
+A declaration without `transport`/`reachability` keeps its earlier meaning: an
+optional `endpoint`, validated as public HTTPS when present.
 
 The helper has `build`, `check`, and `tck` modes. `build` is deterministic and
 atomic; `check`/`tck` are read-only and require a current artifact tree. Every
@@ -84,29 +162,16 @@ private URLs are never printed.
 
 ## Caller contract
 
-```yaml
-jobs:
-  pages:
-    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@<reviewed-sha>
-    with:
-      content_source: pages
-      shared_theme_enabled: true
-      agent_readiness_enabled: true
-      readiness_input: pages/agent-readiness.json
-      readiness_schema: pages/agent-readiness.schema.json
-      readiness_manifest: agent-readiness-manifest.json
-      markdown_manifest: markdown-mirror-manifest.json
-```
+Call `.github/workflows/pages_pipeline.yml@<reviewed-sha>` as a reusable
+workflow. A repository on the current layout passes `content_source: pages`,
+enables the shared theme and agent readiness as needed, and points the two
+readiness inputs at `pages/agent-readiness.json` and
+`pages/agent-readiness.schema.json`. The generated manifests remain at the
+repository root under their canonical names.
 
-A repository still on `docs/` declares that explicitly instead:
-
-```yaml
-    with:
-      content_source: docs
-      agent_readiness_enabled: true
-      readiness_input: docs/agent-readiness.json
-      readiness_schema: docs/agent-readiness.schema.json
-```
+A repository still on `docs/` passes `content_source: docs` and points
+`readiness_input` and `readiness_schema` at the corresponding files below that
+directory.
 
 `shared_theme_enabled` and `agent_readiness_enabled` both default to `false`
 and are independent -- a caller may enable either, both, or neither. A caller

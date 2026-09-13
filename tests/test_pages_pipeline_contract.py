@@ -72,12 +72,22 @@ def test_actions_are_immutable_and_permissions_are_least_privilege() -> None:
     assert "persist-credentials: false" in text
 
 
+def test_write_scopes_are_held_only_by_the_deploy_job() -> None:
+    document = _workflow()["document"]
+    assert document["permissions"] == {"contents": "read"}
+    assert document["jobs"]["deploy"]["permissions"] == {
+        "contents": "read",
+        "pages": "write",
+        "id-token": "write",
+    }
+
+
 def test_enabled_path_checks_strict_build_and_runs_owned_tck() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "if: inputs.agent_readiness_enabled" in text
     assert "mkdocs build --strict" in text
-    assert "python .pipeline-contract/scripts/pages_readiness.py build" in text
-    assert "python .pipeline-contract/scripts/pages_readiness.py tck" in text
+    assert "for mode in build tck; do" in text
+    assert 'python .pipeline-contract/scripts/pages_readiness.py "$mode"' in text
     assert "--content-source" in text
     assert "repository: ${{ job.workflow_repository }}" in text
     assert "ref: ${{ job.workflow_sha }}" in text
@@ -99,6 +109,20 @@ def test_content_source_is_validated_before_any_declared_authority_is_trusted() 
     assert "if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled" in text
     assert "python .pipeline-contract/scripts/pages_readiness.py validate-content-source" in text
     assert "Checkout pipeline-owned scripts" in text
+
+
+def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
+    document = _workflow()["document"]
+    checkout = next(
+        step
+        for step in document["jobs"]["deploy"]["steps"]
+        if step.get("name") == "Checkout pipeline-owned scripts"
+    )
+    assert checkout["with"]["sparse-checkout"].splitlines() == [
+        "scripts/__init__.py",
+        "scripts/pages_readiness.py",
+        "scripts/readiness",
+    ]
 
 
 def test_shared_theme_inherits_via_mkdocs_native_inherit_key() -> None:

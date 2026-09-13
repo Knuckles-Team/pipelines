@@ -10,6 +10,9 @@ import hashlib
 import http.server
 import json
 import mimetypes
+import os
+import shutil
+import subprocess
 import sys
 import threading
 from functools import partial
@@ -22,7 +25,8 @@ import pytest
 # Keep the repository-local helper ahead of any similarly named installed
 # package when pytest uses its importlib test mode.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts import pages_readiness
+from scripts import readiness as pages_readiness
+from scripts.readiness.privacy import _scan_safe_text
 
 
 SCHEMA = {
@@ -82,7 +86,16 @@ def _readiness() -> dict[str, Any]:
     }
 
 
-def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
+def _fixture(
+    tmp_path: Path, base: str = "https://docs.example.test/"
+) -> tuple[Path, Path, dict[str, Any]]:
+    """A flat ``mkdocs build --site-dir site`` tree for a site rooted at ``base``.
+
+    ``base`` is the mkdocs ``site_url``; the HTML is always written at the
+    built site's root (``site/index.html``, ``site/guide/index.html``) exactly
+    as mkdocs does, whatever path prefix ``base`` carries.
+    """
+
     root = tmp_path / "repo"
     docs = root / "docs"
     site = root / "site"
@@ -105,6 +118,9 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         "<!doctype html><html><head><title>Guide</title></head><body>Guide</body></html>",
         encoding="utf-8",
     )
+    (root / "mkdocs.yml").write_text(
+        f"site_name: Fixture\nsite_url: {base}\n", encoding="utf-8"
+    )
     readiness = _readiness()
     (root / "pages" / "agent-readiness.schema.json").write_text(
         json.dumps(SCHEMA, sort_keys=True) + "\n", encoding="utf-8"
@@ -123,11 +139,8 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         }
         for (relative, payload), canonical, markdown in zip(
             sources.items(),
-            ("https://docs.example.test/", "https://docs.example.test/guide/"),
-            (
-                "https://docs.example.test/index.md",
-                "https://docs.example.test/guide/index.md",
-            ),
+            (base, f"{base}guide/"),
+            (f"{base}index.md", f"{base}guide/index.md"),
         )
     ]
     mirror = {
@@ -407,6 +420,15 @@ def test_cli_failure_result_is_versioned(
     [
         ("http://docs.example.test/api", "api-endpoint-url-invalid"),
         ("https://127.0.0.1/api", "api-endpoint-private-url"),
+        ("https://2130706433/api", "api-endpoint-private-url"),
+        ("HTTPS://2130706433/api", "api-endpoint-private-url"),
+        ("https://127.1/api", "api-endpoint-private-url"),
+        ("https://0x7f000001/api", "api-endpoint-private-url"),
+        ("https://017700000001/api", "api-endpoint-private-url"),
+        ("https://0177.0.0.1/api", "api-endpoint-private-url"),
+        ("https://%31%32%37.0.0.1/api", "api-endpoint-private-url"),
+        ("https://%4Cocalhost%2E/api", "api-endpoint-private-url"),
+        (f"https://{'9' * 1024}/api", "api-endpoint-private-url"),
     ],
 )
 def test_malformed_or_private_capability_reference_is_rejected(
@@ -415,6 +437,7 @@ def test_malformed_or_private_capability_reference_is_rejected(
     expected: str,
 ) -> None:
     root, site, readiness = _fixture(tmp_path)
+    readiness["project"]["kind"] = "package"
     readiness["capabilities"]["api"] = {
         "applicable": True,
         "artifact": "api-capability.json",
@@ -430,6 +453,175 @@ def test_malformed_or_private_capability_reference_is_rejected(
 
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         pages_readiness.build(root, site)
+
+
+def test_decoded_json_scan_rejects_an_escaped_secret_key(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    readiness["content_signals"] = {
+        "policy": "operator-reviewed",
+        "values": {"api_key": "abcdefghijklmnop"},
+    }
+    encoded = json.dumps(readiness, sort_keys=True)
+    encoded = encoded.replace("api_key", "api\\u005fkey")
+    (root / "pages/agent-readiness.json").write_text(encoded, encoding="utf-8")
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError,
+        match="content-signals-secret-like-value",
+    ):
+        pages_readiness.build(root, site)
+
+
+def test_decoded_json_scan_rejects_escaped_uppercase_numeric_private_url(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    readiness["content_signals"] = {
+        "policy": "operator-reviewed",
+        "values": {"reference": "HTTPS://2130706433/private"},
+    }
+    encoded = json.dumps(readiness, sort_keys=True).replace(
+        "HTTPS://", "HTTPS\\u003a\\u002f\\u002f"
+    )
+    (root / "pages/agent-readiness.json").write_text(encoded, encoding="utf-8")
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError,
+        match="content-signals-private-url",
+    ):
+        pages_readiness.build(root, site)
+
+
+def test_decoded_json_scan_rejects_an_uppercase_private_url(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    readiness["content_signals"] = {
+        "policy": "operator-reviewed",
+        "values": {"reference": "HTTPS://127.0.0.1/private"},
+    }
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True), encoding="utf-8"
+    )
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError,
+        match="content-signals-private-url",
+    ):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    "safe_value",
+    ["env://LONG_VARIABLE_NAME", "<redacted>", "redacted-value-placeholder"],
+)
+def test_decoded_secret_key_allows_explicit_placeholders(
+    tmp_path: Path, safe_value: str
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    signals = {
+        "policy": "operator-reviewed",
+        "values": {"api_key": safe_value},
+    }
+    readiness["content_signals"] = signals
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True), encoding="utf-8"
+    )
+    manifest_path = root / "agent-readiness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["content_signals"] = signals
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert pages_readiness.build(root, site)["ok"] is True
+
+
+def test_public_numeric_ipv4_endpoint_is_not_a_private_url_false_positive(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _connector(tmp_path)
+    readiness["capabilities"]["mcp"] = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "endpoint": "HTTPS://134744072/mcp",
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": {"applicable": True, "artifact": "mcp-capability.json"},
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (
+            "https://public.example/foo]https://localhost/private",
+            "direct-url-invalid",
+        ),
+        (
+            "https://public.example/foo%5Dhttps%3A%2F%2F2130706433/private",
+            "direct-private-url",
+        ),
+        ("token%2525253Dabcdefghijklmnop", "direct-secret-like-value"),
+        ("bearer%25252520abcdefghijklmnop", "direct-secret-like-value"),
+        ("token%252525253Dabcdefghijklmnop", "direct-url-invalid"),
+        (
+            "api_key%252525252525252525253Dabcdefghijklmnop",
+            "direct-url-invalid",
+        ),
+        (
+            "bearer%2525252525252525252520abcdefghijklmnop",
+            "direct-url-invalid",
+        ),
+    ],
+)
+def test_privacy_scanner_fails_closed_at_canonical_boundaries(
+    value: str, expected: str
+) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        _scan_safe_text(value, "direct")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "%FF",
+        "prefix%41%FFsuffix",
+        "token%3Dabcdefghijklmnop%25FF",
+        "api_key%3Dabcdefghijklmnop%25FF",
+        "bearer%20abcdefghijklmnop%25FF",
+        "%252525FF",
+    ],
+)
+def test_privacy_scanner_rejects_invalid_utf8_percent_transitions(
+    value: str,
+) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match="direct-url-invalid"):
+        _scan_safe_text(value, "direct")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "release%252520notes",
+        "version%2",
+        "ordinary 50% text",
+        "literal%GG",
+    ],
+)
+def test_privacy_scanner_allows_bounded_and_malformed_percent_text(
+    value: str,
+) -> None:
+    _scan_safe_text(value, "direct")
 
 
 def test_traversal_symlink_and_oversized_outputs_fail_closed(tmp_path: Path) -> None:
@@ -711,3 +903,842 @@ def test_cli_validate_content_source(
     failure = json.loads(capsys.readouterr().out)
     assert failure["ok"] is False
     assert failure["error_code"] == "content-source-containment"
+
+
+def test_direct_entry_requires_and_loads_the_sparse_readiness_package(
+    tmp_path: Path,
+) -> None:
+    """Prove the workflow's direct-file entry reaches the split package."""
+
+    source_scripts = Path(__file__).parents[1] / "scripts"
+    caller = tmp_path / "caller"
+    contract_scripts = caller / ".pipeline-contract" / "scripts"
+    contract_scripts.mkdir(parents=True)
+    (caller / "pages").mkdir()
+    shutil.copy2(source_scripts / "__init__.py", contract_scripts / "__init__.py")
+    shutil.copy2(
+        source_scripts / "pages_readiness.py",
+        contract_scripts / "pages_readiness.py",
+    )
+    command = [
+        sys.executable,
+        ".pipeline-contract/scripts/pages_readiness.py",
+        "validate-content-source",
+        "--root",
+        str(caller),
+        "--content-source",
+        "pages",
+    ]
+    environment = {**os.environ, "PYTHONPATH": ""}
+    missing = subprocess.run(
+        command,
+        cwd=caller,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert missing.returncode != 0
+
+    shutil.copytree(source_scripts / "readiness", contract_scripts / "readiness")
+    wired = subprocess.run(
+        command,
+        cwd=caller,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert wired.returncode == 0, wired.stderr
+    assert json.loads(wired.stdout) == {
+        "content_source": "pages",
+        "mkdocs_docs_dir": None,
+        "ok": True,
+    }
+
+
+PROJECT_SITE = "https://example.github.io/example-connector/"
+ROOT_SITE = "https://example.github.io/"
+CUSTOM_DOMAIN = "https://docs.example.com/"
+
+
+@pytest.mark.parametrize(
+    ("url", "site_url", "kind", "expected"),
+    [
+        # Project page: the /<repository>/ prefix exists only at serve time.
+        (PROJECT_SITE, PROJECT_SITE, "html", "index.html"),
+        (
+            f"{PROJECT_SITE}installation/",
+            PROJECT_SITE,
+            "html",
+            "installation/index.html",
+        ),
+        (
+            f"{PROJECT_SITE}guides/setup/",
+            PROJECT_SITE,
+            "html",
+            "guides/setup/index.html",
+        ),
+        (
+            f"{PROJECT_SITE}installation/index.md",
+            PROJECT_SITE,
+            "markdown",
+            "installation/index.md",
+        ),
+        # Root user/org page and custom domain: the base path is "/".
+        (ROOT_SITE, ROOT_SITE, "html", "index.html"),
+        (f"{ROOT_SITE}guide/", ROOT_SITE, "html", "guide/index.html"),
+        (f"{ROOT_SITE}index.md", ROOT_SITE, "markdown", "index.md"),
+        (
+            f"{CUSTOM_DOMAIN}reference/api/",
+            CUSTOM_DOMAIN,
+            "html",
+            "reference/api/index.html",
+        ),
+        # use_directory_urls: false pages are served from their .html file.
+        (f"{PROJECT_SITE}installation.html", PROJECT_SITE, "html", "installation.html"),
+        (f"{PROJECT_SITE}guides/index.html", PROJECT_SITE, "html", "guides/index.html"),
+        (f"{PROJECT_SITE}installation", PROJECT_SITE, "html", "installation.html"),
+    ],
+)
+def test_site_output_path_strips_the_site_url_base(
+    url: str, site_url: str, kind: str, expected: str
+) -> None:
+    assert pages_readiness.site_output_path(url, site_url, kind=kind) == expected
+
+
+@pytest.mark.parametrize(
+    ("url", "site_url"),
+    [
+        (
+            "https://[2606:4700:4700::1111]/docs/guide/",
+            "https://[2606:4700:4700::1111]/docs/",
+        ),
+        (
+            "https://%5B2606%3A4700%3A4700%3A%3A1111%5D/docs/guide/",
+            "https://%5B2606%3A4700%3A4700%3A%3A1111%5D/docs/",
+        ),
+    ],
+)
+def test_site_output_path_accepts_canonical_public_ipv6(
+    url: str, site_url: str
+) -> None:
+    assert pages_readiness.site_output_path(url, site_url, kind="html") == (
+        "guide/index.html"
+    )
+
+
+@pytest.mark.parametrize(
+    "site_url",
+    ["https://[::1]/docs/", "https://%5B%3A%3A1%5D/docs/"],
+)
+def test_site_output_path_rejects_private_ipv6(site_url: str) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match="site-url-private-url"):
+        pages_readiness.site_output_path(
+            f"{site_url}guide/", site_url, kind="html"
+        )
+
+
+@pytest.mark.parametrize(
+    ("url", "site_url", "kind", "expected"),
+    [
+        (
+            "https://other.example.com/guide/",
+            PROJECT_SITE,
+            "html",
+            "mirror-origin-mismatch",
+        ),
+        (
+            f"{ROOT_SITE}other-repository/guide/",
+            PROJECT_SITE,
+            "html",
+            "canonical-outside-site",
+        ),
+        (f"{ROOT_SITE}index.md", PROJECT_SITE, "markdown", "markdown-outside-site"),
+        (f"{PROJECT_SITE}guide/", PROJECT_SITE.rstrip("/"), "html", "site-url-invalid"),
+        (f"{PROJECT_SITE}guide.md", PROJECT_SITE, "html", "canonical-path-invalid"),
+        (
+            f"{PROJECT_SITE}guide/",
+            PROJECT_SITE,
+            "markdown",
+            "markdown-fallback-invalid",
+        ),
+    ],
+)
+def test_site_output_path_rejects_urls_outside_the_declared_site(
+    url: str, site_url: str, kind: str, expected: str
+) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.site_output_path(url, site_url, kind=kind)
+
+
+def test_project_page_site_built_flat_passes_build_and_tck(tmp_path: Path) -> None:
+    """``mkdocs build --site-dir site`` output for a project page, unnested."""
+
+    root, site, _ = _fixture(tmp_path, PROJECT_SITE)
+
+    assert pages_readiness.build(root, site)["ok"] is True
+    assert pages_readiness.build(root, site, check=True)["ok"] is True
+
+    assert (site / "index.md").read_bytes() == (root / "docs/index.md").read_bytes()
+    assert (site / "guide/index.md").read_bytes() == (
+        root / "docs/guide.md"
+    ).read_bytes()
+    assert not (site / "example-connector").exists()
+    assert (
+        "<!-- agent-utilities-markdown "
+        f'alternate="{PROJECT_SITE}guide/index.md" llms="{PROJECT_SITE}llms.txt" -->'
+    ) in (site / "guide/index.html").read_text(encoding="utf-8")
+    assert (site / "robots.txt").read_text(encoding="utf-8") == (
+        f"Sitemap: {PROJECT_SITE}sitemap.xml\n"
+    )
+    assert f"<loc>{PROJECT_SITE}guide/</loc>" in (site / "sitemap.xml").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_use_directory_urls_false_site_passes_build_and_tck(tmp_path: Path) -> None:
+    root, site, _ = _fixture(tmp_path, PROJECT_SITE)
+    (site / "guide" / "index.html").rename(site / "guide.html")
+    (site / "guide").rmdir()
+    mirror_path = root / "markdown-mirror-manifest.json"
+    mirror = json.loads(mirror_path.read_text(encoding="utf-8"))
+    mirror["entries"][0]["url"] = mirror["entries"][0]["canonical_url"] = (
+        f"{PROJECT_SITE}index.html"
+    )
+    mirror["entries"][1]["url"] = mirror["entries"][1]["canonical_url"] = (
+        f"{PROJECT_SITE}guide.html"
+    )
+    mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
+
+    assert pages_readiness.build(root, site)["ok"] is True
+    assert pages_readiness.build(root, site, check=True)["ok"] is True
+    assert "text/markdown" in (site / "guide.html").read_text(encoding="utf-8")
+    assert (site / "guide/index.md").read_bytes() == (
+        root / "docs/guide.md"
+    ).read_bytes()
+
+
+def test_missing_site_url_fails_closed(tmp_path: Path) -> None:
+    root, site, _ = _fixture(tmp_path)
+    (root / "mkdocs.yml").write_text("site_name: Fixture\n", encoding="utf-8")
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match="site-url-required"):
+        pages_readiness.build(root, site)
+
+
+def _declare(
+    root: Path,
+    readiness: dict[str, Any],
+    manifest_capabilities: dict[str, Any],
+    *,
+    discovery: tuple[str, ...] = (),
+) -> None:
+    """Write a readiness declaration and the manifest the generator emits for it."""
+
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    manifest_path = root / "agent-readiness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["project"] = readiness["project"]
+    manifest["applicability"] = readiness["applicability"]
+    manifest["capabilities"] = manifest_capabilities
+    manifest["generated"] = [
+        "llms.txt",
+        "llms-sections/guides/llms.txt",
+        "markdown-mirror-manifest.json",
+        *discovery,
+    ]
+    for relative in discovery:
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not path.exists():
+            path.write_text('{"schema_version": "fixture"}\n', encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+
+
+def _connector(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
+    """A package with a real skill directory and an MCP capability authority."""
+
+    root, site, readiness = _fixture(tmp_path, PROJECT_SITE)
+    readiness["project"]["kind"] = "package"
+    readiness["applicability"]["capabilities"] = True
+    skill = root / "skills" / "example-connector-reader" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "---\nname: example-connector-reader\n---\n# Reader\n", encoding="utf-8"
+    )
+    (root / "example_connector").mkdir()
+    (root / "example_connector" / "mcp_server.py").write_text(
+        "SERVER = 1\n", encoding="utf-8"
+    )
+    (root / "mcp-capability.json").write_text(
+        json.dumps(
+            {
+                "applicable": True,
+                "surface": "mcp",
+                "version": "capability/v1",
+                "source": "example_connector/mcp_server.py",
+            }
+        ),
+        encoding="utf-8",
+    )
+    return root, site, readiness
+
+
+STDIO_MCP = {
+    "applicable": True,
+    "artifact": "mcp-capability.json",
+    "transport": "stdio",
+    "reachability": "local",
+}
+
+
+def test_stdio_mcp_and_skills_connector_passes_build_and_tck(tmp_path: Path) -> None:
+    root, site, readiness = _connector(tmp_path)
+    readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
+    readiness["capabilities"]["skills"] = {"applicable": True, "path": "skills"}
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": dict(STDIO_MCP),
+            "a2a": {"applicable": False},
+            "skills": {"applicable": True, "path": "skills"},
+        },
+        discovery=(".well-known/agent-skills.json",),
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True
+    assert pages_readiness.build(root, site, check=True)["ok"] is True
+    assert (site / ".well-known/agent-skills.json").read_bytes() == (
+        root / ".well-known/agent-skills.json"
+    ).read_bytes()
+
+
+def test_in_cluster_http_mcp_surface_requires_artifact_proof(tmp_path: Path) -> None:
+    root, site, readiness = _connector(tmp_path)
+    declared = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "transport": "streamable-http",
+        "reachability": "in-cluster",
+        "service_identity": "example-connector.connectors",
+    }
+    readiness["capabilities"]["mcp"] = declared
+    manifest_mcp = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "transport": "streamable-http",
+        "reachability": "in-cluster",
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": manifest_mcp,
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+    )
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="mcp-transport-not-proven"
+    ):
+        pages_readiness.build(root, site)
+
+    artifact = json.loads((root / "mcp-capability.json").read_text(encoding="utf-8"))
+    artifact["http_transport"] = True
+    (root / "mcp-capability.json").write_text(json.dumps(artifact), encoding="utf-8")
+    assert pages_readiness.build(root, site)["ok"] is True
+
+
+def test_legacy_public_endpoint_declaration_is_not_reported_stale(
+    tmp_path: Path,
+) -> None:
+    """The generator omits ``endpoint``/OAuth references from its manifest."""
+
+    root, site, readiness = _connector(tmp_path)
+    oauth = root / ".well-known" / "oauth-protected-resource"
+    oauth.parent.mkdir(parents=True)
+    oauth.write_text('{"resource": "https://mcp.example.com"}\n', encoding="utf-8")
+    readiness["capabilities"]["mcp"] = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "endpoint": "https://mcp.example.com/mcp",
+        "oauth_protected_resource": ".well-known/oauth-protected-resource",
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": {"applicable": True, "artifact": "mcp-capability.json"},
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+        discovery=(".well-known/api-catalog",),
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True
+
+
+@pytest.mark.parametrize(
+    ("surface", "declared", "expected"),
+    [
+        (
+            "mcp",
+            {"endpoint": "https://mcp.example.com/mcp"},
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"service_identity": "example-connector.connectors"},
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {
+                "reachability": "in-cluster",
+                "service_identity": "example-connector.connectors",
+            },
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"transport": "streamable-http"},
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"transport": "streamable-http", "reachability": "public"},
+            "capability-endpoint-required",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "streamable-http",
+                "reachability": "public",
+                "endpoint": "https://mcp.example.com/mcp",
+                "service_identity": "example-connector.connectors",
+            },
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"transport": "streamable-http", "reachability": "in-cluster"},
+            "capability-service-identity-required",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "streamable-http",
+                "reachability": "in-cluster",
+                "service_identity": "example-connector.connectors",
+                "endpoint": "https://mcp.example.com/mcp",
+            },
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "sse",
+                "reachability": "in-cluster",
+                "service_identity": "example-connector",
+            },
+            "capability-service-identity-invalid",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "sse",
+                "reachability": "in-cluster",
+                "service_identity": "https://example-connector.connectors",
+            },
+            "capability-service-identity-invalid",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "streamable-http",
+                "reachability": "public",
+                "endpoint": "http://mcp.example.com/mcp",
+            },
+            "mcp-endpoint-url-invalid",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "websocket",
+                "reachability": "public",
+                "endpoint": "https://mcp.example.com/mcp",
+            },
+            "capability-transport-unsupported",
+        ),
+        (
+            "mcp",
+            {"transport": "stdio", "reachability": "nearby"},
+            "capability-reachability-invalid",
+        ),
+        ("mcp", {"reachability": None}, "capability-transport-incomplete"),
+        ("a2a", {"surface_override": True}, "capability-transport-unsupported"),
+        ("api", {"surface_override": True}, "capability-entry-invalid"),
+    ],
+)
+def test_inconsistent_surface_reachability_is_rejected(
+    tmp_path: Path, surface: str, declared: dict[str, Any], expected: str
+) -> None:
+    root, site, readiness = _connector(tmp_path)
+    entry: dict[str, Any] = {**STDIO_MCP, "artifact": f"{surface}-capability.json"}
+    overrides = {
+        key: value for key, value in declared.items() if key != "surface_override"
+    }
+    entry.update(overrides)
+    entry = {key: value for key, value in entry.items() if value is not None}
+    readiness["capabilities"][surface] = entry
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    ("discovery", "skills_applicable", "expected"),
+    [
+        ((".well-known/other.json",), False, "generated-path-outside-contract"),
+        (
+            (".well-known/agent-skills.json/extra",),
+            False,
+            "generated-path-outside-contract",
+        ),
+        ((".well-known/agent-skills.json",), False, "generated-discovery-unbound"),
+        ((), True, "generated-discovery-unbound"),
+        (
+            (".well-known/agent-skills.json", ".well-known/mcp-server-card.json"),
+            True,
+            "generated-discovery-unbound",
+        ),
+        (
+            (".well-known/agent-skills.json", ".well-known/api-catalog"),
+            True,
+            "generated-discovery-unbound",
+        ),
+    ],
+)
+def test_discovery_outputs_are_bound_to_the_declaration(
+    tmp_path: Path,
+    discovery: tuple[str, ...],
+    skills_applicable: bool,
+    expected: str,
+) -> None:
+    root, site, readiness = _connector(tmp_path)
+    skills: dict[str, Any] = (
+        {"applicable": True, "path": "skills"}
+        if skills_applicable
+        else {"applicable": False}
+    )
+    readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
+    readiness["capabilities"]["skills"] = skills
+    manifest_path = root / "agent-readiness-manifest.json"
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": dict(STDIO_MCP),
+            "a2a": {"applicable": False},
+            "skills": skills,
+        },
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["generated"].extend(discovery)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    for relative in discovery:
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not path.parent.is_file():
+            path.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        (False, None),
+        (False, ".well-known/mcp-server-card.json"),
+        (False, ".well-known/api-catalog"),
+        (True, ".well-known/mcp-server-card.json"),
+        (True, ".well-known/api-catalog"),
+    ],
+)
+def test_public_discovery_outputs_follow_the_discoverability_switch(
+    tmp_path: Path, case: tuple[bool, str | None]
+) -> None:
+    discoverable, discovery = case
+    root, site, readiness = _connector(tmp_path)
+    readiness["applicability"]["discoverability"] = discoverable
+    public_mcp = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "transport": "streamable-http",
+        "reachability": "public",
+        "endpoint": "https://mcp.example.com/mcp",
+    }
+    readiness["capabilities"]["mcp"] = public_mcp
+    artifact_path = root / "mcp-capability.json"
+    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    artifact["http_transport"] = True
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+    manifest_mcp = {
+        key: value for key, value in public_mcp.items() if key != "endpoint"
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": manifest_mcp,
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+        discovery=() if discovery is None else (discovery,),
+    )
+
+    if discoverable or discovery is None:
+        assert pages_readiness.build(root, site)["ok"] is True
+        if discovery is not None:
+            assert (site / discovery).is_file()
+        return
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="generated-discovery-unbound"
+    ):
+        pages_readiness.build(root, site)
+
+
+def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]:
+    """Create a connector whose generated skills document has ``payload``."""
+
+    root, site, readiness = _connector(tmp_path)
+    readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
+    readiness["capabilities"]["skills"] = {
+        "applicable": True,
+        "path": "skills",
+    }
+    discovery = ".well-known/agent-skills.json"
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": dict(STDIO_MCP),
+            "a2a": {"applicable": False},
+            "skills": {"applicable": True, "path": "skills"},
+        },
+        discovery=(discovery,),
+    )
+    (root / discovery).write_text(payload, encoding="utf-8")
+    return root, site
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        ('{"api\\u005fkey":"abcdefghijklmnop"}\n', "generated-output-secret-like-value"),
+        (
+            '{"reference":"HTTPS\\u003a\\u002f\\u002f2130706433/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https://public.example/path?to%6ben=abcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://user%40public.example/path"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://public.example/path?note=%GG"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"https://public.example/token%3Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://public.example/path#api_key%3Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://public.example/bearer%20abcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"reference":"https://public.example/to%256ben%253Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://user%2540public.example/path"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://user%25252540public.example/path"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"https://public.example/https%3A%2F%2F2130706433/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https://public.example/?next=https%253A%252F%252F127.0.0.1"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https%3A%2F%2F127.0.0.1/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"%68%74%74%70%73%3A%2F%2F127.0.0.1/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https%253A%252F%252Fuser%2540public.example/path"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https%3A%2F%2Fpublic.example%2Ftoken%253Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https%2525253A%2525252F%2525252Fpublic.example/path"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"%25252568%25252574%25252574%25252570%25252573%2525253A%2525252F%2525252Fpublic.example"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"token%3Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"api_key%3Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"bearer%20abcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"reference":"https://[::1]/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https%3A%2F%2F%5B%3A%3A1%5D/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https://public.example/foo]https://localhost/private"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"https://public.example/foo]https://2130706433/private"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"https://public.example/foo%5Dhttps%3A%2F%2F2130706433/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"value":"token%2525253Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"api_key%2525253Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"bearer%25252520abcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"token%252525253Dabcdefghijklmnop"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"api_key%252525252525252525253Dabcdefghijklmnop"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"bearer%2525252525252525252520abcdefghijklmnop"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"release%25252520notes"}\n',
+            "generated-output-url-invalid",
+        ),
+        ('{"value":"%FF"}\n', "generated-output-url-invalid"),
+        ('{"value":"prefix%41%FFsuffix"}\n', "generated-output-url-invalid"),
+        (
+            '{"value":"token%3Dabcdefghijklmnop%25FF"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"api_key%3Dabcdefghijklmnop%25FF"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"bearer%20abcdefghijklmnop%25FF"}\n',
+            "generated-output-url-invalid",
+        ),
+        ('{"value":"%252525FF"}\n', "generated-output-url-invalid"),
+    ],
+)
+def test_generated_discovery_scans_decoded_json_values(
+    tmp_path: Path, case: tuple[str, str]
+) -> None:
+    payload, expected = case
+    root, site = _generated_skills_fixture(tmp_path, payload)
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    "reference",
+    [
+        "https://public.example/path?no%74e=abcdefghijklmnop",
+        "https://public.example/users/user%40example.test",
+        "https://public.example/caf%C3%A9",
+        "https://public.example/path#release%3Dv1",
+        "https://public.example/caf%25C3%25A9",
+        "https://public.example/discount%2525",
+        "https://public.example/?next=https%3A%2F%2Fpublic.example%2Fdocs",
+        "release%20notes",
+        "discount%2525",
+        "progress 100% complete",
+        "literal%GG",
+        "https://[2606:4700:4700::1111]/dns-query",
+        "https%3A%2F%2F%5B2606%3A4700%3A4700%3A%3A1111%5D/dns-query",
+        "https://public.example/discount%25",
+        "https://public.example/?next=https%3A%2F%2Fpublic.example%2Fdiscount%2525",
+        "https%3A%2F%2Fpublic.example%2Fdiscount%2525",
+        "https%253A%252F%252Fpublic.example%252Fdiscount%252525",
+        "release%252520notes",
+        "version%2",
+        "ordinary 50% text",
+    ],
+)
+def test_generated_discovery_allows_benign_percent_encoding(
+    tmp_path: Path, reference: str
+) -> None:
+    root, site = _generated_skills_fixture(
+        tmp_path, json.dumps({"reference": reference})
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True

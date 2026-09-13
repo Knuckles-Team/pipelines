@@ -39,7 +39,10 @@ addopts = "-p no:cacheprovider"
 packages = ["pipelines_hooks"]
 
 [tool.pipelines_hooks.complexity]
-census_paths = ["pipelines_hooks", "tests/hooks"]
+census_paths = ["pipelines_hooks", "scripts", "tests"]
+
+[tool.pipelines_hooks.kiss]
+paths = ["pipelines_hooks", "scripts", "tests"]
 
 [tool.pipelines_hooks.env_sprawl]
 allow_files = ["pipelines_hooks/core/settings.py"]
