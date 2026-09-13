@@ -20,7 +20,7 @@ import json
 import os
 import re
 import tempfile
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
@@ -60,7 +60,33 @@ GENERATOR_OUTPUTS = {
     "llms-sections",
     "markdown-mirror-manifest.json",
     "agent-readiness-manifest.json",
+    ".well-known",
 }
+#: The exact discovery documents the universal-skills generator is designed
+#: to emit (DOCUMENTATION_STANDARD_VNEXT "Source and generated artifacts").
+#: `.well-known` is admitted only with one of these leaves -- never as an open
+#: directory -- so this set and the generator's own ``discovery_paths`` are
+#: one contract.
+WELL_KNOWN_OUTPUTS = {"agent-skills.json", "api-catalog", "mcp-server-card.json"}
+OAUTH_METADATA_FIELDS = {
+    "oauth_protected_resource": ".well-known/oauth-protected-resource",
+    "oauth_authorization_server": ".well-known/oauth-authorization-server",
+}
+#: Transports a served surface may declare. ``stdio`` exists only for MCP; an
+#: A2A agent is always reached over a network binding.
+SURFACE_TRANSPORTS = {
+    "mcp": {"stdio", "streamable-http", "sse"},
+    "a2a": {"jsonrpc", "http-json", "grpc"},
+}
+#: ``local``: a client launches the server process itself (stdio). ``in-cluster``:
+#: reachable only inside the deployment network under ``service_identity``.
+#: ``public``: reachable at a verifiable public HTTPS ``endpoint``.
+REACHABILITY_VALUES = {"local", "in-cluster", "public"}
+NON_PUBLIC_REACHABILITY = {"local", "in-cluster"}
+TRANSPORT_KEYS = {"transport", "reachability", "service_identity"}
+SERVICE_IDENTITY_PATTERN = re.compile(
+    r"[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?){1,4}"
+)
 SECRET_PATTERN = re.compile(
     r"(?ix)(?:api[_-]?key|access[_-]?token|refresh[_-]?token|password|"
     r"secret(?:[_-][a-z0-9]+)*|token(?:[_-][a-z0-9]+)*)"
@@ -220,15 +246,42 @@ def _mkdocs_document(root: Path) -> yaml.Node | None:
         return None
 
 
-def _docs_dir_node(document: yaml.Node | None) -> yaml.Node | None:
-    """Return the mapping's declared ``docs_dir`` value node, if any."""
+def _top_level_node(document: yaml.Node | None, key: str) -> yaml.Node | None:
+    """Return the mapping's declared top-level ``key`` value node, if any."""
 
     if not isinstance(document, yaml.MappingNode):
         return None
     for key_node, value_node in document.value:
-        if isinstance(key_node, yaml.ScalarNode) and key_node.value == "docs_dir":
+        if isinstance(key_node, yaml.ScalarNode) and key_node.value == key:
             return value_node
     return None
+
+
+def _docs_dir_node(document: yaml.Node | None) -> yaml.Node | None:
+    """Return the mapping's declared ``docs_dir`` value node, if any."""
+
+    return _top_level_node(document, "docs_dir")
+
+
+def mkdocs_site_url(root: Path) -> str:
+    """Return the repository's declared ``site_url`` -- the site-root authority.
+
+    ``mkdocs build --site-dir site`` writes the site root at ``site/`` no
+    matter what path ``site_url`` carries; GitHub Pages adds a project page's
+    ``/<repository>/`` prefix only at serve time. ``site_url`` is therefore the
+    one authority for which URL path prefix to strip before mapping a page to
+    a file under ``site/`` (see `site_output_path`). The universal-skills
+    generator derives every canonical and Markdown URL from this same value,
+    and refuses to generate without it, so a missing or non-scalar value fails
+    loudly here too.
+    """
+
+    node = _top_level_node(_mkdocs_document(root), "site_url")
+    if node is None:
+        _fail("site-url-required")
+    if not isinstance(node, yaml.ScalarNode) or not node.value.strip():
+        _fail("site-url-invalid")
+    return node.value
 
 
 def mkdocs_docs_dir(root: Path) -> str | None:
@@ -404,6 +457,65 @@ def _public_url(raw: object, label: str) -> tuple[str, str, str]:
     return parsed.scheme, host, path
 
 
+def site_output_path(url: str, site_url: str, *, kind: str) -> str:
+    """Map a published URL to the file ``mkdocs build --site-dir`` writes.
+
+    This is the single mapping rule for every page-derived output. The
+    ``site_url`` path is the site's base path (``/`` for a root user/org page
+    or a custom domain, ``/<repository>/`` for a project page); the built
+    site's root directory corresponds to that base, so the base is stripped
+    before the remainder is mapped to a relative file path:
+
+    * ``kind="html"``: a directory URL (empty remainder or trailing ``/``)
+      is served from ``<remainder>/index.html`` -- this covers
+      ``use_directory_urls: true`` pages and index pages in either mode; a
+      ``*.html`` remainder (``use_directory_urls: false``) maps to itself;
+      an extension-less leaf maps to ``<leaf>.html``, which is how Pages
+      serves it. Any other suffix is not an HTML page.
+    * ``kind="markdown"``: the remainder must name an ``index.md`` fallback
+      and maps to itself.
+
+    The URL must share ``site_url``'s origin and lie under its base path;
+    anything else would be written outside the site the URL claims to
+    belong to.
+    """
+
+    if kind not in {"html", "markdown"}:
+        _fail("site-output-kind-invalid")
+    label = "canonical" if kind == "html" else "markdown"
+    site_scheme, site_host, base_path = _public_url(site_url, "site-url")
+    scheme, host, path = _public_url(url, label)
+    if not base_path.endswith("/"):
+        _fail("site-url-invalid")
+    if (scheme, host) != (site_scheme, site_host):
+        _fail("mirror-origin-mismatch")
+    if not path.startswith(base_path):
+        _fail(f"{label}-outside-site")
+    remainder = path[len(base_path) :]
+    parts = [part for part in remainder.split("/") if part]
+    if kind == "markdown":
+        if not parts or parts[-1] != "index.md":
+            _fail("markdown-fallback-invalid")
+        return PurePosixPath(*parts).as_posix()
+    if not parts or remainder.endswith("/"):
+        return PurePosixPath(*parts, "index.html").as_posix()
+    suffix = PurePosixPath(parts[-1]).suffix
+    if suffix == ".html":
+        return PurePosixPath(*parts).as_posix()
+    if suffix:
+        _fail("canonical-path-invalid")
+    return PurePosixPath(*parts[:-1], f"{parts[-1]}.html").as_posix()
+
+
+def _site_asset_url(site_url: str, name: str) -> str:
+    """Return a site-root asset URL (``llms.txt``, ``sitemap.xml``)."""
+
+    scheme, host, base_path = _public_url(site_url, "site-url")
+    if not base_path.endswith("/"):
+        _fail("site-url-invalid")
+    return urlunsplit((scheme, host, f"{base_path}{name}", "", ""))
+
+
 def _scan_safe_text(value: object, label: str) -> None:
     if isinstance(value, str):
         if SECRET_PATTERN.search(value) or BEARER_PATTERN.search(value):
@@ -559,28 +671,7 @@ def _validate_readiness_input(
     if not isinstance(capabilities, Mapping) or set(capabilities) != CAPABILITY_KEYS:
         _fail("capabilities-invalid")
     for name, raw in capabilities.items():
-        if not isinstance(raw, Mapping) or not isinstance(raw.get("applicable"), bool):
-            _fail("capability-entry-invalid")
-        applicable = raw["applicable"]
-        allowed = (
-            {"applicable", "path"}
-            if name == "skills"
-            else {"applicable", "artifact", "endpoint"}
-        )
-        if set(raw) - allowed:
-            _fail("capability-entry-invalid")
-        if not applicable and set(raw) != {"applicable"}:
-            _fail("capability-entry-inapplicable-data")
-        if applicable and name == "skills" and not isinstance(raw.get("path"), str):
-            _fail("skills-path-required")
-        if applicable and name != "skills" and not isinstance(raw.get("artifact"), str):
-            _fail("capability-authority-required")
-        endpoint = raw.get("endpoint")
-        if applicable and name in {"mcp", "a2a"} and not isinstance(endpoint, str):
-            _fail("capability-endpoint-required")
-        if endpoint is not None:
-            _public_url(endpoint, f"{name}-endpoint")
-        _scan_safe_text(raw, f"{name}-capability")
+        _validate_capability_entry(name, raw, project["kind"])
     _scan_safe_text(value, "readiness")
     return {
         "schema_version": SCHEMA_VERSION,
@@ -588,8 +679,172 @@ def _validate_readiness_input(
     }
 
 
+def _validate_capability_entry(name: str, raw: object, kind: str) -> None:
+    """Apply the universal-skills generator's capability-entry contract."""
+
+    if not isinstance(raw, Mapping) or not isinstance(raw.get("applicable"), bool):
+        _fail("capability-entry-invalid")
+    applicable = raw["applicable"]
+    if name == "skills":
+        allowed = {"applicable", "path"}
+    elif name == "api":
+        allowed = {"applicable", "artifact", "endpoint", *OAUTH_METADATA_FIELDS}
+    else:
+        allowed = {
+            "applicable",
+            "artifact",
+            "endpoint",
+            *OAUTH_METADATA_FIELDS,
+            *TRANSPORT_KEYS,
+        }
+    if set(raw) - allowed:
+        _fail("capability-entry-invalid")
+    if not applicable:
+        if set(raw) != {"applicable"}:
+            _fail("capability-entry-inapplicable-data")
+        return
+    if name == "skills":
+        if set(raw) != {"applicable", "path"} or not isinstance(raw.get("path"), str):
+            _fail("skills-path-required")
+        return
+    if kind == "library":
+        _fail("library-capability-unsupported")
+    if kind == "docs-only":
+        _fail("docs-only-served-capability-unsupported")
+    if not isinstance(raw.get("artifact"), str):
+        _fail("capability-authority-required")
+    for field, expected in OAUTH_METADATA_FIELDS.items():
+        if field in raw and raw[field] != expected:
+            _fail(f"{field}-metadata-unbound")
+    endpoint = raw.get("endpoint")
+    if endpoint is not None:
+        _public_url(endpoint, f"{name}-endpoint")
+    if name in SURFACE_TRANSPORTS:
+        _validate_surface_reachability(name, raw)
+    _scan_safe_text(raw, f"{name}-capability")
+
+
+def _validate_surface_reachability(name: str, raw: Mapping[str, Any]) -> None:
+    """Validate how a served MCP/A2A surface is actually reached.
+
+    A declaration without ``transport``/``reachability`` keeps the original
+    v1 meaning (an optional ``endpoint``, validated as public HTTPS when
+    present). Once either is declared, both are required and must agree:
+    ``local`` is MCP ``stdio`` with no endpoint or service identity;
+    ``in-cluster`` is a network transport with a ``service_identity`` and no
+    public endpoint; ``public`` is a network transport with a verifiable
+    public HTTPS ``endpoint``.
+    """
+
+    if not TRANSPORT_KEYS & set(raw):
+        return
+    transport = raw.get("transport")
+    reachability = raw.get("reachability")
+    if transport is None or reachability is None:
+        _fail("capability-transport-incomplete")
+    if transport not in SURFACE_TRANSPORTS[name]:
+        _fail("capability-transport-unsupported")
+    if reachability not in REACHABILITY_VALUES:
+        _fail("capability-reachability-invalid")
+    endpoint = raw.get("endpoint")
+    identity = raw.get("service_identity")
+    if (transport == "stdio") != (reachability == "local"):
+        _fail("capability-reachability-inconsistent")
+    if reachability == "public":
+        if identity is not None:
+            _fail("capability-reachability-inconsistent")
+        if not isinstance(endpoint, str):
+            _fail("capability-endpoint-required")
+        return
+    if endpoint is not None:
+        _fail("capability-reachability-inconsistent")
+    if reachability == "local":
+        if identity is not None:
+            _fail("capability-reachability-inconsistent")
+        return
+    if identity is None:
+        _fail("capability-service-identity-required")
+    if (
+        not isinstance(identity, str)
+        or len(identity) > 253
+        or not SERVICE_IDENTITY_PATTERN.fullmatch(identity)
+    ):
+        _fail("capability-service-identity-invalid")
+
+
+def normalized_capabilities(capabilities: Mapping[str, Any]) -> dict[str, Any]:
+    """Project validated input capabilities onto the generated manifest shape.
+
+    The universal-skills generator records ``applicable``, ``artifact``,
+    ``path``, and (when declared) ``transport``/``reachability`` in
+    ``agent-readiness-manifest.json``; it deliberately omits runtime
+    ``endpoint``, ``service_identity``, and OAuth metadata references. The
+    TCK compares the manifest against this same projection, never against
+    the raw input, so a declaration the generator accepts is not reported
+    stale merely for carrying a field the generator is designed to omit.
+    """
+
+    projected: dict[str, Any] = {}
+    for name, raw in capabilities.items():
+        entry: dict[str, Any] = {"applicable": raw["applicable"]}
+        for field in ("artifact", "path", "transport", "reachability"):
+            if isinstance(raw.get(field), str):
+                entry[field] = raw[field]
+        projected[name] = entry
+    return projected
+
+
+def _publicly_discoverable(raw: Mapping[str, Any]) -> bool:
+    """A served surface may be advertised by public discovery documents only
+    when it is applicable and not explicitly declared non-public."""
+
+    return (
+        raw.get("applicable") is True
+        and raw.get("reachability") not in NON_PUBLIC_REACHABILITY
+    )
+
+
+def _validate_discovery_outputs(
+    normalized: list[str], readiness_input: Mapping[str, Any]
+) -> None:
+    """Bind each generated ``.well-known`` document to the declaration that
+    makes the generator emit it.
+
+    ``agent-skills.json`` is emitted exactly when discoverability and
+    ``skills`` are both applicable, so it is required in that case and
+    rejected otherwise. The MCP server card and the API catalog additionally
+    depend on capability-artifact evidence, so the TCK checks the half it can
+    see from the declaration: they may only appear for an applicable surface
+    that is not declared ``local``/``in-cluster``.
+    """
+
+    applicability = readiness_input["applicability"]
+    capabilities = readiness_input["capabilities"]
+    discoverable = applicability["discoverability"] is True
+    present = {
+        PurePosixPath(item).name
+        for item in normalized
+        if item.startswith(".well-known/")
+    }
+    skills_expected = discoverable and capabilities["skills"]["applicable"] is True
+    if ("agent-skills.json" in present) != skills_expected:
+        _fail("generated-discovery-unbound")
+    if "mcp-server-card.json" in present and not (
+        discoverable and _publicly_discoverable(capabilities["mcp"])
+    ):
+        _fail("generated-discovery-unbound")
+    if "api-catalog" in present and not (
+        discoverable
+        and (
+            _publicly_discoverable(capabilities["mcp"])
+            or _publicly_discoverable(capabilities["a2a"])
+        )
+    ):
+        _fail("generated-discovery-unbound")
+
+
 def _validate_generated_outputs(
-    root: Path, manifest: Mapping[str, Any]
+    root: Path, manifest: Mapping[str, Any], readiness_input: Mapping[str, Any]
 ) -> tuple[tuple[str, bytes], ...]:
     generated = manifest.get("generated")
     if not isinstance(generated, list) or not generated or len(generated) > 256:
@@ -601,7 +856,10 @@ def _validate_generated_outputs(
         parts = _path_parts(raw, "generated")
         if parts[0] not in GENERATOR_OUTPUTS:
             _fail("generated-path-outside-contract")
-        if parts[0] != "llms-sections" and len(parts) != 1:
+        if parts[0] == ".well-known":
+            if len(parts) != 2 or parts[1] not in WELL_KNOWN_OUTPUTS:
+                _fail("generated-path-outside-contract")
+        elif parts[0] != "llms-sections" and len(parts) != 1:
             _fail("generated-path-invalid")
         if parts[0] == "llms-sections" and (len(parts) < 2 or parts[-1] != "llms.txt"):
             _fail("generated-path-invalid")
@@ -615,10 +873,11 @@ def _validate_generated_outputs(
         _fail("generated-output-missing")
     if "agent-readiness-manifest.json" in normalized:
         _fail("generated-path-invalid")
+    _validate_discovery_outputs(normalized, readiness_input)
     total = 0
     published: list[tuple[str, bytes]] = []
     for relative in normalized:
-        path = root.joinpath(*PurePosixPath(relative).parts)
+        path = _safe_existing_path(root, relative, "generated-output")
         payload = _regular_bytes(path, "generated-output", MAX_GENERATED_FILE_BYTES)
         try:
             text = payload.decode("utf-8")
@@ -626,10 +885,18 @@ def _validate_generated_outputs(
             _fail("generated-output-invalid-encoding")
         _scan_safe_text(text, "generated-output")
         total += len(payload)
+        if relative.startswith(".well-known/"):
+            try:
+                document = json.loads(text)
+            except json.JSONDecodeError:
+                _fail("generated-discovery-invalid-json")
+            if not isinstance(document, dict):
+                _fail("generated-discovery-invalid-json")
         if (
             relative == "llms.txt"
             or relative == "llms-full.txt"
             or relative.startswith("llms-sections/")
+            or relative.startswith(".well-known/")
         ):
             published.append((relative, payload))
     if total > MAX_TOTAL_GENERATED_BYTES:
@@ -645,14 +912,44 @@ def _validate_capability_paths(root: Path, value: Mapping[str, Any]) -> None:
         if not isinstance(raw, Mapping) or raw.get("applicable") is not True:
             continue
         if name == "skills":
-            _safe_existing_dir(root, raw.get("path"), "skills-path")
+            skills_root = _safe_existing_dir(root, raw.get("path"), "skills-path")
+            if not any(
+                entry.is_dir()
+                and not entry.is_symlink()
+                and (entry / "SKILL.md").is_file()
+                and not (entry / "SKILL.md").is_symlink()
+                for entry in skills_root.iterdir()
+            ):
+                _fail("skills-path-not-proven")
             continue
+        for field in OAUTH_METADATA_FIELDS:
+            if field in raw:
+                _read_json(
+                    _safe_existing_path(root, raw[field], f"{field}-metadata"),
+                    f"{field}-metadata",
+                )
         artifact = _safe_existing_path(root, raw.get("artifact"), f"{name}-artifact")
         metadata = _read_json(artifact, f"{name}-artifact")
-        if set(metadata) - {"applicable", "surface", "source", "version"}:
+        if set(metadata) - {
+            "applicable",
+            "surface",
+            "source",
+            "version",
+            "http_transport",
+        }:
+            _fail("capability-artifact-schema-invalid")
+        if "http_transport" in metadata and (
+            name != "mcp" or type(metadata["http_transport"]) is not bool
+        ):
             _fail("capability-artifact-schema-invalid")
         if metadata.get("applicable") is not True or metadata.get("surface") != name:
             _fail("capability-artifact-unproven")
+        if (
+            name == "mcp"
+            and raw.get("transport") in {"streamable-http", "sse"}
+            and metadata.get("http_transport") is not True
+        ):
+            _fail("mcp-transport-not-proven")
         source = metadata.get("source")
         if not isinstance(source, str):
             _fail("capability-artifact-source-invalid")
@@ -667,6 +964,7 @@ def _validate_capability_paths(root: Path, value: Mapping[str, Any]) -> None:
 def _source_manifest_pages(
     root: Path,
     site: Path,
+    site_url: str,
     mirror_manifest: Mapping[str, Any],
     readiness_manifest: Mapping[str, Any],
 ) -> tuple[MirrorPage, ...]:
@@ -710,7 +1008,6 @@ def _source_manifest_pages(
     seen_sources: set[str] = set()
     seen_markdown: set[Path] = set()
     seen_html: set[Path] = set()
-    origins: set[tuple[str, str]] = set()
     total_source_bytes = 0
     for entry in entries:
         if not isinstance(entry, Mapping) or set(entry) != {
@@ -764,28 +1061,9 @@ def _source_manifest_pages(
         total_source_bytes += len(source_bytes)
         if total_source_bytes > MAX_TOTAL_SOURCE_BYTES:
             _fail("source-total-oversize")
-        scheme, host, canonical_path = _public_url(canonical, "canonical")
-        markdown_scheme, markdown_host, markdown_path = _public_url(
-            markdown_url, "markdown"
-        )
-        if (scheme, host) != (markdown_scheme, markdown_host):
-            _fail("mirror-origin-mismatch")
-        origins.add((scheme, host))
-        decoded_markdown_path = unquote(markdown_path)
-        markdown_parts = [part for part in decoded_markdown_path.split("/") if part]
-        if not markdown_parts or markdown_parts[-1] != "index.md":
-            _fail("markdown-fallback-invalid")
-        markdown_relative = PurePosixPath(*markdown_parts).as_posix()
+        markdown_relative = site_output_path(markdown_url, site_url, kind="markdown")
         markdown_local = _safe_output_path(site, markdown_relative, "markdown-output")
-        canonical_parts = [part for part in canonical_path.split("/") if part]
-        if canonical_path.endswith("/"):
-            html_parts = (*canonical_parts, "index.html")
-        else:
-            if not canonical_parts:
-                _fail("canonical-path-invalid")
-            html_name = PurePosixPath(canonical_parts[-1]).with_suffix(".html").name
-            html_parts = (*canonical_parts[:-1], html_name)
-        html_relative = PurePosixPath(*html_parts).as_posix()
+        html_relative = site_output_path(canonical, site_url, kind="html")
         html_local = _safe_output_path(site, html_relative, "html-output")
         if markdown_local in seen_markdown or html_local in seen_html:
             _fail("mirror-output-duplicate")
@@ -806,8 +1084,6 @@ def _source_manifest_pages(
                 markdown_path=markdown_local,
             )
         )
-    if len(origins) != 1:
-        _fail("mirror-origin-mismatch")
     if set(provenance_index) != seen_sources:
         _fail("provenance-pages-incomplete")
     return tuple(pages)
@@ -910,22 +1186,6 @@ def _html_with_alternate(
     return updated.encode("utf-8"), _html_state(payload)
 
 
-def _common_site_base(pages: Iterable[MirrorPage]) -> str:
-    paths = [urlsplit(page.canonical_url).path for page in pages]
-    segments = [tuple(part for part in path.split("/") if part) for path in paths]
-    if not segments:
-        _fail("mirror-entries-invalid")
-    prefix = list(segments[0])
-    for current in segments[1:]:
-        length = 0
-        for left, right in zip(prefix, current):
-            if left != right:
-                break
-            length += 1
-        prefix = prefix[:length]
-    return "/" + "/".join(prefix) + ("/" if prefix else "")
-
-
 def _robots_with_sitemap(site: Path, sitemap_url: str) -> bytes:
     sitemap_line = f"Sitemap: {sitemap_url}\n"
     robots_path = site / "robots.txt"
@@ -963,11 +1223,9 @@ def _robots_with_sitemap(site: Path, sitemap_url: str) -> bytes:
 
 
 def _derived_assets(
-    pages: tuple[MirrorPage, ...], site: Path
+    pages: tuple[MirrorPage, ...], site: Path, site_url: str
 ) -> tuple[tuple[Path, bytes], ...]:
-    first = urlsplit(pages[0].canonical_url)
-    base = _common_site_base(pages)
-    sitemap_url = urlunsplit((first.scheme, first.netloc, f"{base}sitemap.xml", "", ""))
+    sitemap_url = _site_asset_url(site_url, "sitemap.xml")
     sitemap_rows: list[str] = []
     for page in pages:
         state = _html_state(
@@ -995,6 +1253,7 @@ def _prepare(
     root: Path,
     site: Path,
     *,
+    site_url: str,
     readiness_input_path: Path,
     schema_path: Path,
     readiness_manifest_path: Path,
@@ -1012,9 +1271,13 @@ def _prepare(
     if not isinstance(readiness_manifest.get("generator_version"), str):
         _fail("readiness-manifest-invalid")
     _scan_safe_text(readiness_manifest, "readiness-manifest")
-    for field in ("project", "applicability", "standards", "capabilities"):
+    for field in ("project", "applicability", "standards"):
         if readiness_manifest.get(field) != readiness_input.get(field):
             _fail("readiness-manifest-stale")
+    if readiness_manifest.get("capabilities") != normalized_capabilities(
+        readiness_input["capabilities"]
+    ):
+        _fail("readiness-manifest-stale")
     if readiness_manifest.get("content_signals") != normalized_input["content_signals"]:
         _fail("content-signals-stale")
     manifest_budgets = readiness_manifest.get("budgets")
@@ -1027,15 +1290,16 @@ def _prepare(
     if not isinstance(capabilities, Mapping) or set(capabilities) != CAPABILITY_KEYS:
         _fail("readiness-capabilities-invalid")
     _scan_safe_text(capabilities, "readiness-capabilities")
-    generated_outputs = _validate_generated_outputs(root, readiness_manifest)
+    generated_outputs = _validate_generated_outputs(
+        root, readiness_manifest, readiness_input
+    )
     mirror_manifest = _read_json(mirror_manifest_path, "mirror-manifest")
-    pages = _source_manifest_pages(root, site, mirror_manifest, readiness_manifest)
+    pages = _source_manifest_pages(
+        root, site, site_url, mirror_manifest, readiness_manifest
+    )
 
     mirrors = tuple((page.markdown_path, page.source_bytes) for page in pages)
-    first = urlsplit(pages[0].canonical_url)
-    base = _common_site_base(pages)
-    llms_url = urlunsplit((first.scheme, first.netloc, f"{base}llms.txt", "", ""))
-    _public_url(llms_url, "llms")
+    llms_url = _site_asset_url(site_url, "llms.txt")
     html_outputs: list[tuple[Path, bytes]] = []
     for page in pages:
         payload = _regular_bytes(page.html_path, "html-output", MAX_HTML_BYTES)
@@ -1051,7 +1315,7 @@ def _prepare(
         )
         for relative, payload in generated_outputs
     )
-    assets = generated_assets + _derived_assets(pages, site)
+    assets = generated_assets + _derived_assets(pages, site, site_url)
     manifest_digest = hashlib.sha256(
         json.dumps(readiness_manifest, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
@@ -1129,6 +1393,7 @@ def build(
     plan = _prepare(
         workspace,
         site_root,
+        site_url=mkdocs_site_url(workspace),
         readiness_input_path=_safe_existing_path(
             workspace, resolved_readiness_input, "readiness-input"
         ),

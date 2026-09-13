@@ -82,7 +82,16 @@ def _readiness() -> dict[str, Any]:
     }
 
 
-def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
+def _fixture(
+    tmp_path: Path, base: str = "https://docs.example.test/"
+) -> tuple[Path, Path, dict[str, Any]]:
+    """A flat ``mkdocs build --site-dir site`` tree for a site rooted at ``base``.
+
+    ``base`` is the mkdocs ``site_url``; the HTML is always written at the
+    built site's root (``site/index.html``, ``site/guide/index.html``) exactly
+    as mkdocs does, whatever path prefix ``base`` carries.
+    """
+
     root = tmp_path / "repo"
     docs = root / "docs"
     site = root / "site"
@@ -105,6 +114,9 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         "<!doctype html><html><head><title>Guide</title></head><body>Guide</body></html>",
         encoding="utf-8",
     )
+    (root / "mkdocs.yml").write_text(
+        f"site_name: Fixture\nsite_url: {base}\n", encoding="utf-8"
+    )
     readiness = _readiness()
     (root / "pages" / "agent-readiness.schema.json").write_text(
         json.dumps(SCHEMA, sort_keys=True) + "\n", encoding="utf-8"
@@ -123,11 +135,8 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         }
         for (relative, payload), canonical, markdown in zip(
             sources.items(),
-            ("https://docs.example.test/", "https://docs.example.test/guide/"),
-            (
-                "https://docs.example.test/index.md",
-                "https://docs.example.test/guide/index.md",
-            ),
+            (base, f"{base}guide/"),
+            (f"{base}index.md", f"{base}guide/index.md"),
         )
     ]
     mirror = {
@@ -415,6 +424,7 @@ def test_malformed_or_private_capability_reference_is_rejected(
     expected: str,
 ) -> None:
     root, site, readiness = _fixture(tmp_path)
+    readiness["project"]["kind"] = "package"
     readiness["capabilities"]["api"] = {
         "applicable": True,
         "artifact": "api-capability.json",
@@ -711,3 +721,481 @@ def test_cli_validate_content_source(
     failure = json.loads(capsys.readouterr().out)
     assert failure["ok"] is False
     assert failure["error_code"] == "content-source-containment"
+
+
+PROJECT_SITE = "https://example.github.io/example-connector/"
+ROOT_SITE = "https://example.github.io/"
+CUSTOM_DOMAIN = "https://docs.example.com/"
+
+
+@pytest.mark.parametrize(
+    ("url", "site_url", "kind", "expected"),
+    [
+        # Project page: the /<repository>/ prefix exists only at serve time.
+        (PROJECT_SITE, PROJECT_SITE, "html", "index.html"),
+        (
+            f"{PROJECT_SITE}installation/",
+            PROJECT_SITE,
+            "html",
+            "installation/index.html",
+        ),
+        (
+            f"{PROJECT_SITE}guides/setup/",
+            PROJECT_SITE,
+            "html",
+            "guides/setup/index.html",
+        ),
+        (
+            f"{PROJECT_SITE}installation/index.md",
+            PROJECT_SITE,
+            "markdown",
+            "installation/index.md",
+        ),
+        # Root user/org page and custom domain: the base path is "/".
+        (ROOT_SITE, ROOT_SITE, "html", "index.html"),
+        (f"{ROOT_SITE}guide/", ROOT_SITE, "html", "guide/index.html"),
+        (f"{ROOT_SITE}index.md", ROOT_SITE, "markdown", "index.md"),
+        (
+            f"{CUSTOM_DOMAIN}reference/api/",
+            CUSTOM_DOMAIN,
+            "html",
+            "reference/api/index.html",
+        ),
+        # use_directory_urls: false pages are served from their .html file.
+        (f"{PROJECT_SITE}installation.html", PROJECT_SITE, "html", "installation.html"),
+        (f"{PROJECT_SITE}guides/index.html", PROJECT_SITE, "html", "guides/index.html"),
+        (f"{PROJECT_SITE}installation", PROJECT_SITE, "html", "installation.html"),
+    ],
+)
+def test_site_output_path_strips_the_site_url_base(
+    url: str, site_url: str, kind: str, expected: str
+) -> None:
+    assert pages_readiness.site_output_path(url, site_url, kind=kind) == expected
+
+
+@pytest.mark.parametrize(
+    ("url", "site_url", "kind", "expected"),
+    [
+        (
+            "https://other.example.com/guide/",
+            PROJECT_SITE,
+            "html",
+            "mirror-origin-mismatch",
+        ),
+        (
+            f"{ROOT_SITE}other-repository/guide/",
+            PROJECT_SITE,
+            "html",
+            "canonical-outside-site",
+        ),
+        (f"{ROOT_SITE}index.md", PROJECT_SITE, "markdown", "markdown-outside-site"),
+        (f"{PROJECT_SITE}guide/", PROJECT_SITE.rstrip("/"), "html", "site-url-invalid"),
+        (f"{PROJECT_SITE}guide.md", PROJECT_SITE, "html", "canonical-path-invalid"),
+        (
+            f"{PROJECT_SITE}guide/",
+            PROJECT_SITE,
+            "markdown",
+            "markdown-fallback-invalid",
+        ),
+    ],
+)
+def test_site_output_path_rejects_urls_outside_the_declared_site(
+    url: str, site_url: str, kind: str, expected: str
+) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.site_output_path(url, site_url, kind=kind)
+
+
+def test_project_page_site_built_flat_passes_build_and_tck(tmp_path: Path) -> None:
+    """``mkdocs build --site-dir site`` output for a project page, unnested."""
+
+    root, site, _ = _fixture(tmp_path, PROJECT_SITE)
+
+    assert pages_readiness.build(root, site)["ok"] is True
+    assert pages_readiness.build(root, site, check=True)["ok"] is True
+
+    assert (site / "index.md").read_bytes() == (root / "docs/index.md").read_bytes()
+    assert (site / "guide/index.md").read_bytes() == (
+        root / "docs/guide.md"
+    ).read_bytes()
+    assert not (site / "example-connector").exists()
+    assert (
+        "<!-- agent-utilities-markdown "
+        f'alternate="{PROJECT_SITE}guide/index.md" llms="{PROJECT_SITE}llms.txt" -->'
+    ) in (site / "guide/index.html").read_text(encoding="utf-8")
+    assert (site / "robots.txt").read_text(encoding="utf-8") == (
+        f"Sitemap: {PROJECT_SITE}sitemap.xml\n"
+    )
+    assert f"<loc>{PROJECT_SITE}guide/</loc>" in (site / "sitemap.xml").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_use_directory_urls_false_site_passes_build_and_tck(tmp_path: Path) -> None:
+    root, site, _ = _fixture(tmp_path, PROJECT_SITE)
+    (site / "guide" / "index.html").rename(site / "guide.html")
+    (site / "guide").rmdir()
+    mirror_path = root / "markdown-mirror-manifest.json"
+    mirror = json.loads(mirror_path.read_text(encoding="utf-8"))
+    mirror["entries"][0]["url"] = mirror["entries"][0]["canonical_url"] = (
+        f"{PROJECT_SITE}index.html"
+    )
+    mirror["entries"][1]["url"] = mirror["entries"][1]["canonical_url"] = (
+        f"{PROJECT_SITE}guide.html"
+    )
+    mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
+
+    assert pages_readiness.build(root, site)["ok"] is True
+    assert pages_readiness.build(root, site, check=True)["ok"] is True
+    assert "text/markdown" in (site / "guide.html").read_text(encoding="utf-8")
+    assert (site / "guide/index.md").read_bytes() == (
+        root / "docs/guide.md"
+    ).read_bytes()
+
+
+def test_missing_site_url_fails_closed(tmp_path: Path) -> None:
+    root, site, _ = _fixture(tmp_path)
+    (root / "mkdocs.yml").write_text("site_name: Fixture\n", encoding="utf-8")
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match="site-url-required"):
+        pages_readiness.build(root, site)
+
+
+def _declare(
+    root: Path,
+    readiness: dict[str, Any],
+    manifest_capabilities: dict[str, Any],
+    *,
+    discovery: tuple[str, ...] = (),
+) -> None:
+    """Write a readiness declaration and the manifest the generator emits for it."""
+
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    manifest_path = root / "agent-readiness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["project"] = readiness["project"]
+    manifest["applicability"] = readiness["applicability"]
+    manifest["capabilities"] = manifest_capabilities
+    manifest["generated"] = [
+        "llms.txt",
+        "llms-sections/guides/llms.txt",
+        "markdown-mirror-manifest.json",
+        *discovery,
+    ]
+    for relative in discovery:
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not path.exists():
+            path.write_text('{"schema_version": "fixture"}\n', encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+
+
+def _connector(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
+    """A package with a real skill directory and an MCP capability authority."""
+
+    root, site, readiness = _fixture(tmp_path, PROJECT_SITE)
+    readiness["project"]["kind"] = "package"
+    readiness["applicability"]["capabilities"] = True
+    skill = root / "skills" / "example-connector-reader" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "---\nname: example-connector-reader\n---\n# Reader\n", encoding="utf-8"
+    )
+    (root / "example_connector").mkdir()
+    (root / "example_connector" / "mcp_server.py").write_text(
+        "SERVER = 1\n", encoding="utf-8"
+    )
+    (root / "mcp-capability.json").write_text(
+        json.dumps(
+            {
+                "applicable": True,
+                "surface": "mcp",
+                "version": "capability/v1",
+                "source": "example_connector/mcp_server.py",
+            }
+        ),
+        encoding="utf-8",
+    )
+    return root, site, readiness
+
+
+STDIO_MCP = {
+    "applicable": True,
+    "artifact": "mcp-capability.json",
+    "transport": "stdio",
+    "reachability": "local",
+}
+
+
+def test_stdio_mcp_and_skills_connector_passes_build_and_tck(tmp_path: Path) -> None:
+    root, site, readiness = _connector(tmp_path)
+    readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
+    readiness["capabilities"]["skills"] = {"applicable": True, "path": "skills"}
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": dict(STDIO_MCP),
+            "a2a": {"applicable": False},
+            "skills": {"applicable": True, "path": "skills"},
+        },
+        discovery=(".well-known/agent-skills.json",),
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True
+    assert pages_readiness.build(root, site, check=True)["ok"] is True
+    assert (site / ".well-known/agent-skills.json").read_bytes() == (
+        root / ".well-known/agent-skills.json"
+    ).read_bytes()
+
+
+def test_in_cluster_http_mcp_surface_requires_artifact_proof(tmp_path: Path) -> None:
+    root, site, readiness = _connector(tmp_path)
+    declared = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "transport": "streamable-http",
+        "reachability": "in-cluster",
+        "service_identity": "example-connector.connectors",
+    }
+    readiness["capabilities"]["mcp"] = declared
+    manifest_mcp = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "transport": "streamable-http",
+        "reachability": "in-cluster",
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": manifest_mcp,
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+    )
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="mcp-transport-not-proven"
+    ):
+        pages_readiness.build(root, site)
+
+    artifact = json.loads((root / "mcp-capability.json").read_text(encoding="utf-8"))
+    artifact["http_transport"] = True
+    (root / "mcp-capability.json").write_text(json.dumps(artifact), encoding="utf-8")
+    assert pages_readiness.build(root, site)["ok"] is True
+
+
+def test_legacy_public_endpoint_declaration_is_not_reported_stale(
+    tmp_path: Path,
+) -> None:
+    """The generator omits ``endpoint``/OAuth references from its manifest."""
+
+    root, site, readiness = _connector(tmp_path)
+    oauth = root / ".well-known" / "oauth-protected-resource"
+    oauth.parent.mkdir(parents=True)
+    oauth.write_text('{"resource": "https://mcp.example.com"}\n', encoding="utf-8")
+    readiness["capabilities"]["mcp"] = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "endpoint": "https://mcp.example.com/mcp",
+        "oauth_protected_resource": ".well-known/oauth-protected-resource",
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": {"applicable": True, "artifact": "mcp-capability.json"},
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+        discovery=(".well-known/api-catalog",),
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True
+
+
+@pytest.mark.parametrize(
+    ("surface", "declared", "expected"),
+    [
+        (
+            "mcp",
+            {"endpoint": "https://mcp.example.com/mcp"},
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"service_identity": "example-connector.connectors"},
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {
+                "reachability": "in-cluster",
+                "service_identity": "example-connector.connectors",
+            },
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"transport": "streamable-http"},
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"transport": "streamable-http", "reachability": "public"},
+            "capability-endpoint-required",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "streamable-http",
+                "reachability": "public",
+                "endpoint": "https://mcp.example.com/mcp",
+                "service_identity": "example-connector.connectors",
+            },
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {"transport": "streamable-http", "reachability": "in-cluster"},
+            "capability-service-identity-required",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "streamable-http",
+                "reachability": "in-cluster",
+                "service_identity": "example-connector.connectors",
+                "endpoint": "https://mcp.example.com/mcp",
+            },
+            "capability-reachability-inconsistent",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "sse",
+                "reachability": "in-cluster",
+                "service_identity": "example-connector",
+            },
+            "capability-service-identity-invalid",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "sse",
+                "reachability": "in-cluster",
+                "service_identity": "https://example-connector.connectors",
+            },
+            "capability-service-identity-invalid",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "streamable-http",
+                "reachability": "public",
+                "endpoint": "http://mcp.example.com/mcp",
+            },
+            "mcp-endpoint-url-invalid",
+        ),
+        (
+            "mcp",
+            {
+                "transport": "websocket",
+                "reachability": "public",
+                "endpoint": "https://mcp.example.com/mcp",
+            },
+            "capability-transport-unsupported",
+        ),
+        (
+            "mcp",
+            {"transport": "stdio", "reachability": "nearby"},
+            "capability-reachability-invalid",
+        ),
+        ("mcp", {"reachability": None}, "capability-transport-incomplete"),
+        ("a2a", {"surface_override": True}, "capability-transport-unsupported"),
+        ("api", {"surface_override": True}, "capability-entry-invalid"),
+    ],
+)
+def test_inconsistent_surface_reachability_is_rejected(
+    tmp_path: Path, surface: str, declared: dict[str, Any], expected: str
+) -> None:
+    root, site, readiness = _connector(tmp_path)
+    entry: dict[str, Any] = {**STDIO_MCP, "artifact": f"{surface}-capability.json"}
+    overrides = {
+        key: value for key, value in declared.items() if key != "surface_override"
+    }
+    entry.update(overrides)
+    entry = {key: value for key, value in entry.items() if value is not None}
+    readiness["capabilities"][surface] = entry
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    ("discovery", "skills_applicable", "expected"),
+    [
+        ((".well-known/other.json",), False, "generated-path-outside-contract"),
+        (
+            (".well-known/agent-skills.json/extra",),
+            False,
+            "generated-path-outside-contract",
+        ),
+        ((".well-known/agent-skills.json",), False, "generated-discovery-unbound"),
+        ((), True, "generated-discovery-unbound"),
+        (
+            (".well-known/agent-skills.json", ".well-known/mcp-server-card.json"),
+            True,
+            "generated-discovery-unbound",
+        ),
+        (
+            (".well-known/agent-skills.json", ".well-known/api-catalog"),
+            True,
+            "generated-discovery-unbound",
+        ),
+    ],
+)
+def test_discovery_outputs_are_bound_to_the_declaration(
+    tmp_path: Path,
+    discovery: tuple[str, ...],
+    skills_applicable: bool,
+    expected: str,
+) -> None:
+    root, site, readiness = _connector(tmp_path)
+    skills: dict[str, Any] = (
+        {"applicable": True, "path": "skills"}
+        if skills_applicable
+        else {"applicable": False}
+    )
+    readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
+    readiness["capabilities"]["skills"] = skills
+    manifest_path = root / "agent-readiness-manifest.json"
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": dict(STDIO_MCP),
+            "a2a": {"applicable": False},
+            "skills": skills,
+        },
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["generated"].extend(discovery)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    for relative in discovery:
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not path.parent.is_file():
+            path.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.build(root, site)
