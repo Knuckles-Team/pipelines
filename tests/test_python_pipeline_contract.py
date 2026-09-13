@@ -45,6 +45,7 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
     assert contract["with"] == {
         "repository": "${{ job.workflow_repository }}",
         "ref": "${{ job.workflow_sha }}",
+        "sparse-checkout": ".github/actions\n",
         "path": ".pipeline-contract",
         "persist-credentials": False,
     }

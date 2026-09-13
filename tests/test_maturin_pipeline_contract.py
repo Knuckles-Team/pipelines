@@ -15,6 +15,7 @@ WHEEL_ACTION = ROOT / ".github/actions/maturin-build-wheels/action.yml"
 CHECKOUT_ACTION = ROOT / ".github/actions/checkout-verified-source/action.yml"
 VERIFY_ACTION = ROOT / ".github/actions/verify-source-commit/action.yml"
 VERIFY_SCRIPT = ROOT / ".github/actions/verify-source-commit/verify_source_commit.py"
+ARTIFACT_ACTION = ROOT / ".github/actions/verify-and-upload-artifact/action.yml"
 
 
 def _git(root: Path, *args: str) -> str:
@@ -38,7 +39,7 @@ def test_maturin_release_consumes_exact_head_without_tag_history() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
     assert text.count("uses: ./.pipeline-contract/.github/actions/checkout-verified-source") == 2
-    assert text.count("uses: ./.pipeline-contract/.github/actions/verify-source-commit") == 2
+    assert text.count("uses: ./.pipeline-contract/.github/actions/verify-and-upload-artifact") == 1
     assert "uses: ./.github/actions/" not in text
     assert text.count("path: .pipeline-contract") == 1
     assert text.count("repository: ${{ job.workflow_repository }}") == 1
@@ -55,7 +56,16 @@ def test_maturin_wheel_action_checks_head_before_and_after_build() -> None:
 
     assert "./.pipeline-contract/.github/actions/checkout-verified-source" in text
     assert "manylinux: ${{ inputs.manylinux }}" in text
+    assert "./.pipeline-contract/.github/actions/verify-and-upload-artifact" in text
+    assert "artifact-path: dist" in text
+
+
+def test_maturin_artifact_action_owns_shared_verification_and_upload() -> None:
+    text = ARTIFACT_ACTION.read_text(encoding="utf-8")
+
     assert "./.pipeline-contract/.github/actions/verify-source-commit" in text
+    assert "actions/upload-artifact@" in text
+    assert "if-no-files-found: error" in text
 
 
 def test_shared_checkout_action_owns_the_exact_sha_binding() -> None:

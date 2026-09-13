@@ -39,6 +39,8 @@ jobs:
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
+          sparse-checkout: |
+            .github/actions
           path: .pipeline-contract
           persist-credentials: false
 

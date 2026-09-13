@@ -86,15 +86,11 @@ jobs:
           command: sdist
           args: --out dist
 
-      - name: Verify source commit after build
-        uses: ./.pipeline-contract/.github/actions/verify-source-commit
+      - name: Verify source and upload artifact
+        uses: ./.pipeline-contract/.github/actions/verify-and-upload-artifact
         with:
-          phase: after
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: wheels-sdist
-          path: dist
+          artifact-name: wheels-sdist
+          artifact-path: dist
 
   # ── Publish + Release ──────────────────────────────────────────
   publish:
