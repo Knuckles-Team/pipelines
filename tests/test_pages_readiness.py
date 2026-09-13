@@ -1501,6 +1501,30 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
             '{"reference":"https://public.example/?next=https%253A%252F%252F127.0.0.1"}\n',
             "generated-output-private-url",
         ),
+        (
+            '{"reference":"https%3A%2F%2F127.0.0.1/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"%68%74%74%70%73%3A%2F%2F127.0.0.1/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https%253A%252F%252Fuser%2540public.example/path"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https%3A%2F%2Fpublic.example%2Ftoken%253Dabcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https%2525253A%2525252F%2525252Fpublic.example/path"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"%25252568%25252574%25252574%25252570%25252573%2525253A%2525252F%2525252Fpublic.example"}\n',
+            "generated-output-url-invalid",
+        ),
     ],
 )
 def test_generated_discovery_scans_decoded_json_values(
@@ -1523,6 +1547,10 @@ def test_generated_discovery_scans_decoded_json_values(
         "https://public.example/caf%25C3%25A9",
         "https://public.example/discount%2525",
         "https://public.example/?next=https%3A%2F%2Fpublic.example%2Fdocs",
+        "release%20notes",
+        "discount%2525",
+        "progress 100% complete",
+        "literal%GG",
     ],
 )
 def test_generated_discovery_allows_benign_percent_encoding(

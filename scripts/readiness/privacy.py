@@ -4,16 +4,15 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from .constants import BEARER_PATTERN, SECRET_PATTERN, URL_PATTERN
+from .constants import BEARER_PATTERN, SECRET_PATTERN
 from .errors import _fail
-from .url_security import _scan_url
+from .scalar_urls import _scan_urls
 
 
 def _scan_text(value: str, label: str) -> None:
     if SECRET_PATTERN.search(value) or BEARER_PATTERN.search(value):
         _fail(f"{label}-secret-like-value")
-    for match in URL_PATTERN.finditer(value):
-        _scan_url(match.group(0).rstrip(".,;:"), label)
+    _scan_urls(value, label)
 
 
 def _scan_children(value: Mapping[object, object] | list[object], label: str) -> None:
