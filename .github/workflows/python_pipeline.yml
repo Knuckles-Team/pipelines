@@ -2,9 +2,23 @@ name: Release Python Package
 
 on:
   workflow_call:
+    inputs:
+      web-assets:
+        description: >-
+          This package ships a Node/pnpm frontend (package.json) that must be
+          built before packaging. Also relaxes the composite publish action
+          to tolerate a missing requirements.txt and skip re-publishing a
+          version that already exists on PyPI -- the web-package variant
+          formerly split out as python_web_pipeline.yml.
+        required: false
+        type: boolean
+        default: false
     secrets:
       PYPI_API_TOKEN:
         required: true
+
+permissions:
+  contents: read
 
 jobs:
   publish-pypi:
@@ -13,60 +27,46 @@ jobs:
       contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Build package
-        id: build_package
+      - name: Setup Node.js
+        if: inputs.web-assets && hashFiles('package.json') != ''
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        if: inputs.web-assets && hashFiles('pnpm-lock.yaml') != ''
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Install Frontend Dependencies
+        if: inputs.web-assets && hashFiles('package.json') != ''
         run: |
-          echo "Creating virtual environment"
-          # Pin to 3.13: Python 3.14 breaks native builds of transitive deps
-          # (e.g. litellm's PyO3 chain caps at cp313), failing release CI fleet-wide.
-          uv venv --python 3.13 .venv
-          source .venv/bin/activate
-          echo "Installing dependencies"
-          uv pip install -r requirements.txt
-          echo "Building package"
-          uv build
-          BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
-          LATEST_COMMIT=$(git rev-parse --verify HEAD)
-          echo "Last Commit: ${LATEST_COMMIT}"
-          if [[ $TAG != '' ]]; then
-            CURRENT_COMMIT=$(git rev-list -n 1 $TAG)
-            CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
           else
-            TAG=''
-            CURRENT_COMMIT=${LATEST_COMMIT}
-            CURRENT_RELEASE="0.0.0"  # Default for no tags
+            npm install
           fi
-          COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
-          COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
-          COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
-          echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nBUILD_VERSION=$BUILD_VERSION" | tee -a $GITHUB_ENV
 
-      - name: Upload Artifact
-        id: upload_artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-${{ env.BUILD_VERSION }}
-          path: dist/*.whl
-          if-no-files-found: error
-
-      - name: Publish package
-        run: |
-          twine upload --skip-existing dist/* --verbose -u "__token__" -p "${{ secrets.PYPI_API_TOKEN }}"
-
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
+      - name: Build Frontend
+        if: inputs.web-assets && hashFiles('package.json') != ''
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm run build
+          else
+            npm run build
+          fi
+
+      - name: Build, publish and release
+        uses: ./.github/actions/publish-python-package
         with:
-          tag_name: v${{ env.BUILD_VERSION }}
-          name: Release v${{ env.BUILD_VERSION }}
-          body: |
-            Released: ${{ env.COMMIT_DATETIME }}
-            Commit: ${{ env.LATEST_COMMIT }}
-            Changes:
-            ${{ env.COMMIT_MESSAGE }}
-          draft: false
-          prerelease: false
+          pypi-token: ${{ secrets.PYPI_API_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tolerate-missing-requirements: ${{ inputs.web-assets && 'true' || 'false' }}
+          twine-skip-existing: ${{ inputs.web-assets && 'false' || 'true' }}

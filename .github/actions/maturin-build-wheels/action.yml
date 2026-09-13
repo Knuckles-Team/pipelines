@@ -1,0 +1,29 @@
+name: Build and upload a maturin wheel
+description: >-
+  Checkout, build a maturin wheel for one target, and upload it as a workflow
+  artifact. Shared by maturin_pipeline.yml's macOS and Windows jobs, which
+  build one target each with no platform-specific step in between.
+inputs:
+  target:
+    description: Rust/Python target triple passed to PyO3/maturin-action.
+    required: true
+  artifact-name:
+    description: Name of the uploaded artifact.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Build wheels
+      uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+      with:
+        target: ${{ inputs.target }}
+        args: --release --out dist
+
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: dist
