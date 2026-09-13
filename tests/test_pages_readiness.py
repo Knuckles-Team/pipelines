@@ -87,6 +87,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
     docs = root / "docs"
     site = root / "site"
     docs.mkdir(parents=True)
+    (root / "pages").mkdir(parents=True)
     (site / "guide").mkdir(parents=True)
     sources = {
         "docs/index.md": b"# Home\n\nSource home.\n",
@@ -105,10 +106,10 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
         encoding="utf-8",
     )
     readiness = _readiness()
-    (root / "docs" / "agent-readiness.schema.json").write_text(
+    (root / "pages" / "agent-readiness.schema.json").write_text(
         json.dumps(SCHEMA, sort_keys=True) + "\n", encoding="utf-8"
     )
-    (root / "docs" / "agent-readiness.json").write_text(
+    (root / "pages" / "agent-readiness.json").write_text(
         json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
     )
     entries = [
@@ -423,7 +424,7 @@ def test_malformed_or_private_capability_reference_is_rejected(
         json.dumps({"applicable": True, "surface": "api", "source": "docs/index.md"}),
         encoding="utf-8",
     )
-    (root / "docs/agent-readiness.json").write_text(
+    (root / "pages/agent-readiness.json").write_text(
         json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
     )
 
@@ -510,3 +511,203 @@ def test_source_markdown_secret_is_not_published(tmp_path: Path) -> None:
         pages_readiness.ReadinessTckError, match="source-secret-like-value"
     ):
         pages_readiness.build(root, site)
+
+
+def test_omitted_readiness_paths_default_to_the_pages_layout(tmp_path: Path) -> None:
+    """No explicit readiness_input/schema resolves under the new pages/ layout."""
+
+    root, site, _ = _fixture(tmp_path)
+
+    result = pages_readiness.build(root, site)
+
+    assert result["ok"] is True
+    assert (root / "pages" / "agent-readiness.json").is_file()
+
+
+def test_content_source_declares_a_legacy_docs_layout_explicitly(
+    tmp_path: Path,
+) -> None:
+    """A repository still on docs/ must declare content_source explicitly.
+
+    There is no fallback probing between layouts: moving the readiness
+    artifacts to docs/ without also declaring content_source="docs" fails
+    closed exactly like any other missing input, rather than silently
+    falling back to check docs/ after pages/ comes up empty.
+    """
+
+    root, site, _ = _fixture(tmp_path)
+    (root / "pages" / "agent-readiness.json").rename(
+        root / "docs" / "agent-readiness.json"
+    )
+    (root / "pages" / "agent-readiness.schema.json").rename(
+        root / "docs" / "agent-readiness.schema.json"
+    )
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match="readiness-input-"):
+        pages_readiness.build(root, site)
+
+    result = pages_readiness.build(root, site, content_source="docs")
+    assert result["ok"] is True
+
+
+def test_mkdocs_docs_dir_tolerates_the_real_fleet_pymdownx_tag(tmp_path: Path) -> None:
+    """`!!python/name:` never reaches a constructor.
+
+    `mkdocs_docs_dir` reads via `yaml.compose`, which runs only the
+    parser/composer stage -- it never calls a constructor, so this tag
+    (copied verbatim from a real connector's `mkdocs.yml`) stays an inert
+    `ScalarNode` and cannot execute anything. No `docs_dir` key is declared,
+    so the result is `None` (mkdocs's own "docs" default applies upstream).
+    """
+
+    (tmp_path / "mkdocs.yml").write_text(
+        "site_name: Fixture\n"
+        "markdown_extensions:\n"
+        "  - pymdownx.highlight:\n"
+        "      anchor_linenums: true\n"
+        "  - pymdownx.superfences:\n"
+        "      custom_fences:\n"
+        "        - name: mermaid\n"
+        "          class: mermaid\n"
+        "          format: !!python/name:pymdownx.superfences.fence_code_format\n",
+        encoding="utf-8",
+    )
+
+    assert pages_readiness.mkdocs_docs_dir(tmp_path) is None
+
+
+def test_mkdocs_docs_dir_missing_key_is_none(tmp_path: Path) -> None:
+    (tmp_path / "mkdocs.yml").write_text(
+        "site_name: Fixture\nnav:\n  - Home: index.md\n", encoding="utf-8"
+    )
+
+    assert pages_readiness.mkdocs_docs_dir(tmp_path) is None
+
+
+def test_mkdocs_docs_dir_declared_scalar(tmp_path: Path) -> None:
+    (tmp_path / "mkdocs.yml").write_text(
+        "site_name: Fixture\ndocs_dir: pages\n", encoding="utf-8"
+    )
+
+    assert pages_readiness.mkdocs_docs_dir(tmp_path) == "pages"
+
+
+def test_mkdocs_docs_dir_non_scalar_fails_loudly(tmp_path: Path) -> None:
+    """A `docs_dir` that isn't a plain string is a named error, not a guess."""
+
+    (tmp_path / "mkdocs.yml").write_text(
+        "site_name: Fixture\ndocs_dir:\n  - pages\n  - docs\n", encoding="utf-8"
+    )
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="content-source-docs-dir-invalid"
+    ):
+        pages_readiness.mkdocs_docs_dir(tmp_path)
+
+
+def test_validate_content_source_requires_a_declared_value(tmp_path: Path) -> None:
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="content-source-required"
+    ):
+        pages_readiness.validate_content_source(tmp_path, "")
+
+
+def test_validate_content_source_missing_directory_fails_loudly(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="content-source-containment"
+    ):
+        pages_readiness.validate_content_source(tmp_path, "pages")
+
+
+def test_validate_content_source_mismatched_docs_dir_fails_loudly(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "pages").mkdir()
+    (tmp_path / "mkdocs.yml").write_text(
+        "site_name: Fixture\ndocs_dir: docs\n", encoding="utf-8"
+    )
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="content-source-mismatch"
+    ):
+        pages_readiness.validate_content_source(tmp_path, "pages")
+
+
+def test_validate_content_source_matching_docs_dir_and_real_fleet_tag_passes(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "pages").mkdir()
+    (tmp_path / "mkdocs.yml").write_text(
+        "site_name: Fixture\n"
+        "docs_dir: pages\n"
+        "markdown_extensions:\n"
+        "  - pymdownx.superfences:\n"
+        "      custom_fences:\n"
+        "        - name: mermaid\n"
+        "          class: mermaid\n"
+        "          format: !!python/name:pymdownx.superfences.fence_code_format\n",
+        encoding="utf-8",
+    )
+
+    result = pages_readiness.validate_content_source(tmp_path, "pages")
+    assert result == {
+        "ok": True,
+        "content_source": "pages",
+        "mkdocs_docs_dir": "pages",
+    }
+
+
+def test_validate_content_source_no_mkdocs_yml_is_not_a_mismatch(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "docs").mkdir()
+
+    result = pages_readiness.validate_content_source(tmp_path, "docs")
+    assert result == {
+        "ok": True,
+        "content_source": "docs",
+        "mkdocs_docs_dir": None,
+    }
+
+
+def test_cli_validate_content_source(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "pages").mkdir()
+
+    assert (
+        pages_readiness.main(
+            [
+                "validate-content-source",
+                "--root",
+                str(tmp_path),
+                "--content-source",
+                "pages",
+            ]
+        )
+        == 0
+    )
+    result = json.loads(capsys.readouterr().out)
+    assert result == {
+        "ok": True,
+        "content_source": "pages",
+        "mkdocs_docs_dir": None,
+    }
+
+    assert (
+        pages_readiness.main(
+            [
+                "validate-content-source",
+                "--root",
+                str(tmp_path),
+                "--content-source",
+                "docs",
+            ]
+        )
+        == 1
+    )
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["ok"] is False
+    assert failure["error_code"] == "content-source-containment"

@@ -1,0 +1,72 @@
+# Shared GitHub Pages theme (CONCEPT:ECO-4.DOCS-DELIVERY / RF-ADR-009 D3-D5).
+#
+# A consuming repository's own `mkdocs.yml` inherits this file via mkdocs's
+# native `INHERIT:` key (a recursive dict merge, lists replaced only where the
+# child repository re-declares them -- see `mkdocs.utils.yaml.yaml_load`).
+# The `pages_pipeline.yml` reusable workflow wires the `INHERIT:` line in for
+# every caller that sets `shared_theme_enabled: true`; a repository never
+# hand-copies this file. The repository's own `mkdocs.yml` is then reduced to
+# its content manifest -- `site_name`, `site_url`, `nav`, and (until its own
+# docs migration wave) `docs_dir` -- while look, structure and navigation
+# hierarchy come from here, identically, for every consumer (EG, the
+# connector SDK, AU, graph-os, and the UIs).
+#
+# D3/D5: HTML/CSS renderings only. No ASCII art, no mermaid fences -- this
+# file deliberately does not enable `pymdownx.superfences`'s `mermaid` custom
+# fence that most repositories' own (pre-existing, untouched-by-this-lane)
+# `mkdocs.yml` still declares today.
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+extra_css:
+  - _pipelines-theme/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets

@@ -1,0 +1,25 @@
+# Tracked root entries of pipelines, read by the root-hygiene hook.
+# An allowlist, not a baseline: a new root entry needs a reason here or the gate
+# fails, and an entry that is no longer tracked fails as stale.
+
+[dirs]
+".github" = "the reusable GitHub Actions workflows other repositories call"
+".kiss" = "hand-set KISS thresholds for the shared hook package (.kiss/kiss.toml), not a baseline"
+docs = "reference documentation for the reusable workflows"
+pipelines_hooks = "the shared pre-commit hook package behind .pre-commit-hooks.yaml"
+scripts = "helper scripts the reusable workflows run"
+templates = "shared templates the reusable workflows render (for example the Pages mkdocs theme)"
+tests = "tests for the reusable workflows and the shared hooks"
+
+[files]
+"README.md" = "repository readme; carries the version marker bump2version updates"
+"VERSION" = "release version file updated by bump2version"
+"pyproject.toml" = "shared hook package metadata and this repository's [tool.pipelines_hooks] configuration"
+"uv.lock" = "uv lockfile for the shared hook package and its tests"
+
+[dotfiles]
+".bumpversion.cfg" = "bump2version release configuration"
+".gitattributes" = "git attributes"
+".gitignore" = "git exclusion patterns (carries the fleet-shared REQUIRED set)"
+".pre-commit-config.yaml" = "this repository's own hook suite, including the shared hooks run locally"
+".pre-commit-hooks.yaml" = "the published shared pre-commit hook catalogue"

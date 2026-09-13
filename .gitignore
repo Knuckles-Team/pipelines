@@ -132,3 +132,18 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Fleet-shared REQUIRED set (gitignore-convergence hook)
+dist-*/
+target-*/
+.venv/
+.ruff_cache/
+.pytest_tmp/
+node_modules/
+.kissconfig
+reports/
+scratch/
+
+# KISS writes a working cache under .kiss/; only the hand-set thresholds are tracked.
+.kiss/*
+!.kiss/kiss.toml

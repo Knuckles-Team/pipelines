@@ -3,21 +3,52 @@ name: Deploy GitHub Pages
 on:
   workflow_call:
     inputs:
+      content_source:
+        description: >-
+          Documentation content source directory (mkdocs's `docs_dir`). Only
+          consulted when a caller opts into `shared_theme_enabled` and/or
+          `agent_readiness_enabled` below -- a repository whose own
+          `mkdocs.yml` already declares `docs_dir` keeps building unaffected
+          by this input either way. New repositories default to the pages/
+          layout; a repository still declaring content under docs/ must set
+          this explicitly to "docs" once it opts into either feature. There
+          is no silent fallback between layouts: a missing or mismatched
+          content_source fails the build loudly rather than guessing.
+        required: false
+        type: string
+        default: pages
+      shared_theme_enabled:
+        description: >-
+          Deliberately inherit the one shared Pages theme (Material config,
+          markdown extensions, CSS) from this repository's
+          templates/mkdocs-theme/base.mkdocs.yml via mkdocs's native
+          INHERIT:, so the caller's own mkdocs.yml only needs to declare its
+          content manifest (site_name/site_url/nav/docs_dir).
+        required: false
+        type: boolean
+        default: false
       agent_readiness_enabled:
         description: "Deliberately enable canonical source-Markdown readiness delivery."
         required: false
         type: boolean
         default: false
       readiness_input:
-        description: "Canonical docs/agent-readiness.json path."
+        description: >-
+          Canonical agent-readiness.json path. Defaults to the pages/ layout;
+          a repository whose readiness file lives elsewhere (e.g. still under
+          docs/) must declare that explicitly -- there is no fallback probe
+          across layouts.
         required: false
         type: string
-        default: docs/agent-readiness.json
+        default: pages/agent-readiness.json
       readiness_schema:
-        description: "Canonical universal-skills readiness schema path."
+        description: >-
+          Canonical universal-skills readiness schema path. Defaults to the
+          pages/ layout; declare explicitly for a repository on another
+          layout.
         required: false
         type: string
-        default: docs/agent-readiness.schema.json
+        default: pages/agent-readiness.schema.json
       readiness_manifest:
         description: "Canonical generated agent-readiness manifest path."
         required: false
@@ -59,9 +90,61 @@ jobs:
         run: |
           pip install mkdocs-material==9.7.6 mkdocs-awesome-pages-plugin==2.10.1
 
+      - name: Checkout pipeline-owned scripts
+        if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-contract
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/__init__.py
+            scripts/pages_readiness.py
+
+      - name: Validate declared content source
+        if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
+        env:
+          CONTENT_SOURCE: ${{ inputs.content_source }}
+        run: |
+          set -euo pipefail
+          python .pipeline-contract/scripts/pages_readiness.py validate-content-source \
+            --root "$GITHUB_WORKSPACE" \
+            --content-source "$CONTENT_SOURCE"
+
+      - name: Checkout shared Pages theme
+        if: inputs.shared_theme_enabled
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-theme
+          persist-credentials: false
+          sparse-checkout: |
+            templates/mkdocs-theme/base.mkdocs.yml
+            templates/mkdocs-theme/extra.css
+
+      - name: Apply shared Pages theme
+        if: inputs.shared_theme_enabled
+        env:
+          CONTENT_SOURCE: ${{ inputs.content_source }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${CONTENT_SOURCE}/_pipelines-theme"
+          cp .pipeline-theme/templates/mkdocs-theme/extra.css "${CONTENT_SOURCE}/_pipelines-theme/extra.css"
+          if [ -f "mkdocs.yml" ]; then
+            if ! grep -q '^INHERIT:' mkdocs.yml; then
+              printf 'INHERIT: .pipeline-theme/templates/mkdocs-theme/base.mkdocs.yml\n' | cat - mkdocs.yml > mkdocs.yml.pipelines-tmp
+              mv mkdocs.yml.pipelines-tmp mkdocs.yml
+            fi
+          else
+            printf 'INHERIT: .pipeline-theme/templates/mkdocs-theme/base.mkdocs.yml\ndocs_dir: %s\nsite_name: Project Documentation\n' "${CONTENT_SOURCE}" > mkdocs.yml
+          fi
+
       - name: Build Docs
         env:
           READINESS_ENABLED: ${{ inputs.agent_readiness_enabled }}
+          CONTENT_SOURCE: ${{ inputs.content_source }}
         run: |
           set -euo pipefail
           if [ -f "mkdocs.yml" ]; then
@@ -75,26 +158,16 @@ jobs:
               echo "agent readiness requires an explicit mkdocs.yml" >&2
               exit 1
             fi
-            # Create a simple mkdocs.yml if it doesn't exist
-            printf 'site_name: Project Documentation\ntheme:\n  name: material\nmarkdown_extensions:\n  - pymdownx.highlight:\n      anchor_linenums: true\n  - pymdownx.superfences:\n      custom_fences:\n        - name: mermaid\n          class: mermaid\n          format: !!python/name:pymdownx.superfences.fence_code_format\n' > mkdocs.yml
+            # Create a minimal mkdocs.yml honoring the declared content
+            # source -- never assume the historical docs/ default.
+            python3 -c "import sys, pathlib; content_source = sys.argv[1]; pathlib.Path('mkdocs.yml').write_text('site_name: Project Documentation\ndocs_dir: ' + content_source + '\ntheme:\n  name: material\nmarkdown_extensions:\n  - pymdownx.highlight:\n      anchor_linenums: true\n  - pymdownx.superfences:\n      custom_fences:\n        - name: mermaid\n          class: mermaid\n          format: !!python/name:pymdownx.superfences.fence_code_format\n', encoding='utf-8')" "$CONTENT_SOURCE"
             mkdocs build
           fi
-
-      - name: Checkout Pages readiness contract
-        if: inputs.agent_readiness_enabled
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          repository: ${{ job.workflow_repository }}
-          ref: ${{ job.workflow_sha }}
-          path: .pipeline-contract
-          persist-credentials: false
-          sparse-checkout: |
-            scripts/__init__.py
-            scripts/pages_readiness.py
 
       - name: Publish source Markdown mirrors and derived discovery assets
         if: inputs.agent_readiness_enabled
         env:
+          CONTENT_SOURCE: ${{ inputs.content_source }}
           READINESS_INPUT: ${{ inputs.readiness_input }}
           READINESS_SCHEMA: ${{ inputs.readiness_schema }}
           READINESS_MANIFEST: ${{ inputs.readiness_manifest }}
@@ -104,6 +177,7 @@ jobs:
           python .pipeline-contract/scripts/pages_readiness.py build \
             --root "$GITHUB_WORKSPACE" \
             --site site \
+            --content-source "$CONTENT_SOURCE" \
             --readiness-input "$READINESS_INPUT" \
             --schema "$READINESS_SCHEMA" \
             --readiness-manifest "$READINESS_MANIFEST" \
@@ -112,6 +186,7 @@ jobs:
       - name: Run offline Agent Readiness TCK
         if: inputs.agent_readiness_enabled
         env:
+          CONTENT_SOURCE: ${{ inputs.content_source }}
           READINESS_INPUT: ${{ inputs.readiness_input }}
           READINESS_SCHEMA: ${{ inputs.readiness_schema }}
           READINESS_MANIFEST: ${{ inputs.readiness_manifest }}
@@ -121,6 +196,7 @@ jobs:
           python .pipeline-contract/scripts/pages_readiness.py tck \
             --root "$GITHUB_WORKSPACE" \
             --site site \
+            --content-source "$CONTENT_SOURCE" \
             --readiness-input "$READINESS_INPUT" \
             --schema "$READINESS_SCHEMA" \
             --readiness-manifest "$READINESS_MANIFEST" \
