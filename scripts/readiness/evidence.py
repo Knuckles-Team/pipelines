@@ -51,10 +51,11 @@ def _validate_oauth_metadata(root: Path, raw: Mapping[str, Any]) -> None:
 
     for field in OAUTH_METADATA_FIELDS:
         if field in raw:
-            _read_json(
+            metadata = _read_json(
                 _safe_existing_path(root, raw[field], f"{field}-metadata"),
                 f"{field}-metadata",
             )
+            _scan_safe_text(metadata, f"{field}-metadata")
 
 
 def _read_capability_artifact(

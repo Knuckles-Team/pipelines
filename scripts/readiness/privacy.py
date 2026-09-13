@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import ipaddress
 import re
 from collections.abc import Mapping
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from .constants import BEARER_PATTERN, SECRET_PATTERN, URL_PATTERN
 from .errors import _fail
+from .ip_addresses import _private_address
 
 
 def _private_hostname(host: str) -> bool:
@@ -17,27 +17,11 @@ def _private_hostname(host: str) -> bool:
     )
 
 
-def _private_address(host: str) -> bool:
-    try:
-        address = ipaddress.ip_address(host)
-    except ValueError:
-        address = None
-    return address is not None and any(
-        (
-            address.is_private,
-            address.is_loopback,
-            address.is_link_local,
-            address.is_reserved,
-            address.is_unspecified,
-            address.is_multicast,
-        )
-    )
-
-
 def _reject_private_host(host: str, label: str) -> None:
     """Reject local names and non-public IP address literals."""
 
-    if _private_hostname(host) or _private_address(host):
+    decoded = unquote(host).rstrip(".").lower()
+    if _private_hostname(decoded) or _private_address(decoded):
         _fail(f"{label}-private-url")
 
 
@@ -71,10 +55,24 @@ def _scan_children(value: Mapping[object, object] | list[object], label: str) ->
         for key, child in value.items():
             if not isinstance(key, str):
                 _fail(f"{label}-metadata-invalid")
+            _scan_key_values(key, child, label)
             _scan_safe_text(child, label)
         return
     for child in value:
         _scan_safe_text(child, label)
+
+
+def _scan_key_values(key: str, value: object, label: str) -> None:
+    """Scan scalar descendants together with their decoded metadata key."""
+
+    if isinstance(value, list):
+        for child in value:
+            _scan_key_values(key, child, label)
+        return
+    if isinstance(value, Mapping):
+        return
+    if value is None or isinstance(value, (str, bool, int, float)):
+        _scan_text(f"{key}={value}", label)
 
 
 def _scan_safe_text(value: object, label: str) -> None:

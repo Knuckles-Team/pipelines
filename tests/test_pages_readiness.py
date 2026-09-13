@@ -419,6 +419,15 @@ def test_cli_failure_result_is_versioned(
     [
         ("http://docs.example.test/api", "api-endpoint-url-invalid"),
         ("https://127.0.0.1/api", "api-endpoint-private-url"),
+        ("https://2130706433/api", "api-endpoint-private-url"),
+        ("HTTPS://2130706433/api", "api-endpoint-private-url"),
+        ("https://127.1/api", "api-endpoint-private-url"),
+        ("https://0x7f000001/api", "api-endpoint-private-url"),
+        ("https://017700000001/api", "api-endpoint-private-url"),
+        ("https://0177.0.0.1/api", "api-endpoint-private-url"),
+        ("https://%31%32%37.0.0.1/api", "api-endpoint-private-url"),
+        ("https://%4Cocalhost%2E/api", "api-endpoint-private-url"),
+        (f"https://{'9' * 1024}/api", "api-endpoint-private-url"),
     ],
 )
 def test_malformed_or_private_capability_reference_is_rejected(
@@ -443,6 +452,111 @@ def test_malformed_or_private_capability_reference_is_rejected(
 
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         pages_readiness.build(root, site)
+
+
+def test_decoded_json_scan_rejects_an_escaped_secret_key(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    readiness["content_signals"] = {
+        "policy": "operator-reviewed",
+        "values": {"api_key": "abcdefghijklmnop"},
+    }
+    encoded = json.dumps(readiness, sort_keys=True)
+    encoded = encoded.replace("api_key", "api\\u005fkey")
+    (root / "pages/agent-readiness.json").write_text(encoded, encoding="utf-8")
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError,
+        match="content-signals-secret-like-value",
+    ):
+        pages_readiness.build(root, site)
+
+
+def test_decoded_json_scan_rejects_escaped_uppercase_numeric_private_url(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    readiness["content_signals"] = {
+        "policy": "operator-reviewed",
+        "values": {"reference": "HTTPS://2130706433/private"},
+    }
+    encoded = json.dumps(readiness, sort_keys=True).replace(
+        "HTTPS://", "HTTPS\\u003a\\u002f\\u002f"
+    )
+    (root / "pages/agent-readiness.json").write_text(encoded, encoding="utf-8")
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError,
+        match="content-signals-private-url",
+    ):
+        pages_readiness.build(root, site)
+
+
+def test_decoded_json_scan_rejects_an_uppercase_private_url(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    readiness["content_signals"] = {
+        "policy": "operator-reviewed",
+        "values": {"reference": "HTTPS://127.0.0.1/private"},
+    }
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True), encoding="utf-8"
+    )
+
+    with pytest.raises(
+        pages_readiness.ReadinessTckError,
+        match="content-signals-private-url",
+    ):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    "safe_value",
+    ["env://LONG_VARIABLE_NAME", "<redacted>", "redacted-value-placeholder"],
+)
+def test_decoded_secret_key_allows_explicit_placeholders(
+    tmp_path: Path, safe_value: str
+) -> None:
+    root, site, readiness = _fixture(tmp_path)
+    signals = {
+        "policy": "operator-reviewed",
+        "values": {"api_key": safe_value},
+    }
+    readiness["content_signals"] = signals
+    (root / "pages/agent-readiness.json").write_text(
+        json.dumps(readiness, sort_keys=True), encoding="utf-8"
+    )
+    manifest_path = root / "agent-readiness-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["content_signals"] = signals
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert pages_readiness.build(root, site)["ok"] is True
+
+
+def test_public_numeric_ipv4_endpoint_is_not_a_private_url_false_positive(
+    tmp_path: Path,
+) -> None:
+    root, site, readiness = _connector(tmp_path)
+    readiness["capabilities"]["mcp"] = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "endpoint": "HTTPS://134744072/mcp",
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": {"applicable": True, "artifact": "mcp-capability.json"},
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True
 
 
 def test_traversal_symlink_and_oversized_outputs_fail_closed(tmp_path: Path) -> None:
@@ -1251,6 +1365,98 @@ def test_discovery_outputs_are_bound_to_the_declaration(
         path.parent.mkdir(parents=True, exist_ok=True)
         if not path.parent.is_file():
             path.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        (False, None),
+        (False, ".well-known/mcp-server-card.json"),
+        (False, ".well-known/api-catalog"),
+        (True, ".well-known/mcp-server-card.json"),
+        (True, ".well-known/api-catalog"),
+    ],
+)
+def test_public_discovery_outputs_follow_the_discoverability_switch(
+    tmp_path: Path, case: tuple[bool, str | None]
+) -> None:
+    discoverable, discovery = case
+    root, site, readiness = _connector(tmp_path)
+    readiness["applicability"]["discoverability"] = discoverable
+    public_mcp = {
+        "applicable": True,
+        "artifact": "mcp-capability.json",
+        "transport": "streamable-http",
+        "reachability": "public",
+        "endpoint": "https://mcp.example.com/mcp",
+    }
+    readiness["capabilities"]["mcp"] = public_mcp
+    artifact_path = root / "mcp-capability.json"
+    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    artifact["http_transport"] = True
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+    manifest_mcp = {
+        key: value for key, value in public_mcp.items() if key != "endpoint"
+    }
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": manifest_mcp,
+            "a2a": {"applicable": False},
+            "skills": {"applicable": False},
+        },
+        discovery=() if discovery is None else (discovery,),
+    )
+
+    if discoverable or discovery is None:
+        assert pages_readiness.build(root, site)["ok"] is True
+        if discovery is not None:
+            assert (site / discovery).is_file()
+        return
+    with pytest.raises(
+        pages_readiness.ReadinessTckError, match="generated-discovery-unbound"
+    ):
+        pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        ('{"api\\u005fkey":"abcdefghijklmnop"}\n', "generated-output-secret-like-value"),
+        (
+            '{"reference":"HTTPS\\u003a\\u002f\\u002f2130706433/private"}\n',
+            "generated-output-private-url",
+        ),
+    ],
+)
+def test_generated_discovery_scans_decoded_json_values(
+    tmp_path: Path, case: tuple[str, str]
+) -> None:
+    payload, expected = case
+    root, site, readiness = _connector(tmp_path)
+    readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
+    readiness["capabilities"]["skills"] = {
+        "applicable": True,
+        "path": "skills",
+    }
+    discovery = ".well-known/agent-skills.json"
+    _declare(
+        root,
+        readiness,
+        {
+            "api": {"applicable": False},
+            "mcp": dict(STDIO_MCP),
+            "a2a": {"applicable": False},
+            "skills": {"applicable": True, "path": "skills"},
+        },
+        discovery=(discovery,),
+    )
+    (root / discovery).write_text(payload, encoding="utf-8")
 
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         pages_readiness.build(root, site)

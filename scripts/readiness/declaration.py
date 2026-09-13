@@ -65,6 +65,7 @@ def _validate_schema(schema: Mapping[str, Any]) -> set[str]:
         isinstance(version, Mapping) and version.get("const") == SCHEMA_VERSION,
         "schema-authority-invalid",
     )
+    _scan_safe_text(schema, "schema")
     return required_set
 
 

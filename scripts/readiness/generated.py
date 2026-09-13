@@ -46,9 +46,9 @@ def _validate_surface_discovery(
 ) -> None:
     """Require one public surface document only when it is declared."""
 
-    if name not in present or not discoverable:
+    if name not in present:
         return
-    if not _publicly_discoverable(raw):
+    if not discoverable or not _publicly_discoverable(raw):
         _fail("generated-discovery-unbound")
 
 
@@ -57,12 +57,12 @@ def _validate_api_discovery(
 ) -> None:
     """Require an API catalog only when a public surface is declared."""
 
-    if "api-catalog" not in present or not discoverable:
+    if "api-catalog" not in present:
         return
-    if not (
-        _publicly_discoverable(capabilities["mcp"])
-        or _publicly_discoverable(capabilities["a2a"])
-    ):
+    public_surface = _publicly_discoverable(
+        capabilities["mcp"]
+    ) or _publicly_discoverable(capabilities["a2a"])
+    if not discoverable or not public_surface:
         _fail("generated-discovery-unbound")
 
 
@@ -104,6 +104,7 @@ def _validate_generated_file(root: Path, relative: str) -> bytes:
             _fail("generated-discovery-invalid-json")
         if not isinstance(document, dict):
             _fail("generated-discovery-invalid-json")
+        _scan_safe_text(document, "generated-output")
     return payload
 
 
