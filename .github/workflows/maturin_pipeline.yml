@@ -50,20 +50,10 @@ jobs:
           - target: aarch64-apple-darwin
             runner: macos-14
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Build wheels
-        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+      - uses: ./.github/actions/maturin-build-wheels
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: wheels-macos-${{ matrix.target }}
-          path: dist
+          artifact-name: wheels-macos-${{ matrix.target }}
 
   # ── Windows Wheels ─────────────────────────────────────────────
   # rdkafka builds its bundled librdkafka via CMake (cmake-build feature) so it
@@ -74,20 +64,10 @@ jobs:
       matrix:
         target: [x86_64-pc-windows-msvc]
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Build wheels
-        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+      - uses: ./.github/actions/maturin-build-wheels
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: wheels-windows-${{ matrix.target }}
-          path: dist
+          artifact-name: wheels-windows-${{ matrix.target }}
 
   # ── Source Distribution ────────────────────────────────────────
   sdist:
@@ -160,17 +140,7 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ./.github/actions/create-version-release
         with:
-          tag_name: v${{ env.BUILD_VERSION }}
-          name: Release v${{ env.BUILD_VERSION }}
-          body: |
-            Released: ${{ env.COMMIT_DATETIME }}
-            Commit: ${{ env.LATEST_COMMIT }}
-            Changes:
-            ${{ env.COMMIT_MESSAGE }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           files: dist/*
-          draft: false
-          prerelease: false

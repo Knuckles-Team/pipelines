@@ -1,0 +1,81 @@
+name: Build, publish and release a Python package
+description: >-
+  Build a Python package with uv, upload the wheel as a workflow artifact,
+  publish it to PyPI with twine, and create a matching GitHub release.
+  Shared by python_pipeline.yml and python_web_pipeline.yml, which differ
+  only in whether a missing requirements.txt is tolerated and whether twine
+  skips an already-published version.
+inputs:
+  pypi-token:
+    description: PyPI API token used by twine.
+    required: true
+  github-token:
+    description: Token used to create the GitHub release.
+    required: true
+  tolerate-missing-requirements:
+    description: >-
+      Continue when `uv pip install -r requirements.txt` fails (the web
+      pipeline package need not vendor its own requirements.txt).
+    required: false
+    default: 'false'
+  twine-skip-existing:
+    description: Pass twine --skip-existing (an idempotent re-trigger becomes a no-op).
+    required: false
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - name: Build package
+      id: build_package
+      shell: bash
+      run: |
+        echo "Creating virtual environment"
+        # Pin to 3.13: Python 3.14 breaks native builds of transitive deps
+        # (e.g. litellm's PyO3 chain caps at cp313), failing release CI fleet-wide.
+        uv venv --python 3.13 .venv
+        source .venv/bin/activate
+        echo "Installing dependencies"
+        if [ "${{ inputs.tolerate-missing-requirements }}" = "true" ]; then
+          uv pip install -r requirements.txt || true
+        else
+          uv pip install -r requirements.txt
+        fi
+        echo "Building package"
+        uv build
+        BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
+        LATEST_COMMIT=$(git rev-parse --verify HEAD)
+        echo "Last Commit: ${LATEST_COMMIT}"
+        if [[ $TAG != '' ]]; then
+          CURRENT_COMMIT=$(git rev-list -n 1 $TAG)
+          CURRENT_RELEASE=$(git tag -l | sort -V | tail -n1 | sed 's/v//')
+        else
+          TAG=''
+          CURRENT_COMMIT=${LATEST_COMMIT}
+          CURRENT_RELEASE="0.0.0"  # Default for no tags
+        fi
+        COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
+        COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
+        COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
+        echo -e "COMMIT_DATETIME=$COMMIT_DATETIME\nCOMMIT_MESSAGE=$COMMIT_MESSAGE\nBUILD_VERSION=$BUILD_VERSION" | tee -a "$GITHUB_ENV"
+
+    - name: Upload Artifact
+      id: upload_artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ github.event.repository.name }}-${{ env.BUILD_VERSION }}
+        path: dist/*.whl
+        if-no-files-found: error
+
+    - name: Publish package
+      shell: bash
+      run: |
+        if [ "${{ inputs.twine-skip-existing }}" = "true" ]; then
+          twine upload --skip-existing dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
+        else
+          twine upload dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
+        fi
+
+    - name: Create Release
+      uses: ./.github/actions/create-version-release
+      with:
+        github-token: ${{ inputs.github-token }}

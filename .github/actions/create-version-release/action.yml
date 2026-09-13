@@ -1,0 +1,33 @@
+name: Create a versioned GitHub release
+description: >-
+  Create a GitHub release named after the calling job's BUILD_VERSION,
+  COMMIT_DATETIME, LATEST_COMMIT and COMMIT_MESSAGE environment variables
+  (set by a preceding build step). Shared by python_pipeline.yml (via
+  publish-python-package), python_web_pipeline.yml (via publish-python-package)
+  and maturin_pipeline.yml, which all release from the same four variables.
+inputs:
+  github-token:
+    description: Token used to create the release.
+    required: true
+  files:
+    description: Glob of release asset files to attach.
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Create Release
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      with:
+        tag_name: v${{ env.BUILD_VERSION }}
+        name: Release v${{ env.BUILD_VERSION }}
+        body: |
+          Released: ${{ env.COMMIT_DATETIME }}
+          Commit: ${{ env.LATEST_COMMIT }}
+          Changes:
+          ${{ env.COMMIT_MESSAGE }}
+        files: ${{ inputs.files }}
+        draft: false
+        prerelease: false
