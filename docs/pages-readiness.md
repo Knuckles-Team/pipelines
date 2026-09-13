@@ -51,9 +51,10 @@ canonical universal-skills artifacts:
   `<content_source>/agent-readiness.json` (default `pages/…`) — the versioned
   input authority and its explicit applicability policy.
 
-`scripts/pages_readiness.py` validates those exact artifacts, re-hashes every
-declared source, rejects traversal/symlink/hardlink/private capability
-references, and checks generated-output bounds. It then copies source Markdown
+The `scripts/pages_readiness.py` entry and its bounded `scripts/readiness/`
+package validate those exact artifacts, re-hash every declared source, reject
+traversal/symlink/hardlink/private capability references, and check
+generated-output bounds. They then copy source Markdown
 to each declared fallback and copies the canonical `llms.txt` hierarchy and the
 generated `.well-known` discovery documents into the uploaded site. Other
 existing `.well-known` files from the strict MkDocs output are retained. Only
@@ -129,14 +130,9 @@ and must agree:
 | `public` | same network transports | a verifiable public HTTPS `endpoint` | `service_identity` |
 
 An MCP surface declaring `streamable-http` or `sse` must be backed by a
-capability artifact with `"http_transport": true`. For example, a stdio
-connector that also ships skills declares:
-
-```json
-"mcp": {"applicable": true, "artifact": "capabilities/mcp.json",
-        "transport": "stdio", "reachability": "local"},
-"skills": {"applicable": true, "path": "skills"}
-```
+capability artifact with `"http_transport": true`. A stdio connector that also
+ships skills marks both capabilities applicable, binds MCP to its artifact with
+the `stdio`/`local` pair, and names the directory containing its skills.
 
 A declaration without `transport`/`reachability` keeps its earlier meaning: an
 optional `endpoint`, validated as public HTTPS when present.
@@ -153,29 +149,16 @@ private URLs are never printed.
 
 ## Caller contract
 
-```yaml
-jobs:
-  pages:
-    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@<reviewed-sha>
-    with:
-      content_source: pages
-      shared_theme_enabled: true
-      agent_readiness_enabled: true
-      readiness_input: pages/agent-readiness.json
-      readiness_schema: pages/agent-readiness.schema.json
-      readiness_manifest: agent-readiness-manifest.json
-      markdown_manifest: markdown-mirror-manifest.json
-```
+Call `.github/workflows/pages_pipeline.yml@<reviewed-sha>` as a reusable
+workflow. A repository on the current layout passes `content_source: pages`,
+enables the shared theme and agent readiness as needed, and points the two
+readiness inputs at `pages/agent-readiness.json` and
+`pages/agent-readiness.schema.json`. The generated manifests remain at the
+repository root under their canonical names.
 
-A repository still on `docs/` declares that explicitly instead:
-
-```yaml
-    with:
-      content_source: docs
-      agent_readiness_enabled: true
-      readiness_input: docs/agent-readiness.json
-      readiness_schema: docs/agent-readiness.schema.json
-```
+A repository still on `docs/` passes `content_source: docs` and points
+`readiness_input` and `readiness_schema` at the corresponding files below that
+directory.
 
 `shared_theme_enabled` and `agent_readiness_enabled` both default to `false`
 and are independent -- a caller may enable either, both, or neither. A caller

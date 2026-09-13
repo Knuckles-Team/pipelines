@@ -111,6 +111,20 @@ def test_content_source_is_validated_before_any_declared_authority_is_trusted() 
     assert "Checkout pipeline-owned scripts" in text
 
 
+def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
+    document = _workflow()["document"]
+    checkout = next(
+        step
+        for step in document["jobs"]["deploy"]["steps"]
+        if step.get("name") == "Checkout pipeline-owned scripts"
+    )
+    assert checkout["with"]["sparse-checkout"].splitlines() == [
+        "scripts/__init__.py",
+        "scripts/pages_readiness.py",
+        "scripts/readiness",
+    ]
+
+
 def test_shared_theme_inherits_via_mkdocs_native_inherit_key() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "templates/mkdocs-theme/base.mkdocs.yml" in text

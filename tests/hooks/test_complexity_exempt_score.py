@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from tests.hooks.conftest import Repo, branchy
 
-HANDLE_SHEX_VALIDATE_BASE = """
+HANDLE_SHEX_VALIDATE_COMMON = """
 async fn handle_shex_validate(
     req_id: u64,
     graph_name: &str,
@@ -64,6 +64,9 @@ async fn handle_shex_validate(
         .collect();
     let map = eg_shex::ShapeMap::from_iri_pairs(&pairs);
     let report = eg_shex::validate(&schema, &data, &map);
+"""
+
+HANDLE_SHEX_VALIDATE_BASE = HANDLE_SHEX_VALIDATE_COMMON + """\
     match serde_json::to_value(&report) {
         Ok(v) => Response::ok(req_id, ResultPayload::Json(v)),
         Err(e) => Response::err(req_id, format!("ShexValidate: serialize report: {e}")),
@@ -71,45 +74,7 @@ async fn handle_shex_validate(
 }
 """
 
-HANDLE_SHEX_VALIDATE_SIMPLIFIED = """
-async fn handle_shex_validate(
-    req_id: u64,
-    graph_name: &str,
-    core: &Arc<GraphCore>,
-    schema: String,
-    data_graph: String,
-    shape_map: Vec<[String; 2]>,
-) -> Response {
-    let schema = match eg_shex::Schema::from_shexj(&schema) {
-        Ok(s) => s,
-        Err(e) => return Response::err(req_id, format!("ShexValidate: bad schema: {e}")),
-    };
-    let data = if data_graph.trim().is_empty() {
-        let exported = eg_rdf::mapping::export_triples(core, graph_name);
-        match exported {
-            Ok(triples) => {
-                let mut g = eg_shex::Graph::new();
-                for t in &triples {
-                    g.insert(t);
-                }
-                g
-            }
-            Err(e) => {
-                return Response::err(req_id, format!("ShexValidate: export live graph: {e}"))
-            }
-        }
-    } else {
-        match eg_shex::graph_from_turtle(&data_graph) {
-            Ok(g) => g,
-            Err(e) => return Response::err(req_id, format!("ShexValidate: bad data graph: {e}")),
-        }
-    };
-    let pairs: Vec<(&str, &str)> = shape_map
-        .iter()
-        .map(|p| (p[0].as_str(), p[1].as_str()))
-        .collect();
-    let map = eg_shex::ShapeMap::from_iri_pairs(&pairs);
-    let report = eg_shex::validate(&schema, &data, &map);
+HANDLE_SHEX_VALIDATE_SIMPLIFIED = HANDLE_SHEX_VALIDATE_COMMON + """\
     Response::ok(
         req_id,
         ResultPayload::of::<eg_types::result_contract::reasoning::ShexValidate>(shex_report_wire(

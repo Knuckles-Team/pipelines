@@ -10,6 +10,9 @@ import hashlib
 import http.server
 import json
 import mimetypes
+import os
+import shutil
+import subprocess
 import sys
 import threading
 from functools import partial
@@ -22,7 +25,7 @@ import pytest
 # Keep the repository-local helper ahead of any similarly named installed
 # package when pytest uses its importlib test mode.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts import pages_readiness
+from scripts import readiness as pages_readiness
 
 
 SCHEMA = {
@@ -721,6 +724,58 @@ def test_cli_validate_content_source(
     failure = json.loads(capsys.readouterr().out)
     assert failure["ok"] is False
     assert failure["error_code"] == "content-source-containment"
+
+
+def test_direct_entry_requires_and_loads_the_sparse_readiness_package(
+    tmp_path: Path,
+) -> None:
+    """Prove the workflow's direct-file entry reaches the split package."""
+
+    source_scripts = Path(__file__).parents[1] / "scripts"
+    caller = tmp_path / "caller"
+    contract_scripts = caller / ".pipeline-contract" / "scripts"
+    contract_scripts.mkdir(parents=True)
+    (caller / "pages").mkdir()
+    shutil.copy2(source_scripts / "__init__.py", contract_scripts / "__init__.py")
+    shutil.copy2(
+        source_scripts / "pages_readiness.py",
+        contract_scripts / "pages_readiness.py",
+    )
+    command = [
+        sys.executable,
+        ".pipeline-contract/scripts/pages_readiness.py",
+        "validate-content-source",
+        "--root",
+        str(caller),
+        "--content-source",
+        "pages",
+    ]
+    environment = {**os.environ, "PYTHONPATH": ""}
+    missing = subprocess.run(
+        command,
+        cwd=caller,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert missing.returncode != 0
+
+    shutil.copytree(source_scripts / "readiness", contract_scripts / "readiness")
+    wired = subprocess.run(
+        command,
+        cwd=caller,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert wired.returncode == 0, wired.stderr
+    assert json.loads(wired.stdout) == {
+        "content_source": "pages",
+        "mkdocs_docs_dir": None,
+        "ok": True,
+    }
 
 
 PROJECT_SITE = "https://example.github.io/example-connector/"

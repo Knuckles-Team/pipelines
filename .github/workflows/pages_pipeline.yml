@@ -104,6 +104,7 @@ jobs:
           sparse-checkout: |
             scripts/__init__.py
             scripts/pages_readiness.py
+            scripts/readiness
 
       - name: Validate declared content source
         if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
