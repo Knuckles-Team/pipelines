@@ -72,12 +72,22 @@ def test_actions_are_immutable_and_permissions_are_least_privilege() -> None:
     assert "persist-credentials: false" in text
 
 
+def test_write_scopes_are_held_only_by_the_deploy_job() -> None:
+    document = _workflow()["document"]
+    assert document["permissions"] == {"contents": "read"}
+    assert document["jobs"]["deploy"]["permissions"] == {
+        "contents": "read",
+        "pages": "write",
+        "id-token": "write",
+    }
+
+
 def test_enabled_path_checks_strict_build_and_runs_owned_tck() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "if: inputs.agent_readiness_enabled" in text
     assert "mkdocs build --strict" in text
-    assert "python .pipeline-contract/scripts/pages_readiness.py build" in text
-    assert "python .pipeline-contract/scripts/pages_readiness.py tck" in text
+    assert "for mode in build tck; do" in text
+    assert 'python .pipeline-contract/scripts/pages_readiness.py "$mode"' in text
     assert "--content-source" in text
     assert "repository: ${{ job.workflow_repository }}" in text
     assert "ref: ${{ job.workflow_sha }}" in text
