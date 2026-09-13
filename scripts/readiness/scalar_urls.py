@@ -65,15 +65,13 @@ def _reject_decoded_secrets(value: str, label: str) -> None:
 
 
 def _reject_decode_bound(current: str, label: str) -> None:
-    """Fail if one more pass would expose security-relevant structure."""
+    """Fail when one bounded probe proves another decode layer remains."""
 
     probe = _decode_scalar_pass(current, label)
-    if probe is not None:
-        _reject_decoded_secrets(probe, label)
-    if _ENCODED_URL_PATTERN.search(current) or (
-        probe is not None and URL_PATTERN.search(probe)
-    ):
-        _fail(f"{label}-url-invalid")
+    if probe is None or probe == current:
+        return
+    _reject_decoded_secrets(probe, label)
+    _fail(f"{label}-url-invalid")
 
 
 def _scan_urls(raw: str, label: str) -> None:

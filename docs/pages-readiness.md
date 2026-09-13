@@ -66,6 +66,17 @@ corresponding HTML, emit bounded `robots.txt` and `sitemap.xml`, and write
 existing UTF-8 `robots.txt` policy and adds exactly one validated sitemap line;
 when no policy exists it emits only the sitemap directive.
 
+Privacy validation decodes non-URL scalar text at most three times before
+checking it for secret, bearer, and encoded URL structure. One additional
+bounded probe is used only to prove that the scalar reached the boundary: if
+that probe changes the value, validation fails with the stable
+`*-url-invalid` error (or `*-secret-like-value` when the probe directly exposes
+a secret). The probe's output is never accepted or decoded again. Malformed or
+ordinary percent text that does not decode remains valid. Recognized URL spans
+use their separate three-pass component validator, which preserves a valid
+encoded literal percent while checking canonical authority, path, query, and
+fragment values.
+
 Existing HTML `noindex` and deprecated markers are retained. Such pages remain
 available as explicit fallbacks but are omitted from the generated sitemap.
 No Content Signals are inferred: `policy: unset` emits no signal, while an

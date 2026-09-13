@@ -573,6 +573,15 @@ def test_public_numeric_ipv4_endpoint_is_not_a_private_url_false_positive(
         ),
         ("token%2525253Dabcdefghijklmnop", "direct-secret-like-value"),
         ("bearer%25252520abcdefghijklmnop", "direct-secret-like-value"),
+        ("token%252525253Dabcdefghijklmnop", "direct-url-invalid"),
+        (
+            "api_key%252525252525252525253Dabcdefghijklmnop",
+            "direct-url-invalid",
+        ),
+        (
+            "bearer%2525252525252525252520abcdefghijklmnop",
+            "direct-url-invalid",
+        ),
     ],
 )
 def test_privacy_scanner_fails_closed_at_canonical_boundaries(
@@ -580,6 +589,21 @@ def test_privacy_scanner_fails_closed_at_canonical_boundaries(
 ) -> None:
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         _scan_safe_text(value, "direct")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "release%252520notes",
+        "version%2",
+        "ordinary 50% text",
+        "literal%GG",
+    ],
+)
+def test_privacy_scanner_allows_bounded_and_malformed_percent_text(
+    value: str,
+) -> None:
+    _scan_safe_text(value, "direct")
 
 
 def test_traversal_symlink_and_oversized_outputs_fail_closed(tmp_path: Path) -> None:
@@ -1624,6 +1648,22 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
             '{"value":"bearer%25252520abcdefghijklmnop"}\n',
             "generated-output-secret-like-value",
         ),
+        (
+            '{"value":"token%252525253Dabcdefghijklmnop"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"api_key%252525252525252525253Dabcdefghijklmnop"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"bearer%2525252525252525252520abcdefghijklmnop"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"release%25252520notes"}\n',
+            "generated-output-url-invalid",
+        ),
     ],
 )
 def test_generated_discovery_scans_decoded_json_values(
@@ -1656,7 +1696,9 @@ def test_generated_discovery_scans_decoded_json_values(
         "https://public.example/?next=https%3A%2F%2Fpublic.example%2Fdiscount%2525",
         "https%3A%2F%2Fpublic.example%2Fdiscount%2525",
         "https%253A%252F%252Fpublic.example%252Fdiscount%252525",
-        "release%25252520notes",
+        "release%252520notes",
+        "version%2",
+        "ordinary 50% text",
     ],
 )
 def test_generated_discovery_allows_benign_percent_encoding(
