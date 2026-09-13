@@ -26,6 +26,7 @@ runs:
         body: |
           Released: ${{ env.COMMIT_DATETIME }}
           Commit: ${{ env.LATEST_COMMIT }}
+          Pipelines contract: ${{ env.PIPELINES_CONTRACT_COMMIT }}
           Changes:
           ${{ env.COMMIT_MESSAGE }}
         files: ${{ inputs.files }}

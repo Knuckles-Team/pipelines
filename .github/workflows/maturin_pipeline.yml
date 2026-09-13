@@ -17,11 +17,20 @@ jobs:
       matrix:
         target: [x86_64, aarch64]
     steps:
+      - &checkout_pipeline_contract
+        name: Checkout pipeline contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-contract
+          persist-credentials: false
+
       - name: Setup QEMU
         if: matrix.target == 'aarch64'
         uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
 
-      - uses: ./.github/actions/maturin-build-wheels
+      - uses: ./.pipeline-contract/.github/actions/maturin-build-wheels
         with:
           target: ${{ matrix.target }}-unknown-linux-gnu
           manylinux: "2_28"
@@ -40,7 +49,9 @@ jobs:
           - target: aarch64-apple-darwin
             runner: macos-14
     steps:
-      - uses: ./.github/actions/maturin-build-wheels
+      - *checkout_pipeline_contract
+
+      - uses: ./.pipeline-contract/.github/actions/maturin-build-wheels
         with:
           target: ${{ matrix.target }}
           artifact-name: wheels-macos-${{ matrix.target }}
@@ -54,7 +65,9 @@ jobs:
       matrix:
         target: [x86_64-pc-windows-msvc]
     steps:
-      - uses: ./.github/actions/maturin-build-wheels
+      - *checkout_pipeline_contract
+
+      - uses: ./.pipeline-contract/.github/actions/maturin-build-wheels
         with:
           target: ${{ matrix.target }}
           artifact-name: wheels-windows-${{ matrix.target }}
@@ -63,7 +76,9 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/checkout-verified-source
+      - *checkout_pipeline_contract
+
+      - uses: ./.pipeline-contract/.github/actions/checkout-verified-source
 
       - name: Build sdist
         uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
@@ -72,7 +87,7 @@ jobs:
           args: --out dist
 
       - name: Verify source commit after build
-        uses: ./.github/actions/verify-source-commit
+        uses: ./.pipeline-contract/.github/actions/verify-source-commit
         with:
           phase: after
 
@@ -88,7 +103,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: ./.github/actions/checkout-verified-source
+      - *checkout_pipeline_contract
+
+      - uses: ./.pipeline-contract/.github/actions/checkout-verified-source
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -97,7 +114,7 @@ jobs:
           merge-multiple: true
 
       - name: Verify source commit after artifact download
-        uses: ./.github/actions/verify-source-commit
+        uses: ./.pipeline-contract/.github/actions/verify-source-commit
         with:
           phase: after
 
@@ -131,7 +148,7 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create Release
-        uses: ./.github/actions/create-version-release
+        uses: ./.pipeline-contract/.github/actions/create-version-release
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: dist/*

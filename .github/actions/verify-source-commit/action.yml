@@ -7,18 +7,25 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
     - name: Verify source commit on Unix
       if: runner.os != 'Windows'
       shell: bash
       env:
         EXPECTED_COMMIT: ${{ github.sha }}
+        EXPECTED_WORKFLOW_COMMIT: ${{ job.workflow_sha }}
+        PIPELINES_CONTRACT_PATH: .pipeline-contract
       run: |
-        python3 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"
+        uv run --no-project --python 3.13 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"
 
     - name: Verify source commit on Windows
       if: runner.os == 'Windows'
       shell: pwsh
       env:
         EXPECTED_COMMIT: ${{ github.sha }}
+        EXPECTED_WORKFLOW_COMMIT: ${{ job.workflow_sha }}
+        PIPELINES_CONTRACT_PATH: .pipeline-contract
       run: |
-        python "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"
+        uv run --no-project --python 3.13 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"

@@ -31,6 +31,17 @@ jobs:
         with:
           persist-credentials: false
 
+      # A called workflow executes in the caller's checkout.  Fetch this
+      # workflow's own action bytes at the exact resolved workflow commit
+      # before any local composite action is loaded.
+      - name: Checkout pipeline contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-contract
+          persist-credentials: false
+
       - name: Setup Node.js
         if: inputs.web-assets && hashFiles('package.json') != ''
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -64,7 +75,7 @@ jobs:
           fi
 
       - name: Build, publish and release
-        uses: ./.github/actions/publish-python-package
+        uses: ./.pipeline-contract/.github/actions/publish-python-package
         with:
           pypi-token: ${{ secrets.PYPI_API_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

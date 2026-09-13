@@ -27,7 +27,7 @@ runs:
   using: composite
   steps:
     - name: Bind source commit
-      uses: ./.github/actions/verify-source-commit
+      uses: ./.pipeline-contract/.github/actions/verify-source-commit
       with:
         phase: before
 
@@ -65,7 +65,7 @@ runs:
         } >> "$GITHUB_ENV"
 
     - name: Verify source commit after build
-      uses: ./.github/actions/verify-source-commit
+      uses: ./.pipeline-contract/.github/actions/verify-source-commit
       with:
         phase: after
 
@@ -87,6 +87,6 @@ runs:
         fi
 
     - name: Create Release
-      uses: ./.github/actions/create-version-release
+      uses: ./.pipeline-contract/.github/actions/create-version-release
       with:
         github-token: ${{ inputs.github-token }}

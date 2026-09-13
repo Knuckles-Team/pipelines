@@ -37,8 +37,12 @@ def _determine_version_script() -> str:
 def test_maturin_release_consumes_exact_head_without_tag_history() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
-    assert text.count("uses: ./.github/actions/checkout-verified-source") == 2
-    assert text.count("uses: ./.github/actions/verify-source-commit") == 2
+    assert text.count("uses: ./.pipeline-contract/.github/actions/checkout-verified-source") == 2
+    assert text.count("uses: ./.pipeline-contract/.github/actions/verify-source-commit") == 2
+    assert "uses: ./.github/actions/" not in text
+    assert text.count("path: .pipeline-contract") == 1
+    assert text.count("repository: ${{ job.workflow_repository }}") == 1
+    assert text.count("ref: ${{ job.workflow_sha }}") == 1
     assert 'COMMIT_MESSAGE=$(git log -1 --format=%B "$LATEST_COMMIT"' in text
     assert "TAG=$(git tag" not in text
     assert "CURRENT_COMMIT" not in text
@@ -49,9 +53,9 @@ def test_maturin_release_consumes_exact_head_without_tag_history() -> None:
 def test_maturin_wheel_action_checks_head_before_and_after_build() -> None:
     text = WHEEL_ACTION.read_text(encoding="utf-8")
 
-    assert "./.github/actions/checkout-verified-source" in text
+    assert "./.pipeline-contract/.github/actions/checkout-verified-source" in text
     assert "manylinux: ${{ inputs.manylinux }}" in text
-    assert "./.github/actions/verify-source-commit" in text
+    assert "./.pipeline-contract/.github/actions/verify-source-commit" in text
 
 
 def test_shared_checkout_action_owns_the_exact_sha_binding() -> None:
@@ -60,7 +64,8 @@ def test_shared_checkout_action_owns_the_exact_sha_binding() -> None:
     assert "actions/checkout@" in text
     assert "ref: ${{ github.sha }}" in text
     assert "persist-credentials: false" in text
-    assert "./.github/actions/verify-source-commit" in text
+    assert "clean: false" in text
+    assert "./.pipeline-contract/.github/actions/verify-source-commit" in text
 
 
 def test_source_verifier_has_one_cross_platform_implementation() -> None:
@@ -68,11 +73,14 @@ def test_source_verifier_has_one_cross_platform_implementation() -> None:
     script = VERIFY_SCRIPT.read_text(encoding="utf-8")
 
     assert "if: runner.os != 'Windows'" in action
-    assert "shell: bash" in action and "python3" in action
+    assert "shell: bash" in action and "uv run --no-project --python 3.13" in action
     assert "if: runner.os == 'Windows'" in action
-    assert "shell: pwsh" in action and "python " in action
-    assert script.count("git") == 2
+    assert "shell: pwsh" in action and "uv run --no-project --python 3.13" in action
+    assert "python3" not in action
+    assert "PIPELINES_CONTRACT_PATH" in action
+    assert "EXPECTED_WORKFLOW_COMMIT" in action
     assert 'stream.write(f"SOURCE_COMMIT={source}\\n")' in script
+    assert 'stream.write(f"PIPELINES_CONTRACT_COMMIT={contract}\\n")' in script
 
 
 def test_source_verifier_binds_and_rejects_a_changed_head(tmp_path: Path) -> None:
@@ -87,7 +95,14 @@ def test_source_verifier_binds_and_rejects_a_changed_head(tmp_path: Path) -> Non
     source = _git(repository, "rev-parse", "HEAD")
     github_env = tmp_path / "github-env"
     environment = os.environ.copy()
-    environment.update({"EXPECTED_COMMIT": source, "GITHUB_ENV": str(github_env)})
+    environment.update(
+        {
+            "EXPECTED_COMMIT": source,
+            "EXPECTED_WORKFLOW_COMMIT": source,
+            "PIPELINES_CONTRACT_PATH": str(repository),
+            "GITHUB_ENV": str(github_env),
+        }
+    )
 
     subprocess.run(
         ["python", str(VERIFY_SCRIPT), "before"],
@@ -99,6 +114,7 @@ def test_source_verifier_binds_and_rejects_a_changed_head(tmp_path: Path) -> Non
     )
     environment.pop("EXPECTED_COMMIT")
     environment["SOURCE_COMMIT"] = source
+    environment["PIPELINES_CONTRACT_COMMIT"] = source
     subprocess.run(
         ["python", str(VERIFY_SCRIPT), "after"],
         cwd=repository,
@@ -119,6 +135,42 @@ def test_source_verifier_binds_and_rejects_a_changed_head(tmp_path: Path) -> Non
         text=True,
     )
     assert failed.returncode == 1
+
+
+def test_external_caller_fixture_never_resolves_actions_from_caller_checkout(tmp_path: Path) -> None:
+    caller = tmp_path / "external-caller"
+    workflow_dir = caller / ".github/workflows"
+    workflow_dir.mkdir(parents=True)
+    (workflow_dir / "release.yml").write_text(
+        """name: External release\n\non:\n  push:\n    branches: [main]\n\njobs:\n  release:\n    uses: Knuckles-Team/pipelines/.github/workflows/maturin_pipeline.yml@main\n    secrets: inherit\n""",
+        encoding="utf-8",
+    )
+
+    assert not (caller / ".github/actions").exists()
+
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    for job in workflow["jobs"].values():
+        for step in job["steps"]:
+            action = step.get("uses", "")
+            if action.startswith("./"):
+                assert action.startswith("./.pipeline-contract/")
+
+    python_workflow = yaml.safe_load(
+        (ROOT / ".github/workflows/python_pipeline.yml").read_text(encoding="utf-8")
+    )
+    for step in python_workflow["jobs"]["publish-pypi"]["steps"]:
+        action = step.get("uses", "")
+        if action.startswith("./"):
+            assert action.startswith("./.pipeline-contract/")
+
+    for action_path in (
+        ROOT / ".github/actions/checkout-verified-source/action.yml",
+        ROOT / ".github/actions/maturin-build-wheels/action.yml",
+        ROOT / ".github/actions/publish-python-package/action.yml",
+    ):
+        for line in action_path.read_text(encoding="utf-8").splitlines():
+            if "uses: ./" in line:
+                assert "uses: ./.pipeline-contract/" in line
 
 
 def test_determine_version_script_works_with_a_shallow_checkout(tmp_path: Path) -> None:

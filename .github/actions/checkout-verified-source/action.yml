@@ -7,8 +7,11 @@ runs:
       with:
         ref: ${{ github.sha }}
         persist-credentials: false
+        # Keep the caller's .pipeline-contract checkout available.  The
+        # default clean=true would remove that untracked nested repository.
+        clean: false
 
     - name: Bind source commit
-      uses: ./.github/actions/verify-source-commit
+      uses: ./.pipeline-contract/.github/actions/verify-source-commit
       with:
         phase: before
