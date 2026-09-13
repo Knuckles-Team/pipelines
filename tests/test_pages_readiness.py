@@ -1424,20 +1424,9 @@ def test_public_discovery_outputs_follow_the_discoverability_switch(
         pages_readiness.build(root, site)
 
 
-@pytest.mark.parametrize(
-    "case",
-    [
-        ('{"api\\u005fkey":"abcdefghijklmnop"}\n', "generated-output-secret-like-value"),
-        (
-            '{"reference":"HTTPS\\u003a\\u002f\\u002f2130706433/private"}\n',
-            "generated-output-private-url",
-        ),
-    ],
-)
-def test_generated_discovery_scans_decoded_json_values(
-    tmp_path: Path, case: tuple[str, str]
-) -> None:
-    payload, expected = case
+def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]:
+    """Create a connector whose generated skills document has ``payload``."""
+
     root, site, readiness = _connector(tmp_path)
     readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
     readiness["capabilities"]["skills"] = {
@@ -1457,6 +1446,54 @@ def test_generated_discovery_scans_decoded_json_values(
         discovery=(discovery,),
     )
     (root / discovery).write_text(payload, encoding="utf-8")
+    return root, site
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        ('{"api\\u005fkey":"abcdefghijklmnop"}\n', "generated-output-secret-like-value"),
+        (
+            '{"reference":"HTTPS\\u003a\\u002f\\u002f2130706433/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https://public.example/path?to%6ben=abcdefghijklmnop"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://user%40public.example/path"}\n',
+            "generated-output-credential-url",
+        ),
+        (
+            '{"reference":"https://public.example/path?note=%GG"}\n',
+            "generated-output-url-invalid",
+        ),
+    ],
+)
+def test_generated_discovery_scans_decoded_json_values(
+    tmp_path: Path, case: tuple[str, str]
+) -> None:
+    payload, expected = case
+    root, site = _generated_skills_fixture(tmp_path, payload)
 
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         pages_readiness.build(root, site)
+
+
+@pytest.mark.parametrize(
+    "reference",
+    [
+        "https://public.example/path?no%74e=abcdefghijklmnop",
+        "https://public.example/users/user%40example.test",
+        "https://public.example/caf%C3%A9",
+    ],
+)
+def test_generated_discovery_allows_benign_percent_encoding(
+    tmp_path: Path, reference: str
+) -> None:
+    root, site = _generated_skills_fixture(
+        tmp_path, json.dumps({"reference": reference})
+    )
+
+    assert pages_readiness.build(root, site)["ok"] is True

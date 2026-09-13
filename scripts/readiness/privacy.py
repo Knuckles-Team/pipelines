@@ -4,11 +4,25 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
-from urllib.parse import unquote, urlsplit
+from urllib.parse import SplitResult, unquote, urlsplit
 
 from .constants import BEARER_PATTERN, SECRET_PATTERN, URL_PATTERN
 from .errors import _fail
 from .ip_addresses import _private_address
+
+
+_INVALID_PERCENT_PATTERN = re.compile(r"%(?![0-9A-Fa-f]{2})")
+
+
+def _strict_unquote(raw: str, label: str) -> str:
+    """Decode valid UTF-8 percent escapes and reject malformed encodings."""
+
+    if _INVALID_PERCENT_PATTERN.search(raw):
+        _fail(f"{label}-url-invalid")
+    try:
+        return unquote(raw, errors="strict")
+    except UnicodeDecodeError:
+        _fail(f"{label}-url-invalid")
 
 
 def _private_hostname(host: str) -> bool:
@@ -20,9 +34,34 @@ def _private_hostname(host: str) -> bool:
 def _reject_private_host(host: str, label: str) -> None:
     """Reject local names and non-public IP address literals."""
 
-    decoded = unquote(host).rstrip(".").lower()
+    decoded = _strict_unquote(host, label).rstrip(".").lower()
     if _private_hostname(decoded) or _private_address(decoded):
         _fail(f"{label}-private-url")
+
+
+def _invalid_authority(authority: str) -> bool:
+    return any(
+        character.isspace() or character in "/?#\\" for character in authority
+    )
+
+
+def _decoded_authority(parsed: SplitResult, label: str) -> str:
+    """Validate decoded authority syntax and return its normalized host."""
+
+    authority = _strict_unquote(parsed.netloc, label)
+    if _invalid_authority(authority):
+        _fail(f"{label}-url-invalid")
+    try:
+        decoded = urlsplit(f"//{authority}")
+        host = decoded.hostname.rstrip(".").lower() if decoded.hostname else ""
+        decoded.port
+    except ValueError:
+        _fail(f"{label}-url-invalid")
+    if not host:
+        _fail(f"{label}-url-invalid")
+    if parsed.username or parsed.password or decoded.username or decoded.password:
+        _fail(f"{label}-credential-url")
+    return host
 
 
 def _scan_url(raw: str, label: str) -> None:
@@ -30,14 +69,15 @@ def _scan_url(raw: str, label: str) -> None:
 
     try:
         parsed = urlsplit(raw)
-        host = parsed.hostname.rstrip(".").lower() if parsed.hostname else ""
     except ValueError:
         _fail(f"{label}-url-invalid")
-    if parsed.username or parsed.password:
-        _fail(f"{label}-credential-url")
-    if parsed.query and re.search(
+    host = _decoded_authority(parsed, label)
+    _strict_unquote(parsed.path, label)
+    query = _strict_unquote(parsed.query, label)
+    _strict_unquote(parsed.fragment, label)
+    if query and re.search(
         r"(?i)(?:token|secret|password|api[_-]?key|credential|auth)=",
-        parsed.query,
+        query,
     ):
         _fail(f"{label}-credential-url")
     _reject_private_host(host, label)
