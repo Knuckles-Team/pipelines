@@ -1,4 +1,4 @@
-"""Grade measured rows and judge NEW / WORSE findings against HEAD.
+"""Judge NEW / WORSE findings by comparing already-graded rows against HEAD.
 
 The staged gate is diff-scoped and deliberately NOT a baseline: nothing is
 written, no count is frozen, and the real numbers of every touched file are
@@ -8,34 +8,44 @@ printed on every run. Its rule:
 * a function present in HEAD whose worst value rose           -> FAIL (WORSE)
 * an over-cap row ADDED under a name that already existed     -> FAIL (NEW)
 * a pre-existing over-cap function left unchanged             -> pass
+
+EXEMPTION STATUS IS NOT PART OF THE COMPARED VALUE. BUG-CX-EXEMPT-SCORE: an
+earlier version hard-zeroed an exempt row's cyclomatic before the before/after
+comparison ran, which folded EXEMPTION STATUS into the METRIC being compared.
+A function that started exempt-over-cap (zeroed to 0) and was simplified below
+the cap -- ceasing to need the exemption at all, since
+``exhaustive_dispatch_exempt`` never grants it to an at-or-under-cap function
+-- read as its full raw value appearing from nowhere (0 -> 9), which the
+comparison called a regression. Simplifying a function until it no longer
+needed the exemption was, perversely, the one thing this gate could not tell
+from making it worse.
+
+The fix (in :mod:`pipelines_hooks.complexity.grading`) compares RAW metrics on
+both sides and treats exemption as a classifier, not a rewrite of the number
+being classified:
+
+* a function over a cap and NOT exempt on the new side always fails, new or
+  pre-existing -- the ordinary case;
+* a function that was over a cap and exempt at base, and is at-or-under the
+  cap on the new side (so no longer exempt -- the rule never exempts an
+  at-or-under-cap function), always passes: this is the transition the
+  exemption exists to allow;
+* an exempt function's cyclomatic axis is judged on its RESIDUAL (measured
+  cyclomatic minus its match-arm count), not zeroed. Adding arms leaves the
+  residual alone -- the whole point of keeping the match exhaustive is that
+  arms are free -- so that alone never reads as a regression. Any other
+  growth raises the residual and fails like ordinary debt would. Cognitive
+  complexity is never graded and never exempt on either side.
 """
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import NamedTuple
 
 from pipelines_hooks.complexity import MAX_COGNITIVE, MAX_CYCLOMATIC
-from pipelines_hooks.complexity.cccc import Row
-from pipelines_hooks.rust.dispatch import exhaustive_dispatch_exempt
+from pipelines_hooks.complexity.grading import Graded, grade, rust_source
 
-CAPS = (MAX_CYCLOMATIC, MAX_COGNITIVE)
-
-
-class Graded(NamedTuple):
-    """One measured row plus the exhaustive-dispatch verdict for its source."""
-
-    cyclomatic: int
-    cognitive: int
-    exempt: bool
-
-    @property
-    def judged_cyclomatic(self) -> int:
-        """Zero for an accepted exhaustive dispatcher; its raw value otherwise."""
-        return 0 if self.exempt else self.cyclomatic
-
-    def over_cap(self) -> bool:
-        return self.judged_cyclomatic > MAX_CYCLOMATIC or self.cognitive > MAX_COGNITIVE
+__all__ = ["Finding", "Graded", "file_summary", "grade", "judge", "rust_source"]
 
 
 class Finding(NamedTuple):
@@ -45,38 +55,43 @@ class Finding(NamedTuple):
     after: tuple[int, int]
 
 
-def rust_source(path: Path) -> str | None:
-    """The Rust text of a measured file, or ``None`` when the rule cannot apply."""
-    if path.suffix.lower() != ".rs":
-        return None
-    try:
-        return path.read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        return None
+def _worst_cognitive(rows: list[Graded]) -> int:
+    return max(r.cognitive for r in rows)
 
 
-def grade(rows: list[Row], source: str | None) -> dict[str, list[Graded]]:
-    """``{qualified name: [Graded, ...]}``; names collide, so values are lists."""
-    graded: dict[str, list[Graded]] = {}
-    for row in rows:
-        metrics = (row.cyclomatic, row.cognitive)
-        exempt = exhaustive_dispatch_exempt(source, line=row.line, metrics=metrics, caps=CAPS)
-        graded.setdefault(row.name, []).append(Graded(row.cyclomatic, row.cognitive, exempt))
-    return graded
+def _worst_raw_cyclomatic(rows: list[Graded]) -> Graded:
+    """The row with the worst RAW cyclomatic value -- raw, not effective, so
+    the selection itself is never already discounted by exemption."""
+    return max(rows, key=lambda r: r.cyclomatic)
 
 
-def _worst(rows: list[Graded]) -> tuple[int, int]:
-    return max(r.judged_cyclomatic for r in rows), max(r.cognitive for r in rows)
+def _cyclomatic_regressed(prior: list[Graded], rows: list[Graded]) -> tuple[bool, int, int]:
+    """Whether the cyclomatic axis regressed, plus the raw (before, after).
+
+    One case bypasses the effective-value comparison entirely: the row was
+    exempt-over-cap at base and is at-or-under the cap now (so necessarily not
+    exempt -- the rule never exempts an at-or-under-cap function). That
+    transition is the one the exemption exists to allow, and always passes.
+    Otherwise, compare ``effective_cyclomatic`` on both sides.
+    """
+    before = _worst_raw_cyclomatic(prior)
+    after = _worst_raw_cyclomatic(rows)
+    if before.exempt and after.cyclomatic <= MAX_CYCLOMATIC:
+        return False, before.cyclomatic, after.cyclomatic
+    return after.effective_cyclomatic > before.effective_cyclomatic, before.cyclomatic, after.cyclomatic
 
 
 def _added_over_cap(name: str, prior: list[Graded], rows: list[Graded]) -> list[Finding]:
     """Over-cap rows ADDED to a name that already existed in HEAD.
 
     A new row below an older worst row must not disappear behind it, so the
-    multiplicity of over-cap rows is compared as well as the worst value.
+    multiplicity of over-cap rows is compared as well as the worst value. A
+    row crossing a cap without any row being ADDED is a worsening of an
+    existing row instead, which ``_cyclomatic_regressed``/``_worst_cognitive``
+    report -- counting it here too would report one function twice.
     """
     prior_count = sum(row.over_cap() for row in prior)
-    after = sorted((row for row in rows if row.over_cap()), key=lambda r: (r.judged_cyclomatic, r.cognitive))
+    after = sorted((row for row in rows if row.over_cap()), key=lambda r: (r.cyclomatic, r.cognitive))
     added = min(len(after) - prior_count, len(rows) - len(prior))
     return [Finding("NEW", name, (0, 0), (r.cyclomatic, r.cognitive)) for r in after[: max(added, 0)]]
 
@@ -92,8 +107,10 @@ def judge(before: dict[str, list[Graded]], after: dict[str, list[Graded]]) -> li
             )
             continue
         findings.extend(_added_over_cap(name, prior, rows))
-        if _worst(rows)[0] > _worst(prior)[0] or _worst(rows)[1] > _worst(prior)[1]:
-            findings.append(Finding("WORSE", name, _worst(prior), _worst(rows)))
+        cyc_regressed, cyc_before, cyc_after = _cyclomatic_regressed(prior, rows)
+        cog_before, cog_after = _worst_cognitive(prior), _worst_cognitive(rows)
+        if cyc_regressed or cog_after > cog_before:
+            findings.append(Finding("WORSE", name, (cyc_before, cog_before), (cyc_after, cog_after)))
     return findings
 
 
