@@ -14,10 +14,48 @@ on:
 
 jobs:
   publish:
-    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main
+    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@<full-commit-sha> # v2.0.2
     secrets:
       PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 ```
+
+## Pinning reusable workflows
+
+Every caller of a workflow in this repository pins the reference to a full
+40-character commit SHA with a trailing `# vX.Y.Z` comment naming the release
+it resolves to — never a branch or a mutable major/minor tag (`@main`,
+`@v2`, `@release/v1`). This repository and its own consumers are a
+supply-chain chokepoint: the reusable workflows here run in every calling
+repository's fleet-wide CI with that repository's checkout and secrets, so a
+mutable ref here is a mutable ref everywhere.
+
+- **From another repository** (the normal case — `python_pipeline.yml`,
+  `python_web_pipeline.yml`, `container_pipeline.yml`,
+  `desktop_release_pipeline.yml`, `maturin_pipeline.yml`,
+  `services_pipeline.yml`, `pages_pipeline.yml`, …): pin the full
+  `owner/repo/.github/workflows/<file>.yml@<full-commit-sha> # vX.Y.Z` form, as
+  in the example above. Resolve the SHA from the real tag before pinning —
+  never invent or guess one:
+
+  ```bash
+  git ls-remote https://github.com/Knuckles-Team/pipelines refs/tags/v2.0.2
+  # an annotated tag needs the dereferenced commit instead of the tag object:
+  git ls-remote https://github.com/Knuckles-Team/pipelines refs/tags/v2.0.2^{}
+  ```
+
+- **From inside this repository** (a workflow here calling another workflow
+  here): use the local `uses: ./.github/workflows/<file>.yml` form. A SHA pin
+  is circular for a same-repository caller (the commit that adds the pin isn't
+  known until after it's committed), and GitHub resolves `./…` reusable
+  workflow references to the calling commit natively, which is exactly as
+  immutable as a SHA pin without the circularity. As of this writing no
+  workflow here calls another one internally; adopt this form the day one
+  does.
+
+Every `uses:` in this repository's own workflows — third-party actions and
+reusable workflows alike — is held to the same rule and enforced by the shared
+`supply-chain` pre-commit/CI hook (see the table below); `.github/workflows/pages_pipeline.yml`
+demonstrates the pattern for a third-party action (`actions/checkout@<sha> # v4.2.2`, etc.).
 
 ## Shared pre-commit hooks
 

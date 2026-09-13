@@ -4,10 +4,6 @@
 # holds the two in lockstep).
 #
 # Shared hooks NOT run here, and why:
-#   supply-chain  -- the reusable workflows carry pre-existing unpinned actions
-#                    and undeclared permissions, including pages_pipeline.yml,
-#                    which another lane owns; adopting the hook is blocked on
-#                    pinning them (reported, not exempted).
 #   stdout-writes -- this repository serves no stdio JSON-RPC surface; the hook
 #                    package is a CLI whose output is its interface.
 #   ci-gate-replica (full replay) -- every workflow is a reusable
@@ -123,6 +119,12 @@ repos:
     language: system
     pass_filenames: false
     files: ^(uv\.lock|pyproject\.toml|\.security-audit-allow\.txt)$
+  - id: supply-chain
+    name: Immutable workflow, container and dependency sources
+    entry: uv run --frozen --quiet pipelines-hook supply-chain
+    language: system
+    pass_filenames: false
+    always_run: true
   - id: root-hygiene
     name: Repository root hygiene (declared entries only)
     entry: uv run --frozen --quiet pipelines-hook root-hygiene
