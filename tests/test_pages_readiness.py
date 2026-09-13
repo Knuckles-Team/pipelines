@@ -26,6 +26,7 @@ import pytest
 # package when pytest uses its importlib test mode.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import readiness as pages_readiness
+from scripts.readiness.privacy import _scan_safe_text
 
 
 SCHEMA = {
@@ -559,6 +560,28 @@ def test_public_numeric_ipv4_endpoint_is_not_a_private_url_false_positive(
     assert pages_readiness.build(root, site)["ok"] is True
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (
+            "https://public.example/foo]https://localhost/private",
+            "direct-url-invalid",
+        ),
+        (
+            "https://public.example/foo%5Dhttps%3A%2F%2F2130706433/private",
+            "direct-private-url",
+        ),
+        ("token%2525253Dabcdefghijklmnop", "direct-secret-like-value"),
+        ("bearer%25252520abcdefghijklmnop", "direct-secret-like-value"),
+    ],
+)
+def test_privacy_scanner_fails_closed_at_canonical_boundaries(
+    value: str, expected: str
+) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
+        _scan_safe_text(value, "direct")
+
+
 def test_traversal_symlink_and_oversized_outputs_fail_closed(tmp_path: Path) -> None:
     root, site, _ = _fixture(tmp_path)
     mirror_path = root / "markdown-mirror-manifest.json"
@@ -940,6 +963,38 @@ def test_site_output_path_strips_the_site_url_base(
     url: str, site_url: str, kind: str, expected: str
 ) -> None:
     assert pages_readiness.site_output_path(url, site_url, kind=kind) == expected
+
+
+@pytest.mark.parametrize(
+    ("url", "site_url"),
+    [
+        (
+            "https://[2606:4700:4700::1111]/docs/guide/",
+            "https://[2606:4700:4700::1111]/docs/",
+        ),
+        (
+            "https://%5B2606%3A4700%3A4700%3A%3A1111%5D/docs/guide/",
+            "https://%5B2606%3A4700%3A4700%3A%3A1111%5D/docs/",
+        ),
+    ],
+)
+def test_site_output_path_accepts_canonical_public_ipv6(
+    url: str, site_url: str
+) -> None:
+    assert pages_readiness.site_output_path(url, site_url, kind="html") == (
+        "guide/index.html"
+    )
+
+
+@pytest.mark.parametrize(
+    "site_url",
+    ["https://[::1]/docs/", "https://%5B%3A%3A1%5D/docs/"],
+)
+def test_site_output_path_rejects_private_ipv6(site_url: str) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match="site-url-private-url"):
+        pages_readiness.site_output_path(
+            f"{site_url}guide/", site_url, kind="html"
+        )
 
 
 @pytest.mark.parametrize(
@@ -1515,7 +1570,7 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
         ),
         (
             '{"reference":"https%3A%2F%2Fpublic.example%2Ftoken%253Dabcdefghijklmnop"}\n',
-            "generated-output-secret-like-value",
+            "generated-output-credential-url",
         ),
         (
             '{"reference":"https%2525253A%2525252F%2525252Fpublic.example/path"}\n',
@@ -1544,6 +1599,30 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
         (
             '{"reference":"https%3A%2F%2F%5B%3A%3A1%5D/private"}\n',
             "generated-output-private-url",
+        ),
+        (
+            '{"reference":"https://public.example/foo]https://localhost/private"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"https://public.example/foo]https://2130706433/private"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"reference":"https://public.example/foo%5Dhttps%3A%2F%2F2130706433/private"}\n',
+            "generated-output-private-url",
+        ),
+        (
+            '{"value":"token%2525253Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"api_key%2525253Dabcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
+        ),
+        (
+            '{"value":"bearer%25252520abcdefghijklmnop"}\n',
+            "generated-output-secret-like-value",
         ),
     ],
 )
@@ -1575,6 +1654,9 @@ def test_generated_discovery_scans_decoded_json_values(
         "https%3A%2F%2F%5B2606%3A4700%3A4700%3A%3A1111%5D/dns-query",
         "https://public.example/discount%25",
         "https://public.example/?next=https%3A%2F%2Fpublic.example%2Fdiscount%2525",
+        "https%3A%2F%2Fpublic.example%2Fdiscount%2525",
+        "https%253A%252F%252Fpublic.example%252Fdiscount%252525",
+        "release%25252520notes",
     ],
 )
 def test_generated_discovery_allows_benign_percent_encoding(

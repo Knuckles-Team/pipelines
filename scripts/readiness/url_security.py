@@ -56,7 +56,9 @@ def _invalid_authority(authority: str) -> bool:
     )
 
 
-def _decoded_authority(parsed: SplitResult, authority: str, label: str) -> str:
+def _decoded_authority(
+    parsed: SplitResult, authority: str, label: str
+) -> tuple[str, int | None]:
     """Validate canonical authority syntax and return its normalized host."""
 
     if _invalid_authority(authority):
@@ -64,14 +66,21 @@ def _decoded_authority(parsed: SplitResult, authority: str, label: str) -> str:
     try:
         decoded = urlsplit(f"//{authority}")
         host = decoded.hostname.rstrip(".").lower() if decoded.hostname else ""
-        decoded.port
+        port = decoded.port
     except ValueError:
         _fail(f"{label}-url-invalid")
     if not host:
         _fail(f"{label}-url-invalid")
     if parsed.username or parsed.password or decoded.username or decoded.password:
         _fail(f"{label}-credential-url")
-    return host
+    return host, port
+
+
+def _canonical_authority(parsed: SplitResult, label: str) -> tuple[str, int | None]:
+    """Return the host and port from one strictly decoded URL authority."""
+
+    authority = _canonical_component(parsed.netloc, label)
+    return _decoded_authority(parsed, authority, label)
 
 
 def _reject_component_credentials(value: str, label: str) -> None:
@@ -95,23 +104,24 @@ def _validated_components(raw: str, label: str) -> tuple[str, ...]:
         for component in (parsed.netloc, parsed.path, parsed.query, parsed.fragment)
     )
     authority, _, _, _ = components
-    host = _decoded_authority(parsed, authority, label)
+    host, _ = _decoded_authority(parsed, authority, label)
     _reject_private_host(host, label)
     return components
 
 
-def _trim_candidate(raw: str) -> str:
-    """Remove prose punctuation while preserving a bracketed IPv6 authority."""
+def _trim_candidate(raw: str, label: str) -> str:
+    """Remove prose punctuation and reject unmatched URL brackets."""
 
     candidate = raw.rstrip(".,;:")
-    extra_brackets = max(candidate.count("]") - candidate.count("["), 0)
-    return candidate[:-extra_brackets] if extra_brackets else candidate
+    if candidate.count("[") != candidate.count("]"):
+        _fail(f"{label}-url-invalid")
+    return candidate
 
 
 def _scan_url(raw: str, label: str) -> None:
     """Validate one URL and any URLs revealed by component decoding."""
 
-    pending = [_trim_candidate(raw)]
+    pending = [_trim_candidate(raw, label)]
     seen: set[str] = set()
     while pending:
         candidate = pending.pop()
@@ -125,7 +135,7 @@ def _scan_url(raw: str, label: str) -> None:
             _reject_component_credentials(component, label)
             pending.extend(
                 _INVALID_PERCENT_PATTERN.sub(
-                    "%25", _trim_candidate(match.group(0))
+                    "%25", _trim_candidate(match.group(0), label)
                 )
                 for match in URL_PATTERN.finditer(component)
             )

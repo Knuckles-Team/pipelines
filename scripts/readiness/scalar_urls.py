@@ -31,27 +31,49 @@ def _decode_scalar_pass(raw: str, label: str) -> str | None:
         return None
 
 
+def _should_decode(value: str) -> bool:
+    return bool(_VALID_PERCENT_PATTERN.search(value)) and not URL_PATTERN.search(value)
+
+
 def _canonical_scalar(raw: str, label: str) -> str:
     """Decode a scalar for URL discovery without rejecting ordinary percent text."""
 
     current = raw
     for _ in range(_MAX_DECODE_PASSES):
-        if not _VALID_PERCENT_PATTERN.search(current):
+        if not _should_decode(current):
             return current
         decoded = _decode_scalar_pass(current, label)
         if decoded is None:
             return raw
         current = decoded
-    if _ENCODED_URL_PATTERN.search(current):
-        _fail(f"{label}-url-invalid")
+    _reject_decode_bound(current, label)
     return current
+
+
+def _has_decoded_secret(value: str) -> bool:
+    return any(
+        pattern.search(value)
+        for pattern in (SECRET_PATTERN, BEARER_PATTERN)
+    )
 
 
 def _reject_decoded_secrets(value: str, label: str) -> None:
     """Reject secrets revealed in canonical scalar text without recursing."""
 
-    if SECRET_PATTERN.search(value) or BEARER_PATTERN.search(value):
+    if _has_decoded_secret(value):
         _fail(f"{label}-secret-like-value")
+
+
+def _reject_decode_bound(current: str, label: str) -> None:
+    """Fail if one more pass would expose security-relevant structure."""
+
+    probe = _decode_scalar_pass(current, label)
+    if probe is not None:
+        _reject_decoded_secrets(probe, label)
+    if _ENCODED_URL_PATTERN.search(current) or (
+        probe is not None and URL_PATTERN.search(probe)
+    ):
+        _fail(f"{label}-url-invalid")
 
 
 def _scan_urls(raw: str, label: str) -> None:

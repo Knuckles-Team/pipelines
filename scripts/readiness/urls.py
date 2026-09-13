@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 from urllib.parse import SplitResult, unquote, urlsplit, urlunsplit
 
 from .errors import _fail
-from .url_security import _reject_private_host
+from .url_security import _canonical_authority, _reject_private_host
 
 
 def _invalid_origin(parsed: SplitResult, host: str, port: int | None) -> bool:
@@ -28,10 +28,9 @@ def _parse_public_url(raw: object, label: str) -> tuple[SplitResult, str]:
         _fail(f"{label}-url-invalid")
     try:
         parsed = urlsplit(raw)
-        host = parsed.hostname.rstrip(".").lower() if parsed.hostname else ""
-        port = parsed.port
     except ValueError:
         _fail(f"{label}-url-invalid")
+    host, port = _canonical_authority(parsed, label)
     if _invalid_origin(parsed, host, port):
         _fail(f"{label}-url-invalid")
     return parsed, host
@@ -100,10 +99,16 @@ def site_output_path(url: str, site_url: str, *, kind: str) -> str:
     return _html_output(parts, remainder)
 
 
+def _url_authority(host: str) -> str:
+    return f"[{host}]" if ":" in host else host
+
+
 def _site_asset_url(site_url: str, name: str) -> str:
     """Return a site-root asset URL such as ``llms.txt`` or ``sitemap.xml``."""
 
     scheme, host, base_path = _public_url(site_url, "site-url")
     if not base_path.endswith("/"):
         _fail("site-url-invalid")
-    return urlunsplit((scheme, host, f"{base_path}{name}", "", ""))
+    return urlunsplit(
+        (scheme, _url_authority(host), f"{base_path}{name}", "", "")
+    )
