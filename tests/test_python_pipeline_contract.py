@@ -12,8 +12,11 @@ RELEASE_ACTION = Path(__file__).parents[1] / ".github/actions/create-version-rel
 def test_release_body_has_an_unambiguous_commit_identity() -> None:
     text = ACTION.read_text(encoding="utf-8")
 
-    assert "uv pip install twine" in text
-    assert 'LATEST_COMMIT=$(git rev-parse --verify HEAD)' in text
+    assert "uv pip install --require-hashes -r" in text
+    assert "twine-requirements.txt" in text
+    assert '.venv/bin/twine upload' in text
+    assert 'SOURCE_COMMIT=$(git rev-parse --verify HEAD)' in text
+    assert 'LATEST_COMMIT="$SOURCE_COMMIT"' in text
     assert 'COMMIT_MESSAGE=$(git log -1 --format=%B "$LATEST_COMMIT"' in text
     assert 'echo "LATEST_COMMIT=$LATEST_COMMIT"' in text
     assert "Commit: ${{ env.LATEST_COMMIT }}" in RELEASE_ACTION.read_text(encoding="utf-8")

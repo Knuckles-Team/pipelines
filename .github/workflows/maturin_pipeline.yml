@@ -19,7 +19,20 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Verify source commit before build
+        shell: bash
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          SOURCE_COMMIT=$(git rev-parse --verify HEAD)
+          if [ -z "$EXPECTED_COMMIT" ] || [ "$SOURCE_COMMIT" != "$EXPECTED_COMMIT" ]; then
+            echo "checked-out commit ${SOURCE_COMMIT} does not match github.sha ${EXPECTED_COMMIT}" >&2
+            exit 1
+          fi
+          echo "SOURCE_COMMIT=$SOURCE_COMMIT" >> "$GITHUB_ENV"
 
       - name: Setup QEMU
         if: matrix.target == 'aarch64'
@@ -31,6 +44,14 @@ jobs:
           target: ${{ matrix.target }}-unknown-linux-gnu
           manylinux: "2_28"
           args: --release --out dist
+
+      - name: Verify source commit after build
+        shell: bash
+        run: |
+          if [ "$(git rev-parse --verify HEAD)" != "$SOURCE_COMMIT" ]; then
+            echo "HEAD changed while building the wheel" >&2
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -75,13 +96,34 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Verify source commit before build
+        shell: bash
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          SOURCE_COMMIT=$(git rev-parse --verify HEAD)
+          if [ -z "$EXPECTED_COMMIT" ] || [ "$SOURCE_COMMIT" != "$EXPECTED_COMMIT" ]; then
+            echo "checked-out commit ${SOURCE_COMMIT} does not match github.sha ${EXPECTED_COMMIT}" >&2
+            exit 1
+          fi
+          echo "SOURCE_COMMIT=$SOURCE_COMMIT" >> "$GITHUB_ENV"
 
       - name: Build sdist
         uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
         with:
           command: sdist
           args: --out dist
+
+      - name: Verify source commit after build
+        shell: bash
+        run: |
+          if [ "$(git rev-parse --verify HEAD)" != "$SOURCE_COMMIT" ]; then
+            echo "HEAD changed while building the source distribution" >&2
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -97,6 +139,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -107,22 +150,28 @@ jobs:
 
       - name: Determine version
         id: version
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
         run: |
-          BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | sort -V | tail -n 1)
-          LATEST_COMMIT=$(git rev-parse --verify HEAD)
-          TAG=$(git tag -l | sort -V | tail -n1 2>/dev/null || echo '')
-          if [[ -n "$TAG" ]]; then
-            CURRENT_COMMIT=$(git rev-list -n 1 "$TAG")
-          else
-            CURRENT_COMMIT=${LATEST_COMMIT}
+          SOURCE_COMMIT=$(git rev-parse --verify HEAD)
+          if [ -z "$EXPECTED_COMMIT" ] || [ "$SOURCE_COMMIT" != "$EXPECTED_COMMIT" ]; then
+            echo "checked-out commit ${SOURCE_COMMIT} does not match github.sha ${EXPECTED_COMMIT}" >&2
+            exit 1
           fi
-          COMMIT_DIFFERENCE=$(git log ${CURRENT_COMMIT}..${LATEST_COMMIT} --pretty=oneline | wc -l)
-          COMMIT_MESSAGE=$(git log --format=%B -n $COMMIT_DIFFERENCE $LATEST_COMMIT | tr '\n' ' ')
+          BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | sort -V | tail -n 1)
+          if [ "$(git rev-parse --verify HEAD)" != "$SOURCE_COMMIT" ]; then
+            echo "HEAD changed while preparing release metadata" >&2
+            exit 1
+          fi
+          LATEST_COMMIT="$SOURCE_COMMIT"
+          COMMIT_MESSAGE=$(git log -1 --format=%B "$LATEST_COMMIT" | tr '\n' ' ')
           COMMIT_DATETIME=$(date "+%m/%d/%Y %H:%M:%S")
-          echo "BUILD_VERSION=$BUILD_VERSION" >> $GITHUB_ENV
-          echo "LATEST_COMMIT=$LATEST_COMMIT" >> $GITHUB_ENV
-          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
-          echo "COMMIT_DATETIME=$COMMIT_DATETIME" >> $GITHUB_ENV
+          {
+            echo "BUILD_VERSION=$BUILD_VERSION"
+            echo "LATEST_COMMIT=$LATEST_COMMIT"
+            echo "COMMIT_MESSAGE=$COMMIT_MESSAGE"
+            echo "COMMIT_DATETIME=$COMMIT_DATETIME"
+          } >> "$GITHUB_ENV"
 
       - name: List artifacts
         run: ls -la dist/
