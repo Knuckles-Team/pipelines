@@ -12,6 +12,7 @@ import yaml
 ROOT = Path(__file__).parents[1]
 WORKFLOW = ROOT / ".github/workflows/maturin_pipeline.yml"
 WHEEL_ACTION = ROOT / ".github/actions/maturin-build-wheels/action.yml"
+CHECKOUT_ACTION = ROOT / ".github/actions/checkout-verified-source/action.yml"
 VERIFY_ACTION = ROOT / ".github/actions/verify-source-commit/action.yml"
 VERIFY_SCRIPT = ROOT / ".github/actions/verify-source-commit/verify_source_commit.py"
 
@@ -36,8 +37,8 @@ def _determine_version_script() -> str:
 def test_maturin_release_consumes_exact_head_without_tag_history() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
-    assert text.count("ref: ${{ github.sha }}") == 3
-    assert text.count("uses: ./.github/actions/verify-source-commit") == 6
+    assert text.count("uses: ./.github/actions/checkout-verified-source") == 2
+    assert text.count("uses: ./.github/actions/verify-source-commit") == 2
     assert 'COMMIT_MESSAGE=$(git log -1 --format=%B "$LATEST_COMMIT"' in text
     assert "TAG=$(git tag" not in text
     assert "CURRENT_COMMIT" not in text
@@ -48,7 +49,17 @@ def test_maturin_release_consumes_exact_head_without_tag_history() -> None:
 def test_maturin_wheel_action_checks_head_before_and_after_build() -> None:
     text = WHEEL_ACTION.read_text(encoding="utf-8")
 
+    assert "./.github/actions/checkout-verified-source" in text
+    assert "manylinux: ${{ inputs.manylinux }}" in text
+    assert "./.github/actions/verify-source-commit" in text
+
+
+def test_shared_checkout_action_owns_the_exact_sha_binding() -> None:
+    text = CHECKOUT_ACTION.read_text(encoding="utf-8")
+
+    assert "actions/checkout@" in text
     assert "ref: ${{ github.sha }}" in text
+    assert "persist-credentials: false" in text
     assert "./.github/actions/verify-source-commit" in text
 
 
