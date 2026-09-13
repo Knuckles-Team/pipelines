@@ -11,8 +11,21 @@ jobs:
     name: Build & Package (Linux)
     runs-on: ubuntu-latest
     steps:
+      - &checkout_pipeline_contract
+        name: Checkout pipeline contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          sparse-checkout: |
+            .github/actions/checkout-verified-source
+            .github/actions/setup-python-uv
+            .github/actions/verify-source-commit
+          path: .pipeline-contract
+          persist-credentials: false
+
       - name: Check out code, set up Python and uv
-        uses: ./.github/actions/setup-python-uv
+        uses: ./.pipeline-contract/.github/actions/setup-python-uv
         with:
           python-version: '3.11'
 
@@ -81,8 +94,10 @@ jobs:
     name: Build & Package (Windows)
     runs-on: windows-latest
     steps:
+      - *checkout_pipeline_contract
+
       - name: Check out code, set up Python and uv
-        uses: ./.github/actions/setup-python-uv
+        uses: ./.pipeline-contract/.github/actions/setup-python-uv
         with:
           python-version: '3.11'
 
