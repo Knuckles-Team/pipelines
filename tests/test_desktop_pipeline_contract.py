@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
 import yaml
+
+from tests.workflow_fixtures import external_caller
 
 
 ROOT = Path(__file__).parents[1]
@@ -14,20 +15,13 @@ SETUP_ACTION = ROOT / ".github/actions/setup-python-uv/action.yml"
 
 
 def test_desktop_workflow_bootstraps_contract_for_an_external_caller(tmp_path: Path) -> None:
-    caller = tmp_path / "external-desktop-caller"
-    workflow_dir = caller / ".github/workflows"
-    workflow_dir.mkdir(parents=True)
-    (workflow_dir / "release.yml").write_text(
+    caller = external_caller(
+        tmp_path,
+        ROOT,
+        "external-desktop-caller",
         """name: External desktop release\n\non:\n  push:\n    tags: ['v*']\n\njobs:\n  release:\n    uses: Knuckles-Team/pipelines/.github/workflows/desktop_release_pipeline.yml@main\n    secrets: inherit\n""",
-        encoding="utf-8",
     )
     assert not (caller / ".github/actions").exists()
-
-    contract_actions = caller / ".pipeline-contract/.github/actions"
-    contract_actions.mkdir(parents=True)
-    for action in (ROOT / ".github/actions").iterdir():
-        if action.is_dir():
-            shutil.copytree(action, contract_actions / action.name)
 
     document = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     for name in ("build-linux", "build-windows"):

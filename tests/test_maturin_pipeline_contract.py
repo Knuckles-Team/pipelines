@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 from pathlib import Path
 
 import yaml
+
+from tests.workflow_fixtures import external_caller
 
 
 ROOT = Path(__file__).parents[1]
@@ -149,21 +150,13 @@ def test_source_verifier_binds_and_rejects_a_changed_head(tmp_path: Path) -> Non
 
 
 def test_external_caller_fixture_never_resolves_actions_from_caller_checkout(tmp_path: Path) -> None:
-    caller = tmp_path / "external-caller"
-    workflow_dir = caller / ".github/workflows"
-    workflow_dir.mkdir(parents=True)
-    (workflow_dir / "release.yml").write_text(
+    caller = external_caller(
+        tmp_path,
+        ROOT,
+        "external-caller",
         """name: External release\n\non:\n  push:\n    branches: [main]\n\njobs:\n  release:\n    uses: Knuckles-Team/pipelines/.github/workflows/maturin_pipeline.yml@main\n    secrets: inherit\n""",
-        encoding="utf-8",
     )
-
     assert not (caller / ".github/actions").exists()
-
-    contract_actions = caller / ".pipeline-contract/.github/actions"
-    contract_actions.mkdir(parents=True)
-    for action in (ROOT / ".github/actions").iterdir():
-        if action.is_dir():
-            shutil.copytree(action, contract_actions / action.name)
 
     workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     for job in workflow["jobs"].values():
