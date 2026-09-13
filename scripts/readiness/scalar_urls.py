@@ -11,24 +11,16 @@ from .url_security import _scan_url
 
 
 _VALID_PERCENT_PATTERN = re.compile(r"%[0-9A-Fa-f]{2}")
-_ENCODED_URL_PATTERN = re.compile(
-    r"(?:h|%(?:25)*68)(?:t|%(?:25)*74){2}(?:p|%(?:25)*70)"
-    r"(?:s|%(?:25)*73)?(?::|%(?:25)*3a)"
-    r"(?:/|%(?:25)*2f){2}",
-    re.IGNORECASE,
-)
 _MAX_DECODE_PASSES = 3
 
 
-def _decode_scalar_pass(raw: str, label: str) -> str | None:
-    """Decode one scalar layer, reserving URL errors for URL-shaped text."""
+def _decode_scalar_pass(raw: str, label: str) -> str:
+    """Decode one scalar layer and reject invalid UTF-8 transitions."""
 
     try:
         return unquote(raw, errors="strict")
     except UnicodeDecodeError:
-        if _ENCODED_URL_PATTERN.search(raw):
-            _fail(f"{label}-url-invalid")
-        return None
+        _fail(f"{label}-url-invalid")
 
 
 def _should_decode(value: str) -> bool:
@@ -42,10 +34,7 @@ def _canonical_scalar(raw: str, label: str) -> str:
     for _ in range(_MAX_DECODE_PASSES):
         if not _should_decode(current):
             return current
-        decoded = _decode_scalar_pass(current, label)
-        if decoded is None:
-            return raw
-        current = decoded
+        current = _decode_scalar_pass(current, label)
     _reject_decode_bound(current, label)
     return current
 
@@ -68,7 +57,7 @@ def _reject_decode_bound(current: str, label: str) -> None:
     """Fail when one bounded probe proves another decode layer remains."""
 
     probe = _decode_scalar_pass(current, label)
-    if probe is None or probe == current:
+    if probe == current:
         return
     _reject_decoded_secrets(probe, label)
     _fail(f"{label}-url-invalid")

@@ -72,10 +72,12 @@ bounded probe is used only to prove that the scalar reached the boundary: if
 that probe changes the value, validation fails with the stable
 `*-url-invalid` error (or `*-secret-like-value` when the probe directly exposes
 a secret). The probe's output is never accepted or decoded again. Malformed or
-ordinary percent text that does not decode remains valid. Recognized URL spans
-use their separate three-pass component validator, which preserves a valid
-encoded literal percent while checking canonical authority, path, query, and
-fragment values.
+ordinary percent text that has no syntactically valid byte escape remains
+valid. A syntactically valid percent-byte transition that cannot decode as
+UTF-8 fails immediately with `*-url-invalid` at every accepted pass and at the
+proof-only probe. Recognized URL spans use their separate three-pass component
+validator, which preserves a valid encoded literal percent while checking
+canonical authority, path, query, and fragment values.
 
 Existing HTML `noindex` and deprecated markers are retained. Such pages remain
 available as explicit fallbacks but are omitted from the generated sitemap.

@@ -594,6 +594,24 @@ def test_privacy_scanner_fails_closed_at_canonical_boundaries(
 @pytest.mark.parametrize(
     "value",
     [
+        "%FF",
+        "prefix%41%FFsuffix",
+        "token%3Dabcdefghijklmnop%25FF",
+        "api_key%3Dabcdefghijklmnop%25FF",
+        "bearer%20abcdefghijklmnop%25FF",
+        "%252525FF",
+    ],
+)
+def test_privacy_scanner_rejects_invalid_utf8_percent_transitions(
+    value: str,
+) -> None:
+    with pytest.raises(pages_readiness.ReadinessTckError, match="direct-url-invalid"):
+        _scan_safe_text(value, "direct")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
         "release%252520notes",
         "version%2",
         "ordinary 50% text",
@@ -1664,6 +1682,21 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
             '{"value":"release%25252520notes"}\n',
             "generated-output-url-invalid",
         ),
+        ('{"value":"%FF"}\n', "generated-output-url-invalid"),
+        ('{"value":"prefix%41%FFsuffix"}\n', "generated-output-url-invalid"),
+        (
+            '{"value":"token%3Dabcdefghijklmnop%25FF"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"api_key%3Dabcdefghijklmnop%25FF"}\n',
+            "generated-output-url-invalid",
+        ),
+        (
+            '{"value":"bearer%20abcdefghijklmnop%25FF"}\n',
+            "generated-output-url-invalid",
+        ),
+        ('{"value":"%252525FF"}\n', "generated-output-url-invalid"),
     ],
 )
 def test_generated_discovery_scans_decoded_json_values(
