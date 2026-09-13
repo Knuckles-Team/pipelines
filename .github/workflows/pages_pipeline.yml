@@ -90,27 +90,27 @@ jobs:
         run: |
           pip install mkdocs-material==9.7.6 mkdocs-awesome-pages-plugin==2.10.1
 
+      - name: Checkout pipeline-owned scripts
+        if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-contract
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/__init__.py
+            scripts/pages_readiness.py
+
       - name: Validate declared content source
         if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
         env:
           CONTENT_SOURCE: ${{ inputs.content_source }}
         run: |
           set -euo pipefail
-          if [ -z "${CONTENT_SOURCE}" ]; then
-            echo "::error::content_source must not be empty -- a repository must explicitly declare its documentation source directory (e.g. 'pages' or 'docs') before enabling shared_theme_enabled or agent_readiness_enabled. No default is silently assumed." >&2
-            exit 1
-          fi
-          if [ ! -d "${CONTENT_SOURCE}" ]; then
-            echo "::error::declared content_source '${CONTENT_SOURCE}' does not exist in this repository. This is not a fallback point -- fix the 'content_source' input on the calling pages.yml, or add the directory." >&2
-            exit 1
-          fi
-          if [ -f "mkdocs.yml" ]; then
-            declared_docs_dir="$(python3 -c "import sys, yaml; yaml.SafeLoader.add_multi_constructor('tag:yaml.org,2002:python/name:', lambda loader, suffix, node: suffix); yaml.SafeLoader.add_multi_constructor('tag:yaml.org,2002:python/object/apply:', lambda loader, suffix, node: suffix); config = yaml.safe_load(open('mkdocs.yml', encoding='utf-8')) or {}; docs_dir = config.get('docs_dir', 'docs') if isinstance(config, dict) else 'docs'; sys.stdout.write(str(docs_dir))")"
-            if [ "${declared_docs_dir}" != "${CONTENT_SOURCE}" ]; then
-              echo "::error::mkdocs.yml declares docs_dir='${declared_docs_dir}' but content_source='${CONTENT_SOURCE}' was declared for this build. mkdocs.yml's docs_dir is the single authority the docs-readiness tooling reads too -- fix one to match the other. There is no automatic reconciliation between them." >&2
-              exit 1
-            fi
-          fi
+          python .pipeline-contract/scripts/pages_readiness.py validate-content-source \
+            --root "$GITHUB_WORKSPACE" \
+            --content-source "$CONTENT_SOURCE"
 
       - name: Checkout shared Pages theme
         if: inputs.shared_theme_enabled
@@ -163,18 +163,6 @@ jobs:
             python3 -c "import sys, pathlib; content_source = sys.argv[1]; pathlib.Path('mkdocs.yml').write_text('site_name: Project Documentation\ndocs_dir: ' + content_source + '\ntheme:\n  name: material\nmarkdown_extensions:\n  - pymdownx.highlight:\n      anchor_linenums: true\n  - pymdownx.superfences:\n      custom_fences:\n        - name: mermaid\n          class: mermaid\n          format: !!python/name:pymdownx.superfences.fence_code_format\n', encoding='utf-8')" "$CONTENT_SOURCE"
             mkdocs build
           fi
-
-      - name: Checkout Pages readiness contract
-        if: inputs.agent_readiness_enabled
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          repository: ${{ job.workflow_repository }}
-          ref: ${{ job.workflow_sha }}
-          path: .pipeline-contract
-          persist-credentials: false
-          sparse-checkout: |
-            scripts/__init__.py
-            scripts/pages_readiness.py
 
       - name: Publish source Markdown mirrors and derived discovery assets
         if: inputs.agent_readiness_enabled

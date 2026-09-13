@@ -26,6 +26,8 @@ from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 from urllib.parse import unquote, urlsplit, urlunsplit
 
+import yaml
+
 SCHEMA_ID = "https://agent-utilities.invalid/schemas/agent-readiness-v1.json"
 SCHEMA_VERSION = "agent-readiness/v1"
 MIRROR_CONTRACT = "mkdocs-static/v2"
@@ -188,6 +190,81 @@ def _safe_existing_dir(root: Path, raw: object, label: str) -> Path:
     if not path.is_dir() or path.is_symlink():
         _fail(f"{label}-not-directory")
     return path
+
+
+def _mkdocs_document(root: Path) -> yaml.Node | None:
+    """Compose ``root/mkdocs.yml`` into a node tree without constructing
+    anything.
+
+    `yaml.compose` runs only the parser/composer stage (it calls
+    `Loader.get_single_node`, never `get_single_data`), so it never
+    constructs a Python object for any node -- a scalar value is read as a
+    `ScalarNode.value` string, and an `!!python/name:...`/
+    `!!python/object/apply:...` tag elsewhere in the document (real fleet
+    `mkdocs.yml` files declare these for pymdownx's Mermaid superfences)
+    stays an inert node carrying that tag string. Nothing importable,
+    callable, or constructible is ever produced from untrusted YAML.
+    Returns ``None`` for a missing/unreadable file or one that fails to
+    parse -- this is the same authority and reading method
+    `repository_manager.docs_readiness._mkdocs_document` uses (RF-ADR-009
+    Phase D, lane PAGES-FOUNDATION).
+    """
+
+    try:
+        text = (root / "mkdocs.yml").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    try:
+        return yaml.compose(text, Loader=yaml.SafeLoader)
+    except yaml.YAMLError:
+        return None
+
+
+def _docs_dir_node(document: yaml.Node | None) -> yaml.Node | None:
+    """Return the mapping's declared ``docs_dir`` value node, if any."""
+
+    if not isinstance(document, yaml.MappingNode):
+        return None
+    for key_node, value_node in document.value:
+        if isinstance(key_node, yaml.ScalarNode) and key_node.value == "docs_dir":
+            return value_node
+    return None
+
+
+def mkdocs_docs_dir(root: Path) -> str | None:
+    """Return the repository's declared ``docs_dir``, or ``None`` if absent.
+
+    A declared ``docs_dir`` that isn't a plain scalar string fails loudly
+    (``content-source-docs-dir-invalid``) rather than silently falling back.
+    """
+
+    node = _docs_dir_node(_mkdocs_document(root))
+    if node is None:
+        return None
+    if not isinstance(node, yaml.ScalarNode) or not node.value.strip():
+        _fail("content-source-docs-dir-invalid")
+    return node.value
+
+
+def validate_content_source(root: str | Path, content_source: str) -> dict[str, Any]:
+    """Validate a declared ``content_source`` before it is trusted.
+
+    Fails loudly -- never falls back between layouts -- when
+    ``content_source`` is empty, the directory does not exist under
+    ``root``, or ``mkdocs.yml`` declares a different ``docs_dir``.
+    ``mkdocs.yml``'s ``docs_dir`` is the single authority; this is the same
+    check the caller's own ``mkdocs`` build already enforces implicitly and
+    the same one `repository_manager.docs_readiness` reads independently.
+    """
+
+    if not isinstance(content_source, str) or not content_source.strip():
+        _fail("content-source-required")
+    workspace = _safe_root(root)
+    _safe_existing_dir(workspace, content_source, "content-source")
+    declared = mkdocs_docs_dir(workspace)
+    if declared is not None and declared != content_source:
+        _fail("content-source-mismatch")
+    return {"ok": True, "content_source": content_source, "mkdocs_docs_dir": declared}
 
 
 def _safe_site(root: Path, raw: str | Path) -> Path:
@@ -1041,7 +1118,9 @@ def build(
     ``content_source`` alone, and an explicit path is used exactly as given.
     """
 
-    resolved_readiness_input = readiness_input or f"{content_source}/agent-readiness.json"
+    resolved_readiness_input = (
+        readiness_input or f"{content_source}/agent-readiness.json"
+    )
     resolved_schema = schema or f"{content_source}/agent-readiness.schema.json"
     workspace = _safe_root(root)
     site_root = _safe_site(workspace, site)
@@ -1094,11 +1173,23 @@ def _parser() -> argparse.ArgumentParser:
         subparser.add_argument(
             "--mirror-manifest", default="markdown-mirror-manifest.json"
         )
+    validate = subparsers.add_parser("validate-content-source")
+    validate.add_argument("--root", default=".")
+    validate.add_argument("--content-source", default="pages")
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = _parser().parse_args(argv)
+def _main_validate_content_source(args: argparse.Namespace) -> int:
+    try:
+        result = validate_content_source(args.root, args.content_source)
+    except ReadinessTckError as exc:
+        print(json.dumps({"ok": False, "error_code": str(exc)}, sort_keys=True))
+        return 1
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _main_build(args: argparse.Namespace) -> int:
     try:
         result = build(
             args.root,
@@ -1126,6 +1217,13 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     print(json.dumps(result, sort_keys=True))
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _parser().parse_args(argv)
+    if args.command == "validate-content-source":
+        return _main_validate_content_source(args)
+    return _main_build(args)
 
 
 if __name__ == "__main__":

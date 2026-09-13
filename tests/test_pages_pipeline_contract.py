@@ -85,11 +85,20 @@ def test_enabled_path_checks_strict_build_and_runs_owned_tck() -> None:
 
 
 def test_content_source_is_validated_before_any_declared_authority_is_trusted() -> None:
+    """The workflow delegates content_source validation to the tested helper.
+
+    The check itself (empty/missing/mismatched content_source) lives in
+    `scripts/pages_readiness.py::validate_content_source` -- see
+    `test_pages_readiness.py` -- so it is unit-tested rather than only
+    grep-able workflow text. This asserts the workflow actually calls it,
+    with the script checked out before it can be invoked, and gated the
+    same as the feature(s) that need it.
+    """
+
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled" in text
-    assert "content_source must not be empty" in text
-    assert "does not exist in this repository" in text
-    assert "docs_dir" in text
+    assert "python .pipeline-contract/scripts/pages_readiness.py validate-content-source" in text
+    assert "Checkout pipeline-owned scripts" in text
 
 
 def test_shared_theme_inherits_via_mkdocs_native_inherit_key() -> None:
