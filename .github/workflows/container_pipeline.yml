@@ -103,12 +103,18 @@ jobs:
       # registry cache reuses the already-authenticated Docker login (no SAS token),
       # so it's durable. ignore-error on cache-to keeps cache an optimization, never a gate.
       # Per-target buildcache tag so the agent/mcp legs don't clobber each other's cache.
+      # The three attempts below share one `with:` block via a YAML anchor
+      # (&docker_build_push_with / *docker_build_push_with) so the block is
+      # spelled out exactly once — a differential clone gate over the raw
+      # workflow text would otherwise see the same duplicated block whenever
+      # its content changes (e.g. a routine action-version bump), even though
+      # the retry-with-identical-config duplication itself is intentional.
       - name: Build and push Docker image (attempt 1)
         id: buildx1
         if: steps.target.outputs.exists == 'true'
         continue-on-error: true
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
-        with:
+        with: &docker_build_push_with
           context: ${{ inputs.build_context }}
           file: ${{ inputs.dockerfile }}
           target: ${{ matrix.target }}
@@ -128,16 +134,7 @@ jobs:
         if: steps.buildx1.outcome == 'failure'
         continue-on-error: true
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
-        with:
-          context: ${{ inputs.build_context }}
-          file: ${{ inputs.dockerfile }}
-          target: ${{ matrix.target }}
-          push: ${{ github.event_name == 'push' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          no-cache: false
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }},mode=max,ignore-error=true
+        with: *docker_build_push_with
 
       - name: Wait before final retry
         if: steps.buildx1.outcome == 'failure' && steps.buildx2.outcome == 'failure'
@@ -146,13 +143,4 @@ jobs:
       - name: Build and push Docker image (final attempt)
         if: steps.buildx1.outcome == 'failure' && steps.buildx2.outcome == 'failure'
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
-        with:
-          context: ${{ inputs.build_context }}
-          file: ${{ inputs.dockerfile }}
-          target: ${{ matrix.target }}
-          push: ${{ github.event_name == 'push' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          no-cache: false
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }},mode=max,ignore-error=true
+        with: *docker_build_push_with
