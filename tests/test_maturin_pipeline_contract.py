@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -158,12 +159,19 @@ def test_external_caller_fixture_never_resolves_actions_from_caller_checkout(tmp
 
     assert not (caller / ".github/actions").exists()
 
+    contract_actions = caller / ".pipeline-contract/.github/actions"
+    contract_actions.mkdir(parents=True)
+    for action in (ROOT / ".github/actions").iterdir():
+        if action.is_dir():
+            shutil.copytree(action, contract_actions / action.name)
+
     workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     for job in workflow["jobs"].values():
         for step in job["steps"]:
             action = step.get("uses", "")
             if action.startswith("./"):
                 assert action.startswith("./.pipeline-contract/")
+                assert (caller / action[2:]).exists()
 
     python_workflow = yaml.safe_load(
         (ROOT / ".github/workflows/python_pipeline.yml").read_text(encoding="utf-8")
@@ -172,15 +180,19 @@ def test_external_caller_fixture_never_resolves_actions_from_caller_checkout(tmp
         action = step.get("uses", "")
         if action.startswith("./"):
             assert action.startswith("./.pipeline-contract/")
+            assert (caller / action[2:]).exists()
 
     for action_path in (
         ROOT / ".github/actions/checkout-verified-source/action.yml",
         ROOT / ".github/actions/maturin-build-wheels/action.yml",
         ROOT / ".github/actions/publish-python-package/action.yml",
+        ROOT / ".github/actions/verify-and-upload-artifact/action.yml",
     ):
         for line in action_path.read_text(encoding="utf-8").splitlines():
             if "uses: ./" in line:
                 assert "uses: ./.pipeline-contract/" in line
+                reference = line.split("uses:", 1)[1].strip()
+                assert (caller / reference[2:]).exists()
 
 
 def test_determine_version_script_works_with_a_shallow_checkout(tmp_path: Path) -> None:
