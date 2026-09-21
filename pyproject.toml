@@ -47,6 +47,12 @@ paths = ["pipelines_hooks", "scripts", "tests"]
 [tool.pipelines_hooks.env_sprawl]
 allow_files = ["pipelines_hooks/core/settings.py"]
 
+[tool.pipelines_hooks.public_surface]
+repository = "Knuckles-Team/pipelines"
+distribution = "pipelines-hooks"
+pages_url = "https://knuckles-team.github.io/pipelines/"
+mcp_server = false
+
 # Every workflow here is a reusable `workflow_call` definition executed in the
 # calling repository with that repository's secrets and checkout; none has a
 # job that can run meaningfully in this repository, so each job carries its

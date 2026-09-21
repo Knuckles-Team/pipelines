@@ -168,6 +168,13 @@
   language: python
   pass_filenames: false
   always_run: true
+# --- public documentation --------------------------------------------------
+- id: public-surface
+  name: Public README/AGENTS surface contract
+  entry: pipelines-hook public-surface
+  language: python
+  pass_filenames: false
+  always_run: true
 # --- CI replica -------------------------------------------------------------
 - id: ci-gate-replica-consistency
   name: CI gate replica - every workflow and job classified

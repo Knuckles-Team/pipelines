@@ -23,6 +23,7 @@ SECTIONS: dict[str, frozenset[str]] = {
     "kiss": frozenset({"paths"}),
     "env_sprawl": frozenset({"allow_files"}),
     "stdout_writes": frozenset({"served_paths"}),
+    "public_surface": frozenset({"repository", "distribution", "pages_url", "mcp_server"}),
     "stubs": frozenset({"declared_seams"}),
     "ci_replica": frozenset({"workflows", "build_affecting"}),
 }

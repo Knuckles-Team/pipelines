@@ -12,6 +12,7 @@ templates = "shared templates the reusable workflows render (for example the Pag
 tests = "tests for the reusable workflows and the shared hooks"
 
 [files]
+"AGENTS.md" = "current engineering contract for shared gates and workflows"
 "README.md" = "repository readme; carries the version marker bump2version updates"
 "VERSION" = "release version file updated by bump2version"
 "pyproject.toml" = "shared hook package metadata and this repository's [tool.pipelines_hooks] configuration"

@@ -35,6 +35,7 @@ GATES: dict[str, str] = {
     "import-cycles": "pipelines_hooks.code.import_cycles",
     "env-sprawl": "pipelines_hooks.code.env_sprawl",
     "stdout-writes": "pipelines_hooks.code.stdout_writes",
+    "public-surface": "pipelines_hooks.docs.public_surface",
     "ci-gate-replica": "pipelines_hooks.ci_replica.gate",
 }
 
