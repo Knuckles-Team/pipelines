@@ -89,24 +89,25 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
     assert "prefers-color-scheme: dark" in styles
     marker = svg_root.find(f".//{SVG_NS}marker[@id='arrow']")
     assert marker is not None and marker.attrib["refX"] == "10"
-    assert flows is not None and len(list(flows)) == 10
+    assert flows is not None and len(list(flows)) == 11
     assert list(svg_root).index(flows) == len(list(svg_root)) - 1
     path_values = [path.attrib["d"] for path in flows]
     expected_connectors = {
-        "M60 90L120 135": ((60, 90), (120, 135)),
-        "M100 90L310 135": ((100, 90), (310, 135)),
-        "M140 90L500 135": ((140, 90), (500, 135)),
-        "M180 90L692 135": ((180, 90), (692, 135)),
+        "M120 90V110H692": ((120, 90), (692, 110)),
+        "M120 110V135": ((120, 110), (120, 135)),
+        "M310 110V135": ((310, 110), (310, 135)),
+        "M500 110V135": ((500, 110), (500, 135)),
+        "M692 110V135": ((692, 110), (692, 135)),
         "M780 180H825": ((780, 180), (825, 180)),
         "M780 285H825": ((780, 285), (825, 285)),
         "M1050 305V335": ((1050, 305), (1050, 335)),
         "M1050 435V485": ((1050, 435), (1050, 485)),
-        "M255 590H445": ((255, 590), (445, 590)),
-        "M705 590H825": ((705, 590), (825, 590)),
+        "M255 565H445": ((255, 565), (445, 565)),
+        "M705 565H825": ((705, 565), (825, 565)),
     }
     assert path_values == list(expected_connectors)
-    assert marker is not None and marker.attrib["refX"] == "10"
-    assert all(path.attrib.get("class") == "arrow" for path in flows)
+    assert list(flows)[0].attrib.get("class") == "bus"
+    assert all(path.attrib.get("class") == "arrow" for path in list(flows)[1:])
     boxes = (
         (35, 35, 205, 90),
         (35, 135, 205, 225),
@@ -117,8 +118,8 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
         (825, 145, 1275, 305),
         (825, 335, 1275, 435),
         (825, 485, 1275, 610),
-        (35, 545, 255, 635),
-        (445, 545, 705, 635),
+        (35, 520, 255, 610),
+        (445, 520, 705, 610),
     )
     rectangles = list(svg_root.iter(f"{SVG_NS}rect"))
     mcp_box = next(
@@ -128,6 +129,15 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
     )
     assert mcp_box.attrib["width"] == "365"
     assert int(mcp_box.attrib["x"]) + int(mcp_box.attrib["width"]) == 780
+    lower_boxes = [
+        rect
+        for rect in rectangles
+        if rect.attrib.get("y") in {"485", "520"}
+    ]
+    assert {
+        int(rect.attrib["y"]) + int(rect.attrib["height"])
+        for rect in lower_boxes
+    } == {610}
 
     def is_box_border(point: tuple[int, int], bounds: tuple[int, int, int, int]) -> bool:
         x, y = point
@@ -136,8 +146,15 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
             y in (top, bottom) and left <= x <= right
         )
 
-    for start, end in expected_connectors.values():
-        assert any(is_box_border(start, box) for box in boxes)
+    for path, (start, end) in expected_connectors.items():
+        if path == "M120 90V110H692":
+            assert any(is_box_border(start, box) for box in boxes)
+            assert end == (692, 110)
+            continue
+        if start[1] == 110:
+            assert start[0] in (120, 310, 500, 692)
+        else:
+            assert any(is_box_border(start, box) for box in boxes)
         assert any(is_box_border(end, box) for box in boxes)
     assert not {
         "M210 180H825",
