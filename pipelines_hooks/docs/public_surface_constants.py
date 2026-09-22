@@ -14,10 +14,10 @@ AGENTS_MAX_LINES = 240
 README_HEADINGS = (
     "overview",
     "key capabilities",
-    "quick start",
-    "architecture",
     "documentation",
-    "development",
+    "architecture",
+    "quick start",
+    "contributing",
     "license",
 )
 AGENTS_HEADINGS = (

@@ -25,6 +25,8 @@ from pipelines_hooks.docs.public_surface_text import (
     line_findings,
     required_headings,
 )
+from pipelines_hooks.docs.public_surface_quickstart import findings as quick_start_findings
+from pipelines_hooks.docs.public_surface_structure import flow_findings, quick_start_body
 
 
 def _read(root: Path, name: str) -> str | None:
@@ -52,9 +54,14 @@ def _readme_findings(root: Path, readme: str, config: PublicSurfaceConfig) -> li
     count = h1_count(readme)
     if count != 1:
         findings.append(f"README.md must contain exactly one H1 (found {count})")
-    missing = required_headings(readme, agents=False)
-    if missing:
-        findings.append("README.md is missing required heading(s): " + ", ".join(missing))
+    findings.extend(flow_findings(readme))
+    findings.extend(
+        quick_start_findings(
+            quick_start_body(readme),
+            repository=config.repository,
+            distribution=config.distribution,
+        )
+    )
     findings.extend(badge_findings(readme, config))
     findings.extend(_pages_finding(readme, config))
     findings.extend(local_link_findings(root, readme))

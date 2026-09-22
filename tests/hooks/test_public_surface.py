@@ -46,11 +46,10 @@ def _readme(*, distribution: str | None = "fixture", mcp_server: bool = False, e
         + "## Overview\n\n"
         + paragraphs
         + "\n\n## Key capabilities\n\nReusable hooks, release workflows, and Pages delivery templates keep repository conventions aligned.\n\n"
-        + "## Installation\n\nInstall the published package with `pip install fixture`.\n\n"
-        + "## Quick start\n\nAdd the hook repository to `.pre-commit-config.yaml`, then run `pre-commit run --all-files`.\n\n"
-        + "## Architecture\n\nThe hook entry point reads repository-local TOML settings and returns stable exit classes.\n\n"
         + "## Documentation\n\nRead the [local guide](docs/guide.md) or visit the [Pages site](https://knuckles-team.github.io/fixture/).\n\n"
-        + "## Development\n\nRun the test suite with `pytest -q` and keep changes covered by focused fixtures.\n\n"
+        + "## Architecture\n\nThe hook entry point reads repository-local TOML settings and returns stable exit classes.\n\n"
+        + "## Quick start\n\nInstall the package, then run its public-surface check:\n\n```bash\npython -m pip install fixture\nfixture --help\n```\n\n"
+        + "## Contributing\n\nRun the test suite with `pytest -q` and keep changes covered by focused fixtures.\n\n"
         + "## License\n\nThis project is released under the repository license.\n"
         + extra
     )
@@ -95,13 +94,13 @@ def test_public_surface_accepts_non_package_docs_without_pypi_badges(repo: Repo)
     assert repo.run("public-surface") == 0
 
 
-def test_public_surface_does_not_require_a_separate_installation_heading(repo: Repo) -> None:
+def test_public_surface_rejects_a_separate_installation_heading(repo: Repo) -> None:
     _plant(repo)
     readme = _readme().replace(
-        "## Installation\n\nInstall the published package with `pip install fixture`.\n\n", ""
+        "## Quick start", "## Installation\n\nInstall the package.\n\n## Quick start"
     )
-    repo.commit({"README.md": readme}, "optional installation heading")
-    assert repo.run("public-surface") == 0
+    repo.commit({"README.md": readme}, "duplicate installation heading")
+    assert repo.run("public-surface") == 1
 
 
 def test_public_surface_accepts_an_mcp_server_only_when_configured(repo: Repo) -> None:
@@ -120,6 +119,36 @@ def test_public_surface_rejects_missing_heading_and_wrong_badge(repo: Repo) -> N
         },
         "bad docs",
     )
+    assert repo.run("public-surface") == 1
+
+
+def test_public_surface_rejects_reordered_root_sections(repo: Repo) -> None:
+    _plant(repo)
+    readme = _readme().replace("## Documentation", "## TEMP", 1)
+    readme = readme.replace("## Architecture", "## Documentation", 1)
+    readme = readme.replace("## TEMP", "## Architecture", 1)
+    repo.commit({"README.md": readme}, "reordered root sections")
+    assert repo.run("public-surface") == 1
+
+
+def test_public_surface_requires_fenced_install_and_run_commands(repo: Repo) -> None:
+    _plant(repo)
+    no_install = _readme().replace(
+        "python -m pip install fixture", "echo python -m pip install fixture"
+    )
+    repo.commit({"README.md": no_install}, "missing install command")
+    assert repo.run("public-surface") == 1
+    no_run = _readme().replace("fixture --help", "echo run omitted").replace(
+        "pre-commit run --all-files", "echo alternate run omitted"
+    )
+    repo.commit({"README.md": no_run}, "missing run command")
+    assert repo.run("public-surface") == 1
+
+
+def test_public_surface_rejects_verbose_root_readme_dump(repo: Repo) -> None:
+    _plant(repo)
+    large = _readme(extra="\n" + ("Detailed reference paragraph.\n" * 220))
+    repo.commit({"README.md": large}, "verbose root README")
     assert repo.run("public-surface") == 1
 
 

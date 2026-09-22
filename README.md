@@ -18,16 +18,11 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/pipelines)
 ![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/pipelines)
 
-Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent
-ecosystem. The package keeps policy in each consuming repository while one
-implementation provides deterministic local checks and release workflows.
+Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The package keeps policy in each consuming repository while one implementation provides deterministic local checks and release workflows.
 
 ## Overview
 
-`pipelines-hooks` is a small Python package with the `pipelines-hook` command.
-It publishes repository-agnostic pre-commit gates, while the reusable workflows
-provide tested building blocks for Python, native, container, service, desktop,
-and Pages delivery.
+`pipelines-hooks` is a small Python package with the `pipelines-hook` command. It publishes repository-agnostic pre-commit gates, while reusable workflows provide tested building blocks for Python, native, container, service, desktop, and Pages delivery.
 
 ## Key capabilities
 
@@ -37,91 +32,58 @@ and Pages delivery.
 - Reusable GitHub workflows pinned by callers to reviewed immutable commits.
 - Pages readiness and shared MkDocs theme assets for deeper documentation.
 
-## Installation
+## Documentation
 
-Install the hook package in the environment used by pre-commit:
+The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks.
 
-```bash
-pip install pipelines-hooks
-```
+The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration and the CI replica contract are described in the Pages reference; the public-surface gate validates their concise entry points without making live HTTP requests.
 
-The native scanners used by some gates are installed by the consuming
-repository or its CI image; the hooks never install tools during a check.
+## Architecture
 
-## Quick start
+The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict.
 
-Add the published hook catalogue to `.pre-commit-config.yaml` and pin it to a
-reviewed commit:
-
-```yaml
-- repo: https://github.com/Knuckles-Team/pipelines
-  rev: <full commit SHA>
-  hooks:
-  - id: public-surface
-  - id: security-sanitizer
-  - id: supply-chain
-```
-
-Run the same checks locally and in CI:
-
-```bash
-pre-commit run --all-files
-pipelines-hook public-surface
-```
-
-The public documentation gate is configured alongside the other shared hooks:
+Public documentation checks are configured per repository:
 
 ```toml
 [tool.pipelines_hooks.public_surface]
 repository = "Knuckles-Team/example"
-distribution = "example"  # omit for a non-PyPI repository
+distribution = "example"  # omit when the project has no PyPI distribution
 pages_url = "https://knuckles-team.github.io/example/"
 mcp_server = false
 ```
 
-## Architecture
+Reusable workflows are called by another repository's own GitHub Actions workflow. They run with that caller's checkout, permissions, and secrets. A caller pins first-party workflows to a full commit SHA and third-party actions to reviewed immutable revisions.
 
-The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are
-read from `[tool.pipelines_hooks]` in the consuming repository; the shared
-implementation never contains a repository-specific allowlist. Every gate
-returns zero for clean, one for findings, and two when it cannot produce a
-trustworthy verdict.
+## Quick start
 
-Reusable workflows are called by a repository's own GitHub Actions workflow.
-They run with that caller's checkout, permissions, and secrets. A caller pins
-each first-party workflow to a full commit SHA and keeps third-party actions
-SHA-pinned as well.
-
-## Documentation
-
-The [Pages documentation](https://knuckles-team.github.io/pipelines/) contains
-the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md)
-covers the generated manifests, content-source contract, and delivery checks.
-
-The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of
-published hook IDs. The command-line help lists the same registry:
+Install the hook package, then run the public-surface check from a configured repository:
 
 ```bash
-pipelines-hook
+python -m pip install pipelines-hooks
+pipelines-hook public-surface
 ```
 
-## Development
+For one of the reusable gates, configure it in `.pre-commit-config.yaml`, pin this repository to a reviewed full commit SHA, and run:
 
-Clone the repository, install the locked development environment, and run the
-focused tests before the complete suite:
+```bash
+pre-commit run --all-files
+```
+
+The Pages documentation linked above has the complete hook catalogue and workflow-specific setup steps.
+
+## Contributing
+
+Clone the repository, install the locked development environment, and run focused tests before the complete suite:
 
 ```bash
 uv sync --locked
 uv run pytest -q tests/hooks tests/test_pages_readiness.py
 uv run pytest -q
+pre-commit run --all-files
 ```
 
-Changes to a gate include positive and adversarial fixtures. Changes to a
-workflow include a contract test for its inputs and permissions. Run
-`pre-commit run --all-files` before submitting a change.
+Every new hook invariant needs positive and adversarial fixtures. Workflow changes need contract tests for inputs and permissions. Stage only reviewed files and keep generated environment output untracked.
 
 ## License
 
-The package is distributed under the license declared by the project metadata.
-See the repository metadata and published distribution for the applicable
-terms.
+The package is distributed under the license declared by the project metadata. See the repository metadata and published distribution for the applicable terms.
