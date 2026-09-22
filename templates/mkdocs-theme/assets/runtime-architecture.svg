@@ -20,7 +20,7 @@
   <g>
     <rect class="box" x="35" y="35" width="170" height="55" rx="14"/><text class="label" x="120" y="69">People</text>
     <rect class="entry" x="35" y="135" width="170" height="90" rx="16"/><text class="label" x="120" y="172">Agent Web UI</text><text class="role" x="120" y="198">browser experience</text>
-    <rect class="entry" x="225" y="135" width="170" height="90" rx="16"/><text class="label" x="310" y="169">Agent Terminal UI</text><text class="role" x="310" y="195">REST capabilities</text><text class="small" x="310" y="215">ACP chat tracked separately</text>
+    <rect class="entry" x="225" y="135" width="170" height="90" rx="16"/><text class="label" x="310" y="169">Agent Terminal UI</text><text class="role" x="310" y="198">REST operations</text>
     <rect class="entry" x="415" y="135" width="170" height="90" rx="16"/><text class="label" x="500" y="172">Geniusbot</text><text class="role" x="500" y="198">desktop cockpit</text>
     <rect class="entry" x="605" y="135" width="175" height="90" rx="16"/><text class="label" x="692" y="169">Messaging</text><text class="role" x="692" y="194">chat + voice channels</text><text class="small" x="692" y="214">hosted by Graph OS</text>
     <rect class="box" x="415" y="245" width="390" height="80" rx="16"/><text class="label" x="610" y="280">MCP / REST / A2A clients</text><text class="role" x="610" y="305">external agents and applications</text>
