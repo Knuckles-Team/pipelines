@@ -71,7 +71,7 @@ def test_theme_components_use_accessible_native_controls() -> None:
     assert css.count("{") == css.count("}")
 
 
-def test_runtime_svg_is_accessible_and_has_all_seven_flows() -> None:
+def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
     diagram = ROOT / "templates/mkdocs-theme/assets/runtime-architecture.svg"
     svg_root = ElementTree.parse(diagram).getroot()
     flows = svg_root.find(f".//{SVG_NS}g[@class='arrow']")
@@ -81,17 +81,20 @@ def test_runtime_svg_is_accessible_and_has_all_seven_flows() -> None:
     assert svg_root.attrib["role"] == "img"
     assert svg_root.find(f"{SVG_NS}title") is not None
     assert svg_root.find(f"{SVG_NS}desc") is not None
-    assert flows is not None and len(list(flows)) == 7
+    assert flows is not None and len(list(flows)) == 13
     for label in (
-        "Agent WebUI",
-        "operator experience",
-        "GraphOS",
-        "public runtime gateway",
-        "agent-utilities",
+        "Agent Web UI",
+        "browser experience",
+        "Agent Terminal UI",
+        "Geniusbot",
+        "Messaging",
+        "Graph OS",
+        "governed runtime gateway",
+        "Agent Utilities",
         "agent control plane",
-        "epistemic-graph",
-        "agent-connector-sdk",
-        "governed source integration boundary",
+        "Epistemic Graph",
+        "Agent Connector SDK",
+        "typed source integration",
     ):
         assert label in text
         assert label.split()[0] in mermaid

@@ -25,6 +25,23 @@ THEME_FILES = (
     ThemeFile("assets/favicon.svg", "assets/favicon.svg"),
     ThemeFile("assets/runtime-architecture.mmd", "assets/runtime-architecture.mmd"),
     ThemeFile("assets/runtime-architecture.svg", "assets/runtime-architecture.svg"),
+    ThemeFile(
+        "assets/brands/epistemic-graph-logo-v1.png",
+        "assets/brands/epistemic-graph-logo-v1.png",
+    ),
+    ThemeFile(
+        "assets/brands/agent-utilities-logo-v1.png",
+        "assets/brands/agent-utilities-logo-v1.png",
+    ),
+    ThemeFile("assets/brands/graph-os-logo-v1.png", "assets/brands/graph-os-logo-v1.png"),
+    ThemeFile(
+        "assets/brands/agent-connector-sdk-logo-v1.png",
+        "assets/brands/agent-connector-sdk-logo-v1.png",
+    ),
+    ThemeFile(
+        "assets/brands/agent-webui-logo-v1.png",
+        "assets/brands/agent-webui-logo-v1.png",
+    ),
     ThemeFile("glossary.md", "glossary.md"),
 )
 
