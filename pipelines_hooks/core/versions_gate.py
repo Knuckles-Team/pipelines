@@ -9,7 +9,7 @@ from pipelines_hooks.core.tools import PINNED_VERSIONS, expected_version_line, v
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="scanner-versions", description=__doc__)
-    parser.add_argument("tools", nargs="*", choices=sorted(PINNED_VERSIONS), default=sorted(PINNED_VERSIONS))
+    parser.add_argument("tools", nargs="*", choices=sorted(PINNED_VERSIONS))
     tools = parser.parse_args(argv).tools or sorted(PINNED_VERSIONS)
     for tool in tools:
         print(f"scanner-versions: {expected_version_line(tool)} at {verified(tool)}")
