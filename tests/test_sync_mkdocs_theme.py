@@ -74,7 +74,8 @@ def test_theme_components_use_accessible_native_controls() -> None:
 def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
     diagram = ROOT / "templates/mkdocs-theme/assets/runtime-architecture.svg"
     svg_root = ElementTree.parse(diagram).getroot()
-    flows = svg_root.find(f".//{SVG_NS}g[@class='arrow']")
+    flows = svg_root.find(f".//{SVG_NS}g[@class='connections']")
+    marker = svg_root.find(f".//{SVG_NS}marker[@id='arrow']")
     background = svg_root.find(f"{SVG_NS}rect[@class='bg']")
     text = " ".join(element.text or "" for element in svg_root.iter(f"{SVG_NS}text"))
     mermaid = diagram.with_suffix(".mmd").read_text(encoding="utf-8")
@@ -86,9 +87,58 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
     styles = " ".join(element.text or "" for element in svg_root.iter(f"{SVG_NS}style"))
     assert "prefers-color-scheme: light" in styles
     assert "prefers-color-scheme: dark" in styles
-    assert flows is not None and len(list(flows)) == 13
+    marker = svg_root.find(f".//{SVG_NS}marker[@id='arrow']")
+    assert marker is not None and marker.attrib["refX"] == "10"
+    assert flows is not None and len(list(flows)) == 10
     assert list(svg_root).index(flows) == len(list(svg_root)) - 1
-    assert list(flows)[-1].attrib["d"] == "M705 590H845"
+    path_values = [path.attrib["d"] for path in flows]
+    expected_connectors = {
+        "M60 90L120 135": ((60, 90), (120, 135)),
+        "M100 90L310 135": ((100, 90), (310, 135)),
+        "M140 90L500 135": ((140, 90), (500, 135)),
+        "M180 90L692 135": ((180, 90), (692, 135)),
+        "M780 180H825": ((780, 180), (825, 180)),
+        "M805 285H825": ((805, 285), (825, 285)),
+        "M1050 305V335": ((1050, 305), (1050, 335)),
+        "M1050 435V485": ((1050, 435), (1050, 485)),
+        "M255 590H445": ((255, 590), (445, 590)),
+        "M705 590H825": ((705, 590), (825, 590)),
+    }
+    assert path_values == list(expected_connectors)
+    assert marker is not None and marker.attrib["refX"] == "10"
+    assert all(path.attrib.get("class") == "arrow" for path in flows)
+    boxes = (
+        (35, 35, 205, 90),
+        (35, 135, 205, 225),
+        (225, 135, 395, 225),
+        (415, 135, 585, 225),
+        (605, 135, 780, 225),
+        (415, 245, 805, 325),
+        (825, 145, 1275, 305),
+        (825, 335, 1275, 435),
+        (825, 485, 1275, 610),
+        (35, 545, 255, 635),
+        (445, 545, 705, 635),
+    )
+
+    def is_box_border(point: tuple[int, int], bounds: tuple[int, int, int, int]) -> bool:
+        x, y = point
+        left, top, right, bottom = bounds
+        return (x in (left, right) and top <= y <= bottom) or (
+            y in (top, bottom) and left <= x <= right
+        )
+
+    for start, end in expected_connectors.values():
+        assert any(is_box_border(start, box) for box in boxes)
+        assert any(is_box_border(end, box) for box in boxes)
+    assert not {
+        "M210 180H825",
+        "M400 180H825",
+        "M590 180H825",
+        "M610 285H825",
+        "M705 590H845",
+        "M705 590H825V548",
+    }.intersection(path_values)
     for label in (
         "Agent Web UI",
         "browser experience",
