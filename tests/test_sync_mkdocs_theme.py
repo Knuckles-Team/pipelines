@@ -98,7 +98,7 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
         "M140 90L500 135": ((140, 90), (500, 135)),
         "M180 90L692 135": ((180, 90), (692, 135)),
         "M780 180H825": ((780, 180), (825, 180)),
-        "M805 285H825": ((805, 285), (825, 285)),
+        "M780 285H825": ((780, 285), (825, 285)),
         "M1050 305V335": ((1050, 305), (1050, 335)),
         "M1050 435V485": ((1050, 435), (1050, 485)),
         "M255 590H445": ((255, 590), (445, 590)),
@@ -113,13 +113,21 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
         (225, 135, 395, 225),
         (415, 135, 585, 225),
         (605, 135, 780, 225),
-        (415, 245, 805, 325),
+        (415, 245, 780, 325),
         (825, 145, 1275, 305),
         (825, 335, 1275, 435),
         (825, 485, 1275, 610),
         (35, 545, 255, 635),
         (445, 545, 705, 635),
     )
+    rectangles = list(svg_root.iter(f"{SVG_NS}rect"))
+    mcp_box = next(
+        rect
+        for rect in rectangles
+        if rect.attrib.get("x") == "415" and rect.attrib.get("y") == "245"
+    )
+    assert mcp_box.attrib["width"] == "365"
+    assert int(mcp_box.attrib["x"]) + int(mcp_box.attrib["width"]) == 780
 
     def is_box_border(point: tuple[int, int], bounds: tuple[int, int, int, int]) -> bool:
         x, y = point
@@ -136,6 +144,7 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
         "M400 180H825",
         "M590 180H825",
         "M610 285H825",
+        "M805 285H825",
         "M705 590H845",
         "M705 590H825V548",
     }.intersection(path_values)
