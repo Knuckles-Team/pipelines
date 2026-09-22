@@ -19,11 +19,12 @@ on:
         default: pages
       shared_theme_enabled:
         description: >-
-          Deliberately inherit the one shared Pages theme (Material config,
-          markdown extensions, CSS) from this repository's
+          Deliberately inherit the shared Pages theme (Material config,
+          markdown extensions, generated styles, logo, footer, switcher, and
+          landing-page assets) from this repository's
           templates/mkdocs-theme/base.mkdocs.yml via mkdocs's native
-          INHERIT:, so the caller's own mkdocs.yml only needs to declare its
-          content manifest (site_name/site_url/nav/docs_dir).
+          INHERIT:. The caller's own mkdocs.yml declares its content manifest;
+          committed generated assets are checked against this immutable workflow ref.
         required: false
         type: boolean
         default: false
@@ -125,17 +126,19 @@ jobs:
           path: .pipeline-theme
           persist-credentials: false
           sparse-checkout: |
-            templates/mkdocs-theme/base.mkdocs.yml
-            templates/mkdocs-theme/extra.css
+            templates/mkdocs-theme
+            scripts/sync_mkdocs_theme.py
 
-      - name: Apply shared Pages theme
+      - name: Verify shared Pages theme assets
         if: inputs.shared_theme_enabled
         env:
           CONTENT_SOURCE: ${{ inputs.content_source }}
         run: |
           set -euo pipefail
-          mkdir -p "${CONTENT_SOURCE}/_pipelines-theme"
-          cp .pipeline-theme/templates/mkdocs-theme/extra.css "${CONTENT_SOURCE}/_pipelines-theme/extra.css"
+          python .pipeline-theme/scripts/sync_mkdocs_theme.py check \
+            --root "$GITHUB_WORKSPACE" \
+            --source-root .pipeline-theme \
+            --content-source "$CONTENT_SOURCE"
           if [ -f "mkdocs.yml" ]; then
             if ! grep -q '^INHERIT:' mkdocs.yml; then
               printf 'INHERIT: .pipeline-theme/templates/mkdocs-theme/base.mkdocs.yml\n' | cat - mkdocs.yml > mkdocs.yml.pipelines-tmp

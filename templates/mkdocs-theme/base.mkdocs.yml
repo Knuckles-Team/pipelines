@@ -1,23 +1,19 @@
-# Shared GitHub Pages theme (CONCEPT:ECO-4.DOCS-DELIVERY / RF-ADR-009 D3-D5).
+# Shared GitHub Pages theme for the Knuckles-Team agent ecosystem.
 #
 # A consuming repository's own `mkdocs.yml` inherits this file via mkdocs's
 # native `INHERIT:` key (a recursive dict merge, lists replaced only where the
 # child repository re-declares them -- see `mkdocs.utils.yaml.yaml_load`).
 # The `pages_pipeline.yml` reusable workflow wires the `INHERIT:` line in for
-# every caller that sets `shared_theme_enabled: true`; a repository never
-# hand-copies this file. The repository's own `mkdocs.yml` is then reduced to
-# its content manifest -- `site_name`, `site_url`, `nav`, and (until its own
-# docs migration wave) `docs_dir` -- while look, structure and navigation
-# hierarchy come from here, identically, for every consumer (EG, the
-# connector SDK, AU, graph-os, and the UIs).
-#
-# D3/D5: HTML/CSS renderings only. No ASCII art, no mermaid fences -- this
-# file deliberately does not enable `pymdownx.superfences`'s `mermaid` custom
-# fence that most repositories' own (pre-existing, untouched-by-this-lane)
-# `mkdocs.yml` still declares today.
+# every caller that sets `shared_theme_enabled: true`. The repository's own
+# `mkdocs.yml` remains the content manifest; this file supplies the common
+# presentation, while `scripts/sync_mkdocs_theme.py` materializes its generated
+# assets into the caller's docs tree.
 
 theme:
   name: material
+  custom_dir: overrides
+  logo: assets/graph-mark.svg
+  favicon: assets/favicon.svg
   icon:
     repo: fontawesome/brands/github
   features:
@@ -53,7 +49,37 @@ theme:
         name: Switch to light mode
 
 extra_css:
-  - _pipelines-theme/extra.css
+  - stylesheets/extra.css
+
+extra:
+  ecosystem:
+    current: ""
+    sites:
+      - slug: agent-webui
+        name: Agent WebUI
+        role: operator experience
+        url: https://knuckles-team.github.io/agent-webui/
+        repository: https://github.com/Knuckles-Team/agent-webui
+      - slug: graph-os
+        name: GraphOS
+        role: public runtime gateway
+        url: https://knuckles-team.github.io/graph-os/
+        repository: https://github.com/Knuckles-Team/graph-os
+      - slug: agent-utilities
+        name: agent-utilities
+        role: agent control plane
+        url: https://knuckles-team.github.io/agent-utilities/
+        repository: https://github.com/Knuckles-Team/agent-utilities
+      - slug: epistemic-graph
+        name: epistemic-graph
+        role: durable multimodal knowledge and reasoning engine
+        url: https://knuckles-team.github.io/epistemic-graph/
+        repository: https://github.com/Knuckles-Team/epistemic-graph
+      - slug: agent-connector-sdk
+        name: agent-connector-sdk
+        role: governed source integration boundary
+        url: https://knuckles-team.github.io/agent-connector-sdk/
+        repository: https://github.com/Knuckles-Team/agent-connector-sdk
 
 markdown_extensions:
   - admonition

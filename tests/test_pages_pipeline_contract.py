@@ -33,11 +33,12 @@ def test_shared_theme_is_explicit_opt_in() -> None:
     inputs = contract["on"]["workflow_call"]["inputs"]
     assert inputs["shared_theme_enabled"] == {
         "description": (
-            "Deliberately inherit the one shared Pages theme (Material "
-            "config, markdown extensions, CSS) from this repository's "
+            "Deliberately inherit the shared Pages theme (Material config, "
+            "markdown extensions, generated styles, logo, footer, switcher, and "
+            "landing-page assets) from this repository's "
             "templates/mkdocs-theme/base.mkdocs.yml via mkdocs's native "
-            "INHERIT:, so the caller's own mkdocs.yml only needs to declare "
-            "its content manifest (site_name/site_url/nav/docs_dir)."
+            "INHERIT:. The caller's own mkdocs.yml declares its content manifest; "
+            "committed generated assets are checked against this immutable workflow ref."
         ),
         "required": False,
         "type": "boolean",
@@ -128,5 +129,8 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
 def test_shared_theme_inherits_via_mkdocs_native_inherit_key() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "templates/mkdocs-theme/base.mkdocs.yml" in text
-    assert "templates/mkdocs-theme/extra.css" in text
+    assert "templates/mkdocs-theme" in text
+    assert "scripts/sync_mkdocs_theme.py" in text
     assert "INHERIT:" in text
+    assert "Verify shared Pages theme assets" in text
+    assert "sync_mkdocs_theme.py check" in text
