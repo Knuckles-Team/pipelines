@@ -93,11 +93,11 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
     assert list(svg_root).index(flows) == len(list(svg_root)) - 1
     path_values = [path.attrib["d"] for path in flows]
     expected_connectors = {
-        "M120 90V110H692": ((120, 90), (692, 110)),
-        "M120 110V135": ((120, 110), (120, 135)),
-        "M310 110V135": ((310, 110), (310, 135)),
-        "M500 110V135": ((500, 110), (500, 135)),
-        "M692 110V135": ((692, 110), (692, 135)),
+        "M120 90V100H692": ((120, 90), (692, 100)),
+        "M120 100V135": ((120, 100), (120, 135)),
+        "M310 100V135": ((310, 100), (310, 135)),
+        "M500 100V135": ((500, 100), (500, 135)),
+        "M692 100V135": ((692, 100), (692, 135)),
         "M780 180H825": ((780, 180), (825, 180)),
         "M780 285H825": ((780, 285), (825, 285)),
         "M1050 305V335": ((1050, 305), (1050, 335)),
@@ -115,7 +115,7 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
         (415, 135, 585, 225),
         (605, 135, 780, 225),
         (415, 245, 780, 325),
-        (825, 145, 1275, 305),
+        (825, 135, 1275, 305),
         (825, 335, 1275, 435),
         (825, 485, 1275, 610),
         (35, 520, 255, 610),
@@ -129,6 +129,13 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
     )
     assert mcp_box.attrib["width"] == "365"
     assert int(mcp_box.attrib["x"]) + int(mcp_box.attrib["width"]) == 780
+    graph_os_box = next(
+        rect
+        for rect in rectangles
+        if rect.attrib.get("x") == "825" and rect.attrib.get("width") == "450"
+    )
+    assert graph_os_box.attrib["y"] == "135"
+    assert graph_os_box.attrib["height"] == "170"
     lower_boxes = [
         rect
         for rect in rectangles
@@ -147,11 +154,11 @@ def test_runtime_svg_is_accessible_and_has_all_entrypoint_flows() -> None:
         )
 
     for path, (start, end) in expected_connectors.items():
-        if path == "M120 90V110H692":
+        if path == "M120 90V100H692":
             assert any(is_box_border(start, box) for box in boxes)
-            assert end == (692, 110)
+            assert end == (692, 100)
             continue
-        if start[1] == 110:
+        if start[1] == 100:
             assert start[0] in (120, 310, 500, 692)
         else:
             assert any(is_box_border(start, box) for box in boxes)
