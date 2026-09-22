@@ -42,6 +42,11 @@ THEME_FILES = (
         "assets/brands/agent-webui-logo-v1.png",
         "assets/brands/agent-webui-logo-v1.png",
     ),
+    ThemeFile("assets/brands/geniusbot-logo-v1.png", "assets/brands/geniusbot-logo-v1.png"),
+    ThemeFile(
+        "assets/brands/agent-terminal-ui-logo-v1.png",
+        "assets/brands/agent-terminal-ui-logo-v1.png",
+    ),
     ThemeFile("glossary.md", "glossary.md"),
 )
 
