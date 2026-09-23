@@ -8,6 +8,7 @@ from pathlib import Path
 
 from skill_graph.corpus import build_graph, generate
 from skill_graph.model import REPOS
+from skill_graph.render_components import render_components
 from skill_graph.render_repo import render_repo_reference_md
 
 
@@ -40,7 +41,10 @@ def _write_or_check(mode: str, files: dict[str, str], label: str) -> int:
 
 def _build_parser(default_workspace: Path, default_root: Path) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("build", "check", "emit-repo", "check-repo"))
+    parser.add_argument(
+        "mode",
+        choices=("build", "check", "emit-repo", "check-repo", "emit-components", "check-components"),
+    )
     parser.add_argument(
         "--workspace",
         type=Path,
@@ -70,6 +74,11 @@ def _build_parser(default_workspace: Path, default_root: Path) -> argparse.Argum
         help="destination file inside that repo -- emit-repo/check-repo only",
     )
     parser.add_argument(
+        "--out-dir",
+        type=Path,
+        help="destination docs/ dir inside that repo -- emit-components/check-components only",
+    )
+    parser.add_argument(
         "--required",
         action="store_true",
         help="fail instead of skipping when --workspace does not exist",
@@ -83,23 +92,56 @@ def _run_repo_mode(args: argparse.Namespace) -> int:
     return _write_or_check(args.mode, {str(args.out): content}, f"skill_graph[{args.slug}]")
 
 
+def _run_components_mode(args: argparse.Namespace) -> int:
+    corpus = build_graph(args.workspace.resolve())
+    files = render_components(corpus)
+    return _write_or_check(
+        args.mode,
+        {str(args.out_dir / k): v for k, v in files.items()},
+        f"skill_graph[components:{args.slug}]",
+    )
+
+
 def _run_pages_mode(args: argparse.Namespace) -> int:
     files = generate(args.workspace.resolve())
     return _write_or_check(args.mode, {str(args.root / k): v for k, v in files.items()}, "skill_graph")
 
 
+# mode -> (required arg names beyond --workspace, runner)
+_MODE_TABLE = {
+    "emit-repo": (("slug", "out"), _run_repo_mode),
+    "check-repo": (("slug", "out"), _run_repo_mode),
+    "emit-components": (("slug", "out_dir"), _run_components_mode),
+    "check-components": (("slug", "out_dir"), _run_components_mode),
+    "build": ((), _run_pages_mode),
+    "check": ((), _run_pages_mode),
+}
+
+
+def _missing_required_args(args: argparse.Namespace, required: tuple[str, ...]) -> bool:
+    return any(getattr(args, name) is None for name in required)
+
+
+def _workspace_skip(args: argparse.Namespace) -> int | None:
+    """None means proceed; an int means return it immediately."""
+    if args.workspace.is_dir():
+        return None
+    if args.required:
+        print(f"skill_graph: CANNOT RUN: {args.workspace} does not exist", file=sys.stderr)
+        return 2
+    print(f"skill_graph: {args.mode} skipped (no sibling checkout at {args.workspace})")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     default_workspace = Path(__file__).resolve().parents[3] / "agent-packages"
     default_root = Path(__file__).resolve().parents[2]
-    args = _build_parser(default_workspace, default_root).parse_args(argv)
-    if args.mode in ("emit-repo", "check-repo") and (args.slug is None or args.out is None):
-        _build_parser(default_workspace, default_root).error(f"{args.mode} requires --slug and --out")
-    if not args.workspace.is_dir():
-        if args.required:
-            print(f"skill_graph: CANNOT RUN: {args.workspace} does not exist", file=sys.stderr)
-            return 2
-        print(f"skill_graph: {args.mode} skipped (no sibling checkout at {args.workspace})")
-        return 0
-    if args.mode in ("emit-repo", "check-repo"):
-        return _run_repo_mode(args)
-    return _run_pages_mode(args)
+    parser = _build_parser(default_workspace, default_root)
+    args = parser.parse_args(argv)
+    required, runner = _MODE_TABLE[args.mode]
+    if _missing_required_args(args, required):
+        parser.error(f"{args.mode} requires --{' and --'.join(n.replace('_', '-') for n in required)}")
+    skip = _workspace_skip(args)
+    if skip is not None:
+        return skip
+    return runner(args)
