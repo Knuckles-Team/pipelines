@@ -1,7 +1,7 @@
 """kiss-census: every tracked Python/Rust file under the KISS paths, enforced at zero.
 
 Each file is checked with its own ``kiss check`` (a multi-path check reports a
-false clean). When ``.kiss/kiss.toml`` enables ``orphan_module_enabled``, each
+false clean). When ``.config/kiss.toml`` enables ``orphan_module_enabled``, each
 KISS path is ALSO checked as one directory: orphan detection needs the whole
 package's import graph, and a single-file check never reports an orphan. Every
 finding fails -- there is no advisory class and no baseline.
@@ -32,7 +32,7 @@ def census_files(root: Path, scope: tuple[str, ...]) -> list[str]:
 def orphan_findings(kiss: str, root: Path, files: list[str]) -> list[str]:
     """``orphan_module`` findings from one whole-directory check per path and language."""
     if not runner.orphan_rule_enabled(root):
-        print("kiss census: orphan_module_enabled is off in .kiss/kiss.toml")
+        print("kiss census: orphan_module_enabled is off in .config/kiss.toml")
         return []
     directories = sorted({(str(Path(path).parts[0]), runner.LANGUAGES[Path(path).suffix]) for path in files})
     return [

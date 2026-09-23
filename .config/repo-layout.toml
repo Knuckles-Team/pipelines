@@ -1,0 +1,25 @@
+# Tracked root entries of pipelines, read by the root-hygiene hook.
+# An allowlist, not a baseline: a new root entry needs a reason here or the gate
+# fails, and an entry that is no longer tracked fails as stale. Every tool input
+# that accepts a path override lives in .config/; the root keeps only what a tool
+# discovers nowhere else.
+
+[dirs]
+".config" = "tool configuration: pre-commit suite (pre-commit -c), bump2version (--config-file), KISS thresholds, this manifest"
+".github" = "the reusable GitHub Actions workflows other repositories call (GitHub discovers only .github/)"
+docs = "reference documentation for the reusable workflows"
+pipelines_hooks = "the shared pre-commit hook package behind .pre-commit-hooks.yaml"
+scripts = "helper scripts the reusable workflows run"
+templates = "shared templates the reusable workflows render (for example the Pages mkdocs theme)"
+tests = "tests for the reusable workflows and the shared hooks"
+
+[files]
+"AGENTS.md" = "current engineering contract for shared gates and workflows"
+"README.md" = "repository readme (GitHub renders only a root, docs/ or .github/ readme; the public-surface gate reads it here)"
+"pyproject.toml" = "shared hook package metadata and this repository's [tool.pipelines_hooks] configuration"
+"uv.lock" = "uv lockfile; uv discovers it only beside pyproject.toml"
+
+[dotfiles]
+".gitattributes" = "git attributes (git reads only the root file)"
+".gitignore" = "git exclusion patterns (carries the fleet-shared REQUIRED set)"
+".pre-commit-hooks.yaml" = "the published shared hook catalogue; pre-commit reads it only at a hook repository's root"

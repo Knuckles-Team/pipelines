@@ -42,6 +42,8 @@ The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of publ
 
 The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict.
 
+File inputs live under `.config/`, never at the repository root: `.config/repo-layout.toml` (root-hygiene allowlist), `.config/kiss.toml` (KISS thresholds), `.config/dupehound-distinct.toml` (reviewed non-clone register) and `.config/security-audit-allow.txt` (risk-acceptance ledger). A copy left at the retired root location fails the gate with exit status two.
+
 Public documentation checks are configured per repository:
 
 ```toml
@@ -63,10 +65,10 @@ python -m pip install pipelines-hooks
 pipelines-hook public-surface
 ```
 
-For one of the reusable gates, configure it in `.pre-commit-config.yaml`, pin this repository to a reviewed full commit SHA, and run:
+For one of the reusable gates, configure it in `.config/pre-commit.yaml`, pin this repository to a reviewed full commit SHA, and run:
 
 ```bash
-pre-commit run --all-files
+pre-commit run -c .config/pre-commit.yaml --all-files
 ```
 
 The Pages documentation linked above has the complete hook catalogue and workflow-specific setup steps.
@@ -79,7 +81,7 @@ Clone the repository, install the locked development environment, and run focuse
 uv sync --locked
 uv run pytest -q tests/hooks tests/test_pages_readiness.py
 uv run pytest -q
-pre-commit run --all-files
+pre-commit run -c .config/pre-commit.yaml --all-files
 ```
 
 Every new hook invariant needs positive and adversarial fixtures. Workflow changes need contract tests for inputs and permissions. Stage only reviewed files and keep generated environment output untracked.

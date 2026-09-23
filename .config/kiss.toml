@@ -1,6 +1,6 @@
 # KISS thresholds for the shared hook package (kiss 0.4.10).
 #
-# Source: agent-packages/agent-utilities/.kiss/kiss.toml [python], the fleet's
+# Source: agent-packages/agent-utilities/.config/kiss.toml [python], the fleet's
 # hand-set, measured Python thresholds, copied unchanged. None was derived from
 # what this repository passes. This file is NOT a baseline.
 #

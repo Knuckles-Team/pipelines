@@ -3,9 +3,11 @@
 1. NEGATIVE: every REQUIRED token appears as its own ``.gitignore`` line; a
    purely presentational leading/trailing ``/`` is ignored (dropping it only
    widens the match, never narrows it).
-2. POSITIVE: no ``dist``/``build``/``target`` directory (or a ``-suffixed``
-   sibling) is already tracked -- a rule only stops FUTURE adds. The check is
-   anchored to a path SEGMENT, so ``build.rs`` or ``build_backend.py`` are fine.
+2. POSITIVE: no ``dist``/``build``/``target``/``site`` directory (or a
+   ``-suffixed`` sibling) is tracked at the root, and no cache, virtualenv,
+   coverage or tool-scratch path is tracked at ANY depth -- a rule only stops
+   FUTURE adds. The check is anchored to a path SEGMENT, so ``build.rs`` or
+   ``build_backend.py`` are fine.
 
 Each REQUIRED entry exists because one fleet repository was burned by exactly
 what it excludes; convergence is the point, so a repository never narrows it.
@@ -22,9 +24,15 @@ from pipelines_hooks.core.tracked import tracked_paths
 
 REQUIRED = frozenset(
     {"dist/", "dist-*/", "sdist/", "build/", "target/", "target-*/", ".venv/", ".mypy_cache/", ".pytest_cache/",
-     ".ruff_cache/", ".hypothesis/", ".pytest_tmp/", "node_modules/", ".kissconfig", "reports/", "scratch/"}
+     ".ruff_cache/", ".hypothesis/", ".pytest_tmp/", "node_modules/", ".kissconfig", "reports/", "scratch/",
+     "__pycache__/", "site/", "htmlcov/", ".coverage", ".specify/", ".kiss/", "*.maturin.lock"}
 )
-_TRACKED_BUILD_OUTPUT_RE = re.compile(r"^(dist|build|target)(-[^/]*)?/")
+_TRACKED_BUILD_OUTPUT_RE = re.compile(
+    r"^(dist|build|target|site)(-[^/]*)?/"
+    r"|(^|/)(__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.hypothesis|\.pytest_tmp|\.venv|venv|node_modules"
+    r"|htmlcov|\.specify|\.kiss)/"
+    r"|(^|/)(\.coverage(\.[^/]*)?|coverage\.xml|\.kissconfig|[^/]*\.maturin\.lock|[^/]*\.pyc)$"
+)
 
 
 def gitignore_tokens(root: Path) -> set[str]:
@@ -38,12 +46,12 @@ def gitignore_tokens(root: Path) -> set[str]:
 def problems(root: Path) -> list[str]:
     tokens = gitignore_tokens(root)
     missing = sorted(token for token in REQUIRED if token.strip("/") not in tokens)
-    tracked = sorted(path for path in tracked_paths(root) if _TRACKED_BUILD_OUTPUT_RE.match(path))
+    tracked = sorted(path for path in tracked_paths(root) if _TRACKED_BUILD_OUTPUT_RE.search(path))
     found = []
     if missing:
         found.append("Missing from .gitignore (fleet-shared REQUIRED set):\n" + "\n".join(f"    {m}" for m in missing))
     if tracked:
-        found.append("Build-output paths are TRACKED (delete them; a rule cannot un-track):\n" + "\n".join(f"    {p}" for p in tracked))
+        found.append("Build-output or cache paths are TRACKED (delete them; a rule cannot un-track):\n" + "\n".join(f"    {p}" for p in tracked))
     return found
 
 

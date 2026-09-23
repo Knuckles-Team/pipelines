@@ -118,7 +118,7 @@ repos:
     entry: uv run --frozen --quiet pipelines-hook dependency-audit
     language: system
     pass_filenames: false
-    files: ^(uv\.lock|pyproject\.toml|\.security-audit-allow\.txt)$
+    files: ^(uv\.lock|pyproject\.toml|\.config/security-audit-allow\.txt)$
   - id: supply-chain
     name: Immutable workflow, container and dependency sources
     entry: uv run --frozen --quiet pipelines-hook supply-chain

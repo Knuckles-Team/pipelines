@@ -34,3 +34,14 @@ def test_supply_chain_fires_on_a_missing_lock_an_unpinned_hook_and_an_unpinned_i
     assert repo.run("supply-chain", str(repo.root)) == 1
     output = capsys.readouterr().out
     assert all(rule in output for rule in ("SC-DEP-001", "SC-HOOK-001", "SC-CTR-001"))
+
+
+def test_supply_chain_inspects_a_pre_commit_suite_relocated_under_config(repo: Repo, capsys) -> None:
+    repo.commit(
+        {
+            ".config/pre-commit.yaml": "repos:\n- repo: https://github.com/example/hooks\n  rev: v1.0.0\n  hooks:\n  - id: x\n",
+            "uv.lock": "version = 1\n",
+        }
+    )
+    assert repo.run("supply-chain", str(repo.root)) == 1
+    assert "SC-HOOK-001" in capsys.readouterr().out

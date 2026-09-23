@@ -9,15 +9,16 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, has_head, sanitized_env
+from pipelines_hooks.core.layout import KISS_CONFIG, located
 from pipelines_hooks.kiss.report import parse_report
 
 LANGUAGES = {".py": "python", ".rs": "rust"}
-CONFIG = ".kiss/kiss.toml"
+CONFIG = KISS_CONFIG
 
 
 def check_config(tree: Path) -> Path:
-    """The tree's ``.kiss/kiss.toml``; a missing file or a ``.kissconfig`` fails closed."""
-    config = tree / CONFIG
+    """The tree's ``.config/kiss.toml``; a missing file or a ``.kissconfig`` fails closed."""
+    config = located(tree, CONFIG)
     if not config.is_file() or config.is_symlink():
         raise CannotRun(f"missing hand-authored {CONFIG} (a regular file)")
     if (tree / ".kissconfig").exists() or (tree / ".kissconfig").is_symlink():

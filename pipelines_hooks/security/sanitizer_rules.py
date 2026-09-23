@@ -12,7 +12,7 @@ MAX_SCAN_BYTES = 8 * 1024 * 1024
 
 #: Root-level ``.txt`` files that are canonical inputs, not scratch.
 ALLOWED_TXT_NAMES = frozenset(
-    {"requirements.txt", "requirements-dev.txt", "llms.txt", "overrides.txt", ".security-audit-allow.txt", ".cargo-audit-allow.txt"}
+    {"requirements.txt", "requirements-dev.txt", "llms.txt", "overrides.txt"}
 )
 TRANSIENT_PY_PATTERNS = tuple(re.compile(p) for p in (r"^test_.*\.py$", r"^fix_.*\.py$", r"^debug_.*\.py$", r"^scratch_.*\.py$", r"^temp_.*\.py$"))
 TRANSIENT_NOTE_PATTERNS = tuple(

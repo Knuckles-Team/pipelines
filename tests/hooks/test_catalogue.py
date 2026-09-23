@@ -26,7 +26,7 @@ def test_every_registered_gate_is_published() -> None:
 
 
 def test_this_repository_runs_its_hooks_with_the_published_entries() -> None:
-    config = yaml.safe_load((HOOK_REPOSITORY / ".pre-commit-config.yaml").read_text(encoding="utf-8"))
+    config = yaml.safe_load((HOOK_REPOSITORY / ".config" / "pre-commit.yaml").read_text(encoding="utf-8"))
     local = {hook["id"]: hook for repo in config["repos"] if repo["repo"] == "local" for hook in repo["hooks"]}
     catalogue = _catalogue()
     self_run = {hook_id: hook for hook_id, hook in local.items() if hook_id in catalogue}

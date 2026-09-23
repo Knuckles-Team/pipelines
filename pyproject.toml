@@ -58,7 +58,7 @@ mcp_server = false
 # job that can run meaningfully in this repository, so each job carries its
 # reason. The consistency hook still fails on any new, renamed or removed job.
 [tool.pipelines_hooks.ci_replica]
-build_affecting = ["pyproject.toml", "uv.lock", ".github/workflows/**", ".pre-commit-config.yaml", ".pre-commit-hooks.yaml"]
+build_affecting = ["pyproject.toml", "uv.lock", ".github/workflows/**", ".config/pre-commit.yaml", ".pre-commit-hooks.yaml"]
 
 [tool.pipelines_hooks.ci_replica.workflows."container_pipeline.yml"]
 blocking = true

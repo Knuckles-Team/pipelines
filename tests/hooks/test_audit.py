@@ -45,7 +45,8 @@ def test_gate_fires_on_an_unaccepted_finding_and_on_a_stale_acceptance(lock: Pat
     monkeypatch.setattr(gate, "audit", lambda packages: [("demo-pkg", "1.0.0", "GHSA-aaaa-bbbb", ("1.0.1",))])
     assert gate.main([str(lock)]) == 1
     expiry = (dt.date.today() + dt.timedelta(days=30)).isoformat()
-    (lock.parent / ".security-audit-allow.txt").write_text(f"GHSA-aaaa-bbbb demo-pkg expires={expiry} # upstream fix pending review\n", encoding="utf-8")
+    (lock.parent / ".config").mkdir()
+    (lock.parent / ".config" / "security-audit-allow.txt").write_text(f"GHSA-aaaa-bbbb demo-pkg expires={expiry} # upstream fix pending review\n", encoding="utf-8")
     assert gate.main([str(lock)]) == 0
     monkeypatch.setattr(gate, "audit", lambda packages: [])
     assert gate.main([str(lock)]) == 1

@@ -15,6 +15,8 @@ SKIP_DIRECTORIES = frozenset(
     {".cache", ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox", ".venv", ".worktrees",
      "__pycache__", "dist", "node_modules", "target", "vendor"}
 )
+#: A pre-commit suite relocated under ``.config/`` (run with ``pre-commit -c``).
+RELOCATED_PRECOMMIT = (".config", "pre-commit.yaml")
 _INSTALLERS = frozenset({"bootstrap.ps1", "bootstrap.sh", "install.ps1", "install.sh", "setup.ps1", "setup.sh", "promote_local_release.py"})
 
 
@@ -75,13 +77,18 @@ def read_source(path: Path) -> str:
         raise CannotRun("source file is unreadable") from None
 
 
+def is_precommit_config(relative: PurePath) -> bool:
+    """A pre-commit suite at its default root name or relocated under ``.config/``."""
+    return relative.name == ".pre-commit-config.yaml" or relative.parts[-2:] == RELOCATED_PRECOMMIT
+
+
 def asset_kinds(relative: PurePath) -> tuple[str, ...]:
     """Which rule families apply: workflow, precommit, docker, compose, installer."""
     name = relative.name.casefold()
     suffix = relative.suffix.casefold()
     kinds = {
         "workflow": len(relative.parts) >= 3 and relative.parts[-3:-1] == (".github", "workflows") and suffix in {".yml", ".yaml"},
-        "precommit": relative.name == ".pre-commit-config.yaml",
+        "precommit": is_precommit_config(relative),
         "docker": name == "dockerfile" or name.startswith("dockerfile.") or name.endswith(".dockerfile"),
         "compose": suffix in {".yml", ".yaml"} and ("compose" in name or name.endswith((".stack.yml", ".stack.yaml"))),
         "installer": name in _INSTALLERS,

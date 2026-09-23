@@ -28,7 +28,7 @@ Install the locked environment and run focused or complete checks with:
 ```bash
 uv sync --locked
 uv run pytest -q
-pre-commit run --all-files
+pre-commit run -c .config/pre-commit.yaml --all-files
 ```
 
 Use `pipelines-hook <id>` to run one published gate. The command lists the
@@ -72,7 +72,8 @@ the applicable focused checks.
 ## Release
 
 Release from a reviewed commit after the full test and hook suites pass. Keep
-the package version in `VERSION` and project metadata synchronized. Consumers
+the package version in `pyproject.toml`, the single version source
+(`bump2version --config-file .config/bumpversion.cfg`). Consumers
 pin published workflow references to an immutable commit and record the release
 version beside that pin. Pages artifacts are promoted only after strict
 contract checks succeed.

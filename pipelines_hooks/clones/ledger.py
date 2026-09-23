@@ -1,4 +1,4 @@
-"""The reviewed register of dupehound pairs that are NOT clones (``dupehound-distinct.toml``).
+"""The reviewed register of dupehound pairs that are NOT clones (``.config/dupehound-distinct.toml``).
 
 A baseline is machine-written, unexplained and grows by default. This register
 is HAND-WRITTEN, carries a reason per entry, and ROTS: every entry pins the
@@ -16,8 +16,9 @@ from typing import Any, NamedTuple
 
 from pipelines_hooks.clones.ledger_text import delegates_to, digest_of, function_exists, normalized_function_text
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.layout import DUPEHOUND_DISTINCT, located
 
-REGISTER = "dupehound-distinct.toml"
+REGISTER = DUPEHOUND_DISTINCT
 _FIELDS = ("left_file", "left_name", "left_digest", "right_file", "right_name", "right_digest", "reason", "reviewed_on")
 
 
@@ -55,7 +56,7 @@ def _pair(index: int, entry: object) -> DistinctPair:
 
 
 def load_register(root: Path) -> list[DistinctPair]:
-    path = root / REGISTER
+    path = located(root, REGISTER)
     if not path.exists():
         return []
     try:

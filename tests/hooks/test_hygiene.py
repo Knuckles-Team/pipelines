@@ -4,17 +4,21 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.layout import RETIRED, located
 from pipelines_hooks.hygiene.gitignore import REQUIRED
 from tests.hooks.conftest import Repo
 
 LAYOUT = (
-    '[dirs]\npkg = "the package"\n".kiss" = "KISS thresholds"\n\n[files]\n"pyproject.toml" = "metadata"\n\n'
+    '[dirs]\npkg = "the package"\n".config" = "gate inputs"\n\n[files]\n"pyproject.toml" = "metadata"\n\n'
     '[dotfiles]\n".gitignore" = "git exclusions"\n'
 )
 
 
 def test_root_hygiene_fires_on_undeclared_and_stale_entries(repo: Repo) -> None:
-    repo.commit({".repo-layout.toml": LAYOUT, ".gitignore": "x\n"})
+    repo.commit({".config/repo-layout.toml": LAYOUT, ".gitignore": "x\n"})
     assert repo.run("root-hygiene") == 0
     repo.commit({"scratch.md": "notes\n"})
     assert repo.run("root-hygiene") == 1
@@ -58,3 +62,29 @@ def test_mermaid_fires_on_an_unquoted_special_character_and_passes_a_quoted_labe
     assert repo.run("mermaid") == 0
     repo.commit({"docs/flow.md": "```mermaid\ngraph TD\n  A[load (cache)] --> B\n```\n"})
     assert repo.run("mermaid") == 1
+
+
+def test_root_hygiene_refuses_a_manifest_left_at_the_retired_root_location(repo: Repo) -> None:
+    repo.commit({".config/repo-layout.toml": LAYOUT, ".gitignore": "x\n"})
+    assert repo.run("root-hygiene") == 0
+    repo.commit({".repo-layout.toml": LAYOUT})
+    assert repo.run("root-hygiene") == 2
+
+
+def test_gitignore_convergence_fires_on_a_tracked_cache_at_any_depth(repo: Repo) -> None:
+    repo.commit({"pkg/sub/__pycache__/mod.cpython-312.pyc": "x"})
+    repo.commit({".gitignore": "\n".join(sorted(REQUIRED)) + "\n"})
+    assert repo.run("gitignore-convergence") == 1
+    repo.git("rm", "-q", "--cached", "pkg/sub/__pycache__/mod.cpython-312.pyc")
+    repo.git("commit", "-q", "-m", "untrack")
+    assert repo.run("gitignore-convergence") == 0
+
+
+@pytest.mark.parametrize("canonical", sorted(RETIRED))
+def test_every_gate_input_refuses_its_retired_root_copy(tmp_path: Path, canonical: str) -> None:
+    assert located(tmp_path, canonical) == tmp_path / canonical
+    retired = tmp_path / RETIRED[canonical]
+    retired.parent.mkdir(parents=True, exist_ok=True)
+    retired.write_text("x\n", encoding="utf-8")
+    with pytest.raises(CannotRun, match=canonical):
+        located(tmp_path, canonical)

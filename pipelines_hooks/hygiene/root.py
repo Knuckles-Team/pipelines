@@ -1,11 +1,11 @@
 """root-hygiene: every tracked root entry is declared, with a reason, and nothing stale.
 
 An ALLOWLIST, not a denylist: a genuinely new root entry is justified once,
-deliberately, in the repository's ``.repo-layout.toml``:
+deliberately, in the repository's ``.config/repo-layout.toml``:
 
 * ``[dirs]`` -- every root directory, dot-directories included;
 * ``[files]`` -- every non-dot root file;
-* ``[dotfiles]`` -- every root dot-file (``.repo-layout.toml`` itself excepted).
+* ``[dotfiles]`` -- every root dot-file.
 
 Every value is a non-empty reason. A declared entry that is no longer tracked
 fails (a stale manifest is the fiction it exists to prevent), and a self-
@@ -21,16 +21,17 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.core.layout import REPO_LAYOUT, located
 from pipelines_hooks.core.tracked import tracked_paths
 
-MANIFEST = ".repo-layout.toml"
+MANIFEST = REPO_LAYOUT
 TABLES = ("dirs", "files", "dotfiles")
 #: Tool-written calibration files: a ratchet the moment they are tracked.
 FORBIDDEN_ANYWHERE = frozenset({".kissconfig", ".complexity-baseline.json"})
 
 
 def load_manifest(root: Path) -> dict[str, dict[str, str]]:
-    path = root / MANIFEST
+    path = located(root, MANIFEST)
     try:
         document = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
@@ -53,12 +54,12 @@ def inspect(paths: list[str], manifest: dict[str, dict[str, str]]) -> dict[str, 
     """Every class of violation, by name (all empty means clean)."""
     dirs = {p.split("/", 1)[0] for p in paths if "/" in p}
     files = {p for p in paths if "/" not in p}
-    dotfiles = _dotted(files) - {MANIFEST}
+    dotfiles = _dotted(files)
     declared_files, declared_dots = set(manifest["files"]), set(manifest["dotfiles"])
     return {
         "forbidden": sorted(p for p in paths if Path(p).name in FORBIDDEN_ANYWHERE),
         "undeclared directory": sorted(dirs - set(manifest["dirs"])),
-        "undeclared file": sorted(files - dotfiles - {MANIFEST} - declared_files),
+        "undeclared file": sorted(files - dotfiles - declared_files),
         "undeclared dot-file": sorted(dotfiles - declared_dots),
         "misfiled entry ([files] takes non-dot names, [dotfiles] dot names)": sorted(
             _dotted(declared_files) | (declared_dots - _dotted(declared_dots))

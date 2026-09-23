@@ -1,4 +1,4 @@
-"""The risk-acceptance ledger ``.security-audit-allow.txt``.
+"""The risk-acceptance ledger ``.config/security-audit-allow.txt``.
 
 One line per accepted advisory: ``ADVISORY-ID package expires=YYYY-MM-DD #
 justification`` (at least 12 characters). Package-only suppressions are
@@ -14,8 +14,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pipelines_hooks.audit.lock import PACKAGE_RE, AuditError, normalise_package
+from pipelines_hooks.core.layout import SECURITY_AUDIT_ALLOW, located
 
-LEDGER = ".security-audit-allow.txt"
+LEDGER = SECURITY_AUDIT_ALLOW
 MAX_ACCEPTANCE_DAYS = 90
 ADVISORY_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]{2,127}$")
 _EXPIRY_RE = re.compile(r"^expires=(\d{4}-\d{2}-\d{2})$")
@@ -60,7 +61,7 @@ def parse_line(number: int, raw: str, today: dt.date) -> RiskAcceptance | None:
 
 
 def load_acceptances(root: Path) -> dict[tuple[str, str], RiskAcceptance]:
-    path = root / LEDGER
+    path = located(root, LEDGER)
     if not path.exists():
         return {}
     if path.is_symlink() or path.stat().st_size > 1024 * 1024:

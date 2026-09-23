@@ -143,7 +143,12 @@ node_modules/
 .kissconfig
 reports/
 scratch/
+__pycache__/
+site/
+htmlcov/
+.coverage
+.specify/
+*.maturin.lock
 
-# KISS writes a working cache under .kiss/; only the hand-set thresholds are tracked.
-.kiss/*
-!.kiss/kiss.toml
+# KISS may write a working cache under .kiss/; its thresholds are tracked in .config/kiss.toml.
+.kiss/

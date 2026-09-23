@@ -61,7 +61,7 @@ def repo(tmp_path: Path) -> Repo:
     fixture.commit(
         {
             "pyproject.toml": PYPROJECT,
-            ".kiss/kiss.toml": (HOOK_REPOSITORY / ".kiss" / "kiss.toml").read_text(encoding="utf-8"),
+            ".config/kiss.toml": (HOOK_REPOSITORY / ".config" / "kiss.toml").read_text(encoding="utf-8"),
             "pkg/__init__.py": '"""Fixture package."""\n',
         },
         "base",
