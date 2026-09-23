@@ -82,6 +82,7 @@ def check_repo(repo_root: Path, slug: str) -> dict[str, object]:
         "ascii_box_files": ascii_files,
         "skill_graph_reference_present": man_page.is_file(),
         "skill_graph_reference_in_nav": "skill-graph.generated.md" in mkdocs_text,
+        "has_components_nav_tier": bool(re.search(r"^\s*-\s*Components:", mkdocs_text, re.MULTILINE)),
     }
 
 
@@ -93,7 +94,8 @@ def _row(result: dict[str, object]) -> str:
         f"| {result['repo']} | {flag(result['inherits_shared_theme'])} "
         f"| {flag(result['shared_theme_byte_parity'])} "
         f"| {result['mermaid_fence_files']} | {result['ascii_box_files']} "
-        f"| {flag(result['skill_graph_reference_present'] and result['skill_graph_reference_in_nav'])} |"
+        f"| {flag(result['skill_graph_reference_present'] and result['skill_graph_reference_in_nav'])} "
+        f"| {flag(result['has_components_nav_tier'])} |"
     )
 
 
@@ -107,8 +109,8 @@ def render_receipt(results: list[dict[str, object]]) -> str:
         "branch is read directly when it exists; otherwise its live `main`.",
         "",
         "| Repo | Inherits shared theme | Theme byte-parity | Mermaid files | "
-        "ASCII-art files | Skill graph reference |",
-        "|---|---|---|---|---|---|",
+        "ASCII-art files | Skill graph reference | Components nav tier |",
+        "|---|---|---|---|---|---|---|",
     ]
     lines.extend(_row(result) for result in results)
     lines.append("")
