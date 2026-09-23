@@ -1116,6 +1116,22 @@ _No components._
 
 ## Graph OS
 
+### Architecture
+
+- **Agent bus** — `architecture/agent-bus.md`
+- **Atlas source catalog** — `architecture/atlas-source-catalog.md`
+- **Engine sharding** — `architecture/engine-sharding.md`
+- **Fleet autonomy** — `architecture/fleet-autonomy.md`
+- **Fleet scale authority** — `architecture/fleet-scale-authority.md`
+- **Gateway daemon** — `architecture/gateway-daemon.md`
+- **Gateway scaling** — `architecture/gateway-scaling.md`
+- **Self-hosting cutover** — `architecture/graphos-self-hosting.md`
+- **Identity inheritance** — `architecture/identity-inheritance.md`
+- **MCP 2026-07-28 protocol surface** — `architecture/mcp-2026-protocol-surface.md`
+- **MCP fleet authentication** — `architecture/mcp-auth.md`
+- **Embedded fleet gateway** — `architecture/fleet-gateway.md`
+- **Multi-tenant streamable HTTP** — `architecture/multi-tenant-streamable-http.md`
+
 ### Capabilities
 
 - **Capabilities** — `capabilities.md`

@@ -257,6 +257,7 @@ components (level 2, see [Components](components.md)).
 
 ## Graph OS
 
+- **Architecture** (13 components)
 - **Capabilities** (1 component)
 - **Components** (5 components)
 - **Glossary** (1 component)

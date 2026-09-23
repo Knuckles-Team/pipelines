@@ -2319,6 +2319,97 @@
       "documentedBy": "manpage/geniusbot/nav/status-md"
     },
     {
+      "id": "component/graph-os/nav/architecture-agent-bus",
+      "type": "Component",
+      "label": "Agent bus",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-agent-bus-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-atlas-source-catalog",
+      "type": "Component",
+      "label": "Atlas source catalog",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-atlas-source-catalog-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-embedded-fleet-gateway",
+      "type": "Component",
+      "label": "Embedded fleet gateway",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-fleet-gateway-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-engine-sharding",
+      "type": "Component",
+      "label": "Engine sharding",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-engine-sharding-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-fleet-autonomy",
+      "type": "Component",
+      "label": "Fleet autonomy",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-fleet-autonomy-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-fleet-scale-authority",
+      "type": "Component",
+      "label": "Fleet scale authority",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-fleet-scale-authority-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-gateway-daemon",
+      "type": "Component",
+      "label": "Gateway daemon",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-gateway-daemon-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-gateway-scaling",
+      "type": "Component",
+      "label": "Gateway scaling",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-gateway-scaling-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-identity-inheritance",
+      "type": "Component",
+      "label": "Identity inheritance",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-identity-inheritance-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-mcp-2026-07-28-protocol-surface",
+      "type": "Component",
+      "label": "MCP 2026-07-28 protocol surface",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-mcp-2026-protocol-surface-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-mcp-fleet-authentication",
+      "type": "Component",
+      "label": "MCP fleet authentication",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-mcp-auth-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-multi-tenant-streamable-http",
+      "type": "Component",
+      "label": "Multi-tenant streamable HTTP",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-multi-tenant-streamable-http-md"
+    },
+    {
+      "id": "component/graph-os/nav/architecture-self-hosting-cutover",
+      "type": "Component",
+      "label": "Self-hosting cutover",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/architecture-graphos-self-hosting-md"
+    },
+    {
       "id": "component/graph-os/nav/capabilities",
       "type": "Component",
       "label": "Capabilities",
@@ -4680,6 +4771,27 @@
       ]
     },
     {
+      "id": "concept/graph-os/nav/architecture",
+      "type": "Concept",
+      "label": "Architecture",
+      "partOfRepo": "repo/graph-os",
+      "hasComponent": [
+        "component/graph-os/nav/architecture-agent-bus",
+        "component/graph-os/nav/architecture-atlas-source-catalog",
+        "component/graph-os/nav/architecture-engine-sharding",
+        "component/graph-os/nav/architecture-fleet-autonomy",
+        "component/graph-os/nav/architecture-fleet-scale-authority",
+        "component/graph-os/nav/architecture-gateway-daemon",
+        "component/graph-os/nav/architecture-gateway-scaling",
+        "component/graph-os/nav/architecture-self-hosting-cutover",
+        "component/graph-os/nav/architecture-identity-inheritance",
+        "component/graph-os/nav/architecture-mcp-2026-07-28-protocol-surface",
+        "component/graph-os/nav/architecture-mcp-fleet-authentication",
+        "component/graph-os/nav/architecture-embedded-fleet-gateway",
+        "component/graph-os/nav/architecture-multi-tenant-streamable-http"
+      ]
+    },
+    {
       "id": "concept/graph-os/nav/capabilities",
       "type": "Concept",
       "label": "Capabilities",
@@ -6432,10 +6544,101 @@
       "partOfRepo": "repo/graph-os"
     },
     {
+      "id": "manpage/graph-os/nav/architecture-agent-bus-md",
+      "type": "ManPage",
+      "label": "Agent bus",
+      "sourcePath": "architecture/agent-bus.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-atlas-source-catalog-md",
+      "type": "ManPage",
+      "label": "Atlas source catalog",
+      "sourcePath": "architecture/atlas-source-catalog.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-engine-sharding-md",
+      "type": "ManPage",
+      "label": "Engine sharding",
+      "sourcePath": "architecture/engine-sharding.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-fleet-autonomy-md",
+      "type": "ManPage",
+      "label": "Fleet autonomy",
+      "sourcePath": "architecture/fleet-autonomy.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-fleet-gateway-md",
+      "type": "ManPage",
+      "label": "Embedded fleet gateway",
+      "sourcePath": "architecture/fleet-gateway.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-fleet-scale-authority-md",
+      "type": "ManPage",
+      "label": "Fleet scale authority",
+      "sourcePath": "architecture/fleet-scale-authority.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-gateway-daemon-md",
+      "type": "ManPage",
+      "label": "Gateway daemon",
+      "sourcePath": "architecture/gateway-daemon.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-gateway-scaling-md",
+      "type": "ManPage",
+      "label": "Gateway scaling",
+      "sourcePath": "architecture/gateway-scaling.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-graphos-self-hosting-md",
+      "type": "ManPage",
+      "label": "Self-hosting cutover",
+      "sourcePath": "architecture/graphos-self-hosting.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-identity-inheritance-md",
+      "type": "ManPage",
+      "label": "Identity inheritance",
+      "sourcePath": "architecture/identity-inheritance.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-mcp-2026-protocol-surface-md",
+      "type": "ManPage",
+      "label": "MCP 2026-07-28 protocol surface",
+      "sourcePath": "architecture/mcp-2026-protocol-surface.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-mcp-auth-md",
+      "type": "ManPage",
+      "label": "MCP fleet authentication",
+      "sourcePath": "architecture/mcp-auth.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
       "id": "manpage/graph-os/nav/architecture-md",
       "type": "ManPage",
       "label": "How it fits",
       "sourcePath": "architecture.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/architecture-multi-tenant-streamable-http-md",
+      "type": "ManPage",
+      "label": "Multi-tenant streamable HTTP",
+      "sourcePath": "architecture/multi-tenant-streamable-http.md",
       "partOfRepo": "repo/graph-os"
     },
     {
