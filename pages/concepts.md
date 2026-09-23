@@ -67,7 +67,7 @@ components (level 2, see [Components](components.md)).
 - **Home** (1 component)
 - **Interfaces** (14 components)
 - **Operate** (8 components)
-- **Reference** (9 components)
+- **Reference** (22 components)
 - **Start** (3 components)
 - **Status** (1 component)
 - **admission** (2 components)

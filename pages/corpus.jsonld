@@ -783,7 +783,7 @@
       "label": "cluster (contract domain)",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/contract-methods/cluster",
-      "methodCount": 30,
+      "methodCount": 31,
       "methods": [
         "CancelRequest",
         "CatalogAssign",
@@ -794,6 +794,7 @@
         "CreateGraph",
         "CreateMatView",
         "DeleteGraph",
+        "FleetCatalog",
         "GetMatView",
         "Health",
         "ListGraphs",
@@ -966,7 +967,7 @@
       "label": "coordination (contract domain)",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/contract-methods/coordination",
-      "methodCount": 38,
+      "methodCount": 44,
       "methods": [
         "AcquireCapacity",
         "AnalyticsJob",
@@ -982,7 +983,12 @@
         "DeferWorkItem",
         "DevelopmentLaneStatus",
         "FinishDevelopmentLane",
+        "GetControlLease",
+        "GetWorkItem",
+        "GetWorkItemOutcome",
+        "IssueControlLease",
         "KgDelegate",
+        "ListWorkItems",
         "MintWorkItemClaimCapability",
         "ObserveDevelopmentLane",
         "QueryDevelopmentLane",
@@ -1002,6 +1008,7 @@
         "Statechart",
         "SubmitWorkItem",
         "SubmitWorkItems",
+        "TransitionControlLease",
         "UpdateCapacityCell",
         "UpdateDevelopmentLaneQuota",
         "UpdateResourceHost",
@@ -1674,6 +1681,13 @@
       "documentedBy": "manpage/epistemic-graph/nav/service-mode-md"
     },
     {
+      "id": "component/epistemic-graph/nav/reference-api-reference",
+      "type": "Component",
+      "label": "API reference",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-index-md"
+    },
+    {
       "id": "component/epistemic-graph/nav/reference-capabilities",
       "type": "Component",
       "label": "Capabilities",
@@ -1681,11 +1695,32 @@
       "documentedBy": "manpage/epistemic-graph/nav/capabilities-md"
     },
     {
+      "id": "component/epistemic-graph/nav/reference-cluster-api",
+      "type": "Component",
+      "label": "Cluster API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-cluster-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-compute-api",
+      "type": "Component",
+      "label": "Compute API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-compute-md"
+    },
+    {
       "id": "component/epistemic-graph/nav/reference-concepts",
       "type": "Component",
       "label": "Concepts",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/nav/concepts-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-coordination-api",
+      "type": "Component",
+      "label": "Coordination API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-coordination-md"
     },
     {
       "id": "component/epistemic-graph/nav/reference-cost-and-capacity",
@@ -1709,11 +1744,60 @@
       "documentedBy": "manpage/epistemic-graph/nav/capabilities-generated-md"
     },
     {
+      "id": "component/epistemic-graph/nav/reference-graph-api",
+      "type": "Component",
+      "label": "Graph API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-graph-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-ingestion-api",
+      "type": "Component",
+      "label": "Ingestion API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-ingestion-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-messaging-api",
+      "type": "Component",
+      "label": "Messaging API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-messaging-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-openapi-swagger-ui",
+      "type": "Component",
+      "label": "OpenAPI / Swagger UI",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/swagger-ui-md"
+    },
+    {
       "id": "component/epistemic-graph/nav/reference-quality-terms",
       "type": "Component",
       "label": "Quality terms",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/nav/quality-gate-terms-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-query-api",
+      "type": "Component",
+      "label": "Query API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-query-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-reasoning-api",
+      "type": "Component",
+      "label": "Reasoning API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-reasoning-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-security-api",
+      "type": "Component",
+      "label": "Security API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-security-md"
     },
     {
       "id": "component/epistemic-graph/nav/reference-skill-graph-reference",
@@ -1728,6 +1812,20 @@
       "label": "Soak and chaos benchmarks",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/nav/benchmarks-soak-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-storage-api",
+      "type": "Component",
+      "label": "Storage API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-storage-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-transactions-api",
+      "type": "Component",
+      "label": "Transactions API",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/api-transactions-md"
     },
     {
       "id": "component/epistemic-graph/nav/reference-transport-benchmarks",
@@ -2976,7 +3074,7 @@
         "component/epistemic-graph/contract-domain/transactions"
       ],
       "sourcePath": "contract/methods.json",
-      "totalMethodCount": 429
+      "totalMethodCount": 436
     },
     {
       "id": "concept/epistemic-graph/nav/architecture",
@@ -3085,6 +3183,19 @@
       "hasComponent": [
         "component/epistemic-graph/nav/reference-capabilities",
         "component/epistemic-graph/nav/reference-generated-method-ledger",
+        "component/epistemic-graph/nav/reference-api-reference",
+        "component/epistemic-graph/nav/reference-cluster-api",
+        "component/epistemic-graph/nav/reference-compute-api",
+        "component/epistemic-graph/nav/reference-coordination-api",
+        "component/epistemic-graph/nav/reference-graph-api",
+        "component/epistemic-graph/nav/reference-ingestion-api",
+        "component/epistemic-graph/nav/reference-messaging-api",
+        "component/epistemic-graph/nav/reference-query-api",
+        "component/epistemic-graph/nav/reference-reasoning-api",
+        "component/epistemic-graph/nav/reference-security-api",
+        "component/epistemic-graph/nav/reference-storage-api",
+        "component/epistemic-graph/nav/reference-transactions-api",
+        "component/epistemic-graph/nav/reference-openapi-swagger-ui",
         "component/epistemic-graph/nav/reference-concepts",
         "component/epistemic-graph/nav/reference-cost-and-capacity",
         "component/epistemic-graph/nav/reference-transport-benchmarks",
@@ -6026,6 +6137,90 @@
       "partOfRepo": "repo/epistemic-graph"
     },
     {
+      "id": "manpage/epistemic-graph/nav/api-cluster-md",
+      "type": "ManPage",
+      "label": "Cluster API",
+      "sourcePath": "api/cluster.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-compute-md",
+      "type": "ManPage",
+      "label": "Compute API",
+      "sourcePath": "api/compute.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-coordination-md",
+      "type": "ManPage",
+      "label": "Coordination API",
+      "sourcePath": "api/coordination.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-graph-md",
+      "type": "ManPage",
+      "label": "Graph API",
+      "sourcePath": "api/graph.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-index-md",
+      "type": "ManPage",
+      "label": "API reference",
+      "sourcePath": "api/index.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-ingestion-md",
+      "type": "ManPage",
+      "label": "Ingestion API",
+      "sourcePath": "api/ingestion.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-messaging-md",
+      "type": "ManPage",
+      "label": "Messaging API",
+      "sourcePath": "api/messaging.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-query-md",
+      "type": "ManPage",
+      "label": "Query API",
+      "sourcePath": "api/query.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-reasoning-md",
+      "type": "ManPage",
+      "label": "Reasoning API",
+      "sourcePath": "api/reasoning.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-security-md",
+      "type": "ManPage",
+      "label": "Security API",
+      "sourcePath": "api/security.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-storage-md",
+      "type": "ManPage",
+      "label": "Storage API",
+      "sourcePath": "api/storage.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/api-transactions-md",
+      "type": "ManPage",
+      "label": "Transactions API",
+      "sourcePath": "api/transactions.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
       "id": "manpage/epistemic-graph/nav/architecture-aif-argumentation-md",
       "type": "ManPage",
       "label": "AIF argumentation",
@@ -6464,6 +6659,13 @@
       "type": "ManPage",
       "label": "Status",
       "sourcePath": "status.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/swagger-ui-md",
+      "type": "ManPage",
+      "label": "OpenAPI / Swagger UI",
+      "sourcePath": "swagger-ui.md",
       "partOfRepo": "repo/epistemic-graph"
     },
     {
