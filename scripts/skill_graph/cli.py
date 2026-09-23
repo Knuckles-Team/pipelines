@@ -5,11 +5,18 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import Any
 
 from skill_graph.corpus import build_graph, generate
 from skill_graph.model import REPOS
-from skill_graph.render_components import render_components
+from skill_graph.render_components import render_components_eg
+from skill_graph.render_components_au import render_components_au
 from skill_graph.render_repo import render_repo_reference_md
+
+_COMPONENT_RENDERERS = {
+    "epistemic-graph": lambda corpus, repo_root: render_components_eg(corpus),
+    "agent-utilities": lambda corpus, repo_root: render_components_au(repo_root),
+}
 
 
 def _write_or_check(mode: str, files: dict[str, str], label: str) -> int:
@@ -92,9 +99,15 @@ def _run_repo_mode(args: argparse.Namespace) -> int:
     return _write_or_check(args.mode, {str(args.out): content}, f"skill_graph[{args.slug}]")
 
 
+def _no_component_registry(corpus: Any, repo_root: Path) -> dict[str, str]:
+    return {}
+
+
 def _run_components_mode(args: argparse.Namespace) -> int:
+    renderer = _COMPONENT_RENDERERS.get(args.slug, _no_component_registry)
     corpus = build_graph(args.workspace.resolve())
-    files = render_components(corpus)
+    repo_root = args.workspace.resolve() / REPOS[args.slug][0]
+    files = renderer(corpus, repo_root)
     return _write_or_check(
         args.mode,
         {str(args.out_dir / k): v for k, v in files.items()},

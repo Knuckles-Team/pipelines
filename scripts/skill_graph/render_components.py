@@ -1,12 +1,15 @@
-"""One generated page per major (top-level) component (RF-ADR-009 D4).
+"""One generated page per major (top-level) component for epistemic-graph
+(RF-ADR-009 D4): the 6 top-level "layer boundary root seam" components in
+``architecture/component-registry.yml``, each owning a set of child
+implementation components -- see ``skill_graph/eg.py``.
 
-Only ``epistemic-graph`` has a component registry rich enough for this today
-(``architecture/component-registry.yml``'s 6 top-level "layer boundary root
-seam" components, each owning a set of child implementation components) --
-see ``skill_graph/eg.py``. The other four core repos have no comparable
-registry; their own docs nav already IS their component tier (see
-``docs/reference/skill-graph.generated.md``'s Concepts/Components mapping),
-so no new per-component page generation applies to them.
+``agent-utilities`` has a components tier too, generated from its own
+``docs/concepts.yaml`` pillars instead -- see ``render_components_au.py``
+(its own ``architecture/component-registry.yml`` has exactly 1 component,
+too sparse to seed a tier). ``agent-connector-sdk``, ``graph-os``, and
+``agent-webui`` have no comparable registry; their own docs nav already IS
+their honest component tier (nav relabeled, not generated -- see
+WRAPUP.md).
 """
 
 from __future__ import annotations
@@ -89,7 +92,7 @@ def _slug_path(component_id: str) -> str:
     return component_id.replace(".", "-")
 
 
-def render_components(corpus: dict[str, Any]) -> dict[str, str]:
+def render_components_eg(corpus: dict[str, Any]) -> dict[str, str]:
     """``{relative_path: content}`` for every major-component page plus the index."""
     nodes_by_id = {n["id"]: n for n in corpus["@graph"]}
     components = _top_level_registry_components(corpus)
