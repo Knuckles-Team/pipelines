@@ -21,4 +21,5 @@ nav:
   - Home: index.md
   - Concepts: concepts.md
   - Components: components.md
+  - Parity receipt: parity.md
   - Ecosystem glossary: glossary.md
