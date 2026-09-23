@@ -23,11 +23,67 @@
   "generatedBy": "pipelines/scripts/build_skill_graph.py",
   "@graph": [
     {
-      "id": "component/agent-connector-sdk/nav/architecture",
+      "id": "component/agent-connector-sdk/nav/architecture-bidirectional-etl-hub",
       "type": "Component",
-      "label": "Architecture",
+      "label": "Bidirectional ETL hub",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-etl-hub-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-camunda-aris-integration",
+      "type": "Component",
+      "label": "Camunda + ARIS integration",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-camunda-aris-integration-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-chunked-async-drain",
+      "type": "Component",
+      "label": "Chunked async drain",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-chunked-async-drain-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-ciso-assistant-integration",
+      "type": "Component",
+      "label": "CISO Assistant integration",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-ciso-assistant-integration-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-connectors-ingestion",
+      "type": "Component",
+      "label": "Connectors & ingestion",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-connectors-and-ingestion-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-content-aware-ingestion",
+      "type": "Component",
+      "label": "Content-aware ingestion",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-content-aware-ingestion-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-overview",
+      "type": "Component",
+      "label": "Overview",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/architecture-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-privacy-safe-external-ingestion",
+      "type": "Component",
+      "label": "Privacy-safe external ingestion",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-privacy-safe-ingestion-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/architecture-universal-external-graph-connectors",
+      "type": "Component",
+      "label": "Universal external graph connectors",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/architecture-universal-graph-connectors-md"
     },
     {
       "id": "component/agent-connector-sdk/nav/build-your-first-connector",
@@ -44,56 +100,56 @@
       "documentedBy": "manpage/agent-connector-sdk/nav/capabilities-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-connector-certification",
+      "id": "component/agent-connector-sdk/nav/components-connector-certification",
       "type": "Component",
       "label": "Connector certification",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/connector-certify-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-connector-servers",
+      "id": "component/agent-connector-sdk/nav/components-connector-servers",
       "type": "Component",
       "label": "Connector servers",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/connector-servers-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-content-over-mcp",
+      "id": "component/agent-connector-sdk/nav/components-content-over-mcp",
       "type": "Component",
       "label": "Content over MCP",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/content-over-mcp-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-credentials",
+      "id": "component/agent-connector-sdk/nav/components-credentials",
       "type": "Component",
       "label": "Credentials",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/credentials-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-extension-ports",
+      "id": "component/agent-connector-sdk/nav/components-extension-ports",
       "type": "Component",
       "label": "Extension ports",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/extension-ports-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-http-clients",
+      "id": "component/agent-connector-sdk/nav/components-http-clients",
       "type": "Component",
       "label": "HTTP clients",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/http-clients-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-repository-ingestion",
+      "id": "component/agent-connector-sdk/nav/components-repository-ingestion",
       "type": "Component",
       "label": "Repository ingestion",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/repository-ingestion-md"
     },
     {
-      "id": "component/agent-connector-sdk/nav/guides-source-synchronization",
+      "id": "component/agent-connector-sdk/nav/components-source-synchronization",
       "type": "Component",
       "label": "Source synchronization",
       "partOfRepo": "repo/agent-connector-sdk",
@@ -126,6 +182,13 @@
       "label": "Quality gates",
       "partOfRepo": "repo/agent-connector-sdk",
       "documentedBy": "manpage/agent-connector-sdk/nav/quality-gates-md"
+    },
+    {
+      "id": "component/agent-connector-sdk/nav/reference-skill-graph-reference",
+      "type": "Component",
+      "label": "Skill graph reference",
+      "partOfRepo": "repo/agent-connector-sdk",
+      "documentedBy": "manpage/agent-connector-sdk/nav/reference-skill-graph-generated-md"
     },
     {
       "id": "component/agent-connector-sdk/nav/status",
@@ -163,6 +226,13 @@
       "documentedBy": "manpage/agent-terminal-ui/nav/architecture-md"
     },
     {
+      "id": "component/agent-terminal-ui/nav/capabilities",
+      "type": "Component",
+      "label": "Capabilities",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "documentedBy": "manpage/agent-terminal-ui/nav/capabilities-md"
+    },
+    {
       "id": "component/agent-terminal-ui/nav/configuration",
       "type": "Component",
       "label": "Configuration",
@@ -184,11 +254,39 @@
       "documentedBy": "manpage/agent-terminal-ui/nav/index-md"
     },
     {
+      "id": "component/agent-terminal-ui/nav/interfaces",
+      "type": "Component",
+      "label": "Interfaces",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "documentedBy": "manpage/agent-terminal-ui/nav/interfaces-md"
+    },
+    {
       "id": "component/agent-terminal-ui/nav/reference-concepts",
       "type": "Component",
       "label": "Concepts",
       "partOfRepo": "repo/agent-terminal-ui",
       "documentedBy": "manpage/agent-terminal-ui/nav/concepts-md"
+    },
+    {
+      "id": "component/agent-terminal-ui/nav/reference-ecosystem-glossary",
+      "type": "Component",
+      "label": "Ecosystem glossary",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "documentedBy": "manpage/agent-terminal-ui/nav/glossary-md"
+    },
+    {
+      "id": "component/agent-terminal-ui/nav/reference-knowledge-graph-extraction",
+      "type": "Component",
+      "label": "Knowledge graph extraction",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "documentedBy": "manpage/agent-terminal-ui/nav/kg-extraction-md"
+    },
+    {
+      "id": "component/agent-terminal-ui/nav/reference-skill-graph-reference",
+      "type": "Component",
+      "label": "Skill graph reference",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "documentedBy": "manpage/agent-terminal-ui/nav/reference-skill-graph-generated-md"
     },
     {
       "id": "component/agent-terminal-ui/nav/sessions-state-session-management",
@@ -198,18 +296,18 @@
       "documentedBy": "manpage/agent-terminal-ui/nav/session-management-md"
     },
     {
+      "id": "component/agent-terminal-ui/nav/status",
+      "type": "Component",
+      "label": "Status",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "documentedBy": "manpage/agent-terminal-ui/nav/status-md"
+    },
+    {
       "id": "component/agent-utilities/nav/architecture-context-boundary",
       "type": "Component",
       "label": "Context boundary",
       "partOfRepo": "repo/agent-utilities",
       "documentedBy": "manpage/agent-utilities/nav/architecture-mandatory-context-compiler-md"
-    },
-    {
-      "id": "component/agent-utilities/nav/architecture-external-connectors",
-      "type": "Component",
-      "label": "External connectors",
-      "partOfRepo": "repo/agent-utilities",
-      "documentedBy": "manpage/agent-utilities/nav/architecture-universal-external-graph-connectors-md"
     },
     {
       "id": "component/agent-utilities/nav/architecture-improvement-lifecycle",
@@ -231,13 +329,6 @@
       "label": "Overview",
       "partOfRepo": "repo/agent-utilities",
       "documentedBy": "manpage/agent-utilities/nav/architecture-index-md"
-    },
-    {
-      "id": "component/agent-utilities/nav/architecture-privacy-safe-ingestion",
-      "type": "Component",
-      "label": "Privacy-safe ingestion",
-      "partOfRepo": "repo/agent-utilities",
-      "documentedBy": "manpage/agent-utilities/nav/architecture-privacy-safe-external-ingestion-md"
     },
     {
       "id": "component/agent-utilities/nav/architecture-runtime-authority",
@@ -287,6 +378,76 @@
       "label": "Workflow skill suite",
       "partOfRepo": "repo/agent-utilities",
       "documentedBy": "manpage/agent-utilities/nav/guides-kg-skill-suite-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-au-ahe",
+      "type": "Component",
+      "label": "AU-AHE",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-au-ahe-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-au-eco",
+      "type": "Component",
+      "label": "AU-ECO",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-au-eco-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-au-kg",
+      "type": "Component",
+      "label": "AU-KG",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-au-kg-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-au-orch",
+      "type": "Component",
+      "label": "AU-ORCH",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-au-orch-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-au-os",
+      "type": "Component",
+      "label": "AU-OS",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-au-os-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-eg-ahe",
+      "type": "Component",
+      "label": "EG-AHE",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-eg-ahe-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-eg-kg",
+      "type": "Component",
+      "label": "EG-KG",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-eg-kg-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-eg-orch",
+      "type": "Component",
+      "label": "EG-ORCH",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-eg-orch-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-eg-os",
+      "type": "Component",
+      "label": "EG-OS",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-eg-os-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/components-overview",
+      "type": "Component",
+      "label": "Overview",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/components-index-md"
     },
     {
       "id": "component/agent-utilities/nav/for-ai-agents",
@@ -352,20 +513,6 @@
       "documentedBy": "manpage/agent-utilities/nav/guides-deployment-configurations-md"
     },
     {
-      "id": "component/agent-utilities/nav/operate-exact-artifact-closure-evidence",
-      "type": "Component",
-      "label": "Exact-artifact closure evidence",
-      "partOfRepo": "repo/agent-utilities",
-      "documentedBy": "manpage/agent-utilities/nav/release-exact-artifact-closure-md"
-    },
-    {
-      "id": "component/agent-utilities/nav/operate-exact-installed-local-certification",
-      "type": "Component",
-      "label": "Exact Installed Local Certification",
-      "partOfRepo": "repo/agent-utilities",
-      "documentedBy": "manpage/agent-utilities/nav/release-exact-local-gates-md"
-    },
-    {
       "id": "component/agent-utilities/nav/operate-observability",
       "type": "Component",
       "label": "Observability",
@@ -413,6 +560,13 @@
       "label": "Runtime configuration",
       "partOfRepo": "repo/agent-utilities",
       "documentedBy": "manpage/agent-utilities/nav/reference-runtime-configuration-md"
+    },
+    {
+      "id": "component/agent-utilities/nav/reference-skill-graph-reference",
+      "type": "Component",
+      "label": "Skill graph reference",
+      "partOfRepo": "repo/agent-utilities",
+      "documentedBy": "manpage/agent-utilities/nav/reference-skill-graph-generated-md"
     },
     {
       "id": "component/agent-utilities/nav/status",
@@ -526,28 +680,28 @@
       "fileCount": 3
     },
     {
-      "id": "component/agent-webui/nav/guides-agents-and-events",
+      "id": "component/agent-webui/nav/components-agents-and-events",
       "type": "Component",
       "label": "Agents and events",
       "partOfRepo": "repo/agent-webui",
       "documentedBy": "manpage/agent-webui/nav/agents-md"
     },
     {
-      "id": "component/agent-webui/nav/guides-architecture",
+      "id": "component/agent-webui/nav/components-architecture",
       "type": "Component",
       "label": "Architecture",
       "partOfRepo": "repo/agent-webui",
       "documentedBy": "manpage/agent-webui/nav/architecture-md"
     },
     {
-      "id": "component/agent-webui/nav/guides-atlas-workspace",
+      "id": "component/agent-webui/nav/components-atlas-workspace",
       "type": "Component",
       "label": "Atlas workspace",
       "partOfRepo": "repo/agent-webui",
       "documentedBy": "manpage/agent-webui/nav/atlas-md"
     },
     {
-      "id": "component/agent-webui/nav/guides-capability-workbench",
+      "id": "component/agent-webui/nav/components-capability-workbench",
       "type": "Component",
       "label": "Capability Workbench",
       "partOfRepo": "repo/agent-webui",
@@ -596,11 +750,18 @@
       "documentedBy": "manpage/agent-webui/nav/features-md"
     },
     {
-      "id": "component/agent-webui/nav/reference-knowledge-extraction",
+      "id": "component/agent-webui/nav/reference-knowledge-graph-extraction",
       "type": "Component",
-      "label": "Knowledge extraction",
+      "label": "Knowledge graph extraction",
       "partOfRepo": "repo/agent-webui",
       "documentedBy": "manpage/agent-webui/nav/kg-extraction-md"
+    },
+    {
+      "id": "component/agent-webui/nav/reference-skill-graph-reference",
+      "type": "Component",
+      "label": "Skill graph reference",
+      "partOfRepo": "repo/agent-webui",
+      "documentedBy": "manpage/agent-webui/nav/reference-skill-graph-generated-md"
     },
     {
       "id": "component/agent-webui/nav/reference-status",
@@ -1156,6 +1317,13 @@
       ]
     },
     {
+      "id": "component/epistemic-graph/nav/architecture-aif-argumentation",
+      "type": "Component",
+      "label": "AIF argumentation",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-aif-argumentation-md"
+    },
+    {
       "id": "component/epistemic-graph/nav/architecture-analytics-program",
       "type": "Component",
       "label": "Analytics program",
@@ -1184,6 +1352,13 @@
       "documentedBy": "manpage/epistemic-graph/nav/architecture-change-envelope-md"
     },
     {
+      "id": "component/epistemic-graph/nav/architecture-code-intelligence",
+      "type": "Component",
+      "label": "Code intelligence",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-code-intelligence-md"
+    },
+    {
       "id": "component/epistemic-graph/nav/architecture-distributed-analytics-and-reasoning",
       "type": "Component",
       "label": "Distributed analytics and reasoning",
@@ -1196,6 +1371,20 @@
       "label": "Engine internals",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/nav/architecture-engine-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/architecture-epistemic-operations-protocol",
+      "type": "Component",
+      "label": "Epistemic Operations Protocol",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-epistemic-operations-protocol-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/architecture-graph-backends-and-mirrors",
+      "type": "Component",
+      "label": "Graph backends and mirrors",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-graph-backends-md"
     },
     {
       "id": "component/epistemic-graph/nav/architecture-hot-path-complexity",
@@ -1226,6 +1415,20 @@
       "documentedBy": "manpage/epistemic-graph/nav/architecture-numeric-kernel-md"
     },
     {
+      "id": "component/epistemic-graph/nav/architecture-ontology-library-and-shacl-authority",
+      "type": "Component",
+      "label": "Ontology library and SHACL authority",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-ontology-library-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/architecture-ontology-package-federation",
+      "type": "Component",
+      "label": "Ontology package federation",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-ontology-federation-md"
+    },
+    {
       "id": "component/epistemic-graph/nav/architecture-program-optimization",
       "type": "Component",
       "label": "Program optimization",
@@ -1238,6 +1441,69 @@
       "label": "Request authority",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/nav/architecture-request-authority-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/architecture-service-layer",
+      "type": "Component",
+      "label": "Service layer",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-service-layer-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/architecture-vector-index-lifecycle",
+      "type": "Component",
+      "label": "Vector index lifecycle",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/architecture-vector-index-lifecycle-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/components-eg-composition",
+      "type": "Component",
+      "label": "eg.composition",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/components-eg-composition-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/components-eg-core",
+      "type": "Component",
+      "label": "eg.core",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/components-eg-core-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/components-eg-query-reasoning",
+      "type": "Component",
+      "label": "eg.query-reasoning",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/components-eg-query-reasoning-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/components-eg-server-protocol",
+      "type": "Component",
+      "label": "eg.server-protocol",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/components-eg-server-protocol-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/components-eg-storage-transaction",
+      "type": "Component",
+      "label": "eg.storage-transaction",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/components-eg-storage-transaction-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/components-eg-types",
+      "type": "Component",
+      "label": "eg.types",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/components-eg-types-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/components-overview",
+      "type": "Component",
+      "label": "Overview",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/components-index-md"
     },
     {
       "id": "component/epistemic-graph/nav/for-ai-agents",
@@ -1448,6 +1714,13 @@
       "label": "Quality terms",
       "partOfRepo": "repo/epistemic-graph",
       "documentedBy": "manpage/epistemic-graph/nav/quality-gate-terms-md"
+    },
+    {
+      "id": "component/epistemic-graph/nav/reference-skill-graph-reference",
+      "type": "Component",
+      "label": "Skill graph reference",
+      "partOfRepo": "repo/epistemic-graph",
+      "documentedBy": "manpage/epistemic-graph/nav/reference-skill-graph-generated-md"
     },
     {
       "id": "component/epistemic-graph/nav/reference-soak-and-chaos-benchmarks",
@@ -1983,11 +2256,18 @@
       "summary": "The zero- and one-edge contract leaves every other component imports. eg-types is the BOTTOM of the DAG and the only crate the whole workspace can see: protocol.rs (Request/Response/Method/ResultPayload), types.rs, wire.rs, acl.rs and the MutationBatch v1 contract itself (mutation_batch/, incl. MutationScope, MutationScopeIdentity, PRIVATE_PAYLOAD_EVENT_TYPES, COMPILED_BATCH_INCARNATION and the three domain predicates). eg-capabilities is the machine-checked MethodPolicy projection of eg_types::protocol::Method (deps = eg-types only). eg-durable carries routing contracts only (CallShape/WorkShape/DurableBackendKind) with no journal, lease or 2PC. eg-resource is dependency-free cgroup-aware capacity resolution. Grouped as one seam because all four are contract-only, are consumed workspace-wide, and splitting them would produce exactly the tiny-facade pattern the layout contract forbids. ADDED 2026-09-12 (F5): the RF-020 Agent Library identity contract also lives here, still within the existing `crates/eg-types/src/` root -- `agent_library.rs` (`AgentLibraryEntry`, `AgentLibraryLifecycle`, the schema-versioned definition/tool-surface digest domains, currently v5), `agent_component.rs`, `agent_graph.rs`, and `agent_template.rs`. This was UNCLAIMED as recently as the 5523859a/2026-09-04 verification; see `capability_authority_model.previously_unclaimed_now_claimed` for the correction record."
     },
     {
-      "id": "component/geniusbot/nav/architecture-technical-overview",
+      "id": "component/geniusbot/nav/architecture",
       "type": "Component",
-      "label": "Technical Overview",
+      "label": "Architecture",
       "partOfRepo": "repo/geniusbot",
       "documentedBy": "manpage/geniusbot/nav/overview-md"
+    },
+    {
+      "id": "component/geniusbot/nav/capabilities",
+      "type": "Component",
+      "label": "Capabilities",
+      "partOfRepo": "repo/geniusbot",
+      "documentedBy": "manpage/geniusbot/nav/capabilities-md"
     },
     {
       "id": "component/geniusbot/nav/home",
@@ -1997,11 +2277,46 @@
       "documentedBy": "manpage/geniusbot/nav/index-md"
     },
     {
-      "id": "component/geniusbot/nav/reference-concept-registry",
+      "id": "component/geniusbot/nav/interfaces",
       "type": "Component",
-      "label": "Concept Registry",
+      "label": "Interfaces",
+      "partOfRepo": "repo/geniusbot",
+      "documentedBy": "manpage/geniusbot/nav/interfaces-md"
+    },
+    {
+      "id": "component/geniusbot/nav/reference-concepts",
+      "type": "Component",
+      "label": "Concepts",
       "partOfRepo": "repo/geniusbot",
       "documentedBy": "manpage/geniusbot/nav/concepts-md"
+    },
+    {
+      "id": "component/geniusbot/nav/reference-ecosystem-glossary",
+      "type": "Component",
+      "label": "Ecosystem glossary",
+      "partOfRepo": "repo/geniusbot",
+      "documentedBy": "manpage/geniusbot/nav/glossary-md"
+    },
+    {
+      "id": "component/geniusbot/nav/reference-knowledge-graph-extraction",
+      "type": "Component",
+      "label": "Knowledge graph extraction",
+      "partOfRepo": "repo/geniusbot",
+      "documentedBy": "manpage/geniusbot/nav/kg-extraction-md"
+    },
+    {
+      "id": "component/geniusbot/nav/reference-skill-graph-reference",
+      "type": "Component",
+      "label": "Skill graph reference",
+      "partOfRepo": "repo/geniusbot",
+      "documentedBy": "manpage/geniusbot/nav/reference-skill-graph-generated-md"
+    },
+    {
+      "id": "component/geniusbot/nav/status",
+      "type": "Component",
+      "label": "Status",
+      "partOfRepo": "repo/geniusbot",
+      "documentedBy": "manpage/geniusbot/nav/status-md"
     },
     {
       "id": "component/graph-os/nav/capabilities",
@@ -2009,6 +2324,41 @@
       "label": "Capabilities",
       "partOfRepo": "repo/graph-os",
       "documentedBy": "manpage/graph-os/nav/capabilities-md"
+    },
+    {
+      "id": "component/graph-os/nav/components-browser-control",
+      "type": "Component",
+      "label": "Browser control",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/browser-control-service-md"
+    },
+    {
+      "id": "component/graph-os/nav/components-fleet-gateway",
+      "type": "Component",
+      "label": "Fleet gateway",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/fleet-md"
+    },
+    {
+      "id": "component/graph-os/nav/components-mcp-server",
+      "type": "Component",
+      "label": "MCP server",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/mcp-server-md"
+    },
+    {
+      "id": "component/graph-os/nav/components-rest-gateway",
+      "type": "Component",
+      "label": "REST gateway",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/gateway-md"
+    },
+    {
+      "id": "component/graph-os/nav/components-unary-a2a",
+      "type": "Component",
+      "label": "Unary A2A",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/a2a-md"
     },
     {
       "id": "component/graph-os/nav/glossary",
@@ -2060,6 +2410,13 @@
       "documentedBy": "manpage/graph-os/nav/quality-gate-terms-md"
     },
     {
+      "id": "component/graph-os/nav/reference-skill-graph-reference",
+      "type": "Component",
+      "label": "Skill graph reference",
+      "partOfRepo": "repo/graph-os",
+      "documentedBy": "manpage/graph-os/nav/reference-skill-graph-generated-md"
+    },
+    {
       "id": "component/graph-os/nav/start-graph-os",
       "type": "Component",
       "label": "Start Graph OS",
@@ -2067,47 +2424,20 @@
       "documentedBy": "manpage/graph-os/nav/get-started-md"
     },
     {
-      "id": "component/graph-os/nav/use-graph-os-browser-control",
-      "type": "Component",
-      "label": "Browser control",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/browser-control-service-md"
-    },
-    {
-      "id": "component/graph-os/nav/use-graph-os-fleet-gateway",
-      "type": "Component",
-      "label": "Fleet gateway",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/fleet-md"
-    },
-    {
-      "id": "component/graph-os/nav/use-graph-os-mcp-server",
-      "type": "Component",
-      "label": "MCP server",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/mcp-server-md"
-    },
-    {
-      "id": "component/graph-os/nav/use-graph-os-rest-gateway",
-      "type": "Component",
-      "label": "REST gateway",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/gateway-md"
-    },
-    {
-      "id": "component/graph-os/nav/use-graph-os-unary-a2a",
-      "type": "Component",
-      "label": "Unary A2A",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/a2a-md"
-    },
-    {
       "id": "concept/agent-connector-sdk/nav/architecture",
       "type": "Concept",
       "label": "Architecture",
       "partOfRepo": "repo/agent-connector-sdk",
       "hasComponent": [
-        "component/agent-connector-sdk/nav/architecture"
+        "component/agent-connector-sdk/nav/architecture-overview",
+        "component/agent-connector-sdk/nav/architecture-connectors-ingestion",
+        "component/agent-connector-sdk/nav/architecture-bidirectional-etl-hub",
+        "component/agent-connector-sdk/nav/architecture-chunked-async-drain",
+        "component/agent-connector-sdk/nav/architecture-content-aware-ingestion",
+        "component/agent-connector-sdk/nav/architecture-camunda-aris-integration",
+        "component/agent-connector-sdk/nav/architecture-ciso-assistant-integration",
+        "component/agent-connector-sdk/nav/architecture-privacy-safe-external-ingestion",
+        "component/agent-connector-sdk/nav/architecture-universal-external-graph-connectors"
       ]
     },
     {
@@ -2129,19 +2459,19 @@
       ]
     },
     {
-      "id": "concept/agent-connector-sdk/nav/guides",
+      "id": "concept/agent-connector-sdk/nav/components",
       "type": "Concept",
-      "label": "Guides",
+      "label": "Components",
       "partOfRepo": "repo/agent-connector-sdk",
       "hasComponent": [
-        "component/agent-connector-sdk/nav/guides-connector-servers",
-        "component/agent-connector-sdk/nav/guides-content-over-mcp",
-        "component/agent-connector-sdk/nav/guides-source-synchronization",
-        "component/agent-connector-sdk/nav/guides-repository-ingestion",
-        "component/agent-connector-sdk/nav/guides-extension-ports",
-        "component/agent-connector-sdk/nav/guides-connector-certification",
-        "component/agent-connector-sdk/nav/guides-http-clients",
-        "component/agent-connector-sdk/nav/guides-credentials"
+        "component/agent-connector-sdk/nav/components-connector-servers",
+        "component/agent-connector-sdk/nav/components-content-over-mcp",
+        "component/agent-connector-sdk/nav/components-source-synchronization",
+        "component/agent-connector-sdk/nav/components-repository-ingestion",
+        "component/agent-connector-sdk/nav/components-extension-ports",
+        "component/agent-connector-sdk/nav/components-connector-certification",
+        "component/agent-connector-sdk/nav/components-http-clients",
+        "component/agent-connector-sdk/nav/components-credentials"
       ]
     },
     {
@@ -2161,7 +2491,8 @@
       "hasComponent": [
         "component/agent-connector-sdk/nav/reference-conformance-kit",
         "component/agent-connector-sdk/nav/reference-quality-gates",
-        "component/agent-connector-sdk/nav/reference-ecosystem-glossary"
+        "component/agent-connector-sdk/nav/reference-ecosystem-glossary",
+        "component/agent-connector-sdk/nav/reference-skill-graph-reference"
       ]
     },
     {
@@ -2194,6 +2525,15 @@
       ]
     },
     {
+      "id": "concept/agent-terminal-ui/nav/capabilities",
+      "type": "Concept",
+      "label": "Capabilities",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "hasComponent": [
+        "component/agent-terminal-ui/nav/capabilities"
+      ]
+    },
+    {
       "id": "concept/agent-terminal-ui/nav/configuration",
       "type": "Concept",
       "label": "Configuration",
@@ -2221,12 +2561,24 @@
       ]
     },
     {
+      "id": "concept/agent-terminal-ui/nav/interfaces",
+      "type": "Concept",
+      "label": "Interfaces",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "hasComponent": [
+        "component/agent-terminal-ui/nav/interfaces"
+      ]
+    },
+    {
       "id": "concept/agent-terminal-ui/nav/reference",
       "type": "Concept",
       "label": "Reference",
       "partOfRepo": "repo/agent-terminal-ui",
       "hasComponent": [
-        "component/agent-terminal-ui/nav/reference-concepts"
+        "component/agent-terminal-ui/nav/reference-concepts",
+        "component/agent-terminal-ui/nav/reference-knowledge-graph-extraction",
+        "component/agent-terminal-ui/nav/reference-ecosystem-glossary",
+        "component/agent-terminal-ui/nav/reference-skill-graph-reference"
       ]
     },
     {
@@ -2239,6 +2591,15 @@
       ]
     },
     {
+      "id": "concept/agent-terminal-ui/nav/status",
+      "type": "Concept",
+      "label": "Status",
+      "partOfRepo": "repo/agent-terminal-ui",
+      "hasComponent": [
+        "component/agent-terminal-ui/nav/status"
+      ]
+    },
+    {
       "id": "concept/agent-utilities/nav/architecture",
       "type": "Concept",
       "label": "Architecture",
@@ -2248,9 +2609,7 @@
         "component/agent-utilities/nav/architecture-runtime-authority",
         "component/agent-utilities/nav/architecture-context-boundary",
         "component/agent-utilities/nav/architecture-observability-model",
-        "component/agent-utilities/nav/architecture-privacy-safe-ingestion",
-        "component/agent-utilities/nav/architecture-improvement-lifecycle",
-        "component/agent-utilities/nav/architecture-external-connectors"
+        "component/agent-utilities/nav/architecture-improvement-lifecycle"
       ]
     },
     {
@@ -2265,6 +2624,24 @@
         "component/agent-utilities/nav/build-workflow-skill-suite",
         "component/agent-utilities/nav/build-ecosystem-capability-fleet",
         "component/agent-utilities/nav/build-capability-and-action-catalog"
+      ]
+    },
+    {
+      "id": "concept/agent-utilities/nav/components",
+      "type": "Concept",
+      "label": "Components",
+      "partOfRepo": "repo/agent-utilities",
+      "hasComponent": [
+        "component/agent-utilities/nav/components-overview",
+        "component/agent-utilities/nav/components-au-ahe",
+        "component/agent-utilities/nav/components-au-eco",
+        "component/agent-utilities/nav/components-au-kg",
+        "component/agent-utilities/nav/components-au-orch",
+        "component/agent-utilities/nav/components-au-os",
+        "component/agent-utilities/nav/components-eg-ahe",
+        "component/agent-utilities/nav/components-eg-kg",
+        "component/agent-utilities/nav/components-eg-orch",
+        "component/agent-utilities/nav/components-eg-os"
       ]
     },
     {
@@ -2307,9 +2684,7 @@
         "component/agent-utilities/nav/operate-production-operations",
         "component/agent-utilities/nav/operate-observability",
         "component/agent-utilities/nav/operate-connector-certification",
-        "component/agent-utilities/nav/operate-compatibility-and-certification",
-        "component/agent-utilities/nav/operate-exact-artifact-closure-evidence",
-        "component/agent-utilities/nav/operate-exact-installed-local-certification"
+        "component/agent-utilities/nav/operate-compatibility-and-certification"
       ]
     },
     {
@@ -2322,7 +2697,8 @@
         "component/agent-utilities/nav/reference-runtime-configuration",
         "component/agent-utilities/nav/reference-metrics",
         "component/agent-utilities/nav/reference-glossary",
-        "component/agent-utilities/nav/reference-documentation-catalog"
+        "component/agent-utilities/nav/reference-documentation-catalog",
+        "component/agent-utilities/nav/reference-skill-graph-reference"
       ]
     },
     {
@@ -2429,15 +2805,15 @@
       "sourcePath": "deploy/release/prebundled-skills.catalog.json"
     },
     {
-      "id": "concept/agent-webui/nav/guides",
+      "id": "concept/agent-webui/nav/components",
       "type": "Concept",
-      "label": "Guides",
+      "label": "Components",
       "partOfRepo": "repo/agent-webui",
       "hasComponent": [
-        "component/agent-webui/nav/guides-architecture",
-        "component/agent-webui/nav/guides-agents-and-events",
-        "component/agent-webui/nav/guides-atlas-workspace",
-        "component/agent-webui/nav/guides-capability-workbench"
+        "component/agent-webui/nav/components-architecture",
+        "component/agent-webui/nav/components-agents-and-events",
+        "component/agent-webui/nav/components-atlas-workspace",
+        "component/agent-webui/nav/components-capability-workbench"
       ]
     },
     {
@@ -2474,10 +2850,11 @@
       "partOfRepo": "repo/agent-webui",
       "hasComponent": [
         "component/agent-webui/nav/reference-features-and-apis",
-        "component/agent-webui/nav/reference-knowledge-extraction",
+        "component/agent-webui/nav/reference-knowledge-graph-extraction",
         "component/agent-webui/nav/reference-concept-registry",
         "component/agent-webui/nav/reference-ecosystem-glossary",
-        "component/agent-webui/nav/reference-status"
+        "component/agent-webui/nav/reference-status",
+        "component/agent-webui/nav/reference-skill-graph-reference"
       ]
     },
     {
@@ -2527,7 +2904,30 @@
         "component/epistemic-graph/nav/architecture-distributed-analytics-and-reasoning",
         "component/epistemic-graph/nav/architecture-analytics-program",
         "component/epistemic-graph/nav/architecture-numeric-kernel",
-        "component/epistemic-graph/nav/architecture-hot-path-complexity"
+        "component/epistemic-graph/nav/architecture-hot-path-complexity",
+        "component/epistemic-graph/nav/architecture-graph-backends-and-mirrors",
+        "component/epistemic-graph/nav/architecture-service-layer",
+        "component/epistemic-graph/nav/architecture-code-intelligence",
+        "component/epistemic-graph/nav/architecture-vector-index-lifecycle",
+        "component/epistemic-graph/nav/architecture-ontology-library-and-shacl-authority",
+        "component/epistemic-graph/nav/architecture-ontology-package-federation",
+        "component/epistemic-graph/nav/architecture-epistemic-operations-protocol",
+        "component/epistemic-graph/nav/architecture-aif-argumentation"
+      ]
+    },
+    {
+      "id": "concept/epistemic-graph/nav/components",
+      "type": "Concept",
+      "label": "Components",
+      "partOfRepo": "repo/epistemic-graph",
+      "hasComponent": [
+        "component/epistemic-graph/nav/components-overview",
+        "component/epistemic-graph/nav/components-eg-types",
+        "component/epistemic-graph/nav/components-eg-core",
+        "component/epistemic-graph/nav/components-eg-storage-transaction",
+        "component/epistemic-graph/nav/components-eg-query-reasoning",
+        "component/epistemic-graph/nav/components-eg-server-protocol",
+        "component/epistemic-graph/nav/components-eg-composition"
       ]
     },
     {
@@ -2599,7 +2999,8 @@
         "component/epistemic-graph/nav/reference-transport-benchmarks",
         "component/epistemic-graph/nav/reference-soak-and-chaos-benchmarks",
         "component/epistemic-graph/nav/reference-quality-terms",
-        "component/epistemic-graph/nav/reference-ecosystem-glossary"
+        "component/epistemic-graph/nav/reference-ecosystem-glossary",
+        "component/epistemic-graph/nav/reference-skill-graph-reference"
       ]
     },
     {
@@ -4227,7 +4628,16 @@
       "label": "Architecture",
       "partOfRepo": "repo/geniusbot",
       "hasComponent": [
-        "component/geniusbot/nav/architecture-technical-overview"
+        "component/geniusbot/nav/architecture"
+      ]
+    },
+    {
+      "id": "concept/geniusbot/nav/capabilities",
+      "type": "Concept",
+      "label": "Capabilities",
+      "partOfRepo": "repo/geniusbot",
+      "hasComponent": [
+        "component/geniusbot/nav/capabilities"
       ]
     },
     {
@@ -4240,12 +4650,33 @@
       ]
     },
     {
+      "id": "concept/geniusbot/nav/interfaces",
+      "type": "Concept",
+      "label": "Interfaces",
+      "partOfRepo": "repo/geniusbot",
+      "hasComponent": [
+        "component/geniusbot/nav/interfaces"
+      ]
+    },
+    {
       "id": "concept/geniusbot/nav/reference",
       "type": "Concept",
       "label": "Reference",
       "partOfRepo": "repo/geniusbot",
       "hasComponent": [
-        "component/geniusbot/nav/reference-concept-registry"
+        "component/geniusbot/nav/reference-concepts",
+        "component/geniusbot/nav/reference-knowledge-graph-extraction",
+        "component/geniusbot/nav/reference-ecosystem-glossary",
+        "component/geniusbot/nav/reference-skill-graph-reference"
+      ]
+    },
+    {
+      "id": "concept/geniusbot/nav/status",
+      "type": "Concept",
+      "label": "Status",
+      "partOfRepo": "repo/geniusbot",
+      "hasComponent": [
+        "component/geniusbot/nav/status"
       ]
     },
     {
@@ -4255,6 +4686,19 @@
       "partOfRepo": "repo/graph-os",
       "hasComponent": [
         "component/graph-os/nav/capabilities"
+      ]
+    },
+    {
+      "id": "concept/graph-os/nav/components",
+      "type": "Concept",
+      "label": "Components",
+      "partOfRepo": "repo/graph-os",
+      "hasComponent": [
+        "component/graph-os/nav/components-mcp-server",
+        "component/graph-os/nav/components-rest-gateway",
+        "component/graph-os/nav/components-fleet-gateway",
+        "component/graph-os/nav/components-unary-a2a",
+        "component/graph-os/nav/components-browser-control"
       ]
     },
     {
@@ -4305,6 +4749,15 @@
       ]
     },
     {
+      "id": "concept/graph-os/nav/reference",
+      "type": "Concept",
+      "label": "Reference",
+      "partOfRepo": "repo/graph-os",
+      "hasComponent": [
+        "component/graph-os/nav/reference-skill-graph-reference"
+      ]
+    },
+    {
       "id": "concept/graph-os/nav/start-graph-os",
       "type": "Concept",
       "label": "Start Graph OS",
@@ -4314,23 +4767,66 @@
       ]
     },
     {
-      "id": "concept/graph-os/nav/use-graph-os",
-      "type": "Concept",
-      "label": "Use Graph OS",
-      "partOfRepo": "repo/graph-os",
-      "hasComponent": [
-        "component/graph-os/nav/use-graph-os-mcp-server",
-        "component/graph-os/nav/use-graph-os-rest-gateway",
-        "component/graph-os/nav/use-graph-os-fleet-gateway",
-        "component/graph-os/nav/use-graph-os-unary-a2a",
-        "component/graph-os/nav/use-graph-os-browser-control"
-      ]
+      "id": "manpage/agent-connector-sdk/nav/architecture-camunda-aris-integration-md",
+      "type": "ManPage",
+      "label": "Camunda + ARIS integration",
+      "sourcePath": "architecture/camunda-aris-integration.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
+      "id": "manpage/agent-connector-sdk/nav/architecture-chunked-async-drain-md",
+      "type": "ManPage",
+      "label": "Chunked async drain",
+      "sourcePath": "architecture/chunked-async-drain.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
+      "id": "manpage/agent-connector-sdk/nav/architecture-ciso-assistant-integration-md",
+      "type": "ManPage",
+      "label": "CISO Assistant integration",
+      "sourcePath": "architecture/ciso-assistant-integration.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
+      "id": "manpage/agent-connector-sdk/nav/architecture-connectors-and-ingestion-md",
+      "type": "ManPage",
+      "label": "Connectors & ingestion",
+      "sourcePath": "architecture/connectors-and-ingestion.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
+      "id": "manpage/agent-connector-sdk/nav/architecture-content-aware-ingestion-md",
+      "type": "ManPage",
+      "label": "Content-aware ingestion",
+      "sourcePath": "architecture/content-aware-ingestion.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
+      "id": "manpage/agent-connector-sdk/nav/architecture-etl-hub-md",
+      "type": "ManPage",
+      "label": "Bidirectional ETL hub",
+      "sourcePath": "architecture/etl-hub.md",
+      "partOfRepo": "repo/agent-connector-sdk"
     },
     {
       "id": "manpage/agent-connector-sdk/nav/architecture-md",
       "type": "ManPage",
-      "label": "Architecture",
+      "label": "Overview",
       "sourcePath": "architecture.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
+      "id": "manpage/agent-connector-sdk/nav/architecture-privacy-safe-ingestion-md",
+      "type": "ManPage",
+      "label": "Privacy-safe external ingestion",
+      "sourcePath": "architecture/privacy-safe-ingestion.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
+      "id": "manpage/agent-connector-sdk/nav/architecture-universal-graph-connectors-md",
+      "type": "ManPage",
+      "label": "Universal external graph connectors",
+      "sourcePath": "architecture/universal-graph-connectors.md",
       "partOfRepo": "repo/agent-connector-sdk"
     },
     {
@@ -4418,6 +4914,13 @@
       "partOfRepo": "repo/agent-connector-sdk"
     },
     {
+      "id": "manpage/agent-connector-sdk/nav/reference-skill-graph-generated-md",
+      "type": "ManPage",
+      "label": "Skill graph reference",
+      "sourcePath": "reference/skill-graph.generated.md",
+      "partOfRepo": "repo/agent-connector-sdk"
+    },
+    {
       "id": "manpage/agent-connector-sdk/nav/repository-ingestion-md",
       "type": "ManPage",
       "label": "Repository ingestion",
@@ -4460,6 +4963,13 @@
       "partOfRepo": "repo/agent-terminal-ui"
     },
     {
+      "id": "manpage/agent-terminal-ui/nav/capabilities-md",
+      "type": "ManPage",
+      "label": "Capabilities",
+      "sourcePath": "capabilities.md",
+      "partOfRepo": "repo/agent-terminal-ui"
+    },
+    {
       "id": "manpage/agent-terminal-ui/nav/concepts-md",
       "type": "ManPage",
       "label": "Concepts",
@@ -4481,6 +4991,13 @@
       "partOfRepo": "repo/agent-terminal-ui"
     },
     {
+      "id": "manpage/agent-terminal-ui/nav/glossary-md",
+      "type": "ManPage",
+      "label": "Ecosystem glossary",
+      "sourcePath": "glossary.md",
+      "partOfRepo": "repo/agent-terminal-ui"
+    },
+    {
       "id": "manpage/agent-terminal-ui/nav/goal-command-md",
       "type": "ManPage",
       "label": "Goal Command",
@@ -4495,10 +5012,38 @@
       "partOfRepo": "repo/agent-terminal-ui"
     },
     {
+      "id": "manpage/agent-terminal-ui/nav/interfaces-md",
+      "type": "ManPage",
+      "label": "Interfaces",
+      "sourcePath": "interfaces.md",
+      "partOfRepo": "repo/agent-terminal-ui"
+    },
+    {
+      "id": "manpage/agent-terminal-ui/nav/kg-extraction-md",
+      "type": "ManPage",
+      "label": "Knowledge graph extraction",
+      "sourcePath": "kg-extraction.md",
+      "partOfRepo": "repo/agent-terminal-ui"
+    },
+    {
+      "id": "manpage/agent-terminal-ui/nav/reference-skill-graph-generated-md",
+      "type": "ManPage",
+      "label": "Skill graph reference",
+      "sourcePath": "reference/skill-graph.generated.md",
+      "partOfRepo": "repo/agent-terminal-ui"
+    },
+    {
       "id": "manpage/agent-terminal-ui/nav/session-management-md",
       "type": "ManPage",
       "label": "Session Management",
       "sourcePath": "session_management.md",
+      "partOfRepo": "repo/agent-terminal-ui"
+    },
+    {
+      "id": "manpage/agent-terminal-ui/nav/status-md",
+      "type": "ManPage",
+      "label": "Status",
+      "sourcePath": "status.md",
       "partOfRepo": "repo/agent-terminal-ui"
     },
     {
@@ -4602,13 +5147,6 @@
       "partOfRepo": "repo/agent-utilities"
     },
     {
-      "id": "manpage/agent-utilities/nav/architecture-privacy-safe-external-ingestion-md",
-      "type": "ManPage",
-      "label": "Privacy-safe ingestion",
-      "sourcePath": "architecture/privacy-safe-external-ingestion.md",
-      "partOfRepo": "repo/agent-utilities"
-    },
-    {
       "id": "manpage/agent-utilities/nav/architecture-self-evolution-flywheel-md",
       "type": "ManPage",
       "label": "Improvement lifecycle",
@@ -4616,17 +5154,80 @@
       "partOfRepo": "repo/agent-utilities"
     },
     {
-      "id": "manpage/agent-utilities/nav/architecture-universal-external-graph-connectors-md",
-      "type": "ManPage",
-      "label": "External connectors",
-      "sourcePath": "architecture/universal-external-graph-connectors.md",
-      "partOfRepo": "repo/agent-utilities"
-    },
-    {
       "id": "manpage/agent-utilities/nav/capabilities-power-md",
       "type": "ManPage",
       "label": "Capability and action catalog",
       "sourcePath": "capabilities-power.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-au-ahe-md",
+      "type": "ManPage",
+      "label": "AU-AHE",
+      "sourcePath": "components/au-ahe.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-au-eco-md",
+      "type": "ManPage",
+      "label": "AU-ECO",
+      "sourcePath": "components/au-eco.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-au-kg-md",
+      "type": "ManPage",
+      "label": "AU-KG",
+      "sourcePath": "components/au-kg.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-au-orch-md",
+      "type": "ManPage",
+      "label": "AU-ORCH",
+      "sourcePath": "components/au-orch.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-au-os-md",
+      "type": "ManPage",
+      "label": "AU-OS",
+      "sourcePath": "components/au-os.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-eg-ahe-md",
+      "type": "ManPage",
+      "label": "EG-AHE",
+      "sourcePath": "components/eg-ahe.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-eg-kg-md",
+      "type": "ManPage",
+      "label": "EG-KG",
+      "sourcePath": "components/eg-kg.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-eg-orch-md",
+      "type": "ManPage",
+      "label": "EG-ORCH",
+      "sourcePath": "components/eg-orch.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-eg-os-md",
+      "type": "ManPage",
+      "label": "EG-OS",
+      "sourcePath": "components/eg-os.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
+      "id": "manpage/agent-utilities/nav/components-index-md",
+      "type": "ManPage",
+      "label": "Overview",
+      "sourcePath": "components/index.md",
       "partOfRepo": "repo/agent-utilities"
     },
     {
@@ -4756,6 +5357,13 @@
       "partOfRepo": "repo/agent-utilities"
     },
     {
+      "id": "manpage/agent-utilities/nav/reference-skill-graph-generated-md",
+      "type": "ManPage",
+      "label": "Skill graph reference",
+      "sourcePath": "reference/skill-graph.generated.md",
+      "partOfRepo": "repo/agent-utilities"
+    },
+    {
       "id": "manpage/agent-utilities/nav/release-compatibility-and-certification-md",
       "type": "ManPage",
       "label": "Compatibility and certification",
@@ -4767,20 +5375,6 @@
       "type": "ManPage",
       "label": "Connector certification",
       "sourcePath": "release/connector-live-certification.md",
-      "partOfRepo": "repo/agent-utilities"
-    },
-    {
-      "id": "manpage/agent-utilities/nav/release-exact-artifact-closure-md",
-      "type": "ManPage",
-      "label": "Exact-artifact closure evidence",
-      "sourcePath": "release/exact-artifact-closure.md",
-      "partOfRepo": "repo/agent-utilities"
-    },
-    {
-      "id": "manpage/agent-utilities/nav/release-exact-local-gates-md",
-      "type": "ManPage",
-      "label": "Exact Installed Local Certification",
-      "sourcePath": "release/exact-local-gates.md",
       "partOfRepo": "repo/agent-utilities"
     },
     {
@@ -4974,8 +5568,15 @@
     {
       "id": "manpage/agent-webui/nav/kg-extraction-md",
       "type": "ManPage",
-      "label": "Knowledge extraction",
+      "label": "Knowledge graph extraction",
       "sourcePath": "kg-extraction.md",
+      "partOfRepo": "repo/agent-webui"
+    },
+    {
+      "id": "manpage/agent-webui/nav/reference-skill-graph-generated-md",
+      "type": "ManPage",
+      "label": "Skill graph reference",
+      "sourcePath": "reference/skill-graph.generated.md",
       "partOfRepo": "repo/agent-webui"
     },
     {
@@ -5313,6 +5914,13 @@
       "partOfRepo": "repo/epistemic-graph"
     },
     {
+      "id": "manpage/epistemic-graph/nav/architecture-aif-argumentation-md",
+      "type": "ManPage",
+      "label": "AIF argumentation",
+      "sourcePath": "architecture/aif-argumentation.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
       "id": "manpage/epistemic-graph/nav/architecture-analytics-program-md",
       "type": "ManPage",
       "label": "Analytics program",
@@ -5334,6 +5942,13 @@
       "partOfRepo": "repo/epistemic-graph"
     },
     {
+      "id": "manpage/epistemic-graph/nav/architecture-code-intelligence-md",
+      "type": "ManPage",
+      "label": "Code intelligence",
+      "sourcePath": "architecture/code-intelligence.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
       "id": "manpage/epistemic-graph/nav/architecture-distributed-analytics-reasoning-md",
       "type": "ManPage",
       "label": "Distributed analytics and reasoning",
@@ -5345,6 +5960,20 @@
       "type": "ManPage",
       "label": "Engine internals",
       "sourcePath": "architecture/engine.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/architecture-epistemic-operations-protocol-md",
+      "type": "ManPage",
+      "label": "Epistemic Operations Protocol",
+      "sourcePath": "architecture/epistemic-operations-protocol.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/architecture-graph-backends-md",
+      "type": "ManPage",
+      "label": "Graph backends and mirrors",
+      "sourcePath": "architecture/graph-backends.md",
       "partOfRepo": "repo/epistemic-graph"
     },
     {
@@ -5390,10 +6019,38 @@
       "partOfRepo": "repo/epistemic-graph"
     },
     {
+      "id": "manpage/epistemic-graph/nav/architecture-ontology-federation-md",
+      "type": "ManPage",
+      "label": "Ontology package federation",
+      "sourcePath": "architecture/ontology-federation.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/architecture-ontology-library-md",
+      "type": "ManPage",
+      "label": "Ontology library and SHACL authority",
+      "sourcePath": "architecture/ontology-library.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
       "id": "manpage/epistemic-graph/nav/architecture-request-authority-md",
       "type": "ManPage",
       "label": "Request authority",
       "sourcePath": "architecture/request_authority.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/architecture-service-layer-md",
+      "type": "ManPage",
+      "label": "Service layer",
+      "sourcePath": "architecture/service-layer.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/architecture-vector-index-lifecycle-md",
+      "type": "ManPage",
+      "label": "Vector index lifecycle",
+      "sourcePath": "architecture/vector-index-lifecycle.md",
       "partOfRepo": "repo/epistemic-graph"
     },
     {
@@ -5422,6 +6079,55 @@
       "type": "ManPage",
       "label": "Capabilities",
       "sourcePath": "capabilities.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/components-eg-composition-md",
+      "type": "ManPage",
+      "label": "eg.composition",
+      "sourcePath": "components/eg-composition.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/components-eg-core-md",
+      "type": "ManPage",
+      "label": "eg.core",
+      "sourcePath": "components/eg-core.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/components-eg-query-reasoning-md",
+      "type": "ManPage",
+      "label": "eg.query-reasoning",
+      "sourcePath": "components/eg-query-reasoning.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/components-eg-server-protocol-md",
+      "type": "ManPage",
+      "label": "eg.server-protocol",
+      "sourcePath": "components/eg-server-protocol.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/components-eg-storage-transaction-md",
+      "type": "ManPage",
+      "label": "eg.storage-transaction",
+      "sourcePath": "components/eg-storage-transaction.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/components-eg-types-md",
+      "type": "ManPage",
+      "label": "eg.types",
+      "sourcePath": "components/eg-types.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
+      "id": "manpage/epistemic-graph/nav/components-index-md",
+      "type": "ManPage",
+      "label": "Overview",
+      "sourcePath": "components/index.md",
       "partOfRepo": "repo/epistemic-graph"
     },
     {
@@ -5621,6 +6327,13 @@
       "partOfRepo": "repo/epistemic-graph"
     },
     {
+      "id": "manpage/epistemic-graph/nav/reference-skill-graph-generated-md",
+      "type": "ManPage",
+      "label": "Skill graph reference",
+      "sourcePath": "reference/skill-graph.generated.md",
+      "partOfRepo": "repo/epistemic-graph"
+    },
+    {
       "id": "manpage/epistemic-graph/nav/service-mode-md",
       "type": "ManPage",
       "label": "Service mode",
@@ -5649,10 +6362,24 @@
       "partOfRepo": "repo/epistemic-graph"
     },
     {
+      "id": "manpage/geniusbot/nav/capabilities-md",
+      "type": "ManPage",
+      "label": "Capabilities",
+      "sourcePath": "capabilities.md",
+      "partOfRepo": "repo/geniusbot"
+    },
+    {
       "id": "manpage/geniusbot/nav/concepts-md",
       "type": "ManPage",
-      "label": "Concept Registry",
+      "label": "Concepts",
       "sourcePath": "concepts.md",
+      "partOfRepo": "repo/geniusbot"
+    },
+    {
+      "id": "manpage/geniusbot/nav/glossary-md",
+      "type": "ManPage",
+      "label": "Ecosystem glossary",
+      "sourcePath": "glossary.md",
       "partOfRepo": "repo/geniusbot"
     },
     {
@@ -5663,10 +6390,38 @@
       "partOfRepo": "repo/geniusbot"
     },
     {
+      "id": "manpage/geniusbot/nav/interfaces-md",
+      "type": "ManPage",
+      "label": "Interfaces",
+      "sourcePath": "interfaces.md",
+      "partOfRepo": "repo/geniusbot"
+    },
+    {
+      "id": "manpage/geniusbot/nav/kg-extraction-md",
+      "type": "ManPage",
+      "label": "Knowledge graph extraction",
+      "sourcePath": "kg-extraction.md",
+      "partOfRepo": "repo/geniusbot"
+    },
+    {
       "id": "manpage/geniusbot/nav/overview-md",
       "type": "ManPage",
-      "label": "Technical Overview",
+      "label": "Architecture",
       "sourcePath": "overview.md",
+      "partOfRepo": "repo/geniusbot"
+    },
+    {
+      "id": "manpage/geniusbot/nav/reference-skill-graph-generated-md",
+      "type": "ManPage",
+      "label": "Skill graph reference",
+      "sourcePath": "reference/skill-graph.generated.md",
+      "partOfRepo": "repo/geniusbot"
+    },
+    {
+      "id": "manpage/geniusbot/nav/status-md",
+      "type": "ManPage",
+      "label": "Status",
+      "sourcePath": "status.md",
       "partOfRepo": "repo/geniusbot"
     },
     {
@@ -5758,6 +6513,13 @@
       "type": "ManPage",
       "label": "Quality gate terms",
       "sourcePath": "quality-gate-terms.md",
+      "partOfRepo": "repo/graph-os"
+    },
+    {
+      "id": "manpage/graph-os/nav/reference-skill-graph-generated-md",
+      "type": "ManPage",
+      "label": "Skill graph reference",
+      "sourcePath": "reference/skill-graph.generated.md",
       "partOfRepo": "repo/graph-os"
     },
     {

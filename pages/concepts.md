@@ -6,23 +6,26 @@ components (level 2, see [Components](components.md)).
 
 ## Agent Connector SDK
 
-- **Architecture** (1 component)
+- **Architecture** (9 components)
 - **Build your first connector** (1 component)
 - **Capabilities** (1 component)
-- **Guides** (8 components)
+- **Components** (8 components)
 - **Home** (1 component)
-- **Reference** (3 components)
+- **Reference** (4 components)
 - **Status** (1 component)
 
 ## Agent Terminal UI
 
 - **Agents & Workflows** (3 components)
 - **Architecture** (1 component)
+- **Capabilities** (1 component)
 - **Configuration** (1 component)
 - **Features** (1 component)
 - **Home** (1 component)
-- **Reference** (1 component)
+- **Interfaces** (1 component)
+- **Reference** (4 components)
 - **Sessions & State** (1 component)
+- **Status** (1 component)
 
 ## Agent Utilities
 
@@ -31,8 +34,9 @@ components (level 2, see [Components](components.md)).
 - **AU-KG**
 - **AU-ORCH**
 - **AU-OS**
-- **Architecture** (7 components)
+- **Architecture** (5 components)
 - **Build** (6 components)
+- **Components** (10 components)
 - **EG-AHE**
 - **EG-KG**
 - **EG-ORCH**
@@ -40,29 +44,30 @@ components (level 2, see [Components](components.md)).
 - **For AI agents** (1 component)
 - **Get started** (4 components)
 - **Home** (1 component)
-- **Operate** (7 components)
+- **Operate** (5 components)
 - **Prebundled skills** (13 components)
-- **Reference** (5 components)
+- **Reference** (6 components)
 - **Status** (1 component)
 
 ## Agent Web UI
 
-- **Guides** (4 components)
+- **Components** (4 components)
 - **Home** (1 component)
 - **How it fits** (1 component)
 - **Operate** (1 component)
-- **Reference** (5 components)
+- **Reference** (6 components)
 - **Start** (1 component)
 
 ## Epistemic Graph
 
-- **Architecture** (12 components)
+- **Architecture** (20 components)
+- **Components** (7 components)
 - **For AI agents** (1 component)
 - **Generated contract methods** (11 components)
 - **Home** (1 component)
 - **Interfaces** (14 components)
 - **Operate** (8 components)
-- **Reference** (8 components)
+- **Reference** (9 components)
 - **Start** (3 components)
 - **Status** (1 component)
 - **admission** (2 components)
@@ -244,16 +249,20 @@ components (level 2, see [Components](components.md)).
 ## Geniusbot
 
 - **Architecture** (1 component)
+- **Capabilities** (1 component)
 - **Home** (1 component)
-- **Reference** (1 component)
+- **Interfaces** (1 component)
+- **Reference** (4 components)
+- **Status** (1 component)
 
 ## Graph OS
 
 - **Capabilities** (1 component)
+- **Components** (5 components)
 - **Glossary** (1 component)
 - **Home** (1 component)
 - **How it fits** (1 component)
 - **Interfaces** (1 component)
 - **Operate** (3 components)
+- **Reference** (1 component)
 - **Start Graph OS** (1 component)
-- **Use Graph OS** (5 components)

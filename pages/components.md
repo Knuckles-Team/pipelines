@@ -9,7 +9,15 @@ is published as [`corpus.jsonld`](corpus.jsonld).
 
 ### Architecture
 
-- **Architecture** — `architecture.md`
+- **Overview** — `architecture.md`
+- **Connectors & ingestion** — `architecture/connectors-and-ingestion.md`
+- **Bidirectional ETL hub** — `architecture/etl-hub.md`
+- **Chunked async drain** — `architecture/chunked-async-drain.md`
+- **Content-aware ingestion** — `architecture/content-aware-ingestion.md`
+- **Camunda + ARIS integration** — `architecture/camunda-aris-integration.md`
+- **CISO Assistant integration** — `architecture/ciso-assistant-integration.md`
+- **Privacy-safe external ingestion** — `architecture/privacy-safe-ingestion.md`
+- **Universal external graph connectors** — `architecture/universal-graph-connectors.md`
 
 ### Build your first connector
 
@@ -19,7 +27,7 @@ is published as [`corpus.jsonld`](corpus.jsonld).
 
 - **Capabilities** — `capabilities.md`
 
-### Guides
+### Components
 
 - **Connector servers** — `connector-servers.md`
 - **Content over MCP** — `content-over-mcp.md`
@@ -39,6 +47,7 @@ is published as [`corpus.jsonld`](corpus.jsonld).
 - **Conformance kit** — `conformance-kit.md`
 - **Quality gates** — `quality-gates.md`
 - **Ecosystem glossary** — `glossary.md`
+- **Skill graph reference** — `reference/skill-graph.generated.md`
 
 ### Status
 
@@ -56,6 +65,10 @@ is published as [`corpus.jsonld`](corpus.jsonld).
 
 - **Architecture** — `architecture.md`
 
+### Capabilities
+
+- **Capabilities** — `capabilities.md`
+
 ### Configuration
 
 - **Configuration** — `configuration.md`
@@ -68,13 +81,24 @@ is published as [`corpus.jsonld`](corpus.jsonld).
 
 - **Home** — `index.md`
 
+### Interfaces
+
+- **Interfaces** — `interfaces.md`
+
 ### Reference
 
 - **Concepts** — `concepts.md`
+- **Knowledge graph extraction** — `kg-extraction.md`
+- **Ecosystem glossary** — `glossary.md`
+- **Skill graph reference** — `reference/skill-graph.generated.md`
 
 ### Sessions & State
 
 - **Session Management** — `session_management.md`
+
+### Status
+
+- **Status** — `status.md`
 
 ## Agent Utilities
 
@@ -104,9 +128,7 @@ _No components._
 - **Runtime authority** — `architecture/graph-authority-convergence.md`
 - **Context boundary** — `architecture/mandatory-context-compiler.md`
 - **Observability model** — `architecture/observability.md`
-- **Privacy-safe ingestion** — `architecture/privacy-safe-external-ingestion.md`
 - **Improvement lifecycle** — `architecture/self-evolution-flywheel.md`
-- **External connectors** — `architecture/universal-external-graph-connectors.md`
 
 ### Build
 
@@ -116,6 +138,19 @@ _No components._
 - **Workflow skill suite** — `guides/kg-skill-suite.md`
 - **Ecosystem capability fleet** — `ecosystem-capability-fleet.md`
 - **Capability and action catalog** — `capabilities-power.md`
+
+### Components
+
+- **Overview** — `components/index.md`
+- **AU-AHE** — `components/au-ahe.md`
+- **AU-ECO** — `components/au-eco.md`
+- **AU-KG** — `components/au-kg.md`
+- **AU-ORCH** — `components/au-orch.md`
+- **AU-OS** — `components/au-os.md`
+- **EG-AHE** — `components/eg-ahe.md`
+- **EG-KG** — `components/eg-kg.md`
+- **EG-ORCH** — `components/eg-orch.md`
+- **EG-OS** — `components/eg-os.md`
 
 ### EG-AHE
 
@@ -155,8 +190,6 @@ _No components._
 - **Observability** — `guides/observability-usage-tracking.md`
 - **Connector certification** — `release/connector-live-certification.md`
 - **Compatibility and certification** — `release/compatibility-and-certification.md`
-- **Exact-artifact closure evidence** — `release/exact-artifact-closure.md`
-- **Exact Installed Local Certification** — `release/exact-local-gates.md`
 
 ### Prebundled skills
 
@@ -181,6 +214,7 @@ _No components._
 - **Metrics** — `reference/metrics.md`
 - **Glossary** — `glossary.md`
 - **Documentation catalog** — `reference/documentation-catalog.md`
+- **Skill graph reference** — `reference/skill-graph.generated.md`
 
 ### Status
 
@@ -188,7 +222,7 @@ _No components._
 
 ## Agent Web UI
 
-### Guides
+### Components
 
 - **Architecture** — `architecture.md`
 - **Agents and events** — `agents.md`
@@ -210,10 +244,11 @@ _No components._
 ### Reference
 
 - **Features and APIs** — `features.md`
-- **Knowledge extraction** — `kg-extraction.md`
+- **Knowledge graph extraction** — `kg-extraction.md`
 - **Concept registry** — `concepts.md`
 - **Ecosystem glossary** — `glossary.md`
 - **Status** — `status.md`
+- **Skill graph reference** — `reference/skill-graph.generated.md`
 
 ### Start
 
@@ -235,6 +270,24 @@ _No components._
 - **Analytics program** — `architecture/analytics_program.md`
 - **Numeric kernel** — `architecture/numeric_kernel.md`
 - **Hot-path complexity** — `architecture/hot-path-complexity.md`
+- **Graph backends and mirrors** — `architecture/graph-backends.md`
+- **Service layer** — `architecture/service-layer.md`
+- **Code intelligence** — `architecture/code-intelligence.md`
+- **Vector index lifecycle** — `architecture/vector-index-lifecycle.md`
+- **Ontology library and SHACL authority** — `architecture/ontology-library.md`
+- **Ontology package federation** — `architecture/ontology-federation.md`
+- **Epistemic Operations Protocol** — `architecture/epistemic-operations-protocol.md`
+- **AIF argumentation** — `architecture/aif-argumentation.md`
+
+### Components
+
+- **Overview** — `components/index.md`
+- **eg.types** — `components/eg-types.md`
+- **eg.core** — `components/eg-core.md`
+- **eg.storage-transaction** — `components/eg-storage-transaction.md`
+- **eg.query-reasoning** — `components/eg-query-reasoning.md`
+- **eg.server-protocol** — `components/eg-server-protocol.md`
+- **eg.composition** — `components/eg-composition.md`
 
 ### For AI agents
 
@@ -296,6 +349,7 @@ _No components._
 - **Soak and chaos benchmarks** — `benchmarks-soak.md`
 - **Quality terms** — `quality-gate-terms.md`
 - **Ecosystem glossary** — `glossary.md`
+- **Skill graph reference** — `reference/skill-graph.generated.md`
 
 ### Start
 
@@ -1035,21 +1089,44 @@ _No components._
 
 ### Architecture
 
-- **Technical Overview** — `overview.md`
+- **Architecture** — `overview.md`
+
+### Capabilities
+
+- **Capabilities** — `capabilities.md`
 
 ### Home
 
 - **Home** — `index.md`
 
+### Interfaces
+
+- **Interfaces** — `interfaces.md`
+
 ### Reference
 
-- **Concept Registry** — `concepts.md`
+- **Concepts** — `concepts.md`
+- **Knowledge graph extraction** — `kg-extraction.md`
+- **Ecosystem glossary** — `glossary.md`
+- **Skill graph reference** — `reference/skill-graph.generated.md`
+
+### Status
+
+- **Status** — `status.md`
 
 ## Graph OS
 
 ### Capabilities
 
 - **Capabilities** — `capabilities.md`
+
+### Components
+
+- **MCP server** — `mcp-server.md`
+- **REST gateway** — `gateway.md`
+- **Fleet gateway** — `fleet.md`
+- **Unary A2A** — `a2a.md`
+- **Browser control** — `browser-control-service.md`
 
 ### Glossary
 
@@ -1073,14 +1150,10 @@ _No components._
 - **Capability status** — `status.md`
 - **Quality gate terms** — `quality-gate-terms.md`
 
+### Reference
+
+- **Skill graph reference** — `reference/skill-graph.generated.md`
+
 ### Start Graph OS
 
 - **Start Graph OS** — `get-started.md`
-
-### Use Graph OS
-
-- **MCP server** — `mcp-server.md`
-- **REST gateway** — `gateway.md`
-- **Fleet gateway** — `fleet.md`
-- **Unary A2A** — `a2a.md`
-- **Browser control** — `browser-control-service.md`
