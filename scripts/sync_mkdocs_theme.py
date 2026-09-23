@@ -20,7 +20,7 @@ class ThemeFile:
 
 THEME_FILES = (
     ThemeFile("extra.css", "stylesheets/extra.css"),
-    ThemeFile("overrides/main.html", "overrides/main.html", content_relative=False),
+    ThemeFile("overrides/main.html", ".config/mkdocs-overrides/main.html", content_relative=False),
     ThemeFile("assets/graph-mark.svg", "assets/graph-mark.svg"),
     ThemeFile("assets/favicon.svg", "assets/favicon.svg"),
     ThemeFile("assets/runtime-architecture.mmd", "assets/runtime-architecture.mmd"),

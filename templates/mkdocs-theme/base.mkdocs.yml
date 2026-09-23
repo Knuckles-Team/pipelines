@@ -11,7 +11,7 @@
 
 theme:
   name: material
-  custom_dir: overrides
+  custom_dir: .config/mkdocs-overrides
   logo: assets/graph-mark.svg
   favicon: assets/favicon.svg
   icon:
