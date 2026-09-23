@@ -12,6 +12,10 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.supply_chain.finding import NETWORK_TO_SHELL_RE, Finding, Source
 
 VCS_REVISION_RE = re.compile(r"@[0-9a-fA-F]{40}(?:$|[#&])")
+# Knuckles-Team/pipelines is the sanctioned exception: a `git+https://...
+# Knuckles-Team/pipelines@<ref>` dependency must name `main`, never a commit
+# SHA or tag (operator ruling, plans/refactor/DECISIONS.md).
+PIPELINES_VCS_RE = re.compile(r"git\+https://github\.com/Knuckles-Team/pipelines(?:\.git)?@([^\s#&]+)", re.IGNORECASE)
 POWERSHELL_NETWORK_RE = re.compile(r"(?:irm|iwr|Invoke-RestMethod|Invoke-WebRequest)\b[^\n|]*\|\s*(?:iex|Invoke-Expression)\b", re.IGNORECASE)
 DYNAMIC_EXPRESSION_RE = re.compile(r"(?:^|[;&|]\s*)(?:eval\b|Invoke-Expression\b|iex\b)", re.IGNORECASE)
 _LOCKS = (
@@ -51,12 +55,25 @@ def _pyproject_findings(label: str, pyproject: Path, reader: Callable[[Path], st
     except CannotRun as error:
         return [Finding(label, "pyproject.toml", 0, "SC-SRC-001", str(error))]
     source = Source(label, "pyproject.toml", text)
-    message = "direct network dependency must use HTTPS and an immutable revision or SHA-256 digest"
-    return [
-        source.at_offset(max(text.find(d), 0), rule="SC-DEP-004", message=message)
-        for d in declared_dependencies(document)
-        if _unsafe(d)
-    ]
+    findings = []
+    for d in declared_dependencies(document):
+        offset = max(text.find(d), 0)
+        pipelines_ref = PIPELINES_VCS_RE.search(d)
+        if pipelines_ref is not None:
+            if pipelines_ref.group(1) != "main":
+                findings.append(
+                    source.at_offset(
+                        offset,
+                        rule="SC-DEP-005",
+                        message="Knuckles-Team/pipelines dependency must be pinned to @main; a commit SHA or tag is rejected",
+                    )
+                )
+            continue
+        if _unsafe(d):
+            findings.append(
+                source.at_offset(offset, rule="SC-DEP-004", message="direct network dependency must use HTTPS and an immutable revision or SHA-256 digest")
+            )
+    return findings
 
 
 def dependency_findings(label: str, repository: Path, sources: tuple[Path, ...], *, reader: Callable[[Path], str]) -> list[Finding]:

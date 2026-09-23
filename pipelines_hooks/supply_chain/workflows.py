@@ -8,6 +8,12 @@ from pipelines_hooks.supply_chain.finding import NETWORK_TO_SHELL_RE, Finding, S
 
 ACTION_SHA_RE = re.compile(r"^[^/@\s]+/[^@\s]+@[0-9a-fA-F]{40}$")
 EXTERNAL_USES_RE = re.compile(r"^\s*(?:-\s*)?uses:\s*([^\s#]+)", re.MULTILINE)
+# Knuckles-Team/pipelines is the one sanctioned exception to the immutable-pin
+# rule below: every repository consumes it at its `main` branch (operator
+# ruling, plans/refactor/DECISIONS.md), never a commit SHA or tag. A pin of
+# pipelines to anything other than `main` is therefore itself a finding
+# (SC-GHA-010), not merely tolerated as "already pinned".
+PIPELINES_RE = re.compile(r"^Knuckles-Team/pipelines(?:/|$)", re.IGNORECASE)
 _CHECKOUT_RE = re.compile(r"\buses:\s*actions/checkout@[0-9a-fA-F]{40}\b")
 _PERSIST_FALSE_RE = re.compile(r"^\s*persist-credentials:\s*false\s*(?:#.*)?$")
 _NESTED_WRITE_RE = re.compile(r"^\s{1,2}[a-z-]+:\s*write\s*(?:#.*)?$", re.IGNORECASE)
@@ -26,15 +32,28 @@ def _pinned(reference: str) -> bool:
         return True
     if reference.startswith("docker://"):
         return pinned_digest(reference.removeprefix("docker://"))
+    repository, _, ref = reference.rpartition("@")
+    if PIPELINES_RE.match(repository):
+        return ref == "main"
     return bool(ACTION_SHA_RE.fullmatch(reference))
 
 
 def _uses_findings(source: Source) -> list[Finding]:
-    return [
-        source.at_offset(m.start(), rule="SC-GHA-001", message="external action or reusable workflow is not pinned to a full commit SHA")
-        for m in EXTERNAL_USES_RE.finditer(source.text)
-        if not _pinned(m.group(1))
-    ]
+    findings = []
+    for m in EXTERNAL_USES_RE.finditer(source.text):
+        reference = m.group(1)
+        repository, _, ref = reference.rpartition("@")
+        if PIPELINES_RE.match(repository) and ref != "main":
+            findings.append(
+                source.at_offset(
+                    m.start(),
+                    rule="SC-GHA-010",
+                    message="Knuckles-Team/pipelines must be referenced at main; a pinned commit SHA or tag is rejected",
+                )
+            )
+        elif not _pinned(reference):
+            findings.append(source.at_offset(m.start(), rule="SC-GHA-001", message="external action or reusable workflow is not pinned to a full commit SHA"))
+    return findings
 
 
 def _step_block(lines: list[str], index: int) -> list[str]:
