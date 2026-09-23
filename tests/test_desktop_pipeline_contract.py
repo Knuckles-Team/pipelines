@@ -46,3 +46,9 @@ def test_desktop_setup_binds_caller_and_contract_commits() -> None:
     text = SETUP_ACTION.read_text(encoding="utf-8")
 
     assert "./.pipeline-contract/.github/actions/checkout-verified-source" in text
+
+
+def test_windows_installer_compiles_the_packaging_script() -> None:
+    text = WORKFLOW.read_text(encoding="utf-8")
+    assert '"/DMyAppVersion=$VERSION" packaging\\windows\\setup.iss' in text
+    assert " setup.iss" not in text.replace("packaging\\windows\\setup.iss", "")
