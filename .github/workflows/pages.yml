@@ -1,0 +1,25 @@
+name: Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - pages/**
+      - mkdocs.yml
+      - .github/workflows/pages.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages_pipeline.yml
+    with:
+      content_source: pages
+      shared_theme_enabled: true

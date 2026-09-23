@@ -80,6 +80,11 @@ extra:
         role: governed source integration boundary
         url: https://knuckles-team.github.io/agent-connector-sdk/
         repository: https://github.com/Knuckles-Team/agent-connector-sdk
+      - slug: pipelines
+        name: Skill Graph
+        role: cross-repo concept, component and man-page corpus
+        url: https://knuckles-team.github.io/pipelines/
+        repository: https://github.com/Knuckles-Team/pipelines
 
 markdown_extensions:
   - admonition

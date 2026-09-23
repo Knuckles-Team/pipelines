@@ -1,0 +1,24 @@
+INHERIT: .pipeline-theme/templates/mkdocs-theme/base.mkdocs.yml
+
+site_name: Skill Graph
+site_description: >-
+  The cross-repo concept, component, and man-page corpus for the Knuckles
+  agent ecosystem, generated from each repo's own registries and content
+  manifest.
+site_url: https://knuckles-team.github.io/pipelines/
+repo_name: Knuckles-Team/pipelines
+repo_url: https://github.com/Knuckles-Team/pipelines
+edit_uri: edit/main/pages/
+docs_dir: pages
+strict: true
+copyright: Copyright &copy; Knuckles-Team — MIT licensed
+
+extra:
+  ecosystem:
+    current: pipelines
+
+nav:
+  - Home: index.md
+  - Concepts: concepts.md
+  - Components: components.md
+  - Ecosystem glossary: glossary.md

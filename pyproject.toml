@@ -86,6 +86,11 @@ publish = "reusable workflow: publishes the caller's wheels to PyPI with the cal
 sdist = "reusable workflow: builds the caller's source distribution"
 windows = "reusable workflow: builds the caller's native wheels on hosted Windows runners"
 
+[tool.pipelines_hooks.ci_replica.workflows."pages.yml"]
+blocking = true
+[tool.pipelines_hooks.ci_replica.workflows."pages.yml".skip_reasons]
+deploy = "calls this repository's own pages_pipeline.yml (below) to publish the RF-ADR-009 D1 skill_graph corpus as this repo's own Pages site; same reusable-workflow-secrets reason as every other caller"
+
 [tool.pipelines_hooks.ci_replica.workflows."pages_pipeline.yml"]
 blocking = true
 [tool.pipelines_hooks.ci_replica.workflows."pages_pipeline.yml".skip_reasons]

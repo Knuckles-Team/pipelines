@@ -1,0 +1,105 @@
+"""Command-line entrypoint: build/check the shared corpus, emit/check-repo a slice."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+from skill_graph.corpus import build_graph, generate
+from skill_graph.model import REPOS
+from skill_graph.render_repo import render_repo_reference_md
+
+
+def _write_or_check(mode: str, files: dict[str, str], label: str) -> int:
+    if mode.startswith("emit") or mode == "build":
+        for destination_str, content in files.items():
+            destination = Path(destination_str)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(content, encoding="utf-8")
+        print(f"{label}: wrote {len(files)} file(s)")
+        return 0
+    mismatches = []
+    for destination_str, content in files.items():
+        destination = Path(destination_str)
+        try:
+            actual = destination.read_text(encoding="utf-8")
+        except OSError:
+            mismatches.append(f"missing: {destination}")
+            continue
+        if actual != content:
+            mismatches.append(f"stale: {destination}")
+    if mismatches:
+        print(f"{label}: out of sync with source registries:", file=sys.stderr)
+        for mismatch in mismatches:
+            print(f"  - {mismatch}", file=sys.stderr)
+        return 1
+    print(f"{label}: check complete")
+    return 0
+
+
+def _build_parser(default_workspace: Path, default_root: Path) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=("build", "check", "emit-repo", "check-repo"))
+    parser.add_argument(
+        "--workspace",
+        type=Path,
+        default=default_workspace,
+        help=(
+            "path to the agent-packages directory containing every repo in REPOS "
+            f"(default: the sibling checkout at {default_workspace}, this "
+            "workspace's own layout -- a standalone clone of just `pipelines`, or "
+            "of a single downstream repo with no sibling checkouts, skips this "
+            "gate rather than failing it)"
+        ),
+    )
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=default_root,
+        help="pipelines repository root (where pages/ lives) -- build/check only",
+    )
+    parser.add_argument(
+        "--slug",
+        choices=tuple(REPOS),
+        help="repo to project a man-page reference for -- emit-repo/check-repo only",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        help="destination file inside that repo -- emit-repo/check-repo only",
+    )
+    parser.add_argument(
+        "--required",
+        action="store_true",
+        help="fail instead of skipping when --workspace does not exist",
+    )
+    return parser
+
+
+def _run_repo_mode(args: argparse.Namespace) -> int:
+    corpus = build_graph(args.workspace.resolve())
+    content = render_repo_reference_md(corpus, args.slug)
+    return _write_or_check(args.mode, {str(args.out): content}, f"skill_graph[{args.slug}]")
+
+
+def _run_pages_mode(args: argparse.Namespace) -> int:
+    files = generate(args.workspace.resolve())
+    return _write_or_check(args.mode, {str(args.root / k): v for k, v in files.items()}, "skill_graph")
+
+
+def main(argv: list[str] | None = None) -> int:
+    default_workspace = Path(__file__).resolve().parents[3] / "agent-packages"
+    default_root = Path(__file__).resolve().parents[2]
+    args = _build_parser(default_workspace, default_root).parse_args(argv)
+    if args.mode in ("emit-repo", "check-repo") and (args.slug is None or args.out is None):
+        _build_parser(default_workspace, default_root).error(f"{args.mode} requires --slug and --out")
+    if not args.workspace.is_dir():
+        if args.required:
+            print(f"skill_graph: CANNOT RUN: {args.workspace} does not exist", file=sys.stderr)
+            return 2
+        print(f"skill_graph: {args.mode} skipped (no sibling checkout at {args.workspace})")
+        return 0
+    if args.mode in ("emit-repo", "check-repo"):
+        return _run_repo_mode(args)
+    return _run_pages_mode(args)
