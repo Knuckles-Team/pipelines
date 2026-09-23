@@ -148,7 +148,7 @@ site/
 htmlcov/
 .coverage
 .specify/
-*.maturin.lock
+*maturin.lock
 
 # KISS may write a working cache under .kiss/; its thresholds are tracked in .config/kiss.toml.
 .kiss/

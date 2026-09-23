@@ -25,13 +25,13 @@ from pipelines_hooks.core.tracked import tracked_paths
 REQUIRED = frozenset(
     {"dist/", "dist-*/", "sdist/", "build/", "target/", "target-*/", ".venv/", ".mypy_cache/", ".pytest_cache/",
      ".ruff_cache/", ".hypothesis/", ".pytest_tmp/", "node_modules/", ".kissconfig", "reports/", "scratch/",
-     "__pycache__/", "site/", "htmlcov/", ".coverage", ".specify/", ".kiss/", "*.maturin.lock"}
+     "__pycache__/", "site/", "htmlcov/", ".coverage", ".specify/", ".kiss/", "*maturin.lock"}
 )
 _TRACKED_BUILD_OUTPUT_RE = re.compile(
     r"^(dist|build|target|site)(-[^/]*)?/"
     r"|(^|/)(__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.hypothesis|\.pytest_tmp|\.venv|venv|node_modules"
     r"|htmlcov|\.specify|\.kiss)/"
-    r"|(^|/)(\.coverage(\.[^/]*)?|coverage\.xml|\.kissconfig|[^/]*\.maturin\.lock|[^/]*\.pyc)$"
+    r"|(^|/)(\.coverage(\.[^/]*)?|coverage\.xml|\.kissconfig|[^/]*maturin\.lock|[^/]*\.pyc)$"
 )
 
 
