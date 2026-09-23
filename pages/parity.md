@@ -5,9 +5,9 @@ Snapshot against the shared documentation standard (RF-ADR-009 D3-D5) for the fi
 | Repo | Inherits shared theme | Theme byte-parity | Mermaid files | ASCII-art files | Skill graph reference | Components nav tier |
 |---|---|---|---|---|---|---|
 | epistemic-graph | yes | yes | 0 | 0 | yes | yes |
-| agent-utilities | yes | yes | 161 | 46 | yes | yes |
+| agent-utilities | yes | yes | 141 | 48 | yes | yes |
 | agent-connector-sdk | yes | yes | 0 | 0 | yes | yes |
-| graph-os | yes | yes | 0 | 0 | yes | yes |
+| graph-os | yes | yes | 0 | 1 | yes | yes |
 | agent-webui | yes | yes | 0 | 0 | yes | yes |
 
-**Known content gap, not this pass's to close:** agent-utilities already inherit the shared theme (D3's wiring is done) but still carry Mermaid fences / ASCII box-drawing in hand-written prose -- a large, repo-owned content migration. Their generated docs (docs/capabilities.generated.md, docs/status.md, docs/concepts.yaml, etc.) are also under active concurrent feature lanes; the finish-line docs lane's collision rule defers touching either until those lanes land (see WRAPUP.md's D6 rehome plan).
+**Known content gap, not this pass's to close:** agent-utilities, graph-os already inherit the shared theme (D3's wiring is done) but still carry Mermaid fences / ASCII box-drawing in hand-written prose -- a large, repo-owned content migration. Their generated docs (docs/capabilities.generated.md, docs/status.md, docs/concepts.yaml, etc.) are also under active concurrent feature lanes; the finish-line docs lane's collision rule defers touching either until those lanes land (see WRAPUP.md's D6 rehome plan).
