@@ -5,7 +5,8 @@
 #
 # Consumers pin `rev:` to a full commit SHA and choose each hook's stages.
 # Native scanners (cccc, kiss, dupehound, jscpd) must already be installed at
-# the pinned versions; hooks never install them.
+# the pinned versions; hooks never install them. kiss must be the pinned fork
+# build (pipelines_hooks/core/kiss_fork.py), proven by a behavioural probe.
 
 # --- complexity (cccc 1.6.0) ------------------------------------------------
 - id: complexity-staged
@@ -22,7 +23,7 @@
   pass_filenames: false
   always_run: true
   require_serial: true
-# --- KISS (0.4.10) ----------------------------------------------------------
+# --- KISS (0.4.10 rules, fork build Knucklessg1/kiss; see core/kiss_fork.py) --
 - id: kiss-staged
   name: KISS - staged Python/Rust, diff-scoped
   entry: pipelines-hook kiss-staged

@@ -2,7 +2,9 @@
 
 One reviewed version per scanner for the whole fleet (the versions
 epistemic-graph's ``scripts/scanner_contract.py`` pins). A consuming repository
-pins these by pinning this hook repository's revision. Hooks resolve binaries
+pins these by pinning this hook repository's revision. kiss is the fleet's
+fork build of 0.4.10 (see ``pipelines_hooks.core.kiss_fork``), proven by a
+behavioural probe because it prints the upstream version line. Hooks resolve binaries
 that are already installed; they never download, compile or substitute one,
 and a missing or drifted binary is exit 2, never a clean pass.
 """
@@ -16,6 +18,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import sanitized_env
+from pipelines_hooks.core.kiss_fork import require_fork_build
 from pipelines_hooks.core.settings import setting
 
 PINNED_VERSIONS = {
@@ -24,6 +27,9 @@ PINNED_VERSIONS = {
     "dupehound": "0.1.2",
     "jscpd": "5.0.16",
 }
+#: Scanners whose pinned build is a fork that prints the same ``--version`` as
+#: the upstream release; each probe proves the installed binary is the fork.
+_BUILD_PROBES = {"kiss": require_fork_build}
 #: jscpd v5 reports itself as ``cpd``.
 _VERSION_PREFIX = {"cccc": "cccc", "kiss": "kiss", "dupehound": "dupehound", "jscpd": "cpd"}
 
@@ -76,4 +82,7 @@ def verified(tool: str) -> str:
     expected = expected_version_line(tool)
     if result.returncode != 0 or got != expected:
         raise CannotRun(f"{tool} version drift: expected {expected!r}, got {got!r}")
+    probe = _BUILD_PROBES.get(tool)
+    if probe is not None:
+        probe(executable)
     return executable
