@@ -38,10 +38,10 @@ def _file_findings(kiss: str, trees: tuple[Path, Path | None], path: str) -> lis
 
 def staged_findings(root: Path, scope: tuple[str, ...], paths: list[str]) -> list[Violation]:
     """Attributable findings over the materialized staged index and HEAD tree."""
-    kiss = verified("kiss")
     with tempfile.TemporaryDirectory(prefix="kiss-staged-") as raw:
         staged_tree = runner.materialize_index(root, Path(raw) / "index")
-        runner.check_config(staged_tree)
+        runner.check_config_keys(staged_tree)
+        kiss = verified("kiss")
         runner.reject_symlinks(staged_tree, scope)
         head_tree = runner.materialize_head(root, Path(raw) / "head")
         return [f for path in paths for f in _file_findings(kiss, (staged_tree, head_tree), path)]

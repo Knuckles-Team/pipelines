@@ -1,12 +1,12 @@
-"""Prove an installed kiss is the fleet's pinned fork build, not crates.io 0.4.10.
+"""Prove an installed kiss is the fleet's pinned fork build, not crates.io 0.4.12.
 
-The fleet runs kiss 0.4.10 rule semantics from the fork commit below: the
-0.4.10 release plus the inline-module resolution fix (upstream PR
-dsweet99/kiss#48). Both builds print ``kiss 0.4.10``, so ``--version`` cannot
-tell them apart. The probe runs a four-file crate that declares ``mod helper;``
-inside an inline ``mod tests { .. }`` block of a non-root file: the upstream
-0.4.10 build aborts with ``missing module helper``; the pinned fork analyzes
-it cleanly.
+The fleet runs kiss 0.4.12 from the fork commit below: upstream 0.4.12 plus the
+inline-module resolution fix (upstream PR dsweet99/kiss#48). Both builds print
+``kiss 0.4.12``, so ``--version`` cannot tell them apart. The probe runs a
+four-file crate that declares ``mod helper;`` inside an inline
+``mod tests { .. }`` block of a non-root file: every upstream build through
+0.4.12 aborts with ``missing module helper``; the pinned fork analyzes it
+cleanly.
 
 Install the pinned build with::
 
@@ -24,7 +24,7 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import sanitized_env
 
 KISS_FORK_GIT = "https://github.com/Knucklessg1/kiss"
-KISS_FORK_REV = "4d05b0ee01c58318f199848b4d799b12d470d1bd"
+KISS_FORK_REV = "7f1c6785697d3fe9a41ceb8b8e5d0f615fb1f3d9"
 
 _PROBE_CRATE = {
     "Cargo.toml": '[package]\nname = "inline_mod_probe"\nversion = "0.1.0"\nedition = "2024"\n',

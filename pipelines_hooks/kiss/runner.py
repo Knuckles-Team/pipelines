@@ -14,6 +14,40 @@ from pipelines_hooks.kiss.report import parse_report
 
 LANGUAGES = {".py": "python", ".rs": "rust"}
 CONFIG = KISS_CONFIG
+#: kiss 0.4.12's allow-list per table. kiss silently DROPS a whole table when
+#: it holds any other key (``[global]`` with no output at all), reverting e.g.
+#: ``docs_allowed`` to its default -- so an unknown key fails closed here.
+#: ``[global] orphan_module_enabled`` left in 0.4.11: orphan detection moved to
+#: ``kiss test`` (``[test] orphan_detection``); ``kiss check`` no longer
+#: reports ``orphan_module``. A ``[gate]`` table (pre-0.4.11) is refused whole.
+KNOWN_KEYS = {
+    "global": frozenset(
+        {
+            "min_similarity",
+            "duplication_enabled",
+            "comment_removal_enabled",
+            "docs_allowed",
+            "orphan_allowed",
+        }
+    ),
+    "test": frozenset(
+        {
+            "main_branch",
+            "num_jobs",
+            "num_jobs_pytest",
+            "num_jobs_llvm_cov",
+            "watch_settle_seconds",
+            "pytest_plugins",
+            "ignore",
+            "test_coverage_threshold",
+            "test_coverage_scope",
+            "orphan_detection",
+            "max_unit_test_seconds",
+            "max_num_tests",
+            "cache",
+        }
+    ),
+}
 
 
 def check_config(tree: Path) -> Path:
@@ -26,13 +60,23 @@ def check_config(tree: Path) -> Path:
     return config
 
 
-def orphan_rule_enabled(tree: Path) -> bool:
-    """Whether ``[global] orphan_module_enabled`` is on in the tree's config."""
+def unknown_keys(document: dict) -> list[str]:
+    """``table.key`` for every key kiss 0.4.12 would silently drop its table for."""
+    unknown = [f"{table}.{key}" for table, known in KNOWN_KEYS.items() for key in sorted(document.get(table) or {}) if key not in known]
+    if "gate" in document:
+        unknown.append("[gate] (renamed to [global]/[test] in kiss 0.4.11)")
+    return unknown
+
+
+def check_config_keys(tree: Path) -> None:
+    """Fail closed on a config key kiss would silently drop its whole table for."""
     try:
         document = tomllib.loads(check_config(tree).read_text(encoding="utf-8"))
     except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise CannotRun(f"cannot read {CONFIG}: {exc}") from exc
-    return document.get("global", {}).get("orphan_module_enabled") is True
+    unknown = unknown_keys(document)
+    if unknown:
+        raise CannotRun(f"{CONFIG} has key(s) kiss 0.4.12 does not know: {', '.join(unknown)}; kiss would silently drop the whole table")
 
 
 def _validated(output: str, status: int, path: str) -> str:

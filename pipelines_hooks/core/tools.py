@@ -3,7 +3,7 @@
 One reviewed version per scanner for the whole fleet (the versions
 epistemic-graph's ``scripts/scanner_contract.py`` pins). A consuming repository
 pins these by pinning this hook repository's revision. kiss is the fleet's
-fork build of 0.4.10 (see ``pipelines_hooks.core.kiss_fork``), proven by a
+fork build of 0.4.12 (see ``pipelines_hooks.core.kiss_fork``), proven by a
 behavioural probe because it prints the upstream version line. Hooks resolve binaries
 that are already installed; they never download, compile or substitute one,
 and a missing or drifted binary is exit 2, never a clean pass.
@@ -23,7 +23,7 @@ from pipelines_hooks.core.settings import setting
 
 PINNED_VERSIONS = {
     "cccc": "1.6.0",
-    "kiss": "0.4.10",
+    "kiss": "0.4.12",
     "dupehound": "0.1.2",
     "jscpd": "5.0.16",
 }

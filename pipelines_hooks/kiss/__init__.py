@@ -1,4 +1,4 @@
-"""KISS 0.4.10 gates: diff-scoped staged gate and enforced census.
+"""KISS 0.4.12 gates: diff-scoped staged gate and enforced census.
 
 KISS has two dangerous defaults: bare ``kiss check`` writes a self-calibrating
 ``.kissconfig``, and a multi-path ``check`` reports a false clean. Every run

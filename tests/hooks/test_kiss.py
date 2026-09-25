@@ -1,8 +1,11 @@
-"""kiss-staged attributes only what a diff caused; kiss-census enforces findings and orphans."""
+"""kiss-staged attributes only what a diff caused; kiss-census enforces every finding."""
 
 from __future__ import annotations
 
+import pytest
+
 from pipelines_hooks.kiss.report import attributable
+from pipelines_hooks.kiss.runner import unknown_keys
 from pipelines_hooks.kiss.spans import python_spans, rust_spans
 from tests.hooks.conftest import Repo, branchy
 
@@ -40,9 +43,32 @@ def test_staged_gate_does_not_count_untouched_debt_in_a_changed_file(repo: Repo)
     assert repo.run("kiss-staged") == 0
 
 
-def test_census_fires_on_findings_and_orphans_and_passes_when_wired(repo: Repo, capsys) -> None:
-    repo.commit({"pkg/__init__.py": "from pkg import used\n", "pkg/used.py": "VALUE = 1\n", "pkg/lonely.py": "UNUSED = 1\n"})
+def test_census_fires_on_findings_and_passes_when_clean(repo: Repo) -> None:
+    repo.commit({"pkg/returns.py": branchy("returns", 6)})
     assert repo.run("kiss-census") == 1
-    assert "orphan_module" in capsys.readouterr().out
-    repo.commit({"pkg/__init__.py": "from pkg import lonely, used\n"})
+    repo.commit({"pkg/returns.py": "VALUE = 1\n"})
     assert repo.run("kiss-census") == 0
+
+
+def test_unknown_keys_names_every_key_kiss_would_drop_its_table_for() -> None:
+    document = {
+        "global": {"docs_allowed": [], "orphan_module_enabled": True},
+        "test": {"bogus": 1},
+        "gate": {},
+    }
+    assert unknown_keys(document) == [
+        "global.orphan_module_enabled",
+        "test.bogus",
+        "[gate] (renamed to [global]/[test] in kiss 0.4.11)",
+    ]
+    assert unknown_keys({"global": {"docs_allowed": []}, "test": {"orphan_detection": True}}) == []
+
+
+@pytest.mark.parametrize("gate", ["kiss-census", "kiss-staged"])
+def test_gates_refuse_a_config_key_kiss_would_silently_drop(repo: Repo, gate: str, capsys) -> None:
+    config = (repo.root / ".config/kiss.toml").read_text(encoding="utf-8")
+    bad = config.replace("[global]\n", "[global]\norphan_module_enabled = true\n", 1)
+    repo.commit({".config/kiss.toml": bad, "pkg/returns.py": "VALUE = 1\n"})
+    repo.stage({"pkg/returns.py": "VALUE = 2\n"})
+    assert repo.run(gate) == 2
+    assert "global.orphan_module_enabled" in capsys.readouterr().err

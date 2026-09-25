@@ -1,4 +1,4 @@
-"""The kiss fork probe rejects the upstream 0.4.10 build that prints the same version."""
+"""The kiss fork probe rejects the upstream 0.4.12 build that prints the same version."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def test_probe_accepts_a_build_that_resolves_the_inline_module(tmp_path: Path) -
 def test_verified_kiss_runs_the_probe_after_the_version_check(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    binary = _fake(tmp_path, "#!/bin/sh\necho 'kiss 0.4.10'\n")
+    binary = _fake(tmp_path, "#!/bin/sh\necho 'kiss 0.4.12'\n")
     monkeypatch.setenv("KISS_BIN", binary)
     probed: list[str] = []
     monkeypatch.setitem(tools._BUILD_PROBES, "kiss", probed.append)

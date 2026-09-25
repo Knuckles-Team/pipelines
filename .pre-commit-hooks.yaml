@@ -23,7 +23,7 @@
   pass_filenames: false
   always_run: true
   require_serial: true
-# --- KISS (0.4.10 rules, fork build Knucklessg1/kiss; see core/kiss_fork.py) --
+# --- KISS (0.4.12 fork build Knucklessg1/kiss; see core/kiss_fork.py) --------
 - id: kiss-staged
   name: KISS - staged Python/Rust, diff-scoped
   entry: pipelines-hook kiss-staged

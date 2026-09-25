@@ -1,4 +1,4 @@
-# KISS thresholds for the shared hook package (kiss 0.4.10).
+# KISS thresholds for the shared hook package (kiss 0.4.12, fleet fork build).
 #
 # Source: agent-packages/agent-utilities/.config/kiss.toml [python], the fleet's
 # hand-set, measured Python thresholds, copied unchanged. None was derived from
@@ -6,16 +6,20 @@
 #
 # Never run bare `kiss check`: without --config it writes a self-calibrating
 # .kissconfig. Go through the kiss-staged / kiss-census hooks (one path per
-# invocation; kiss 0.4.10 reports a false clean for a multi-path check).
+# invocation; kiss reports a false clean for a multi-path check).
 
 [global]
 min_similarity          = 0.9
 duplication_enabled     = true
-# Orphan modules are enforced by the kiss-census hook's whole-directory pass.
-orphan_module_enabled   = true
 comment_removal_enabled = false
 docs_allowed            = ["./"]
 orphan_allowed          = []
+# kiss 0.4.11 moved orphan detection out of [global] (orphan_module_enabled,
+# now an unknown key that makes kiss drop this whole table) to the
+# coverage-linked `kiss test`; `kiss check` no longer reports orphans.
+
+[test]
+orphan_detection        = true
 
 [python]
 max_indentation            = 4

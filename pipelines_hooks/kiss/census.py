@@ -1,10 +1,9 @@
 """kiss-census: every tracked Python/Rust file under the KISS paths, enforced at zero.
 
 Each file is checked with its own ``kiss check`` (a multi-path check reports a
-false clean). When ``.config/kiss.toml`` enables ``orphan_module_enabled``, each
-KISS path is ALSO checked as one directory: orphan detection needs the whole
-package's import graph, and a single-file check never reports an orphan. Every
-finding fails -- there is no advisory class and no baseline.
+false clean). Every finding fails -- there is no advisory class and no baseline.
+Orphan modules are NOT covered: since kiss 0.4.11 ``kiss check`` no longer
+reports ``orphan_module`` (the check moved to the coverage-linked ``kiss test``).
 """
 
 from __future__ import annotations
@@ -29,31 +28,16 @@ def census_files(root: Path, scope: tuple[str, ...]) -> list[str]:
     return files
 
 
-def orphan_findings(kiss: str, root: Path, files: list[str]) -> list[str]:
-    """``orphan_module`` findings from one whole-directory check per path and language."""
-    if not runner.orphan_rule_enabled(root):
-        print("kiss census: orphan_module_enabled is off in .config/kiss.toml")
-        return []
-    directories = sorted({(str(Path(path).parts[0]), runner.LANGUAGES[Path(path).suffix]) for path in files})
-    return [
-        format_violation(violation)
-        for directory, language in directories
-        for violation in parse_report(runner.check(kiss, root, directory, language=language))
-        if violation["rule"] == "orphan_module"
-    ]
-
-
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="kiss-census", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     root = repo_root(parser.parse_args(argv).root)
     scope = kiss_paths(root)
-    runner.check_config(root)
+    runner.check_config_keys(root)
     kiss = verified("kiss")
     files = census_files(root, scope)
     findings = [format_violation(v) for path in files for v in parse_report(runner.check(kiss, root, path))]
-    orphans = orphan_findings(kiss, root, files)
-    for line in [*findings, *orphans]:
+    for line in findings:
         print(line)
-    print(f"kiss census: {len(files)} file(s), {len(findings)} finding(s), {len(orphans)} orphan module(s)")
-    return 1 if findings or orphans else 0
+    print(f"kiss census: {len(files)} file(s), {len(findings)} finding(s)")
+    return 1 if findings else 0
