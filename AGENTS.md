@@ -21,15 +21,33 @@ wheels, containers, desktop artifacts, services, and Pages sites. They execute
 with the caller's checkout, credentials, and permissions. `scripts/readiness/`
 contains the Pages readiness validator and delivery planning code.
 
-## Commands
+## Setup
 
-Install the locked environment and run focused or complete checks with:
+From a fresh clone (locally, or in a Claude Code cloud session where
+`.claude/hooks/session-start.sh` runs it automatically when
+`CLAUDE_CODE_REMOTE=true`):
 
 ```bash
-uv sync --locked
-uv run pytest -q
-pre-commit run -c .config/pre-commit.yaml --all-files
+scripts/bootstrap.sh              # uv >= 0.9, locked env + test deps, pre-commit and pre-push hooks
+scripts/bootstrap.sh --scanners   # also the pinned cccc, kiss fork, dupehound and jscpd builds
 ```
+
+The script is idempotent. Without the scanners, or without a sibling checkout
+or the operator's privacy identity catalog, the affected hooks print
+`SKIPPED (<gate>): <reason>` and pass locally; CI fails them closed.
+
+## Commands
+
+Run focused or complete checks with:
+
+```bash
+uv run --frozen python -m pytest -q
+uvx pre-commit run --config .config/pre-commit.yaml --all-files
+uvx pre-commit run --config .config/pre-commit.yaml --all-files --hook-stage manual
+```
+
+CI (`.github/workflows/ci.yml`) runs the same two pre-commit invocations with
+the scanners installed by `scripts/install_scanners.sh`.
 
 Use `pipelines-hook <id>` to run one published gate. The command lists the
 available IDs when called without an ID.
@@ -57,7 +75,7 @@ case and an adversarial case for every new invariant. For a workflow change,
 update its contract test; for a hook change, update the CLI registry, published
 catalogue, self-run configuration when appropriate, and README example.
 
-Stage only reviewed paths and use `uv run --locked` for Python commands.
+Stage only reviewed paths and use `uv run --frozen` for Python commands.
 
 ## Documentation
 
@@ -72,6 +90,11 @@ Use an explicit branch or repository worktree for changes. Do not mix unrelated
 edits, share a mutable checkout between concurrent lanes, or commit generated
 environment output. Before a commit, inspect the complete staged diff and run
 the applicable focused checks.
+
+Work on a topic branch, push it, and open a pull request against `main`; the
+`CI` workflow must pass before merge. No gate depends on an external network
+service: a check whose verdict would depend on reachability does not belong in
+the hooks or workflows.
 
 ## Release
 

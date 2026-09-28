@@ -6,6 +6,7 @@
 
 [dirs]
 ".specify" = "tracked Spec Kit project constitution for public specifications"
+".claude" = "Claude Code project settings and the cloud-session SessionStart hook (Claude Code reads only .claude/)"
 ".config" = "tool configuration: pre-commit suite (pre-commit -c), bump2version (--config-file), KISS thresholds, this manifest"
 ".github" = "the reusable GitHub Actions workflows other repositories call (GitHub discovers only .github/)"
 docs = "reference documentation for the reusable workflows"

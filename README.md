@@ -65,14 +65,16 @@ The Pages documentation linked above has the complete hook catalogue and workflo
 
 ## Contributing
 
-Clone the repository, install the locked development environment, and run focused tests before the complete suite:
+Clone the repository, run the bootstrap (locked environment, test dependencies and git hooks; add `--scanners` for the native scanners), and run focused tests before the complete suite:
 
 ```bash
-uv sync --locked
-uv run pytest -q tests/hooks tests/test_pages_readiness.py
-uv run pytest -q
-pre-commit run -c .config/pre-commit.yaml --all-files
+scripts/bootstrap.sh
+uv run --frozen python -m pytest -q tests/hooks tests/test_pages_readiness.py
+uv run --frozen python -m pytest -q
+uvx pre-commit run --config .config/pre-commit.yaml --all-files
 ```
+
+Open a pull request against `main` from a topic branch; CI runs the same pre-commit configuration.
 
 Every new hook invariant needs positive and adversarial fixtures. Workflow changes need contract tests for inputs and permissions. Stage only reviewed files and keep generated environment output untracked.
 
