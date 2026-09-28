@@ -5,8 +5,11 @@
 #
 # Consumers pin `rev:` to a full commit SHA and choose each hook's stages.
 # Native scanners (cccc, kiss, dupehound, jscpd) must already be installed at
-# the pinned versions; hooks never install them. kiss must be the pinned fork
-# build (pipelines_hooks/core/kiss_fork.py), proven by a behavioural probe.
+# the pinned versions (scripts/install_scanners.sh); hooks never install them.
+# kiss must be the pinned fork build (pipelines_hooks/core/kiss_fork.py), proven
+# by a behavioural probe. A gate whose scanner or sibling checkout is absent
+# fails closed (exit 2) when $CI is set; locally it prints
+# `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and exits 0.
 
 # --- complexity (cccc 1.6.0) ------------------------------------------------
 - id: complexity-staged

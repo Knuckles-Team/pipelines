@@ -27,7 +27,7 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 ## Key capabilities
 
 - Repository-local TOML configuration with strict unknown-key validation.
-- Security, privacy, supply-chain, hygiene, code-shape, clone, and CI-replica gates.
+- Security, privacy, supply-chain, hygiene, code-shape, and clone gates.
 - A public README/AGENTS surface contract for consistent fleet documentation.
 - Reusable GitHub workflows pinned by callers to reviewed immutable commits.
 - Pages readiness and shared MkDocs theme assets for deeper documentation.
@@ -36,11 +36,11 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts.
 
-The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration and the CI replica contract are described in the Pages reference; the public-surface gate validates their concise entry points without making live HTTP requests.
+The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration is described in the Pages reference; the public-surface gate validates their concise entry points without making live HTTP requests.
 
 ## Architecture
 
-The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict.
+The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict. A gate whose native scanner or sibling checkout is absent fails closed with two when `CI` is set; locally it prints `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and returns zero.
 
 File inputs live under `.config/`, never at the repository root: `.config/repo-layout.toml` (root-hygiene allowlist), `.config/kiss.toml` (KISS thresholds), `.config/dupehound-distinct.toml` (reviewed non-clone register) and `.config/security-audit-allow.txt` (risk-acceptance ledger). A copy left at the retired root location fails the gate with exit status two.
 

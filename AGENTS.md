@@ -37,7 +37,10 @@ available IDs when called without an ID.
 ## Quality gates
 
 Every gate returns zero for clean, one for findings, and two when it cannot
-produce a trustworthy verdict. The public-surface gate checks README and AGENTS
+produce a trustworthy verdict. A missing native scanner or sibling checkout
+(`pipelines_hooks.core.errors.Unavailable`) is exit two only when `CI` is set;
+locally the command line prints `SKIPPED (<gate>)` with the install command and
+returns zero. The public-surface gate checks README and AGENTS
 structure, canonical offline badges, contained local links, Pages
 discoverability, and absence of checkout or planning details. No network
 request is made by a local documentation gate.

@@ -32,17 +32,20 @@ def test_rust_spans_ignore_a_function_named_in_a_comment_or_string() -> None:
     assert [span[:2] for span in rust_spans(source, "target")] == [(3, 5)]
 
 
+@pytest.mark.scanner("kiss")
 def test_staged_gate_fires_on_a_new_function_with_too_many_returns(repo: Repo) -> None:
     repo.stage({"pkg/returns.py": branchy("returns", 6)})
     assert repo.run("kiss-staged") == 1
 
 
+@pytest.mark.scanner("kiss")
 def test_staged_gate_does_not_count_untouched_debt_in_a_changed_file(repo: Repo) -> None:
     repo.commit({"pkg/debt.py": branchy("debt", 6)})
     repo.stage({"pkg/debt.py": branchy("debt", 6) + "\n\ndef fresh():\n    return 1\n"})
     assert repo.run("kiss-staged") == 0
 
 
+@pytest.mark.scanner("kiss")
 def test_census_fires_on_findings_and_passes_when_clean(repo: Repo) -> None:
     repo.commit({"pkg/returns.py": branchy("returns", 6)})
     assert repo.run("kiss-census") == 1

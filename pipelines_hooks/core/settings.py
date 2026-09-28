@@ -27,6 +27,7 @@ KNOWN_SETTINGS = {
     "USER": "ambient account name (tracked-privacy)",
     "LOGNAME": "ambient account name (tracked-privacy)",
     "USERNAME": "ambient account name (tracked-privacy)",
+    "CI": "set by CI runners: a missing tool or sibling checkout fails closed (exit 2)",
 }
 
 
