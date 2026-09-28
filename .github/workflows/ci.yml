@@ -1,0 +1,80 @@
+name: CI
+
+# This repository's own gates: the same .config/pre-commit.yaml a contributor
+# runs locally (scripts/bootstrap.sh installs it), never a hand-listed copy.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    name: pre-commit (all stages)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SCANNER_ROOT: ${{ github.workspace }}/../pipelines-scanners
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      # The native scanners are built from source; the build is cached under the
+      # hash of scripts/install_scanners.sh (the one place the pins live), and
+      # the scanner-versions hook still proves every cached binary on each run.
+      - name: Restore pinned scanner toolchain
+        id: scanner-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.SCANNER_ROOT }}
+          key: pipelines-scanners-${{ runner.os }}-${{ hashFiles('scripts/install_scanners.sh') }}
+
+      - name: Provision pinned scanner toolchain
+        if: steps.scanner-cache.outputs.cache-hit != 'true'
+        run: bash scripts/install_scanners.sh "$SCANNER_ROOT" >/dev/null
+
+      - name: Save pinned scanner toolchain
+        if: steps.scanner-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.SCANNER_ROOT }}
+          key: ${{ steps.scanner-cache.outputs.cache-primary-key }}
+
+      - name: Put scanners on PATH and resolve the diff base
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          bash scripts/install_scanners.sh "$SCANNER_ROOT" >> "$GITHUB_PATH"
+          base="${PR_BASE:-$PUSH_BEFORE}"
+          if [[ -z "$base" || "$base" =~ ^0+$ ]] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            base="$(git merge-base HEAD origin/main)"
+          fi
+          echo "CX_DUP_BASE_REF=$base" >> "$GITHUB_ENV"
+          echo "PRE_COMMIT_FROM_REF=$base" >> "$GITHUB_ENV"
+
+      - name: Locked environment
+        run: uv sync --frozen
+
+      # tracked-privacy needs the operator's private identity catalog, which
+      # is not published to hosted runners; it runs wherever the catalog is
+      # installed (and is a visible SKIPPED locally when it is not).
+      - name: pre-commit (commit stage, all files)
+        env:
+          SKIP: tracked-privacy
+        run: uvx --from pre-commit==4.6.2 pre-commit run --config .config/pre-commit.yaml --all-files --show-diff-on-failure
+
+      - name: pre-commit (pre-push and manual stages, all files)
+        run: uvx --from pre-commit==4.6.2 pre-commit run --config .config/pre-commit.yaml --all-files --hook-stage manual
