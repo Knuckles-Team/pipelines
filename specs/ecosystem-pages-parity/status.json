@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "spec_id": "PIPE-EH-428",
+  "owner_repo": "pipelines",
+  "requirement_ids": ["EH-428"],
+  "delivery_state": "SPECIFIED",
+  "acceptance_state": "NOT_AUDITED",
+  "evidence": []
+}

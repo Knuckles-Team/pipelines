@@ -35,6 +35,19 @@ def test_gitignore_convergence_fires_on_a_missing_entry_and_tracked_output(repo:
     assert repo.run("gitignore-convergence") == 1
 
 
+def test_gitignore_convergence_allows_only_tracked_spec_kit_constitution(repo: Repo) -> None:
+    full = "\n".join(sorted(REQUIRED)) + "\n"
+    repo.commit({".gitignore": full})
+    repo.write(".specify/memory/constitution.md", "# Constitution\n")
+    repo.git("add", "-f", ".specify/memory/constitution.md")
+    repo.git("commit", "-q", "-m", "track constitution")
+    assert repo.run("gitignore-convergence") == 0
+    repo.write(".specify/cache/generated.json", "{}\n")
+    repo.git("add", "-f", ".specify/cache/generated.json")
+    repo.git("commit", "-q", "-m", "track generated file")
+    assert repo.run("gitignore-convergence") == 1
+
+
 def test_sprawl_fires_on_clones_artifacts_and_merge_markers_but_not_quoted_markers(repo: Repo) -> None:
     marker = "# --- Merged" + " from"
     repo.commit({"docs/gate.md": f"The gate rejects `{marker}` lines.\n"})

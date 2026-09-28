@@ -46,7 +46,10 @@ def gitignore_tokens(root: Path) -> set[str]:
 def problems(root: Path) -> list[str]:
     tokens = gitignore_tokens(root)
     missing = sorted(token for token in REQUIRED if token.strip("/") not in tokens)
-    tracked = sorted(path for path in tracked_paths(root) if _TRACKED_BUILD_OUTPUT_RE.search(path))
+    tracked = sorted(
+        path for path in tracked_paths(root)
+        if path != ".specify/memory/constitution.md" and _TRACKED_BUILD_OUTPUT_RE.search(path)
+    )
     found = []
     if missing:
         found.append("Missing from .gitignore (fleet-shared REQUIRED set):\n" + "\n".join(f"    {m}" for m in missing))
