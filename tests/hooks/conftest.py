@@ -80,7 +80,14 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
 
 @pytest.fixture(autouse=True)
 def ci_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Gate runs see ``CI=true`` (fail closed) unless a test opts out."""
+    """Gate runs fail closed without inheriting the caller's revision range.
+
+    Pre-commit exports these refs for the real repository. They cannot resolve
+    in the throwaway repositories used by these tests, and can change which
+    fixture commits a differential gate examines.
+    """
+    monkeypatch.delenv("CX_DUP_BASE_REF", raising=False)
+    monkeypatch.delenv("PRE_COMMIT_FROM_REF", raising=False)
     monkeypatch.setenv("CI", "true")
 
 
