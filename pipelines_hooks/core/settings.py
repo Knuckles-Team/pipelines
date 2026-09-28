@@ -27,8 +27,6 @@ KNOWN_SETTINGS = {
     "USER": "ambient account name (tracked-privacy)",
     "LOGNAME": "ambient account name (tracked-privacy)",
     "USERNAME": "ambient account name (tracked-privacy)",
-    "CI_GATE_TMPDIR": "temporary directory of the local CI replica",
-    "CI_GATE_STEP_TIMEOUT_SECS": "per-step timeout of the local CI replica",
 }
 
 

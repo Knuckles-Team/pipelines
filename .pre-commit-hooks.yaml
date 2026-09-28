@@ -176,17 +176,3 @@
   language: python
   pass_filenames: false
   always_run: true
-# --- CI replica -------------------------------------------------------------
-- id: ci-gate-replica-consistency
-  name: CI gate replica - every workflow and job classified
-  entry: pipelines-hook ci-gate-replica --consistency-check
-  language: python
-  pass_filenames: false
-  always_run: true
-- id: ci-gate-replica
-  name: CI gate replica - replay the executable workflow jobs locally
-  entry: pipelines-hook ci-gate-replica
-  language: python
-  pass_filenames: false
-  always_run: true
-  require_serial: true
