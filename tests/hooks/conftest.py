@@ -2,18 +2,25 @@
 
 Every gate test plants a violation and proves the gate fires (exit 1), then
 proves it passes on a clean fixture (exit 0). Gates run the real pinned
-scanners; nothing is mocked except the OSV network client.
+scanners; nothing is mocked.
 """
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
 import pytest
 
 from pipelines_hooks.cli import run_gate
+from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import sanitized_env
+from pipelines_hooks.core.tools import resolve
+
+#: The runner's own ``CI`` value, captured before the autouse fixture below
+#: pins it for gate runs.
+RUNNER_IN_CI = (os.environ.get("CI") or "").strip().casefold() not in {"", "0", "false", "no"}
 
 HOOK_REPOSITORY = Path(__file__).resolve().parents[2]
 PYPROJECT = '[project]\nname = "fixture"\nversion = "0"\n\n[tool.pipelines_hooks]\npackages = ["pkg"]\n'
@@ -50,6 +57,38 @@ class Repo:
 
     def run(self, gate: str, *args: str) -> int:
         return run_gate(gate, ["--root", str(self.root), *args])
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line("markers", "scanner(*tools): the test runs the named pinned native scanners")
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    """Scanner tests need the pinned binaries: skipped locally, required in CI.
+
+    ``scripts/install_scanners.sh`` installs them; under CI a missing scanner is
+    left to fail the test, never skipped.
+    """
+    for marker in item.iter_markers("scanner"):
+        for tool in marker.args:
+            try:
+                resolve(tool)
+            except CannotRun as exc:
+                if not RUNNER_IN_CI:
+                    pytest.skip(f"{exc}; run scripts/bootstrap.sh --scanners")
+
+
+@pytest.fixture(autouse=True)
+def ci_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Gate runs fail closed without inheriting the caller's revision range.
+
+    Pre-commit exports these refs for the real repository. They cannot resolve
+    in the throwaway repositories used by these tests, and can change which
+    fixture commits a differential gate examines.
+    """
+    monkeypatch.delenv("CX_DUP_BASE_REF", raising=False)
+    monkeypatch.delenv("PRE_COMMIT_FROM_REF", raising=False)
+    monkeypatch.setenv("CI", "true")
 
 
 @pytest.fixture

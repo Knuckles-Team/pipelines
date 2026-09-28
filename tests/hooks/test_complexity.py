@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
 from tests.hooks.conftest import Repo, branchy
+
+pytestmark = pytest.mark.scanner("cccc")
 
 
 def test_staged_gate_fires_on_a_new_function_over_the_cyclomatic_cap(repo: Repo) -> None:

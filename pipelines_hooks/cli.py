@@ -6,7 +6,8 @@ import importlib
 import sys
 from collections.abc import Sequence
 
-from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.errors import CannotRun, Unavailable
+from pipelines_hooks.core.settings import setting
 
 #: Hook id -> module exposing ``main(argv: list[str]) -> int``.
 GATES: dict[str, str] = {
@@ -21,7 +22,6 @@ GATES: dict[str, str] = {
     "secret-history": "pipelines_hooks.security.secret_history",
     "security-sanitizer": "pipelines_hooks.security.sanitizer",
     "tracked-privacy": "pipelines_hooks.privacy.gate",
-    "dependency-audit": "pipelines_hooks.audit.gate",
     "supply-chain": "pipelines_hooks.supply_chain.gate",
     "root-hygiene": "pipelines_hooks.hygiene.root",
     "gitignore-convergence": "pipelines_hooks.hygiene.gitignore",
@@ -36,15 +36,29 @@ GATES: dict[str, str] = {
     "env-sprawl": "pipelines_hooks.code.env_sprawl",
     "stdout-writes": "pipelines_hooks.code.stdout_writes",
     "public-surface": "pipelines_hooks.docs.public_surface",
-    "ci-gate-replica": "pipelines_hooks.ci_replica.gate",
 }
 
 
+def in_ci() -> bool:
+    """True under a CI runner (GitHub Actions and most CI systems export ``CI``)."""
+    return setting("CI").casefold() not in {"", "0", "false", "no"}
+
+
 def run_gate(gate: str, argv: Sequence[str]) -> int:
-    """Run one gate, mapping :class:`CannotRun` to exit status 2."""
+    """Run one gate, mapping :class:`CannotRun` to exit status 2.
+
+    A missing prerequisite (:class:`Unavailable`) fails closed only in CI;
+    locally it is reported as skipped with the command that installs it.
+    """
     module = importlib.import_module(GATES[gate])
     try:
         return int(module.main(list(argv)))
+    except Unavailable as exc:
+        if in_ci():
+            print(f"{gate}: CANNOT RUN: {exc}", file=sys.stderr)
+            return 2
+        print(f"SKIPPED ({gate}): {exc}; run {exc.remedy}", file=sys.stderr)
+        return 0
     except CannotRun as exc:
         print(f"{gate}: CANNOT RUN: {exc}", file=sys.stderr)
         return 2

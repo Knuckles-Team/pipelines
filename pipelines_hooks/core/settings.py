@@ -19,16 +19,11 @@ KNOWN_SETTINGS = {
     "PRE_COMMIT_FROM_REF": "remote revision of the range pre-commit is pushing",
     "PRE_COMMIT_HOME": "pre-commit cache directory (patch-safety)",
     "XDG_CACHE_HOME": "cache root used when PRE_COMMIT_HOME is unset",
-    "SECURITY_AUDIT_OFFLINE_POLICY": "'warn' downgrades an unreachable OSV locally",
-    "SSL_CERT_FILE": "PEM bundle for the OSV client",
-    "REQUESTS_CA_BUNDLE": "PEM bundle for the OSV client",
-    "SSL_CERT_DIR": "hashed CA directory for the OSV client",
     "AGENT_UTILITIES_PRIVACY_IDENTIFIERS": "declared identities for tracked-privacy",
     "USER": "ambient account name (tracked-privacy)",
     "LOGNAME": "ambient account name (tracked-privacy)",
     "USERNAME": "ambient account name (tracked-privacy)",
-    "CI_GATE_TMPDIR": "temporary directory of the local CI replica",
-    "CI_GATE_STEP_TIMEOUT_SECS": "per-step timeout of the local CI replica",
+    "CI": "set by CI runners: a missing tool or sibling checkout fails closed (exit 2)",
 }
 
 

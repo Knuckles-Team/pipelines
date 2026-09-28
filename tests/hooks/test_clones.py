@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from pathlib import Path
 
 from pipelines_hooks.clones.ledger import DistinctPair, partition
@@ -24,18 +26,21 @@ def _worker(name: str) -> str:
     )
 
 
+@pytest.mark.scanner("dupehound")
 def test_dupehound_fires_on_a_staged_structural_clone(repo: Repo) -> None:
     repo.commit({"pkg/original.py": _worker("summarise")})
     repo.stage({"pkg/copy.py": _worker("tally").replace("records", "rows").replace("totals", "sums")})
     assert repo.run("dupehound-changed") == 1
 
 
+@pytest.mark.scanner("dupehound")
 def test_dupehound_passes_distinct_changed_source(repo: Repo) -> None:
     repo.commit({"pkg/original.py": _worker("summarise")})
     repo.stage({"pkg/other.py": "def other(value):\n    return str(value).upper()\n"})
     assert repo.run("dupehound-changed") == 0
 
 
+@pytest.mark.scanner("jscpd")
 def test_jscpd_differential_fires_only_on_a_new_pair(repo: Repo) -> None:
     block = "".join(_worker(f"variant_{index}") for index in range(1))
     base = repo.commit({"pkg/original.py": block})
@@ -50,6 +55,7 @@ def _in_class(name: str) -> str:
     return f"class {name}:\n" + "".join(f"    {line}\n" for line in _worker("run").splitlines()) + "\n"
 
 
+@pytest.mark.scanner("jscpd")
 def test_jscpd_same_file_pair_survives_a_line_shift_but_not_a_new_copy(repo: Repo) -> None:
     pair = _in_class("First") + _in_class("Second")
     base = repo.commit({"pkg/both.py": pair})

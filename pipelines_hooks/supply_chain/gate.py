@@ -12,7 +12,7 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.errors import CannotRun, Unavailable
 from pipelines_hooks.supply_chain import containers, precommit, workflows
 from pipelines_hooks.supply_chain.dependencies import dependency_findings, installer_findings
 from pipelines_hooks.supply_chain.finding import Finding, Source
@@ -74,12 +74,25 @@ def inspect(repository: Path, fleet_root: Path, *, snapshot: SnapshotBudget | No
     return findings + [f for found in inspected for f in found], len(inspected)
 
 
+def _require_sibling(path: Path, what: str) -> None:
+    """A fleet/snapshot input that lives outside this checkout must be present."""
+    if not path.exists():
+        raise Unavailable(f"{what} {path} is not checked out")
+
+
 def _repositories(arguments: argparse.Namespace) -> tuple[Path, tuple[Path, ...], SnapshotBudget | None]:
     if arguments.source_snapshot_root:
-        root, repositories = resolve_snapshot_repositories(Path(arguments.source_snapshot_root), Path(arguments.snapshot_workspace))
+        providers, workspace = Path(arguments.source_snapshot_root), Path(arguments.snapshot_workspace)
+        _require_sibling(providers, "source snapshot root")
+        _require_sibling(workspace, "snapshot workspace")
+        root, repositories = resolve_snapshot_repositories(providers, workspace)
         return root, repositories, SnapshotBudget()
+    if arguments.fleet_root:
+        _require_sibling(Path(arguments.fleet_root), "fleet root")
     fleet_root = Path(arguments.fleet_root or arguments.root).resolve()
     repositories = discover_repositories(fleet_root)
+    if not repositories and arguments.fleet_root:
+        raise Unavailable(f"no Git repositories are checked out under the fleet root {fleet_root}")
     if not repositories:
         raise CannotRun("no Git repositories were discovered")
     return fleet_root, repositories, None

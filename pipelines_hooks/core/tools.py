@@ -16,7 +16,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.errors import SCANNERS_REMEDY, CannotRun, Unavailable
 from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.core.kiss_fork import require_fork_build
 from pipelines_hooks.core.settings import setting
@@ -58,9 +58,10 @@ def resolve(tool: str) -> str:
     found = shutil.which(tool)
     if found:
         return found
-    raise CannotRun(
+    raise Unavailable(
         f"{tool} is not installed; install the pinned {PINNED_VERSIONS[tool]} "
-        "binary (hooks never install scanners)"
+        "binary (hooks never install scanners)",
+        remedy=SCANNERS_REMEDY,
     )
 
 

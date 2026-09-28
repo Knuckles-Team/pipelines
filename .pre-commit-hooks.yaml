@@ -5,8 +5,11 @@
 #
 # Consumers pin `rev:` to a full commit SHA and choose each hook's stages.
 # Native scanners (cccc, kiss, dupehound, jscpd) must already be installed at
-# the pinned versions; hooks never install them. kiss must be the pinned fork
-# build (pipelines_hooks/core/kiss_fork.py), proven by a behavioural probe.
+# the pinned versions (scripts/install_scanners.sh); hooks never install them.
+# kiss must be the pinned fork build (pipelines_hooks/core/kiss_fork.py), proven
+# by a behavioural probe. A gate whose scanner or sibling checkout is absent
+# fails closed (exit 2) when $CI is set; locally it prints
+# `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and exits 0.
 
 # --- complexity (cccc 1.6.0) ------------------------------------------------
 - id: complexity-staged
@@ -85,12 +88,6 @@
   language: python
   pass_filenames: false
   always_run: true
-- id: dependency-audit
-  name: Dependency CVE audit (OSV) against the risk-acceptance ledger
-  entry: pipelines-hook dependency-audit
-  language: python
-  pass_filenames: false
-  files: ^(uv\.lock|pyproject\.toml|\.config/security-audit-allow\.txt)$
 - id: supply-chain
   name: Immutable workflow, container and dependency sources
   entry: pipelines-hook supply-chain
@@ -176,17 +173,3 @@
   language: python
   pass_filenames: false
   always_run: true
-# --- CI replica -------------------------------------------------------------
-- id: ci-gate-replica-consistency
-  name: CI gate replica - every workflow and job classified
-  entry: pipelines-hook ci-gate-replica --consistency-check
-  language: python
-  pass_filenames: false
-  always_run: true
-- id: ci-gate-replica
-  name: CI gate replica - replay the executable workflow jobs locally
-  entry: pipelines-hook ci-gate-replica
-  language: python
-  pass_filenames: false
-  always_run: true
-  require_serial: true

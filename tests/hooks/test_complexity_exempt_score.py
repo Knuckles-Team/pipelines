@@ -23,6 +23,8 @@ both caps, not exempt) -- the exact edit this class of bug wrongly blocked.
 
 from __future__ import annotations
 
+import pytest
+
 from tests.hooks.conftest import Repo, branchy
 
 HANDLE_SHEX_VALIDATE_COMMON = """
@@ -83,6 +85,8 @@ HANDLE_SHEX_VALIDATE_SIMPLIFIED = HANDLE_SHEX_VALIDATE_COMMON + """\
     )
 }
 """
+
+pytestmark = pytest.mark.scanner("cccc")
 
 
 def _dispatch(arms: int, extra: str = "") -> str:

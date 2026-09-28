@@ -1,8 +1,10 @@
-"""Validate the public README and current-state AGENTS contract.
+"""public-surface: the README (and AGENTS.md when present) point at things that exist.
 
-The gate is intentionally offline.  Badge URLs and Pages links are checked
-for canonical syntax and repository containment; reachability is a CI/Pages
-responsibility, not a non-deterministic pre-commit side effect.
+The gate checks only what breaks for a reader: a missing README, a relative
+link or image whose target is absent or outside the repository, a link with a
+non-web URL scheme, and a README that never says how to install or start the
+project. Wording, length and section layout are review matters, not gates.
+The gate is offline: web links are not fetched.
 """
 
 from __future__ import annotations
@@ -12,21 +14,8 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
-from pipelines_hooks.docs.public_surface_config import (
-    PublicSurfaceConfig,
-    load_public_surface_config,
-)
-from pipelines_hooks.docs.public_surface_constants import LINK_RE
-from pipelines_hooks.docs.public_surface_links import link_destination, local_link_findings
-from pipelines_hooks.docs.public_surface_text import (
-    badge_findings,
-    forbidden_findings,
-    h1_count,
-    line_findings,
-    required_headings,
-)
+from pipelines_hooks.docs.public_surface_links import local_link_findings
 from pipelines_hooks.docs.public_surface_quickstart import findings as quick_start_findings
-from pipelines_hooks.docs.public_surface_structure import flow_findings, quick_start_body
 
 
 def _read(root: Path, name: str) -> str | None:
@@ -39,63 +28,15 @@ def _read(root: Path, name: str) -> str | None:
         raise CannotRun(f"cannot read {name}: {exc}") from exc
 
 
-def _pages_finding(readme: str, config: PublicSurfaceConfig) -> list[str]:
-    links = {
-        link_destination(match.group(1)).rstrip("/") or "/"
-        for match in LINK_RE.finditer(readme)
-    }
-    if config.pages_url not in links:
-        return [f"README.md must link to the configured Pages URL {config.pages_url!r}"]
-    return []
-
-
-def _readme_findings(root: Path, readme: str, config: PublicSurfaceConfig) -> list[str]:
-    findings = line_findings("README.md", readme, agents=False)
-    count = h1_count(readme)
-    if count != 1:
-        findings.append(f"README.md must contain exactly one H1 (found {count})")
-    findings.extend(flow_findings(readme))
-    findings.extend(
-        quick_start_findings(
-            quick_start_body(readme),
-            repository=config.repository,
-            distribution=config.distribution,
-        )
-    )
-    findings.extend(badge_findings(readme, config))
-    findings.extend(_pages_finding(readme, config))
-    findings.extend(local_link_findings(root, readme))
-    findings.extend(forbidden_findings("README.md", readme))
-    return findings
-
-
-def _agents_findings(root: Path, agents: str) -> list[str]:
-    findings = line_findings("AGENTS.md", agents, agents=True)
-    count = h1_count(agents)
-    if count != 1:
-        findings.append(f"AGENTS.md must contain exactly one H1 (found {count})")
-    missing = required_headings(agents, agents=True)
-    if missing:
-        findings.append("AGENTS.md is missing required durable heading(s): " + ", ".join(missing))
-    findings.extend(local_link_findings(root, agents))
-    findings.extend(forbidden_findings("AGENTS.md", agents))
-    return findings
-
-
 def validate(root: Path) -> list[str]:
     """Return all public-surface findings for ``root``."""
-    config = load_public_surface_config(root)
     readme = _read(root, "README.md")
-    agents = _read(root, "AGENTS.md")
-    findings: list[str] = []
     if readme is None:
-        findings.append("README.md is required")
-    else:
-        findings.extend(_readme_findings(root, readme, config))
-    if agents is None:
-        findings.append("AGENTS.md is required")
-    else:
-        findings.extend(_agents_findings(root, agents))
+        return ["README.md is required"]
+    findings = quick_start_findings(readme) + local_link_findings(root, readme, name="README.md")
+    agents = _read(root, "AGENTS.md")
+    if agents is not None:
+        findings += local_link_findings(root, agents, name="AGENTS.md")
     return findings
 
 
@@ -104,9 +45,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     findings = validate(repo_root(parser.parse_args(argv).root))
     if not findings:
-        print("public surface: clean (README.md and AGENTS.md)")
+        print("public surface: clean")
         return 0
-    print("FAIL: public README/AGENTS surface contract.")
+    print("FAIL: public README/AGENTS surface.")
     for finding in findings:
         print(f"  - {finding}")
     return 1

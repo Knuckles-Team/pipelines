@@ -27,8 +27,8 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 ## Key capabilities
 
 - Repository-local TOML configuration with strict unknown-key validation.
-- Security, privacy, supply-chain, hygiene, code-shape, clone, and CI-replica gates.
-- A public README/AGENTS surface contract for consistent fleet documentation.
+- Security, privacy, supply-chain, hygiene, code-shape, and clone gates.
+- A public-surface gate that catches dead README/AGENTS links and a missing quick start.
 - Reusable GitHub workflows pinned by callers to reviewed immutable commits.
 - Pages readiness and shared MkDocs theme assets for deeper documentation.
 
@@ -36,29 +36,19 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts.
 
-The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration and the CI replica contract are described in the Pages reference; the public-surface gate validates their concise entry points without making live HTTP requests.
+The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration is described in the Pages reference.
 
 ## Architecture
 
-The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict.
+The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict. A gate whose native scanner or sibling checkout is absent fails closed with two when `CI` is set; locally it prints `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and returns zero.
 
-File inputs live under `.config/`, never at the repository root: `.config/repo-layout.toml` (root-hygiene allowlist), `.config/kiss.toml` (KISS thresholds), `.config/dupehound-distinct.toml` (reviewed non-clone register) and `.config/security-audit-allow.txt` (risk-acceptance ledger). A copy left at the retired root location fails the gate with exit status two.
-
-Public documentation checks are configured per repository:
-
-```toml
-[tool.pipelines_hooks.public_surface]
-repository = "Knuckles-Team/example"
-distribution = "example"  # omit when the project has no PyPI distribution
-pages_url = "https://knuckles-team.github.io/example/"
-mcp_server = false
-```
+File inputs live under `.config/`, never at the repository root: `.config/repo-layout.toml` (root-hygiene allowlist), `.config/kiss.toml` (KISS thresholds) and `.config/dupehound-distinct.toml` (reviewed non-clone register). A copy left at the retired root location fails the gate with exit status two.
 
 Reusable workflows are called by another repository's own GitHub Actions workflow. They run with that caller's checkout, permissions, and secrets. A caller pins first-party workflows to a full commit SHA and third-party actions to reviewed immutable revisions.
 
 ## Quick start
 
-Install the hook package, then run the public-surface check from a configured repository:
+Install the hook package, then run the public-surface check from a repository:
 
 ```bash
 python -m pip install pipelines-hooks
@@ -75,14 +65,16 @@ The Pages documentation linked above has the complete hook catalogue and workflo
 
 ## Contributing
 
-Clone the repository, install the locked development environment, and run focused tests before the complete suite:
+Clone the repository, run the bootstrap (locked environment, test dependencies and git hooks; add `--scanners` for the native scanners), and run focused tests before the complete suite:
 
 ```bash
-uv sync --locked
-uv run pytest -q tests/hooks tests/test_pages_readiness.py
-uv run pytest -q
-pre-commit run -c .config/pre-commit.yaml --all-files
+scripts/bootstrap.sh
+uv run --frozen python -m pytest -q tests/hooks tests/test_pages_readiness.py
+uv run --frozen python -m pytest -q
+uvx pre-commit run --config .config/pre-commit.yaml --all-files
 ```
+
+Open a pull request against `main` from a topic branch; CI runs the same pre-commit configuration.
 
 Every new hook invariant needs positive and adversarial fixtures. Workflow changes need contract tests for inputs and permissions. Stage only reviewed files and keep generated environment output untracked.
 

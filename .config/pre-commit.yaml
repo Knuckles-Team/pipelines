@@ -6,9 +6,6 @@
 # Shared hooks NOT run here, and why:
 #   stdout-writes -- this repository serves no stdio JSON-RPC surface; the hook
 #                    package is a CLI whose output is its interface.
-#   ci-gate-replica (full replay) -- every workflow is a reusable
-#                    `workflow_call` definition with no locally executable job;
-#                    ci-gate-replica-consistency still classifies every job.
 default_install_hook_types: [pre-commit, pre-push]
 default_stages: [pre-commit]
 repos:
@@ -113,12 +110,6 @@ repos:
     language: system
     pass_filenames: false
     always_run: true
-  - id: dependency-audit
-    name: Dependency CVE audit (OSV)
-    entry: uv run --frozen --quiet pipelines-hook dependency-audit
-    language: system
-    pass_filenames: false
-    files: ^(uv\.lock|pyproject\.toml|\.config/security-audit-allow\.txt)$
   - id: supply-chain
     name: Immutable workflow, container and dependency sources
     entry: uv run --frozen --quiet pipelines-hook supply-chain
@@ -193,12 +184,6 @@ repos:
   - id: public-surface
     name: Public README/AGENTS surface contract
     entry: uv run --frozen --quiet pipelines-hook public-surface
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: ci-gate-replica-consistency
-    name: CI gate replica - every workflow and job classified
-    entry: uv run --frozen --quiet pipelines-hook ci-gate-replica --consistency-check
     language: system
     pass_filenames: false
     always_run: true

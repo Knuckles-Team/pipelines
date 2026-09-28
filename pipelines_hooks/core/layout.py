@@ -16,14 +16,12 @@ CONFIG_DIR = ".config"
 REPO_LAYOUT = f"{CONFIG_DIR}/repo-layout.toml"
 KISS_CONFIG = f"{CONFIG_DIR}/kiss.toml"
 DUPEHOUND_DISTINCT = f"{CONFIG_DIR}/dupehound-distinct.toml"
-SECURITY_AUDIT_ALLOW = f"{CONFIG_DIR}/security-audit-allow.txt"
 
 #: Canonical path -> the retired root location it replaced.
 RETIRED = {
     REPO_LAYOUT: ".repo-layout.toml",
     KISS_CONFIG: ".kiss/kiss.toml",
     DUPEHOUND_DISTINCT: "dupehound-distinct.toml",
-    SECURITY_AUDIT_ALLOW: ".security-audit-allow.txt",
 }
 
 
