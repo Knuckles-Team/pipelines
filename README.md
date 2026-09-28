@@ -28,7 +28,7 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 - Repository-local TOML configuration with strict unknown-key validation.
 - Security, privacy, supply-chain, hygiene, code-shape, and clone gates.
-- A public README/AGENTS surface contract for consistent fleet documentation.
+- A public-surface gate that catches dead README/AGENTS links and a missing quick start.
 - Reusable GitHub workflows pinned by callers to reviewed immutable commits.
 - Pages readiness and shared MkDocs theme assets for deeper documentation.
 
@@ -36,7 +36,7 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts.
 
-The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration is described in the Pages reference; the public-surface gate validates their concise entry points without making live HTTP requests.
+The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration is described in the Pages reference.
 
 ## Architecture
 
@@ -44,21 +44,11 @@ The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are 
 
 File inputs live under `.config/`, never at the repository root: `.config/repo-layout.toml` (root-hygiene allowlist), `.config/kiss.toml` (KISS thresholds), `.config/dupehound-distinct.toml` (reviewed non-clone register) and `.config/security-audit-allow.txt` (risk-acceptance ledger). A copy left at the retired root location fails the gate with exit status two.
 
-Public documentation checks are configured per repository:
-
-```toml
-[tool.pipelines_hooks.public_surface]
-repository = "Knuckles-Team/example"
-distribution = "example"  # omit when the project has no PyPI distribution
-pages_url = "https://knuckles-team.github.io/example/"
-mcp_server = false
-```
-
 Reusable workflows are called by another repository's own GitHub Actions workflow. They run with that caller's checkout, permissions, and secrets. A caller pins first-party workflows to a full commit SHA and third-party actions to reviewed immutable revisions.
 
 ## Quick start
 
-Install the hook package, then run the public-surface check from a configured repository:
+Install the hook package, then run the public-surface check from a repository:
 
 ```bash
 python -m pip install pipelines-hooks

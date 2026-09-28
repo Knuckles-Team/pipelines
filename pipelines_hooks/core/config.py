@@ -23,6 +23,7 @@ SECTIONS: dict[str, frozenset[str]] = {
     "kiss": frozenset({"paths"}),
     "env_sprawl": frozenset({"allow_files"}),
     "stdout_writes": frozenset({"served_paths"}),
+    # No longer read (the public-surface gate needs no identity); still accepted.
     "public_surface": frozenset({"repository", "distribution", "pages_url", "mcp_server"}),
     "stubs": frozenset({"declared_seams"}),
     # Retired with the ci-gate-replica hooks (CI runs pre-commit directly);

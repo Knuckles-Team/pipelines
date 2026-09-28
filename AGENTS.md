@@ -40,9 +40,10 @@ Every gate returns zero for clean, one for findings, and two when it cannot
 produce a trustworthy verdict. A missing native scanner or sibling checkout
 (`pipelines_hooks.core.errors.Unavailable`) is exit two only when `CI` is set;
 locally the command line prints `SKIPPED (<gate>)` with the install command and
-returns zero. The public-surface gate checks README and AGENTS
-structure, canonical offline badges, contained local links, Pages
-discoverability, and absence of checkout or planning details. No network
+returns zero. The public-surface gate checks only reader-visible
+breakage: a missing README, relative links or images in README/AGENTS that
+point nowhere or outside the repository, and a README with no install or
+quick-start path. No network
 request is made by a local documentation gate.
 
 Workflow changes also receive YAML and contract validation. CI builds the
