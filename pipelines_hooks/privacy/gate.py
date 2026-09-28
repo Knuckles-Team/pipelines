@@ -1,8 +1,9 @@
 """tracked-privacy gate: public text artifacts, runtime source, and the identity catalog.
 
 The catalog is REQUIRED (``--identity-catalog``, default the operator's
-``agent-utilities/governance/prohibited-identities.json`` user config file); a
-missing or malformed catalog is exit 2, never a silently narrower scan. The
+``agent-utilities/governance/prohibited-identities.json`` user config file) and
+is never replaced by a silently narrower scan: a malformed catalog is exit 2; an
+absent one is a missing prerequisite (exit 2 in CI, a visible skip locally). The
 absolute maximum is zero findings: there is no count-based allowance.
 """
 
@@ -16,7 +17,7 @@ from pathlib import Path
 
 import platformdirs
 
-from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.errors import CannotRun, Unavailable
 from pipelines_hooks.privacy import classify, inventory
 from pipelines_hooks.privacy.identities import derive_local_identifiers
 from pipelines_hooks.privacy.identity_catalog import IdentityPolicyError, load_identity_catalog
@@ -70,6 +71,11 @@ def scan(root: Path, identities: tuple[bytes, ...]) -> list[tuple[str, int, str,
 
 
 def _catalog(path: Path) -> tuple[bytes, ...]:
+    if not path.exists():
+        raise Unavailable(
+            f"the identity catalog {path} is not installed",
+            remedy="pipelines-hook tracked-privacy --identity-catalog <catalog.json>",
+        )
     try:
         return load_identity_catalog(path)
     except (OSError, IdentityPolicyError) as exc:

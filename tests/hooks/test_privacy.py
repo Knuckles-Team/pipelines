@@ -41,3 +41,15 @@ def test_privacy_fires_on_a_catalog_identity_in_a_file_body(repo: Repo, catalog:
 
 def test_privacy_cannot_run_without_its_catalog(repo: Repo, tmp_path: Path) -> None:
     assert repo.run("tracked-privacy", "--identity-catalog", str(tmp_path / "absent.json")) == 2
+
+
+def test_privacy_skips_locally_without_its_catalog(repo: Repo, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("CI")
+    assert repo.run("tracked-privacy", "--identity-catalog", str(tmp_path / "absent.json")) == 0
+
+
+def test_a_malformed_catalog_is_not_downgraded_locally(repo: Repo, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("CI")
+    malformed = tmp_path / "catalog.json"
+    malformed.write_text("{not json", encoding="utf-8")
+    assert repo.run("tracked-privacy", "--identity-catalog", str(malformed)) == 2
