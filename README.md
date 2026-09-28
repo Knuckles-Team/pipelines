@@ -34,7 +34,7 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 ## Documentation
 
-The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks.
+The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts.
 
 The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration and the CI replica contract are described in the Pages reference; the public-surface gate validates their concise entry points without making live HTTP requests.
 
