@@ -2,7 +2,7 @@
 
 Every gate test plants a violation and proves the gate fires (exit 1), then
 proves it passes on a clean fixture (exit 0). Gates run the real pinned
-scanners; nothing is mocked except the OSV network client.
+scanners; nothing is mocked.
 """
 
 from __future__ import annotations

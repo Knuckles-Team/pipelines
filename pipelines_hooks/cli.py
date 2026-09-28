@@ -22,7 +22,6 @@ GATES: dict[str, str] = {
     "secret-history": "pipelines_hooks.security.secret_history",
     "security-sanitizer": "pipelines_hooks.security.sanitizer",
     "tracked-privacy": "pipelines_hooks.privacy.gate",
-    "dependency-audit": "pipelines_hooks.audit.gate",
     "supply-chain": "pipelines_hooks.supply_chain.gate",
     "root-hygiene": "pipelines_hooks.hygiene.root",
     "gitignore-convergence": "pipelines_hooks.hygiene.gitignore",
