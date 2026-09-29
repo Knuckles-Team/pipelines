@@ -30,27 +30,38 @@ def _repository_blocks(lines: list[str]) -> list[tuple[int, str, list[tuple[int,
     return blocks
 
 
+def _revision(body: list[tuple[int, str]]) -> tuple[int, str] | None:
+    """``(line, revision)`` of the first ``rev:`` in a repository block, if any."""
+    return next(((n, m.group(1).strip("\"'")) for n, line in body if (m := _REV_RE.match(line))), None)
+
+
+def _pipelines_revision_finding(source: Source, number: int, revision: tuple[int, str] | None) -> Finding | None:
+    if revision is not None and revision[1] == "main":
+        return None
+    return source.at_line(
+        revision[0] if revision else number,
+        rule="SC-HOOK-003",
+        message="Knuckles-Team/pipelines pre-commit hook must be pinned to rev: main; a commit SHA or tag is rejected",
+    )
+
+
+def _external_revision_finding(source: Source, number: int, revision: tuple[int, str] | None) -> Finding | None:
+    if revision is None:
+        return source.at_line(number, rule="SC-HOOK-001", message="external pre-commit hook repository has no immutable revision")
+    if not _SHA_RE.fullmatch(revision[1]):
+        return source.at_line(revision[0], rule="SC-HOOK-001", message="external pre-commit hook is not pinned to a full commit SHA")
+    return None
+
+
 def _revision_findings(source: Source) -> list[Finding]:
     findings = []
     for number, repository, body in _repository_blocks(source.text.splitlines()):
         if repository in {"local", "meta"}:
             continue
-        revision = next(((n, m.group(1).strip("\"'")) for n, line in body if (m := _REV_RE.match(line))), None)
-        if _PIPELINES_HOOK_RE.match(repository):
-            if revision is None or revision[1] != "main":
-                line = revision[0] if revision else number
-                findings.append(
-                    source.at_line(
-                        line,
-                        rule="SC-HOOK-003",
-                        message="Knuckles-Team/pipelines pre-commit hook must be pinned to rev: main; a commit SHA or tag is rejected",
-                    )
-                )
-            continue
-        if revision is None:
-            findings.append(source.at_line(number, rule="SC-HOOK-001", message="external pre-commit hook repository has no immutable revision"))
-        elif not _SHA_RE.fullmatch(revision[1]):
-            findings.append(source.at_line(revision[0], rule="SC-HOOK-001", message="external pre-commit hook is not pinned to a full commit SHA"))
+        check = _pipelines_revision_finding if _PIPELINES_HOOK_RE.match(repository) else _external_revision_finding
+        finding = check(source, number, _revision(body))
+        if finding is not None:
+            findings.append(finding)
     return findings
 
 

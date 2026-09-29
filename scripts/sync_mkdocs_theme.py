@@ -70,6 +70,17 @@ def _contained(root: Path, relative: Path, label: str) -> Path:
     return result
 
 
+def _check_file(destination: Path, expected: bytes, repository: Path) -> str | None:
+    """Describe how ``destination`` diverges from ``expected``, or ``None`` when it matches."""
+    try:
+        actual = destination.read_bytes()
+    except OSError:
+        return f"missing generated file: {destination.relative_to(repository)}"
+    if actual != expected:
+        return f"generated file differs: {destination.relative_to(repository)}"
+    return None
+
+
 def sync_theme(
     *,
     source_root: Path,
@@ -94,13 +105,9 @@ def sync_theme(
         destination = _contained(destination_root, Path(item.destination), item.destination)
         expected = source_file.read_bytes()
         if mode == "check":
-            try:
-                actual = destination.read_bytes()
-            except OSError:
-                mismatches.append(f"missing generated file: {destination.relative_to(repository)}")
-            else:
-                if actual != expected:
-                    mismatches.append(f"generated file differs: {destination.relative_to(repository)}")
+            mismatch = _check_file(destination, expected, repository)
+            if mismatch:
+                mismatches.append(mismatch)
             continue
 
         destination.parent.mkdir(parents=True, exist_ok=True)
