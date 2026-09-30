@@ -181,3 +181,9 @@ def test_hardlinks_and_directories_rejected(tmp_path):
     path.mkdir()
     with pytest.raises(ValueError):
         publication.staged(tmp_path, "example", "1.0")
+
+
+def test_redirected_404_is_not_absence():
+    error = HTTPError("https://another.example/json", 404, "test", {}, None)
+    with patch.object(publication, "urlopen", side_effect=error), pytest.raises(ValueError):
+        publication.missing(EXPECTED)

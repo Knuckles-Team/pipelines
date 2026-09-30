@@ -77,6 +77,7 @@ def remote_files(expected: dict) -> dict[str, str]:
             require(response.geturl() == url, "unexpected index redirect")
             data = json.load(response)
     except HTTPError as error:
+        require(error.geturl() == url, "unexpected index error redirect")
         if error.code == 404:
             return {}
         raise
