@@ -2,8 +2,9 @@ name: Prove exact wheel runtime readiness
 description: Fail closed unless every explicit runtime profile installs from public PyPI.
 inputs:
   runtime-profiles:
-    description: JSON array including base and every advertised runtime extra.
-    required: true
+    description: Additional runtime extras as JSON; base and declared mcp/agent/all are always proven.
+    required: false
+    default: '[]'
   phase:
     description: check a native wheel, prove a source rebuild, or aggregate all Maturin targets.
     default: check

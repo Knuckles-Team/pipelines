@@ -5,8 +5,9 @@ description: >-
   build one target each with no platform-specific step in between.
 inputs:
   runtime-profiles:
-    description: Explicit base and advertised runtime profiles.
-    required: true
+    description: Additional runtime extras as JSON; base and declared mcp/agent/all are always proven.
+    required: false
+    default: '[]'
   readiness-target:
     description: Closed publication target identity.
     required: true

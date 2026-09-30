@@ -1,4 +1,4 @@
-# Python wheel release readiness (draft)
+# Python wheel release readiness
 
 A successful code gate is not proof that a package can be installed from PyPI.
 In particular, tests against pinned sibling sources may pass before those
@@ -24,11 +24,39 @@ fleet-name allowlist or an optional sibling checker. There is no empty/missing
 fleet scope that can turn this action into a successful no-op. Missing scripts,
 missing proof, malformed metadata, resolver failures, and index errors block.
 
-`runtime-profiles` is a required JSON array. `base` is mandatory; other entries
-must be actual wheel extras. When the wheel declares `mcp`, `agent`, or `all`,
-each must be included. Test/development extras are not inferred as advertised
-runtime profiles. Other advertised profiles must be explicitly supplied by the
-consumer. Each profile installs independently in its own fresh environment.
+`runtime-profiles` is an optional JSON array of additional runtime extras,
+defaulting to `[]`. The exact wheel's metadata always selects `base` plus each
+of its declared `mcp`, `agent`, and `all` extras. Explicit inputs are additive;
+`["base"]` cannot omit a declared standard runtime profile. Existing full lists
+remain valid. Unknown, malformed, or duplicate aliases fail. Other advertised
+runtime extras must still be explicitly supplied. Test/development extras are
+not inferred. Each selected profile installs in a separate fresh environment.
+Verification recomputes the profile set from those same digest-bound wheel bytes.
+
+## Central hook and caller wiring
+
+The pipelines hook catalogue owns `dependency-readiness` and its `[manual]`
+stage. Consumers keep an immutable `rev` and hook ID, without copying an entry,
+stage, or release policy paragraph. Link this document from consumer guidance.
+The hook invokes `repository_manager.release_readiness_hook` in an already
+prepared interpreter. Missing RM, empty/invalid fleet scope, index errors and
+overridden verdicts block locally as well as in CI. It never downloads a checker.
+Prepare RM in the hook environment using an explicitly pinned
+`additional_dependencies` entry, or supply `args: [--python, /prepared/python]`
+for an existing RM environment. That runtime reference is operator wiring, not
+an alternate policy source. An older RM lacking the strict entry point blocks.
+
+RM's existing `scripts/sweep_dependency_readiness_hook.py` owns reconciliation.
+Review its dry-run diff and all actual publisher paths before applying: package
+publishers must use immutable guarded workflows, and downstream runtime image
+publishing must depend on successful guarded package publication. The updater
+preserves custom entries for manual review. It does not audit arbitrary workflow
+scripts or claim that changing a hook makes a release ready.
+
+Necessary local references are the shared workflow SHA, the hook repository SHA,
+and any prepared RM runtime reference. Only nonstandard runtime extras need a
+profile input. Pinned consumers still require deliberate reference updates when
+the shared interface changes; centralization does not make immutable pins float.
 
 The guard runs only during publication, never in ordinary push/pre-push code
 gates. This is the narrow network exception documented in AGENTS.md, consistent
@@ -63,68 +91,19 @@ versions. Existing quality, tests, security, and source-provenance checks remain
 necessary. There is a small verification-to-upload interval; this prototype does
 not provide filesystem-level immutability against concurrent hostile mutation.
 
-## Draft implementation and acceptance status
+## Validation boundaries
 
-The resolver is now pinned to pip 25.1.1, including the exact public wheel
-SHA-256 in `resolver-pin.json`. Its bootstrap was exercised on CPython 3.13.15:
-the reviewed wheel was downloaded, verified, and installed into a fresh checker
-venv. Fresh-profile integration subsequently installed the exact synthetic wheel
-in four separate profile venvs, reverified their reports, and rebuilt the same
-wheel through a dependency-free backend in a fifth fresh build venv.
+Offline tests exercise the pinned resolver against synthetic index responses,
+profile closures, poisoned configuration, exact artifact and source identity,
+and target interpreter contracts. Fresh disposable environments validate a
+synthetic wheel and dependency-free source backend. These are not receipts for
+real consumer artifacts or native target execution.
 
-Maturin producer jobs now request native target receipts. The publisher requires
-exactly the existing four target identities and one sdist receipt; it validates
-source/contract identity, target interpreter and marker context, artifact bytes,
-profiles, runtime closure, and exact bundle membership. The sdist producer code
-safely extracts the exact archive, installs public build prerequisites, rebuilds
-one Linux CPython wheel, and runs the same runtime-profile proof on it. Rebuilt
-wheel bytes are separate evidence and are not uploaded as another release wheel.
-
-The focused offline suite has 116 passing tests. It exercises the actual pinned
-pip resolver with in-memory HTTP responses and no socket fallback, including
-base/mcp/agent/all closure, unavailable versions, transitive conflicts, direct
-sources, redirects, index errors, poisoned configuration, and preinstalled
-packages. A small synthetic wheel installation verifies that package startup
-files are not executed. A dependency-free Python backend exercises source-wheel
-rebuilding without any native ecosystem build.
-
-Source validation and aggregation require one root PKG-INFO with unique valid
-identity fields matching both the archive filename and rebuilt wheel. Invalid
-upload identity fails before any rebuild. Maturin selects CPython 3.13 explicitly
-inside Linux build containers and uses setup-python 3.13 on macOS/Windows,
-aligning producer selection with the checker without changing package Python
-requirements or ABI3 features.
-
-Source evidence now binds public build prerequisites to the exact archive's
-build-system requirements and rechecks their transitive closure. Runtime metadata
-includes normalized Requires-Python, so source/release range differences cannot
-be hidden by a shared compatible interpreter. Requested extras and explicit
-profiles use canonical case/hyphen/underscore/dot names; duplicate aliases fail.
-Windows file URLs use the pinned pip decoder, with alternate-root and UNC
-rejection tested under emulated Windows path semantics.
-
-These tests use synthetic target contexts; they are **not native execution
-receipts**. The implementation remains a draft and is not a consumer migration
-target. Remaining acceptance work is explicit:
-
-| Acceptance test | Status / category |
-| --- | --- |
-| Actual pinned resolver and adverse public-index responses | Focused offline integration passes; no live upstream availability claim |
-| Fresh profile venv creation, exact pinned resolver seeding, installation and receipt reverification as one end-to-end operation | Passed on CPython 3.13.15 with the exact hash-pinned pip wheel and four disposable profile venvs |
-| Source extraction, prerequisite closure, rebuild and source/release metadata binding | Focused synthetic and dependency-free backend tests pass; no native ecosystem build performed |
-| Native target interpreter/ABI, missing proof and wrong-platform rejection | Offline contracts pass; genuine target execution remains required at publication time |
-| Windows exact root file URL and canonical extras | Focused regressions pass; Windows filesystem semantics are emulated on Linux |
-| Every producer, aggregation and pre-publication/release verification path | Focused workflow contracts pass; full configured suite remains pending |
-| Full test suite and commit/manual hook suites at final head | 571 tests and manual stage pass with CI fail-closed behavior; commit stage passes in normal local mode, with the documented tracked-privacy skip because the operator catalog is absent. Strict commit mode stops on that missing catalog. Hosted CI remains required. |
-| Independent parent review, passing CI and immutable consumer pin | Pending; keep PR draft |
-
-The existing aarch64 producer cross-builds on x86_64. Its host cannot supply a
-native aarch64 runtime receipt, so publication deliberately remains blocked.
-This is a consumer publication requirement, not a reason to invent target proof
-or redesign infrastructure merely to test the guard. This branch changes no
-runner, image, security setting, or consumer. It does not overlap PR #7's Pages
-work. The bounded local validation slot is released after checks complete. No publication, deployment, workflow rerun, credential change, or
-native ecosystem build has occurred.
+A publisher must obtain genuine execution evidence for each required target.
+An aarch64 wheel cross-built on x86_64 cannot use its host's runtime receipt.
+The guard fails closed when native target proof is absent; this interface change
+does not deploy target infrastructure or relax that requirement. Source tests
+against pinned siblings likewise do not prove public-index availability.
 
 ## Safe consumer migration after the guard is ready
 
@@ -134,8 +113,8 @@ native ecosystem build has occurred.
    example `'["base", "mcp", "agent", "all"]'` when all are advertised.
 3. Move only the repository-manager `dependency-readiness` hook to `manual`
    RELEASE use. Keep every actual code, test, security, and quality gate intact.
-   Correct existing stale hook entries; do not rely on the current sweep to
-   replace them automatically.
+   Use the RM updater for recognized legacy entries after reviewing its diff;
+   custom entries require explicit review. Inherit the shared manual stage.
 4. Verify the consumer's configuration and workflow contracts offline using
    exact pinned sibling sources where needed. Real publication stays blocked
    until the declared versions exist publicly. In particular, agent-utilities

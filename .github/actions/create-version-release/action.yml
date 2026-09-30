@@ -10,8 +10,9 @@ inputs:
     description: Token used to create the release.
     required: true
   runtime-profiles:
-    description: Profiles whose exact wheel readiness must be reverified.
-    required: true
+    description: Additional runtime extras as JSON; base and declared mcp/agent/all are always proven.
+    required: false
+    default: '[]'
   files:
     description: Glob of release asset files to attach.
     required: false

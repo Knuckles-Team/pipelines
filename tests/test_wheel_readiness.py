@@ -61,15 +61,15 @@ def test_root_direct_dependencies_rejected_even_when_inactive(tmp_path, requires
         guard.metadata(path)
 
 
-@pytest.mark.parametrize("raw", ['[]', '["mcp"]', '["base","missing"]', '["base","base"]', 'null', '[1]'])
+@pytest.mark.parametrize("raw", ['', '["base","missing"]', '["base","base"]', 'null', '[1]', '{}'])
 def test_profiles_fail_closed(raw):
     with pytest.raises(ValueError):
         guard.profiles(raw, ["mcp"])
 
 
-def test_advertised_profiles_cannot_be_silently_omitted():
-    with pytest.raises(ValueError, match="advertised"):
-        guard.profiles('["base"]', ["mcp", "agent", "all", "dev"])
+@pytest.mark.parametrize("raw", ['[]', '["base"]', '["mcp"]'])
+def test_advertised_profiles_cannot_be_silently_omitted(raw):
+    assert guard.profiles(raw, ["mcp", "agent", "all", "dev"]) == ["agent", "all", "base", "mcp"]
     assert guard.profiles('["base","mcp","agent","all"]', ["mcp", "agent", "all", "dev"]) == ["agent", "all", "base", "mcp"]
 
 
@@ -175,7 +175,8 @@ def test_all_python_publication_paths_guard_before_upload_and_release():
     release = yaml.safe_load((ROOT / ".github/actions/create-version-release/action.yml").read_text())
     assert "readiness.py verify" in release["runs"]["steps"][0]["run"]
     for item in (python, release):
-        assert item["inputs"]["runtime-profiles"]["required"] is True
+        assert item["inputs"]["runtime-profiles"]["required"] is False
+        assert item["inputs"]["runtime-profiles"]["default"] == "[]"
 
 
 def test_transport_rejects_poisoned_origins_and_direct_candidates(tmp_path, monkeypatch):
@@ -305,3 +306,45 @@ def test_root_python_range_cannot_change_in_report(tmp_path):
     proof = report(path, dict(root, requires_python=">=3.12"))
     with pytest.raises(ValueError, match="Python requirement changed"):
         guard.validate_report(proof, path, root, "base")
+
+
+def test_default_profiles_bound_to_exact_wheel(tmp_path, monkeypatch):
+    path = wheel(tmp_path, extras=("MCP", "agent", "all", "dev", "runtime_extra"))
+    root = guard.metadata(path)
+    selected = guard.profiles('["Runtime.Extra"]', root["provides_extra"])
+    assert selected == ["agent", "all", "base", "mcp", "runtime-extra"]
+    item = {"sha256": guard.digest(path), "metadata": root, "profiles": selected,
+            "evidence": [{"profile": p, "report": report(path, root)} for p in selected]}
+    guard.verify_item(path, item, '["runtime-extra"]', guard.observed_context())
+    item["profiles"] = ["base"]
+    with pytest.raises(ValueError, match="profiles changed"):
+        guard.verify_item(path, item, '[]', guard.observed_context())
+    wheel(tmp_path, extras=("mcp",))
+    with pytest.raises(ValueError, match="wheel bytes changed"):
+        guard.verify_item(path, item, '[]', guard.observed_context())
+
+
+def test_profile_defaults_at_every_entrypoint():
+    paths = [*ROOT.glob(".github/actions/*/action.yml"),
+             ROOT / ".github/workflows/python_pipeline.yml",
+             ROOT / ".github/workflows/maturin_pipeline.yml"]
+    found = 0
+    for path in paths:
+        config = yaml.safe_load(path.read_text())
+        inputs = config.get("inputs", config.get(True, {}).get("workflow_call", {}).get("inputs", {}))
+        if "runtime-profiles" in inputs:
+            found += 1
+            assert inputs["runtime-profiles"]["default"] == "[]"
+            assert inputs["runtime-profiles"]["required"] is False
+    assert found == 6
+
+
+@pytest.mark.parametrize("extras", [["../bad"], ["bad extra"], [None]])
+def test_malformed_wheel_profiles_rejected(extras):
+    with pytest.raises(ValueError, match="invalid wheel extra"):
+        guard.profiles('[]', extras)
+
+
+def test_reserved_base_extra_cannot_hide_an_extra_closure():
+    with pytest.raises(ValueError, match="reserved base"):
+        guard.profiles('[]', ["BASE"])

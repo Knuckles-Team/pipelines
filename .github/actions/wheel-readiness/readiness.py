@@ -68,19 +68,22 @@ def identity() -> dict:
     return {"source_commit": source, "contract_commit": contract}
 
 
+def valid_profile_names(items: list) -> bool:
+    return all(isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9]+(?:[-_.][A-Za-z0-9]+)*", item)
+               for item in items)
+
+
 def profiles(raw: str, extras: list[str]) -> list[str]:
     selected = json.loads(raw)
-    require(isinstance(selected, list) and bool(selected), "runtime profiles must be explicit")
-    require(all(isinstance(item, str) for item in selected), "invalid runtime profile")
-    require(all(re.fullmatch(r"[A-Za-z0-9]+(?:[-_.][A-Za-z0-9]+)*", item) for item in selected),
-            "invalid runtime profile name")
+    require(isinstance(selected, list), "runtime profiles must be a JSON array")
+    require(valid_profile_names(selected), "invalid runtime profile name")
+    require(valid_profile_names(extras), "invalid wheel extra name")
     selected = [canonicalize_name(item) for item in selected]
     extras = [canonicalize_name(item) for item in extras]
+    require("base" not in extras, "wheel extra uses reserved base profile name")
     require(len(set(selected)) == len(selected), "duplicate runtime profile")
-    require("base" in selected, "base profile is mandatory")
     require(set(selected) <= {"base", *extras}, "unknown runtime extra")
-    require(ADVERTISED.intersection(extras) <= set(selected), "advertised runtime profile omitted")
-    return sorted(selected)
+    return sorted({"base", *ADVERTISED.intersection(extras), *selected})
 
 
 def metadata(path: Path, context: dict | None = None) -> dict:
@@ -313,7 +316,7 @@ def main() -> None:
     parser.add_argument("--source-evidence", type=Path, default=Path("source-evidence"))
     args = parser.parse_args()
     try:
-        raw = os.environ.get("RUNTIME_PROFILES", "")
+        raw = os.environ.get("RUNTIME_PROFILES", "[]")
         directory, receipt = args.directory.resolve(), args.receipt.resolve()
         if args.phase == "check":
             check(directory, receipt, raw)

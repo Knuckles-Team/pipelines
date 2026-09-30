@@ -4,6 +4,8 @@
 # holds the two in lockstep).
 #
 # Shared hooks NOT run here, and why:
+#   dependency-readiness -- release-only network check; full manual code validation
+#                           must stay offline. Publishers enforce exact wheel proof.
 #   stdout-writes -- this repository serves no stdio JSON-RPC surface; the hook
 #                    package is a CLI whose output is its interface.
 default_install_hook_types: [pre-commit, pre-push]
