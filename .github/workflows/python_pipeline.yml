@@ -3,13 +3,14 @@ name: Release Python Package
 on:
   workflow_call:
     inputs:
+      runtime-profiles:
+        description: JSON array containing base and advertised runtime extras (for example mcp, agent, all).
+        required: true
+        type: string
       web-assets:
         description: >-
           This package ships a Node/pnpm frontend (package.json) that must be
-          built before packaging. Also relaxes the composite publish action
-          to tolerate a missing requirements.txt and skip re-publishing a
-          version that already exists on PyPI -- the web-package variant
-          formerly split out as python_web_pipeline.yml.
+          built before packaging.
         required: false
         type: boolean
         default: false
@@ -81,5 +82,4 @@ jobs:
         with:
           pypi-token: ${{ secrets.PYPI_API_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          tolerate-missing-requirements: ${{ inputs.web-assets && 'true' || 'false' }}
-          twine-skip-existing: ${{ inputs.web-assets && 'false' || 'true' }}
+          runtime-profiles: ${{ inputs.runtime-profiles }}

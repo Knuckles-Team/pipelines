@@ -1,0 +1,28 @@
+name: Prove exact wheel runtime readiness
+description: Fail closed unless every explicit runtime profile resolves from public PyPI.
+inputs:
+  runtime-profiles:
+    description: JSON array including base and every advertised runtime extra.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Create isolated readiness interpreter
+      shell: bash
+      run: |
+        CHECKER_DIR=$(mktemp -d "$RUNNER_TEMP/wheel-checker.XXXXXXXX")
+        uv --no-config run --no-project --python 3.13 python -I -m venv "$CHECKER_DIR"
+        echo "READINESS_PYTHON=$CHECKER_DIR/bin/python" >> "$GITHUB_ENV"
+
+    - name: Resolve exact wheels and runtime profiles
+      shell: bash
+      env:
+        RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
+      run: '"$READINESS_PYTHON" -I "${{ github.action_path }}/readiness.py" check'
+
+    - name: Preserve release proof
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: release-readiness
+        path: release-readiness.json
+        if-no-files-found: error

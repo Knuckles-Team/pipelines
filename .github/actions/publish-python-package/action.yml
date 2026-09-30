@@ -2,10 +2,6 @@ name: Build, publish and release a Python package
 description: >-
   Build a Python package with uv, upload the wheel as a workflow artifact,
   publish it to PyPI with twine, and create a matching GitHub release.
-  Called by python_pipeline.yml's single job for both its plain and
-  web-assets (`web-assets: true`) variants, which differ only in whether a
-  missing requirements.txt is tolerated and whether twine skips an
-  already-published version.
 inputs:
   pypi-token:
     description: PyPI API token used by twine.
@@ -13,16 +9,9 @@ inputs:
   github-token:
     description: Token used to create the GitHub release.
     required: true
-  tolerate-missing-requirements:
-    description: >-
-      Continue when `uv pip install -r requirements.txt` fails (the web
-      pipeline package need not vendor its own requirements.txt).
-    required: false
-    default: 'false'
-  twine-skip-existing:
-    description: Pass twine --skip-existing (an idempotent re-trigger becomes a no-op).
-    required: false
-    default: 'true'
+  runtime-profiles:
+    description: JSON array containing base and every advertised runtime extra.
+    required: true
 runs:
   using: composite
   steps:
@@ -40,10 +29,8 @@ runs:
         # (e.g. litellm's PyO3 chain caps at cp313), failing release CI fleet-wide.
         uv venv --python 3.13 .venv
         source .venv/bin/activate
-        echo "Installing dependencies"
-        if [ "${{ inputs.tolerate-missing-requirements }}" = "true" ]; then
-          uv pip install -r requirements.txt || true
-        else
+        echo "Installing build prerequisites"
+        if [ -f requirements.txt ]; then
           uv pip install -r requirements.txt
         fi
         # Keep the publisher available for packages whose requirements file
@@ -51,7 +38,8 @@ runs:
         # the web-assets variant).
         uv pip install --require-hashes -r "${{ github.action_path }}/twine-requirements.txt"
         echo "Building package"
-        uv build
+        rm -rf dist
+        uv build --wheel
         BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
         LATEST_COMMIT="$SOURCE_COMMIT"
         echo "Last Commit: ${LATEST_COMMIT}"
@@ -69,6 +57,11 @@ runs:
       with:
         phase: after
 
+    - name: Prove wheel runtime readiness
+      uses: ./.pipeline-contract/.github/actions/wheel-readiness
+      with:
+        runtime-profiles: ${{ inputs.runtime-profiles }}
+
     - name: Upload Artifact
       id: upload_artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -78,15 +71,15 @@ runs:
         if-no-files-found: error
 
     - name: Publish package
+      env:
+        RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
       shell: bash
       run: |
-        if [ "${{ inputs.twine-skip-existing }}" = "true" ]; then
-          .venv/bin/twine upload --skip-existing dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
-        else
-          .venv/bin/twine upload dist/* --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
-        fi
+        "$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify
+        .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ dist/*.whl --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
 
     - name: Create Release
       uses: ./.pipeline-contract/.github/actions/create-version-release
       with:
         github-token: ${{ inputs.github-token }}
+        runtime-profiles: ${{ inputs.runtime-profiles }}

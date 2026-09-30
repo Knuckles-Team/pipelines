@@ -2,6 +2,11 @@ name: Release Maturin Package
 
 on:
   workflow_call:
+    inputs:
+      runtime-profiles:
+        description: Explicit JSON array of base and advertised runtime extras.
+        required: true
+        type: string
     secrets:
       PYPI_API_TOKEN:
         required: true
@@ -135,12 +140,20 @@ jobs:
       # future-proof path is build-then-publish: maturin builds the wheels (the
       # build jobs above, --out dist) and the official PyPA action uploads them
       # via twine. Same PYPI_API_TOKEN secret, so publishing keeps working.
-      # skip-existing keeps idempotent re-triggers a no-op.
+      - name: Prove wheel runtime readiness
+        uses: ./.pipeline-contract/.github/actions/wheel-readiness
+        with:
+          runtime-profiles: ${{ inputs.runtime-profiles }}
+
+      - name: Reverify exact upload bytes
+        env:
+          RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
+        run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify'
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: dist/
-          skip-existing: true
           password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create Release
@@ -148,3 +161,4 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: dist/*
+          runtime-profiles: ${{ inputs.runtime-profiles }}
