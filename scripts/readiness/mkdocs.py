@@ -43,17 +43,37 @@ def _mkdocs_text(root: Path) -> str | None:
         raise ReadinessTckError("mkdocs-unreadable") from exc
 
 
-def _top_level_mapping(document: yaml.Node) -> dict[str, yaml.Node]:
-    """Keep tagged nodes inert and reject ambiguous top-level declarations."""
-    if not isinstance(document, yaml.MappingNode):
+def _mapping_entries(document: yaml.Node):
+    """Require an ordinary root map; custom tags cannot supply defaults."""
+    if not isinstance(document, yaml.MappingNode) or document.tag != "tag:yaml.org,2002:map":
         _fail("mkdocs-mapping-required")
+    return document.value
+
+
+def _literal_key(node: yaml.Node) -> str:
+    """Reserve merge syntax and require string keys, including alias targets."""
+    if not isinstance(node, yaml.ScalarNode):
+        _fail("mkdocs-key-invalid")
+    if node.value == "<<":
+        _fail("mkdocs-merge-key")
+    if node.tag != "tag:yaml.org,2002:str":
+        _fail("mkdocs-key-invalid")
+    return node.value
+
+
+def _top_level_mapping(document: yaml.Node) -> dict[str, yaml.Node]:
+    """Read literal root keys only: no merge expansion or tagged construction.
+
+    Aliases resolve to nodes before validation. Unrelated nested values remain
+    inert, including their merges/tags/recursive aliases. Only a missing file,
+    empty document or absent literal key can select the caller's default.
+    """
     result = {}
-    for key_node, value_node in document.value:
-        if not isinstance(key_node, yaml.ScalarNode):
-            _fail("mkdocs-key-invalid")
-        if key_node.value in result:
+    for key_node, value_node in _mapping_entries(document):
+        key = _literal_key(key_node)
+        if key in result:
             _fail("mkdocs-duplicate-key")
-        result[key_node.value] = value_node
+        result[key] = value_node
     return result
 
 
@@ -64,10 +84,11 @@ def _top_level_node(document: yaml.Node | None, key: str) -> yaml.Node | None:
     return _top_level_mapping(document).get(key)
 
 
-def _docs_dir_node(document: yaml.Node | None) -> yaml.Node | None:
-    """Return the mapping's declared ``docs_dir`` value node, if any."""
-
-    return _top_level_node(document, "docs_dir")
+def _string_value(node: yaml.Node, reason: str) -> str:
+    """Authority values must be nonempty YAML strings, never custom tags."""
+    if not isinstance(node, yaml.ScalarNode) or node.tag != "tag:yaml.org,2002:str" or not node.value.strip():
+        _fail(reason)
+    return node.value
 
 
 def mkdocs_site_url(root: Path) -> str:
@@ -76,20 +97,16 @@ def mkdocs_site_url(root: Path) -> str:
     node = _top_level_node(_mkdocs_document(root), "site_url")
     if node is None:
         _fail("site-url-required")
-    if not isinstance(node, yaml.ScalarNode) or not node.value.strip():
-        _fail("site-url-invalid")
-    return node.value
+    return _string_value(node, "site-url-invalid")
 
 
 def mkdocs_docs_dir(root: Path) -> str | None:
     """Return the repository's declared ``docs_dir``, or ``None`` if absent."""
 
-    node = _docs_dir_node(_mkdocs_document(root))
+    node = _top_level_node(_mkdocs_document(root), "docs_dir")
     if node is None:
         return None
-    if not isinstance(node, yaml.ScalarNode) or not node.value.strip():
-        _fail("content-source-docs-dir-invalid")
-    return node.value
+    return _string_value(node, "content-source-docs-dir-invalid")
 
 
 def validate_content_source(root: str | Path, content_source: str) -> dict[str, Any]:

@@ -12,6 +12,11 @@ from pages_fleet_fixtures import declaration_file, fleet_fixture, revise
 @pytest.mark.parametrize("payload,reason", [
     ("docs_dir: docs\ndocs_dir: other\n", "mkdocs-duplicate-key"),
     ("docs_dir: [\n", "mkdocs-yaml-invalid"),
+    ("defaults: &d {docs_dir: other}\n<<: *d\n", "mkdocs-merge-key"),
+    ("defaults: &d {extra: {docs_dir: other}}\n<<: *d\n", "mkdocs-merge-key"),
+    ("docs_dir: docs\n<<: {docs_dir: other}\ndocs_dir: docs\n", "mkdocs-merge-key"),
+    ("!custom {site_name: Fixture}\n", "mkdocs-mapping-required"),
+    ("docs_dir: !custom docs\n", "content-source-docs-dir-invalid"),
 ])
 def test_invalid_mkdocs_yields_unverified_receipt(tmp_path, capsys, payload, reason):
     declaration = fleet_fixture(tmp_path)
