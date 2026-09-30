@@ -4,8 +4,9 @@ on:
   workflow_call:
     inputs:
       runtime-profiles:
-        description: JSON array containing base and advertised runtime extras (for example mcp, agent, all).
-        required: true
+        description: Additional runtime extras as JSON; base and declared mcp/agent/all are always proven.
+        required: false
+        default: '[]'
         type: string
       web-assets:
         description: >-

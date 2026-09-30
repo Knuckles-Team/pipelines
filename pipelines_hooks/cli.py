@@ -11,6 +11,7 @@ from pipelines_hooks.core.settings import setting
 
 #: Hook id -> module exposing ``main(argv: list[str]) -> int``.
 GATES: dict[str, str] = {
+    "dependency-readiness": "pipelines_hooks.release.dependency_readiness",
     "complexity-staged": "pipelines_hooks.complexity.staged",
     "complexity-census": "pipelines_hooks.complexity.census",
     "kiss-staged": "pipelines_hooks.kiss.staged",

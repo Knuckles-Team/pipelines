@@ -10,8 +10,9 @@ inputs:
     description: Token used to create the GitHub release.
     required: true
   runtime-profiles:
-    description: JSON array containing base and every advertised runtime extra.
-    required: true
+    description: Additional runtime extras as JSON; base and declared mcp/agent/all are always proven.
+    required: false
+    default: '[]'
 runs:
   using: composite
   steps:

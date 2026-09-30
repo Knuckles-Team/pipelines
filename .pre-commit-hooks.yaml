@@ -3,7 +3,8 @@
 # pyproject.toml [tool.pipelines_hooks] table, never in these definitions.
 # Exit codes: 0 clean, 1 findings, 2 the gate could not run.
 #
-# Consumers pin `rev:` to a full commit SHA and choose each hook's stages.
+# Consumers pin `rev:` to a full commit SHA. RELEASE readiness inherits manual
+# staging here; do not duplicate/override its policy in consumers.
 # Native scanners (cccc, kiss, dupehound, jscpd) must already be installed at
 # the pinned versions (scripts/install_scanners.sh); hooks never install them.
 # kiss must be the pinned fork build (pipelines_hooks/core/kiss_fork.py), proven
@@ -173,3 +174,13 @@
   language: python
   pass_filenames: false
   always_run: true
+
+# --- release-only index readiness (never an ordinary code gate) ------------
+- id: dependency-readiness
+  name: RELEASE dependency readiness (repository-manager)
+  entry: pipelines-hook dependency-readiness
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]

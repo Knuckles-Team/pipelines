@@ -18,7 +18,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/pipelines)
 ![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/pipelines)
 
-Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The package keeps policy in each consuming repository while one implementation provides deterministic local checks and release workflows.
+Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The package centralizes shared hook and release policy; consumers supply immutable references and repository-specific inputs.
 
 ## Overview
 
@@ -84,6 +84,6 @@ The package is distributed under the license declared by the project metadata. S
 
 ## Python publication readiness
 
-The draft [wheel readiness contract](docs/python-release-readiness.md) describes
-explicit runtime profiles, release-only public-index proof, and current merge
+The [wheel readiness contract](docs/python-release-readiness.md) describes
+metadata-derived runtime profiles, release-only public-index proof, and current release
 blockers. Consumer migrations must wait for a reviewed immutable guard ref.

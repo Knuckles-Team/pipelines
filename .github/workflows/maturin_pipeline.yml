@@ -4,8 +4,9 @@ on:
   workflow_call:
     inputs:
       runtime-profiles:
-        description: Explicit JSON array of base and advertised runtime extras.
-        required: true
+        description: Additional runtime extras as JSON; base and declared mcp/agent/all are always proven.
+        required: false
+        default: '[]'
         type: string
     secrets:
       PYPI_API_TOKEN:
