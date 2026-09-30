@@ -10,19 +10,33 @@ from scripts.readiness.filesystem import _safe_existing_path
 from scripts.readiness.mkdocs import validate_content_source
 
 
-def mapping(node: yaml.Node) -> dict:
-    if not isinstance(node, yaml.MappingNode):
+def mapping_entries(node: yaml.Node):
+    """Validate the mapping authority before interpreting its entries."""
+    if not isinstance(node, yaml.MappingNode) or node.tag != "tag:yaml.org,2002:map":
         raise ParityError("workflow-mapping-required")
+    return node.value
+
+
+def mapping(node: yaml.Node) -> dict:
     result = {}
-    for key, value in node.value:
-        if not isinstance(key, yaml.ScalarNode) or key.value in result:
+    for key, value in mapping_entries(node):
+        if scalar(key) in (None, "<<") or key.value in result:
             raise ParityError("workflow-ambiguous-mapping")
         result[key.value] = value
     return result
 
 
-def scalar(node: yaml.Node | None) -> str | None:
-    return node.value if isinstance(node, yaml.ScalarNode) else None
+def scalar(node: yaml.Node | None, *, boolean: bool = False) -> str | None:
+    """Authority strings must have standard tags; boolean input also permits bool."""
+    return scalar_value(node, boolean) if isinstance(node, yaml.ScalarNode) else None
+
+
+def scalar_value(node: yaml.ScalarNode, boolean: bool) -> str:
+    """Reject explicit tags outside the authority's supported YAML types."""
+    allowed = ("tag:yaml.org,2002:str", "tag:yaml.org,2002:bool") if boolean else ("tag:yaml.org,2002:str",)
+    if node.tag not in allowed:
+        raise ParityError("workflow-scalar-tag-invalid")
+    return node.value
 
 
 def pages_calls(tree: ExactTree, repository: str) -> list[dict]:
@@ -32,7 +46,10 @@ def pages_calls(tree: ExactTree, repository: str) -> list[dict]:
         if not path.endswith((".yaml", ".yml")):
             continue
         try:
-            document = yaml.compose(tree.read(path), Loader=yaml.SafeLoader)
+            # BaseLoader keeps GitHub's `on` and plain scalars as strings,
+            # while preserving explicit tags for authority validation. Compose
+            # never constructs tagged objects or resolves root merge mappings.
+            document = yaml.compose(tree.read(path), Loader=yaml.BaseLoader)
         except yaml.YAMLError as exc:
             raise ParityError("workflow-yaml-invalid") from exc
         jobs = mapping(mapping(document).get("jobs"))
@@ -54,7 +71,7 @@ def validate_workflow(tree: ExactTree, consumer: dict, pipeline: dict) -> None:
     if revision != pipeline["revision"]:
         raise ParityError("workflow-revision-mismatch")
     inputs = mapping(call.get("with"))
-    if scalar(inputs.get("shared_theme_enabled")) != "true":
+    if scalar(inputs.get("shared_theme_enabled"), boolean=True) != "true":
         raise ParityError("workflow-shared-theme-disabled")
     content = scalar(inputs["content_source"]) if "content_source" in inputs else "pages"
     if content != consumer["content_source"]:
