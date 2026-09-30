@@ -27,7 +27,6 @@ def scalar(node: yaml.Node | None) -> str | None:
 
 def pages_calls(tree: ExactTree, repository: str) -> list[dict]:
     paths = object_git(tree.root, ["ls-tree", "-r", "-z", "--name-only", tree.commit, "--", ".github/workflows"])
-    prefix = f"{repository}/.github/workflows/pages_pipeline.yml@".lower()
     calls = []
     for path in paths.split("\0"):
         if not path.endswith((".yaml", ".yml")):
@@ -40,7 +39,7 @@ def pages_calls(tree: ExactTree, repository: str) -> list[dict]:
         for node in jobs.values():
             job = mapping(node)
             uses = scalar(job.get("uses")) or ""
-            if uses.lower().startswith(prefix):
+            if is_pages_call(uses, repository):
                 calls.append(job)
     return calls
 
@@ -62,3 +61,10 @@ def validate_workflow(tree: ExactTree, consumer: dict, pipeline: dict) -> None:
         raise ParityError("workflow-content-source-mismatch")
     _safe_existing_path(tree.root, "mkdocs.yml", "mkdocs")
     validate_content_source(tree.root, content)
+
+
+def is_pages_call(uses: str, repository: str) -> bool:
+    """GitHub repository identity ignores case; the Git workflow path does not."""
+    parts = uses.split("/", 2)
+    return (len(parts) == 3 and "/".join(parts[:2]).lower() == repository.lower()
+            and parts[2].startswith(".github/workflows/pages_pipeline.yml@"))

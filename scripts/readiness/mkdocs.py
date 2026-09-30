@@ -7,7 +7,7 @@ from typing import Any
 
 import yaml
 
-from .errors import _fail
+from .errors import ReadinessTckError, _fail
 from .filesystem import _safe_existing_dir, _safe_root
 
 
@@ -21,28 +21,47 @@ def _mkdocs_document(root: Path) -> yaml.Node | None:
     `ScalarNode.value` string, and a Python-specific tag elsewhere in the
     document stays an inert node carrying that tag string. Nothing importable,
     callable, or constructible is produced from untrusted YAML.
-    Returns ``None`` for a missing/unreadable file or one that fails to parse.
+    Returns ``None`` for a missing file or an empty YAML document. Invalid
+    YAML is a named error, never an absent declaration/default.
     """
 
-    try:
-        text = (root / "mkdocs.yml").read_text(encoding="utf-8")
-    except OSError:
+    text = _mkdocs_text(root)
+    if text is None:
         return None
     try:
         return yaml.compose(text, Loader=yaml.SafeLoader)
-    except yaml.YAMLError:
+    except yaml.YAMLError as exc:
+        raise ReadinessTckError("mkdocs-yaml-invalid") from exc
+
+
+def _mkdocs_text(root: Path) -> str | None:
+    try:
+        return (root / "mkdocs.yml").read_text(encoding="utf-8")
+    except FileNotFoundError:
         return None
+    except (OSError, UnicodeError) as exc:
+        raise ReadinessTckError("mkdocs-unreadable") from exc
+
+
+def _top_level_mapping(document: yaml.Node) -> dict[str, yaml.Node]:
+    """Keep tagged nodes inert and reject ambiguous top-level declarations."""
+    if not isinstance(document, yaml.MappingNode):
+        _fail("mkdocs-mapping-required")
+    result = {}
+    for key_node, value_node in document.value:
+        if not isinstance(key_node, yaml.ScalarNode):
+            _fail("mkdocs-key-invalid")
+        if key_node.value in result:
+            _fail("mkdocs-duplicate-key")
+        result[key_node.value] = value_node
+    return result
 
 
 def _top_level_node(document: yaml.Node | None, key: str) -> yaml.Node | None:
-    """Return the mapping's declared top-level ``key`` value node, if any."""
-
-    if not isinstance(document, yaml.MappingNode):
+    """Read one unambiguous top-level key; absence retains caller defaults."""
+    if document is None:
         return None
-    for key_node, value_node in document.value:
-        if isinstance(key_node, yaml.ScalarNode) and key_node.value == key:
-            return value_node
-    return None
+    return _top_level_mapping(document).get(key)
 
 
 def _docs_dir_node(document: yaml.Node | None) -> yaml.Node | None:
