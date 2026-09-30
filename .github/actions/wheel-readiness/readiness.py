@@ -63,6 +63,8 @@ def profiles(raw: str, extras: list[str]) -> list[str]:
     selected = json.loads(raw)
     require(isinstance(selected, list) and bool(selected), "runtime profiles must be explicit")
     require(all(isinstance(item, str) for item in selected), "invalid runtime profile")
+    require(all(re.fullmatch(r"[a-z0-9]+(?:[-_.][a-z0-9]+)*", item) for item in selected),
+            "invalid runtime profile name")
     require(len(set(selected)) == len(selected), "duplicate runtime profile")
     require("base" in selected, "base profile is mandatory")
     require(set(selected) <= {"base", *extras}, "unknown runtime extra")

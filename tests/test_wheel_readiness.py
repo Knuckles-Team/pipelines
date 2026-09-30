@@ -229,3 +229,8 @@ def test_poisoned_receipt_is_not_publication_proof(tmp_path, monkeypatch, field,
     receipt.write_text(json.dumps(payload))
     with pytest.raises(ValueError):
         guard.verify(dist, receipt, '["base"]')
+
+
+def test_profile_names_cannot_escape_isolated_directory():
+    with pytest.raises(ValueError, match="profile name"):
+        guard.profiles('["base","../escape"]', ["../escape"])
