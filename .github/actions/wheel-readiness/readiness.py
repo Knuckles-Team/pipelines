@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import warnings
 import zipfile
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -69,7 +70,7 @@ def identity() -> dict:
 
 
 def valid_profile_names(items: list) -> bool:
-    return all(isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9]+(?:[-_.][A-Za-z0-9]+)*", item)
+    return all(isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", item)
                for item in items)
 
 
@@ -84,6 +85,21 @@ def profiles(raw: str, extras: list[str]) -> list[str]:
     require(len(set(selected)) == len(selected), "duplicate runtime profile")
     require(set(selected) <= {"base", *extras}, "unknown runtime extra")
     return sorted({"base", *ADVERTISED.intersection(extras), *selected})
+
+
+def declared_extras(message) -> list[str]:
+    versions = message.get_all("Metadata-Version", [])
+    require(len(versions) == 1, "missing/duplicate metadata version")
+    require(bool(re.fullmatch(r"[12]\.[0-9]+", versions[0])), "unsupported metadata version")
+    raw = message.get_all("Provides-Extra", [])
+    require(valid_profile_names(raw), "invalid Provides-Extra name")
+    normalized = [canonicalize_name(extra) for extra in raw]
+    if Version(versions[0]) >= Version("2.3"):
+        require(raw == normalized, "Provides-Extra must be normalized in metadata 2.3+")
+        require(len(set(normalized)) == len(normalized), "duplicate Provides-Extra declaration")
+    elif raw != normalized or len(set(normalized)) != len(normalized):
+        warnings.warn("legacy Provides-Extra aliases/collisions normalized for comparison", stacklevel=2)
+    return list(dict.fromkeys(normalized))
 
 
 def metadata(path: Path, context: dict | None = None) -> dict:
@@ -108,7 +124,7 @@ def metadata(path: Path, context: dict | None = None) -> dict:
     return {
         "name": name, "version": str(version),
         "requires_python": str(SpecifierSet(message.get("Requires-Python", ""))),
-        "provides_extra": [canonicalize_name(extra) for extra in message.get_all("Provides-Extra", [])],
+        "provides_extra": declared_extras(message),
         "requires_dist": requirements,
     }
 

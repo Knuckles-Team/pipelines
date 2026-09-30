@@ -18,9 +18,9 @@ guard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(guard)
 
 
-def wheel(tmp_path, *, requires=(), extras=(), python=">=3.11", name="fixture-1.0-py3-none-any.whl"):
+def wheel(tmp_path, *, requires=(), extras=(), python=">=3.11", name="fixture-1.0-py3-none-any.whl", metadata_version="2.3"):
     path = tmp_path / name
-    lines = ["Metadata-Version: 2.3", "Name: fixture", "Version: 1.0", f"Requires-Python: {python}"]
+    lines = [f"Metadata-Version: {metadata_version}", "Name: fixture", "Version: 1.0", f"Requires-Python: {python}"]
     lines += [f"Requires-Dist: {req}" for req in requires]
     lines += [f"Provides-Extra: {extra}" for extra in extras]
     with zipfile.ZipFile(path, "w") as archive:
@@ -309,7 +309,7 @@ def test_root_python_range_cannot_change_in_report(tmp_path):
 
 
 def test_default_profiles_bound_to_exact_wheel(tmp_path, monkeypatch):
-    path = wheel(tmp_path, extras=("MCP", "agent", "all", "dev", "runtime_extra"))
+    path = wheel(tmp_path, extras=("mcp", "agent", "all", "dev", "runtime-extra"))
     root = guard.metadata(path)
     selected = guard.profiles('["Runtime.Extra"]', root["provides_extra"])
     assert selected == ["agent", "all", "base", "mcp", "runtime-extra"]
@@ -348,3 +348,44 @@ def test_malformed_wheel_profiles_rejected(extras):
 def test_reserved_base_extra_cannot_hide_an_extra_closure():
     with pytest.raises(ValueError, match="reserved base"):
         guard.profiles('[]', ["BASE"])
+
+
+@pytest.mark.parametrize("metadata_version", ["2.3", "2.4", "2.5", "2.6"])
+@pytest.mark.parametrize("extras", [("foo__bar",), ("mcp", "MCP"), ("mcp", "mcp"), ("foo.bar",), ("foo--bar",)])
+def test_modern_raw_wheel_extra_declarations_rejected(tmp_path, metadata_version, extras):
+    path = wheel(tmp_path, metadata_version=metadata_version, extras=extras)
+    with pytest.raises(ValueError, match="Provides-Extra"):
+        guard.metadata(path)
+
+
+@pytest.mark.parametrize("metadata_version", ["2.1", "2.2"])
+@pytest.mark.parametrize("extras,expected", [(("foo__bar",), ["foo-bar"]),
+    (("mcp", "MCP"), ["mcp"]), (("mcp", "mcp"), ["mcp"]),
+    (("Foo.Bar", "foo-bar"), ["foo-bar"])])
+def test_legacy_raw_wheel_aliases_preserved(tmp_path, metadata_version, extras, expected):
+    path = wheel(tmp_path, metadata_version=metadata_version, extras=extras)
+    with pytest.warns(UserWarning, match="legacy Provides-Extra"):
+        root = guard.metadata(path)
+    assert root["provides_extra"] == expected
+    assert guard.profiles(json.dumps(expected), root["provides_extra"]) == ["base", *expected]
+
+
+@pytest.mark.parametrize("metadata_version", ["2.1", "2.2", "2.3", "2.6"])
+@pytest.mark.parametrize("extra", ["../escape", "bad extra", "-leading", "trailing_", "café", ""])
+def test_invalid_raw_wheel_extra_names_rejected(tmp_path, metadata_version, extra):
+    with pytest.raises(ValueError, match="Provides-Extra"):
+        guard.metadata(wheel(tmp_path, metadata_version=metadata_version, extras=[extra]))
+
+
+@pytest.mark.parametrize("metadata_version", ["2.1", "2.2", "2.3", "2.6"])
+def test_canonical_raw_wheel_extras_are_valid(tmp_path, metadata_version):
+    root = guard.metadata(wheel(tmp_path, metadata_version=metadata_version,
+                                extras=["mcp", "foo-bar", "agent", "all"]))
+    assert guard.profiles('[]', root["provides_extra"]) == ["agent", "all", "base", "mcp"]
+    assert "foo-bar" in guard.profiles('["foo__bar"]', root["provides_extra"])
+
+
+@pytest.mark.parametrize("metadata_version", ["", "garbage", "3.0", "2.3\nMetadata-Version: 2.2"])
+def test_ambiguous_wheel_metadata_version_cannot_select_legacy_rules(tmp_path, metadata_version):
+    with pytest.raises(ValueError, match="metadata version"):
+        guard.metadata(wheel(tmp_path, metadata_version=metadata_version, extras=["MCP"]))

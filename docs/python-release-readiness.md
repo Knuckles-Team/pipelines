@@ -28,10 +28,17 @@ missing proof, malformed metadata, resolver failures, and index errors block.
 defaulting to `[]`. The exact wheel's metadata always selects `base` plus each
 of its declared `mcp`, `agent`, and `all` extras. Explicit inputs are additive;
 `["base"]` cannot omit a declared standard runtime profile. Existing full lists
-remain valid. Unknown, malformed, or duplicate aliases fail. Other advertised
+remain valid. Unknown/malformed profile inputs and duplicate input aliases fail. Other advertised
 runtime extras must still be explicitly supplied. Test/development extras are
 not inferred. Each selected profile installs in a separate fresh environment.
 Verification recomputes the profile set from those same digest-bound wheel bytes.
+
+Raw wheel `Provides-Extra` declarations are checked before normalization.
+For Core Metadata 2.3+, names must already be normalized and unique. For older
+metadata, valid name aliases (including repeated punctuation) and canonical
+collisions are accepted with a warning and compared as one canonical name;
+invalid names still fail. This reader compatibility does not excuse a modern
+producer writing invalid declarations. See the [Core Metadata specification](https://packaging.python.org/en/latest/specifications/core-metadata/#provides-extra-multiple-use).
 
 ## Central hook and caller wiring
 
