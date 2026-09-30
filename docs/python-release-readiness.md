@@ -78,36 +78,45 @@ safely extracts the exact archive, installs public build prerequisites, rebuilds
 one Linux CPython wheel, and runs the same runtime-profile proof on it. Rebuilt
 wheel bytes are separate evidence and are not uploaded as another release wheel.
 
-The focused offline suite has 62 passing tests, including all four synthetic
-target contexts, missing/substituted target receipts, duplicate wheel ownership,
-changed bytes, wrong markers/profiles/source commits, changed resolver versions,
-source-archive traversal and symlink rejection, and source-wheel substitution.
-These synthetic contexts are **not native target execution evidence**.
+The focused offline suite has 104 passing tests. It exercises the actual pinned
+pip resolver with in-memory HTTP responses and no socket fallback, including
+base/mcp/agent/all closure, unavailable versions, transitive conflicts, direct
+sources, redirects, index errors, poisoned configuration, and preinstalled
+packages. A small synthetic wheel installation verifies that package startup
+files are not executed. A dependency-free Python backend exercises source-wheel
+rebuilding without any native ecosystem build.
 
-The implementation remains a **draft**, not a consumer migration target. Exact
-remaining acceptance tests and their blocking category follow:
+Source evidence now binds public build prerequisites to the exact archive's
+build-system requirements and rechecks their transitive closure. Runtime metadata
+includes normalized Requires-Python, so source/release range differences cannot
+be hidden by a shared compatible interpreter. Requested extras and explicit
+profiles use canonical case/hyphen/underscore/dot names; duplicate aliases fail.
+Windows file URLs use the pinned pip decoder, with alternate-root and UNC
+rejection tested under emulated Windows path semantics.
+
+These tests use synthetic target contexts; they are **not native execution
+receipts**. The implementation remains a draft and is not a consumer migration
+target. Remaining acceptance work is explicit:
 
 | Acceptance test | Status / category |
 | --- | --- |
-| Actual pinned resolver installs a no-dependency wheel in a fresh profile venv and emits re-verifiable evidence | Pending integration implementation and execution |
-| Public-index fixture supplies transitive requirements and base/mcp/agent/all profiles; actual pip resolves the correct closure | Pending integration implementation and execution |
-| Actual resolver rejects unavailable versions, transitive conflicts, unknown extras, direct/local/editable dependencies, redirects and non-public transport | Pending adversarial integration implementation and execution |
-| Poisoned pip/uv/project config, environment indexes/proxies, constraints, sources and installed packages cannot affect actual resolver results | Synthetic environment checks pass; actual integration pending |
-| Missing/mismatched pinned resolver, unavailable index, malformed metadata, and absent checker produce no success receipt | Synthetic checks partly cover this; actual subprocess failures pending |
-| Actual native macOS arm64 and Windows x86_64 receipts match built-wheel interpreter/ABI and all runtime profiles | Native target validation unavailable on this host; workflow interpreter selection still needs review |
-| Actual native Linux aarch64 receipt for the existing cross-built wheel | **Architecture blocker**, not compute wait: the pinned action uses an x86_64 cross container and exposes no post-build hook. No host-side or invented cross-resolution proof is accepted |
-| Exact sdist rebuild binds archive bytes, public build-prerequisite report, rebuilt runtime metadata and final publication bundle | Archive safety and synthetic aggregation pass; pure-Python backend integration and stricter prerequisite-report validation remain code work. No native ecosystem source build has been run |
-| Workflow contracts enforce every producer proof, required target set, aggregation and reverification before every publication/release | Existing ordering tests pass; new producer/source-path negative contracts remain code work |
-| Full test suite plus commit/manual hook suites at final head, with no weakened checks | Not run; request a new bounded slot only when implementation is ready |
-| Final independent parent review, passing CI, immutable consumer pin | Blocked by the preceding items; keep PR draft |
+| Actual pinned resolver and adverse public-index responses | Focused offline integration passes; no live upstream availability claim |
+| Fresh profile venv creation, exact pinned resolver seeding, installation and receipt reverification as one end-to-end operation | Still pending isolated integration execution in the next bounded validation slot |
+| Source extraction, prerequisite closure, rebuild and source/release metadata binding | Focused synthetic and dependency-free backend tests pass; no native ecosystem build performed |
+| Native target interpreter/ABI, missing proof and wrong-platform rejection | Offline contracts pass; genuine target execution remains required at publication time |
+| Windows exact root file URL and canonical extras | Focused regressions pass; Windows filesystem semantics are emulated on Linux |
+| Every producer, aggregation and pre-publication/release verification path | Focused workflow contracts pass; full configured suite remains pending |
+| Full test suite and commit/manual hook suites at final head | Queued for a bounded slot after other allocated work; not run yet |
+| Independent parent review, passing CI and immutable consumer pin | Pending; keep PR draft |
 
-The existing aarch64 runner/container choice must not be silently changed to
-remove that blocker. This branch changes no runner, container image, security
-setting, or consumer. It does not touch files from PR #7's separate Pages work.
-
-The exclusive validation slot was released after bootstrap and focused checks;
-no full suite or native ecosystem build remains running. No publication,
-deployment, workflow rerun, or credential change has occurred.
+The existing aarch64 producer cross-builds on x86_64. Its host cannot supply a
+native aarch64 runtime receipt, so publication deliberately remains blocked.
+This is a consumer publication requirement, not a reason to invent target proof
+or redesign infrastructure merely to test the guard. This branch changes no
+runner, image, security setting, or consumer. It does not overlap PR #7's Pages
+work. The full-validation slot has been released; only focused light checks have
+run since. No publication, deployment, workflow rerun, credential change, or
+native ecosystem build has occurred.
 
 ## Safe consumer migration after the guard is ready
 

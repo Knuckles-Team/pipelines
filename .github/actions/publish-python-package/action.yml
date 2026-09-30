@@ -75,7 +75,7 @@ runs:
         RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
       shell: bash
       run: |
-        "$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify
+        "$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"
         .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ dist/*.whl --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
 
     - name: Create Release

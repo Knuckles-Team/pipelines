@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import tempfile
 from pathlib import Path
 
 
@@ -67,6 +68,16 @@ def validate_source(guard, directory: Path, source: dict, proofs: dict, raw: str
     wheel = evidence / item["file"]
     guard.require(wheel.is_file() and not wheel.is_symlink(), "source wheel evidence missing or linked")
     guard.verify_item(wheel, item, raw, proof["context"])
+    with tempfile.TemporaryDirectory(prefix="source-metadata-proof-") as temporary:
+        source_checker = guard.sibling("source")
+        project = source_checker.extract(path, Path(temporary))
+        requirements = source_checker.build_requirements(guard, project)
+        guard.sibling("prerequisites").validate(
+            guard, requirements, source["build_prerequisites"], proof["context"]
+        )
+    source_name, source_version = guard.parse_sdist_filename(name)
+    guard.require((source_name, str(source_version)) == (item["metadata"]["name"], item["metadata"]["version"]),
+                  "source filename disagrees with rebuilt package identity")
     reference = proofs["linux-x86_64"]["wheels"][0]["metadata"]
     guard.require(item["metadata"] == reference, "source rebuilt runtime metadata differs from release wheel")
     return name

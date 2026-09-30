@@ -10,11 +10,12 @@ import os
 import json
 from importlib.metadata import version
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import urlsplit
 
 from pip._internal.cli.main import main
 from pip._internal.network.session import PipSession
 from pip._internal.operations.prepare import RequirementPreparer
+from pip._internal.utils.urls import url_to_path
 
 PUBLIC_HOSTS = {"pypi.org", "files.pythonhosted.org"}
 
@@ -28,6 +29,21 @@ def public_url(url: str) -> bool:
         and parsed.username is None
         and parsed.password is None
     )
+
+
+def local_wheel_path(url: str) -> Path:
+    parsed = urlsplit(url)
+    if parsed.scheme != "file" or parsed.netloc not in ("", "localhost") or parsed.query or parsed.fragment:
+        raise ValueError("only local file URLs may identify the root wheel")
+    # pip owns platform-specific drive decoding; urlsplit().path alone is wrong
+    # for file:///C:/ on Windows. Never allow its supported UNC expansion here.
+    decoded = url_to_path(url)
+    if decoded.startswith(("\\\\", "//")):
+        raise ValueError("UNC paths cannot identify the root wheel")
+    path = Path(decoded)
+    if not path.is_absolute():
+        raise ValueError("root wheel URL must be absolute")
+    return path.resolve()
 
 
 def constrain(root: Path | None) -> None:
@@ -49,7 +65,7 @@ def constrain(root: Path | None) -> None:
         if link is None or not link.is_wheel or req.editable:
             raise ValueError("release resolution requires non-editable wheels")
         if link.is_file:
-            path = Path(unquote(urlsplit(link.url).path)).resolve()
+            path = local_wheel_path(link.url)
             if path != root or not req.user_supplied:
                 raise ValueError("only the exact root wheel may be local")
         elif not public_url(link.url) or req.is_direct:
@@ -64,12 +80,16 @@ def constrain(root: Path | None) -> None:
     RequirementPreparer.prepare_linked_requirement = wheel_only
 
 
+def run(arguments: list[str], root: Path | None) -> int:
+    pin = json.loads(Path(__file__).with_name("resolver-pin.json").read_text())
+    if version("pip") != pin["version"]:
+        raise ValueError("release readiness requires the reviewed resolver version")
+    constrain(root)
+    return main(arguments)
+
+
 if __name__ == "__main__":
     import sys
 
-    pin = json.loads(Path(__file__).with_name("resolver-pin.json").read_text())
-    if version("pip") != pin["version"]:
-        raise SystemExit("release readiness requires the reviewed resolver version")
     root = os.environ.get("READINESS_ROOT_WHEEL")
-    constrain(Path(root).resolve() if root else None)
-    raise SystemExit(main(sys.argv[1:]))
+    raise SystemExit(run(sys.argv[1:], Path(root).resolve() if root else None))

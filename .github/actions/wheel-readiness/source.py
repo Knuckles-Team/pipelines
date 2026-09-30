@@ -24,9 +24,9 @@ def extract(archive: Path, directory: Path) -> Path:
             path = PurePosixPath(member.name)
             if path.is_absolute() or ".." in path.parts or "\\" in member.name or not path.parts:
                 raise ValueError("source archive path escapes its root")
-            if member.name in names or not (member.isfile() or member.isdir()):
+            if str(path) in names or not (member.isfile() or member.isdir()):
                 raise ValueError("source archive has duplicate, linked or special entries")
-            names.add(member.name)
+            names.add(str(path))
             roots.add(path.parts[0])
         if len(roots) != 1:
             raise ValueError("source archive must have exactly one project root")
@@ -40,26 +40,31 @@ def extract(archive: Path, directory: Path) -> Path:
 def build_requirements(guard, project: Path) -> list[str]:
     data = tomllib.loads((project / "pyproject.toml").read_text())
     requirements = data["build-system"]["requires"]
-    guard.require(isinstance(requirements, list) and bool(requirements), "source build prerequisites missing")
+    guard.require(isinstance(requirements, list), "source build prerequisites missing")
     for raw in requirements:
         guard.require(isinstance(raw, str) and guard.Requirement(raw).url is None,
                       "source build prerequisite must come from the public index")
     return requirements
 
 
-def rebuild(guard, project: Path, work: Path) -> tuple[Path, dict]:
+def rebuild(guard, project: Path, work: Path) -> tuple[Path, dict | None]:
     bootstrap = guard.sibling("bootstrap")
     venv = work / "build-env"
     python = bootstrap.create(venv, Path(sys.prefix) / bootstrap.PIN["filename"])
     environment = bootstrap.environment(work)
     report = work / "build-prerequisites.json"
     resolver = Path(__file__).with_name("resolve.py").resolve()
-    subprocess.run(
-        [str(python), "-I", str(resolver), "install", "--no-cache-dir", "--disable-pip-version-check",
-         "--only-binary=:all:", "--index-url", guard.PUBLIC_INDEX, "--report", str(report),
-         *build_requirements(guard, project)],
-        env=environment, cwd=work, check=True, timeout=600,
-    )
+    requirements = build_requirements(guard, project)
+    prerequisites = None
+    if requirements:
+        subprocess.run(
+            [str(python), "-I", str(resolver), "install", "--ignore-installed", "--no-cache-dir",
+             "--disable-pip-version-check", "--only-binary=:all:", "--index-url", guard.PUBLIC_INDEX,
+             "--report", str(report), *requirements],
+            env=environment, cwd=work, check=True, timeout=600,
+        )
+        prerequisites = json.loads(report.read_text())
+    guard.sibling("prerequisites").validate(guard, requirements, prerequisites, guard.observed_context())
     environment["PATH"] = str(python.parent) + os.pathsep + os.defpath
     # Use the already-provisioned native toolchain, never install or switch it.
     # Cargo's dependency/build cache is fresh; runner source overrides are absent.
@@ -76,7 +81,7 @@ def rebuild(guard, project: Path, work: Path) -> tuple[Path, dict]:
     )
     wheels = guard.wheel_set(output)
     guard.require(len(wheels) == 1, "source rebuild must produce exactly one wheel")
-    return wheels[0], json.loads(report.read_text())
+    return wheels[0], prerequisites
 
 
 def check(guard, directory: Path, receipt: Path, raw: str, evidence: Path) -> None:
@@ -106,6 +111,10 @@ def check(guard, directory: Path, receipt: Path, raw: str, evidence: Path) -> No
             else:
                 os.environ["READINESS_TARGET"] = previous
         proof = json.loads(proof_path.read_text())
+        name, version = guard.parse_sdist_filename(archive.name)
+        rebuilt = proof["wheels"][0]["metadata"]
+        guard.require((name, str(version)) == (rebuilt["name"], rebuilt["version"]),
+                      "source filename disagrees with rebuilt package identity")
         evidence.mkdir(parents=True, exist_ok=True)
         guard.require(not list(evidence.iterdir()), "source evidence directory is not empty")
         shutil.copyfile(wheel, evidence / wheel.name)

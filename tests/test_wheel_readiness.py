@@ -234,3 +234,74 @@ def test_poisoned_receipt_is_not_publication_proof(tmp_path, monkeypatch, field,
 def test_profile_names_cannot_escape_isolated_directory():
     with pytest.raises(ValueError, match="profile name"):
         guard.profiles('["base","../escape"]', ["../escape"])
+
+
+def test_release_version_comes_from_metadata_not_filename_regex(tmp_path):
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(json.dumps({"schema": 1, "wheels": [{"metadata": {"name": "fixture", "version": "1.2.3rc1"}}]}))
+    assert guard.publication_version(receipt) == "1.2.3rc1"
+    receipt.write_text(json.dumps({"schema": 1, "wheels": [
+        {"metadata": {"name": "fixture", "version": "1.2.3"}},
+        {"metadata": {"name": "fixture", "version": "1.2.4"}},
+    ]}))
+    with pytest.raises(ValueError, match="one package identity"):
+        guard.publication_version(receipt)
+
+
+@pytest.mark.parametrize("alias", ["foo-bar", "foo_bar", "foo.bar", "FOO_Bar"])
+def test_extra_aliases_have_the_same_runtime_closure(tmp_path, alias):
+    path = wheel(tmp_path, requires=[f"dep[{alias}]"], extras=["foo-bar"])
+    root = guard.metadata(path)
+    dep = dependency(extras=["foo-bar"], requires=['missing; extra == "foo-bar"'])
+    with pytest.raises(ValueError, match="missing transitive"):
+        guard.validate_report(report(path, root, [dep]), path, root, "base")
+    dep["metadata"]["requires_dist"] = []
+    guard.validate_report(report(path, root, [dep]), path, root, "base")
+    guard.validate_report(report(path, root, [dep]), path, root, alias)
+    assert guard.profiles(json.dumps(["base", alias]), ["foo-bar"]) == ["base", "foo-bar"]
+    with pytest.raises(ValueError, match="duplicate"):
+        guard.profiles(json.dumps(["base", "foo-bar", alias]), ["foo-bar"])
+    dep["metadata"]["provides_extra"] = ["different"]
+    with pytest.raises(ValueError, match="unknown transitive extra"):
+        guard.validate_report(report(path, root, [dep]), path, root, "base")
+
+
+def test_windows_root_file_url_uses_pinned_decoder(monkeypatch):
+    import nturl2path
+    from pathlib import PureWindowsPath
+    from types import SimpleNamespace
+    from pip._internal.utils import urls
+
+    resolver = guard.sibling("resolve")
+    class WindowsPath(PureWindowsPath):
+        def resolve(self):
+            return self
+    monkeypatch.setattr(urls, "WINDOWS", True)
+    monkeypatch.setattr(urls.urllib.request, "url2pathname", nturl2path.url2pathname)
+    monkeypatch.setattr(resolver, "Path", WindowsPath)
+    class Preparer:
+        def prepare_linked_requirement(self, req):
+            return "accepted"
+    monkeypatch.setattr(resolver, "RequirementPreparer", Preparer)
+    # Avoid mutating the real pip session for other tests.
+    monkeypatch.setattr(resolver, "PipSession", type("Session", (), {"request": lambda *a, **kw: None}))
+    root = WindowsPath("C:/release space/fixture.whl")
+    resolver.constrain(root)
+    def prepare(url):
+        return Preparer().prepare_linked_requirement(SimpleNamespace(
+            link=SimpleNamespace(url=url, is_file=True, is_wheel=True), editable=False, user_supplied=True))
+    assert prepare(root.as_uri()) == "accepted"
+    for url in (WindowsPath("D:/release space/fixture.whl").as_uri(),
+                WindowsPath("C:/other/fixture.whl").as_uri(),
+                "file://server/share/fixture.whl", "file:////server/share/fixture.whl",
+                "file:///C:/release%20space/fixture.whl?override=1"):
+        with pytest.raises(ValueError):
+            prepare(url)
+
+
+def test_root_python_range_cannot_change_in_report(tmp_path):
+    path = wheel(tmp_path, python=">=3.8")
+    root = guard.metadata(path)
+    proof = report(path, dict(root, requires_python=">=3.12"))
+    with pytest.raises(ValueError, match="Python requirement changed"):
+        guard.validate_report(proof, path, root, "base")

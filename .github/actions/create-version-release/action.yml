@@ -23,7 +23,7 @@ runs:
       shell: bash
       env:
         RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
-      run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify'
+      run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"'
 
     - name: Create Release
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3

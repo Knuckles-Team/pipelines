@@ -183,7 +183,7 @@ jobs:
       - name: Reverify exact upload bytes
         env:
           RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
-        run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify'
+        run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"'
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

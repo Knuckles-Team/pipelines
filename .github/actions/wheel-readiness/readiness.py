@@ -24,14 +24,14 @@ try:
     from pip._vendor.packaging.requirements import Requirement
     from pip._vendor.packaging.specifiers import SpecifierSet
     from pip._vendor.packaging.tags import sys_tags
-    from pip._vendor.packaging.utils import canonicalize_name, parse_wheel_filename
+    from pip._vendor.packaging.utils import canonicalize_name, parse_sdist_filename, parse_wheel_filename
     from pip._vendor.packaging.version import Version
 except ImportError:
     from packaging.markers import default_environment
     from packaging.requirements import Requirement
     from packaging.specifiers import SpecifierSet
     from packaging.tags import sys_tags
-    from packaging.utils import canonicalize_name, parse_wheel_filename
+    from packaging.utils import canonicalize_name, parse_sdist_filename, parse_wheel_filename
     from packaging.version import Version
 
 PUBLIC_INDEX = "https://pypi.org/simple"
@@ -72,8 +72,10 @@ def profiles(raw: str, extras: list[str]) -> list[str]:
     selected = json.loads(raw)
     require(isinstance(selected, list) and bool(selected), "runtime profiles must be explicit")
     require(all(isinstance(item, str) for item in selected), "invalid runtime profile")
-    require(all(re.fullmatch(r"[a-z0-9]+(?:[-_.][a-z0-9]+)*", item) for item in selected),
+    require(all(re.fullmatch(r"[A-Za-z0-9]+(?:[-_.][A-Za-z0-9]+)*", item) for item in selected),
             "invalid runtime profile name")
+    selected = [canonicalize_name(item) for item in selected]
+    extras = [canonicalize_name(item) for item in extras]
     require(len(set(selected)) == len(selected), "duplicate runtime profile")
     require("base" in selected, "base profile is mandatory")
     require(set(selected) <= {"base", *extras}, "unknown runtime extra")
@@ -102,6 +104,7 @@ def metadata(path: Path, context: dict | None = None) -> dict:
         require(Requirement(raw).url is None, "direct URL dependency is forbidden")
     return {
         "name": name, "version": str(version),
+        "requires_python": str(SpecifierSet(message.get("Requires-Python", ""))),
         "provides_extra": [canonicalize_name(extra) for extra in message.get_all("Provides-Extra", [])],
         "requires_dist": requirements,
     }
@@ -144,6 +147,8 @@ def validate_report(report: dict, wheel: Path, root: dict, profile: str, expecte
             require(download["url"] == (root_uri or wheel.as_uri()), "resolver replaced the root wheel")
             require(hashes["sha256"] == (expected_digest or digest(wheel)), "root wheel digest mismatch")
             require(data["version"] == root["version"], "root wheel version mismatch")
+            require(str(SpecifierSet(data.get("requires_python", ""))) == root["requires_python"],
+                    "root Python requirement changed")
             require(data.get("requires_dist", []) == root["requires_dist"], "root requirements changed")
         else:
             require(not item.get("is_direct", False), "direct dependency in resolution")
@@ -156,8 +161,9 @@ def validate_report(report: dict, wheel: Path, root: dict, profile: str, expecte
     check_closure(packages, root["name"], profile, report["environment"])
 
 
-def check_closure(packages: dict, root: str, profile: str, environment: dict) -> None:
-    pending = [(root, "" if profile == "base" else profile)]
+def check_closure(packages: dict, root: str, profile: str, environment: dict, *, root_extra: str | None = None) -> None:
+    extra = root_extra if root_extra is not None else ("" if profile == "base" else profile)
+    pending = [(root, canonicalize_name(extra))]
     visited = set()
     while pending:
         name, extra = pending.pop()
@@ -174,7 +180,7 @@ def check_closure(packages: dict, root: str, profile: str, environment: dict) ->
             dependency = canonicalize_name(req.name)
             require(dependency in packages, "missing transitive runtime dependency")
             require(Version(packages[dependency]["version"]) in req.specifier, "unsatisfied runtime constraint")
-            pending.extend((dependency, item) for item in {"", *req.extras})
+            pending.extend((dependency, canonicalize_name(item)) for item in {"", *req.extras})
 
 
 def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list[dict]:
@@ -246,6 +252,8 @@ def check(directory: Path, receipt: Path, raw: str) -> None:
         proof["wheels"].append({"file": wheel.name, "sha256": original,
                                 "metadata": root, "profiles": selected, "evidence": evidence})
     require(identity()["source_commit"] == proof["source_commit"], "source changed")
+    require(len({(item["metadata"]["name"], item["metadata"]["version"]) for item in proof["wheels"]}) == 1,
+            "publication must have one package identity")
     receipt.write_text(json.dumps(proof, indent=2) + "\n")
 
 
@@ -284,11 +292,23 @@ def verify_item(path: Path, item: dict, raw: str, context: dict) -> None:
         validate_report(report, path, actual, entry["profile"], digest(path), context, uri)
 
 
+def publication_version(receipt: Path) -> str:
+    proof = json.loads(receipt.read_text())
+    groups = proof["targets"].values() if proof["schema"] == 2 else (proof,)
+    identities = {(item["metadata"]["name"], item["metadata"]["version"])
+                  for group in groups for item in group["wheels"]}
+    require(len(identities) == 1, "publication must have one package identity")
+    _, version = identities.pop()
+    return str(Version(version))
+
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("phase", choices=("check", "verify", "aggregate", "source"))
     parser.add_argument("--directory", type=Path, default=Path("dist"))
     parser.add_argument("--receipt", type=Path, default=Path("release-readiness.json"))
+    parser.add_argument("--release-version")
     parser.add_argument("--receipts", type=Path, default=Path("target-receipts"))
     parser.add_argument("--source-evidence", type=Path, default=Path("source-evidence"))
     args = parser.parse_args()
@@ -299,10 +319,15 @@ def main() -> None:
             check(directory, receipt, raw)
         elif args.phase == "verify":
             verify(directory, receipt, raw, args.source_evidence.resolve())
+            require(args.release_version == publication_version(receipt), "release version disagrees with wheel proof")
         elif args.phase == "aggregate":
             sibling("bundle").aggregate(directory, args.receipts.resolve(), receipt, raw, args.source_evidence.resolve())
         else:
             sibling("source").check(sys.modules[__name__], directory, receipt, raw, args.source_evidence.resolve())
+        if args.phase in {"check", "aggregate"}:
+            version = publication_version(receipt)
+            with Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as stream:
+                stream.write(f"BUILD_VERSION={version}\n")
 
     except (ValueError, KeyError, OSError, subprocess.SubprocessError, zipfile.BadZipFile) as error:
         print(f"Release readiness blocked: {error}", file=sys.stderr)
