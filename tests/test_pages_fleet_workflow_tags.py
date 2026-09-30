@@ -1,11 +1,9 @@
 """Tagged authority nodes cannot turn an invalid workflow into a passing receipt."""
 
-import json
-
 import pytest
 
-from pages_fleet_fixtures import declaration_file, fleet_fixture, revise
-from scripts.check_five_repo_parity import main
+from pages_fleet_fixtures import fleet_fixture, revise
+from pages_fleet_assertions import assert_unverified_receipt, replace_workflow
 from scripts.pages_fleet_parity import verify
 
 
@@ -23,15 +21,9 @@ from scripts.pages_fleet_parity import verify
 def test_tagged_workflow_authority_fails_receipt(tmp_path, capsys, old, new):
     declaration = fleet_fixture(tmp_path)
 
-    def mutate(target):
-        path = target / ".github/workflows/pages.yml"
-        path.write_text(path.read_text().replace(old, new))
-
-    changed = revise(tmp_path, declaration, mutate)
+    changed = replace_workflow(tmp_path, declaration, old, new)
     assert verify(changed, tmp_path)["status"] == "unverified"
-    path = declaration_file(tmp_path / "declaration", changed)
-    assert main(["--declaration", str(path), "--fixtures", str(tmp_path)]) == 2
-    assert json.loads(capsys.readouterr().out)["verification"]["status"] == "unverified"
+    assert_unverified_receipt(tmp_path, changed, capsys)
 
 
 @pytest.mark.parametrize("enabled", ["true", '"true"', "!!bool true", "!!str true"])

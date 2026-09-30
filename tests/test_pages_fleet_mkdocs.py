@@ -1,12 +1,10 @@
 """Malformed MkDocs input must never turn an exact-ref receipt into a pass."""
 
-import json
-
 import pytest
 
-from scripts.check_five_repo_parity import main
 from scripts.pages_fleet_parity import verify
-from pages_fleet_fixtures import declaration_file, fleet_fixture, revise
+from pages_fleet_fixtures import fleet_fixture, revise
+from pages_fleet_assertions import assert_unverified_receipt, replace_workflow
 
 
 @pytest.mark.parametrize("payload,reason", [
@@ -24,9 +22,7 @@ def test_invalid_mkdocs_yields_unverified_receipt(tmp_path, capsys, payload, rea
     result = verify(changed, tmp_path)
     assert result["status"] == "unverified"
     assert result["consumers"][0]["reason"] == reason
-    path = declaration_file(tmp_path / "declaration", changed)
-    assert main(["--declaration", str(path), "--fixtures", str(tmp_path)]) == 2
-    assert json.loads(capsys.readouterr().out)["verification"]["status"] == "unverified"
+    assert_unverified_receipt(tmp_path, changed, capsys)
 
 
 @pytest.mark.parametrize("old,new,expected", [
@@ -36,9 +32,5 @@ def test_invalid_mkdocs_yields_unverified_receipt(tmp_path, capsys, payload, rea
 def test_workflow_case_rules(tmp_path, old, new, expected):
     declaration = fleet_fixture(tmp_path)
 
-    def mutate(target):
-        path = target / ".github/workflows/pages.yml"
-        path.write_text(path.read_text().replace(old, new))
-
-    changed = revise(tmp_path, declaration, mutate)
+    changed = replace_workflow(tmp_path, declaration, old, new)
     assert verify(changed, tmp_path)["status"] == expected
