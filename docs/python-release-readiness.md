@@ -107,10 +107,12 @@ against pinned siblings likewise do not prove public-index availability.
 
 ## Safe consumer migration after the guard is ready
 
-1. Merge the reviewed guard only after its blockers are resolved and checks pass.
+1. Merge the central interface after code checks and independent review pass.
+   Native runtime receipts and public-index availability remain publication
+   requirements; source validation cannot substitute for them.
 2. Pin each consumer workflow to the full immutable guard commit, recording its
-   release version beside the pin. Declare `runtime-profiles` explicitly, for
-   example `'["base", "mcp", "agent", "all"]'` when all are advertised.
+   release version beside the pin. Standard runtime profiles derive from the
+   exact wheel; declare only additional advertised runtime extras.
 3. Move only the repository-manager `dependency-readiness` hook to `manual`
    RELEASE use. Keep every actual code, test, security, and quality gate intact.
    Use the RM updater for recognized legacy entries after reviewing its diff;
