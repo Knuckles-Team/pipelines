@@ -31,7 +31,7 @@ def wheel(tmp_path, *, requires=(), extras=(), python=">=3.11", name="fixture-1.
 
 
 def report(path, root, dependencies=()):
-    return {"version": "1", "environment": guard.default_environment(), "install": [
+    return {"version": "1", "pip_version": "25.1.1", "environment": guard.default_environment(), "install": [
         {"metadata": root, "is_direct": True, "download_info": {
             "url": path.as_uri(), "archive_info": {"hashes": {"sha256": guard.digest(path)}}}},
         *dependencies,

@@ -4,6 +4,12 @@ description: >-
   artifact. Shared by maturin_pipeline.yml's macOS and Windows jobs, which
   build one target each with no platform-specific step in between.
 inputs:
+  runtime-profiles:
+    description: Explicit base and advertised runtime profiles.
+    required: true
+  readiness-target:
+    description: Closed publication target identity.
+    required: true
   target:
     description: Rust/Python target triple passed to PyO3/maturin-action.
     required: true
@@ -26,6 +32,14 @@ runs:
         target: ${{ inputs.target }}
         manylinux: ${{ inputs.manylinux }}
         args: --release --out dist
+
+    - name: Prove native wheel readiness
+      uses: ./.pipeline-contract/.github/actions/wheel-readiness
+      with:
+        runtime-profiles: ${{ inputs.runtime-profiles }}
+        target: ${{ inputs.readiness-target }}
+        receipt: ${{ inputs.readiness-target }}.json
+        artifact-name: readiness-${{ inputs.readiness-target }}
 
     - name: Verify source and upload artifact
       uses: ./.pipeline-contract/.github/actions/verify-and-upload-artifact

@@ -63,24 +63,51 @@ versions. Existing quality, tests, security, and source-provenance checks remain
 necessary. There is a small verification-to-upload interval; this prototype does
 not provide filesystem-level immutability against concurrent hostile mutation.
 
-## Explicit merge blockers
+## Draft implementation and acceptance status
 
-This implementation is a **draft**, not a consumer migration target:
+The resolver is now pinned to pip 25.1.1, including the exact public wheel
+SHA-256 in `resolver-pin.json`. Its bootstrap was exercised on CPython 3.13.15:
+the reviewed wheel was downloaded, verified, and installed into a fresh checker
+venv. This proves bootstrap, not the runtime resolver integration suite.
 
-- Maturin's existing publication bundle contains cross-platform wheels and an
-  sdist. The publisher's interpreter cannot prove those target installations.
-  The same guard is wired there and deliberately blocks this bundle. Before
-  merge, complete target-specific proof and aggregation, or agree a separately
-  reviewed rollout boundary. Do not add a bypass. This branch does not change
-  any file touched by the separate PR #7 Pages receipt/parser work.
-- Resolver transport restrictions currently wrap pip internal preparation and
-  session interfaces. The existing host's pip 25.1.1 passed a no-network,
-  no-dependency wheel dry-run. Full isolated-interpreter integration, including
-  a pinned supported pip/interpreter combination and adversarial transitive
-  fixtures, remains necessary before this is release-ready.
-- Full test and hook validation awaits the bounded GR1080 slot. No live index
-  proof, package publication, deployment, workflow rerun, or consumer migration
-  has been performed.
+Maturin producer jobs now request native target receipts. The publisher requires
+exactly the existing four target identities and one sdist receipt; it validates
+source/contract identity, target interpreter and marker context, artifact bytes,
+profiles, runtime closure, and exact bundle membership. The sdist producer code
+safely extracts the exact archive, installs public build prerequisites, rebuilds
+one Linux CPython wheel, and runs the same runtime-profile proof on it. Rebuilt
+wheel bytes are separate evidence and are not uploaded as another release wheel.
+
+The focused offline suite has 62 passing tests, including all four synthetic
+target contexts, missing/substituted target receipts, duplicate wheel ownership,
+changed bytes, wrong markers/profiles/source commits, changed resolver versions,
+source-archive traversal and symlink rejection, and source-wheel substitution.
+These synthetic contexts are **not native target execution evidence**.
+
+The implementation remains a **draft**, not a consumer migration target. Exact
+remaining acceptance tests and their blocking category follow:
+
+| Acceptance test | Status / category |
+| --- | --- |
+| Actual pinned resolver installs a no-dependency wheel in a fresh profile venv and emits re-verifiable evidence | Pending integration implementation and execution |
+| Public-index fixture supplies transitive requirements and base/mcp/agent/all profiles; actual pip resolves the correct closure | Pending integration implementation and execution |
+| Actual resolver rejects unavailable versions, transitive conflicts, unknown extras, direct/local/editable dependencies, redirects and non-public transport | Pending adversarial integration implementation and execution |
+| Poisoned pip/uv/project config, environment indexes/proxies, constraints, sources and installed packages cannot affect actual resolver results | Synthetic environment checks pass; actual integration pending |
+| Missing/mismatched pinned resolver, unavailable index, malformed metadata, and absent checker produce no success receipt | Synthetic checks partly cover this; actual subprocess failures pending |
+| Actual native macOS arm64 and Windows x86_64 receipts match built-wheel interpreter/ABI and all runtime profiles | Native target validation unavailable on this host; workflow interpreter selection still needs review |
+| Actual native Linux aarch64 receipt for the existing cross-built wheel | **Architecture blocker**, not compute wait: the pinned action uses an x86_64 cross container and exposes no post-build hook. No host-side or invented cross-resolution proof is accepted |
+| Exact sdist rebuild binds archive bytes, public build-prerequisite report, rebuilt runtime metadata and final publication bundle | Archive safety and synthetic aggregation pass; pure-Python backend integration and stricter prerequisite-report validation remain code work. No native ecosystem source build has been run |
+| Workflow contracts enforce every producer proof, required target set, aggregation and reverification before every publication/release | Existing ordering tests pass; new producer/source-path negative contracts remain code work |
+| Full test suite plus commit/manual hook suites at final head, with no weakened checks | Not run; request a new bounded slot only when implementation is ready |
+| Final independent parent review, passing CI, immutable consumer pin | Blocked by the preceding items; keep PR draft |
+
+The existing aarch64 runner/container choice must not be silently changed to
+remove that blocker. This branch changes no runner, container image, security
+setting, or consumer. It does not touch files from PR #7's separate Pages work.
+
+The exclusive validation slot was released after bootstrap and focused checks;
+no full suite or native ecosystem build remains running. No publication,
+deployment, workflow rerun, or credential change has occurred.
 
 ## Safe consumer migration after the guard is ready
 

@@ -7,6 +7,8 @@ are fatal. Never use this module as a general-purpose package installer.
 from __future__ import annotations
 
 import os
+import json
+from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -28,7 +30,7 @@ def public_url(url: str) -> bool:
     )
 
 
-def constrain(root: Path) -> None:
+def constrain(root: Path | None) -> None:
     request = PipSession.request
     prepare = RequirementPreparer.prepare_linked_requirement
 
@@ -65,5 +67,9 @@ def constrain(root: Path) -> None:
 if __name__ == "__main__":
     import sys
 
-    constrain(Path(os.environ["READINESS_ROOT_WHEEL"]).resolve())
+    pin = json.loads(Path(__file__).with_name("resolver-pin.json").read_text())
+    if version("pip") != pin["version"]:
+        raise SystemExit("release readiness requires the reviewed resolver version")
+    root = os.environ.get("READINESS_ROOT_WHEEL")
+    constrain(Path(root).resolve() if root else None)
     raise SystemExit(main(sys.argv[1:]))
