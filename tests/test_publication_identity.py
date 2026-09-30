@@ -24,6 +24,7 @@ def response(files):
     result = io.StringIO(
         json.dumps({"info": {"name": "example", "version": "1.0"}, "urls": files})
     )
+    result.status = 200
     result.geturl = lambda: URL
     return result
 
@@ -162,6 +163,7 @@ def test_cli_rejects_staging_or_identity_changes(tmp_path, monkeypatch, change):
 )
 def test_malformed_remote_fails(payload):
     result = io.StringIO(json.dumps(payload))
+    result.status = 200
     result.geturl = lambda: URL
     with (
         patch.object(publication, "urlopen", return_value=result),
@@ -185,5 +187,64 @@ def test_hardlinks_and_directories_rejected(tmp_path):
 
 def test_redirected_404_is_not_absence():
     error = HTTPError("https://another.example/json", 404, "test", {}, None)
-    with patch.object(publication, "urlopen", side_effect=error), pytest.raises(ValueError):
+    with (
+        patch.object(publication, "urlopen", side_effect=error),
+        pytest.raises(ValueError),
+    ):
         publication.missing(EXPECTED)
+
+
+@pytest.mark.parametrize("mode", ["preflight", "postverify"])
+@pytest.mark.parametrize("fault", ["partial", "urls", "identity", "hash"])
+def test_ambiguous_or_partial_json_rejected(tmp_path, monkeypatch, mode, fault):
+    stage = tmp_path / "dist"
+    stage.mkdir()
+    (stage / FILE).write_bytes(b"wheel")
+    monkeypatch.setenv("GITHUB_RUN_ID", "123")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "1")
+    identity = {"source_commit": "a" * 40, "contract_commit": "b" * 40}
+    saved = tmp_path / "manifest.json"
+    with patch.object(publication.guard, "identity", return_value=identity):
+        expected = publication.manifest(stage, "example", "1.0")
+        checksum = expected["files"][FILE]
+        files = json.dumps([item(digest=checksum)])
+        info = '"info":{"name":"example","version":"1.0"}'
+        raw = "{" + info + ',"urls":' + files + "}"
+        if fault == "urls":
+            raw = (
+                "{"
+                + info
+                + ',"urls":[{"filename":"foreign.whl"}],"urls":'
+                + files
+                + "}"
+            )
+        elif fault == "identity":
+            raw = raw.replace('"name":"example"', '"name":"foreign","name":"example"')
+        elif fault == "hash":
+            raw = raw.replace('"sha256":', '"sha256":"' + "b" * 64 + '","sha256":')
+        response_data = io.StringIO(raw)
+        response_data.status = 206 if fault == "partial" else 200
+        response_data.geturl = lambda: URL
+        saved.write_text(json.dumps(expected))
+        monkeypatch.setattr(
+            "sys.argv",
+            [
+                "publication",
+                mode,
+                "--directory",
+                str(stage),
+                "--package",
+                "example",
+                "--version",
+                "1.0",
+                "--manifest",
+                str(saved),
+            ],
+        )
+        with (
+            patch.object(publication, "urlopen", return_value=response_data),
+            patch.object(publication.time, "sleep") as sleep,
+        ):
+            with pytest.raises(ValueError):
+                publication.main()
+            sleep.assert_not_called()

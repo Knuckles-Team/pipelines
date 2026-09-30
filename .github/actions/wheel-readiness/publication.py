@@ -70,12 +70,21 @@ def manifest(directory: Path, package: str, version: str) -> dict:
     }
 
 
+def unique_object(pairs: list[tuple[str, object]]) -> dict:
+    result = {}
+    for key, value in pairs:
+        require(key not in result, "duplicate index JSON key")
+        result[key] = value
+    return result
+
+
 def remote_files(expected: dict) -> dict[str, str]:
     url = f"https://pypi.org/pypi/{expected['package']}/{expected['version']}/json"
     try:
         with urlopen(url, timeout=30) as response:
             require(response.geturl() == url, "unexpected index redirect")
-            data = json.load(response)
+            require(response.status == 200, "index response is not HTTP 200")
+            data = json.load(response, object_pairs_hook=unique_object)
     except HTTPError as error:
         require(error.geturl() == url, "unexpected index error redirect")
         if error.code == 404:
