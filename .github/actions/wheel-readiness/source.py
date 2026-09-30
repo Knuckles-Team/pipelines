@@ -1,6 +1,7 @@
 """Bind an exact sdist to a wheel rebuilt in an isolated public-dependency env."""
 from __future__ import annotations
 
+import email.parser
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -35,6 +36,24 @@ def extract(archive: Path, directory: Path) -> Path:
     if not (project / "pyproject.toml").is_file():
         raise ValueError("source archive lacks pyproject.toml")
     return project
+
+
+def package_identity(guard, project: Path, archive_name: str) -> tuple[str, str]:
+    """Bind the upload metadata Twine reads to the archive filename."""
+    path = project / "PKG-INFO"
+    guard.require(path.is_file() and not path.is_symlink(), "source root PKG-INFO is missing")
+    message = email.parser.BytesParser().parsebytes(path.read_bytes())
+    guard.require(not message.defects, "invalid source PKG-INFO")
+    for field in ("Metadata-Version", "Name", "Version"):
+        guard.require(len(message.get_all(field, [])) == 1, "missing or duplicate source PKG-INFO identity")
+    guard.require(bool(guard.re.fullmatch(r"[1-9]\d*\.\d+", message["Metadata-Version"])),
+                  "invalid source metadata version")
+    guard.require(bool(guard.re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", message["Name"])),
+                  "invalid source package name")
+    identity = (guard.canonicalize_name(message["Name"]), str(guard.Version(message["Version"])))
+    name, version = guard.parse_sdist_filename(archive_name)
+    guard.require(identity == (name, str(version)), "source PKG-INFO disagrees with archive filename")
+    return identity
 
 
 def build_requirements(guard, project: Path) -> list[str]:
@@ -97,6 +116,7 @@ def check(guard, directory: Path, receipt: Path, raw: str, evidence: Path) -> No
     with tempfile.TemporaryDirectory(prefix="sdist-readiness-") as temporary:
         work = Path(temporary)
         project = extract(archive, work / "source")
+        package = package_identity(guard, project, archive.name)
         wheel, prerequisites = rebuild(guard, project, work)
         proof_path = work / "wheel-proof.json"
         # This contract deliberately promises one Linux CPython source rebuild,
@@ -111,9 +131,8 @@ def check(guard, directory: Path, receipt: Path, raw: str, evidence: Path) -> No
             else:
                 os.environ["READINESS_TARGET"] = previous
         proof = json.loads(proof_path.read_text())
-        name, version = guard.parse_sdist_filename(archive.name)
         rebuilt = proof["wheels"][0]["metadata"]
-        guard.require((name, str(version)) == (rebuilt["name"], rebuilt["version"]),
+        guard.require(package == (rebuilt["name"], rebuilt["version"]),
                       "source filename disagrees with rebuilt package identity")
         evidence.mkdir(parents=True, exist_ok=True)
         guard.require(not list(evidence.iterdir()), "source evidence directory is not empty")

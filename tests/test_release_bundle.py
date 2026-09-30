@@ -120,7 +120,7 @@ def test_missing_target_receipt_removes_stale_success(release_bundle, tmp_path):
     assert not output.exists()
 
 
-def write_archive(path, name, *, link=False):
+def write_archive(path, name, *, link=False, pkg_info=b"Metadata-Version: 2.3\nName: fixture\nVersion: 1.0\n", duplicate=False):
     with tarfile.open(path, "w:gz") as tar:
         entry = tarfile.TarInfo(name)
         if link:
@@ -131,6 +131,11 @@ def write_archive(path, name, *, link=False):
             payload = b'[build-system]\nrequires=["maturin>=1"]\n'
             entry.size = len(payload)
             tar.addfile(entry, io.BytesIO(payload))
+            if pkg_info is not None:
+                for _ in range(2 if duplicate else 1):
+                    metadata = tarfile.TarInfo("fixture/PKG-INFO")
+                    metadata.size = len(pkg_info)
+                    tar.addfile(metadata, io.BytesIO(pkg_info))
 
 
 def test_source_archive_extracts_only_one_bounded_project(tmp_path):
@@ -291,3 +296,50 @@ def test_source_rebuild_must_preserve_python_range(release_bundle):
     item["evidence"] = [{"profile": "base", "report": resolver}]
     with pytest.raises(ValueError, match="source rebuilt runtime metadata differs"):
         bundle.verify_snapshot(directory, snapshot, '["base"]', evidence)
+
+
+@pytest.mark.parametrize("pkg_info,duplicate", [
+    (None, False),
+    (b"Metadata-Version: 2.3\nName: fixture\n", False),
+    (b"Metadata-Version: 2.3\nName: bad/name\nVersion: 1.0\n", False),
+    (b"Name: fixture\nVersion: 1.0\n", False),
+    (b"Metadata-Version: 2.3\nName: DIFFERENT\nVersion: 9.0\n", False),
+    (b"Metadata-Version: 2.3\nName: fixture\nVersion: 9.0\n", False),
+    (b"Metadata-Version: 2.3\nName: fixture\nName: other\nVersion: 1.0\n", False),
+    (b"Metadata-Version: 2.3\nName: fixture\nVersion: 1.0\nVersion: 1.0\n", False),
+    (b"Metadata-Version: 2.3\nName: fixture\nVersion: invalid\n", False),
+    (b"Metadata-Version: 2.3\nName: fixture\nVersion: 1.0\n", True),
+])
+def test_source_upload_metadata_identity_fails_closed(release_bundle, tmp_path, monkeypatch, pkg_info, duplicate):
+    directory, evidence, snapshot = release_bundle
+    archive = directory / snapshot["source"]["archive"]["file"]
+    write_archive(archive, "fixture/pyproject.toml", pkg_info=pkg_info, duplicate=duplicate)
+    snapshot["source"]["archive"]["sha256"] = guard.digest(archive)
+    with pytest.raises(ValueError):
+        bundle.verify_snapshot(directory, snapshot, '["base"]', evidence)
+    producer = tmp_path / "producer"
+    producer.mkdir()
+    (producer / archive.name).write_bytes(archive.read_bytes())
+    monkeypatch.setattr(guard, "observed_context", lambda: context("linux-x86_64"))
+    monkeypatch.setattr(source, "rebuild", lambda *args: pytest.fail("invalid upload identity reached rebuild"))
+    receipt = tmp_path / "invalid-source.json"
+    receipt.write_text("stale")
+    with pytest.raises(ValueError):
+        source.check(guard, producer, receipt, '["base"]', evidence)
+    assert not receipt.exists()
+
+
+def test_maturin_producer_selects_the_checker_python_version():
+    import yaml
+    from tests.test_wheel_readiness import ROOT
+
+    action = yaml.safe_load((ROOT / ".github/actions/maturin-build-wheels/action.yml").read_text())
+    steps = action["runs"]["steps"]
+    selector = next(step for step in steps if step.get("name") == "Select native build interpreter")
+    builder = next(step for step in steps if step.get("name") == "Build wheels")
+    assert selector["with"]["python-version"] == "3.13"
+    assert selector["if"] == "runner.os != 'Linux'"
+    assert steps.index(selector) < steps.index(builder)
+    assert builder["with"]["args"] == "--release --out dist --interpreter ${{ runner.os == 'Linux' && 'python3.13' || 'python' }}"
+    checker = yaml.safe_load((ROOT / ".github/actions/wheel-readiness/action.yml").read_text())
+    assert "--python 3.13" in checker["runs"]["steps"][0]["run"]

@@ -78,13 +78,20 @@ safely extracts the exact archive, installs public build prerequisites, rebuilds
 one Linux CPython wheel, and runs the same runtime-profile proof on it. Rebuilt
 wheel bytes are separate evidence and are not uploaded as another release wheel.
 
-The focused offline suite has 104 passing tests. It exercises the actual pinned
+The focused offline suite has 115 passing tests. It exercises the actual pinned
 pip resolver with in-memory HTTP responses and no socket fallback, including
 base/mcp/agent/all closure, unavailable versions, transitive conflicts, direct
 sources, redirects, index errors, poisoned configuration, and preinstalled
 packages. A small synthetic wheel installation verifies that package startup
 files are not executed. A dependency-free Python backend exercises source-wheel
 rebuilding without any native ecosystem build.
+
+Source validation and aggregation require one root PKG-INFO with unique valid
+identity fields matching both the archive filename and rebuilt wheel. Invalid
+upload identity fails before any rebuild. Maturin selects CPython 3.13 explicitly
+inside Linux build containers and uses setup-python 3.13 on macOS/Windows,
+aligning producer selection with the checker without changing package Python
+requirements or ABI3 features.
 
 Source evidence now binds public build prerequisites to the exact archive's
 build-system requirements and rechecks their transitive closure. Runtime metadata
