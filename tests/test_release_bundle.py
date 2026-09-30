@@ -76,7 +76,7 @@ def test_complete_native_bundle_accepts_all_target_contexts(release_bundle):
     bundle.verify_snapshot(directory, snapshot, '["base"]', evidence)
 
 
-@pytest.mark.parametrize("change", ["missing", "duplicate", "target", "commit", "profile", "version", "resolver", "marker", "bytes", "extra", "sdist", "source-wheel"])
+@pytest.mark.parametrize("change", ["missing", "duplicate", "target", "commit", "profile", "version", "resolver", "marker"])
 def test_bundle_rejects_incomplete_or_substituted_proof(release_bundle, change):
     directory, evidence, snapshot = release_bundle
     proof = snapshot["targets"]["linux-aarch64"]
@@ -97,13 +97,21 @@ def test_bundle_rejects_incomplete_or_substituted_proof(release_bundle, change):
         item["evidence"][0]["report"]["pip_version"] = "25.2"
     elif change == "marker":
         proof["context"]["environment"]["platform_machine"] = "x86_64"
-    elif change == "bytes":
+    with pytest.raises(ValueError):
+        bundle.verify_snapshot(directory, snapshot, '["base"]', evidence)
+
+
+@pytest.mark.parametrize("change", ["bytes", "extra", "sdist", "source-wheel"])
+def test_bundle_rejects_changed_artifact_set(release_bundle, change):
+    directory, evidence, snapshot = release_bundle
+    if change == "bytes":
+        item = snapshot["targets"]["linux-aarch64"]["wheels"][0]
         (directory / item["file"]).write_bytes(b"changed")
     elif change == "extra":
         (directory / "extra.whl").write_bytes(b"extra")
     elif change == "sdist":
         (directory / snapshot["source"]["archive"]["file"]).write_bytes(b"changed")
-    elif change == "source-wheel":
+    else:
         next(evidence.iterdir()).write_bytes(b"changed")
     with pytest.raises(ValueError):
         bundle.verify_snapshot(directory, snapshot, '["base"]', evidence)
@@ -246,6 +254,13 @@ def test_producers_and_publishers_require_the_closed_target_matrix():
     native = yaml.safe_load((ROOT / ".github/actions/maturin-build-wheels/action.yml").read_text())
     names = [step["name"] for step in native["runs"]["steps"]]
     assert names.index("Build wheels") < names.index("Prove native wheel readiness") < names.index("Verify source and upload artifact")
+
+
+def test_source_and_publisher_proof_ordering():
+    import yaml
+    from tests.test_wheel_readiness import ROOT
+
+    workflow = yaml.safe_load((ROOT / ".github/workflows/maturin_pipeline.yml").read_text())
     steps = workflow["jobs"]["sdist"]["steps"]
     names = [step.get("name") for step in steps]
     assert names.index("Build sdist") < names.index("Prove exact source archive rebuild") < names.index("Verify source and upload artifact")

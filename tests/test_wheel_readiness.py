@@ -113,7 +113,8 @@ def test_environment_drops_every_poisoned_setting(tmp_path, monkeypatch):
     assert clean["PIP_CONFIG_FILE"] == os.devnull
 
 
-def test_changed_wheel_and_missing_receipt_block(tmp_path, monkeypatch):
+@pytest.fixture
+def verified_wheel(tmp_path, monkeypatch):
     dist = tmp_path / "dist"
     dist.mkdir()
     path = wheel(dist)
@@ -121,6 +122,11 @@ def test_changed_wheel_and_missing_receipt_block(tmp_path, monkeypatch):
     monkeypatch.setattr(guard, "identity", lambda: {"source_commit": "a" * 40, "contract_commit": "b" * 40})
     monkeypatch.setattr(guard, "resolve", lambda path, root, *_: [{"profile": "base", "report": report(path, root)}])
     guard.check(dist, receipt, '["base"]')
+    return dist, path, receipt
+
+
+def test_changed_wheel_and_missing_receipt_block(verified_wheel):
+    dist, path, receipt = verified_wheel
     guard.verify(dist, receipt, '["base"]')
     path.write_bytes(path.read_bytes() + b"changed")
     with pytest.raises(ValueError, match="bytes changed"):
@@ -216,14 +222,8 @@ def test_transport_rejects_poisoned_origins_and_direct_candidates(tmp_path, monk
 
 
 @pytest.mark.parametrize("field,value", [("scope", "fleet-only"), ("index", "https://mirror.invalid"), ("interpreter", {}), ("source_commit", "c" * 40)])
-def test_poisoned_receipt_is_not_publication_proof(tmp_path, monkeypatch, field, value):
-    dist = tmp_path / "dist"
-    dist.mkdir()
-    wheel(dist)
-    receipt = tmp_path / "proof.json"
-    monkeypatch.setattr(guard, "identity", lambda: {"source_commit": "a" * 40, "contract_commit": "b" * 40})
-    monkeypatch.setattr(guard, "resolve", lambda path, root, *_: [{"profile": "base", "report": report(path, root)}])
-    guard.check(dist, receipt, '["base"]')
+def test_poisoned_receipt_is_not_publication_proof(verified_wheel, field, value):
+    dist, _, receipt = verified_wheel
     payload = json.loads(receipt.read_text())
     payload[field] = value
     receipt.write_text(json.dumps(payload))
