@@ -68,7 +68,9 @@ not provide filesystem-level immutability against concurrent hostile mutation.
 The resolver is now pinned to pip 25.1.1, including the exact public wheel
 SHA-256 in `resolver-pin.json`. Its bootstrap was exercised on CPython 3.13.15:
 the reviewed wheel was downloaded, verified, and installed into a fresh checker
-venv. This proves bootstrap, not the runtime resolver integration suite.
+venv. Fresh-profile integration subsequently installed the exact synthetic wheel
+in four separate profile venvs, reverified their reports, and rebuilt the same
+wheel through a dependency-free backend in a fifth fresh build venv.
 
 Maturin producer jobs now request native target receipts. The publisher requires
 exactly the existing four target identities and one sdist receipt; it validates
@@ -78,7 +80,7 @@ safely extracts the exact archive, installs public build prerequisites, rebuilds
 one Linux CPython wheel, and runs the same runtime-profile proof on it. Rebuilt
 wheel bytes are separate evidence and are not uploaded as another release wheel.
 
-The focused offline suite has 115 passing tests. It exercises the actual pinned
+The focused offline suite has 116 passing tests. It exercises the actual pinned
 pip resolver with in-memory HTTP responses and no socket fallback, including
 base/mcp/agent/all closure, unavailable versions, transitive conflicts, direct
 sources, redirects, index errors, poisoned configuration, and preinstalled
@@ -108,12 +110,12 @@ target. Remaining acceptance work is explicit:
 | Acceptance test | Status / category |
 | --- | --- |
 | Actual pinned resolver and adverse public-index responses | Focused offline integration passes; no live upstream availability claim |
-| Fresh profile venv creation, exact pinned resolver seeding, installation and receipt reverification as one end-to-end operation | Still pending isolated integration execution in the next bounded validation slot |
+| Fresh profile venv creation, exact pinned resolver seeding, installation and receipt reverification as one end-to-end operation | Passed on CPython 3.13.15 with the exact hash-pinned pip wheel and four disposable profile venvs |
 | Source extraction, prerequisite closure, rebuild and source/release metadata binding | Focused synthetic and dependency-free backend tests pass; no native ecosystem build performed |
 | Native target interpreter/ABI, missing proof and wrong-platform rejection | Offline contracts pass; genuine target execution remains required at publication time |
 | Windows exact root file URL and canonical extras | Focused regressions pass; Windows filesystem semantics are emulated on Linux |
 | Every producer, aggregation and pre-publication/release verification path | Focused workflow contracts pass; full configured suite remains pending |
-| Full test suite and commit/manual hook suites at final head | Queued for a bounded slot after other allocated work; not run yet |
+| Full test suite and commit/manual hook suites at final head | Running against the final tree after test census refactoring and merging current main |
 | Independent parent review, passing CI and immutable consumer pin | Pending; keep PR draft |
 
 The existing aarch64 producer cross-builds on x86_64. Its host cannot supply a
@@ -121,8 +123,7 @@ native aarch64 runtime receipt, so publication deliberately remains blocked.
 This is a consumer publication requirement, not a reason to invent target proof
 or redesign infrastructure merely to test the guard. This branch changes no
 runner, image, security setting, or consumer. It does not overlap PR #7's Pages
-work. The full-validation slot has been released; only focused light checks have
-run since. No publication, deployment, workflow rerun, credential change, or
+work. Full local validation uses a bounded exclusive slot. No publication, deployment, workflow rerun, credential change, or
 native ecosystem build has occurred.
 
 ## Safe consumer migration after the guard is ready
