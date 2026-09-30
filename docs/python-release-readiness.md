@@ -115,7 +115,7 @@ target. Remaining acceptance work is explicit:
 | Native target interpreter/ABI, missing proof and wrong-platform rejection | Offline contracts pass; genuine target execution remains required at publication time |
 | Windows exact root file URL and canonical extras | Focused regressions pass; Windows filesystem semantics are emulated on Linux |
 | Every producer, aggregation and pre-publication/release verification path | Focused workflow contracts pass; full configured suite remains pending |
-| Full test suite and commit/manual hook suites at final head | Running against the final tree after test census refactoring and merging current main |
+| Full test suite and commit/manual hook suites at final head | 571 tests and manual stage pass with CI fail-closed behavior; commit stage passes in normal local mode, with the documented tracked-privacy skip because the operator catalog is absent. Strict commit mode stops on that missing catalog. Hosted CI remains required. |
 | Independent parent review, passing CI and immutable consumer pin | Pending; keep PR draft |
 
 The existing aarch64 producer cross-builds on x86_64. Its host cannot supply a
@@ -123,7 +123,7 @@ native aarch64 runtime receipt, so publication deliberately remains blocked.
 This is a consumer publication requirement, not a reason to invent target proof
 or redesign infrastructure merely to test the guard. This branch changes no
 runner, image, security setting, or consumer. It does not overlap PR #7's Pages
-work. Full local validation uses a bounded exclusive slot. No publication, deployment, workflow rerun, credential change, or
+work. The bounded local validation slot is released after checks complete. No publication, deployment, workflow rerun, credential change, or
 native ecosystem build has occurred.
 
 ## Safe consumer migration after the guard is ready
