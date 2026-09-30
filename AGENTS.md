@@ -92,9 +92,13 @@ environment output. Before a commit, inspect the complete staged diff and run
 the applicable focused checks.
 
 Work on a topic branch, push it, and open a pull request against `main`; the
-`CI` workflow must pass before merge. No gate depends on an external network
-service: a check whose verdict would depend on reachability does not belong in
-the hooks or workflows.
+`CI` workflow must pass before merge. Ordinary code gates and push hooks must
+remain independent of external network reachability. The narrow exception is release-only wheel readiness immediately
+before PyPI upload and GitHub package release: it must prove the exact artifact's
+runtime dependency closure is available from the public index, and fail closed
+on index errors. Repository-manager continues to own manual RELEASE readiness
+and fleet ordering. This publication proof must never run as an ordinary code
+or pre-push gate.
 
 ## Release
 

@@ -4,6 +4,12 @@ description: >-
   artifact. Shared by maturin_pipeline.yml's macOS and Windows jobs, which
   build one target each with no platform-specific step in between.
 inputs:
+  runtime-profiles:
+    description: Explicit base and advertised runtime profiles.
+    required: true
+  readiness-target:
+    description: Closed publication target identity.
+    required: true
   target:
     description: Rust/Python target triple passed to PyO3/maturin-action.
     required: true
@@ -20,12 +26,28 @@ runs:
     - name: Checkout and bind source commit
       uses: ./.pipeline-contract/.github/actions/checkout-verified-source
 
+    - name: Select native build interpreter
+      if: runner.os != 'Linux'
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.13'
+
     - name: Build wheels
       uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
       with:
         target: ${{ inputs.target }}
         manylinux: ${{ inputs.manylinux }}
-        args: --release --out dist
+        # Linux resolves inside the existing manylinux container; other
+        # targets resolve the interpreter placed on PATH by setup-python.
+        args: --release --out dist --interpreter ${{ runner.os == 'Linux' && 'python3.13' || 'python' }}
+
+    - name: Prove native wheel readiness
+      uses: ./.pipeline-contract/.github/actions/wheel-readiness
+      with:
+        runtime-profiles: ${{ inputs.runtime-profiles }}
+        target: ${{ inputs.readiness-target }}
+        receipt: ${{ inputs.readiness-target }}.json
+        artifact-name: readiness-${{ inputs.readiness-target }}
 
     - name: Verify source and upload artifact
       uses: ./.pipeline-contract/.github/actions/verify-and-upload-artifact

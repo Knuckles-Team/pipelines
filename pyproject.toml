@@ -19,6 +19,7 @@ pipelines-hook = "pipelines_hooks.cli:main"
 
 [dependency-groups]
 dev = [
+    "pip==25.1.1",
     "pytest==9.1.1",
 ]
 

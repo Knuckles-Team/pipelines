@@ -1,0 +1,41 @@
+name: Prove exact wheel runtime readiness
+description: Fail closed unless every explicit runtime profile installs from public PyPI.
+inputs:
+  runtime-profiles:
+    description: JSON array including base and every advertised runtime extra.
+    required: true
+  phase:
+    description: check a native wheel, prove a source rebuild, or aggregate all Maturin targets.
+    default: check
+  target:
+    description: Native target identity; cross-compilation cannot substitute a native runtime.
+    default: native
+  receipt:
+    description: Unique target receipt filename.
+    default: release-readiness.json
+  artifact-name:
+    description: Unique proof artifact name.
+    default: release-readiness
+runs:
+  using: composite
+  steps:
+    - name: Create isolated readiness interpreter
+      shell: bash
+      run: |
+        uv --no-config run --no-project --python 3.13 python -I "${{ github.action_path }}/bootstrap.py"
+
+    - name: Prove publication artifacts
+      shell: bash
+      env:
+        RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
+        READINESS_TARGET: ${{ inputs.target }}
+        READINESS_PHASE: ${{ inputs.phase }}
+        READINESS_RECEIPT: ${{ inputs.receipt }}
+      run: '"$READINESS_PYTHON" -I "${{ github.action_path }}/readiness.py" "$READINESS_PHASE" --receipt "$READINESS_RECEIPT"'
+
+    - name: Preserve release proof
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.receipt }}
+        if-no-files-found: error

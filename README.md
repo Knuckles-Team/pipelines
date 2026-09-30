@@ -81,3 +81,9 @@ Every new hook invariant needs positive and adversarial fixtures. Workflow chang
 ## License
 
 The package is distributed under the license declared by the project metadata. See the repository metadata and published distribution for the applicable terms.
+
+## Python publication readiness
+
+The draft [wheel readiness contract](docs/python-release-readiness.md) describes
+explicit runtime profiles, release-only public-index proof, and current merge
+blockers. Consumer migrations must wait for a reviewed immutable guard ref.

@@ -9,6 +9,9 @@ inputs:
   github-token:
     description: Token used to create the release.
     required: true
+  runtime-profiles:
+    description: Profiles whose exact wheel readiness must be reverified.
+    required: true
   files:
     description: Glob of release asset files to attach.
     required: false
@@ -16,6 +19,12 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Verify release wheel proof
+      shell: bash
+      env:
+        RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
+      run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"'
+
     - name: Create Release
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       env:
@@ -27,6 +36,7 @@ runs:
           Released: ${{ env.COMMIT_DATETIME }}
           Commit: ${{ env.LATEST_COMMIT }}
           Pipelines contract: ${{ env.PIPELINES_CONTRACT_COMMIT }}
+          Wheel readiness: release-readiness.json workflow artifact
           Changes:
           ${{ env.COMMIT_MESSAGE }}
         files: ${{ inputs.files }}
