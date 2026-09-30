@@ -1,162 +1,64 @@
-"""Five-core-repo documentation parity receipt (RF-ADR-009 D5).
+"""Offline exact-ref Pages fleet parity (PIPE-EH-428).
 
-Checks epistemic-graph, agent-utilities, agent-connector-sdk, graph-os, and
-agent-webui against the shared documentation standard this Phase D pass
-established, and renders a receipt (``pages/parity.md``): does each repo
-inherit the shared MkDocs theme byte-for-byte (``sync_mkdocs_theme.py
-check``), carry zero Mermaid fences / ASCII box-drawing in its docs, and
-have the generated skill_graph man-page reference (D1/D2/D4) present and
-linked into nav.
+The legacy filename is retained as the command entry point; the five-repository
+worktree snapshot is historical. No hard-coded fleet or sibling fallback remains.
 
-This is a snapshot, not a gate: no repo in scope has landed its docs/phase-d
-branch yet, so most rows below describe that branch's content, read directly
-from each repo's own worktree -- not (yet) from its ``main``. Re-run after
-landing to get a true fleet-wide receipt.
+Commit a JSON declaration with schema_version=1, pipeline={repository, revision},
+and consumers=[{repository, revision, content_source, shared_theme_enabled}].
+Each revision is a full lowercase SHA-1 commit. Optional consumer site_url is
+HTTPS. Prepare clean Git fixtures at <fixtures>/<owner>/<repo>/<revision>.
 
-Usage::
+Run from the repository root::
 
-    python check_five_repo_parity.py --workspace <agent-packages> [--worktree-suffix docs-phase-d]
+    uv run --frozen python -m scripts.check_five_repo_parity \\
+        --declaration fleet.json --fixtures /path/to/fixtures --format json
+
+Output goes to stdout, never into consumer trees. Verification fields are stable;
+generated_at is presentation metadata. --previous annotates prior JSON evidence
+as historical if the input changed; it never supplies a cached verdict. Exit 0
+means fixture parity, 1 means digest mismatch, and 2 means unverified/invalid.
+This command proves neither public availability nor release acceptance. Production
+declaration location, approval, fetching and promotion integration remain open.
 """
 
 from __future__ import annotations
 
 import argparse
-import re
+import json
+import sys
 from pathlib import Path
 
-from sync_mkdocs_theme import sync_theme
+# Retain direct script execution as well as python -m invocation.
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-CORE_REPOS = (
-    "epistemic-graph",
-    "agent-utilities",
-    "agent-connector-sdk",
-    "graph-os",
-    "agent-webui",
-)
-
-_BOX_DRAWING = re.compile("[─-╿]")
+from scripts.pages_fleet_declaration import canonical, load
+from scripts.pages_fleet_parity import reason, verify
+from scripts.pages_fleet_receipt import receipt, render_receipt
+from scripts.pages_fleet_trees import UNVERIFIED_ERRORS
 
 
-def _read_text(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8", errors="ignore")
-    except OSError:
-        return ""
-
-
-def _docs_scan(repo_root: Path) -> tuple[int, int]:
-    """(files with a mermaid fence, files with ASCII box-drawing) under docs/."""
-    docs_dir = repo_root / "docs"
-    if not docs_dir.is_dir():
-        return (0, 0)
-    mermaid = 0
-    ascii_art = 0
-    for path in docs_dir.rglob("*.md"):
-        text = _read_text(path)
-        if "```mermaid" in text:
-            mermaid += 1
-        if _BOX_DRAWING.search(text):
-            ascii_art += 1
-    return (mermaid, ascii_art)
-
-
-_PIPELINES_ROOT = Path(__file__).resolve().parents[1]
-
-
-def check_repo(repo_root: Path, slug: str) -> dict[str, object]:
-    mkdocs_text = _read_text(repo_root / "mkdocs.yml")
-    inherits = mkdocs_text.startswith("INHERIT:")
-    theme_mismatches: list[str] = []
-    if inherits:
-        theme_mismatches = sync_theme(
-            source_root=_PIPELINES_ROOT, repository_root=repo_root, content_source="docs", mode="check"
-        )
-    mermaid_files, ascii_files = _docs_scan(repo_root)
-    man_page = repo_root / "docs" / "reference" / "skill-graph.generated.md"
-    return {
-        "repo": slug,
-        "inherits_shared_theme": inherits,
-        "shared_theme_byte_parity": inherits and not theme_mismatches,
-        "theme_mismatches": theme_mismatches,
-        "mermaid_fence_files": mermaid_files,
-        "ascii_box_files": ascii_files,
-        "skill_graph_reference_present": man_page.is_file(),
-        "skill_graph_reference_in_nav": "skill-graph.generated.md" in mkdocs_text,
-        "has_components_nav_tier": bool(re.search(r"^\s*-\s*Components:", mkdocs_text, re.MULTILINE)),
-    }
-
-
-def _row(result: dict[str, object]) -> str:
-    def flag(value: object) -> str:
-        return "yes" if value else "**no**"
-
-    return (
-        f"| {result['repo']} | {flag(result['inherits_shared_theme'])} "
-        f"| {flag(result['shared_theme_byte_parity'])} "
-        f"| {result['mermaid_fence_files']} | {result['ascii_box_files']} "
-        f"| {flag(result['skill_graph_reference_present'] and result['skill_graph_reference_in_nav'])} "
-        f"| {flag(result['has_components_nav_tier'])} |"
-    )
-
-
-def render_receipt(results: list[dict[str, object]]) -> str:
-    lines = [
-        "# Five-repo parity receipt",
-        "",
-        "Snapshot against the shared documentation standard (RF-ADR-009 D3-D5) "
-        "for the five core repos, generated by "
-        "`scripts/check_five_repo_parity.py`. A repo's own `docs/phase-d` "
-        "branch is read directly when it exists; otherwise its live `main`.",
-        "",
-        "| Repo | Inherits shared theme | Theme byte-parity | Mermaid files | "
-        "ASCII-art files | Skill graph reference | Components nav tier |",
-        "|---|---|---|---|---|---|---|",
-    ]
-    lines.extend(_row(result) for result in results)
-    lines.append("")
-    theme_gaps = [r["repo"] for r in results if not r["inherits_shared_theme"]]
-    if theme_gaps:
-        lines.append(
-            f"**Theme wiring gap:** {', '.join(theme_gaps)} do not yet declare `INHERIT:`.\n"
-        )
-    content_gaps = [
-        r["repo"] for r in results if r["mermaid_fence_files"] or r["ascii_box_files"]
-    ]
-    if content_gaps:
-        lines.append(
-            f"**Known content gap, not this pass's to close:** {', '.join(content_gaps)} "
-            "already inherit the shared theme (D3's wiring is done) but still carry "
-            "Mermaid fences / ASCII box-drawing in hand-written prose -- a large,"
-            " repo-owned content migration. Their generated docs "
-            "(docs/capabilities.generated.md, docs/status.md, docs/concepts.yaml, etc.) "
-            "are also under active concurrent feature lanes; the finish-line docs lane's "
-            "collision rule defers touching either until those lanes land (see "
-            "WRAPUP.md's D6 rehome plan)."
-        )
-    return "\n".join(lines) + "\n"
+def previous_receipt(path: Path | None) -> dict | None:
+    return json.loads(path.read_text()) if path else None
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--workspace", type=Path, required=True)
-    parser.add_argument(
-        "--worktree-root",
-        type=Path,
-        default=Path("/var/tmp/repository-worktrees"),
-        help="prefer <root>/<repo>/<suffix> over --workspace/<repo> when it exists",
-    )
-    parser.add_argument("--worktree-suffix", default="docs-phase-d")
-    parser.add_argument("--out", type=Path, default=Path(__file__).resolve().parents[1] / "pages" / "parity.md")
+    parser.add_argument("--declaration", type=Path, required=True)
+    parser.add_argument("--fixtures", type=Path, required=True)
+    parser.add_argument("--format", choices=("json", "markdown"), default="json")
+    parser.add_argument("--previous", type=Path)
     args = parser.parse_args(argv)
-    results = []
-    for slug in CORE_REPOS:
-        candidate = args.worktree_root / slug / args.worktree_suffix
-        repo_root = candidate if candidate.is_dir() else args.workspace / slug
-        results.append(check_repo(repo_root, slug))
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(render_receipt(results), encoding="utf-8")
-    print(f"parity receipt: wrote {args.out}")
-    return 0
+    try:
+        fleet = load(args.declaration)
+        previous = previous_receipt(args.previous)
+        result = receipt(verify(fleet, args.fixtures), previous=previous)
+    except (*UNVERIFIED_ERRORS, KeyError, TypeError) as exc:
+        print(canonical({"schema_version": 1, "status": "unverified", "reason": reason(exc)}))
+        return 2
+    render = {"json": canonical, "markdown": render_receipt}[args.format]
+    print(render(result), end="\n")
+    return {"pass": 0, "mismatch": 1, "unverified": 2}[result["verification"]["status"]]
 
 
 if __name__ == "__main__":
