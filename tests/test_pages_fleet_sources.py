@@ -77,3 +77,18 @@ def test_fixture_directory_symlink_is_not_a_checkout(fleet):
     target.rename(original)
     target.symlink_to(original, target_is_directory=True)
     assert verify(declaration, root)["status"] == "unverified"
+
+
+@pytest.mark.parametrize("failure", ["empty-content", "control-filename"])
+def test_workflow_paths_and_empty_inputs_fail_closed(fleet, failure):
+    root, declaration = fleet
+
+    def mutate(target):
+        path = target / ".github/workflows/pages.yml"
+        if failure == "empty-content":
+            path.write_text(path.read_text().replace("content_source: pages", 'content_source: ""'))
+        else:
+            path.with_name("hidden\nworkflow.yml").write_bytes(path.read_bytes())
+
+    changed = revise(root, declaration, mutate, index=1)
+    assert verify(changed, root)["status"] == "unverified"

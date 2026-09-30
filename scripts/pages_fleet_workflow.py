@@ -26,10 +26,10 @@ def scalar(node: yaml.Node | None) -> str | None:
 
 
 def pages_calls(tree: ExactTree, repository: str) -> list[dict]:
-    paths = object_git(tree.root, ["ls-tree", "-r", "--name-only", tree.commit, "--", ".github/workflows"])
+    paths = object_git(tree.root, ["ls-tree", "-r", "-z", "--name-only", tree.commit, "--", ".github/workflows"])
     prefix = f"{repository}/.github/workflows/pages_pipeline.yml@".lower()
     calls = []
-    for path in paths.splitlines():
+    for path in paths.split("\0"):
         if not path.endswith((".yaml", ".yml")):
             continue
         try:
@@ -57,7 +57,7 @@ def validate_workflow(tree: ExactTree, consumer: dict, pipeline: dict) -> None:
     inputs = mapping(call.get("with"))
     if scalar(inputs.get("shared_theme_enabled")) != "true":
         raise ParityError("workflow-shared-theme-disabled")
-    content = scalar(inputs.get("content_source")) or "pages"
+    content = scalar(inputs["content_source"]) if "content_source" in inputs else "pages"
     if content != consumer["content_source"]:
         raise ParityError("workflow-content-source-mismatch")
     _safe_existing_path(tree.root, "mkdocs.yml", "mkdocs")
