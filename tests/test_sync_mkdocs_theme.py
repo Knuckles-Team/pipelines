@@ -62,8 +62,8 @@ def test_theme_components_use_accessible_native_controls() -> None:
     template = (ROOT / "templates/mkdocs-theme/overrides/main.html").read_text(encoding="utf-8")
     css = (ROOT / "templates/mkdocs-theme/extra.css").read_text(encoding="utf-8")
 
-    assert "<details class=\"site-switcher\">" in template
-    assert 'aria-label="Choose an ecosystem documentation site"' in template
+    assert "<details class=\"repository-switcher\">" in template
+    assert 'aria-label="Choose an ecosystem repository"' in template
     assert 'aria-current="page"' in template
     assert "<script" not in template.lower()
     assert ":focus-visible" in css

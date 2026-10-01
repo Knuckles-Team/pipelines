@@ -36,21 +36,21 @@
   max-width: var(--site-content-max-width);
 }
 
-.site-switcher {
+.repository-switcher {
   padding: 0.5rem max(1rem, calc((100vw - 76rem) / 2));
   color: var(--site-ink);
   background: var(--site-panel);
   border-bottom: 1px solid var(--site-line);
 }
 
-.site-switcher summary {
+.repository-switcher summary {
   width: fit-content;
   cursor: pointer;
   font-weight: 700;
 }
 
-.site-switcher summary:focus-visible,
-.site-switcher a:focus-visible,
+.repository-switcher summary:focus-visible,
+.repository-switcher a:focus-visible,
 .site-footer a:focus-visible,
 .site-hero a:focus-visible {
   outline: 3px solid var(--site-focus);
@@ -58,7 +58,7 @@
   border-radius: 0.2rem;
 }
 
-.site-switcher__list {
+.repository-switcher__list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 1.2rem;
@@ -67,8 +67,8 @@
   list-style: none;
 }
 
-.site-switcher__list a,
-.site-switcher__list [aria-current="page"] {
+.repository-switcher__list a,
+.repository-switcher__list [aria-current="page"] {
   color: var(--site-accent);
   font-weight: 650;
 }

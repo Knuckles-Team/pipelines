@@ -3,12 +3,12 @@
 {% block announce %}
   {% set ecosystem = config.extra.ecosystem %}
   {% set current_site = ecosystem.sites | selectattr("slug", "equalto", ecosystem.current) | first %}
-  <details class="site-switcher">
-    <summary aria-label="Choose an ecosystem documentation site">
-      Ecosystem documentation{% if current_site %}: {{ current_site.name }}{% endif %}
+  <details class="repository-switcher">
+    <summary aria-label="Choose an ecosystem repository">
+      Repository{% if current_site %}: {{ current_site.name }}{% endif %}
     </summary>
-    <nav aria-label="Ecosystem documentation sites">
-      <ul class="site-switcher__list">
+    <nav aria-label="Ecosystem repositories">
+      <ul class="repository-switcher__list">
         {% for site in ecosystem.sites %}
           <li>
             {% if site.slug == ecosystem.current %}

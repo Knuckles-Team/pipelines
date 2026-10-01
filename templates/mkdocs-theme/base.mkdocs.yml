@@ -80,6 +80,16 @@ extra:
         role: governed source integration boundary
         url: https://knuckles-team.github.io/agent-connector-sdk/
         repository: https://github.com/Knuckles-Team/agent-connector-sdk
+      - slug: agent-terminal-ui
+        name: Agent Terminal UI
+        role: terminal operator experience
+        url: https://knuckles-team.github.io/agent-terminal-ui/
+        repository: https://github.com/Knuckles-Team/agent-terminal-ui
+      - slug: geniusbot
+        name: Geniusbot
+        role: desktop and messaging client
+        url: https://knuckles-team.github.io/geniusbot/
+        repository: https://github.com/Knuckles-Team/geniusbot
       - slug: pipelines
         name: Skill Graph
         role: cross-repo concept, component and man-page corpus

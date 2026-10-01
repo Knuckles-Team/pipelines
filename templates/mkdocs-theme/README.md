@@ -1,6 +1,6 @@
 # Shared MkDocs theme
 
-This folder is the canonical source for the five ecosystem documentation sites. `scripts/sync_mkdocs_theme.py` copies its generated files into a consuming repository and checks that committed copies are byte-identical.
+This folder is the canonical source for the ecosystem documentation sites. `scripts/sync_mkdocs_theme.py` copies its generated files into a consuming repository and checks that committed copies are byte-identical.
 
 ## Generated files
 
@@ -16,8 +16,8 @@ This folder is the canonical source for the five ecosystem documentation sites. 
 
 ## MkDocs configuration
 
-The repository's `mkdocs.yml` inherits `templates/mkdocs-theme/base.mkdocs.yml` and supplies `extra.ecosystem.current` with its own slug (`agent-webui`, `graph-os`, `agent-utilities`, `epistemic-graph`, or `agent-connector-sdk`). It continues to own its site name, URL, content directory, and navigation. For local builds, check out the exact pinned `pipelines` revision into `.pipeline-theme`, run the `sync` command above, then run `mkdocs build --strict`.
+The repository's `mkdocs.yml` inherits `templates/mkdocs-theme/base.mkdocs.yml` and supplies `extra.ecosystem.current` with its own slug, one of the repositories declared in `base.mkdocs.yml`'s `extra.ecosystem.sites` -- kept in sync with `scripts/skill_graph/model.py`'s `REPOS` plus `pipelines` itself (`tests/test_sync_mkdocs_theme.py` asserts the two stay equal). It continues to own its site name, URL, content directory, and navigation. For local builds, check out the exact pinned `pipelines` revision into `.pipeline-theme`, run the `sync` command above, then run `mkdocs build --strict`.
 
-Use `.site-hero`, `.site-card-grid` / `.site-card`, `.site-ownership__grid` / `.site-ownership__item`, and the ordered `.site-flow` components for landing-page structure. Prefer semantic HTML and retain visible keyboard focus. The common theme uses native `<details>` for the site switcher and does not require custom JavaScript.
+Use `.site-hero`, `.site-card-grid` / `.site-card`, `.site-ownership__grid` / `.site-ownership__item`, and the ordered `.site-flow` components for landing-page structure. Prefer semantic HTML and retain visible keyboard focus. The common theme uses native `<details>` for the repository switcher and does not require custom JavaScript.
 
 The root `README.md` remains the short entry point and keeps its exact ordered headings: Overview, Key capabilities, Documentation, Architecture, Quick start, Contributing, License. Deep reference material belongs in Pages. Public home pages describe the current bundled ecosystem in present tense; they do not contain planning, migration, worktree, or future-release status.
