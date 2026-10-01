@@ -7,6 +7,7 @@ scanners; nothing is mocked.
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -57,6 +58,51 @@ class Repo:
 
     def run(self, gate: str, *args: str) -> int:
         return run_gate(gate, ["--root", str(self.root), *args])
+
+
+def write_identity_allowlist(root: Path, identities: list[dict[str, str]], version: str = "1") -> Path:
+    """A ``.config/commit-identity-allowlist.json`` naming the given synthetic identities."""
+    path = root / ".config" / "commit-identity-allowlist.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"version": version, "identities": identities}), encoding="utf-8")
+    return path
+
+
+def set_local_identity(root: Path, *, name: str, email: str) -> None:
+    """Persist ``user.name``/``user.email`` in the repository's own config (not ``-c``).
+
+    Unlike :meth:`Repo.git`'s per-invocation ``-c`` override, this is what a
+    fresh ``git var GIT_AUTHOR_IDENT`` call -- run by the commit-time gate as
+    its own subprocess -- will actually resolve.
+    """
+    env = sanitized_env()
+    subprocess.run(["git", "config", "user.name", name], cwd=root, env=env, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", email], cwd=root, env=env, check=True, capture_output=True)
+
+
+def stage_file(root: Path, rel: str = "pending.txt", text: str = "pending\n") -> None:
+    """Stage one file without committing it, for a commit-time (pending) check."""
+    path = root / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    subprocess.run(["git", "add", "--", rel], cwd=root, env=sanitized_env(), check=True, capture_output=True)
+
+
+def commit_as(root: Path, *, name: str, email: str, message: str = "change", author: str | None = None) -> str:
+    """A commit made under an explicit, possibly-synthetic identity.
+
+    ``-c user.name=``/``-c user.email=`` sets the committer for this one
+    invocation only (matching :mod:`pipelines_hooks.core.gitenv`'s sanitized,
+    non-ambient style); ``--author`` records a different author when given.
+    """
+    stage_file(root, f"identity-{abs(hash(message))}.txt", message)
+    env = sanitized_env()
+    args = ["git", "-c", f"user.name={name}", "-c", f"user.email={email}", "-c", "commit.gpgsign=false", "commit", "-q", "-m", message]
+    if author is not None:
+        args.append(f"--author={author}")
+    subprocess.run(args, cwd=root, env=env, check=True, capture_output=True, text=True)
+    result = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, env=env, check=True, capture_output=True, text=True)
+    return result.stdout.strip()
 
 
 def pytest_configure(config: pytest.Config) -> None:
