@@ -11,7 +11,7 @@ _REV_RE = re.compile(r"^\s*rev:\s*([^\s#]+)")
 _SHA_RE = re.compile(r"[0-9a-fA-F]{40}")
 # Knuckles-Team/pipelines is the sanctioned exception to "immutable revision":
 # every repository pins its hook repo entry to `rev: main`, never a commit SHA
-# or tag (operator ruling, plans/refactor/DECISIONS.md).
+# or tag (fleet standard).
 _PIPELINES_HOOK_RE = re.compile(r"^https://github\.com/Knuckles-Team/pipelines(?:\.git)?/?$", re.IGNORECASE)
 _PYTHON_PIN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*(?:\[[A-Za-z0-9_,.-]+\])?==[^\s]+")
 _NPM_PIN_RE = re.compile(r"@[^/\s]+/[^@\s]+@[0-9][0-9A-Za-z.+_-]*")
