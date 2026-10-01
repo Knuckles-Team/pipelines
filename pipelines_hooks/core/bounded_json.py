@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 
-def read_bounded_json(path: Path, limit: int, what: str, error: type[Exception]) -> object:
+def read_bounded_json(path: Path, limit: int, *, what: str, error: type[Exception]) -> object:
     """The decoded payload; an oversized or undecodable file raises ``error``."""
     with path.open("rb") as stream:
         payload = stream.read(limit + 1)

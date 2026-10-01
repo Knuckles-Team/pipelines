@@ -40,5 +40,7 @@ def validated_terms(raw: object) -> tuple[bytes, ...]:
 
 def load_identity_catalog(path: Path) -> tuple[bytes, ...]:
     """The catalog's identities; oversized or malformed input raises."""
-    raw = read_bounded_json(path, MAX_CATALOG_BYTES, "identity catalog", IdentityPolicyError)
+    raw = read_bounded_json(
+        path, MAX_CATALOG_BYTES, what="identity catalog", error=IdentityPolicyError
+    )
     return validated_terms(raw)
