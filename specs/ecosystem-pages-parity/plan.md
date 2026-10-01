@@ -1,4 +1,4 @@
-# Architecture — PIPE-EH-428
+# Architecture — PIPE-PAGES-001
 
 ## Existing wiring
 

@@ -1,4 +1,4 @@
-# Test contract — PIPE-EH-428
+# Test contract — PIPE-PAGES-001
 
 Use disposable Git fixtures with six consumer shapes and a pinned shared theme commit. Assert exact JSON fields and exit status; retain sanitized output and commit refs as release evidence.
 

@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from scripts.check_public_specs import status_errors as command_status_errors
+from scripts.public_spec_requirements import requirement_errors
 from scripts.public_spec_status import status_errors
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,3 +83,33 @@ def test_direct_and_module_entrypoints(args):
     result = subprocess.run([sys.executable, *args], cwd=ROOT, capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "Public pipeline specs are structurally complete and self-contained.\n"
+
+
+def entry(**changes):
+    base = dict(id="TEST-1", title="Checked behavior", delivery_state="SPECIFIED", evidence=[])
+    return base | changes
+
+
+def register(tmp_path, data, defined="| `TEST-1` | Checked behavior |"):
+    (tmp_path / "requirements.md").write_text(defined)
+    assert check(tmp_path, data)[0] == []
+    return requirement_errors(tmp_path / "status.json")
+
+
+def test_requirement_entries_follow_declared_ids_and_definitions(tmp_path):
+    assert register(tmp_path, status() | {"requirements": [entry()]}) == []
+    assert "array of objects" in register(tmp_path, status() | {"requirements": ["TEST-1"]})[0]
+    errors = register(tmp_path, status() | {"requirements": [entry(id="OTHER-1")]})
+    assert any("match requirement IDs" in error for error in errors)
+    assert any("missing from requirements.md" in error for error in errors)
+
+
+def test_requirement_delivery_needs_its_own_merged_head(tmp_path):
+    landed = entry(delivery_state="LANDED")
+    errors = register(tmp_path, status() | {"requirements": [landed]})
+    assert any("merged-head evidence required" in error for error in errors)
+    landed["evidence"] = [evidence("merged_head")]
+    assert register(tmp_path, status() | {"requirements": [landed]}) == []
+    untitled = entry(title="", delivery_state="DONE")
+    errors = register(tmp_path, status() | {"requirements": [untitled]})
+    assert any("title and delivery state required" in error for error in errors)

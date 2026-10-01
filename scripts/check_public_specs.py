@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 status_errors = import_module("scripts.public_spec_status").status_errors
+requirement_errors = import_module("scripts.public_spec_requirements").requirement_errors
 
 FILES = ("spec.md", "plan.md", "test-spec.md", "tasks.md", "status.json")
 PRIVATE = re.compile(r"plans/|gitlab|homelab|(?:file://|/(?:home|Users|tmp|workspace)/)|\.arpa\b", re.I)
@@ -60,6 +61,7 @@ def _feature_file_errors(root: Path, feature: Path, index: str) -> list[str]:
 def _ownership_errors(status: Path, used: set[str], spec_ids: set[str]) -> list[str]:
     """Status errors plus spec-ID and requirement-owner uniqueness across features."""
     errors, ids, spec_id = status_errors(status)
+    errors.extend(requirement_errors(status))
     if spec_id in spec_ids:
         errors.append(f"{status}: duplicate spec ID {spec_id}")
     spec_ids.add(spec_id)

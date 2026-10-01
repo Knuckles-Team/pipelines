@@ -1,6 +1,4 @@
-# PIPE-EH-428 — Ecosystem Pages parity and release receipt
-
-Status: SPECIFIED. Owner: `pipelines`. Source requirement: EH-428. Acceptance: NOT_AUDITED.
+# PIPE-PAGES-001 — Ecosystem Pages parity and release receipt
 
 ## Purpose and user stories
 
@@ -38,3 +36,5 @@ The declaration contains `{repository, revision, content_source, shared_theme_en
 ## Open decision
 
 Select the public declaration location and approver for new consumers before activation. Both choices must preserve immutable revisions and source provenance. Source implementation alone does not establish Pages release acceptance.
+
+Requirement IDs are defined in [requirements.md](requirements.md); delivery state per ID is in `status.json`.

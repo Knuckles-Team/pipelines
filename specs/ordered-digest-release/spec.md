@@ -1,6 +1,4 @@
-# PIPE-EH-247 — Dependency-ordered digest release orchestration
-
-Status: SPECIFIED. Owner: `pipelines`. Source requirement: EH-247, shared CI/release ordering portion only. Acceptance: NOT_AUDITED.
+# PIPE-RELEASE-001 — Dependency-ordered digest release orchestration
 
 ## Purpose and user stories
 
@@ -38,3 +36,5 @@ A release operator can promote a qualified set of ecosystem repositories in depe
 ## Success and open decisions
 
 No downstream stage runs before each predecessor qualifies at its exact revision. Every ready consumer reference uses the qualified digest. Select public candidate manifest location and receipt integrity mechanism during implementation; both must allow independent verification from public artifacts. Live rollout acceptance remains with deployment owners.
+
+Requirement IDs are defined in [requirements.md](requirements.md); delivery state per ID is in `status.json`.
