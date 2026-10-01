@@ -80,7 +80,7 @@ Stage only reviewed paths and use `uv run --frozen` for Python commands.
 ## Documentation
 
 `README.md` is the concise public entry point. The [Pages site](https://knuckles-team.github.io/pipelines/)
-contains the navigable reference surface, while `docs/` contains workflow and
+contains the navigable reference surface, while `reference/` contains workflow and
 readiness reference material. Keep examples synchronized with the published
 hook catalogue and configuration schema.
 

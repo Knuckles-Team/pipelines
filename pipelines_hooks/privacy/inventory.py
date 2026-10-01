@@ -17,7 +17,7 @@ from pipelines_hooks.core.gitenv import nul_split, run_git
 
 TEXT_SUFFIXES = frozenset({".md", ".json", ".yaml", ".yml", ".toml"})
 SOURCE_SUFFIXES = frozenset({".js", ".md", ".ps1", ".py", ".rs", ".sh", ".ts", ".yaml", ".yml"})
-PUBLIC_TEXT_TREES = frozenset({"docs", ".github", "tests", ".specify", "examples"})
+PUBLIC_TEXT_TREES = frozenset({"docs", "reference", ".github", "tests", ".specify", "examples"})
 _EXCLUDED_DIRECTORIES = frozenset(
     {".acp-sessions", ".benchmarks", ".git", ".hypothesis", ".mypy_cache", ".nox", ".pytest_cache",
      ".pytest_tmp", ".ruff_cache", ".tox", ".venv", "__pycache__", "build", "dist", "htmlcov",
