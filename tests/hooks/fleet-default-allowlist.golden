@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "identities": [
+    {"name": "Audel Rouhi", "email": "knucklessg1@gmail.com"},
+    {"name": "Claude", "email": "noreply@anthropic.com"},
+    {"name": "Codex", "email": "noreply@openai.com"},
+    {"name": "dependabot[bot]", "email": "49699333+dependabot[bot]@users.noreply.github.com"},
+    {"name": "GitHub", "email": "noreply@github.com"}
+  ]
+}

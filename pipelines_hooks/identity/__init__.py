@@ -7,5 +7,7 @@ versioned JSON of explicit ``{name, email}`` pairs; see
 resolve for a new commit right now; :mod:`pipelines_hooks.identity.range_gate`
 re-walks a whole commit range the same way at push time and in CI, so a
 bypassed or disabled commit-time hook cannot let a disallowed identity reach a
-shared branch unexamined.
+shared branch unexamined. :mod:`pipelines_hooks.identity.fork_exemption` keeps
+the range gate from checking an external pull request from a fork, which is
+welcome and never subject to the allowlist.
 """

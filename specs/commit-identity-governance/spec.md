@@ -45,12 +45,20 @@ silently.
 
 ## Interfaces and exclusions
 
-The configuration is a versioned, bounded file naming permitted identities; its exact file location
-and ownership (repository-local versus fleet-shared) is the open decision below. This spec governs
-only author/committer name and email verification for commits reaching a shared branch; it does not
-cover GPG/SSH commit signing, branch protection rules enforced by the hosting platform, or who is
-authorized to approve a pull request. Those remain separate controls layered independently of this
-check.
+The configuration is a versioned, bounded file naming permitted identities. It ships as one fleet-wide
+default packaged inside the hook distribution itself, so every consumer is covered without first
+installing a file of its own; a repository may still override it with a repository-local file, or
+point at a fleet-shared path, as described in [plan.md](plan.md#allowlist-configuration). This spec
+governs only author/committer name and email verification for commits reaching a shared branch; it
+does not cover GPG/SSH commit signing, branch protection rules enforced by the hosting platform, or
+who is authorized to approve a pull request. Those remain separate controls layered independently of
+this check.
+
+Contributions from outside the organization are welcome and are not subject to this allowlist: FR-4's
+CI re-verification exempts a pull request whose head repository differs from its base repository (a
+fork) rather than checking it, per
+[the fork exemption](plan.md#ci-re-verification). Every other case -- a push, a same-repository pull
+request, or a local run -- is checked as before.
 
 ## Traceability
 
@@ -62,11 +70,16 @@ check.
 | FR-4 | [CI re-verification](plan.md#ci-re-verification) | P-4, N-4 | CI run result |
 | FR-5 | [Failure behavior](plan.md#failure-behavior) | N-5 | fail-closed CI run, local skip message |
 
-## Open decision
+## Decided: where the allowlist is stored
 
-Select where the configured allowlist is stored (repository-local versus a fleet-shared location
-read the same way the existing tracked-content identity catalog is read) and who may change it,
-before activation. Either choice must keep the configuration bounded, versioned, and free of
-secrets, and must not let an unreadable configuration silently widen who is accepted.
+One shared allowlist ships inside the `pipelines_hooks` package itself (packaged as data alongside
+`pipelines_hooks/identity/`, declared in the package's own build configuration) and the whole fleet
+consumes it by default; a repository-local file or a fleet-shared path named through
+`COMMIT_IDENTITY_ALLOWLIST` still takes precedence when present, so a consumer can still restrict its
+own accepted identities further. The packaged default is maintained as part of this repository and
+changed the same way any other fleet-wide hook behavior changes: a pull request against this
+repository, reviewed like any other change. Because the default is always present once the package is
+installed, a missing allowlist is no longer a reachable state; only a malformed file still fails
+closed. See [plan.md](plan.md#allowlist-configuration).
 
 Requirement IDs are defined in [requirements.md](requirements.md); delivery state per ID is in `status.json`.

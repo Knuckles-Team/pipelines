@@ -112,6 +112,19 @@ repos:
     language: system
     pass_filenames: false
     always_run: true
+  - id: commit-identity
+    name: Commit identity - the commit being made has an allowlisted author and committer
+    entry: uv run --frozen --quiet pipelines-hook commit-identity
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: commit-identity-range
+    name: Commit identity (range) - every commit in the outgoing/incoming range is allowlisted
+    entry: uv run --frozen --quiet pipelines-hook commit-identity-range
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push, manual]
   - id: supply-chain
     name: Immutable workflow, container and dependency sources
     entry: uv run --frozen --quiet pipelines-hook supply-chain

@@ -14,19 +14,40 @@ from tests.hooks.conftest import Repo, write_identity_allowlist
 ALLOWED = {"name": "Example Author", "email": "author@example.invalid"}
 
 
-def test_n5_a_missing_allowlist_fails_closed_in_ci(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_n5_an_explicitly_configured_missing_allowlist_fails_closed_in_ci(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A packaged fleet default ships with the package, so "missing" now only
+    happens when an explicit override (here, the env setting) names a path
+    that does not exist; the repository-local default and the packaged
+    fallback are both bypassed once an explicit path is configured."""
     monkeypatch.setenv("CI", "true")
+    monkeypatch.setenv("COMMIT_IDENTITY_ALLOWLIST", str(repo.root / "does-not-exist.json"))
     assert repo.run("commit-identity-range") == 2
 
 
-def test_n5_a_missing_allowlist_is_a_visible_local_skip_naming_the_remedy(
+def test_n5_an_explicitly_configured_missing_allowlist_is_a_visible_local_skip_naming_the_remedy(
     repo: Repo, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.setenv("CI", "false")
+    monkeypatch.setenv("COMMIT_IDENTITY_ALLOWLIST", str(repo.root / "does-not-exist.json"))
     assert repo.run("commit-identity-range") == 0
     err = capsys.readouterr().err
     assert "SKIPPED (commit-identity-range)" in err
     assert "COMMIT_IDENTITY_ALLOWLIST" in err or "commit-identity-allowlist.json" in err
+
+
+def test_with_no_configuration_at_all_the_packaged_fleet_default_is_used(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """No explicit path, no env setting, no repository-local file: the gate
+    still runs against the packaged fleet default rather than reporting a
+    missing prerequisite. The fixture's own commit identity
+    (``hook-test <hooks@example.invalid>``) is not one of the fleet's five
+    sanctioned identities, so a rejection here proves the packaged default --
+    not an implicit pass -- is what was actually checked."""
+    monkeypatch.setenv("CI", "true")
+    assert repo.run("commit-identity-range") == 1
 
 
 def test_n5_a_malformed_allowlist_always_fails_regardless_of_ci(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:

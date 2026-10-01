@@ -29,10 +29,22 @@ Define a bounded, versioned configuration format naming permitted identities as 
 schema check, a size ceiling, and a hard rejection of anything malformed rather than a narrowed
 scan. Resolve the configuration path through `pipelines_hooks/core/settings.py`'s single
 environment-reading module, so the path a gate reads is visible alongside every other declared
-setting, and support a fleet-shared default location of the same kind `tracked-privacy` already
-resolves its catalog from. A repository may instead keep a repository-local configuration file
-tracked in its own tree; the choice is the open decision in `spec.md` and does not change the
-validation or enforcement logic.
+setting.
+
+`pipelines_hooks/identity/allowlist.py` resolves the path in this order: an explicit `--allowlist`
+argument; else `COMMIT_IDENTITY_ALLOWLIST`; else a repository-local `<root>/.config/commit-identity-
+allowlist.json` if one is tracked; else the fleet default packaged inside this package,
+`pipelines_hooks/identity/fleet-default-allowlist.json`, declared in
+`[tool.setuptools.package-data]` in `pyproject.toml` so it ships with every build and is present for
+every consumer without any per-repository setup. The packaged default names the fleet's five
+sanctioned commit identities (the organization's own git identity, the two assistant identities used
+for agent-authored commits, Dependabot, and the identity GitHub records as committer on a web-merged
+commit); outside contributors are not part of it and are not expected to be, since their
+contributions are exempt (see "CI re-verification" below) rather than checked against it. Because the
+packaged default always exists once the package is installed, `resolved_allowlist` can no longer
+raise `Unavailable` for the no-configuration case; it still raises `Unavailable` when an explicit
+path or `COMMIT_IDENTITY_ALLOWLIST` names a file that does not exist, and `CannotRun` for a present
+but malformed file, exactly as before.
 
 ## Commit-time check
 
@@ -57,9 +69,22 @@ push-time stage inspects the full outgoing range independently.
 
 No separate implementation: `.github/workflows/ci.yml` already runs the commit-stage hooks across
 the whole checkout and then re-runs the `pre-push`/`manual` stage hooks with
-`pre-commit run --hook-stage manual`. Registering `commit-identity` at both stages is sufficient for
-CI to independently repeat the same check against the full incoming range, exactly as it already
-does for every other gate in this repository.
+`pre-commit run --hook-stage manual --all-files` (no explicit hook-id list, so every hook registered
+at the manual stage is picked up automatically; registering `commit-identity-range` under
+`stages: [pre-push, manual]` in `.config/pre-commit.yaml` needs no further workflow change).
+Registering `commit-identity` at the default (commit) stage and `commit-identity-range` at both
+`pre-push` and `manual` is sufficient for CI to independently repeat the same check against the full
+incoming range, exactly as it already does for every other gate in this repository.
+
+Outside contributions are welcome and are not subject to the allowlist: a pull request whose head
+repository differs from its base repository is an external contribution from a fork, and
+`pipelines_hooks/identity/fork_exemption.py` detects it by reading `GITHUB_EVENT_NAME`/
+`GITHUB_EVENT_PATH` (through `core/settings.py`, never `os.environ` directly) and comparing
+`pull_request.head.repo.full_name` against `pull_request.base.repo.full_name` in the event payload at
+`GITHUB_EVENT_PATH`. `range_gate.main` checks this first and, when it holds, reports the run exempt
+and returns success without loading the allowlist at all. A push, a same-repository pull request, a
+local run, or a missing/unreadable event payload is not exempt and is checked exactly as before
+(fail-closed: an indeterminate payload is treated as "not a fork", never as "exempt").
 
 ## Failure behavior
 

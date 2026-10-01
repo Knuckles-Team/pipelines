@@ -1,13 +1,17 @@
-"""Load the repository-configured commit identity allowlist (bounded, versioned JSON).
+"""Load the configured commit identity allowlist (bounded, versioned JSON).
 
-The allowlist is supplied by the consuming repository, not this package: a
-repository-local file by default (``<root>/.config/commit-identity-allowlist.json``),
-or a fleet-shared path named through ``COMMIT_IDENTITY_ALLOWLIST``
-(:mod:`pipelines_hooks.core.settings`), the same way
-:mod:`pipelines_hooks.privacy.identity_catalog` resolves its own external
-catalog. Its format is ``{"version": "...", "identities": [{"name": ...,
-"email": ...}, ...]}``; a malformed or empty file is rejected rather than
-silently widening who is accepted.
+Resolution order: an explicit ``--allowlist`` path, else the fleet-shared path
+named through ``COMMIT_IDENTITY_ALLOWLIST`` (:mod:`pipelines_hooks.core.settings`),
+else a repository-local file if one is tracked
+(``<root>/.config/commit-identity-allowlist.json``), else the fleet default
+packaged inside this package (``fleet-default-allowlist.json``, shipped via
+``[tool.setuptools.package-data]`` in ``pyproject.toml``) -- the same precedence
+:mod:`pipelines_hooks.privacy.identity_catalog` uses for its own external
+catalog, one step deeper. Because the packaged default always ships with the
+package, a missing allowlist is no longer possible; only a malformed file (at
+whichever path was resolved) still raises. Its format is ``{"version": "...",
+"identities": [{"name": ..., "email": ...}, ...]}``; a malformed or empty file
+is rejected rather than silently widening who is accepted.
 """
 
 from __future__ import annotations
@@ -22,6 +26,8 @@ from pipelines_hooks.core.settings import setting
 MAX_ALLOWLIST_BYTES = 64 * 1024
 MAX_IDENTITIES = 256
 DEFAULT_RELATIVE_PATH = Path(".config") / "commit-identity-allowlist.json"
+#: The fleet default shipped inside this package; always present once installed.
+FLEET_DEFAULT_PATH = Path(__file__).resolve().parent / "fleet-default-allowlist.json"
 REMEDY = (
     'create a commit identity allowlist JSON ({"version": "1", "identities": '
     '[{"name": "...", "email": "..."}]}) at .config/commit-identity-allowlist.json, '
@@ -80,19 +86,28 @@ def matches(name: str, email: str, identities: tuple[Identity, ...]) -> bool:
 
 
 def configured_path(root: Path, explicit: Path | None) -> Path:
-    """Where the allowlist is read from: ``explicit``, else the env setting, else the repo default."""
+    """Where the allowlist is read from.
+
+    ``explicit``, else the env setting, else a repository-local file if one is
+    present, else the fleet default packaged with this package.
+    """
     if explicit is not None:
         return explicit
     configured = setting("COMMIT_IDENTITY_ALLOWLIST")
-    return Path(configured) if configured else root / DEFAULT_RELATIVE_PATH
+    if configured:
+        return Path(configured)
+    repository_local = root / DEFAULT_RELATIVE_PATH
+    return repository_local if repository_local.exists() else FLEET_DEFAULT_PATH
 
 
 def resolved_allowlist(root: Path, explicit: Path | None) -> tuple[Identity, ...]:
     """The validated allowlist at the configured path.
 
-    A missing file is :class:`~pipelines_hooks.core.errors.Unavailable` (a
-    fail-closed CI exit, a visible local skip naming the remedy); a present but
-    malformed file is :class:`~pipelines_hooks.core.errors.CannotRun` (always
+    With the fleet default always packaged, the configured path is missing
+    only when ``explicit`` or ``COMMIT_IDENTITY_ALLOWLIST`` names a path that
+    does not exist; that is still :class:`~pipelines_hooks.core.errors.Unavailable`
+    (a fail-closed CI exit, a visible local skip naming the remedy). A present
+    but malformed file is :class:`~pipelines_hooks.core.errors.CannotRun` (always
     exit 2), since that is a defect in the input, not an absent prerequisite.
     """
     path = configured_path(root, explicit)
