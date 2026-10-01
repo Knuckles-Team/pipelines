@@ -14,7 +14,7 @@ from pipelines_hooks.supply_chain.finding import NETWORK_TO_SHELL_RE, Finding, S
 VCS_REVISION_RE = re.compile(r"@[0-9a-fA-F]{40}(?:$|[#&])")
 # Knuckles-Team/pipelines is the sanctioned exception: a `git+https://...
 # Knuckles-Team/pipelines@<ref>` dependency must name `main`, never a commit
-# SHA or tag (operator ruling, plans/refactor/DECISIONS.md).
+# SHA or tag (fleet standard).
 PIPELINES_VCS_RE = re.compile(r"git\+https://github\.com/Knuckles-Team/pipelines(?:\.git)?@([^\s#&]+)", re.IGNORECASE)
 POWERSHELL_NETWORK_RE = re.compile(r"(?:irm|iwr|Invoke-RestMethod|Invoke-WebRequest)\b[^\n|]*\|\s*(?:iex|Invoke-Expression)\b", re.IGNORECASE)
 DYNAMIC_EXPRESSION_RE = re.compile(r"(?:^|[;&|]\s*)(?:eval\b|Invoke-Expression\b|iex\b)", re.IGNORECASE)

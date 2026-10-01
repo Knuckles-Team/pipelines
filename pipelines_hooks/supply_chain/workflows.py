@@ -9,8 +9,8 @@ from pipelines_hooks.supply_chain.finding import NETWORK_TO_SHELL_RE, Finding, S
 ACTION_SHA_RE = re.compile(r"^[^/@\s]+/[^@\s]+@[0-9a-fA-F]{40}$")
 EXTERNAL_USES_RE = re.compile(r"^\s*(?:-\s*)?uses:\s*([^\s#]+)", re.MULTILINE)
 # Knuckles-Team/pipelines is the one sanctioned exception to the immutable-pin
-# rule below: every repository consumes it at its `main` branch (operator
-# ruling, plans/refactor/DECISIONS.md), never a commit SHA or tag. A pin of
+# rule below: every repository consumes it at its `main` branch (fleet
+# standard), never a commit SHA or tag. A pin of
 # pipelines to anything other than `main` is therefore itself a finding
 # (SC-GHA-010), not merely tolerated as "already pinned".
 PIPELINES_RE = re.compile(r"^Knuckles-Team/pipelines(?:/|$)", re.IGNORECASE)

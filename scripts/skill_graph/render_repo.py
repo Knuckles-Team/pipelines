@@ -1,4 +1,4 @@
-"""The man-page-tier reference page projected for one repo (RF-ADR-009 D2/D4)."""
+"""The man-page-tier reference page projected for one repo."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _header(name: str) -> list[str]:
         "Every concept and component this repo's own registries and documentation "
         "nav declare, generated from the same cross-repo "
         "[skill graph](https://knuckles-team.github.io/pipelines/) corpus "
-        "(RF-ADR-009 D1) that indexes all seven repos. This page is this repo's "
+        "that indexes all seven repos. This page is this repo's "
         "own slice of that corpus, not a duplicate authority -- the full machine "
         "corpus, with typed links, is published from `pipelines`.",
         "",

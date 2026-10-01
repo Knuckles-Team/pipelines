@@ -1,4 +1,4 @@
-"""Build the cross-repo skill_graph corpus (RF-ADR-009 D1).
+"""Build the cross-repo skill_graph corpus.
 
 Generates one progressively-disclosed corpus -- Concepts, Components, and
 ManPages, with typed links between them -- from each repo's own existing

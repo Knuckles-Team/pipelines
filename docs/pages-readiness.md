@@ -35,8 +35,7 @@ native `INHERIT:` key -- a real recursive config merge, not a text copy. A
 repository that enables it keeps only its content manifest (`site_name`,
 `site_url`, `nav`, and `docs_dir`/`content_source`); look, structure and
 navigation hierarchy come from the one shared file, identically, across every
-consumer (EG, the connector SDK, AU, graph-os, and the UIs -- RF-ADR-009
-D3/D5). The shared theme deliberately does not enable the `pymdownx`
+consumer (EG, the connector SDK, AU, graph-os, and the UIs). The shared theme deliberately does not enable the `pymdownx`
 `mermaid` custom fence: D3 requires HTML/CSS renderings, not diagrams drawn
 in Markdown.
 
