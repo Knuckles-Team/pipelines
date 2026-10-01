@@ -1,9 +1,5 @@
 # PIPE-PAGES-001 — Ecosystem Pages parity and release receipt
 
-Status: SPECIFIED. Owner: `pipelines`. Source requirement: PIPE-PAGES-R001. Acceptance: NOT_AUDITED.
-Every requirement ID this spec owns is defined in [requirements.md](requirements.md); delivery
-state and evidence for each ID are recorded in [status.json](status.json).
-
 ## Purpose and user stories
 
 An external contributor can inspect a public receipt and see which ecosystem sites use the shared Pages contract and which exact revisions were checked. A release operator can refuse theme or switcher promotion when a declared consumer differs from promoted assets. A site maintainer can contribute without a private workspace, cluster, or live browser session.
@@ -40,3 +36,5 @@ The declaration contains `{repository, revision, content_source, shared_theme_en
 ## Open decision
 
 Select the public declaration location and approver for new consumers before activation. Both choices must preserve immutable revisions and source provenance. Source implementation alone does not establish Pages release acceptance.
+
+Requirement IDs are defined in [requirements.md](requirements.md); delivery state per ID is in `status.json`.

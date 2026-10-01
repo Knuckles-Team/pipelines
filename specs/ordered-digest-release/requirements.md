@@ -1,10 +1,5 @@
 # PIPE-RELEASE-001 requirements
 
-Every requirement this specification owns, with the proof that closes it. Delivery state and
-public evidence for each ID are recorded in [`status.json`](status.json); this file defines what
-each ID means. The design is in [`spec.md`](spec.md) and [`plan.md`](plan.md), the test contract
-in [`test-spec.md`](test-spec.md), and the work order in [`tasks.md`](tasks.md).
-
 | ID | Requirement | Verification |
 |---|---|---|
 | `PIPE-RELEASE-R001` | **Pipelines publishes images in dependency order with digest pins.** pipelines builds each repository's container image with an immutable digest pin, pushes repositories to GitHub in dependency order, and awaits hosted CI on each pushed revision before publishing the next stage, stopping before any downstream publication on failure. | Verified by an integration test with three ordered candidates confirming each stage's hosted CI must pass before the next stage publishes, per FR-3. |

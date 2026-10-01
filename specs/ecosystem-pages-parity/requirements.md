@@ -1,10 +1,5 @@
 # PIPE-PAGES-001 requirements
 
-Every requirement this specification owns, with the proof that closes it. Delivery state and
-public evidence for each ID are recorded in [`status.json`](status.json); this file defines what
-each ID means. The design is in [`spec.md`](spec.md) and [`plan.md`](plan.md), the test contract
-in [`test-spec.md`](test-spec.md), and the work order in [`tasks.md`](tasks.md).
-
 | ID | Requirement | Verification |
 |---|---|---|
 | `PIPE-PAGES-R001` | **Repository switcher kept in sync with the core repo list.** The documentation site's repository switcher is renamed and its repository list is completed to match the full declared set of core repositories, replacing any per-repository duplicate copies and staying synchronized with the shared parity check and release receipt. agent-utilities' now-obsolete generator for a standalone web UI deployment manifest is also removed, since the web UI runs within Graph OS. | A parity check confirms the switcher's repository list matches the declared core-repository set and release receipt, and a source scan confirms the obsolete standalone deployment generator no longer exists. |

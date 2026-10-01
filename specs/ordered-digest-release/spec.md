@@ -1,9 +1,5 @@
 # PIPE-RELEASE-001 — Dependency-ordered digest release orchestration
 
-Status: SPECIFIED. Owner: `pipelines`. Source requirement: PIPE-RELEASE-R001, shared CI/release ordering portion only. Acceptance: NOT_AUDITED.
-Every requirement ID this spec owns is defined in [requirements.md](requirements.md); delivery
-state and evidence for each ID are recorded in [status.json](status.json).
-
 ## Purpose and user stories
 
 A release operator can promote a qualified set of ecosystem repositories in dependency order, with every deployed image bound to an immutable digest. A contributor can reproduce ordering and refusal logic from public workflow contracts and fixtures without a preconfigured cluster.
@@ -40,3 +36,5 @@ A release operator can promote a qualified set of ecosystem repositories in depe
 ## Success and open decisions
 
 No downstream stage runs before each predecessor qualifies at its exact revision. Every ready consumer reference uses the qualified digest. Select public candidate manifest location and receipt integrity mechanism during implementation; both must allow independent verification from public artifacts. Live rollout acceptance remains with deployment owners.
+
+Requirement IDs are defined in [requirements.md](requirements.md); delivery state per ID is in `status.json`.

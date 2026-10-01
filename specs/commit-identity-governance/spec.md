@@ -1,9 +1,5 @@
 # PIPE-IDENTITY-001 — Commit author identity governance
 
-Status: SPECIFIED. Owner: `pipelines`. Source requirement: PIPE-IDENTITY-R001. Acceptance: NOT_AUDITED.
-Every requirement ID this spec owns is defined in [requirements.md](requirements.md); delivery
-state and evidence for each ID are recorded in [status.json](status.json).
-
 ## Purpose and user stories
 
 A repository maintainer can restrict who is allowed to author or commit changes by configuring a
@@ -72,3 +68,5 @@ Select where the configured allowlist is stored (repository-local versus a fleet
 read the same way the existing tracked-content identity catalog is read) and who may change it,
 before activation. Either choice must keep the configuration bounded, versioned, and free of
 secrets, and must not let an unreadable configuration silently widen who is accepted.
+
+Requirement IDs are defined in [requirements.md](requirements.md); delivery state per ID is in `status.json`.
