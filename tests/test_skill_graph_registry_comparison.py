@@ -58,6 +58,15 @@ METHODS = {
 }
 
 
+def _add_revoke_method(repo_root: Path) -> None:
+    """Append a third method, bumping ``method_count`` -- a contract drift fixture."""
+    methods_path = repo_root / "contract" / "methods.json"
+    data = json.loads(methods_path.read_text(encoding="utf-8"))
+    data["methods"].append({"id": "proof.revoke", "domain": "proof"})
+    data["method_count"] = 3
+    methods_path.write_text(json.dumps(data), encoding="utf-8")
+
+
 def _seed_eg_repo(workspace: Path) -> Path:
     repo_root = workspace / "epistemic-graph"
     (repo_root / "architecture").mkdir(parents=True)
@@ -131,11 +140,7 @@ def test_contract_methods_page_matches_the_method_registry(tmp_path: Path) -> No
     contract_domain = nodes_by_id["component/epistemic-graph/contract-domain/proof"]
     assert contract_domain["methods"] == ["proof.submit", "proof.verify"]
 
-    methods_path = repo_root / "contract" / "methods.json"
-    data = json.loads(methods_path.read_text(encoding="utf-8"))
-    data["methods"].append({"id": "proof.revoke", "domain": "proof"})
-    data["method_count"] = 3
-    methods_path.write_text(json.dumps(data), encoding="utf-8")
+    _add_revoke_method(repo_root)
 
     drifted_corpus = build_graph(tmp_path)
     drifted = render_repo_reference_md(drifted_corpus, "epistemic-graph")
@@ -158,11 +163,7 @@ def test_check_repo_mode_fails_closed_on_contract_drift(tmp_path: Path, capsys) 
         "check-repo", "--slug", "epistemic-graph", "--workspace", str(tmp_path), "--out", str(out_path),
     ]) == 0
 
-    methods_path = repo_root / "contract" / "methods.json"
-    data = json.loads(methods_path.read_text(encoding="utf-8"))
-    data["methods"].append({"id": "proof.revoke", "domain": "proof"})
-    data["method_count"] = 3
-    methods_path.write_text(json.dumps(data), encoding="utf-8")
+    _add_revoke_method(repo_root)
 
     exit_code = skill_graph_main([
         "check-repo", "--slug", "epistemic-graph", "--workspace", str(tmp_path), "--out", str(out_path),

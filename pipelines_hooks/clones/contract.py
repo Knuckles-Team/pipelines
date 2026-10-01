@@ -2,7 +2,13 @@
 
 One reviewed contract for every repository, so a consumer cannot narrow what
 the clone gates see. Exclusions cover only machine-produced or deliberately
-repeated trees (build output, vendored code, lockfiles, fixtures, samples).
+repeated trees (build output, vendored code, lockfiles, fixtures, samples) --
+including the shared MkDocs theme's own consumer-side mirrors
+(``.config/mkdocs-overrides/`` and each content source's synced
+``stylesheets/extra.css``), which ``scripts/sync_mkdocs_theme.py`` keeps
+byte-identical to ``templates/mkdocs-theme/`` by design and verifies
+separately; scanning both copies as independently authored code would flag
+every edit to the shared theme as new duplication.
 """
 
 from __future__ import annotations
@@ -52,7 +58,7 @@ EXCLUSIONS = tuple(
     **/__generated__/** **/generated/** **/codegen/** **/openapi_client/**
     **/graphql_client/** **/*.generated.* **/*.map **/*.min.css **/*.min.js **/*.lock
     **/Cargo.lock **/package-lock.json **/pnpm-lock.yaml **/yarn.lock **/poetry.lock
-    site/**""".split()
+    site/** **/.config/mkdocs-overrides/** **/stylesheets/extra.css""".split()
 )
 
 
