@@ -34,7 +34,7 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 ## Documentation
 
-The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](docs/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts.
+The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](reference/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts.
 
 The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration is described in the Pages reference.
 
@@ -84,10 +84,10 @@ The package is distributed under the license declared by the project metadata. S
 
 ## Python publication readiness
 
-The [wheel readiness contract](docs/python-release-readiness.md) describes
+The [wheel readiness contract](reference/python-release-readiness.md) describes
 metadata-derived runtime profiles, release-only public-index proof, and current release
 blockers. Consumer migrations must wait for a reviewed immutable guard ref.
 
-Release callers can additionally use the [exact PyPI publication identity checker](docs/publication-identity.md)
+Release callers can additionally use the [exact PyPI publication identity checker](reference/publication-identity.md)
 to reject same-version filename/digest conflicts and verify every staged file after upload.
 This supplements their existing readiness and platform-completeness gates.
