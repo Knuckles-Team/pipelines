@@ -7,8 +7,9 @@ ASCII-letter identities of 2..64 characters.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+from pipelines_hooks.core.bounded_json import read_bounded_json
 
 MAX_CATALOG_BYTES = 64 * 1024
 
@@ -39,11 +40,5 @@ def validated_terms(raw: object) -> tuple[bytes, ...]:
 
 def load_identity_catalog(path: Path) -> tuple[bytes, ...]:
     """The catalog's identities; oversized or malformed input raises."""
-    with path.open("rb") as stream:
-        payload = stream.read(MAX_CATALOG_BYTES + 1)
-    if len(payload) > MAX_CATALOG_BYTES:
-        raise IdentityPolicyError("identity catalog exceeds the size limit")
-    try:
-        return validated_terms(json.loads(payload))
-    except json.JSONDecodeError as exc:
-        raise IdentityPolicyError("identity catalog is not valid JSON") from exc
+    raw = read_bounded_json(path, MAX_CATALOG_BYTES, "identity catalog", IdentityPolicyError)
+    return validated_terms(raw)

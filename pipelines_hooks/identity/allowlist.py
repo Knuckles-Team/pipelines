@@ -12,10 +12,10 @@ silently widening who is accepted.
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from pipelines_hooks.core.bounded_json import read_bounded_json
 from pipelines_hooks.core.errors import CannotRun, Unavailable
 from pipelines_hooks.core.settings import setting
 
@@ -68,14 +68,8 @@ def validated_terms(raw: object) -> tuple[Identity, ...]:
 
 def load_allowlist(path: Path) -> tuple[Identity, ...]:
     """The allowlist's identities; an oversized or malformed file raises."""
-    with path.open("rb") as stream:
-        payload = stream.read(MAX_ALLOWLIST_BYTES + 1)
-    if len(payload) > MAX_ALLOWLIST_BYTES:
-        raise IdentityAllowlistError("allowlist exceeds the size limit")
-    try:
-        return validated_terms(json.loads(payload))
-    except json.JSONDecodeError as exc:
-        raise IdentityAllowlistError("allowlist is not valid JSON") from exc
+    raw = read_bounded_json(path, MAX_ALLOWLIST_BYTES, "allowlist", IdentityAllowlistError)
+    return validated_terms(raw)
 
 
 def matches(name: str, email: str, identities: tuple[Identity, ...]) -> bool:
