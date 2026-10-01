@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "spec_id": "PIPE-IDENTITY-001",
+  "owner_repo": "pipelines",
+  "requirement_ids": [
+    "PIPE-IDENTITY-R001"
+  ],
+  "delivery_state": "SPECIFIED",
+  "acceptance_state": "NOT_AUDITED",
+  "evidence": [],
+  "requirements": [
+    {
+      "id": "PIPE-IDENTITY-R001",
+      "title": "Commit author identity is restricted to an allowlist",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    }
+  ]
+}

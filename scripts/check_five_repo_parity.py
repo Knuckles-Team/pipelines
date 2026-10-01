@@ -1,4 +1,4 @@
-"""Offline exact-ref Pages fleet parity (PIPE-EH-428).
+"""Offline exact-ref Pages fleet parity (PIPE-PAGES-001).
 
 The legacy filename is retained as the command entry point; the five-repository
 worktree snapshot is historical. No hard-coded fleet or sibling fallback remains.

@@ -1,9 +1,105 @@
 {
   "schema_version": 1,
-  "spec_id": "PIPE-EH-428",
+  "spec_id": "PIPE-PAGES-001",
   "owner_repo": "pipelines",
-  "requirement_ids": ["EH-428"],
+  "requirement_ids": [
+    "PIPE-PAGES-R001",
+    "PIPE-PAGES-R002",
+    "PIPE-PAGES-R003",
+    "PIPE-PAGES-R004",
+    "PIPE-PAGES-R005",
+    "PIPE-PAGES-R006",
+    "PIPE-PAGES-R007",
+    "PIPE-PAGES-R008",
+    "PIPE-PAGES-R009",
+    "PIPE-PAGES-R010",
+    "PIPE-PAGES-R011"
+  ],
   "delivery_state": "SPECIFIED",
   "acceptance_state": "NOT_AUDITED",
-  "evidence": []
+  "evidence": [],
+  "requirements": [
+    {
+      "id": "PIPE-PAGES-R001",
+      "title": "Repository switcher kept in sync with the core repo list",
+      "delivery_state": "SPECIFIED",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R002",
+      "title": "Layered documentation from overview to reference",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R003",
+      "title": "Present-tense docs with accessible embedded start",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R004",
+      "title": "One progressively disclosed skill-graph corpus",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R005",
+      "title": "Generate architecture and reference pages from registries",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R006",
+      "title": "Rehome generated docs out of the legacy docs directory",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R007",
+      "title": "Ecosystem flow diagram with exact names and project marks",
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "64e34ca63385200f5ddfef5286e6886bf7dc80b4",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/64e34ca63385200f5ddfef5286e6886bf7dc80b4",
+          "description": "Implementing commit is reachable from the default branch."
+        }
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R008",
+      "title": "Correct ownership and quick start in consumer parity checks",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R009",
+      "title": "HTML/CSS architecture views, no ASCII or Mermaid diagrams",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R010",
+      "title": "Generate API contract docs from the contract registry",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-PAGES-R011",
+      "title": "Present-tense home page with screenshot and repo map",
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "ebfaa43bc23346a3a635edd5d1822beb46d48898",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/ebfaa43bc23346a3a635edd5d1822beb46d48898",
+          "description": "Implementing commit is reachable from the default branch."
+        }
+      ]
+    }
+  ]
 }

@@ -1,9 +1,33 @@
 {
   "schema_version": 1,
-  "spec_id": "PIPE-EH-247",
+  "spec_id": "PIPE-RELEASE-001",
   "owner_repo": "pipelines",
-  "requirement_ids": ["EH-247"],
+  "requirement_ids": [
+    "PIPE-RELEASE-R001",
+    "PIPE-RELEASE-R002",
+    "PIPE-RELEASE-R003"
+  ],
   "delivery_state": "SPECIFIED",
   "acceptance_state": "NOT_AUDITED",
-  "evidence": []
+  "evidence": [],
+  "requirements": [
+    {
+      "id": "PIPE-RELEASE-R001",
+      "title": "Pipelines publishes images in dependency order with digest pins",
+      "delivery_state": "SPECIFIED",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-RELEASE-R002",
+      "title": "Release tags point to the exact qualified commit",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    },
+    {
+      "id": "PIPE-RELEASE-R003",
+      "title": "Release build job sources environment values safely",
+      "delivery_state": "UNKNOWN",
+      "evidence": []
+    }
+  ]
 }

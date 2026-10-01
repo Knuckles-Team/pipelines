@@ -1,4 +1,4 @@
-# Test contract — PIPE-EH-247
+# Test contract — PIPE-RELEASE-001
 
 Use public synthetic candidate manifests and CI/registry responses. Unit and workflow tests require no cluster or secrets; a real release supplies separate exact-run evidence.
 

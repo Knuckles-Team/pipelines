@@ -1,6 +1,8 @@
-# PIPE-EH-428 — Ecosystem Pages parity and release receipt
+# PIPE-PAGES-001 — Ecosystem Pages parity and release receipt
 
-Status: SPECIFIED. Owner: `pipelines`. Source requirement: EH-428. Acceptance: NOT_AUDITED.
+Status: SPECIFIED. Owner: `pipelines`. Source requirement: PIPE-PAGES-R001. Acceptance: NOT_AUDITED.
+Every requirement ID this spec owns is defined in [requirements.md](requirements.md); delivery
+state and evidence for each ID are recorded in [status.json](status.json).
 
 ## Purpose and user stories
 

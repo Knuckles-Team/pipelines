@@ -1,6 +1,8 @@
-# PIPE-EH-247 — Dependency-ordered digest release orchestration
+# PIPE-RELEASE-001 — Dependency-ordered digest release orchestration
 
-Status: SPECIFIED. Owner: `pipelines`. Source requirement: EH-247, shared CI/release ordering portion only. Acceptance: NOT_AUDITED.
+Status: SPECIFIED. Owner: `pipelines`. Source requirement: PIPE-RELEASE-R001, shared CI/release ordering portion only. Acceptance: NOT_AUDITED.
+Every requirement ID this spec owns is defined in [requirements.md](requirements.md); delivery
+state and evidence for each ID are recorded in [status.json](status.json).
 
 ## Purpose and user stories
 
