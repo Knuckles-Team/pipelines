@@ -33,36 +33,33 @@ def test_n3_one_non_matching_commit_anywhere_in_range_is_refused_even_when_the_t
     assert repo.run("commit-identity-range", "--base", base) == 1
 
 
-def test_n3_names_only_the_author_field_for_a_mismatched_author(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+OUTSIDE = {"name": OUTSIDE_NAME, "email": OUTSIDE_EMAIL}
+
+
+@pytest.mark.parametrize(
+    ("committer", "author", "expect_named", "expect_silent"),
+    [
+        (ALLOWED, OUTSIDE, "author", "committer"),
+        (OUTSIDE, ALLOWED, "committer", "author"),
+    ],
+    ids=["mismatched-author", "mismatched-committer"],
+)
+def test_n3_names_only_the_one_mismatched_field_for_a_split_identity(
+    repo: Repo,
+    capsys: pytest.CaptureFixture[str],
+    committer: dict[str, str],
+    author: dict[str, str],
+    expect_named: str,
+    expect_silent: str,
+) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
     write_identity_allowlist(repo.root, [ALLOWED])
-    commit_as(
-        repo.root,
-        name=ALLOWED["name"],
-        email=ALLOWED["email"],
-        message="split-author",
-        author=f"{OUTSIDE_NAME} <{OUTSIDE_EMAIL}>",
-    )
+    commit_as(repo.root, name=committer["name"], email=committer["email"], message="split", author=f"{author['name']} <{author['email']}>")
     assert repo.run("commit-identity-range", "--base", base) == 1
     output = capsys.readouterr().out
-    assert "author" in output
-    assert "committer" not in output
+    assert expect_named in output
+    assert expect_silent not in output
     assert OUTSIDE_NAME not in output
-
-
-def test_n3_names_only_the_committer_field_for_a_mismatched_committer(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
-    base = repo.git("rev-parse", "HEAD").strip()
-    write_identity_allowlist(repo.root, [ALLOWED])
-    commit_as(
-        repo.root,
-        name=OUTSIDE_NAME,
-        email=OUTSIDE_EMAIL,
-        message="split-committer",
-        author=f"{ALLOWED['name']} <{ALLOWED['email']}>",
-    )
-    assert repo.run("commit-identity-range", "--base", base) == 1
-    output = capsys.readouterr().out
-    assert "committer" in output
 
 
 def test_p4_ci_reverification_accepts_a_fully_matching_range(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:
