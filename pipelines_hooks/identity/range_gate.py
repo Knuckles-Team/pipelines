@@ -8,6 +8,10 @@ before the allowlist existed, or made with a bypassed or skipped local hook,
 is still caught here, and independently again when CI re-runs this same gate
 over the full incoming range. Only the failing commit and field are named; the
 configured allowlist is never echoed back.
+
+A pull request whose head repository differs from its base repository is an
+external contribution and is exempt rather than checked; see
+:mod:`pipelines_hooks.identity.fork_exemption`.
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ from pathlib import Path
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.identity.allowlist import Identity, matches, resolved_allowlist
+from pipelines_hooks.identity.fork_exemption import is_fork_pull_request
 from pipelines_hooks.identity.resolve import CommitIdentity, range_identities
 
 
@@ -36,6 +41,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--base", default=None, help="base revision (default: see module docstring)")
     args = parser.parse_args(argv)
     root = repo_root(args.root)
+    if is_fork_pull_request():
+        print("commit-identity-range: OK: external pull request (fork) is exempt")
+        return 0
     identities = resolved_allowlist(root, args.allowlist)
     commits = range_identities(root, upstream_base(root, args.base))
     failures = [(commit.sha[:12], _rejected_field(commit, identities)) for commit in commits]
