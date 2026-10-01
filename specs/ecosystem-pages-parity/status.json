@@ -22,8 +22,9 @@
     {
       "id": "PIPE-PAGES-R001",
       "title": "Repository switcher kept in sync with the core repo list",
-      "delivery_state": "SPECIFIED",
-      "evidence": []
+      "delivery_state": "BUILDING",
+      "evidence": [],
+      "remaining": "A switcher change (rename and the two missing repositories) is built on a branch but not landed: every consumer verifies its tracked theme copies against this repository at main, so the template change has to land together with a re-sync in each consumer. Also remaining: removal of the obsolete standalone web UI deployment-manifest generator in agent-utilities."
     },
     {
       "id": "PIPE-PAGES-R002",
@@ -63,16 +64,30 @@
     {
       "id": "PIPE-PAGES-R005",
       "title": "Generate architecture and reference pages from registries",
-      "delivery_state": "SPECIFIED",
-      "evidence": [],
-      "remaining": "scripts/skill_graph/eg.py and au.py extract pages from architecture/component-registry.yml and contract/methods.json, but no test or CI step performs the required build-time comparison between generated page content and the source registry; the generator is not invoked by any workflow (checked-in ou"
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
+          "description": "Implemented on the default branch; exercised by tests/test_skill_graph_registry_comparison.py"
+        }
+      ]
     },
     {
       "id": "PIPE-PAGES-R006",
       "title": "Rehome generated docs out of the legacy docs directory",
-      "delivery_state": "SPECIFIED",
-      "evidence": [],
-      "remaining": "pages/ is the live mkdocs docs_dir and no gate reads docs/ as doc content, but docs/ itself still exists on main (3 files: pages-readiness.md, publication-identity.md, python-release-readiness.md) rather than being removed, and the last committed fleet receipt (pages/parity.md, 2026-09-23) records a"
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
+          "description": "Implemented on the default branch; exercised by tests/test_docs_rehomed.py"
+        }
+      ]
     },
     {
       "id": "PIPE-PAGES-R007",
@@ -104,9 +119,16 @@
     {
       "id": "PIPE-PAGES-R010",
       "title": "Generate API contract docs from the contract registry",
-      "delivery_state": "SPECIFIED",
-      "evidence": [],
-      "remaining": "scripts/skill_graph/eg.py's extract_contract() generates man pages from contract/methods.json's 429 methods, but no test or build-time comparison confirms the generated pages match the registry, and nothing invokes this generator in CI."
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
+          "description": "Implemented on the default branch; exercised by tests/test_skill_graph_registry_comparison.py"
+        }
+      ]
     },
     {
       "id": "PIPE-PAGES-R011",

@@ -34,8 +34,9 @@
     {
       "id": "PIPE-RELEASE-R003",
       "title": "Release build job sources environment values safely",
-      "delivery_state": "SPECIFIED",
-      "evidence": []
+      "delivery_state": "BUILDING",
+      "evidence": [],
+      "remaining": "Sourced environment values are now read and exported safely (scripts/write_github_env.sh, tests/test_write_github_env.py). Remaining: prove byte-identical wheels across two independent builds."
     }
   ]
 }
