@@ -28,32 +28,51 @@
     {
       "id": "PIPE-PAGES-R002",
       "title": "Layered documentation from overview to reference",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "fe4d11323d0b94c044c38f5257a15576c076500e",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/fe4d11323d0b94c044c38f5257a15576c076500e",
+          "description": "Implemented on the default branch; exercised by .github/workflows/pages.yml (mkdocs build --strict on push to pages/**, fails on broken inter-tier links)"
+        }
+      ]
     },
     {
       "id": "PIPE-PAGES-R003",
       "title": "Present-tense docs with accessible embedded start",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "SPECIFIED",
+      "evidence": [],
+      "remaining": "README.md's heading order matches the canonical Overview/Key capabilities/Documentation/Architecture/Quick start/Contributing/License order and uses the shared Material theme, but no embedded observable quick-start demonstration exists in pipelines' own docs, and no accessibility or present-tense co"
     },
     {
       "id": "PIPE-PAGES-R004",
       "title": "One progressively disclosed skill-graph corpus",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "fe4d11323d0b94c044c38f5257a15576c076500e",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/fe4d11323d0b94c044c38f5257a15576c076500e",
+          "description": "Implemented on the default branch; exercised by scripts/check_five_repo_parity.py output committed as pages/parity.md (skill-graph-reference and components-nav-tier columns = yes for all 5 tracked repos as of last run)"
+        }
+      ]
     },
     {
       "id": "PIPE-PAGES-R005",
       "title": "Generate architecture and reference pages from registries",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "SPECIFIED",
+      "evidence": [],
+      "remaining": "scripts/skill_graph/eg.py and au.py extract pages from architecture/component-registry.yml and contract/methods.json, but no test or CI step performs the required build-time comparison between generated page content and the source registry; the generator is not invoked by any workflow (checked-in ou"
     },
     {
       "id": "PIPE-PAGES-R006",
       "title": "Rehome generated docs out of the legacy docs directory",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "SPECIFIED",
+      "evidence": [],
+      "remaining": "pages/ is the live mkdocs docs_dir and no gate reads docs/ as doc content, but docs/ itself still exists on main (3 files: pages-readiness.md, publication-identity.md, python-release-readiness.md) rather than being removed, and the last committed fleet receipt (pages/parity.md, 2026-09-23) records a"
     },
     {
       "id": "PIPE-PAGES-R007",
@@ -72,20 +91,22 @@
     {
       "id": "PIPE-PAGES-R008",
       "title": "Correct ownership and quick start in consumer parity checks",
-      "delivery_state": "UNKNOWN",
+      "delivery_state": "SPECIFIED",
       "evidence": []
     },
     {
       "id": "PIPE-PAGES-R009",
       "title": "HTML/CSS architecture views, no ASCII or Mermaid diagrams",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "SPECIFIED",
+      "evidence": [],
+      "remaining": "The shared theme's runtime-architecture.svg is a tested, accessible, theme-aware generated diagram (tests/test_sync_mkdocs_theme.py) and pipelines' own pages/ has zero Mermaid/ASCII, but pages/parity.md (last run 2026-09-23, still the latest on main) records agent-utilities with 141 Mermaid and 48 A"
     },
     {
       "id": "PIPE-PAGES-R010",
       "title": "Generate API contract docs from the contract registry",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "SPECIFIED",
+      "evidence": [],
+      "remaining": "scripts/skill_graph/eg.py's extract_contract() generates man pages from contract/methods.json's 429 methods, but no test or build-time comparison confirms the generated pages match the registry, and nothing invokes this generator in CI."
     },
     {
       "id": "PIPE-PAGES-R011",

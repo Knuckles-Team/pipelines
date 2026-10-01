@@ -12,7 +12,7 @@
     {
       "id": "PIPE-IDENTITY-R001",
       "title": "Commit author identity is restricted to an allowlist",
-      "delivery_state": "UNKNOWN",
+      "delivery_state": "SPECIFIED",
       "evidence": []
     }
   ]
