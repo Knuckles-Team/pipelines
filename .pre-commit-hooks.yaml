@@ -89,6 +89,18 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: commit-identity
+  name: Commit identity - the commit being made has an allowlisted author and committer
+  entry: pipelines-hook commit-identity
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: commit-identity-range
+  name: Commit identity (range) - every commit in the outgoing/incoming range is allowlisted
+  entry: pipelines-hook commit-identity-range
+  language: python
+  pass_filenames: false
+  always_run: true
 - id: supply-chain
   name: Immutable workflow, container and dependency sources
   entry: pipelines-hook supply-chain
