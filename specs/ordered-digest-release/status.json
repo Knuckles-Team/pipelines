@@ -20,13 +20,21 @@
     {
       "id": "PIPE-RELEASE-R002",
       "title": "Release tags point to the exact qualified commit",
-      "delivery_state": "UNKNOWN",
-      "evidence": []
+      "delivery_state": "LANDED",
+      "evidence": [
+        {
+          "kind": "merged_head",
+          "result": "passed",
+          "commit": "df7212f102bbd167f1fb72e1b24b221d2db5d974",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/df7212f102bbd167f1fb72e1b24b221d2db5d974",
+          "description": "Implemented on the default branch; exercised by tests/test_maturin_pipeline_contract.py::test_source_verifier_binds_and_rejects_a_changed_head"
+        }
+      ]
     },
     {
       "id": "PIPE-RELEASE-R003",
       "title": "Release build job sources environment values safely",
-      "delivery_state": "UNKNOWN",
+      "delivery_state": "SPECIFIED",
       "evidence": []
     }
   ]
