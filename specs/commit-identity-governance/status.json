@@ -12,17 +12,16 @@
     {
       "id": "PIPE-IDENTITY-R001",
       "title": "Commit author identity is restricted to an allowlist",
-      "delivery_state": "BUILDING",
+      "delivery_state": "LANDED",
       "evidence": [
         {
-          "kind": "implementation",
+          "kind": "merged_head",
           "result": "passed",
-          "commit": "1a70d678b24febed890226bcb461f850c2b82009",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/1a70d678b24febed890226bcb461f850c2b82009",
-          "description": "The commit-identity and commit-identity-range gates are implemented, registered and tested; exercised by tests/hooks/test_identity_range.py."
+          "commit": "f2d327f13a3c158149f2e358821052305161b4d9",
+          "url": "https://github.com/Knuckles-Team/pipelines/commit/f2d327f13a3c158149f2e358821052305161b4d9",
+          "description": "Implemented on the default branch; exercised by tests/hooks/test_identity_wiring.py"
         }
-      ],
-      "remaining": "The gates are published but not yet enabled in this repository's own hook configuration and CI; that needs a configured allowlist and a decision on where it is stored."
+      ]
     }
   ]
 }
