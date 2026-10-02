@@ -30,7 +30,7 @@ where = ["."]
 include = ["pipelines_hooks*"]
 
 [tool.setuptools.package-data]
-pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json"]
+pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json", "skills/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -14,7 +14,10 @@ repositories supply their own policy through the documented TOML configuration.
 
 `pipelines-hook` is the single command entry point for the Python quality-gate
 package. `pipelines_hooks/cli.py` maps published IDs to gate modules, and each
-module exposes `main(argv) -> int`.
+module exposes `main(argv) -> int`. `pipelines_hooks/skills/<name>/SKILL.md`
+holds this repository's packaged skills (declared in `pyproject.toml`
+`[tool.setuptools.package-data]`); read a skill before explaining a gate's
+caps or this repository's branch/worktree conventions to a contributor.
 
 Reusable workflows under `.github/workflows/` build Python packages, native
 wheels, containers, desktop artifacts, services, and Pages sites. They execute
