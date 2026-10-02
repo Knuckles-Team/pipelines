@@ -1,0 +1,26 @@
+[
+  {
+    "component_id": "A",
+    "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifact_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "workflow_run_url": "https://github.com/Knuckles-Team/component-a/actions/runs/1",
+    "status": "published",
+    "reason": ""
+  },
+  {
+    "component_id": "B",
+    "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "artifact_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "workflow_run_url": "https://github.com/Knuckles-Team/component-b/actions/runs/1",
+    "status": "published",
+    "reason": ""
+  },
+  {
+    "component_id": "C",
+    "commit": "cccccccccccccccccccccccccccccccccccccccc",
+    "artifact_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "workflow_run_url": "https://github.com/Knuckles-Team/component-c/actions/runs/1",
+    "status": "published",
+    "reason": ""
+  }
+]
