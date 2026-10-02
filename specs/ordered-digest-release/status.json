@@ -14,8 +14,9 @@
     {
       "id": "PIPE-RELEASE-R001",
       "title": "Pipelines publishes images in dependency order with digest pins",
-      "delivery_state": "SPECIFIED",
-      "evidence": []
+      "delivery_state": "BUILDING",
+      "evidence": [],
+      "remaining": "A release orchestration tool is on the default branch (scripts/release_orchestrator.py: validate, plan, publish, verify-consumers): candidate schema with cycle and floating-tag refusal, qualification, dependency-ordered publication that stops downstream on a failed stage, idempotent retry, and exact digest handoff, all tested against recorded fixtures. Remaining: the live adapters that push a revision, await hosted checks and publish images, and wiring the tool into the release workflow as an opt-in step."
     },
     {
       "id": "PIPE-RELEASE-R002",
@@ -36,7 +37,7 @@
       "title": "Release build job sources environment values safely",
       "delivery_state": "BUILDING",
       "evidence": [],
-      "remaining": "Sourced environment values are now read and exported safely (scripts/write_github_env.sh, tests/test_write_github_env.py). Remaining: prove byte-identical wheels across two independent builds."
+      "remaining": "Sourced environment values are read and exported safely (scripts/write_github_env.sh). A reproducibility check that builds a package twice and compares the wheels byte for byte is on the default branch (scripts/release_orchestrator.py check-reproducible-build), proven on a pure-Python fixture including a deliberately non-reproducible build. Remaining: run that check inside the real release build, including for the Rust-built wheels."
     }
   ]
 }
