@@ -8,26 +8,17 @@ project's own locked ``build``/``setuptools``).
 
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
 import pytest
+from release_fixtures import write_reproducible_fixture
 
 from scripts.release.errors import ReproducibilityError
 from scripts.release.reproducibility import build_wheel_twice, compare_wheels
 
-SOURCE_PACKAGE = Path(__file__).parent / "fixtures" / "reproducible_package"
-
-
-def _fresh_source(tmp_path: Path, name: str) -> Path:
-    """An isolated copy of the fixture package, so parallel builds never race on one checkout."""
-    destination = tmp_path / name
-    shutil.copytree(SOURCE_PACKAGE, destination)
-    return destination
-
 
 def test_building_the_same_source_twice_with_one_source_date_epoch_is_byte_identical(tmp_path: Path) -> None:
-    source = _fresh_source(tmp_path, "source")
+    source = write_reproducible_fixture(tmp_path / "source")
     wheel_a, wheel_b = build_wheel_twice(source, tmp_path / "out-a", tmp_path / "out-b", source_date_epoch="1700000000")
     result = compare_wheels(wheel_a, wheel_b)
     assert result.identical, result.differences
@@ -35,8 +26,8 @@ def test_building_the_same_source_twice_with_one_source_date_epoch_is_byte_ident
 
 
 def test_a_deliberately_different_source_date_epoch_is_detected_as_not_reproducible(tmp_path: Path) -> None:
-    source_one = _fresh_source(tmp_path, "source-one")
-    source_two = _fresh_source(tmp_path, "source-two")
+    source_one = write_reproducible_fixture(tmp_path / "source-one")
+    source_two = write_reproducible_fixture(tmp_path / "source-two")
     wheel_one, _ = build_wheel_twice(source_one, tmp_path / "one-a", tmp_path / "one-b", source_date_epoch="1700000000")
     wheel_two, _ = build_wheel_twice(source_two, tmp_path / "two-a", tmp_path / "two-b", source_date_epoch="1700000100")
 

@@ -63,11 +63,18 @@ def _blocked_by_predecessor(candidate: Candidate, blocked: dict[str, str]) -> st
 
 def _ineligibility_reason(candidate: Candidate, checks: ChecksClient) -> str:
     results = {result.name: result for result in checks.check_results(candidate.repository, candidate.source_commit)}
+    missing, failing, wrong_commit = _check_problems(candidate, results)
+    return _render_reason(missing, failing, wrong_commit)
+
+
+def _check_problems(candidate: Candidate, results: dict[str, CheckResult]) -> tuple[list[str], list[str], list[str]]:
     missing = [name for name in candidate.required_checks if name not in results]
     failing = [name for name in candidate.required_checks if name in results and results[name].outcome != "passed"]
-    wrong_commit = sorted(
-        {name for name, result in results.items() if result.commit != candidate.source_commit}
-    )
+    wrong_commit = sorted({name for name, result in results.items() if result.commit != candidate.source_commit})
+    return missing, failing, wrong_commit
+
+
+def _render_reason(missing: list[str], failing: list[str], wrong_commit: list[str]) -> str:
     bits = []
     if missing:
         bits.append(f"missing checks: {', '.join(missing)}")

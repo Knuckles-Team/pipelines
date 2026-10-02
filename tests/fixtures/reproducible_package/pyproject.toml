@@ -1,8 +1,0 @@
-[build-system]
-requires = ["setuptools>=80"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "reprofixture"
-version = "0.0.1"
-description = "A trivial pure-Python fixture package for the wheel reproducibility test."

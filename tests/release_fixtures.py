@@ -39,3 +39,35 @@ def success_plan(candidate_set: CandidateSet) -> dict[str, StageOutcome]:
         c.component_id: StageOutcome(c.component_id, c.source_commit, c.artifact_digest, f"https://ci/{c.component_id}", "published")
         for c in candidate_set.candidates
     }
+
+
+_REPRODUCIBLE_PYPROJECT = """\
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reprofixture"
+version = "0.0.1"
+description = "A trivial pure-Python fixture package for the wheel reproducibility test."
+"""
+
+_REPRODUCIBLE_INIT = '''\
+"""Trivial fixture package used only to prove wheel reproducibility (PIPE-RELEASE-R003)."""
+
+VALUE = 1
+'''
+
+
+def write_reproducible_fixture(destination: Path) -> Path:
+    """A minimal, buildable pure-Python package written fresh at ``destination``.
+
+    Generated at test time rather than checked in as a tracked ``pyproject.toml``:
+    a second tracked project-boundary file under ``tests/`` confuses tooling that
+    walks the tree looking for one (observed with the KISS census scanner).
+    """
+    package_dir = destination / "src" / "reprofixture"
+    package_dir.mkdir(parents=True, exist_ok=True)
+    (destination / "pyproject.toml").write_text(_REPRODUCIBLE_PYPROJECT, encoding="utf-8")
+    (package_dir / "__init__.py").write_text(_REPRODUCIBLE_INIT, encoding="utf-8")
+    return destination
