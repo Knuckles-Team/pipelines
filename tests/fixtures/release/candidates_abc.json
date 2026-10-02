@@ -1,0 +1,59 @@
+{
+  "candidates": [
+    {
+      "component_id": "A",
+      "repository": "Knuckles-Team/component-a",
+      "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "artifact_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "profile_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "compatibility_range": ">=1.0,<2.0",
+      "predecessors": [],
+      "required_checks": [
+        "ci/pytest"
+      ],
+      "build_receipt": {
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "artifact_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "run_url": "https://github.com/Knuckles-Team/component-a/actions/runs/1"
+      }
+    },
+    {
+      "component_id": "B",
+      "repository": "Knuckles-Team/component-b",
+      "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "artifact_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "profile_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "compatibility_range": ">=1.0,<2.0",
+      "predecessors": [
+        "A"
+      ],
+      "required_checks": [
+        "ci/pytest"
+      ],
+      "build_receipt": {
+        "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "artifact_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "run_url": "https://github.com/Knuckles-Team/component-b/actions/runs/1"
+      }
+    },
+    {
+      "component_id": "C",
+      "repository": "Knuckles-Team/component-c",
+      "source_commit": "cccccccccccccccccccccccccccccccccccccccc",
+      "artifact_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "profile_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "compatibility_range": ">=1.0,<2.0",
+      "predecessors": [
+        "B"
+      ],
+      "required_checks": [
+        "ci/pytest"
+      ],
+      "build_receipt": {
+        "source_commit": "cccccccccccccccccccccccccccccccccccccccc",
+        "artifact_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "run_url": "https://github.com/Knuckles-Team/component-c/actions/runs/1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "repository": "Knuckles-Team/component-a",
+    "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "results": [
+      {"name": "ci/pytest", "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "outcome": "passed"}
+    ]
+  },
+  {
+    "repository": "Knuckles-Team/component-b",
+    "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "results": [
+      {"name": "ci/pytest", "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "outcome": "passed"}
+    ]
+  },
+  {
+    "repository": "Knuckles-Team/component-c",
+    "commit": "cccccccccccccccccccccccccccccccccccccccc",
+    "results": [
+      {"name": "ci/pytest", "commit": "cccccccccccccccccccccccccccccccccccccccc", "outcome": "passed"}
+    ]
+  }
+]
