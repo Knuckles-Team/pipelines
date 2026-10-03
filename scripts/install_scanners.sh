@@ -24,11 +24,9 @@ install_crate() {
 install_crate cccc cccc --git https://github.com/moznion/cccc --rev d728759323be5d9977b7390a27133e8eaf481f26 cccc-cli
 install_crate kiss kiss --git https://github.com/Knucklessg1/kiss --rev 7f1c6785697d3fe9a41ceb8b8e5d0f615fb1f3d9 kiss-ai
 install_crate dupehound dupehound --version 0.1.2 dupehound
-if [[ ! -x "$root/npm/node_modules/.bin/jscpd" ]]; then
-  npm install --prefix "$root/npm" --no-package-lock --ignore-scripts --no-save --no-audit --no-fund \
-    "jscpd@5.0.16" >&2
-fi
+jscpd_bin_dir="$(python3 "$(dirname "$0")/install_jscpd.py" --root "$root/jscpd")"
 
-for bin_dir in cccc/bin kiss/bin dupehound/bin npm/node_modules/.bin; do
+for bin_dir in cccc/bin kiss/bin dupehound/bin; do
   echo "$root/$bin_dir"
 done
+echo "$jscpd_bin_dir"
