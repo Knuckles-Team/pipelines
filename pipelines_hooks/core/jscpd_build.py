@@ -19,7 +19,7 @@ ARCHIVE_URL = f"https://codeload.github.com/kucherenko/jscpd/tar.gz/{SOURCE_COMM
 ARCHIVE_SHA256 = "3ba10661d3c61034a1c6c9d1387acab0af4ef313062327bb14ebacf6ab9ade50"
 PATCH_SHA256 = "c0403911dfd8d52f4d88b9c17e54a2b75b391d764a123eaad9940fd4a26dab78"
 LOCK_SHA256 = "9bd475c6bfb2615d292c64a1b988654afa6a73fe0039b5b077312a65c35ab57a"
-RUST_TOOLCHAIN = "1.97"
+RUST_TOOLCHAIN = "1.97.0"
 
 
 def sha256(path: Path) -> str:
@@ -56,7 +56,7 @@ def _validated_receipt(executable: Path) -> dict:
         raise ValueError("source/toolchain/platform identity mismatch")
     if receipt.get("binary_sha256") != sha256(executable):
         raise ValueError("executable checksum mismatch")
-    if not receipt.get("compiler", "").startswith("rustc 1.97.0 "):
+    if not receipt.get("compiler", "").startswith(f"rustc {RUST_TOOLCHAIN} "):
         raise ValueError("compiler identity mismatch")
     return receipt
 

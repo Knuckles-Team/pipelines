@@ -109,7 +109,7 @@ def install(prefix: Path, archive: Path | None = None) -> Path:
     destination.mkdir(parents=True, exist_ok=True)
     patch = REPO / "scripts/patches/jscpd-markdown-glob.patch"
     compiler = run("rustup", "run", contract.RUST_TOOLCHAIN, "rustc", "--version")
-    if not compiler.startswith("rustc 1.97.0 "):
+    if not compiler.startswith(f"rustc {contract.RUST_TOOLCHAIN} "):
         raise ValueError("pinned Rust compiler unavailable")
     with tempfile.TemporaryDirectory(prefix="build-", dir=destination) as tmp:
         work = Path(tmp)

@@ -98,7 +98,10 @@ def test_installer_embeds_reviewed_patch_and_workflow_keys_all_inputs():
         "pipelines_hooks/core/jscpd_build.py",
     ):
         assert path in workflow
-    assert "rustup toolchain install 1.97 --profile minimal" in workflow
+    assert build.RUST_TOOLCHAIN == "1.97.0"
+    assert (
+        f"rustup toolchain install {build.RUST_TOOLCHAIN} --profile minimal" in workflow
+    )
     assert "runner.arch" in workflow
 
 
@@ -147,3 +150,14 @@ def test_other_scanner_build_probe_remains_registered():
 
     assert tools._BUILD_PROBES["kiss"] is require_fork_build
     assert tools._BUILD_PROBES["jscpd"] is build.require_corrected_build
+
+
+@pytest.mark.parametrize(
+    "compiler", ["rustc 1.97.1 (fixture)", "rustc 1.98.0 (fixture)"]
+)
+def test_receipt_rejects_other_compiler_patch_versions(executable, compiler):
+    data = receipt(executable)
+    data["compiler"] = compiler
+    executable.with_suffix(".provenance.json").write_text(json.dumps(data))
+    with pytest.raises(CannotRun, match="compiler identity mismatch"):
+        build.verify_receipt(executable)

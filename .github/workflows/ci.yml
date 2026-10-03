@@ -31,7 +31,7 @@ jobs:
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
       - name: Install pinned jscpd build compiler
-        run: rustup toolchain install 1.97 --profile minimal
+        run: rustup toolchain install 1.97.0 --profile minimal
 
       # The native scanners are built from source; the build is cached under the
       # source, patch, lock identity, compiler and provisioning recipe, and
