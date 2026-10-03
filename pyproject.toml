@@ -14,9 +14,6 @@ dependencies = [
     "PyYAML==6.0.3",
 ]
 
-[project.entry-points."agent_utilities.skill_providers"]
-pipelines = "pipelines_hooks.skills"
-
 [project.scripts]
 pipelines-hook = "pipelines_hooks.cli:main"
 
@@ -33,7 +30,7 @@ where = ["."]
 include = ["pipelines_hooks*"]
 
 [tool.setuptools.package-data]
-pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json", "skills/**"]
+pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
