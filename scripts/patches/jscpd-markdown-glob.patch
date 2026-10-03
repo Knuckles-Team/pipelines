@@ -1,0 +1,73 @@
+diff --git a/rust/crates/cpd-tokenizer/src/generic.rs b/rust/crates/cpd-tokenizer/src/generic.rs
+index c913f05..4bdd9ab 100644
+--- a/rust/crates/cpd-tokenizer/src/generic.rs
++++ b/rust/crates/cpd-tokenizer/src/generic.rs
+@@ -24,6 +24,7 @@ enum CommentStyle {
+
+ fn comment_style(format: &str) -> CommentStyle {
+     match format {
++        "markdown" => CommentStyle::None,
+         "c" | "c-header" | "cpp" | "cpp-header" | "csharp" | "java" | "go" | "rust" | "swift"
+         | "kotlin" | "scala" | "dart" | "php" | "typescript" | "jsx" | "tsx" | "javascript"
+         | "groovy" | "d" | "glsl" | "hlsl" | "wgsl" | "openqasm" | "solidity" | "bicep" | "hcl"
+diff --git a/rust/crates/cpd-tokenizer/src/markdown.rs b/rust/crates/cpd-tokenizer/src/markdown.rs
+index b0a5484..55af218 100644
+--- a/rust/crates/cpd-tokenizer/src/markdown.rs
++++ b/rust/crates/cpd-tokenizer/src/markdown.rs
+@@ -553,6 +553,56 @@ mod tests {
+         assert!(find_map(maps, format).is_some(), "{}", msg);
+     }
+
++    #[test]
++    fn markdown_globs_preserve_prose_and_embedded_maps_across_modes() {
++        for mode in [Mode::Mild, Mode::Weak, Mode::Strict] {
++            for newline in ["\n", "\r\n"] {
++                for (fence, tag, expected) in [
++                    ("```", "python", "python"),
++                    ("~~~", "python", "python"),
++                    ("```", "unknown_language", "text"),
++                ] {
++                    let source = format!(
++                        "Read café/*.md at https://example.test/a/* and literal /* markers.\n\n{fence}{tag}\nalpha = 17\nbeta = 29\ngamma = 43\n{fence}\n"
++                    ).replace('\n', newline);
++                    let control = source.replace("/*", "/x");
++                    let options = TokenizeOptions::new(mode);
++                    let maps = tokenize_markdown_maps(&source, &options);
++                    let controls = tokenize_markdown_maps(&control, &options);
++                    let embedded = find_map(&maps, expected).expect("embedded map");
++                    let ordinary = find_map(&controls, expected).expect("control embedded map");
++                    assert!(!embedded.tokens.is_empty());
++                    assert_eq!(format!("{:?}", embedded.tokens), format!("{:?}", ordinary.tokens));
++                    for token in &embedded.tokens {
++                        assert!(source.is_char_boundary(token.range[0]));
++                        assert!(source.is_char_boundary(token.range[1]));
++                        assert!(token.start.line >= 4 && token.end.line <= 6);
++                        assert!(token.range[0] < token.range[1]);
++                    }
++                    if mode != Mode::Strict {
++                        let prose = find_map(&maps, "markdown").expect("prose map");
++                        assert!(prose.tokens.iter().all(|t| t.start.line == 1));
++                    }
++                    let display = crate::generic::tokenize_generic(&source, "markdown");
++                    assert!(display.iter().all(|t| !matches!(t.kind, TokenKind::Comment | TokenKind::BlockComment)));
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn markdown_glob_does_not_change_frontmatter_or_ignore_contracts() {
++        for mode in [Mode::Mild, Mode::Weak, Mode::Strict] {
++            let source = "---\ntitle: café\n---\nRead docs/*.md\n<!-- jscpd:ignore-start -->\n```python\nignored_name = 17\n```\n<!-- jscpd:ignore-end -->\n```python\nvisible_name = 29\n```\n";
++            let options = TokenizeOptions::new(mode);
++            let maps = tokenize_markdown_maps(source, &options);
++            assert!(!find_map(&maps, "yaml").expect("front matter").tokens.is_empty());
++            let python = find_map(&maps, "python").expect("visible code");
++            assert!(!python.tokens.is_empty());
++            assert!(python.tokens.iter().all(|t| t.start.line == 11));
++        }
++    }
++
+     #[test]
+     fn maps_empty_source_returns_empty() {
+         let maps = tokenize_markdown_maps("", &default_options());

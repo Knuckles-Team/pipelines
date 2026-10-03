@@ -30,15 +30,18 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
+      - name: Install pinned jscpd build compiler
+        run: rustup toolchain install 1.97.0 --profile minimal
+
       # The native scanners are built from source; the build is cached under the
-      # hash of scripts/install_scanners.sh (the one place the pins live), and
+      # source, patch, lock identity, compiler and provisioning recipe, and
       # the scanner-versions hook still proves every cached binary on each run.
       - name: Restore pinned scanner toolchain
         id: scanner-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.SCANNER_ROOT }}
-          key: pipelines-scanners-${{ runner.os }}-${{ hashFiles('scripts/install_scanners.sh') }}
+          key: pipelines-scanners-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/install_scanners.sh', 'scripts/install_jscpd.py', 'scripts/patches/jscpd-markdown-glob.patch', 'pipelines_hooks/core/jscpd_build.py') }}
 
       - name: Provision pinned scanner toolchain
         if: steps.scanner-cache.outputs.cache-hit != 'true'

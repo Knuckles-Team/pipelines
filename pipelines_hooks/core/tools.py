@@ -18,6 +18,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import SCANNERS_REMEDY, CannotRun, Unavailable
 from pipelines_hooks.core.gitenv import sanitized_env
+from pipelines_hooks.core.jscpd_build import require_corrected_build
 from pipelines_hooks.core.kiss_fork import require_fork_build
 from pipelines_hooks.core.settings import setting
 
@@ -29,9 +30,14 @@ PINNED_VERSIONS = {
 }
 #: Scanners whose pinned build is a fork that prints the same ``--version`` as
 #: the upstream release; each probe proves the installed binary is the fork.
-_BUILD_PROBES = {"kiss": require_fork_build}
+_BUILD_PROBES = {"kiss": require_fork_build, "jscpd": require_corrected_build}
 #: jscpd v5 reports itself as ``cpd``.
-_VERSION_PREFIX = {"cccc": "cccc", "kiss": "kiss", "dupehound": "dupehound", "jscpd": "cpd"}
+_VERSION_PREFIX = {
+    "cccc": "cccc",
+    "kiss": "kiss",
+    "dupehound": "dupehound",
+    "jscpd": "cpd",
+}
 
 
 def expected_version_line(tool: str) -> str:
@@ -49,10 +55,16 @@ def resolve(tool: str) -> str:
     if override:
         candidate = Path(override).expanduser()
         if not _executable(candidate):
-            raise CannotRun(f"${tool.upper()}_BIN is not an executable file: {candidate}")
+            raise CannotRun(
+                f"${tool.upper()}_BIN is not an executable file: {candidate}"
+            )
         return str(candidate)
     home = Path.home()
-    for candidate in (home / ".local/bin" / tool, Path("/usr/local/bin") / tool, home / ".cargo/bin" / tool):
+    for candidate in (
+        home / ".local/bin" / tool,
+        Path("/usr/local/bin") / tool,
+        home / ".cargo/bin" / tool,
+    ):
         if _executable(candidate):
             return str(candidate)
     found = shutil.which(tool)
