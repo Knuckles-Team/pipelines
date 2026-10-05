@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import os
 import subprocess
 from pathlib import Path
 
 import yaml
 
+from pipelines_hooks.core.gitenv import sanitized_env
 from tests.workflow_fixtures import external_caller
 
 
@@ -24,6 +24,7 @@ def _git(root: Path, *args: str) -> str:
     result = subprocess.run(
         ["git", *args],
         cwd=root,
+        env=sanitized_env(),
         check=True,
         capture_output=True,
         text=True,
@@ -106,7 +107,7 @@ def test_source_verifier_binds_and_rejects_a_changed_head(tmp_path: Path) -> Non
     _git(repository, "commit", "-q", "-m", "source commit")
     source = _git(repository, "rev-parse", "HEAD")
     github_env = tmp_path / "github-env"
-    environment = os.environ.copy()
+    environment = sanitized_env()
     environment.update(
         {
             "EXPECTED_COMMIT": source,
@@ -205,7 +206,7 @@ def test_determine_version_script_works_with_a_shallow_checkout(tmp_path: Path) 
     dist.mkdir()
     (dist / "fixture-1.2.3-py3-none-any.whl").write_bytes(b"wheel")
     github_env = tmp_path / "github-env"
-    environment = os.environ.copy()
+    environment = sanitized_env()
     environment.update(
         {
             "EXPECTED_COMMIT": expected,

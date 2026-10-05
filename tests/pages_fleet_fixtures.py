@@ -7,11 +7,12 @@ import json
 import subprocess
 from pathlib import Path
 
+from pipelines_hooks.core.gitenv import sanitized_env
 from scripts.sync_mkdocs_theme import THEME_FILES, sync_theme
 
 
 def git(root: Path, *args: str) -> str:
-    return subprocess.check_output(["git", "-C", str(root), *args], text=True).strip()
+    return subprocess.check_output(["git", "-C", str(root), *args], env=sanitized_env(), text=True).strip()
 
 
 def commit(root: Path) -> str:
