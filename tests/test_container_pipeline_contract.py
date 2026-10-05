@@ -6,23 +6,16 @@ import hashlib
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
-from tests.workflow_fixtures import freeze_runtime, runtime_case
+from tests.workflow_fixtures import freeze_runtime, run_runtime_helper, runtime_case
 
 ROOT = Path(__file__).parents[1]
 WORKFLOW = ROOT / ".github/workflows/container_pipeline.yml"
 ACTION = ROOT / ".github/actions/stage-container-runtime/action.yml"
-SCRIPT = ROOT / ".github/actions/stage-container-runtime/stage_runtime.py"
-
-
-def run_helper(case: dict, phase: str = "stage") -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, "-I", str(SCRIPT), phase], cwd=case["caller"],
-                          env=case["environment"], text=True, capture_output=True)
 
 
 def test_workflow_contract_and_legacy_publication_controls() -> None:
@@ -51,6 +44,8 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
     ("", "agent", "FROM base AS agent\n", (True, "agent", False)),
     ("", "mcp", "FROM base AS agent\n", (False, None, False)),
     ("", "mcp", "from base as mcp\n", (True, "mcp", False)),
+    ("", "agent", "FROM base AS agent\r\n", (True, "agent", False)),
+    ("mcp", "mcp", "FROM base AS mcp\r\n", (True, "mcp", False)),
     ("default", "agent", "FROM base\n", (True, "", False)),
     ("default", "mcp", "FROM base\n", (False, None, False)),
     ("runtime", "agent", "FROM base AS runtime\n", (True, "runtime", False)),
@@ -102,6 +97,27 @@ def test_runtime_request_requires_explicit_target(tmp_path: Path) -> None:
     assert (tmp_path / "output").read_text() == "runtime=true\n"
 
 
+@pytest.mark.parametrize("collision", ["absent", "directory", "file", "symlink", "dangling-symlink"])
+def test_pipeline_checkout_collision_fails_before_checkout(tmp_path: Path, collision: str) -> None:
+    steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+    preflight = next(step for step in steps if step["name"] == "Validate pipeline checkout destination")
+    checkout = next(step for step in steps if step["name"] == "Checkout pipeline contract")
+    assert steps.index(preflight) < steps.index(checkout) and preflight["if"] == checkout["if"]
+    destination = tmp_path / ".pipeline-contract"
+    outside = tmp_path / "outside-checkout"
+    outside.mkdir()
+    sentinel = outside / "caller-file"
+    sentinel.write_text("preserve caller content")
+    prepare = {"absent": lambda: None, "directory": destination.mkdir,
+               "file": lambda: destination.write_text("existing"),
+               "symlink": lambda: destination.symlink_to(outside, target_is_directory=True),
+               "dangling-symlink": lambda: destination.symlink_to(tmp_path / "missing")}
+    prepare[collision]()
+    result = subprocess.run(["bash", "-c", preflight["run"]], env={**os.environ, "CONTRACT_PATH": str(destination)}, capture_output=True)
+    assert (result.returncode == 0) == (collision == "absent")
+    assert sentinel.read_text() == "preserve caller content"
+
+
 @pytest.mark.parametrize("profile", ["graphos", "connector/agent-utilities", "connector-without-graph"])
 def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: str) -> None:
     case = runtime_case(tmp_path, ROOT)
@@ -122,9 +138,9 @@ def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: s
     freeze_runtime(case)
     assert not (case["caller"] / ".github/actions").exists()
     assert (case["caller"] / ".pipeline-contract/.github/actions/stage-container-runtime/action.yml").is_file()
-    prepared = run_helper(case, "prepare")
+    prepared = run_runtime_helper(case, "prepare")
     assert prepared.returncode == 0, prepared.stderr
-    result = run_helper(case)
+    result = run_runtime_helper(case)
     assert result.returncode == 0, result.stderr
     destination = case["caller"] / "build-artifacts/runtime"
     for original in case["download"].rglob("*"):
@@ -145,7 +161,7 @@ def test_invalid_inputs_refused_before_download(tmp_path: Path, key: str, value:
     freeze_runtime(case)
     case["inputs"][key] = value
     case["environment"]["RUNTIME_INPUTS"] = json.dumps(case["inputs"])
-    result = run_helper(case, "prepare")
+    result = run_runtime_helper(case, "prepare")
     assert result.returncode != 0
     assert not Path(case["environment"]["GITHUB_OUTPUT"]).exists()
 
@@ -172,7 +188,7 @@ def test_semantic_mismatches_refused_even_with_repinned_freeze(tmp_path: Path, m
     }
     changes[mutation]()
     freeze_runtime(case)
-    result = run_helper(case)
+    result = run_runtime_helper(case)
     assert result.returncode != 0, mutation
     assert not (case["caller"] / "build-artifacts/runtime").exists()
 
@@ -195,7 +211,7 @@ def test_changed_bytes_or_unsafe_staging_never_overwrites_caller(tmp_path: Path,
         "pipeline-checkout": lambda: case["environment"].update(EXPECTED_PIPELINE="b" * 40),
     }
     changes[mutation]()
-    result = run_helper(case)
+    result = run_runtime_helper(case)
     assert result.returncode != 0, mutation
     assert not (destination / "source-freeze.json").exists()
 
@@ -213,6 +229,6 @@ def test_lock_cannot_reintroduce_resolution_or_unselected_extras(tmp_path: Path,
     lock.write_text(replacement.format(hash=item["sha256"], path=item["path"]) + "\n" + "\n".join(lines[2:]) + "\n")
     case["inputs"]["lock-sha256"] = case["manifest"]["requirements_lock"]["sha256"] = hashlib.sha256(lock.read_bytes()).hexdigest()
     freeze_runtime(case)
-    result = run_helper(case)
+    result = run_runtime_helper(case)
     assert result.returncode != 0
     assert not (case["caller"] / "build-artifacts/runtime").exists()

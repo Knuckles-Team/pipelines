@@ -6,6 +6,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from pipelines_hooks.core.gitenv import sanitized_env
@@ -84,3 +85,9 @@ def freeze_runtime(case: dict) -> None:
     freeze.write_text(json.dumps(case["manifest"]), encoding="utf-8")
     case["inputs"]["freeze-sha256"] = hashlib.sha256(freeze.read_bytes()).hexdigest()
     case["environment"]["RUNTIME_INPUTS"] = json.dumps(case["inputs"])
+
+
+def run_runtime_helper(case: dict, phase: str = "stage") -> subprocess.CompletedProcess:
+    script = case["caller"] / ".pipeline-contract/.github/actions/stage-container-runtime/stage_runtime.py"
+    return subprocess.run([sys.executable, "-I", str(script), phase], cwd=case["caller"],
+                          env=case["environment"], text=True, capture_output=True)

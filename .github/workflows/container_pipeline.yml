@@ -127,7 +127,7 @@ jobs:
           if [[ "$target" == default ]]; then
             echo 'target=' >> "$GITHUB_OUTPUT"
             echo 'exists=true' >> "$GITHUB_OUTPUT"
-          elif awk -v target="$target" 'toupper($1)=="FROM" {for(i=2;i<NF;i++) if(toupper($i)=="AS" && $(i+1)==target) found=1} END {exit !found}' "$DOCKERFILE"; then
+          elif awk -v target="$target" '{sub(/\r$/, "", $0)} toupper($1)=="FROM" {for(i=2;i<NF;i++) if(toupper($i)=="AS" && $(i+1)==target) found=1} END {exit !found}' "$DOCKERFILE"; then
             echo "target=$target" >> "$GITHUB_OUTPUT"
             echo 'exists=true' >> "$GITHUB_OUTPUT"
           elif [[ -n "$REQUESTED_TARGET" ]]; then
@@ -138,8 +138,19 @@ jobs:
             echo "::notice::Dockerfile has no '$target' stage — skipping this leg (single-surface package)."
           fi
 
-      - name: Checkout pipeline contract
+      - name: Validate pipeline checkout destination
         if: &stage_runtime steps.target.outputs.exists == 'true' && steps.target.outputs.runtime == 'true'
+        env:
+          CONTRACT_PATH: ${{ github.workspace }}/.pipeline-contract
+        run: |
+          set -euo pipefail
+          if [[ -e "$CONTRACT_PATH" || -L "$CONTRACT_PATH" ]]; then
+            echo '::error::Pipeline checkout destination already exists; refusing to replace caller content.'
+            exit 1
+          fi
+
+      - name: Checkout pipeline contract
+        if: *stage_runtime
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}

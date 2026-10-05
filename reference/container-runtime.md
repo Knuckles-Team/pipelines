@@ -82,6 +82,9 @@ their own complete closure; the GraphOS lock is not interchangeable.
 
 ## Staging and recipe responsibilities
 
+Before checking out the reusable workflow, the publisher rejects an existing
+`.pipeline-contract` file, directory or symlink, including dangling symlinks.
+It never lets the checkout action clean or replace caller content at that path.
 The action loads its helper from the reusable workflow's own pinned checkout,
 checks both checkout revisions, and validates the request before downloading.
 It hashes the freeze, lock and every wheel; rejects missing, duplicate or extra
