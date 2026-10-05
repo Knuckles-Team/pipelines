@@ -11,9 +11,9 @@ Set `build_target: default` to build the Dockerfile's final stage once, includin
 single-stage recipes. A named `build_target` builds that stage once and fails if
 it is absent. Explicit `mcp` selection retains the mcp leg's existing suffixes
 and tags; other explicit targets use the agent leg's unsuffixed tags. The other
-leg skips the build. Runtime staging requires explicit
-selection so one profile cannot accidentally feed both images. Separate callers
-can publish separate profiles.
+leg skips the build. Runtime staging requires explicit profile-bound selection:
+GraphOS uses `default`; connector profiles use their `mcp` or `agent` suffix.
+Separate callers publish separate profiles.
 
 ## Opt-in inputs
 
@@ -21,9 +21,9 @@ can publish separate profiles.
 | --- | --- |
 | `dockerfile` | The caller's offline runtime recipe, for example `docker/graphos-unified.Dockerfile`. |
 | `build_context` | Existing caller-relative local directory, default `.`. |
-| `build_target` | `default` or one named Dockerfile stage. |
+| `build_target` | `default` for `graphos`; `mcp` or `agent` matching the connector profile suffix. |
 | `runtime_artifact_id` | One immutable numeric artifact ID produced earlier in the same workflow run. |
-| `runtime_profile` | `graphos` or `connector/<normalized-distribution>`. |
+| `runtime_profile` | `graphos` or `connector/<normalized-distribution>/<mcp\|agent>`. |
 | `source_revision` | Full lowercase caller commit SHA equal to `github.sha`, checkout HEAD and the frozen caller source. |
 | `graph_os_revision` | Full frozen `graph-os` SHA when present in the profile; otherwise empty. Required for `graphos`. |
 | `runtime_lock_sha256` | Expected SHA256 of `requirements.lock`, obtained from the qualified producer. |
@@ -43,11 +43,19 @@ not accepted. The workflow needs no additional token or permission.
 
 ## Producer and manifest contract
 
-The source freeze uses schema `graphos-runtime-wheel-inputs/1`:
+The source freeze uses schema `graphos-runtime-wheel-inputs/2`. This is the
+hard cutover defined by frozen interface revision `2026-10-05.stage-profiles.1`
+(contract SHA256 `602770e54718c77f6769ae5bc33f914bbcea62100d2bb0330873041768d44c25`).
+Artifact-backed producers and callers must update together; /1 manifests and
+two-component connector profile aliases are rejected. Callers without runtime
+artifacts retain their existing behavior. Published old workflow pins remain
+historical.
+
+Required manifest fields:
 
 - `profile` contains `name`, the exact target `{python: "3.14", implementation:
   "cpython", os: "linux", arch: "x86_64"}`, `first_party`, and
-  `explicit_third_party_roots`.
+  `explicit_third_party_roots`, `image_stage` and `root_requirement`.
 - Every first-party entry contains `distribution`, `version`, `repository`,
   `source_sha`, `extras`, and `pyproject_sha256`.
 - `requirements_lock` contains `path: requirements.lock` and its `sha256`.
@@ -57,6 +65,21 @@ The source freeze uses schema `graphos-runtime-wheel-inputs/1`:
 - `resolver_receipt_sha256` and `verification_receipt_sha256` bind the producer's
   resolution and static verification evidence. All SHA256 fields are full,
   nonzero lowercase digests. Source revisions are full lowercase commit SHAs.
+
+For `graphos`, both `image_stage` and the requested build target must be
+`default`. Its root is
+`graph-os[messaging-mattermost,messaging-telegram,webui]==<frozen-version>`,
+matching the graph-os first-party row's exact version and extras. The caller
+source still binds agent-utilities; `graph_os_revision` separately binds graph-os.
+
+For `connector/<distribution>/<mcp|agent>`, the suffix, `image_stage` and requested
+build target must agree. The caller row selects exactly that one stage extra,
+and `root_requirement` is `<distribution>[<stage>]==<frozen-version>`. Root
+requirements use canonical distribution names, sorted unique extras and exact
+versions; ranges, wildcards, URLs and markers are rejected. Each transitive
+first-party row retains its independently selected extras and exact lock binding.
+The producer still owns complete feature and dependency qualification; the root
+requirement does not replace those checks.
 
 The producer resolves the complete target-specific closure from actual wheel
 metadata with every requested extra. It qualifies wheel RECORD/payloads, Python
@@ -77,8 +100,9 @@ accepted. All first-party entries use
 `epistemic-graph` uses `eg-wheel` instead. Extras must equal the frozen selection.
 Third-party entries may use an equivalent local wheel reference or an exact
 `distribution==version` pin. Every declared wheel must appear in the lock.
-Connector profiles must select the caller distribution's `mcp` extra and have
-their own complete closure; the GraphOS lock is not interchangeable.
+Connector profiles select the caller distribution's explicit `mcp` or `agent`
+extra and have their own complete closure; MCP, agent and GraphOS locks are not
+interchangeable.
 
 ## Staging and recipe responsibilities
 

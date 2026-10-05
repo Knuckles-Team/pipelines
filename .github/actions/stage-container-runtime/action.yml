@@ -4,11 +4,14 @@ inputs:
   build-context:
     description: Caller-relative local build context.
     default: '.'
+  build-target:
+    description: Explicit default, mcp or agent target matching the /2 frozen profile.
+    default: ''
   artifact-id:
     description: One immutable artifact ID from this workflow run.
     default: ''
   profile:
-    description: graphos or connector/<distribution>; empty is a no-op.
+    description: /2 graphos or connector/<distribution>/<mcp|agent>; empty is a no-op.
     default: ''
   source-revision:
     description: Full source SHA matching the caller checkout and frozen profile.

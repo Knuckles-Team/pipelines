@@ -26,6 +26,14 @@ def normalized(value: str) -> str:
     return re.sub(r"[-_.]+", "-", value).lower()
 
 
+def selection(value: str) -> tuple[str, str]:
+    if value == "graphos":
+        return "graph-os", "default"
+    match = re.fullmatch(r"connector/([a-z0-9]+(?:-[a-z0-9]+)*)/(mcp|agent)", value)
+    require(match, "Runtime /2 requires graphos or a stage-qualified connector profile")
+    return match.groups()
+
+
 def digest(path: Path) -> str:
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
@@ -55,7 +63,7 @@ class Runtime:
     def prepare(self) -> None:
         values = self.inputs
         require(re.fullmatch(r"[1-9][0-9]*", values["artifact-id"]), "One immutable artifact ID is required")
-        require(re.fullmatch(r"graphos|connector/[a-z0-9]+(?:-[a-z0-9]+)*", values["profile"]), "Invalid runtime profile")
+        require(values["build-target"] == selection(values["profile"])[1], "Profile/build target mismatch")
         for key in ("lock-sha256", "freeze-sha256"):
             require(hex_value(values[key]), f"Missing or invalid {key}")
         require(hex_value(values["source-revision"], 40), "Full source revision is required")
@@ -83,6 +91,7 @@ class Runtime:
             first_party[name] = item
         require(first_party, "No first-party sources")
         self.bind_sources(first_party)
+        self.bind_root(profile, first_party=first_party)
         return first_party
 
     def bind_sources(self, first_party: dict) -> None:
@@ -94,10 +103,20 @@ class Runtime:
         require(graph == self.inputs["graph-os-revision"], "GraphOS source mismatch")
         profile = self.inputs["profile"]
         require(profile != "graphos" or graph, "GraphOS profile requires graph-os")
-        if profile.startswith("connector/"):
-            connector = profile.split("/", 1)[1]
-            require(connector == normalized(matches[0]["distribution"]), "Connector profile must match caller")
-            require("mcp" in matches[0]["extras"], "Connector profile requires mcp extra")
+        caller_distribution = "agent-utilities" if profile == "graphos" else selection(profile)[0]
+        require(caller_distribution == normalized(matches[0]["distribution"]), "Profile must match caller distribution")
+
+    def bind_root(self, profile: dict, *, first_party: dict) -> None:
+        name, stage = selection(profile["name"])
+        require(profile["image_stage"] == stage, "Profile/image stage mismatch")
+        root = first_party[name]
+        extras = ["messaging-mattermost", "messaging-telegram", "webui"] if stage == "default" else [stage]
+        require(sorted(root["extras"]) == extras, "Root extras mismatch")
+        version = (r"(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:(?:a|b|rc)[0-9]+)?"
+                   r"(?:\.post[0-9]+)?(?:\.dev[0-9]+)?(?:\+[a-z0-9]+(?:[.-][a-z0-9]+)*)?")
+        require(re.fullmatch(version, root["version"]), "Invalid exact root version")
+        expected = f"{name}[{','.join(extras)}]=={root['version']}"
+        require(profile["root_requirement"] == expected, "Canonical exact root requirement mismatch")
 
     def artifacts(self, root: Path, manifest: dict, *, first_party: dict) -> dict:
         artifacts = {}
@@ -159,7 +178,7 @@ class Runtime:
         freeze = local_path(root, "source-freeze.json")
         require(digest(freeze) == self.inputs["freeze-sha256"], "Source freeze digest mismatch")
         manifest = json.loads(freeze.read_text(encoding="utf-8"))
-        require(manifest["schema"] == "graphos-runtime-wheel-inputs/1", "Unsupported freeze schema")
+        require(manifest["schema"] == "graphos-runtime-wheel-inputs/2", "Runtime manifest /2 is required; rebuild the producer context")
         for key in ("resolver_receipt_sha256", "verification_receipt_sha256"):
             require(hex_value(manifest[key]), f"Missing {key}")
         expected_lock = {"path": "requirements.lock", "sha256": self.inputs["lock-sha256"]}

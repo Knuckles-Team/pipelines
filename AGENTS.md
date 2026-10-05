@@ -26,8 +26,10 @@ contains the Pages readiness validator and delivery planning code.
 
 Container callers may opt into a producer-qualified offline wheel context using
 an immutable same-run artifact ID, pinned source-freeze/lock digests and an
-explicit build target. The shared staging action verifies the complete byte
-inventory and source bindings before forwarding provenance arguments. Legacy
+explicit build target. Runtime manifests use /2 and bind the profile's image
+stage and exact root version/extras to that target; /1 contexts are rejected.
+The shared staging action verifies the complete byte inventory and source
+bindings before forwarding provenance arguments. Legacy
 agent/mcp detection remains the default. See [the runtime contract](reference/container-runtime.md)
 for inputs, producer prerequisites and the boundary between transport checks and
 runtime qualification.
