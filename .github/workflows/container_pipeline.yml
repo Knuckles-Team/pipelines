@@ -11,6 +11,41 @@ on:
         required: false
         type: string
         default: '.'
+      build_target:
+        description: Empty preserves agent/mcp detection; default builds the final stage once; otherwise select one named stage.
+        required: false
+        type: string
+        default: ''
+      runtime_artifact_id:
+        description: Immutable artifact ID from an upstream producer in this workflow run; requires all runtime provenance inputs.
+        required: false
+        type: string
+        default: ''
+      runtime_profile:
+        description: Verified context profile (graphos or connector/<distribution>); empty disables runtime staging.
+        required: false
+        type: string
+        default: ''
+      source_revision:
+        description: Full caller source SHA, equal to github.sha and the selected first-party source receipt.
+        required: false
+        type: string
+        default: ''
+      graph_os_revision:
+        description: Full GraphOS source SHA; required exactly when the profile includes graph-os.
+        required: false
+        type: string
+        default: ''
+      runtime_lock_sha256:
+        description: Expected SHA256 of the producer-qualified requirements.lock.
+        required: false
+        type: string
+        default: ''
+      source_freeze_sha256:
+        description: Expected SHA256 of the producer-qualified source-freeze.json, binding all wheel bytes and receipts.
+        required: false
+        type: string
+        default: ''
     secrets:
       DOCKER_REGISTRY:
         required: false
@@ -51,6 +86,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
 
       # Single-surface packages ship only one stage (e.g. an agent-only or mcp-only
       # package). If this leg's target stage isn't in the Dockerfile, skip the build
@@ -58,13 +94,71 @@ jobs:
       # broken build of a stage that DOES exist still fails (below).
       - name: Detect build target
         id: target
+        env:
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          REQUESTED_TARGET: ${{ inputs.build_target }}
+          MATRIX_TARGET: ${{ matrix.target }}
+          RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.graph_os_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
         run: |
-          if grep -qE "AS ${{ matrix.target }}([[:space:]]|\$)" "${{ inputs.dockerfile }}"; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if [[ -n "$RUNTIME_REQUEST" ]]; then
+            echo 'runtime=true' >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Dockerfile has no '${{ matrix.target }}' stage — skipping this leg (single-surface package)."
+            echo 'runtime=false' >> "$GITHUB_OUTPUT"
           fi
+          if [[ -n "$RUNTIME_REQUEST" && -z "$REQUESTED_TARGET" ]]; then
+            echo '::error::Runtime staging requires an explicit build_target.'
+            exit 1
+          fi
+          if [[ -n "$REQUESTED_TARGET" && ! "$REQUESTED_TARGET" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]]; then
+            echo '::error::Invalid build_target.'
+            exit 1
+          fi
+          selected_leg=agent
+          if [[ "$REQUESTED_TARGET" == mcp ]]; then
+            selected_leg=mcp
+          fi
+          if [[ -n "$REQUESTED_TARGET" && "$MATRIX_TARGET" != "$selected_leg" ]]; then
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          target="${REQUESTED_TARGET:-$MATRIX_TARGET}"
+          echo "cache-key=$target" >> "$GITHUB_OUTPUT"
+          if [[ "$target" == default ]]; then
+            echo 'target=' >> "$GITHUB_OUTPUT"
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          elif awk -v target="$target" 'toupper($1)=="FROM" {for(i=2;i<NF;i++) if(toupper($i)=="AS" && $(i+1)==target) found=1} END {exit !found}' "$DOCKERFILE"; then
+            echo "target=$target" >> "$GITHUB_OUTPUT"
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          elif [[ -n "$REQUESTED_TARGET" ]]; then
+            echo '::error::Requested stage is absent from the Dockerfile.'
+            exit 1
+          else
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+            echo "::notice::Dockerfile has no '$target' stage — skipping this leg (single-surface package)."
+          fi
+
+      - name: Checkout pipeline contract
+        if: &stage_runtime steps.target.outputs.exists == 'true' && steps.target.outputs.runtime == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-contract
+          persist-credentials: false
+
+      - name: Stage verified runtime context
+        id: runtime
+        if: *stage_runtime
+        uses: ./.pipeline-contract/.github/actions/stage-container-runtime
+        with:
+          build-context: ${{ inputs.build_context }}
+          artifact-id: ${{ inputs.runtime_artifact_id }}
+          profile: ${{ inputs.runtime_profile }}
+          source-revision: ${{ inputs.source_revision }}
+          graph-os-revision: ${{ inputs.graph_os_revision }}
+          lock-sha256: ${{ inputs.runtime_lock_sha256 }}
+          freeze-sha256: ${{ inputs.source_freeze_sha256 }}
 
       - name: Set up Docker Buildx
         if: steps.target.outputs.exists == 'true'
@@ -117,13 +211,14 @@ jobs:
         with: &docker_build_push_with
           context: ${{ inputs.build_context }}
           file: ${{ inputs.dockerfile }}
-          target: ${{ matrix.target }}
+          target: ${{ steps.target.outputs.target }}
+          build-args: ${{ steps.runtime.outputs.build-args }}
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ matrix.target }},mode=max,ignore-error=true
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ steps.target.outputs.cache-key }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:buildcache-${{ steps.target.outputs.cache-key }},mode=max,ignore-error=true
 
       - name: Wait before retry
         if: steps.buildx1.outcome == 'failure'

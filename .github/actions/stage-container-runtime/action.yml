@@ -1,0 +1,84 @@
+name: Stage verified container runtime
+description: Stage a producer-qualified, source-bound offline wheel context by immutable artifact ID and expected digests.
+inputs:
+  build-context:
+    description: Caller-relative local build context.
+    default: '.'
+  artifact-id:
+    description: One immutable artifact ID from this workflow run.
+    default: ''
+  profile:
+    description: graphos or connector/<distribution>; empty is a no-op.
+    default: ''
+  source-revision:
+    description: Full source SHA matching the caller checkout and frozen profile.
+    default: ''
+  graph-os-revision:
+    description: Full GraphOS SHA if the profile contains graph-os.
+    default: ''
+  lock-sha256:
+    description: Expected requirements.lock SHA256.
+    default: ''
+  freeze-sha256:
+    description: Expected source-freeze.json SHA256 from the qualified producer.
+    default: ''
+outputs:
+  build-args:
+    description: Verified provenance arguments, empty for legacy callers.
+    value: ${{ steps.stage.outputs.build-args }}
+runs:
+  using: composite
+  steps:
+    - name: Select runtime mode
+      id: mode
+      shell: bash
+      env:
+        PROFILE: ${{ inputs.profile }}
+        PROVENANCE: ${{ inputs.artifact-id }}${{ inputs.source-revision }}${{ inputs.graph-os-revision }}${{ inputs.lock-sha256 }}${{ inputs.freeze-sha256 }}
+      run: |
+        set -euo pipefail
+        if [[ -n "$PROFILE" ]]; then
+          echo 'enabled=true' >> "$GITHUB_OUTPUT"
+        elif [[ -n "$PROVENANCE" ]]; then
+          echo '::error::Partial runtime request: profile is required.'
+          exit 1
+        else
+          echo 'enabled=false' >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Set up staging interpreter
+      if: steps.mode.outputs.enabled == 'true'
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.13'
+
+    - name: Validate runtime request before download
+      id: request
+      if: steps.mode.outputs.enabled == 'true'
+      shell: bash
+      env: &runtime_environment
+        RUNTIME_INPUTS: ${{ toJSON(inputs) }}
+        EXPECTED_SOURCE: ${{ github.sha }}
+        EXPECTED_PIPELINE: ${{ job.workflow_sha }}
+        CALLER_REPOSITORY: ${{ github.repository }}
+        STAGING_SCRIPT: ${{ github.action_path }}/stage_runtime.py
+        RUNTIME_DOWNLOAD: ${{ steps.request.outputs.download-path }}
+      run: python -I "$STAGING_SCRIPT" prepare
+
+    # The artifact ID selects one artifact in this run, never a mutable name,
+    # pattern, external run or repository. Every downloaded file is then checked
+    # against the caller-pinned freeze; downloader warnings cannot admit bytes.
+    - name: Download selected runtime artifact
+      if: steps.mode.outputs.enabled == 'true'
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        artifact-ids: ${{ inputs.artifact-id }}
+        path: ${{ steps.request.outputs.download-path }}
+        merge-multiple: true
+
+    - name: Verify and stage exact runtime bytes
+      id: stage
+      if: steps.mode.outputs.enabled == 'true'
+      shell: bash
+      env: *runtime_environment
+      run: python -I "$STAGING_SCRIPT" stage

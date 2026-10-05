@@ -24,6 +24,14 @@ wheels, containers, desktop artifacts, services, and Pages sites. They execute
 with the caller's checkout, credentials, and permissions. `scripts/readiness/`
 contains the Pages readiness validator and delivery planning code.
 
+Container callers may opt into a producer-qualified offline wheel context using
+an immutable same-run artifact ID, pinned source-freeze/lock digests and an
+explicit build target. The shared staging action verifies the complete byte
+inventory and source bindings before forwarding provenance arguments. Legacy
+agent/mcp detection remains the default. See [the runtime contract](reference/container-runtime.md)
+for inputs, producer prerequisites and the boundary between transport checks and
+runtime qualification.
+
 ## Setup
 
 From a fresh clone (locally, or in a Claude Code cloud session where
