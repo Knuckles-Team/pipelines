@@ -26,7 +26,10 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
     assert checkout["with"]["repository"] == "${{ job.workflow_repository }}"
     assert checkout["with"]["ref"] == "${{ job.workflow_sha }}"
     assert checkout["if"] == "steps.target.outputs.exists == 'true' && steps.target.outputs.runtime == 'true'"
-    assert next(step for step in steps if step.get("id") == "runtime")["if"] == checkout["if"]
+    runtime = next(step for step in steps if step.get("id") == "runtime")
+    assert runtime["if"] == checkout["if"]
+    assert runtime["with"]["build-target"] == "${{ inputs.build_target }}"
+    assert "build-target" in yaml.safe_load(ACTION.read_text())["inputs"]
     assert workflow["permissions"] == {"contents": "read"}
     assert job["runs-on"] == "self-hosted"
     assert job["strategy"]["matrix"]["include"] == [
@@ -118,9 +121,11 @@ def test_pipeline_checkout_collision_fails_before_checkout(tmp_path: Path, colli
     assert sentinel.read_text() == "preserve caller content"
 
 
-@pytest.mark.parametrize("profile", ["graphos", "connector/agent-utilities", "connector-without-graph"])
+@pytest.mark.parametrize("profile", ["graphos", "connector/gitlab-api/mcp", "connector/gitlab-api/agent",
+    "connector/gramps-mcp/mcp", "connector/gramps-mcp/agent", "connector/onetrust-api/mcp",
+    "connector/onetrust-api/agent", "connector-without-graph"])
 def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: str) -> None:
-    case = runtime_case(tmp_path, ROOT)
+    case = runtime_case(tmp_path, ROOT, profile="connector/gitlab-api/mcp" if profile == "connector-without-graph" else profile)
     if profile == "connector-without-graph":
         case["manifest"]["profile"]["first_party"].pop(1)
         removed = case["manifest"]["artifacts"].pop(1)
@@ -128,12 +133,6 @@ def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: s
         case["inputs"]["graph-os-revision"] = ""
         lock = case["download"] / "requirements.lock"
         lock.write_text(lock.read_text().replace(f"graph-os @ file:///opt/graphos-runtime/{removed['path']} \\\n    --hash=sha256:{removed['sha256']}\n", ""))
-        profile = "connector/agent-utilities"
-    if profile.startswith("connector/"):
-        case["manifest"]["profile"]["name"] = case["inputs"]["profile"] = profile
-        case["manifest"]["profile"]["first_party"][0]["extras"] = ["mcp"]
-        lock = case["download"] / "requirements.lock"
-        lock.write_text(lock.read_text().replace("agent-utilities @", "agent-utilities[mcp] @"))
         case["manifest"]["requirements_lock"]["sha256"] = case["inputs"]["lock-sha256"] = hashlib.sha256(lock.read_bytes()).hexdigest()
     freeze_runtime(case)
     assert not (case["caller"] / ".github/actions").exists()
@@ -152,12 +151,18 @@ def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: s
         assert (f"{argument}={case['inputs'][key]}\n" in output) == bool(case["inputs"][key])
 
 
+@pytest.mark.parametrize("profile", ["graphos", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
 @pytest.mark.parametrize(("key", "value"), [("artifact-id", ""), ("artifact-id", "1,2"),
     ("source-revision", "main"), ("source-revision", "a" * 40), ("lock-sha256", ""),
     ("freeze-sha256", "0" * 64), ("graph-os-revision", "bad"), ("profile", "other"),
-    ("build-context", "../escape"), ("build-context", "/tmp"), ("build-context", ".pipeline-contract")])
-def test_invalid_inputs_refused_before_download(tmp_path: Path, key: str, value: str) -> None:
-    case = runtime_case(tmp_path, ROOT)
+    ("build-context", "../escape"), ("build-context", "/tmp"), ("build-context", ".pipeline-contract"),
+    ("profile", "connector/gitlab-api"), ("profile", "connector/gitlab-api/worker"),
+    ("build-target", ""), ("build-target", "swap"), ("build-target", "wrong-final")])
+def test_invalid_inputs_refused_before_download(tmp_path: Path, *, key: str, value: str, profile: str) -> None:
+    case = runtime_case(tmp_path, ROOT, profile=profile)
+    alternatives = {"swap": {"default": "mcp", "mcp": "agent", "agent": "mcp"},
+                    "wrong-final": {"default": "agent", "mcp": "default", "agent": "default"}}
+    value = alternatives.get(value, {}).get(case["inputs"]["build-target"], value)
     freeze_runtime(case)
     case["inputs"][key] = value
     case["environment"]["RUNTIME_INPUTS"] = json.dumps(case["inputs"])
@@ -166,11 +171,16 @@ def test_invalid_inputs_refused_before_download(tmp_path: Path, key: str, value:
     assert not Path(case["environment"]["GITHUB_OUTPUT"]).exists()
 
 
+@pytest.mark.parametrize("profile", ["graphos", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
 @pytest.mark.parametrize("mutation", ["profile", "target", "source", "version", "missing-wheel", "duplicate-wheel",
-    "missing-receipt", "lock-binding", "graph", "unknown-source", "path", "payload", "duplicate-first-party"])
-def test_semantic_mismatches_refused_even_with_repinned_freeze(tmp_path: Path, mutation: str) -> None:
-    case = runtime_case(tmp_path, ROOT)
+    "missing-receipt", "lock-binding", "graph", "unknown-source", "path", "payload", "duplicate-first-party",
+    "schema", "image-stage", "missing-stage", "missing-root", "root-name", "root-extra", "root-version",
+    "root-marker", "root-range", "root-url", "root-extras-row", "root-extras-duplicate", "frozen-root-version", "caller-distribution"])
+def test_semantic_mismatches_refused_even_with_repinned_freeze(tmp_path: Path, mutation: str, profile: str) -> None:
+    case = runtime_case(tmp_path, ROOT, profile=profile)
     manifest = case["manifest"]
+    root = manifest["profile"]["first_party"][{"graphos": 1}.get(profile, 0)]
+    requirement = manifest["profile"]["root_requirement"]
     changes = {
         "profile": lambda: manifest["profile"].update(name="connector/elsewhere"),
         "target": lambda: manifest["profile"]["target"].update(python="3.13"),
@@ -185,6 +195,20 @@ def test_semantic_mismatches_refused_even_with_repinned_freeze(tmp_path: Path, m
         "path": lambda: manifest["artifacts"][0].update(path="../escape.whl"),
         "payload": lambda: manifest["artifacts"][0].update(payload_manifest_sha256=""),
         "duplicate-first-party": lambda: manifest["profile"]["first_party"].append(manifest["profile"]["first_party"][0]),
+        "schema": lambda: manifest.update(schema="graphos-runtime-wheel-inputs/1"),
+        "image-stage": lambda: manifest["profile"].update(image_stage={"mcp": "agent"}.get(manifest["profile"]["image_stage"], "mcp")),
+        "missing-stage": lambda: manifest["profile"].pop("image_stage"),
+        "missing-root": lambda: manifest["profile"].pop("root_requirement"),
+        "root-name": lambda: manifest["profile"].update(root_requirement="other" + requirement),
+        "root-extra": lambda: manifest["profile"].update(root_requirement=requirement.replace("[", "[unselected,")),
+        "root-version": lambda: manifest["profile"].update(root_requirement=requirement.replace("==1.0", "==9.0")),
+        "root-marker": lambda: manifest["profile"].update(root_requirement=requirement + '; python_version >= "3.14"'),
+        "root-range": lambda: manifest["profile"].update(root_requirement=requirement.replace("==", ">=")),
+        "root-url": lambda: manifest["profile"].update(root_requirement=requirement.replace("==1.0", " @ https://example.invalid/root.whl")),
+        "root-extras-row": lambda: root.update(extras=[]),
+        "root-extras-duplicate": lambda: root["extras"].append(root["extras"][0]),
+        "frozen-root-version": lambda: root.update(version="1.*"),
+        "caller-distribution": lambda: manifest["profile"]["first_party"][0].update(distribution="other"),
     }
     changes[mutation]()
     freeze_runtime(case)

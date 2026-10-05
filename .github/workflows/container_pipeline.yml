@@ -22,7 +22,7 @@ on:
         type: string
         default: ''
       runtime_profile:
-        description: Verified context profile (graphos or connector/<distribution>); empty disables runtime staging.
+        description: Verified /2 profile (graphos or connector/<distribution>/<mcp|agent>); empty disables runtime staging.
         required: false
         type: string
         default: ''
@@ -164,6 +164,7 @@ jobs:
         uses: ./.pipeline-contract/.github/actions/stage-container-runtime
         with:
           build-context: ${{ inputs.build_context }}
+          build-target: ${{ inputs.build_target }}
           artifact-id: ${{ inputs.runtime_artifact_id }}
           profile: ${{ inputs.runtime_profile }}
           source-revision: ${{ inputs.source_revision }}

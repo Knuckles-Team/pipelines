@@ -48,34 +48,55 @@ def runtime_artifact(download: Path, name: str, *, source: str = "") -> dict:
             "source": {"repository": f"Example/{name}", "source_sha": source, "receipt_sha256": receipt} if source else None}
 
 
-def runtime_manifest(download: Path, source: str) -> dict:
-    artifacts = [runtime_artifact(download, name, source=source) for name in ("agent-utilities", "graph-os", "epistemic-graph")]
+def runtime_profile(name: str) -> dict:
+    if name == "graphos":
+        return {"caller": "agent-utilities", "stage": "default", "root_index": 1,
+                "extras": ["messaging-mattermost", "messaging-telegram", "webui"]}
+    _, caller, stage = name.split("/")
+    return {"caller": caller, "stage": stage, "root_index": 0, "extras": [stage]}
+
+
+def runtime_lock_entry(item: dict, root: dict) -> str:
+    extras = {root["distribution"]: root["extras"]}.get(item["distribution"], [])
+    suffix = f"[{','.join(extras)}]" if extras else ""
+    return f"{item['distribution']}{suffix} @ file:///opt/graphos-runtime/{item['path']} \\\n    --hash=sha256:{item['sha256']}"
+
+
+def runtime_manifest(download: Path, source: str, *, profile: str = "graphos") -> dict:
+    selected = runtime_profile(profile)
+    artifacts = [runtime_artifact(download, name, source=source) for name in (selected["caller"], "graph-os", "epistemic-graph")]
     artifacts.append(runtime_artifact(download, "dependency"))
     first_party = [{"distribution": item["distribution"], "version": item["version"],
                     "repository": item["source"]["repository"], "source_sha": source,
                     "extras": [], "pyproject_sha256": item["sha256"]} for item in artifacts[:3]]
-    lock = "\n".join(f"{item['distribution']} @ file:///opt/graphos-runtime/{item['path']} \\\n    --hash=sha256:{item['sha256']}" for item in artifacts) + "\n"
+    root = first_party[selected["root_index"]]
+    root["extras"] = selected["extras"]
+    lock = "\n".join(runtime_lock_entry(item, root) for item in artifacts) + "\n"
     lock = lock.replace(f"dependency @ file:///opt/graphos-runtime/{artifacts[-1]['path']}", "dependency==1.0")
     (download / "requirements.lock").write_text(lock, encoding="utf-8")
     receipt = hashlib.sha256(lock.encode()).hexdigest()
-    return {"schema": "graphos-runtime-wheel-inputs/1",
-            "profile": {"name": "graphos", "target": {"python": "3.14", "implementation": "cpython", "os": "linux", "arch": "x86_64"},
+    return {"schema": "graphos-runtime-wheel-inputs/2",
+            "profile": {"name": profile, "image_stage": selected["stage"],
+                        "root_requirement": f"{root['distribution']}[{','.join(root['extras'])}]=={root['version']}",
+                        "target": {"python": "3.14", "implementation": "cpython", "os": "linux", "arch": "x86_64"},
                         "first_party": first_party, "explicit_third_party_roots": ["dependency==1.0"]},
             "requirements_lock": {"path": "requirements.lock", "sha256": receipt}, "artifacts": artifacts,
             "resolver_receipt_sha256": receipt, "verification_receipt_sha256": receipt}
 
 
-def runtime_case(tmp_path: Path, root: Path) -> dict:
+def runtime_case(tmp_path: Path, root: Path, *, profile: str = "graphos") -> dict:
     caller = external_caller(tmp_path, root, "caller", "name: Container caller\n")
     source = runtime_checkout(caller)
     pipeline = runtime_checkout(caller / ".pipeline-contract")
     download = tmp_path / "download"
     download.mkdir()
-    manifest = runtime_manifest(download, source)
+    manifest = runtime_manifest(download, source, profile=profile)
     environment = {**sanitized_env(), "GITHUB_WORKSPACE": str(caller), "RUNNER_TEMP": str(tmp_path),
                    "GITHUB_OUTPUT": str(tmp_path / "outputs"), "RUNTIME_DOWNLOAD": str(download),
-                   "EXPECTED_SOURCE": source, "EXPECTED_PIPELINE": pipeline, "CALLER_REPOSITORY": "Example/agent-utilities"}
-    inputs = {"build-context": ".", "artifact-id": "1234", "profile": "graphos", "source-revision": source,
+                   "EXPECTED_SOURCE": source, "EXPECTED_PIPELINE": pipeline,
+                   "CALLER_REPOSITORY": manifest["artifacts"][0]["source"]["repository"]}
+    inputs = {"build-context": ".", "build-target": manifest["profile"]["image_stage"],
+              "artifact-id": "1234", "profile": profile, "source-revision": source,
               "graph-os-revision": source, "lock-sha256": manifest["requirements_lock"]["sha256"], "freeze-sha256": ""}
     return {"caller": caller, "download": download, "manifest": manifest, "environment": environment, "inputs": inputs}
 
