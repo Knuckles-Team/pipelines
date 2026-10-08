@@ -15,23 +15,24 @@ repositories supply their own policy through the documented TOML configuration.
 `pipelines-hook` is the single command entry point for the Python quality-gate
 package. `pipelines_hooks/cli.py` maps published IDs to gate modules, and each
 module exposes `main(argv) -> int`. The skills that explain these gates and the
-branch/worktree conventions to contributors (`gates-and-code-placement`,
-`git-in-shared-repos`) live in universal-skills under `development/`, so the
-ecosystem host can serve them; read them before explaining a gate's caps.
+branch/worktree conventions for contributors (`gates-and-code-placement`,
+`git-in-shared-repos`) live in universal-skills under `development/`. The
+ecosystem host serves them; read them before explaining a gate's caps.
 
 Reusable workflows under `.github/workflows/` build Python packages, native
-wheels, containers, desktop artifacts, services, and Pages sites. They execute
-with the caller's checkout, credentials, and permissions. `scripts/readiness/`
+wheels, containers, desktop artifacts, services, and Pages sites. They run
+with the caller's checkout, credentials, and permissions.
+`scripts/readiness/`
 contains the Pages readiness validator and delivery planning code.
 
-Container callers may opt into a producer-qualified offline wheel context using
-an immutable same-run artifact ID, pinned source-freeze/lock digests and an
-explicit build target. Runtime manifests use /2 and bind the profile's image
+Container callers may opt into a producer-qualified offline wheel context.
+That context uses an immutable same-run artifact ID, pinned
+source-freeze/lock digests, and an explicit build target. Runtime manifests use /2 and bind the profile's image
 stage and exact root version/extras to that target; /1 contexts are rejected.
-The shared staging action verifies the complete byte inventory and source
+The shared staging action checks the complete byte inventory and source
 bindings before forwarding provenance arguments. Legacy
 agent/mcp detection remains the default. See [the runtime contract](reference/container-runtime.md)
-for inputs, producer prerequisites and the boundary between transport checks and
+for inputs, producer prerequisites, and the boundary between transport and
 runtime qualification.
 
 ## Setup
@@ -45,9 +46,9 @@ scripts/bootstrap.sh              # uv >= 0.9, locked env + test deps, pre-commi
 scripts/bootstrap.sh --scanners   # also the pinned cccc, kiss fork, dupehound and jscpd builds
 ```
 
-The script is idempotent. Without the scanners, or without a sibling checkout
-or the operator's privacy identity catalog, the affected hooks print
-`SKIPPED (<gate>): <reason>` and pass locally; CI fails them closed.
+The script is idempotent. Without the scanners, a sibling checkout, or the
+operator's privacy identity catalog, the affected hooks print
+`SKIPPED (<gate>): <reason>` and pass locally. CI fails them closed.
 
 ## Commands
 
@@ -69,13 +70,12 @@ available IDs when called without an ID.
 
 Every gate returns zero for clean, one for findings, and two when it cannot
 produce a trustworthy verdict. A missing native scanner or sibling checkout
-(`pipelines_hooks.core.errors.Unavailable`) is exit two only when `CI` is set;
-locally the command line prints `SKIPPED (<gate>)` with the install command and
-returns zero. The public-surface gate checks only reader-visible
-breakage: a missing README, relative links or images in README/AGENTS that
-point nowhere or outside the repository, and a README with no install or
-quick-start path. No network
-request is made by a local documentation gate.
+(`pipelines_hooks.core.errors.Unavailable`) is exit two only when `CI` is set.
+Locally the command line prints `SKIPPED (<gate>)` with the install command
+and returns zero. The public-surface gate checks reader-visible breakage in
+README/AGENTS: a missing README, and links or images outside the repository.
+It also flags a README without an install or quick-start path. A local
+documentation gate makes no network request.
 
 Workflow changes also receive YAML and contract validation. CI builds the
 relevant workflow artifacts with the caller's declared permissions.
@@ -85,7 +85,7 @@ relevant workflow artifacts with the caller's declared permissions.
 Keep one focused change per commit and preserve explicit branch and worktree
 boundaries. Read the relevant module and tests before editing. Add a positive
 case and an adversarial case for every new invariant. For a workflow change,
-update its contract test; for a hook change, update the CLI registry, published
+update its contract test. For a hook change, update the CLI registry, published
 catalogue, self-run configuration when appropriate, and README example.
 
 Stage only reviewed paths and use `uv run --frozen` for Python commands.
@@ -106,10 +106,10 @@ the applicable focused checks.
 
 Work on a topic branch, push it, and open a pull request against `main`; the
 `CI` workflow must pass before merge. Ordinary code gates and push hooks must
-remain independent of external network reachability. The narrow exception is release-only wheel readiness immediately
-before PyPI upload and GitHub package release: it must prove the exact artifact's
-runtime dependency closure is available from the public index, and fail closed
-on index errors. Repository-manager continues to own manual RELEASE readiness
+remain independent of external network reachability. The narrow exception is
+release-only wheel readiness, immediately before PyPI upload and GitHub package
+release. It must prove the exact artifact's dependency closure resolves from
+the public index. Otherwise it fails closed on index errors. Repository-manager continues to own manual RELEASE readiness
 and fleet ordering. This publication proof must never run as an ordinary code
 or pre-push gate.
 

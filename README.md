@@ -22,13 +22,14 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 ## Overview
 
-`pipelines-hooks` is a small Python package with the `pipelines-hook` command. It publishes repository-agnostic pre-commit gates, while reusable workflows provide tested building blocks for Python, native, container, service, desktop, and Pages delivery.
+`pipelines-hooks` is a small Python package with the `pipelines-hook` command. It publishes repository-agnostic pre-commit gates. The reusable workflows supply tested building blocks for Python, native, container, service, desktop, and Pages delivery.
 
 ## Key capabilities
 
 - Repository-local TOML configuration with strict unknown-key validation.
 - Security, privacy, supply-chain, hygiene, code-shape, and clone gates.
 - A public-surface gate that catches dead README/AGENTS links and a missing quick start.
+- Controlled-language gates that check document prose and stale claims. The [ste reference](reference/ste.md) states the standard and the configuration.
 - Reusable GitHub workflows pinned by callers to reviewed immutable commits.
 - Pages readiness and shared MkDocs theme assets for deeper documentation.
 
@@ -40,7 +41,7 @@ The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of publ
 
 ## Architecture
 
-The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict. A gate whose native scanner or sibling checkout is absent fails closed with two when `CI` is set; locally it prints `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and returns zero.
+The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict. A gate whose native scanner or sibling checkout is absent fails closed with two when `CI` is set. Locally it prints `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and returns zero.
 
 File inputs live under `.config/`, never at the repository root: `.config/repo-layout.toml` (root-hygiene allowlist), `.config/kiss.toml` (KISS thresholds) and `.config/dupehound-distinct.toml` (reviewed non-clone register). A copy left at the retired root location fails the gate with exit status two.
 
@@ -65,7 +66,7 @@ The Pages documentation linked above has the complete hook catalogue and workflo
 
 ## Contributing
 
-Clone the repository, run the bootstrap (locked environment, test dependencies and git hooks; add `--scanners` for the native scanners), and run focused tests before the complete suite:
+Clone the repository, then run `scripts/bootstrap.sh` for the locked environment, test dependencies, and git hooks. Add `--scanners` for the native scanners. Run focused tests before the complete suite:
 
 ```bash
 scripts/bootstrap.sh
@@ -88,6 +89,6 @@ The [wheel readiness contract](reference/python-release-readiness.md) describes
 metadata-derived runtime profiles, release-only public-index proof, and current release
 blockers. Consumer migrations must wait for a reviewed immutable guard ref.
 
-Release callers can additionally use the [exact PyPI publication identity checker](reference/publication-identity.md)
-to reject same-version filename/digest conflicts and verify every staged file after upload.
+Release callers also use the [exact PyPI publication identity checker](reference/publication-identity.md)
+to reject same-version filename/digest conflicts. It checks every staged file after upload.
 This supplements their existing readiness and platform-completeness gates.
