@@ -52,10 +52,30 @@ requirement slices. `SPECIFIED` means documented; `BUILDING` means in progress;
 `ACCEPTED`. Source-landed and done never establish release/deployment.
 
 Current status charts and remaining-count bars include unknown and unaccepted work.
-The first adapter deliberately reports timeline, daily velocity, historical burndown,
-and release evidence as unavailable: these schemas do not contain verified transition
-history. No dates or historical points are invented. Source files remain the authority;
-a future history adapter must preserve actual additions, removals, and status reversals.
+The dashboard opt-in fetches a bounded depth of 100 commits; other Pages builds retain
+one-commit checkout depth. The generator reads at most 100 first-parent snapshots
+(default), accepts `--history-limit` from 2 through 200 for an existing local checkout,
+and never fetches history itself. Inline workflows may set their existing checkout's
+`fetch-depth: 100`; a shallow one-commit checkout remains visibly history-unavailable.
+No unbounded fetch, database, persistence service, or additional credentials are used.
+
+The JSON `history` object includes availability/reason, shallow/truncated flags, the
+configured limit, sampled commit count, per-commit points, and source-state events.
+Each point has its commit and observed timestamp plus separate spec/requirement totals,
+remaining, unknown, added, removed, newly source-landed, accepted-completed, and reopened
+counts. SVG burndown charts show actual remaining and total scope in commit order;
+velocity charts aggregate observed transitions to LANDED/CLOSED by UTC commit date.
+The expandable timeline and scope table show exact state changes and counts.
+
+Dates are commit observations, not implementation or release dates. States already
+landed at the first available snapshot are baseline-unknown, not new completions.
+New records already landed are scope additions, not observed completion events.
+Scope removal lowers remaining scope without adding velocity. Losing accepted-done
+or source-landed status is recorded as reopened work. Whole-spec status still never
+inherits requirement completion. Malformed or inaccessible history is unavailable,
+not a fabricated empty success. Bounded/shallow history is labeled, and no earlier
+points are extrapolated. Release/deployment dates remain unavailable without explicit
+release evidence; Git status transitions do not establish them.
 
 Open issues and PRs are paginated separately at build time. A failed page makes the
 entire affected collection unavailable, not empty or partial. Existing `GITHUB_TOKEN`

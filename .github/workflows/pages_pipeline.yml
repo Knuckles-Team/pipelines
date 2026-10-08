@@ -90,10 +90,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Dashboard opt-in reads at most 100 first-parent commits; never fetch unlimited history.
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: ${{ inputs.spec_dashboard_enabled && 100 || 1 }}
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -117,6 +119,10 @@ jobs:
             scripts/pages_readiness.py
             scripts/spec_dashboard.py
             scripts/spec_dashboard_render.py
+            scripts/spec_dashboard_sources.py
+            scripts/spec_dashboard_history.py
+            scripts/spec_dashboard_history_metrics.py
+            scripts/spec_dashboard_charts.py
             scripts/readiness
 
       - name: Validate declared content source

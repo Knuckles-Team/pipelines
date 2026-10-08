@@ -3,6 +3,11 @@ from collections import Counter
 import html
 from urllib.parse import quote
 
+if __package__:
+    from .spec_dashboard_charts import history_panels
+else:
+    from spec_dashboard_charts import history_panels
+
 def distribution(records, kind):
     return dict(Counter(item['state'] for item in records if item['kind'] == kind))
 
@@ -67,10 +72,8 @@ def render(snapshot):
             + '</p><p>Revision ' + html.escape(revision) + ' · <a href="snapshot.json">JSON snapshot</a></p>'
             '<p>Whole specs and requirement slices are counted separately. Done requires explicit LANDED/CLOSED and ACCEPTED. '
             'Source-landed does not imply released or deployed. Release evidence is unavailable in this v1 adapter.</p>'
-            + charts + '<h2>Velocity and landed / released timeline</h2><p>History unavailable: canonical status files do not provide '
-            'a verified transition timeline. No dates or daily completions are inferred from current state or PR counts.</p>'
-            '<h2>Burndown · current snapshot only</h2><p>History unavailable. Remaining includes unknown and unaccepted records; '
-            'deferred/rejected records remain visible. This is not a historical burndown.</p>'
+            + charts + history_panels(snapshot.get('history', {}), repository)
+            + '<h2>Current snapshot</h2><p>Remaining includes unknown and unaccepted records; deferred/rejected records remain visible.</p>'
             + bars(remaining, 'Records not explicitly done') + '<h2>Documented inventory</h2><section><table><thead><tr>'
             '<th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th><th>Delivery</th><th>Acceptance</th><th>Release</th>'
             '</tr></thead><tbody>' + inventory_rows(snapshot) + '</tbody></table></section>' + github_sections(snapshot) + '</html>')
