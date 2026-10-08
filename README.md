@@ -18,7 +18,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/pipelines)
 ![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/pipelines)
 
-Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The package centralizes shared hook and release policy; consumers supply immutable references and repository-specific inputs.
+Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The package centralizes shared hook and release policy. Consumers supply immutable references and repository-specific inputs.
 
 ## Overview
 
@@ -43,7 +43,7 @@ The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of publ
 
 ## Architecture
 
-The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository; the shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict. A gate whose native scanner or sibling checkout is absent fails closed with two when `CI` is set. Locally it prints `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and returns zero.
+The `pipelines-hook` entry point dispatches to one gate module. Gate inputs are read from `[tool.pipelines_hooks]` in the consuming repository. The shared implementation never contains a product-specific allowlist. Gates return zero for clean, one for findings, and two when they cannot produce a trustworthy verdict. A gate whose native scanner or sibling checkout is absent fails closed with two when `CI` is set. Locally it prints `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and returns zero.
 
 File inputs live under `.config/`, never at the repository root: `.config/repo-layout.toml` (root-hygiene allowlist), `.config/kiss.toml` (KISS thresholds) and `.config/dupehound-distinct.toml` (reviewed non-clone register). A copy left at the retired root location fails the gate with exit status two.
 
