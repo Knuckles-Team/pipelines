@@ -7,6 +7,9 @@ repair passes. Gates run the real scanner and wordlist; nothing is mocked.
 
 from __future__ import annotations
 
+import shutil
+import subprocess
+
 import pytest
 
 from pipelines_hooks.ste.sentences import sentence_spans
@@ -315,3 +318,47 @@ def test_abbreviation_protect_needs_a_word_boundary() -> None:
     assert len(sentence_spans(signoff, frozenset())) == 3
     assert len(sentence_spans("The gate claims. The run ends.", frozenset({"Ms."}))) == 2
     assert len(sentence_spans("The gate audits stale claims. The run ends.", frozenset({"Ms."}))) == 2
+
+
+@pytest.mark.parametrize("gate", ["ste-census", "ste-staged", "ste-staleness-census", "ste-staleness-staged"])
+def test_doc_gates_ignore_binary_assets_but_scan_architecture_prose(repo: Repo, gate: str) -> None:
+    repo.commit({"pyproject.toml": _pyproject(STE_STALE), "README.md": CLEAN})
+    asset = repo.root / "docs" / "logo.png"
+    asset.parent.mkdir()
+    asset.write_bytes(b"\x89PNG\r\n\x1a\n\x00\xff")
+    repo.git("add", "docs/logo.png")
+    repo.stage({"docs/architecture.md": "# Architecture\n\nThe gate runs the hook.\n\n```mermaid\ngraph TD\n    A[utilizes the hook] --> B[gate]\n```\n"})
+    assert repo.run(gate) == 0
+    repo.stage({"docs/architecture.md": "# Architecture\n\nThe tool utilizes agent-utilities.\n"})
+    assert repo.run(gate) == 1
+
+
+def test_staleness_staged_reads_the_alternate_index(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo.commit({"pyproject.toml": _pyproject(STE_STALE), "README.md": CLEAN})
+    alternate = repo.root / "alternate.index"
+    shutil.copyfile(repo.root / ".git" / "index", alternate)
+    repo.write("README.md", CLEAN + "Powered by agent-utilities.\n")
+    monkeypatch.setenv("GIT_INDEX_FILE", str(alternate))
+    subprocess.run(["git", "add", "README.md"], cwd=repo.root, check=True)
+    assert repo.run("ste-staleness-staged") == 1
+    monkeypatch.delenv("GIT_INDEX_FILE")
+    assert repo.run("ste-staleness-staged") == 0
+
+
+@pytest.mark.parametrize("gate", ["ste-census", "ste-staged", "ste-staleness-census"])
+def test_doc_gates_fail_closed_on_unreadable_markdown(repo: Repo, gate: str) -> None:
+    repo.commit({"pyproject.toml": _pyproject(STE_STALE), "README.md": CLEAN})
+    repo.write("docs/architecture.md", "")
+    (repo.root / "docs/architecture.md").write_bytes(b"\xff")
+    repo.git("add", "docs/architecture.md")
+    assert repo.run(gate) == 2
+
+
+def test_staged_counts_each_repeated_word_without_line_churn(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    repo.commit({"README.md": "The tool utilizes the wheel.\n"})
+    repo.stage({"README.md": "The tool utilizes the wheel and utilizes the hook.\n"})
+    assert repo.run("ste-staged") == 1
+    assert capsys.readouterr().out.count("utilizes -> use") == 1
+    repo.commit({"README.md": "The tool utilizes the wheel and utilizes the hook.\n"})
+    repo.stage({"README.md": "# fixture\n\nThe tool utilizes the wheel\nand utilizes the hook.\n"})
+    assert repo.run("ste-staged") == 0

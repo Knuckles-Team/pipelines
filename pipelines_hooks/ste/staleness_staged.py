@@ -22,7 +22,7 @@ _HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 
 def _added_lines(root: Path, rel: str) -> list[tuple[int, str]]:
     """(line number, text) pairs for every added line in the staged diff."""
-    raw = git_text(root, ("diff", "--cached", "--unified=0", "--", rel))
+    raw = git_text(root, ("diff", "--cached", "--unified=0", "--", rel), preserve_index=True)
     lines: list[tuple[int, str]] = []
     number = 0
     for text in raw.splitlines():

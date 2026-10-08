@@ -8,7 +8,7 @@ advisory heuristics (noisy by design) and never fail a gate.
 from __future__ import annotations
 
 import re
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from re import Match
 
@@ -31,7 +31,7 @@ class Finding:
     advisory: bool = False
 
 
-def hits(text: str, term: str) -> Iterable[Match[str]]:
+def hits(text: str, term: str) -> Iterator[Match[str]]:
     """Whole-word, case-insensitive matches of ``term`` in masked text."""
     return re.finditer(rf"(?<!\w){re.escape(term)}(?!\w)", text, re.IGNORECASE)
 
@@ -133,19 +133,8 @@ def _cluster_findings(masked: list[str], path: str, wordlist: Wordlist) -> list[
     return out
 
 
-def _dedupe(findings: list[Finding]) -> list[Finding]:
-    seen: set[tuple[str, str, int, str, bool]] = set()
-    out: list[Finding] = []
-    for finding in findings:
-        key = (finding.code, finding.path, finding.line, finding.message, finding.advisory)
-        if key not in seen:
-            seen.add(key)
-            out.append(finding)
-    return out
-
-
 def check_document(text: str, wordlist: Wordlist, *, path: str) -> list[Finding]:
-    """Every rule finding for one document's text, deduplicated, in order."""
+    """Every rule occurrence for one document's text, in order."""
     masked = mask_lines(text)
     findings: list[Finding] = []
     for number, line in enumerate(masked, 1):
@@ -154,4 +143,4 @@ def check_document(text: str, wordlist: Wordlist, *, path: str) -> list[Finding]
     for para in paragraphs(masked):
         findings.extend(_sentence_findings(para, path, wordlist))
     findings.extend(_cluster_findings(masked, path, wordlist))
-    return _dedupe(findings)
+    return findings

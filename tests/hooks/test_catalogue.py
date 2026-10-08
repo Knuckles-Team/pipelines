@@ -33,3 +33,8 @@ def test_this_repository_runs_its_hooks_with_the_published_entries() -> None:
     assert self_run, "the repository runs none of its own hooks"
     for hook_id, hook in self_run.items():
         assert hook["entry"].endswith(catalogue[hook_id]["entry"]), hook_id
+
+
+def test_ste_census_hooks_run_only_at_push_or_manual() -> None:
+    for hook_id in ("ste-census", "ste-staleness-census"):
+        assert _catalogue()[hook_id].get("stages") == ["pre-push", "manual"]
