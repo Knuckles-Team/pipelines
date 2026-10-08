@@ -122,6 +122,8 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
     assert checkout["with"]["sparse-checkout"].splitlines() == [
         "scripts/__init__.py",
         "scripts/pages_readiness.py",
+        "scripts/spec_dashboard.py",
+        "scripts/spec_dashboard_render.py",
         "scripts/readiness",
     ]
 
@@ -134,3 +136,15 @@ def test_shared_theme_inherits_via_mkdocs_native_inherit_key() -> None:
     assert "INHERIT:" in text
     assert "Verify shared Pages theme assets" in text
     assert "sync_mkdocs_theme.py check" in text
+
+
+def test_spec_dashboard_is_opt_in_and_after_readiness():
+    contract = _workflow()
+    inputs = contract["on"]["workflow_call"]["inputs"]
+    assert inputs["spec_dashboard_enabled"]["default"] is False
+    text = WORKFLOW.read_text()
+    assert "scripts/spec_dashboard.py" in text
+    assert text.index("Build spec delivery snapshot") > text.index("Publish readiness assets")
+    assert text.index("Build spec delivery snapshot") < text.index("Upload artifact")
+    assert "GITHUB_TOKEN: ${{ github.token }}" in text
+    assert "--repository \"$GITHUB_REPOSITORY\"" in text
