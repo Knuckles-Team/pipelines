@@ -49,3 +49,6 @@ paths = ["pipelines_hooks", "scripts", "tests"]
 
 [tool.pipelines_hooks.env_sprawl]
 allow_files = ["pipelines_hooks/core/settings.py"]
+
+[tool.pipelines_hooks.ste]
+exempt = ["specs/*", "specs/**/*"]

@@ -35,7 +35,7 @@ agent/mcp detection remains the default. See [the runtime contract](reference/co
 for inputs, producer prerequisites, and the boundary between transport and
 runtime qualification.
 
-`scripts/spec_dashboard.py` owns the opt-in static spec delivery dashboard. The adjacent source, history, metrics, chart, and renderer modules keep canonical normalization and bounded first-parent accounting separate. Its version 1 JSON configuration, status semantics, and snapshot contract are documented in `pages/spec-dashboard.md`; fixtures live in `tests/test_spec_dashboard.py`.
+`scripts/spec_dashboard.py` owns the opt-in static spec delivery dashboard. The adjacent source, history, metrics, chart, and renderer modules keep canonical normalization and bounded first-parent accounting separate. Its version 1 JSON configuration, status semantics, and snapshot contract are documented in `pages/spec-dashboard.md`. Fixtures live in `tests/test_spec_dashboard.py`.
 
 ## Setup
 
