@@ -18,8 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      SCANNER_ROOT: ${{ github.workspace }}/../pipelines-scanners
     steps:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,6 +30,14 @@ jobs:
 
       - name: Install pinned jscpd build compiler
         run: rustup toolchain install 1.97.0 --profile minimal
+
+      # Actions cache rejects literal dot segments, even in absolute paths.
+      # Resolve the existing sibling location before either cache action reads it.
+      - name: Resolve scanner cache directory
+        run: |
+          set -euo pipefail
+          scanner_cache_root="$(realpath -m -- "$GITHUB_WORKSPACE/../pipelines-scanners")"
+          echo "SCANNER_ROOT=$scanner_cache_root" >> "$GITHUB_ENV"
 
       # The native scanners are built from source; the build is cached under the
       # source, patch, lock identity, compiler and provisioning recipe, and
