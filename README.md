@@ -24,6 +24,8 @@ Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent eco
 
 `pipelines-hooks` is a small Python package with the `pipelines-hook` command. It publishes repository-agnostic pre-commit gates. The reusable workflows supply tested building blocks for Python, native, container, service, desktop, and Pages delivery.
 
+The [spec dashboard template](pages/spec-dashboard.md) adds a source-backed delivery snapshot to existing Pages publishing.
+
 ## Key capabilities
 
 - Repository-local TOML configuration with strict unknown-key validation.

@@ -3,6 +3,16 @@ name: Deploy GitHub Pages
 on:
   workflow_call:
     inputs:
+      spec_dashboard_enabled:
+        description: "Append a source-backed static spec delivery dashboard."
+        required: false
+        type: boolean
+        default: false
+      spec_dashboard_config:
+        description: "Repository-owned version 1 canonical status source configuration."
+        required: false
+        type: string
+        default: .config/spec-dashboard.json
       content_source:
         description: >-
           Documentation content source directory (mkdocs's `docs_dir`). Only
@@ -95,7 +105,7 @@ jobs:
           pip install mkdocs-material==9.7.6 mkdocs-awesome-pages-plugin==2.10.1
 
       - name: Checkout pipeline-owned scripts
-        if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
+        if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled || inputs.spec_dashboard_enabled
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
@@ -105,6 +115,8 @@ jobs:
           sparse-checkout: |
             scripts/__init__.py
             scripts/pages_readiness.py
+            scripts/spec_dashboard.py
+            scripts/spec_dashboard_render.py
             scripts/readiness
 
       - name: Validate declared content source
@@ -194,6 +206,17 @@ jobs:
               --readiness-manifest "$READINESS_MANIFEST" \
               --mirror-manifest "$MARKDOWN_MANIFEST"
           done
+
+      - name: Build spec delivery snapshot
+        if: inputs.spec_dashboard_enabled
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DASHBOARD_CONFIG: ${{ inputs.spec_dashboard_config }}
+        run: |
+          set -euo pipefail
+          python .pipeline-contract/scripts/spec_dashboard.py \
+            --root "$GITHUB_WORKSPACE" --config "$DASHBOARD_CONFIG" \
+            --output site/spec-delivery --repository "$GITHUB_REPOSITORY"
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

@@ -19,6 +19,7 @@ extra:
 
 nav:
   - Home: index.md
+  - Spec dashboard template: spec-dashboard.md
   - Concepts: concepts.md
   - Components: components.md
   - Parity receipt: parity.md
