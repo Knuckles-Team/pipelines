@@ -6,17 +6,16 @@ import json
 import os
 from pathlib import Path
 import re
-import subprocess
 from urllib.request import Request, urlopen
 
 if __package__:
     from .spec_dashboard_render import render
     from .spec_dashboard_sources import read_records, record
-    from .spec_dashboard_history import history_snapshot
+    from .spec_dashboard_history import history_snapshot, git
 else:
     from spec_dashboard_render import render
     from spec_dashboard_sources import read_records, record
-    from spec_dashboard_history import history_snapshot
+    from spec_dashboard_history import history_snapshot, git
 
 
 def github_snapshot(repository, token, opener=urlopen):
@@ -81,7 +80,7 @@ def parse_options(argv):
 
 
 def create_snapshot(args, root, config):
-    revision = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+    revision = git(root, 'rev-parse', 'HEAD').decode().strip()
     snapshot = {'version': 1, 'repository': args.repository, 'revision': revision,
                 'captured_at': datetime.now(timezone.utc).isoformat(),
                 'records': read_records(root, config),

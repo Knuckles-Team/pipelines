@@ -1,40 +1,10 @@
 """Actual Git fixtures for bounded, changing-scope delivery observations."""
-import json
-import os
-from pathlib import Path
-import subprocess
+from spec_dashboard_fixtures import initialize, commit, state, run
 
 from scripts.spec_dashboard_history import history_snapshot, matches
 from scripts.spec_dashboard_charts import history_panels, daily_velocity
 
 CONFIG = {'sources': [{'glob': 'specs/*/status.json', 'kind': 'spec'}]}
-
-
-def initialize(root):
-    root.mkdir()
-    subprocess.run(['git', 'init', '-q', '-b', 'main', str(root)], check=True)
-    subprocess.run(['git', '-C', str(root), 'config', 'user.name', 'Fixture'], check=True)
-    subprocess.run(['git', '-C', str(root), 'config', 'user.email', 'fixture@example.com'], check=True)
-    return root
-
-
-def commit(root, payload, day):
-    path = root / 'specs' / 'sample' / 'status.json'
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if payload is None:
-        path.unlink()
-    else:
-        path.write_text(json.dumps(payload))
-    subprocess.run(['git', '-C', str(root), 'add', '--', 'specs/sample/status.json'], check=True)
-    env = {**os.environ, 'GIT_AUTHOR_DATE': f'2026-01-{day:02}T12:00:00Z',
-           'GIT_COMMITTER_DATE': f'2026-01-{day:02}T12:00:00Z'}
-    subprocess.run(['git', '-C', str(root), 'commit', '-qm', f'observation {day}'], env=env, check=True)
-
-
-def state(delivery, *, accepted=False, requirements=None):
-    return {'spec_id': 'S', 'delivery_state': delivery,
-            'acceptance_state': 'ACCEPTED' if accepted else 'NOT_AUDITED',
-            'requirements': requirements or []}
 
 
 def test_baseline_landed_is_not_new_completion(tmp_path):
@@ -82,7 +52,7 @@ def test_shallow_and_single_snapshot_are_explicit(tmp_path):
     commit(root, state('SPECIFIED'), 1)
     commit(root, state('LANDED'), 2)
     shallow = tmp_path / 'shallow'
-    subprocess.run(['git', 'clone', '-q', '--depth=1', root.as_uri(), str(shallow)], check=True)
+    run(tmp_path, 'clone', '-q', '--depth=1', root.as_uri(), str(shallow))
     result = history_snapshot(shallow, CONFIG)
     assert not result['available'] and result['shallow'] and result['truncated']
     assert result['sampled_commits'] == 1

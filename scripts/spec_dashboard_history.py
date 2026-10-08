@@ -1,6 +1,7 @@
 """Bounded, offline first-parent observations of canonical status files."""
 from io import BytesIO
 import json
+import os
 from pathlib import Path
 import subprocess
 from fnmatch import fnmatchcase
@@ -15,7 +16,11 @@ else:
 
 def git(root, *args, input=None):
     return subprocess.run(['git', '-C', str(root), *args], input=input,
-                          capture_output=True, check=True, timeout=30).stdout
+                          capture_output=True, check=True, timeout=30, env=git_environment()).stdout
+
+
+def git_environment():
+    return {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
 
 
 def matches(parts, pattern):
