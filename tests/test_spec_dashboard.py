@@ -67,3 +67,24 @@ def test_successful_empty_collections_render():
     snapshot = {'repository': 'a/b', 'revision': 'abc', 'captured_at': 'now',
                 'records': [], 'github': {'issues': {'available': True, 'items': []}}}
     assert '0 open at capture.' in render(snapshot)
+
+
+def test_external_document_symlink_cannot_publish_heading(tmp_path):
+    root = tmp_path / 'repo'
+    source = root / 'specs' / 'live'
+    source.mkdir(parents=True)
+    (source / 'status.json').write_text('{"spec_id":"SAFE","delivery_state":"SPECIFIED"}')
+    outside = tmp_path / 'private.md'
+    outside.write_text('# PRIVATE OUTSIDE HEADING\n')
+    document = source / 'spec.md'
+    document.symlink_to(outside)
+    config = {'sources': [{'glob': 'specs/*/status.json'}]}
+    records = read_records(root, config)
+    assert records[0]['title'] == 'SAFE'
+    assert 'document' not in records[0]
+    assert 'PRIVATE' not in json.dumps(records)
+    document.unlink()
+    document.write_text('# Public spec heading\n')
+    records = read_records(root, config)
+    assert records[0]['title'] == 'Public spec heading'
+    assert records[0]['document'] == 'specs/live/spec.md'

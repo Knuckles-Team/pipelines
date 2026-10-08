@@ -23,11 +23,14 @@ with:
   spec_dashboard_config: .github/spec-dashboard.json
 ```
 
-Keep the existing content-source/theme/readiness inputs and immutable pipeline pin.
+Keep the existing content-source/theme/readiness inputs. Fleet caller workflows use
+`Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main`, as required by
+the repository policy. The reusable workflow checks out its scripts and theme at the
+resolved immutable `job.workflow_sha`; record that SHA in delivery evidence.
 Rebuild on every main push (remove restrictive path filters) so source/status changes
 are reflected. Link `spec-delivery/` from your existing documentation landing page.
 For inline workflows run the following after existing build/readiness/privacy gates,
-using the same pinned pipeline checkout and existing read-only GitHub token:
+using the policy-approved pipeline checkout and existing read-only GitHub token:
 
 ```sh
 python .pipeline-contract/scripts/spec_dashboard.py --root . \

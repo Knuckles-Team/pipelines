@@ -43,20 +43,17 @@ def read_records(root, config):
             if relative in seen:
                 continue
             seen.add(relative)
-            records.extend(read_source(path, relative, source.get('kind', 'spec')))
+            records.extend(read_source(path, relative, source.get('kind', 'spec'), root=root))
     return records
 
 
-def read_source(path, relative, kind):
+def read_source(path, relative, kind, *, root):
     if kind not in {'spec', 'requirement'}:
         raise ValueError('kind must be spec or requirement')
     raw = json.loads(path.read_text(encoding='utf-8'))
     primary = record(raw, relative, kind)
-    document = path.with_name('spec.md')
-    if kind == 'spec' and document.is_file():
-        headings = re.findall(r'^# (.+)$', document.read_text(encoding='utf-8'), re.MULTILINE)
-        primary['title'] = headings[0] if headings else primary['title']
-        primary['document'] = relative.with_name('spec.md').as_posix()
+    if kind == 'spec':
+        primary.update(document_metadata(path, root))
     result = [primary]
     children = {str(item['id']): item for item in raw.get('requirements', [])}
     ids = dict.fromkeys([*raw.get('requirement_ids', []), *children])
@@ -64,6 +61,17 @@ def read_source(path, relative, kind):
         result.append(record(children.get(identifier, {'id': identifier}), relative,
                              'requirement', parent=primary['id']))
     return result
+
+
+def document_metadata(path, root):
+    document = path.with_name('spec.md')
+    if not document.is_file() or not document.resolve().is_relative_to(root):
+        return {}
+    headings = re.findall(r'^# (.+)$', document.read_text(encoding='utf-8'), re.MULTILINE)
+    metadata = {'document': document.relative_to(root).as_posix()}
+    if headings:
+        metadata['title'] = headings[0]
+    return metadata
 
 
 def github_snapshot(repository, token, opener=urlopen):
