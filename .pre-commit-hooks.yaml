@@ -186,6 +186,35 @@
   language: python
   pass_filenames: false
   always_run: true
+# --- documentation standard (EG-STE-Lite) ----------------------------------
+- id: ste-staged
+  name: EG-STE-Lite - staged docs, diff-scoped
+  entry: pipelines-hook ste-staged
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: ste-census
+  name: EG-STE-Lite census - every in-scope doc, enforced
+  entry: pipelines-hook ste-census
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: ste-staleness-staged
+  name: Doc staleness - staged lines, diff-scoped
+  entry: pipelines-hook ste-staleness-staged
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+- id: ste-staleness-census
+  name: Doc staleness census - every in-scope doc, enforced
+  entry: pipelines-hook ste-staleness-census
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
 
 # --- release-only index readiness (never an ordinary code gate) ------------
 - id: dependency-readiness

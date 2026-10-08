@@ -1,0 +1,270 @@
+# EG-STE-Lite wordlist: the machine-readable half of the standard.
+#
+# Read flat by words.py. Every key except [banned] is a top-level value;
+# [banned] is the only table (term -> fix) and must stay last, since a TOML
+# table header captures all following keys until the next header.
+#
+#   general           - plain-English vocabulary, advisory context only.
+#   banned            - term -> fix; whole-word, case-insensitive, failing.
+#   modal             - hedging modals, failing (RFC-2119: must/should/may).
+#   modal_advisory    - capability modal "can", advisory.
+#   fuzzy             - fuzzy quantifiers, failing (state a measured value,
+#                       or tag with `measured: ~N`).
+#   fuzzy_advisory    - "some", advisory.
+#   person            - first/second person, failing (name the actor).
+#   idioms            - idiom phrases, failing.
+#   cluster           - synonym pairs; two or more members of one cluster in
+#                       the same file is one failing finding.
+#   abbreviations     - tokens that must not split sentences.
+#   passive_allowlist - past participles the passive heuristic ignores.
+
+general = [
+  "about", "accept", "action", "active", "add", "after", "again", "age", "all",
+  "allow", "almost", "already", "also", "always", "amount", "and", "another",
+  "answer", "any", "apply", "appear", "argument", "array", "assign", "at",
+  "attribute", "avoid", "back", "bad", "base", "basic", "because", "before",
+  "begin", "between", "block", "both", "build", "by",
+  "call", "cannot", "case", "catch", "chain", "change", "check", "chunk",
+  "clear", "close", "code", "collect", "combine", "command", "commit",
+  "compile", "complete", "config", "connect", "content", "continue", "control",
+  "convert", "copy", "correct", "count", "create", "current",
+  "data", "date", "debug", "declare", "default", "define", "delay", "delete",
+  "deliver", "depend", "describe", "detect", "dictionary", "different",
+  "disable", "dispatch", "document", "download", "drive",
+  "early", "easy", "encode", "empty", "enable", "end", "engine", "enough",
+  "enter", "error", "escape", "event", "every", "exact", "example", "except",
+  "execute", "exist", "expand", "explain", "export", "extend", "external",
+  "fail", "false", "fast", "feature", "file", "filter", "find", "finish",
+  "first", "fit", "follow", "format", "forward", "found", "free", "from",
+  "full", "function",
+  "gain", "generate", "get", "give", "go", "grab", "group",
+  "handle", "hard", "have", "head", "high", "hold", "home", "host",
+  "id", "include", "index", "info", "input", "install", "instead", "integrate",
+  "into", "invert", "issue", "itself",
+  "join", "just",
+  "key", "keep", "kind", "known",
+  "label", "large", "last", "later", "layout", "lead", "learn", "leave",
+  "level", "line", "link", "list", "load", "local", "logic", "look", "low",
+  "make", "manage", "mark", "match", "maximum", "may", "mean", "mechanism",
+  "member", "memory", "mention", "merge", "message", "method", "minimum",
+  "mode", "model", "module", "monitor", "move", "much",
+  "name", "native", "near", "need", "negative", "next", "no", "node", "none",
+  "normal", "not", "note", "nothing", "number", "object",
+  "offer", "ok", "old", "on", "once", "one", "only", "open", "option",
+  "order", "other", "out", "output", "outside", "over", "override",
+  "own",
+  "package", "pad", "page", "pair", "parse", "part", "path", "pattern", "pay",
+  "perform", "pick", "place", "plan", "platform", "policy", "pool", "port",
+  "position", "possible", "power", "prune", "pull", "push",
+  "quietly",
+  "range", "rate", "raw", "rebuild", "read", "reason", "receive", "record",
+  "reduce", "reference", "regenerate", "register", "regular", "reject",
+  "relate", "remote", "remove", "rename", "repeat", "replace", "report",
+  "request", "require", "reset", "resolve", "resource", "restart", "return",
+  "reuse", "right", "role", "root", "rotate", "run",
+  "safe", "sample", "save", "scan", "schedule", "scope", "script", "search",
+  "select", "self", "send", "sequence", "server", "session", "set", "setting",
+  "shuffle", "simple", "single", "size", "skip", "slice", "slot", "slow",
+  "small", "sort", "source", "span", "split", "standard", "start", "state",
+  "static", "step", "still", "store", "stop", "strategy", "stream", "string",
+  "strip", "structure", "style", "sub", "subject", "submit", "success",
+  "suffix", "summarize", "support", "surface", "switch", "system",
+  "take", "target", "task", "template", "term", "test", "text", "than", "that",
+  "the", "these", "they", "this", "time", "timed", "token", "top", "total",
+  "track", "transform", "true", "try", "turn", "type",
+  "unit", "unknown", "unnamed", "until", "update", "upgrade", "upload", "up",
+  "use", "user", "using", "utility",
+  "value", "valid", "variable", "via", "version", "view",
+  "wait", "warn", "watch", "way", "web", "when", "where", "which", "while",
+  "who", "whole", "why", "wide", "window", "with", "without", "word", "work",
+  "write",
+  "zero",
+]
+
+modal = ["would", "might", "could", "need to", "ought to", "be able to"]
+modal_advisory = ["can"]
+
+fuzzy = [
+  "several",
+  "a few",
+  "many",
+  "numerous",
+  "a lot of",
+  "lots of",
+  "couple of",
+  "plenty",
+  "handful of",
+  "good number of",
+]
+fuzzy_advisory = ["some"]
+
+person = [
+  "I",
+  "we",
+  "our",
+  "ours",
+  "you",
+  "your",
+  "yours",
+  "yourself",
+  "yourselves",
+  "ourselves",
+  "let's",
+]
+
+idioms = [
+  "under the hood",
+  "out of the box",
+  "quick win",
+  "deep dive",
+  "deep-dive",
+  "game changer",
+  "low-hanging fruit",
+  "move the needle",
+  "boil the ocean",
+  "on the same page",
+  "touch base",
+  "loop in",
+  "drill down",
+  "head to head",
+  "in a nutshell",
+  "on the fly",
+  "cut to the chase",
+  "hit the ground running",
+  "win-win",
+  "no-brainer",
+  "piece of cake",
+  "easy as pie",
+  "in the same boat",
+  "beat around the bush",
+  "cut corners",
+  "moving target",
+  "needle in a haystack",
+  "elephant in the room",
+  "tip of the iceberg",
+  "at the end of the day",
+  "as a matter of fact",
+  "for what it's worth",
+  "the bottom line",
+  "needless to say",
+  "in the grand scheme",
+  "big picture",
+  "cutting edge",
+  "best of breed",
+  "blue-sky",
+]
+
+cluster = [
+  [["fetch", "fetches", "fetched", "fetching"], ["retrieve", "retrieves", "retrieved", "retrieving"]],
+  [["run", "runs", "ran", "running"], ["execute", "executes", "executed", "executing"]],
+  [["start", "starts", "started", "starting"], ["launch", "launches", "launched", "launching"]],
+  [["stop", "stops", "stopped", "stopping"], ["halt", "halts", "halted", "halting"]],
+  [["show", "shows", "showed", "showing"], ["display", "displays", "displayed", "displaying"]],
+  [["check", "checks", "checked", "checking"], ["verify", "verifies", "verified", "verifying"]],
+  [["enable", "enables", "enabled", "enabling"], ["activate", "activates", "activated", "activating"]],
+  [["disable", "disables", "disabled", "disabling"], ["deactivate", "deactivates", "deactivated", "deactivating"]],
+  [["provide", "provides", "provided", "providing"], ["supply", "supplies", "supplied", "supplying"]],
+  [["build", "builds", "built", "building"], ["construct", "constructs", "constructed", "constructing"]],
+  [["remove", "removes", "removed", "removing"], ["delete", "deletes", "deleted", "deleting"]],
+]
+
+abbreviations = [
+  "e.g.",
+  "i.e.",
+  "vs.",
+  "etc.",
+  "Mr.",
+  "Mrs.",
+  "Ms.",
+  "Dr.",
+  "Fig.",
+  "No.",
+]
+
+passive_allowlist = [
+  "used",
+  "known",
+  "called",
+  "based",
+  "required",
+  "needed",
+  "created",
+  "defined",
+  "implemented",
+  "considered",
+  "provided",
+  "stored",
+  "returned",
+  "accepted",
+  "exposed",
+  "loaded",
+  "pinned",
+]
+
+[banned]
+utilize = "use"
+utilizes = "use"
+utilized = "use"
+utilizing = "use"
+utilization = "use"
+leverage = "use"
+leverages = "use"
+leveraged = "use"
+leveraging = "use"
+facilitate = "help"
+terminate = "stop"
+terminates = "stop"
+terminated = "stop"
+terminating = "stop"
+initiate = "start"
+initiates = "start"
+initiated = "start"
+initiating = "start"
+commence = "start"
+commences = "start"
+commenced = "start"
+commencing = "start"
+ascertain = "find"
+ascertains = "find"
+ascertained = "find"
+ascertaining = "find"
+endeavor = "try"
+endeavour = "try"
+endeavors = "try"
+endeavoring = "try"
+sufficient = "enough"
+sufficiently = "enough"
+additionally = "also"
+subsequently = "after"
+commensurate = "matching"
+comprehensive = "complete"
+crucial = "important"
+pivotal = "important"
+paramount = "important"
+ubiquitous = "everywhere"
+myriad = "many"
+plethora = "many"
+tapestry = "set"
+functionality = "feature"
+methodology = "method"
+operationalize = "run"
+exacerbate = "make worse"
+mitigate = "reduce"
+substantiate = "support"
+hinder = "block"
+impede = "block"
+inquire = "ask"
+delineate = "describe"
+enumerate = "list"
+incorporate = "include"
+proliferate = "spread"
+streamline = "simplify"
+seamless = "smooth"
+seamlessly = "smoothly"
+regardless = "in either case"
+"with regard to" = "about"
+"with respect to" = "about"
+"in order to" = "to"
+"in the event that" = "if"
+"prior to" = "before"
+"due to" = "because"

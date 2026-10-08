@@ -12,7 +12,7 @@ This folder is the canonical source for the five ecosystem documentation sites. 
 | `glossary.md` | `<content-source>/glossary.md` |
 | `base.mkdocs.yml` | inherited directly from the pinned pipelines checkout |
 
-`<content-source>` is the explicitly declared `docs` or `pages` directory. Run `python scripts/sync_mkdocs_theme.py sync --root REPOSITORY --content-source docs` to update files, and the same command with `check` to verify exact equality without writing. The Pages workflow checks the committed assets against its immutable workflow checkout before building.
+`<content-source>` is the explicitly declared `docs` or `pages` directory. Run `python scripts/sync_mkdocs_theme.py sync --root REPOSITORY --content-source docs` to update files, and the same command with `check` to check exact equality without writing. The Pages workflow checks the committed assets against its immutable workflow checkout before building.
 
 ## MkDocs configuration
 
@@ -20,4 +20,4 @@ The repository's `mkdocs.yml` inherits `templates/mkdocs-theme/base.mkdocs.yml` 
 
 Use `.site-hero`, `.site-card-grid` / `.site-card`, `.site-ownership__grid` / `.site-ownership__item`, and the ordered `.site-flow` components for landing-page structure. Prefer semantic HTML and retain visible keyboard focus. The common theme uses native `<details>` for the site switcher and does not require custom JavaScript.
 
-The root `README.md` remains the short entry point and keeps its exact ordered headings: Overview, Key capabilities, Documentation, Architecture, Quick start, Contributing, License. Deep reference material belongs in Pages. Public home pages describe the current bundled ecosystem in present tense; they do not contain planning, migration, worktree, or future-release status.
+The root `README.md` remains the short entry point. It keeps its exact ordered headings: Overview, Key capabilities, Documentation, Architecture, Quick start, Contributing, License. Deep reference material belongs in Pages. Public home pages describe the current bundled ecosystem in present tense. They contain no planning, migration, worktree, or future-release status.

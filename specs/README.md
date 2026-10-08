@@ -1,6 +1,6 @@
 # Pipelines specifications
 
-This directory is the public build contract for pipeline-owned Graph OS ecosystem work. Each feature has `spec.md` (outcome), `plan.md` (architecture), `test-spec.md` (proof), `tasks.md` (work order), `requirements.md` (the definition of every requirement ID the spec owns), and `status.json` (delivery and acceptance, including a `requirements` array with one entry per requirement ID carrying its own `delivery_state` and evidence). Start from [_template](_template/). A proposed spec does not claim its behavior has landed.
+This directory is the public build contract for pipeline-owned Graph OS ecosystem work. Each feature has `spec.md` (outcome), `plan.md` (architecture), `test-spec.md` (proof), and `tasks.md` (work order). `requirements.md` defines every requirement ID the spec owns. `status.json` records delivery and acceptance. It carries a `requirements` array, one entry per requirement ID, with its own `delivery_state` and evidence. Start from [_template](_template/). A proposed spec does not claim its behavior has landed.
 
 | Spec | Requirement | Owner boundary | Delivery | Acceptance |
 |---|---|---|---|---|
