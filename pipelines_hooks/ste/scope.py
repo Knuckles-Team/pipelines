@@ -87,9 +87,11 @@ def _entry_matches(rel: str, entry: str) -> bool:
 
 def in_scope_doc(rel: str, cfg: SteConfig) -> bool:
     """Whether a tracked doc path is inside the ste scope."""
-    if _excluded(rel, cfg.exempt):
-        return False
-    return any(_entry_matches(rel, entry) for entry in cfg.paths)
+    return all((
+        rel.endswith(".md"),
+        not _excluded(rel, cfg.exempt),
+        any(_entry_matches(rel, entry) for entry in cfg.paths),
+    ))
 
 
 def in_scope_code(rel: str, cfg: SteConfig) -> bool:

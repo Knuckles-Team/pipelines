@@ -16,7 +16,7 @@ from pipelines_hooks.core.errors import CannotRun
 
 #: Fleet-wide staleness patterns: none shipped in the gate repository. Every
 #: staleness pattern comes from the consumer's own configuration table.
-DEFAULT_STALENESS: tuple[tuple[str, str], ...] = ()
+DEFAULT_STALENESS: tuple[()] = ()
 
 _WORDLIST = Path(__file__).with_name("ste_words.toml")
 _REQUIRED = (

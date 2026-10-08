@@ -11,7 +11,7 @@ The ste gates handle the prose side. They also check the argparse strings. One s
 | `ste-staleness-staged` | Staged hunks against the staleness patterns | `pre-commit` |
 | `ste-staleness-census` | Every tracked in-scope document | `pre-push`, `manual` |
 
-The staged gates diff against the committed text. A finding present in the committed file does not re-fire on a formatting touch. A finding introduced by the staged text fails the run. A newly staged file checks in full.
+The staged gates diff against the committed text. A finding present in the committed file does not re-fire on a formatting touch. Each added occurrence fails the run. Moving existing occurrences to other lines does not fail. A newly staged file checks in full.
 
 The staleness gates judge currency. They fire the configured patterns on matching lines. The census pair defaults to `pre-push` and the `manual` hook stage.
 
@@ -65,7 +65,7 @@ exempt = ["docs/generated/**"]
 code_paths = ["src/pkg/cli.py", "src/pkg/commands"]
 ```
 
-- `paths`: in-scope paths. The default set is `README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `docs`. A bare file name matches by base name, so a nested `README.md` counts.
+- `paths`: in-scope Markdown (`.md`) files and directories. Directory entries select Markdown files, including architecture documents. Images and diagram assets stay outside prose scope. The default set is `README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `docs`. A bare file name matches by base name, so a nested `README.md` counts.
 - `exempt`: path patterns that skip the check. A pattern matches the relative path or the bare file name.
 - `code_paths`: Python files or directories to scan for argparse `help`, `description`, and `epilog` strings. The wordlist tiers cover these strings; sentence shape does not apply.
 - `staleness`: a list of tables, each with a `pattern` and a `message`.
