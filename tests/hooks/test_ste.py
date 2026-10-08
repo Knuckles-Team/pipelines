@@ -310,5 +310,8 @@ def test_abbreviations_do_not_end_sentences() -> None:
 
 
 def test_abbreviation_protect_needs_a_word_boundary() -> None:
-    protect = frozenset({"Ms."})
-    assert len(sentence_spans("The gate audits stale claims. The run ends.", protect)) == 2
+    signoff = "Ms. Lee signs. The run ends."
+    assert len(sentence_spans(signoff, frozenset({"Ms."}))) == 2
+    assert len(sentence_spans(signoff, frozenset())) == 3
+    assert len(sentence_spans("The gate claims. The run ends.", frozenset({"Ms."}))) == 2
+    assert len(sentence_spans("The gate audits stale claims. The run ends.", frozenset({"Ms."}))) == 2

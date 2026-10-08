@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
@@ -43,21 +44,19 @@ def _added(before: list[Finding], after: list[Finding]) -> list[Finding]:
     return out
 
 
-def _added_docs(root: Path, rels: list[str], *, wordlist: object, head_present: bool) -> list[Finding]:
+def _added_paths(
+    root: Path,
+    rels: list[str],
+    *,
+    wordlist: object,
+    head_present: bool,
+    check: Callable[[str, object, str], list[Finding]],
+) -> list[Finding]:
     out: list[Finding] = []
     for rel in rels:
         index = _index_text(root, rel)
         head = blob_text(root, f"HEAD:{rel}") if head_present else None
-        out.extend(_added(check_document(head or "", wordlist, path=rel), check_document(index, wordlist, path=rel)))
-    return out
-
-
-def _added_code(root: Path, rels: list[str], *, wordlist: object, head_present: bool) -> list[Finding]:
-    out: list[Finding] = []
-    for rel in rels:
-        index = _index_text(root, rel)
-        head = blob_text(root, f"HEAD:{rel}") if head_present else None
-        out.extend(_added(cli_findings(head or "", wordlist, path=rel), cli_findings(index, wordlist, path=rel)))
+        out.extend(_added(check(head or "", wordlist, path=rel), check(index, wordlist, path=rel)))
     return out
 
 
@@ -71,8 +70,8 @@ def _main(root: Path) -> int:
         print("ste(staged): OK: no in-scope file staged")
         return 0
     head_present = has_head(root)
-    findings = _added_docs(root, docs, wordlist=wordlist, head_present=head_present)
-    findings.extend(_added_code(root, code, wordlist=wordlist, head_present=head_present))
+    findings = _added_paths(root, docs, wordlist=wordlist, head_present=head_present, check=check_document)
+    findings.extend(_added_paths(root, code, wordlist=wordlist, head_present=head_present, check=cli_findings))
     return report("ste(staged)", findings)
 
 
