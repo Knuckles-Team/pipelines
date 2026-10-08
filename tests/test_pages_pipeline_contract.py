@@ -124,6 +124,10 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/pages_readiness.py",
         "scripts/spec_dashboard.py",
         "scripts/spec_dashboard_render.py",
+        "scripts/spec_dashboard_sources.py",
+        "scripts/spec_dashboard_history.py",
+        "scripts/spec_dashboard_history_metrics.py",
+        "scripts/spec_dashboard_charts.py",
         "scripts/readiness",
     ]
 
@@ -148,3 +152,10 @@ def test_spec_dashboard_is_opt_in_and_after_readiness():
     assert text.index("Build spec delivery snapshot") < text.index("Upload artifact")
     assert "GITHUB_TOKEN: ${{ github.token }}" in text
     assert "--repository \"$GITHUB_REPOSITORY\"" in text
+
+
+def test_dashboard_history_checkout_is_bounded_and_opt_in():
+    steps = _workflow()["document"]["jobs"]["deploy"]["steps"]
+    checkout = next(step for step in steps if step["name"] == "Checkout Repository")
+    assert checkout["with"]["fetch-depth"] == "${{ inputs.spec_dashboard_enabled && 100 || 1 }}"
+    assert checkout["with"]["persist-credentials"] is False
