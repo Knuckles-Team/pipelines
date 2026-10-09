@@ -2,10 +2,14 @@ name: Checkout, set up Python and uv
 description: >-
   Checkout the repository, install a pinned Python version, and install uv.
   Shared by desktop_release_pipeline.yml's Linux and Windows build jobs so
-  the three-step preamble exists once, not once per platform.
+  the three-step preamble exists once, not once per platform. Many callers
+  run this on self-hosted homelab runners without AVX2; actions/setup-python's
+  python-build-standalone distribution requires AVX2 and fails there with
+  "CPU ISA level is lower than required" (exit 127), so Python is installed
+  via uv instead, which has no such requirement.
 inputs:
   python-version:
-    description: Python version passed to actions/setup-python.
+    description: Python version passed to uv python install.
     required: false
     default: '3.11'
 runs:
@@ -14,10 +18,7 @@ runs:
     - name: Check out code and bind provenance
       uses: ./.pipeline-contract/.github/actions/checkout-verified-source
 
-    - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+    - name: Install uv and set up Python
+      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
       with:
         python-version: ${{ inputs.python-version }}
-
-    - name: Install uv
-      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
