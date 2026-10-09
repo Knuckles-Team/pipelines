@@ -8,12 +8,13 @@ hand-edited copy is simply overwritten by the next ``--write``.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import NamedTuple
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.specs.bindings import test_bindings
-from pipelines_hooks.specs.git_log import landing_commits, reachable_shas
+from pipelines_hooks.specs.git_log import landing_commits, reachable_shas, reverted_shas
 from pipelines_hooks.specs.legacy import legacy_landings
 from pipelines_hooks.specs.records import build_record, mentioned_tokens
 from pipelines_hooks.specs.requirements_doc import Row, parse_rows
@@ -42,12 +43,16 @@ def _load_status(path: Path) -> dict:
 
 
 def _requirement_state(rid: str, evidence: Evidence) -> tuple[list[str], list[str]]:
-    landed = sorted(evidence.landed_by.get(rid, set()) | set(evidence.legacy_by.get(rid, [])))
+    landed = sorted(
+        evidence.landed_by.get(rid, set()) | set(evidence.legacy_by.get(rid, []))
+    )
     tests = sorted(set(evidence.tested_by.get(rid, [])))
     return landed, tests
 
 
-def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evidence, owner: str) -> dict:
+def _spec_document(
+    spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evidence, owner: str
+) -> dict:
     ids = [row.id for row in rows]
     state: dict[str, str] = {}
     records: dict[str, dict[str, object]] = {}
@@ -66,19 +71,38 @@ def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evid
     }
 
 
+def live_resolver(on_head: set[str], reverted: set[str]) -> Callable[[str], str | None]:
+    """Map a recorded full SHA or SHA prefix to a reachable, non-reverted full SHA."""
+    by_prefix = {sha[:12]: sha for sha in on_head}
+
+    def resolve(recorded: str) -> str | None:
+        full = (
+            recorded
+            if recorded in on_head
+            else by_prefix.get(recorded[:12])
+            if len(recorded) >= 12
+            else None
+        )
+        return full if full and full not in reverted else None
+
+    return resolve
+
+
 def generate(repo: Path, head: str) -> dict[Path, dict]:
     """status.json path -> generated document, for every ``specs/*/requirements.md``."""
     commits = landing_commits(repo, head)
     landed_by = mentioned_tokens(commits)
     tested_by = test_bindings(repo)
-    on_head = reachable_shas(repo, head)
+    resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
     owner = repo.resolve().name
     result: dict[Path, dict] = {}
     for requirements_path in sorted(repo.glob("specs/*/requirements.md")):
         spec_dir = requirements_path.parent
         status_path = spec_dir / "status.json"
         old = _load_status(status_path)
-        evidence = Evidence(landed_by, tested_by, legacy_landings(old, lambda sha: sha in on_head))
+        evidence = Evidence(landed_by, tested_by, legacy_landings(old, resolve))
         rows = parse_rows(requirements_path.read_text(encoding="utf-8"))
-        result[status_path] = _spec_document(spec_dir, old=old, rows=rows, evidence=evidence, owner=owner)
+        result[status_path] = _spec_document(
+            spec_dir, old=old, rows=rows, evidence=evidence, owner=owner
+        )
     return result
