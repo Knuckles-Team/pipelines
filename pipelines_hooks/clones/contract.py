@@ -52,7 +52,7 @@ EXCLUSIONS = tuple(
     **/__generated__/** **/generated/** **/codegen/** **/openapi_client/**
     **/graphql_client/** **/*.generated.* **/*.map **/*.min.css **/*.min.js **/*.lock
     **/Cargo.lock **/package-lock.json **/pnpm-lock.yaml **/yarn.lock **/poetry.lock
-    site/**""".split()
+    site/** pages/**""".split()
 )
 
 
