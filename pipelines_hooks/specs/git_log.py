@@ -20,6 +20,22 @@ def _parse_record(record: str) -> tuple[str, str, str] | None:
     return sha, message, files
 
 
+def _merge_members(root: Path, sha: str) -> set[str]:
+    """A reverted merge (``git revert -m 1``) undoes every commit it brought in."""
+    parents = git_text(root, ("rev-list", "--parents", "-n", "1", sha)).split()[1:]
+    if len(parents) < 2:
+        return set()
+    return set(git_text(root, ("rev-list", f"{parents[0]}..{sha}")).split())
+
+
+def expand_reverted(root: Path, reverted: set[str]) -> set[str]:
+    """Reverted SHAs plus every member of a reverted merge."""
+    out = set(reverted)
+    for sha in reverted:
+        out |= _merge_members(root, sha)
+    return out
+
+
 def landing_commits(root: Path, head: str) -> dict[str, str]:
     """commit SHA -> expanded message, for non-merge commits that land product code.
 
@@ -38,9 +54,15 @@ def landing_commits(root: Path, head: str) -> dict[str, str]:
         reverted |= set(_REVERT_RE.findall(message))
         if any(is_product_path(f) for f in files.split()):
             commits[sha] = expand_ranges(message)
-    for sha in reverted:
+    for sha in expand_reverted(root, reverted):
         commits.pop(sha, None)
     return commits
+
+
+def reverted_shas(root: Path, head: str) -> set[str]:
+    """Every commit undone by a later revert reachable from ``head`` (merge members included)."""
+    raw = git_text(root, ("log", head, "--format=%B", "--grep=This reverts commit"))
+    return expand_reverted(root, set(_REVERT_RE.findall(raw)))
 
 
 def reachable_shas(root: Path, head: str) -> set[str]:

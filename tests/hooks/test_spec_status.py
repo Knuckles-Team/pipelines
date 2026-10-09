@@ -127,3 +127,52 @@ def test_same_line_shorthand_inherits_prefix() -> None:
     out = expand_ranges("Spec: TUI-RUNTIME-R001.1, R001.2, R001.3\nR009 alone")
     assert "TUI-RUNTIME-R001.2" in out and "TUI-RUNTIME-R001.3" in out
     assert "-R009" not in out
+
+
+_LEGACY_ROW = (
+    "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R050` | **Legacy landing.** |\n"
+)
+
+
+def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> None:
+    """v1 merged_head evidence becomes v2 landed_in; regenerating must carry it forward."""
+    repo.commit({"specs/demo/requirements.md": _LEGACY_ROW}, "add spec")
+    sha = repo.commit({"pkg/legacy.py": "# old work\n"}, "old work without an ID")
+    v1 = {
+        "schema_version": 1,
+        "spec_id": "demo",
+        "owner_repo": "demo",
+        "requirements": [
+            {
+                "id": "TEST-R050",
+                "delivery_state": "LANDED",
+                "evidence": [
+                    {"kind": "merged_head", "result": "passed", "commit": sha}
+                ],
+            }
+        ],
+    }
+    repo.commit({"specs/demo/status.json": json.dumps(v1)}, "v1 status")
+
+    assert repo.run("spec-status", "--write") == 0
+    first = (repo.root / "specs/demo/status.json").read_text(encoding="utf-8")
+    assert _by_id(repo)["TEST-R050"]["delivery_state"] == "LANDED"
+    repo.commit({"specs/demo/status.json": first}, "v2 status")
+
+    assert repo.run("spec-status", "--write") == 0
+    assert (repo.root / "specs/demo/status.json").read_text(encoding="utf-8") == first
+    assert repo.run("spec-status") == 0
+
+
+def test_reverting_a_merge_undoes_its_member_commits(repo: Repo) -> None:
+    repo.commit({"specs/demo/requirements.md": _REVERT_ROW}, "add spec")
+    base = repo.git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    repo.git("checkout", "-q", "-b", "feature")
+    repo.commit({"pkg/r030.py": "# r030\n"}, "Spec: TEST-R030")
+    repo.git("checkout", "-q", base)
+    repo.git("merge", "-q", "--no-ff", "-m", "merge feature", "feature")
+    merge = repo.git("rev-parse", "HEAD").strip()
+    repo.git("revert", "-m", "1", "--no-edit", merge)
+
+    assert repo.run("spec-status", "--write") == 0
+    assert _by_id(repo)["TEST-R030"]["delivery_state"] == "SPECIFIED"
