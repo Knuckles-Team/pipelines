@@ -39,6 +39,7 @@ GATES: dict[str, str] = {
     "env-sprawl": "pipelines_hooks.code.env_sprawl",
     "stdout-writes": "pipelines_hooks.code.stdout_writes",
     "public-surface": "pipelines_hooks.docs.public_surface",
+    "spec-decomposition": "pipelines_hooks.specs.decomposition",
     "ste-staged": "pipelines_hooks.ste.staged",
     "ste-census": "pipelines_hooks.ste.census",
     "ste-staleness-staged": "pipelines_hooks.ste.staleness_staged",

@@ -186,6 +186,13 @@
   language: python
   pass_filenames: false
   always_run: true
+# --- spec decomposition -----------------------------------------------------
+- id: spec-decomposition
+  name: Spec decomposition - requirements/tasks/test-spec/status.json IDs agree
+  entry: pipelines-hook spec-decomposition
+  language: python
+  pass_filenames: false
+  always_run: true
 # --- documentation standard (EG-STE-Lite) ----------------------------------
 - id: ste-staged
   name: EG-STE-Lite - staged docs, diff-scoped
