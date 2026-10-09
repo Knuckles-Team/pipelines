@@ -220,7 +220,7 @@ _No components._
 
 - **Status** — `status.md`
 
-## Agent Web UI
+## Graph OS web UI
 
 ### Components
 

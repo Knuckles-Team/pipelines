@@ -6955,7 +6955,7 @@
     {
       "id": "repo/agent-webui",
       "type": "Repository",
-      "label": "Agent Web UI",
+      "label": "Graph OS web UI",
       "pagesUrl": "https://knuckles-team.github.io/agent-webui/"
     },
     {
