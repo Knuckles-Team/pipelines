@@ -235,6 +235,14 @@
   require_serial: true
   stages: [manual]
 
+# --- spec lifecycle (SPEC-STATUS-LIFECYCLE.md) ------------------------------
+- id: spec-status
+  name: Spec status - generated specs/*/status.json matches requirements.md, git history and test bindings
+  entry: pipelines-hook spec-status
+  language: python
+  pass_filenames: false
+  always_run: true
+
 # --- CI-shaped helpers (a hosted workflow step calls these directly; never
 #     an ordinary pre-commit stage) -----------------------------------------
 - id: pr-test-scope
