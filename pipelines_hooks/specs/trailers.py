@@ -29,21 +29,21 @@ from pathlib import Path
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git
+from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN, named_ids
 
 #: Framing bytes for the single combined ``git log`` call: start-of-record,
 #: then sha/trailer separator. Both are illegal in a sha or a trailer value.
 _RECORD = "\x01"
 _FIELD = "\x02"
-_TRAILER_JOIN = "\x1f"
-_LOG_FORMAT = f"{_RECORD}%H{_FIELD}%(trailers:key=Spec,valueonly,separator={_TRAILER_JOIN})"
+_LOG_FORMAT = (
+    f"{_RECORD}%H{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
+)
 
 _EXEMPT_PREFIXES = ("specs/", "docs/", ".github/")
 
 _ID = r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-R?\d{2,3}(?:\.\d+)*"
 _ID_IN_BACKTICKS = re.compile(rf"`({_ID})`")
 _ID_ANYWHERE = re.compile(_ID)
-_NONE_EXEMPTION = re.compile(r"(?i)^none\b")
-_RANGE = re.compile(rf"^(?P<base>[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-)R(?P<start>\d{{2,3}})\.\.R?(?P<end>\d{{2,3}})$")
 
 #: One extended-regex alternation covers every binding shape in one grep.
 _BOUND_TEST_PATTERN = r"mark\.spec\(|//[[:space:]]*spec:|#[[:space:]]*spec:"
@@ -61,7 +61,9 @@ class _Commit:
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="spec-trailers", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument("--base-ref", default=None, help="default: see module docstring")
+    parser.add_argument(
+        "--base-ref", default=None, help="default: see module docstring"
+    )
     return parser.parse_args(argv)
 
 
@@ -79,7 +81,10 @@ def _parse_log(raw: str) -> list[_Commit]:
 
 def _load_commits(root: Path, base: str | None) -> list[_Commit]:
     rev_range = f"{base}..HEAD" if base else "HEAD"
-    raw = git_text(root, ("log", "--no-merges", f"--format={_LOG_FORMAT}", "--name-only", rev_range))
+    raw = git_text(
+        root,
+        ("log", "--no-merges", f"--format={_LOG_FORMAT}", "--name-only", rev_range),
+    )
     return _parse_log(raw)
 
 
@@ -92,7 +97,9 @@ def _is_product_path(path: str) -> bool:
 
 def _missing_trailer_failures(commits: list[_Commit]) -> list[str]:
     """Item 3: a product-path commit exists, but no commit carries ``Spec:`` at all."""
-    touches_product = any(any(_is_product_path(path) for path in commit.paths) for commit in commits)
+    touches_product = any(
+        any(_is_product_path(path) for path in commit.paths) for commit in commits
+    )
     has_trailer = any(commit.trailer_raw.strip() for commit in commits)
     if touches_product and not has_trailer:
         return [
@@ -100,32 +107,6 @@ def _missing_trailer_failures(commits: list[_Commit]) -> list[str]:
             "range carries a Spec: trailer (use 'Spec: none (<reason>)' when none applies)"
         ]
     return []
-
-
-def _expand_token(token: str) -> list[str]:
-    """A ``PREFIX-R001..R005`` range expands to its member IDs; anything else is itself."""
-    match = _RANGE.match(token)
-    if not match:
-        return [token]
-    width = len(match.group("start"))
-    start, end = int(match.group("start")), int(match.group("end"))
-    return [f"{match.group('base')}R{number:0{width}d}" for number in range(start, end + 1)]
-
-
-def _trailer_tokens(trailer_raw: str) -> list[str]:
-    tokens = (part.strip() for group in trailer_raw.split(_TRAILER_JOIN) for part in group.split(","))
-    return [token for token in tokens if token]
-
-
-def _named_ids(commits: list[_Commit]) -> list[str]:
-    """Every requirement ID any commit's ``Spec:`` trailer names, ranges expanded."""
-    ids: list[str] = []
-    for commit in commits:
-        for token in _trailer_tokens(commit.trailer_raw):
-            if _NONE_EXEMPTION.match(token):
-                continue
-            ids.extend(_expand_token(token))
-    return ids
 
 
 def _known_requirement_ids(root: Path) -> set[str]:
@@ -145,7 +126,9 @@ def _unknown_id_failures(named: list[str], known: set[str]) -> list[str]:
     unknown = sorted({identifier for identifier in named if identifier not in known})
     if not unknown:
         return []
-    return [f"spec-trailers: FAIL: unknown requirement id(s), no requirements.md row: {', '.join(unknown)}"]
+    return [
+        f"spec-trailers: FAIL: unknown requirement id(s), no requirements.md row: {', '.join(unknown)}"
+    ]
 
 
 def _bound_ids(root: Path) -> set[str]:
@@ -169,7 +152,9 @@ def _unbound_id_failures(named: list[str], known: set[str], root: Path) -> list[
     unbound = [identifier for identifier in known_named if identifier not in bound]
     if not unbound:
         return []
-    return [f"spec-trailers: FAIL: requirement id(s) with no bound test in the tree: {', '.join(unbound)}"]
+    return [
+        f"spec-trailers: FAIL: requirement id(s) with no bound test in the tree: {', '.join(unbound)}"
+    ]
 
 
 def main(argv: list[str]) -> int:
@@ -177,7 +162,7 @@ def main(argv: list[str]) -> int:
     root = repo_root(args.root)
     base = upstream_base(root, args.base_ref)
     commits = _load_commits(root, base)
-    named = _named_ids(commits)
+    named = named_ids(commit.trailer_raw for commit in commits)
     known = _known_requirement_ids(root)
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)

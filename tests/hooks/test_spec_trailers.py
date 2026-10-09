@@ -16,7 +16,9 @@ def _requirements_md(identifier: str) -> str:
     )
 
 
-def _commit(repo: Repo, files: dict[str, str], message: str, *, trailer: str | None = None) -> str:
+def _commit(
+    repo: Repo, files: dict[str, str], message: str, *, trailer: str | None = None
+) -> str:
     for rel, text in files.items():
         repo.write(rel, text)
     repo.git("add", "--", *files)
@@ -78,9 +80,16 @@ def test_item4_fail_a_trailer_names_an_id_with_no_requirements_row(
     assert "NOPE-R999" in out
 
 
-def test_item4_a_range_trailer_expands_to_each_member_id(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+def test_item4_a_range_trailer_expands_to_each_member_id(
+    repo: Repo, capsys: pytest.CaptureFixture[str]
+) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
-    _commit(repo, {"pkg/util.py": "x = 4\n"}, "range of unknown ids", trailer="DEMO4-R001..R003")
+    _commit(
+        repo,
+        {"pkg/util.py": "x = 4\n"},
+        "range of unknown ids",
+        trailer="DEMO4-R001..R003",
+    )
     assert repo.run("spec-trailers", "--base-ref", base) == 1
     out = capsys.readouterr().out
     assert "DEMO4-R001" in out
@@ -88,7 +97,9 @@ def test_item4_a_range_trailer_expands_to_each_member_id(repo: Repo, capsys: pyt
     assert "DEMO4-R003" in out
 
 
-def test_item5_fail_a_known_id_with_no_bound_test_in_the_tree(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+def test_item5_fail_a_known_id_with_no_bound_test_in_the_tree(
+    repo: Repo, capsys: pytest.CaptureFixture[str]
+) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
     _commit(
         repo,
@@ -122,3 +133,13 @@ def test_pass_a_known_id_with_a_comment_style_binding(repo: Repo) -> None:
 
 def test_a_malformed_base_revision_cannot_run(repo: Repo) -> None:
     assert repo.run("spec-trailers", "--base-ref", "not-a-real-revision") == 2
+
+
+def test_same_trailer_shorthand_inherits_prefix() -> None:
+    from pipelines_hooks.specs.trailer_ids import _qualified
+
+    assert _qualified(["TUI-RUNTIME-R001.1", "R001.2", "R003..R004"]) == [
+        "TUI-RUNTIME-R001.1",
+        "TUI-RUNTIME-R001.2",
+        "TUI-RUNTIME-R003..R004",
+    ]

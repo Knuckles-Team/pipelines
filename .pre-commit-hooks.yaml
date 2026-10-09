@@ -186,6 +186,13 @@
   language: python
   pass_filenames: false
   always_run: true
+# --- spec decomposition -----------------------------------------------------
+- id: spec-decomposition
+  name: Spec decomposition - requirements/tasks/test-spec/status.json IDs agree
+  entry: pipelines-hook spec-decomposition
+  language: python
+  pass_filenames: false
+  always_run: true
 # --- documentation standard (EG-STE-Lite) ----------------------------------
 - id: ste-staged
   name: EG-STE-Lite - staged docs, diff-scoped
@@ -227,6 +234,14 @@
   always_run: true
   require_serial: true
   stages: [manual]
+
+# --- spec lifecycle (SPEC-STATUS-LIFECYCLE.md) ------------------------------
+- id: spec-status
+  name: Spec status - generated specs/*/status.json matches requirements.md, git history and test bindings
+  entry: pipelines-hook spec-status
+  language: python
+  pass_filenames: false
+  always_run: true
 
 # --- CI-shaped helpers (a hosted workflow step calls these directly; never
 #     an ordinary pre-commit stage) -----------------------------------------
