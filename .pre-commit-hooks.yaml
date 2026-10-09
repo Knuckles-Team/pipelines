@@ -227,3 +227,13 @@
   always_run: true
   require_serial: true
   stages: [manual]
+
+# --- CI-shaped helpers (a hosted workflow step calls these directly; never
+#     an ordinary pre-commit stage) -----------------------------------------
+- id: pr-test-scope
+  name: PR test scope - map a pull request's diff to the tests it affects
+  entry: pipelines-hook pr-test-scope
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
