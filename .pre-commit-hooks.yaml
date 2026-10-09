@@ -252,3 +252,12 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
+
+# --- spec-status lifecycle (SPEC-STATUS-LIFECYCLE.md S6) -------------------
+- id: spec-trailers
+  name: "Spec trailers - every product-path PR carries a verified Spec: trailer"
+  entry: pipelines-hook spec-trailers
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-push, manual]
