@@ -14,7 +14,6 @@ from collections import Counter
 from dataclasses import dataclass
 
 
-
 def parent_of(id_: str) -> str | None:
     """The immediate parent of a dotted child ID, or ``None`` for a root ID."""
     m = re.match(r"(.+)\.\d+$", id_)
