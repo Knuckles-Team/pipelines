@@ -49,7 +49,7 @@ components (level 2, see [Components](components.md)).
 - **Reference** (6 components)
 - **Status** (1 component)
 
-## Agent Web UI
+## Graph OS web UI
 
 - **Components** (4 components)
 - **Home** (1 component)

@@ -202,7 +202,7 @@ def test_runtime_svg_labels_match_mermaid_source() -> None:
     mermaid = RUNTIME_DIAGRAM.with_suffix(".mmd").read_text(encoding="utf-8")
 
     for label in (
-        "Agent Web UI",
+        "Graph OS web UI",
         "browser experience",
         "Agent Terminal UI",
         "Geniusbot",
