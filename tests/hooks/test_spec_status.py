@@ -7,7 +7,9 @@ from pathlib import Path
 
 from tests.hooks.conftest import Repo
 
-_LANDED_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R001` | **Landed only.** |\n"
+_LANDED_ROW = (
+    "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R001` | **Landed only.** |\n"
+)
 _RETIRED_ROW = (
     "# demo\n\n| ID | Requirement |\n|---|---|\n"
     "| `TEST-R002` | **RETIRED: superseded by TEST-R003.** |\n"
@@ -23,7 +25,9 @@ _STALE_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R040` | **Needs
 
 
 def _status(repo: Repo) -> dict:
-    return json.loads((repo.root / "specs/demo/status.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (repo.root / "specs/demo/status.json").read_text(encoding="utf-8")
+    )
 
 
 def _by_id(repo: Repo) -> dict[str, dict]:
@@ -45,7 +49,9 @@ def test_bound_test_promotes_landed_to_verified(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _LANDED_ROW}, "add spec")
     repo.commit({"pkg/feature.py": "# implements TEST-R001\n"}, "Spec: TEST-R001")
     repo.commit(
-        {"tests/test_feature.py": "# spec: TEST-R001\ndef test_feature() -> None:\n    assert True\n"},
+        {
+            "tests/test_feature.py": "# spec: TEST-R001\ndef test_feature() -> None:\n    assert True\n"
+        },
         "add bound test",
     )
 
@@ -70,7 +76,9 @@ def test_parent_rollup_is_the_minimum_of_its_children(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _ROLLUP_ROWS}, "add spec")
     repo.commit({"pkg/a.py": "# a\n"}, "Spec: TEST-R010.1, TEST-R010.2")
     repo.commit(
-        {"tests/test_a.py": "# spec: TEST-R010.1\ndef test_a() -> None:\n    assert True\n"},
+        {
+            "tests/test_a.py": "# spec: TEST-R010.1\ndef test_a() -> None:\n    assert True\n"
+        },
         "verify child one",
     )
 
@@ -85,7 +93,10 @@ def test_parent_rollup_is_the_minimum_of_its_children(repo: Repo) -> None:
 def test_reverted_commit_does_not_count_as_landed(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _REVERT_ROW}, "add spec")
     landing_sha = repo.commit({"pkg/b.py": "# b\n"}, "Spec: TEST-R030")
-    repo.commit({"pkg/b.py": "# b removed\n"}, f"Revert previous change\n\nThis reverts commit {landing_sha}.")
+    repo.commit(
+        {"pkg/b.py": "# b removed\n"},
+        f"Revert previous change\n\nThis reverts commit {landing_sha}.",
+    )
 
     assert repo.run("spec-status", "--write") == 0
     row = _by_id(repo)["TEST-R030"]
