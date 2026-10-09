@@ -128,6 +128,11 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/spec_dashboard_history.py",
         "scripts/spec_dashboard_history_metrics.py",
         "scripts/spec_dashboard_charts.py",
+        "scripts/spec_dashboard_history_views.py",
+        "scripts/spec_dashboard_panels.py",
+        "scripts/spec_dashboard_records.py",
+        "scripts/spec_dashboard_structure.py",
+        "scripts/spec_dashboard_style.py",
         "scripts/readiness",
     ]
 

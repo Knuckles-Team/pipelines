@@ -63,4 +63,5 @@ def observations(snapshots):
     return {'available': len(points) > 1,
             'reason': '' if len(points) > 1 else 'Only one or no commit snapshots available',
             'points': points, 'events': events,
-            'baseline': 'Existing states at the first snapshot have unknown prior transitions; added already-landed records are scope additions, not observed completions.'}
+            'baseline': ('States at the first snapshot have no known earlier changes. '
+                         'A new record that is already landed adds scope. It is not an observed completion.')}

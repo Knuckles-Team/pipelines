@@ -32,8 +32,8 @@ def test_escape_and_empty_history():
     snapshot = {'repository': 'a/b', 'revision': 'abc', 'captured_at': 'now',
                 'records': [], 'github': {'issues': {'available': False, 'error': '<fail>'}}}
     page = render(snapshot)
-    assert 'No records documented' in page
-    assert 'History unavailable' in page
+    assert 'No documented records' in page
+    assert 'History is not available' in page
     assert '&lt;fail&gt;' in page and '<fail>' not in page
     snapshot['records'] = [record({'id': '<script>'}, Path('x/status.json'), 'spec')]
     assert '<script>' not in render(snapshot)
