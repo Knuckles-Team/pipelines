@@ -2,7 +2,8 @@
 from spec_dashboard_fixtures import initialize, commit, state, run
 
 from scripts.spec_dashboard_history import history_snapshot, matches
-from scripts.spec_dashboard_charts import history_panels, daily_velocity
+from scripts.spec_dashboard_charts import daily_velocity, history_charts
+from scripts.spec_dashboard_history_views import history_tables, history_timeline
 
 CONFIG = {'sources': [{'glob': 'specs/*/status.json', 'kind': 'spec'}]}
 
@@ -56,7 +57,8 @@ def test_shallow_and_single_snapshot_are_explicit(tmp_path):
     result = history_snapshot(shallow, CONFIG)
     assert not result['available'] and result['shallow'] and result['truncated']
     assert result['sampled_commits'] == 1
-    assert 'History unavailable' in history_panels(result, 'owner/repo')
+    assert 'History is not available' in (history_charts(result) + history_timeline(result, '2026-01-03T00:00:00Z')
+            + history_tables(result, 'owner/repo'))
 
 
 def test_no_template_and_patterns_do_not_cross_segments():
@@ -70,11 +72,13 @@ def test_render_escapes_history_and_shows_scope(tmp_path):
     commit(root, {**state('SPECIFIED'), 'spec_id': '<script>'}, 1)
     commit(root, {**state('LANDED'), 'spec_id': '<script>'}, 2)
     result = history_snapshot(root, CONFIG)
-    page = history_panels(result, 'owner/repo')
+    page = (history_charts(result) + history_timeline(result, '2026-01-03T00:00:00Z')
+            + history_tables(result, 'owner/repo'))
     assert '<script>' not in page and '&lt;script&gt;' in page
     assert 'burndown' in page and 'velocity' in page
     assert 'Removed' in page and 'Reopened' in page
-    assert 'not release or deployment dates' in page
+    assert 'No release or deployment timeline' in page
+    assert 'First observed commit' in page
 
 
 def test_invalid_history_does_not_claim_empty_success(tmp_path):

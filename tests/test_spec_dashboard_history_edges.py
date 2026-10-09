@@ -3,7 +3,8 @@ from pathlib import Path
 from scripts.spec_dashboard_sources import source_records
 from scripts.spec_dashboard_history_metrics import observations
 from scripts.spec_dashboard_history import source_kind
-from scripts.spec_dashboard_charts import history_panels
+from scripts.spec_dashboard_charts import history_charts
+from scripts.spec_dashboard_history_views import history_tables, history_timeline
 
 
 def records(raw):
@@ -43,7 +44,8 @@ def test_scope_addition_and_removal_are_distinct_from_completions():
 def test_empty_scope_and_zero_velocity_render_honestly():
     result = observations([('a', '2026-01-01T00:00:00Z', {}), ('b', '2026-01-02T00:00:00Z', {})])
     result['truncated'] = False
-    page = history_panels(result, 'owner/repo')
+    page = (history_charts(result) + history_timeline(result, '2026-01-03T00:00:00Z')
+            + history_tables(result, 'owner/repo'))
     assert 'nan' not in page.lower() and 'infinity' not in page.lower()
     assert result['points'][-1]['spec']['total'] == 0
     assert result['points'][-1]['spec']['landed'] == 0

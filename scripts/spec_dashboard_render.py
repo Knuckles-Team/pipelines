@@ -1,79 +1,85 @@
-"""Static HTML/SVG rendering for the spec delivery snapshot."""
-from collections import Counter
+"""Static HTML/SVG rendering for the spec delivery snapshot, laid out as one drawing sheet."""
 import html
-from urllib.parse import quote
+from pathlib import PurePosixPath
 
 if __package__:
-    from .spec_dashboard_charts import history_panels
+    from .spec_dashboard_charts import history_caption, history_charts
+    from .spec_dashboard_history_views import history_tables, history_timeline
+    from .spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
+    from .spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
+    from .spec_dashboard_structure import structure_panel
+    from .spec_dashboard_style import STYLE, panel, zones
 else:
-    from spec_dashboard_charts import history_panels
+    from spec_dashboard_charts import history_caption, history_charts
+    from spec_dashboard_history_views import history_tables, history_timeline
+    from spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
+    from spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
+    from spec_dashboard_structure import structure_panel
+    from spec_dashboard_style import STYLE, panel, zones
 
-def distribution(records, kind):
-    return dict(Counter(item['state'] for item in records if item['kind'] == kind))
-
-
-def bars(counts, title):
-    escaped = html.escape(title)
-    if not counts:
-        return f'<h3>{escaped}</h3><p>No records documented.</p>'
-    maximum = max(counts.values(), default=0) or 1
-    rows = []
-    for index, (label, count) in enumerate(sorted(counts.items())):
-        y = 30 + index * 32
-        rows.append(f'<text x="0" y="{y}">{html.escape(label)}: {count}</text>'
-                    f'<rect x="180" y="{y-16}" width="{count/maximum*360}" height="20" fill="#4478cc"/>')
-    return f'<h3>{escaped}</h3><svg role="img" aria-label="{escaped}" viewBox="0 0 560 {40+len(counts)*32}">{"".join(rows)}</svg>'
+__all__ = ['distribution', 'render']
 
 
-def safe_link(url, label):
-    if not str(url).startswith('https://github.com/'):
-        return html.escape(str(label))
-    return f'<a href="{html.escape(str(url), quote=True)}">{html.escape(str(label))}</a>'
+def source_pattern(records):
+    patterns = sorted({str(PurePosixPath(item['source']).parent.parent / '*' / PurePosixPath(item['source']).name)
+                       for item in records})
+    return ', '.join(patterns) or 'no status files'
 
 
-def inventory_rows(snapshot):
-    rows = []
-    repository = snapshot['repository']
-    revision = snapshot['revision']
-    for item in snapshot['records']:
-        url = f'https://github.com/{repository}/blob/{revision}/{quote(item["source"])}'
-        document_url = f'https://github.com/{repository}/blob/{revision}/{quote(item.get("document", item["source"]))}'
-        cells = [safe_link(url, item['id']) + '<br>' + safe_link(document_url, item['title']), *[html.escape(str(item[key])) for key in
-                 ('kind', 'parent', 'state', 'delivery_state', 'acceptance_state', 'release_state')]]
-        rows.append('<tr>' + ''.join('<td>' + cell + '</td>' for cell in cells) + '</tr>')
-    return ''.join(rows)
+def title_block(snapshot):
+    repository, revision = snapshot['repository'], snapshot['revision']
+    commit = safe_link(f'https://github.com/{repository}/commit/{revision}', revision[:12])
+    cells = [('title', 'Title', '<b>Spec delivery: ' + html.escape(repository.split('/')[-1]) + '</b>'),
+             ('', 'Repository', html.escape(repository)), ('', 'Commit', '<span class="mono">' + commit + '</span>'),
+             ('', 'Captured (UTC)', '<span class="mono">' + html.escape(snapshot['captured_at'][:19]) + '</span>'),
+             ('', 'Snapshot', '<a href="snapshot.json">snapshot.json</a> (v1)'),
+             ('', 'Source', '<span class="mono">' + html.escape(source_pattern(snapshot['records'])) + '</span>'),
+             ('', 'Sheet', '1 of 1')]
+    return ('<section class="block" aria-label="Title block">'
+            + ''.join(f'<div class="{css}"><small>{name}</small>{value}</div>' for css, name, value in cells) + '</section>')
 
 
-def github_sections(snapshot):
-    sections = []
-    for label, data in snapshot['github'].items():
-        body = '<p>Unavailable: ' + html.escape(data.get('error', 'unknown failure')) + '</p>'
-        if data['available']:
-            body = '<p>' + str(len(data['items'])) + ' open at capture.</p><ul>'
-            body += ''.join('<li>' + safe_link(item['html_url'], f'#{item["number"]} {item["title"]}')
-                            + ' · updated ' + html.escape(item['updated_at']) + '</li>' for item in data['items'])
-            body += '</ul>'
-        sections.append('<h2>' + html.escape(label.replace('_', ' ').title()) + '</h2>' + body)
-    return ''.join(sections)
+def count_caption(snapshot):
+    kinds = [item['kind'] for item in snapshot['records']]
+    return f'{kinds.count("spec")} specs, {kinds.count("requirement")} requirements'
+
+
+def current_panels(snapshot):
+    records = snapshot['records']
+    return [
+        panel('A', 'Delivery structure', caption=html.escape(count_caption(snapshot)), body=structure_panel(snapshot)),
+        panel('B', 'Delivery states', caption='count of total', body=states_panel(records)),
+        panel('C', 'State definitions', caption='delivery_state', body=definitions_panel()),
+        panel('D', 'Specifications', caption='specs/*/status.json',
+              body=specs_panel(snapshot, blob_link(snapshot)), width='w7'),
+    ]
+
+
+def history_panels(snapshot):
+    history = snapshot.get('history', {})
+    return [
+        panel('E', 'Observed delivery history', caption=html.escape(history_caption(history)),
+              body=history_charts(history), width='w5'),
+        panel('F', 'Timeline', caption='UTC commit dates',
+              body=history_timeline(history, snapshot['captured_at']), width='w6'),
+    ]
+
+
+def audit_panels(snapshot):
+    history = snapshot.get('history', {})
+    return [
+        panel('G', 'Open issues and pull requests', caption='open at capture', body=github_sections(snapshot), width='w6'),
+        panel('H', 'Observed changes', caption='per commit',
+              body=history_tables(history, snapshot['repository']), width='w5'),
+        panel('J', 'Record inventory', caption=f'{len(snapshot["records"])} records', body=inventory_panel(snapshot)),
+        title_block(snapshot),
+    ]
 
 
 def render(snapshot):
-    repository = snapshot['repository']
-    revision = snapshot['revision']
-    charts = ''.join(bars(distribution(snapshot['records'], kind), kind.title() + ' status')
-                     for kind in ('spec', 'requirement'))
-    remaining = {kind: sum(not item['done'] for item in snapshot['records'] if item['kind'] == kind)
-                 for kind in ('spec', 'requirement')}
-    return ('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">'
-            '<title>Spec delivery dashboard</title><style>body{font:16px system-ui;max-width:1100px;margin:40px auto;padding:0 20px;color:#202938}'
-            'table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:8px;border-bottom:1px solid #ccd}svg{max-width:560px;width:100%}'
-            'a{color:#2357a1}section{overflow:auto}</style><h1>Spec delivery dashboard</h1><p>'
-            + html.escape(repository) + ' · Captured ' + html.escape(snapshot['captured_at'])
-            + '</p><p>Revision ' + html.escape(revision) + ' · <a href="snapshot.json">JSON snapshot</a></p>'
-            '<p>Whole specs and requirement slices are counted separately. Done requires explicit LANDED/CLOSED and ACCEPTED. '
-            'Source-landed does not imply released or deployed. Release evidence is unavailable in this v1 adapter.</p>'
-            + charts + history_panels(snapshot.get('history', {}), repository)
-            + '<h2>Current snapshot</h2><p>Remaining includes unknown and unaccepted records; deferred/rejected records remain visible.</p>'
-            + bars(remaining, 'Records not explicitly done') + '<h2>Documented inventory</h2><section><table><thead><tr>'
-            '<th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th><th>Delivery</th><th>Acceptance</th><th>Release</th>'
-            '</tr></thead><tbody>' + inventory_rows(snapshot) + '</tbody></table></section>' + github_sections(snapshot) + '</html>')
+    title = html.escape(snapshot['repository'] + ': spec delivery')
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            f'<meta name="color-scheme" content="light dark"><title>{title}</title>{STYLE}</head><body>'
+            f'<div class="frame">{zones()}<main class="sheet">' + ''.join(current_panels(snapshot) + history_panels(snapshot) + audit_panels(snapshot))
+            + '</main></div></body></html>')
