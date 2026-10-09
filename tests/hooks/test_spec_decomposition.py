@@ -19,10 +19,12 @@ REQ_CLEAN = "# FOO-001 requirements\n\n| ID | Requirement | Verification |\n|---
 
 
 def _clean(repo: Repo) -> None:
-    repo.commit({
-        "specs/foo/status.json": STATUS_CLEAN,
-        "specs/foo/requirements.md": REQ_CLEAN,
-    })
+    repo.commit(
+        {
+            "specs/foo/status.json": STATUS_CLEAN,
+            "specs/foo/requirements.md": REQ_CLEAN,
+        }
+    )
 
 
 def test_clean_spec_passes(repo: Repo) -> None:
@@ -32,7 +34,12 @@ def test_clean_spec_passes(repo: Repo) -> None:
 
 def test_duplicate_id_in_requirements_fires(repo: Repo) -> None:
     _clean(repo)
-    repo.commit({"specs/foo/requirements.md": REQ_CLEAN + "| `FOO-001` | **Root again.** Dup row. | Verified. |\n"})
+    repo.commit(
+        {
+            "specs/foo/requirements.md": REQ_CLEAN
+            + "| `FOO-001` | **Root again.** Dup row. | Verified. |\n"
+        }
+    )
     assert repo.run("spec-decomposition") == 1
 
 
@@ -44,15 +51,20 @@ def test_duplicate_id_in_status_fires(repo: Repo) -> None:
       ]
     }
     """
-    repo.commit({"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN})
+    repo.commit(
+        {"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN}
+    )
     assert repo.run("spec-decomposition") == 1
 
 
 def test_referenced_child_with_no_status_row_fires(repo: Repo) -> None:
     _clean(repo)
-    repo.commit({
-        "specs/foo/requirements.md": REQ_CLEAN + "| `FOO-001.1` | **Slice.** First slice. | Verified. |\n",
-    })
+    repo.commit(
+        {
+            "specs/foo/requirements.md": REQ_CLEAN
+            + "| `FOO-001.1` | **Slice.** First slice. | Verified. |\n",
+        }
+    )
     assert repo.run("spec-decomposition") == 1
 
 
@@ -64,7 +76,9 @@ def test_status_row_with_no_requirements_row_fires(repo: Repo) -> None:
       ]
     }
     """
-    repo.commit({"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN})
+    repo.commit(
+        {"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN}
+    )
     assert repo.run("spec-decomposition") == 1
 
 
@@ -91,3 +105,9 @@ def test_child_with_no_parent_row_at_all_fires(repo: Repo) -> None:
     req = "# requirements\n\n| ID | Requirement | Verification |\n|---|---|---|\n| `FOO-001.1` | **Orphan slice.** No parent row anywhere. | Verified. |\n"
     repo.commit({"specs/foo/status.json": status, "specs/foo/requirements.md": req})
     assert repo.run("spec-decomposition") == 1
+
+
+def test_v2_landed_parent_with_verified_child_is_consistent() -> None:
+    from pipelines_hooks.specs.decomposition_checks import STATE_RANK
+
+    assert STATE_RANK["VERIFIED"] >= STATE_RANK["LANDED"]
