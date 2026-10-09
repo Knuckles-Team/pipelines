@@ -14,6 +14,10 @@ For each ``specs/<dir>/`` that has a ``status.json``, across that directory's ow
 (d) a parent is LANDED/ACCEPTED while any of its (tracked) children is not;
 (e) a child exists (tracked in status.json, or merely referenced) but its parent
     has no row at all, neither in status.json nor in requirements.md.
+
+Each failure kind (a)-(e) is checked by its own ``find_*`` function in
+``decomposition_checks.py``; this module only builds the per-spec index and
+runs those checks.
 """
 
 from __future__ import annotations
@@ -26,21 +30,20 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.specs.decomposition_checks import (
+    SpecIndex,
+    find_duplicates,
+    find_orphan_children,
+    find_parent_done_child_open,
+    find_status_without_requirement,
+    find_untracked_children,
+    parent_of,
+)
 
 #: An ID family token, e.g. ``PIPE-IDENTITY-R001`` or a child ``PIPE-IDENTITY-R001.2``.
 ID = r"[A-Z][A-Z0-9-]*-R?\d{2,3}(?:\.\d+)*"
 ID_RE = re.compile(ID)
 ROW_RE = re.compile(r"^\|\s*`?(" + ID + r")`?\s*\|")
-#: Delivery states that satisfy "the parent is LANDED/ACCEPTED" in (d).
-PARENT_DONE = {"LANDED", "ACCEPTED"}
-#: Delivery states that satisfy "the child is done" when checking (d).
-CHILD_DONE = {"LANDED", "ACCEPTED", "CLOSED", "RETIRED"}
-
-
-def parent_of(id_: str) -> str | None:
-    """The immediate parent of a dotted child ID, or ``None`` for a root ID."""
-    m = re.match(r"(.+)\.\d+$", id_)
-    return m.group(1) if m else None
 
 
 def _row_ids(text: str) -> Counter[str]:
@@ -93,51 +96,21 @@ def check_spec(spec_dir: Path) -> list[str]:
     for r in rows:
         state_by_id.setdefault(r["id"], r.get("delivery_state") or "")
 
-    label = spec_dir.name
-    findings: list[str] = []
+    idx = SpecIndex(
+        label=spec_dir.name,
+        req_counts=req_counts,
+        status_counts=status_counts,
+        state_by_id=state_by_id,
+        referenced=_referenced_child_ids(texts),
+    )
 
-    # (a) an ID appears twice, in requirements.md rows or in status.json rows.
-    for id_, count in sorted(req_counts.items()):
-        if count > 1:
-            findings.append(f"{label}: duplicate ID {id_} appears {count}x in requirements.md")
-    for id_, count in sorted(status_counts.items()):
-        if count > 1:
-            findings.append(f"{label}: duplicate ID {id_} appears {count}x in status.json")
-
-    # (b) a referenced child has no status.json row.
-    referenced = _referenced_child_ids(texts)
-    for id_ in sorted(referenced):
-        if id_ not in status_counts:
-            findings.append(f"{label}: child {id_} is referenced but has no status.json row")
-
-    # (c) a status.json row has no requirements.md row.
-    for id_ in sorted(status_counts):
-        if id_ not in req_counts:
-            findings.append(f"{label}: status.json row {id_} has no requirements.md row")
-
-    # (d) a parent is LANDED/ACCEPTED while any of its tracked children is not.
-    children_of: dict[str, list[str]] = {}
-    for id_ in status_counts:
-        parent = parent_of(id_)
-        if parent:
-            children_of.setdefault(parent, []).append(id_)
-    for parent, children in sorted(children_of.items()):
-        if state_by_id.get(parent) in PARENT_DONE:
-            for child in sorted(children):
-                child_state = state_by_id.get(child) or ""
-                if child_state not in CHILD_DONE:
-                    findings.append(
-                        f"{label}: parent {parent} is {state_by_id.get(parent)} but "
-                        f"child {child} is {child_state or 'UNKNOWN'}"
-                    )
-
-    # (e) a child exists (tracked or merely referenced) but its parent has no row at all.
-    for id_ in sorted({*status_counts, *referenced}):
-        parent = parent_of(id_)
-        if parent and parent not in status_counts and parent not in req_counts:
-            findings.append(f"{label}: child {id_} exists but parent {parent} has no row at all")
-
-    return findings
+    return [
+        *find_duplicates(idx),
+        *find_untracked_children(idx),
+        *find_status_without_requirement(idx),
+        *find_parent_done_child_open(idx),
+        *find_orphan_children(idx),
+    ]
 
 
 def main(argv: list[str]) -> int:
