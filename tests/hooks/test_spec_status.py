@@ -108,3 +108,11 @@ def test_check_mode_fails_on_a_stale_status_json(repo: Repo) -> None:
 def test_no_specs_directory_is_a_clean_pass(repo: Repo) -> None:
     assert repo.run("spec-status") == 0
     assert not (Path(repo.root) / "specs").exists()
+
+
+def test_same_line_shorthand_inherits_prefix() -> None:
+    from pipelines_hooks.specs.ids import expand_ranges
+
+    out = expand_ranges("Spec: TUI-RUNTIME-R001.1, R001.2, R001.3\nR009 alone")
+    assert "TUI-RUNTIME-R001.2" in out and "TUI-RUNTIME-R001.3" in out
+    assert "-R009" not in out

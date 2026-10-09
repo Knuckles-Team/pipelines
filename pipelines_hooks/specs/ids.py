@@ -18,9 +18,29 @@ NON_PRODUCT_PREFIXES = ("specs/", "docs/", ".github/")
 MAX_RANGE_SPAN = 60
 
 
+#: ``X-R001.1, R001.2``: a bare ``R###`` inherits the nearest preceding full prefix on its line.
+SHORTHAND_RE = re.compile(
+    r"(?<![A-Za-z0-9-])([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-)R\d{3}"
+    r"|(?<![A-Za-z0-9-])(R\d{3}(?:\.\d+)*)(?![0-9])"
+)
+
+
+def _line_shorthand(line: str) -> list[str]:
+    """Full IDs for the bare ``R###`` tokens in one line (none before the first prefix)."""
+    prefix, found = None, []
+    for match in SHORTHAND_RE.finditer(line):
+        if match.group(1):
+            prefix = match.group(1)
+        elif prefix:
+            found.append(prefix + match.group(2))
+    return found
+
+
 def expand_ranges(text: str) -> str:
-    """Append the individual IDs any ``R019..R021``-style range in ``text`` spans."""
+    """Append the IDs any ``R019..R021`` range spans and any same-line shorthand names."""
     extra: list[str] = []
+    for line in text.splitlines():
+        extra += _line_shorthand(line)
     for prefix, start, end in RANGE_RE.findall(text):
         start_n, end_n = int(start), int(end)
         if 0 < end_n - start_n <= MAX_RANGE_SPAN:
