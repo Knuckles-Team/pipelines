@@ -58,18 +58,32 @@ def _row_ids(text: str) -> Counter[str]:
 
 def _status_rows(status: object) -> list[dict]:
     """The requirement rows of a parsed status.json, in whatever shape it was written."""
-    reqs = status["requirements"] if isinstance(status, dict) and "requirements" in status else status
+    reqs = (
+        status["requirements"]
+        if isinstance(status, dict) and "requirements" in status
+        else status
+    )
     if not isinstance(reqs, list):
         return []
     return [r for r in reqs if isinstance(r, dict) and r.get("id")]
 
 
-def _referenced_child_ids(texts: dict[str, str]) -> set[str]:
-    """Every dotted child ID mentioned anywhere across the spec's own markdown files."""
+_NUMBER_TAIL = re.compile(r"R?\d{2,3}(?:\.\d+)*$")
+
+
+def _id_prefix(rid: str) -> str:
+    """``EG-FOO-R012.3`` -> ``EG-FOO-``: the family a requirement ID belongs to."""
+    return _NUMBER_TAIL.sub("", rid)
+
+
+def _referenced_child_ids(texts: dict[str, str], known_ids: set[str]) -> set[str]:
+    """Dotted child IDs mentioned across the spec's markdown, limited to the ID families the
+    spec actually declares -- local test-case numbers such as ``F-07.1`` are not requirements."""
+    families = {_id_prefix(rid) for rid in known_ids}
     found: set[str] = set()
     for text in texts.values():
         for match in ID_RE.findall(text):
-            if parent_of(match):
+            if parent_of(match) and _id_prefix(match) in families:
                 found.add(match)
     return found
 
@@ -101,7 +115,7 @@ def check_spec(spec_dir: Path) -> list[str]:
         req_counts=req_counts,
         status_counts=status_counts,
         state_by_id=state_by_id,
-        referenced=_referenced_child_ids(texts),
+        referenced=_referenced_child_ids(texts, set(req_counts) | set(status_counts)),
     )
 
     return [

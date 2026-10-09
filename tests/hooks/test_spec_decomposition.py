@@ -111,3 +111,10 @@ def test_v2_landed_parent_with_verified_child_is_consistent() -> None:
     from pipelines_hooks.specs.decomposition_checks import STATE_RANK
 
     assert STATE_RANK["VERIFIED"] >= STATE_RANK["LANDED"]
+
+
+def test_local_test_case_numbers_are_not_requirement_children() -> None:
+    from pipelines_hooks.specs.decomposition import _referenced_child_ids
+
+    texts = {"test-spec.md": "| F-07.1 | case |\n| EG-FIN-R005.2 | real child |"}
+    assert _referenced_child_ids(texts, {"EG-FIN-R005"}) == {"EG-FIN-R005.2"}
