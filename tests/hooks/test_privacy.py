@@ -53,3 +53,21 @@ def test_a_malformed_catalog_is_not_downgraded_locally(repo: Repo, tmp_path: Pat
     malformed = tmp_path / "catalog.json"
     malformed.write_text("{not json", encoding="utf-8")
     assert repo.run("tracked-privacy", "--identity-catalog", str(malformed)) == 2
+
+
+def test_privacy_allows_a_hyphenated_requirement_id_citation(repo: Repo, catalog: Path) -> None:
+    """A requirement ID like ``GRAPHOS-FLEET-R016`` is not a fleet host alias.
+
+    Regression for the false-positive flood that broke requirement-ID
+    citations in graph-os PRs: ``MACHINE_HOST_ID_RE``'s lookbehind excluded
+    only alnum characters, so the hyphen immediately before ``R016`` never
+    blocked the match and the requirement ID itself read as a host.
+    """
+    repo.commit({"docs/notes.md": "See GRAPHOS-FLEET-R016 and GRAPHOS-FLEET-R017 for scope.\n"})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0
+
+
+def test_privacy_still_fires_on_a_bare_host_token(repo: Repo, catalog: Path) -> None:
+    """A bare fleet host alias (no hyphen boundary) must still be caught."""
+    repo.commit({"docs/notes.md": "Deployed to " + "rw" + "710 for the pilot.\n"})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 1
