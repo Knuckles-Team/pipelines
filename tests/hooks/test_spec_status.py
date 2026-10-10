@@ -164,6 +164,65 @@ def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> Non
     assert repo.run("spec-status") == 0
 
 
+_LANDED_ROW_A = "# a\n\n| ID | Requirement |\n|---|---|\n| `A-R001` | **Landed only.** |\n"
+_LANDED_ROW_B = "# b\n\n| ID | Requirement |\n|---|---|\n| `B-R001` | **Landed only.** |\n"
+
+
+def test_changed_only_skips_an_untouched_stale_dir(repo: Repo) -> None:
+    """A PR touching spec A passes under --changed-only even while B is stale."""
+    repo.commit(
+        {"specs/a/requirements.md": _LANDED_ROW_A, "specs/b/requirements.md": _LANDED_ROW_B},
+        "add specs a and b",
+    )
+    assert repo.run("spec-status", "--write") == 0
+    repo.commit(
+        {
+            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8"),
+            "specs/b/status.json": (repo.root / "specs/b/status.json").read_text(encoding="utf-8"),
+        },
+        "commit generated status",
+    )
+
+    # main advances on spec b without this PR: hand-drift b's committed status.json.
+    drifted = json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))
+    drifted["delivery_state"] = "LANDED"
+    repo.commit({"specs/b/status.json": json.dumps(drifted)}, "simulate b drift on main")
+
+    base = repo.git("rev-parse", "HEAD").strip()
+
+    # This PR only lands and regenerates spec a.
+    repo.commit({"pkg/a.py": "# a\n"}, "land a\n\nSpec: A-R001")
+    assert repo.run("spec-status", "--base-ref", base, "--changed-only", "--write") == 0
+    repo.commit(
+        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
+        "regenerate a status",
+    )
+
+    # The scoped --write never touched b: it is still drifted.
+    assert json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))[
+        "delivery_state"
+    ] == "LANDED"
+
+    assert repo.run("spec-status") == 1  # full-repo mode still catches b's staleness
+    assert repo.run("spec-status", "--base-ref", base, "--changed-only") == 0
+
+
+def test_changed_only_still_fails_when_the_touched_dir_is_stale(repo: Repo) -> None:
+    """A PR touching spec A fails under --changed-only when A itself is stale."""
+    repo.commit({"specs/a/requirements.md": _LANDED_ROW_A}, "add spec a")
+    assert repo.run("spec-status", "--write") == 0
+    repo.commit(
+        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
+        "commit generated status",
+    )
+
+    base = repo.git("rev-parse", "HEAD").strip()
+    # Lands A-R001 (via the Spec: trailer) without regenerating status.json.
+    repo.commit({"pkg/a.py": "# a\n"}, "land a\n\nSpec: A-R001")
+
+    assert repo.run("spec-status", "--base-ref", base, "--changed-only") == 1
+
+
 def test_reverting_a_merge_undoes_its_member_commits(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _REVERT_ROW}, "add spec")
     base = repo.git("rev-parse", "--abbrev-ref", "HEAD").strip()
