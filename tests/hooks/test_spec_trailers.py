@@ -143,3 +143,24 @@ def test_same_trailer_shorthand_inherits_prefix() -> None:
         "TUI-RUNTIME-R001.2",
         "TUI-RUNTIME-R003..R004",
     ]
+
+
+def test_item5_a_delivery_reverted_in_range_needs_no_bound_test(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    _commit(
+        repo,
+        {
+            "pkg/util.py": "x = 6\n",
+            "specs/demo3/requirements.md": _requirements_md("DEMO3-R001"),
+        },
+        "deliver then withdraw",
+        trailer="DEMO3-R001",
+    )
+    delivered = repo.git("rev-parse", "HEAD").strip()
+    _commit(
+        repo,
+        {"pkg/util.py": "x = 5\n"},
+        f"withdraw the delivery\n\nThis reverts commit {delivered}.",
+        trailer="none (refactor)",
+    )
+    assert repo.run("spec-trailers", "--base-ref", base) == 0
