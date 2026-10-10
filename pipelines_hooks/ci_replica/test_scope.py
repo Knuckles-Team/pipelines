@@ -6,14 +6,18 @@ so a PR auto-merges within minutes; `push` to main and release tags still
 run the full suite unchanged (that path never calls this gate).
 
 ``--lang python`` maps each changed ``<src-root>/**/*.py`` file to its mirror
-``<tests-root>/.../test_<name>.py`` (the layout every repo in this fleet
-already uses: ``graph_os/fleet/foo.py`` <-> ``tests/fleet/test_foo.py``), and
-always includes a changed file that already lives under ``tests-root``. A
-changed file with no mirror, or a change to a global fixture (``conftest.py``,
-``pyproject.toml``, the lockfile), forces the conservative fallback: print
-``FULL`` so the caller re-runs everything rather than silently narrowing on
-a mapping miss. No matching production or test change at all prints ``NONE``
-so the caller skips the test step entirely.
+``<tests-root>/.../test_<name>.py`` (the layout most repos in this fleet use:
+``graph_os/fleet/foo.py`` <-> ``tests/fleet/test_foo.py``), and always
+includes a changed file that already lives under ``tests-root``. A changed
+file with no mirror falls back to a static import-graph scan
+(:mod:`pipelines_hooks.ci_replica.import_graph`): every test file that
+imports the changed module, or imports a module that itself -- transitively,
+directly imports it, is selected instead. Only a change to a
+global fixture (``conftest.py``, ``pyproject.toml``, the lockfile) forces the
+conservative fallback: print ``FULL`` so the caller re-runs everything rather
+than trusting a narrowed scope against shared test infrastructure. No
+matching production or test change at all prints ``NONE`` so the caller
+skips the test step entirely.
 
 ``--lang rust`` maps each changed file under ``--workspace-root`` to the
 nearest ancestor crate (the directory holding its ``Cargo.toml``) and prints
@@ -32,6 +36,7 @@ import argparse
 import tomllib
 from pathlib import Path
 
+from pipelines_hooks.ci_replica.import_graph import module_for_path, test_files_importing
 from pipelines_hooks.clones.dupehound import changed_paths
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.settings import setting
@@ -92,14 +97,26 @@ def _handle_python_path(scope: _DedupedScope, path: str, root: Path, src_prefix:
         return False
     if not (path.startswith(src_prefix) and path.endswith(".py")):
         return False
-    mirror = _mirrored_test(tests_prefix.rstrip("/"), path[len(src_prefix) :], root)
-    if mirror is None:
-        # An unmapped source change is the one case this gate itself cannot
-        # resolve into an added path: force the safe fallback rather than
-        # silently dropping the file from the run.
-        return True
-    scope.add(mirror)
+    rel = path[len(src_prefix) :]
+    mirror = _mirrored_test(tests_prefix.rstrip("/"), rel, root)
+    if mirror is not None:
+        scope.add(mirror)
+        return False
+    _add_import_graph_matches(scope, root, src_prefix, tests_prefix, rel)
     return False
+
+
+def _add_import_graph_matches(scope: _DedupedScope, root: Path, src_prefix: str, tests_prefix: str, rel: str) -> None:
+    """No mirrored test file: fall back to the import graph, not FULL.
+
+    A changed module with no mirror and no importers within the graph adds
+    nothing to the scope -- that is not treated as an unreadable diff.
+    """
+    changed_module = module_for_path(root, src_prefix.rstrip("/"), rel)
+    for test_path in test_files_importing(
+        root, src_prefix.rstrip("/"), tests_prefix=tests_prefix.rstrip("/"), changed_module=changed_module
+    ):
+        scope.add(test_path)
 
 
 def _python_scope(root: Path, changed: list[str], src_root: str, tests_root: str) -> list[str]:
