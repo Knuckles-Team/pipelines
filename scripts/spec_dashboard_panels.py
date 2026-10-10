@@ -7,8 +7,8 @@ if __package__:
 else:
     from spec_dashboard_style import mark
 
-ORDER = ['unknown', 'documented', 'planned', 'in-progress', 'built', 'source-landed', 'closed', 'done',
-         'deferred', 'rejected']
+ORDER = ['unknown', 'documented', 'planned', 'in-progress', 'built', 'source-landed', 'verified', 'closed',
+         'done', 'retired', 'deferred', 'rejected']
 DEFINITIONS = [
     ('UNKNOWN', 'unknown', 'The status file has no valid delivery state.'),
     ('SPECIFIED', 'documented', 'A spec describes the work. The build is not started.'),
@@ -16,11 +16,13 @@ DEFINITIONS = [
     ('BUILDING', 'in-progress', 'The work is in progress on a branch.'),
     ('BUILT', 'built', 'The code is complete but it is not on main.'),
     ('LANDED', 'source-landed', 'The code is on the main branch.'),
+    ('VERIFIED', 'verified', 'The code is on the main branch and a bound test proves it. It counts as done.'),
     ('CLOSED', 'closed', 'The record is closed. It counts as landed.'),
+    ('RETIRED', 'retired', 'The requirement is withdrawn. It counts as done.'),
     ('DEFERRED', 'deferred', 'The work moves to a later time.'),
     ('REJECTED', 'rejected', 'The team does not do this work.'),
 ]
-LANDED = {'LANDED', 'CLOSED'}
+LANDED = {'LANDED', 'VERIFIED', 'CLOSED'}
 DELIVERY = {state: name for name, state, _ in DEFINITIONS} | {'done': 'ACCEPTED'}
 STEPS = [base * 10 ** power for power in range(9) for base in (1, 2, 5)]
 

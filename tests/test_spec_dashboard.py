@@ -2,7 +2,8 @@
 import io
 import json
 from pathlib import Path
-from scripts.spec_dashboard import read_records, render, github_snapshot, record
+
+from scripts.spec_dashboard import github_snapshot, read_records, record, render
 
 
 def test_canonical_nested_status_and_template(tmp_path):
@@ -26,6 +27,15 @@ def test_completion_requires_explicit_acceptance():
     assert record({'delivery_state': 'LANDED', 'acceptance_state': 'ACCEPTED'},
                   Path('x/status.json'), 'spec')['done'] is True
     assert record({'delivery_state': 'invented'}, Path('x/status.json'), 'spec')['state'] == 'unknown'
+
+
+def test_generated_lifecycle_states_are_recognised():
+    verified = record({'delivery_state': 'VERIFIED'}, Path('x/status.json'), 'requirement')
+    retired = record({'delivery_state': 'RETIRED'}, Path('x/status.json'), 'requirement')
+    landed = record({'delivery_state': 'LANDED'}, Path('x/status.json'), 'requirement')
+    assert (verified['state'], verified['done']) == ('verified', True)
+    assert (retired['state'], retired['done']) == ('retired', True)
+    assert (landed['state'], landed['done']) == ('source-landed', False)
 
 
 def test_escape_and_empty_history():

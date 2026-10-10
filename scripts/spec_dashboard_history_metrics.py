@@ -2,7 +2,7 @@
 
 
 def landed(item):
-    return item['delivery_state'] in {'LANDED', 'CLOSED'}
+    return item['delivery_state'] in {'LANDED', 'VERIFIED', 'CLOSED'}
 
 
 def totals(records, kind):
