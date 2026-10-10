@@ -76,3 +76,12 @@ def test_the_register_rots_when_a_reviewed_function_changes(tmp_path: Path) -> N
     assert partition([finding], [pair], tmp_path)["unregistered"] == []
     (tmp_path / "b.py").write_text("def right():\n    return 3\n", encoding="utf-8")
     assert partition([finding], [pair], tmp_path)["changed"] == [finding]
+
+
+def test_generated_spec_status_is_outside_the_jscpd_universe() -> None:
+    # specs/*/status.json is generator output (pipelines-hook spec-status); two specs with
+    # similar requirement rows produce structurally identical JSON that no author can dedupe.
+    from pipelines_hooks.clones.contract import is_jscpd_path
+
+    assert not is_jscpd_path("specs/portable-deployment/status.json")
+    assert is_jscpd_path("graph_os/api/ops/identity.py")
