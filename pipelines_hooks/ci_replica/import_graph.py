@@ -6,8 +6,7 @@ for a fleet-wide package whose test tree does not literally mirror its source
 layout file-for-file (``agent_utilities``). This module builds a module-level
 import graph from :mod:`pipelines_hooks.ci_replica.import_scan`'s AST scan of
 ``--src-root`` and ``--tests-root``, and answers: which test files import the
-changed module, or import a module that itself (transitively, up to 3 further
-hops) imports it?
+changed module directly? (Transitive reach is left to the full suite on main.)
 """
 
 from __future__ import annotations
@@ -16,8 +15,10 @@ from pathlib import Path
 
 from pipelines_hooks.ci_replica.import_scan import imports_of, module_name, package_name, scan_tree
 
-#: test -> module (1 hop) + up to 3 further module -> module hops.
-MAX_DEPTH = 4
+#: Direct importers only. Transitive reach through package re-exports selects most of a
+#: large suite (AU: 997 files for one module), which defeats a fast PR subset; main CI
+#: runs the full suite and catches transitive breakage (fix forward).
+MAX_DEPTH = 1
 
 
 def _known_prefixes(dotted: str, known: set[str]) -> set[str]:
@@ -56,8 +57,7 @@ def importers_within_depth(edges: dict[str, set[str]], target: str, max_depth: i
     """Modules that import ``target``, directly or via a chain of imports.
 
     ``max_depth`` bounds the number of import hops walked backward from
-    ``target`` (``test -> module`` is hop 1; a further 3 hops of
-    ``module -> module`` chasing is the transitive case the gate asks for).
+    ``target``; the default (1) selects only tests that import it directly.
     """
     reverse: dict[str, set[str]] = {}
     for src, dests in edges.items():

@@ -12,7 +12,7 @@ includes a changed file that already lives under ``tests-root``. A changed
 file with no mirror falls back to a static import-graph scan
 (:mod:`pipelines_hooks.ci_replica.import_graph`): every test file that
 imports the changed module, or imports a module that itself -- transitively,
-up to 3 further hops -- imports it, is selected instead. Only a change to a
+directly imports it, is selected instead. Only a change to a
 global fixture (``conftest.py``, ``pyproject.toml``, the lockfile) forces the
 conservative fallback: print ``FULL`` so the caller re-runs everything rather
 than trusting a narrowed scope against shared test infrastructure. No
