@@ -33,7 +33,15 @@ INTERNAL_ENDPOINT_RE = re.compile(
 PRIVATE_KEY_LINE_RE = re.compile(r"^\s*-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----\s*$")
 CREDENTIAL_URI_RE = re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s/@:]+:(?P<secret>[^\s/@]+)@(?P<cred_host>[^\s/@:\"'<>]+)")
 HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
-MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9])(?:rw?|host)[0-9]{3,}(?![a-z0-9])")
+# D-EG-PRIVACY-R001-FALSEPOS (mirrored fix): the lookbehind excluded only
+# alnum, so a hyphen-joined requirement ID (`GRAPHOS-FLEET-R016`) matched
+# `R016` as a fleet host alias (an `r`/`rw` prefix plus 3+ digits is a real
+# fleet node naming convention) -- the hyphen before `R016` was never
+# itself alnum, so it never blocked the match. Excluding `-` too keeps a
+# bare host token and a requirement ID embedded without a hyphen boundary
+# caught, while a hyphen-prefixed requirement-ID citation is no longer
+# misread as a host.
+MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[0-9]{3,}(?![a-z0-9])")
 
 
 def has_real_home_path(line: str) -> bool:
