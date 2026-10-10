@@ -29,6 +29,7 @@ from pathlib import Path
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git
+from pipelines_hooks.specs.git_log import reverted_shas
 from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN, named_ids
 
 #: Framing bytes for the single combined ``git log`` call: start-of-record,
@@ -162,7 +163,12 @@ def main(argv: list[str]) -> int:
     root = repo_root(args.root)
     base = upstream_base(root, args.base_ref)
     commits = _load_commits(root, base)
-    named = named_ids(commit.trailer_raw for commit in commits)
+    # A delivery that was reverted in the same range delivers nothing: its
+    # ``Spec:`` trailer must not demand a bound test for work that is gone.
+    reverted = reverted_shas(root, "HEAD")
+    named = named_ids(
+        commit.trailer_raw for commit in commits if commit.sha not in reverted
+    )
     known = _known_requirement_ids(root)
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)
