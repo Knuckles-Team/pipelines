@@ -104,6 +104,20 @@ def test_reverted_commit_does_not_count_as_landed(repo: Repo) -> None:
     assert row["landed_in"] == []
 
 
+def test_revert_naming_a_commit_absent_from_this_clone_is_tolerated(repo: Repo) -> None:
+    repo.commit({"specs/demo/requirements.md": _REVERT_ROW}, "add spec")
+    landing_sha = repo.commit({"pkg/b.py": "# b\n"}, "Spec: TEST-R030")
+    repo.commit(
+        {"pkg/c.py": "# c\n"},
+        f"Revert an unpushed change\n\nThis reverts commit {'0' * 39}1.",
+    )
+
+    assert repo.run("spec-status", "--write") == 0
+    row = _by_id(repo)["TEST-R030"]
+    assert row["delivery_state"] == "LANDED"
+    assert row["landed_in"] == [landing_sha[:12]]
+
+
 def test_check_mode_fails_on_a_stale_status_json(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _STALE_ROW}, "add spec")
 
@@ -164,29 +178,44 @@ def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> Non
     assert repo.run("spec-status") == 0
 
 
-_LANDED_ROW_A = "# a\n\n| ID | Requirement |\n|---|---|\n| `A-R001` | **Landed only.** |\n"
-_LANDED_ROW_B = "# b\n\n| ID | Requirement |\n|---|---|\n| `B-R001` | **Landed only.** |\n"
+_LANDED_ROW_A = (
+    "# a\n\n| ID | Requirement |\n|---|---|\n| `A-R001` | **Landed only.** |\n"
+)
+_LANDED_ROW_B = (
+    "# b\n\n| ID | Requirement |\n|---|---|\n| `B-R001` | **Landed only.** |\n"
+)
 
 
 def test_changed_only_skips_an_untouched_stale_dir(repo: Repo) -> None:
     """A PR touching spec A passes under --changed-only even while B is stale."""
     repo.commit(
-        {"specs/a/requirements.md": _LANDED_ROW_A, "specs/b/requirements.md": _LANDED_ROW_B},
+        {
+            "specs/a/requirements.md": _LANDED_ROW_A,
+            "specs/b/requirements.md": _LANDED_ROW_B,
+        },
         "add specs a and b",
     )
     assert repo.run("spec-status", "--write") == 0
     repo.commit(
         {
-            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8"),
-            "specs/b/status.json": (repo.root / "specs/b/status.json").read_text(encoding="utf-8"),
+            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(
+                encoding="utf-8"
+            ),
+            "specs/b/status.json": (repo.root / "specs/b/status.json").read_text(
+                encoding="utf-8"
+            ),
         },
         "commit generated status",
     )
 
     # main advances on spec b without this PR: hand-drift b's committed status.json.
-    drifted = json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))
+    drifted = json.loads(
+        (repo.root / "specs/b/status.json").read_text(encoding="utf-8")
+    )
     drifted["delivery_state"] = "LANDED"
-    repo.commit({"specs/b/status.json": json.dumps(drifted)}, "simulate b drift on main")
+    repo.commit(
+        {"specs/b/status.json": json.dumps(drifted)}, "simulate b drift on main"
+    )
 
     base = repo.git("rev-parse", "HEAD").strip()
 
@@ -194,14 +223,21 @@ def test_changed_only_skips_an_untouched_stale_dir(repo: Repo) -> None:
     repo.commit({"pkg/a.py": "# a\n"}, "land a\n\nSpec: A-R001")
     assert repo.run("spec-status", "--base-ref", base, "--changed-only", "--write") == 0
     repo.commit(
-        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
+        {
+            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(
+                encoding="utf-8"
+            )
+        },
         "regenerate a status",
     )
 
     # The scoped --write never touched b: it is still drifted.
-    assert json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))[
-        "delivery_state"
-    ] == "LANDED"
+    assert (
+        json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))[
+            "delivery_state"
+        ]
+        == "LANDED"
+    )
 
     assert repo.run("spec-status") == 1  # full-repo mode still catches b's staleness
     assert repo.run("spec-status", "--base-ref", base, "--changed-only") == 0
@@ -212,7 +248,11 @@ def test_changed_only_still_fails_when_the_touched_dir_is_stale(repo: Repo) -> N
     repo.commit({"specs/a/requirements.md": _LANDED_ROW_A}, "add spec a")
     assert repo.run("spec-status", "--write") == 0
     repo.commit(
-        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
+        {
+            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(
+                encoding="utf-8"
+            )
+        },
         "commit generated status",
     )
 

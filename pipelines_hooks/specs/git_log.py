@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from pipelines_hooks.core.gitenv import git_text
+from pipelines_hooks.core.gitenv import git_text, run_git
 from pipelines_hooks.specs.ids import expand_ranges, is_product_path
 
 _RECORD_SEP = "\x1e"
@@ -21,7 +21,14 @@ def _parse_record(record: str) -> tuple[str, str, str] | None:
 
 
 def _merge_members(root: Path, sha: str) -> set[str]:
-    """A reverted merge (``git revert -m 1``) undoes every commit it brought in."""
+    """A reverted merge (``git revert -m 1``) undoes every commit it brought in.
+
+    A revert message can name a commit this clone does not have (it was never
+    pushed, or its branch was deleted). Such a commit brought nothing into this
+    history, so it has no members here.
+    """
+    if run_git(root, ("cat-file", "-e", f"{sha}^{{commit}}")).returncode != 0:
+        return set()
     parents = git_text(root, ("rev-list", "--parents", "-n", "1", sha)).split()[1:]
     if len(parents) < 2:
         return set()
