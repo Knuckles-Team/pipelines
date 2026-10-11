@@ -19,3 +19,7 @@ PIPE-CONNSPEC-R006 reconciles ownership moves with permanent requirement IDs. Re
 ## Repository ownership
 
 Resolve the repository slug offline from origin, or a sole configured remote when origin is absent. This authoritative identity overrides stale generated ownership. If remote identity cannot be established, keep the prior owner, with checkout basename only as a final fallback. Keep legacy landing validation independent of identity correction.
+
+## Amendment: CI prose comparison (2026-10-11)
+
+PIPE-CONNSPEC-R007 closes the clean-index gap in hosted `ste-staged` runs. Reuse sanitized Git access, commit resolution, and bounded event JSON loading. Resolve explicit refs first, then GitHub event bases, then pre-commit refs outside GitHub Actions. New-ref pushes and manual runs check the last commit with full history. Never guess when a requested base is absent. Preserve local staged-index checks and per-file `(code, message)` debt subtraction.

@@ -6,12 +6,30 @@ The ste gates handle the prose side. They also check the argparse strings. One s
 
 | Gate ID | Checks | Stage |
 |---------|--------|---------------|
-| `ste-staged` | In-scope files staged for the commit | `pre-commit` |
+| `ste-staged` | In-scope staged files or committed CI changes | `pre-commit` |
 | `ste-census` | Every tracked in-scope document | `pre-push`, `manual` |
 | `ste-staleness-staged` | Staged hunks against the staleness patterns | `pre-commit` |
 | `ste-staleness-census` | Every tracked in-scope document | `pre-push`, `manual` |
 
 The staged gates diff against the committed text. A finding present in the committed file does not re-fire on a formatting touch. Each added occurrence fails the run. Moving existing occurrences to other lines does not fail. A newly staged file checks in full.
+
+### CI comparison
+
+`ste-staged` checks committed changes on clean CI checkouts, including `pre-commit run --all-files`.
+Its base is `--base-ref`, then the GitHub event payload, then `PRE_COMMIT_FROM_REF` outside GitHub Actions.
+Pull requests use `pull_request.base.sha`; pushes use `before`.
+The base commit must exist locally. Missing or malformed requested bases return exit two.
+Use a full-history checkout, or fetch the exact base before this gate.
+New-ref pushes with a zero `before` SHA and `workflow_dispatch` runs check the last commit.
+An initial commit checks its whole tree. These cases require full history.
+Other hosted event types require `--base-ref`.
+GitHub event bases override ambient pre-commit refs, so stale refs cannot narrow the PR range.
+
+Local staged changes still compare the index with `HEAD`, including an alternate `GIT_INDEX_FILE`.
+They take precedence over ambient range refs unless `--base-ref` explicitly selects a range.
+Hosted GitHub runs compare committed trees even when earlier steps changed the index or working tree.
+For each changed file, the gate subtracts base finding counts keyed by `(code, message)`.
+Line shifts do not create new debt. Each excess occurrence fails; existing debt remains for `ste-census`.
 
 The staleness gates judge currency. They fire the configured patterns on matching lines. The census pair defaults to `pre-push` and the `manual` hook stage.
 

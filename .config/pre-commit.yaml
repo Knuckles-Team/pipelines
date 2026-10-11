@@ -203,7 +203,7 @@ repos:
     pass_filenames: false
     always_run: true
   - id: ste-staged
-    name: EG-STE-Lite - staged docs, diff-scoped
+    name: EG-STE-Lite - staged or CI docs, diff-scoped
     entry: uv run --frozen --quiet pipelines-hook ste-staged
     language: system
     pass_filenames: false

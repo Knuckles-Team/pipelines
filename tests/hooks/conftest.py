@@ -134,6 +134,8 @@ def ci_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     monkeypatch.delenv("CX_DUP_BASE_REF", raising=False)
     monkeypatch.delenv("PRE_COMMIT_FROM_REF", raising=False)
+    monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)
+    monkeypatch.delenv("GITHUB_EVENT_PATH", raising=False)
     monkeypatch.setenv("CI", "true")
 
 
