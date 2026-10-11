@@ -5,7 +5,9 @@ from requirements.md, git history and test bindings. The default (check) mode
 prints and fails (exit 1) on any status.json that is stale: missing,
 hand-edited, or behind what the generator would produce. status.json is
 machine output; a mismatch is resolved by rerunning ``--write``, never by a
-textual merge.
+textual merge. Repositories with specs require full Git history: shallow checkouts
+fail with exit 2 before any writes. Fetch with ``git fetch --unshallow`` or set
+``fetch-depth: 0`` in checkout before running this gate.
 
 With 10+ parallel PR lanes, another lane's landing on ``main`` regenerates
 *other* specs' status.json, so a full-repo check fails every open PR on

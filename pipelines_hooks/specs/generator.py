@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.gitenv import git_text
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.git_log import landing_commits, reachable_shas, reverted_shas
 from pipelines_hooks.specs.legacy import legacy_landings
@@ -91,13 +92,22 @@ def live_resolver(on_head: set[str], reverted: set[str]) -> Callable[[str], str 
 
 def generate(repo: Path, head: str) -> dict[Path, dict]:
     """status.json path -> generated document, for every ``specs/*/requirements.md``."""
+    requirements_paths = sorted(repo.glob("specs/*/requirements.md"))
+    if not requirements_paths:
+        return {}
+    if git_text(repo, ("rev-parse", "--is-shallow-repository")).strip() == "true":
+        raise CannotRun(
+            "spec-status needs complete Git history to validate landing receipts; "
+            "fetch full history (git fetch --unshallow or checkout fetch-depth: 0) "
+            "before retrying; no status files were changed"
+        )
     commits = landing_commits(repo, head)
     landed_by = mentioned_tokens(commits)
     tested_by = test_bindings(repo)
     resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
     owner = remote_owner(repo)
     result: dict[Path, dict] = {}
-    for requirements_path in sorted(repo.glob("specs/*/requirements.md")):
+    for requirements_path in requirements_paths:
         spec_dir = requirements_path.parent
         status_path = spec_dir / "status.json"
         old = _load_status(status_path)

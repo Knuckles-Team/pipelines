@@ -9,3 +9,5 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [x] Limit new PIPE-CONNSPEC-R001 landing attribution to explicit declarations, with regression tests and preserved legacy receipt validation.
 
 - [ ] PIPE-CONNSPEC-R006: preserve moved retired IDs using shared parsing; run positive and misleading-prose regressions.
+
+- [x] Refuse spec-status generation with incomplete shallow history before any writes; verify legacy and current receipts survive a full-history fetch while reverted and unreachable receipts are rejected.
