@@ -387,13 +387,16 @@
       "title": "Generated status with three hooks and four states",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "1141a437d4bd",
         "15fc54d4d3c9",
         "d2971dd38d43"
       ],
       "verified_by": [
         "tests/hooks/test_spec_landing_attribution.py:15",
         "tests/hooks/test_spec_landing_attribution.py:37",
-        "tests/hooks/test_spec_landing_attribution.py:49"
+        "tests/hooks/test_spec_landing_attribution.py:49",
+        "tests/hooks/test_spec_repository_identity.py:20",
+        "tests/hooks/test_spec_repository_identity.py:29"
       ]
     },
     {
