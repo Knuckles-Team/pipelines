@@ -648,7 +648,7 @@
     {
       "id": "PIPE-PAGES-R019",
       "title": "The spec-delivery page carries the documentation site's navigation",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [],
       "verified_by": [],
       "rollup_of": [
@@ -662,8 +662,10 @@
     {
       "id": "PIPE-PAGES-R019.1",
       "title": "Add `site_nav(repository)` to `scripts/spec_dashboard_nav.py`. It renders `<nav aria-label=\"Site\">` with the repository name and a `Documentation` link, both to `../`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "556a2a4e800e"
+      ],
       "verified_by": [
         "tests/test_spec_dashboard_nav.py:19"
       ]
@@ -671,8 +673,10 @@
     {
       "id": "PIPE-PAGES-R019.2",
       "title": "Mark the current page in `site_nav` with `aria-current=\"page\"` on the `Spec delivery` entry",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "556a2a4e800e"
+      ],
       "verified_by": [
         "tests/test_spec_dashboard_nav.py:26"
       ]
@@ -680,8 +684,10 @@
     {
       "id": "PIPE-PAGES-R019.3",
       "title": "List every repository in `site_nav` from `ecosystem_components()` in `scripts/spec_dashboard_drilldown.py`. Link each to its level-1 URL and mark the current repository. Define no second list",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "556a2a4e800e"
+      ],
       "verified_by": [
         "tests/test_spec_dashboard_nav.py:33"
       ]
@@ -689,8 +695,10 @@
     {
       "id": "PIPE-PAGES-R019.4",
       "title": "Add `skip_link()` to `scripts/spec_dashboard_nav.py` and wrap the sheet in `<main id=\"main\">` in `render` in `scripts/spec_dashboard_render.py`. Style the bar with the existing tokens in `scripts/spec_dashboard_style.py`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "556a2a4e800e"
+      ],
       "verified_by": [
         "tests/test_spec_dashboard_nav.py:41"
       ]
@@ -698,8 +706,10 @@
     {
       "id": "PIPE-PAGES-R019.5",
       "title": "Add `scripts/spec_dashboard_nav.py` to the sparse checkout in `.github/workflows/pages_pipeline.yml`. The page must keep every existing panel",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "556a2a4e800e"
+      ],
       "verified_by": [
         "tests/test_spec_dashboard_nav.py:48"
       ]
