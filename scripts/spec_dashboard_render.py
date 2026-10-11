@@ -50,7 +50,7 @@ def current_panels(snapshot):
     return [
         panel('A', 'Delivery structure', caption=html.escape(count_caption(snapshot)), body=structure_panel(snapshot)),
         panel('B', 'Delivery states', caption='count of total', body=states_panel(records)),
-        panel('C', 'State definitions', caption='delivery_state', body=definitions_panel()),
+        panel('C', 'State definitions', caption='delivery_state', body=definitions_panel(records)),
         panel('D', 'Specifications', caption='specs/*/status.json',
               body=specs_panel(snapshot, blob_link(snapshot)), width='w7'),
         panel('R', 'Spec relationships', caption='depends on, extends', body=relations_panel(snapshot)),

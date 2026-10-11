@@ -9,23 +9,14 @@ else:
     from spec_dashboard_concepts import concept_links
     from spec_dashboard_style import mark
 
-ORDER = ['unknown', 'documented', 'planned', 'in-progress', 'built', 'source-landed', 'verified', 'closed',
-         'done', 'retired', 'deferred', 'rejected']
+ORDER = ['specified', 'landed', 'verified', 'invalid']
 DEFINITIONS = [
-    ('UNKNOWN', 'unknown', 'The status file has no valid delivery state.'),
-    ('SPECIFIED', 'documented', 'A spec describes the work. The build is not started.'),
-    ('PLANNED', 'planned', 'The work has a plan. The build is not started.'),
-    ('BUILDING', 'in-progress', 'The work is in progress on a branch.'),
-    ('BUILT', 'built', 'The code is complete but it is not on main.'),
-    ('LANDED', 'source-landed', 'The code is on the main branch.'),
-    ('VERIFIED', 'verified', 'The code is on the main branch and a bound test proves it. It counts as done.'),
-    ('CLOSED', 'closed', 'The record is closed. It counts as landed.'),
-    ('RETIRED', 'retired', 'The requirement is withdrawn. It counts as done.'),
-    ('DEFERRED', 'deferred', 'The work moves to a later time.'),
-    ('REJECTED', 'rejected', 'The team does not do this work.'),
+    ('SPECIFIED', 'specified', 'The requirement is written. No code for it is on the default branch.'),
+    ('LANDED', 'landed', 'A commit that carries its ID in a Spec trailer is on the default branch.'),
+    ('VERIFIED', 'verified', 'It is LANDED and a test bound to its ID exists.'),
 ]
-LANDED = {'LANDED', 'VERIFIED', 'CLOSED'}
-DELIVERY = {state: name for name, state, _ in DEFINITIONS} | {'done': 'ACCEPTED'}
+LANDED = {'LANDED', 'VERIFIED'}
+DELIVERY = {state: name for name, state, _ in DEFINITIONS} | {'invalid': 'INVALID'}
 STEPS = [base * 10 ** power for power in range(9) for base in (1, 2, 5)]
 
 
@@ -68,18 +59,15 @@ def state_bars(records, kind, noun):
 def states_panel(records):
     return (state_bars(records, 'requirement', 'requirements') + state_bars(records, 'spec', 'specs')
             + '<div class="note"><p>Each bar shows one state against all records of the same kind.</p>'
-            '<p>Remaining work includes unknown and unaccepted records. Deferred and rejected records stay visible.</p></div>')
+            '<p>Percentages count current rows. Done means VERIFIED.</p></div>')
 
 
-def definitions_panel():
-    rows = [f'<tr><td class="mono">{name}</td><td>{html.escape(text)}</td><td>{mark(name in LANDED, "Landed" if name in LANDED else "Not landed")}</td></tr>'
-            for name, _, text in DEFINITIONS]
-    rows.append('<tr><td class="mono">ACCEPTED</td><td>The record is LANDED or CLOSED, and an audit accepts it.</td>'
-                f'<td>{mark(True, "Done")}</td></tr>')
-    return ('<div class="scroll"><table><thead><tr><th>delivery_state</th><th>Definition</th><th>Status</th></tr></thead>'
+def definitions_panel(records=()):
+    rows = [f'<tr><td class="mono">{name}</td><td>{html.escape(text)}</td></tr>' for name, _, text in DEFINITIONS]
+    return ('<div class="scroll"><table class="legend"><thead><tr><th>State</th><th>Definition</th></tr></thead>'
             '<tbody>' + ''.join(rows) + '</tbody></table></div><div class="note">'
-            '<p>Specs and requirements have separate counts. A spec never takes the state of its requirements.</p>'
-            '<p>Done needs LANDED or CLOSED, and ACCEPTED. Landed does not mean released or deployed.</p></div>')
+            '<p>A spec state is the lowest state of its rows. Done means VERIFIED.</p>'
+            f'<p>Invalid state: <b class="mono" id="invalid-count">{sum(item['state'] == 'invalid' for item in records)}</b></p></div>')
 
 
 def spec_row(spec, children, link, *, repo=''):
@@ -108,5 +96,5 @@ def specs_panel(snapshot, link):
         return '<p>No documented records.</p>'
     return ('<div class="scroll"><table class="specs"><thead><tr><th>Spec / title</th><th class="n">Req.</th>'
             '<th class="n">Landed</th><th class="n">Done</th><th>Spec state</th><th>Concepts</th></tr></thead><tbody>'
-            + ''.join(rows) + '</tbody></table></div><div class="note"><p>Landed counts LANDED and CLOSED requirements.'
-            ' Done counts accepted requirements only.</p><p>The spec state comes from the spec status file only.</p></div>')
+            + ''.join(rows) + '</tbody></table></div><div class="note"><p>Landed counts LANDED and VERIFIED requirements.'
+            ' Done counts VERIFIED requirements only.</p><p>The spec state comes from the spec status file only.</p></div>')

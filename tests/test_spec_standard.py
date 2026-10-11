@@ -23,7 +23,9 @@ def _spec(root: Path, name: str = "foo", spec_id: str = "FOO") -> Path:
     d = root / "specs" / name
     d.mkdir(parents=True, exist_ok=True)
     for f in FILES:
-        (d / f).write_text("{}\n" if f.endswith(".json") else "x\n")
+        (d / f).write_text(
+            f'{{"spec_id": "{spec_id}"}}\n' if f.endswith(".json") else "x\n"
+        )
     (d / "spec.md").write_text(f"# {spec_id} — Title\n")
     (d / "requirements.md").write_text(f"| `{spec_id}-R001` | req |\n")
     (root / "specs" / "README.md").write_text(f"- [x]({name}/spec.md)\n")
@@ -135,3 +137,15 @@ def test_tombstone_row_is_advisory_by_default(root, capsys):
     req.write_text(req.read_text() + "| `FOO-R002` | RETIRED: replaced by BAR-R001 |\n")
     code, out = _run(root, capsys)
     assert code == 0 and "ADV spec-standard:" in out
+
+
+def test_status_spec_id_must_match_title(root, capsys):
+    d = _spec(root)
+    (d / "status.json").write_text('{"spec_id": "BAR"}\n')
+    code, out = _run(root, capsys)
+    assert code == 0
+    assert (
+        "ADV spec-standard: specs/foo: status.json spec_id BAR differs from the spec ID FOO"
+        in out
+    )
+    assert main(["--root", str(root), "--tombstones"]) == 1

@@ -53,3 +53,6 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R016.3 | PIPE-PAGES-R016.3 | Run `test_removed_id_absent_from_page` in `tests/test_spec_dashboard.py` expects a removed ID to be absent from the page built from a repository whose history contains it. |
 | T-PIPE-PAGES-R016.4 | PIPE-PAGES-R016.4 | Run `test_workflow_does_not_reference_history_scripts` in `tests/test_spec_dashboard.py` expects no `spec_dashboard_history` or `spec_dashboard_charts` in the workflow. |
 | T-PIPE-PAGES-R016.5 | PIPE-PAGES-R016.5 | Run `test_retired_record_is_not_rendered` in `tests/test_spec_dashboard.py` expects one VERIFIED record rendered and the RETIRED ID absent. |
+| T-PIPE-PAGES-R017.1 | PIPE-PAGES-R017.1 | Run `test_legend_has_three_states` in `tests/test_spec_dashboard_states.py` expects exactly three legend rows. |
+| T-PIPE-PAGES-R017.2 | PIPE-PAGES-R017.2 | Run `test_row_has_one_state_cell` in `tests/test_spec_dashboard_states.py` expects one state cell and no acceptance text. |
+| T-PIPE-PAGES-R017.3 | PIPE-PAGES-R017.3 | Run `test_unknown_state_renders_invalid` in `tests/test_spec_dashboard_states.py` expects `INVALID` and a count of one. |

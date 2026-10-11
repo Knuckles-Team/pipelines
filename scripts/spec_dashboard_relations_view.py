@@ -9,29 +9,21 @@ else:
     from spec_dashboard_relations import layer_specs
 
 CAP = 40
-GROUPS = ("verified", "landed", "building", "specified")
-GROUP_OF = {
-    "verified": "verified",
-    "done": "verified",
-    "closed": "verified",
-    "retired": "verified",
-    "source-landed": "landed",
-    "built": "building",
-    "in-progress": "building",
-}
+GROUPS = ("verified", "landed", "specified", "invalid")
+GROUP_OF = {"verified": "verified", "landed": "landed", "specified": "specified"}
 STYLE = (
     "<style>.rel-view{display:flex;gap:16px;align-items:flex-start;overflow-x:auto}"
     ".rel-col{display:flex;flex-direction:column;gap:8px;min-width:150px}"
     ".rel-box{border:1px solid currentColor;padding:6px;font-size:12px}"
     ".rel-link{display:block;margin-left:8px;border-left:2px solid currentColor;padding-left:4px}"
-    ".rel-verified{color:#1a7f37}.rel-landed{color:#0969da}.rel-building{color:#9a6700}"
+    ".rel-verified{color:#1a7f37}.rel-landed{color:#0969da}.rel-invalid{color:#cf222e}"
     ".rel-specified{color:#57606a}</style>"
 )
 
 
 def state_counts(states):
     """Group record states into the four displayed counts."""
-    counts = Counter(GROUP_OF.get(state, "specified") for state in states)
+    counts = Counter(GROUP_OF.get(state, "invalid") for state in states)
     return {group: counts[group] for group in GROUPS}
 
 

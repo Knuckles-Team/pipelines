@@ -1,6 +1,6 @@
 # [ID] — Design and implementation plan
 
-Status: PROPOSED. Governing spec: [spec.md](spec.md).
+Governing spec: [spec.md](spec.md).
 
 ## Existing system and reuse
 

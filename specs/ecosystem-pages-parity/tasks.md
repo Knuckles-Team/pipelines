@@ -55,3 +55,7 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R016.3: Render only records present in the current `specs/` tree. A requirement ID that was removed in an earlier commit appears nowhere in the HTML.
 - [ ] PIPE-PAGES-R016.4: Remove the history scripts from the sparse checkout and the history option from the dashboard call in `.github/workflows/pages_pipeline.yml`. The Pages workflow does not invoke the history modules.
 - [ ] PIPE-PAGES-R016.5: Do not render records whose state is `RETIRED`. `read_records` in `scripts/spec_dashboard_sources.py` drops them.
+- [ ] PIPE-PAGES-R017: **Three states only.** Rollup of the children below. A requirement row and a spec have one state field with the values `SPECIFIED`, `LANDED` and `VERIFIED`.
+- [ ] PIPE-PAGES-R017.1: The state legend lists exactly three states, `SPECIFIED`, `LANDED` and `VERIFIED`, each with a one-line definition, in `definitions_panel` in `scripts/spec_dashboard_panels.py`.
+- [ ] PIPE-PAGES-R017.2: Every record row shows one state cell. The page has no acceptance column, no release column and no second state label.
+- [ ] PIPE-PAGES-R017.3: A `delivery_state` outside the three states, after `RETIRED` is filtered, renders as `INVALID` and counts in one visible invalid-state number.

@@ -23,7 +23,7 @@ def inventory_rows(snapshot):
     for item in snapshot['records']:
         cells = [link(item, item['id']) + '<br>' + link(item, item['title'], 'document'),
                  *[html.escape(str(item[key])) for key in
-                   ('kind', 'parent', 'state', 'delivery_state', 'acceptance_state', 'release_state')]]
+                   ('kind', 'parent', 'delivery_state')]]
         rows.append('<tr>' + ''.join('<td>' + cell + '</td>' for cell in cells) + '</tr>')
     return ''.join(rows)
 
@@ -31,10 +31,9 @@ def inventory_rows(snapshot):
 def inventory_panel(snapshot):
     count = len(snapshot['records'])
     return ('<p>Each status file gives one spec row. Each requirement gives one more row. '
-            'A requirement without a declared state stays unknown.</p>'
+            'A record without a valid state shows INVALID.</p>'
             f'<details><summary>All documented records <span class="mono">({count} rows)</span></summary>'
-            '<div class="scroll"><table><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th>'
-            '<th>Delivery</th><th>Acceptance</th><th>Release</th></tr></thead><tbody>'
+            '<div class="scroll"><table><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th></tr></thead><tbody>'
             + inventory_rows(snapshot) + '</tbody></table></div></details>')
 
 
