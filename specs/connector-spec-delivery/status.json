@@ -9,6 +9,7 @@
     "PIPE-CONNSPEC-R003",
     "PIPE-CONNSPEC-R004",
     "PIPE-CONNSPEC-R005",
+    "PIPE-CONNSPEC-R006",
     "PIPE-CONNSPEC-R101",
     "PIPE-CONNSPEC-R101.1",
     "PIPE-CONNSPEC-R101.2",
@@ -384,9 +385,16 @@
     {
       "id": "PIPE-CONNSPEC-R001",
       "title": "Generated status with three hooks and four states",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "15fc54d4d3c9",
+        "d2971dd38d43"
+      ],
+      "verified_by": [
+        "tests/hooks/test_spec_landing_attribution.py:15",
+        "tests/hooks/test_spec_landing_attribution.py:37",
+        "tests/hooks/test_spec_landing_attribution.py:49"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R002",
@@ -415,6 +423,18 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R006",
+      "title": "Preserve retired identities across spec ownership moves",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "615425fe278b"
+      ],
+      "verified_by": [
+        "tests/test_spec_standard.py:103",
+        "tests/test_spec_standard.py:110"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R101",
