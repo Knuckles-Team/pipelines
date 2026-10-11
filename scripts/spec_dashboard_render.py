@@ -7,6 +7,7 @@ if __package__:
     from .spec_dashboard_history_views import history_tables, history_timeline
     from .spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from .spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
+    from .spec_dashboard_relations_view import relations_panel
     from .spec_dashboard_structure import structure_panel
     from .spec_dashboard_style import STYLE, panel, zones
 else:
@@ -14,6 +15,7 @@ else:
     from spec_dashboard_history_views import history_tables, history_timeline
     from spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
+    from spec_dashboard_relations_view import relations_panel
     from spec_dashboard_structure import structure_panel
     from spec_dashboard_style import STYLE, panel, zones
 
@@ -52,6 +54,7 @@ def current_panels(snapshot):
         panel('C', 'State definitions', caption='delivery_state', body=definitions_panel()),
         panel('D', 'Specifications', caption='specs/*/status.json',
               body=specs_panel(snapshot, blob_link(snapshot)), width='w7'),
+        panel('R', 'Spec relationships', caption='depends on, extends', body=relations_panel(snapshot)),
     ]
 
 
