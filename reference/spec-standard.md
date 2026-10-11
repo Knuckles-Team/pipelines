@@ -23,7 +23,7 @@ One capability has one owning spec. A second spec, planner, selector, or store f
 
 An amendment entry states the date, the row IDs, the old statement, the new statement, and the evidence.
 
-Row IDs are permanent. A removed requirement moves to the `RETIRED` state. A row ID in an older form, such as `DS-01`, keeps its ID; tests and commit trailers bind to it. A moved requirement leaves a `RETIRED` row that names the new ID.
+Row IDs are permanent. A removed requirement moves to the `RETIRED` state. A row ID in an older form, such as `DS-01`, keeps its ID; tests and commit trailers bind to it. A moved requirement leaves a `RETIRED` row that names the new ID. The retired row retains its original ID even when its owning spec changes. The gate uses the status generator's retirement parser; mentioning retirement in an active row does not exempt its ID.
 
 ## Audits, reviews, and carry-overs
 

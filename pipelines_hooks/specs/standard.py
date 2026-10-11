@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
-from pipelines_hooks.specs.ids import ROW_RE
+from pipelines_hooks.specs.requirements_doc import parse_rows
 
 REQUIRED = (
     "spec.md",
@@ -59,19 +59,21 @@ def check_id(spec_dir: Path, spec_id: str) -> list[str]:
     """No numeric suffix; every ``-R###`` row ID starts with ``<ID>-R``.
 
     A row ID in an older form (``DS-01``) is permanent and is not a finding.
+    Retired rows retain their original IDs when moved between owning specs.
     """
     out = []
     if SUFFIX_RE.search(spec_id):
         out.append(f"spec ID {spec_id} has a numeric suffix")
-    for line in _read(spec_dir / "requirements.md").splitlines():
-        m = ROW_RE.match(line)
+    rows = (row for line in _read(spec_dir / "requirements.md").splitlines()
+            for row in parse_rows(line))
+    for row in rows:
         if (
-            m
-            and STANDARD_ROW_RE.search(m.group(1))
-            and not m.group(1).startswith(spec_id + "-R")
+            row.retired_reason is None
+            and STANDARD_ROW_RE.search(row.id)
+            and not row.id.startswith(spec_id + "-R")
         ):
             out.append(
-                f"requirements.md row {m.group(1)} does not start with {spec_id}-R"
+                f"requirements.md row {row.id} does not start with {spec_id}-R"
             )
     return out
 
