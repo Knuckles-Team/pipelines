@@ -46,3 +46,6 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R015.1: The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller.
 - [ ] PIPE-PAGES-R015.2: agent-webui, agent-terminal-ui, and geniusbot adopt it through the caller pattern in PIPE-CONNSPEC-R004.
 - [ ] PIPE-PAGES-R015.3: Connector repositories get the same page through PIPE-CONNSPEC-R101 and following.
+
+- [ ] Recheck historical R001/R003/R009 acceptance notes against current exact source and served-site evidence.
+- [ ] Validate R013.3 cycle layout with the planned order-independence test.

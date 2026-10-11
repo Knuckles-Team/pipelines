@@ -40,3 +40,11 @@ Contract tests inspect `pages_pipeline.yml` for least-privilege checkout, immuta
 | T-PIPE-PAGES-R015.1 | PIPE-PAGES-R015.1 | `test_pages_workflow_runs_relation_steps` in `tests/test_pages_pipeline_contract.py` expects the steps and no repository names. |
 | T-PIPE-PAGES-R015.2 | PIPE-PAGES-R015.2 | `test_client_callers_use_reusable_workflow` in `tests/test_pages_pipeline_contract.py` expects each caller to reference the workflow at `main`. |
 | T-PIPE-PAGES-R015.3 | PIPE-PAGES-R015.3 | `test_connector_page_has_concepts_and_relations` in `tests/test_spec_dashboard_render.py` expects both blocks in a connector fixture. |
+
+
+## Planned cycle-layout acceptance
+
+`tests/test_spec_dashboard_relations.py::test_cycle_layers_are_order_independent` must cover self-loops and three-node cycles.
+Incoming and outgoing dependencies must retain their depth after strongly connected components collapse.
+Input permutations must produce identical layers. The relationship table must retain every original edge.
+This test is planned; this documentation change does not implement it.
