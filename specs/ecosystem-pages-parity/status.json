@@ -235,7 +235,7 @@
     },
     {
       "id": "PIPE-PAGES-R013.3",
-      "title": "Add `layer_specs(nodes, edges)` to `scripts/spec_dashboard_structure.py`. It assigns each spec the layer equal to its longest dependency depth, so roots sit in layer 0",
+      "title": "Add `layer_specs(nodes, edges)` to `scripts/spec_dashboard_structure.py`. It collapses strongly connected components, then assigns longest dependency depth on the resulting graph. Component members share a layer; roots sit in layer 0",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
