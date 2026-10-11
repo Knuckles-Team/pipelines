@@ -448,7 +448,7 @@
     {
       "id": "PIPE-PAGES-R016",
       "title": "Spec-delivery page shows only the current spec state",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [],
       "verified_by": [],
       "rollup_of": [
@@ -506,8 +506,10 @@
     {
       "id": "PIPE-PAGES-R016.5",
       "title": "Do not render records whose state is `RETIRED`. `read_records` in `scripts/spec_dashboard_sources.py` drops them, so no row, count, legend entry, link, relationship or percentage includes one",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "9e705970e4c9"
+      ],
       "verified_by": [
         "tests/test_spec_dashboard.py:142"
       ]
