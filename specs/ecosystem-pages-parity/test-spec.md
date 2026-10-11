@@ -66,3 +66,21 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R019.3 | PIPE-PAGES-R019.3 | Run `test_repository_links_equal_single_source` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
 | T-PIPE-PAGES-R019.4 | PIPE-PAGES-R019.4 | Run `test_skip_link_targets_main` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
 | T-PIPE-PAGES-R019.5 | PIPE-PAGES-R019.5 | Run `test_page_keeps_existing_panels` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R020.1 | PIPE-PAGES-R020.1 | Run `test_doc_claim_kind_is_closed` in `tests/hooks/test_doc_claims.py` expects a `ValueError` for any other kind. |
+| T-PIPE-PAGES-R020.2 | PIPE-PAGES-R020.2 | Run `test_resolvers_check_each_kind` in `tests/hooks/test_doc_claims.py` expects one finding per false claim and none for true claims. |
+| T-PIPE-PAGES-R020.3 | PIPE-PAGES-R020.3 | Run `test_validate_calls_claim_findings` in `tests/hooks/test_doc_claims.py` expects a claim finding from `validate` on a stale fixture. |
+| T-PIPE-PAGES-R020.4 | PIPE-PAGES-R020.4 | Run `test_unresolvable_claim_is_reported` in `tests/hooks/test_doc_claims.py` expects the `claims-unchecked` finding. |
+| T-PIPE-PAGES-R020.5 | PIPE-PAGES-R020.5 | Run `test_claims_summary_line` in `tests/hooks/test_doc_claims.py` expects the counts to equal the fixture. |
+| T-PIPE-PAGES-R020.6 | PIPE-PAGES-R020.6 | Run `test_public_surface_hook_fails_on_stale_claim` in `tests/hooks/test_public_surface_claims.py` expects exit 1 and the finding. |
+| T-PIPE-PAGES-R021.1 | PIPE-PAGES-R021.1 | Run `test_finding_rule_is_closed` in `tests/hooks/test_test_quality.py` expects a `ValueError` for any other rule. |
+| T-PIPE-PAGES-R021.2 | PIPE-PAGES-R021.2 | Run `test_scan_flags_placeholder_and_bare_suppression` in `tests/hooks/test_test_quality.py` expects one finding per violation. |
+| T-PIPE-PAGES-R021.3 | PIPE-PAGES-R021.3 | Run `test_test_quality_is_registered` in `tests/hooks/test_test_quality.py` expects the name in `GATES` and in the hook file. |
+| T-PIPE-PAGES-R021.4 | PIPE-PAGES-R021.4 | Run `test_missing_coverage_report_cannot_run` in `tests/hooks/test_test_quality.py` expects exit 2. |
+| T-PIPE-PAGES-R021.5 | PIPE-PAGES-R021.5 | Run `test_test_quality_summary_line` in `tests/hooks/test_test_quality.py` expects the stated fields. |
+| T-PIPE-PAGES-R021.6 | PIPE-PAGES-R021.6 | Run `test_test_quality_hook_fails_fixture` in `tests/hooks/test_test_quality_hook.py` expects exit 1 and two findings. |
+| T-PIPE-PAGES-R022.1 | PIPE-PAGES-R022.1 | Run `test_policy_defaults` in `tests/hooks/test_mutation_gaps.py` expects the default module list. |
+| T-PIPE-PAGES-R022.2 | PIPE-PAGES-R022.2 | Run `test_only_survivors_are_reported` in `tests/hooks/test_mutation_gaps.py` expects survivors only. |
+| T-PIPE-PAGES-R022.3 | PIPE-PAGES-R022.3 | Run `test_mutation_workflow_runs_gate` in `tests/hooks/test_mutation_gaps.py` expects the cron entry and the gate command. |
+| T-PIPE-PAGES-R022.4 | PIPE-PAGES-R022.4 | Run `test_absent_runner_fails_closed_in_ci` in `tests/hooks/test_mutation_gaps.py` expects exit 2 under `CI=1`. |
+| T-PIPE-PAGES-R022.5 | PIPE-PAGES-R022.5 | Run `test_mutation_report_lines` in `tests/hooks/test_mutation_gaps.py` expects the stated lines. |
+| T-PIPE-PAGES-R022.6 | PIPE-PAGES-R022.6 | Run `test_mutation_gaps_hook_reports_untested_branch` in `tests/hooks/test_mutation_gaps_hook.py` expects exit 1 and the line. |
