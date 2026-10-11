@@ -32,6 +32,8 @@ STANDARD_ROW_RE = re.compile(r"-R\d{3}(?:\.\d+)*$")
 
 #: Advisory until every repository has deleted its tombstone rows; `--tombstones` enforces it.
 TOMBSTONE = "is a tombstone for a moved row"
+#: Advisory until every repository has merged its status spec_id fix.
+STATUS_ID = "differs from the spec ID"
 
 
 def _read(path: Path) -> str:
@@ -49,7 +51,7 @@ def check_status_id(spec_dir: Path, spec_id: str) -> list[str]:
         return []
     if found == spec_id:
         return []
-    return [f"status.json spec_id {found} differs from the spec ID {spec_id}"]
+    return [f"status.json spec_id {found} {STATUS_ID} {spec_id}"]
 
 
 def check_files(spec_dir: Path) -> list[str]:
@@ -152,7 +154,8 @@ def main(argv: list[str]) -> int:
     index = _read(root / "specs" / "README.md")
     dirs = _spec_dirs(root)
     found = [f for d in dirs for f in check_spec(d, index)]
-    findings = [f for f in found if args.tombstones or TOMBSTONE not in f]
+    advisory = () if args.tombstones else (TOMBSTONE, STATUS_ID)
+    findings = [f for f in found if not any(mark in f for mark in advisory)]
     for finding in found:
         print(finding if finding in findings else f"ADV {finding}")
     if findings:
