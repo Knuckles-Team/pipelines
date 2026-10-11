@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from skill_graph.model import REPOS, VOCAB, repo_label
 from skill_graph.render_shared import group_concepts_by_repo, render_concept_components
+
+
+def concept_slug(label: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", label.lower()).strip("-")
 
 
 def render_concepts_md(corpus: dict[str, Any]) -> str:
@@ -25,7 +30,8 @@ def render_concepts_md(corpus: dict[str, Any]) -> str:
             count = len(node.get("hasComponent") or [])
             unit = "component" if count == 1 else "components"
             extra = f" ({count} {unit})" if count else ""
-            lines.append(f"- **{node['label']}**{extra}")
+            anchor = f'<a id="concept-{concept_slug(node["label"])}"></a>'
+            lines.append(f"- {anchor}**{node['label']}**{extra}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -71,7 +77,7 @@ def render_index_md(corpus: dict[str, Any]) -> str:
         f"`{VOCAB}`, the same namespace Epistemic Graph's own ontology uses.\n\n"
         "See [Ecosystem glossary](glossary.md) for the shared vocabulary this "
         "corpus's repo and concept names draw from.\n\n"
-        "!!! note \"Not the same thing as `skills/skill-graphs`\"\n"
+        '!!! note "Not the same thing as `skills/skill-graphs`"\n'
         "    `agent-utilities`' `docs/guides/skill-graph-migration.md` and the "
         "`skills/skill-graphs` repository name a **different** artifact: ~74 "
         "distilled third-party documentation knowledge-graphs (AWS, Django, "
