@@ -10,6 +10,7 @@
     "PIPE-CONNSPEC-R004",
     "PIPE-CONNSPEC-R005",
     "PIPE-CONNSPEC-R006",
+    "PIPE-CONNSPEC-R007",
     "PIPE-CONNSPEC-R101",
     "PIPE-CONNSPEC-R101.1",
     "PIPE-CONNSPEC-R101.2",
@@ -438,6 +439,15 @@
       "verified_by": [
         "tests/test_spec_standard.py:103",
         "tests/test_spec_standard.py:110"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R007",
+      "title": "CI checks changed prose",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_ste_ci.py:29"
       ]
     },
     {

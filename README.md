@@ -94,3 +94,7 @@ blockers. Consumer migrations must wait for a reviewed immutable guard ref.
 Release callers also use the [exact PyPI publication identity checker](reference/publication-identity.md)
 to reject same-version filename/digest conflicts. It checks every staged file after upload.
 This supplements their existing readiness and platform-completeness gates.
+
+`pipelines-hook ste-staged --base-ref <commit>` checks new prose findings in a committed range.
+GitHub PR and push runs resolve the base from the event payload. Local commits check the staged index.
+See [STE comparison rules](reference/ste.md#ci-comparison).
