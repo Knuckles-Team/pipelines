@@ -50,24 +50,3 @@ Levels: ecosystem (organisation profile README) -> repository (`/<repo>/spec-del
 ## Same generator everywhere (PIPE-PAGES-R015)
 
 The reusable workflow `pages_pipeline.yml` (it already runs `--output site/spec-delivery`) carries all steps. Connector rows PIPE-CONNSPEC-R101 and following, and the caller pattern PIPE-CONNSPEC-R004, are linked by ID and not restated. CONFIRMED. Client repositories adopt through their own callers. DECIDED.
-
-## Amendments
-
-- 2026-10-11. Rows PIPE-PAGES-R012 to PIPE-PAGES-R015 added. Operator requirement: concept references, spec relationship views, ecosystem drill-down, and one generator for all repositories. No existing row changed. Evidence: the code reads above.
-- 2026-10-11. Rows PIPE-PAGES-R012 to PIPE-PAGES-R014 corrected to name where the code and tests now live (`scripts/spec_dashboard_concepts.py`, `spec_dashboard_relations.py`, `spec_dashboard_relations_view.py`, `spec_dashboard_drilldown.py`, and the three `tests/test_spec_dashboard_*.py` files). No row ID changed.
-
-- 2026-10-11. Row PIPE-PAGES-R016 added. Operator requirement: "We don't care about tracking historical states of specs. We only want the most up to date specs ... an as-is state of features, like a functional requirements document that shows only canonical features. Only current state matters. Previous states are stored in git history." Any earlier row asking for history views is superseded by PIPE-PAGES-R016 (none found in `specs/*/requirements.md`).
-
-### 2026-10-11: preserve prior acceptance notes
-
-Status regeneration drops free-form legacy fields. The following summary preserves the prior acceptance obligations.
-The notes are historical; they do not establish current implementation or published-site acceptance.
-The source is commit `83fb4371ed92c83472989eb9fad11dbae9ed3a21`, in `specs/ecosystem-pages-parity/status.json`.
-
-- PIPE-PAGES-R001: The branch had a switcher rename and two additional repositories. Consumer theme copies needed coordinated synchronization. The obsolete standalone web UI deployment generator still needed removal.
-- PIPE-PAGES-R003: Heading order and shared theme existed. The repository still lacked an embedded quick-start demonstration. Accessibility and present-tense acceptance remained open.
-- PIPE-PAGES-R009: The generated runtime SVG had tests. The local pages tree had no Mermaid or ASCII diagrams. The dated parity report still recorded Mermaid and ASCII diagrams in agent-utilities.
-
-The R003 and R009 source notes were truncated. Their missing text remains unknown.
-The release still needs exact-ref consumer validation and served-site publication evidence.
-Opt-in workflow wiring remains an open task. Source landing alone does not prove either result.

@@ -139,6 +139,18 @@ def test_removed_id_absent_from_page(tmp_path):
     assert 'KEEP-1' in page and 'GONE-1' not in page
 
 
+@pytest.mark.spec("PIPE-PAGES-R016.5")
+def test_retired_record_is_not_rendered(tmp_path):
+    for spec_id, state in (('GONE-1', 'RETIRED'), ('KEEP-1', 'VERIFIED')):
+        path = tmp_path / 'specs' / spec_id.lower()
+        path.mkdir(parents=True)
+        (path / 'status.json').write_text(json.dumps({'spec_id': spec_id, 'delivery_state': state}))
+    records = read_records(tmp_path, {'sources': [{'glob': 'specs/*/status.json'}]})
+    page = render({'repository': 'a/b', 'revision': 'abc', 'captured_at': 'now', 'records': records, 'github': {}})
+    assert [item['id'] for item in records] == ['KEEP-1']
+    assert 'KEEP-1' in page and 'GONE-1' not in page
+
+
 @pytest.mark.spec("PIPE-PAGES-R016.4")
 def test_workflow_does_not_reference_history_scripts():
     text = (Path(__file__).parents[1] / '.github/workflows/pages_pipeline.yml').read_text()

@@ -95,7 +95,7 @@ def test_older_row_id_form_is_permanent(root, capsys):
 
 
 @pytest.mark.parametrize("title, expected", [
-    ("**RETIRED: replaced by FOO-R001.**", 0),
+    ("**RETIRED: replaced by FOO-R001.**", 1),
     ("Active row; RETIRED is discussed only.", 1),
     ("**Active row.** RETIRED: replaced by FOO-R001.", 1),
 ])
@@ -113,3 +113,10 @@ def test_retired_duplicate_does_not_hide_active_wrong_prefix(root, capsys):
         "| `OLD-R001` | **RETIRED: replaced by FOO-R001.** | |\n"
         "| `OLD-R001` | **Active duplicate.** | |\n")
     assert _run(root, capsys)[0] == 1
+
+
+def test_tombstone_row_is_a_finding(root, capsys):
+    req = _spec(root) / "requirements.md"
+    req.write_text(req.read_text() + "| `FOO-R002` | RETIRED: replaced by BAR-R001 |\n")
+    out = _run(root, capsys)[1]
+    assert "requirements.md row FOO-R002 is a tombstone for a moved row; delete it" in out

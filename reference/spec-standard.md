@@ -19,20 +19,18 @@ One capability has one owning spec. A second spec, planner, selector, or store f
 |---|---|---|
 | Child row | Narrow, split, or complete an existing requirement | `<ID>-R012.4` under `R012` in `requirements.md` and `tasks.md` |
 | New rollup | Add a requirement that the spec owns but does not state | Next free `R###` at the end of the same spec |
-| Amendment | Change a recorded decision, or correct a wrong statement | A dated entry in the `plan.md` section "Amendments", plus the row edit |
+| Correction | Change a wrong or outdated statement | Edit the row and the `plan.md` text in place. The commit message states the reason. |
 
-An amendment entry states the date, the row IDs, the old statement, the new statement, and the evidence.
-
-Row IDs are permanent. A removed requirement moves to the `RETIRED` state. A row ID in an older form, such as `DS-01`, keeps its ID; tests and commit trailers bind to it. A moved requirement leaves a `RETIRED` row that names the new ID. The retired row retains its original ID even when its owning spec changes. The gate uses the status generator's retirement parser; mentioning retirement in an active row does not exempt its ID.
+A spec states the current requirements only. A moved or renamed row takes its new ID in every file; no row is left behind under the old ID. A removed requirement is deleted from the spec. Git history holds every previous state. A delivered row keeps its ID, because tests and commit trailers bind to it; a row ID in an older form, such as `DS-01`, stays as it is.
 
 ## Audits, reviews, and carry-overs
 
 An audit, a review, a gap analysis, and a carry-over produce findings. Findings are not a capability, so they never get a spec directory.
 
-- A finding against a row lands as a child row or an amendment in the spec that owns the row.
+- A finding against a row lands as a child row or a correction in the spec that owns the row.
 - A missing requirement lands as a new rollup in the spec that owns the capability.
 - A finding against another repository lands in that repository's owning spec.
-- The audit method and its result table go in the owning spec's `plan.md` section "Audit record", with the date.
+- An audit leaves no record in the spec beyond the rows it changed. The commit message and the pull request hold the method and the result.
 
 Directory names and spec IDs must not contain `audit`, `review`, `gap`, `carryover`, `followup`, or `fix`.
 
@@ -58,7 +56,7 @@ Each spec directory holds exactly these files:
 | File | Content |
 |---|---|
 | `spec.md` | Outcome, scope, owner, non-goals, "Why a new spec" |
-| `plan.md` | Architecture, reuse inventory, interfaces, wiring, decisions, "Amendments", "Audit record" |
+| `plan.md` | Architecture, reuse inventory, interfaces, wiring, and decisions, as they are now |
 | `requirements.md` | One table row per requirement ID |
 | `tasks.md` | One task per requirement row, producer first |
 | `test-spec.md` | One test row per requirement, with the proving test name |
@@ -71,7 +69,7 @@ Design, architecture, coverage, and cross-repository notes are sections of `plan
 - One requirement per row. One row is one five-minute unit of work, or a rollup of such rows.
 - A row names the file it touches and the test that proves it.
 - A cross-repository prerequisite is a row in the owning repository. The dependent row links it by ID.
-- States are `SPECIFIED`, `LANDED`, `VERIFIED`, and `RETIRED`. The generator sets them from `Spec:` trailers and test bindings.
+- States are `SPECIFIED`, `LANDED`, and `VERIFIED`. The generator sets them from `Spec:` trailers and test bindings. The `RETIRED` state exists only for a delivered row whose code was removed; the page does not show it.
 
 ## Wording
 

@@ -78,6 +78,16 @@ def check_id(spec_dir: Path, spec_id: str) -> list[str]:
     return out
 
 
+def check_tombstones(spec_dir: Path) -> list[str]:
+    """A ``RETIRED: replaced by`` row is a tombstone for a moved row."""
+    rows = parse_rows(_read(spec_dir / "requirements.md"))
+    return [
+        f"requirements.md row {r.id} is a tombstone for a moved row; delete it"
+        for r in rows
+        if (r.retired_reason or "").startswith("replaced by")
+    ]
+
+
 def check_names(name: str, spec_id: str | None) -> list[str]:
     """Forbidden words as hyphen-separated tokens in the directory name or ID."""
     out = []
@@ -95,6 +105,7 @@ def check_spec(spec_dir: Path, index: str) -> list[str]:
     found = [*check_files(spec_dir), *title]
     if spec_id:
         found += check_id(spec_dir, spec_id)
+    found += check_tombstones(spec_dir)
     found += check_names(spec_dir.name, spec_id)
     if f"]({spec_dir.name}/spec.md)" not in index:
         found.append("not listed in specs/README.md")
