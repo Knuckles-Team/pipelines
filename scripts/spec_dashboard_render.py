@@ -7,6 +7,8 @@ if __package__:
     from .spec_dashboard_history_views import history_tables, history_timeline
     from .spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from .spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
+    from .spec_dashboard_concepts import unmapped_count
+    from .spec_dashboard_relations_view import relations_panel
     from .spec_dashboard_structure import structure_panel
     from .spec_dashboard_style import STYLE, panel, zones
 else:
@@ -14,6 +16,8 @@ else:
     from spec_dashboard_history_views import history_tables, history_timeline
     from spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
+    from spec_dashboard_concepts import unmapped_count
+    from spec_dashboard_relations_view import relations_panel
     from spec_dashboard_structure import structure_panel
     from spec_dashboard_style import STYLE, panel, zones
 
@@ -41,7 +45,8 @@ def title_block(snapshot):
 
 def count_caption(snapshot):
     kinds = [item['kind'] for item in snapshot['records']]
-    return f'{kinds.count("spec")} specs, {kinds.count("requirement")} requirements'
+    unmapped = unmapped_count(item.get('concepts', []) for item in snapshot['records'] if item['kind'] == 'spec')
+    return f'{kinds.count("spec")} specs, {kinds.count("requirement")} requirements, {unmapped} with no concept mapped'
 
 
 def current_panels(snapshot):
@@ -52,6 +57,7 @@ def current_panels(snapshot):
         panel('C', 'State definitions', caption='delivery_state', body=definitions_panel()),
         panel('D', 'Specifications', caption='specs/*/status.json',
               body=specs_panel(snapshot, blob_link(snapshot)), width='w7'),
+        panel('R', 'Spec relationships', caption='depends on, extends', body=relations_panel(snapshot)),
     ]
 
 

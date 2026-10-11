@@ -141,7 +141,7 @@
     {
       "id": "PIPE-PAGES-R012",
       "title": "Concept references on the spec-delivery page",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [],
       "verified_by": [],
       "rollup_of": [
@@ -156,59 +156,91 @@
     },
     {
       "id": "PIPE-PAGES-R012.1",
-      "title": "Add `concepts_for_row(row, roots)` to `scripts/spec_dashboard_sources.py`. It scans the code roots the row names (`spec_graph_core.CODE_ROOT`) for `CONCEPT:<ID>` markers and returns the sorted identifiers",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `concepts_for_row(row, roots)` to `scripts/spec_dashboard_concepts.py`. It scans the code roots the row names (`spec_graph_core.CODE_ROOT`) for `CONCEPT:<ID>` markers and returns the sorted identifiers",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:18"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.2",
-      "title": "Add `explicit_concepts(text)` to `scripts/spec_dashboard_sources.py`. It reads a `Concepts: <ID>, <ID>` line from `spec.md` or a row and returns the identifiers. The explicit line wins over derived markers",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `explicit_concepts(text)` to `scripts/spec_dashboard_concepts.py`. It reads a `Concepts: <ID>, <ID>` line from `spec.md` or a row and returns the identifiers. The explicit line wins over derived markers",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:25"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.3",
       "title": "Add one anchor per concept in `scripts/skill_graph/render_pages.py` (`render_concepts_md`): each bullet gets the slug id `concept-<slug>`. This is the stable link target `https://knuckles-team.github.io/<repo>/concepts/#concept-<slug>`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:33"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.4",
-      "title": "Add `concept_links(ids, base)` to `scripts/spec_dashboard_panels.py`. It renders one `<a>` per identifier and the marker `no concept mapped` for an empty list. The marker carries the class `no-concept`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `concept_links(ids, base)` to `scripts/spec_dashboard_concepts.py`. It renders one `<a>` per identifier and the marker `no concept mapped` for an empty list. The marker carries the class `no-concept`",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:44"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.5",
       "title": "Call `concept_links` from `spec_row` in `scripts/spec_dashboard_panels.py` and from the requirement table in `scripts/spec_dashboard_structure.py`, so every spec row and requirement row carries a Concepts cell",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0fc12ceeb003"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:53"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.6",
       "title": "Add the count of `no concept mapped` rows to `count_caption` in `scripts/spec_dashboard_render.py`, so the page states the number of unmapped rows",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0fc12ceeb003"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:68"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.7",
-      "title": "Add `check_concept_links(page, concepts_md)` to `scripts/spec_dashboard_sources.py`. It fails when a link targets an anchor that `concepts.md` does not define. The `pages_pipeline.yml` build calls it before upload",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `check_concept_links(page, concepts_md)` to `scripts/spec_dashboard_concepts.py`. It fails when a link targets an anchor that `concepts.md` does not define. The `pages_pipeline.yml` build calls it before upload",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0fc12ceeb003"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:80"
+      ]
     },
     {
       "id": "PIPE-PAGES-R013",
       "title": "Spec relationship view on the spec-delivery page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0fc12ceeb003"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:96"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R013.1",
         "PIPE-PAGES-R013.2",
@@ -221,52 +253,81 @@
     },
     {
       "id": "PIPE-PAGES-R013.1",
-      "title": "Add `spec_edges(records)` to `scripts/spec_graph_core.py`. It lifts the requirement edges (`depends_on`) to spec level, keeps cross-repository edges, and labels each edge `depends on`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `spec_edges(records)` to `scripts/spec_dashboard_relations.py`. It lifts the requirement edges (`depends_on`) to spec level, keeps cross-repository edges, and labels each edge `depends on`",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6cd983d5fe0b"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:18"
+      ]
     },
     {
       "id": "PIPE-PAGES-R013.2",
-      "title": "Add the `extends` edge to `spec_edges` in `scripts/spec_graph_core.py`. A spec extends another when its `spec.md` line `Extends: <ID>` names it. The generator reads no other source",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add the `extends` edge to `spec_edges` in `scripts/spec_dashboard_relations.py`. A spec extends another when its `spec.md` line `Extends: <ID>` names it. The generator reads no other source",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6cd983d5fe0b"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:29"
+      ]
     },
     {
       "id": "PIPE-PAGES-R013.3",
-      "title": "Add `layer_specs(nodes, edges)` to `scripts/spec_dashboard_structure.py`. It collapses strongly connected components, then assigns longest dependency depth on the resulting graph. Component members share a layer; roots sit in layer 0",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `layer_specs(nodes, edges)` to `scripts/spec_dashboard_relations.py`. It collapses strongly connected components, then assigns longest dependency depth on the resulting graph. Component members share a layer; roots sit in layer 0",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6cd983d5fe0b"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:35",
+        "tests/test_spec_dashboard_relations.py:40"
+      ]
     },
     {
       "id": "PIPE-PAGES-R013.4",
-      "title": "Add `relation_view(nodes, edges)` to `scripts/spec_dashboard_panels.py`. It renders one HTML/CSS column per layer and one box per spec with its four state counts (PIPE-PAGES-R009). It uses no SVG, ASCII, or Mermaid",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `relation_view(nodes, edges)` to `scripts/spec_dashboard_relations_view.py`. It renders one HTML/CSS column per layer and one box per spec with its four state counts (PIPE-PAGES-R009). It uses no SVG, ASCII, or Mermaid",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6cd983d5fe0b"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:63"
+      ]
     },
     {
       "id": "PIPE-PAGES-R013.5",
       "title": "Render edges in `relation_view` as labelled CSS connectors (`depends on`, `extends`), and render a legend that explains the two labels and the state colours. Use short active labels with one term per concept",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6cd983d5fe0b"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:70"
+      ]
     },
     {
       "id": "PIPE-PAGES-R013.6",
-      "title": "Add `relation_table(nodes, edges)` to `scripts/spec_dashboard_panels.py`. It renders a text-alternative table (source, label, target) beside the view. The view carries `aria-describedby` for the table",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `relation_table(nodes, edges)` to `scripts/spec_dashboard_relations_view.py`. It renders a text-alternative table (source, label, target) beside the view. The view carries `aria-describedby` for the table",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6cd983d5fe0b"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:78"
+      ]
     },
     {
       "id": "PIPE-PAGES-R013.7",
       "title": "Cap the view at 40 specs in `relation_view`. Above 40, render only the table and the sentence `view limited to 40 specs; see table`. Mount the panel in `current_panels` in `scripts/spec_dashboard_render.py`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6cd983d5fe0b"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_relations.py:87"
+      ]
     },
     {
       "id": "PIPE-PAGES-R014",
@@ -285,31 +346,47 @@
     },
     {
       "id": "PIPE-PAGES-R014.1",
-      "title": "Add `ecosystem_components()` to `scripts/spec_dashboard_sources.py`. It returns the list defined by PIPE-PAGES-R001 (the core repository list) and defines no second list",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `ecosystem_components()` to `scripts/spec_dashboard_drilldown.py`. It returns the list defined by PIPE-PAGES-R001 (the core repository list) and defines no second list",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe2b599895fa"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_drilldown.py:20"
+      ]
     },
     {
       "id": "PIPE-PAGES-R014.2",
-      "title": "Define the URL form in `scripts/spec_dashboard_sources.py`: level 1 `https://knuckles-team.github.io/<repo>/spec-delivery/`, level 2 `.../spec-delivery/#spec-<ID>`, level 3 row `.../spec-delivery/#req-<ID>`. Add `anchor_for(kind, id)`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Define the URL form in `scripts/spec_dashboard_drilldown.py`: level 1 `https://knuckles-team.github.io/<repo>/spec-delivery/`, level 2 `.../spec-delivery/#spec-<ID>`, level 3 row `.../spec-delivery/#req-<ID>`. Add `anchor_for(kind, id)`",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe2b599895fa"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_drilldown.py:25"
+      ]
     },
     {
       "id": "PIPE-PAGES-R014.3",
       "title": "Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id=\"spec-<ID>\"` and lists its rows, state, concepts, and bound tests; each row gets `id=\"req-<ID>\"`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0fc12ceeb003"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_drilldown.py:45"
+      ]
     },
     {
       "id": "PIPE-PAGES-R014.4",
-      "title": "Link each box in `relation_view` (`scripts/spec_dashboard_panels.py`) to `#spec-<ID>` of its own page, or to the other repository's page for a cross-repository node",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Link each box in `relation_view` (`scripts/spec_dashboard_relations_view.py`) to `#spec-<ID>` of its own page, or to the other repository's page for a cross-repository node",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0fc12ceeb003"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_drilldown.py:53"
+      ]
     },
     {
       "id": "PIPE-PAGES-R014.5",
@@ -320,10 +397,14 @@
     },
     {
       "id": "PIPE-PAGES-R014.6",
-      "title": "Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_sources.py`. It fails when a component link or spec anchor does not resolve in the generated site",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "title": "Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_drilldown.py`. It fails when a component link or spec anchor does not resolve in the generated site",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe2b599895fa"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_drilldown.py:34"
+      ]
     },
     {
       "id": "PIPE-PAGES-R015",
