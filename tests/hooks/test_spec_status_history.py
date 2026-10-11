@@ -63,14 +63,15 @@ def test_shallow_history_refuses_without_writes_then_full_history_validates_rece
     _assert_refusal_preserves_files(shallow, capsys)
     shallow.git("fetch", "-q", "--unshallow")
     assert shallow.git("rev-parse", "--is-shallow-repository").strip() == "false"
-    assert shallow.run("spec-status", "--write") == 0
+    # Hosted PR jobs auto-scope to a base; the clone's origin/main is already HEAD.
+    assert shallow.run("spec-status", "--write", "--base-ref", live) == 0
     status = shallow.root / "specs/demo/status.json"
     rows = json.loads(status.read_text(encoding="utf-8"))["requirements"]
     assert rows[0]["landed_in"] == [live[:12]]
     assert rows[0]["delivery_state"] == "LANDED"
     assert all(row["landed_in"] == [] for row in rows[1:])
     assert all(row["delivery_state"] == "SPECIFIED" for row in rows[1:])
-    assert shallow.run("spec-status") == 0
+    assert shallow.run("spec-status", "--base-ref", live) == 0
 
 
 def test_shallow_repository_without_specs_is_a_clean_pass(repo: Repo, tmp_path: Path) -> None:
