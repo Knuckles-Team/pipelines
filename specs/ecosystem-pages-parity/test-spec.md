@@ -90,18 +90,18 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R020.10 | PIPE-PAGES-R020.10 | Run `test_unsupported_finding_refused` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
 | T-PIPE-PAGES-R020.11 | PIPE-PAGES-R020.11 | Run `test_located_evidence_export` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
 | T-PIPE-PAGES-R020.12 | PIPE-PAGES-R020.12 | Run `test_public_surface_located_evidence_cli` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R021.7 | PIPE-PAGES-R021.7 | Run `test_component_contract_model` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R021.8 | PIPE-PAGES-R021.8 | Run `test_component_contract_checks` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R021.9 | PIPE-PAGES-R021.9 | Run `test_component_checks_are_wired` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R021.10 | PIPE-PAGES-R021.10 | Run `test_component_proof_refusals` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R021.11 | PIPE-PAGES-R021.11 | Run `test_component_evidence_receipts` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R021.12 | PIPE-PAGES-R021.12 | Run `test_component_handoff_cli` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R023.1 | PIPE-PAGES-R023.1 | Run `test_skill_grade_model` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R023.2 | PIPE-PAGES-R023.2 | Run `test_skill_grade_criteria` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R023.3 | PIPE-PAGES-R023.3 | Run `test_skill_grade_registration` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R023.4 | PIPE-PAGES-R023.4 | Run `test_skill_grade_refusals` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R023.5 | PIPE-PAGES-R023.5 | Run `test_skill_grade_evidence` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
-| T-PIPE-PAGES-R023.6 | PIPE-PAGES-R023.6 | Run `test_skill_grade_cli` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R021.7 | PIPE-PAGES-R021.7 | Run `test_component_contract_model` in `tests/hooks/test_test_quality_hook.py`. Assert the closed edge kinds and separate runtime/type-only permissions. |
+| T-PIPE-PAGES-R021.8 | PIPE-PAGES-R021.8 | Run `test_component_contract_checks` in `tests/hooks/test_test_quality_hook.py`. Assert allowed lazy imports preserve reachability, forbidden lazy imports fail, and type-only imports cannot prove runtime reachability. |
+| T-PIPE-PAGES-R021.9 | PIPE-PAGES-R021.9 | Run `test_component_checks_are_wired` in `tests/hooks/test_test_quality_hook.py`. Assert the CLI boundary/orphan path consumes the static runtime graph and cycle checks retain the eager graph. |
+| T-PIPE-PAGES-R021.10 | PIPE-PAGES-R021.10 | Run `test_component_proof_refusals` in `tests/hooks/test_test_quality_hook.py`. Assert unresolved dynamic reachability is exit 2, never a false clean or definite orphan; retain receipt refusals. |
+| T-PIPE-PAGES-R021.11 | PIPE-PAGES-R021.11 | Run `test_component_evidence_receipts` in `tests/hooks/test_test_quality_hook.py`. Assert runtime, type-only and unresolved dynamic evidence remain distinguishable. |
+| T-PIPE-PAGES-R021.12 | PIPE-PAGES-R021.12 | Run `test_component_handoff_cli` and `test_component_lazy_import_cli` in `tests/hooks/test_test_quality_hook.py`. Assert CLI exit codes, exact edge locations, type-only separation and no false orphan for allowed lazy imports. |
+| T-PIPE-PAGES-R023.1 | PIPE-PAGES-R023.1 | Run `test_skill_grade_model` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. Carry a document base separately from the containment root. |
+| T-PIPE-PAGES-R023.2 | PIPE-PAGES-R023.2 | Run `test_skill_grade_criteria` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. Resolve nested and parent-relative links from the document while enforcing repository containment. |
+| T-PIPE-PAGES-R023.3 | PIPE-PAGES-R023.3 | Run `test_skill_grade_registration` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. Adapt the shared helper without changing root README behavior. |
+| T-PIPE-PAGES-R023.4 | PIPE-PAGES-R023.4 | Run `test_skill_grade_refusals` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. Refuse traversal outside the repository, escaped document bases and symlinks outside the repository. |
+| T-PIPE-PAGES-R023.5 | PIPE-PAGES-R023.5 | Run `test_skill_grade_evidence` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. Emit located source-document and resolved-target evidence. |
+| T-PIPE-PAGES-R023.6 | PIPE-PAGES-R023.6 | Run `test_skill_grade_cli` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. Run `test_nested_skill_links_cli` in `tests/hooks/test_skill_grade_hook.py`; sibling and in-repository parent links pass, missing or escaping links fail. |
 | T-PIPE-PAGES-R024.1 | PIPE-PAGES-R024.1 | Run `test_similarity_report_model` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
 | T-PIPE-PAGES-R024.2 | PIPE-PAGES-R024.2 | Run `test_similarity_threshold_boundaries` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
 | T-PIPE-PAGES-R024.3 | PIPE-PAGES-R024.3 | Run `test_similarity_reporting_wiring` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |

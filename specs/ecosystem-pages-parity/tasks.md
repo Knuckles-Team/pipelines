@@ -98,18 +98,18 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R020.10: Refusal: implement the requirement and its acceptance test.
 - [ ] PIPE-PAGES-R020.11: Evidence: implement the requirement and its acceptance test.
 - [ ] PIPE-PAGES-R020.12: Hot-path proof: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.7: Model: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.8: Behavior: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.9: Wiring: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.10: Refusal: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.11: Evidence: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.12: Hot-path proof: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R023.1: Model: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R023.2: Behavior: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R023.3: Wiring: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R023.4: Refusal: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R023.5: Evidence: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R023.6: Hot-path proof: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.7: Model: Assert the closed edge kinds and separate runtime/type-only permissions. Implement and bind `test_component_contract_model` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] PIPE-PAGES-R021.8: Behavior: Assert allowed lazy imports preserve reachability, forbidden lazy imports fail, and type-only imports cannot prove runtime reachability. Implement and bind `test_component_contract_checks` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] PIPE-PAGES-R021.9: Wiring: Assert the CLI boundary/orphan path consumes the static runtime graph and cycle checks retain the eager graph. Implement and bind `test_component_checks_are_wired` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] PIPE-PAGES-R021.10: Refusal: Assert unresolved dynamic reachability is exit 2, never a false clean or definite orphan; retain receipt refusals. Implement and bind `test_component_proof_refusals` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] PIPE-PAGES-R021.11: Evidence: Assert runtime, type-only and unresolved dynamic evidence remain distinguishable. Implement and bind `test_component_evidence_receipts` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] PIPE-PAGES-R021.12: Hot-path proof: Assert CLI exit codes, exact edge locations, type-only separation and no false orphan for allowed lazy imports. Implement and bind `test_component_handoff_cli` and `test_component_lazy_import_cli` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] PIPE-PAGES-R023.1: Model: implement the requirement and its acceptance test. Carry a document base separately from the containment root.
+- [ ] PIPE-PAGES-R023.2: Behavior: implement the requirement and its acceptance test. Resolve nested and parent-relative links from the document while enforcing repository containment.
+- [ ] PIPE-PAGES-R023.3: Wiring: implement the requirement and its acceptance test. Adapt the shared helper without changing root README behavior.
+- [ ] PIPE-PAGES-R023.4: Refusal: implement the requirement and its acceptance test. Refuse traversal outside the repository, escaped document bases and symlinks outside the repository.
+- [ ] PIPE-PAGES-R023.5: Evidence: implement the requirement and its acceptance test. Emit located source-document and resolved-target evidence.
+- [ ] PIPE-PAGES-R023.6: Hot-path proof: implement the requirement and its acceptance test. Run `test_nested_skill_links_cli` in `tests/hooks/test_skill_grade_hook.py`; sibling and in-repository parent links pass, missing or escaping links fail.
 - [ ] PIPE-PAGES-R024.1: Model: implement the requirement and its acceptance test.
 - [ ] PIPE-PAGES-R024.2: Behavior: implement the requirement and its acceptance test.
 - [ ] PIPE-PAGES-R024.3: Wiring: implement the requirement and its acceptance test.
