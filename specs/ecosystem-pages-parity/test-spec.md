@@ -56,3 +56,8 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R017.1 | PIPE-PAGES-R017.1 | Run `test_legend_has_three_states` in `tests/test_spec_dashboard_states.py` expects exactly three legend rows. |
 | T-PIPE-PAGES-R017.2 | PIPE-PAGES-R017.2 | Run `test_row_has_one_state_cell` in `tests/test_spec_dashboard_states.py` expects one state cell and no acceptance text. |
 | T-PIPE-PAGES-R017.3 | PIPE-PAGES-R017.3 | Run `test_unknown_state_renders_invalid` in `tests/test_spec_dashboard_states.py` expects `INVALID` and a count of one. |
+| T-PIPE-PAGES-R019.1 | PIPE-PAGES-R019.1 | Run `test_nav_landmark_links_documentation` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.2 | PIPE-PAGES-R019.2 | Run `test_current_page_is_marked` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.3 | PIPE-PAGES-R019.3 | Run `test_repository_links_equal_single_source` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.4 | PIPE-PAGES-R019.4 | Run `test_skip_link_targets_main` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.5 | PIPE-PAGES-R019.5 | Run `test_page_keeps_existing_panels` in `tests/test_spec_dashboard_nav.py` expects the stated result. |

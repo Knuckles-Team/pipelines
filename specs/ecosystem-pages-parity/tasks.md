@@ -59,3 +59,9 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R017.1: The state legend lists exactly three states, `SPECIFIED`, `LANDED` and `VERIFIED`, each with a one-line definition, in `definitions_panel` in `scripts/spec_dashboard_panels.py`.
 - [ ] PIPE-PAGES-R017.2: Every record row shows one state cell. The page has no acceptance column, no release column and no second state label.
 - [ ] PIPE-PAGES-R017.3: A `delivery_state` outside the three states, after `RETIRED` is filtered, renders as `INVALID` and counts in one visible invalid-state number.
+- [ ] PIPE-PAGES-R019: **The spec-delivery page carries the documentation site's navigation.** Rollup of the children below. Readers must move between the documentation and the page without the browser's address bar.
+- [ ] PIPE-PAGES-R019.1: Add `site_nav(repository)` to `scripts/spec_dashboard_nav.py`. It renders `<nav aria-label="Site">` with the repository name and a `Documentation` link, both to `../`.
+- [ ] PIPE-PAGES-R019.2: Mark the current page in `site_nav` with `aria-current="page"` on the `Spec delivery` entry.
+- [ ] PIPE-PAGES-R019.3: List every repository in `site_nav` from `ecosystem_components()` in `scripts/spec_dashboard_drilldown.py`. Link each to its level-1 URL and mark the current repository. Define no second list.
+- [ ] PIPE-PAGES-R019.4: Add `skip_link()` to `scripts/spec_dashboard_nav.py` and wrap the sheet in `<main id="main">` in `render` in `scripts/spec_dashboard_render.py`. Style the bar with the existing tokens in `scripts/spec_dashboard_style.py`.
+- [ ] PIPE-PAGES-R019.5: Add `scripts/spec_dashboard_nav.py` to the sparse checkout in `.github/workflows/pages_pipeline.yml`. The page must keep every existing panel.

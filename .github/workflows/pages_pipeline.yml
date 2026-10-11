@@ -124,6 +124,10 @@ jobs:
             scripts/spec_dashboard_records.py
             scripts/spec_dashboard_structure.py
             scripts/spec_dashboard_style.py
+            scripts/spec_dashboard_nav.py
+            scripts/spec_dashboard_drilldown.py
+            scripts/skill_graph/__init__.py
+            scripts/skill_graph/model.py
             scripts/spec_dashboard_concepts.py
             scripts/spec_dashboard_relations.py
             scripts/spec_dashboard_relations_view.py
