@@ -26,6 +26,9 @@ BAD_WORDS = {"audit", "review", "gap", "carryover", "followup", "fix"}
 TITLE_RE = re.compile(r"^# ([A-Z0-9]+(?:-[A-Z0-9]+)*) — \S.*$")
 SUFFIX_RE = re.compile(r"-\d+$")
 
+#: A row ID in the standard form; older forms keep their permanent IDs.
+STANDARD_ROW_RE = re.compile(r"-R\d{3}(?:\.\d+)*$")
+
 
 def _read(path: Path) -> str:
     try:
@@ -53,13 +56,20 @@ def check_title(spec_dir: Path) -> tuple[str | None, list[str]]:
 
 
 def check_id(spec_dir: Path, spec_id: str) -> list[str]:
-    """No numeric suffix; every requirements.md row ID starts with ``<ID>-R``."""
+    """No numeric suffix; every ``-R###`` row ID starts with ``<ID>-R``.
+
+    A row ID in an older form (``DS-01``) is permanent and is not a finding.
+    """
     out = []
     if SUFFIX_RE.search(spec_id):
         out.append(f"spec ID {spec_id} has a numeric suffix")
     for line in _read(spec_dir / "requirements.md").splitlines():
         m = ROW_RE.match(line)
-        if m and not m.group(1).startswith(spec_id + "-R"):
+        if (
+            m
+            and STANDARD_ROW_RE.search(m.group(1))
+            and not m.group(1).startswith(spec_id + "-R")
+        ):
             out.append(
                 f"requirements.md row {m.group(1)} does not start with {spec_id}-R"
             )

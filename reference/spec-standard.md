@@ -23,7 +23,7 @@ One capability has one owning spec. A second spec, planner, selector, or store f
 
 An amendment entry states the date, the row IDs, the old statement, the new statement, and the evidence.
 
-Row IDs are permanent. A removed requirement moves to the `RETIRED` state. A moved requirement leaves a `RETIRED` row that names the new ID.
+Row IDs are permanent. A removed requirement moves to the `RETIRED` state. A row ID in an older form, such as `DS-01`, keeps its ID; tests and commit trailers bind to it. A moved requirement leaves a `RETIRED` row that names the new ID.
 
 ## Audits, reviews, and carry-overs
 
@@ -93,7 +93,7 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 |---|---|
 | File set | A required file is absent, or a forbidden file exists |
 | Title line | `spec.md` line 1 does not match `# <ID> — <Title>` |
-| Spec ID | The ID has a numeric suffix, or the row IDs do not start with the ID |
+| Spec ID | The ID has a numeric suffix, or a `-R###` row ID does not start with the ID |
 | Names | The directory name or the ID contains a forbidden word |
 | Index | `specs/README.md` does not list the spec |
 

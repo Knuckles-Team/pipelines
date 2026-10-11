@@ -86,3 +86,9 @@ def test_index(root, capsys):
     _spec(root)
     (root / "specs" / "README.md").write_text("nothing\n")
     assert "not listed in specs/README.md" in _run(root, capsys)[1]
+
+
+def test_older_row_id_form_is_permanent(root, capsys):
+    req = _spec(root) / "requirements.md"
+    req.write_text(req.read_text() + "| `DS-01` | An older row keeps its ID. |\n")
+    assert _run(root, capsys) == (0, "spec-standard: clean (1 spec(s) checked)\n")
