@@ -92,3 +92,27 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R022.4: **Refusal.** When the runner is absent, `main` raises `Unavailable`, which `run_gate` at `pipelines_hooks/cli.py:66` fails closed in CI. A module with no tests yields the finding `no-tests-for-module`.
 - [ ] PIPE-PAGES-R022.5: **Evidence.** The report prints one line `module:line operator` per survivor and one `module: killed K, survived S` line per module.
 - [ ] PIPE-PAGES-R022.6: **Hot-path proof.** The entry point is `pipelines-hook mutation-gaps` through `main` in `pipelines_hooks/cli.py:79`. A fixture module with one untested branch must exit 1 and print that module and line.
+- [ ] PIPE-PAGES-R020.7: Model: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R020.8: Behavior: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R020.9: Wiring: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R020.10: Refusal: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R020.11: Evidence: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R020.12: Hot-path proof: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.7: Model: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.8: Behavior: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.9: Wiring: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.10: Refusal: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.11: Evidence: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.12: Hot-path proof: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R023.1: Model: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R023.2: Behavior: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R023.3: Wiring: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R023.4: Refusal: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R023.5: Evidence: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R023.6: Hot-path proof: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R024.1: Model: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R024.2: Behavior: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R024.3: Wiring: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R024.4: Refusal: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R024.5: Evidence: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R024.6: Hot-path proof: implement the requirement and its acceptance test.

@@ -103,3 +103,50 @@ Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipe
 - Decision. The run is scheduled and covers core modules only. DECIDED.
 - Rejected: running mutation tests on every commit. The cost exceeds the five-minute gate budget.
 - Cross-repository. None.
+
+## Located evidence (PIPE-PAGES-R020)
+
+Data flow: public-surface CLI -> validate -> claim resolvers -> located evidence validator -> report and exit status.
+Existing code: `pipelines_hooks/docs/public_surface.py:31` gathers public-surface findings; `pipelines_hooks/docs/public_surface_links.py:29` resolves local paths. `pipelines_hooks/clones/dupehound_report.py:66` validates clone locations and scores for its own format.
+Reachable today: no. The public-surface gate runs, but `pipelines_hooks/docs/claims.py` and the shared measured-evidence validator are absent. Existing clone validation is format-specific and is not a generic code-enhancer finding validator.
+Attach point: `validate` at `pipelines_hooks/docs/public_surface.py:31`, dispatched by `run_gate` at `pipelines_hooks/cli.py:59`.
+Decision: extend R020 with code and documentation finding provenance. Reuse containment and typed error helpers; require tree-bound measurements before exporting findings. Reject unlocated prose reports rather than guessing their evidence.
+Cross-repository rows: `EG-ORCH-VOCAB` owns trace storage; this producer owns gate evidence. A receipt does not confer host admission.
+Source credit: `prompts/plans/sdd-enhanced.md`, AU queue candidate 64. No research citation was supplied.
+Acceptance: implement `tests/hooks/test_public_surface_claims.py`, then run `uv run --frozen python -m pytest tests/hooks/test_public_surface_claims.py -q`. The subprocess tests enter the published CLI and assert exact exit codes and structured findings.
+
+## Component handoff evidence (PIPE-PAGES-R021)
+
+Data flow: test-quality CLI -> component declaration -> static edge checks and test receipts -> located findings -> verdict.
+Existing code: `pipelines_hooks/code/import_graph.py:71` builds Python eager-import edges; `pipelines_hooks/code/import_cycles.py:57` runs the current import gate. `pipelines_hooks/kiss/census.py:31` checks per-file limits; its module contract explicitly excludes orphan detection.
+Reachable today: no. Eager-import checks run, but `pipelines_hooks/code/test_quality.py`, its CLI registration and handoff receipt checks are absent. Reuse graph construction; add explicit entry-module reachability rather than claiming the census proves it.
+Attach point: the R021 gate registered at `pipelines_hooks/cli.py:14`, called by `run_gate` at `pipelines_hooks/cli.py:59` and the standard CI hook workflow.
+Decision: require interfaces and risky handoff tests in a tracked declaration. Property receipts carry seed, case count and test outcome; zero cases fail. Real-component integration evidence identifies the components and forbids replacing their handoff with mocks. Pin receipts to source and declaration digests. Unsupported languages need an explicit adapter and otherwise fail closed.
+Rejected: deriving architectural intent from imports alone. Imports show connections, not which interface the owner permits. An explicit dynamic entry declaration prevents valid plugins being mislabeled as orphans.
+Cross-repository rows: none added; repositories supply declarations and executable handoff tests. Existing R021 placeholder, suppression and coverage behavior remains required.
+Source credit: `prompts/unorganized/PyTests Enhancement Agent utilities.txt`, AU queue candidate 67. No research citation was supplied.
+Acceptance: implement `tests/hooks/test_test_quality_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_test_quality_hook.py -q`. Tests run real fixture components and then the CLI against their generated receipts.
+
+## Skill grading (PIPE-PAGES-R023)
+
+Data flow: skill-grade CLI -> declared skill files -> deterministic criteria -> located evidence -> grade receipt.
+Existing code: `pipelines_hooks/docs/public_surface_links.py:29` checks local link containment. `scripts/readiness/evidence.py:41` proves a skills directory exists; `scripts/skill_graph/au.py:78` extracts skill catalogue data. Neither grades skill quality.
+Reachable today: no. A grader and its registry entry are absent. Source searches for frontmatter, skill grade, description quality and skill metadata found no grader to reuse. Add the small grader module and reuse existing link checks and `CannotRun` mapping.
+Attach point: `pipelines_hooks/cli.py:14` and `pipelines_hooks/cli.py:59`, plus the published hook, catalogue and self-run configuration used by `.github/workflows/ci.yml:86`.
+Decision: grade declared inputs with a versioned policy, never a model-generated subjective score. Default frontmatter requires nonempty name and description. Description checks require purpose and use-condition fields in the policy's declared form. Body sections are Usage and Examples by default. Metadata checks UTF-8 readability, a regular file, and no escaping symlink. Each criterion is binary at its declared weight; a policy replacement must name its version and predicates.
+Rejected: treating directory presence or catalogue extraction as quality evidence. Grade receipts bind inputs and policy, while installation and admission remain with the host.
+Cross-repository rows: `EG-TYPED-PACKS` owns skill contracts; `GRAPHOS-FLEET-R034` owns admission. This gate emits evidence and does not approve a skill.
+Source credit: `prompts/plans/code-enhancement-skill-rule.md`, AU queue candidate 63. No research citation was supplied.
+Acceptance: implement `tests/hooks/test_skill_grade_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_skill_grade_hook.py -q`. Invoke the published CLI on valid and adversarial skill fixtures and assert every criterion and exit code.
+
+## Similarity guidance (PIPE-PAGES-R024)
+
+Data flow: changed-source CLI -> pinned structural scanner -> validated clone report -> diagnostic and enforcement partitions -> reviewed-distinct register -> located guidance.
+Existing code: `pipelines_hooks/clones/dupehound.py:64` constructs the scanner command; `pipelines_hooks/clones/dupehound_report.py:66` validates findings; `pipelines_hooks/clones/dupehound_gate.py:28` enforces the reviewed register. `pipelines_hooks/clones/contract.py:14` sets 0.85 and the shared contract retains token minima and exclusions.
+Reachable today: yes for detection and enforcement through `pipelines_hooks/clones/dupehound_gate.py:46`; no for the additional 0.80 diagnostic partition and extraction advice. These additions have no production caller today.
+Attach point: extend the existing command, report and verdict chain, reached through `pipelines_hooks/cli.py:59`; create no second scanner or allowlist. A diagnostic finding cannot erase a register rot failure.
+Decision: preserve the reviewed 0.85 blocking threshold while flagging 0.80-and-above pairs as requested. Below 0.85, guidance is diagnostic. Defaults live in the shared contract and can only change by reviewed producer policy. Tests cover 0.799, 0.80, 0.849 and 0.85 using deterministic report fixtures, then exercise real Rust and Python scanner fixtures through the CLI. Threshold invariants require finite values with 0 <= diagnostic <= enforcement <= 1.
+Rejected: replacing the scanner or lowering every consumer's enforcement threshold from source inspiration alone. Keep existing Rust/Python support, token minima, scope rules and digest-bound distinct-pair review. Extraction advice is a review proposal with both locations, not an automatic code rewrite.
+Cross-repository rows: none added; consumers retain the same hook ID and published policy.
+Source credit: `open-source-libraries/kiss/README.md`, AU queue candidate 66, informs the user need for similarity and extraction guidance. No arXiv citation was supplied. The design reuses this repository's existing scanner contract.
+Acceptance: implement `tests/hooks/test_similarity_guidance_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_similarity_guidance_hook.py -q`. The integration test invokes the pinned scanner through the CLI; scanner absence cannot satisfy it. No native scanner build is required for this specification change.

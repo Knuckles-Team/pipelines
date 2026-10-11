@@ -84,3 +84,27 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R022.4 | PIPE-PAGES-R022.4 | Run `test_absent_runner_fails_closed_in_ci` in `tests/hooks/test_mutation_gaps.py` expects exit 2 under `CI=1`. |
 | T-PIPE-PAGES-R022.5 | PIPE-PAGES-R022.5 | Run `test_mutation_report_lines` in `tests/hooks/test_mutation_gaps.py` expects the stated lines. |
 | T-PIPE-PAGES-R022.6 | PIPE-PAGES-R022.6 | Run `test_mutation_gaps_hook_reports_untested_branch` in `tests/hooks/test_mutation_gaps_hook.py` expects exit 1 and the line. |
+| T-PIPE-PAGES-R020.7 | PIPE-PAGES-R020.7 | Run `test_located_finding_schema` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R020.8 | PIPE-PAGES-R020.8 | Run `test_located_evidence_matches_tree` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R020.9 | PIPE-PAGES-R020.9 | Run `test_finding_validator_is_wired` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R020.10 | PIPE-PAGES-R020.10 | Run `test_unsupported_finding_refused` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R020.11 | PIPE-PAGES-R020.11 | Run `test_located_evidence_export` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R020.12 | PIPE-PAGES-R020.12 | Run `test_public_surface_located_evidence_cli` in `tests/hooks/test_public_surface_claims.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R021.7 | PIPE-PAGES-R021.7 | Run `test_component_contract_model` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R021.8 | PIPE-PAGES-R021.8 | Run `test_component_contract_checks` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R021.9 | PIPE-PAGES-R021.9 | Run `test_component_checks_are_wired` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R021.10 | PIPE-PAGES-R021.10 | Run `test_component_proof_refusals` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R021.11 | PIPE-PAGES-R021.11 | Run `test_component_evidence_receipts` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R021.12 | PIPE-PAGES-R021.12 | Run `test_component_handoff_cli` in `tests/hooks/test_test_quality_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R023.1 | PIPE-PAGES-R023.1 | Run `test_skill_grade_model` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R023.2 | PIPE-PAGES-R023.2 | Run `test_skill_grade_criteria` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R023.3 | PIPE-PAGES-R023.3 | Run `test_skill_grade_registration` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R023.4 | PIPE-PAGES-R023.4 | Run `test_skill_grade_refusals` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R023.5 | PIPE-PAGES-R023.5 | Run `test_skill_grade_evidence` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R023.6 | PIPE-PAGES-R023.6 | Run `test_skill_grade_cli` in `tests/hooks/test_skill_grade_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R024.1 | PIPE-PAGES-R024.1 | Run `test_similarity_report_model` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R024.2 | PIPE-PAGES-R024.2 | Run `test_similarity_threshold_boundaries` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R024.3 | PIPE-PAGES-R024.3 | Run `test_similarity_reporting_wiring` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R024.4 | PIPE-PAGES-R024.4 | Run `test_similarity_refusals` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R024.5 | PIPE-PAGES-R024.5 | Run `test_similarity_evidence` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
+| T-PIPE-PAGES-R024.6 | PIPE-PAGES-R024.6 | Run `test_similarity_guidance_cli` in `tests/hooks/test_similarity_guidance_hook.py`; assert the requirement outcomes. |
