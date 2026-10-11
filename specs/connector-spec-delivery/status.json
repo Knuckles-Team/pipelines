@@ -444,8 +444,10 @@
     {
       "id": "PIPE-CONNSPEC-R007",
       "title": "CI checks changed prose",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6f1b2623bbda"
+      ],
       "verified_by": [
         "tests/hooks/test_ste_ci.py:29"
       ]
