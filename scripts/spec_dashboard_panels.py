@@ -82,7 +82,7 @@ def definitions_panel():
             '<p>Done needs LANDED or CLOSED, and ACCEPTED. Landed does not mean released or deployed.</p></div>')
 
 
-def spec_row(spec, children, link, repo=''):
+def spec_row(spec, children, link, *, repo=''):
     landed = sum(item['delivery_state'] in LANDED for item in children)
     done = sum(item['done'] for item in children)
     state = mark(True, spec['delivery_state']) if spec['done'] else html.escape(spec['delivery_state'])
@@ -98,7 +98,7 @@ def spec_rows(snapshot, link):
     for item in snapshot['records']:
         if item['kind'] == 'requirement':
             children.setdefault(item['parent'], []).append(item)
-    return [spec_row(spec, children.get(spec['id'], []), link, snapshot['repository'].split('/')[-1])
+    return [spec_row(spec, children.get(spec['id'], []), link, repo=snapshot['repository'].split('/')[-1])
             for spec in snapshot['records'] if spec['kind'] == 'spec']
 
 

@@ -61,7 +61,7 @@ def test_spec_row_carries_concepts_cell():
         "done": True,
         "concepts": ["A-1"],
     }
-    out = spec_row(spec, [], lambda item, label: label, "repo")
+    out = spec_row(spec, [], lambda item, label: label, repo="repo")
     assert 'id="spec-S-1"' in out and "concepts/#concept-a-1" in out
 
 

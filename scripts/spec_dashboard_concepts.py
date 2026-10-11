@@ -18,16 +18,19 @@ def _scan(path: Path) -> set[str]:
         return set()
 
 
+def _files(target: Path) -> list[Path]:
+    """The scannable files at or under one code root."""
+    paths = [target] if target.is_file() else target.rglob("*")
+    return [path for path in paths if path.is_file() and not SKIP & set(path.parts)]
+
+
 def concepts_for_row(row_roots, roots) -> list[str]:
     """Sorted CONCEPT:<ID> markers found under the code roots a row names."""
     found: set[str] = set()
     for base in roots:
         for root in row_roots:
-            target = Path(base) / root
-            files = [target] if target.is_file() else target.rglob("*")
-            for path in files:
-                if path.is_file() and not SKIP & set(path.parts):
-                    found |= _scan(path)
+            for path in _files(Path(base) / root):
+                found |= _scan(path)
     return sorted(found)
 
 
