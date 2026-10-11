@@ -26,7 +26,8 @@ def requirement_errors(path: Path) -> list[str]:
     """Per-requirement delivery entries match the declared IDs, in order."""
     data, _failure = _load_status(path)
     entries = (data or {}).get("requirements")
-    if entries is None:
+    if entries is None or (data or {}).get("schema_version") == 2:
+        # Schema 2 entries are generated and gated by ``pipelines-hook spec-status``.
         return []
     if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
         return [f"{path}: requirements must be an array of objects"]
