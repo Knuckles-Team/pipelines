@@ -420,8 +420,10 @@
     {
       "id": "PIPE-CONNSPEC-R006",
       "title": "Preserve retired identities across spec ownership moves",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "615425fe278b"
+      ],
       "verified_by": [
         "tests/test_spec_standard.py:103",
         "tests/test_spec_standard.py:110"
