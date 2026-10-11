@@ -15,3 +15,7 @@ The generator uses Git trailer parsing in the existing single history scan, with
 ## Amendment: retired identities (2026-10-11)
 
 PIPE-CONNSPEC-R006 reconciles ownership moves with permanent requirement IDs. Reuse the status generator retirement parser in the standard gate. Preserve the old row as RETIRED and name its replacement; active rows still obey prefix checks. This does not repair or retire existing rows automatically.
+
+## Repository ownership
+
+Resolve the repository slug offline from origin, or a sole configured remote when origin is absent. This authoritative identity overrides stale generated ownership. If remote identity cannot be established, keep the prior owner, with checkout basename only as a final fallback. Keep legacy landing validation independent of identity correction.
