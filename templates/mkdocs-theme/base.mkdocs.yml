@@ -86,6 +86,7 @@ extra:
         role: cross-repo concept, component and man-page corpus
         url: https://knuckles-team.github.io/pipelines/
         repository: https://github.com/Knuckles-Team/pipelines
+        spec_delivery: false
 
 markdown_extensions:
   - admonition
