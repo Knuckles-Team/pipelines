@@ -52,6 +52,7 @@ extra_css:
   - stylesheets/extra.css
 
 extra:
+  spec_delivery: !ENV [SPEC_DELIVERY_ENABLED, false]
   ecosystem:
     current: ""
     sites:

@@ -247,3 +247,8 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.site-spec-delivery { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.3rem 0.8rem; }
+.site-spec-delivery__link { font-weight: 700; }
+.site-spec-delivery__list { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+.site-spec-delivery a:focus-visible, .site-spec-delivery summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

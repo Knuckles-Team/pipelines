@@ -51,7 +51,13 @@
     "PIPE-PAGES-R017",
     "PIPE-PAGES-R017.1",
     "PIPE-PAGES-R017.2",
-    "PIPE-PAGES-R017.3"
+    "PIPE-PAGES-R017.3",
+    "PIPE-PAGES-R018",
+    "PIPE-PAGES-R018.1",
+    "PIPE-PAGES-R018.2",
+    "PIPE-PAGES-R018.3",
+    "PIPE-PAGES-R018.4",
+    "PIPE-PAGES-R018.5"
   ],
   "requirements": [
     {
@@ -562,6 +568,55 @@
       "verified_by": [
         "tests/test_spec_dashboard_states.py:35"
       ]
+    },
+    {
+      "id": "PIPE-PAGES-R018",
+      "title": "Spec delivery is a native menu entry on every documentation site",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R018.1",
+        "PIPE-PAGES-R018.2",
+        "PIPE-PAGES-R018.3",
+        "PIPE-PAGES-R018.4",
+        "PIPE-PAGES-R018.5"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R018.1",
+      "title": "Add the `spec_delivery` flag to `extra:` in `templates/mkdocs-theme/base.mkdocs.yml` as `!ENV [SPEC_DELIVERY_ENABLED, false]`. Set the variable from `inputs.spec_dashboard_enabled` on the Build Docs step of `.github/workflows/pages_pipeline.yml`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R018.2",
+      "title": "Render a `Spec delivery` link in `templates/mkdocs-theme/overrides/main.html` and its synced copy `.config/mkdocs-overrides/main.html`. The link must use `base_url` and `/spec-delivery/`, and the block must render only when the flag is set",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R018.3",
+      "title": "List the `spec-delivery/` page of each repository in a native `<details>` list inside the same navigation landmark. The list must iterate `extra.ecosystem.sites` and must hold no second repository list",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R018.4",
+      "title": "Keep every `extra.ecosystem.sites` URL in `templates/mkdocs-theme/base.mkdocs.yml` equal to its `REPOS` entry in `scripts/skill_graph/model.py`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R018.5",
+      "title": "Style the entry in `templates/mkdocs-theme/extra.css` with a visible focus outline. The theme sync check must pass for the changed override and stylesheet",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }

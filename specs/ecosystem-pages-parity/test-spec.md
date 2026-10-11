@@ -56,3 +56,8 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R017.1 | PIPE-PAGES-R017.1 | Run `test_legend_has_three_states` in `tests/test_spec_dashboard_states.py` expects exactly three legend rows. |
 | T-PIPE-PAGES-R017.2 | PIPE-PAGES-R017.2 | Run `test_row_has_one_state_cell` in `tests/test_spec_dashboard_states.py` expects one state cell and no acceptance text. |
 | T-PIPE-PAGES-R017.3 | PIPE-PAGES-R017.3 | Run `test_unknown_state_renders_invalid` in `tests/test_spec_dashboard_states.py` expects `INVALID` and a count of one. |
+| T-PIPE-PAGES-R018.1 | PIPE-PAGES-R018.1 | Run `test_flag_is_env_driven` in `tests/test_spec_delivery_nav.py` expects the `!ENV` flag and the workflow variable. |
+| T-PIPE-PAGES-R018.2 | PIPE-PAGES-R018.2 | Run `test_entry_is_root_relative_and_flag_gated` in `tests/test_spec_delivery_nav.py` expects `base_url`, no host, and the flag guard. |
+| T-PIPE-PAGES-R018.3 | PIPE-PAGES-R018.3 | Run `test_menu_iterates_the_single_site_list` in `tests/test_spec_delivery_nav.py` expects the loop over `extra.ecosystem.sites` and no literal repository URL in the template. |
+| T-PIPE-PAGES-R018.4 | PIPE-PAGES-R018.4 | Run `test_site_urls_match_repos` in `tests/test_spec_delivery_nav.py` expects each site URL to equal the REPOS URL for its slug. |
+| T-PIPE-PAGES-R018.5 | PIPE-PAGES-R018.5 | Run `test_theme_sync_check_passes_with_entry` in `tests/test_spec_delivery_nav.py` expects an empty drift list. |

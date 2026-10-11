@@ -21,6 +21,19 @@
       </ul>
     </nav>
   </details>
+  {% if config.extra.spec_delivery %}
+  <nav class="site-spec-delivery" aria-label="Spec delivery">
+    <a class="site-spec-delivery__link" href="{{ base_url }}/spec-delivery/">Spec delivery</a>
+    <details class="site-spec-delivery__menu">
+      <summary aria-label="Spec delivery of each core repository">All repositories</summary>
+      <ul class="site-spec-delivery__list">
+        {% for site in config.extra.ecosystem.sites %}
+          <li><a href="{{ site.url }}spec-delivery/">{{ site.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </details>
+  </nav>
+  {% endif %}
 {% endblock %}
 
 {% block footer %}

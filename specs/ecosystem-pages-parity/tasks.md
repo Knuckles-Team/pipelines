@@ -59,3 +59,9 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R017.1: The state legend lists exactly three states, `SPECIFIED`, `LANDED` and `VERIFIED`, each with a one-line definition, in `definitions_panel` in `scripts/spec_dashboard_panels.py`.
 - [ ] PIPE-PAGES-R017.2: Every record row shows one state cell. The page has no acceptance column, no release column and no second state label.
 - [ ] PIPE-PAGES-R017.3: A `delivery_state` outside the three states, after `RETIRED` is filtered, renders as `INVALID` and counts in one visible invalid-state number.
+- [ ] PIPE-PAGES-R018: **Spec delivery is a native menu entry on every documentation site.** Rollup of the children below
+- [ ] PIPE-PAGES-R018.1: Add the `spec_delivery` flag to `extra:` in `templates/mkdocs-theme/base.mkdocs.yml` as `!ENV [SPEC_DELIVERY_ENABLED, false]`. Set the variable from `inputs.spec_dashboard_enabled` on the Build Docs step of `.github/workflows/pages_pipeline.yml`.
+- [ ] PIPE-PAGES-R018.2: Render a `Spec delivery` link in `templates/mkdocs-theme/overrides/main.html` and its synced copy `.config/mkdocs-overrides/main.html`. The link must use `base_url` and `/spec-delivery/`, and the block must render only when the flag is set.
+- [ ] PIPE-PAGES-R018.3: List the `spec-delivery/` page of each repository in a native `<details>` list inside the same navigation landmark. The list must iterate `extra.ecosystem.sites` and must hold no second repository list.
+- [ ] PIPE-PAGES-R018.4: Keep every `extra.ecosystem.sites` URL in `templates/mkdocs-theme/base.mkdocs.yml` equal to its `REPOS` entry in `scripts/skill_graph/model.py`.
+- [ ] PIPE-PAGES-R018.5: Style the entry in `templates/mkdocs-theme/extra.css` with a visible focus outline. The theme sync check must pass for the changed override and stylesheet.
