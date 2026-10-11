@@ -594,7 +594,8 @@
       "title": "Add the `spec_delivery` flag to `extra:` in `templates/mkdocs-theme/base.mkdocs.yml` as `!ENV [SPEC_DELIVERY_ENABLED, false]`. Set the variable from `inputs.spec_dashboard_enabled` on the Build Docs step of `.github/workflows/pages_pipeline.yml`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2f6747267768"
+        "2f6747267768",
+        "64ce2e92a6da"
       ],
       "verified_by": [
         "tests/test_spec_delivery_nav.py:21"
@@ -602,7 +603,7 @@
     },
     {
       "id": "PIPE-PAGES-R018.2",
-      "title": "Render a `Spec delivery` link in `templates/mkdocs-theme/overrides/main.html` and its synced copy `.config/mkdocs-overrides/main.html`. The link must use `base_url` and `/spec-delivery/`, and the block must render only when the flag is set",
+      "title": "Render a `Spec delivery` link in `templates/mkdocs-theme/overrides/main.html`. The link must use `base_url` and `/spec-delivery/`, and the block must render only when the flag is set",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "2f6747267768",
@@ -636,7 +637,7 @@
     },
     {
       "id": "PIPE-PAGES-R018.5",
-      "title": "Style the entry in `templates/mkdocs-theme/extra.css` with a visible focus outline. The theme sync check must pass for the changed override and stylesheet",
+      "title": "Style the entry in a `<style>` element inside the block in `templates/mkdocs-theme/overrides/main.html` with a visible focus outline. The override is served from the theme checkout through `custom_dir`, so the theme sync check needs no consumer change",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "2f6747267768"

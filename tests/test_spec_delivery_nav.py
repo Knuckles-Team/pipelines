@@ -55,4 +55,5 @@ def test_site_urls_match_repos() -> None:
 def test_theme_sync_check_passes_with_entry(tmp_path: Path) -> None:
     for mode in ("sync", "check"):
         assert sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode=mode) == []
-    assert "site-spec-delivery" in (THEME / "extra.css").read_text(encoding="utf-8")
+    assert "focus-visible" in MAIN and "<style>" in MAIN
+    assert "site-spec-delivery" not in (THEME / "extra.css").read_text(encoding="utf-8")

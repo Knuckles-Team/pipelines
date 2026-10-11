@@ -7,7 +7,7 @@ This folder is the canonical source for the five ecosystem documentation sites. 
 | Source | Consumer path |
 | --- | --- |
 | `extra.css` | `<content-source>/stylesheets/extra.css` |
-| `overrides/main.html` | `.config/mkdocs-overrides/main.html` (the theme's `custom_dir`, kept out of the repository root) |
+| `overrides/main.html` | not synced: `custom_dir` serves it from the theme checkout (`.pipeline-theme/templates/mkdocs-theme/overrides`) |
 | `assets/*` | `<content-source>/assets/*` |
 | `glossary.md` | `<content-source>/glossary.md` |
 | `base.mkdocs.yml` | inherited directly from the pinned pipelines checkout |

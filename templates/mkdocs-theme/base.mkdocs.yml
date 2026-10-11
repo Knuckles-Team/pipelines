@@ -11,7 +11,7 @@
 
 theme:
   name: material
-  custom_dir: .config/mkdocs-overrides
+  custom_dir: .pipeline-theme/templates/mkdocs-theme/overrides
   logo: assets/graph-mark.svg
   favicon: assets/favicon.svg
   icon:

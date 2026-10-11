@@ -251,9 +251,8 @@ def test_all_seven_product_logo_assets_remain_canonical() -> None:
         assert (logos / name).read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
 
 
-def test_theme_custom_dir_is_where_sync_writes_the_overrides() -> None:
+def test_theme_override_is_served_from_the_theme_checkout() -> None:
     base = (ROOT / "templates/mkdocs-theme/base.mkdocs.yml").read_text(encoding="utf-8")
     custom_dirs = [line.split(":", 1)[1].strip() for line in base.splitlines() if line.strip().startswith("custom_dir:")]
-    overrides = [item.destination for item in THEME_FILES if item.source.startswith("overrides/")]
-    assert custom_dirs == [".config/mkdocs-overrides"]
-    assert overrides and all(Path(path).parent.as_posix() == custom_dirs[0] for path in overrides)
+    assert custom_dirs == [".pipeline-theme/templates/mkdocs-theme/overrides"]
+    assert not [item for item in THEME_FILES if item.source.startswith("overrides/")]
