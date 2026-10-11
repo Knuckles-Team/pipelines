@@ -94,12 +94,17 @@ def test_older_row_id_form_is_permanent(root, capsys):
     assert _run(root, capsys) == (0, "spec-standard: clean (1 spec(s) checked)\n")
 
 
-@pytest.mark.parametrize("title, expected", [
-    ("**RETIRED: replaced by FOO-R001.**", 1),
-    ("Active row; RETIRED is discussed only.", 1),
-    ("**Active row.** RETIRED: replaced by FOO-R001.", 1),
-])
-def test_moved_retired_identity_uses_shared_status_parser(root, capsys, title, expected):
+@pytest.mark.parametrize(
+    "title, expected",
+    [
+        ("**RETIRED: replaced by FOO-R001.**", 0),
+        ("Active row; RETIRED is discussed only.", 1),
+        ("**Active row.** RETIRED: replaced by FOO-R001.", 1),
+    ],
+)
+def test_moved_retired_identity_uses_shared_status_parser(
+    root, capsys, title, expected
+):
     # spec: PIPE-CONNSPEC-R006
     req = _spec(root) / "requirements.md"
     req.write_text(req.read_text() + f"| `OLD-R001` | {title} | preserved |\n")
@@ -109,14 +114,24 @@ def test_moved_retired_identity_uses_shared_status_parser(root, capsys, title, e
 def test_retired_duplicate_does_not_hide_active_wrong_prefix(root, capsys):
     # spec: PIPE-CONNSPEC-R006
     req = _spec(root) / "requirements.md"
-    req.write_text(req.read_text() +
-        "| `OLD-R001` | **RETIRED: replaced by FOO-R001.** | |\n"
-        "| `OLD-R001` | **Active duplicate.** | |\n")
-    assert _run(root, capsys)[0] == 1
+    req.write_text(
+        req.read_text() + "| `OLD-R001` | **RETIRED: replaced by FOO-R001.** | |\n"
+        "| `OLD-R001` | **Active duplicate.** | |\n"
+    )
+    assert main(["--root", str(root), "--tombstones"]) == 1
 
 
 def test_tombstone_row_is_a_finding(root, capsys):
     req = _spec(root) / "requirements.md"
     req.write_text(req.read_text() + "| `FOO-R002` | RETIRED: replaced by BAR-R001 |\n")
     out = _run(root, capsys)[1]
-    assert "requirements.md row FOO-R002 is a tombstone for a moved row; delete it" in out
+    assert (
+        "requirements.md row FOO-R002 is a tombstone for a moved row; delete it" in out
+    )
+
+
+def test_tombstone_row_is_advisory_by_default(root, capsys):
+    req = _spec(root) / "requirements.md"
+    req.write_text(req.read_text() + "| `FOO-R002` | RETIRED: replaced by BAR-R001 |\n")
+    code, out = _run(root, capsys)
+    assert code == 0 and "ADV spec-standard:" in out
