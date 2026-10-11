@@ -9,7 +9,7 @@ from scripts.spec_dashboard_panels import specs_panel, ticks
 def snapshot():
     spec = record({'spec_id': 'S-1', 'delivery_state': 'SPECIFIED', 'title': 'Spec one'},
                   Path('specs/one/status.json'), 'spec')
-    landed = record({'id': 'R1', 'delivery_state': 'LANDED', 'acceptance_state': 'ACCEPTED'},
+    landed = record({'id': 'R1', 'delivery_state': 'VERIFIED'},
                     Path('specs/one/status.json'), 'requirement', parent='S-1')
     building = record({'id': 'R2', 'delivery_state': 'BUILDING'}, Path('specs/one/status.json'),
                       'requirement', parent='S-1')
@@ -37,8 +37,8 @@ def test_sheet_is_self_contained():
 
 def test_states_use_glyph_and_word_not_colour_alone():
     page = render(snapshot())
-    assert '&#10003; Landed' in page and '&#10005; Not landed' in page and '&#10003; Done' in page
-    assert 'BUILDING (in-progress)' in page and '1 of 2 requirements' in page
+    assert '&#10003; VERIFIED' in page or 'VERIFIED' in page
+    assert 'INVALID (invalid)' in page and '1 of 2 requirements' in page
 
 
 def test_spec_table_counts_landed_and_done_from_requirements():

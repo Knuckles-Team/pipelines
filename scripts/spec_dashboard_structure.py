@@ -21,7 +21,7 @@ def tally(records, kind, *, open_only=False):
 
 def not_done_leaves(records):
     rows = [('Requirements', 'all slices in all specs', tally(records, 'requirement')),
-            ('Requirements not done', 'unknown and unaccepted included', tally(records, 'requirement', open_only=True)),
+            ('Requirements not done', 'not VERIFIED', tally(records, 'requirement', open_only=True)),
             ('Specs not done', 'whole specs only', tally(records, 'spec', open_only=True))]
     return ''.join(f'<li><span>{label}<small>{note}</small></span><span class="mono">{value}</span></li>'
                    for label, note, value in rows)

@@ -7,6 +7,7 @@ and the ``specs/README.md`` index entry. No baseline and no suppression.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from pathlib import Path
 
@@ -38,6 +39,17 @@ def _read(path: Path) -> str:
         return path.read_text(encoding="utf-8")
     except (OSError, UnicodeError):
         return ""
+
+
+def check_status_id(spec_dir: Path, spec_id: str) -> list[str]:
+    """``status.json`` ``spec_id`` must equal the ID in the ``spec.md`` title."""
+    try:
+        found = json.loads(_read(spec_dir / "status.json")).get("spec_id")
+    except (ValueError, AttributeError):
+        return []
+    if found == spec_id:
+        return []
+    return [f"status.json spec_id {found} differs from the spec ID {spec_id}"]
 
 
 def check_files(spec_dir: Path) -> list[str]:
@@ -109,6 +121,7 @@ def check_spec(spec_dir: Path, index: str) -> list[str]:
     found = [*check_files(spec_dir), *title]
     if spec_id:
         found += check_id(spec_dir, spec_id)
+        found += check_status_id(spec_dir, spec_id)
     found += check_tombstones(spec_dir)
     found += check_names(spec_dir.name, spec_id)
     if f"]({spec_dir.name}/spec.md)" not in index:

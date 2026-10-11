@@ -2,26 +2,19 @@
 import json
 import re
 
-STATES = {'UNKNOWN': 'unknown', 'SPECIFIED': 'documented', 'PLANNED': 'planned',
-          'BUILDING': 'in-progress', 'BUILT': 'built', 'LANDED': 'source-landed',
-          'CLOSED': 'closed', 'DEFERRED': 'deferred', 'REJECTED': 'rejected',
-          'VERIFIED': 'verified', 'RETIRED': 'retired'}
-# Generated status lifecycle (schema v2): VERIFIED is landed with a bound test and
-# RETIRED is out of scope; both are finished without a separate acceptance field.
-DONE_STATES = frozenset({'VERIFIED', 'RETIRED'})
+STATES = {'SPECIFIED': 'specified', 'LANDED': 'landed', 'VERIFIED': 'verified', 'RETIRED': 'retired'}
+# RETIRED is an internal generator value for a delivered row whose code was removed.
+# It is filtered out before display; any other unknown value renders as INVALID.
 
 
 def record(raw, path, kind, *, parent=None):
     """Allowlist public fields; status never propagates between specs and slices."""
-    delivery = str(raw.get('delivery_state', 'UNKNOWN')).upper()
-    acceptance = str(raw.get('acceptance_state', 'NOT_AUDITED')).upper()
-    done = delivery in DONE_STATES or (delivery in {'LANDED', 'CLOSED'} and acceptance == 'ACCEPTED')
+    delivery = str(raw.get('delivery_state', 'MISSING')).upper()
     return {'id': str(raw.get('spec_id', raw.get('id', path.parent.name))),
             'kind': kind, 'parent': parent, 'source': path.as_posix(),
             'title': str(raw.get('title', raw.get('spec_id', raw.get('id', path.parent.name)))),
-            'delivery_state': delivery, 'acceptance_state': acceptance,
-            'state': STATES[delivery] if delivery in DONE_STATES else ('done' if done else STATES.get(delivery, 'unknown')),
-            'done': done, 'release_state': 'unknown'}
+            'delivery_state': delivery if delivery in STATES else 'INVALID',
+            'state': STATES.get(delivery, 'invalid'), 'done': delivery == 'VERIFIED'}
 
 
 def read_records(root, config):

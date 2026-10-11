@@ -17,18 +17,17 @@ def test_canonical_nested_status_and_template(tmp_path):
             'evidence': [{'description': 'PRIVATE'}]}]}))
     records = read_records(tmp_path, {'sources': [{'glob': 'specs/*/status.json'}]})
     assert len(records) == 3
-    assert records[0]['state'] == 'documented'
-    assert records[1]['state'] == 'source-landed'
-    assert records[2]['state'] == 'unknown'
+    assert records[0]['state'] == 'specified'
+    assert records[1]['state'] == 'landed'
+    assert records[2]['state'] == 'invalid'
     assert not any(item['done'] for item in records)
     assert 'PRIVATE' not in json.dumps(records)
 
 
-def test_completion_requires_explicit_acceptance():
-    assert record({'delivery_state': 'CLOSED'}, Path('x/status.json'), 'spec')['done'] is False
-    assert record({'delivery_state': 'LANDED', 'acceptance_state': 'ACCEPTED'},
-                  Path('x/status.json'), 'spec')['done'] is True
-    assert record({'delivery_state': 'invented'}, Path('x/status.json'), 'spec')['state'] == 'unknown'
+def test_completion_requires_verified():
+    assert record({'delivery_state': 'LANDED'}, Path('x/status.json'), 'spec')['done'] is False
+    assert record({'delivery_state': 'VERIFIED'}, Path('x/status.json'), 'spec')['done'] is True
+    assert record({'delivery_state': 'invented'}, Path('x/status.json'), 'spec')['state'] == 'invalid'
 
 
 def test_generated_lifecycle_states_are_recognised():
@@ -36,8 +35,8 @@ def test_generated_lifecycle_states_are_recognised():
     retired = record({'delivery_state': 'RETIRED'}, Path('x/status.json'), 'requirement')
     landed = record({'delivery_state': 'LANDED'}, Path('x/status.json'), 'requirement')
     assert (verified['state'], verified['done']) == ('verified', True)
-    assert (retired['state'], retired['done']) == ('retired', True)
-    assert (landed['state'], landed['done']) == ('source-landed', False)
+    assert (retired['state'], retired['done']) == ('retired', False)
+    assert (landed['state'], landed['done']) == ('landed', False)
 
 
 def test_escape_and_empty_records():

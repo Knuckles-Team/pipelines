@@ -69,7 +69,18 @@ Design, architecture, coverage, and cross-repository notes are sections of `plan
 - One requirement per row. One row is one five-minute unit of work, or a rollup of such rows.
 - A row names the file it touches and the test that proves it.
 - A cross-repository prerequisite is a row in the owning repository. The dependent row links it by ID.
-- States are `SPECIFIED`, `LANDED`, and `VERIFIED`. The generator sets them from `Spec:` trailers and test bindings. The `RETIRED` state exists only for a delivered row whose code was removed; the page does not show it.
+
+## States
+
+| State | Definition |
+|---|---|
+| `SPECIFIED` | The requirement is written. No code for it is on the default branch. |
+| `LANDED` | A commit that carries its ID in a `Spec:` trailer is on the default branch. |
+| `VERIFIED` | It is `LANDED` and a test bound to its ID exists. |
+
+A spec's state is the lowest state of its rows.
+
+No other state, acceptance value or status label exists. Do not write a status line in `spec.md`, `plan.md`, `tasks.md` or `test-spec.md`; the generator owns the state.
 
 ## Wording
 
