@@ -36,7 +36,7 @@ def read_records(root, config):
                 continue
             seen.add(relative)
             records.extend(read_source(path, relative, source.get('kind', 'spec'), root=root))
-    return records
+    return [item for item in records if item['delivery_state'] != 'RETIRED']
 
 
 def read_source(path, relative, kind, *, root):

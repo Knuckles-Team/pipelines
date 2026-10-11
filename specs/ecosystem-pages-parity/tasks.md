@@ -49,3 +49,9 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 
 - [ ] Recheck historical R001/R003/R009 acceptance notes against current exact source and served-site evidence.
 - [ ] Validate R013.3 cycle layout with the planned order-independence test.
+- [ ] PIPE-PAGES-R016: **Spec-delivery page shows only the current spec state.** Rollup of the children below
+- [ ] PIPE-PAGES-R016.1: Remove the `history` field and the `--history-limit` option from `create_snapshot` and `argument_parser` in `scripts/spec_dashboard.py`. The snapshot holds only records read from the current tree, so no ID absent from that tree enters it.
+- [ ] PIPE-PAGES-R016.2: Remove `history_panels` and the history and per-commit panels from `scripts/spec_dashboard_render.py`, then delete `scripts/spec_dashboard_charts.py`, `scripts/spec_dashboard_history.py`, `scripts/spec_dashboard_history_metrics.py`, and `scripts/spec_dashboard_history_views.py` with their tests. No state-transition table, chart, metric or panel is rendered.
+- [ ] PIPE-PAGES-R016.3: Render only records present in the current `specs/` tree. A requirement ID that was removed in an earlier commit appears nowhere in the HTML.
+- [ ] PIPE-PAGES-R016.4: Remove the history scripts from the sparse checkout and the history option from the dashboard call in `.github/workflows/pages_pipeline.yml`. The Pages workflow does not invoke the history modules.
+- [ ] PIPE-PAGES-R016.5: Do not render records whose state is `RETIRED`. `read_records` in `scripts/spec_dashboard_sources.py` drops them.

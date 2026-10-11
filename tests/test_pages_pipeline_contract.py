@@ -125,10 +125,6 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/spec_dashboard.py",
         "scripts/spec_dashboard_render.py",
         "scripts/spec_dashboard_sources.py",
-        "scripts/spec_dashboard_history.py",
-        "scripts/spec_dashboard_history_metrics.py",
-        "scripts/spec_dashboard_charts.py",
-        "scripts/spec_dashboard_history_views.py",
         "scripts/spec_dashboard_panels.py",
         "scripts/spec_dashboard_records.py",
         "scripts/spec_dashboard_structure.py",
@@ -166,8 +162,8 @@ def test_spec_dashboard_is_opt_in_and_after_readiness():
     assert "--repository \"$GITHUB_REPOSITORY\"" in text
 
 
-def test_dashboard_history_checkout_is_bounded_and_opt_in():
+def test_dashboard_checkout_is_shallow():
     steps = _workflow()["document"]["jobs"]["deploy"]["steps"]
     checkout = next(step for step in steps if step["name"] == "Checkout Repository")
-    assert checkout["with"]["fetch-depth"] == "${{ inputs.spec_dashboard_enabled && 100 || 1 }}"
+    assert checkout["with"]["fetch-depth"] == 1
     assert checkout["with"]["persist-credentials"] is False

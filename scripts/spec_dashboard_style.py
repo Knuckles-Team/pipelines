@@ -68,12 +68,11 @@ CHARTS = ('.charts{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}figur
           'svg text{font:9.5px var(--mono);fill:var(--muted)}.grid{stroke:var(--soft)}.axis{stroke:var(--rule)}'
           '.scope{stroke:var(--muted);stroke-dasharray:4 3;fill:none;stroke-width:1.2}'
           '.remain{stroke:var(--blue);fill:none;stroke-width:1.6}.vbar{fill:var(--fill);stroke:var(--blue);stroke-width:1}'
-          '.timeline{position:relative;display:flex;justify-content:space-between;gap:6px;padding-top:10px}'
-          '.timeline:before{content:"";position:absolute;left:6%;right:6%;top:44px;border-top:1px solid var(--ink)}'
-          '.mile{flex:1;text-align:center;position:relative;font-size:11.5px;color:var(--muted)}'
-          '.mile b{display:block;font:600 13px var(--mono);color:var(--ink);margin-bottom:10px}'
-          '.mile i{display:block;width:11px;height:11px;border:1.5px solid var(--ink);border-radius:50%;'
-          'background:var(--paper);margin:0 auto 8px}')
+          ''
+          ''
+          ''
+          ''
+          '')
 
 BLOCK = ('.block{grid-column:span 3;border:1px solid var(--ink);display:grid;grid-template-columns:1fr 1fr}'
          '.block div{padding:6px 10px;border-top:1px solid var(--ink);min-width:0;overflow-wrap:anywhere}'
@@ -84,8 +83,8 @@ PHONE = ('@media (max-width:1100px){.sheet{grid-template-columns:repeat(6,minmax
          '.panel,.w3,.w5,.w6,.w7,.w9,.block{grid-column:span 6}}'
          '@media (max-width:620px){body{padding:16px 8px}.frame{padding:14px}.zones.h{left:14px;right:14px;height:14px}'
          '.zones.v{top:14px;bottom:14px;width:14px}.zones{font-size:8px}.sheet{padding:10px;gap:14px}'
-         '.body{padding:12px}.charts,.branches{grid-template-columns:1fr}.timeline{flex-wrap:wrap}'
-         '.timeline:before,.branches:before{display:none}.mile{flex:1 1 40%}.cap{display:none}}')
+         '.body{padding:12px}.charts,.branches{grid-template-columns:1fr}'
+         '.cap{display:none}}')
 
 STYLE = '<style>' + THEME + FRAME + PANEL + TABLES + TREE + LIMITS + CHARTS + BLOCK + PHONE + '</style>'
 

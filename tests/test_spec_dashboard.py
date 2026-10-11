@@ -3,6 +3,8 @@ import io
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.spec_dashboard import github_snapshot, read_records, record, render
 
 
@@ -38,12 +40,11 @@ def test_generated_lifecycle_states_are_recognised():
     assert (landed['state'], landed['done']) == ('source-landed', False)
 
 
-def test_escape_and_empty_history():
+def test_escape_and_empty_records():
     snapshot = {'repository': 'a/b', 'revision': 'abc', 'captured_at': 'now',
                 'records': [], 'github': {'issues': {'available': False, 'error': '<fail>'}}}
     page = render(snapshot)
     assert 'No documented records' in page
-    assert 'History is not available' in page
     assert '&lt;fail&gt;' in page and '<fail>' not in page
     snapshot['records'] = [record({'id': '<script>'}, Path('x/status.json'), 'spec')]
     assert '<script>' not in render(snapshot)
@@ -98,3 +99,59 @@ def test_external_document_symlink_cannot_publish_heading(tmp_path):
     records = read_records(root, config)
     assert records[0]['title'] == 'Public spec heading'
     assert records[0]['document'] == 'specs/live/spec.md'
+
+
+def _page_for(tmp_path, ids):
+    root = tmp_path
+    for spec_id in ids:
+        path = root / 'specs' / spec_id.lower()
+        path.mkdir(parents=True, exist_ok=True)
+        (path / 'status.json').write_text(json.dumps({'spec_id': spec_id, 'delivery_state': 'SPECIFIED'}))
+    return {'repository': 'a/b', 'revision': 'abc', 'captured_at': 'now',
+            'records': read_records(root, {'sources': [{'glob': 'specs/*/status.json'}]}), 'github': {}}
+
+
+@pytest.mark.spec("PIPE-PAGES-R016.1")
+def test_snapshot_has_no_history_field(tmp_path):
+    from scripts import spec_dashboard
+    assert not hasattr(spec_dashboard, 'history_snapshot')
+    assert not any('history' in action.dest for action in spec_dashboard.argument_parser()._actions)
+
+
+@pytest.mark.spec("PIPE-PAGES-R016.2")
+def test_page_has_no_history_panels(tmp_path):
+    page = render(_page_for(tmp_path, ['KEEP-1'])).lower()
+    for marker in ('observed delivery history', 'timeline', 'observed changes', 'burndown', 'velocity'):
+        assert marker not in page
+
+
+@pytest.mark.spec("PIPE-PAGES-R016.3")
+def test_removed_id_absent_from_page(tmp_path):
+    import subprocess
+    run = lambda *a: subprocess.run(['git', '-C', str(tmp_path), '-c', 'user.name=T', '-c', 'user.email=t@e.invalid', *a], check=True, capture_output=True)
+    run('init', '-q')
+    _page_for(tmp_path, ['GONE-1', 'KEEP-1'])
+    run('add', '--', 'specs')
+    run('commit', '-q', '-m', 'both')
+    run('rm', '-q', '-r', '--', 'specs/gone-1')
+    run('commit', '-q', '-m', 'drop')
+    page = render(_page_for(tmp_path, ['KEEP-1']))
+    assert 'KEEP-1' in page and 'GONE-1' not in page
+
+
+@pytest.mark.spec("PIPE-PAGES-R016.5")
+def test_retired_record_is_not_rendered(tmp_path):
+    for spec_id, state in (('GONE-1', 'RETIRED'), ('KEEP-1', 'VERIFIED')):
+        path = tmp_path / 'specs' / spec_id.lower()
+        path.mkdir(parents=True)
+        (path / 'status.json').write_text(json.dumps({'spec_id': spec_id, 'delivery_state': state}))
+    records = read_records(tmp_path, {'sources': [{'glob': 'specs/*/status.json'}]})
+    page = render({'repository': 'a/b', 'revision': 'abc', 'captured_at': 'now', 'records': records, 'github': {}})
+    assert [item['id'] for item in records] == ['KEEP-1']
+    assert 'KEEP-1' in page and 'GONE-1' not in page
+
+
+@pytest.mark.spec("PIPE-PAGES-R016.4")
+def test_workflow_does_not_reference_history_scripts():
+    text = (Path(__file__).parents[1] / '.github/workflows/pages_pipeline.yml').read_text()
+    assert 'spec_dashboard_history' not in text and 'spec_dashboard_charts' not in text

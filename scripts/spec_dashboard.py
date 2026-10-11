@@ -6,21 +6,26 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 from urllib.request import Request, urlopen
 
 if __package__:
     from .spec_dashboard_render import render
     from .spec_dashboard_sources import read_records, record
-    from .spec_dashboard_history import history_snapshot, git
     from .spec_dashboard_concepts import check_concept_links
     from .spec_dashboard_wiring import snapshot_concepts, snapshot_edges
 else:
     from spec_dashboard_render import render
     from spec_dashboard_sources import read_records, record
-    from spec_dashboard_history import history_snapshot, git
     from spec_dashboard_concepts import check_concept_links
     from spec_dashboard_wiring import snapshot_concepts, snapshot_edges
+
+
+def git(root, *args):
+    env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    return subprocess.run(['git', '-C', str(root), *args], capture_output=True,
+                          check=True, timeout=30, env=env).stdout
 
 
 def github_snapshot(repository, token, opener=urlopen):
@@ -65,7 +70,6 @@ def argument_parser():
     parser.add_argument('--config', type=Path, default=Path('.config/spec-dashboard.json'))
     parser.add_argument('--output', type=Path, default=Path('site/spec-delivery'))
     parser.add_argument('--repository', required=True)
-    parser.add_argument('--history-limit', type=int, choices=range(2, 201), default=100)
     return parser
 
 
@@ -89,7 +93,6 @@ def create_snapshot(args, root, config):
     snapshot = {'version': 1, 'repository': args.repository, 'revision': revision,
                 'captured_at': datetime.now(timezone.utc).isoformat(),
                 'records': read_records(root, config),
-                'history': history_snapshot(root, config, limit=args.history_limit),
                 'github': github_snapshot(args.repository, os.environ.get('GITHUB_TOKEN'))}
     snapshot['spec_edges'] = snapshot_edges(root)
     concepts = snapshot_concepts(root, snapshot['records'])
