@@ -521,7 +521,7 @@
     {
       "id": "PIPE-PAGES-R017",
       "title": "Three states only",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [],
       "verified_by": [],
       "rollup_of": [
@@ -533,23 +533,35 @@
     {
       "id": "PIPE-PAGES-R017.1",
       "title": "The state legend lists exactly three states, `SPECIFIED`, `LANDED` and `VERIFIED`, each with a one-line definition, in `definitions_panel` in `scripts/spec_dashboard_panels.py`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "71203d08a166"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_states.py:20"
+      ]
     },
     {
       "id": "PIPE-PAGES-R017.2",
       "title": "Every record row shows one state cell. The page has no acceptance column, no release column and no second state label",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "71203d08a166"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_states.py:27"
+      ]
     },
     {
       "id": "PIPE-PAGES-R017.3",
       "title": "A `delivery_state` outside the three states, after `RETIRED` is filtered, renders as `INVALID` and counts in one visible invalid-state number",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "71203d08a166"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_states.py:35"
+      ]
     }
   ]
 }
