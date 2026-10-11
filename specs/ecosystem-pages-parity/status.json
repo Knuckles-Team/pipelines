@@ -157,30 +157,46 @@
     {
       "id": "PIPE-PAGES-R012.1",
       "title": "Add `concepts_for_row(row, roots)` to `scripts/spec_dashboard_sources.py`. It scans the code roots the row names (`spec_graph_core.CODE_ROOT`) for `CONCEPT:<ID>` markers and returns the sorted identifiers",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:13"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.2",
       "title": "Add `explicit_concepts(text)` to `scripts/spec_dashboard_sources.py`. It reads a `Concepts: <ID>, <ID>` line from `spec.md` or a row and returns the identifiers. The explicit line wins over derived markers",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:20"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.3",
       "title": "Add one anchor per concept in `scripts/skill_graph/render_pages.py` (`render_concepts_md`): each bullet gets the slug id `concept-<slug>`. This is the stable link target `https://knuckles-team.github.io/<repo>/concepts/#concept-<slug>`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:28"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.4",
       "title": "Add `concept_links(ids, base)` to `scripts/spec_dashboard_panels.py`. It renders one `<a>` per identifier and the marker `no concept mapped` for an empty list. The marker carries the class `no-concept`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "303d05f2ffc1"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_concepts.py:39"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.5",
