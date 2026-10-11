@@ -97,7 +97,7 @@ def test_older_row_id_form_is_permanent(root, capsys):
 @pytest.mark.parametrize(
     "title, expected",
     [
-        ("**RETIRED: replaced by FOO-R001.**", 1),
+        ("**RETIRED: replaced by FOO-R001.**", 0),
         ("Active row; RETIRED is discussed only.", 1),
         ("**Active row.** RETIRED: replaced by FOO-R001.", 1),
     ],
