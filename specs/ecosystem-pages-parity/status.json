@@ -63,7 +63,28 @@
     "PIPE-PAGES-R019.2",
     "PIPE-PAGES-R019.3",
     "PIPE-PAGES-R019.4",
-    "PIPE-PAGES-R019.5"
+    "PIPE-PAGES-R019.5",
+    "PIPE-PAGES-R020",
+    "PIPE-PAGES-R020.1",
+    "PIPE-PAGES-R020.2",
+    "PIPE-PAGES-R020.3",
+    "PIPE-PAGES-R020.4",
+    "PIPE-PAGES-R020.5",
+    "PIPE-PAGES-R020.6",
+    "PIPE-PAGES-R021",
+    "PIPE-PAGES-R021.1",
+    "PIPE-PAGES-R021.2",
+    "PIPE-PAGES-R021.3",
+    "PIPE-PAGES-R021.4",
+    "PIPE-PAGES-R021.5",
+    "PIPE-PAGES-R021.6",
+    "PIPE-PAGES-R022",
+    "PIPE-PAGES-R022.1",
+    "PIPE-PAGES-R022.2",
+    "PIPE-PAGES-R022.3",
+    "PIPE-PAGES-R022.4",
+    "PIPE-PAGES-R022.5",
+    "PIPE-PAGES-R022.6"
   ],
   "requirements": [
     {
@@ -715,6 +736,177 @@
       "verified_by": [
         "tests/test_spec_dashboard_nav.py:48"
       ]
+    },
+    {
+      "id": "PIPE-PAGES-R020",
+      "title": "Documentation claims must match the repository",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R020.1",
+        "PIPE-PAGES-R020.2",
+        "PIPE-PAGES-R020.3",
+        "PIPE-PAGES-R020.4",
+        "PIPE-PAGES-R020.5",
+        "PIPE-PAGES-R020.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R020.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R020.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R020.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R020.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R020.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R020.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021",
+      "title": "Test quality gate for repository validation",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R021.1",
+        "PIPE-PAGES-R021.2",
+        "PIPE-PAGES-R021.3",
+        "PIPE-PAGES-R021.4",
+        "PIPE-PAGES-R021.5",
+        "PIPE-PAGES-R021.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R021.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R022",
+      "title": "Scheduled mutation testing reports test gaps",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R022.1",
+        "PIPE-PAGES-R022.2",
+        "PIPE-PAGES-R022.3",
+        "PIPE-PAGES-R022.4",
+        "PIPE-PAGES-R022.5",
+        "PIPE-PAGES-R022.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R022.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R022.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R022.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R022.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R022.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R022.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }

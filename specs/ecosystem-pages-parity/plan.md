@@ -67,3 +67,39 @@ Data flow: `ecosystem_components()` (`scripts/spec_dashboard_drilldown.py:17`) f
 - Attach point. `render` in `scripts/spec_dashboard_render.py:67` emits the nav and the skip link. DECIDED.
 - Decision. The generator must render its own navigation block with relative links. The theme lane adds the matching menu entry on the documentation side. DECIDED.
 - Rejected: rendering the page through MkDocs. The workflow writes the page after the MkDocs build, and the drawing sheet needs its own layout.
+
+## Documentation claims gate (PIPE-PAGES-R020)
+
+Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `validate` (`pipelines_hooks/docs/public_surface.py:31`) -> `claim_findings` -> findings and exit status.
+
+- Types. `DocClaim` holds file, line, kind and text. The kind set is closed.
+- Attach point. `validate` in `pipelines_hooks/docs/public_surface.py:31`. The `public-surface` hook at `.pre-commit-hooks.yaml:183` calls it in production.
+- Failure. An unresolvable claim yields `claims-unchecked`. The gate never passes silently.
+- Reused. `local_link_findings` and `quick_start_findings` stay as they are. New: `claims.py` and the resolvers.
+- Decision. The gate must resolve claims against the tree and the gate registry. DECIDED.
+- Rejected: a hand-kept list of allowed claims. It repeats the drift the gate prevents.
+- Cross-repository. Each consumer repository runs the same hook. No row restates a consumer's own docs.
+
+## Test quality gate (PIPE-PAGES-R021)
+
+Data flow: `pipelines-hook test-quality` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `scan` in `pipelines_hooks/code/test_quality.py` -> findings, summary line, exit status.
+
+- Types. `TestQualityFinding` holds path, line and rule. The rule set is closed.
+- Attach point. This plan creates the call site: the `GATES` entry at `pipelines_hooks/cli.py:33` and a hook beside `no-stub` at `.pre-commit-hooks.yaml:141`.
+- Failure. A missing coverage report raises `CannotRun`; `run_gate` maps it to exit 2.
+- Reused. `repo_root` and `load_config`, as `no-stub` uses them at `pipelines_hooks/code/no_stub.py:79`. New: the scanner.
+- Decision. The gate reports the rule and location, and suppression needs a stated reason. DECIDED.
+- Rejected: a coverage ratchet that only blocks a decrease. It hides existing debt.
+- Cross-repository. None. Consumers adopt the hook through their pre-commit configuration.
+
+## Scheduled mutation testing (PIPE-PAGES-R022)
+
+Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `survivors` in `pipelines_hooks/code/mutation_gaps.py` -> report lines and exit status.
+
+- Types. `MutationPolicy` and `SurvivingMutation`.
+- Attach point. This plan creates the call site: the `GATES` entry at `pipelines_hooks/cli.py:33` and `.github/workflows/mutation.yml`.
+- Failure. An absent runner raises `Unavailable`; `run_gate` at `pipelines_hooks/cli.py:66` fails closed in CI.
+- Reused. The `GATES` registry and `run_gate` error mapping. New: the runner seam and the report.
+- Decision. The run is scheduled and covers core modules only. DECIDED.
+- Rejected: running mutation tests on every commit. The cost exceeds the five-minute gate budget.
+- Cross-repository. None.
