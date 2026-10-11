@@ -3,8 +3,6 @@ import html
 from pathlib import PurePosixPath
 
 if __package__:
-    from .spec_dashboard_charts import history_caption, history_charts
-    from .spec_dashboard_history_views import history_tables, history_timeline
     from .spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from .spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
     from .spec_dashboard_concepts import unmapped_count
@@ -12,8 +10,6 @@ if __package__:
     from .spec_dashboard_structure import structure_panel
     from .spec_dashboard_style import STYLE, panel, zones
 else:
-    from spec_dashboard_charts import history_caption, history_charts
-    from spec_dashboard_history_views import history_tables, history_timeline
     from spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
     from spec_dashboard_concepts import unmapped_count
@@ -61,22 +57,9 @@ def current_panels(snapshot):
     ]
 
 
-def history_panels(snapshot):
-    history = snapshot.get('history', {})
-    return [
-        panel('E', 'Observed delivery history', caption=html.escape(history_caption(history)),
-              body=history_charts(history), width='w5'),
-        panel('F', 'Timeline', caption='UTC commit dates',
-              body=history_timeline(history, snapshot['captured_at']), width='w6'),
-    ]
-
-
 def audit_panels(snapshot):
-    history = snapshot.get('history', {})
     return [
         panel('G', 'Open issues and pull requests', caption='open at capture', body=github_sections(snapshot), width='w6'),
-        panel('H', 'Observed changes', caption='per commit',
-              body=history_tables(history, snapshot['repository']), width='w5'),
         panel('J', 'Record inventory', caption=f'{len(snapshot["records"])} records', body=inventory_panel(snapshot)),
         title_block(snapshot),
     ]
@@ -87,5 +70,5 @@ def render(snapshot):
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<meta name="color-scheme" content="light dark"><title>{title}</title>{STYLE}</head><body>'
-            f'<div class="frame">{zones()}<main class="sheet">' + ''.join(current_panels(snapshot) + history_panels(snapshot) + audit_panels(snapshot))
+            f'<div class="frame">{zones()}<main class="sheet">' + ''.join(current_panels(snapshot) + audit_panels(snapshot))
             + '</main></div></body></html>')

@@ -20,8 +20,8 @@ def snapshot():
 def test_sheet_has_lettered_panels_zones_and_title_block():
     page = render(snapshot())
     for letter, title in [('A', 'Delivery structure'), ('B', 'Delivery states'), ('C', 'State definitions'),
-                          ('D', 'Specifications'), ('E', 'Observed delivery history'), ('F', 'Timeline'),
-                          ('G', 'Open issues and pull requests'), ('H', 'Observed changes'), ('J', 'Record inventory')]:
+                          ('D', 'Specifications'),
+                          ('G', 'Open issues and pull requests'), ('J', 'Record inventory')]:
         assert f'<span class="tab">{letter}</span><h2 id="panel-{letter}">{title}</h2>' in page
     assert page.count('<span>8</span>') == 2 and page.count('<span>D</span>') == 2
     assert 'Sheet</small>1 of 1' in page and 'specs/*/status.json' in page

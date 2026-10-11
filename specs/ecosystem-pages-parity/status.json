@@ -41,7 +41,12 @@
     "PIPE-PAGES-R015",
     "PIPE-PAGES-R015.1",
     "PIPE-PAGES-R015.2",
-    "PIPE-PAGES-R015.3"
+    "PIPE-PAGES-R015.3",
+    "PIPE-PAGES-R016",
+    "PIPE-PAGES-R016.1",
+    "PIPE-PAGES-R016.2",
+    "PIPE-PAGES-R016.3",
+    "PIPE-PAGES-R016.4"
   ],
   "requirements": [
     {
@@ -438,6 +443,55 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R016",
+      "title": "Spec-delivery page shows only the current spec state",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R016.1",
+        "PIPE-PAGES-R016.2",
+        "PIPE-PAGES-R016.3",
+        "PIPE-PAGES-R016.4"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R016.1",
+      "title": "Remove the `history` field and the `--history-limit` option from `create_snapshot` and `argument_parser` in `scripts/spec_dashboard.py`. The snapshot holds only records read from the current tree, so no ID absent from that tree enters it",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_spec_dashboard.py:114"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R016.2",
+      "title": "Remove `history_panels` and the history and per-commit panels from `scripts/spec_dashboard_render.py`, then delete `scripts/spec_dashboard_charts.py`, `scripts/spec_dashboard_history.py`, `scripts/spec_dashboard_history_metrics.py`, and `scripts/spec_dashboard_history_views.py` with their tests. No state-transition table, chart, metric or panel is rendered",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_spec_dashboard.py:121"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R016.3",
+      "title": "Render only records present in the current `specs/` tree. A requirement ID that was removed in an earlier commit appears nowhere in the HTML",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_spec_dashboard.py:128"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R016.4",
+      "title": "Remove the history scripts from the sparse checkout and the history option from the dashboard call in `.github/workflows/pages_pipeline.yml`. The Pages workflow does not invoke the history modules",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_spec_dashboard.py:142"
+      ]
     }
   ]
 }

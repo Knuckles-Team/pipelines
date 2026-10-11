@@ -56,6 +56,7 @@ The reusable workflow `pages_pipeline.yml` (it already runs `--output site/spec-
 - 2026-10-11. Rows PIPE-PAGES-R012 to PIPE-PAGES-R015 added. Operator requirement: concept references, spec relationship views, ecosystem drill-down, and one generator for all repositories. No existing row changed. Evidence: the code reads above.
 - 2026-10-11. Rows PIPE-PAGES-R012 to PIPE-PAGES-R014 corrected to name where the code and tests now live (`scripts/spec_dashboard_concepts.py`, `spec_dashboard_relations.py`, `spec_dashboard_relations_view.py`, `spec_dashboard_drilldown.py`, and the three `tests/test_spec_dashboard_*.py` files). No row ID changed.
 
+- 2026-10-11. Row PIPE-PAGES-R016 added. Operator requirement: "We don't care about tracking historical states of specs. We only want the most up to date specs ... an as-is state of features, like a functional requirements document that shows only canonical features. Only current state matters. Previous states are stored in git history." Any earlier row asking for history views is superseded by PIPE-PAGES-R016 (none found in `specs/*/requirements.md`).
 
 ### 2026-10-11: preserve prior acceptance notes
 
