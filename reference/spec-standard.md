@@ -13,6 +13,28 @@ Read the existing specs before any code change and before any new spec text.
 
 One capability has one owning spec. A second spec, planner, selector, or store for an owned capability is a defect.
 
+## Ownership boundaries
+
+One repository owns each kind of requirement. Ask these questions in order. The first "yes" names the owner.
+
+| Question about the requirement | Owner | Examples |
+|---|---|---|
+| Is it a fact, a vocabulary term, a query, or a choice among options? | epistemic-graph | Model facts, the decision that selects tools, run-trace vocabulary |
+| Is it a mechanism inside a run, or the application of a decision? | agent-utilities | The run loop, context management, the signed dispatch envelope |
+| Is it a check when work enters the system, or a served operation? | graph-os | Admission, the operation registry, the gateway |
+| Is it a property of a tool, a source, or a connector contract? | agent-connector-sdk | Read-only flags, argument schemas, certification |
+| Is it the behavior of one external system? | That connector repository | One vendor's operations and mappings |
+| Is it something a person sees or does? | agent-webui, agent-terminal-ui, geniusbot | Views, controls, honest states |
+| Is it a gate, a page, or a release rule for every repository? | pipelines | Hooks, the spec-delivery page, this standard |
+
+A requirement that needs two answers becomes two linked rows, one in each owner. Each row cites the other by ID.
+
+A client must read a served operation. A client must not compute a decision and must not call the engine directly.
+
+graph-os must hold no policy table. agent-utilities must hold no fact store. Only the engine decides among options.
+
+A design section in `plan.md` must trace the requirement to the live call path. It names the entry point, each function on the path, and the place the new behavior attaches. A row that no production caller reaches is not delivered.
+
 ## Extension forms
 
 | Form | Use | Where |
