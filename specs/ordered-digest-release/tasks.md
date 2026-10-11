@@ -17,3 +17,5 @@ commit).
       (including compiler flags such as CFLAGS) so a multi-token value is never misinterpreted as a
       shell command, and verify the build produces byte-identical, reproducible wheels. Closes
       PIPE-RELEASE-R003, which no functional requirement or existing task above covers.
+- [ ] Add `kernels.py` with the kernel matrix, call it from `aggregate`, record `kernel_cells` in the receipt, and prove a release bundle with a missing platform wheel fails. Closes PIPE-RELEASE-R004.
+- [ ] Add `dependency_cycles.py`, call it from `dependency_findings`, emit `SC-DEP-LOOP`, and prove `pipelines-hook supply-chain` fails on a group loop. Closes PIPE-RELEASE-R005.

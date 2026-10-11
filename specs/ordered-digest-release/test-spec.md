@@ -17,3 +17,7 @@ Use public synthetic candidate manifests and CI/registry responses. Unit and wor
 | P-5 | FR-5 | Dry-run, parser, ordering, and negative tests run without infrastructure secrets. |
 
 Contract tests inspect immutable workflow/action pins, source binding, least-privilege permissions, exact CI polling, and digest handoff. Real acceptance also records registry digest, hosted run IDs, reviewed consumer manifest commit, and deployment-owner runtime evidence. Run YAML, pytest, CCCC, jscpd, Dupehound, and KISS on implementation. Mocked tests never imply a green release.
+
+## Kernel wheel completeness and dependency loops
+
+`tests/test_wheel_kernel_completeness.py::test_release_bundle_blocks_missing_kernel_wheel` must fail the bundle when a platform wheel is absent. `tests/hooks/test_dependency_cycles.py::test_supply_chain_hook_blocks_dependency_loop` must exit 1 on a group loop.
