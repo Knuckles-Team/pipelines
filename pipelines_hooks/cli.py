@@ -40,6 +40,7 @@ GATES: dict[str, str] = {
     "stdout-writes": "pipelines_hooks.code.stdout_writes",
     "public-surface": "pipelines_hooks.docs.public_surface",
     "spec-decomposition": "pipelines_hooks.specs.decomposition",
+    "spec-standard": "pipelines_hooks.specs.standard",
     "ste-staged": "pipelines_hooks.ste.staged",
     "ste-census": "pipelines_hooks.ste.census",
     "ste-staleness-staged": "pipelines_hooks.ste.staleness_staged",

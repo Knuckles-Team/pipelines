@@ -193,6 +193,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: spec-standard
+  name: Spec standard - names, file set, title, index
+  entry: pipelines-hook spec-standard
+  language: python
+  pass_filenames: false
+  always_run: true
 # --- documentation standard (EG-STE-Lite) ----------------------------------
 - id: ste-staged
   name: EG-STE-Lite - staged docs, diff-scoped
