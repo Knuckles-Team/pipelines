@@ -122,4 +122,3 @@ def test_generated_schema_two_status_is_accepted_without_receipts(tmp_path):
                      requirements=[dict(id="TEST-1", delivery_state="SPECIFIED")])
     path.write_text(json.dumps(generated), encoding="utf-8")
     assert status_errors(path) == ([], ["TEST-1"], "PIPE-TEST-1")
-
