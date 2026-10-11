@@ -1,4 +1,4 @@
-# Architecture — PIPE-CONNSPEC-001
+# Architecture — PIPE-CONNSPEC
 
 ## Approach
 

@@ -123,3 +123,7 @@ the package version in `pyproject.toml`, the single version source
 pin published workflow references to an immutable commit and record the release
 version beside that pin. Pages artifacts are promoted only after strict
 contract checks succeed.
+
+## Specs: extend first
+
+Find the spec row that owns the behavior before any code change. Search with `git grep -n "<term>" -- specs`. Cite the row ID in the commit `Spec:` trailer. Extend the owning spec before any new spec text. Add a child row, a new rollup, or a dated `plan.md` "Amendments" entry. Create a new spec only for a capability that no spec owns. Audits, reviews, and carry-overs land in the owning spec. They never get a spec directory. Reuse an existing function, module, or store before adding one. The rules are the ecosystem [spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md).

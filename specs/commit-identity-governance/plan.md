@@ -1,4 +1,4 @@
-# Architecture — PIPE-IDENTITY-001
+# Architecture — PIPE-IDENTITY
 
 ## Existing wiring
 

@@ -1,7 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "spec_id": "PIPE-PAGES-001",
   "owner_repo": "pipelines",
+  "delivery_state": "SPECIFIED",
   "requirement_ids": [
     "PIPE-PAGES-R001",
     "PIPE-PAGES-R002",
@@ -13,136 +14,349 @@
     "PIPE-PAGES-R008",
     "PIPE-PAGES-R009",
     "PIPE-PAGES-R010",
-    "PIPE-PAGES-R011"
+    "PIPE-PAGES-R011",
+    "PIPE-PAGES-R012",
+    "PIPE-PAGES-R012.1",
+    "PIPE-PAGES-R012.2",
+    "PIPE-PAGES-R012.3",
+    "PIPE-PAGES-R012.4",
+    "PIPE-PAGES-R012.5",
+    "PIPE-PAGES-R012.6",
+    "PIPE-PAGES-R012.7",
+    "PIPE-PAGES-R013",
+    "PIPE-PAGES-R013.1",
+    "PIPE-PAGES-R013.2",
+    "PIPE-PAGES-R013.3",
+    "PIPE-PAGES-R013.4",
+    "PIPE-PAGES-R013.5",
+    "PIPE-PAGES-R013.6",
+    "PIPE-PAGES-R013.7",
+    "PIPE-PAGES-R014",
+    "PIPE-PAGES-R014.1",
+    "PIPE-PAGES-R014.2",
+    "PIPE-PAGES-R014.3",
+    "PIPE-PAGES-R014.4",
+    "PIPE-PAGES-R014.5",
+    "PIPE-PAGES-R014.6",
+    "PIPE-PAGES-R015",
+    "PIPE-PAGES-R015.1",
+    "PIPE-PAGES-R015.2",
+    "PIPE-PAGES-R015.3"
   ],
-  "delivery_state": "SPECIFIED",
-  "acceptance_state": "NOT_AUDITED",
-  "evidence": [],
   "requirements": [
     {
       "id": "PIPE-PAGES-R001",
       "title": "Repository switcher kept in sync with the core repo list",
-      "delivery_state": "BUILDING",
-      "evidence": [],
-      "remaining": "A switcher change (rename and the two missing repositories) is built on a branch but not landed: every consumer verifies its tracked theme copies against this repository at main, so the template change has to land together with a re-sync in each consumer. Also remaining: removal of the obsolete standalone web UI deployment-manifest generator in agent-utilities."
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R002",
       "title": "Layered documentation from overview to reference",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "fe4d11323d0b94c044c38f5257a15576c076500e",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/fe4d11323d0b94c044c38f5257a15576c076500e",
-          "description": "Implemented on the default branch; exercised by .github/workflows/pages.yml (mkdocs build --strict on push to pages/**, fails on broken inter-tier links)"
-        }
-      ]
+      "landed_in": [
+        "fe4d11323d0b"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R003",
       "title": "Present-tense docs with accessible embedded start",
       "delivery_state": "SPECIFIED",
-      "evidence": [],
-      "remaining": "README.md's heading order matches the canonical Overview/Key capabilities/Documentation/Architecture/Quick start/Contributing/License order and uses the shared Material theme, but no embedded observable quick-start demonstration exists in pipelines' own docs, and no accessibility or present-tense co"
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R004",
       "title": "One progressively disclosed skill-graph corpus",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "fe4d11323d0b94c044c38f5257a15576c076500e",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/fe4d11323d0b94c044c38f5257a15576c076500e",
-          "description": "Implemented on the default branch; exercised by scripts/check_five_repo_parity.py output committed as pages/parity.md (skill-graph-reference and components-nav-tier columns = yes for all 5 tracked repos as of last run)"
-        }
-      ]
+      "landed_in": [
+        "fe4d11323d0b"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R005",
       "title": "Generate architecture and reference pages from registries",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "description": "Implemented on the default branch; exercised by tests/test_skill_graph_registry_comparison.py"
-        }
-      ]
+      "landed_in": [
+        "38133654c6e9",
+        "6048c059727f"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R006",
       "title": "Rehome generated docs out of the legacy docs directory",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "description": "Implemented on the default branch; exercised by tests/test_docs_rehomed.py"
-        }
-      ]
+      "landed_in": [
+        "38133654c6e9",
+        "fabe92a1aa4c"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R007",
       "title": "Ecosystem flow diagram with exact names and project marks",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "64e34ca63385200f5ddfef5286e6886bf7dc80b4",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/64e34ca63385200f5ddfef5286e6886bf7dc80b4",
-          "description": "Implementing commit is reachable from the default branch."
-        }
-      ]
+      "landed_in": [
+        "64e34ca63385"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R008",
       "title": "Correct ownership and quick start in consumer parity checks",
       "delivery_state": "SPECIFIED",
-      "evidence": []
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R009",
       "title": "HTML/CSS architecture views, no ASCII or Mermaid diagrams",
       "delivery_state": "SPECIFIED",
-      "evidence": [],
-      "remaining": "The shared theme's runtime-architecture.svg is a tested, accessible, theme-aware generated diagram (tests/test_sync_mkdocs_theme.py) and pipelines' own pages/ has zero Mermaid/ASCII, but pages/parity.md (last run 2026-09-23, still the latest on main) records agent-utilities with 141 Mermaid and 48 A"
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R010",
       "title": "Generate API contract docs from the contract registry",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "description": "Implemented on the default branch; exercised by tests/test_skill_graph_registry_comparison.py"
-        }
-      ]
+      "landed_in": [
+        "38133654c6e9",
+        "6048c059727f"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R011",
       "title": "Present-tense home page with screenshot and repo map",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "ebfaa43bc23346a3a635edd5d1822beb46d48898",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/ebfaa43bc23346a3a635edd5d1822beb46d48898",
-          "description": "Implementing commit is reachable from the default branch."
-        }
+      "landed_in": [
+        "ebfaa43bc233"
+      ],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R012",
+      "title": "Concept references on the spec-delivery page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R012.1",
+        "PIPE-PAGES-R012.2",
+        "PIPE-PAGES-R012.3",
+        "PIPE-PAGES-R012.4",
+        "PIPE-PAGES-R012.5",
+        "PIPE-PAGES-R012.6",
+        "PIPE-PAGES-R012.7"
       ]
+    },
+    {
+      "id": "PIPE-PAGES-R012.1",
+      "title": "Add `concepts_for_row(row, roots)` to `scripts/spec_dashboard_sources.py`. It scans the code roots the row names (`spec_graph_core.CODE_ROOT`) for `CONCEPT:<ID>` markers and returns the sorted identifiers",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R012.2",
+      "title": "Add `explicit_concepts(text)` to `scripts/spec_dashboard_sources.py`. It reads a `Concepts: <ID>, <ID>` line from `spec.md` or a row and returns the identifiers. The explicit line wins over derived markers",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R012.3",
+      "title": "Add one anchor per concept in `scripts/skill_graph/render_pages.py` (`render_concepts_md`): each bullet gets the slug id `concept-<slug>`. This is the stable link target `https://knuckles-team.github.io/<repo>/concepts/#concept-<slug>`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R012.4",
+      "title": "Add `concept_links(ids, base)` to `scripts/spec_dashboard_panels.py`. It renders one `<a>` per identifier and the marker `no concept mapped` for an empty list. The marker carries the class `no-concept`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R012.5",
+      "title": "Call `concept_links` from `spec_row` in `scripts/spec_dashboard_panels.py` and from the requirement table in `scripts/spec_dashboard_structure.py`, so every spec row and requirement row carries a Concepts cell",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R012.6",
+      "title": "Add the count of `no concept mapped` rows to `count_caption` in `scripts/spec_dashboard_render.py`, so the page states the number of unmapped rows",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R012.7",
+      "title": "Add `check_concept_links(page, concepts_md)` to `scripts/spec_dashboard_sources.py`. It fails when a link targets an anchor that `concepts.md` does not define. The `pages_pipeline.yml` build calls it before upload",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R013",
+      "title": "Spec relationship view on the spec-delivery page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R013.1",
+        "PIPE-PAGES-R013.2",
+        "PIPE-PAGES-R013.3",
+        "PIPE-PAGES-R013.4",
+        "PIPE-PAGES-R013.5",
+        "PIPE-PAGES-R013.6",
+        "PIPE-PAGES-R013.7"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R013.1",
+      "title": "Add `spec_edges(records)` to `scripts/spec_graph_core.py`. It lifts the requirement edges (`depends_on`) to spec level, keeps cross-repository edges, and labels each edge `depends on`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R013.2",
+      "title": "Add the `extends` edge to `spec_edges` in `scripts/spec_graph_core.py`. A spec extends another when its `spec.md` line `Extends: <ID>` names it. The generator reads no other source",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R013.3",
+      "title": "Add `layer_specs(nodes, edges)` to `scripts/spec_dashboard_structure.py`. It collapses strongly connected components, then assigns longest dependency depth on the resulting graph. Component members share a layer; roots sit in layer 0",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R013.4",
+      "title": "Add `relation_view(nodes, edges)` to `scripts/spec_dashboard_panels.py`. It renders one HTML/CSS column per layer and one box per spec with its four state counts (PIPE-PAGES-R009). It uses no SVG, ASCII, or Mermaid",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R013.5",
+      "title": "Render edges in `relation_view` as labelled CSS connectors (`depends on`, `extends`), and render a legend that explains the two labels and the state colours. Use short active labels with one term per concept",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R013.6",
+      "title": "Add `relation_table(nodes, edges)` to `scripts/spec_dashboard_panels.py`. It renders a text-alternative table (source, label, target) beside the view. The view carries `aria-describedby` for the table",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R013.7",
+      "title": "Cap the view at 40 specs in `relation_view`. Above 40, render only the table and the sentence `view limited to 40 specs; see table`. Mount the panel in `current_panels` in `scripts/spec_dashboard_render.py`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R014",
+      "title": "Three-level drill-down from the ecosystem view to the spec",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R014.1",
+        "PIPE-PAGES-R014.2",
+        "PIPE-PAGES-R014.3",
+        "PIPE-PAGES-R014.4",
+        "PIPE-PAGES-R014.5",
+        "PIPE-PAGES-R014.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R014.1",
+      "title": "Add `ecosystem_components()` to `scripts/spec_dashboard_sources.py`. It returns the list defined by PIPE-PAGES-R001 (the core repository list) and defines no second list",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R014.2",
+      "title": "Define the URL form in `scripts/spec_dashboard_sources.py`: level 1 `https://knuckles-team.github.io/<repo>/spec-delivery/`, level 2 `.../spec-delivery/#spec-<ID>`, level 3 row `.../spec-delivery/#req-<ID>`. Add `anchor_for(kind, id)`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R014.3",
+      "title": "Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id=\"spec-<ID>\"` and lists its rows, state, concepts, and bound tests; each row gets `id=\"req-<ID>\"`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R014.4",
+      "title": "Link each box in `relation_view` (`scripts/spec_dashboard_panels.py`) to `#spec-<ID>` of its own page, or to the other repository's page for a cross-repository node",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R014.5",
+      "title": "Cross-repository row, owner `Knuckles-Team/.github` (BLOCKED until that repository carries a spec tree): link each component in `profile/README.md` to `ecosystem_components()` URLs at level 1. Add `scripts/render_profile_links.py` here as the producer",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R014.6",
+      "title": "Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_sources.py`. It fails when a component link or spec anchor does not resolve in the generated site",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R015",
+      "title": "One generator for connectors and client repositories",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R015.1",
+        "PIPE-PAGES-R015.2",
+        "PIPE-PAGES-R015.3"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R015.1",
+      "title": "The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller. It adds no per-repository input and no per-repository copy",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R015.2",
+      "title": "agent-webui, agent-terminal-ui, and geniusbot adopt it through the caller pattern in PIPE-CONNSPEC-R004. Each caller change belongs to the repository's own spec",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R015.3",
+      "title": "Connector repositories get the same page through PIPE-CONNSPEC-R101 and following. This row restates none of them and checks only that the generated page carries the Concepts cell and the relation view",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }

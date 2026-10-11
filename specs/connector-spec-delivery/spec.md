@@ -1,4 +1,4 @@
-# PIPE-CONNSPEC-001 — Connector spec-delivery rollout
+# PIPE-CONNSPEC — Connector spec-delivery rollout
 
 ## Purpose and user stories
 
