@@ -2,11 +2,25 @@
   "schema_version": 2,
   "spec_id": "PIPE-RELEASE",
   "owner_repo": "pipelines",
-  "delivery_state": "LANDED",
+  "delivery_state": "SPECIFIED",
   "requirement_ids": [
     "PIPE-RELEASE-R001",
     "PIPE-RELEASE-R002",
-    "PIPE-RELEASE-R003"
+    "PIPE-RELEASE-R003",
+    "PIPE-RELEASE-R004",
+    "PIPE-RELEASE-R004.1",
+    "PIPE-RELEASE-R004.2",
+    "PIPE-RELEASE-R004.3",
+    "PIPE-RELEASE-R004.4",
+    "PIPE-RELEASE-R004.5",
+    "PIPE-RELEASE-R004.6",
+    "PIPE-RELEASE-R005",
+    "PIPE-RELEASE-R005.1",
+    "PIPE-RELEASE-R005.2",
+    "PIPE-RELEASE-R005.3",
+    "PIPE-RELEASE-R005.4",
+    "PIPE-RELEASE-R005.5",
+    "PIPE-RELEASE-R005.6"
   ],
   "requirements": [
     {
@@ -35,6 +49,120 @@
         "59dd4e7b91c6",
         "622a53f14803"
       ],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R004",
+      "title": "Release gate fails when a compiled kernel wheel is missing",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-RELEASE-R004.1",
+        "PIPE-RELEASE-R004.2",
+        "PIPE-RELEASE-R004.3",
+        "PIPE-RELEASE-R004.4",
+        "PIPE-RELEASE-R004.5",
+        "PIPE-RELEASE-R004.6"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R004.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R004.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R004.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R004.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R004.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R004.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005",
+      "title": "Dependency gate blocks circular dependency loops",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-RELEASE-R005.1",
+        "PIPE-RELEASE-R005.2",
+        "PIPE-RELEASE-R005.3",
+        "PIPE-RELEASE-R005.4",
+        "PIPE-RELEASE-R005.5",
+        "PIPE-RELEASE-R005.6"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R005.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": []
     }
   ]
