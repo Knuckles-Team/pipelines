@@ -86,7 +86,14 @@ PHONE = ('@media (max-width:1100px){.sheet{grid-template-columns:repeat(6,minmax
          '.body{padding:12px}.charts,.branches{grid-template-columns:1fr}'
          '.cap{display:none}}')
 
-STYLE = '<style>' + THEME + FRAME + PANEL + TABLES + TREE + LIMITS + CHARTS + BLOCK + PHONE + '</style>'
+NAV = ('.skip{position:absolute;left:-999px}.skip:focus{left:16px;top:8px;background:var(--paper);padding:4px 8px;z-index:3}'
+       'nav.site{display:flex;flex-wrap:wrap;gap:16px;align-items:center;max-width:1760px;margin:0 auto 12px;'
+       'padding:8px 22px;border:1px solid var(--rule);font:13px var(--sans)}nav.site .brand{font-weight:600}'
+       'nav.site [aria-current=page]{color:var(--ink);font-weight:600;text-decoration:none}'
+       'nav.site details{margin:0;border:0;padding:0;position:relative}nav.site ul{position:absolute;z-index:2;'
+       'list-style:none;margin:4px 0 0;padding:6px 10px;background:var(--paper);border:1px solid var(--rule)}'
+       'nav.site li{padding:2px 0}nav.site [aria-current=true]{font-weight:600;color:var(--ink)}')
+STYLE = '<style>' + THEME + NAV + FRAME + PANEL + TABLES + TREE + LIMITS + CHARTS + BLOCK + PHONE + '</style>'
 
 
 def zones():

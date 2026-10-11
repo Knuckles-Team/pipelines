@@ -61,3 +61,8 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R018.3 | PIPE-PAGES-R018.3 | Run `test_menu_iterates_the_single_site_list` in `tests/test_spec_delivery_nav.py` expects the loop over `extra.ecosystem.sites` and no literal repository URL in the template. |
 | T-PIPE-PAGES-R018.4 | PIPE-PAGES-R018.4 | Run `test_site_urls_match_repos` in `tests/test_spec_delivery_nav.py` expects each site URL to equal the REPOS URL for its slug. |
 | T-PIPE-PAGES-R018.5 | PIPE-PAGES-R018.5 | Run `test_theme_sync_check_passes_with_entry` in `tests/test_spec_delivery_nav.py` expects an empty drift list. |
+| T-PIPE-PAGES-R019.1 | PIPE-PAGES-R019.1 | Run `test_nav_landmark_links_documentation` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.2 | PIPE-PAGES-R019.2 | Run `test_current_page_is_marked` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.3 | PIPE-PAGES-R019.3 | Run `test_repository_links_equal_single_source` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.4 | PIPE-PAGES-R019.4 | Run `test_skip_link_targets_main` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
+| T-PIPE-PAGES-R019.5 | PIPE-PAGES-R019.5 | Run `test_page_keeps_existing_panels` in `tests/test_spec_dashboard_nav.py` expects the stated result. |
