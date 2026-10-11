@@ -1,4 +1,4 @@
-# PIPE-PAGES-001 — Ecosystem Pages parity and release receipt
+# PIPE-PAGES — Ecosystem Pages parity and release receipt
 
 ## Purpose and user stories
 

@@ -1,43 +1,41 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "spec_id": "PIPE-RELEASE-001",
   "owner_repo": "pipelines",
+  "delivery_state": "LANDED",
   "requirement_ids": [
     "PIPE-RELEASE-R001",
     "PIPE-RELEASE-R002",
     "PIPE-RELEASE-R003"
   ],
-  "delivery_state": "SPECIFIED",
-  "acceptance_state": "NOT_AUDITED",
-  "evidence": [],
   "requirements": [
     {
       "id": "PIPE-RELEASE-R001",
       "title": "Pipelines publishes images in dependency order with digest pins",
-      "delivery_state": "BUILDING",
-      "evidence": [],
-      "remaining": "A release orchestration tool is on the default branch (scripts/release_orchestrator.py: validate, plan, publish, verify-consumers): candidate schema with cycle and floating-tag refusal, qualification, dependency-ordered publication that stops downstream on a failed stage, idempotent retry, and exact digest handoff, all tested against recorded fixtures. Remaining: the live adapters that push a revision, await hosted checks and publish images, and wiring the tool into the release workflow as an opt-in step."
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "59dd4e7b91c6"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R002",
       "title": "Release tags point to the exact qualified commit",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "df7212f102bbd167f1fb72e1b24b221d2db5d974",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/df7212f102bbd167f1fb72e1b24b221d2db5d974",
-          "description": "Implemented on the default branch; exercised by tests/test_maturin_pipeline_contract.py::test_source_verifier_binds_and_rejects_a_changed_head"
-        }
-      ]
+      "landed_in": [
+        "df7212f102bb"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R003",
       "title": "Release build job sources environment values safely",
-      "delivery_state": "BUILDING",
-      "evidence": [],
-      "remaining": "Sourced environment values are read and exported safely (scripts/write_github_env.sh). A reproducibility check that builds a package twice and compares the wheels byte for byte is on the default branch (scripts/release_orchestrator.py check-reproducible-build), proven on a pure-Python fixture including a deliberately non-reproducible build. Remaining: run that check inside the real release build, including for the Rust-built wheels."
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "59dd4e7b91c6",
+        "622a53f14803"
+      ],
+      "verified_by": []
     }
   ]
 }

@@ -1,27 +1,21 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "spec_id": "PIPE-IDENTITY-001",
   "owner_repo": "pipelines",
+  "delivery_state": "LANDED",
   "requirement_ids": [
     "PIPE-IDENTITY-R001"
   ],
-  "delivery_state": "SPECIFIED",
-  "acceptance_state": "NOT_AUDITED",
-  "evidence": [],
   "requirements": [
     {
       "id": "PIPE-IDENTITY-R001",
       "title": "Commit author identity is restricted to an allowlist",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "f2d327f13a3c158149f2e358821052305161b4d9",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/f2d327f13a3c158149f2e358821052305161b4d9",
-          "description": "Implemented on the default branch; exercised by tests/hooks/test_identity_wiring.py"
-        }
-      ]
+      "landed_in": [
+        "1a70d678b24f",
+        "f2d327f13a3c"
+      ],
+      "verified_by": []
     }
   ]
 }

@@ -1,4 +1,4 @@
-# PIPE-CONNSPEC-001 requirements
+# PIPE-CONNSPEC requirements
 
 | ID | Requirement | Verification |
 |---|---|---|

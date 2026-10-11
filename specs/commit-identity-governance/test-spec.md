@@ -1,4 +1,4 @@
-# Test contract — PIPE-IDENTITY-001
+# Test contract — PIPE-IDENTITY
 
 Use disposable Git fixture repositories with a pinned, synthetic allowlist configuration fixture.
 Assert exit status and the specific field named in a rejection; never assert on or log the full

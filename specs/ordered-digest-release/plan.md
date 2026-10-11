@@ -1,4 +1,4 @@
-# Architecture — PIPE-RELEASE-001
+# Architecture — PIPE-RELEASE
 
 ## Existing components and flow
 

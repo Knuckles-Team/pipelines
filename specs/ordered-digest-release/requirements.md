@@ -1,4 +1,4 @@
-# PIPE-RELEASE-001 requirements
+# PIPE-RELEASE requirements
 
 | ID | Requirement | Verification |
 |---|---|---|
