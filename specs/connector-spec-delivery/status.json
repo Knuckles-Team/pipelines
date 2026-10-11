@@ -9,6 +9,7 @@
     "PIPE-CONNSPEC-R003",
     "PIPE-CONNSPEC-R004",
     "PIPE-CONNSPEC-R005",
+    "PIPE-CONNSPEC-R006",
     "PIPE-CONNSPEC-R101",
     "PIPE-CONNSPEC-R101.1",
     "PIPE-CONNSPEC-R101.2",
@@ -415,6 +416,16 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R006",
+      "title": "Preserve retired identities across spec ownership moves",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_spec_standard.py:103",
+        "tests/test_spec_standard.py:110"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R101",

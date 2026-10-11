@@ -92,3 +92,24 @@ def test_older_row_id_form_is_permanent(root, capsys):
     req = _spec(root) / "requirements.md"
     req.write_text(req.read_text() + "| `DS-01` | An older row keeps its ID. |\n")
     assert _run(root, capsys) == (0, "spec-standard: clean (1 spec(s) checked)\n")
+
+
+@pytest.mark.parametrize("title, expected", [
+    ("**RETIRED: replaced by FOO-R001.**", 0),
+    ("Active row; RETIRED is discussed only.", 1),
+    ("**Active row.** RETIRED: replaced by FOO-R001.", 1),
+])
+def test_moved_retired_identity_uses_shared_status_parser(root, capsys, title, expected):
+    # spec: PIPE-CONNSPEC-R006
+    req = _spec(root) / "requirements.md"
+    req.write_text(req.read_text() + f"| `OLD-R001` | {title} | preserved |\n")
+    assert _run(root, capsys)[0] == expected
+
+
+def test_retired_duplicate_does_not_hide_active_wrong_prefix(root, capsys):
+    # spec: PIPE-CONNSPEC-R006
+    req = _spec(root) / "requirements.md"
+    req.write_text(req.read_text() +
+        "| `OLD-R001` | **RETIRED: replaced by FOO-R001.** | |\n"
+        "| `OLD-R001` | **Active duplicate.** | |\n")
+    assert _run(root, capsys)[0] == 1
