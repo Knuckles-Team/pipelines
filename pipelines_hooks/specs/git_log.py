@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import NamedTuple
 
 from pipelines_hooks.core.gitenv import git_text, run_git
 from pipelines_hooks.specs.ids import expand_ranges, is_product_path
@@ -14,11 +15,18 @@ _FIELD_SEP = "\x1f"
 _REVERT_RE = re.compile(r"This reverts commit ([0-9a-f]{40})")
 
 
-def _parse_record(record: str) -> tuple[str, str, str, str] | None:
+class _Record(NamedTuple):
+    sha: str
+    message: str
+    trailers: str
+    files: str
+
+
+def _parse_record(record: str) -> _Record | None:
     if _FIELD_SEP not in record:
         return None
     sha, message, trailers, files = record.split(_FIELD_SEP, 3)
-    return sha, message, trailers, files
+    return _Record(sha, message, trailers, files)
 
 
 def _declarations(message: str, trailers: str) -> str:
