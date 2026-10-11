@@ -50,3 +50,11 @@ Levels: ecosystem (organisation profile README) -> repository (`/<repo>/spec-del
 ## Same generator everywhere (PIPE-PAGES-R015)
 
 The reusable workflow `pages_pipeline.yml` (it already runs `--output site/spec-delivery`) carries all steps. Connector rows PIPE-CONNSPEC-R101 and following, and the caller pattern PIPE-CONNSPEC-R004, are linked by ID and not restated. CONFIRMED. Client repositories adopt through their own callers. DECIDED.
+
+## Site navigation on the page (PIPE-PAGES-R019)
+
+Data flow: `ecosystem_components()` (`scripts/spec_dashboard_drilldown.py:17`) feeds `site_nav`, which `render` places before the frame (`scripts/spec_dashboard_render.py:70`). The page must stay a standalone file at `site/spec-delivery/index.html`.
+
+- Attach point. `render` in `scripts/spec_dashboard_render.py:67` emits the nav and the skip link. DECIDED.
+- Decision. The generator must render its own navigation block with relative links. The theme lane adds the matching menu entry on the documentation side. DECIDED.
+- Rejected: rendering the page through MkDocs. The workflow writes the page after the MkDocs build, and the drawing sheet needs its own layout.

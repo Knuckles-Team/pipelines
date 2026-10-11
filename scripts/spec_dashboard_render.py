@@ -7,6 +7,7 @@ if __package__:
     from .spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
     from .spec_dashboard_concepts import unmapped_count
     from .spec_dashboard_relations_view import relations_panel
+    from .spec_dashboard_nav import site_nav, skip_link
     from .spec_dashboard_structure import structure_panel
     from .spec_dashboard_style import STYLE, panel, zones
 else:
@@ -14,6 +15,7 @@ else:
     from spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
     from spec_dashboard_concepts import unmapped_count
     from spec_dashboard_relations_view import relations_panel
+    from spec_dashboard_nav import site_nav, skip_link
     from spec_dashboard_structure import structure_panel
     from spec_dashboard_style import STYLE, panel, zones
 
@@ -70,5 +72,5 @@ def render(snapshot):
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<meta name="color-scheme" content="light dark"><title>{title}</title>{STYLE}</head><body>'
-            f'<div class="frame">{zones()}<main class="sheet">' + ''.join(current_panels(snapshot) + audit_panels(snapshot))
+            + skip_link() + site_nav(snapshot['repository']) + f'<div class="frame">{zones()}<main id="main" class="sheet">' + ''.join(current_panels(snapshot) + audit_panels(snapshot))
             + '</main></div></body></html>')
