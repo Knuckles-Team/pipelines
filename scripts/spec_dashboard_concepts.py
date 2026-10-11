@@ -59,3 +59,10 @@ def concept_links(ids, base) -> str:
 
 def unmapped_count(rows) -> int:
     return sum(1 for ids in rows if not ids)
+
+
+def check_concept_links(page, concepts_md):
+    """Concept anchors the page links to but concepts.md does not define."""
+    wanted = set(re.findall(r"concepts/#(concept-[a-z0-9-]+)", page))
+    defined = set(re.findall(r'id="(concept-[a-z0-9-]+)"', concepts_md))
+    return sorted(wanted - defined)

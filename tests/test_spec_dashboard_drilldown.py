@@ -40,3 +40,20 @@ def test_unresolved_component_link_fails():
     assert check_drilldown_links(ok + '<a href="#req-Z"></a>') == [
         "unresolved anchor: #req-Z"
     ]
+
+
+@pytest.mark.spec("PIPE-PAGES-R014.3")
+def test_spec_section_has_anchor():
+    from scripts.spec_dashboard_panels import spec_row
+
+    spec = {"id": "S-1", "title": "t", "delivery_state": "VERIFIED", "done": True}
+    assert 'id="spec-S-1"' in spec_row(spec, [], lambda item, label: label)
+
+
+@pytest.mark.spec("PIPE-PAGES-R014.4")
+def test_relation_box_links_to_spec_section():
+    from scripts.spec_dashboard_relations_view import box
+
+    html = box("S-1", {}, [])
+    assert 'href="#spec-S-1"' in html
+    assert check_drilldown_links('<tr id="spec-S-1"></tr>' + html, []) == []

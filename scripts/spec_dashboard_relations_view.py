@@ -45,7 +45,7 @@ def box(spec, counts, edges):
         f'<span class="rel-{group}">{group} {counts.get(group, 0)}</span>'
         for group in GROUPS
     )
-    return f'<div class="rel-box"><b>{html.escape(spec)}</b><br>{stats}{links}</div>'
+    return f'<div class="rel-box"><b><a href="#spec-{html.escape(spec)}">{html.escape(spec)}</a></b><br>{stats}{links}</div>'
 
 
 def legend():

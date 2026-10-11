@@ -91,3 +91,12 @@ def test_view_cap_falls_back_to_table():
     out = relation_view(nodes, edges)
     assert "rel-box" not in out and "view limited to 40 specs; see table" in out
     assert out.count("<tr><td>") == 40
+
+
+@pytest.mark.spec("PIPE-PAGES-R013")
+def test_snapshot_edges_feed_relation_panel(tmp_path):
+    from scripts.spec_dashboard_wiring import snapshot_edges
+
+    (tmp_path / "specs" / "B").mkdir(parents=True)
+    (tmp_path / "specs" / "B" / "spec.md").write_text("Extends: A\n")
+    assert snapshot_edges(tmp_path) == [["B", "extends", "A"]]

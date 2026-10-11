@@ -6,16 +6,21 @@ import json
 import os
 from pathlib import Path
 import re
+import sys
 from urllib.request import Request, urlopen
 
 if __package__:
     from .spec_dashboard_render import render
     from .spec_dashboard_sources import read_records, record
     from .spec_dashboard_history import history_snapshot, git
+    from .spec_dashboard_concepts import check_concept_links
+    from .spec_dashboard_wiring import snapshot_concepts, snapshot_edges
 else:
     from spec_dashboard_render import render
     from spec_dashboard_sources import read_records, record
     from spec_dashboard_history import history_snapshot, git
+    from spec_dashboard_concepts import check_concept_links
+    from spec_dashboard_wiring import snapshot_concepts, snapshot_edges
 
 
 def github_snapshot(repository, token, opener=urlopen):
@@ -86,6 +91,11 @@ def create_snapshot(args, root, config):
                 'records': read_records(root, config),
                 'history': history_snapshot(root, config, limit=args.history_limit),
                 'github': github_snapshot(args.repository, os.environ.get('GITHUB_TOKEN'))}
+    snapshot['spec_edges'] = snapshot_edges(root)
+    concepts = snapshot_concepts(root, snapshot['records'])
+    for item in snapshot['records']:
+        if item['kind'] == 'spec':
+            item['concepts'] = concepts[item['id']]
     return snapshot
 
 
@@ -95,8 +105,18 @@ def main(argv=None):
     output = root / args.output
     output.mkdir(parents=True, exist_ok=True)
     (output / 'snapshot.json').write_text(json.dumps(snapshot, indent=2) + '\n')
-    (output / 'index.html').write_text(render(snapshot))
-    return 0
+    page = render(snapshot)
+    (output / 'index.html').write_text(page)
+    return parity_status(page, root)
+
+
+def parity_status(page, root):
+    """1 when a concept link targets an anchor the repository's concepts page lacks."""
+    concepts = root / 'docs' / 'concepts.md'
+    missing = check_concept_links(page, concepts.read_text(encoding='utf-8')) if concepts.is_file() else []
+    for anchor in missing:
+        print('dangling concept link: #' + anchor, file=sys.stderr)
+    return 1 if missing else 0
 
 
 if __name__ == '__main__':

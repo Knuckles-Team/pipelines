@@ -1,7 +1,12 @@
+import sys
+from pathlib import Path
+
 import pytest
 
-from scripts.skill_graph.render_pages import render_concepts_md
-from scripts.spec_dashboard_concepts import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from scripts.skill_graph.render_pages import render_concepts_md  # noqa: E402
+from scripts.spec_dashboard_concepts import (  # noqa: E402
+    check_concept_links,
     concept_links,
     concepts_for_row,
     explicit_concepts,
@@ -43,3 +48,37 @@ def test_concept_links_and_marker():
     empty = concept_links([], "https://x/")
     assert "no concept mapped" in empty and 'class="no-concept"' in empty
     assert unmapped_count([["A"], [], []]) == 2
+
+
+@pytest.mark.spec("PIPE-PAGES-R012.5")
+def test_spec_row_carries_concepts_cell():
+    from scripts.spec_dashboard_panels import spec_row
+
+    spec = {
+        "id": "S-1",
+        "title": "t",
+        "delivery_state": "VERIFIED",
+        "done": True,
+        "concepts": ["A-1"],
+    }
+    out = spec_row(spec, [], lambda item, label: label, "repo")
+    assert 'id="spec-S-1"' in out and "concepts/#concept-a-1" in out
+
+
+@pytest.mark.spec("PIPE-PAGES-R012.6")
+def test_caption_counts_unmapped_rows():
+    from scripts.spec_dashboard_render import count_caption
+
+    records = [
+        {"kind": "spec", "concepts": []},
+        {"kind": "spec", "concepts": ["A"]},
+        {"kind": "requirement"},
+    ]
+    assert "1 with no concept mapped" in count_caption({"records": records})
+
+
+@pytest.mark.spec("PIPE-PAGES-R012.7")
+def test_dangling_concept_link_fails():
+    page = '<a href="x/concepts/#concept-a-1">A-1</a>'
+    assert check_concept_links(page, '<a id="concept-a-1">') == []
+    assert check_concept_links(page, "") == ["concept-a-1"]
