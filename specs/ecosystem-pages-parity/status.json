@@ -595,7 +595,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "2f6747267768",
-        "64ce2e92a6da"
+        "64ce2e92a6da",
+        "7eca7920c666"
       ],
       "verified_by": [
         "tests/test_spec_delivery_nav.py:21"
