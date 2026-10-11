@@ -22,10 +22,20 @@ def _entry_errors(path: Path, entry: dict, defined: str) -> list[str]:
     return errors
 
 
+def _hand_written_entries(data: dict | None) -> object:
+    """Requirement entries to check here, or ``None`` when there are none.
+
+    Schema 2 entries are generated and gated by ``pipelines-hook spec-status``.
+    """
+    if not data or data.get("schema_version") == 2:
+        return None
+    return data.get("requirements")
+
+
 def requirement_errors(path: Path) -> list[str]:
     """Per-requirement delivery entries match the declared IDs, in order."""
     data, _failure = _load_status(path)
-    entries = (data or {}).get("requirements")
+    entries = _hand_written_entries(data)
     if entries is None:
         return []
     if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):

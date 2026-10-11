@@ -1,0 +1,3454 @@
+{
+  "schema_version": 2,
+  "spec_id": "PIPE-CONNSPEC-001",
+  "owner_repo": "pipelines",
+  "delivery_state": "SPECIFIED",
+  "requirement_ids": [
+    "PIPE-CONNSPEC-R001",
+    "PIPE-CONNSPEC-R002",
+    "PIPE-CONNSPEC-R003",
+    "PIPE-CONNSPEC-R004",
+    "PIPE-CONNSPEC-R005",
+    "PIPE-CONNSPEC-R101",
+    "PIPE-CONNSPEC-R101.1",
+    "PIPE-CONNSPEC-R101.2",
+    "PIPE-CONNSPEC-R101.3",
+    "PIPE-CONNSPEC-R101.4",
+    "PIPE-CONNSPEC-R102",
+    "PIPE-CONNSPEC-R102.1",
+    "PIPE-CONNSPEC-R102.2",
+    "PIPE-CONNSPEC-R102.3",
+    "PIPE-CONNSPEC-R102.4",
+    "PIPE-CONNSPEC-R103",
+    "PIPE-CONNSPEC-R103.1",
+    "PIPE-CONNSPEC-R103.2",
+    "PIPE-CONNSPEC-R103.3",
+    "PIPE-CONNSPEC-R103.4",
+    "PIPE-CONNSPEC-R104",
+    "PIPE-CONNSPEC-R104.1",
+    "PIPE-CONNSPEC-R104.2",
+    "PIPE-CONNSPEC-R104.3",
+    "PIPE-CONNSPEC-R104.4",
+    "PIPE-CONNSPEC-R105",
+    "PIPE-CONNSPEC-R105.1",
+    "PIPE-CONNSPEC-R105.2",
+    "PIPE-CONNSPEC-R105.3",
+    "PIPE-CONNSPEC-R105.4",
+    "PIPE-CONNSPEC-R106",
+    "PIPE-CONNSPEC-R106.1",
+    "PIPE-CONNSPEC-R106.2",
+    "PIPE-CONNSPEC-R106.3",
+    "PIPE-CONNSPEC-R106.4",
+    "PIPE-CONNSPEC-R107",
+    "PIPE-CONNSPEC-R107.1",
+    "PIPE-CONNSPEC-R107.2",
+    "PIPE-CONNSPEC-R107.3",
+    "PIPE-CONNSPEC-R107.4",
+    "PIPE-CONNSPEC-R108",
+    "PIPE-CONNSPEC-R108.1",
+    "PIPE-CONNSPEC-R108.2",
+    "PIPE-CONNSPEC-R108.3",
+    "PIPE-CONNSPEC-R108.4",
+    "PIPE-CONNSPEC-R109",
+    "PIPE-CONNSPEC-R109.1",
+    "PIPE-CONNSPEC-R109.2",
+    "PIPE-CONNSPEC-R109.3",
+    "PIPE-CONNSPEC-R109.4",
+    "PIPE-CONNSPEC-R110",
+    "PIPE-CONNSPEC-R110.1",
+    "PIPE-CONNSPEC-R110.2",
+    "PIPE-CONNSPEC-R110.3",
+    "PIPE-CONNSPEC-R110.4",
+    "PIPE-CONNSPEC-R111",
+    "PIPE-CONNSPEC-R111.1",
+    "PIPE-CONNSPEC-R111.2",
+    "PIPE-CONNSPEC-R111.3",
+    "PIPE-CONNSPEC-R111.4",
+    "PIPE-CONNSPEC-R112",
+    "PIPE-CONNSPEC-R112.1",
+    "PIPE-CONNSPEC-R112.2",
+    "PIPE-CONNSPEC-R112.3",
+    "PIPE-CONNSPEC-R112.4",
+    "PIPE-CONNSPEC-R113",
+    "PIPE-CONNSPEC-R113.1",
+    "PIPE-CONNSPEC-R113.2",
+    "PIPE-CONNSPEC-R113.3",
+    "PIPE-CONNSPEC-R113.4",
+    "PIPE-CONNSPEC-R114",
+    "PIPE-CONNSPEC-R114.1",
+    "PIPE-CONNSPEC-R114.2",
+    "PIPE-CONNSPEC-R114.3",
+    "PIPE-CONNSPEC-R114.4",
+    "PIPE-CONNSPEC-R115",
+    "PIPE-CONNSPEC-R115.1",
+    "PIPE-CONNSPEC-R115.2",
+    "PIPE-CONNSPEC-R115.3",
+    "PIPE-CONNSPEC-R115.4",
+    "PIPE-CONNSPEC-R116",
+    "PIPE-CONNSPEC-R116.1",
+    "PIPE-CONNSPEC-R116.2",
+    "PIPE-CONNSPEC-R116.3",
+    "PIPE-CONNSPEC-R116.4",
+    "PIPE-CONNSPEC-R117",
+    "PIPE-CONNSPEC-R117.1",
+    "PIPE-CONNSPEC-R117.2",
+    "PIPE-CONNSPEC-R117.3",
+    "PIPE-CONNSPEC-R117.4",
+    "PIPE-CONNSPEC-R118",
+    "PIPE-CONNSPEC-R118.1",
+    "PIPE-CONNSPEC-R118.2",
+    "PIPE-CONNSPEC-R118.3",
+    "PIPE-CONNSPEC-R118.4",
+    "PIPE-CONNSPEC-R119",
+    "PIPE-CONNSPEC-R119.1",
+    "PIPE-CONNSPEC-R119.2",
+    "PIPE-CONNSPEC-R119.3",
+    "PIPE-CONNSPEC-R119.4",
+    "PIPE-CONNSPEC-R120",
+    "PIPE-CONNSPEC-R120.1",
+    "PIPE-CONNSPEC-R120.2",
+    "PIPE-CONNSPEC-R120.3",
+    "PIPE-CONNSPEC-R120.4",
+    "PIPE-CONNSPEC-R121",
+    "PIPE-CONNSPEC-R121.1",
+    "PIPE-CONNSPEC-R121.2",
+    "PIPE-CONNSPEC-R121.3",
+    "PIPE-CONNSPEC-R121.4",
+    "PIPE-CONNSPEC-R122",
+    "PIPE-CONNSPEC-R122.1",
+    "PIPE-CONNSPEC-R122.2",
+    "PIPE-CONNSPEC-R122.3",
+    "PIPE-CONNSPEC-R122.4",
+    "PIPE-CONNSPEC-R123",
+    "PIPE-CONNSPEC-R123.1",
+    "PIPE-CONNSPEC-R123.2",
+    "PIPE-CONNSPEC-R123.3",
+    "PIPE-CONNSPEC-R123.4",
+    "PIPE-CONNSPEC-R124",
+    "PIPE-CONNSPEC-R124.1",
+    "PIPE-CONNSPEC-R124.2",
+    "PIPE-CONNSPEC-R124.3",
+    "PIPE-CONNSPEC-R124.4",
+    "PIPE-CONNSPEC-R125",
+    "PIPE-CONNSPEC-R125.1",
+    "PIPE-CONNSPEC-R125.2",
+    "PIPE-CONNSPEC-R125.3",
+    "PIPE-CONNSPEC-R125.4",
+    "PIPE-CONNSPEC-R126",
+    "PIPE-CONNSPEC-R126.1",
+    "PIPE-CONNSPEC-R126.2",
+    "PIPE-CONNSPEC-R126.3",
+    "PIPE-CONNSPEC-R126.4",
+    "PIPE-CONNSPEC-R127",
+    "PIPE-CONNSPEC-R127.1",
+    "PIPE-CONNSPEC-R127.2",
+    "PIPE-CONNSPEC-R127.3",
+    "PIPE-CONNSPEC-R127.4",
+    "PIPE-CONNSPEC-R128",
+    "PIPE-CONNSPEC-R128.1",
+    "PIPE-CONNSPEC-R128.2",
+    "PIPE-CONNSPEC-R128.3",
+    "PIPE-CONNSPEC-R128.4",
+    "PIPE-CONNSPEC-R129",
+    "PIPE-CONNSPEC-R129.1",
+    "PIPE-CONNSPEC-R129.2",
+    "PIPE-CONNSPEC-R129.3",
+    "PIPE-CONNSPEC-R129.4",
+    "PIPE-CONNSPEC-R130",
+    "PIPE-CONNSPEC-R130.1",
+    "PIPE-CONNSPEC-R130.2",
+    "PIPE-CONNSPEC-R130.3",
+    "PIPE-CONNSPEC-R130.4",
+    "PIPE-CONNSPEC-R131",
+    "PIPE-CONNSPEC-R131.1",
+    "PIPE-CONNSPEC-R131.2",
+    "PIPE-CONNSPEC-R131.3",
+    "PIPE-CONNSPEC-R131.4",
+    "PIPE-CONNSPEC-R132",
+    "PIPE-CONNSPEC-R132.1",
+    "PIPE-CONNSPEC-R132.2",
+    "PIPE-CONNSPEC-R132.3",
+    "PIPE-CONNSPEC-R132.4",
+    "PIPE-CONNSPEC-R133",
+    "PIPE-CONNSPEC-R133.1",
+    "PIPE-CONNSPEC-R133.2",
+    "PIPE-CONNSPEC-R133.3",
+    "PIPE-CONNSPEC-R133.4",
+    "PIPE-CONNSPEC-R134",
+    "PIPE-CONNSPEC-R134.1",
+    "PIPE-CONNSPEC-R134.2",
+    "PIPE-CONNSPEC-R134.3",
+    "PIPE-CONNSPEC-R134.4",
+    "PIPE-CONNSPEC-R135",
+    "PIPE-CONNSPEC-R135.1",
+    "PIPE-CONNSPEC-R135.2",
+    "PIPE-CONNSPEC-R135.3",
+    "PIPE-CONNSPEC-R135.4",
+    "PIPE-CONNSPEC-R136",
+    "PIPE-CONNSPEC-R136.1",
+    "PIPE-CONNSPEC-R136.2",
+    "PIPE-CONNSPEC-R136.3",
+    "PIPE-CONNSPEC-R136.4",
+    "PIPE-CONNSPEC-R137",
+    "PIPE-CONNSPEC-R137.1",
+    "PIPE-CONNSPEC-R137.2",
+    "PIPE-CONNSPEC-R137.3",
+    "PIPE-CONNSPEC-R137.4",
+    "PIPE-CONNSPEC-R138",
+    "PIPE-CONNSPEC-R138.1",
+    "PIPE-CONNSPEC-R138.2",
+    "PIPE-CONNSPEC-R138.3",
+    "PIPE-CONNSPEC-R138.4",
+    "PIPE-CONNSPEC-R139",
+    "PIPE-CONNSPEC-R139.1",
+    "PIPE-CONNSPEC-R139.2",
+    "PIPE-CONNSPEC-R139.3",
+    "PIPE-CONNSPEC-R139.4",
+    "PIPE-CONNSPEC-R140",
+    "PIPE-CONNSPEC-R140.1",
+    "PIPE-CONNSPEC-R140.2",
+    "PIPE-CONNSPEC-R140.3",
+    "PIPE-CONNSPEC-R140.4",
+    "PIPE-CONNSPEC-R141",
+    "PIPE-CONNSPEC-R141.1",
+    "PIPE-CONNSPEC-R141.2",
+    "PIPE-CONNSPEC-R141.3",
+    "PIPE-CONNSPEC-R141.4",
+    "PIPE-CONNSPEC-R142",
+    "PIPE-CONNSPEC-R142.1",
+    "PIPE-CONNSPEC-R142.2",
+    "PIPE-CONNSPEC-R142.3",
+    "PIPE-CONNSPEC-R142.4",
+    "PIPE-CONNSPEC-R143",
+    "PIPE-CONNSPEC-R143.1",
+    "PIPE-CONNSPEC-R143.2",
+    "PIPE-CONNSPEC-R143.3",
+    "PIPE-CONNSPEC-R143.4",
+    "PIPE-CONNSPEC-R144",
+    "PIPE-CONNSPEC-R144.1",
+    "PIPE-CONNSPEC-R144.2",
+    "PIPE-CONNSPEC-R144.3",
+    "PIPE-CONNSPEC-R144.4",
+    "PIPE-CONNSPEC-R145",
+    "PIPE-CONNSPEC-R145.1",
+    "PIPE-CONNSPEC-R145.2",
+    "PIPE-CONNSPEC-R145.3",
+    "PIPE-CONNSPEC-R145.4",
+    "PIPE-CONNSPEC-R146",
+    "PIPE-CONNSPEC-R146.1",
+    "PIPE-CONNSPEC-R146.2",
+    "PIPE-CONNSPEC-R146.3",
+    "PIPE-CONNSPEC-R146.4",
+    "PIPE-CONNSPEC-R147",
+    "PIPE-CONNSPEC-R147.1",
+    "PIPE-CONNSPEC-R147.2",
+    "PIPE-CONNSPEC-R147.3",
+    "PIPE-CONNSPEC-R147.4",
+    "PIPE-CONNSPEC-R148",
+    "PIPE-CONNSPEC-R148.1",
+    "PIPE-CONNSPEC-R148.2",
+    "PIPE-CONNSPEC-R148.3",
+    "PIPE-CONNSPEC-R148.4",
+    "PIPE-CONNSPEC-R149",
+    "PIPE-CONNSPEC-R149.1",
+    "PIPE-CONNSPEC-R149.2",
+    "PIPE-CONNSPEC-R149.3",
+    "PIPE-CONNSPEC-R149.4",
+    "PIPE-CONNSPEC-R150",
+    "PIPE-CONNSPEC-R150.1",
+    "PIPE-CONNSPEC-R150.2",
+    "PIPE-CONNSPEC-R150.3",
+    "PIPE-CONNSPEC-R150.4",
+    "PIPE-CONNSPEC-R151",
+    "PIPE-CONNSPEC-R151.1",
+    "PIPE-CONNSPEC-R151.2",
+    "PIPE-CONNSPEC-R151.3",
+    "PIPE-CONNSPEC-R151.4",
+    "PIPE-CONNSPEC-R152",
+    "PIPE-CONNSPEC-R152.1",
+    "PIPE-CONNSPEC-R152.2",
+    "PIPE-CONNSPEC-R152.3",
+    "PIPE-CONNSPEC-R152.4",
+    "PIPE-CONNSPEC-R153",
+    "PIPE-CONNSPEC-R153.1",
+    "PIPE-CONNSPEC-R153.2",
+    "PIPE-CONNSPEC-R153.3",
+    "PIPE-CONNSPEC-R153.4",
+    "PIPE-CONNSPEC-R154",
+    "PIPE-CONNSPEC-R154.1",
+    "PIPE-CONNSPEC-R154.2",
+    "PIPE-CONNSPEC-R154.3",
+    "PIPE-CONNSPEC-R154.4",
+    "PIPE-CONNSPEC-R155",
+    "PIPE-CONNSPEC-R155.1",
+    "PIPE-CONNSPEC-R155.2",
+    "PIPE-CONNSPEC-R155.3",
+    "PIPE-CONNSPEC-R155.4",
+    "PIPE-CONNSPEC-R156",
+    "PIPE-CONNSPEC-R156.1",
+    "PIPE-CONNSPEC-R156.2",
+    "PIPE-CONNSPEC-R156.3",
+    "PIPE-CONNSPEC-R156.4",
+    "PIPE-CONNSPEC-R157",
+    "PIPE-CONNSPEC-R157.1",
+    "PIPE-CONNSPEC-R157.2",
+    "PIPE-CONNSPEC-R157.3",
+    "PIPE-CONNSPEC-R157.4",
+    "PIPE-CONNSPEC-R158",
+    "PIPE-CONNSPEC-R158.1",
+    "PIPE-CONNSPEC-R158.2",
+    "PIPE-CONNSPEC-R158.3",
+    "PIPE-CONNSPEC-R158.4",
+    "PIPE-CONNSPEC-R159",
+    "PIPE-CONNSPEC-R159.1",
+    "PIPE-CONNSPEC-R159.2",
+    "PIPE-CONNSPEC-R159.3",
+    "PIPE-CONNSPEC-R159.4",
+    "PIPE-CONNSPEC-R160",
+    "PIPE-CONNSPEC-R160.1",
+    "PIPE-CONNSPEC-R160.2",
+    "PIPE-CONNSPEC-R160.3",
+    "PIPE-CONNSPEC-R160.4",
+    "PIPE-CONNSPEC-R161",
+    "PIPE-CONNSPEC-R161.1",
+    "PIPE-CONNSPEC-R161.2",
+    "PIPE-CONNSPEC-R161.3",
+    "PIPE-CONNSPEC-R161.4",
+    "PIPE-CONNSPEC-R162",
+    "PIPE-CONNSPEC-R162.1",
+    "PIPE-CONNSPEC-R162.2",
+    "PIPE-CONNSPEC-R162.3",
+    "PIPE-CONNSPEC-R162.4",
+    "PIPE-CONNSPEC-R163",
+    "PIPE-CONNSPEC-R163.1",
+    "PIPE-CONNSPEC-R163.2",
+    "PIPE-CONNSPEC-R163.3",
+    "PIPE-CONNSPEC-R163.4",
+    "PIPE-CONNSPEC-R164",
+    "PIPE-CONNSPEC-R164.1",
+    "PIPE-CONNSPEC-R164.2",
+    "PIPE-CONNSPEC-R164.3",
+    "PIPE-CONNSPEC-R164.4",
+    "PIPE-CONNSPEC-R165",
+    "PIPE-CONNSPEC-R165.1",
+    "PIPE-CONNSPEC-R165.2",
+    "PIPE-CONNSPEC-R165.3",
+    "PIPE-CONNSPEC-R165.4",
+    "PIPE-CONNSPEC-R166",
+    "PIPE-CONNSPEC-R166.1",
+    "PIPE-CONNSPEC-R166.2",
+    "PIPE-CONNSPEC-R166.3",
+    "PIPE-CONNSPEC-R166.4",
+    "PIPE-CONNSPEC-R167",
+    "PIPE-CONNSPEC-R167.1",
+    "PIPE-CONNSPEC-R167.2",
+    "PIPE-CONNSPEC-R167.3",
+    "PIPE-CONNSPEC-R167.4",
+    "PIPE-CONNSPEC-R168",
+    "PIPE-CONNSPEC-R168.1",
+    "PIPE-CONNSPEC-R168.2",
+    "PIPE-CONNSPEC-R168.3",
+    "PIPE-CONNSPEC-R168.4",
+    "PIPE-CONNSPEC-R169",
+    "PIPE-CONNSPEC-R169.1",
+    "PIPE-CONNSPEC-R169.2",
+    "PIPE-CONNSPEC-R169.3",
+    "PIPE-CONNSPEC-R169.4",
+    "PIPE-CONNSPEC-R170",
+    "PIPE-CONNSPEC-R170.1",
+    "PIPE-CONNSPEC-R170.2",
+    "PIPE-CONNSPEC-R170.3",
+    "PIPE-CONNSPEC-R170.4",
+    "PIPE-CONNSPEC-R171",
+    "PIPE-CONNSPEC-R171.1",
+    "PIPE-CONNSPEC-R171.2",
+    "PIPE-CONNSPEC-R171.3",
+    "PIPE-CONNSPEC-R171.4",
+    "PIPE-CONNSPEC-R172",
+    "PIPE-CONNSPEC-R172.1",
+    "PIPE-CONNSPEC-R172.2",
+    "PIPE-CONNSPEC-R172.3",
+    "PIPE-CONNSPEC-R172.4",
+    "PIPE-CONNSPEC-R173",
+    "PIPE-CONNSPEC-R173.1",
+    "PIPE-CONNSPEC-R173.2",
+    "PIPE-CONNSPEC-R173.3",
+    "PIPE-CONNSPEC-R173.4",
+    "PIPE-CONNSPEC-R174",
+    "PIPE-CONNSPEC-R174.1",
+    "PIPE-CONNSPEC-R174.2",
+    "PIPE-CONNSPEC-R174.3",
+    "PIPE-CONNSPEC-R174.4"
+  ],
+  "requirements": [
+    {
+      "id": "PIPE-CONNSPEC-R001",
+      "title": "Generated status with three hooks and four states",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R002",
+      "title": "Test binding forms",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R003",
+      "title": "The spec-delivery page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R004",
+      "title": "Reference callers in the five core repositories",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R005",
+      "title": "The lane contract in each development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R101",
+      "title": "`ansible-tower-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R101.1",
+        "PIPE-CONNSPEC-R101.2",
+        "PIPE-CONNSPEC-R101.3",
+        "PIPE-CONNSPEC-R101.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R101.1",
+      "title": "`ansible-tower-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R101.2",
+      "title": "`ansible-tower-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R101.3",
+      "title": "`ansible-tower-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R101.4",
+      "title": "`ansible-tower-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R102",
+      "title": "`archimate-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R102.1",
+        "PIPE-CONNSPEC-R102.2",
+        "PIPE-CONNSPEC-R102.3",
+        "PIPE-CONNSPEC-R102.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R102.1",
+      "title": "`archimate-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R102.2",
+      "title": "`archimate-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R102.3",
+      "title": "`archimate-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R102.4",
+      "title": "`archimate-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R103",
+      "title": "`archivebox-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R103.1",
+        "PIPE-CONNSPEC-R103.2",
+        "PIPE-CONNSPEC-R103.3",
+        "PIPE-CONNSPEC-R103.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R103.1",
+      "title": "`archivebox-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R103.2",
+      "title": "`archivebox-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R103.3",
+      "title": "`archivebox-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R103.4",
+      "title": "`archivebox-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R104",
+      "title": "`aris-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R104.1",
+        "PIPE-CONNSPEC-R104.2",
+        "PIPE-CONNSPEC-R104.3",
+        "PIPE-CONNSPEC-R104.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R104.1",
+      "title": "`aris-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R104.2",
+      "title": "`aris-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R104.3",
+      "title": "`aris-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R104.4",
+      "title": "`aris-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R105",
+      "title": "`arr-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R105.1",
+        "PIPE-CONNSPEC-R105.2",
+        "PIPE-CONNSPEC-R105.3",
+        "PIPE-CONNSPEC-R105.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R105.1",
+      "title": "`arr-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R105.2",
+      "title": "`arr-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R105.3",
+      "title": "`arr-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R105.4",
+      "title": "`arr-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R106",
+      "title": "`atlassian-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R106.1",
+        "PIPE-CONNSPEC-R106.2",
+        "PIPE-CONNSPEC-R106.3",
+        "PIPE-CONNSPEC-R106.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R106.1",
+      "title": "`atlassian-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R106.2",
+      "title": "`atlassian-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R106.3",
+      "title": "`atlassian-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R106.4",
+      "title": "`atlassian-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R107",
+      "title": "`audio-transcriber` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R107.1",
+        "PIPE-CONNSPEC-R107.2",
+        "PIPE-CONNSPEC-R107.3",
+        "PIPE-CONNSPEC-R107.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R107.1",
+      "title": "`audio-transcriber` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R107.2",
+      "title": "`audio-transcriber` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R107.3",
+      "title": "`audio-transcriber` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R107.4",
+      "title": "`audio-transcriber` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R108",
+      "title": "`audiobookshelf-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R108.1",
+        "PIPE-CONNSPEC-R108.2",
+        "PIPE-CONNSPEC-R108.3",
+        "PIPE-CONNSPEC-R108.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R108.1",
+      "title": "`audiobookshelf-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R108.2",
+      "title": "`audiobookshelf-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R108.3",
+      "title": "`audiobookshelf-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R108.4",
+      "title": "`audiobookshelf-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R109",
+      "title": "`caddy-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R109.1",
+        "PIPE-CONNSPEC-R109.2",
+        "PIPE-CONNSPEC-R109.3",
+        "PIPE-CONNSPEC-R109.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R109.1",
+      "title": "`caddy-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R109.2",
+      "title": "`caddy-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R109.3",
+      "title": "`caddy-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R109.4",
+      "title": "`caddy-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R110",
+      "title": "`camunda-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R110.1",
+        "PIPE-CONNSPEC-R110.2",
+        "PIPE-CONNSPEC-R110.3",
+        "PIPE-CONNSPEC-R110.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R110.1",
+      "title": "`camunda-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R110.2",
+      "title": "`camunda-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R110.3",
+      "title": "`camunda-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R110.4",
+      "title": "`camunda-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R111",
+      "title": "`ciso-assistant-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R111.1",
+        "PIPE-CONNSPEC-R111.2",
+        "PIPE-CONNSPEC-R111.3",
+        "PIPE-CONNSPEC-R111.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R111.1",
+      "title": "`ciso-assistant-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R111.2",
+      "title": "`ciso-assistant-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R111.3",
+      "title": "`ciso-assistant-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R111.4",
+      "title": "`ciso-assistant-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R112",
+      "title": "`clarity-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R112.1",
+        "PIPE-CONNSPEC-R112.2",
+        "PIPE-CONNSPEC-R112.3",
+        "PIPE-CONNSPEC-R112.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R112.1",
+      "title": "`clarity-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R112.2",
+      "title": "`clarity-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R112.3",
+      "title": "`clarity-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R112.4",
+      "title": "`clarity-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R113",
+      "title": "`container-manager-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R113.1",
+        "PIPE-CONNSPEC-R113.2",
+        "PIPE-CONNSPEC-R113.3",
+        "PIPE-CONNSPEC-R113.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R113.1",
+      "title": "`container-manager-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R113.2",
+      "title": "`container-manager-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R113.3",
+      "title": "`container-manager-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R113.4",
+      "title": "`container-manager-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R114",
+      "title": "`data-science-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R114.1",
+        "PIPE-CONNSPEC-R114.2",
+        "PIPE-CONNSPEC-R114.3",
+        "PIPE-CONNSPEC-R114.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R114.1",
+      "title": "`data-science-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R114.2",
+      "title": "`data-science-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R114.3",
+      "title": "`data-science-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R114.4",
+      "title": "`data-science-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R115",
+      "title": "`dockerhub-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R115.1",
+        "PIPE-CONNSPEC-R115.2",
+        "PIPE-CONNSPEC-R115.3",
+        "PIPE-CONNSPEC-R115.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R115.1",
+      "title": "`dockerhub-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R115.2",
+      "title": "`dockerhub-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R115.3",
+      "title": "`dockerhub-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R115.4",
+      "title": "`dockerhub-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R116",
+      "title": "`documentdb-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R116.1",
+        "PIPE-CONNSPEC-R116.2",
+        "PIPE-CONNSPEC-R116.3",
+        "PIPE-CONNSPEC-R116.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R116.1",
+      "title": "`documentdb-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R116.2",
+      "title": "`documentdb-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R116.3",
+      "title": "`documentdb-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R116.4",
+      "title": "`documentdb-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R117",
+      "title": "`egeria-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R117.1",
+        "PIPE-CONNSPEC-R117.2",
+        "PIPE-CONNSPEC-R117.3",
+        "PIPE-CONNSPEC-R117.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R117.1",
+      "title": "`egeria-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R117.2",
+      "title": "`egeria-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R117.3",
+      "title": "`egeria-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R117.4",
+      "title": "`egeria-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R118",
+      "title": "`emerald-exchange` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R118.1",
+        "PIPE-CONNSPEC-R118.2",
+        "PIPE-CONNSPEC-R118.3",
+        "PIPE-CONNSPEC-R118.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R118.1",
+      "title": "`emerald-exchange` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R118.2",
+      "title": "`emerald-exchange` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R118.3",
+      "title": "`emerald-exchange` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R118.4",
+      "title": "`emerald-exchange` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R119",
+      "title": "`erpnext-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R119.1",
+        "PIPE-CONNSPEC-R119.2",
+        "PIPE-CONNSPEC-R119.3",
+        "PIPE-CONNSPEC-R119.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R119.1",
+      "title": "`erpnext-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R119.2",
+      "title": "`erpnext-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R119.3",
+      "title": "`erpnext-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R119.4",
+      "title": "`erpnext-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R120",
+      "title": "`fan-manager` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R120.1",
+        "PIPE-CONNSPEC-R120.2",
+        "PIPE-CONNSPEC-R120.3",
+        "PIPE-CONNSPEC-R120.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R120.1",
+      "title": "`fan-manager` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R120.2",
+      "title": "`fan-manager` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R120.3",
+      "title": "`fan-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R120.4",
+      "title": "`fan-manager` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R121",
+      "title": "`firefly-iii-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R121.1",
+        "PIPE-CONNSPEC-R121.2",
+        "PIPE-CONNSPEC-R121.3",
+        "PIPE-CONNSPEC-R121.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R121.1",
+      "title": "`firefly-iii-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R121.2",
+      "title": "`firefly-iii-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R121.3",
+      "title": "`firefly-iii-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R121.4",
+      "title": "`firefly-iii-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R122",
+      "title": "`freshrss-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R122.1",
+        "PIPE-CONNSPEC-R122.2",
+        "PIPE-CONNSPEC-R122.3",
+        "PIPE-CONNSPEC-R122.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R122.1",
+      "title": "`freshrss-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R122.2",
+      "title": "`freshrss-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R122.3",
+      "title": "`freshrss-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R122.4",
+      "title": "`freshrss-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R123",
+      "title": "`genius-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R123.1",
+        "PIPE-CONNSPEC-R123.2",
+        "PIPE-CONNSPEC-R123.3",
+        "PIPE-CONNSPEC-R123.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R123.1",
+      "title": "`genius-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R123.2",
+      "title": "`genius-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R123.3",
+      "title": "`genius-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R123.4",
+      "title": "`genius-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R124",
+      "title": "`github-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R124.1",
+        "PIPE-CONNSPEC-R124.2",
+        "PIPE-CONNSPEC-R124.3",
+        "PIPE-CONNSPEC-R124.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R124.1",
+      "title": "`github-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R124.2",
+      "title": "`github-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R124.3",
+      "title": "`github-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R124.4",
+      "title": "`github-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R125",
+      "title": "`gitlab-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R125.1",
+        "PIPE-CONNSPEC-R125.2",
+        "PIPE-CONNSPEC-R125.3",
+        "PIPE-CONNSPEC-R125.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R125.1",
+      "title": "`gitlab-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R125.2",
+      "title": "`gitlab-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R125.3",
+      "title": "`gitlab-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R125.4",
+      "title": "`gitlab-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R126",
+      "title": "`gramps-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R126.1",
+        "PIPE-CONNSPEC-R126.2",
+        "PIPE-CONNSPEC-R126.3",
+        "PIPE-CONNSPEC-R126.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R126.1",
+      "title": "`gramps-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R126.2",
+      "title": "`gramps-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R126.3",
+      "title": "`gramps-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R126.4",
+      "title": "`gramps-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R127",
+      "title": "`hdhomerun-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R127.1",
+        "PIPE-CONNSPEC-R127.2",
+        "PIPE-CONNSPEC-R127.3",
+        "PIPE-CONNSPEC-R127.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R127.1",
+      "title": "`hdhomerun-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R127.2",
+      "title": "`hdhomerun-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R127.3",
+      "title": "`hdhomerun-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R127.4",
+      "title": "`hdhomerun-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R128",
+      "title": "`home-assistant-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R128.1",
+        "PIPE-CONNSPEC-R128.2",
+        "PIPE-CONNSPEC-R128.3",
+        "PIPE-CONNSPEC-R128.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R128.1",
+      "title": "`home-assistant-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R128.2",
+      "title": "`home-assistant-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R128.3",
+      "title": "`home-assistant-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R128.4",
+      "title": "`home-assistant-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R129",
+      "title": "`jellyfin-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R129.1",
+        "PIPE-CONNSPEC-R129.2",
+        "PIPE-CONNSPEC-R129.3",
+        "PIPE-CONNSPEC-R129.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R129.1",
+      "title": "`jellyfin-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R129.2",
+      "title": "`jellyfin-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R129.3",
+      "title": "`jellyfin-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R129.4",
+      "title": "`jellyfin-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R130",
+      "title": "`jena-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R130.1",
+        "PIPE-CONNSPEC-R130.2",
+        "PIPE-CONNSPEC-R130.3",
+        "PIPE-CONNSPEC-R130.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R130.1",
+      "title": "`jena-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R130.2",
+      "title": "`jena-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R130.3",
+      "title": "`jena-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R130.4",
+      "title": "`jena-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R131",
+      "title": "`kafka-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R131.1",
+        "PIPE-CONNSPEC-R131.2",
+        "PIPE-CONNSPEC-R131.3",
+        "PIPE-CONNSPEC-R131.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R131.1",
+      "title": "`kafka-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R131.2",
+      "title": "`kafka-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R131.3",
+      "title": "`kafka-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R131.4",
+      "title": "`kafka-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R132",
+      "title": "`keycloak-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R132.1",
+        "PIPE-CONNSPEC-R132.2",
+        "PIPE-CONNSPEC-R132.3",
+        "PIPE-CONNSPEC-R132.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R132.1",
+      "title": "`keycloak-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R132.2",
+      "title": "`keycloak-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R132.3",
+      "title": "`keycloak-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R132.4",
+      "title": "`keycloak-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R133",
+      "title": "`lakekeeper-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R133.1",
+        "PIPE-CONNSPEC-R133.2",
+        "PIPE-CONNSPEC-R133.3",
+        "PIPE-CONNSPEC-R133.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R133.1",
+      "title": "`lakekeeper-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R133.2",
+      "title": "`lakekeeper-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R133.3",
+      "title": "`lakekeeper-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R133.4",
+      "title": "`lakekeeper-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R134",
+      "title": "`langfuse-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R134.1",
+        "PIPE-CONNSPEC-R134.2",
+        "PIPE-CONNSPEC-R134.3",
+        "PIPE-CONNSPEC-R134.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R134.1",
+      "title": "`langfuse-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R134.2",
+      "title": "`langfuse-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R134.3",
+      "title": "`langfuse-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R134.4",
+      "title": "`langfuse-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R135",
+      "title": "`leanix-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R135.1",
+        "PIPE-CONNSPEC-R135.2",
+        "PIPE-CONNSPEC-R135.3",
+        "PIPE-CONNSPEC-R135.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R135.1",
+      "title": "`leanix-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R135.2",
+      "title": "`leanix-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R135.3",
+      "title": "`leanix-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R135.4",
+      "title": "`leanix-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R136",
+      "title": "`legal-peripherals-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R136.1",
+        "PIPE-CONNSPEC-R136.2",
+        "PIPE-CONNSPEC-R136.3",
+        "PIPE-CONNSPEC-R136.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R136.1",
+      "title": "`legal-peripherals-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R136.2",
+      "title": "`legal-peripherals-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R136.3",
+      "title": "`legal-peripherals-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R136.4",
+      "title": "`legal-peripherals-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R137",
+      "title": "`lgtm-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R137.1",
+        "PIPE-CONNSPEC-R137.2",
+        "PIPE-CONNSPEC-R137.3",
+        "PIPE-CONNSPEC-R137.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R137.1",
+      "title": "`lgtm-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R137.2",
+      "title": "`lgtm-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R137.3",
+      "title": "`lgtm-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R137.4",
+      "title": "`lgtm-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R138",
+      "title": "`listmonk-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R138.1",
+        "PIPE-CONNSPEC-R138.2",
+        "PIPE-CONNSPEC-R138.3",
+        "PIPE-CONNSPEC-R138.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R138.1",
+      "title": "`listmonk-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R138.2",
+      "title": "`listmonk-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R138.3",
+      "title": "`listmonk-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R138.4",
+      "title": "`listmonk-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R139",
+      "title": "`market-data-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R139.1",
+        "PIPE-CONNSPEC-R139.2",
+        "PIPE-CONNSPEC-R139.3",
+        "PIPE-CONNSPEC-R139.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R139.1",
+      "title": "`market-data-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R139.2",
+      "title": "`market-data-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R139.3",
+      "title": "`market-data-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R139.4",
+      "title": "`market-data-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R140",
+      "title": "`mattermost-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R140.1",
+        "PIPE-CONNSPEC-R140.2",
+        "PIPE-CONNSPEC-R140.3",
+        "PIPE-CONNSPEC-R140.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R140.1",
+      "title": "`mattermost-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R140.2",
+      "title": "`mattermost-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R140.3",
+      "title": "`mattermost-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R140.4",
+      "title": "`mattermost-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R141",
+      "title": "`mealie-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R141.1",
+        "PIPE-CONNSPEC-R141.2",
+        "PIPE-CONNSPEC-R141.3",
+        "PIPE-CONNSPEC-R141.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R141.1",
+      "title": "`mealie-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R141.2",
+      "title": "`mealie-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R141.3",
+      "title": "`mealie-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R141.4",
+      "title": "`mealie-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R142",
+      "title": "`media-downloader` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R142.1",
+        "PIPE-CONNSPEC-R142.2",
+        "PIPE-CONNSPEC-R142.3",
+        "PIPE-CONNSPEC-R142.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R142.1",
+      "title": "`media-downloader` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R142.2",
+      "title": "`media-downloader` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R142.3",
+      "title": "`media-downloader` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R142.4",
+      "title": "`media-downloader` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R143",
+      "title": "`microsoft-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R143.1",
+        "PIPE-CONNSPEC-R143.2",
+        "PIPE-CONNSPEC-R143.3",
+        "PIPE-CONNSPEC-R143.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R143.1",
+      "title": "`microsoft-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R143.2",
+      "title": "`microsoft-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R143.3",
+      "title": "`microsoft-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R143.4",
+      "title": "`microsoft-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R144",
+      "title": "`nextcloud-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R144.1",
+        "PIPE-CONNSPEC-R144.2",
+        "PIPE-CONNSPEC-R144.3",
+        "PIPE-CONNSPEC-R144.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R144.1",
+      "title": "`nextcloud-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R144.2",
+      "title": "`nextcloud-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R144.3",
+      "title": "`nextcloud-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R144.4",
+      "title": "`nextcloud-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R145",
+      "title": "`objectstore-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R145.1",
+        "PIPE-CONNSPEC-R145.2",
+        "PIPE-CONNSPEC-R145.3",
+        "PIPE-CONNSPEC-R145.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R145.1",
+      "title": "`objectstore-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R145.2",
+      "title": "`objectstore-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R145.3",
+      "title": "`objectstore-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R145.4",
+      "title": "`objectstore-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R146",
+      "title": "`okta-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R146.1",
+        "PIPE-CONNSPEC-R146.2",
+        "PIPE-CONNSPEC-R146.3",
+        "PIPE-CONNSPEC-R146.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R146.1",
+      "title": "`okta-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R146.2",
+      "title": "`okta-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R146.3",
+      "title": "`okta-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R146.4",
+      "title": "`okta-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R147",
+      "title": "`onetrust-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R147.1",
+        "PIPE-CONNSPEC-R147.2",
+        "PIPE-CONNSPEC-R147.3",
+        "PIPE-CONNSPEC-R147.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R147.1",
+      "title": "`onetrust-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R147.2",
+      "title": "`onetrust-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R147.3",
+      "title": "`onetrust-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R147.4",
+      "title": "`onetrust-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R148",
+      "title": "`openbao-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R148.1",
+        "PIPE-CONNSPEC-R148.2",
+        "PIPE-CONNSPEC-R148.3",
+        "PIPE-CONNSPEC-R148.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R148.1",
+      "title": "`openbao-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R148.2",
+      "title": "`openbao-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R148.3",
+      "title": "`openbao-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R148.4",
+      "title": "`openbao-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R149",
+      "title": "`opensearch-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R149.1",
+        "PIPE-CONNSPEC-R149.2",
+        "PIPE-CONNSPEC-R149.3",
+        "PIPE-CONNSPEC-R149.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R149.1",
+      "title": "`opensearch-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R149.2",
+      "title": "`opensearch-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R149.3",
+      "title": "`opensearch-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R149.4",
+      "title": "`opensearch-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R150",
+      "title": "`owncast-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R150.1",
+        "PIPE-CONNSPEC-R150.2",
+        "PIPE-CONNSPEC-R150.3",
+        "PIPE-CONNSPEC-R150.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R150.1",
+      "title": "`owncast-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R150.2",
+      "title": "`owncast-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R150.3",
+      "title": "`owncast-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R150.4",
+      "title": "`owncast-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R151",
+      "title": "`paperless-ngx-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R151.1",
+        "PIPE-CONNSPEC-R151.2",
+        "PIPE-CONNSPEC-R151.3",
+        "PIPE-CONNSPEC-R151.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R151.1",
+      "title": "`paperless-ngx-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R151.2",
+      "title": "`paperless-ngx-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R151.3",
+      "title": "`paperless-ngx-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R151.4",
+      "title": "`paperless-ngx-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R152",
+      "title": "`plane-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R152.1",
+        "PIPE-CONNSPEC-R152.2",
+        "PIPE-CONNSPEC-R152.3",
+        "PIPE-CONNSPEC-R152.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R152.1",
+      "title": "`plane-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R152.2",
+      "title": "`plane-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R152.3",
+      "title": "`plane-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R152.4",
+      "title": "`plane-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R153",
+      "title": "`portainer-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R153.1",
+        "PIPE-CONNSPEC-R153.2",
+        "PIPE-CONNSPEC-R153.3",
+        "PIPE-CONNSPEC-R153.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R153.1",
+      "title": "`portainer-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R153.2",
+      "title": "`portainer-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R153.3",
+      "title": "`portainer-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R153.4",
+      "title": "`portainer-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R154",
+      "title": "`postiz-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R154.1",
+        "PIPE-CONNSPEC-R154.2",
+        "PIPE-CONNSPEC-R154.3",
+        "PIPE-CONNSPEC-R154.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R154.1",
+      "title": "`postiz-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R154.2",
+      "title": "`postiz-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R154.3",
+      "title": "`postiz-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R154.4",
+      "title": "`postiz-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R155",
+      "title": "`pulselink-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R155.1",
+        "PIPE-CONNSPEC-R155.2",
+        "PIPE-CONNSPEC-R155.3",
+        "PIPE-CONNSPEC-R155.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R155.1",
+      "title": "`pulselink-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R155.2",
+      "title": "`pulselink-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R155.3",
+      "title": "`pulselink-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R155.4",
+      "title": "`pulselink-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R156",
+      "title": "`qbittorrent-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R156.1",
+        "PIPE-CONNSPEC-R156.2",
+        "PIPE-CONNSPEC-R156.3",
+        "PIPE-CONNSPEC-R156.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R156.1",
+      "title": "`qbittorrent-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R156.2",
+      "title": "`qbittorrent-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R156.3",
+      "title": "`qbittorrent-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R156.4",
+      "title": "`qbittorrent-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R157",
+      "title": "`repository-manager` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R157.1",
+        "PIPE-CONNSPEC-R157.2",
+        "PIPE-CONNSPEC-R157.3",
+        "PIPE-CONNSPEC-R157.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R157.1",
+      "title": "`repository-manager` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R157.2",
+      "title": "`repository-manager` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R157.3",
+      "title": "`repository-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R157.4",
+      "title": "`repository-manager` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R158",
+      "title": "`rom-manager` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R158.1",
+        "PIPE-CONNSPEC-R158.2",
+        "PIPE-CONNSPEC-R158.3",
+        "PIPE-CONNSPEC-R158.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R158.1",
+      "title": "`rom-manager` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R158.2",
+      "title": "`rom-manager` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R158.3",
+      "title": "`rom-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R158.4",
+      "title": "`rom-manager` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R159",
+      "title": "`salesforce-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R159.1",
+        "PIPE-CONNSPEC-R159.2",
+        "PIPE-CONNSPEC-R159.3",
+        "PIPE-CONNSPEC-R159.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R159.1",
+      "title": "`salesforce-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R159.2",
+      "title": "`salesforce-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R159.3",
+      "title": "`salesforce-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R159.4",
+      "title": "`salesforce-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R160",
+      "title": "`scholarx` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R160.1",
+        "PIPE-CONNSPEC-R160.2",
+        "PIPE-CONNSPEC-R160.3",
+        "PIPE-CONNSPEC-R160.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R160.1",
+      "title": "`scholarx` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R160.2",
+      "title": "`scholarx` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R160.3",
+      "title": "`scholarx` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R160.4",
+      "title": "`scholarx` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R161",
+      "title": "`searxng-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R161.1",
+        "PIPE-CONNSPEC-R161.2",
+        "PIPE-CONNSPEC-R161.3",
+        "PIPE-CONNSPEC-R161.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R161.1",
+      "title": "`searxng-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R161.2",
+      "title": "`searxng-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R161.3",
+      "title": "`searxng-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R161.4",
+      "title": "`searxng-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R162",
+      "title": "`servicenow-api` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R162.1",
+        "PIPE-CONNSPEC-R162.2",
+        "PIPE-CONNSPEC-R162.3",
+        "PIPE-CONNSPEC-R162.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R162.1",
+      "title": "`servicenow-api` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R162.2",
+      "title": "`servicenow-api` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R162.3",
+      "title": "`servicenow-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R162.4",
+      "title": "`servicenow-api` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R163",
+      "title": "`spark-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R163.1",
+        "PIPE-CONNSPEC-R163.2",
+        "PIPE-CONNSPEC-R163.3",
+        "PIPE-CONNSPEC-R163.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R163.1",
+      "title": "`spark-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R163.2",
+      "title": "`spark-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R163.3",
+      "title": "`spark-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R163.4",
+      "title": "`spark-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R164",
+      "title": "`sql-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R164.1",
+        "PIPE-CONNSPEC-R164.2",
+        "PIPE-CONNSPEC-R164.3",
+        "PIPE-CONNSPEC-R164.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R164.1",
+      "title": "`sql-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R164.2",
+      "title": "`sql-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R164.3",
+      "title": "`sql-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R164.4",
+      "title": "`sql-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R165",
+      "title": "`stirlingpdf-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R165.1",
+        "PIPE-CONNSPEC-R165.2",
+        "PIPE-CONNSPEC-R165.3",
+        "PIPE-CONNSPEC-R165.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R165.1",
+      "title": "`stirlingpdf-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R165.2",
+      "title": "`stirlingpdf-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R165.3",
+      "title": "`stirlingpdf-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R165.4",
+      "title": "`stirlingpdf-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R166",
+      "title": "`systems-manager` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R166.1",
+        "PIPE-CONNSPEC-R166.2",
+        "PIPE-CONNSPEC-R166.3",
+        "PIPE-CONNSPEC-R166.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R166.1",
+      "title": "`systems-manager` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R166.2",
+      "title": "`systems-manager` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R166.3",
+      "title": "`systems-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R166.4",
+      "title": "`systems-manager` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R167",
+      "title": "`technitium-dns-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R167.1",
+        "PIPE-CONNSPEC-R167.2",
+        "PIPE-CONNSPEC-R167.3",
+        "PIPE-CONNSPEC-R167.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R167.1",
+      "title": "`technitium-dns-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R167.2",
+      "title": "`technitium-dns-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R167.3",
+      "title": "`technitium-dns-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R167.4",
+      "title": "`technitium-dns-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R168",
+      "title": "`tunnel-manager` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R168.1",
+        "PIPE-CONNSPEC-R168.2",
+        "PIPE-CONNSPEC-R168.3",
+        "PIPE-CONNSPEC-R168.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R168.1",
+      "title": "`tunnel-manager` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R168.2",
+      "title": "`tunnel-manager` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R168.3",
+      "title": "`tunnel-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R168.4",
+      "title": "`tunnel-manager` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R169",
+      "title": "`twenty-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R169.1",
+        "PIPE-CONNSPEC-R169.2",
+        "PIPE-CONNSPEC-R169.3",
+        "PIPE-CONNSPEC-R169.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R169.1",
+      "title": "`twenty-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R169.2",
+      "title": "`twenty-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R169.3",
+      "title": "`twenty-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R169.4",
+      "title": "`twenty-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R170",
+      "title": "`uptime-kuma-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R170.1",
+        "PIPE-CONNSPEC-R170.2",
+        "PIPE-CONNSPEC-R170.3",
+        "PIPE-CONNSPEC-R170.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R170.1",
+      "title": "`uptime-kuma-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R170.2",
+      "title": "`uptime-kuma-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R170.3",
+      "title": "`uptime-kuma-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R170.4",
+      "title": "`uptime-kuma-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R171",
+      "title": "`vaultwarden-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R171.1",
+        "PIPE-CONNSPEC-R171.2",
+        "PIPE-CONNSPEC-R171.3",
+        "PIPE-CONNSPEC-R171.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R171.1",
+      "title": "`vaultwarden-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R171.2",
+      "title": "`vaultwarden-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R171.3",
+      "title": "`vaultwarden-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R171.4",
+      "title": "`vaultwarden-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R172",
+      "title": "`vector-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R172.1",
+        "PIPE-CONNSPEC-R172.2",
+        "PIPE-CONNSPEC-R172.3",
+        "PIPE-CONNSPEC-R172.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R172.1",
+      "title": "`vector-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R172.2",
+      "title": "`vector-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R172.3",
+      "title": "`vector-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R172.4",
+      "title": "`vector-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R173",
+      "title": "`wger-agent` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R173.1",
+        "PIPE-CONNSPEC-R173.2",
+        "PIPE-CONNSPEC-R173.3",
+        "PIPE-CONNSPEC-R173.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R173.1",
+      "title": "`wger-agent` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R173.2",
+      "title": "`wger-agent` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R173.3",
+      "title": "`wger-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R173.4",
+      "title": "`wger-agent` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R174",
+      "title": "`world-reference-mcp` adopts the standard spec-delivery method and page",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R174.1",
+        "PIPE-CONNSPEC-R174.2",
+        "PIPE-CONNSPEC-R174.3",
+        "PIPE-CONNSPEC-R174.4"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R174.1",
+      "title": "`world-reference-mcp` has a `specs/` tree with a generated `status.json`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R174.2",
+      "title": "`world-reference-mcp` has the three spec hooks in its pre-commit config",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R174.3",
+      "title": "`world-reference-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R174.4",
+      "title": "`world-reference-mcp` has the rapid-delivery section in its development skill",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    }
+  ]
+}

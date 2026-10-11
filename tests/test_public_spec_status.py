@@ -42,7 +42,7 @@ def test_invalid_status_json(tmp_path, payload, reason):
 
 
 @pytest.mark.parametrize("field,value,reason", [
-    ("schema_version", 2, "schema version or spec ID mismatch"),
+    ("schema_version", 3, "schema version or spec ID mismatch"),
     ("owner_repo", "other", "wrong owner"),
     ("requirement_ids", [], "requirement IDs required"),
     ("delivery_state", "INVALID", "invalid state"),
@@ -113,3 +113,12 @@ def test_requirement_delivery_needs_its_own_merged_head(tmp_path):
     untitled = entry(title="", delivery_state="DONE")
     errors = register(tmp_path, status() | {"requirements": [untitled]})
     assert any("title and delivery state required" in error for error in errors)
+
+
+def test_generated_schema_two_status_is_accepted_without_receipts(tmp_path):
+    path = tmp_path / "status.json"
+    generated = dict(schema_version=2, spec_id="PIPE-TEST-1", owner_repo="pipelines",
+                     delivery_state="SPECIFIED", requirement_ids=["TEST-1"],
+                     requirements=[dict(id="TEST-1", delivery_state="SPECIFIED")])
+    path.write_text(json.dumps(generated), encoding="utf-8")
+    assert status_errors(path) == ([], ["TEST-1"], "PIPE-TEST-1")
