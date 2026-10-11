@@ -1,0 +1,7 @@
+# Test contract — PIPE-CONNSPEC-001
+
+| ID | Requirement | Test and expected result |
+|---|---|---|
+| P-1 | FR-1 | The files named in PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005 exist in this repository and the reference workflows call the reusable Pages workflow. |
+| P-2 | FR-2 | For each connector, the check in each child requirement passes on its default branch. |
+| N-1 | FR-2 | A connector missing any child is reported as SPECIFIED by the rollup, never as complete. |

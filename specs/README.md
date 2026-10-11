@@ -7,6 +7,7 @@ This directory is the public build contract for pipeline-owned Graph OS ecosyste
 | [ecosystem-pages-parity](ecosystem-pages-parity/spec.md) | PIPE-PAGES-R001 | Shared Pages parity and release receipt | SPECIFIED | NOT_AUDITED |
 | [ordered-digest-release](ordered-digest-release/spec.md) | PIPE-RELEASE-R001 | Shared CI/release orchestration | SPECIFIED | NOT_AUDITED |
 | [commit-identity-governance](commit-identity-governance/spec.md) | PIPE-IDENTITY-R001 | Commit author/committer identity allowlist enforcement | SPECIFIED | NOT_AUDITED |
+| [connector-spec-delivery](connector-spec-delivery/spec.md) | PIPE-CONNSPEC-R001 | Spec-delivery standard and per-connector rollout | SPECIFIED | NOT_AUDITED |
 
 `SPECIFIED` means ready for implementation. `BUILDING`, `BUILT`, and `LANDED` distinguish work in progress, source produced, and an exact merged revision. `CLOSED`, `DEFERRED`, and `REJECTED` are explicit dispositions. `UNKNOWN` means no exact audit established delivery. `NOT_AUDITED`, `PENDING`, `ACCEPTED`, and `FAILED` describe the separate acceptance result. Only a public merged revision supports `LANDED`; only recorded tests, consumer, and release receipts support `ACCEPTED`. A requirement counts as delivered only once a merged-head commit on the default branch demonstrates it, per its `requirements` entry in `status.json`.
 
