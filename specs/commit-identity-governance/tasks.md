@@ -1,4 +1,4 @@
-# Tasks — PIPE-IDENTITY-001
+# Tasks — PIPE-IDENTITY
 
 - [ ] Define the bounded, versioned allowlist configuration schema (`{name, email}` pairs) and its
       load/validation module, modeled on `pipelines_hooks/privacy/identity_catalog.py`. Closes FR-1

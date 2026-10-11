@@ -1,4 +1,4 @@
-# Architecture — PIPE-PAGES-001
+# Architecture — PIPE-PAGES
 
 ## Existing wiring
 

@@ -1,4 +1,4 @@
-# PIPE-RELEASE-001 — Dependency-ordered digest release orchestration
+# PIPE-RELEASE — Dependency-ordered digest release orchestration
 
 ## Purpose and user stories
 

@@ -1,7 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "spec_id": "PIPE-PAGES-001",
   "owner_repo": "pipelines",
+  "delivery_state": "SPECIFIED",
   "requirement_ids": [
     "PIPE-PAGES-R001",
     "PIPE-PAGES-R002",
@@ -15,134 +16,100 @@
     "PIPE-PAGES-R010",
     "PIPE-PAGES-R011"
   ],
-  "delivery_state": "SPECIFIED",
-  "acceptance_state": "NOT_AUDITED",
-  "evidence": [],
   "requirements": [
     {
       "id": "PIPE-PAGES-R001",
       "title": "Repository switcher kept in sync with the core repo list",
-      "delivery_state": "BUILDING",
-      "evidence": [],
-      "remaining": "A switcher change (rename and the two missing repositories) is built on a branch but not landed: every consumer verifies its tracked theme copies against this repository at main, so the template change has to land together with a re-sync in each consumer. Also remaining: removal of the obsolete standalone web UI deployment-manifest generator in agent-utilities."
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R002",
       "title": "Layered documentation from overview to reference",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "fe4d11323d0b94c044c38f5257a15576c076500e",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/fe4d11323d0b94c044c38f5257a15576c076500e",
-          "description": "Implemented on the default branch; exercised by .github/workflows/pages.yml (mkdocs build --strict on push to pages/**, fails on broken inter-tier links)"
-        }
-      ]
+      "landed_in": [
+        "fe4d11323d0b"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R003",
       "title": "Present-tense docs with accessible embedded start",
       "delivery_state": "SPECIFIED",
-      "evidence": [],
-      "remaining": "README.md's heading order matches the canonical Overview/Key capabilities/Documentation/Architecture/Quick start/Contributing/License order and uses the shared Material theme, but no embedded observable quick-start demonstration exists in pipelines' own docs, and no accessibility or present-tense co"
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R004",
       "title": "One progressively disclosed skill-graph corpus",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "fe4d11323d0b94c044c38f5257a15576c076500e",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/fe4d11323d0b94c044c38f5257a15576c076500e",
-          "description": "Implemented on the default branch; exercised by scripts/check_five_repo_parity.py output committed as pages/parity.md (skill-graph-reference and components-nav-tier columns = yes for all 5 tracked repos as of last run)"
-        }
-      ]
+      "landed_in": [
+        "fe4d11323d0b"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R005",
       "title": "Generate architecture and reference pages from registries",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "description": "Implemented on the default branch; exercised by tests/test_skill_graph_registry_comparison.py"
-        }
-      ]
+      "landed_in": [
+        "38133654c6e9",
+        "6048c059727f"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R006",
       "title": "Rehome generated docs out of the legacy docs directory",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "description": "Implemented on the default branch; exercised by tests/test_docs_rehomed.py"
-        }
-      ]
+      "landed_in": [
+        "38133654c6e9",
+        "fabe92a1aa4c"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R007",
       "title": "Ecosystem flow diagram with exact names and project marks",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "64e34ca63385200f5ddfef5286e6886bf7dc80b4",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/64e34ca63385200f5ddfef5286e6886bf7dc80b4",
-          "description": "Implementing commit is reachable from the default branch."
-        }
-      ]
+      "landed_in": [
+        "64e34ca63385"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R008",
       "title": "Correct ownership and quick start in consumer parity checks",
       "delivery_state": "SPECIFIED",
-      "evidence": []
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R009",
       "title": "HTML/CSS architecture views, no ASCII or Mermaid diagrams",
       "delivery_state": "SPECIFIED",
-      "evidence": [],
-      "remaining": "The shared theme's runtime-architecture.svg is a tested, accessible, theme-aware generated diagram (tests/test_sync_mkdocs_theme.py) and pipelines' own pages/ has zero Mermaid/ASCII, but pages/parity.md (last run 2026-09-23, still the latest on main) records agent-utilities with 141 Mermaid and 48 A"
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R010",
       "title": "Generate API contract docs from the contract registry",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/38133654c6e9d4d2938a686a075a6a03c6aa0f8f",
-          "description": "Implemented on the default branch; exercised by tests/test_skill_graph_registry_comparison.py"
-        }
-      ]
+      "landed_in": [
+        "38133654c6e9",
+        "6048c059727f"
+      ],
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R011",
       "title": "Present-tense home page with screenshot and repo map",
       "delivery_state": "LANDED",
-      "evidence": [
-        {
-          "kind": "merged_head",
-          "result": "passed",
-          "commit": "ebfaa43bc23346a3a635edd5d1822beb46d48898",
-          "url": "https://github.com/Knuckles-Team/pipelines/commit/ebfaa43bc23346a3a635edd5d1822beb46d48898",
-          "description": "Implementing commit is reachable from the default branch."
-        }
-      ]
+      "landed_in": [
+        "ebfaa43bc233"
+      ],
+      "verified_by": []
     }
   ]
 }

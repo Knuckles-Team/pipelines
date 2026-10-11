@@ -1,4 +1,4 @@
-# Tasks — PIPE-PAGES-001
+# Tasks — PIPE-PAGES
 
 - [ ] Review public consumer declaration and receipt schema with full commits, content sources, and owner links.
 - [ ] Refactor existing parity script to use exact fetched commits and shared theme enumeration, removing fixed names and worktree fallback.

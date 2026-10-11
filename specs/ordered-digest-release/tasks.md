@@ -1,4 +1,4 @@
-# Tasks — PIPE-RELEASE-001
+# Tasks — PIPE-RELEASE
 
 - [ ] Agree public candidate schema and integrity mechanism; document deployment-owner handoff fields.
 - [ ] Implement strict candidate, digest, source, and dependency validation before publication effects.

@@ -1,4 +1,4 @@
-# PIPE-IDENTITY-001 — Commit author identity governance
+# PIPE-IDENTITY — Commit author identity governance
 
 ## Purpose and user stories
 

@@ -1,4 +1,4 @@
-# Test contract — PIPE-CONNSPEC-001
+# Test contract — PIPE-CONNSPEC
 
 | ID | Requirement | Test and expected result |
 |---|---|---|
