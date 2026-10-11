@@ -182,6 +182,7 @@ jobs:
         env:
           READINESS_ENABLED: ${{ inputs.agent_readiness_enabled }}
           CONTENT_SOURCE: ${{ inputs.content_source }}
+          SPEC_DELIVERY_ENABLED: ${{ inputs.spec_dashboard_enabled }}
         run: |
           set -euo pipefail
           if [ -f "mkdocs.yml" ]; then

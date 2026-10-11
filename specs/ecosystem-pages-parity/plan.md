@@ -51,6 +51,15 @@ Levels: ecosystem (organisation profile README) -> repository (`/<repo>/spec-del
 
 The reusable workflow `pages_pipeline.yml` (it already runs `--output site/spec-delivery`) carries all steps. Connector rows PIPE-CONNSPEC-R101 and following, and the caller pattern PIPE-CONNSPEC-R004, are linked by ID and not restated. CONFIRMED. Client repositories adopt through their own callers. DECIDED.
 
+## Spec delivery in the site navigation (PIPE-PAGES-R018)
+
+Data flow: `spec_dashboard_enabled` -> `SPEC_DELIVERY_ENABLED` on the Build Docs step -> `extra.spec_delivery` in `templates/mkdocs-theme/base.mkdocs.yml` -> `announce` block in `templates/mkdocs-theme/overrides/main.html` -> link and list on every page.
+
+- Single copy. DECIDED: `custom_dir` in `templates/mkdocs-theme/base.mkdocs.yml` points at `.pipeline-theme/templates/mkdocs-theme/overrides`, so the override and its styles are read from the theme checkout and no consumer syncs `main.html`.
+
+- Attach point. DECIDED: the `announce` block in `templates/mkdocs-theme/overrides/main.html`, beside the site switcher. The list reuses `extra.ecosystem.sites`, the list the switcher already reads. R018.4 pins its URLs to `REPOS`.
+- Root-relative link. DECIDED: `base_url` resolves from any page depth, so the link needs no host.
+- Rejected: a JavaScript menu built from a generated JSON file. It fails without scripts and adds a second list.
 ## Site navigation on the page (PIPE-PAGES-R019)
 
 Data flow: `ecosystem_components()` (`scripts/spec_dashboard_drilldown.py:17`) feeds `site_nav`, which `render` places before the frame (`scripts/spec_dashboard_render.py:70`). The page must stay a standalone file at `site/spec-delivery/index.html`.

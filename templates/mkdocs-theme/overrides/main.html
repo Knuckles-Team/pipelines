@@ -21,6 +21,25 @@
       </ul>
     </nav>
   </details>
+  {% if config.extra.spec_delivery %}
+  <style>
+    .site-spec-delivery { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.3rem 0.8rem; }
+    .site-spec-delivery > a { font-weight: 700; }
+    .site-spec-delivery__list { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+    .site-spec-delivery a:focus-visible, .site-spec-delivery summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  </style>
+  <nav class="site-spec-delivery" aria-label="Spec delivery">
+    <a class="site-spec-delivery__link" href="{{ base_url }}/spec-delivery/">Spec delivery</a>
+    <details class="site-spec-delivery__menu">
+      <summary aria-label="Spec delivery of each core repository">All repositories</summary>
+      <ul class="site-spec-delivery__list">
+        {% for site in config.extra.ecosystem.sites %}
+          {% if site.spec_delivery is not false %}<li><a href="{{ site.url }}spec-delivery/">{{ site.name }}</a></li>{% endif %}
+        {% endfor %}
+      </ul>
+    </details>
+  </nav>
+  {% endif %}
 {% endblock %}
 
 {% block footer %}
