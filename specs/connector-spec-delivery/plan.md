@@ -7,3 +7,7 @@ Each connector copies the reference callers named in PIPE-CONNSPEC-R004 and the 
 ## Order
 
 Land the specs tree and hooks first, then the Pages caller, then the skill section, so each connector's dashboard shows real states from its first publish.
+
+## Landing attribution compatibility
+
+The generator uses Git trailer parsing in the existing single history scan, with historical Spec subjects, ranges and shorthand retained. Existing merged_head and landed_in receipts remain supported: they do not preserve enough provenance to distinguish valid migrations from old parser mistakes. Correct known false receipts through targeted review rather than global invalidation.

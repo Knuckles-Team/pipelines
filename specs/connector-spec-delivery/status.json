@@ -386,7 +386,11 @@
       "title": "Generated status with three hooks and four states",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_spec_landing_attribution.py:15",
+        "tests/hooks/test_spec_landing_attribution.py:37",
+        "tests/hooks/test_spec_landing_attribution.py:49"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R002",

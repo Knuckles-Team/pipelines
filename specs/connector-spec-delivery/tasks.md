@@ -5,3 +5,5 @@
 - [ ] Record each landed child in the generated status and confirm the connector's page publishes.
 
 The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work order; they are not repeated here.
+
+- [x] Limit new PIPE-CONNSPEC-R001 landing attribution to explicit declarations, with regression tests and preserved legacy receipt validation.
