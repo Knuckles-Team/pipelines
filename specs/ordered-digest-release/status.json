@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "spec_id": "PIPE-RELEASE-001",
+  "spec_id": "PIPE-RELEASE",
   "owner_repo": "pipelines",
   "delivery_state": "LANDED",
   "requirement_ids": [

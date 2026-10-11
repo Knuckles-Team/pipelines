@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "spec_id": "PIPE-CONNSPEC-001",
+  "spec_id": "PIPE-CONNSPEC",
   "owner_repo": "pipelines",
   "delivery_state": "SPECIFIED",
   "requirement_ids": [
@@ -437,8 +437,8 @@
         "615425fe278b"
       ],
       "verified_by": [
-        "tests/test_spec_standard.py:103",
-        "tests/test_spec_standard.py:110"
+        "tests/test_spec_standard.py:108",
+        "tests/test_spec_standard.py:115"
       ]
     },
     {
