@@ -29,6 +29,9 @@ SUFFIX_RE = re.compile(r"-\d+$")
 #: A row ID in the standard form; older forms keep their permanent IDs.
 STANDARD_ROW_RE = re.compile(r"-R\d{3}(?:\.\d+)*$")
 
+#: Advisory until every repository has deleted its tombstone rows; `--tombstones` enforces it.
+TOMBSTONE = "is a tombstone for a moved row"
+
 
 def _read(path: Path) -> str:
     try:
@@ -64,17 +67,18 @@ def check_id(spec_dir: Path, spec_id: str) -> list[str]:
     out = []
     if SUFFIX_RE.search(spec_id):
         out.append(f"spec ID {spec_id} has a numeric suffix")
-    rows = (row for line in _read(spec_dir / "requirements.md").splitlines()
-            for row in parse_rows(line))
+    rows = (
+        row
+        for line in _read(spec_dir / "requirements.md").splitlines()
+        for row in parse_rows(line)
+    )
     for row in rows:
         if (
             row.retired_reason is None
             and STANDARD_ROW_RE.search(row.id)
             and not row.id.startswith(spec_id + "-R")
         ):
-            out.append(
-                f"requirements.md row {row.id} does not start with {spec_id}-R"
-            )
+            out.append(f"requirements.md row {row.id} does not start with {spec_id}-R")
     return out
 
 
@@ -82,7 +86,7 @@ def check_tombstones(spec_dir: Path) -> list[str]:
     """A ``RETIRED: replaced by`` row is a tombstone for a moved row."""
     rows = parse_rows(_read(spec_dir / "requirements.md"))
     return [
-        f"requirements.md row {r.id} is a tombstone for a moved row; delete it"
+        f"requirements.md row {r.id} {TOMBSTONE}; delete it"
         for r in rows
         if (r.retired_reason or "").startswith("replaced by")
     ]
@@ -125,12 +129,19 @@ def _spec_dirs(root: Path) -> list[Path]:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="spec-standard", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    root = repo_root(parser.parse_args(argv).root)
+    parser.add_argument(
+        "--tombstones",
+        action="store_true",
+        help="fail on a tombstone row for a moved requirement (advisory by default)",
+    )
+    args = parser.parse_args(argv)
+    root = repo_root(args.root)
     index = _read(root / "specs" / "README.md")
     dirs = _spec_dirs(root)
-    findings = [f for d in dirs for f in check_spec(d, index)]
-    for finding in findings:
-        print(finding)
+    found = [f for d in dirs for f in check_spec(d, index)]
+    findings = [f for f in found if args.tombstones or TOMBSTONE not in f]
+    for finding in found:
+        print(finding if finding in findings else f"ADV {finding}")
     if findings:
         print(f"spec-standard: FAIL: {len(findings)} finding(s)")
         return 1
