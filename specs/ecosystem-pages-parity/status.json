@@ -90,6 +90,12 @@
     "PIPE-PAGES-R021.10",
     "PIPE-PAGES-R021.11",
     "PIPE-PAGES-R021.12",
+    "PIPE-PAGES-R021.13",
+    "PIPE-PAGES-R021.14",
+    "PIPE-PAGES-R021.15",
+    "PIPE-PAGES-R021.16",
+    "PIPE-PAGES-R021.17",
+    "PIPE-PAGES-R021.18",
     "PIPE-PAGES-R022",
     "PIPE-PAGES-R022.1",
     "PIPE-PAGES-R022.2",
@@ -886,7 +892,13 @@
         "PIPE-PAGES-R021.9",
         "PIPE-PAGES-R021.10",
         "PIPE-PAGES-R021.11",
-        "PIPE-PAGES-R021.12"
+        "PIPE-PAGES-R021.12",
+        "PIPE-PAGES-R021.13",
+        "PIPE-PAGES-R021.14",
+        "PIPE-PAGES-R021.15",
+        "PIPE-PAGES-R021.16",
+        "PIPE-PAGES-R021.17",
+        "PIPE-PAGES-R021.18"
       ]
     },
     {
@@ -968,6 +980,48 @@
     },
     {
       "id": "PIPE-PAGES-R021.12",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.13",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.14",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.15",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.16",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.17",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R021.18",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
