@@ -70,6 +70,19 @@ gates. This is the narrow network exception documented in AGENTS.md, consistent
 with repository-manager's manual RELEASE migration at
 `0be91491a809e50c719cf4c729114f638c5a2b64`.
 
+## Release source and tag
+
+The workflow freezes the caller's exact commit before the build. The release tag
+preflight compares that source with checkout HEAD, the workflow SHA and release
+metadata before upload. It reads the exact GitHub tag and resolves annotated
+tags to their commit. Conflicts and unavailable metadata block publication.
+Release creation repeats the check and supplies that verified commit explicitly;
+advancing the default branch cannot move the release target. This guard performs
+no tag writes and does not repair an existing conflicting release. A concurrent
+tag change after preflight can still block the later release check; upload and
+GitHub release creation are separate operations. A tag mutation after the final
+read can still race release creation; this check is not an atomic tag lock.
+
 ## Evidence and isolation
 
 `release-readiness.json` records source and pipeline commits, wheel SHA-256,

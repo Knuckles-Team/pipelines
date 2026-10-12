@@ -26,12 +26,19 @@ runs:
         RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
       run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"'
 
+    - name: Verify release tag source
+      id: release_source
+      uses: ./.pipeline-contract/.github/actions/verify-release-source
+      with:
+        github-token: ${{ inputs.github-token }}
+
     - name: Create Release
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       with:
         tag_name: v${{ env.BUILD_VERSION }}
+        target_commitish: ${{ steps.release_source.outputs.commit }}
         name: Release v${{ env.BUILD_VERSION }}
         body: |
           Released: ${{ env.COMMIT_DATETIME }}

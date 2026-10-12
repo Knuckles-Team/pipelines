@@ -1,0 +1,22 @@
+name: Verify release source and tag
+description: Refuse release metadata drift or a conflicting GitHub tag before publication.
+inputs:
+  github-token:
+    description: Token used only to read repository and tag metadata.
+    required: true
+outputs:
+  commit:
+    description: Verified immutable source commit for release creation.
+    value: ${{ steps.verify.outputs.commit }}
+runs:
+  using: composite
+  steps:
+    - name: Verify release source
+      id: verify
+      shell: bash
+      env:
+        RELEASE_TOKEN: ${{ inputs.github-token }}
+        RELEASE_API_URL: ${{ github.api_url }}
+        RELEASE_REPOSITORY: ${{ github.repository }}
+        EXPECTED_COMMIT: ${{ github.sha }}
+      run: '"$READINESS_PYTHON" -I "${{ github.action_path }}/verify_release_source.py"'
