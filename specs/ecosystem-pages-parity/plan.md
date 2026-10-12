@@ -235,7 +235,7 @@ The six original inputs were read from the authorized source workspace. Source-r
 | AU:119 | PIPE-PAGES-R021.25–30 | `c98a353b9004b5cde39c6d26434c570fb1c1db65043adbfa950b240701066ca1` |
 | AU:123 | PIPE-PAGES-R023.7–12 | `9814e34da54466301d7778d157b8a5aafddd7a0791470ec90f1cf0e7da8f6018` |
 
-Cross-repository boundaries: consumers provide inventory, policy, adapters and rule packs. Pipelines owns checking/report contracts only. Host consumers may read reports for repair planning without acquiring execution or write authority. Every added obligation remains SPECIFIED; implementation and real integration acceptance are future work.
+Cross-repository boundaries: consumers provide inventory, policy, adapters and rule packs. Pipelines owns checking/report contracts only. Host consumers may read reports for repair planning without acquiring execution or write authority. Implementation and real integration acceptance are future work.
 
 ## Documentation contract synthesis
 
@@ -290,7 +290,7 @@ All six original inputs were read. PIPE:4's formerly unavailable task was found 
 
 Source-byte SHA-256 evidence: task b097dc10 `8d1b602b340de2c617569ea065a6d0299397a69e43608332fa9f80a689b7d856`; guide splitting `12192bfe6cade66abffafe81844f9cf95847b2b94b135e13644e4b86c4005488`; environment/deployment conversation `6ea0112bca6b26c0b8f28710f31e9f5dc77994a4b3e61ee70c1b8f4164ab0dea`; four deployment options `ea28329a140f215fd655e2fb80014029f48251d874cd63f9b42ce86788e7d3be`; modernization plan `5b71bc49259e276e2e149f837cc35780c31da21d5a664ca0fd467ac476c5c1b9`; standardization task `c7c5c1545805b72cca225ce1b9ede5fabad308833217b1772212b85e49281520`; shared README request `21d96ae2690c43ccb7c076e1620afead4b731a8357fe64c4a2282eaba89560c3`.
 
-Every new child remains SPECIFIED. Runtime/deployment capability remains with its existing owner; pipelines owns documentation parity and evidence only. The parent rows keep their existing historical receipts; new acceptance is not claimed by those receipts.
+Runtime/deployment capability remains with its existing owner; pipelines owns documentation parity and evidence only. The parent rows keep their existing historical receipts; new acceptance is not claimed by those receipts.
 
 
 ### Amendment — 2026-10-12: readable delivery detail panels
