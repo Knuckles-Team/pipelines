@@ -12,7 +12,8 @@ from scripts.sync_mkdocs_theme import THEME_FILES, sync_theme
 
 
 def git(root: Path, *args: str) -> str:
-    return subprocess.check_output(["git", "-C", str(root), *args], env=sanitized_env(), text=True).strip()
+    # Fixture commits must not leave detached housekeeping writers behind.
+    return subprocess.check_output(["git", "-c", "maintenance.auto=false", "-C", str(root), *args], env=sanitized_env(), text=True).strip()
 
 
 def commit(root: Path) -> str:
