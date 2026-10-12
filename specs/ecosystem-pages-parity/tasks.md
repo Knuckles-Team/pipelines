@@ -116,3 +116,9 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R024.4: Refusal: implement the requirement and its acceptance test.
 - [ ] PIPE-PAGES-R024.5: Evidence: implement the requirement and its acceptance test.
 - [ ] PIPE-PAGES-R024.6: Hot-path proof: implement the requirement and its acceptance test.
+- [ ] PIPE-PAGES-R021.13: Model: Reject unknown outcome kinds, empty observables and missing source bindings; accept return, error and side-effect contracts. Implement and bind `test_outcome_contract_schema` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] PIPE-PAGES-R021.14: Behavior: Reject a passing test that ignores the result; accept exact return, error and state assertions that detect their counterexamples. Implement and bind `test_outcome_counterexamples` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] PIPE-PAGES-R021.15: Wiring: Assert the published CLI invokes the configured runner, validates its receipts and includes outcome findings in its exit code. Implement and bind `test_outcome_checker_wiring` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] PIPE-PAGES-R021.16: Refusal: Missing contracts and surviving counterexamples exit 1; stale, skipped, setup-failing and timed-out proofs exit 2. Implement and bind `test_outcome_proof_refusals` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] PIPE-PAGES-R021.17: Evidence: Assert distinct static/runtime records and digest-bound receipts; never report coverage or assertion count as outcome proof. Implement and bind `test_outcome_evidence` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] PIPE-PAGES-R021.18: Hot-path proof: Assert exit 0 for proved outcomes, exit 1 for missing observation and exit 2 for unchecked proof through the real CLI and runner. Implement and bind `test_outcome_quality_cli` in `tests/hooks/test_test_quality_outcomes.py`.
