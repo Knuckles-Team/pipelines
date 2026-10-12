@@ -318,6 +318,7 @@
       "title": "The generator must read Code declarations and existing source citations from spec.md and plan.md",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "303d05f2ffc1"
       ],
       "verified_by": [
@@ -329,6 +330,7 @@
       "title": "Source declarations must survive status regeneration without adding hand-edited status fields",
       "delivery_state": "LANDED",
       "landed_in": [
+        "13e5f2f6b948",
         "303d05f2ffc1"
       ],
       "verified_by": []
@@ -338,6 +340,7 @@
       "title": "Each implementation link must identify its source revision and path. External links must remain unverified",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "303d05f2ffc1"
       ],
       "verified_by": [
@@ -349,6 +352,7 @@
       "title": "The page must state Not mapped when a spec has no code references",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "303d05f2ffc1"
       ],
       "verified_by": [
@@ -360,7 +364,8 @@
       "title": "The spec table must distinguish implementation, test, and documentation links",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0fc12ceeb003"
+        "0fc12ceeb003",
+        "13e5f2f6b948"
       ],
       "verified_by": [
         "tests/test_spec_dashboard_metadata.py:57"
@@ -371,7 +376,8 @@
       "title": "The caption must count specs without resolved implementation links",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0fc12ceeb003"
+        "0fc12ceeb003",
+        "13e5f2f6b948"
       ],
       "verified_by": [
         "tests/test_spec_dashboard_metadata.py:127"
@@ -382,7 +388,8 @@
       "title": "The generator must reject unsafe links and paths outside the checkout. It must retain unresolved mappings",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0fc12ceeb003"
+        "0fc12ceeb003",
+        "13e5f2f6b948"
       ],
       "verified_by": [
         "tests/test_spec_dashboard_metadata.py:104"
@@ -414,6 +421,7 @@
       "title": "Depends-on declarations must resolve local spec and requirement IDs through canonical spec ownership",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "6cd983d5fe0b"
       ],
       "verified_by": [
@@ -425,6 +433,7 @@
       "title": "The generator must distinguish Depends-on, Extends, and References declarations. Mere mentions must not imply prerequisite order",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "6cd983d5fe0b"
       ],
       "verified_by": [
@@ -436,6 +445,7 @@
       "title": "Repository and component groups must include orphan specs. Missing components must remain Unassigned",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "6cd983d5fe0b"
       ],
       "verified_by": [
@@ -447,6 +457,7 @@
       "title": "The page must render package diagrams without browser scripts. Mermaid export must escape source labels",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "6cd983d5fe0b"
       ],
       "verified_by": [
@@ -458,6 +469,7 @@
       "title": "Every relationship must retain its label, source declaration, target link, and evidence limit",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "6cd983d5fe0b"
       ],
       "verified_by": [
@@ -469,6 +481,7 @@
       "title": "The relationship index must retain unresolved targets and specs without declared relationships",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "6cd983d5fe0b"
       ],
       "verified_by": [
@@ -480,6 +493,7 @@
       "title": "Large diagrams must split into navigable groups without hiding any spec or relationship",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "13e5f2f6b948",
         "6cd983d5fe0b"
       ],
       "verified_by": [
