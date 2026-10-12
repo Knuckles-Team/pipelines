@@ -17,20 +17,20 @@ Use disposable Git fixtures with six consumer shapes and a pinned shared theme c
 | P-5 | FR-5 | Consumer results link own commits; checker does not mutate consumer trees. |
 
 Contract tests inspect `pages_pipeline.yml` for least-privilege checkout, immutable shared source, and release condition. Hosted Pages URL and browser probe are release acceptance evidence, not unit-test prerequisites. Run YAML parse, relevant pytest, and configured CCCC/jscpd/Dupehound/KISS gates on implementation. Record unavailable scanners as gaps, never as passes.
-| T-PIPE-PAGES-R012.1 | PIPE-PAGES-R012.1 | `test_mentions_and_shared_code_never_become_dependencies` in `tests/test_spec_dashboard_metadata.py`. |
-| T-PIPE-PAGES-R012.2 | PIPE-PAGES-R012.2 | `test_enrichment_preserves_delivery_records_and_status_bytes` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R012.1 | PIPE-PAGES-R012.1 | `test_source_declarations_and_citations_in_both_documents` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R012.2 | PIPE-PAGES-R012.2 | Needs a status-regeneration integration check. `test_enrichment_preserves_delivery_records_and_status_bytes` checks enrichment only; it does not prove regeneration. |
 | T-PIPE-PAGES-R012.3 | PIPE-PAGES-R012.3 | `test_implementation_tests_docs_and_missing_sources_are_distinct` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R012.4 | PIPE-PAGES-R012.4 | `test_code_cells_replace_concepts` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R012.5 | PIPE-PAGES-R012.5 | `test_implementation_tests_docs_and_missing_sources_are_distinct` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R012.6 | PIPE-PAGES-R012.6 | `test_code_cells_replace_concepts` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R012.7 | PIPE-PAGES-R012.7 | `test_examples_unsafe_links_and_parent_escape_are_not_mappings` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R013.1 | PIPE-PAGES-R013.1 | `test_local_and_external_dependencies_have_links_and_canonical_identity` in `tests/test_spec_dashboard_metadata.py`. |
-| T-PIPE-PAGES-R013.2 | PIPE-PAGES-R013.2 | `test_mentions_and_shared_code_never_become_dependencies` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R013.2 | PIPE-PAGES-R013.2 | `test_explicit_edge_kinds_remain_distinct_from_mentions` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R013.3 | PIPE-PAGES-R013.3 | `test_unknowns_empty_and_isolated_specs_remain_discoverable` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R013.4 | PIPE-PAGES-R013.4 | `test_deterministic_escaped_output_and_plan_diagram_coverage` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R013.5 | PIPE-PAGES-R013.5 | `test_local_and_external_dependencies_have_links_and_canonical_identity` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R013.6 | PIPE-PAGES-R013.6 | `test_unknowns_empty_and_isolated_specs_remain_discoverable` in `tests/test_spec_dashboard_metadata.py`. |
-| T-PIPE-PAGES-R013.7 | PIPE-PAGES-R013.7 | `test_unknowns_empty_and_isolated_specs_remain_discoverable` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R013.7 | PIPE-PAGES-R013.7 | `test_large_groups_keep_all_specs_and_relationships` in `tests/test_spec_dashboard_metadata.py`. |
 | T-PIPE-PAGES-R014.1 | PIPE-PAGES-R014.1 | `test_components_equal_core_list` in `tests/test_spec_dashboard_drilldown.py` expects equality with the R001 list. |
 | T-PIPE-PAGES-R014.2 | PIPE-PAGES-R014.2 | `test_anchor_forms` in `tests/test_spec_dashboard_drilldown.py` expects the three forms. |
 | T-PIPE-PAGES-R014.3 | PIPE-PAGES-R014.3 | `test_spec_section_has_anchor` in `tests/test_spec_dashboard_drilldown.py` expects the anchor and four content blocks. |

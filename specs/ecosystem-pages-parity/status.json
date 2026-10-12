@@ -267,9 +267,11 @@
     },
     {
       "id": "PIPE-PAGES-R009",
-      "title": "HTML/CSS architecture views, no ASCII or Mermaid diagrams",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "title": "The shared generator must show accessible component package diagrams and export Mermaid source. It must include every spec",
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "5b454e4b7eb4"
+      ],
       "verified_by": []
     },
     {
@@ -293,10 +295,14 @@
     },
     {
       "id": "PIPE-PAGES-R012",
-      "title": "Concept references on the spec-delivery page",
-      "delivery_state": "VERIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "title": "The spec-delivery page must map specs to implementation references. It must replace the Concepts column",
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "5b454e4b7eb4"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_metadata.py:55"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R012.1",
         "PIPE-PAGES-R012.2",
@@ -309,90 +315,89 @@
     },
     {
       "id": "PIPE-PAGES-R012.1",
-      "title": "Add `concepts_for_row(row, roots)` to `scripts/spec_dashboard_concepts.py`. It scans the code roots the row names (`spec_graph_core.CODE_ROOT`) for `CONCEPT:<ID>` markers and returns the sorted identifiers",
+      "title": "The generator must read Code declarations and existing source citations from spec.md and plan.md",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "303d05f2ffc1"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_concepts.py:18"
+        "tests/test_spec_dashboard_metadata.py:175"
       ]
     },
     {
       "id": "PIPE-PAGES-R012.2",
-      "title": "Add `explicit_concepts(text)` to `scripts/spec_dashboard_concepts.py`. It reads a `Concepts: <ID>, <ID>` line from `spec.md` or a row and returns the identifiers. The explicit line wins over derived markers",
-      "delivery_state": "VERIFIED",
+      "title": "Source declarations must survive status regeneration without adding hand-edited status fields",
+      "delivery_state": "LANDED",
       "landed_in": [
         "303d05f2ffc1"
       ],
-      "verified_by": [
-        "tests/test_spec_dashboard_concepts.py:25"
-      ]
+      "verified_by": []
     },
     {
       "id": "PIPE-PAGES-R012.3",
-      "title": "Add one anchor per concept in `scripts/skill_graph/render_pages.py` (`render_concepts_md`): each bullet gets the slug id `concept-<slug>`. This is the stable link target `https://knuckles-team.github.io/<repo>/concepts/#concept-<slug>`",
+      "title": "Each implementation link must identify its source revision and path. External links must remain unverified",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "303d05f2ffc1"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_concepts.py:33"
+        "tests/test_spec_dashboard_metadata.py:56"
       ]
     },
     {
       "id": "PIPE-PAGES-R012.4",
-      "title": "Add `concept_links(ids, base)` to `scripts/spec_dashboard_concepts.py`. It renders one `<a>` per identifier and the marker `no concept mapped` for an empty list. The marker carries the class `no-concept`",
+      "title": "The page must state Not mapped when a spec has no code references",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "303d05f2ffc1"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_concepts.py:44"
+        "tests/test_spec_dashboard_metadata.py:126"
       ]
     },
     {
       "id": "PIPE-PAGES-R012.5",
-      "title": "Call `concept_links` from `spec_row` in `scripts/spec_dashboard_panels.py` and from the requirement table in `scripts/spec_dashboard_structure.py`, so every spec row and requirement row carries a Concepts cell",
+      "title": "The spec table must distinguish implementation, test, and documentation links",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0fc12ceeb003"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_concepts.py:53"
+        "tests/test_spec_dashboard_metadata.py:57"
       ]
     },
     {
       "id": "PIPE-PAGES-R012.6",
-      "title": "Add the count of `no concept mapped` rows to `count_caption` in `scripts/spec_dashboard_render.py`, so the page states the number of unmapped rows",
+      "title": "The caption must count specs without resolved implementation links",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0fc12ceeb003"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_concepts.py:68"
+        "tests/test_spec_dashboard_metadata.py:127"
       ]
     },
     {
       "id": "PIPE-PAGES-R012.7",
-      "title": "Add `check_concept_links(page, concepts_md)` to `scripts/spec_dashboard_concepts.py`. It fails when a link targets an anchor that `concepts.md` does not define. The `pages_pipeline.yml` build calls it before upload",
+      "title": "The generator must reject unsafe links and paths outside the checkout. It must retain unresolved mappings",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0fc12ceeb003"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_concepts.py:80"
+        "tests/test_spec_dashboard_metadata.py:104"
       ]
     },
     {
       "id": "PIPE-PAGES-R013",
-      "title": "Spec relationship view on the spec-delivery page",
+      "title": "The page must show declared dependencies within and across repositories. It must distinguish references and shared code",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0fc12ceeb003"
+        "0fc12ceeb003",
+        "5b454e4b7eb4"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:96"
+        "tests/test_spec_dashboard_metadata.py:23"
       ],
       "rollup_of": [
         "PIPE-PAGES-R013.1",
@@ -406,80 +411,79 @@
     },
     {
       "id": "PIPE-PAGES-R013.1",
-      "title": "Add `spec_edges(records)` to `scripts/spec_dashboard_relations.py`. It lifts the requirement edges (`depends_on`) to spec level, keeps cross-repository edges, and labels each edge `depends on`",
+      "title": "Depends-on declarations must resolve local spec and requirement IDs through canonical spec ownership",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:18"
+        "tests/test_spec_dashboard_metadata.py:24"
       ]
     },
     {
       "id": "PIPE-PAGES-R013.2",
-      "title": "Add the `extends` edge to `spec_edges` in `scripts/spec_dashboard_relations.py`. A spec extends another when its `spec.md` line `Extends: <ID>` names it. The generator reads no other source",
+      "title": "The generator must distinguish Depends-on, Extends, and References declarations. Mere mentions must not imply prerequisite order",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:29"
+        "tests/test_spec_dashboard_metadata.py:187"
       ]
     },
     {
       "id": "PIPE-PAGES-R013.3",
-      "title": "Add `layer_specs(nodes, edges)` to `scripts/spec_dashboard_relations.py`. It collapses strongly connected components, then assigns longest dependency depth on the resulting graph. Component members share a layer; roots sit in layer 0",
+      "title": "Repository and component groups must include orphan specs. Missing components must remain Unassigned",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:35",
-        "tests/test_spec_dashboard_relations.py:40"
+        "tests/test_spec_dashboard_metadata.py:73"
       ]
     },
     {
       "id": "PIPE-PAGES-R013.4",
-      "title": "Add `relation_view(nodes, edges)` to `scripts/spec_dashboard_relations_view.py`. It renders one HTML/CSS column per layer and one box per spec with its four state counts (PIPE-PAGES-R009). It uses no SVG, ASCII, or Mermaid",
+      "title": "The page must render package diagrams without browser scripts. Mermaid export must escape source labels",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:63"
+        "tests/test_spec_dashboard_metadata.py:87"
       ]
     },
     {
       "id": "PIPE-PAGES-R013.5",
-      "title": "Render edges in `relation_view` as labelled CSS connectors (`depends on`, `extends`), and render a legend that explains the two labels and the state colours. Use short active labels with one term per concept",
+      "title": "Every relationship must retain its label, source declaration, target link, and evidence limit",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:70"
+        "tests/test_spec_dashboard_metadata.py:25"
       ]
     },
     {
       "id": "PIPE-PAGES-R013.6",
-      "title": "Add `relation_table(nodes, edges)` to `scripts/spec_dashboard_relations_view.py`. It renders a text-alternative table (source, label, target) beside the view. The view carries `aria-describedby` for the table",
+      "title": "The relationship index must retain unresolved targets and specs without declared relationships",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:78"
+        "tests/test_spec_dashboard_metadata.py:74"
       ]
     },
     {
       "id": "PIPE-PAGES-R013.7",
-      "title": "Cap the view at 40 specs in `relation_view`. Above 40, render only the table and the sentence `view limited to 40 specs; see table`. Mount the panel in `current_panels` in `scripts/spec_dashboard_render.py`",
+      "title": "Large diagrams must split into navigable groups without hiding any spec or relationship",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_relations.py:87"
+        "tests/test_spec_dashboard_metadata.py:196"
       ]
     },
     {
@@ -521,10 +525,11 @@
     },
     {
       "id": "PIPE-PAGES-R014.3",
-      "title": "Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id=\"spec-<ID>\"` and lists its rows, state, concepts, and bound tests; each row gets `id=\"req-<ID>\"`",
+      "title": "Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id=\"spec-<ID>\"` and lists its rows, state, code references, and bound tests; each row gets `id=\"req-<ID>\"`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0fc12ceeb003"
+        "0fc12ceeb003",
+        "5b454e4b7eb4"
       ],
       "verified_by": [
         "tests/test_spec_dashboard_drilldown.py:45"
@@ -587,9 +592,11 @@
     },
     {
       "id": "PIPE-PAGES-R015.3",
-      "title": "Connector repositories get the same page through PIPE-CONNSPEC-R101 and following. This row restates none of them and checks only that the generated page carries the Concepts cell and the relation view",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "title": "Connectors must inherit code references and relationship views through the shared Pages generator when enabled",
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "5b454e4b7eb4"
+      ],
       "verified_by": []
     },
     {
@@ -614,7 +621,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:113"
+        "tests/test_spec_dashboard.py:115"
       ]
     },
     {
@@ -625,7 +632,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:120"
+        "tests/test_spec_dashboard.py:122"
       ]
     },
     {
@@ -636,7 +643,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:127"
+        "tests/test_spec_dashboard.py:129"
       ]
     },
     {
@@ -647,7 +654,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:153"
+        "tests/test_spec_dashboard.py:155"
       ]
     },
     {
@@ -658,7 +665,7 @@
         "9e705970e4c9"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:141"
+        "tests/test_spec_dashboard.py:143"
       ]
     },
     {

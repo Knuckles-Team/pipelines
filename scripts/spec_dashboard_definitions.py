@@ -28,3 +28,19 @@ def enrich_definitions(records, path, root):
         if record['kind'] == 'requirement':
             record['parent_title'] = parent_title
             record.update(definitions.get(record['id'], {}))
+
+
+def outside_fences(text):
+    """Remove fenced examples, including unclosed and indented Markdown fences."""
+    visible = []
+    fence = ''
+    for line in text.splitlines():
+        match = re.match(r'^ {0,3}(`{3,}|~{3,})(.*)$', line)
+        if fence:
+            if match and match[1][0] == fence[0] and len(match[1]) >= len(fence) and not match[2].strip():
+                fence = ''
+        elif match and (match[1][0] == '~' or '`' not in match[2]):
+            fence = match[1]
+        else:
+            visible.append(line)
+    return '\n'.join(visible)

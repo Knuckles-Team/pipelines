@@ -4,9 +4,11 @@ from pathlib import Path
 from urllib.parse import quote
 
 if __package__:
+    from .spec_dashboard_definitions import outside_fences
     from .spec_dashboard_relations import normalized_edges
     from .spec_dashboard_links import code_role, source_link
 else:
+    from spec_dashboard_definitions import outside_fences
     from spec_dashboard_relations import normalized_edges
     from spec_dashboard_links import code_role, source_link
 
@@ -17,7 +19,7 @@ KINDS = {'depends-on': 'depends on', 'depends on': 'depends on', 'extends': 'ext
 
 def declarations(text):
     """Only standalone metadata lines declare dependency semantics."""
-    text = re.sub(r'(?ms)^(```|~~~).*?^\1[^\n]*$', '', text)
+    text = outside_fences(text)
     for line in text.splitlines():
         match = DECLARATION.fullmatch(line.strip())
         if match:
@@ -46,7 +48,7 @@ def read_metadata(root, item, *, repository, revision, known):
 
 
 def collect_metadata(result, document, *, root, repository, revision, known):
-    text = re.sub(r'(?ms)^(```|~~~).*?^\1[^\n]*$', '', document.read_text(encoding='utf-8'))
+    text = outside_fences(document.read_text(encoding='utf-8'))
     for kind, value in declarations(text):
         if kind == 'component':
             result['component'] = value.strip() or 'Unassigned'

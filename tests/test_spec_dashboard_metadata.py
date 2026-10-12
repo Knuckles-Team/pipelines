@@ -2,6 +2,8 @@
 import json
 from copy import deepcopy
 
+import pytest
+
 from scripts.spec_dashboard_architecture import architecture_panel, mermaid, relationships_panel
 from scripts.spec_dashboard_metadata import enrich_records
 from scripts.spec_dashboard_sources import read_records
@@ -18,6 +20,9 @@ def fixture(root, text='', plan=''):
     return {'repository': 'Knuckles-Team/demo', 'revision': 'a' * 40, 'records': records}
 
 
+@pytest.mark.spec("PIPE-PAGES-R013")
+@pytest.mark.spec("PIPE-PAGES-R013.1")
+@pytest.mark.spec("PIPE-PAGES-R013.5")
 def test_local_and_external_dependencies_have_links_and_canonical_identity(tmp_path):
     remote = 'https://github.com/Knuckles-Team/graph-os/blob/main/specs/host/spec.md'
     snapshot = fixture(tmp_path, 'Depends-on: AU-OTHER-R001, [host](' + remote + ')\n')
@@ -29,6 +34,10 @@ def test_local_and_external_dependencies_have_links_and_canonical_identity(tmp_p
     page = relationships_panel(snapshot)
     assert 'specs/second/spec.md' in page and remote in page
     assert 'not verified' in page
+    assert 'AU-OTHER-R001' in page
+    assert 'host' in page
+    assert 'source: specs/first/spec.md' in page
+    assert 'local spec declaration' in page
     assert 'depends on' in mermaid(snapshot)
 
 
@@ -43,8 +52,11 @@ def test_mentions_and_shared_code_never_become_dependencies(tmp_path):
     assert 'depends on' not in mermaid(snapshot)
 
 
+@pytest.mark.spec("PIPE-PAGES-R012")
+@pytest.mark.spec("PIPE-PAGES-R012.3")
+@pytest.mark.spec("PIPE-PAGES-R012.5")
 def test_implementation_tests_docs_and_missing_sources_are_distinct(tmp_path):
-    snapshot = fixture(tmp_path, 'Code: src/main.py:12 tests/test_main.py docs/guide.md missing.py\n')
+    snapshot = fixture(tmp_path, 'Code: src/main.py:12 tests/test_main.py docs/guide.md missing.py https://github.com/Knuckles-Team/other/blob/main/src/file.py\n')
     for file in ['src/main.py', 'tests/test_main.py', 'docs/guide.md']:
         path = tmp_path / file
         path.parent.mkdir()
@@ -52,11 +64,14 @@ def test_implementation_tests_docs_and_missing_sources_are_distinct(tmp_path):
     enrich_records(tmp_path, snapshot)
     refs = snapshot['records'][0]['code_refs']
     assert {row['role'] for row in refs} == {'implementation', 'test', 'documentation'}
-    assert any(row['url'].endswith('src/main.py#L12') for row in refs)
+    assert any('/blob/' + snapshot['revision'] + '/src/main.py#L12' in row['url'] for row in refs)
+    assert_code_roles_and_external_evidence(refs)
     assert next(row for row in refs if row['label'] == 'missing.py')['url'] == ''
     assert all('verified' in row['evidence'] or row['evidence'] == 'missing source' for row in refs)
 
 
+@pytest.mark.spec("PIPE-PAGES-R013.3")
+@pytest.mark.spec("PIPE-PAGES-R013.6")
 def test_unknowns_empty_and_isolated_specs_remain_discoverable(tmp_path):
     snapshot = fixture(tmp_path, 'Depends-on: MISSING\n')
     enrich_records(tmp_path, snapshot)
@@ -69,6 +84,7 @@ def test_unknowns_empty_and_isolated_specs_remain_discoverable(tmp_path):
     assert 'Architecture is unknown' in architecture_panel({'records': []})
 
 
+@pytest.mark.spec("PIPE-PAGES-R013.4")
 def test_deterministic_escaped_output_and_plan_diagram_coverage(tmp_path):
     snapshot = fixture(tmp_path, 'Component: runtime "]; evil <script>\n', '```mermaid\nflowchart LR\n  A-->B\n```\n')
     enrich_records(tmp_path, snapshot)
@@ -77,12 +93,15 @@ def test_deterministic_escaped_output_and_plan_diagram_coverage(tmp_path):
     snapshot['records'].reverse()
     assert output == mermaid(snapshot)
     assert '<script>' not in architecture_panel(snapshot)
+    assert '<svg' in architecture_panel(snapshot)
+    assert '<script' not in architecture_panel(snapshot)
     assert '#34;' in output and '#60;script#62;' in output
     assert 'source plan diagrams' in architecture_panel(snapshot)
     assert 'no plan diagram declared' in architecture_panel(snapshot)
     assert original['records'][0]['plan_diagrams'] == ['flowchart LR\n  A-->B\n']
 
 
+@pytest.mark.spec("PIPE-PAGES-R012.7")
 def test_examples_unsafe_links_and_parent_escape_are_not_mappings(tmp_path):
     snapshot = fixture(tmp_path, '```\nDepends-on: AU-OTHER\n```\nCode: [bad](javascript:alert) [escape](../../../../etc/passwd)\n')
     enrich_records(tmp_path, snapshot)
@@ -104,6 +123,8 @@ def test_enrichment_preserves_delivery_records_and_status_bytes(tmp_path):
     assert snapshot['history']['points'][0]['remaining'] == 7
 
 
+@pytest.mark.spec("PIPE-PAGES-R012.4")
+@pytest.mark.spec("PIPE-PAGES-R012.6")
 def test_code_cells_replace_concepts(tmp_path):
     from scripts.spec_dashboard_panels import specs_panel
     from scripts.spec_dashboard_render import count_caption
@@ -114,6 +135,10 @@ def test_code_cells_replace_concepts(tmp_path):
     assert '<th>Code references</th>' in output and 'Concepts' not in output
     assert 'Not mapped' in output
     assert '2 with no code mapped' in count_caption(snapshot)
+    snapshot['records'][0]['code_refs'] = [{'role': 'test', 'url': 'https://github.com/Knuckles-Team/demo/blob/main/tests/test_run.py'}]
+    assert '2 with no code mapped' in count_caption(snapshot)
+    snapshot['records'][0]['code_refs'][0]['role'] = 'implementation'
+    assert '1 with no code mapped' in count_caption(snapshot)
 
 
 def test_generator_entry_point_writes_architecture(tmp_path, monkeypatch):
@@ -145,3 +170,68 @@ def test_commit_and_bound_test_evidence_survive_normalization(tmp_path):
     assert '/tests/test_run.py' in output
     assert 'tests/test_run.py::test_run' in output
     assert 'code_refs' not in row
+
+
+@pytest.mark.spec("PIPE-PAGES-R012.1")
+def test_source_declarations_and_citations_in_both_documents(tmp_path):
+    snapshot = fixture(tmp_path, 'Code: src/first.py\nSee [source](src/second.py).\n', 'Code: src/third.py\nUse `src/fourth.py`.\n')
+    (tmp_path / 'src').mkdir()
+    for name in ('first', 'second', 'third', 'fourth'):
+        (tmp_path / 'src' / (name + '.py')).write_text('pass\n')
+    enrich_records(tmp_path, snapshot)
+    refs = snapshot['records'][0]['code_refs']
+    assert {row['url'].rsplit('/', 1)[-1] for row in refs} == {'first.py', 'second.py', 'third.py', 'fourth.py'}
+    assert {row['declared_in'] for row in refs} == {'specs/first/spec.md', 'specs/first/plan.md'}
+
+
+@pytest.mark.spec("PIPE-PAGES-R013.2")
+def test_explicit_edge_kinds_remain_distinct_from_mentions(tmp_path):
+    snapshot = fixture(tmp_path, 'Depends-on: AU-OTHER\nExtends: AU-OTHER\nReferences: AU-OTHER\nUnblocks MENTION-ONLY.\n')
+    enrich_records(tmp_path, snapshot)
+    assert {row['kind'] for row in snapshot['records'][0]['relations']} == {'depends on', 'extends', 'references'}
+    assert len(snapshot['records'][0]['relations']) == 3
+    assert 'MENTION-ONLY' not in mermaid(snapshot)
+
+
+@pytest.mark.spec("PIPE-PAGES-R013.7")
+def test_large_groups_keep_all_specs_and_relationships(tmp_path):
+    snapshot = fixture(tmp_path, 'Component: runtime\nDepends-on: MISSING\n')
+    enrich_records(tmp_path, snapshot)
+    template = snapshot['records'][0]
+    for number in range(45):
+        snapshot['records'].append(dict(template, id=f'LARGE-{number}'))
+    architecture = architecture_panel(snapshot)
+    relations = relationships_panel(snapshot)
+    assert architecture.count('<svg') == 4
+    assert relations.count('<td>depends on</td>') == 46
+    assert mermaid(snapshot).count('-->|depends on|') == 46
+    assert all(f'href="#spec-LARGE-{number}"' in architecture and f'href="#spec-LARGE-{number}"' in relations for number in range(45))
+
+
+@pytest.mark.parametrize('indent', range(4))
+@pytest.mark.parametrize('fence', ['```', '~~~~'])
+def test_indented_fences_hide_examples_and_citations(tmp_path, indent, fence):
+    prefix = ' ' * indent
+    text = prefix + fence + '\nDepends-on: HIDDEN\nCode: src/example.py\n[hidden](../second/spec.md)\n'
+    text += prefix + fence[0] * (len(fence) - 1) + '\nDepends-on: ALSO-HIDDEN\n'
+    text += prefix + ('~~~' if fence[0] == '`' else '```') + '\nDepends-on: STILL-HIDDEN\n'
+    text += prefix + fence + '\nDepends-on: AU-OTHER\n'
+    snapshot = fixture(tmp_path, text)
+    (tmp_path / 'src').mkdir()
+    (tmp_path / 'src/example.py').write_text('pass\n')
+    enrich_records(tmp_path, snapshot)
+    assert [row['label'] for row in snapshot['records'][0]['relations']] == ['AU-OTHER']
+    assert snapshot['records'][0]['code_refs'] == []
+
+
+def test_unclosed_fence_hides_remaining_example_text(tmp_path):
+    snapshot = fixture(tmp_path, 'Depends-on: AU-OTHER\n   ```python\nDepends-on: HIDDEN\n')
+    enrich_records(tmp_path, snapshot)
+    assert [row['label'] for row in snapshot['records'][0]['relations']] == ['AU-OTHER']
+
+
+def assert_code_roles_and_external_evidence(refs):
+    from scripts.spec_dashboard_architecture import code_links
+
+    assert any(row['evidence'] == 'external declaration; not verified' for row in refs)
+    assert all(role + ':' in code_links(refs) for role in ('implementation', 'test', 'documentation'))

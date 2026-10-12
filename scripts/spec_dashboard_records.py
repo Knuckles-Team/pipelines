@@ -1,5 +1,6 @@
 """Linked record inventory and GitHub snapshot sections for the delivery sheet."""
 import html
+import re
 from urllib.parse import quote
 
 
@@ -56,11 +57,11 @@ def evidence_links(snapshot, item):
     commits = [safe_link(f'https://github.com/{snapshot["repository"]}/commit/{sha}', sha) for sha in item.get('landed_in', [])]
     tests = []
     for test in item.get('verified_by', []):
-        path = test.split('::')[0]
-        if path.startswith('/') or '..' in path.split('/'):
-            tests.append(html.escape(test))
+        target = receipt_target(test)
+        if target:
+            tests.append(safe_link(f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/' + target, test))
         else:
-            tests.append(safe_link(f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/' + quote(path), test))
+            tests.append(html.escape(test))
     return '<br>'.join(commits + tests) or 'No recorded commit/test evidence'
 
 
@@ -74,3 +75,19 @@ def definition_details(snapshot, item):
     return ('<details><summary>Definition — ' + html.escape(context) + '</summary>'
             + safe_link(url, 'Canonical requirement and verification source')
             + '<div style="white-space:pre-wrap;overflow-wrap:anywhere">' + html.escape(item['definition']) + '</div></details>')
+
+
+def receipt_target(receipt):
+    """Resolve repo-relative receipts; keep malformed citations as plain text."""
+    match = re.fullmatch(r'([^:\\#?\x00-\x1f]+?)(?::([1-9]\d*)(?:-([1-9]\d*))?)?', receipt.split('::', 1)[0])
+    if not match:
+        return ''
+    path, first, last = match.groups()
+    if path.startswith('/') or any(part in {'', '.', '..'} for part in path.split('/')):
+        return ''
+    if last and int(last) < int(first):
+        return ''
+    fragment = '#L' + first if first else ''
+    if last:
+        fragment += '-L' + last
+    return quote(path) + fragment
