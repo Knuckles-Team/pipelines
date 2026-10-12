@@ -39,7 +39,7 @@ A design section in `plan.md` must trace the requirement to the live call path. 
 
 | Form | Use | Where |
 |---|---|---|
-| Child row | Narrow, split, or complete an existing requirement | `<ID>-R012.4` under `R012` in `requirements.md` and `tasks.md` |
+| Child row | Narrow, split, or complete an existing requirement | `<ID>-R012.4` under `<ID>-R012` in `requirements.md` and `tasks.md` |
 | New rollup | Add a requirement that the spec owns but does not state | Next free `R###` at the end of the same spec |
 | Correction | Change a wrong or outdated statement | Edit the row and the `plan.md` text in place. The commit message states the reason. |
 
@@ -142,3 +142,33 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Index | `specs/README.md` does not list the spec |
 
 The gate exits 0 when clean, 1 on a finding, and 2 when it cannot run. It has no baseline and no suppression.
+
+## Delivery relationships and implementation mapping
+
+Every core repository and connector uses the shared spec-delivery generator.
+The generator reads declarations from `spec.md` and `plan.md` outside fenced examples.
+These source files survive status regeneration. Do not hand-edit generated status fields.
+
+```markdown
+Component: Gateway
+Depends-on: LOCAL-SPEC-R001, [Remote host](https://github.com/OWNER/REPO/blob/REV/specs/host/spec.md)
+Extends: [Base spec](../base/spec.md)
+References: [Related spec](../related/spec.md)
+Code: ../../src/gateway.py:42 ../../tests/test_gateway.py
+```
+
+- `Depends-on` declares a prerequisite. Local spec or requirement IDs resolve to their owning spec.
+- Cross-repository targets must supply a public GitHub source link. Prefer an immutable revision.
+- `Extends` and `References` do not imply prerequisite order. An ordinary spec link is a reference.
+- Shared files, prose mentions, and `Unblocks` statements never create prerequisite edges.
+- `Code` names source files. Relative paths resolve beside the declaration, then from the repository root.
+- Existing source citations also provide file mappings. The view separates implementation, test, and documentation paths.
+- A file link proves neither coverage nor delivery. Missing paths stay unresolved; external paths stay unverified.
+- `Component` groups specs within their repository. Missing component metadata produces an `Unassigned` group.
+- Missing declarations mean unknown dependencies or unmapped code. They never establish completeness.
+
+The shared page must show every spec, including isolated specs, through repository and component groups.
+The page replaces the Concepts column with Code references. The concept corpus remains a separate documentation surface.
+The architecture view uses accessible package diagrams and exports escaped Mermaid source with labelled dependency edges.
+Existing Mermaid diagrams in `plan.md` remain available as source. Absence of a plan diagram stays visible.
+Relationships and code mappings must not change delivery states, recorded history, or timelines.

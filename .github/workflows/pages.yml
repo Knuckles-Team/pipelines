@@ -6,6 +6,12 @@ on:
       - main
     paths:
       - pages/**
+      - specs/**
+      - reference/**
+      - .config/spec-dashboard.json
+      - scripts/spec_dashboard*.py
+      - templates/mkdocs-theme/**
+      - .github/workflows/pages_pipeline.yml
       - mkdocs.yml
       - .github/workflows/pages.yml
   workflow_dispatch: {}
@@ -23,3 +29,5 @@ jobs:
     with:
       content_source: pages
       shared_theme_enabled: true
+      spec_dashboard_enabled: true
+      spec_dashboard_config: .config/spec-dashboard.json

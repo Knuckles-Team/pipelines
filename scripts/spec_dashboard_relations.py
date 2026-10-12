@@ -64,3 +64,8 @@ def layer_specs(nodes, edges):
         return depth[rep]
 
     return {node: of(comp[node]) for node in nodes}
+
+
+def normalized_edges(specs, local):
+    edges = {(row['id'], edge['kind'], local.get(edge['url'], edge['url'] or edge['label'])) for row in specs for edge in row['relations']}
+    return [list(edge) for edge in sorted(edges)]

@@ -125,6 +125,7 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/spec_dashboard.py",
         "scripts/spec_dashboard_render.py",
         "scripts/spec_dashboard_sources.py",
+        "scripts/spec_dashboard_definitions.py",
         "scripts/spec_dashboard_panels.py",
         "scripts/spec_dashboard_records.py",
         "scripts/spec_dashboard_structure.py",
@@ -137,6 +138,9 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/spec_dashboard_relations.py",
         "scripts/spec_dashboard_relations_view.py",
         "scripts/spec_dashboard_wiring.py",
+        "scripts/spec_dashboard_metadata.py",
+        "scripts/spec_dashboard_links.py",
+        "scripts/spec_dashboard_architecture.py",
         "scripts/spec_graph_core.py",
         "scripts/spec_graph_load.py",
         "scripts/spec_graph_parse.py",
@@ -171,3 +175,10 @@ def test_dashboard_checkout_is_shallow():
     checkout = next(step for step in steps if step["name"] == "Checkout Repository")
     assert checkout["with"]["fetch-depth"] == 1
     assert checkout["with"]["persist-credentials"] is False
+
+
+def test_dashboard_caller_checkout_materializes_source_files():
+    document = _workflow()["document"]
+    checkout = next(step for step in document["jobs"]["deploy"]["steps"] if step.get("name") == "Checkout Repository")
+    assert "sparse-checkout" not in checkout["with"]
+    assert checkout["with"]["fetch-depth"] == 1

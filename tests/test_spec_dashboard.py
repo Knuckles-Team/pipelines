@@ -1,4 +1,6 @@
 """Source semantics, escaping, and complete GitHub snapshot contracts."""
+from tests.git_fixture_environment import fixture_git_environment
+
 import io
 import json
 from pathlib import Path
@@ -127,7 +129,7 @@ def test_page_has_no_history_panels(tmp_path):
 @pytest.mark.spec("PIPE-PAGES-R016.3")
 def test_removed_id_absent_from_page(tmp_path):
     import subprocess
-    run = lambda *a: subprocess.run(['git', '-C', str(tmp_path), '-c', 'user.name=T', '-c', 'user.email=t@e.invalid', *a], check=True, capture_output=True)
+    run = lambda *a: subprocess.run(['git', '-C', str(tmp_path), '-c', 'user.name=T', '-c', 'user.email=t@e.invalid', *a], env=fixture_git_environment(), check=True, capture_output=True)
     run('init', '-q')
     _page_for(tmp_path, ['GONE-1', 'KEEP-1'])
     run('add', '--', 'specs')

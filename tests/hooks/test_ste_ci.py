@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.git_fixture_environment import fixture_git_environment
+
 import json
 import shutil
 import subprocess
@@ -60,7 +62,7 @@ def test_local_alternate_index_is_preserved(repo: Repo, monkeypatch: pytest.Monk
     shutil.copyfile(repo.root / ".git" / "index", alternate)
     repo.write("README.md", CLEAN + DEBT)
     monkeypatch.setenv("GIT_INDEX_FILE", str(alternate))
-    subprocess.run(["git", "add", "README.md"], cwd=repo.root, check=True)
+    subprocess.run(["git", "add", "README.md"], cwd=repo.root, env=fixture_git_environment(index=alternate), check=True)
     assert repo.run("ste-staged") == 1
     monkeypatch.delenv("GIT_INDEX_FILE")
     assert repo.run("ste-staged") == 0

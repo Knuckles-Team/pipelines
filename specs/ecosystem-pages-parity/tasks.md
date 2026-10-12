@@ -16,39 +16,39 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
       layered navigation from overview to reference, present-tense wording with an accessible
       embedded quick start, one progressively disclosed skill-graph content corpus, architecture and
       API-contract reference pages generated from their registries, generated/gate-checked artifacts
-      rehomed out of the legacy docs directory, and HTML/CSS architecture views with no ASCII or
-      Mermaid diagrams. Closes PIPE-PAGES-R002, PIPE-PAGES-R003, PIPE-PAGES-R004, PIPE-PAGES-R005,
+      rehomed out of the legacy docs directory, and accessible component package views with
+      Mermaid source. Covers PIPE-PAGES-R002, PIPE-PAGES-R003, PIPE-PAGES-R004, PIPE-PAGES-R005,
       PIPE-PAGES-R006, PIPE-PAGES-R008, PIPE-PAGES-R009, PIPE-PAGES-R010.
-- [ ] PIPE-PAGES-R012: Concept references on the spec-delivery page. Producer first; children below.
-- [ ] PIPE-PAGES-R012.1: Add `concepts_for_row(row, roots)` to `scripts/spec_dashboard_sources.py`.
-- [ ] PIPE-PAGES-R012.2: Add `explicit_concepts(text)` to `scripts/spec_dashboard_sources.py`.
-- [ ] PIPE-PAGES-R012.3: Add one anchor per concept in `scripts/skill_graph/render_pages.py` (`render_concepts_md`): each bullet gets the slug id `concept-<slug>`.
-- [ ] PIPE-PAGES-R012.4: Add `concept_links(ids, base)` to `scripts/spec_dashboard_panels.py`.
-- [ ] PIPE-PAGES-R012.5: Call `concept_links` from `spec_row` in `scripts/spec_dashboard_panels.py` and from the requirement table in `scripts/spec_dashboard_structure.py`, so every spec row and requirement row carries a Concepts cell..
-- [ ] PIPE-PAGES-R012.6: Add the count of `no concept mapped` rows to `count_caption` in `scripts/spec_dashboard_render.py`, so the page states the number of unmapped rows..
-- [ ] PIPE-PAGES-R012.7: Add `check_concept_links(page, concepts_md)` to `scripts/spec_dashboard_sources.py`.
-- [ ] PIPE-PAGES-R013: Spec relationship view on the spec-delivery page. Producer first; children below.
-- [ ] PIPE-PAGES-R013.1: Add `spec_edges(records)` to `scripts/spec_graph_core.py`.
-- [ ] PIPE-PAGES-R013.2: Add the `extends` edge to `spec_edges` in `scripts/spec_graph_core.py`.
-- [ ] PIPE-PAGES-R013.3: Add `layer_specs(nodes, edges)` to `scripts/spec_dashboard_structure.py`.
-- [ ] PIPE-PAGES-R013.4: Add `relation_view(nodes, edges)` to `scripts/spec_dashboard_panels.py`.
-- [ ] PIPE-PAGES-R013.5: Render edges in `relation_view` as labelled CSS connectors (`depends on`, `extends`), and render a legend that explains the two labels and the state colours.
-- [ ] PIPE-PAGES-R013.6: Add `relation_table(nodes, edges)` to `scripts/spec_dashboard_panels.py`.
-- [ ] PIPE-PAGES-R013.7: Cap the view at 40 specs in `relation_view`.
+- [ ] PIPE-PAGES-R012: The spec-delivery page must map specs to implementation references. It must replace the Concepts column.
+- [ ] PIPE-PAGES-R012.1: The generator must read Code declarations and existing source citations from spec.md and plan.md.
+- [ ] PIPE-PAGES-R012.2: Source declarations must survive status regeneration without adding hand-edited status fields.
+- [ ] PIPE-PAGES-R012.3: Each implementation link must identify its source revision and path. External links must remain unverified.
+- [ ] PIPE-PAGES-R012.4: The page must state Not mapped when a spec has no code references.
+- [ ] PIPE-PAGES-R012.5: The spec table must distinguish implementation, test, and documentation links.
+- [ ] PIPE-PAGES-R012.6: The caption must count specs without resolved implementation links.
+- [ ] PIPE-PAGES-R012.7: The generator must reject unsafe links and paths outside the checkout. It must retain unresolved mappings.
+- [ ] PIPE-PAGES-R013: The page must show declared dependencies within and across repositories. It must distinguish references and shared code.
+- [ ] PIPE-PAGES-R013.1: Depends-on declarations must resolve local spec and requirement IDs through canonical spec ownership.
+- [ ] PIPE-PAGES-R013.2: The generator must distinguish Depends-on, Extends, and References declarations. Mere mentions must not imply prerequisite order.
+- [ ] PIPE-PAGES-R013.3: Repository and component groups must include orphan specs. Missing components must remain Unassigned.
+- [ ] PIPE-PAGES-R013.4: The page must render package diagrams without browser scripts. Mermaid export must escape source labels.
+- [ ] PIPE-PAGES-R013.5: Every relationship must retain its label, source declaration, target link, and evidence limit.
+- [ ] PIPE-PAGES-R013.6: The relationship index must retain unresolved targets and specs without declared relationships.
+- [ ] PIPE-PAGES-R013.7: Large diagrams must split into navigable groups without hiding any spec or relationship.
 - [ ] PIPE-PAGES-R014: Three-level drill-down from the ecosystem view to the spec. Producer first; children below.
 - [ ] PIPE-PAGES-R014.1: Add `ecosystem_components()` to `scripts/spec_dashboard_sources.py`.
 - [ ] PIPE-PAGES-R014.2: Define the URL form in `scripts/spec_dashboard_sources.py`: level 1 `https://knuckles-team.github.io/<repo>/spec-delivery/`, level 2 `.../spec-delivery/#spec-<ID>`, level 3 row `.../spec-delivery/#req-<ID>`.
-- [ ] PIPE-PAGES-R014.3: Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id="spec-<ID>"` and lists its rows, state, concepts, and bound tests; each row gets `id="req-<ID>"`..
+- [ ] PIPE-PAGES-R014.3: Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id="spec-<ID>"` and lists its rows, state, code references, and bound tests; each row gets `id="req-<ID>"`..
 - [ ] PIPE-PAGES-R014.4: Link each box in `relation_view` (`scripts/spec_dashboard_panels.py`) to `#spec-<ID>` of its own page, or to the other repository's page for a cross-repository node..
 - [ ] PIPE-PAGES-R014.5: Cross-repository row, owner `Knuckles-Team/.github` (BLOCKED until that repository carries a spec tree): link each component in `profile/README.md` to `ecosystem_components()` URLs at level 1.
 - [ ] PIPE-PAGES-R014.6: Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_sources.py`.
 - [ ] PIPE-PAGES-R015: One generator for connectors and client repositories. Producer first; children below.
 - [ ] PIPE-PAGES-R015.1: The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller.
 - [ ] PIPE-PAGES-R015.2: agent-webui, agent-terminal-ui, and geniusbot adopt it through the caller pattern in PIPE-CONNSPEC-R004.
-- [ ] PIPE-PAGES-R015.3: Connector repositories get the same page through PIPE-CONNSPEC-R101 and following.
+- [ ] PIPE-PAGES-R015.3: Connectors must inherit code references and relationship views through the shared Pages generator when enabled.
 
 - [ ] Recheck historical R001/R003/R009 acceptance notes against current exact source and served-site evidence.
-- [ ] Validate R013.3 cycle layout with the planned order-independence test.
+- [ ] Validate R013.3 repository and component grouping with orphan specs.
 - [ ] PIPE-PAGES-R016: **Spec-delivery page shows only the current spec state.** Rollup of the children below
 - [ ] PIPE-PAGES-R016.1: Remove the `history` field and the `--history-limit` option from `create_snapshot` and `argument_parser` in `scripts/spec_dashboard.py`. The snapshot holds only records read from the current tree, so no ID absent from that tree enters it.
 - [ ] PIPE-PAGES-R016.2: Remove `history_panels` and the history and per-commit panels from `scripts/spec_dashboard_render.py`, then delete `scripts/spec_dashboard_charts.py`, `scripts/spec_dashboard_history.py`, `scripts/spec_dashboard_history_metrics.py`, and `scripts/spec_dashboard_history_views.py` with their tests. No state-transition table, chart, metric or panel is rendered.

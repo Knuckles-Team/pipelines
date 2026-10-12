@@ -119,3 +119,56 @@ If one page fails, the full collection shows as not available. It never shows as
 The build uses the existing `GITHUB_TOKEN` and asks for no extra permissions.
 If a repository refuses a read, the collection shows as not available.
 The snapshot is not live, and the page makes no API requests.
+
+## Source relationships and architecture
+
+The current generator follows [the shared spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md#delivery-relationships-and-implementation-mapping).
+No extra configuration is required. `spec.md` and `plan.md` hold `Component:`, `Depends-on:`,
+`Extends:`, `References:`, and `Code:` declarations. Generated `status.json` files remain unchanged.
+Same-repository IDs resolve through canonical spec IDs, including requirement ownership.
+External targets require explicit GitHub blob links; the generator does not fetch external repositories.
+The supported Pages caller checkout materializes the complete source tree. Only pipeline tooling uses sparse checkout.
+Inline callers must materialize referenced source files; a sparse caller tree cannot establish file absence.
+
+Panel D shows Code references instead of Concepts. Each reference states its role and evidence limit.
+Panel R groups declared dependencies and references by repository and component, including unresolved targets.
+Panel U shows package diagrams for all specs, with groups split into 20-node drawings and no inventory cap.
+Its `architecture.mmd` download contains labelled Mermaid edges. Plan diagrams remain available as escaped source.
+The page uses no browser scripts or external rendering service. All source paths and labels are escaped.
+These additions preserve the existing record states and any supplied history data.
+
+## Consumer adoption
+
+The seven core callers already enable this dashboard through `pages_pipeline.yml@main`.
+After the shared change merges, their next Pages build inherits the generator. A workflow reference alone
+never proves that a particular deployed site contains the change; record the resolved workflow SHA and build URL.
+Add explicit component and dependency declarations to source specs as ownership is reviewed.
+Do not convert all existing prose references into prerequisites.
+
+Connector adoption uses the same existing Pages publisher and this minimal configuration:
+
+```json
+{"version":1,"sources":[{"glob":"specs/*/status.json","kind":"spec"}]}
+```
+
+Save it as `.config/spec-dashboard.json`. In the existing reusable Pages job, add:
+
+```yaml
+with:
+  spec_dashboard_enabled: true
+  spec_dashboard_config: .config/spec-dashboard.json
+```
+
+Retain existing inputs and permissions. The push trigger must include `specs/**` and
+`.config/spec-dashboard.json`, or run on all default-branch pushes. Keep `workflow_dispatch`
+for an explicit Pages refresh. Add the existing `spec-delivery/` link to the site navigation.
+Reconcile duplicate `docs.yml` publishers before rollout so an older build cannot overwrite the shared output.
+The adoption audit reports 74 connector callers lacking the enable input and 66 duplicate publishers.
+A separate rollout lane owns those consumer edits. This change starts no connector builds.
+
+## Requirement definitions
+
+The record inventory opens by default. Each requirement exposes its parent spec and an expandable Definition.
+The generator reads the complete canonical row from `requirements.md`, including verification text.
+The detail links to that exact source line at the snapshot revision. It escapes source text instead of executing HTML.
+Missing definitions remain unavailable. Definition text changes no delivery state or evidence receipt.

@@ -3,6 +3,13 @@
 Owner: [repository name]. Cross-repo IDs: [IDs or none].
 Public provenance: [GitHub issue, PR, or decision URL if available. Keep all required detail below].
 
+## Delivery mapping
+
+Component: [owned component]
+
+[Declare Depends-on, Extends, References, and Code lines using the shared spec standard.
+Leave missing mappings unknown. Use public source links for external prerequisites.]
+
 ## Purpose and user stories
 
 [Describe the user, outcome, and reason.]

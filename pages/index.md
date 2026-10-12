@@ -2,6 +2,8 @@
 
 One progressively disclosed corpus of the Knuckles agent ecosystem's concepts, components, and man pages, generated from each repo's own registries and documentation nav — never hand-authored.
 
+- [Spec delivery](https://knuckles-team.github.io/pipelines/spec-delivery/) — current requirements, code references, and specification relationships.
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md) — the shared rules for every repository.
 - [Concepts](concepts.md) — level 1, 243 nodes across 7 repos.
 - [Components](components.md) — level 2, 260 nodes, each documented by a man page.
 - [`corpus.jsonld`](corpus.jsonld) — the full machine corpus (269 man pages), consumable by agents directly over HTTP once this site is published; JSON-LD with `@id` IRIs under `http://knuckles.team/kg#`, the same namespace Epistemic Graph's own ontology uses.

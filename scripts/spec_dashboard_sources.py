@@ -2,6 +2,11 @@
 import json
 import re
 
+if __package__:
+    from .spec_dashboard_definitions import enrich_definitions
+else:
+    from spec_dashboard_definitions import enrich_definitions
+
 STATES = {'SPECIFIED': 'specified', 'LANDED': 'landed', 'VERIFIED': 'verified', 'RETIRED': 'retired'}
 # RETIRED is an internal generator value for a delivered row whose code was removed.
 # It is filtered out before display; any other unknown value renders as INVALID.
@@ -14,7 +19,8 @@ def record(raw, path, kind, *, parent=None):
             'kind': kind, 'parent': parent, 'source': path.as_posix(),
             'title': str(raw.get('title', raw.get('spec_id', raw.get('id', path.parent.name)))),
             'delivery_state': delivery if delivery in STATES else 'INVALID',
-            'state': STATES.get(delivery, 'invalid'), 'done': delivery == 'VERIFIED'}
+            'state': STATES.get(delivery, 'invalid'), 'done': delivery == 'VERIFIED',
+            **public_evidence(raw)}
 
 
 def read_records(root, config):
@@ -39,6 +45,7 @@ def read_source(path, relative, kind, *, root):
     result = source_records(raw, relative, kind)
     if kind == 'spec':
         result[0].update(document_metadata(path, root))
+        enrich_definitions(result, path, root)
     return result
 
 
@@ -62,3 +69,13 @@ def document_metadata(path, root):
     if headings:
         metadata['title'] = headings[0]
     return metadata
+
+
+def public_list(raw, field):
+    value = raw.get(field, [])
+    return value if isinstance(value, list) else []
+
+
+def public_evidence(raw):
+    return {'landed_in': [sha for sha in public_list(raw, 'landed_in') if isinstance(sha, str) and re.fullmatch(r'[0-9a-f]{7,40}', sha)],
+            'verified_by': [test for test in public_list(raw, 'verified_by') if isinstance(test, str)]}
