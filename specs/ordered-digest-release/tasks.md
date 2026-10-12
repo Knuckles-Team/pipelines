@@ -26,3 +26,27 @@ commit).
 - [ ] PIPE-RELEASE-R006.4: Refusal: Missing, malformed or competing configs and ambiguous extraction exit 2; mismatches exit 1 and cannot produce a passing receipt. Implement and bind `test_project_version_refusals` in `tests/hooks/test_project_version_sync.py`.
 - [ ] PIPE-RELEASE-R006.5: Evidence: Evidence identifies the exact checked Git bytes and all three roles; unchecked cases have no successful verdict. Implement and bind `test_project_version_evidence` in `tests/hooks/test_project_version_sync.py`.
 - [ ] PIPE-RELEASE-R006.6: Hot-path proof: Assert real dispatcher/hook exit codes, exact locations, snapshot isolation, all-surface bumping and unchanged caller files during gate checks. Implement and bind `test_project_version_sync_cli` in `tests/hooks/test_project_version_sync.py`.
+- [ ] PIPE-RELEASE-R005.7: Model. Implement this contract and bind `test_role_extra_closure_model` in `tests/hooks/test_role_extra_closure.py`.
+- [ ] PIPE-RELEASE-R005.8: Behavior. Implement this contract and bind `test_role_extra_closure_behavior` in `tests/hooks/test_role_extra_closure.py`.
+- [ ] PIPE-RELEASE-R005.9: Wiring. Implement this contract and bind `test_role_extra_closure_wiring` in `tests/hooks/test_role_extra_closure.py`.
+- [ ] PIPE-RELEASE-R005.10: Refusal. Implement this contract and bind `test_role_extra_closure_refusal` in `tests/hooks/test_role_extra_closure.py`.
+- [ ] PIPE-RELEASE-R005.11: Evidence. Implement this contract and bind `test_role_extra_closure_evidence` in `tests/hooks/test_role_extra_closure.py`.
+- [ ] PIPE-RELEASE-R005.12: Hot-path proof. Implement this contract and bind `test_role_extra_closure_cli` in `tests/hooks/test_role_extra_closure.py`.
+- [ ] PIPE-RELEASE-R001.1: Model. Implement this contract and bind `test_release_phase_progress_model` in `tests/hooks/test_release_phase_progress.py`.
+- [ ] PIPE-RELEASE-R001.2: Behavior. Implement this contract and bind `test_release_phase_progress_behavior` in `tests/hooks/test_release_phase_progress.py`.
+- [ ] PIPE-RELEASE-R001.3: Wiring. Implement this contract and bind `test_release_phase_progress_wiring` in `tests/hooks/test_release_phase_progress.py`.
+- [ ] PIPE-RELEASE-R001.4: Refusal. Implement this contract and bind `test_release_phase_progress_refusal` in `tests/hooks/test_release_phase_progress.py`.
+- [ ] PIPE-RELEASE-R001.5: Evidence. Implement this contract and bind `test_release_phase_progress_evidence` in `tests/hooks/test_release_phase_progress.py`.
+- [ ] PIPE-RELEASE-R001.6: Hot-path proof. Implement this contract and bind `test_release_phase_progress_cli` in `tests/hooks/test_release_phase_progress.py`.
+- [ ] PIPE-RELEASE-R006.7: Model. Implement this contract and bind `test_version_inventory_completeness_model` in `tests/hooks/test_version_inventory_completeness.py`.
+- [ ] PIPE-RELEASE-R006.8: Behavior. Implement this contract and bind `test_version_inventory_completeness_behavior` in `tests/hooks/test_version_inventory_completeness.py`.
+- [ ] PIPE-RELEASE-R006.9: Wiring. Implement this contract and bind `test_version_inventory_completeness_wiring` in `tests/hooks/test_version_inventory_completeness.py`.
+- [ ] PIPE-RELEASE-R006.10: Refusal. Implement this contract and bind `test_version_inventory_completeness_refusal` in `tests/hooks/test_version_inventory_completeness.py`.
+- [ ] PIPE-RELEASE-R006.11: Evidence. Implement this contract and bind `test_version_inventory_completeness_evidence` in `tests/hooks/test_version_inventory_completeness.py`.
+- [ ] PIPE-RELEASE-R006.12: Hot-path proof. Implement this contract and bind `test_version_inventory_completeness_cli` in `tests/hooks/test_version_inventory_completeness.py`.
+- [ ] PIPE-RELEASE-R001.7: Model. Implement this contract and bind `test_major_upgrade_pre_pin_model` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- [ ] PIPE-RELEASE-R001.8: Behavior. Implement this contract and bind `test_major_upgrade_pre_pin_behavior` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- [ ] PIPE-RELEASE-R001.9: Wiring. Implement this contract and bind `test_major_upgrade_pre_pin_wiring` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- [ ] PIPE-RELEASE-R001.10: Refusal. Implement this contract and bind `test_major_upgrade_pre_pin_refusal` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- [ ] PIPE-RELEASE-R001.11: Evidence. Implement this contract and bind `test_major_upgrade_pre_pin_evidence` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- [ ] PIPE-RELEASE-R001.12: Hot-path proof. Implement this contract and bind `test_major_upgrade_pre_pin_cli` in `tests/hooks/test_major_upgrade_pre_pin.py`.

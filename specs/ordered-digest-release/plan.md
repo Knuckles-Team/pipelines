@@ -76,3 +76,37 @@ step's actual build command against a small pure-Python package with network
 access disabled and the existing build environment. It checks the valid wheel
 and injects unwanted output to prove refusal. No index proof or upload runs in
 this regression.
+
+## Role closure, phased release and version inventory
+
+These child contracts preserve the existing publication, dependency-cycle and version-consistency obligations.
+The public dispatcher remains `pipelines_hooks/cli.py:79` through `run_gate` at line 59.
+New CLI registrations and modules below are proposed attachment points, not existing delivery receipts.
+Repository-manager retains release admission and fleet ordering; SDK retains package compatibility semantics.
+Existing release source-binding and artifact qualification rules remain independent prerequisites.
+
+### Role extra closure
+
+`PIPE-RELEASE-R005.7` through `PIPE-RELEASE-R005.12` extend `PIPE-RELEASE-R005`.
+Register role-closure at pipelines_hooks/cli.py:13 through run_gate at line 59. Proposed role_closure.main must consume the package producer artifact before release readiness aggregation at .github/actions/wheel-readiness/bundle.py:98. Reuse dependency groups from R005 and static boundaries from PIPE-PAGES-R021.7. Static import analysis alone cannot prove installed closure.
+
+### Release phase progress
+
+`PIPE-RELEASE-R001.1` through `PIPE-RELEASE-R001.6` extend `PIPE-RELEASE-R001`.
+Create release-phases at pipelines_hooks/cli.py:13 through run_gate at line 59. Proposed phases.main must consume repository-manager readiness and ordered candidate exports before invoking release producers. Repository-manager retains fleet-order authority. The CLI emits JSON lines to its consuming UI. Overflow disconnects that subscriber with an explicit sequence-gap record; resumption requires a fresh authoritative progress snapshot.
+
+### Version inventory completeness
+
+`PIPE-RELEASE-R006.7` through `PIPE-RELEASE-R006.12` extend `PIPE-RELEASE-R006`.
+Extend proposed project_version.main through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse R006 snapshot selection. Add a code-enhancer consumer binding: owner repository, revision, real entry-point path and function, invocation argv and inventory digest. That entry must invoke project-version-sync before admitting a version proposal. Its concrete owner call site remains unresolved; a generic CLI pass cannot prove consumer integration.
+
+### Major upgrade pre pin
+
+`PIPE-RELEASE-R001.7` through `PIPE-RELEASE-R001.12` extend `PIPE-RELEASE-R001`.
+Extend the proposed release-phases entry at pipelines_hooks/cli.py:13 through run_gate at line 59. Place the SDK compatibility adapter before version-bump argv execution and pin writes. Repository-manager retains fleet rollout admission; SDK retains compatibility semantics. Pipelines must consume those producer receipts without duplicating certification rules.
+
+The package owner must publish the authoritative supported-role export before role completeness can be evaluated.
+The concrete code-enhancer owner and production call site remain unresolved prerequisites for consumer integration.
+A generic CLI fixture cannot close that consumer obligation. Six child rows do not themselves establish completeness.
+Delay measurement starts after predecessor qualification. Restarted runs must revalidate and wait a fresh full interval.
+Preflight refusal writes no pins. Post-admission failures retain explicit partial effects; no cross-repository atomicity is claimed.
