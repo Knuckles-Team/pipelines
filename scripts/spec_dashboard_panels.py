@@ -3,10 +3,10 @@ import html
 from collections import Counter
 
 if __package__:
-    from .spec_dashboard_concepts import concept_links
+    from .spec_dashboard_architecture import code_links
     from .spec_dashboard_style import mark
 else:
-    from spec_dashboard_concepts import concept_links
+    from spec_dashboard_architecture import code_links
     from spec_dashboard_style import mark
 
 ORDER = ['specified', 'landed', 'verified', 'invalid']
@@ -74,8 +74,7 @@ def spec_row(spec, children, link, *, repo=''):
     landed = sum(item['delivery_state'] in LANDED for item in children)
     done = sum(item['done'] for item in children)
     state = mark(True, spec['delivery_state']) if spec['done'] else html.escape(spec['delivery_state'])
-    base = f'https://knuckles-team.github.io/{repo}/' if repo else './'
-    cell = concept_links(spec.get('concepts', []), base)
+    cell = code_links(spec.get('code_refs', []))
     return (f'<tr id="spec-{html.escape(spec["id"])}"><td><span class="mono">{link(spec, spec["id"])}</span><small>{html.escape(spec["title"])}</small></td>'
             f'<td class="n">{len(children)}</td><td class="n">{landed}/{len(children)}</td>'
             f'<td class="n">{done}</td><td class="mono">{state}</td><td>{cell}</td></tr>')
@@ -95,6 +94,6 @@ def specs_panel(snapshot, link):
     if not rows:
         return '<p>No documented records.</p>'
     return ('<div class="scroll"><table class="specs"><thead><tr><th>Spec / title</th><th class="n">Req.</th>'
-            '<th class="n">Landed</th><th class="n">Done</th><th>Spec state</th><th>Concepts</th></tr></thead><tbody>'
+            '<th class="n">Landed</th><th class="n">Done</th><th>Spec state</th><th>Code references</th></tr></thead><tbody>'
             + ''.join(rows) + '</tbody></table></div><div class="note"><p>Landed counts LANDED and VERIFIED requirements.'
             ' Done counts VERIFIED requirements only.</p><p>The spec state comes from the spec status file only.</p></div>')

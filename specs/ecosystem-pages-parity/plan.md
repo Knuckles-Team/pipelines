@@ -20,24 +20,25 @@ The generic workflow accepts a versioned declaration or receipt artifact; consum
 
 Fetch failure means unverified. Reject traversal, symlink escape, malformed revision, extra declaration fields, and out-of-tree asset names. Keep schema versioned; old local-worktree snapshots remain historical rather than current exact-ref proof. New consumers opt in; removal requires a reviewed declaration change. Use `complexity-staged`/`complexity-census` (CCCC 10/15), `jscpd-differential` plus advisory census, `dupehound-changed`, and `kiss-staged`/`kiss-census` with `.config/kiss.toml`; run workflow YAML and contract tests. Reuse existing parser/theme/Pages wiring to satisfy KISS.
 
-## Concept references (PIPE-PAGES-R012)
+## Source mappings and architecture (PIPE-PAGES-R009, PIPE-PAGES-R012, PIPE-PAGES-R013)
 
-Data flow: code roots named in a row (`spec_graph_core.CODE_ROOT`) -> `concepts_for_row` -> `concept_links` -> Concepts cell in `spec_row`. The link target is `/<repo>/concepts/#concept-<slug>`, defined by `render_concepts_md`.
+The production call path is `create_snapshot` -> `enrich_records` -> `read_metadata`.
+`render` -> `current_panels` wires the result to code cells, relationship tables, and component diagrams.
+`main` writes the companion `architecture.mmd` before the existing Pages upload.
 
-- Mapping source. DECIDED. Derive from `CONCEPT:<ID>` markers under the code roots a row names. An explicit `Concepts:` line overrides the derived list. Evidence: `scripts/skill_graph/render_components_au.py` line 53 documents `CONCEPT:<ID>` markers in `agent_utilities/`, and `spec_graph_core.CODE_ROOT` already extracts the roots per requirement. No second registry results.
-- Rejected: deriving from files that bound tests and `Spec:` commits touch. The `Spec:` parser (`pipelines_hooks/specs/trailer_ids.py`) returns IDs only, so the file list needs a new git walk per row. The walk exceeds five minutes of CI time on large repositories.
-- Concept anchors. CONFIRMED missing. `render_concepts_md` emits plain bullets with no anchor. R012.3 adds them first.
-- Markers outside agent-utilities. CONFIRMED rare. Repositories without markers show `no concept mapped`, counted in the caption.
+The generator reads source declarations from `spec.md` and `plan.md` outside fenced examples.
+`Depends-on` declares prerequisites; `Extends` and `References` retain separate meanings.
+Local IDs resolve through canonical status ownership. External declarations carry explicit source URLs.
+The delivery view must not use the older prose-mention dependency heuristic in `spec_graph_parse`.
 
-## Spec relationship view (PIPE-PAGES-R013)
+`Code` declarations and existing file citations identify implementation, test, and documentation references.
+Local existence is evidence of a file only. External files and coverage remain unverified.
+The page groups all specs by repository and declared component, including orphan specs and Unassigned components.
+Package diagrams use SVG within HTML; Mermaid source carries labelled edges without adding a renderer dependency.
+Existing plan diagrams remain available as escaped source. Missing plan diagrams remain visible.
 
-Data flow: `spec_graph_load` records -> `spec_edges` -> `layer_specs` -> `relation_view` and `relation_table` -> panel in `current_panels`. The view follows PIPE-PAGES-R009.
-
-- Edges. CONFIRMED. `spec_graph_core.add_edge` computes requirement-level `depends_on` only, across repositories. `extends` does not exist yet, so R013.2 adds it from an `Extends:` line in `spec.md`. DECIDED.
-- Layout. DECIDED. Collapse each strongly connected component before computing dependency depth. Roots of the condensed graph form layer 0. Each other component gets one plus the greatest prerequisite depth. Members of a component share its layer. Sort component members by stable spec ID. Preserve all original edges in the table, including self-loops and cycle edges. Tests cover chains, self-loops, and three-node cycles with incoming and outgoing dependencies. Permuting input order must leave layers unchanged.
-- Size cap. DECIDED at 40 specs. Above 40 the page renders the table only and states the limit.
-- Accessibility. DECIDED. The table is the text alternative, linked with `aria-describedby`.
-- Rejected: Mermaid or SVG layout. R009 forbids Mermaid; SVG gives no gain over CSS columns.
+The integration regression enters through `main`, writes the actual output artifacts, and preserves source status bytes.
+No generated status, delivery state, or timeline changes belong to this mapping change.
 
 ## Drill-down (PIPE-PAGES-R014)
 

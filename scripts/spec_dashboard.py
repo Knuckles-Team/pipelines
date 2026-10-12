@@ -14,12 +14,14 @@ if __package__:
     from .spec_dashboard_render import render
     from .spec_dashboard_sources import read_records, record
     from .spec_dashboard_concepts import check_concept_links
-    from .spec_dashboard_wiring import snapshot_concepts, snapshot_edges
+    from .spec_dashboard_metadata import enrich_records
+    from .spec_dashboard_architecture import mermaid
 else:
     from spec_dashboard_render import render
     from spec_dashboard_sources import read_records, record
     from spec_dashboard_concepts import check_concept_links
-    from spec_dashboard_wiring import snapshot_concepts, snapshot_edges
+    from spec_dashboard_metadata import enrich_records
+    from spec_dashboard_architecture import mermaid
 
 
 def git(root, *args):
@@ -94,11 +96,7 @@ def create_snapshot(args, root, config):
                 'captured_at': datetime.now(timezone.utc).isoformat(),
                 'records': read_records(root, config),
                 'github': github_snapshot(args.repository, os.environ.get('GITHUB_TOKEN'))}
-    snapshot['spec_edges'] = snapshot_edges(root)
-    concepts = snapshot_concepts(root, snapshot['records'])
-    for item in snapshot['records']:
-        if item['kind'] == 'spec':
-            item['concepts'] = concepts[item['id']]
+    enrich_records(root, snapshot)
     return snapshot
 
 
@@ -108,6 +106,7 @@ def main(argv=None):
     output = root / args.output
     output.mkdir(parents=True, exist_ok=True)
     (output / 'snapshot.json').write_text(json.dumps(snapshot, indent=2) + '\n')
+    (output / 'architecture.mmd').write_text(mermaid(snapshot))
     page = render(snapshot)
     (output / 'index.html').write_text(page)
     return parity_status(page, root)

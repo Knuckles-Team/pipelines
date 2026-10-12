@@ -13,7 +13,7 @@ _STATUS = "specs/demo/status.json"
 @pytest.mark.parametrize("remote", [
     "https://github.com/Knuckles-Team/graph-os.git",
     "git@github.com:Knuckles-Team/graph-os.git",
-    "ssh://git@gitlab.arpa:2222/team/graph-os.git/",
+    "ssh://git@git.example.invalid:2222/team/graph-os.git/",
     "file:///srv/git/graph-os.git",
 ])
 def test_new_owner_comes_from_remote(repo: Repo, remote: str) -> None:

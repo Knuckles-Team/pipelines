@@ -51,7 +51,7 @@ def test_concept_links_and_marker():
 
 
 @pytest.mark.spec("PIPE-PAGES-R012.5")
-def test_spec_row_carries_concepts_cell():
+def test_spec_row_replaces_legacy_concepts_cell():
     from scripts.spec_dashboard_panels import spec_row
 
     spec = {
@@ -62,7 +62,7 @@ def test_spec_row_carries_concepts_cell():
         "concepts": ["A-1"],
     }
     out = spec_row(spec, [], lambda item, label: label, repo="repo")
-    assert 'id="spec-S-1"' in out and "concepts/#concept-a-1" in out
+    assert 'id="spec-S-1"' in out and "Not mapped" in out and "concepts/#" not in out
 
 
 @pytest.mark.spec("PIPE-PAGES-R012.6")
@@ -74,7 +74,7 @@ def test_caption_counts_unmapped_rows():
         {"kind": "spec", "concepts": ["A"]},
         {"kind": "requirement"},
     ]
-    assert "1 with no concept mapped" in count_caption({"records": records})
+    assert "2 with no code mapped" in count_caption({"records": records})
 
 
 @pytest.mark.spec("PIPE-PAGES-R012.7")

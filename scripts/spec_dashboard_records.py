@@ -21,19 +21,19 @@ def inventory_rows(snapshot):
     rows = []
     link = blob_link(snapshot)
     for item in snapshot['records']:
-        cells = [link(item, item['id']) + '<br>' + link(item, item['title'], 'document'),
+        cells = [link(item, item['id']) + '<br>' + link(item, item['title'], 'document') + definition_details(snapshot, item),
                  *[html.escape(str(item[key])) for key in
-                   ('kind', 'parent', 'delivery_state')]]
-        rows.append('<tr>' + ''.join('<td>' + cell + '</td>' for cell in cells) + '</tr>')
+                   ('kind', 'parent', 'delivery_state')], evidence_links(snapshot, item)]
+        rows.append('<tr id="req-' + quote(item['id'], safe='') + '">' + ''.join('<td>' + cell + '</td>' for cell in cells) + '</tr>')
     return ''.join(rows)
 
 
 def inventory_panel(snapshot):
     count = len(snapshot['records'])
     return ('<p>Each status file gives one spec row. Each requirement gives one more row. '
-            'A record without a valid state shows INVALID.</p>'
-            f'<details><summary>All documented records <span class="mono">({count} rows)</span></summary>'
-            '<div class="scroll"><table><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th></tr></thead><tbody>'
+            'A record without a valid state shows INVALID. Expand a Definition to read the canonical requirement and verification text.</p>'
+            f'<details open><summary>All documented records <span class="mono">({count} rows)</span></summary>'
+            '<div class="scroll"><table><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th><th>Commit / test evidence</th></tr></thead><tbody>'
             + inventory_rows(snapshot) + '</tbody></table></div></details>')
 
 
@@ -50,3 +50,27 @@ def github_sections(snapshot):
         sections.append('<h3>' + html.escape(label.replace('_', ' ').title()) + '</h3>' + body)
     return ''.join(sections) + ('<div class="note"><p>The build reads GitHub one time. '
                                 'This page makes no live API requests.</p></div>')
+
+
+def evidence_links(snapshot, item):
+    commits = [safe_link(f'https://github.com/{snapshot["repository"]}/commit/{sha}', sha) for sha in item.get('landed_in', [])]
+    tests = []
+    for test in item.get('verified_by', []):
+        path = test.split('::')[0]
+        if path.startswith('/') or '..' in path.split('/'):
+            tests.append(html.escape(test))
+        else:
+            tests.append(safe_link(f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/' + quote(path), test))
+    return '<br>'.join(commits + tests) or 'No recorded commit/test evidence'
+
+
+def definition_details(snapshot, item):
+    if item['kind'] != 'requirement':
+        return ''
+    context = str(item.get('parent') or 'Unknown spec') + ' / ' + item.get('parent_title', 'Unknown spec title')
+    if 'definition' not in item:
+        return '<p>' + html.escape(context) + ': definition unavailable in requirements.md.</p>'
+    url = f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/' + quote(item['definition_source']) + '#L' + str(item['definition_line'])
+    return ('<details><summary>Definition — ' + html.escape(context) + '</summary>'
+            + safe_link(url, 'Canonical requirement and verification source')
+            + '<div style="white-space:pre-wrap;overflow-wrap:anywhere">' + html.escape(item['definition']) + '</div></details>')

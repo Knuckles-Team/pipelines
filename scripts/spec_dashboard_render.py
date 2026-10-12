@@ -5,16 +5,14 @@ from pathlib import PurePosixPath
 if __package__:
     from .spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from .spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
-    from .spec_dashboard_concepts import unmapped_count
-    from .spec_dashboard_relations_view import relations_panel
+    from .spec_dashboard_architecture import architecture_panel, relationships_panel
     from .spec_dashboard_nav import site_nav, skip_link
     from .spec_dashboard_structure import structure_panel
     from .spec_dashboard_style import STYLE, panel, zones
 else:
     from spec_dashboard_records import blob_link, github_sections, inventory_panel, safe_link
     from spec_dashboard_panels import definitions_panel, distribution, specs_panel, states_panel
-    from spec_dashboard_concepts import unmapped_count
-    from spec_dashboard_relations_view import relations_panel
+    from spec_dashboard_architecture import architecture_panel, relationships_panel
     from spec_dashboard_nav import site_nav, skip_link
     from spec_dashboard_structure import structure_panel
     from spec_dashboard_style import STYLE, panel, zones
@@ -43,8 +41,8 @@ def title_block(snapshot):
 
 def count_caption(snapshot):
     kinds = [item['kind'] for item in snapshot['records']]
-    unmapped = unmapped_count(item.get('concepts', []) for item in snapshot['records'] if item['kind'] == 'spec')
-    return f'{kinds.count("spec")} specs, {kinds.count("requirement")} requirements, {unmapped} with no concept mapped'
+    unmapped = sum(no_implementation(item) for item in snapshot['records'] if item['kind'] == 'spec')
+    return f'{kinds.count("spec")} specs, {kinds.count("requirement")} requirements, {unmapped} with no code mapped'
 
 
 def current_panels(snapshot):
@@ -55,7 +53,8 @@ def current_panels(snapshot):
         panel('C', 'State definitions', caption='delivery_state', body=definitions_panel(records)),
         panel('D', 'Specifications', caption='specs/*/status.json',
               body=specs_panel(snapshot, blob_link(snapshot)), width='w7'),
-        panel('R', 'Spec relationships', caption='depends on, extends', body=relations_panel(snapshot)),
+        panel('U', 'Spec architecture', caption='repository / component packages', body=architecture_panel(snapshot)),
+        panel('R', 'Spec relationships', caption='declared dependencies and references', body=relationships_panel(snapshot)),
     ]
 
 
@@ -74,3 +73,7 @@ def render(snapshot):
             f'<meta name="color-scheme" content="light dark"><title>{title}</title>{STYLE}</head><body>'
             + skip_link() + site_nav(snapshot['repository']) + f'<div class="frame">{zones()}<main id="main" class="sheet">' + ''.join(current_panels(snapshot) + audit_panels(snapshot))
             + '</main></div></body></html>')
+
+
+def no_implementation(item):
+    return not any(ref['url'] and ref.get('role') == 'implementation' for ref in item.get('code_refs', []))

@@ -120,6 +120,7 @@ jobs:
             scripts/spec_dashboard.py
             scripts/spec_dashboard_render.py
             scripts/spec_dashboard_sources.py
+            scripts/spec_dashboard_definitions.py
             scripts/spec_dashboard_panels.py
             scripts/spec_dashboard_records.py
             scripts/spec_dashboard_structure.py
@@ -132,6 +133,9 @@ jobs:
             scripts/spec_dashboard_relations.py
             scripts/spec_dashboard_relations_view.py
             scripts/spec_dashboard_wiring.py
+            scripts/spec_dashboard_metadata.py
+            scripts/spec_dashboard_links.py
+            scripts/spec_dashboard_architecture.py
             scripts/spec_graph_core.py
             scripts/spec_graph_load.py
             scripts/spec_graph_parse.py
