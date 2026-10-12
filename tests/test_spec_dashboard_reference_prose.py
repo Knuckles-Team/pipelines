@@ -39,3 +39,43 @@ def test_unparsed_reference_evidence_is_escaped(tmp_path):
     assert '<script>' not in page
     assert '&lt;script&gt;' in page
     assert snapshot['records'][0]['relations'] == []
+
+
+@pytest.mark.parametrize(('target', 'relative_file', 'fragment'), [
+    ('templates/mkdocs-theme/base.mkdocs.yml', 'templates/mkdocs-theme/base.mkdocs.yml', ''),
+    ('.pre-commit-config.yaml', '.pre-commit-config.yaml', ''),
+    ('src/module.test.ts', 'src/module.test.ts', ''),
+    ('../other/spec.md#requirements', 'specs/other/spec.md', '#requirements'),
+    ('.gitignore', '.gitignore', ''),
+])
+def test_reference_paths_preserve_dots_dotfiles_and_fragments(tmp_path, target, relative_file, fragment):
+    snapshot = fixture(tmp_path, 'References: ' + target + '\n')
+    path = tmp_path / relative_file
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('Source')
+    enrich_records(tmp_path, snapshot)
+    row = snapshot['records'][0]
+    assert row['unparsed_references'] == []
+    assert row['relations'][0]['url'] == 'https://github.com/Knuckles-Team/demo/blob/' + 'a' * 40 + '/' + relative_file + fragment
+
+
+@pytest.mark.parametrize('target', [
+    'MCP', 'needs.', '.', '/etc/config.yaml', r'C:\temp\file.md',
+    '%2e%2e/file.md', 'file.md#<script>', 'javascript:alert(1)',
+])
+def test_reference_path_recognition_excludes_prose_and_unsafe_syntax(tmp_path, target):
+    snapshot = fixture(tmp_path, 'References: ' + target + '\n')
+    enrich_records(tmp_path, snapshot)
+    assert snapshot['records'][0]['relations'] == []
+    assert snapshot['records'][0]['unparsed_references'][0]['text'] == target
+
+
+def test_reference_file_shape_does_not_bypass_checkout_containment(tmp_path):
+    outside = tmp_path.parent / (tmp_path.name + '-outside.md')
+    outside.write_text('Outside checkout')
+    target = '../../../' + outside.name + '#requirements'
+    snapshot = fixture(tmp_path, 'References: ' + target + '\n')
+    enrich_records(tmp_path, snapshot)
+    edge = snapshot['records'][0]['relations'][0]
+    assert edge['url'] == ''
+    assert edge['evidence'] == 'missing source'

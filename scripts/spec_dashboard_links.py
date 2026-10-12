@@ -60,6 +60,6 @@ def reference_target(target):
     patterns = (
         r'[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+(?:\.\d+)*',
         r'https://github\.com/[\w.-]+/[\w.-]+/blob/\S+',
-        r'(?:\.{1,2}/)*(?:[\w.-]+/)*[\w-]+\.[\w]+(?:#L\d+(?:-L\d+)?|:\d+)?',
+        r'(?:\.{1,2}/)*(?:[\w.-]+/)*(?:\.[\w-]+(?:\.[\w-]+)*|[\w-]+(?:\.[\w-]+)+)(?:#[\w.:-]+|:\d+)?',
     )
     return any(re.fullmatch(pattern, target) for pattern in patterns)
