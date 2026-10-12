@@ -71,6 +71,11 @@ runs:
         path: dist/*.whl
         if-no-files-found: error
 
+    - name: Verify release tag before publication
+      uses: ./.pipeline-contract/.github/actions/verify-release-source
+      with:
+        github-token: ${{ inputs.github-token }}
+
     - name: Publish package
       env:
         RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}

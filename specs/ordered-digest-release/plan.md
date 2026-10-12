@@ -110,3 +110,19 @@ The concrete code-enhancer owner and production call site remain unresolved prer
 A generic CLI fixture cannot close that consumer obligation. Six child rows do not themselves establish completeness.
 Delay measurement starts after predecessor qualification. Restarted runs must revalidate and wait a fresh full interval.
 Preflight refusal writes no pins. Post-admission failures retain explicit partial effects; no cross-repository atomicity is claimed.
+
+### 2026-10-12 — PIPE-RELEASE-R002 publication source binding
+
+Reuse the source verifier's frozen workflow commit and wheel readiness proof.
+Before Python or native-wheel upload, compare the frozen source with checkout
+HEAD, release metadata and the workflow SHA. Read the repository and exact tag
+through GitHub's API; peel annotated tags with a bounded traversal. A conflicting
+tag, unavailable metadata or unsupported target blocks publication. Repeat the
+check before creating the release and pass the verified full commit explicitly
+as its target. A moving default branch cannot select the release source.
+
+The guard never creates or changes a tag. Existing releases and package versions
+remain untouched. Tests in `tests/test_release_source.py` exercise a branch
+advance after source freeze, lightweight and annotated tag conflicts, metadata
+failures and the real shared action wiring using disposable Git repositories.
+No package build, index upload or live release is required by these tests.
