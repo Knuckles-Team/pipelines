@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 import sys
 from xml.etree import ElementTree
@@ -256,3 +257,95 @@ def test_theme_override_is_served_from_the_theme_checkout() -> None:
     custom_dirs = [line.split(":", 1)[1].strip() for line in base.splitlines() if line.strip().startswith("custom_dir:")]
     assert custom_dirs == [".pipeline-theme/templates/mkdocs-theme/overrides"]
     assert not [item for item in THEME_FILES if item.source.startswith("overrides/")]
+
+
+def _compatibility_svg(payload: bytes) -> bytes:
+    return (
+        "<!-- Generated compatibility copy; do not edit.\n"
+        "Source: https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/"
+        "54aab65786bf72fac94f565796eb21f5d1ec72c4/docs/assets/runtime-architecture.svg\n"
+        f"SHA-256: {hashlib.sha256(payload).hexdigest()}\n"
+        "Synchronize: https://github.com/Knuckles-Team/.github/blob/main/docs/runtime-diagram.md\n"
+        "-->\n"
+    ).encode() + payload
+
+
+@pytest.fixture
+def compatibility_repo(tmp_path: Path) -> Path:
+    sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode="sync")
+    asset = tmp_path / "docs/assets/runtime-architecture.svg"
+    asset.write_bytes(_compatibility_svg(RUNTIME_DIAGRAM.read_bytes()))
+    return tmp_path
+
+
+@pytest.mark.parametrize("content_source", ["docs", "pages"])
+def test_runtime_provenance_is_checked_and_preserved(compatibility_repo: Path, content_source: str) -> None:
+    root = compatibility_repo
+    if content_source == "pages":
+        (root / "docs").rename(root / content_source)
+    asset = root / content_source / "assets/runtime-architecture.svg"
+    original = asset.read_bytes()
+    for mode in ("check", "sync", "check"):
+        assert sync_theme(
+            source_root=ROOT, repository_root=root, content_source=content_source, mode=mode
+        ) == []
+        assert asset.read_bytes() == original
+
+
+def _assert_runtime_copy_rejected(compatibility_repo: Path, original: bytes) -> None:
+    asset = compatibility_repo / "docs/assets/runtime-architecture.svg"
+    asset.write_bytes(original)
+    for mode in ("check", "sync"):
+        with pytest.raises(ThemeSyncError, match="provenance or payload differs"):
+            sync_theme(
+                source_root=ROOT, repository_root=compatibility_repo, content_source="docs", mode=mode
+            )
+        assert asset.read_bytes() == original
+
+
+@pytest.mark.parametrize(
+    ("before", "after"),
+    [
+        (b"Generated compatibility copy", b"Unrecognized provenance"),
+        (b"Knuckles-Team/epistemic-graph/", b"Knuckles-Team/graph-os/"),
+        (b"54aab65786bf72fac94f565796eb21f5d1ec72c4", b"main"),
+        (b"SHA-256: ", b"SHA-256: 0"),
+        (hashlib.sha256(RUNTIME_DIAGRAM.read_bytes()).hexdigest().encode(), b"0" * 64),
+        (b"docs/runtime-diagram.md", b"docs/other-guide.md"),
+        (b"-->\n", b"-->\n<!-- extra comment -->\n"),
+        (b"<!-- Generated", b"<!-- extra comment -->\n<!-- Generated"),
+        (b"\n", b"\r\n"),
+    ],
+)
+def test_runtime_provenance_rejects_unrecognized_headers(
+    compatibility_repo: Path, before: bytes, after: bytes
+) -> None:
+    asset = compatibility_repo / "docs/assets/runtime-architecture.svg"
+    original = asset.read_bytes().replace(before, after)
+    _assert_runtime_copy_rejected(compatibility_repo, original)
+
+
+@pytest.mark.parametrize("resign", [False, True])
+def test_runtime_provenance_rejects_payload_drift_even_with_matching_digest(
+    compatibility_repo: Path, resign: bool
+) -> None:
+    payload = RUNTIME_DIAGRAM.read_bytes()
+    changed = payload + b"\n"
+    original = _compatibility_svg(changed) if resign else _compatibility_svg(payload) + b"\n"
+    _assert_runtime_copy_rejected(compatibility_repo, original)
+
+
+def test_runtime_provenance_does_not_exempt_other_assets(compatibility_repo: Path) -> None:
+    asset = compatibility_repo / "docs/assets/graph-mark.svg"
+    asset.write_bytes(_compatibility_svg(asset.read_bytes()))
+    assert sync_theme(
+        source_root=ROOT, repository_root=compatibility_repo, content_source="docs", mode="check"
+    ) == ["generated file differs: docs/assets/graph-mark.svg"]
+
+
+def test_bare_runtime_payload_drift_is_still_rejected(compatibility_repo: Path) -> None:
+    asset = compatibility_repo / "docs/assets/runtime-architecture.svg"
+    asset.write_bytes(RUNTIME_DIAGRAM.read_bytes() + b"\n")
+    assert sync_theme(
+        source_root=ROOT, repository_root=compatibility_repo, content_source="docs", mode="check"
+    ) == ["generated file differs: docs/assets/runtime-architecture.svg"]
