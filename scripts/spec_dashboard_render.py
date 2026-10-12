@@ -52,16 +52,16 @@ def current_panels(snapshot):
         panel('B', 'Delivery states', caption='count of total', body=states_panel(records)),
         panel('C', 'State definitions', caption='delivery_state', body=definitions_panel(records)),
         panel('D', 'Specifications', caption='specs/*/status.json',
-              body=specs_panel(snapshot, blob_link(snapshot)), width='w7'),
-        panel('U', 'Spec architecture', caption='repository / component packages', body=architecture_panel(snapshot)),
-        panel('R', 'Spec relationships', caption='declared dependencies and references', body=relationships_panel(snapshot)),
+              body=specs_panel(snapshot, blob_link(snapshot)), width='w12'),
+        panel('U', 'Spec architecture', caption='repository / component packages', body=architecture_panel(snapshot), width='w12'),
+        panel('R', 'Spec relationships', caption='declared dependencies and references', body=relationships_panel(snapshot), width='w12'),
     ]
 
 
 def audit_panels(snapshot):
     return [
         panel('G', 'Open issues and pull requests', caption='open at capture', body=github_sections(snapshot), width='w6'),
-        panel('J', 'Record inventory', caption=f'{len(snapshot["records"])} records', body=inventory_panel(snapshot)),
+        panel('J', 'Record inventory', caption=f'{len(snapshot["records"])} records', body=inventory_panel(snapshot), width='w12'),
         title_block(snapshot),
     ]
 

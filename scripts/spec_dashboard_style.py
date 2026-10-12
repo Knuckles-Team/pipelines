@@ -22,7 +22,7 @@ FRAME = ('*{box-sizing:border-box}html,body{margin:0;background:var(--paper);col
 
 PANEL = ('.panel{grid-column:span 4;border:1px solid var(--ink);min-width:0;background:var(--paper)}'
          '.w3{grid-column:span 3}.w5{grid-column:span 5}.w6{grid-column:span 6}.w7{grid-column:span 7}'
-         '.w9{grid-column:span 9}.w12{grid-column:span 12}'
+         '.w9{grid-column:span 9}.w12{grid-column:1/-1}'
          '.bar{display:flex;align-items:stretch;border-bottom:1px solid var(--ink);min-height:32px}'
          '.tab{background:var(--ink);color:var(--paper);font:600 13px var(--mono);width:32px;display:flex;'
          'align-items:center;justify-content:center;flex:none}'
@@ -33,13 +33,17 @@ PANEL = ('.panel{grid-column:span 4;border:1px solid var(--ink);min-width:0;back
          '.mono,code{font-family:var(--mono);font-size:12px}.ok{color:var(--blue)}.no{color:var(--red)}'
          'h3{font:600 12.5px var(--sans);margin:14px 0 6px}h3:first-child{margin-top:0}')
 
-TABLES = ('.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%}'
+TABLES = ('.scroll{max-width:100%;overflow-x:auto}table{border-collapse:collapse;width:100%}'
           'th{font:500 10.5px var(--mono);color:var(--muted);text-align:left;padding:6px 8px;'
           'border-bottom:1px solid var(--rule);white-space:nowrap}'
           'td{padding:6px 8px;border-bottom:1px solid var(--soft);vertical-align:top}'
           'tbody tr:nth-child(odd){background:var(--row)}td.n,th.n{text-align:right;font-family:var(--mono)}'
           '.specs small{display:block;color:var(--muted);font-size:12px}td.mono:first-child,.specs .mono,td:last-child .ok,td:last-child .no{white-space:nowrap}'
           'details{margin-top:10px;border-top:1px solid var(--soft);padding-top:8px}'
+          '.inventory{table-layout:fixed;min-width:42rem}.inventory th:first-child,.inventory td:first-child{width:48%}'
+          '.inventory td,.specs td{overflow-wrap:anywhere}.specs{min-width:42rem}'
+          '.definition{max-width:min(100%,calc(100vw - 8rem));white-space:pre-wrap;overflow-wrap:anywhere}'
+          '.package-diagram{min-width:680px}.package-diagram text{font-size:13px}'
           'summary{cursor:pointer;font:600 12.5px var(--sans)}summary .mono{color:var(--muted);font-weight:400}')
 
 TREE = ('.root{border:1px solid var(--blue);background:var(--fill);text-align:center;padding:8px;margin:0 auto;'

@@ -52,3 +52,32 @@ def test_tick_scale_ends_on_total():
     assert ticks(9) == [0, 2, 4, 6, 8, 9]
     assert ticks(489) == [0, 100, 200, 300, 400, 489]
     assert ticks(1) == [0, 1]
+
+
+def test_dense_panels_span_the_sheet_without_implicit_mobile_columns():
+    page = render(snapshot())
+    for letter in ('D', 'U', 'R', 'J'):
+        assert f'class="panel w12" aria-labelledby="panel-{letter}"' in page
+    assert '.w12{grid-column:1/-1}' in page
+    assert '.w12{grid-column:span 12}' not in page
+    assert '.sheet{grid-template-columns:repeat(6,minmax(0,1fr))}' in page
+
+
+def test_long_definition_uses_bounded_wrapping_cell_without_losing_text():
+    data = snapshot()
+    text = 'Requirement text ' + 'long_identifier_' * 90
+    data['records'][1].update(definition=text, definition_source='specs/one/requirements.md', definition_line=24)
+    page = render(data)
+    assert '<table class="inventory">' in page
+    assert '<div class="definition">' + text + '</div>' in page
+    assert '.inventory{table-layout:fixed;min-width:42rem}' in page
+    assert '.definition{max-width:min(100%,calc(100vw - 8rem));white-space:pre-wrap;overflow-wrap:anywhere}' in page
+
+
+def test_package_labels_keep_readable_size_inside_local_scroll():
+    page = render(snapshot())
+    assert '<div class="scroll"><svg class="package-diagram"' in page
+    assert '.package-diagram{min-width:680px}' in page
+    assert '.package-diagram text{font-size:13px}' in page
+    assert '.scroll{max-width:100%;overflow-x:auto}' in page
+    assert 'overflow-x:hidden' not in page

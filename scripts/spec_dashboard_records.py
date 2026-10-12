@@ -34,7 +34,7 @@ def inventory_panel(snapshot):
     return ('<p>Each status file gives one spec row. Each requirement gives one more row. '
             'A record without a valid state shows INVALID. Expand a Definition to read the canonical requirement and verification text.</p>'
             f'<details open><summary>All documented records <span class="mono">({count} rows)</span></summary>'
-            '<div class="scroll"><table><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th><th>Commit / test evidence</th></tr></thead><tbody>'
+            '<div class="scroll"><table class="inventory"><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th><th>Commit / test evidence</th></tr></thead><tbody>'
             + inventory_rows(snapshot) + '</tbody></table></div></details>')
 
 
@@ -74,7 +74,7 @@ def definition_details(snapshot, item):
     url = f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/' + quote(item['definition_source']) + '#L' + str(item['definition_line'])
     return ('<details><summary>Definition — ' + html.escape(context) + '</summary>'
             + safe_link(url, 'Canonical requirement and verification source')
-            + '<div style="white-space:pre-wrap;overflow-wrap:anywhere">' + html.escape(item['definition']) + '</div></details>')
+            + '<div class="definition">' + html.escape(item['definition']) + '</div></details>')
 
 
 def receipt_target(receipt):
