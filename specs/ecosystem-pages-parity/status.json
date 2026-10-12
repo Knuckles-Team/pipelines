@@ -435,10 +435,12 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "13e5f2f6b948",
-        "6cd983d5fe0b"
+        "6cd983d5fe0b",
+        "911c63f923e5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:187"
+        "tests/test_spec_dashboard_metadata.py:187",
+        "tests/test_spec_dashboard_reference_prose.py:9"
       ]
     },
     {
