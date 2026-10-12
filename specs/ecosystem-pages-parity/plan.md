@@ -299,3 +299,87 @@ R012.5, R013.4 and R014.3 retain their data semantics. Give specifications, arch
 
 
 R013.2 also excludes prose words in References declarations from relationship targets. Retain the full declaration and source path as unparsed evidence. Preserve explicit links, canonical identifiers and relative file references, including unresolved canonical identifiers.
+
+## Structured artifacts and shared validation contracts
+
+The shared CLI at `pipelines_hooks/cli.py:79` calls `run_gate` at line 59.
+The new registrations below are proposed; the current registry does not publish these checks.
+Reuse canonical status generation at `pipelines_hooks/specs/generator.py:93`; artifact validation must precede it.
+Reuse the proposed repository-validation, test-quality, config-inventory and skill-grade adapters owned by existing rows.
+Those modules remain implementation work. Their names describe required attachment points, not existing runtime evidence.
+KISS census and staged entry points already exist. Their new structural predicates require explicit measurements and consumer adoption.
+All planned test names below are future proof obligations. Documentation alone creates no runtime receipt.
+
+### Spec artifacts
+
+`PIPE-PAGES-R020.73` through `PIPE-PAGES-R020.78` extend `PIPE-PAGES-R020`.
+Add a spec-artifacts entry to pipelines_hooks/cli.py:13, dispatched through run_gate at line 59. Proposed artifacts.main must validate generator-skill output before the existing specs/generator.py:93 status consumer reads rendered requirements. Generator skills must invoke this adapter with their output path; direct unvalidated output cannot receive a compatibility receipt.
+
+### Spec bundle compatibility
+
+`PIPE-PAGES-R012.8` through `PIPE-PAGES-R012.13` extend `PIPE-PAGES-R012`.
+Extend proposed spec-artifacts at pipelines_hooks/cli.py:13 through run_gate at line 59. Validate the bundle before specs/generator.py:93 and dashboard source ingestion. EG-ORCH-VOCAB-R012 owns graph ingestion. Its owner adapter must consume the identical bundle bytes; the Pages renderer must not invent graph compatibility.
+
+### Skill dependency audit
+
+`PIPE-PAGES-R021.31` through `PIPE-PAGES-R021.36` extend `PIPE-PAGES-R021`.
+Extend the planned repository-validation registration at pipelines_hooks/cli.py:13 and run_gate at line 59. Proposed repository_validation.main must pass the skill inventory to the supply-chain adapter beside supply_chain/gate.py:58. The owner connector must return a durable proposal identity before approval consumers receive it.
+
+### Aggregate skill grade
+
+`PIPE-PAGES-R023.13` through `PIPE-PAGES-R023.18` extend `PIPE-PAGES-R023`.
+Extend planned repository_validation.main to call a structured skill_grade.grade(snapshot, policy) adapter once before its final verdict. Register through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse the standalone grader contract; neither proposed module exists on this source revision.
+
+### Capability inventory
+
+`PIPE-PAGES-R012.14` through `PIPE-PAGES-R012.19` extend `PIPE-PAGES-R012`.
+Create a capability-coverage registration at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Reuse specs/bindings.py test discovery and owner-exported MCP inventories. Add static source adapters before the verdict. Dashboard source declarations must consume the resulting receipt without claiming exhaustive coverage themselves.
+
+### Structural limits
+
+`PIPE-PAGES-R021.37` through `PIPE-PAGES-R021.42` extend `PIPE-PAGES-R021`.
+Extend pipelines_hooks/kiss/census.py:31 for build enforcement and kiss/staged.py:50 for changed-source admission. Their existing callers are pipelines_hooks/cli.py:59. GraphOS must configure both limits and invoke the shared check in its build. Unsupported scanner measurements require a versioned adapter, not guessed values.
+
+### Source path portability
+
+`PIPE-PAGES-R021.43` through `PIPE-PAGES-R021.48` extend `PIPE-PAGES-R021`.
+Register source-path-portability at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Publish a shared pre-commit hook and invoke it before package builds. Inventory Git paths and declared package roots statically; artifact platform tags do not replace source-path validation.
+
+### Coverage closure
+
+`PIPE-PAGES-R021.49` through `PIPE-PAGES-R021.54` extend `PIPE-PAGES-R021`.
+Extend the planned test-quality registration at pipelines_hooks/cli.py:13 and run_gate at line 59 with an explicit closure mode. Proposed test_quality.main must invoke the declared runner before evaluating closure. Reuse the existing outcome runner and coverage adapters rather than adding another project registry.
+
+### Validation behavior inventory
+
+`PIPE-PAGES-R020.79` through `PIPE-PAGES-R020.84` extend `PIPE-PAGES-R020`.
+Extend the proposed config-inventory registration at pipelines_hooks/cli.py:13 through run_gate at line 59. Reuse the existing project inventory and configured hook parser. Execute the pinned baseline and consumer hooks in disposable trees. Connector spec-hook adoption alone must not establish complete validation coverage.
+
+### Offline unit profile
+
+`PIPE-PAGES-R021.55` through `PIPE-PAGES-R021.60` extend `PIPE-PAGES-R021`.
+Extend the planned test-quality registration at pipelines_hooks/cli.py:13 through run_gate at line 59. The proposed outcome runner must apply UnitProfile isolation before test collection and execution. Enforcement must cover subprocesses, not only patched Python socket calls. Consumers must select the unit profile explicitly.
+
+### Ontology governance hook
+
+`PIPE-PAGES-R020.85` through `PIPE-PAGES-R020.90` extend `PIPE-PAGES-R020`.
+Register ontology-governance at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Publish the pre-commit hook with complete ontology discovery before commit admission. The adapter must consume the generated OntologyInspect/ShaclValidate client or generated offline authority artifacts. Read-only inspection alone does not establish validation.
+
+### Test layout independence
+
+`PIPE-PAGES-R021.61` through `PIPE-PAGES-R021.66` extend `PIPE-PAGES-R021`.
+Extend the planned test-quality entry at pipelines_hooks/cli.py:13 through run_gate at line 59. Reuse proposed config-inventory project roots and the outcome runner. Publish the test-layout profile through the shared hook. Preserve separate real-component integration and recovery acceptance contracts.
+
+### Solution size evidence
+
+`PIPE-PAGES-R021.67` through `PIPE-PAGES-R021.72` extend `PIPE-PAGES-R021`.
+Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under EG-DECISION-ENGINE-R136.4. AU run receipts must preserve the same source and evidence identities.
+
+### Graph workflow receipt
+
+`PIPE-PAGES-R021.73` through `PIPE-PAGES-R021.78` extend `PIPE-PAGES-R021`.
+Extend the planned test-quality handoff verifier at pipelines_hooks/cli.py:13 through run_gate at line 59. Consume the owner acceptance receipt joining AU graph_orchestrate, execute_workflow and EG SourceIngest. The shared gate verifies provenance and outcomes; it must not become a runtime workflow orchestrator.
+
+Historical validation comparison remains blocked until its former command revision and complete behavior inventory are recovered.
+Solution-size evidence does not resolve the reserved shortcut-comment policy. The coordinator retains that decision.
+Coverage closure reuses the coverage and outcome owners; it does not replace their separate semantic proof contracts.
