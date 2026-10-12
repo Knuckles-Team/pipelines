@@ -21,3 +21,14 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 ## Kernel wheel completeness and dependency loops
 
 `tests/test_wheel_kernel_completeness.py::test_release_bundle_blocks_missing_kernel_wheel` must fail the bundle when a platform wheel is absent. `tests/hooks/test_dependency_cycles.py::test_supply_chain_hook_blocks_dependency_loop` must exit 1 on a group loop.
+
+## Project version consistency
+
+| ID | Requirement | Test and expected result |
+|---|---|---|
+| T-PIPE-RELEASE-R006.1 | PIPE-RELEASE-R006.1 | Run `test_project_version_inventory` in `tests/hooks/test_project_version_sync.py`. Accept a complete three-role inventory; reject unknown roles, duplicate locations and missing role coverage. |
+| T-PIPE-RELEASE-R006.2 | PIPE-RELEASE-R006.2 | Run `test_project_version_values` in `tests/hooks/test_project_version_sync.py`. Equal values pass; independently changing metadata, source, documentation or canonical current version fails at the exact location. |
+| T-PIPE-RELEASE-R006.3 | PIPE-RELEASE-R006.3 | Run `test_project_version_hook_wiring` in `tests/hooks/test_project_version_sync.py`. The installed CLI and published hook select the same snapshot and fail on an inconsistent unchanged declared surface. |
+| T-PIPE-RELEASE-R006.4 | PIPE-RELEASE-R006.4 | Run `test_project_version_refusals` in `tests/hooks/test_project_version_sync.py`. Missing, malformed or competing configs and ambiguous extraction exit 2; mismatches exit 1 and cannot produce a passing receipt. |
+| T-PIPE-RELEASE-R006.5 | PIPE-RELEASE-R006.5 | Run `test_project_version_evidence` in `tests/hooks/test_project_version_sync.py`. Evidence identifies the exact checked Git bytes and all three roles; unchecked cases have no successful verdict. |
+| T-PIPE-RELEASE-R006.6 | PIPE-RELEASE-R006.6 | Run `test_project_version_sync_cli` in `tests/hooks/test_project_version_sync.py`. Assert real dispatcher/hook exit codes, exact locations, snapshot isolation, all-surface bumping and unchanged caller files during gate checks. |

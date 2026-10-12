@@ -19,3 +19,10 @@ commit).
       PIPE-RELEASE-R003, which no functional requirement or existing task above covers.
 - [ ] Add `kernels.py` with the kernel matrix, call it from `aggregate`, record `kernel_cells` in the receipt, and prove a release bundle with a missing platform wheel fails. Closes PIPE-RELEASE-R004.
 - [ ] Add `dependency_cycles.py`, call it from `dependency_findings`, emit `SC-DEP-LOOP`, and prove `pipelines-hook supply-chain` fails on a group loop. Closes PIPE-RELEASE-R005.
+- [ ] PIPE-RELEASE-R006: Deliver all six children and retain separate consistency and release authorization.
+- [ ] PIPE-RELEASE-R006.1: Model: Accept a complete three-role inventory; reject unknown roles, duplicate locations and missing role coverage. Implement and bind `test_project_version_inventory` in `tests/hooks/test_project_version_sync.py`.
+- [ ] PIPE-RELEASE-R006.2: Behavior: Equal values pass; independently changing metadata, source, documentation or canonical current version fails at the exact location. Implement and bind `test_project_version_values` in `tests/hooks/test_project_version_sync.py`.
+- [ ] PIPE-RELEASE-R006.3: Wiring: The installed CLI and published hook select the same snapshot and fail on an inconsistent unchanged declared surface. Implement and bind `test_project_version_hook_wiring` in `tests/hooks/test_project_version_sync.py`.
+- [ ] PIPE-RELEASE-R006.4: Refusal: Missing, malformed or competing configs and ambiguous extraction exit 2; mismatches exit 1 and cannot produce a passing receipt. Implement and bind `test_project_version_refusals` in `tests/hooks/test_project_version_sync.py`.
+- [ ] PIPE-RELEASE-R006.5: Evidence: Evidence identifies the exact checked Git bytes and all three roles; unchecked cases have no successful verdict. Implement and bind `test_project_version_evidence` in `tests/hooks/test_project_version_sync.py`.
+- [ ] PIPE-RELEASE-R006.6: Hot-path proof: Assert real dispatcher/hook exit codes, exact locations, snapshot isolation, all-surface bumping and unchanged caller files during gate checks. Implement and bind `test_project_version_sync_cli` in `tests/hooks/test_project_version_sync.py`.
