@@ -4,6 +4,8 @@ from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 
 
+LINK = re.compile(r'\[([^\]]+)\]\(([^\s)]+)\)')
+
 def source_link(root, document, target, *, repository, revision):
     """Accept public GitHub blob links or existing files contained by this checkout."""
     target = re.sub(r':(\d+)$', r'#L\1', target)
@@ -39,3 +41,25 @@ def local_source(root, document, parts, *, repository, revision):
     relative = path.relative_to(root.resolve()).as_posix()
     fragment = '#' + quote(parts.fragment, safe='-') if parts.fragment else ''
     return f'https://github.com/{repository}/blob/{revision}/{quote(relative)}{fragment}', repository, 'file exists; coverage not verified'
+
+
+def targets(value, *, kind, result, source):
+    links = LINK.findall(value)
+    remainder = LINK.sub('', value)
+    candidates = links + [(token.strip('`'), token.strip('`')) for token in re.split(r'[,\s]+', remainder) if token.strip('`')]
+    if kind != 'references':
+        return candidates
+    selected = [pair for pair in candidates if pair in links or reference_target(pair[1])]
+    if len(selected) != len(candidates):
+        result['unparsed_references'].append({'text': value, 'declared_in': source})
+    return selected
+
+
+def reference_target(target):
+    """Recognize explicit source shapes, never infer identities from prose words."""
+    patterns = (
+        r'[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+(?:\.\d+)*',
+        r'https://github\.com/[\w.-]+/[\w.-]+/blob/\S+',
+        r'(?:\.{1,2}/)*(?:[\w.-]+/)*[\w-]+\.[\w]+(?:#L\d+(?:-L\d+)?|:\d+)?',
+    )
+    return any(re.fullmatch(pattern, target) for pattern in patterns)

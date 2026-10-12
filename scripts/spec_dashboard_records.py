@@ -91,3 +91,9 @@ def receipt_target(receipt):
     if last:
         fragment += '-L' + last
     return quote(path) + fragment
+
+
+def unparsed_reference_note(row):
+    return ''.join('<p>Unparsed reference declaration: ' + html.escape(note['text'])
+                   + '; source: ' + html.escape(note['declared_in']) + '</p>'
+                   for note in row.get('unparsed_references', []))

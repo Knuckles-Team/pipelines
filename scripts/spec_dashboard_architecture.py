@@ -4,9 +4,9 @@ from collections import defaultdict
 from urllib.parse import quote
 
 if __package__:
-    from .spec_dashboard_records import safe_link
+    from .spec_dashboard_records import safe_link, unparsed_reference_note
 else:
-    from spec_dashboard_records import safe_link
+    from spec_dashboard_records import safe_link, unparsed_reference_note
 
 
 def code_links(refs):
@@ -54,6 +54,7 @@ def relationships_panel(snapshot):
         cells = []
         for row in rows:
             source = f'<a href="#spec-{quote(row["id"], safe="")}">{html.escape(row["id"])}</a>'
+            source += unparsed_reference_note(row)
             relations = row.get('relations', [])
             if not relations:
                 cells.append(f'<tr><td>{source}</td><td colspan="3">No relationships declared; dependencies unknown</td></tr>')

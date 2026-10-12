@@ -6,13 +6,12 @@ from urllib.parse import quote
 if __package__:
     from .spec_dashboard_definitions import outside_fences
     from .spec_dashboard_relations import normalized_edges
-    from .spec_dashboard_links import code_role, source_link
+    from .spec_dashboard_links import LINK, code_role, source_link, targets
 else:
     from spec_dashboard_definitions import outside_fences
     from spec_dashboard_relations import normalized_edges
-    from spec_dashboard_links import code_role, source_link
+    from spec_dashboard_links import LINK, code_role, source_link, targets
 
-LINK = re.compile(r'\[([^\]]+)\]\(([^\s)]+)\)')
 DECLARATION = re.compile(r'^(Depends-on|Depends on|Extends|References|Code|Component):\s*(.*)$', re.I)
 KINDS = {'depends-on': 'depends on', 'depends on': 'depends on', 'extends': 'extends', 'references': 'references'}
 
@@ -26,14 +25,8 @@ def declarations(text):
             yield match[1].lower(), match[2]
 
 
-def targets(value):
-    links = LINK.findall(value)
-    remainder = LINK.sub('', value)
-    return links + [(token.strip('`'), token.strip('`')) for token in re.split(r'[,\s]+', remainder) if token.strip('`')]
-
-
 def read_metadata(root, item, *, repository, revision, known):
-    result = {'component': 'Unassigned', 'code_refs': [], 'relations': [], 'plan_diagrams': []}
+    result = {'component': 'Unassigned', 'code_refs': [], 'relations': [], 'plan_diagrams': [], 'unparsed_references': []}
     directory = root / Path(item['source']).parent
     for name in ('spec.md', 'plan.md'):
         document = directory / name
@@ -41,7 +34,7 @@ def read_metadata(root, item, *, repository, revision, known):
             if name == 'plan.md':
                 result['plan_diagrams'] = re.findall(r'```mermaid\s*\n(.*?)```', document.read_text(encoding='utf-8'), re.S)
             collect_metadata(result, document, root=root, repository=repository, revision=revision, known=known)
-    for field in ('code_refs', 'relations'):
+    for field in ('code_refs', 'relations', 'unparsed_references'):
         result[field] = sorted({tuple(sorted(row.items())) for row in result[field]})
         result[field] = [dict(row) for row in result[field]]
     return result
@@ -80,7 +73,7 @@ def enrich_records(root, snapshot):
 
 def collect_declaration(result, declaration, document, *, root, repository, revision, known):
     kind, value = declaration
-    for label, target in targets(value):
+    for label, target in targets(value, kind=kind, result=result, source=document.relative_to(root).as_posix()):
         url, repo, evidence = source_link(root, document, target, repository=repository, revision=revision)
         if target in known:
             url, repo, evidence = known[target], repository, 'local spec declaration'

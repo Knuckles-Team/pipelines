@@ -172,3 +172,6 @@ The page replaces the Concepts column with Code references. The concept corpus r
 The architecture view uses accessible package diagrams and exports escaped Mermaid source with labelled dependency edges.
 Existing Mermaid diagrams in `plan.md` remain available as source. Absence of a plan diagram stays visible.
 Relationships and code mappings must not change delivery states, recorded history, or timelines.
+
+
+References declarations accept explicit links, canonical spec or requirement identifiers, and relative file paths. Other prose remains unparsed source evidence; its words do not become relationship targets. Unknown canonical identifiers remain unresolved references.

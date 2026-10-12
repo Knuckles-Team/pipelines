@@ -296,3 +296,6 @@ Every new child remains SPECIFIED. Runtime/deployment capability remains with it
 ### Amendment — 2026-10-12: readable delivery detail panels
 
 R012.5, R013.4 and R014.3 retain their data semantics. Give specifications, architecture, relationships and record inventory the full sheet width. Wrap definition text within the visible area. Keep wide tables and package diagrams in local scroll containers, with package labels at readable size. Regression checks cover panel spans, bounded definitions and local overflow. Desktop and mobile visual evidence remains a separate validation step.
+
+
+R013.2 also excludes prose words in References declarations from relationship targets. Retain the full declaration and source path as unparsed evidence. Preserve explicit links, canonical identifiers and relative file references, including unresolved canonical identifiers.
