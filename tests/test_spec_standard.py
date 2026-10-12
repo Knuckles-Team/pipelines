@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tests.git_fixture_environment import fixture_git_environment
+
 import subprocess
 from pathlib import Path
 
@@ -34,7 +36,7 @@ def _spec(root: Path, name: str = "foo", spec_id: str = "FOO") -> Path:
 
 @pytest.fixture
 def root(tmp_path: Path) -> Path:
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], env=fixture_git_environment(), check=True)
     return tmp_path
 
 
