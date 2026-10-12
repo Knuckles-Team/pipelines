@@ -62,3 +62,17 @@ Decision: enforce complete agreement with one config and emit deterministic obse
 Cross-repository rows: none added. Each consumer supplies its own compatible canonical bump configuration and adopts the shared hook. Version selection and release authorization remain with the repository owner; this gate only checks consistency.
 Source credit: audit candidate PIPE:5 from the source document “Verify” supplies the one-configuration requirement. No research citation was supplied. Exact source lineage and record digest remain in the audit ledger.
 Acceptance: implement `tests/hooks/test_project_version_sync.py`, then run `uv run --frozen python -m pytest tests/hooks/test_project_version_sync.py -q`. The fixture initializes Git and installs the published local hook entry. It checks equal versions, independent drift in all roles, canonical-version drift, missing/malformed/duplicate configuration, extraction counts that differ from the declared count and unsupported dynamic source expressions. A location declaring two matches passes only when both tokens agree with current_version; one or three matches fail. Assert index/commit isolation in both directions, no writes by the gate, and location/digest evidence. In a separate disposable fixture, invoke the real configured bump command, verify all three replacements and run the gate again. Parser-only tests do not close the CLI/hook acceptance row.
+
+
+## Amendments
+
+### 2026-10-12 — PIPE-RELEASE-R003 wheel output boundary
+
+The Python publisher must build a wheel-only output directory. Use the build
+tool option that prevents an auxiliary `.gitignore` file. Keep `wheel_set`
+strict: hidden files, source archives, other files and symlinked wheels still
+block publication. `tests/test_python_wheel_output.py` executes the publication
+step's actual build command against a small pure-Python package with network
+access disabled and the existing build environment. It checks the valid wheel
+and injects unwanted output to prove refusal. No index proof or upload runs in
+this regression.

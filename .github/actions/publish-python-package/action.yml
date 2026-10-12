@@ -40,7 +40,7 @@ runs:
         uv pip install --require-hashes -r "${{ github.action_path }}/twine-requirements.txt"
         echo "Building package"
         rm -rf dist
-        uv build --wheel
+        uv build --wheel --no-create-gitignore
         BUILD_VERSION=$(ls dist | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -n 1)
         LATEST_COMMIT="$SOURCE_COMMIT"
         echo "Last Commit: ${LATEST_COMMIT}"
