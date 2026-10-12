@@ -4,9 +4,9 @@ from collections import defaultdict
 from urllib.parse import quote
 
 if __package__:
-    from .spec_dashboard_records import safe_link
+    from .spec_dashboard_records import safe_link, unparsed_reference_note
 else:
-    from spec_dashboard_records import safe_link
+    from spec_dashboard_records import safe_link, unparsed_reference_note
 
 
 def code_links(refs):
@@ -26,14 +26,14 @@ def groups(snapshot):
 def package_diagram(label, rows):
     """UML package containment: every spec remains linked, including isolated specs."""
     height = 58 + 36 * len(rows)
-    parts = [f'<svg viewBox="0 0 680 {height}" role="img" aria-label="{html.escape(label, quote=True)}" style="width:100%;max-width:680px">',
+    parts = [f'<div class="scroll"><svg class="package-diagram" viewBox="0 0 680 {height}" role="img" aria-label="{html.escape(label, quote=True)}" style="width:100%;max-width:680px">',
              '<rect x="1" y="1" width="678" height="32" fill="none" stroke="currentColor"/>',
              f'<text x="12" y="23" fill="currentColor">{html.escape(label)}</text>',
              f'<rect x="1" y="33" width="678" height="{height - 34}" fill="none" stroke="currentColor"/>']
     for index, row in enumerate(rows):
         y = 44 + index * 36
         parts.append(f'<a href="#spec-{quote(row["id"], safe="")}"><rect x="12" y="{y}" width="656" height="28" fill="none" stroke="currentColor"/><text x="22" y="{y + 20}" fill="currentColor">{html.escape(row["id"])}</text></a>')
-    return ''.join(parts) + '</svg>'
+    return ''.join(parts) + '</svg></div>'
 
 
 def architecture_panel(snapshot):
@@ -54,6 +54,7 @@ def relationships_panel(snapshot):
         cells = []
         for row in rows:
             source = f'<a href="#spec-{quote(row["id"], safe="")}">{html.escape(row["id"])}</a>'
+            source += unparsed_reference_note(row)
             relations = row.get('relations', [])
             if not relations:
                 cells.append(f'<tr><td>{source}</td><td colspan="3">No relationships declared; dependencies unknown</td></tr>')

@@ -291,3 +291,11 @@ All six original inputs were read. PIPE:4's formerly unavailable task was found 
 Source-byte SHA-256 evidence: task b097dc10 `8d1b602b340de2c617569ea065a6d0299397a69e43608332fa9f80a689b7d856`; guide splitting `12192bfe6cade66abffafe81844f9cf95847b2b94b135e13644e4b86c4005488`; environment/deployment conversation `6ea0112bca6b26c0b8f28710f31e9f5dc77994a4b3e61ee70c1b8f4164ab0dea`; four deployment options `ea28329a140f215fd655e2fb80014029f48251d874cd63f9b42ce86788e7d3be`; modernization plan `5b71bc49259e276e2e149f837cc35780c31da21d5a664ca0fd467ac476c5c1b9`; standardization task `c7c5c1545805b72cca225ce1b9ede5fabad308833217b1772212b85e49281520`; shared README request `21d96ae2690c43ccb7c076e1620afead4b731a8357fe64c4a2282eaba89560c3`.
 
 Every new child remains SPECIFIED. Runtime/deployment capability remains with its existing owner; pipelines owns documentation parity and evidence only. The parent rows keep their existing historical receipts; new acceptance is not claimed by those receipts.
+
+
+### Amendment — 2026-10-12: readable delivery detail panels
+
+R012.5, R013.4 and R014.3 retain their data semantics. Give specifications, architecture, relationships and record inventory the full sheet width. Wrap definition text within the visible area. Keep wide tables and package diagrams in local scroll containers, with package labels at readable size. Regression checks cover panel spans, bounded definitions and local overflow. Desktop and mobile visual evidence remains a separate validation step.
+
+
+R013.2 also excludes prose words in References declarations from relationship targets. Retain the full declaration and source path as unparsed evidence. Preserve explicit links, canonical identifiers and relative file references, including unresolved canonical identifiers.

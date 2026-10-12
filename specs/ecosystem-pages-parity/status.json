@@ -365,7 +365,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0fc12ceeb003",
-        "13e5f2f6b948"
+        "13e5f2f6b948",
+        "170f1bc883a2"
       ],
       "verified_by": [
         "tests/test_spec_dashboard_metadata.py:57"
@@ -434,10 +435,13 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "13e5f2f6b948",
-        "6cd983d5fe0b"
+        "6cd8906edd00",
+        "6cd983d5fe0b",
+        "911c63f923e5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:187"
+        "tests/test_spec_dashboard_metadata.py:187",
+        "tests/test_spec_dashboard_reference_prose.py:9"
       ]
     },
     {
@@ -458,6 +462,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "13e5f2f6b948",
+        "170f1bc883a2",
         "6cd983d5fe0b"
       ],
       "verified_by": [
@@ -543,6 +548,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0fc12ceeb003",
+        "170f1bc883a2",
         "5b454e4b7eb4"
       ],
       "verified_by": [
