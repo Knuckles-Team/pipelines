@@ -200,3 +200,87 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R020.70: Refusal: An image lacking trustworthy theme evidence cannot silently pass or disappear from inventory. Implement and bind `test_image_theme_refusal` in `tests/hooks/test_image_theme.py`.
 - [ ] PIPE-PAGES-R020.71: Evidence: Every image has two bound render results with exact failure locations and reasons. Implement and bind `test_image_theme_evidence` in `tests/hooks/test_image_theme.py`.
 - [ ] PIPE-PAGES-R020.72: Hot-path proof: Assert real served dual-media coverage for every image, failed adversarial probes and stale-receipt exit 2. Implement and bind `test_image_theme_cli` in `tests/hooks/test_image_theme.py`.
+- [ ] PIPE-PAGES-R020.73: Model. Implement this contract and bind `test_spec_artifacts_model` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] PIPE-PAGES-R020.74: Behavior. Implement this contract and bind `test_spec_artifacts_behavior` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] PIPE-PAGES-R020.75: Wiring. Implement this contract and bind `test_spec_artifacts_wiring` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] PIPE-PAGES-R020.76: Refusal. Implement this contract and bind `test_spec_artifacts_refusal` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] PIPE-PAGES-R020.77: Evidence. Implement this contract and bind `test_spec_artifacts_evidence` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] PIPE-PAGES-R020.78: Hot-path proof. Implement this contract and bind `test_spec_artifacts_cli` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] PIPE-PAGES-R012.8: Model. Implement this contract and bind `test_spec_bundle_compatibility_model` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] PIPE-PAGES-R012.9: Behavior. Implement this contract and bind `test_spec_bundle_compatibility_behavior` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] PIPE-PAGES-R012.10: Wiring. Implement this contract and bind `test_spec_bundle_compatibility_wiring` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] PIPE-PAGES-R012.11: Refusal. Implement this contract and bind `test_spec_bundle_compatibility_refusal` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] PIPE-PAGES-R012.12: Evidence. Implement this contract and bind `test_spec_bundle_compatibility_evidence` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] PIPE-PAGES-R012.13: Hot-path proof. Implement this contract and bind `test_spec_bundle_compatibility_cli` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] PIPE-PAGES-R021.31: Model. Implement this contract and bind `test_skill_dependency_audit_model` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] PIPE-PAGES-R021.32: Behavior. Implement this contract and bind `test_skill_dependency_audit_behavior` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] PIPE-PAGES-R021.33: Wiring. Implement this contract and bind `test_skill_dependency_audit_wiring` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] PIPE-PAGES-R021.34: Refusal. Implement this contract and bind `test_skill_dependency_audit_refusal` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] PIPE-PAGES-R021.35: Evidence. Implement this contract and bind `test_skill_dependency_audit_evidence` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] PIPE-PAGES-R021.36: Hot-path proof. Implement this contract and bind `test_skill_dependency_audit_cli` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] PIPE-PAGES-R023.13: Model. Implement this contract and bind `test_aggregate_skill_grade_model` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] PIPE-PAGES-R023.14: Behavior. Implement this contract and bind `test_aggregate_skill_grade_behavior` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] PIPE-PAGES-R023.15: Wiring. Implement this contract and bind `test_aggregate_skill_grade_wiring` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] PIPE-PAGES-R023.16: Refusal. Implement this contract and bind `test_aggregate_skill_grade_refusal` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] PIPE-PAGES-R023.17: Evidence. Implement this contract and bind `test_aggregate_skill_grade_evidence` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] PIPE-PAGES-R023.18: Hot-path proof. Implement this contract and bind `test_aggregate_skill_grade_cli` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] PIPE-PAGES-R012.14: Model. Implement this contract and bind `test_capability_inventory_model` in `tests/hooks/test_capability_inventory.py`.
+- [ ] PIPE-PAGES-R012.15: Behavior. Implement this contract and bind `test_capability_inventory_behavior` in `tests/hooks/test_capability_inventory.py`.
+- [ ] PIPE-PAGES-R012.16: Wiring. Implement this contract and bind `test_capability_inventory_wiring` in `tests/hooks/test_capability_inventory.py`.
+- [ ] PIPE-PAGES-R012.17: Refusal. Implement this contract and bind `test_capability_inventory_refusal` in `tests/hooks/test_capability_inventory.py`.
+- [ ] PIPE-PAGES-R012.18: Evidence. Implement this contract and bind `test_capability_inventory_evidence` in `tests/hooks/test_capability_inventory.py`.
+- [ ] PIPE-PAGES-R012.19: Hot-path proof. Implement this contract and bind `test_capability_inventory_cli` in `tests/hooks/test_capability_inventory.py`.
+- [ ] PIPE-PAGES-R021.37: Model. Implement this contract and bind `test_structural_limits_model` in `tests/hooks/test_structural_limits.py`.
+- [ ] PIPE-PAGES-R021.38: Behavior. Implement this contract and bind `test_structural_limits_behavior` in `tests/hooks/test_structural_limits.py`.
+- [ ] PIPE-PAGES-R021.39: Wiring. Implement this contract and bind `test_structural_limits_wiring` in `tests/hooks/test_structural_limits.py`.
+- [ ] PIPE-PAGES-R021.40: Refusal. Implement this contract and bind `test_structural_limits_refusal` in `tests/hooks/test_structural_limits.py`.
+- [ ] PIPE-PAGES-R021.41: Evidence. Implement this contract and bind `test_structural_limits_evidence` in `tests/hooks/test_structural_limits.py`.
+- [ ] PIPE-PAGES-R021.42: Hot-path proof. Implement this contract and bind `test_structural_limits_cli` in `tests/hooks/test_structural_limits.py`.
+- [ ] PIPE-PAGES-R021.43: Model. Implement this contract and bind `test_source_path_portability_model` in `tests/hooks/test_source_path_portability.py`.
+- [ ] PIPE-PAGES-R021.44: Behavior. Implement this contract and bind `test_source_path_portability_behavior` in `tests/hooks/test_source_path_portability.py`.
+- [ ] PIPE-PAGES-R021.45: Wiring. Implement this contract and bind `test_source_path_portability_wiring` in `tests/hooks/test_source_path_portability.py`.
+- [ ] PIPE-PAGES-R021.46: Refusal. Implement this contract and bind `test_source_path_portability_refusal` in `tests/hooks/test_source_path_portability.py`.
+- [ ] PIPE-PAGES-R021.47: Evidence. Implement this contract and bind `test_source_path_portability_evidence` in `tests/hooks/test_source_path_portability.py`.
+- [ ] PIPE-PAGES-R021.48: Hot-path proof. Implement this contract and bind `test_source_path_portability_cli` in `tests/hooks/test_source_path_portability.py`.
+- [ ] PIPE-PAGES-R021.49: Model. Implement this contract and bind `test_coverage_closure_model` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.50: Behavior. Implement this contract and bind `test_coverage_closure_behavior` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.51: Wiring. Implement this contract and bind `test_coverage_closure_wiring` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.52: Refusal. Implement this contract and bind `test_coverage_closure_refusal` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.53: Evidence. Implement this contract and bind `test_coverage_closure_evidence` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.54: Hot-path proof. Implement this contract and bind `test_coverage_closure_cli` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R020.79: Model. Implement this contract and bind `test_validation_behavior_inventory_model` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] PIPE-PAGES-R020.80: Behavior. Implement this contract and bind `test_validation_behavior_inventory_behavior` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] PIPE-PAGES-R020.81: Wiring. Implement this contract and bind `test_validation_behavior_inventory_wiring` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] PIPE-PAGES-R020.82: Refusal. Implement this contract and bind `test_validation_behavior_inventory_refusal` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] PIPE-PAGES-R020.83: Evidence. Implement this contract and bind `test_validation_behavior_inventory_evidence` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] PIPE-PAGES-R020.84: Hot-path proof. Implement this contract and bind `test_validation_behavior_inventory_cli` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] PIPE-PAGES-R021.55: Model. Implement this contract and bind `test_offline_unit_profile_model` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] PIPE-PAGES-R021.56: Behavior. Implement this contract and bind `test_offline_unit_profile_behavior` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] PIPE-PAGES-R021.57: Wiring. Implement this contract and bind `test_offline_unit_profile_wiring` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] PIPE-PAGES-R021.58: Refusal. Implement this contract and bind `test_offline_unit_profile_refusal` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] PIPE-PAGES-R021.59: Evidence. Implement this contract and bind `test_offline_unit_profile_evidence` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] PIPE-PAGES-R021.60: Hot-path proof. Implement this contract and bind `test_offline_unit_profile_cli` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] PIPE-PAGES-R020.85: Model. Implement this contract and bind `test_ontology_governance_hook_model` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] PIPE-PAGES-R020.86: Behavior. Implement this contract and bind `test_ontology_governance_hook_behavior` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] PIPE-PAGES-R020.87: Wiring. Implement this contract and bind `test_ontology_governance_hook_wiring` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] PIPE-PAGES-R020.88: Refusal. Implement this contract and bind `test_ontology_governance_hook_refusal` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] PIPE-PAGES-R020.89: Evidence. Implement this contract and bind `test_ontology_governance_hook_evidence` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] PIPE-PAGES-R020.90: Hot-path proof. Implement this contract and bind `test_ontology_governance_hook_cli` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] PIPE-PAGES-R021.61: Model. Implement this contract and bind `test_test_layout_independence_model` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] PIPE-PAGES-R021.62: Behavior. Implement this contract and bind `test_test_layout_independence_behavior` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] PIPE-PAGES-R021.63: Wiring. Implement this contract and bind `test_test_layout_independence_wiring` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] PIPE-PAGES-R021.64: Refusal. Implement this contract and bind `test_test_layout_independence_refusal` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] PIPE-PAGES-R021.65: Evidence. Implement this contract and bind `test_test_layout_independence_evidence` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] PIPE-PAGES-R021.66: Hot-path proof. Implement this contract and bind `test_test_layout_independence_cli` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] PIPE-PAGES-R021.67: Model. Implement this contract and bind `test_solution_size_evidence_model` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] PIPE-PAGES-R021.68: Behavior. Implement this contract and bind `test_solution_size_evidence_behavior` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] PIPE-PAGES-R021.69: Wiring. Implement this contract and bind `test_solution_size_evidence_wiring` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] PIPE-PAGES-R021.70: Refusal. Implement this contract and bind `test_solution_size_evidence_refusal` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] PIPE-PAGES-R021.71: Evidence. Implement this contract and bind `test_solution_size_evidence_evidence` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] PIPE-PAGES-R021.72: Hot-path proof. Implement this contract and bind `test_solution_size_evidence_cli` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] PIPE-PAGES-R021.73: Model. Implement this contract and bind `test_graph_workflow_receipt_model` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.74: Behavior. Implement this contract and bind `test_graph_workflow_receipt_behavior` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.75: Wiring. Implement this contract and bind `test_graph_workflow_receipt_wiring` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.76: Refusal. Implement this contract and bind `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.77: Evidence. Implement this contract and bind `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.78: Hot-path proof. Implement this contract and bind `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`.

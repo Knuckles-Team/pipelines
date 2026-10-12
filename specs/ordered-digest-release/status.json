@@ -27,17 +27,55 @@
     "PIPE-RELEASE-R006.3",
     "PIPE-RELEASE-R006.4",
     "PIPE-RELEASE-R006.5",
-    "PIPE-RELEASE-R006.6"
+    "PIPE-RELEASE-R006.6",
+    "PIPE-RELEASE-R005.7",
+    "PIPE-RELEASE-R005.8",
+    "PIPE-RELEASE-R005.9",
+    "PIPE-RELEASE-R005.10",
+    "PIPE-RELEASE-R005.11",
+    "PIPE-RELEASE-R005.12",
+    "PIPE-RELEASE-R001.1",
+    "PIPE-RELEASE-R001.2",
+    "PIPE-RELEASE-R001.3",
+    "PIPE-RELEASE-R001.4",
+    "PIPE-RELEASE-R001.5",
+    "PIPE-RELEASE-R001.6",
+    "PIPE-RELEASE-R006.7",
+    "PIPE-RELEASE-R006.8",
+    "PIPE-RELEASE-R006.9",
+    "PIPE-RELEASE-R006.10",
+    "PIPE-RELEASE-R006.11",
+    "PIPE-RELEASE-R006.12",
+    "PIPE-RELEASE-R001.7",
+    "PIPE-RELEASE-R001.8",
+    "PIPE-RELEASE-R001.9",
+    "PIPE-RELEASE-R001.10",
+    "PIPE-RELEASE-R001.11",
+    "PIPE-RELEASE-R001.12"
   ],
   "requirements": [
     {
       "id": "PIPE-RELEASE-R001",
       "title": "Pipelines publishes images in dependency order with digest pins",
-      "delivery_state": "LANDED",
+      "delivery_state": "SPECIFIED",
       "landed_in": [
         "59dd4e7b91c6"
       ],
-      "verified_by": []
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-RELEASE-R001.1",
+        "PIPE-RELEASE-R001.2",
+        "PIPE-RELEASE-R001.3",
+        "PIPE-RELEASE-R001.4",
+        "PIPE-RELEASE-R001.5",
+        "PIPE-RELEASE-R001.6",
+        "PIPE-RELEASE-R001.7",
+        "PIPE-RELEASE-R001.8",
+        "PIPE-RELEASE-R001.9",
+        "PIPE-RELEASE-R001.10",
+        "PIPE-RELEASE-R001.11",
+        "PIPE-RELEASE-R001.12"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R002",
@@ -53,6 +91,7 @@
       "title": "Release build job sources environment values safely",
       "delivery_state": "LANDED",
       "landed_in": [
+        "3778a909bcad",
         "59dd4e7b91c6",
         "622a53f14803"
       ],
@@ -127,7 +166,13 @@
         "PIPE-RELEASE-R005.3",
         "PIPE-RELEASE-R005.4",
         "PIPE-RELEASE-R005.5",
-        "PIPE-RELEASE-R005.6"
+        "PIPE-RELEASE-R005.6",
+        "PIPE-RELEASE-R005.7",
+        "PIPE-RELEASE-R005.8",
+        "PIPE-RELEASE-R005.9",
+        "PIPE-RELEASE-R005.10",
+        "PIPE-RELEASE-R005.11",
+        "PIPE-RELEASE-R005.12"
       ]
     },
     {
@@ -184,7 +229,13 @@
         "PIPE-RELEASE-R006.3",
         "PIPE-RELEASE-R006.4",
         "PIPE-RELEASE-R006.5",
-        "PIPE-RELEASE-R006.6"
+        "PIPE-RELEASE-R006.6",
+        "PIPE-RELEASE-R006.7",
+        "PIPE-RELEASE-R006.8",
+        "PIPE-RELEASE-R006.9",
+        "PIPE-RELEASE-R006.10",
+        "PIPE-RELEASE-R006.11",
+        "PIPE-RELEASE-R006.12"
       ]
     },
     {
@@ -224,6 +275,174 @@
     },
     {
       "id": "PIPE-RELEASE-R006.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.7",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.8",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.9",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.10",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.11",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R005.12",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R006.7",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R006.8",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R006.9",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R006.10",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R006.11",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R006.12",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.7",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.8",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.9",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.10",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.11",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R001.12",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
