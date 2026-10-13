@@ -9,6 +9,7 @@ import subprocess
 import shutil
 import sys
 import time
+from contextlib import contextmanager
 from dataclasses import asdict
 from pathlib import Path
 
@@ -25,9 +26,40 @@ def _terminate(process: subprocess.Popen, output) -> None:
     process.wait()
 
 
+@contextmanager
+def _termination_guard():
+    previous = signal.getsignal(signal.SIGTERM)
+    interrupted = [False]
+
+    def notice(_signum, _frame):
+        interrupted[0] = True
+
+    if previous == signal.SIG_DFL:
+        signal.signal(signal.SIGTERM, notice)
+    try:
+        yield interrupted
+    finally:
+        signal.signal(signal.SIGTERM, previous)
+        if interrupted[0]:
+            # Cleanup has finished; retain the caller-visible signal exit status.
+            signal.raise_signal(signal.SIGTERM)
+
+
+def _wait(process, timeout, interrupted):
+    deadline = time.monotonic() + timeout
+    while process.poll() is None:
+        if interrupted[0]:
+            raise SystemExit(128 + signal.SIGTERM)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise subprocess.TimeoutExpired(process.args, timeout)
+        time.sleep(min(remaining, 0.05))
+    return process.returncode
+
+
 def execute(command: list[str], root: Path, log: Path, *, timeout: float) -> dict:
     started = time.monotonic()
-    with log.open("xb") as output:
+    with _termination_guard() as interrupted, log.open("xb") as output:
         try:
             process = subprocess.Popen(
                 command,
@@ -41,7 +73,7 @@ def execute(command: list[str], root: Path, log: Path, *, timeout: float) -> dic
             output.write(f"Cannot start check: {exc}\n".encode())
             return {"outcome": "unavailable", "exit_code": 2, "seconds": 0.0}
         try:
-            code = process.wait(timeout=timeout)
+            code = _wait(process, timeout, interrupted)
             outcome = {0: "pass", 1: "fail", 2: "unavailable"}.get(code, "unavailable")
         except subprocess.TimeoutExpired:
             code, outcome = 2, "timeout"

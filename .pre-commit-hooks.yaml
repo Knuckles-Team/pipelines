@@ -275,5 +275,6 @@
   language: python
   pass_filenames: false
   always_run: true
+  verbose: true
   require_serial: true
   stages: [pre-commit, pre-push, manual]

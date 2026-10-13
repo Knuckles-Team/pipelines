@@ -73,7 +73,9 @@
       ],
       "verified_by": [
         "tests/hooks/test_validation.py:195",
-        "tests/hooks/test_validation.py:218"
+        "tests/hooks/test_validation.py:218",
+        "tests/hooks/test_validation_lifecycle.py:103",
+        "tests/hooks/test_validation_lifecycle.py:137"
       ]
     },
     {
@@ -84,7 +86,8 @@
         "b76625874902"
       ],
       "verified_by": [
-        "tests/hooks/test_validation.py:106"
+        "tests/hooks/test_validation.py:106",
+        "tests/hooks/test_validation_lifecycle.py:47"
       ]
     },
     {
