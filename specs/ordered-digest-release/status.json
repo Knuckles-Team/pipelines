@@ -82,6 +82,8 @@
       "title": "Release tags point to the exact qualified commit",
       "delivery_state": "LANDED",
       "landed_in": [
+        "0f9f73b150d7",
+        "d6a43376acc9",
         "df7212f102bb"
       ],
       "verified_by": []

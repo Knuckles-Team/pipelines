@@ -68,6 +68,7 @@
       "title": "Bounded execution",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0f9f73b150d7",
         "b76625874902"
       ],
       "verified_by": [

@@ -3490,8 +3490,10 @@
     {
       "id": "PIPE-CONNSPEC-R008",
       "title": "Canonical title determines generated spec identity",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0f9f73b150d7"
+      ],
       "verified_by": [
         "tests/hooks/test_spec_status.py:282"
       ]
