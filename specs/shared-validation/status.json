@@ -2,7 +2,7 @@
   "schema_version": 2,
   "spec_id": "shared-validation",
   "owner_repo": "pipelines",
-  "delivery_state": "SPECIFIED",
+  "delivery_state": "VERIFIED",
   "requirement_ids": [
     "PIPE-VALIDATION-R001",
     "PIPE-VALIDATION-R001.1",
@@ -16,7 +16,7 @@
     {
       "id": "PIPE-VALIDATION-R001",
       "title": "Bounded shared repository validation",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [],
       "verified_by": [],
       "rollup_of": [
@@ -31,8 +31,10 @@
     {
       "id": "PIPE-VALIDATION-R001.1",
       "title": "Strict policy",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b76625874902"
+      ],
       "verified_by": [
         "tests/hooks/test_validation.py:40",
         "tests/hooks/test_validation.py:47"
@@ -41,8 +43,10 @@
     {
       "id": "PIPE-VALIDATION-R001.2",
       "title": "Passive events do no work",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b76625874902"
+      ],
       "verified_by": [
         "tests/hooks/test_validation.py:129"
       ]
@@ -50,8 +54,10 @@
     {
       "id": "PIPE-VALIDATION-R001.3",
       "title": "Required checks fail closed",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b76625874902"
+      ],
       "verified_by": [
         "tests/hooks/test_validation.py:75",
         "tests/hooks/test_validation.py:92"
@@ -60,8 +66,10 @@
     {
       "id": "PIPE-VALIDATION-R001.4",
       "title": "Bounded execution",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b76625874902"
+      ],
       "verified_by": [
         "tests/hooks/test_validation.py:166",
         "tests/hooks/test_validation.py:189"
@@ -70,8 +78,10 @@
     {
       "id": "PIPE-VALIDATION-R001.5",
       "title": "Actionable evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b76625874902"
+      ],
       "verified_by": [
         "tests/hooks/test_validation.py:105"
       ]
@@ -79,8 +89,10 @@
     {
       "id": "PIPE-VALIDATION-R001.6",
       "title": "Retain AU ignore acceptance",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b76625874902"
+      ],
       "verified_by": [
         "tests/hooks/test_validation_acceptance.py:27",
         "tests/hooks/test_validation_acceptance.py:49"
