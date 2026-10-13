@@ -267,3 +267,13 @@
   pass_filenames: false
   always_run: true
   stages: [pre-push, manual]
+
+# One bounded report for the declared offline repository checks.
+- id: validate
+  name: Repository validation
+  entry: pipelines-hook validate
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push, manual]

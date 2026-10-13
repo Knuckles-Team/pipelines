@@ -1,0 +1,20 @@
+version = 1
+budget_seconds = 20
+
+[[checks]]
+id = "layout"
+group = "repository"
+gate = "root-hygiene"
+required = true
+timeout_seconds = 10
+acceptance = ["root-hygiene"]
+remedy = "Review undeclared or stale entries in .config/repo-layout.toml"
+
+[[checks]]
+id = "ignore"
+group = "repository"
+gate = "gitignore-convergence"
+required = true
+timeout_seconds = 10
+acceptance = ["gitignore-convergence"]
+remedy = "Restore required ignore patterns and remove tracked build or cache output"

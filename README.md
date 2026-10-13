@@ -98,3 +98,21 @@ This supplements their existing readiness and platform-completeness gates.
 `pipelines-hook ste-staged --base-ref <commit>` checks new prose findings in a committed range.
 GitHub PR and push runs resolve the base from the event payload. Local commits check the staged index.
 See [STE comparison rules](reference/ste.md#ci-comparison).
+
+### Bounded repository validation
+
+Run `pipelines-hook validate --dry-run` to inspect `.config/validation.toml`,
+then `pipelines-hook validate` to run its declared offline repository checks.
+The command uses installed tools; it never installs dependencies. It prints a
+short group summary and paths to a JSON report and per-check logs. Required
+findings return 1; unavailable checks and timeouts return 2. Advisory outcomes
+remain visible. Post-merge, post-checkout, and post-rewrite events are inactive.
+
+Version 1 supports `root-hygiene`, `gitignore-convergence`, and `sprawl`, each
+at most once. Policy requires version 1, a total `budget_seconds` (1–300), and
+`[[checks]]` entries with `id`, `group = "repository"`, `gate`, `required`,
+`timeout_seconds` (1–300), nonempty `acceptance` IDs, and a `remedy`. See
+[the example policy](.config/validation.toml) and
+[the validation contract](specs/shared-validation/spec.md).
+The default evidence directory is a fresh private temporary directory;
+`--evidence-dir` selects its parent. Version 1 needs POSIX process groups.
