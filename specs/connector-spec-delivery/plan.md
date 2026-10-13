@@ -23,3 +23,7 @@ Resolve the repository slug offline from origin, or a sole configured remote whe
 ## Amendment: CI prose comparison (2026-10-11)
 
 PIPE-CONNSPEC-R007 closes the clean-index gap in hosted `ste-staged` runs. Reuse sanitized Git access, commit resolution, and bounded event JSON loading. Resolve explicit refs first, then GitHub event bases, then pre-commit refs outside GitHub Actions. New-ref pushes and manual runs check the last commit with full history. Never guess when a requested base is absent. Preserve local staged-index checks and per-file `(code, message)` debt subtraction.
+
+## Generated identity
+
+The generator reuses `standard.check_title` for canonical spec identity. A valid title governs the generated ID. Historical specs without a canonical title retain their fallback; requirement identities and landing receipts are unchanged.

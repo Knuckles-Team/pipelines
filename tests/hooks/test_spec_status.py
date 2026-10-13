@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from tests.hooks.conftest import Repo
 
 _LANDED_ROW = (
@@ -275,3 +277,19 @@ def test_reverting_a_merge_undoes_its_member_commits(repo: Repo) -> None:
 
     assert repo.run("spec-status", "--write") == 0
     assert _by_id(repo)["TEST-R030"]["delivery_state"] == "SPECIFIED"
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R008")
+@pytest.mark.parametrize("old", [None, "demo", "OLD-SPEC"])
+def test_canonical_title_controls_generated_identity(repo, old):
+    files = {
+        "specs/demo/requirements.md": _LANDED_ROW,
+        "specs/demo/spec.md": "# TEST — Canonical identity\n",
+    }
+    if old is not None:
+        files["specs/demo/status.json"] = json.dumps({"spec_id": old})
+    repo.commit(files, "declare canonical spec identity")
+    assert repo.run("spec-status", "--write") == 0
+    assert _status(repo)["spec_id"] == "TEST"
+    assert _status(repo)["requirement_ids"] == ["TEST-R001"]
+    assert repo.run("spec-status") == 0

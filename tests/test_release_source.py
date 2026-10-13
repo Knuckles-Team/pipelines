@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -25,8 +26,25 @@ def guard():
     return module
 
 
+@pytest.fixture(params=["clean", "pre-push"])
+def git_context(tmp_path, monkeypatch, request):
+    if request.param == "pre-push":
+        outer = tmp_path / "outer"
+        outer.mkdir()
+        runtime_checkout(outer)
+        for key, value in {
+            "GIT_DIR": outer / ".git",
+            "GIT_WORK_TREE": outer,
+            "GIT_INDEX_FILE": outer / ".git/index",
+        }.items():
+            monkeypatch.setenv(key, str(value))
+    # Push-hook Git selectors must never redirect fixture commands.
+    for key in set(os.environ) - sanitized_env().keys():
+        monkeypatch.delenv(key)
+
+
 @pytest.fixture
-def case(tmp_path, monkeypatch):
+def case(tmp_path, monkeypatch, git_context):
     source = runtime_checkout(tmp_path)
     monkeypatch.chdir(tmp_path)
     environment = {"SOURCE_COMMIT": source, "LATEST_COMMIT": source, "EXPECTED_COMMIT": source,

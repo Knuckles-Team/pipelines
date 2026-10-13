@@ -10,6 +10,7 @@ This directory is the public build contract for pipeline-owned Graph OS ecosyste
 | [ordered-digest-release](ordered-digest-release/spec.md) | PIPE-RELEASE-R001 | Shared CI/release orchestration |
 | [commit-identity-governance](commit-identity-governance/spec.md) | PIPE-IDENTITY-R001 | Commit author/committer identity allowlist enforcement |
 | [connector-spec-delivery](connector-spec-delivery/spec.md) | PIPE-CONNSPEC-R001 | Spec-delivery standard and per-connector rollout |
+| [shared-validation](shared-validation/spec.md) | PIPE-VALIDATION-R001 | Bounded offline repository validation |
 
 States are `SPECIFIED`, `LANDED`, and `VERIFIED`; see the [spec standard](../reference/spec-standard.md#states).
 

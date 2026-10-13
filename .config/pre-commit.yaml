@@ -133,18 +133,6 @@ repos:
     language: system
     pass_filenames: false
     always_run: true
-  - id: root-hygiene
-    name: Repository root hygiene (declared entries only)
-    entry: uv run --frozen --quiet pipelines-hook root-hygiene
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: gitignore-convergence
-    name: .gitignore carries the fleet-shared REQUIRED set
-    entry: uv run --frozen --quiet pipelines-hook gitignore-convergence
-    language: system
-    pass_filenames: false
-    always_run: true
   - id: sprawl
     name: Anti-sprawl
     entry: uv run --frozen --quiet pipelines-hook sprawl
@@ -234,3 +222,11 @@ repos:
     always_run: true
     require_serial: true
     stages: [pre-push, manual]
+  - id: validate
+    name: Repository validation
+    entry: uv run --offline --no-sync --frozen --no-python-downloads --quiet pipelines-hook validate
+    language: system
+    pass_filenames: false
+    always_run: true
+    verbose: true
+    stages: [pre-commit, pre-push, manual]

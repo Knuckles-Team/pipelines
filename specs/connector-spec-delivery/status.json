@@ -380,7 +380,8 @@
     "PIPE-CONNSPEC-R174.1",
     "PIPE-CONNSPEC-R174.2",
     "PIPE-CONNSPEC-R174.3",
-    "PIPE-CONNSPEC-R174.4"
+    "PIPE-CONNSPEC-R174.4",
+    "PIPE-CONNSPEC-R008"
   ],
   "requirements": [
     {
@@ -437,8 +438,8 @@
         "615425fe278b"
       ],
       "verified_by": [
-        "tests/test_spec_standard.py:110",
-        "tests/test_spec_standard.py:117"
+        "tests/test_spec_standard.py:112",
+        "tests/test_spec_standard.py:119"
       ]
     },
     {
@@ -449,7 +450,7 @@
         "6f1b2623bbda"
       ],
       "verified_by": [
-        "tests/hooks/test_ste_ci.py:29"
+        "tests/hooks/test_ste_ci.py:31"
       ]
     },
     {
@@ -3485,6 +3486,17 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R008",
+      "title": "Canonical title determines generated spec identity",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0f9f73b150d7"
+      ],
+      "verified_by": [
+        "tests/hooks/test_spec_status.py:282"
+      ]
     }
   ]
 }
