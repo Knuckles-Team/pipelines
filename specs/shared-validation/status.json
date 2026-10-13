@@ -69,6 +69,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f9f73b150d7",
+        "af9b1ddcb25f",
         "b76625874902"
       ],
       "verified_by": [
@@ -83,6 +84,7 @@
       "title": "Actionable evidence",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "af9b1ddcb25f",
         "b76625874902"
       ],
       "verified_by": [
