@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import shlex
@@ -163,6 +164,34 @@ def test_passive_git_event_does_not_dispatch(repo, monkeypatch, event):
     assert not marker.exists()
 
 
+def _process_exited(status):
+    """A reaped process may disappear while procfs status is being read."""
+    try:
+        return status.read_text().split()[2] == "Z"
+    except OSError as exc:
+        if exc.errno in (errno.ENOENT, errno.ESRCH):
+            return True
+        raise
+
+
+@pytest.mark.parametrize("number", [errno.ENOENT, errno.ESRCH])
+def test_reaped_process_is_an_exited_child(number):
+    class Reaped:
+        def read_text(self):
+            raise OSError(number, "child already reaped")
+
+    assert _process_exited(Reaped())
+
+
+def test_child_status_permission_failure_is_not_success():
+    class Inaccessible:
+        def read_text(self):
+            raise PermissionError(errno.EACCES, "status denied")
+
+    with pytest.raises(PermissionError, match="status denied"):
+        _process_exited(Inaccessible())
+
+
 @pytest.mark.spec("PIPE-VALIDATION-R001.4")
 def test_deadline_terminates_child_process(tmp_path):
     child_file = tmp_path / "child"
@@ -179,7 +208,7 @@ def test_deadline_terminates_child_process(tmp_path):
     pid = int(child_file.read_text())
     status = Path(f"/proc/{pid}/stat")
     for _ in range(20):
-        if not status.exists() or status.read_text().split()[2] == "Z":
+        if _process_exited(status):
             break
         time.sleep(0.01)
     else:

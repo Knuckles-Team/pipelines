@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "spec_id": "shared-validation",
+  "spec_id": "PIPE-VALIDATION",
   "owner_repo": "pipelines",
   "delivery_state": "VERIFIED",
   "requirement_ids": [
@@ -36,8 +36,8 @@
         "b76625874902"
       ],
       "verified_by": [
-        "tests/hooks/test_validation.py:40",
-        "tests/hooks/test_validation.py:47"
+        "tests/hooks/test_validation.py:41",
+        "tests/hooks/test_validation.py:48"
       ]
     },
     {
@@ -48,7 +48,7 @@
         "b76625874902"
       ],
       "verified_by": [
-        "tests/hooks/test_validation.py:129"
+        "tests/hooks/test_validation.py:130"
       ]
     },
     {
@@ -59,8 +59,8 @@
         "b76625874902"
       ],
       "verified_by": [
-        "tests/hooks/test_validation.py:75",
-        "tests/hooks/test_validation.py:92"
+        "tests/hooks/test_validation.py:76",
+        "tests/hooks/test_validation.py:93"
       ]
     },
     {
@@ -71,8 +71,8 @@
         "b76625874902"
       ],
       "verified_by": [
-        "tests/hooks/test_validation.py:166",
-        "tests/hooks/test_validation.py:189"
+        "tests/hooks/test_validation.py:195",
+        "tests/hooks/test_validation.py:218"
       ]
     },
     {
@@ -83,7 +83,7 @@
         "b76625874902"
       ],
       "verified_by": [
-        "tests/hooks/test_validation.py:105"
+        "tests/hooks/test_validation.py:106"
       ]
     },
     {

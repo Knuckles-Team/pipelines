@@ -21,6 +21,7 @@ from pipelines_hooks.specs.records import build_record, mentioned_tokens
 from pipelines_hooks.specs.requirements_doc import Row, parse_rows
 from pipelines_hooks.specs.repository_identity import remote_owner
 from pipelines_hooks.specs.rollup import apply_rollup, overall_state
+from pipelines_hooks.specs.standard import check_title
 
 SCHEMA_VERSION = 2
 
@@ -52,6 +53,11 @@ def _requirement_state(rid: str, evidence: Evidence) -> tuple[list[str], list[st
     return landed, tests
 
 
+def _spec_identity(spec_dir: Path, old: dict) -> str:
+    """Read canonical identity while preserving untitled legacy metadata."""
+    return check_title(spec_dir)[0] or old.get("spec_id") or spec_dir.name
+
+
 def _spec_document(
     spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evidence, owner: str
 ) -> dict:
@@ -65,7 +71,7 @@ def _spec_document(
     apply_rollup(ids, state, records)
     return {
         "schema_version": SCHEMA_VERSION,
-        "spec_id": old.get("spec_id") or spec_dir.name,
+        "spec_id": _spec_identity(spec_dir, old),
         "owner_repo": owner,
         "delivery_state": overall_state(state),
         "requirement_ids": ids,
