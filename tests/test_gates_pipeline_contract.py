@@ -87,3 +87,12 @@ def test_fast_tests_is_a_pre_push_published_gate() -> None:
     hooks = {hook["id"]: hook for hook in yaml.safe_load((HOOK_REPOSITORY / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))}
     assert hooks["fast-tests"]["stages"] == ["pre-push"]
     assert hooks["fast-tests"]["entry"] == "pipelines-hook fast-tests"
+
+
+def test_spec_trailers_is_skipped_on_push_only() -> None:
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    hooks = [step for step in steps if str(step.get("name", "")).startswith("pre-commit")]
+    assert hooks
+    for step in hooks:
+        assert 'EVENT_NAME" == "push"' in step["run"]
+        assert "spec-trailers" in step["run"]
