@@ -380,4 +380,3 @@
 | `PIPE-PAGES-R036.4` | **Refusal.** Receipt without AU consumer definition stays partial; no source-writeback substitution. | Run partial refusal test. |
 | `PIPE-PAGES-R036.5` | **Evidence.** AU consumer definition and dispatch location bound to source snapshots. | Run consumer location evidence test. |
 | `PIPE-PAGES-R036.6` | **Hot-path proof.** AU consumer definition and receipt name published and verified via CLI. | Run `test_eg15_consumer_binding_cli`. |
-
