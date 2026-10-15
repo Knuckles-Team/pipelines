@@ -40,6 +40,8 @@ Existing plan diagrams remain available as escaped source. Missing plan diagrams
 The integration regression enters through `main`, writes the actual output artifacts, and preserves source status bytes.
 No generated status, delivery state, or timeline changes belong to this mapping change.
 
+R012.20-.25: Source binding authority and exhaustive language/tool inventory; capability ID gate refusing missing/invalid identities.
+
 ## Drill-down (PIPE-PAGES-R014)
 
 Levels: ecosystem (organisation profile README) -> repository (`/<repo>/spec-delivery/`) -> spec (`#spec-<ID>`) -> row (`#req-<ID>`). `ecosystem_components()` returns the R001 list; it adds no second list.
@@ -93,6 +95,8 @@ Data flow: `pipelines-hook test-quality` -> `main` (`pipelines_hooks/cli.py:79`)
 - Rejected: a coverage ratchet that only blocks a decrease. It hides existing debt.
 - Cross-repository. None. Consumers adopt the hook through their pre-commit configuration.
 
+R021.79-.84: Coverage runner and per-project inventory; closure gate refusing untested paths at any threshold.
+
 ## Scheduled mutation testing (PIPE-PAGES-R022)
 
 Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `survivors` in `pipelines_hooks/code/mutation_gaps.py` -> report lines and exit status.
@@ -129,6 +133,8 @@ Rejected: using the eager graph for all dependencies, or deriving architectural 
 Cross-repository rows: none added; repositories supply declarations and executable handoff tests. Existing R021 placeholder, suppression and coverage behavior remains required.
 Source credit: the source document “PyTests Enhancement Agent utilities”, AU queue candidate 67. No research citation was supplied.
 Acceptance: implement `tests/hooks/test_test_quality_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_test_quality_hook.py -q`. Tests run real fixture components and then the CLI against their generated receipts. `test_component_lazy_import_cli` invokes the production gate with allowed and forbidden imports inside both synchronous and asynchronous entry functions. Assert that an allowed lazy-only dependency is reachable and a forbidden lazy edge exits 1 at its line. A type-only reference remains separately classified and cannot rescue an otherwise orphaned module. A computed import with unresolved reachability exits 2 and records uncertainty. Preserve the existing real-handoff, property-proof and skipped-receipt cases.
+
+R021.85-.90: Graph-loaded workflow with durable hydration; AU consumer and independent readback acceptance.
 
 ## Skill grading (PIPE-PAGES-R023)
 
@@ -383,3 +389,23 @@ Extend the planned test-quality handoff verifier at pipelines_hooks/cli.py:13 th
 Historical validation comparison remains blocked until its former command revision and complete behavior inventory are recovered.
 Solution-size evidence does not resolve the reserved shortcut-comment policy. The coordinator retains that decision.
 Coverage closure reuses the coverage and outcome owners; it does not replace their separate semantic proof contracts.
+
+## PIPE-PAGES-R032
+
+R032.1-.6: Preserve export-time coordinator decision and exact version comparison preventing silent forward/backward moves.
+
+## PIPE-PAGES-R033
+
+R033.1-.6: Bind installer contract to skill/command with explicit IDE/agent target/version matrix and per-target proof.
+
+## PIPE-PAGES-R034
+
+R034.1-.6: Extend portable deployment with single binary/image profile and external-dependency-free capability parity.
+
+## PIPE-PAGES-R035
+
+R035.1-.6: Define stable prompt JSON/Pydantic disk format with exact difference oracle retaining roundtrip coverage.
+
+## PIPE-PAGES-R036
+
+R036.1-.6: Define AU render-receipt consumer and bind EG producer to AU consumer before model transport.

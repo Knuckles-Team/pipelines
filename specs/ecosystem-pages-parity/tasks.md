@@ -230,6 +230,12 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R012.17: Refusal. Implement this contract and bind `test_capability_inventory_refusal` in `tests/hooks/test_capability_inventory.py`.
 - [ ] PIPE-PAGES-R012.18: Evidence. Implement this contract and bind `test_capability_inventory_evidence` in `tests/hooks/test_capability_inventory.py`.
 - [ ] PIPE-PAGES-R012.19: Hot-path proof. Implement this contract and bind `test_capability_inventory_cli` in `tests/hooks/test_capability_inventory.py`.
+- [ ] PIPE-PAGES-R012.20: Model. Implement this contract and bind `test_eg7_capability_authority_model` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] PIPE-PAGES-R012.21: Behavior. Implement this contract and bind `test_eg7_complete_binding_coverage` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] PIPE-PAGES-R012.22: Wiring. Implement this contract and bind `test_eg7_binding_gate_wiring` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] PIPE-PAGES-R012.23: Refusal. Implement this contract and bind `test_eg7_refusal_missing_identity` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] PIPE-PAGES-R012.24: Evidence. Implement this contract and bind `test_eg7_coverage_evidence` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] PIPE-PAGES-R012.25: Hot-path proof. Implement this contract and bind `test_eg7_identity_enforcement_cli` in `tests/test_spec_dashboard_metadata.py`.
 - [ ] PIPE-PAGES-R021.37: Model. Implement this contract and bind `test_structural_limits_model` in `tests/hooks/test_structural_limits.py`.
 - [ ] PIPE-PAGES-R021.38: Behavior. Implement this contract and bind `test_structural_limits_behavior` in `tests/hooks/test_structural_limits.py`.
 - [ ] PIPE-PAGES-R021.39: Wiring. Implement this contract and bind `test_structural_limits_wiring` in `tests/hooks/test_structural_limits.py`.
@@ -284,3 +290,45 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R021.76: Refusal. Implement this contract and bind `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
 - [ ] PIPE-PAGES-R021.77: Evidence. Implement this contract and bind `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
 - [ ] PIPE-PAGES-R021.78: Hot-path proof. Implement this contract and bind `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.79: Model. Implement this contract and bind `test_pipe9_coverage_runner_model` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.80: Behavior. Implement this contract and bind `test_pipe9_inventory_behavior` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.81: Wiring. Implement this contract and bind `test_pipe9_gate_wiring` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.82: Refusal. Implement this contract and bind `test_pipe9_threshold_refusal` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.83: Evidence. Implement this contract and bind `test_pipe9_closure_evidence` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.84: Hot-path proof. Implement this contract and bind `test_pipe9_closure_cli` in `tests/hooks/test_coverage_closure.py`.
+- [ ] PIPE-PAGES-R021.85: Model. Implement this contract and bind `test_pipe10_workflow_model` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.86: Behavior. Implement this contract and bind `test_pipe10_readback_behavior` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.87: Wiring. Implement this contract and bind `test_pipe10_gate_wiring` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.88: Refusal. Implement this contract and bind `test_pipe10_readback_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.89: Evidence. Implement this contract and bind `test_pipe10_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R021.90: Hot-path proof. Implement this contract and bind `test_pipe10_cli_proof` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] PIPE-PAGES-R032.1: Model. Implement this contract and bind `test_eg56_export_model` in export-import test.
+- [ ] PIPE-PAGES-R032.2: Behavior. Implement this contract and bind `test_eg56_roundtrip_behavior` in export-import test.
+- [ ] PIPE-PAGES-R032.3: Wiring. Implement this contract and bind `test_eg56_export_wiring` in export-import test.
+- [ ] PIPE-PAGES-R032.4: Refusal. Implement this contract and bind `test_eg56_version_refusal` in export-import test.
+- [ ] PIPE-PAGES-R032.5: Evidence. Implement this contract and bind `test_eg56_comparison_evidence` in export-import test.
+- [ ] PIPE-PAGES-R032.6: Hot-path proof. Implement this contract and bind `test_eg56_export_import_cli` in export-import test.
+- [ ] PIPE-PAGES-R033.1: Model. Implement this contract and bind `test_au96_installer_model` in installer test.
+- [ ] PIPE-PAGES-R033.2: Behavior. Implement this contract and bind `test_au96_target_behavior` in installer test.
+- [ ] PIPE-PAGES-R033.3: Wiring. Implement this contract and bind `test_au96_harness_wiring` in installer test.
+- [ ] PIPE-PAGES-R033.4: Refusal. Implement this contract and bind `test_au96_target_refusal` in installer test.
+- [ ] PIPE-PAGES-R033.5: Evidence. Implement this contract and bind `test_au96_coverage_evidence` in installer test.
+- [ ] PIPE-PAGES-R033.6: Hot-path proof. Implement this contract and bind `test_au96_target_binding_cli` in installer test.
+- [ ] PIPE-PAGES-R034.1: Model. Implement this contract and bind `test_eg53_profile_model` in deployment test.
+- [ ] PIPE-PAGES-R034.2: Behavior. Implement this contract and bind `test_eg53_dependency_free_behavior` in deployment test.
+- [ ] PIPE-PAGES-R034.3: Wiring. Implement this contract and bind `test_eg53_parity_wiring` in deployment test.
+- [ ] PIPE-PAGES-R034.4: Refusal. Implement this contract and bind `test_eg53_parity_refusal` in deployment test.
+- [ ] PIPE-PAGES-R034.5: Evidence. Implement this contract and bind `test_eg53_parity_evidence` in deployment test.
+- [ ] PIPE-PAGES-R034.6: Hot-path proof. Implement this contract and bind `test_eg53_portable_deployment_cli` in deployment test.
+- [ ] PIPE-PAGES-R035.1: Model. Implement this contract and bind `test_au121_prompt_model` in prompt test.
+- [ ] PIPE-PAGES-R035.2: Behavior. Implement this contract and bind `test_au121_roundtrip_behavior` in prompt test.
+- [ ] PIPE-PAGES-R035.3: Wiring. Implement this contract and bind `test_au121_serializer_wiring` in prompt test.
+- [ ] PIPE-PAGES-R035.4: Refusal. Implement this contract and bind `test_au121_coverage_refusal` in prompt test.
+- [ ] PIPE-PAGES-R035.5: Evidence. Implement this contract and bind `test_au121_oracle_evidence` in prompt test.
+- [ ] PIPE-PAGES-R035.6: Hot-path proof. Implement this contract and bind `test_au121_roundtrip_cli` in prompt test.
+- [ ] PIPE-PAGES-R036.1: Model. Implement this contract and bind `test_eg15_consumer_model` in consumer test.
+- [ ] PIPE-PAGES-R036.2: Behavior. Implement this contract and bind `test_eg15_dispatch_behavior` in consumer test.
+- [ ] PIPE-PAGES-R036.3: Wiring. Implement this contract and bind `test_eg15_producer_wiring` in consumer test.
+- [ ] PIPE-PAGES-R036.4: Refusal. Implement this contract and bind `test_eg15_partial_refusal` in consumer test.
+- [ ] PIPE-PAGES-R036.5: Evidence. Implement this contract and bind `test_eg15_location_evidence` in consumer test.
+- [ ] PIPE-PAGES-R036.6: Hot-path proof. Implement this contract and bind `test_eg15_consumer_binding_cli` in consumer test.
