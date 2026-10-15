@@ -380,3 +380,44 @@
 | `PIPE-PAGES-R036.4` | **Refusal.** Receipt without AU consumer definition stays partial; no source-writeback substitution. | Run partial refusal test. |
 | `PIPE-PAGES-R036.5` | **Evidence.** AU consumer definition and dispatch location bound to source snapshots. | Run consumer location evidence test. |
 | `PIPE-PAGES-R036.6` | **Hot-path proof.** AU consumer definition and receipt name published and verified via CLI. | Run `test_eg15_consumer_binding_cli`. |
+| `PIPE-PAGES-R021.91` | **Model.** Record former validate behaviors and their deployment state. | Complete inventory lists every validation action. |
+| `PIPE-PAGES-R021.92` | **Behavior.** Map each behavior to every supported project hook. | Hook adopters configure and pass both success and failure cases. |
+| `PIPE-PAGES-R021.93` | **Wiring.** Require configured pre-commit parity before hook passes. | Pre-commit configuration names every mapped behavior for all projects. |
+| `PIPE-PAGES-R021.94` | **Refusal.** Missing historical baseline cannot mask incomplete coverage. | Baseline gaps remain visible in inventory and findings. |
+| `PIPE-PAGES-R021.95` | **Evidence.** Bind behavior inventory and baseline to source snapshot. | Baseline state appears in all hook findings. |
+| `PIPE-PAGES-R021.96` | **Hot-path proof.** Installed hook rejects unmapped project behavior. | Test missing behavior in pre-commit configuration. |
+| `PIPE-PAGES-R037` | **Unit-test profile with enforced external determinism.** Rollup of the children below. Unit tests must isolate external dependencies and refuse network or container access. | Rollup is minimum state of children. |
+| `PIPE-PAGES-R037.1` | **Model.** Define unit-test profile with declared external dependency categories. | Profile specifies doubles for database, API, client code. |
+| `PIPE-PAGES-R037.2` | **Behavior.** Enforce deterministic doubles for all declared external seams. | Unit runner rejects planted network and container attempts. |
+| `PIPE-PAGES-R037.3` | **Wiring.** Wire unit profile enforcement into test-quality gate. | Profile adoption gates must reject unmocked external dependencies. |
+| `PIPE-PAGES-R037.4` | **Refusal.** Missing doubles or network egress causes unit test fail. | Runner cannot silently skip external dependency mocking. |
+| `PIPE-PAGES-R037.5` | **Evidence.** Record declared external categories, discovered doubles and test scope. | Evidence separates unit isolation from integration tests. |
+| `PIPE-PAGES-R037.6` | **Hot-path proof.** Installed gate blocks unmocked network access in tests. | Test planted database and API calls. |
+| `PIPE-PAGES-R038` | **Python-only pre-commit hook for ontology governance validation.** Rollup of the children below. Python hook consumes EG-owned ontology checks with fail-closed authority. | Rollup is minimum state of children. |
+| `PIPE-PAGES-R038.1` | **Model.** Define Python-only execution boundary and governance rule set. | Hook declares ontology file inputs and check outputs. |
+| `PIPE-PAGES-R038.2` | **Behavior.** Hook consumes EG-generated verdicts without local semantic authority. | Failed verdict causes commit refusal via hook exit. |
+| `PIPE-PAGES-R038.3` | **Wiring.** Pre-commit hook integration consumes EG's published check service. | Hook reaches EG service identity and pins verdict version. |
+| `PIPE-PAGES-R038.4` | **Refusal.** Unavailable EG service causes hook to fail closed. | Missing verdicts block commits rather than permit them. |
+| `PIPE-PAGES-R038.5` | **Evidence.** Record EG verdict identity, pinned version and applied rules. | Evidence separates local execution from remote verdict authority. |
+| `PIPE-PAGES-R038.6` | **Hot-path proof.** Planted ontology violation blocks commit through installed hook. | Test proves local authority cannot override EG. |
+| `PIPE-PAGES-R039` | **Complete project test-layout inventory with isolation and order policies.** Rollup of the children below. Every project declares fixtures, modules and test independence requirements. | Rollup is minimum state of children. |
+| `PIPE-PAGES-R039.1` | **Model.** Define project layout inventory with shared fixtures and modules. | Inventory lists required fixtures, modules and isolation requirements. |
+| `PIPE-PAGES-R039.2` | **Behavior.** Enforce test independence via fixture-isolation gate. | Tests must pass regardless of test order. |
+| `PIPE-PAGES-R039.3` | **Wiring.** Wire inventory check into test-quality gate. | Gate verifies every project's fixture and module declarations. |
+| `PIPE-PAGES-R039.4` | **Refusal.** Missing fixtures or test order dependencies cause gate fail. | Gate refuses fixtures listed outside declared project inventory. |
+| `PIPE-PAGES-R039.5` | **Evidence.** Record project inventory, discovered fixtures and independence check results. | Evidence documents failed isolation and order-dependency tests. |
+| `PIPE-PAGES-R039.6` | **Hot-path proof.** Gate blocks planted fixture dependency in test suite. | Test proves missing fixture causes isolation failure. |
+| `PIPE-PAGES-R040` | **Coverage-decrease refusal in AU proposal and admission.** Rollup of the children below. AU must reject every enhancement or refactor decreasing test coverage. | Rollup is minimum state of children. |
+| `PIPE-PAGES-R040.1` | **Model.** Extend approval criteria with baseline and candidate evidence. | Proposal must carry coverage baseline and candidate measurements. |
+| `PIPE-PAGES-R040.2` | **Behavior.** Reject proposals where coverage decreases from baseline. | Gate compares candidate metrics against baseline deterministically. |
+| `PIPE-PAGES-R040.3` | **Wiring.** Wire coverage check into AU proposal admission. | Baseline and candidate evidence bind to revision. |
+| `PIPE-PAGES-R040.4` | **Refusal.** Missing or stale coverage evidence causes proposal rejection. | Unmeasured coverage proposals fail rather than pass. |
+| `PIPE-PAGES-R040.5` | **Evidence.** Record baseline and candidate coverage with proposal identity. | Evidence preserves graph authorization and materialization receipt. |
+| `PIPE-PAGES-R040.6` | **Hot-path proof.** Gate rejects proposal that decreases coverage metrics. | Test planted coverage decrease in candidate revision. |
+| `PIPE-PAGES-R041` | **Configured structural limits with named-function failure reporting.** Rollup of the children below. Build failures name each violating function and state limit. | Rollup is minimum state of children. |
+| `PIPE-PAGES-R041.1` | **Model.** Define function-argument-count and try-block-statement-count limits. | Configuration specifies nonnegative integer limits for each. |
+| `PIPE-PAGES-R041.2` | **Behavior.** Build fails when function or try-block exceeds limit. | Every violation identifies repository-relative path and function. |
+| `PIPE-PAGES-R041.3` | **Wiring.** Wire limits into shared KISS gate and GraphOS build. | GraphOS configuration pins both limits and invokes check. |
+| `PIPE-PAGES-R041.4` | **Refusal.** Missing configuration or unsupported measurement causes build failure. | Missing limits exit 2; violations above limits exit 1. |
+| `PIPE-PAGES-R041.5` | **Evidence.** Record policy digest, per-function count and configured limits. | Evidence identifies repository-relative path and qualified function. |
+| `PIPE-PAGES-R041.6` | **Hot-path proof.** Build fails on function exceeding argument-count limit. | Test keyword-only, variadic and nested-try function cases. |

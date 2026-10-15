@@ -332,3 +332,39 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R036.4: Refusal. Implement this contract and bind `test_eg15_partial_refusal` in consumer test.
 - [ ] PIPE-PAGES-R036.5: Evidence. Implement this contract and bind `test_eg15_location_evidence` in consumer test.
 - [ ] PIPE-PAGES-R036.6: Hot-path proof. Implement this contract and bind `test_eg15_consumer_binding_cli` in consumer test.
+- [ ] PIPE-PAGES-R021.91: Model. Record validate behaviors and deployment state inventory.
+- [ ] PIPE-PAGES-R021.92: Behavior. Map behaviors to every supported project hook.
+- [ ] PIPE-PAGES-R021.93: Wiring. Require pre-commit parity for all projects.
+- [ ] PIPE-PAGES-R021.94: Refusal. Keep baseline gaps visible in inventory.
+- [ ] PIPE-PAGES-R021.95: Evidence. Bind baseline to source snapshot.
+- [ ] PIPE-PAGES-R021.96: Hot-path proof. Hook rejects unmapped behavior.
+- [ ] PIPE-PAGES-R037.1: Model. Define unit-test profile with external dependency categories.
+- [ ] PIPE-PAGES-R037.2: Behavior. Enforce deterministic doubles in unit tests.
+- [ ] PIPE-PAGES-R037.3: Wiring. Wire unit profile into test-quality gate.
+- [ ] PIPE-PAGES-R037.4: Refusal. Reject unmocked external dependencies.
+- [ ] PIPE-PAGES-R037.5: Evidence. Record external categories and test scope.
+- [ ] PIPE-PAGES-R037.6: Hot-path proof. Gate blocks unmocked network access.
+- [ ] PIPE-PAGES-R038.1: Model. Define Python-only execution boundary and rules.
+- [ ] PIPE-PAGES-R038.2: Behavior. Hook consumes EG verdicts without local authority.
+- [ ] PIPE-PAGES-R038.3: Wiring. Pre-commit integrates with EG service.
+- [ ] PIPE-PAGES-R038.4: Refusal. Unavailable EG service fails closed.
+- [ ] PIPE-PAGES-R038.5: Evidence. Record EG verdict identity and version.
+- [ ] PIPE-PAGES-R038.6: Hot-path proof. Planted violation blocks commit.
+- [ ] PIPE-PAGES-R039.1: Model. Define project layout inventory with fixtures.
+- [ ] PIPE-PAGES-R039.2: Behavior. Enforce test independence via isolation gate.
+- [ ] PIPE-PAGES-R039.3: Wiring. Wire inventory check into test-quality gate.
+- [ ] PIPE-PAGES-R039.4: Refusal. Reject undeclared fixtures.
+- [ ] PIPE-PAGES-R039.5: Evidence. Record inventory and independence results.
+- [ ] PIPE-PAGES-R039.6: Hot-path proof. Gate blocks fixture dependency.
+- [ ] PIPE-PAGES-R040.1: Model. Extend approval criteria with coverage evidence.
+- [ ] PIPE-PAGES-R040.2: Behavior. Reject proposals where coverage decreases.
+- [ ] PIPE-PAGES-R040.3: Wiring. Wire coverage check into AU admission.
+- [ ] PIPE-PAGES-R040.4: Refusal. Missing coverage evidence causes rejection.
+- [ ] PIPE-PAGES-R040.5: Evidence. Record baseline and candidate coverage.
+- [ ] PIPE-PAGES-R040.6: Hot-path proof. Gate rejects coverage decrease.
+- [ ] PIPE-PAGES-R041.1: Model. Define function-argument and try-block limits.
+- [ ] PIPE-PAGES-R041.2: Behavior. Build fails when functions exceed limit.
+- [ ] PIPE-PAGES-R041.3: Wiring. Wire limits into shared KISS gate.
+- [ ] PIPE-PAGES-R041.4: Refusal. Missing limits or unsupported measurement fail.
+- [ ] PIPE-PAGES-R041.5: Evidence. Record policy digest and function counts.
+- [ ] PIPE-PAGES-R041.6: Hot-path proof. Build fails on excess arguments.

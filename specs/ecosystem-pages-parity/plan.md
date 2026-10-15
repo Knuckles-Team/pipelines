@@ -409,3 +409,27 @@ R035.1-.6: Define stable prompt JSON/Pydantic disk format with exact difference 
 ## PIPE-PAGES-R036
 
 R036.1-.6: Define AU render-receipt consumer and bind EG producer to AU consumer before model transport.
+
+## PIPE-PAGES-R021.91-.96
+
+R021.91-.96: Complete central-validate behavior inventory and require pre-commit parity across all projects.
+
+## PIPE-PAGES-R037
+
+R037.1-.6: Define unit-test profile with enforced external determinism and mocked dependencies.
+
+## PIPE-PAGES-R038
+
+R038.1-.6: Python-only pre-commit hook consuming EG-owned ontology validation with fail-closed authority.
+
+## PIPE-PAGES-R039
+
+R039.1-.6: Complete project test-layout inventory with fixture isolation and order independence.
+
+## PIPE-PAGES-R040
+
+R040.1-.6: Extend AU approval criteria to reject coverage-decreasing proposals.
+
+## PIPE-PAGES-R041
+
+R041.1-.6: Configured structural limits with named-function failure reporting in shared gate.
