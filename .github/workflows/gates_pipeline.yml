@@ -22,6 +22,10 @@ name: Gates
 # paths-ignore leaves a required `gates` check pending; pair it with the
 # templates/workflows/gates-skip.yml companion (the inverse `paths:` filter).
 # Every input has a default, so adding the workflow needs no `with:` block.
+#
+# Trailers belong to pull request commits: a squash merge does not carry the
+# `Spec:` trailer, so on push events the `spec-trailers` hook is added to SKIP.
+# Pull request runs always enforce it.
 
 on:
   workflow_call:
@@ -151,8 +155,10 @@ jobs:
         env:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          if [[ "$EVENT_NAME" == "push" ]]; then SKIP="${SKIP:+$SKIP,}spec-trailers"; export SKIP; fi
           for stage in pre-commit pre-push; do
             # shellcheck disable=SC2086
             uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage "$stage" $PRE_COMMIT_RANGE --show-diff-on-failure
@@ -164,8 +170,10 @@ jobs:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
           HOOKS: ${{ inputs.extra-manual-hooks }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          if [[ "$EVENT_NAME" == "push" ]]; then SKIP="${SKIP:+$SKIP,}spec-trailers"; export SKIP; fi
           for hook in $HOOKS; do
             # shellcheck disable=SC2086
             uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage manual $PRE_COMMIT_RANGE "$hook"
