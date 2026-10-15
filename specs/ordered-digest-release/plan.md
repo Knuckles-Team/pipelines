@@ -64,6 +64,15 @@ Source credit: audit candidate PIPE:5 from the source document “Verify” supp
 Acceptance: implement `tests/hooks/test_project_version_sync.py`, then run `uv run --frozen python -m pytest tests/hooks/test_project_version_sync.py -q`. The fixture initializes Git and installs the published local hook entry. It checks equal versions, independent drift in all roles, canonical-version drift, missing/malformed/duplicate configuration, extraction counts that differ from the declared count and unsupported dynamic source expressions. A location declaring two matches passes only when both tokens agree with current_version; one or three matches fail. Assert index/commit isolation in both directions, no writes by the gate, and location/digest evidence. In a separate disposable fixture, invoke the real configured bump command, verify all three replacements and run the gate again. Parser-only tests do not close the CLI/hook acceptance row.
 
 
+## Shared gates workflow and tag-only publish (PIPE-RELEASE-R007)
+
+Data flow: caller `gates` job -> `gates_pipeline.yml@main` -> pre-commit stages over the diff range -> `pr-test-scope` subset -> verdict; release caller -> `python_pipeline.yml` `require-tag` guard -> publish.
+Existing code: `.github/workflows/python_pipeline.yml` publishes and tags on whatever ref calls it; `pipelines_hooks/ci_replica/test_scope.py` maps a diff to tests; every core repository hand-writes the gates block. Reachable today: no shared gates workflow, `require-tag` or `fast-tests` exists.
+Attach point: new `.github/workflows/gates_pipeline.yml`; `python_pipeline.yml` input `require-tag`; `templates/workflows/gates-skip.yml`; `pipelines_hooks/ci_replica/fast_tests.py` registered at `pipelines_hooks/cli.py` and `.pre-commit-hooks.yaml`; reference `reference/ci-standard.md`.
+Decision: additive only, every input defaulted, because every caller references pipelines at `@main`. Concurrency stays with the caller (a reusable workflow cannot set it). Rejected: removing tagging from `python_pipeline` now, since that would break today's push callers; callers opt in with `require-tag` when they move to tag-triggered releases.
+Acceptance: `uv run --frozen python -m pytest tests/test_gates_pipeline_contract.py tests/hooks/test_fast_tests.py -q`.
+
+
 ## Amendments
 
 ### 2026-10-12 — PIPE-RELEASE-R003 wheel output boundary

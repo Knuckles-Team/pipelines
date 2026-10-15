@@ -1,0 +1,194 @@
+name: Gates
+
+# Shared PR / main gate (CI-STANDARD): the caller's own pre-commit file, run
+# diff-scoped on pull requests (--from-ref/--to-ref) and over every file on a
+# main push, then the affected-test subset. Never publishes.
+#
+# Caller contract (copy; a reusable workflow cannot set the caller's groups):
+#
+#   on:
+#     pull_request:
+#       paths-ignore: [specs/**, docs/**, '**/*.md', plans/**, LICENSE]
+#     push:
+#       branches: [main]
+#       paths-ignore: [specs/**, docs/**, '**/*.md', plans/**, LICENSE]
+#   concurrency:
+#     group: ${{ github.event_name == 'pull_request' && format('pr-{0}-{1}', github.workflow, github.event.pull_request.number) || format('main-{0}', github.workflow) }}
+#     cancel-in-progress: true
+#   jobs:
+#     gates:
+#       uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main
+#
+# paths-ignore leaves a required `gates` check pending; pair it with the
+# templates/workflows/gates-skip.yml companion (the inverse `paths:` filter).
+# Every input has a default, so adding the workflow needs no `with:` block.
+
+on:
+  workflow_call:
+    inputs:
+      config:
+        description: Pre-commit configuration file of the caller.
+        required: false
+        type: string
+        default: .config/pre-commit.yaml
+      test-scope:
+        description: Tests directory for the affected-test subset; empty disables the test step.
+        required: false
+        type: string
+        default: tests
+      src-root:
+        description: Package under test for test mapping; empty derives it from pyproject.toml.
+        required: false
+        type: string
+        default: ''
+      runner:
+        description: JSON runner label or label list for runs-on.
+        required: false
+        type: string
+        default: '"ubuntu-latest"'
+      rust:
+        description: Install a minimal Rust toolchain before the gates.
+        required: false
+        type: boolean
+        default: false
+      all-files:
+        description: Run every file (main push) instead of the pull request diff.
+        required: false
+        type: boolean
+        default: false
+      extra-manual-hooks:
+        description: Space-separated hook ids to run at the manual stage after the push stage.
+        required: false
+        type: string
+        default: ''
+      skip-hooks:
+        description: Comma-separated hook ids exported as SKIP (for hooks that need unavailable private data).
+        required: false
+        type: string
+        default: ''
+      timeout-minutes:
+        description: Wall-clock cap for the gates job (15 for pull requests, 60 for main).
+        required: false
+        type: number
+        default: 15
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: gates
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The exact hook bytes of this workflow's resolved commit.
+      - name: Checkout pipeline contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-contract
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            uv.lock
+            ${{ inputs.config }}
+
+      - name: Install Rust toolchain
+        if: inputs.rust
+        run: rustup toolchain install stable --profile minimal
+
+      - name: Cache pre-commit environments
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config) }}
+
+      - name: Resolve diff range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          BASE_REF: ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
+          ALL_FILES: ${{ inputs.all-files }}
+        run: |
+          set -euo pipefail
+          range=(--all-files)
+          if [[ "$ALL_FILES" != "true" ]]; then
+            base="${PR_BASE:-$PUSH_BEFORE}"
+            if [[ -z "$base" || "$base" =~ ^0+$ ]] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              git fetch --no-tags origin "$BASE_REF" >/dev/null 2>&1 || true
+              base="$(git merge-base HEAD "origin/$BASE_REF")"
+            fi
+            range=(--from-ref "$base" --to-ref HEAD)
+            echo "PRE_COMMIT_FROM_REF=$base" >> "$GITHUB_ENV"
+            echo "PRE_COMMIT_TO_REF=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+            echo "TEST_BASE=$base" >> "$GITHUB_ENV"
+          fi
+          echo "PRE_COMMIT_RANGE=${range[*]}" >> "$GITHUB_ENV"
+
+      - name: pre-commit (commit stage)
+        env:
+          SKIP: ${{ inputs.skip-hooks }}
+          CONFIG: ${{ inputs.config }}
+        run: |
+          # shellcheck disable=SC2086
+          uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage pre-commit $PRE_COMMIT_RANGE --show-diff-on-failure
+
+      - name: pre-commit (pre-push stage)
+        env:
+          SKIP: ${{ inputs.skip-hooks }}
+          CONFIG: ${{ inputs.config }}
+        run: |
+          # shellcheck disable=SC2086
+          uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage pre-push $PRE_COMMIT_RANGE --show-diff-on-failure
+
+      - name: pre-commit (extra manual hooks)
+        if: inputs.extra-manual-hooks != ''
+        env:
+          SKIP: ${{ inputs.skip-hooks }}
+          CONFIG: ${{ inputs.config }}
+          HOOKS: ${{ inputs.extra-manual-hooks }}
+        run: |
+          set -euo pipefail
+          for hook in $HOOKS; do
+            # shellcheck disable=SC2086
+            uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage manual $PRE_COMMIT_RANGE "$hook"
+          done
+
+      - name: Affected tests
+        if: inputs.test-scope != ''
+        env:
+          TEST_SCOPE: ${{ inputs.test-scope }}
+          SRC_ROOT: ${{ inputs.src-root }}
+          ALL_FILES: ${{ inputs.all-files }}
+        run: |
+          set -euo pipefail
+          src="$SRC_ROOT"
+          if [[ -z "$src" && -f pyproject.toml ]]; then
+            src="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb")).get("project",{}).get("name","").replace("-","_"))')"
+          fi
+          uv sync --frozen
+          if [[ "$ALL_FILES" == "true" ]]; then
+            uv run --frozen pytest -q "$TEST_SCOPE"
+            exit 0
+          fi
+          scope="$(uvx --from ./.pipeline-contract pipelines-hook pr-test-scope --base-ref "$TEST_BASE" --src-root "$src" --tests-root "$TEST_SCOPE")"
+          echo "pr-test-scope: $scope"
+          case "$scope" in
+            NONE) echo "no affected tests" ;;
+            FULL) uv run --frozen pytest -q "$TEST_SCOPE" ;;
+            *) mapfile -t tests <<<"$scope"; uv run --frozen pytest -q "${tests[@]}" ;;
+          esac

@@ -47,6 +47,7 @@ GATES: dict[str, str] = {
     "ste-staleness-staged": "pipelines_hooks.ste.staleness_staged",
     "ste-staleness-census": "pipelines_hooks.ste.staleness_census",
     "pr-test-scope": "pipelines_hooks.ci_replica.test_scope",
+    "fast-tests": "pipelines_hooks.ci_replica.fast_tests",
     "spec-status": "pipelines_hooks.specs.status",
     "spec-trailers": "pipelines_hooks.specs.trailers",
 }

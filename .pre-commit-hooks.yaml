@@ -259,6 +259,16 @@
   always_run: true
   stages: [manual]
 
+# Affected tests only under a hard 120 s cap (CI-STANDARD pre-push); the base is
+# pre-commit's --from-ref (PRE_COMMIT_FROM_REF). FULL/NONE run nothing locally.
+- id: fast-tests
+  name: Fast tests - only the tests the pushed diff affects (120 s cap)
+  entry: pipelines-hook fast-tests
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-push]
+
 # --- spec-status lifecycle (SPEC-STATUS-LIFECYCLE.md S6) -------------------
 - id: spec-trailers
   name: "Spec trailers - every product-path PR carries a verified Spec: trailer"
