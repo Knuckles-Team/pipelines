@@ -85,6 +85,7 @@ EXPECTED_CONNECTORS = {
     "M1050 435V485": ((1050, 435), (1050, 485)),
     "M255 565H445": ((255, 565), (445, 565)),
     "M705 565H825": ((705, 565), (825, 565)),
+    "M960 645V705": ((960, 645), (960, 705)),
 }
 BOXES = (
     (35, 35, 205, 90),
@@ -95,7 +96,8 @@ BOXES = (
     (415, 245, 780, 325),
     (825, 135, 1275, 305),
     (825, 335, 1275, 435),
-    (825, 485, 1275, 610),
+    (825, 485, 1275, 645),
+    (825, 705, 1275, 815),
     (35, 520, 255, 610),
     (445, 520, 705, 610),
 )
@@ -150,7 +152,7 @@ def test_runtime_svg_has_all_entrypoint_flows() -> None:
     svg_root = _runtime_svg()
     flows = _runtime_flows(svg_root)
 
-    assert len(list(flows)) == 11
+    assert len(list(flows)) == 12
     assert list(svg_root).index(flows) == len(list(svg_root)) - 1
     path_values = [path.attrib["d"] for path in flows]
     assert path_values == list(EXPECTED_CONNECTORS)
@@ -179,7 +181,7 @@ def test_runtime_svg_box_geometry_is_aligned() -> None:
     assert {
         int(rect.attrib["y"]) + int(rect.attrib["height"])
         for rect in lower_boxes
-    } == {610}
+    } == {610, 645}
 
 
 def test_runtime_svg_connectors_touch_box_borders() -> None:
