@@ -66,6 +66,15 @@ on:
         required: false
         type: string
         default: ''
+      setup-command:
+        description: >-
+          Shell command run once after uv is installed and before the hooks, for a
+          caller whose hooks need a prepared environment (bootstrap script, extra
+          PYTHONPATH via GITHUB_ENV). When set, the affected-test step reuses that
+          environment (uv run --no-sync) instead of running uv sync.
+        required: false
+        type: string
+        default: ''
       timeout-minutes:
         description: Wall-clock cap for the gates job (15 for pull requests, 60 for main).
         required: false
@@ -100,6 +109,14 @@ jobs:
       - name: Install Rust toolchain
         if: inputs.rust
         run: rustup toolchain install stable --profile minimal
+
+      - name: Caller setup
+        if: inputs.setup-command != ''
+        env:
+          SETUP_COMMAND: ${{ inputs.setup-command }}
+          PROHIBITED_IDENTITY_CATALOG: ${{ vars.PROHIBITED_IDENTITY_CATALOG }}
+          FORK_PULL_REQUEST: ${{ github.event.pull_request.head.repo.fork || false }}
+        run: bash -c "$SETUP_COMMAND"
 
       - name: Cache pre-commit environments
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -160,6 +177,7 @@ jobs:
           TEST_SCOPE: ${{ inputs.test-scope }}
           SRC_ROOT: ${{ inputs.src-root }}
           ALL_FILES: ${{ inputs.all-files }}
+          SETUP_COMMAND: ${{ inputs.setup-command }}
           PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
         run: |
           set -euo pipefail
@@ -167,15 +185,20 @@ jobs:
           if [[ -z "$src" && -f pyproject.toml ]]; then
             src="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb")).get("project",{}).get("name","").replace("-","_"))')"
           fi
-          uv sync --frozen
+          run=(uv run --frozen)
+          if [[ -n "$SETUP_COMMAND" ]]; then
+            run=(uv run --frozen --no-sync)
+          else
+            uv sync --frozen
+          fi
           if [[ "$ALL_FILES" == "true" ]]; then
-            uv run --frozen pytest -q "$TEST_SCOPE"
+            "${run[@]}" pytest -q "$TEST_SCOPE"
             exit 0
           fi
           scope="$(uvx --from "$PIPELINES_SOURCE" pipelines-hook pr-test-scope --base-ref "$TEST_BASE" --src-root "$src" --tests-root "$TEST_SCOPE")"
           echo "pr-test-scope: $scope"
           case "$scope" in
             NONE) echo "no affected tests" ;;
-            FULL) uv run --frozen pytest -q "$TEST_SCOPE" ;;
-            *) mapfile -t tests <<<"$scope"; uv run --frozen pytest -q "${tests[@]}" ;;
+            FULL) "${run[@]}" pytest -q "$TEST_SCOPE" ;;
+            *) mapfile -t tests <<<"$scope"; "${run[@]}" pytest -q "${tests[@]}" ;;
           esac
