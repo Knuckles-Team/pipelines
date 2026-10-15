@@ -89,15 +89,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # The exact hook bytes of this workflow's resolved commit.
-      - name: Checkout pipeline contract
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ${{ job.workflow_repository }}
-          ref: ${{ job.workflow_sha }}
-          path: .pipeline-contract
-          persist-credentials: false
-
       - name: Install uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
@@ -139,21 +130,16 @@ jobs:
           fi
           echo "PRE_COMMIT_RANGE=${range[*]}" >> "$GITHUB_ENV"
 
-      - name: pre-commit (commit stage)
+      - name: pre-commit (commit and pre-push stages)
         env:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
         run: |
-          # shellcheck disable=SC2086
-          uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage pre-commit $PRE_COMMIT_RANGE --show-diff-on-failure
-
-      - name: pre-commit (pre-push stage)
-        env:
-          SKIP: ${{ inputs.skip-hooks }}
-          CONFIG: ${{ inputs.config }}
-        run: |
-          # shellcheck disable=SC2086
-          uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage pre-push $PRE_COMMIT_RANGE --show-diff-on-failure
+          set -euo pipefail
+          for stage in pre-commit pre-push; do
+            # shellcheck disable=SC2086
+            uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage "$stage" $PRE_COMMIT_RANGE --show-diff-on-failure
+          done
 
       - name: pre-commit (extra manual hooks)
         if: inputs.extra-manual-hooks != ''
@@ -174,6 +160,7 @@ jobs:
           TEST_SCOPE: ${{ inputs.test-scope }}
           SRC_ROOT: ${{ inputs.src-root }}
           ALL_FILES: ${{ inputs.all-files }}
+          PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
         run: |
           set -euo pipefail
           src="$SRC_ROOT"
@@ -185,7 +172,7 @@ jobs:
             uv run --frozen pytest -q "$TEST_SCOPE"
             exit 0
           fi
-          scope="$(uvx --from ./.pipeline-contract pipelines-hook pr-test-scope --base-ref "$TEST_BASE" --src-root "$src" --tests-root "$TEST_SCOPE")"
+          scope="$(uvx --from "$PIPELINES_SOURCE" pipelines-hook pr-test-scope --base-ref "$TEST_BASE" --src-root "$src" --tests-root "$TEST_SCOPE")"
           echo "pr-test-scope: $scope"
           case "$scope" in
             NONE) echo "no affected tests" ;;

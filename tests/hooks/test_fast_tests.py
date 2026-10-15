@@ -19,7 +19,7 @@ def test_fast_tests_runs_only_the_affected_subset(repo: Repo, capsys: pytest.Cap
     repo.commit({"pkg/mod_a.py": "VALUE = 2\n"}, "change")
     assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 0
     capsys.readouterr()
-    repo.commit({"pkg/mod_a.py": "VALUE = 3\n"}, "break it")
+    repo.commit({"pkg/mod_a.py": "VALUE = 30\n"}, "break it")
     assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 1
 
 
