@@ -15,6 +15,14 @@ on:
         required: false
         type: boolean
         default: false
+      require-tag:
+        description: >-
+          Fail before building unless the triggering ref is a v* tag, so a
+          caller cannot publish from an ordinary branch push. Default false
+          keeps existing callers unchanged.
+        required: false
+        type: boolean
+        default: false
     secrets:
       PYPI_API_TOKEN:
         required: true
@@ -33,6 +41,16 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Require a release tag
+        if: inputs.require-tag
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [[ ! "$REF" =~ ^refs/tags/v ]]; then
+            echo "::error::require-tag is set and $REF is not a v* tag; publish only from a release tag."
+            exit 1
+          fi
 
       # A called workflow executes in the caller's checkout.  Fetch this
       # workflow's own action bytes at the exact resolved workflow commit
