@@ -278,7 +278,57 @@
     "PIPE-PAGES-R021.75",
     "PIPE-PAGES-R021.76",
     "PIPE-PAGES-R021.77",
-    "PIPE-PAGES-R021.78"
+    "PIPE-PAGES-R021.78",
+    "PIPE-PAGES-R025",
+    "PIPE-PAGES-R025.1",
+    "PIPE-PAGES-R025.2",
+    "PIPE-PAGES-R025.3",
+    "PIPE-PAGES-R025.4",
+    "PIPE-PAGES-R025.5",
+    "PIPE-PAGES-R025.6",
+    "PIPE-PAGES-R026",
+    "PIPE-PAGES-R026.1",
+    "PIPE-PAGES-R026.2",
+    "PIPE-PAGES-R026.3",
+    "PIPE-PAGES-R026.4",
+    "PIPE-PAGES-R026.5",
+    "PIPE-PAGES-R026.6",
+    "PIPE-PAGES-R027",
+    "PIPE-PAGES-R027.1",
+    "PIPE-PAGES-R027.2",
+    "PIPE-PAGES-R027.3",
+    "PIPE-PAGES-R027.4",
+    "PIPE-PAGES-R027.5",
+    "PIPE-PAGES-R027.6",
+    "PIPE-PAGES-R028",
+    "PIPE-PAGES-R028.1",
+    "PIPE-PAGES-R028.2",
+    "PIPE-PAGES-R028.3",
+    "PIPE-PAGES-R028.4",
+    "PIPE-PAGES-R028.5",
+    "PIPE-PAGES-R028.6",
+    "PIPE-PAGES-R029",
+    "PIPE-PAGES-R029.1",
+    "PIPE-PAGES-R029.2",
+    "PIPE-PAGES-R029.3",
+    "PIPE-PAGES-R029.4",
+    "PIPE-PAGES-R029.5",
+    "PIPE-PAGES-R029.6",
+    "PIPE-PAGES-R030",
+    "PIPE-PAGES-R030.1",
+    "PIPE-PAGES-R030.2",
+    "PIPE-PAGES-R030.3",
+    "PIPE-PAGES-R030.4",
+    "PIPE-PAGES-R030.5",
+    "PIPE-PAGES-R030.6",
+    "PIPE-PAGES-R023.19",
+    "PIPE-PAGES-R031",
+    "PIPE-PAGES-R031.1",
+    "PIPE-PAGES-R031.2",
+    "PIPE-PAGES-R031.3",
+    "PIPE-PAGES-R031.4",
+    "PIPE-PAGES-R031.5",
+    "PIPE-PAGES-R031.6"
   ],
   "requirements": [
     {
@@ -1952,7 +2002,8 @@
         "PIPE-PAGES-R023.15",
         "PIPE-PAGES-R023.16",
         "PIPE-PAGES-R023.17",
-        "PIPE-PAGES-R023.18"
+        "PIPE-PAGES-R023.18",
+        "PIPE-PAGES-R023.19"
       ]
     },
     {
@@ -2679,6 +2730,412 @@
     },
     {
       "id": "PIPE-PAGES-R021.78",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R025",
+      "title": "Packaging role-to-extra closure contracts and build gates",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R025.1",
+        "PIPE-PAGES-R025.2",
+        "PIPE-PAGES-R025.3",
+        "PIPE-PAGES-R025.4",
+        "PIPE-PAGES-R025.5",
+        "PIPE-PAGES-R025.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R025.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R025.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R025.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R025.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R025.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R025.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R026",
+      "title": "User story and artifact schema generation contracts",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R026.1",
+        "PIPE-PAGES-R026.2",
+        "PIPE-PAGES-R026.3",
+        "PIPE-PAGES-R026.4",
+        "PIPE-PAGES-R026.5",
+        "PIPE-PAGES-R026.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R026.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R026.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R026.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R026.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R026.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R026.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R027",
+      "title": "Specification tooling compatibility and layout standard",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R027.1",
+        "PIPE-PAGES-R027.2",
+        "PIPE-PAGES-R027.3",
+        "PIPE-PAGES-R027.4",
+        "PIPE-PAGES-R027.5",
+        "PIPE-PAGES-R027.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R027.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R027.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R027.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R027.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R027.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R027.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R028",
+      "title": "Release coordination with multi-phase version-bump policy",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R028.1",
+        "PIPE-PAGES-R028.2",
+        "PIPE-PAGES-R028.3",
+        "PIPE-PAGES-R028.4",
+        "PIPE-PAGES-R028.5",
+        "PIPE-PAGES-R028.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R028.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R028.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R028.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R028.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R028.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R028.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R029",
+      "title": "Skill-scoped dependency audit and version-update proposal workflow",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R029.1",
+        "PIPE-PAGES-R029.2",
+        "PIPE-PAGES-R029.3",
+        "PIPE-PAGES-R029.4",
+        "PIPE-PAGES-R029.5",
+        "PIPE-PAGES-R029.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R029.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R029.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R029.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R029.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R029.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R029.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R030",
+      "title": "Project-version reference discovery and code-enhancer binding",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R030.1",
+        "PIPE-PAGES-R030.2",
+        "PIPE-PAGES-R030.3",
+        "PIPE-PAGES-R030.4",
+        "PIPE-PAGES-R030.5",
+        "PIPE-PAGES-R030.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R030.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R030.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R030.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R030.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R030.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R030.6",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R023.19",
+      "title": "Aggregate skill grader call contract and lineage preservation",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R031",
+      "title": "Package source-path portability and cross-platform legality",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-PAGES-R031.1",
+        "PIPE-PAGES-R031.2",
+        "PIPE-PAGES-R031.3",
+        "PIPE-PAGES-R031.4",
+        "PIPE-PAGES-R031.5",
+        "PIPE-PAGES-R031.6"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R031.1",
+      "title": "Model",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R031.2",
+      "title": "Behavior",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R031.3",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R031.4",
+      "title": "Refusal",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R031.5",
+      "title": "Evidence",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R031.6",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],

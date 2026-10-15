@@ -277,3 +277,53 @@
 | `PIPE-PAGES-R021.76` | **Refusal.** Missing graph-load evidence, mismatched run identities, uncommitted ingestion or absent independent readback must fail acceptance. Unavailable real components or stale source bindings must exit 2. A cached or mocked catalog result must not become a real graph-load receipt. | Run `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | `PIPE-PAGES-R021.77` | **Evidence.** Emit producer revisions, persisted workflow identity, selected decision, executed step IDs and committed ingestion receipt. Record independent readback query, expected hydrated identities and observed digest. Separate SDK source effects from graph durability and retain failure/cancellation evidence. | Run `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | `PIPE-PAGES-R021.78` | **Hot-path proof.** The actual test-quality CLI must consume a real graph-to-AU-to-ingestion acceptance run. An independent client must read hydrated identities after commit. Remove readback, substitute a fake catalog or mismatch the decision identity; each must refuse. A passing helper-only test must not satisfy the receipt. | Run `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
+| `PIPE-PAGES-R025` | **Packaging role-to-extra closure contracts and build gates.** Rollup of the children below. Declare supported package role/extra combinations and ensure build gates prove dependency closure for each role. | The rollup is the minimum state of its children. |
+| `PIPE-PAGES-R025.1` | **Model.** Define role/extra inventory and closure assertions. | Run packaging gate test. |
+| `PIPE-PAGES-R025.2` | **Behavior.** Build gate verifies role-specific closure. | Run role verification test. |
+| `PIPE-PAGES-R025.3` | **Wiring.** Import harness binds gate to packaging workflow. | Run integration test. |
+| `PIPE-PAGES-R025.4` | **Refusal.** Out-of-extra imports and role violations fail. | Run violation test. |
+| `PIPE-PAGES-R025.5` | **Evidence.** Closure evidence proves package constraint. | Run evidence test. |
+| `PIPE-PAGES-R025.6` | **Hot-path proof.** `uvx pipelines-hook` validates role matrix. | Run `test_packaging_role_closure_cli`. |
+| `PIPE-PAGES-R026` | **User story and artifact schema generation contracts.** Rollup of the children below. Bind generator skills to UserStory, AcceptanceCriteria and Task Pydantic schema contracts. | The rollup is the minimum state of its children. |
+| `PIPE-PAGES-R026.1` | **Model.** Three artifact model schemas with versioned generator. | Run schema validation test. |
+| `PIPE-PAGES-R026.2` | **Behavior.** Generator emits valid schemas matching contract. | Run generator test. |
+| `PIPE-PAGES-R026.3` | **Wiring.** Consumer deserialization validates artifact models. | Run consumer test. |
+| `PIPE-PAGES-R026.4` | **Refusal.** Malformed artifacts and schema mismatch fail. | Run refusal test. |
+| `PIPE-PAGES-R026.5` | **Evidence.** Emitted schemas round-trip through validation. | Run round-trip test. |
+| `PIPE-PAGES-R026.6` | **Hot-path proof.** `uvx pipelines-hook` validates generated artifacts. | Run `test_artifact_schema_cli`. |
+| `PIPE-PAGES-R027` | **Specification tooling compatibility and layout standard.** Rollup of the children below. Support external artifact formats and reconcile with current directory standards. | The rollup is the minimum state of its children. |
+| `PIPE-PAGES-R027.1` | **Model.** External format/version contract. | Run format test. |
+| `PIPE-PAGES-R027.2` | **Behavior.** Unchanged-file interoperability fixture passes. | Run interop test. |
+| `PIPE-PAGES-R027.3` | **Wiring.** Ingestion classifies standard layout. | Run classification test. |
+| `PIPE-PAGES-R027.4` | **Refusal.** Incompatible format and layout failures fail. | Run compat test. |
+| `PIPE-PAGES-R027.5` | **Evidence.** Standard layout and version agreement proven. | Run agreement test. |
+| `PIPE-PAGES-R027.6` | **Hot-path proof.** `uvx pipelines-hook` validates format support. | Run `test_spec_format_compat_cli`. |
+| `PIPE-PAGES-R028` | **Release coordination with multi-phase version-bump policy.** Rollup of the children below. Configure phase ordering, inter-phase delays and live status reporting. | The rollup is the minimum state of its children. |
+| `PIPE-PAGES-R028.1` | **Model.** Phase/wait policy with typed status contract. | Run phase test. |
+| `PIPE-PAGES-R028.2` | **Behavior.** Coordinator executes phases with configurable delays. | Run execution test. |
+| `PIPE-PAGES-R028.3` | **Wiring.** CLI/UI consumes live project-status stream. | Run stream test. |
+| `PIPE-PAGES-R028.4` | **Refusal.** Missing policy and status event failures fail. | Run event test. |
+| `PIPE-PAGES-R028.5` | **Evidence.** Phase transitions and wait periods recorded. | Run transition test. |
+| `PIPE-PAGES-R028.6` | **Hot-path proof.** Coordinator CLI observes configured phases. | Run `test_release_phase_coordination_cli`. |
+| `PIPE-PAGES-R029` | **Skill-scoped dependency audit and version-update proposal workflow.** Rollup of the children below. Inventory skill dependencies, bind reports to EG proposals and control installation. | The rollup is the minimum state of its children. |
+| `PIPE-PAGES-R029.1` | **Model.** Skill inventory snapshot and version-update proposal. | Run inventory test. |
+| `PIPE-PAGES-R029.2` | **Behavior.** Audit supplies durable proposal with provenance. | Run audit test. |
+| `PIPE-PAGES-R029.3` | **Wiring.** Approval gate prevents direct skill install. | Run approval test. |
+| `PIPE-PAGES-R029.4` | **Refusal.** Unauthorized installs and audit gaps fail. | Run auth test. |
+| `PIPE-PAGES-R029.5` | **Evidence.** Proposal ID and audit binding proven. | Run binding test. |
+| `PIPE-PAGES-R029.6` | **Hot-path proof.** Vulnerable skill yields zero install until approved. | Run `test_skill_dependency_audit_cli`. |
+| `PIPE-PAGES-R030` | **Project-version reference discovery and code-enhancer binding.** Rollup of the children below. Define discoverable scope and require safe static inventory completeness. | The rollup is the minimum state of its children. |
+| `PIPE-PAGES-R030.1` | **Model.** Reference discovery policy and inventory-completeness contract. | Run discovery test. |
+| `PIPE-PAGES-R030.2` | **Behavior.** Code-enhancer compares discovered vs. configured. | Run comparison test. |
+| `PIPE-PAGES-R030.3` | **Wiring.** Unmapped reference refusal integrated in workflow. | Run refusal test. |
+| `PIPE-PAGES-R030.4` | **Refusal.** Undeclared version references fail without evaluation. | Run undeclared test. |
+| `PIPE-PAGES-R030.5` | **Evidence.** Discovered set and mapping gaps located. | Run gap test. |
+| `PIPE-PAGES-R030.6` | **Hot-path proof.** Undeclared reference blocks, then passes after mapping. | Run `test_version_reference_discovery_cli`. |
+| `PIPE-PAGES-R023.19` | **Aggregate skill grader call contract and lineage preservation.** Same repository-analysis invocation discovers skills, calls grader and includes results in aggregate. | Run `test_aggregate_skill_grade_cli`. |
+| `PIPE-PAGES-R031` | **Package source-path portability and cross-platform legality.** Rollup of the children below. Define path policy and wire pre-commit refusal for illegal paths. | The rollup is the minimum state of its children. |
+| `PIPE-PAGES-R031.1` | **Model.** Path-length, reserved-name and normalization rules. | Run rules test. |
+| `PIPE-PAGES-R031.2` | **Behavior.** Portability check rejects Windows/macOS violations. | Run platform test. |
+| `PIPE-PAGES-R031.3` | **Wiring.** Shared check in build and pre-commit gates. | Run gate test. |
+| `PIPE-PAGES-R031.4` | **Refusal.** Reserved names and too-long paths fail without sanitizing. | Run sanitize test. |
+| `PIPE-PAGES-R031.5` | **Evidence.** Policy version and violation locations proven. | Run location test. |
+| `PIPE-PAGES-R031.6` | **Hot-path proof.** Reserved name and long path both fail then pass. | Run `test_path_portability_cli`. |
