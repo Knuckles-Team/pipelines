@@ -2,19 +2,16 @@
 
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 import sys
-from xml.etree import ElementTree
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.sync_mkdocs_theme import THEME_FILES, ThemeSyncError, sync_theme
+from scripts.sync_mkdocs_theme import RUNTIME_DIAGRAM_URL, THEME_FILES, ThemeSyncError, sync_theme
 
 
 ROOT = Path(__file__).parents[1]
-SVG_NS = "{http://www.w3.org/2000/svg}"
 
 
 def test_sync_then_check_is_byte_identical_and_detects_drift(tmp_path: Path) -> None:
@@ -72,165 +69,6 @@ def test_theme_components_use_accessible_native_controls() -> None:
     assert css.count("{") == css.count("}")
 
 
-RUNTIME_DIAGRAM = ROOT / "templates/mkdocs-theme/assets/runtime-architecture.svg"
-EXPECTED_CONNECTORS = {
-    "M120 90V100H692": ((120, 90), (692, 100)),
-    "M120 100V135": ((120, 100), (120, 135)),
-    "M310 100V135": ((310, 100), (310, 135)),
-    "M500 100V135": ((500, 100), (500, 135)),
-    "M692 100V135": ((692, 100), (692, 135)),
-    "M780 180H825": ((780, 180), (825, 180)),
-    "M780 285H825": ((780, 285), (825, 285)),
-    "M1050 305V335": ((1050, 305), (1050, 335)),
-    "M1050 435V485": ((1050, 435), (1050, 485)),
-    "M255 565H445": ((255, 565), (445, 565)),
-    "M705 565H825": ((705, 565), (825, 565)),
-    "M960 645V705": ((960, 645), (960, 705)),
-}
-BOXES = (
-    (35, 35, 205, 90),
-    (35, 135, 205, 225),
-    (225, 135, 395, 225),
-    (415, 135, 585, 225),
-    (605, 135, 780, 225),
-    (415, 245, 780, 325),
-    (825, 135, 1275, 305),
-    (825, 335, 1275, 435),
-    (825, 485, 1275, 645),
-    (825, 705, 1275, 815),
-    (35, 520, 255, 610),
-    (445, 520, 705, 610),
-)
-
-
-def _runtime_svg() -> ElementTree.Element:
-    return ElementTree.parse(RUNTIME_DIAGRAM).getroot()
-
-
-def _runtime_flows(svg_root: ElementTree.Element) -> ElementTree.Element:
-    flows = svg_root.find(f".//{SVG_NS}g[@class='connections']")
-    assert flows is not None
-    return flows
-
-
-def _is_box_border(point: tuple[int, int], bounds: tuple[int, int, int, int]) -> bool:
-    x, y = point
-    left, top, right, bottom = bounds
-    return (x in (left, right) and top <= y <= bottom) or (
-        y in (top, bottom) and left <= x <= right
-    )
-
-
-def _on_any_box_border(point: tuple[int, int]) -> bool:
-    return any(_is_box_border(point, box) for box in BOXES)
-
-
-def _rect_where(rectangles: list[ElementTree.Element], **attributes: str) -> ElementTree.Element:
-    return next(
-        rect
-        for rect in rectangles
-        if all(rect.attrib.get(name) == value for name, value in attributes.items())
-    )
-
-
-def test_runtime_svg_is_accessible_and_theme_aware() -> None:
-    svg_root = _runtime_svg()
-    background = svg_root.find(f"{SVG_NS}rect[@class='bg']")
-
-    assert svg_root.attrib["role"] == "img"
-    assert svg_root.find(f"{SVG_NS}title") is not None
-    assert svg_root.find(f"{SVG_NS}desc") is not None
-    assert background is not None and background.attrib["fill"] == "none"
-    styles = " ".join(element.text or "" for element in svg_root.iter(f"{SVG_NS}style"))
-    assert "prefers-color-scheme: light" in styles
-    assert "prefers-color-scheme: dark" in styles
-    marker = svg_root.find(f".//{SVG_NS}marker[@id='arrow']")
-    assert marker is not None and marker.attrib["refX"] == "10"
-
-
-def test_runtime_svg_has_all_entrypoint_flows() -> None:
-    svg_root = _runtime_svg()
-    flows = _runtime_flows(svg_root)
-
-    assert len(list(flows)) == 12
-    assert list(svg_root).index(flows) == len(list(svg_root)) - 1
-    path_values = [path.attrib["d"] for path in flows]
-    assert path_values == list(EXPECTED_CONNECTORS)
-    assert list(flows)[0].attrib.get("class") == "bus"
-    assert all(path.attrib.get("class") == "arrow" for path in list(flows)[1:])
-    assert not {
-        "M210 180H825",
-        "M400 180H825",
-        "M590 180H825",
-        "M610 285H825",
-        "M805 285H825",
-        "M705 590H845",
-        "M705 590H825V548",
-    }.intersection(path_values)
-
-
-def test_runtime_svg_box_geometry_is_aligned() -> None:
-    rectangles = list(_runtime_svg().iter(f"{SVG_NS}rect"))
-    mcp_box = _rect_where(rectangles, x="415", y="245")
-    assert mcp_box.attrib["width"] == "365"
-    assert int(mcp_box.attrib["x"]) + int(mcp_box.attrib["width"]) == 780
-    graph_os_box = _rect_where(rectangles, x="825", width="450")
-    assert graph_os_box.attrib["y"] == "135"
-    assert graph_os_box.attrib["height"] == "170"
-    lower_boxes = [rect for rect in rectangles if rect.attrib.get("y") in {"485", "520"}]
-    assert {
-        int(rect.attrib["y"]) + int(rect.attrib["height"])
-        for rect in lower_boxes
-    } == {610, 645}
-
-
-def test_runtime_svg_connectors_touch_box_borders() -> None:
-    bus = "M120 90V100H692"
-    bus_start, bus_end = EXPECTED_CONNECTORS[bus]
-    assert _on_any_box_border(bus_start)
-    assert bus_end == (692, 100)
-    for path, (start, end) in EXPECTED_CONNECTORS.items():
-        if path == bus:
-            continue
-        if start[1] == 100:
-            assert start[0] in (120, 310, 500, 692)
-        else:
-            assert _on_any_box_border(start)
-        assert _on_any_box_border(end)
-
-
-def test_runtime_svg_labels_match_mermaid_source() -> None:
-    svg_root = _runtime_svg()
-    text = " ".join(element.text or "" for element in svg_root.iter(f"{SVG_NS}text"))
-    mermaid = RUNTIME_DIAGRAM.with_suffix(".mmd").read_text(encoding="utf-8")
-
-    for label in (
-        "Graph OS web UI",
-        "browser experience",
-        "Agent Terminal UI",
-        "Geniusbot",
-        "Messaging",
-        "Graph OS",
-        "governed runtime gateway",
-        "Agent Utilities",
-        "agent control plane",
-        "Epistemic Graph",
-        "Agent Connector SDK",
-        "typed source integration",
-    ):
-        assert label in text
-        assert label.split()[0] in mermaid
-    for edge in (
-        "WebUI --> GraphOS",
-        "TUI -->|REST| GraphOS",
-        "GraphOS --> AU",
-        "AU --> EG",
-        "Sources --> SDK",
-        "SDK --> EG",
-    ):
-        assert edge in mermaid
-
-
 def test_all_seven_product_logo_assets_remain_canonical() -> None:
     logos = ROOT / "templates/mkdocs-theme/assets/brands"
     expected = {
@@ -261,93 +99,27 @@ def test_theme_override_is_served_from_the_theme_checkout() -> None:
     assert not [item for item in THEME_FILES if item.source.startswith("overrides/")]
 
 
-def _compatibility_svg(payload: bytes) -> bytes:
-    return (
-        "<!-- Generated compatibility copy; do not edit.\n"
-        "Source: https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/"
-        "54aab65786bf72fac94f565796eb21f5d1ec72c4/docs/assets/runtime-architecture.svg\n"
-        f"SHA-256: {hashlib.sha256(payload).hexdigest()}\n"
-        "Synchronize: https://github.com/Knuckles-Team/.github/blob/main/docs/runtime-diagram.md\n"
-        "-->\n"
-    ).encode() + payload
+def test_runtime_diagram_is_not_a_theme_asset() -> None:
+    assert not [item for item in THEME_FILES if "runtime-architecture" in item.source]
+    assert not list((ROOT / "templates/mkdocs-theme/assets").glob("runtime-architecture.*"))
 
 
-@pytest.fixture
-def compatibility_repo(tmp_path: Path) -> Path:
+def _page(tmp_path: Path, text: str) -> Path:
     sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode="sync")
-    asset = tmp_path / "docs/assets/runtime-architecture.svg"
-    asset.write_bytes(_compatibility_svg(RUNTIME_DIAGRAM.read_bytes()))
+    (tmp_path / "docs").mkdir(exist_ok=True)
+    (tmp_path / "docs/index.md").write_text(text, encoding="utf-8")
     return tmp_path
 
 
-@pytest.mark.parametrize("content_source", ["docs", "pages"])
-def test_runtime_provenance_is_checked_and_preserved(compatibility_repo: Path, content_source: str) -> None:
-    root = compatibility_repo
-    if content_source == "pages":
-        (root / "docs").rename(root / content_source)
-    asset = root / content_source / "assets/runtime-architecture.svg"
-    original = asset.read_bytes()
-    for mode in ("check", "sync", "check"):
-        assert sync_theme(
-            source_root=ROOT, repository_root=root, content_source=content_source, mode=mode
-        ) == []
-        assert asset.read_bytes() == original
+def test_check_requires_no_local_runtime_diagram_copy(tmp_path: Path) -> None:
+    root = _page(tmp_path, f"![Runtime]({RUNTIME_DIAGRAM_URL})\n")
+    assert not (root / "docs/assets/runtime-architecture.svg").exists()
+    assert sync_theme(source_root=ROOT, repository_root=root, content_source="docs", mode="check") == []
 
 
-def _assert_runtime_copy_rejected(compatibility_repo: Path, original: bytes) -> None:
-    asset = compatibility_repo / "docs/assets/runtime-architecture.svg"
-    asset.write_bytes(original)
-    for mode in ("check", "sync"):
-        with pytest.raises(ThemeSyncError, match="provenance or payload differs"):
-            sync_theme(
-                source_root=ROOT, repository_root=compatibility_repo, content_source="docs", mode=mode
-            )
-        assert asset.read_bytes() == original
-
-
-@pytest.mark.parametrize(
-    ("before", "after"),
-    [
-        (b"Generated compatibility copy", b"Unrecognized provenance"),
-        (b"Knuckles-Team/epistemic-graph/", b"Knuckles-Team/graph-os/"),
-        (b"54aab65786bf72fac94f565796eb21f5d1ec72c4", b"main"),
-        (b"SHA-256: ", b"SHA-256: 0"),
-        (hashlib.sha256(RUNTIME_DIAGRAM.read_bytes()).hexdigest().encode(), b"0" * 64),
-        (b"docs/runtime-diagram.md", b"docs/other-guide.md"),
-        (b"-->\n", b"-->\n<!-- extra comment -->\n"),
-        (b"<!-- Generated", b"<!-- extra comment -->\n<!-- Generated"),
-        (b"\n", b"\r\n"),
-    ],
-)
-def test_runtime_provenance_rejects_unrecognized_headers(
-    compatibility_repo: Path, before: bytes, after: bytes
-) -> None:
-    asset = compatibility_repo / "docs/assets/runtime-architecture.svg"
-    original = asset.read_bytes().replace(before, after)
-    _assert_runtime_copy_rejected(compatibility_repo, original)
-
-
-@pytest.mark.parametrize("resign", [False, True])
-def test_runtime_provenance_rejects_payload_drift_even_with_matching_digest(
-    compatibility_repo: Path, resign: bool
-) -> None:
-    payload = RUNTIME_DIAGRAM.read_bytes()
-    changed = payload + b"\n"
-    original = _compatibility_svg(changed) if resign else _compatibility_svg(payload) + b"\n"
-    _assert_runtime_copy_rejected(compatibility_repo, original)
-
-
-def test_runtime_provenance_does_not_exempt_other_assets(compatibility_repo: Path) -> None:
-    asset = compatibility_repo / "docs/assets/graph-mark.svg"
-    asset.write_bytes(_compatibility_svg(asset.read_bytes()))
-    assert sync_theme(
-        source_root=ROOT, repository_root=compatibility_repo, content_source="docs", mode="check"
-    ) == ["generated file differs: docs/assets/graph-mark.svg"]
-
-
-def test_bare_runtime_payload_drift_is_still_rejected(compatibility_repo: Path) -> None:
-    asset = compatibility_repo / "docs/assets/runtime-architecture.svg"
-    asset.write_bytes(RUNTIME_DIAGRAM.read_bytes() + b"\n")
-    assert sync_theme(
-        source_root=ROOT, repository_root=compatibility_repo, content_source="docs", mode="check"
-    ) == ["generated file differs: docs/assets/runtime-architecture.svg"]
+@pytest.mark.parametrize("target", ["assets/runtime-architecture.svg", "../docs/assets/runtime-architecture.svg"])
+def test_check_rejects_local_runtime_diagram_references(tmp_path: Path, target: str) -> None:
+    root = _page(tmp_path, f"![Runtime]({target})\n")
+    assert sync_theme(source_root=ROOT, repository_root=root, content_source="docs", mode="check") == [
+        f"runtime diagram must be referenced as {RUNTIME_DIAGRAM_URL}: docs/index.md"
+    ]
