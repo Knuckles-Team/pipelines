@@ -26,6 +26,19 @@ runs:
         RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
       run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"'
 
+    # The release links the published PyPI package: the distribution name comes
+    # from the caller's pyproject.toml, the version from BUILD_VERSION.
+    - name: Resolve the PyPI project link
+      id: pypi
+      shell: bash
+      run: |
+        set -euo pipefail
+        name="$("$READINESS_PYTHON" -I -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["name"])')"
+        {
+          echo "name=$name"
+          echo "url=https://pypi.org/project/$name/$BUILD_VERSION/"
+        } >> "$GITHUB_OUTPUT"
+
     - name: Verify release tag source
       id: release_source
       uses: ./.pipeline-contract/.github/actions/verify-release-source
@@ -41,6 +54,12 @@ runs:
         target_commitish: ${{ steps.release_source.outputs.commit }}
         name: Release v${{ env.BUILD_VERSION }}
         body: |
+          PyPI: [`${{ steps.pypi.outputs.name }}` ${{ env.BUILD_VERSION }}](${{ steps.pypi.outputs.url }})
+
+          ```bash
+          pip install "${{ steps.pypi.outputs.name }}==${{ env.BUILD_VERSION }}"
+          ```
+
           Released: ${{ env.COMMIT_DATETIME }}
           Commit: ${{ env.LATEST_COMMIT }}
           Pipelines contract: ${{ env.PIPELINES_CONTRACT_COMMIT }}
@@ -50,3 +69,4 @@ runs:
         files: ${{ inputs.files }}
         draft: false
         prerelease: false
+        make_latest: true
