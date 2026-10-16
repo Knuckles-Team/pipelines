@@ -7,3 +7,7 @@ Pipelines owns the reusable parts of the fleet CI standard; each repository call
 - `templates/workflows/gates-skip.yml`: the companion that reports the required `gates` check for docs/spec-only changes that `paths-ignore` skips.
 - `python_pipeline.yml` input `require-tag` (default `false`): when `true` the job fails before building unless the ref is a `v*` tag. A release workflow triggered by `push: tags: ['v*']` sets it.
 - Hook `fast-tests` (pre-push): affected tests only, 120 s cap, base from `PRE_COMMIT_FROM_REF`.
+
+## Required status check
+
+A repository that adopts `gates_pipeline.yml` through a caller job named `gates` requires the single status check `gates / gates` in its branch ruleset. The docs and spec-only skip companion reports the same name.
