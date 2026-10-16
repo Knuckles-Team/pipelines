@@ -79,7 +79,7 @@ def test_skip_template_is_the_inverse_of_the_documented_ignore_list() -> None:
     paths = set(_on(SKIP_TEMPLATE)["pull_request"]["paths"])
     header = GATES_WORKFLOW.read_text(encoding="utf-8")
     assert all(path.strip("'") in header for path in paths)
-    assert skip["jobs"]["gates"]["name"] == "gates"
+    assert skip["jobs"]["gates"]["name"] == "gates / gates"
 
 
 def test_fast_tests_is_a_pre_push_published_gate() -> None:
