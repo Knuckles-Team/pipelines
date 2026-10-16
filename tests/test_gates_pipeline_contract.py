@@ -16,7 +16,7 @@ PYTHON_WORKFLOW = WORKFLOWS / "python_pipeline.yml"
 SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
-    "config", "test-scope", "src-root", "runner", "rust", "all-files",
+    "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
     "extra-manual-hooks", "skip-hooks", "setup-command", "timeout-minutes",
 }  # fmt: skip
 
@@ -96,3 +96,12 @@ def test_spec_trailers_is_skipped_on_push_only() -> None:
     for step in hooks:
         assert 'EVENT_NAME" == "push"' in step["run"]
         assert "spec-trailers" in step["run"]
+
+
+def test_ci_only_gates_run_from_their_own_file_and_skip_when_absent() -> None:
+    inputs = _on(GATES_WORKFLOW)["workflow_call"]["inputs"]
+    assert inputs["ci-config"]["default"] == ".config/ci-gates.yaml"
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    step = next(step for step in steps if step.get("name") == "CI-only gates")
+    assert '--config "$CI_CONFIG" $PRE_COMMIT_RANGE' in step["run"]
+    assert 'if [[ ! -f "$CI_CONFIG" ]]' in step["run"]

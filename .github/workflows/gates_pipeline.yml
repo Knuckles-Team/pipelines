@@ -1,6 +1,7 @@
 name: Gates
 
-# Shared PR / main gate (CI-STANDARD): the caller's own pre-commit file, run
+# Shared PR / main gate (CI-STANDARD): the caller's own pre-commit file and its
+# CI-only gate file (.config/ci-gates.yaml, PRECOMMIT standard), run
 # diff-scoped on pull requests (--from-ref/--to-ref) and over every file on a
 # main push, then the affected-test subset. Never publishes.
 #
@@ -35,6 +36,14 @@ on:
         required: false
         type: string
         default: .config/pre-commit.yaml
+      ci-config:
+        description: >-
+          CI-only gate file (pre-commit format, never installed as a git hook): the
+          architecture gates, scanners, drift checks and type checks the
+          PRECOMMIT standard keeps out of local hooks. Skipped when the file is absent.
+        required: false
+        type: string
+        default: .config/ci-gates.yaml
       test-scope:
         description: Tests directory for the affected-test subset; empty disables the test step.
         required: false
@@ -109,6 +118,7 @@ jobs:
           cache-dependency-glob: |
             uv.lock
             ${{ inputs.config }}
+            ${{ inputs.ci-config }}
 
       - name: Install Rust toolchain
         if: inputs.rust
@@ -126,7 +136,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config) }}
+          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}
 
       - name: Resolve diff range
         env:
@@ -163,6 +173,16 @@ jobs:
             # shellcheck disable=SC2086
             uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage "$stage" $PRE_COMMIT_RANGE --show-diff-on-failure
           done
+
+      - name: CI-only gates
+        env:
+          SKIP: ${{ inputs.skip-hooks }}
+          CI_CONFIG: ${{ inputs.ci-config }}
+        run: |
+          set -euo pipefail
+          if [[ ! -f "$CI_CONFIG" ]]; then echo "no $CI_CONFIG; no CI-only gates"; exit 0; fi
+          # shellcheck disable=SC2086
+          uvx --from pre-commit==4.6.2 pre-commit run --config "$CI_CONFIG" $PRE_COMMIT_RANGE --show-diff-on-failure
 
       - name: pre-commit (extra manual hooks)
         if: inputs.extra-manual-hooks != ''
