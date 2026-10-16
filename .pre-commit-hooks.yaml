@@ -269,6 +269,15 @@
   always_run: true
   stages: [pre-push]
 
+# uv.lock agrees with pyproject.toml; verifies only, never rewrites (PRECOMMIT standard).
+- id: uv-lock-check
+  name: uv.lock is current (uv lock --check; never mutates)
+  entry: pipelines-hook uv-lock-check
+  language: python
+  pass_filenames: false
+  files: (^|/)(pyproject\.toml|uv\.lock)$
+  stages: [pre-push]
+
 # --- spec-status lifecycle (SPEC-STATUS-LIFECYCLE.md S6) -------------------
 - id: spec-trailers
   name: "Spec trailers - verified delivery or constrained evidence withdrawal"

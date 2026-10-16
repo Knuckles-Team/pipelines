@@ -1,0 +1,44 @@
+# Reference pre-commit configuration (reference/precommit-standard.md).
+# Copy to .config/pre-commit.yaml; install with
+#   pre-commit install --config .config/pre-commit.yaml
+# Only fast, local checks live here. Every other gate is CI-only and lives in
+# .config/ci-gates.yaml (see templates/ci-gates.yaml), which no git hook runs.
+# Adjust a repository's copy only with a stated reason in a comment.
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+repos:
+# --- pre-commit: hygiene on staged files ------------------------------------
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-merge-conflict
+  - id: check-added-large-files
+    args: [--maxkb=2000]
+    exclude: ^uv\.lock$
+  - id: check-yaml
+    args: [--unsafe]
+  - id: check-toml
+  - id: check-json
+  - id: detect-private-key
+# --- pre-commit: format and lint staged Python (pinned ruff) ----------------
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0
+  hooks:
+  - id: ruff-format
+  - id: ruff-check
+# --- shared hooks: the push gates ------------------------------------------
+# The commit-stage secret scan is detect-private-key above (staged files);
+# tracked-privacy scans the whole tracked tree (~85 s on agent-utilities) and
+# is CI-only.
+- repo: https://github.com/Knuckles-Team/pipelines
+  rev: main
+  hooks:
+  - id: uv-lock-check
+    stages: [pre-push]
+  - id: spec-trailers
+    stages: [pre-push]
+  - id: fast-tests
+    stages: [pre-push]
+    # args: [--src-root, <package>]
