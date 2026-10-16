@@ -27,3 +27,13 @@ PIPE-CONNSPEC-R007 closes the clean-index gap in hosted `ste-staged` runs. Reuse
 ## Generated identity
 
 The generator reuses `standard.check_title` for canonical spec identity. A valid title governs the generated ID. Historical specs without a canonical title retain their fallback; requirement identities and landing receipts are unchanged.
+
+### 2026-10-16: withdraw invalid verification evidence
+
+PIPE-CONNSPEC-R001 permits a narrow evidence-only correction without losing its Spec IDs.
+A Spec-Withdraw trailer names the IDs, and Spec-Withdrawal-Reason records why acceptance evidence is invalid.
+The whole PR range must preserve requirements and executable source.
+Only actual Rust comment bindings may be removed, with owning plan additions, task reopening and generated status updates.
+Every withdrawn ID must lose an existing binding and retain its reason in the owning plan.
+Unknown IDs, missing reasons, altered code, requirements, modes, workflow or build configuration fail closed.
+Other IDs still require ordinary acceptance bindings. Status remains generated from the corrected evidence.

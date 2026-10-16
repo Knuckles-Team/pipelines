@@ -116,3 +116,5 @@ at most once. Policy requires version 1, a total `budget_seconds` (1–300), and
 [the validation contract](specs/shared-validation/spec.md).
 The default evidence directory is a fresh private temporary directory;
 `--evidence-dir` selects its parent. Version 1 needs POSIX process groups.
+
+Evidence corrections retain their requirement IDs. See [evidence withdrawal](reference/spec-standard.md#withdrawing-invalid-verification-evidence) for the restricted `Spec-Withdraw` contract.

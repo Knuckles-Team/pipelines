@@ -14,9 +14,11 @@ when:
 5. a trailered, known ID has no bound test anywhere in the tree: a Python
    ``mark.spec("ID")`` call, or a ``// spec: ID`` / ``# spec: ID`` line.
 
-One ``git log`` call (history: trailers and changed paths) and one
-``git grep`` call (working tree: bound-test markers) are enough; nothing
-shells out per commit.
+Explicit evidence withdrawals additionally validate the complete PR diff against
+its merge base. See ``reference/spec-standard.md`` for the restricted contract.
+
+History and bindings are scanned without a subprocess per commit.
+Withdrawals additionally inspect the affected source blobs.
 """
 
 from __future__ import annotations
@@ -31,6 +33,7 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git
 from pipelines_hooks.specs.git_log import reverted_shas
 from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN, named_ids
+from pipelines_hooks.specs.withdrawal import withdrawals
 
 #: Framing bytes for the single combined ``git log`` call: start-of-record,
 #: then sha/trailer separator. Both are illegal in a sha or a trailer value.
@@ -172,7 +175,13 @@ def main(argv: list[str]) -> int:
     known = _known_requirement_ids(root)
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)
-    failures += _unbound_id_failures(named, known, root)
+    withdrawn, withdrawal_errors = withdrawals(
+        root, base, named=set(named), known=known, bound=_bound_ids(root)
+    )
+    failures += withdrawal_errors
+    failures += _unbound_id_failures(
+        [rid for rid in named if rid not in withdrawn], known, root
+    )
     if failures:
         for line in failures:
             print(line)
