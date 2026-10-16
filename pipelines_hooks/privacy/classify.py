@@ -10,6 +10,8 @@ from pipelines_hooks.privacy.hosts import internal_endpoint_in_line
 
 _NEUTRAL_AUTHOR_NAME = "repository maintainers"
 _NEUTRAL_AUTHOR_EMAIL_SUFFIX = "@example.invalid"
+# A role address names no person; PyPI rejects the reserved .invalid domain.
+_NEUTRAL_ROLE_ADDRESS = "maintainers@knuckles.team"
 _DEPLOYMENT_MARKERS = ("deploy", "runbook", "configuration", "workspace-config", "mcp_auth", "secrets-auth")
 
 
@@ -70,12 +72,16 @@ def classify_runtime_source_line(line: str, *, identifiers: frozenset[str]) -> f
     return frozenset(category for hit, category in checks if hit)
 
 
+def _neutral_email(folded: str) -> bool:
+    return _NEUTRAL_AUTHOR_EMAIL_SUFFIX in folded or _NEUTRAL_ROLE_ADDRESS in folded
+
+
 def _non_neutral_author(folded: str, *, in_authors: bool) -> bool:
     if re.match(r"authors\s*=", folded):
-        return _NEUTRAL_AUTHOR_NAME not in folded or _NEUTRAL_AUTHOR_EMAIL_SUFFIX not in folded
+        return _NEUTRAL_AUTHOR_NAME not in folded or not _neutral_email(folded)
     if in_authors and re.match(r"name\s*=", folded):
         return _NEUTRAL_AUTHOR_NAME not in folded
-    return in_authors and bool(re.match(r"email\s*=", folded)) and _NEUTRAL_AUTHOR_EMAIL_SUFFIX not in folded
+    return in_authors and bool(re.match(r"email\s*=", folded)) and not _neutral_email(folded)
 
 
 def author_metadata_lines(path: Path, lines: list[str]) -> list[int]:
