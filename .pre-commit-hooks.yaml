@@ -271,7 +271,7 @@
 
 # --- spec-status lifecycle (SPEC-STATUS-LIFECYCLE.md S6) -------------------
 - id: spec-trailers
-  name: "Spec trailers - every product-path PR carries a verified Spec: trailer"
+  name: "Spec trailers - verified delivery or constrained evidence withdrawal"
   entry: pipelines-hook spec-trailers
   language: python
   pass_filenames: false
