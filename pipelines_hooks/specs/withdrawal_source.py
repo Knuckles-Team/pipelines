@@ -24,18 +24,18 @@ def _quoted_end(source: str, start: int, quote: str) -> int:
 def _block_end(source: str, start: int) -> int:
     """Rust block comments nest; quote-like text within them has no significance."""
     cursor, depth = start + 2, 1
-    while cursor < len(source):
+    while cursor < len(source) and depth:
         if source.startswith("/*", cursor):
             depth += 1
             cursor += 2
         elif source.startswith("*/", cursor):
             depth -= 1
             cursor += 2
-            if not depth:
-                return cursor
         else:
             cursor += 1
-    raise ValueError("unterminated block comment")
+    if depth:
+        raise ValueError("unterminated block comment")
+    return cursor
 
 
 def _token_end(source: str, cursor: int) -> int:
@@ -53,9 +53,11 @@ def _token_end(source: str, cursor: int) -> int:
         return _quoted_end(source, cursor, '"')
     if source[cursor] == "'":
         lifetime = _LIFETIME.match(source, cursor)
-        if lifetime and source[lifetime.end() : lifetime.end() + 1] != "'":
-            return lifetime.end()
-        return _quoted_end(source, cursor, "'")
+        return (
+            lifetime.end()
+            if lifetime and source[lifetime.end() : lifetime.end() + 1] != "'"
+            else _quoted_end(source, cursor, "'")
+        )
     return cursor + 1
 
 

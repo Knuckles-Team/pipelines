@@ -176,7 +176,7 @@ def main(argv: list[str]) -> int:
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)
     withdrawn, withdrawal_errors = withdrawals(
-        root, base, set(named), known, _bound_ids(root)
+        root, base, named=set(named), known=known, bound=_bound_ids(root)
     )
     failures += withdrawal_errors
     failures += _unbound_id_failures(
