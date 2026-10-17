@@ -37,8 +37,8 @@ repos:
   hooks:
   - id: uv-lock-check
     stages: [pre-push]
-  - id: spec-trailers
+  - id: spec
     stages: [pre-push]
-  - id: fast-tests
+  - id: tests-fast
     stages: [pre-push]
     # args: [--src-root, <package>]

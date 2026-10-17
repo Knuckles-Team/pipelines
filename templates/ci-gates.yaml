@@ -13,14 +13,9 @@ repos:
 - repo: https://github.com/Knuckles-Team/pipelines
   rev: main
   hooks:
-  - id: spec-standard
-  - id: spec-status
-  - id: spec-decomposition
-  - id: ste-staged
-  - id: public-surface
-  - id: complexity-staged
-  - id: secret-history
-  - id: tracked-privacy
+  # One grouped id per check (reference/gate-standard.md). Scanners, STE,
+  # complexity and clone gates are advisory and run weekly, not here.
+  - id: secrets
 # - repo: local
 #   hooks:
 #   - id: <repository architecture gate>
