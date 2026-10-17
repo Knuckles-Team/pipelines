@@ -21,7 +21,15 @@ from pipelines_hooks.core.tools import resolve
 
 #: The runner's own ``CI`` value, captured before the autouse fixture below
 #: pins it for gate runs.
-RUNNER_IN_CI = (os.environ.get("CI") or "").strip().casefold() not in {"", "0", "false", "no"}
+# The native scanners back advisory gates only (reference/gate-standard.md), so
+# pull request CI does not install them. A run that provisions them sets
+# PIPELINES_REQUIRE_SCANNERS=1, and then a missing scanner fails the test.
+REQUIRE_SCANNERS = (os.environ.get("PIPELINES_REQUIRE_SCANNERS") or "").strip().casefold() not in {
+    "",
+    "0",
+    "false",
+    "no",
+}
 
 HOOK_REPOSITORY = Path(__file__).resolve().parents[2]
 PYPROJECT = '[project]\nname = "fixture"\nversion = "0"\n\n[tool.pipelines_hooks]\npackages = ["pkg"]\n'
@@ -124,17 +132,17 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_runtest_setup(item: pytest.Item) -> None:
-    """Scanner tests need the pinned binaries: skipped locally, required in CI.
+    """Scanner tests need the pinned binaries: skipped when absent, unless required.
 
-    ``scripts/install_scanners.sh`` installs them; under CI a missing scanner is
-    left to fail the test, never skipped.
+    ``scripts/install_scanners.sh`` installs them; with PIPELINES_REQUIRE_SCANNERS
+    set a missing scanner is left to fail the test, never skipped.
     """
     for marker in item.iter_markers("scanner"):
         for tool in marker.args:
             try:
                 resolve(tool)
             except CannotRun as exc:
-                if not RUNNER_IN_CI:
+                if not REQUIRE_SCANNERS:
                     pytest.skip(f"{exc}; run scripts/bootstrap.sh --scanners")
 
 
