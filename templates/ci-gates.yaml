@@ -1,0 +1,29 @@
+# Reference CI-only gate file (reference/precommit-standard.md).
+# Copy to .config/ci-gates.yaml. pre-commit format so one definition serves CI,
+# but it is never installed as a git hook: gates_pipeline.yml (input
+# `ci-config`) runs it over the pull-request diff, or every file on main.
+# Hooks here use the default stage; a `manual` stage is not allowed (a check
+# runs in CI or it is deleted). List only the gates the repository needs.
+default_stages: [pre-commit]
+repos:
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: fc0f09a29bb495f4a91f00266155d6282d52485d # v1.20.2
+  hooks:
+  - id: mypy
+- repo: https://github.com/Knuckles-Team/pipelines
+  rev: main
+  hooks:
+  - id: spec-standard
+  - id: spec-status
+  - id: spec-decomposition
+  - id: ste-staged
+  - id: public-surface
+  - id: complexity-staged
+  - id: secret-history
+  - id: tracked-privacy
+# - repo: local
+#   hooks:
+#   - id: <repository architecture gate>
+#     entry: python scripts/<gate>.py
+#     language: system
+#     pass_filenames: false

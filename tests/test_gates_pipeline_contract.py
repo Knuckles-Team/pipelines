@@ -16,7 +16,7 @@ PYTHON_WORKFLOW = WORKFLOWS / "python_pipeline.yml"
 SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
-    "config", "test-scope", "src-root", "runner", "rust", "all-files",
+    "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
     "extra-manual-hooks", "skip-hooks", "setup-command", "docs-only-paths", "timeout-minutes",
 }  # fmt: skip
 
@@ -144,3 +144,12 @@ def test_docs_only_guard_covers_every_later_step() -> None:
     position = steps.index(_docs_only_step())
     assert position == 1
     assert all("steps.scope.outputs.docs-only != 'true'" in step["if"] for step in steps[position + 1 :])
+
+
+def test_ci_only_gates_run_from_their_own_file_and_skip_when_absent() -> None:
+    inputs = _on(GATES_WORKFLOW)["workflow_call"]["inputs"]
+    assert inputs["ci-config"]["default"] == ".config/ci-gates.yaml"
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    step = next(step for step in steps if step.get("name") == "CI-only gates")
+    assert '--config "$CI_CONFIG" $PRE_COMMIT_RANGE' in step["run"]
+    assert 'if [[ ! -f "$CI_CONFIG" ]]' in step["run"]
