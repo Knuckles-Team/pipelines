@@ -97,6 +97,14 @@ def live_resolver(on_head: set[str], reverted: set[str]) -> Callable[[str], str 
     return resolve
 
 
+def _history_evidence(
+    repo: Path, head: str, aliases: dict[str, str]
+) -> tuple[dict[str, set[str]], dict[str, list[str]]]:
+    """Trailer landings and test bindings, keyed by canonical requirement ID."""
+    landed_by = canonical_sets(mentioned_tokens(landing_commits(repo, head)), aliases)
+    return landed_by, canonical_lists(test_bindings(repo), aliases)
+
+
 def generate(repo: Path, head: str) -> dict[Path, dict]:
     """status.json path -> generated document, for every ``specs/*/requirements.md``."""
     requirements_paths = sorted(repo.glob("specs/*/requirements.md"))
@@ -109,9 +117,7 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
             "before retrying; no status files were changed"
         )
     aliases = load_aliases(repo)
-    commits = landing_commits(repo, head)
-    landed_by = canonical_sets(mentioned_tokens(commits), aliases)
-    tested_by = canonical_lists(test_bindings(repo), aliases)
+    landed_by, tested_by = _history_evidence(repo, head, aliases)
     resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
     owner = remote_owner(repo)
     result: dict[Path, dict] = {}

@@ -21,6 +21,7 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.specs.trailer_ids import named_ids
 
 ALIAS_FILE = ".config/spec-aliases.toml"
 _PREFIX_RE = re.compile(r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-")
@@ -90,3 +91,21 @@ def canonical_lists(by_id: Mapping[str, list[str]], aliases: Aliases) -> dict[st
     for rid, values in by_id.items():
         out.setdefault(canonical_id(rid, aliases), []).extend(values)
     return out
+
+
+def retired_prefix_warnings(named: Iterable[str], aliases: Aliases) -> list[str]:
+    """New commits should name the canonical ID; a retired prefix still counts, so warn only."""
+    retired = sorted({rid for rid in named if retired_prefix(rid, aliases)})
+    return [
+        f"spec-trailers: WARN: retired ID prefix in a new trailer, use {canonical_id(rid, aliases)} "
+        f"instead of {rid} (see {ALIAS_FILE})"
+        for rid in retired
+    ]
+
+
+def canonical_trailer_ids(trailers: Iterable[str], aliases: Aliases) -> list[str]:
+    """Trailer IDs with retired prefixes canonicalized; each retired use prints a WARN."""
+    raw_named = named_ids(trailers)
+    for warning in retired_prefix_warnings(raw_named, aliases):
+        print(warning)
+    return canonical_ids(raw_named, aliases)

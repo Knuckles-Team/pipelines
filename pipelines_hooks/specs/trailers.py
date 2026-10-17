@@ -41,10 +41,10 @@ from pipelines_hooks.specs.aliases import (
     canonical_id,
     canonical_ids,
     load_aliases,
-    retired_prefix,
+    canonical_trailer_ids,
 )
 from pipelines_hooks.specs.git_log import reverted_shas
-from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN, named_ids
+from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN
 from pipelines_hooks.specs.withdrawal import withdrawals
 
 #: Framing bytes for the single combined ``git log`` call: start-of-record,
@@ -160,7 +160,7 @@ def _bound_ids(root: Path, aliases: Aliases | None = None) -> set[str]:
 
 
 def _unbound_id_failures(
-    named: list[str], known: set[str], root: Path, aliases: Aliases | None = None
+    named: list[str], known: set[str], root: Path, *, aliases: Aliases | None = None
 ) -> list[str]:
     """Item 5: a trailered, known ID with no bound test anywhere in the tree."""
     known_named = sorted({identifier for identifier in named if identifier in known})
@@ -175,16 +175,6 @@ def _unbound_id_failures(
     ]
 
 
-def _retired_prefix_warnings(named: list[str], aliases: Aliases) -> list[str]:
-    """New commits should name the canonical ID; a retired prefix still counts, so warn only."""
-    retired = sorted({rid for rid in named if retired_prefix(rid, aliases)})
-    return [
-        f"spec-trailers: WARN: retired ID prefix in a new trailer, use {canonical_id(rid, aliases)} "
-        f"instead of {rid} (see .config/spec-aliases.toml)"
-        for rid in retired
-    ]
-
-
 def main(argv: list[str]) -> int:
     args = _parse_args(argv)
     root = repo_root(args.root)
@@ -194,12 +184,9 @@ def main(argv: list[str]) -> int:
     # ``Spec:`` trailer must not demand a bound test for work that is gone.
     reverted = reverted_shas(root, "HEAD")
     aliases = load_aliases(root)
-    raw_named = named_ids(
-        commit.trailer_raw for commit in commits if commit.sha not in reverted
+    named = canonical_trailer_ids(
+        [commit.trailer_raw for commit in commits if commit.sha not in reverted], aliases
     )
-    for warning in _retired_prefix_warnings(raw_named, aliases):
-        print(warning)
-    named = canonical_ids(raw_named, aliases)
     known = set(canonical_ids(_known_requirement_ids(root), aliases))
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)
@@ -208,7 +195,7 @@ def main(argv: list[str]) -> int:
     )
     failures += withdrawal_errors
     failures += _unbound_id_failures(
-        [rid for rid in named if rid not in withdrawn], known, root, aliases
+        [rid for rid in named if rid not in withdrawn], known, root, aliases=aliases
     )
     if failures:
         for line in failures:
