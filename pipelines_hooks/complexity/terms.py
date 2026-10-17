@@ -64,9 +64,7 @@ def unaccepted(over: list[tuple[Path, Row]]) -> list[tuple[Path, Row]]:
     """Over-cap rows the terms do not accept: the real backlog, row by row."""
     cache: dict[Path, str | None] = {}
     return [
-        (path, row)
-        for path, row in over
-        if row.cognitive > MAX_COGNITIVE or classify(path, row, cache) != "accepted"
+        (path, row) for path, row in over if row.cognitive > MAX_COGNITIVE or classify(path, row, cache) != "accepted"
     ]
 
 

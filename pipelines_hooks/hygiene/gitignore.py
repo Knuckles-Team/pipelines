@@ -23,9 +23,31 @@ from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.tracked import tracked_paths
 
 REQUIRED = frozenset(
-    {"dist/", "dist-*/", "sdist/", "build/", "target/", "target-*/", ".venv/", ".mypy_cache/", ".pytest_cache/",
-     ".ruff_cache/", ".hypothesis/", ".pytest_tmp/", "node_modules/", ".kissconfig", "reports/", "scratch/",
-     "__pycache__/", "site/", "htmlcov/", ".coverage", ".specify/", ".kiss/", "*maturin.lock"}
+    {
+        "dist/",
+        "dist-*/",
+        "sdist/",
+        "build/",
+        "target/",
+        "target-*/",
+        ".venv/",
+        ".mypy_cache/",
+        ".pytest_cache/",
+        ".ruff_cache/",
+        ".hypothesis/",
+        ".pytest_tmp/",
+        "node_modules/",
+        ".kissconfig",
+        "reports/",
+        "scratch/",
+        "__pycache__/",
+        "site/",
+        "htmlcov/",
+        ".coverage",
+        ".specify/",
+        ".kiss/",
+        "*maturin.lock",
+    }
 )
 _TRACKED_BUILD_OUTPUT_RE = re.compile(
     r"^(dist|build|target|site)(-[^/]*)?/"
@@ -47,14 +69,18 @@ def problems(root: Path) -> list[str]:
     tokens = gitignore_tokens(root)
     missing = sorted(token for token in REQUIRED if token.strip("/") not in tokens)
     tracked = sorted(
-        path for path in tracked_paths(root)
+        path
+        for path in tracked_paths(root)
         if path != ".specify/memory/constitution.md" and _TRACKED_BUILD_OUTPUT_RE.search(path)
     )
     found = []
     if missing:
         found.append("Missing from .gitignore (fleet-shared REQUIRED set):\n" + "\n".join(f"    {m}" for m in missing))
     if tracked:
-        found.append("Build-output or cache paths are TRACKED (delete them; a rule cannot un-track):\n" + "\n".join(f"    {p}" for p in tracked))
+        found.append(
+            "Build-output or cache paths are TRACKED (delete them; a rule cannot un-track):\n"
+            + "\n".join(f"    {p}" for p in tracked)
+        )
     return found
 
 

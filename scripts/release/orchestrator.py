@@ -20,8 +20,7 @@ from .receipts import FileReceiptStore, stage_key
 class Publisher(Protocol):
     """Publishes one qualified candidate and reports its hosted outcome."""
 
-    def publish(self, candidate: Candidate) -> StageOutcome:
-        ...
+    def publish(self, candidate: Candidate) -> StageOutcome: ...
 
 
 class RecordedPublisher:
@@ -39,7 +38,14 @@ class RecordedPublisher:
     def publish(self, candidate: Candidate) -> StageOutcome:
         return self._plan.get(
             candidate.component_id,
-            StageOutcome(candidate.component_id, candidate.source_commit, candidate.artifact_digest, "", "blocked", "no recorded publish plan"),
+            StageOutcome(
+                candidate.component_id,
+                candidate.source_commit,
+                candidate.artifact_digest,
+                "",
+                "blocked",
+                "no recorded publish plan",
+            ),
         )
 
 

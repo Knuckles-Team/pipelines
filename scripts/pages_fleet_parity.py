@@ -19,8 +19,14 @@ def reason(exc: Exception) -> str:
 
 def compare_asset(source: ExactTree, target: ExactTree, *, item, content: str) -> dict:
     path = f"{content}/{item.destination}" if item.content_relative else item.destination
-    result = {"path": path, "source": f"templates/mkdocs-theme/{item.source}",
-              "expected_sha256": None, "actual_sha256": None, "status": "unverified", "reason": None}
+    result = {
+        "path": path,
+        "source": f"templates/mkdocs-theme/{item.source}",
+        "expected_sha256": None,
+        "actual_sha256": None,
+        "status": "unverified",
+        "reason": None,
+    }
     try:
         result["expected_sha256"] = digest(source.read(result["source"]))
         result["actual_sha256"] = digest(target.read(path))
@@ -55,10 +61,16 @@ def verify(declaration: dict, fixtures: Path) -> dict:
     """Recompute all exact refs; never reuse an earlier pass or write a consumer."""
     fleet = validate(declaration)
     pipeline = fleet["pipeline"]
-    result = {"schema_version": 1, "provider": "offline-git-fixtures", "public_source_verified": False,
-              "fleet_sha256": digest(canonical(fleet).encode()), "pipeline": dict(pipeline, tree=None),
-              "status": "unverified", "reason": None,
-              "consumers": [consumer_record(item) for item in fleet["consumers"]]}
+    result = {
+        "schema_version": 1,
+        "provider": "offline-git-fixtures",
+        "public_source_verified": False,
+        "fleet_sha256": digest(canonical(fleet).encode()),
+        "pipeline": dict(pipeline, tree=None),
+        "status": "unverified",
+        "reason": None,
+        "consumers": [consumer_record(item) for item in fleet["consumers"]],
+    }
     try:
         populate_fleet(result, fixtures, fleet)
     except UNVERIFIED_ERRORS as exc:
@@ -74,8 +86,9 @@ def populate_consumer(result: dict, root: Path, consumer: dict, *, source: Exact
     if not consumer["shared_theme_enabled"]:
         raise ParityError("shared-theme-disabled")
     validate_workflow(target, consumer, pipeline)
-    result["assets"] = [compare_asset(source, target, item=item, content=consumer["content_source"])
-                        for item in THEME_FILES]
+    result["assets"] = [
+        compare_asset(source, target, item=item, content=consumer["content_source"]) for item in THEME_FILES
+    ]
     target.clean()
     result["status"] = verdict(result["assets"])
 
@@ -84,13 +97,22 @@ def populate_fleet(result: dict, fixtures: Path, fleet: dict) -> None:
     pipeline = fleet["pipeline"]
     source = resolve(fixtures, pipeline)
     result["pipeline"]["tree"] = source.tree
-    result["consumers"] = [check_consumer(fixtures, item, source=source, pipeline=pipeline)
-                           for item in sorted(fleet["consumers"], key=lambda item: item["repository"])]
+    result["consumers"] = [
+        check_consumer(fixtures, item, source=source, pipeline=pipeline)
+        for item in sorted(fleet["consumers"], key=lambda item: item["repository"])
+    ]
     source.clean()
     result["status"] = verdict(result["consumers"])
 
 
 def consumer_record(consumer: dict) -> dict:
-    return {"repository": consumer["repository"], "commit": consumer["revision"], "tree": None,
-              "commit_url": f"https://github.com/{consumer['repository']}/commit/{consumer['revision']}",
-              "content_source": consumer["content_source"], "status": "unverified", "reason": None, "assets": []}
+    return {
+        "repository": consumer["repository"],
+        "commit": consumer["revision"],
+        "tree": None,
+        "commit_url": f"https://github.com/{consumer['repository']}/commit/{consumer['revision']}",
+        "content_source": consumer["content_source"],
+        "status": "unverified",
+        "reason": None,
+        "assets": [],
+    }

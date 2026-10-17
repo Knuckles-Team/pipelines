@@ -60,8 +60,12 @@ def test_a_same_digest_retry_resumes_without_republishing(tmp_path: Path) -> Non
 
     publisher = CountingPublisher(success_plan(candidates))
     checks_client = checks("checks_all_pass.json")
-    first = orchestrate(candidates, order, checks=checks_client, publisher=publisher, receipts=FileReceiptStore(receipts_path))
-    second = orchestrate(candidates, order, checks=checks_client, publisher=publisher, receipts=FileReceiptStore(receipts_path))
+    first = orchestrate(
+        candidates, order, checks=checks_client, publisher=publisher, receipts=FileReceiptStore(receipts_path)
+    )
+    second = orchestrate(
+        candidates, order, checks=checks_client, publisher=publisher, receipts=FileReceiptStore(receipts_path)
+    )
     assert publish_calls == ["A", "B", "C"]  # not six: the retry resumed every stage from its receipt
     assert first == second
 

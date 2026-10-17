@@ -88,7 +88,9 @@ def _groups(stream: BinaryIO) -> Iterator[tuple[int, bytes]]:
         yield last
 
 
-def scan_prohibited_identities(root: Path, paths: Iterable[Path], identities: tuple[bytes, ...]) -> list[IdentityFinding]:
+def scan_prohibited_identities(
+    root: Path, paths: Iterable[Path], identities: tuple[bytes, ...]
+) -> list[IdentityFinding]:
     """Every tracked path name and body occurrence of a prohibited identity."""
     findings: list[IdentityFinding] = []
     for path in paths:

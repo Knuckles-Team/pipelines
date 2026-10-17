@@ -13,13 +13,25 @@ from scripts.sync_mkdocs_theme import THEME_FILES, sync_theme
 
 def git(root: Path, *args: str) -> str:
     # Fixture commits must not leave detached housekeeping writers behind.
-    return subprocess.check_output(["git", "-c", "maintenance.auto=false", "-C", str(root), *args], env=sanitized_env(), text=True).strip()
+    return subprocess.check_output(
+        ["git", "-c", "maintenance.auto=false", "-C", str(root), *args], env=sanitized_env(), text=True
+    ).strip()
 
 
 def commit(root: Path) -> str:
     git(root, "add", ".")
-    git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
-        "-c", "commit.gpgsign=false", "commit", "-qm", "fixture")
+    git(
+        root,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+        "commit",
+        "-qm",
+        "fixture",
+    )
     return git(root, "rev-parse", "HEAD")
 
 

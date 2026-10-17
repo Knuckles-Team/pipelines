@@ -37,7 +37,7 @@ The [spec dashboard template](pages/spec-dashboard.md) adds a source-backed deli
 
 ## Documentation
 
-The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](reference/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts. The [ecosystem boundaries](reference/ecosystem-boundaries.md) standard routes each feature to the repository that owns it.
+The [Pages site](https://knuckles-team.github.io/pipelines/) contains the navigable reference surface. The [Pages readiness guide](reference/pages-readiness.md) covers generated manifests, content-source configuration, and delivery checks. [Public specifications](specs/README.md) define upcoming pipeline-owned work and contribution contracts.
 
 The hook catalogue in `.pre-commit-hooks.yaml` is the authoritative list of published hook IDs. Repository-specific configuration is described in the Pages reference.
 
@@ -58,7 +58,7 @@ python -m pip install pipelines-hooks
 pipelines-hook public-surface
 ```
 
-For one of the reusable gates, configure it in `.config/pre-commit.yaml`, pin this repository to a reviewed full commit SHA, and run:
+For the shared gates, add the `secrets`, `tests-fast` and `spec` hooks to `.config/pre-commit.yaml` with `rev: main` (see [the gate standard](reference/gate-standard.md)), and run:
 
 ```bash
 pre-commit run -c .config/pre-commit.yaml --all-files
@@ -77,7 +77,7 @@ uv run --frozen python -m pytest -q
 uvx pre-commit run --config .config/pre-commit.yaml --all-files
 ```
 
-Open a pull request against `main` from a topic branch; CI runs the same pre-commit configuration.
+Open a pull request against `main` from a topic branch; CI runs the same pre-commit configuration and the affected tests. Main and release tags run the full suite and the dependency audit. The advisory scanners report weekly and never block.
 
 Every new hook invariant needs positive and adversarial fixtures. Workflow changes need contract tests for inputs and permissions. Stage only reviewed files and keep generated environment output untracked.
 

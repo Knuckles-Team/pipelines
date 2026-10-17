@@ -25,9 +25,7 @@ def _spec(root: Path, name: str = "foo", spec_id: str = "FOO") -> Path:
     d = root / "specs" / name
     d.mkdir(parents=True, exist_ok=True)
     for f in FILES:
-        (d / f).write_text(
-            f'{{"spec_id": "{spec_id}"}}\n' if f.endswith(".json") else "x\n"
-        )
+        (d / f).write_text(f'{{"spec_id": "{spec_id}"}}\n' if f.endswith(".json") else "x\n")
     (d / "spec.md").write_text(f"# {spec_id} — Title\n")
     (d / "requirements.md").write_text(f"| `{spec_id}-R001` | req |\n")
     (root / "specs" / "README.md").write_text(f"- [x]({name}/spec.md)\n")
@@ -106,9 +104,7 @@ def test_older_row_id_form_is_permanent(root, capsys):
         ("**Active row.** RETIRED: replaced by FOO-R001.", 1),
     ],
 )
-def test_moved_retired_identity_uses_shared_status_parser(
-    root, capsys, title, expected
-):
+def test_moved_retired_identity_uses_shared_status_parser(root, capsys, title, expected):
     # spec: PIPE-CONNSPEC-R006
     req = _spec(root) / "requirements.md"
     req.write_text(req.read_text() + f"| `OLD-R001` | {title} | preserved |\n")
@@ -129,9 +125,7 @@ def test_tombstone_row_is_a_finding(root, capsys):
     req = _spec(root) / "requirements.md"
     req.write_text(req.read_text() + "| `FOO-R002` | RETIRED: replaced by BAR-R001 |\n")
     out = _run(root, capsys)[1]
-    assert (
-        "requirements.md row FOO-R002 is a tombstone for a moved row; delete it" in out
-    )
+    assert "requirements.md row FOO-R002 is a tombstone for a moved row; delete it" in out
 
 
 def test_tombstone_row_is_advisory_by_default(root, capsys):
@@ -146,8 +140,5 @@ def test_status_spec_id_must_match_title(root, capsys):
     (d / "status.json").write_text('{"spec_id": "BAR"}\n')
     code, out = _run(root, capsys)
     assert code == 0
-    assert (
-        "ADV spec-standard: specs/foo: status.json spec_id BAR differs from the spec ID FOO"
-        in out
-    )
+    assert "ADV spec-standard: specs/foo: status.json spec_id BAR differs from the spec ID FOO" in out
     assert main(["--root", str(root), "--tombstones"]) == 1

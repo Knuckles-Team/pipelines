@@ -50,6 +50,8 @@ def cli_findings(text: str, wordlist: Wordlist, *, path: str) -> list[Finding]:
         start, literal = _literal(match)
         position = start
         for chunk in literal.splitlines(keepends=True):
-            findings.extend(_cli_line(chunk.rstrip("\n"), number=_line_of(text, position), wordlist=wordlist, path=path))
+            findings.extend(
+                _cli_line(chunk.rstrip("\n"), number=_line_of(text, position), wordlist=wordlist, path=path)
+            )
             position += len(chunk)
     return findings

@@ -39,10 +39,7 @@ def _valid_components(numbers: list[int]) -> bool:
     """Check the width assigned to each component in legacy IPv4 syntax."""
 
     last_bits = 8 * (5 - len(numbers))
-    return (
-        all(0 <= value <= 255 for value in numbers[:-1])
-        and 0 <= numbers[-1] < 1 << last_bits
-    )
+    return all(0 <= value <= 255 for value in numbers[:-1]) and 0 <= numbers[-1] < 1 << last_bits
 
 
 def _legacy_ipv4_address(host: str) -> ipaddress.IPv4Address | None:

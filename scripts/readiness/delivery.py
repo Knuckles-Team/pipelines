@@ -30,9 +30,7 @@ from .privacy import _scan_safe_text
 from .urls import _site_asset_url
 
 
-def _validate_manifest_identity(
-    manifest: Mapping[str, Any], readiness_input: Mapping[str, Any]
-) -> None:
+def _validate_manifest_identity(manifest: Mapping[str, Any], readiness_input: Mapping[str, Any]) -> None:
     if manifest.get("schema_version") != constants.SCHEMA_VERSION:
         _fail("readiness-manifest-stale")
     if not isinstance(manifest.get("generator_version"), str):
@@ -48,17 +46,13 @@ def _validate_manifest_projection(
     readiness_input: Mapping[str, Any],
     normalized_input: Mapping[str, Any],
 ) -> None:
-    if manifest.get("capabilities") != normalized_capabilities(
-        readiness_input["capabilities"]
-    ):
+    if manifest.get("capabilities") != normalized_capabilities(readiness_input["capabilities"]):
         _fail("readiness-manifest-stale")
     if manifest.get("content_signals") != normalized_input["content_signals"]:
         _fail("content-signals-stale")
 
 
-def _validate_manifest_budgets(
-    manifest: Mapping[str, Any], readiness_input: Mapping[str, Any]
-) -> None:
+def _validate_manifest_budgets(manifest: Mapping[str, Any], readiness_input: Mapping[str, Any]) -> None:
     budgets = manifest.get("budgets")
     if not isinstance(budgets, Mapping):
         _fail("readiness-manifest-invalid")
@@ -66,10 +60,7 @@ def _validate_manifest_budgets(
         if budgets.get(field) != readiness_input["budgets"].get(field):
             _fail("readiness-manifest-stale")
     capabilities = manifest.get("capabilities")
-    if (
-        not isinstance(capabilities, Mapping)
-        or set(capabilities) != constants.CAPABILITY_KEYS
-    ):
+    if not isinstance(capabilities, Mapping) or set(capabilities) != constants.CAPABILITY_KEYS:
         _fail("readiness-capabilities-invalid")
     _scan_safe_text(capabilities, "readiness-capabilities")
 
@@ -86,26 +77,19 @@ def _validated_manifest(
     return manifest
 
 
-def _html_outputs(
-    pages: tuple[MirrorPage, ...], site_url: str
-) -> tuple[tuple[Path, bytes], ...]:
+def _html_outputs(pages: tuple[MirrorPage, ...], site_url: str) -> tuple[tuple[Path, bytes], ...]:
     llms_url = _site_asset_url(site_url, "llms.txt")
     outputs: list[tuple[Path, bytes]] = []
     for page in pages:
-        payload = _regular_bytes(
-            page.html_path, "html-output", constants.MAX_HTML_BYTES
-        )
+        payload = _regular_bytes(page.html_path, "html-output", constants.MAX_HTML_BYTES)
         updated, _ = _html_with_alternate(page, payload, llms_url)
         outputs.append((page.html_path, updated))
     return tuple(outputs)
 
 
-def _generated_assets(
-    site: Path, generated: tuple[tuple[str, bytes], ...]
-) -> tuple[tuple[Path, bytes], ...]:
+def _generated_assets(site: Path, generated: tuple[tuple[str, bytes], ...]) -> tuple[tuple[Path, bytes], ...]:
     return tuple(
-        (_safe_output_path(site, relative, "generated-site-output"), payload)
-        for relative, payload in generated
+        (_safe_output_path(site, relative, "generated-site-output"), payload) for relative, payload in generated
     )
 
 
@@ -123,14 +107,9 @@ def _prepare(
     readiness_input = _read_json(readiness_input_path, "readiness-input")
     normalized_input = _validate_readiness_input(readiness_input, schema)
     _validate_capability_paths(root, readiness_input)
-    if (
-        normalized_input["content_signals"]["policy"]
-        not in constants.SIGNAL_POLICIES
-    ):
+    if normalized_input["content_signals"]["policy"] not in constants.SIGNAL_POLICIES:
         _fail("content-signals-policy-required")
-    readiness_manifest = _validated_manifest(
-        readiness_manifest_path, readiness_input, normalized_input
-    )
+    readiness_manifest = _validated_manifest(readiness_manifest_path, readiness_input, normalized_input)
     generated = _validate_generated_outputs(root, readiness_manifest, readiness_input)
     mirror_manifest = _read_json(mirror_manifest_path, "mirror-manifest")
     pages = _source_manifest_pages(
@@ -143,9 +122,7 @@ def _prepare(
     mirrors = tuple((page.markdown_path, page.source_bytes) for page in pages)
     html = _html_outputs(pages, site_url)
     assets = _generated_assets(site, generated) + _derived_assets(pages, site, site_url)
-    digest = hashlib.sha256(
-        json.dumps(readiness_manifest, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
+    digest = hashlib.sha256(json.dumps(readiness_manifest, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return DeliveryPlan(pages, mirrors, html, assets, digest)
 
 
@@ -162,17 +139,13 @@ def _assert_current(plan: DeliveryPlan) -> None:
 
 def _apply(plan: DeliveryPlan) -> None:
     for page in plan.pages:
-        actual = _regular_bytes(
-            page.source_path, "source", constants.MAX_SOURCE_BYTES
-        )
+        actual = _regular_bytes(page.source_path, "source", constants.MAX_SOURCE_BYTES)
         if actual != page.source_bytes:
             _fail("source-digest-stale")
     for path, payload in plan.mirrors:
         _atomic_write(path, payload, "markdown-output")
     for path, expected in plan.mirrors:
-        actual = _regular_bytes(
-            path, "markdown-output", constants.MAX_SOURCE_BYTES
-        )
+        actual = _regular_bytes(path, "markdown-output", constants.MAX_SOURCE_BYTES)
         if actual != expected:
             _fail("markdown-output-mismatch")
     for path, payload in plan.html:
@@ -204,16 +177,10 @@ def build(
         workspace,
         site_root,
         site_url=mkdocs_site_url(workspace),
-        readiness_input_path=_safe_existing_path(
-            workspace, input_path, "readiness-input"
-        ),
+        readiness_input_path=_safe_existing_path(workspace, input_path, "readiness-input"),
         schema_path=_safe_existing_path(workspace, schema_path, "schema"),
-        readiness_manifest_path=_safe_existing_path(
-            workspace, readiness_manifest, "readiness-manifest"
-        ),
-        mirror_manifest_path=_safe_existing_path(
-            workspace, mirror_manifest, "mirror-manifest"
-        ),
+        readiness_manifest_path=_safe_existing_path(workspace, readiness_manifest, "readiness-manifest"),
+        mirror_manifest_path=_safe_existing_path(workspace, mirror_manifest, "mirror-manifest"),
     )
     if check:
         _assert_current(plan)

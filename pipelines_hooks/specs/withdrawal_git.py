@@ -37,9 +37,7 @@ def blob(root: Path, revision: str, path: str) -> str:
         )
         return result.stdout.decode("utf-8")
     except (OSError, subprocess.SubprocessError, UnicodeError) as exc:
-        raise CannotRun(
-            f"cannot read withdrawal blob {revision}:{path}: {exc}"
-        ) from exc
+        raise CannotRun(f"cannot read withdrawal blob {revision}:{path}: {exc}") from exc
 
 
 def changes(root: Path, base: str) -> list[tuple[str, str, str]]:
@@ -50,9 +48,7 @@ def changes(root: Path, base: str) -> list[tuple[str, str, str]]:
         metadata, path = parts[index : index + 2]
         fields = metadata.split()
         if fields[0] != ":100644" or fields[1] != "100644" or fields[4] != "M":
-            raise ValueError(
-                "withdrawal requires existing regular files with unchanged modes"
-            )
+            raise ValueError("withdrawal requires existing regular files with unchanged modes")
         before = blob(root, base, path)
         after = blob(root, "HEAD", path)
         changes.append((path, before, after))

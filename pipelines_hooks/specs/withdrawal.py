@@ -29,10 +29,7 @@ def _owners(root: Path, ids: set[str]) -> dict[str, str]:
 
 def _added_only(before: str, after: str) -> bool:
     remaining = iter(after.splitlines(keepends=True))
-    return all(
-        any(line == candidate for candidate in remaining)
-        for line in before.splitlines(keepends=True)
-    )
+    return all(any(line == candidate for candidate in remaining) for line in before.splitlines(keepends=True))
 
 
 def _tasks_only(before: str, after: str, ids: set[str]) -> bool:
@@ -53,16 +50,10 @@ def _metadata_only(name: str, before: str, after: str, *, ids: set[str]) -> bool
 def _removed_ids(path: str, before: str, after: str, *, ids: set[str]) -> set[str]:
     if not path.endswith(".rs") or not source_withdrawal_only(before, after, ids):
         raise ValueError(f"withdrawal changes non-evidence content: {path}")
-    return {
-        rid
-        for rid in ids
-        if re.search(rf"(?m)^\s*// spec: {re.escape(rid)}\s*$", before)
-    }
+    return {rid for rid in ids if re.search(rf"(?m)^\s*// spec: {re.escape(rid)}\s*$", before)}
 
 
-def _validate_changes(
-    root: Path, base: str, *, ids: set[str], owners: dict[str, str]
-) -> None:
+def _validate_changes(root: Path, base: str, *, ids: set[str], owners: dict[str, str]) -> None:
     removed = set()
     directories = set(owners.values())
     for path, before, after in changes(root, base):
@@ -71,24 +62,16 @@ def _validate_changes(
             continue
         removed.update(_removed_ids(path, before, after, ids=ids))
     if removed != ids:
-        raise ValueError(
-            "each withdrawn ID must remove an existing Rust comment binding"
-        )
+        raise ValueError("each withdrawn ID must remove an existing Rust comment binding")
 
 
-def _validate_reason(
-    root: Path, requested: set[str], reason: str, *, owners: dict[str, str]
-) -> None:
+def _validate_reason(root: Path, requested: set[str], reason: str, *, owners: dict[str, str]) -> None:
     if not requested or len(reason) < 20:
-        raise ValueError(
-            "every withdrawal needs IDs and a descriptive reason (20+ characters)"
-        )
+        raise ValueError("every withdrawal needs IDs and a descriptive reason (20+ characters)")
     for rid in requested:
         text = blob(root, "HEAD", f"{owners[rid]}/plan.md")
         if rid not in text or reason not in text:
-            raise ValueError(
-                f"owning plan must retain {rid} and its exact withdrawal reason"
-            )
+            raise ValueError(f"owning plan must retain {rid} and its exact withdrawal reason")
 
 
 def _validate(

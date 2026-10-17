@@ -38,12 +38,7 @@ def touched_spec_dirs(root: Path, base: str) -> set[str]:
     ``Spec:`` trailer names a requirement ID that dir owns.
     """
     changed = nul_split(git_text(root, ("diff", "--name-only", "-z", f"{base}...HEAD")))
-    dirs = {
-        parts[1]
-        for path in changed
-        for parts in (Path(path).parts,)
-        if len(parts) > 1 and parts[0] == "specs"
-    }
+    dirs = {parts[1] for path in changed for parts in (Path(path).parts,) if len(parts) > 1 and parts[0] == "specs"}
     merge_base = git_text(root, ("merge-base", base, "HEAD")).strip()
     raw = git_text(
         root,
@@ -59,9 +54,7 @@ def touched_spec_dirs(root: Path, base: str) -> set[str]:
     return dirs
 
 
-def scope_to_changed(
-    root: Path, generated: dict[Path, dict], base_ref: str | None
-) -> tuple[dict[Path, dict], str]:
+def scope_to_changed(root: Path, generated: dict[Path, dict], base_ref: str | None) -> tuple[dict[Path, dict], str]:
     """``generated`` narrowed to touched dirs, plus a human-readable scope note."""
     base = upstream_base(root, base_ref)
     if base is None:

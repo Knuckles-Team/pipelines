@@ -1,8 +1,8 @@
 """supply-chain gate: one repository, a fleet of nested repositories, or a source snapshot.
 
-    pipelines-hook supply-chain .
-    pipelines-hook supply-chain --fleet-root ../
-    pipelines-hook supply-chain --source-snapshot-root ../agents --snapshot-workspace <workspace.yml>
+pipelines-hook supply-chain .
+pipelines-hook supply-chain --fleet-root ../
+pipelines-hook supply-chain --source-snapshot-root ../agents --snapshot-workspace <workspace.yml>
 """
 
 from __future__ import annotations
@@ -16,9 +16,21 @@ from pipelines_hooks.core.errors import CannotRun, Unavailable
 from pipelines_hooks.supply_chain import containers, precommit, workflows
 from pipelines_hooks.supply_chain.dependencies import dependency_findings, installer_findings
 from pipelines_hooks.supply_chain.finding import Finding, Source
-from pipelines_hooks.supply_chain.inventory import asset_kinds, discover_repositories, read_source, repository_label, source_files
+from pipelines_hooks.supply_chain.inventory import (
+    asset_kinds,
+    discover_repositories,
+    read_source,
+    repository_label,
+    source_files,
+)
 from pipelines_hooks.supply_chain.secrets import content_finding, secret_findings, sensitive_file_findings
-from pipelines_hooks.supply_chain.snapshot import SnapshotBudget, read_snapshot_bytes, read_snapshot_source, resolve_snapshot_repositories, snapshot_source_files
+from pipelines_hooks.supply_chain.snapshot import (
+    SnapshotBudget,
+    read_snapshot_bytes,
+    read_snapshot_source,
+    resolve_snapshot_repositories,
+    snapshot_source_files,
+)
 
 RULES: dict[str, Callable[[Source], list[Finding]]] = {
     "workflow": workflows.workflow_findings,
@@ -66,7 +78,11 @@ def inspect(repository: Path, fleet_root: Path, *, snapshot: SnapshotBudget | No
         sources, reader, secrets = source_files(repository), read_source, secret_findings
         present = [path for path in sources if path.exists()]
     else:
-        sources, reader, secrets = snapshot_source_files(repository, snapshot), read_snapshot_source, snapshot_secret_findings
+        sources, reader, secrets = (
+            snapshot_source_files(repository, snapshot),
+            read_snapshot_source,
+            snapshot_secret_findings,
+        )
         present = list(sources)
     findings = dependency_findings(label, repository, sources, reader=reader) + secrets(label, repository, sources)
     assets = [_asset_findings(label, path, relative=path.relative_to(repository), reader=reader) for path in present]
@@ -115,7 +131,11 @@ def main(argv: list[str]) -> int:
     for finding in findings:
         print(f"  FAIL {finding.render()}")
     if findings:
-        print(f"supply-chain: FAILED ({len(findings)} findings across {len(repositories)} repositories)", file=sys.stderr)
+        print(
+            f"supply-chain: FAILED ({len(findings)} findings across {len(repositories)} repositories)", file=sys.stderr
+        )
         return 1
-    print(f"supply-chain: clean ({len(repositories)} repositories, {sum(n for _, n in results)} workflow/container assets)")
+    print(
+        f"supply-chain: clean ({len(repositories)} repositories, {sum(n for _, n in results)} workflow/container assets)"
+    )
     return 0

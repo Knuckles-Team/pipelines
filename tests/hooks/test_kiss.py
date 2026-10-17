@@ -12,7 +12,10 @@ from tests.hooks.conftest import Repo, branchy
 
 def test_attribution_counts_only_new_or_modified_functions_and_grown_aggregates() -> None:
     head = "def untouched():\n    return 1\n\n\ndef changed():\n    return 1\n"
-    staged = head.replace("return 1\n", "return 2\n", 2).replace("return 2\n", "return 1\n", 1) + "\n\ndef added():\n    return 3\n"
+    staged = (
+        head.replace("return 1\n", "return 2\n", 2).replace("return 2\n", "return 1\n", 1)
+        + "\n\ndef added():\n    return 3\n"
+    )
     report = "\n".join(
         [
             "VIOLATION:returns_per_function:m.py:1:untouched: too many returns",

@@ -88,4 +88,6 @@ def test_a_present_but_non_authoritative_snapshot_still_fails_locally(
     monkeypatch.delenv("CI")
     workspace = tmp_path / "workspace.yml"
     workspace.write_text("repositories: []\n", encoding="utf-8")
-    assert run_gate("supply-chain", ["--source-snapshot-root", str(tmp_path), "--snapshot-workspace", str(workspace)]) == 2
+    assert (
+        run_gate("supply-chain", ["--source-snapshot-root", str(tmp_path), "--snapshot-workspace", str(workspace)]) == 2
+    )

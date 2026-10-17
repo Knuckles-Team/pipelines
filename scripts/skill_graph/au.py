@@ -81,9 +81,7 @@ def extract_skills(graph: Graph, repo_root: Path) -> None:
         return
     data = json.loads(catalog_path.read_text(encoding="utf-8"))
     component_ids = [
-        comp_id
-        for entry in (data.get("entries") or [])
-        if (comp_id := _add_skill(graph, entry)) is not None
+        comp_id for entry in (data.get("entries") or []) if (comp_id := _add_skill(graph, entry)) is not None
     ]
     graph.add(
         "concept/agent-utilities/prebundled-skills",

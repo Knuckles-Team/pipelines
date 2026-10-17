@@ -58,11 +58,7 @@ def _row_ids(text: str) -> Counter[str]:
 
 def _status_rows(status: object) -> list[dict]:
     """The requirement rows of a parsed status.json, in whatever shape it was written."""
-    reqs = (
-        status["requirements"]
-        if isinstance(status, dict) and "requirements" in status
-        else status
-    )
+    reqs = status["requirements"] if isinstance(status, dict) and "requirements" in status else status
     if not isinstance(reqs, list):
         return []
     return [r for r in reqs if isinstance(r, dict) and r.get("id")]

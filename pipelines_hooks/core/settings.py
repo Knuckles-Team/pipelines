@@ -27,6 +27,7 @@ KNOWN_SETTINGS = {
     "LOGNAME": "ambient account name (tracked-privacy)",
     "USERNAME": "ambient account name (tracked-privacy)",
     "CI": "set by CI runners: a missing tool or sibling checkout fails closed (exit 2)",
+    "SKIP": "pre-commit SKIP list; a grouped check skips the member gates it names",
 }
 
 

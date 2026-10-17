@@ -31,8 +31,7 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> list[Any]:
     """Return the declared entries after checking the mirror contract."""
 
     if (
-        set(manifest)
-        != {"schema_version", "url_contract", "applicable", "entries"}
+        set(manifest) != {"schema_version", "url_contract", "applicable", "entries"}
         or manifest.get("schema_version") != constants.SCHEMA_VERSION
         or manifest.get("url_contract") != constants.MIRROR_CONTRACT
         or manifest.get("applicable") is not True
@@ -44,9 +43,7 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> list[Any]:
     return entries
 
 
-def _provenance_index(
-    readiness_manifest: Mapping[str, Any], *, entry_count: int
-) -> dict[str, tuple[str, int]]:
+def _provenance_index(readiness_manifest: Mapping[str, Any], *, entry_count: int) -> dict[str, tuple[str, int]]:
     """Index source provenance while retaining its exact validation errors."""
 
     provenance = readiness_manifest.get("provenance")
@@ -99,9 +96,7 @@ def _entry_mapping(raw: object) -> Mapping[str, Any]:
 def _entry_values(raw: Mapping[str, Any]) -> MirrorEntry:
     """Validate the scalar values in one manifest entry."""
 
-    text_values = tuple(
-        raw.get(key) for key in ("source", "url", "canonical_url", "markdown_url")
-    )
+    text_values = tuple(raw.get(key) for key in ("source", "url", "canonical_url", "markdown_url"))
     if not all(isinstance(value, str) for value in text_values):
         errors._fail("mirror-entry-invalid")
     source, url, canonical, markdown_url = text_values
@@ -142,9 +137,7 @@ def _source_payload(
     source_path = filesystem._safe_existing_path(root, source, "source")
     if site in source_path.parents or source_path == site:
         errors._fail("source-site-recursion")
-    source_bytes = filesystem._regular_bytes(
-        source_path, "source", constants.MAX_SOURCE_BYTES
-    )
+    source_bytes = filesystem._regular_bytes(source_path, "source", constants.MAX_SOURCE_BYTES)
     try:
         source_text = source_bytes.decode("utf-8")
     except UnicodeDecodeError:
@@ -171,9 +164,7 @@ def _output_paths(
     """Resolve and validate the two site outputs for a source page."""
 
     markdown_relative = urls.site_output_path(markdown_url, site_url, kind="markdown")
-    markdown_local = filesystem._safe_output_path(
-        site, markdown_relative, "markdown-output"
-    )
+    markdown_local = filesystem._safe_output_path(site, markdown_relative, "markdown-output")
     html_relative = urls.site_output_path(canonical, site_url, kind="html")
     html_local = filesystem._safe_output_path(site, html_relative, "html-output")
     if markdown_local in seen_markdown or html_local in seen_html:
@@ -235,9 +226,7 @@ def _source_manifest_pages(
     """Validate a mirror manifest and return its source delivery pages."""
 
     entries = _validate_manifest(mirror_manifest)
-    provenance_index = _provenance_index(
-        readiness_manifest, entry_count=len(entries)
-    )
+    provenance_index = _provenance_index(readiness_manifest, entry_count=len(entries))
     pages: list[models.MirrorPage] = []
     seen_sources: set[str] = set()
     seen_markdown: set[Path] = set()

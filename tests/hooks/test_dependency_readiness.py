@@ -19,13 +19,16 @@ def test_release_stage_owned_by_catalogue():
 
 def test_authoritative_checker_invocation(monkeypatch):
     calls = []
+
     def run(command, **kwargs):
         calls.append((command, kwargs))
         return SimpleNamespace(returncode=0)
+
     monkeypatch.setattr(gate.subprocess, "run", run)
     assert run_gate("dependency-readiness", ["--python", "/prepared/python"]) == 0
-    assert calls == [(["/prepared/python", "-I", "-m",
-                      "repository_manager.release_readiness_hook", "."], {"check": False})]
+    assert calls == [
+        (["/prepared/python", "-I", "-m", "repository_manager.release_readiness_hook", "."], {"check": False})
+    ]
 
 
 @pytest.mark.parametrize("code", [1, 2, -9])

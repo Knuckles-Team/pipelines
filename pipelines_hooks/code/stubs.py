@@ -79,7 +79,11 @@ def check_file(path: Path, rel: str, seams: frozenset[str]) -> list[tuple[int, s
 def python_files(root: Path, files: list[str]) -> list[str]:
     """The given Python files, or every tracked one outside hidden directories."""
     selected = [name for name in files if name.endswith(".py")]
-    tracked = [p for p in tracked_paths(root) if p.endswith(".py") and not any(part.startswith(".") for part in Path(p).parts[:-1])]
+    tracked = [
+        p
+        for p in tracked_paths(root)
+        if p.endswith(".py") and not any(part.startswith(".") for part in Path(p).parts[:-1])
+    ]
     return [name for name in (selected or tracked) if (root / name).is_file()]
 
 
@@ -91,7 +95,11 @@ def main(argv: list[str]) -> int:
     root = repo_root(args.root)
     seams = declared_seams(root)
     names = python_files(root, args.files)
-    lines = [f"{rel}:{line}: {message}" for rel in names for line, message in check_file(root / rel, rel, seams.get(rel, frozenset()))]
+    lines = [
+        f"{rel}:{line}: {message}"
+        for rel in names
+        for line, message in check_file(root / rel, rel, seams.get(rel, frozenset()))
+    ]
     print("\n".join(lines))
     if lines:
         print(f"STUB & TODO VERIFICATION FAILED: {len(lines)} active stub/TODO item(s)")

@@ -6,10 +6,7 @@ from pipelines_hooks.specs.withdrawal_source import source_withdrawal_only
 
 _IDS = {"DEMO-R001"}
 _MARKER = "// spec: DEMO-R001\n"
-_REASON = (
-    "// Partial refusal coverage for DEMO-R001; "
-    "successful-operation acceptance remains open.\n"
-)
+_REASON = "// Partial refusal coverage for DEMO-R001; successful-operation acceptance remains open.\n"
 
 
 # spec: PIPE-CONNSPEC-R001
@@ -24,9 +21,7 @@ def test_actual_comment_removal_or_replacement(replacement: str) -> None:
 def test_raw_string_marker_is_not_evidence(prefix: str, hashes: str) -> None:
     opening = f'const TEXT: &str = {prefix}{hashes}"\n'
     closing = f'"{hashes};\n'
-    assert not source_withdrawal_only(
-        opening + _MARKER + closing, opening + closing, _IDS
-    )
+    assert not source_withdrawal_only(opening + _MARKER + closing, opening + closing, _IDS)
 
 
 @pytest.mark.parametrize(
@@ -39,9 +34,7 @@ def test_raw_string_marker_is_not_evidence(prefix: str, hashes: str) -> None:
     ],
 )
 def test_non_comment_marker_is_preserved(opening: str, closing: str) -> None:
-    assert not source_withdrawal_only(
-        opening + _MARKER + closing, opening + closing, _IDS
-    )
+    assert not source_withdrawal_only(opening + _MARKER + closing, opening + closing, _IDS)
 
 
 @pytest.mark.parametrize(

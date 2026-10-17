@@ -16,14 +16,25 @@ COMMIT = "a" * 40
 
 
 def status():
-    return dict(schema_version=1, spec_id="PIPE-TEST-1", owner_repo="pipelines",
-                requirement_ids=["TEST-1"], delivery_state="SPECIFIED",
-                acceptance_state="NOT_AUDITED", evidence=[])
+    return dict(
+        schema_version=1,
+        spec_id="PIPE-TEST-1",
+        owner_repo="pipelines",
+        requirement_ids=["TEST-1"],
+        delivery_state="SPECIFIED",
+        acceptance_state="NOT_AUDITED",
+        evidence=[],
+    )
 
 
 def evidence(kind, *, commit=COMMIT, result="passed"):
-    return {"kind": kind, "commit": commit, "result": result, "description": "Verified receipt",
-            "url": f"https://github.com/Knuckles-Team/pipelines/commit/{commit}"}
+    return {
+        "kind": kind,
+        "commit": commit,
+        "result": result,
+        "description": "Verified receipt",
+        "url": f"https://github.com/Knuckles-Team/pipelines/commit/{commit}",
+    }
 
 
 def check(tmp_path, data):
@@ -41,16 +52,19 @@ def test_invalid_status_json(tmp_path, payload, reason):
     assert (ids, spec_id) == ([], "")
 
 
-@pytest.mark.parametrize("field,value,reason", [
-    ("schema_version", 3, "schema version or spec ID mismatch"),
-    ("owner_repo", "other", "wrong owner"),
-    ("requirement_ids", [], "requirement IDs required"),
-    ("delivery_state", "INVALID", "invalid state"),
-    ("acceptance_state", "INVALID", "invalid state"),
-    ("evidence", {}, "evidence must be an array"),
-    ("evidence", [None], "evidence item must be an object"),
-    ("evidence", [{}], "invalid public evidence receipt"),
-])
+@pytest.mark.parametrize(
+    "field,value,reason",
+    [
+        ("schema_version", 3, "schema version or spec ID mismatch"),
+        ("owner_repo", "other", "wrong owner"),
+        ("requirement_ids", [], "requirement IDs required"),
+        ("delivery_state", "INVALID", "invalid state"),
+        ("acceptance_state", "INVALID", "invalid state"),
+        ("evidence", {}, "evidence must be an array"),
+        ("evidence", [None], "evidence item must be an object"),
+        ("evidence", [{}], "invalid public evidence receipt"),
+    ],
+)
 def test_status_contract_errors(tmp_path, field, value, reason):
     data = status()
     data[field] = value
@@ -61,8 +75,11 @@ def test_status_contract_errors(tmp_path, field, value, reason):
 @pytest.mark.parametrize("receipt_kind", ["consumer", "release"])
 def test_acceptance_requires_matching_public_receipts(tmp_path, receipt_kind):
     data = status()
-    data.update(delivery_state="LANDED", acceptance_state="ACCEPTED",
-                evidence=[evidence(kind) for kind in ("merged_head", "test", receipt_kind)])
+    data.update(
+        delivery_state="LANDED",
+        acceptance_state="ACCEPTED",
+        evidence=[evidence(kind) for kind in ("merged_head", "test", receipt_kind)],
+    )
     assert check(tmp_path, data) == ([], ["TEST-1"], "PIPE-TEST-1")
     data["evidence"][-1]["commit"] = "b" * 40
     assert any("acceptance receipts required" in error for error in check(tmp_path, data)[0])
@@ -117,8 +134,13 @@ def test_requirement_delivery_needs_its_own_merged_head(tmp_path):
 
 def test_generated_schema_two_status_is_accepted_without_receipts(tmp_path):
     path = tmp_path / "status.json"
-    generated = dict(schema_version=2, spec_id="PIPE-TEST-1", owner_repo="pipelines",
-                     delivery_state="SPECIFIED", requirement_ids=["TEST-1"],
-                     requirements=[dict(id="TEST-1", delivery_state="SPECIFIED")])
+    generated = dict(
+        schema_version=2,
+        spec_id="PIPE-TEST-1",
+        owner_repo="pipelines",
+        delivery_state="SPECIFIED",
+        requirement_ids=["TEST-1"],
+        requirements=[dict(id="TEST-1", delivery_state="SPECIFIED")],
+    )
     path.write_text(json.dumps(generated), encoding="utf-8")
     assert status_errors(path) == ([], ["TEST-1"], "PIPE-TEST-1")

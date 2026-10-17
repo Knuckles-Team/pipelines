@@ -8,6 +8,7 @@ from scripts.check_five_repo_parity import main
 
 def replace_workflow(root, declaration, old, new):
     """Commit a literal replacement in the first consumer's workflow."""
+
     def mutate(target):
         path = target / ".github/workflows/pages.yml"
         path.write_text(path.read_text().replace(old, new))

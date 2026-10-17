@@ -12,15 +12,15 @@ from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 
-from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.args import root_and_base_ref
 from pipelines_hooks.core.comparison import comparison
+from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import blob_text
 from pipelines_hooks.ste import scope
 from pipelines_hooks.ste.code_strings import cli_findings
 from pipelines_hooks.ste.report import report
 from pipelines_hooks.ste.scan import Finding, check_document
-from pipelines_hooks.ste.words import load_wordlist
+from pipelines_hooks.ste.words import Wordlist, load_wordlist
 
 
 def _after_text(root: Path, rel: str, ref: str) -> str:
@@ -50,10 +50,10 @@ def _added_paths(
     root: Path,
     rels: list[str],
     *,
-    wordlist: object,
+    wordlist: Wordlist,
     before_ref: str | None,
     after_ref: str,
-    check: Callable[[str, object, str], list[Finding]],
+    check: Callable[..., list[Finding]],
 ) -> list[Finding]:
     out: list[Finding] = []
     for rel in rels:

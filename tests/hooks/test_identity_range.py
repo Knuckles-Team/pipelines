@@ -54,7 +54,13 @@ def test_n3_names_only_the_one_mismatched_field_for_a_split_identity(
 ) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
     write_identity_allowlist(repo.root, [ALLOWED])
-    commit_as(repo.root, name=committer["name"], email=committer["email"], message="split", author=f"{author['name']} <{author['email']}>")
+    commit_as(
+        repo.root,
+        name=committer["name"],
+        email=committer["email"],
+        message="split",
+        author=f"{author['name']} <{author['email']}>",
+    )
     assert repo.run("commit-identity-range", "--base", base) == 1
     output = capsys.readouterr().out
     assert expect_named in output

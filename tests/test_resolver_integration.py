@@ -1,4 +1,5 @@
 """Real pip resolution with offline HTTP fixtures and tiny synthetic installations."""
+
 from __future__ import annotations
 
 import base64
@@ -46,8 +47,14 @@ def run(tmp_path, root, responses, profile="base", poison=None, install=False):
     if poison:
         (tmp_path / "pip.conf").write_text("[global]\nindex-url = https://poison.invalid/simple\n")
     environment = guard.clean_environment(tmp_path, root)
-    result = subprocess.run([sys.executable, "-I", str(RUNNER), str(ACTION), str(scenario)],
-                            cwd=tmp_path, env=environment, capture_output=True, text=True, timeout=15)
+    result = subprocess.run(
+        [sys.executable, "-I", str(RUNNER), str(ACTION), str(scenario)],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
     return result, json.loads((tmp_path / "requests.json").read_text())
 
 
@@ -77,9 +84,15 @@ def test_real_resolver_missing_version_extra_and_conflict(tmp_path, requirement)
     assert not (tmp_path / "validated.json").exists()
 
 
-@pytest.mark.parametrize("url", ["file:///tmp/other-1-py3-none-any.whl", "https://outside.invalid/other-1-py3-none-any.whl",
-                                  "git+https://outside.invalid/repository",
-                                  "https://files.pythonhosted.org/other-1-py3-none-any.whl"])
+@pytest.mark.parametrize(
+    "url",
+    [
+        "file:///tmp/other-1-py3-none-any.whl",
+        "https://outside.invalid/other-1-py3-none-any.whl",
+        "git+https://outside.invalid/repository",
+        "https://files.pythonhosted.org/other-1-py3-none-any.whl",
+    ],
+)
 def test_real_resolver_blocks_transitive_direct_sources(tmp_path, url):
     root = wheel(tmp_path, requires=["dep>=2"])
     dep = dependency_wheel(tmp_path, requires=["other @ " + url])
@@ -93,8 +106,11 @@ def test_real_resolver_blocks_transitive_direct_sources(tmp_path, url):
 @pytest.mark.parametrize("status", [302, 503])
 def test_real_resolver_rejects_redirects_and_index_errors(tmp_path, status):
     root = wheel(tmp_path, requires=["dep>=2"])
-    fixture = {"https://pypi.org/simple/dep/": response(b"", "text/html", status=status,
-               headers={"Location": "https://outside.invalid/"})}
+    fixture = {
+        "https://pypi.org/simple/dep/": response(
+            b"", "text/html", status=status, headers={"Location": "https://outside.invalid/"}
+        )
+    }
     result, requests = run(tmp_path, root, fixture)
     assert result.returncode != 0
     assert requests == ["https://pypi.org/simple/dep/"]

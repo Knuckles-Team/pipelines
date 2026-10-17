@@ -1,4 +1,5 @@
 """Bind an exact sdist to a wheel rebuilt in an isolated public-dependency env."""
+
 from __future__ import annotations
 
 import email.parser
@@ -46,10 +47,13 @@ def package_identity(guard, project: Path, archive_name: str) -> tuple[str, str]
     guard.require(not message.defects, "invalid source PKG-INFO")
     for field in ("Metadata-Version", "Name", "Version"):
         guard.require(len(message.get_all(field, [])) == 1, "missing or duplicate source PKG-INFO identity")
-    guard.require(bool(guard.re.fullmatch(r"[1-9]\d*\.\d+", message["Metadata-Version"])),
-                  "invalid source metadata version")
-    guard.require(bool(guard.re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", message["Name"])),
-                  "invalid source package name")
+    guard.require(
+        bool(guard.re.fullmatch(r"[1-9]\d*\.\d+", message["Metadata-Version"])), "invalid source metadata version"
+    )
+    guard.require(
+        bool(guard.re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", message["Name"])),
+        "invalid source package name",
+    )
     identity = (guard.canonicalize_name(message["Name"]), str(guard.Version(message["Version"])))
     name, version = guard.parse_sdist_filename(archive_name)
     guard.require(identity == (name, str(version)), "source PKG-INFO disagrees with archive filename")
@@ -61,8 +65,10 @@ def build_requirements(guard, project: Path) -> list[str]:
     requirements = data["build-system"]["requires"]
     guard.require(isinstance(requirements, list), "source build prerequisites missing")
     for raw in requirements:
-        guard.require(isinstance(raw, str) and guard.Requirement(raw).url is None,
-                      "source build prerequisite must come from the public index")
+        guard.require(
+            isinstance(raw, str) and guard.Requirement(raw).url is None,
+            "source build prerequisite must come from the public index",
+        )
     return requirements
 
 
@@ -77,10 +83,25 @@ def rebuild(guard, project: Path, work: Path) -> tuple[Path, dict | None]:
     prerequisites = None
     if requirements:
         subprocess.run(
-            [str(python), "-I", str(resolver), "install", "--ignore-installed", "--no-cache-dir",
-             "--disable-pip-version-check", "--only-binary=:all:", "--index-url", guard.PUBLIC_INDEX,
-             "--report", str(report), *requirements],
-            env=environment, cwd=work, check=True, timeout=600,
+            [
+                str(python),
+                "-I",
+                str(resolver),
+                "install",
+                "--ignore-installed",
+                "--no-cache-dir",
+                "--disable-pip-version-check",
+                "--only-binary=:all:",
+                "--index-url",
+                guard.PUBLIC_INDEX,
+                "--report",
+                str(report),
+                *requirements,
+            ],
+            env=environment,
+            cwd=work,
+            check=True,
+            timeout=600,
         )
         prerequisites = json.loads(report.read_text())
     guard.sibling("prerequisites").validate(guard, requirements, prerequisites, guard.observed_context())
@@ -94,9 +115,25 @@ def rebuild(guard, project: Path, work: Path) -> tuple[Path, dict | None]:
         environment["CARGO_HOME"] = str(work / "cargo-home")
     output = work / "rebuilt"
     subprocess.run(
-        [str(python), "-I", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation",
-         "--no-cache-dir", "--disable-pip-version-check", "--wheel-dir", str(output), str(project)],
-        env=environment, cwd=work, check=True, timeout=600,
+        [
+            str(python),
+            "-I",
+            "-m",
+            "pip",
+            "wheel",
+            "--no-index",
+            "--no-deps",
+            "--no-build-isolation",
+            "--no-cache-dir",
+            "--disable-pip-version-check",
+            "--wheel-dir",
+            str(output),
+            str(project),
+        ],
+        env=environment,
+        cwd=work,
+        check=True,
+        timeout=600,
     )
     wheels = guard.wheel_set(output)
     guard.require(len(wheels) == 1, "source rebuild must produce exactly one wheel")
@@ -108,8 +145,10 @@ def check(guard, directory: Path, receipt: Path, raw: str, evidence: Path) -> No
     archives = list(directory.iterdir())
     guard.require(len(archives) == 1, "source job must contain exactly one archive")
     archive = archives[0]
-    guard.require(archive.name.endswith(".tar.gz") and archive.is_file() and not archive.is_symlink(),
-                  "source job requires a regular tar.gz archive")
+    guard.require(
+        archive.name.endswith(".tar.gz") and archive.is_file() and not archive.is_symlink(),
+        "source job requires a regular tar.gz archive",
+    )
     identity = guard.identity()
     guard.sibling("targets").validate("linux-x86_64", guard.observed_context())
     original = guard.digest(archive)
@@ -132,13 +171,22 @@ def check(guard, directory: Path, receipt: Path, raw: str, evidence: Path) -> No
                 os.environ["READINESS_TARGET"] = previous
         proof = json.loads(proof_path.read_text())
         rebuilt = proof["wheels"][0]["metadata"]
-        guard.require(package == (rebuilt["name"], rebuilt["version"]),
-                      "source filename disagrees with rebuilt package identity")
+        guard.require(
+            package == (rebuilt["name"], rebuilt["version"]), "source filename disagrees with rebuilt package identity"
+        )
         evidence.mkdir(parents=True, exist_ok=True)
         guard.require(not list(evidence.iterdir()), "source evidence directory is not empty")
         shutil.copyfile(wheel, evidence / wheel.name)
     guard.require(guard.digest(archive) == original, "source archive changed during rebuild")
     guard.require(guard.identity() == identity, "source identity changed during rebuild")
-    receipt.write_text(json.dumps({"archive": {"file": archive.name, "sha256": original},
-                                  "build_prerequisites": prerequisites,
-                                  "rebuilt_wheel_proof": proof}, indent=2) + "\n")
+    receipt.write_text(
+        json.dumps(
+            {
+                "archive": {"file": archive.name, "sha256": original},
+                "build_prerequisites": prerequisites,
+                "rebuilt_wheel_proof": proof,
+            },
+            indent=2,
+        )
+        + "\n"
+    )

@@ -45,7 +45,9 @@ def main(argv: list[str]) -> int:
     if args.timeout < 1:
         raise CannotRun("--timeout must be a positive number of seconds")
     root = repo_root(args.root)
-    scope = _python_scope(root, changed_paths(root, args.base_ref or None), args.src_root.rstrip("/"), args.tests_root.rstrip("/"))
+    scope = _python_scope(
+        root, changed_paths(root, args.base_ref or None), args.src_root.rstrip("/"), args.tests_root.rstrip("/")
+    )
     if scope == [NONE]:
         print("fast-tests: no affected tests")
         return 0

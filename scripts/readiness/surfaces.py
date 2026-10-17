@@ -14,9 +14,7 @@ from .constants import (
 from .errors import _fail
 
 
-def _validate_transport_declaration(
-    name: str, raw: Mapping[str, Any]
-) -> tuple[Any, Any] | None:
+def _validate_transport_declaration(name: str, raw: Mapping[str, Any]) -> tuple[Any, Any] | None:
     if not TRANSPORT_KEYS & set(raw):
         return None
     transport = raw.get("transport")
@@ -42,9 +40,7 @@ def _validate_public_reachability(endpoint: Any, identity: Any) -> None:
         _fail("capability-endpoint-required")
 
 
-def _validate_non_public_reachability(
-    reachability: Any, endpoint: Any, identity: Any
-) -> None:
+def _validate_non_public_reachability(reachability: Any, endpoint: Any, identity: Any) -> None:
     if endpoint is not None:
         _fail("capability-reachability-inconsistent")
     if reachability == "local":
@@ -53,11 +49,7 @@ def _validate_non_public_reachability(
         return
     if identity is None:
         _fail("capability-service-identity-required")
-    if (
-        not isinstance(identity, str)
-        or len(identity) > 253
-        or not SERVICE_IDENTITY_PATTERN.fullmatch(identity)
-    ):
+    if not isinstance(identity, str) or len(identity) > 253 or not SERVICE_IDENTITY_PATTERN.fullmatch(identity):
         _fail("capability-service-identity-invalid")
 
 

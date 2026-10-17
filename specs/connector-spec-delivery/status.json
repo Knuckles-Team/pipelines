@@ -396,11 +396,11 @@
         "69e538013617"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_landing_attribution.py:15",
-        "tests/hooks/test_spec_landing_attribution.py:37",
-        "tests/hooks/test_spec_landing_attribution.py:49",
-        "tests/hooks/test_spec_repository_identity.py:20",
-        "tests/hooks/test_spec_repository_identity.py:29"
+        "tests/hooks/test_spec_landing_attribution.py:18",
+        "tests/hooks/test_spec_landing_attribution.py:46",
+        "tests/hooks/test_spec_landing_attribution.py:56",
+        "tests/hooks/test_spec_repository_identity.py:23",
+        "tests/hooks/test_spec_repository_identity.py:32"
       ]
     },
     {
@@ -439,8 +439,8 @@
         "615425fe278b"
       ],
       "verified_by": [
-        "tests/test_spec_standard.py:112",
-        "tests/test_spec_standard.py:119"
+        "tests/test_spec_standard.py:108",
+        "tests/test_spec_standard.py:115"
       ]
     },
     {
@@ -3496,7 +3496,7 @@
         "0f9f73b150d7"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_status.py:282"
+        "tests/hooks/test_spec_status.py:242"
       ]
     }
   ]

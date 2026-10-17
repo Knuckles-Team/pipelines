@@ -31,9 +31,7 @@ def sanitized_env(*, preserve_index: bool = False) -> dict[str, str]:
     return environment
 
 
-def run_git(
-    root: Path, args: Sequence[str], *, preserve_index: bool = False
-) -> subprocess.CompletedProcess[str]:
+def run_git(root: Path, args: Sequence[str], *, preserve_index: bool = False) -> subprocess.CompletedProcess[str]:
     """Run git from ``root``; a process failure raises :class:`CannotRun`."""
     try:
         return subprocess.run(
@@ -49,9 +47,7 @@ def run_git(
         raise CannotRun(f"could not execute git {' '.join(args)}: {exc}") from exc
 
 
-def git_text(
-    root: Path, args: Sequence[str], *, preserve_index: bool = False
-) -> str:
+def git_text(root: Path, args: Sequence[str], *, preserve_index: bool = False) -> str:
     """Standard output of a git command that must succeed."""
     result = run_git(root, args, preserve_index=preserve_index)
     if result.returncode != 0:
