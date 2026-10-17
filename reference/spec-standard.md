@@ -64,7 +64,7 @@ A rollup must include a wiring row and a hot-path proof row. The wiring row name
 | Item | Rule | Example |
 |---|---|---|
 | Spec ID | `<OWNER>-<AREA>`, upper case, hyphen-separated, no numeric suffix | `EG-IDENTITY` |
-| Owner prefix | The owner map in the repository `specs/README.md` | `EG`, `AU`, `GRAPHOS`, `SDK`, `WEBUI`, `RM`, `PIPE` |
+| Owner prefix | The owner map in the repository `specs/README.md` | `EG`, `AU`, `ARBORA`, `SDK`, `WEBUI`, `RM`, `PIPE` |
 | Directory | The area in lower case, hyphen-separated | `specs/identity/` for `EG-IDENTITY` |
 | Title line | The first line of `spec.md`: `# <ID> — <Title>` with an em dash | `# EG-IDENTITY — Engine identity and scope` |
 | Row ID | `<ID>-R<nnn>`, children `.n`, three digits | `EG-IDENTITY-R007.2` |
