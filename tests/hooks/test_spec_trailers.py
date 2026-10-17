@@ -16,9 +16,7 @@ def _requirements_md(identifier: str) -> str:
     )
 
 
-def _commit(
-    repo: Repo, files: dict[str, str], message: str, *, trailer: str | None = None
-) -> str:
+def _commit(repo: Repo, files: dict[str, str], message: str, *, trailer: str | None = None) -> str:
     for rel, text in files.items():
         repo.write(rel, text)
     repo.git("add", "--", *files)
@@ -80,9 +78,7 @@ def test_item4_fail_a_trailer_names_an_id_with_no_requirements_row(
     assert "NOPE-R999" in out
 
 
-def test_item4_a_range_trailer_expands_to_each_member_id(
-    repo: Repo, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_item4_a_range_trailer_expands_to_each_member_id(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
     _commit(
         repo,
@@ -97,9 +93,7 @@ def test_item4_a_range_trailer_expands_to_each_member_id(
     assert "DEMO4-R003" in out
 
 
-def test_item5_fail_a_known_id_with_no_bound_test_in_the_tree(
-    repo: Repo, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_item5_fail_a_known_id_with_no_bound_test_in_the_tree(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
     _commit(
         repo,

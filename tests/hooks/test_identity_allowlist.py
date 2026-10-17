@@ -43,7 +43,10 @@ def _golden_fleet_identities() -> frozenset[tuple[str, str]]:
 def test_p1_well_formed_allowlist_loads_and_validates(tmp_path: Path) -> None:
     path = write_identity_allowlist(tmp_path, [ALLOWED, OTHER])
     identities = load_allowlist(path)
-    assert {(i.name, i.email) for i in identities} == {(ALLOWED["name"], ALLOWED["email"]), (OTHER["name"], OTHER["email"])}
+    assert {(i.name, i.email) for i in identities} == {
+        (ALLOWED["name"], ALLOWED["email"]),
+        (OTHER["name"], OTHER["email"]),
+    }
     assert matches(ALLOWED["name"], ALLOWED["email"], identities)
     assert not matches("Nobody", "nobody@example.invalid", identities)
 

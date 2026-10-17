@@ -49,7 +49,9 @@ def check_package(root: Path, package: str) -> int:
     cycles = find_cycles(graph)
     for cycle in cycles:
         print(f"  cycle ({len(cycle)} modules): {' -> '.join([*cycle, cycle[0]])}", file=sys.stderr)
-    print(f"{package}: {len(cycles)} eager-import cycle(s) among {graph.number_of_nodes()} modules, {graph.number_of_edges()} eager edges")
+    print(
+        f"{package}: {len(cycles)} eager-import cycle(s) among {graph.number_of_nodes()} modules, {graph.number_of_edges()} eager edges"
+    )
     report_reach(graph)
     return len(cycles)
 

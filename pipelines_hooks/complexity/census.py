@@ -32,11 +32,7 @@ def census_paths(root: Path) -> tuple[str, ...]:
 
 def census_files(root: Path, paths: tuple[str, ...]) -> list[str]:
     """Tracked cccc-supported files below ``paths``; an empty universe fails closed."""
-    files = sorted(
-        path
-        for path in tracked_paths(root, paths)
-        if Path(path).suffix.lower() in cccc.SUPPORTED_SUFFIXES
-    )
+    files = sorted(path for path in tracked_paths(root, paths) if Path(path).suffix.lower() in cccc.SUPPORTED_SUFFIXES)
     if not files:
         raise CannotRun(f"no tracked cccc-supported file under {', '.join(paths)}")
     return files

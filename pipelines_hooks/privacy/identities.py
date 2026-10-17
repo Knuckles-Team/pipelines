@@ -18,14 +18,32 @@ from pipelines_hooks.core.gitenv import run_git
 from pipelines_hooks.core.settings import setting
 
 GENERIC_IDENTIFIERS = frozenset(
-    {"admin", "agent", "apps", "build", "developer", "home", "localhost", "maintainer",
-     "maintainers", "root", "runner", "service", "user", "workspace"}
+    {
+        "admin",
+        "agent",
+        "apps",
+        "build",
+        "developer",
+        "home",
+        "localhost",
+        "maintainer",
+        "maintainers",
+        "root",
+        "runner",
+        "service",
+        "user",
+        "workspace",
+    }
 )
 
 
 def _identifiers_from_path(value: str) -> set[str]:
     normalized = value.replace("\\", "/")
-    return {name for pattern in (r"/home/([^/]+)", r"/Users/([^/]+)") for name in re.findall(pattern, normalized, flags=re.IGNORECASE)}
+    return {
+        name
+        for pattern in (r"/home/([^/]+)", r"/Users/([^/]+)")
+        for name in re.findall(pattern, normalized, flags=re.IGNORECASE)
+    }
 
 
 def _passwd_name() -> str:

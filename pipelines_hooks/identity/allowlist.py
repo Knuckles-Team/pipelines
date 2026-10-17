@@ -74,9 +74,7 @@ def validated_terms(raw: object) -> tuple[Identity, ...]:
 
 def load_allowlist(path: Path) -> tuple[Identity, ...]:
     """The allowlist's identities; an oversized or malformed file raises."""
-    raw = read_bounded_json(
-        path, MAX_ALLOWLIST_BYTES, what="allowlist", error=IdentityAllowlistError
-    )
+    raw = read_bounded_json(path, MAX_ALLOWLIST_BYTES, what="allowlist", error=IdentityAllowlistError)
     return validated_terms(raw)
 
 

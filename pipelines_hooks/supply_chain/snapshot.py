@@ -63,7 +63,9 @@ def resolve_snapshot_repositories(providers_root: Path, workspace: Path) -> tupl
     """Exactly the direct provider roots the authoritative workspace declares."""
     root = _authoritative_root(providers_root, workspace)
     try:
-        directories = {e.name for e in os.scandir(root) if e.name not in SKIP_DIRECTORIES and e.is_dir(follow_symlinks=False)}
+        directories = {
+            e.name for e in os.scandir(root) if e.name not in SKIP_DIRECTORIES and e.is_dir(follow_symlinks=False)
+        }
     except OSError:
         raise CannotRun("source snapshot membership is unavailable") from None
     providers = workspace_provider_names(workspace)

@@ -7,9 +7,7 @@ from pathlib import Path
 from pipelines_hooks.core.kiss_fork import KISS_FORK_GIT, KISS_FORK_REV
 from pipelines_hooks.core.tools import PINNED_VERSIONS
 
-INSTALLER = (
-    Path(__file__).resolve().parents[2] / "scripts" / "install_scanners.sh"
-).read_text(encoding="utf-8")
+INSTALLER = (Path(__file__).resolve().parents[2] / "scripts" / "install_scanners.sh").read_text(encoding="utf-8")
 
 
 def test_installer_builds_the_pinned_kiss_fork() -> None:

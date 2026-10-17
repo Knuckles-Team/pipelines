@@ -28,8 +28,10 @@ def bare_reads(source: str) -> set[str]:
 def scan(root: Path) -> list[tuple[str, str]]:
     config = load_config(root)
     allowed = set(string_tuple(config.section("env_sprawl").get("allow_files", []), "env_sprawl.allow_files"))
-    paths = [p for package in config.required_packages() for p in tracked_or_walked(root / package, ("*.py",), root=root)]
-    found = set()
+    paths = [
+        p for package in config.required_packages() for p in tracked_or_walked(root / package, ("*.py",), root=root)
+    ]
+    found: set[tuple[str, str]] = set()
     for path in paths:
         rel = path.relative_to(root).as_posix()
         if not skipped(Path(rel)) and rel not in allowed:

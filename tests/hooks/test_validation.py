@@ -50,20 +50,14 @@ def test_policy_accepts_repository_group(validation_repo):
     "change",
     [
         lambda value: value + '\nunknown = "typo"\n',
-        lambda value: value.replace(
-            '"gitignore-convergence"', '"dependency-readiness"'
-        ),
+        lambda value: value.replace('"gitignore-convergence"', '"dependency-readiness"'),
         lambda value: value.replace("budget_seconds = 5", "budget_seconds = 0"),
         lambda value: value.replace("timeout_seconds = 3", "timeout_seconds = true"),
         lambda value: value.replace("required = true", 'required = "yes"'),
-        lambda value: value.replace(
-            '["AU ignore patterns", "tracked build families"]', "[]"
-        ),
+        lambda value: value.replace('["AU ignore patterns", "tracked build families"]', "[]"),
         lambda value: value + "\n[[checks]]\n" + value.split("[[checks]]\n")[1],
         lambda value: (
-            value
-            + "\n[[checks]]\n"
-            + value.split("[[checks]]\n")[1].replace('id = "ignore"', 'id = "second"')
+            value + "\n[[checks]]\n" + value.split("[[checks]]\n")[1].replace('id = "ignore"', 'id = "second"')
         ),
     ],
 )
@@ -108,9 +102,7 @@ def test_missing_git_is_unavailable(validation_repo, tmp_path, monkeypatch):
 def test_summary_matches_evidence(validation_repo, tmp_path, capsys, bad, expected):
     if bad:
         validation_repo.write(".gitignore", "")
-    result = cli.main(
-        ["--root", str(validation_repo.root), "--evidence-dir", str(tmp_path)]
-    )
+    result = cli.main(["--root", str(validation_repo.root), "--evidence-dir", str(tmp_path)])
     assert result == expected
     (report_path,) = tmp_path.glob("pipelines-validation-*/report.json")
     report = json.loads(report_path.read_text())
@@ -122,9 +114,7 @@ def test_summary_matches_evidence(validation_repo, tmp_path, capsys, bad, expect
     output = capsys.readouterr().out
     assert str(report_path) in output and "repository: 1 checks" in output
     if bad:
-        assert (
-            "ignore: fail (required)" in output and "Restore required ignore" in output
-        )
+        assert "ignore: fail (required)" in output and "Restore required ignore" in output
 
 
 @pytest.mark.spec("PIPE-VALIDATION-R001.2")
@@ -136,17 +126,13 @@ def test_passive_git_event_does_not_dispatch(repo, monkeypatch, event):
     marker = repo.root / "unexpected-setup"
     for name in ("uv", "pip", "pip3", "curl", "wget"):
         tool = sentinels / name
-        tool.write_text(
-            f"#!/bin/sh\nprintf invoked >> {shlex.quote(str(marker))}\nexit 93\n"
-        )
+        tool.write_text(f"#!/bin/sh\nprintf invoked >> {shlex.quote(str(marker))}\nexit 93\n")
         tool.chmod(0o755)
     monkeypatch.setenv("PATH", f"{sentinels}:{os.environ['PATH']}")
     # Invalid policy proves passive handling occurs before policy evaluation.
     repo.write(".config/validation.toml", "this is not TOML")
     hook = repo.root / ".git" / "hooks" / event
-    command = shlex.join(
-        [sys.executable, "-m", "pipelines_hooks", "validate", "--event", event]
-    )
+    command = shlex.join([sys.executable, "-m", "pipelines_hooks", "validate", "--event", event])
     hook.write_text(f"#!/bin/sh\nexec {command}\n")
     hook.chmod(0o755)
     repo.git("checkout", "-qb", "incoming")
@@ -201,9 +187,7 @@ def test_deadline_terminates_child_process(tmp_path):
         f"p=subprocess.Popen([sys.executable,'-c',{child!r}]); "
         f"pathlib.Path({str(child_file)!r}).write_text(str(p.pid)); time.sleep(30)"
     )
-    result = execute(
-        [sys.executable, "-c", code], tmp_path, tmp_path / "timeout.log", timeout=0.5
-    )
+    result = execute([sys.executable, "-c", code], tmp_path, tmp_path / "timeout.log", timeout=0.5)
     assert result["outcome"] == "timeout" and result["seconds"] < 3
     pid = int(child_file.read_text())
     status = Path(f"/proc/{pid}/stat")

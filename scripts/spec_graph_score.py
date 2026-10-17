@@ -20,15 +20,10 @@ def verification_clauses(text: str) -> int:
 
 
 def size_breakdown(req: Requirement, delivery_states: dict[str, str]) -> dict[str, int]:
-    unresolved_deps = sum(
-        1
-        for dep in req.depends_on
-        if delivery_states.get(dep, "UNKNOWN") not in LANDED_STATES
-    )
+    unresolved_deps = sum(1 for dep in req.depends_on if delivery_states.get(dep, "UNKNOWN") not in LANDED_STATES)
     return {
         "unchecked_tasks": req.unchecked_tasks,
-        "verification_clauses": verification_clauses(req.verification_text)
-        + req.test_mentions,
+        "verification_clauses": verification_clauses(req.verification_text) + req.test_mentions,
         "extra_code_roots": max(0, len(req.code_roots) - 1),
         "other_repos": len(req.other_repos),
         "unresolved_deps": unresolved_deps,
@@ -65,9 +60,7 @@ def propose_split(req: Requirement) -> tuple[str, list[tuple[str, str]]]:
     else:
         parts = ["part-1", "part-2"]
         basis = "fallback"
-    children = [
-        (f"{req.id}.{index}", part) for index, part in enumerate(parts, start=1)
-    ]
+    children = [(f"{req.id}.{index}", part) for index, part in enumerate(parts, start=1)]
     return basis, children
 
 

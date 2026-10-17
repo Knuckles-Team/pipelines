@@ -36,14 +36,10 @@ def find_duplicates(idx: SpecIndex) -> list[str]:
     findings: list[str] = []
     for id_, count in sorted(idx.req_counts.items()):
         if count > 1:
-            findings.append(
-                f"{idx.label}: duplicate ID {id_} appears {count}x in requirements.md"
-            )
+            findings.append(f"{idx.label}: duplicate ID {id_} appears {count}x in requirements.md")
     for id_, count in sorted(idx.status_counts.items()):
         if count > 1:
-            findings.append(
-                f"{idx.label}: duplicate ID {id_} appears {count}x in status.json"
-            )
+            findings.append(f"{idx.label}: duplicate ID {id_} appears {count}x in status.json")
     return findings
 
 
@@ -90,10 +86,7 @@ def find_parent_done_child_open(idx: SpecIndex) -> list[str]:
             continue
         for child in sorted(children):
             child_state = idx.state_by_id.get(child) or ""
-            if (
-                child_state not in IGNORED_CHILD
-                and STATE_RANK.get(child_state, 0) < parent_rank
-            ):
+            if child_state not in IGNORED_CHILD and STATE_RANK.get(child_state, 0) < parent_rank:
                 findings.append(
                     f"{idx.label}: parent {parent} is {idx.state_by_id.get(parent)} but "
                     f"child {child} is {child_state or 'UNKNOWN'}"
@@ -107,7 +100,5 @@ def find_orphan_children(idx: SpecIndex) -> list[str]:
     for id_ in sorted({*idx.status_counts, *idx.referenced}):
         parent = parent_of(id_)
         if parent and parent not in idx.status_counts and parent not in idx.req_counts:
-            findings.append(
-                f"{idx.label}: child {id_} exists but parent {parent} has no row at all"
-            )
+            findings.append(f"{idx.label}: child {id_} exists but parent {parent} has no row at all")
     return findings

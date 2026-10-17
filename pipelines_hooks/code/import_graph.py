@@ -80,5 +80,7 @@ def build_eager_graph(package_root: Path, *, root: Path) -> nx.DiGraph:
     graph: nx.DiGraph = nx.DiGraph()
     graph.add_nodes_from(modules)
     for module, path in modules.items():
-        graph.add_edges_from((module, target) for target in eager_targets(path, package_root) & set(modules) if target != module)
+        graph.add_edges_from(
+            (module, target) for target in eager_targets(path, package_root) & set(modules) if target != module
+        )
     return graph

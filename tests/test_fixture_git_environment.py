@@ -22,10 +22,14 @@ def test_fixture_git_preserves_parent_under_inherited_selectors(tmp_path: Path, 
     git_text(outer, ("add", "--", "parent.txt"))
     protected = {path: path.read_bytes() for path in (sentinel, outer / ".git/index", outer / ".git/config")}
     contamination = {
-        "GIT_DIR": str(outer / ".git"), "GIT_COMMON_DIR": str(outer / ".git"),
-        "GIT_WORK_TREE": str(outer), "GIT_INDEX_FILE": str(outer / ".git/index"),
+        "GIT_DIR": str(outer / ".git"),
+        "GIT_COMMON_DIR": str(outer / ".git"),
+        "GIT_WORK_TREE": str(outer),
+        "GIT_INDEX_FILE": str(outer / ".git/index"),
         "GIT_OBJECT_DIRECTORY": str(outer / ".git/objects"),
-        "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "user.name", "GIT_CONFIG_VALUE_0": "inherited-name",
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": "user.name",
+        "GIT_CONFIG_VALUE_0": "inherited-name",
     }
     for key, value in contamination.items():
         monkeypatch.setenv(key, value)

@@ -16,11 +16,23 @@ VCS_REVISION_RE = re.compile(r"@[0-9a-fA-F]{40}(?:$|[#&])")
 # Knuckles-Team/pipelines@<ref>` dependency must name `main`, never a commit
 # SHA or tag (fleet standard).
 PIPELINES_VCS_RE = re.compile(r"git\+https://github\.com/Knuckles-Team/pipelines(?:\.git)?@([^\s#&]+)", re.IGNORECASE)
-POWERSHELL_NETWORK_RE = re.compile(r"(?:irm|iwr|Invoke-RestMethod|Invoke-WebRequest)\b[^\n|]*\|\s*(?:iex|Invoke-Expression)\b", re.IGNORECASE)
+POWERSHELL_NETWORK_RE = re.compile(
+    r"(?:irm|iwr|Invoke-RestMethod|Invoke-WebRequest)\b[^\n|]*\|\s*(?:iex|Invoke-Expression)\b", re.IGNORECASE
+)
 DYNAMIC_EXPRESSION_RE = re.compile(r"(?:^|[;&|]\s*)(?:eval\b|Invoke-Expression\b|iex\b)", re.IGNORECASE)
 _LOCKS = (
-    ("pyproject.toml", {"Pipfile.lock", "poetry.lock", "uv.lock"}, "SC-DEP-001", "Python dependency manifest has no committed resolver lock"),
-    ("package.json", {"package-lock.json", "pnpm-lock.yaml", "yarn.lock"}, "SC-DEP-002", "Node dependency manifest has no committed resolver lock"),
+    (
+        "pyproject.toml",
+        {"Pipfile.lock", "poetry.lock", "uv.lock"},
+        "SC-DEP-001",
+        "Python dependency manifest has no committed resolver lock",
+    ),
+    (
+        "package.json",
+        {"package-lock.json", "pnpm-lock.yaml", "yarn.lock"},
+        "SC-DEP-002",
+        "Node dependency manifest has no committed resolver lock",
+    ),
     ("Cargo.toml", {"Cargo.lock"}, "SC-DEP-003", "Rust application/workspace manifest has no committed Cargo.lock"),
 )
 
@@ -42,7 +54,9 @@ def declared_dependencies(document: dict[str, Any]) -> list[str]:
 def _unsafe(dependency: str) -> bool:
     folded = dependency.casefold()
     vcs = "git+" in folded and ("git+https://" not in folded or VCS_REVISION_RE.search(dependency) is None)
-    archive = bool(re.search(r"\s@\s*https?://", dependency, re.IGNORECASE)) and (" @ https://" not in folded or "#sha256=" not in folded)
+    archive = bool(re.search(r"\s@\s*https?://", dependency, re.IGNORECASE)) and (
+        " @ https://" not in folded or "#sha256=" not in folded
+    )
     return vcs or archive
 
 
@@ -71,12 +85,18 @@ def _pyproject_findings(label: str, pyproject: Path, reader: Callable[[Path], st
             continue
         if _unsafe(d):
             findings.append(
-                source.at_offset(offset, rule="SC-DEP-004", message="direct network dependency must use HTTPS and an immutable revision or SHA-256 digest")
+                source.at_offset(
+                    offset,
+                    rule="SC-DEP-004",
+                    message="direct network dependency must use HTTPS and an immutable revision or SHA-256 digest",
+                )
             )
     return findings
 
 
-def dependency_findings(label: str, repository: Path, sources: tuple[Path, ...], *, reader: Callable[[Path], str]) -> list[Finding]:
+def dependency_findings(
+    label: str, repository: Path, sources: tuple[Path, ...], *, reader: Callable[[Path], str]
+) -> list[Finding]:
     names = {path.name for path in sources if path.parent == repository}
     findings = [
         Finding(label, manifest, 1, rule, message)
@@ -95,7 +115,13 @@ def installer_findings(source: Source) -> list[Finding]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         if NETWORK_TO_SHELL_RE.search(line) or POWERSHELL_NETWORK_RE.search(line):
-            findings.append(source.at_line(number, rule="SC-INSTALL-001", message="installer executes an unverified network response"))
+            findings.append(
+                source.at_line(
+                    number, rule="SC-INSTALL-001", message="installer executes an unverified network response"
+                )
+            )
         if DYNAMIC_EXPRESSION_RE.search(line):
-            findings.append(source.at_line(number, rule="SC-INSTALL-002", message="installer uses dynamic expression evaluation"))
+            findings.append(
+                source.at_line(number, rule="SC-INSTALL-002", message="installer uses dynamic expression evaluation")
+            )
     return findings

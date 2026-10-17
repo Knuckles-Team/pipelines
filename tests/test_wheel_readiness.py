@@ -1,4 +1,5 @@
 """Offline adversarial tests for the publication-only wheel guard."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -18,29 +19,45 @@ guard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(guard)
 
 
-def wheel(tmp_path, *, requires=(), extras=(), python=">=3.11", name="fixture-1.0-py3-none-any.whl", metadata_version="2.3"):
+def wheel(
+    tmp_path, *, requires=(), extras=(), python=">=3.11", name="fixture-1.0-py3-none-any.whl", metadata_version="2.3"
+):
     path = tmp_path / name
     lines = [f"Metadata-Version: {metadata_version}", "Name: fixture", "Version: 1.0", f"Requires-Python: {python}"]
     lines += [f"Requires-Dist: {req}" for req in requires]
     lines += [f"Provides-Extra: {extra}" for extra in extras]
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("fixture-1.0.dist-info/METADATA", "\n".join(lines) + "\n")
-        archive.writestr("fixture-1.0.dist-info/WHEEL", "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n")
+        archive.writestr(
+            "fixture-1.0.dist-info/WHEEL",
+            "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        )
         archive.writestr("fixture-1.0.dist-info/RECORD", "")
     return path
 
 
 def report(path, root, dependencies=()):
-    return {"version": "1", "pip_version": "25.1.1", "environment": guard.default_environment(), "install": [
-        {"metadata": root, "is_direct": True, "download_info": {
-            "url": path.as_uri(), "archive_info": {"hashes": {"sha256": guard.digest(path)}}}},
-        *dependencies,
-    ]}
+    return {
+        "version": "1",
+        "pip_version": "25.1.1",
+        "environment": guard.default_environment(),
+        "install": [
+            {
+                "metadata": root,
+                "is_direct": True,
+                "download_info": {"url": path.as_uri(), "archive_info": {"hashes": {"sha256": guard.digest(path)}}},
+            },
+            *dependencies,
+        ],
+    }
 
 
 def dependency(*, requires=(), extras=(), url="https://files.pythonhosted.org/packages/dep-2-py3-none-any.whl"):
-    return {"metadata": {"name": "dep", "version": "2", "requires_dist": list(requires), "provides_extra": list(extras)},
-            "is_direct": False, "download_info": {"url": url, "archive_info": {"hashes": {"sha256": "a" * 64}}}}
+    return {
+        "metadata": {"name": "dep", "version": "2", "requires_dist": list(requires), "provides_extra": list(extras)},
+        "is_direct": False,
+        "download_info": {"url": url, "archive_info": {"hashes": {"sha256": "a" * 64}}},
+    }
 
 
 def test_base_and_extra_closures(tmp_path):
@@ -54,23 +71,31 @@ def test_base_and_extra_closures(tmp_path):
         guard.validate_report(report(path, root, [dependency()]), path, root, "mcp")
 
 
-@pytest.mark.parametrize("requires", ['dep @ file:///tmp/dep.whl', 'dep @ https://example.invalid/dep.whl', 'dep @ git+https://example.invalid/dep'])
+@pytest.mark.parametrize(
+    "requires",
+    ["dep @ file:///tmp/dep.whl", "dep @ https://example.invalid/dep.whl", "dep @ git+https://example.invalid/dep"],
+)
 def test_root_direct_dependencies_rejected_even_when_inactive(tmp_path, requires):
     path = wheel(tmp_path, requires=[requires + ' ; extra == "dev"'])
     with pytest.raises(ValueError, match="direct URL"):
         guard.metadata(path)
 
 
-@pytest.mark.parametrize("raw", ['', '["base","missing"]', '["base","base"]', 'null', '[1]', '{}'])
+@pytest.mark.parametrize("raw", ["", '["base","missing"]', '["base","base"]', "null", "[1]", "{}"])
 def test_profiles_fail_closed(raw):
     with pytest.raises(ValueError):
         guard.profiles(raw, ["mcp"])
 
 
-@pytest.mark.parametrize("raw", ['[]', '["base"]', '["mcp"]'])
+@pytest.mark.parametrize("raw", ["[]", '["base"]', '["mcp"]'])
 def test_advertised_profiles_cannot_be_silently_omitted(raw):
     assert guard.profiles(raw, ["mcp", "agent", "all", "dev"]) == ["agent", "all", "base", "mcp"]
-    assert guard.profiles('["base","mcp","agent","all"]', ["mcp", "agent", "all", "dev"]) == ["agent", "all", "base", "mcp"]
+    assert guard.profiles('["base","mcp","agent","all"]', ["mcp", "agent", "all", "dev"]) == [
+        "agent",
+        "all",
+        "base",
+        "mcp",
+    ]
 
 
 @pytest.mark.parametrize("change", ["url", "direct", "hash", "requires", "version", "python", "missing"])
@@ -103,9 +128,16 @@ def test_incompatible_interpreter_blocks(tmp_path, kwargs):
 
 
 def test_environment_drops_every_poisoned_setting(tmp_path, monkeypatch):
-    poisoned = {"PIP_INDEX_URL": "http://evil", "UV_INDEX": "http://evil", "PIP_CONSTRAINT": "bad.txt",
-                "PYTHONPATH": "/tmp/evil", "HTTP_PROXY": "http://evil", "SSL_CERT_FILE": "/tmp/evil",
-                "UV_CONFIG_FILE": "/tmp/evil", "PIP_CONFIG_FILE": "/tmp/evil"}
+    poisoned = {
+        "PIP_INDEX_URL": "http://evil",
+        "UV_INDEX": "http://evil",
+        "PIP_CONSTRAINT": "bad.txt",
+        "PYTHONPATH": "/tmp/evil",
+        "HTTP_PROXY": "http://evil",
+        "SSL_CERT_FILE": "/tmp/evil",
+        "UV_CONFIG_FILE": "/tmp/evil",
+        "PIP_CONFIG_FILE": "/tmp/evil",
+    }
     for key, value in poisoned.items():
         monkeypatch.setenv(key, value)
     clean = guard.clean_environment(tmp_path, tmp_path / "fixture.whl")
@@ -143,8 +175,10 @@ def test_failed_resolution_removes_stale_success(tmp_path, monkeypatch):
     receipt = tmp_path / "proof.json"
     receipt.write_text('{"schema": 1}')
     monkeypatch.setattr(guard, "identity", lambda: {})
+
     def unavailable(*args):
         raise ValueError("index unavailable")
+
     monkeypatch.setattr(guard, "resolve", unavailable)
     with pytest.raises(ValueError, match="unavailable"):
         guard.check(dist, receipt, '["base"]')
@@ -170,7 +204,12 @@ def test_all_python_publication_paths_guard_before_upload_and_release():
     native = yaml.safe_load((ROOT / ".github/workflows/maturin_pipeline.yml").read_text())
     steps = native["jobs"]["publish"]["steps"]
     names = [step.get("name") for step in steps]
-    assert names.index("Prove wheel runtime readiness") < names.index("Reverify exact upload bytes") < names.index("Publish to PyPI") < names.index("Create Release")
+    assert (
+        names.index("Prove wheel runtime readiness")
+        < names.index("Reverify exact upload bytes")
+        < names.index("Publish to PyPI")
+        < names.index("Create Release")
+    )
     assert "skip-existing" not in str(steps)
     release = yaml.safe_load((ROOT / ".github/actions/create-version-release/action.yml").read_text())
     assert "readiness.py verify" in release["runs"]["steps"][0]["run"]
@@ -184,6 +223,7 @@ def test_transport_rejects_poisoned_origins_and_direct_candidates(tmp_path, monk
     from types import SimpleNamespace
 
     calls = []
+
     class Session:
         def request(self, *args, **kwargs):
             calls.append(kwargs)
@@ -204,7 +244,14 @@ def test_transport_rejects_poisoned_origins_and_direct_candidates(tmp_path, monk
     session = Session()
     session.request("GET", "https://pypi.org/simple/dep/")
     assert calls == [{"allow_redirects": False}]
-    for url in ("http://pypi.org/simple", "https://pypi.org.evil/", "file:///tmp/a", "https://evil/", "https://user@pypi.org/", "https://pypi.org:8080/"):
+    for url in (
+        "http://pypi.org/simple",
+        "https://pypi.org.evil/",
+        "file:///tmp/a",
+        "https://evil/",
+        "https://user@pypi.org/",
+        "https://pypi.org:8080/",
+    ):
         with pytest.raises(ValueError):
             session.request("GET", url)
     link = SimpleNamespace(is_wheel=True, is_file=True, url=root.as_uri())
@@ -222,7 +269,10 @@ def test_transport_rejects_poisoned_origins_and_direct_candidates(tmp_path, monk
         Preparer().prepare_editable_requirement(req)
 
 
-@pytest.mark.parametrize("field,value", [("scope", "fleet-only"), ("index", "https://mirror.invalid"), ("interpreter", {}), ("source_commit", "c" * 40)])
+@pytest.mark.parametrize(
+    "field,value",
+    [("scope", "fleet-only"), ("index", "https://mirror.invalid"), ("interpreter", {}), ("source_commit", "c" * 40)],
+)
 def test_poisoned_receipt_is_not_publication_proof(verified_wheel, field, value):
     dist, _, receipt = verified_wheel
     payload = json.loads(receipt.read_text())
@@ -241,10 +291,17 @@ def test_release_version_comes_from_metadata_not_filename_regex(tmp_path):
     receipt = tmp_path / "receipt.json"
     receipt.write_text(json.dumps({"schema": 1, "wheels": [{"metadata": {"name": "fixture", "version": "1.2.3rc1"}}]}))
     assert guard.publication_version(receipt) == "1.2.3rc1"
-    receipt.write_text(json.dumps({"schema": 1, "wheels": [
-        {"metadata": {"name": "fixture", "version": "1.2.3"}},
-        {"metadata": {"name": "fixture", "version": "1.2.4"}},
-    ]}))
+    receipt.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "wheels": [
+                    {"metadata": {"name": "fixture", "version": "1.2.3"}},
+                    {"metadata": {"name": "fixture", "version": "1.2.4"}},
+                ],
+            }
+        )
+    )
     with pytest.raises(ValueError, match="one package identity"):
         guard.publication_version(receipt)
 
@@ -274,28 +331,40 @@ def test_windows_root_file_url_uses_pinned_decoder(monkeypatch):
     from pip._internal.utils import urls
 
     resolver = guard.sibling("resolve")
+
     class WindowsPath(PureWindowsPath):
         def resolve(self):
             return self
+
     monkeypatch.setattr(urls, "WINDOWS", True)
     monkeypatch.setattr(urls.urllib.request, "url2pathname", nturl2path.url2pathname)
     monkeypatch.setattr(resolver, "Path", WindowsPath)
+
     class Preparer:
         def prepare_linked_requirement(self, req):
             return "accepted"
+
     monkeypatch.setattr(resolver, "RequirementPreparer", Preparer)
     # Avoid mutating the real pip session for other tests.
     monkeypatch.setattr(resolver, "PipSession", type("Session", (), {"request": lambda *a, **kw: None}))
     root = WindowsPath("C:/release space/fixture.whl")
     resolver.constrain(root)
+
     def prepare(url):
-        return Preparer().prepare_linked_requirement(SimpleNamespace(
-            link=SimpleNamespace(url=url, is_file=True, is_wheel=True), editable=False, user_supplied=True))
+        return Preparer().prepare_linked_requirement(
+            SimpleNamespace(
+                link=SimpleNamespace(url=url, is_file=True, is_wheel=True), editable=False, user_supplied=True
+            )
+        )
+
     assert prepare(root.as_uri()) == "accepted"
-    for url in (WindowsPath("D:/release space/fixture.whl").as_uri(),
-                WindowsPath("C:/other/fixture.whl").as_uri(),
-                "file://server/share/fixture.whl", "file:////server/share/fixture.whl",
-                "file:///C:/release%20space/fixture.whl?override=1"):
+    for url in (
+        WindowsPath("D:/release space/fixture.whl").as_uri(),
+        WindowsPath("C:/other/fixture.whl").as_uri(),
+        "file://server/share/fixture.whl",
+        "file:////server/share/fixture.whl",
+        "file:///C:/release%20space/fixture.whl?override=1",
+    ):
         with pytest.raises(ValueError):
             prepare(url)
 
@@ -313,21 +382,27 @@ def test_default_profiles_bound_to_exact_wheel(tmp_path, monkeypatch):
     root = guard.metadata(path)
     selected = guard.profiles('["Runtime.Extra"]', root["provides_extra"])
     assert selected == ["agent", "all", "base", "mcp", "runtime-extra"]
-    item = {"sha256": guard.digest(path), "metadata": root, "profiles": selected,
-            "evidence": [{"profile": p, "report": report(path, root)} for p in selected]}
+    item = {
+        "sha256": guard.digest(path),
+        "metadata": root,
+        "profiles": selected,
+        "evidence": [{"profile": p, "report": report(path, root)} for p in selected],
+    }
     guard.verify_item(path, item, '["runtime-extra"]', guard.observed_context())
     item["profiles"] = ["base"]
     with pytest.raises(ValueError, match="profiles changed"):
-        guard.verify_item(path, item, '[]', guard.observed_context())
+        guard.verify_item(path, item, "[]", guard.observed_context())
     wheel(tmp_path, extras=("mcp",))
     with pytest.raises(ValueError, match="wheel bytes changed"):
-        guard.verify_item(path, item, '[]', guard.observed_context())
+        guard.verify_item(path, item, "[]", guard.observed_context())
 
 
 def test_profile_defaults_at_every_entrypoint():
-    paths = [*ROOT.glob(".github/actions/*/action.yml"),
-             ROOT / ".github/workflows/python_pipeline.yml",
-             ROOT / ".github/workflows/maturin_pipeline.yml"]
+    paths = [
+        *ROOT.glob(".github/actions/*/action.yml"),
+        ROOT / ".github/workflows/python_pipeline.yml",
+        ROOT / ".github/workflows/maturin_pipeline.yml",
+    ]
     found = 0
     for path in paths:
         config = yaml.safe_load(path.read_text())
@@ -342,12 +417,12 @@ def test_profile_defaults_at_every_entrypoint():
 @pytest.mark.parametrize("extras", [["../bad"], ["bad extra"], [None]])
 def test_malformed_wheel_profiles_rejected(extras):
     with pytest.raises(ValueError, match="invalid wheel extra"):
-        guard.profiles('[]', extras)
+        guard.profiles("[]", extras)
 
 
 def test_reserved_base_extra_cannot_hide_an_extra_closure():
     with pytest.raises(ValueError, match="reserved base"):
-        guard.profiles('[]', ["BASE"])
+        guard.profiles("[]", ["BASE"])
 
 
 @pytest.mark.parametrize("metadata_version", ["2.3", "2.4", "2.5", "2.6"])
@@ -359,9 +434,15 @@ def test_modern_raw_wheel_extra_declarations_rejected(tmp_path, metadata_version
 
 
 @pytest.mark.parametrize("metadata_version", ["2.1", "2.2"])
-@pytest.mark.parametrize("extras,expected", [(("foo__bar",), ["foo-bar"]),
-    (("mcp", "MCP"), ["mcp"]), (("mcp", "mcp"), ["mcp"]),
-    (("Foo.Bar", "foo-bar"), ["foo-bar"])])
+@pytest.mark.parametrize(
+    "extras,expected",
+    [
+        (("foo__bar",), ["foo-bar"]),
+        (("mcp", "MCP"), ["mcp"]),
+        (("mcp", "mcp"), ["mcp"]),
+        (("Foo.Bar", "foo-bar"), ["foo-bar"]),
+    ],
+)
 def test_legacy_raw_wheel_aliases_preserved(tmp_path, metadata_version, extras, expected):
     path = wheel(tmp_path, metadata_version=metadata_version, extras=extras)
     with pytest.warns(UserWarning, match="legacy Provides-Extra"):
@@ -379,9 +460,8 @@ def test_invalid_raw_wheel_extra_names_rejected(tmp_path, metadata_version, extr
 
 @pytest.mark.parametrize("metadata_version", ["2.1", "2.2", "2.3", "2.6"])
 def test_canonical_raw_wheel_extras_are_valid(tmp_path, metadata_version):
-    root = guard.metadata(wheel(tmp_path, metadata_version=metadata_version,
-                                extras=["mcp", "foo-bar", "agent", "all"]))
-    assert guard.profiles('[]', root["provides_extra"]) == ["agent", "all", "base", "mcp"]
+    root = guard.metadata(wheel(tmp_path, metadata_version=metadata_version, extras=["mcp", "foo-bar", "agent", "all"]))
+    assert guard.profiles("[]", root["provides_extra"]) == ["agent", "all", "base", "mcp"]
     assert "foo-bar" in guard.profiles('["foo__bar"]', root["provides_extra"])
 
 

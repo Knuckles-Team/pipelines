@@ -31,10 +31,7 @@ def _contract_commit(expected: str) -> str | None:
         return None
     contract = _head(contract_path)
     if not expected or contract != expected:
-        _fail(
-            "pipeline contract commit "
-            f"{contract} does not match the reusable workflow commit {expected}"
-        )
+        _fail(f"pipeline contract commit {contract} does not match the reusable workflow commit {expected}")
         return None
     return contract
 
@@ -42,9 +39,7 @@ def _contract_commit(expected: str) -> str | None:
 def _before(expected: str) -> int:
     source = _head()
     if not expected or source != expected:
-        return _fail(
-            f"checked-out commit {source} does not match github.sha {expected}"
-        )
+        return _fail(f"checked-out commit {source} does not match github.sha {expected}")
     contract = _contract_commit(os.environ.get("EXPECTED_WORKFLOW_COMMIT", ""))
     if contract is None:
         return 1

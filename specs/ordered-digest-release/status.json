@@ -460,8 +460,10 @@
     {
       "id": "PIPE-RELEASE-R007",
       "title": "Shared gates workflow, tag-only publish guard and fast-tests hook",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": [],
       "rollup_of": [
         "PIPE-RELEASE-R007.1",
@@ -475,43 +477,55 @@
     {
       "id": "PIPE-RELEASE-R007.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     }
   ]

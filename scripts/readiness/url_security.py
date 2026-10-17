@@ -12,9 +12,7 @@ from .ip_addresses import _private_address
 
 _INVALID_PERCENT_PATTERN = re.compile(r"%(?![0-9A-Fa-f]{2})")
 _VALID_PERCENT_PATTERN = re.compile(r"%[0-9A-Fa-f]{2}")
-_CREDENTIAL_PATTERN = re.compile(
-    r"(?i)(?:token|secret|password|api[_-]?key|credential|auth)\s*="
-)
+_CREDENTIAL_PATTERN = re.compile(r"(?i)(?:token|secret|password|api[_-]?key|credential|auth)\s*=")
 _MAX_DECODE_PASSES = 3
 _MAX_NESTED_URLS = 16
 
@@ -51,14 +49,10 @@ def _reject_private_host(host: str, label: str) -> None:
 
 
 def _invalid_authority(authority: str) -> bool:
-    return any(
-        character.isspace() or character in "/?#\\" for character in authority
-    )
+    return any(character.isspace() or character in "/?#\\" for character in authority)
 
 
-def _decoded_authority(
-    parsed: SplitResult, authority: str, label: str
-) -> tuple[str, int | None]:
+def _decoded_authority(parsed: SplitResult, authority: str, label: str) -> tuple[str, int | None]:
     """Validate canonical authority syntax and return its normalized host."""
 
     if _invalid_authority(authority):
@@ -134,8 +128,6 @@ def _scan_url(raw: str, label: str) -> None:
         for component in components:
             _reject_component_credentials(component, label)
             pending.extend(
-                _INVALID_PERCENT_PATTERN.sub(
-                    "%25", _trim_candidate(match.group(0), label)
-                )
+                _INVALID_PERCENT_PATTERN.sub("%25", _trim_candidate(match.group(0), label))
                 for match in URL_PATTERN.finditer(component)
             )

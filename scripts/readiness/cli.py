@@ -21,12 +21,8 @@ def _parser() -> argparse.ArgumentParser:
         subparser.add_argument("--content-source", default="pages")
         subparser.add_argument("--readiness-input", default=None)
         subparser.add_argument("--schema", default=None)
-        subparser.add_argument(
-            "--readiness-manifest", default="agent-readiness-manifest.json"
-        )
-        subparser.add_argument(
-            "--mirror-manifest", default="markdown-mirror-manifest.json"
-        )
+        subparser.add_argument("--readiness-manifest", default="agent-readiness-manifest.json")
+        subparser.add_argument("--mirror-manifest", default="markdown-mirror-manifest.json")
     validate = subparsers.add_parser("validate-content-source")
     validate.add_argument("--root", default=".")
     validate.add_argument("--content-source", default="pages")

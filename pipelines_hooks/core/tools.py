@@ -55,9 +55,7 @@ def resolve(tool: str) -> str:
     if override:
         candidate = Path(override).expanduser()
         if not _executable(candidate):
-            raise CannotRun(
-                f"${tool.upper()}_BIN is not an executable file: {candidate}"
-            )
+            raise CannotRun(f"${tool.upper()}_BIN is not an executable file: {candidate}")
         return str(candidate)
     home = Path.home()
     for candidate in (
@@ -71,8 +69,7 @@ def resolve(tool: str) -> str:
     if found:
         return found
     raise Unavailable(
-        f"{tool} is not installed; install the pinned {PINNED_VERSIONS[tool]} "
-        "binary (hooks never install scanners)",
+        f"{tool} is not installed; install the pinned {PINNED_VERSIONS[tool]} binary (hooks never install scanners)",
         remedy=SCANNERS_REMEDY,
     )
 

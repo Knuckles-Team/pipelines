@@ -18,8 +18,7 @@ from .models import Candidate, CandidateSet, CheckResult, QualificationResult
 class ChecksClient(Protocol):
     """Looks up recorded hosted-check results for one repository and commit."""
 
-    def check_results(self, repository: str, commit: str) -> tuple[CheckResult, ...]:
-        ...
+    def check_results(self, repository: str, commit: str) -> tuple[CheckResult, ...]: ...
 
 
 class RecordedChecksClient:

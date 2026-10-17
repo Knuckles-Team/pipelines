@@ -1,4 +1,5 @@
 """Closed target set for the existing Maturin publication matrix."""
+
 from __future__ import annotations
 
 import re

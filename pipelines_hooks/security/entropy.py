@@ -45,7 +45,10 @@ def _is_dotted_identifier_path(token: str) -> bool:
 def is_noise(token: str) -> bool:
     """Hashes, UUIDs, identifiers and dotted identifier paths are never secrets."""
     return bool(
-        _HEX_RE.match(token) or _UUID_RE.match(token) or _IDENTIFIER_RE.match(token) or _is_dotted_identifier_path(token)
+        _HEX_RE.match(token)
+        or _UUID_RE.match(token)
+        or _IDENTIFIER_RE.match(token)
+        or _is_dotted_identifier_path(token)
     )
 
 

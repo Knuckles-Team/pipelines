@@ -55,8 +55,7 @@ def concept_links(ids, base) -> str:
     if not ids:
         return '<span class="no-concept">no concept mapped</span>'
     return " ".join(
-        f'<a href="{html.escape(base)}concepts/#concept-{concept_slug(i)}">{html.escape(i)}</a>'
-        for i in ids
+        f'<a href="{html.escape(base)}concepts/#concept-{concept_slug(i)}">{html.escape(i)}</a>' for i in ids
     )
 
 

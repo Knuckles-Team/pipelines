@@ -25,7 +25,7 @@ def _walk(node: ast.AST, *, protected: set[str], found: list[tuple[int, str]]) -
         if isinstance(child, _NESTED) and getattr(child, "name", "<lambda>") in protected:
             continue
         label = call_label(child) if isinstance(child, ast.Call) else None
-        if label:
+        if label and isinstance(child, ast.Call):
             found.append((child.lineno, label))
         _walk(child, protected=protected, found=found)
 

@@ -10,12 +10,7 @@ EXTENDS_LINE = re.compile(r"^Extends:\s*(\S+)", re.MULTILINE)
 def spec_edges(requirements):
     """Lift requirement `depends_on` edges to spec pairs; one edge per pair."""
     spec_of = {req.id: req.spec for req in requirements}
-    pairs = {
-        (req.spec, DEPENDS, spec_of[dep])
-        for req in requirements
-        for dep in req.depends_on
-        if dep in spec_of
-    }
+    pairs = {(req.spec, DEPENDS, spec_of[dep]) for req in requirements for dep in req.depends_on if dep in spec_of}
     return sorted(edge for edge in pairs if edge[0] != edge[2])
 
 
@@ -67,5 +62,9 @@ def layer_specs(nodes, edges):
 
 
 def normalized_edges(specs, local):
-    edges = {(row['id'], edge['kind'], local.get(edge['url'], edge['url'] or edge['label'])) for row in specs for edge in row['relations']}
+    edges = {
+        (row["id"], edge["kind"], local.get(edge["url"], edge["url"] or edge["label"]))
+        for row in specs
+        for edge in row["relations"]
+    }
     return [list(edge) for edge in sorted(edges)]

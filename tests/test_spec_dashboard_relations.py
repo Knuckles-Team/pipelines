@@ -1,7 +1,5 @@
 """Spec relationship model and view (PIPE-PAGES-R013)."""
 
-import pytest
-
 from scripts.spec_dashboard_relations import extends_edges, layer_specs, spec_edges
 from scripts.spec_dashboard_relations_view import relation_table, relation_view
 
@@ -64,17 +62,13 @@ def test_relation_view_is_html_css():
 
 def test_relation_view_has_legend_and_labels():
     out = relation_view({n: COUNTS for n in "ABC"}, CHAIN)
-    assert (
-        "rel-legend" in out and "<b>depends on</b>" in out and "<b>extends</b>" in out
-    )
+    assert "rel-legend" in out and "<b>depends on</b>" in out and "<b>extends</b>" in out
 
 
 def test_relation_table_matches_edges():
     out = relation_table({}, CHAIN)
     assert out.count("<tr><td>") == len(CHAIN)
-    assert 'aria-describedby="relation-table"' in relation_view(
-        {n: COUNTS for n in "ABC"}, CHAIN
-    )
+    assert 'aria-describedby="relation-table"' in relation_view({n: COUNTS for n in "ABC"}, CHAIN)
 
 
 def test_view_cap_falls_back_to_table():

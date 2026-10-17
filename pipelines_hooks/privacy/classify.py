@@ -58,7 +58,9 @@ def _has_local_identity(line: str, identifiers: frozenset[str], display_names: f
     return _has_identifier(line, identifiers) or _attributed_name(line, display_names)
 
 
-def classify_line(line: str, *, identifiers: frozenset[str], deployment_doc: bool, display_names: frozenset[str] = frozenset()) -> frozenset[str]:
+def classify_line(
+    line: str, *, identifiers: frozenset[str], deployment_doc: bool, display_names: frozenset[str] = frozenset()
+) -> frozenset[str]:
     """Categories for one line of a public text artifact."""
     persisted = _persisted_machine_path(line)
     checks = [
@@ -76,7 +78,9 @@ def classify_line(line: str, *, identifiers: frozenset[str], deployment_doc: boo
     return frozenset(category for hit, category in checks if hit)
 
 
-def classify_runtime_source_line(line: str, *, identifiers: frozenset[str], display_names: frozenset[str] = frozenset()) -> frozenset[str]:
+def classify_runtime_source_line(
+    line: str, *, identifiers: frozenset[str], display_names: frozenset[str] = frozenset()
+) -> frozenset[str]:
     """Categories for one line of runtime or deployment source.
 
     Source legitimately manipulates path-shaped values, so the generic

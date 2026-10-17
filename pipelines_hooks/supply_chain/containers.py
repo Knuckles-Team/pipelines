@@ -10,7 +10,8 @@ DOCKER_FROM_RE = re.compile(r"^\s*FROM(?:\s+--platform=\S+)?\s+(\S+)(?:\s+AS\s+(
 DOCKER_COPY_FROM_RE = re.compile(r"\bCOPY\s+--from=([^\s]+)", re.IGNORECASE)
 DOCKER_ARG_RE = re.compile(r"^\s*ARG\s+([A-Za-z_][A-Za-z0-9_]*)(?:=(\S+))?", re.MULTILINE)
 SECRET_NAME_RE = re.compile(
-    r"(?:^|_)(?:ACCESS_KEY|ACCESS_TOKEN|API_KEY|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|PASSWD|PRIVATE_KEY|SECRET|TOKEN)$", re.IGNORECASE
+    r"(?:^|_)(?:ACCESS_KEY|ACCESS_TOKEN|API_KEY|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|PASSWD|PRIVATE_KEY|SECRET|TOKEN)$",
+    re.IGNORECASE,
 )
 COMPOSE_IMAGE_RE = re.compile(r"^\s*image:\s*(.+?)\s*(?:#.*)?$", re.MULTILINE)
 REQUIRED_IMAGE_DIGEST_VARIABLE_RE = re.compile(r"^\$\{[A-Z][A-Z0-9_]*_IMAGE_DIGEST:\?[^}\r\n]{1,128}\}$")
@@ -40,7 +41,11 @@ def _from_findings(source: Source) -> tuple[list[Finding], set[str]]:
         if match.group(2):
             stages.add(match.group(2).casefold())
         if not _from_valid(match.group(1), stages, arguments):
-            findings.append(source.at_offset(match.start(), rule="SC-CTR-001", message="external base image is not pinned to sha256"))
+            findings.append(
+                source.at_offset(
+                    match.start(), rule="SC-CTR-001", message="external base image is not pinned to sha256"
+                )
+            )
     return findings, stages
 
 
@@ -49,13 +54,25 @@ def docker_findings(source: Source) -> list[Finding]:
     for match in DOCKER_COPY_FROM_RE.finditer(source.text):
         origin = match.group(1)
         if not (origin.isdigit() or origin.casefold() in stages or origin.startswith("$") or pinned_digest(origin)):
-            findings.append(source.at_offset(match.start(), rule="SC-CTR-002", message="external COPY --from image is not pinned to sha256"))
-    findings += source.each_match(NETWORK_TO_SHELL_RE, rule="SC-CTR-003", message="network response is executed by a shell during the build")
+            findings.append(
+                source.at_offset(
+                    match.start(), rule="SC-CTR-002", message="external COPY --from image is not pinned to sha256"
+                )
+            )
     findings += source.each_match(
-        re.compile(r"^\s*ADD\s+https?://", re.IGNORECASE | re.MULTILINE), rule="SC-CTR-004", message="remote ADD bypasses explicit digest verification"
+        NETWORK_TO_SHELL_RE, rule="SC-CTR-003", message="network response is executed by a shell during the build"
+    )
+    findings += source.each_match(
+        re.compile(r"^\s*ADD\s+https?://", re.IGNORECASE | re.MULTILINE),
+        rule="SC-CTR-004",
+        message="remote ADD bypasses explicit digest verification",
     )
     findings += [
-        source.at_offset(m.start(), rule="SC-CTR-005", message="secret-shaped build ARG/ENV can persist in image metadata; use a secret mount")
+        source.at_offset(
+            m.start(),
+            rule="SC-CTR-005",
+            message="secret-shaped build ARG/ENV can persist in image metadata; use a secret mount",
+        )
         for m in re.finditer(r"^\s*(?:ARG|ENV)\s+([A-Za-z_][A-Za-z0-9_]*)", source.text, re.MULTILINE)
         if SECRET_NAME_RE.search(m.group(1))
     ]
@@ -77,10 +94,16 @@ def _compose_image_valid(image: str) -> bool:
 
 def compose_findings(source: Source) -> list[Finding]:
     findings = [
-        source.at_offset(m.start(), rule="SC-CTR-006", message="runtime image must be a digest or a required immutable image variable")
+        source.at_offset(
+            m.start(),
+            rule="SC-CTR-006",
+            message="runtime image must be a digest or a required immutable image variable",
+        )
         for m in COMPOSE_IMAGE_RE.finditer(source.text)
         if not _compose_image_valid(m.group(1).strip().strip("\"'"))
     ]
     for pattern, message in _DANGEROUS_COMPOSE:
-        findings += source.each_match(re.compile(pattern, re.IGNORECASE | re.MULTILINE), rule="SC-CTR-007", message=message)
+        findings += source.each_match(
+            re.compile(pattern, re.IGNORECASE | re.MULTILINE), rule="SC-CTR-007", message=message
+        )
     return findings

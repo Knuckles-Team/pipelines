@@ -52,7 +52,14 @@ def test_missing_alias_file_means_no_aliases(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(
     "text",
-    ['"old-" = "NEW-"\n', '"OLD" = "NEW-"\n', '"OLD-" = 3\n', '"OLD-" = "OLD-"\n', '"A-" = "B-"\n"B-" = "C-"\n', "not toml ="],
+    [
+        '"old-" = "NEW-"\n',
+        '"OLD" = "NEW-"\n',
+        '"OLD-" = 3\n',
+        '"OLD-" = "OLD-"\n',
+        '"A-" = "B-"\n"B-" = "C-"\n',
+        "not toml =",
+    ],
 )
 def test_malformed_alias_file_cannot_run(tmp_path: Path, text: str) -> None:
     (tmp_path / ".config").mkdir()

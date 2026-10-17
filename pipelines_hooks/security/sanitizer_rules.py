@@ -11,13 +11,18 @@ import re
 MAX_SCAN_BYTES = 8 * 1024 * 1024
 
 #: Root-level ``.txt`` files that are canonical inputs, not scratch.
-ALLOWED_TXT_NAMES = frozenset(
-    {"requirements.txt", "requirements-dev.txt", "llms.txt", "overrides.txt"}
+ALLOWED_TXT_NAMES = frozenset({"requirements.txt", "requirements-dev.txt", "llms.txt", "overrides.txt"})
+TRANSIENT_PY_PATTERNS = tuple(
+    re.compile(p) for p in (r"^test_.*\.py$", r"^fix_.*\.py$", r"^debug_.*\.py$", r"^scratch_.*\.py$", r"^temp_.*\.py$")
 )
-TRANSIENT_PY_PATTERNS = tuple(re.compile(p) for p in (r"^test_.*\.py$", r"^fix_.*\.py$", r"^debug_.*\.py$", r"^scratch_.*\.py$", r"^temp_.*\.py$"))
 TRANSIENT_NOTE_PATTERNS = tuple(
     re.compile(p, re.IGNORECASE)
-    for p in (r".*[-_ ]BASELINE[-_ ]NOTES\.md$", r".*[-_ ]WORKING[-_ ]NOTES\.md$", r".*[-_ ]HANDOFF[-_ ]NOTES\.md$", r".*[-_ ]SCRATCHPAD\.md$")
+    for p in (
+        r".*[-_ ]BASELINE[-_ ]NOTES\.md$",
+        r".*[-_ ]WORKING[-_ ]NOTES\.md$",
+        r".*[-_ ]HANDOFF[-_ ]NOTES\.md$",
+        r".*[-_ ]SCRATCHPAD\.md$",
+    )
 )
 SECRET_PATTERNS = (
     ("GitHub PAT", re.compile(r"ghp_[A-Za-z0-9_]{36,255}")),
@@ -27,23 +32,58 @@ SECRET_PATTERNS = (
     ("AWS access key", re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b")),
     ("Slack token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,}\b")),
     ("Langfuse secret", re.compile(r"\bsk-lf-[A-Za-z0-9_-]{16,}\b")),
-    ("Generic Secret Assignment", re.compile(r"secret[A-Za-z0-9_]*\s*[:=]\s*['\"][A-Za-z0-9_\-\.\~\*]{16,255}['\"]", re.IGNORECASE)),
+    (
+        "Generic Secret Assignment",
+        re.compile(r"secret[A-Za-z0-9_]*\s*[:=]\s*['\"][A-Za-z0-9_\-\.\~\*]{16,255}['\"]", re.IGNORECASE),
+    ),
     ("Generic Token Assignment", re.compile(r"token\s*[:=]\s*['\"][A-Za-z0-9_\-\.\~\*]{16,255}['\"]", re.IGNORECASE)),
 )
 #: Generated trees only; hidden source directories such as ``.github`` stay in.
 EXCLUDED_DIRS = frozenset(
-    {".git", ".venv", "venv", "node_modules", "build", "dist", "__pycache__", ".tox", ".specify",
-     ".mypy_cache", ".pytest_cache", ".ruff_cache", ".cache", "target", "target-isolated"}
+    {
+        ".git",
+        ".venv",
+        "venv",
+        "node_modules",
+        "build",
+        "dist",
+        "__pycache__",
+        ".tox",
+        ".specify",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".cache",
+        "target",
+        "target-isolated",
+    }
 )
 EXCLUDED_EXTENSIONS = frozenset(
     ".png .jpg .jpeg .gif .webp .ico .pyc .db .kuzu .sqlite .sqlite3 .zip .tar.gz .tgz .bz2 .xz "
     ".pdf .bin .exe .dll .so .dylib .woff .woff2 .eot .ttf .mp4 .mp3 .wav .lock .svg".split()
 )
 PLACEHOLDER_VALUES = frozenset(
-    {"1234567890", "abcdef12345", "abc123youandme", "askdfalskdvjas", "test_token", "test_secret",
-     "glpat-askdfalskdvjas", "github_pat_12345", "glpat-abc123youandme", "github_pat_...",
-     "glpat-*************", "ghp_*************", "github_pat_*************", "token_*************",
-     "secret_*************", "glpat-abc", "ghp_abc", "github_pat_abc", "${env:"}
+    {
+        "1234567890",
+        "abcdef12345",
+        "abc123youandme",
+        "askdfalskdvjas",
+        "test_token",
+        "test_secret",
+        "glpat-askdfalskdvjas",
+        "github_pat_12345",
+        "glpat-abc123youandme",
+        "github_pat_...",
+        "glpat-*************",
+        "ghp_*************",
+        "github_pat_*************",
+        "token_*************",
+        "secret_*************",
+        "glpat-abc",
+        "ghp_abc",
+        "github_pat_abc",
+        "${env:",
+    }
 )
 PLACEHOLDER_PREFIXES = ("your_", "your-", "dummy", "example", "mock")
 

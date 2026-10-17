@@ -3,6 +3,7 @@
 No native target is substituted by the publisher's interpreter. The caller
 supplies no target allowlist: the existing workflow matrix is the closed scope.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -51,7 +52,9 @@ def validate_wheels(guard, directory: Path, proofs: dict, raw: str, identity: di
     return owned
 
 
-def validate_source(guard, directory: Path, source: dict, proofs: dict, raw: str, identity: dict, evidence: Path) -> str:
+def validate_source(
+    guard, directory: Path, source: dict, proofs: dict, raw: str, identity: dict, evidence: Path
+) -> str:
     archive = source["archive"]
     name = archive["file"]
     guard.require(Path(name).name == name and name.endswith(".tar.gz"), "invalid source archive name")
@@ -73,11 +76,11 @@ def validate_source(guard, directory: Path, source: dict, proofs: dict, raw: str
         project = source_checker.extract(path, Path(temporary))
         package = source_checker.package_identity(guard, project, name)
         requirements = source_checker.build_requirements(guard, project)
-        guard.sibling("prerequisites").validate(
-            guard, requirements, source["build_prerequisites"], proof["context"]
-        )
-    guard.require(package == (item["metadata"]["name"], item["metadata"]["version"]),
-                  "source filename disagrees with rebuilt package identity")
+        guard.sibling("prerequisites").validate(guard, requirements, source["build_prerequisites"], proof["context"])
+    guard.require(
+        package == (item["metadata"]["name"], item["metadata"]["version"]),
+        "source filename disagrees with rebuilt package identity",
+    )
     reference = proofs["linux-x86_64"]["wheels"][0]["metadata"]
     guard.require(item["metadata"] == reference, "source rebuilt runtime metadata differs from release wheel")
     return name
@@ -99,8 +102,10 @@ def aggregate(directory: Path, receipts: Path, output: Path, raw: str, evidence:
     guard = guard_module()
     output.unlink(missing_ok=True)
     expected = {*guard.sibling("targets").TARGETS, "sdist"}
-    guard.require({path.name for path in receipts.iterdir()} == {name + ".json" for name in expected},
-                  "target receipt directory is incomplete or contains unexpected files")
+    guard.require(
+        {path.name for path in receipts.iterdir()} == {name + ".json" for name in expected},
+        "target receipt directory is incomplete or contains unexpected files",
+    )
     proofs = {}
     for name in sorted(expected):
         path = receipts / (name + ".json")

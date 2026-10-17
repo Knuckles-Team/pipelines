@@ -84,8 +84,10 @@ def unique_object(pairs: list[tuple[str, object]]) -> dict:
 
 def object_git(root: Path, args: list[str]) -> str:
     """Read original objects without replacement refs, fsmonitor hooks or index writes."""
-    return git_text(root, ["--no-replace-objects", "--no-optional-locks", "--literal-pathspecs",
-                           "-c", "core.fsmonitor=false", *args])
+    return git_text(
+        root,
+        ["--no-replace-objects", "--no-optional-locks", "--literal-pathspecs", "-c", "core.fsmonitor=false", *args],
+    )
 
 
 def load(path: Path) -> dict:

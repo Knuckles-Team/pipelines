@@ -68,15 +68,20 @@ async fn handle_shex_validate(
     let report = eg_shex::validate(&schema, &data, &map);
 """
 
-HANDLE_SHEX_VALIDATE_BASE = HANDLE_SHEX_VALIDATE_COMMON + """\
+HANDLE_SHEX_VALIDATE_BASE = (
+    HANDLE_SHEX_VALIDATE_COMMON
+    + """\
     match serde_json::to_value(&report) {
         Ok(v) => Response::ok(req_id, ResultPayload::Json(v)),
         Err(e) => Response::err(req_id, format!("ShexValidate: serialize report: {e}")),
     }
 }
 """
+)
 
-HANDLE_SHEX_VALIDATE_SIMPLIFIED = HANDLE_SHEX_VALIDATE_COMMON + """\
+HANDLE_SHEX_VALIDATE_SIMPLIFIED = (
+    HANDLE_SHEX_VALIDATE_COMMON
+    + """\
     Response::ok(
         req_id,
         ResultPayload::of::<eg_types::result_contract::reasoning::ShexValidate>(shex_report_wire(
@@ -85,6 +90,7 @@ HANDLE_SHEX_VALIDATE_SIMPLIFIED = HANDLE_SHEX_VALIDATE_COMMON + """\
     )
 }
 """
+)
 
 pytestmark = pytest.mark.scanner("cccc")
 
@@ -115,7 +121,10 @@ def test_exempt_function_growing_non_arm_complexity_fails(repo: Repo) -> None:
     # 3): still exempt on both sides (cognitive stays under the cap), but the
     # growth is not "purely added arms".
     repo.commit({"pkg/dispatch.rs": _dispatch(11)})
-    grown = _dispatch(11, extra="\n            if flag {\n                if other {\n                    return 9;\n                }\n            }")
+    grown = _dispatch(
+        11,
+        extra="\n            if flag {\n                if other {\n                    return 9;\n                }\n            }",
+    )
     repo.stage({"pkg/dispatch.rs": grown})
     assert repo.run("complexity-staged") == 1
 
