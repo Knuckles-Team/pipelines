@@ -43,6 +43,49 @@ def test_secret_history_scans_all_history_without_a_published_base(repo: Repo) -
     assert repo.run("secret-history") == 1
 
 
+def _publish(repo: Repo, branch: str = "feature") -> None:
+    """Push the current HEAD to a bare remote, so its commits are published."""
+    remote = repo.root.parent / f"{repo.root.name}-remote.git"
+    if not remote.exists():
+        repo.git("init", "-q", "--bare", str(remote))
+        repo.git("remote", "add", "origin", str(remote))
+    repo.git("push", "-q", "origin", f"HEAD:refs/heads/{branch}")
+    repo.git("fetch", "-q", "origin")
+
+
+def test_secret_history_does_not_rescan_published_commits_whose_secret_is_gone(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.commit({"pkg/leak.py": _assignment("TOKEN")})
+    repo.commit({"pkg/leak.py": "TOKEN = None\n"})
+    assert check(repo.root, base)[0] == 1  # unpushed: the add-then-remove is caught
+    _publish(repo)
+    rc, result = check(repo.root, base)
+    assert rc == 0
+    assert result["publishedCommitsNotRescanned"] == 2 and result["unpublishedCommitsScanned"] == 0
+
+
+def test_secret_history_net_diff_catches_a_secret_still_in_a_published_change(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.commit({"pkg/leak.py": _assignment("TOKEN")})
+    _publish(repo)
+    rc, result = check(repo.root, base)
+    assert rc == 1
+    assert result["credentialHits"][0]["commit"] == "net-diff"
+
+
+def test_secret_history_marker_on_a_net_diff_line_exempts_a_published_fixture(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.commit({"pkg/fixture.py": f"KEY = '{AWS_KEY}'\n"})
+    _publish(repo)
+    assert check(repo.root, base)[0] == 1
+    repo.commit({"pkg/fixture.py": f"KEY = '{AWS_KEY}'  {MARK} - synthetic test fixture\n"})
+    _publish(repo)
+    assert check(repo.root, base)[0] == 0
+    repo.commit({"pkg/fixture.py": f"KEY = '{AWS_KEY}'  {MARK}\n"})
+    _publish(repo)
+    assert check(repo.root, base)[0] == 1  # a bare marker still exempts nothing
+
+
 def test_secret_history_skips_a_documented_placeholder_uri_but_not_a_real_password() -> None:
     from pipelines_hooks.security.history_scan import scan_text_for_credentials
 
