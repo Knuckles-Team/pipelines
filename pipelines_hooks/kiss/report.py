@@ -80,9 +80,7 @@ def _item_attributable(violation: Violation, sources: tuple[str, str], spans: Sp
     return ordinal >= len(head) or head[ordinal][2] != staged[ordinal][2]
 
 
-def attributable(
-    staged: tuple[str, str], head: tuple[str, str] | None, spans: SpanFinder
-) -> list[Violation]:
+def attributable(staged: tuple[str, str], head: tuple[str, str] | None, spans: SpanFinder) -> list[Violation]:
     """The staged findings the diff caused. ``staged``/``head`` are (source, report).
 
     ``head`` is ``None`` for a file with no HEAD blob: every finding counts.

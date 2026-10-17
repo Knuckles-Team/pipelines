@@ -59,11 +59,7 @@ def _row_ids(text: str, aliases: Aliases | None = None) -> Counter[str]:
 
 def _status_rows(status: object) -> list[dict]:
     """The requirement rows of a parsed status.json, in whatever shape it was written."""
-    reqs = (
-        status["requirements"]
-        if isinstance(status, dict) and "requirements" in status
-        else status
-    )
+    reqs = status["requirements"] if isinstance(status, dict) and "requirements" in status else status
     if not isinstance(reqs, list):
         return []
     return [r for r in reqs if isinstance(r, dict) and r.get("id")]
@@ -71,9 +67,7 @@ def _status_rows(status: object) -> list[dict]:
 
 def _canonical_status_rows(status: object, aliases: Aliases) -> list[dict]:
     """status.json rows with each ID canonicalized through the repository's aliases."""
-    return [
-        {**r, "id": canonical_id(str(r["id"]), aliases)} for r in _status_rows(status)
-    ]
+    return [{**r, "id": canonical_id(str(r["id"]), aliases)} for r in _status_rows(status)]
 
 
 _NUMBER_TAIL = re.compile(r"R?\d{2,3}(?:\.\d+)*$")
@@ -84,9 +78,7 @@ def _id_prefix(rid: str) -> str:
     return _NUMBER_TAIL.sub("", rid)
 
 
-def _referenced_child_ids(
-    texts: dict[str, str], known_ids: set[str], aliases: Aliases | None = None
-) -> set[str]:
+def _referenced_child_ids(texts: dict[str, str], known_ids: set[str], aliases: Aliases | None = None) -> set[str]:
     """Dotted child IDs mentioned across the spec's markdown, limited to the ID families the
     spec actually declares -- local test-case numbers such as ``F-07.1`` are not requirements."""
     families = {_id_prefix(rid) for rid in known_ids}
@@ -127,9 +119,7 @@ def check_spec(spec_dir: Path, aliases: Aliases | None = None) -> list[str]:
         req_counts=req_counts,
         status_counts=status_counts,
         state_by_id=state_by_id,
-        referenced=_referenced_child_ids(
-            texts, set(req_counts) | set(status_counts), aliases
-        ),
+        referenced=_referenced_child_ids(texts, set(req_counts) | set(status_counts), aliases),
     )
 
     return [

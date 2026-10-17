@@ -40,10 +40,7 @@ def _canonical_scalar(raw: str, label: str) -> str:
 
 
 def _has_decoded_secret(value: str) -> bool:
-    return any(
-        pattern.search(value)
-        for pattern in (SECRET_PATTERN, BEARER_PATTERN)
-    )
+    return any(pattern.search(value) for pattern in (SECRET_PATTERN, BEARER_PATTERN))
 
 
 def _reject_decoded_secrets(value: str, label: str) -> None:

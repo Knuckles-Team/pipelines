@@ -31,10 +31,7 @@ def _decode_html(payload: bytes) -> str:
 
 
 def _tag_attributes(tag: str) -> dict[str, str]:
-    return {
-        match.group("name").lower(): match.group("value")
-        for match in ATTRIBUTE_PATTERN.finditer(tag)
-    }
+    return {match.group("name").lower(): match.group("value") for match in ATTRIBUTE_PATTERN.finditer(tag)}
 
 
 def _html_state(payload: bytes) -> str:
@@ -45,10 +42,7 @@ def _html_state(payload: bytes) -> str:
         content = attributes.get("content", "").lower()
         if name == "robots" and re.search(r"\bnoindex\b", content):
             return "noindex"
-        if (
-            name in {"agent-document-state", "document-state"}
-            and content == "deprecated"
-        ):
+        if name in {"agent-document-state", "document-state"} and content == "deprecated":
             return "deprecated"
     if DEPRECATED_DATA_PATTERN.search(text):
         return "deprecated"
@@ -59,10 +53,7 @@ def _markdown_alternate_hrefs(text: str) -> list[str]:
     hrefs: list[str] = []
     for tag in LINK_TAG_PATTERN.findall(text):
         attributes = _tag_attributes(tag)
-        if (
-            attributes.get("rel", "").lower() == "alternate"
-            and attributes.get("type", "").lower() == "text/markdown"
-        ):
+        if attributes.get("rel", "").lower() == "alternate" and attributes.get("type", "").lower() == "text/markdown":
             href = attributes.get("href")
             if href is None:
                 _fail("html-alternate-invalid")
@@ -70,12 +61,8 @@ def _markdown_alternate_hrefs(text: str) -> list[str]:
     return hrefs
 
 
-def _validate_alternate_hrefs(
-    matches: list[str], markdown_url: str, expected: str
-) -> None:
-    if matches and any(
-        value != markdown_url and value != expected for value in matches
-    ):
+def _validate_alternate_hrefs(matches: list[str], markdown_url: str, expected: str) -> None:
+    if matches and any(value != markdown_url and value != expected for value in matches):
         _fail("html-alternate-conflict")
 
 
@@ -83,22 +70,15 @@ def _validate_directive(text: str, expected: str, llms_url: str) -> bool:
     directive_matches = list(DIRECTIVE_PATTERN.finditer(text))
     if not DIRECTIVE_MARKER_PATTERN.search(text):
         return False
-    if (
-        len(directive_matches) != 1
-        or len(DIRECTIVE_MARKER_PATTERN.findall(text)) != 1
-    ):
+    if len(directive_matches) != 1 or len(DIRECTIVE_MARKER_PATTERN.findall(text)) != 1:
         _fail("html-directive-invalid")
     directive = directive_matches[0]
-    if directive.group("alternate") != expected or directive.group(
-        "llms"
-    ) != html.escape(llms_url, quote=True):
+    if directive.group("alternate") != expected or directive.group("llms") != html.escape(llms_url, quote=True):
         _fail("html-directive-conflict")
     return True
 
 
-def _html_with_alternate(
-    page: MirrorPage, payload: bytes, llms_url: str
-) -> tuple[bytes, str]:
+def _html_with_alternate(page: MirrorPage, payload: bytes, llms_url: str) -> tuple[bytes, str]:
     text = _decode_html(payload)
     matches = _markdown_alternate_hrefs(text)
     expected = html.escape(page.markdown_url, quote=True)
@@ -108,13 +88,10 @@ def _html_with_alternate(
 
     additions: list[str] = []
     if not has_alternate:
-        additions.append(
-            f'  <link rel="alternate" type="text/markdown" href="{expected}">\n'
-        )
+        additions.append(f'  <link rel="alternate" type="text/markdown" href="{expected}">\n')
     if not has_directive:
         additions.append(
-            "  <!-- agent-utilities-markdown "
-            f'alternate="{expected}" llms="{html.escape(llms_url, quote=True)}" -->\n'
+            f'  <!-- agent-utilities-markdown alternate="{expected}" llms="{html.escape(llms_url, quote=True)}" -->\n'
         )
     if not additions:
         return payload, _html_state(payload)
@@ -171,24 +148,16 @@ def _robots_with_sitemap(site: Path, sitemap_url: str) -> bytes:
     return (text + separator + sitemap_line).encode("utf-8")
 
 
-def _derived_assets(
-    pages: tuple[MirrorPage, ...], site: Path, site_url: str
-) -> tuple[tuple[Path, bytes], ...]:
+def _derived_assets(pages: tuple[MirrorPage, ...], site: Path, site_url: str) -> tuple[tuple[Path, bytes], ...]:
     sitemap_url = _site_asset_url(site_url, "sitemap.xml")
     sitemap_rows: list[str] = []
     for page in pages:
-        state = _html_state(
-            _regular_bytes(page.html_path, "html-output", MAX_HTML_BYTES)
-        )
+        state = _html_state(_regular_bytes(page.html_path, "html-output", MAX_HTML_BYTES))
         if state == "current":
-            sitemap_rows.append(
-                f"  <url><loc>{html.escape(page.canonical_url)}</loc></url>"
-            )
+            sitemap_rows.append(f"  <url><loc>{html.escape(page.canonical_url)}</loc></url>")
     sitemap = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        + "\n".join(sitemap_rows)
-        + "\n</urlset>\n"
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(sitemap_rows) + "\n</urlset>\n"
     ).encode("utf-8")
     robots = _robots_with_sitemap(site, sitemap_url)
     return (

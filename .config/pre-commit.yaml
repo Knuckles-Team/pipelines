@@ -1,227 +1,72 @@
-# pipelines runs its own shared hooks (.pre-commit-hooks.yaml) on itself, as
-# local hooks over the locked project environment, with the identical
-# `pipelines-hook <gate>` entries consumers get (tests/hooks/test_catalogue.py
-# holds the two in lockstep).
+# pipelines runs the gate standard (reference/gate-standard.md) on itself.
+# The shared `secrets`, `tests-fast` and `spec` hooks run as local hooks over
+# the locked project environment, with the same `pipelines-hook <id>` entries
+# consumers get (tests/hooks/test_catalogue.py holds the two in lockstep).
 #
-# Shared hooks NOT run here, and why:
-#   dependency-readiness -- release-only network check; full manual code validation
-#                           must stay offline. Publishers enforce exact wheel proof.
-#   stdout-writes -- this repository serves no stdio JSON-RPC surface; the hook
-#                    package is a CLI whose output is its interface.
+# Blocking: format, hygiene, secrets (commit); types, tests-fast, spec (push).
+# Advisory gates run weekly in .github/workflows/advisory.yml and never block.
+# `validate` is the on-demand repository report (manual stage only).
 default_install_hook_types: [pre-commit, pre-push]
 default_stages: [pre-commit]
 repos:
+# --- hygiene ---------------------------------------------------------------
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
   hooks:
   - id: trailing-whitespace
   - id: end-of-file-fixer
+  - id: check-merge-conflict
+  - id: check-added-large-files
   - id: check-yaml
     # --unsafe: syntax check only, so MkDocs tags such as !ENV in the shared theme config parse.
     args: [--unsafe]
-  - id: check-added-large-files
+  - id: check-toml
+  - id: check-json
+# --- format ----------------------------------------------------------------
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: 38bfb07c0c64c304f47eb52090f8288150c77730 # v0.17.1
+  hooks:
+  - id: ruff-check
+    args: [--fix]
+  - id: ruff-format
 - repo: local
   hooks:
-  - id: forbid-actions-write-all
-    name: Forbid broad GitHub Actions write-all permissions
-    entry: '^\s*permissions:\s*write-all\s*$'
-    language: pygrep
-    files: ^\.github/workflows/.*\.ya?ml$
-  - id: pytest
-    name: pytest (full suite)
-    entry: uv run --frozen python -m pytest -q
+  # --- secrets ---------------------------------------------------------------
+  - id: secrets
+    name: Secrets and identity - credentials, host/identity data, commit identities
+    entry: uv run --frozen --quiet pipelines-hook secrets
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-commit, pre-push]
+  # --- types -----------------------------------------------------------------
+  - id: types
+    name: Types (mypy)
+    entry: uv run --frozen --quiet mypy pipelines_hooks
     language: system
     pass_filenames: false
     always_run: true
     stages: [pre-push, manual]
-  # --- shared hooks, run on this repository -------------------------------
-  - id: complexity-staged
-    name: Complexity (cccc) - no new or worsened function over 10/15
-    entry: uv run --frozen --quiet pipelines-hook complexity-staged
+  # --- tests-fast ------------------------------------------------------------
+  - id: tests-fast
+    name: Fast tests - only the tests the pushed diff affects (120 s cap)
+    entry: uv run --frozen --quiet pipelines-hook tests-fast
+    args: [--src-root, pipelines_hooks]
     language: system
     pass_filenames: false
     always_run: true
-    require_serial: true
-  - id: complexity-census
-    name: Complexity census (cccc) - absolute zero outside the terms of acceptance
-    entry: uv run --frozen --quiet pipelines-hook complexity-census
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-    stages: [pre-push, manual]
-  - id: kiss-staged
-    name: KISS - staged package source, diff-scoped
-    entry: uv run --frozen --quiet pipelines-hook kiss-staged
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-  - id: kiss-census
-    name: KISS census - every package file plus orphan modules
-    entry: uv run --frozen --quiet pipelines-hook kiss-census
+    stages: [pre-push]
+  # --- spec ------------------------------------------------------------------
+  - id: spec
+    name: Spec - standard, decomposition, generated status freshness and Spec trailers
+    entry: uv run --frozen --quiet pipelines-hook spec
     language: system
     pass_filenames: false
     always_run: true
     require_serial: true
     stages: [pre-push, manual]
-  - id: dupehound-changed
-    name: Clone gate - changed functions (dupehound)
-    entry: uv run --frozen --quiet pipelines-hook dupehound-changed
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-  - id: jscpd-differential
-    name: Clone gate - new blocks (jscpd, merged-tree differential)
-    entry: uv run --frozen --quiet pipelines-hook jscpd-differential
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-    stages: [pre-push, manual]
-  - id: jscpd-census
-    name: Clone census - tracked tree (jscpd, advisory)
-    entry: uv run --frozen --quiet pipelines-hook jscpd-census
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-    stages: [pre-push, manual]
-  - id: scanner-versions
-    name: Pinned native scanners are installed at their exact versions
-    entry: uv run --frozen --quiet pipelines-hook scanner-versions
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages: [pre-push, manual]
-  - id: secret-history
-    name: Credential-shaped content in the unpublished commit range
-    entry: uv run --frozen --quiet pipelines-hook secret-history
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages: [pre-push, manual]
-  - id: security-sanitizer
-    name: Security and garbage sanitizer
-    entry: uv run --frozen --quiet pipelines-hook security-sanitizer
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: tracked-privacy
-    name: Tracked artifacts contain no host-specific data, local or model identities
-    entry: uv run --frozen --quiet pipelines-hook tracked-privacy
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: commit-identity
-    name: Commit identity - the commit being made has an allowlisted author and committer
-    entry: uv run --frozen --quiet pipelines-hook commit-identity
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: commit-identity-range
-    name: Commit identity (range) - every commit in the outgoing/incoming range is allowlisted
-    entry: uv run --frozen --quiet pipelines-hook commit-identity-range
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages: [pre-push, manual]
-  - id: supply-chain
-    name: Immutable workflow, container and dependency sources
-    entry: uv run --frozen --quiet pipelines-hook supply-chain
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: sprawl
-    name: Anti-sprawl
-    entry: uv run --frozen --quiet pipelines-hook sprawl
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: pre-commit-patch-safety
-    name: No live uncommitted work parked in the pre-commit patch cache
-    entry: uv run --frozen --quiet pipelines-hook pre-commit-patch-safety
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages: [pre-push, manual]
-  - id: mermaid
-    name: Mermaid diagram syntax
-    entry: uv run --frozen --quiet pipelines-hook mermaid
-    language: system
-    types: [markdown]
-  - id: no-stub
-    name: No production stub markers or unmarked NotImplementedError
-    entry: uv run --frozen --quiet pipelines-hook no-stub
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: stubs
-    name: No stub bodies and no deferred-work comments
-    entry: uv run --frozen --quiet pipelines-hook stubs
-    language: system
-    types: [python]
-  - id: swallowed-errors
-    name: Swallowed errors - no cause-dropping handler added
-    entry: uv run --frozen --quiet pipelines-hook swallowed-errors
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: event-loop-blocking
-    name: Event-loop blocking - no blocking call added in async code
-    entry: uv run --frozen --quiet pipelines-hook event-loop-blocking
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: import-cycles
-    name: Import cycles - zero eager cycles
-    entry: uv run --frozen --quiet pipelines-hook import-cycles
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: env-sprawl
-    name: Configuration - environment read only in core/settings.py
-    entry: uv run --frozen --quiet pipelines-hook env-sprawl
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: public-surface
-    name: Public README/AGENTS surface contract
-    entry: uv run --frozen --quiet pipelines-hook public-surface
-    language: system
-    pass_filenames: false
-    always_run: true
-  - id: ste-staged
-    name: EG-STE-Lite - staged or CI docs, diff-scoped
-    entry: uv run --frozen --quiet pipelines-hook ste-staged
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-  - id: ste-census
-    name: EG-STE-Lite census - every in-scope doc, enforced
-    entry: uv run --frozen --quiet pipelines-hook ste-census
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-    stages: [pre-push, manual]
-  - id: ste-staleness-staged
-    name: Doc staleness - staged lines, diff-scoped
-    entry: uv run --frozen --quiet pipelines-hook ste-staleness-staged
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-  - id: ste-staleness-census
-    name: Doc staleness census - every in-scope doc, enforced
-    entry: uv run --frozen --quiet pipelines-hook ste-staleness-census
-    language: system
-    pass_filenames: false
-    always_run: true
-    require_serial: true
-    stages: [pre-push, manual]
+  # --- on-demand report (not a blocking stage) -------------------------------
   - id: validate
     name: Repository validation
     entry: uv run --offline --no-sync --frozen --no-python-downloads --quiet pipelines-hook validate
@@ -229,4 +74,4 @@ repos:
     pass_filenames: false
     always_run: true
     verbose: true
-    stages: [pre-commit, pre-push, manual]
+    stages: [manual]

@@ -42,7 +42,9 @@ def document_errors(root: Path, path: Path) -> list[str]:
 
 def _template_errors(specs: Path) -> list[str]:
     template = specs / "_template"
-    return [f"{template / filename}: missing template file" for filename in FILES if not (template / filename).is_file()]
+    return [
+        f"{template / filename}: missing template file" for filename in FILES if not (template / filename).is_file()
+    ]
 
 
 def _feature_file_errors(root: Path, feature: Path, index: str) -> list[str]:

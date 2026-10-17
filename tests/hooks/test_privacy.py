@@ -48,7 +48,9 @@ def test_privacy_skips_locally_without_its_catalog(repo: Repo, tmp_path: Path, m
     assert repo.run("tracked-privacy", "--identity-catalog", str(tmp_path / "absent.json")) == 0
 
 
-def test_a_malformed_catalog_is_not_downgraded_locally(repo: Repo, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_malformed_catalog_is_not_downgraded_locally(
+    repo: Repo, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.delenv("CI")
     malformed = tmp_path / "catalog.json"
     malformed.write_text("{not json", encoding="utf-8")

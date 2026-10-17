@@ -3,6 +3,7 @@
 This adapter exists only in tests. Production has no fixture/index override.
 The actual request/preparation restrictions and pip resolver are left intact.
 """
+
 from __future__ import annotations
 
 import base64
@@ -11,7 +12,6 @@ import io
 import json
 from pathlib import Path
 import sys
-from urllib.parse import urlsplit
 
 from pip._internal.network.session import PipSession
 from pip._vendor.requests import Response
@@ -53,13 +53,24 @@ def main() -> int:
         root = guard.metadata(wheel)
         profile = scenario.get("profile", "base")
         target = str(wheel) + ("[" + profile + "]" if profile != "base" else "")
-        operation = (["--target", str(scenario_path.parent / "installed")]
-                     if scenario.get("install") else ["--dry-run"])
-        result = resolver.run([
-            "install", *operation, "--ignore-installed", "--no-cache-dir", "--disable-pip-version-check",
-            "--no-input", "--only-binary=:all:", "--index-url", guard.PUBLIC_INDEX,
-            "--report", str(report), target,
-        ], wheel)
+        operation = ["--target", str(scenario_path.parent / "installed")] if scenario.get("install") else ["--dry-run"]
+        result = resolver.run(
+            [
+                "install",
+                *operation,
+                "--ignore-installed",
+                "--no-cache-dir",
+                "--disable-pip-version-check",
+                "--no-input",
+                "--only-binary=:all:",
+                "--index-url",
+                guard.PUBLIC_INDEX,
+                "--report",
+                str(report),
+                target,
+            ],
+            wheel,
+        )
         if result:
             return result
         data = json.loads(report.read_text())

@@ -33,10 +33,7 @@ def box(spec, counts, edges):
         for src, label, tgt in edges
         if src == spec
     )
-    stats = " ".join(
-        f'<span class="rel-{group}">{group} {counts.get(group, 0)}</span>'
-        for group in GROUPS
-    )
+    stats = " ".join(f'<span class="rel-{group}">{group} {counts.get(group, 0)}</span>' for group in GROUPS)
     return f'<div class="rel-box"><b><a href="#spec-{html.escape(spec)}">{html.escape(spec)}</a></b><br>{stats}{links}</div>'
 
 
@@ -63,9 +60,7 @@ def relation_table(nodes, edges):
 def relation_view(nodes, edges):
     """`nodes` maps spec id to its state counts. Above the cap only the table renders."""
     if len(nodes) > CAP:
-        return f"<p>view limited to {CAP} specs; see table</p>" + relation_table(
-            nodes, edges
-        )
+        return f"<p>view limited to {CAP} specs; see table</p>" + relation_table(nodes, edges)
     layers = layer_specs(nodes, edges)
     columns = "".join(
         '<div class="rel-col">'
@@ -85,17 +80,9 @@ def relations_panel(snapshot):
     """Body for the sheet panel; edges come from `snapshot['spec_edges']` when present."""
     records = snapshot["records"]
     nodes = {
-        r["id"]: state_counts(
-            c["state"]
-            for c in records
-            if c["kind"] == "requirement" and c["parent"] == r["id"]
-        )
+        r["id"]: state_counts(c["state"] for c in records if c["kind"] == "requirement" and c["parent"] == r["id"])
         for r in records
         if r["kind"] == "spec"
     }
-    edges = [
-        tuple(edge)
-        for edge in snapshot.get("spec_edges", [])
-        if edge[0] in nodes and edge[2] in nodes
-    ]
+    edges = [tuple(edge) for edge in snapshot.get("spec_edges", []) if edge[0] in nodes and edge[2] in nodes]
     return relation_view(nodes, sorted(edges))

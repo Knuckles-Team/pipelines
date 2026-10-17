@@ -42,11 +42,14 @@ def _marker_findings(rel: str, lines: list[str]) -> list[str]:
 def _unimplemented_raises(tree: ast.AST) -> list[ast.Raise]:
     """``raise NotImplementedError`` nodes outside any ``@abstractmethod``."""
     abstract = {
-        id(node) for function in ast.walk(tree)
+        id(node)
+        for function in ast.walk(tree)
         if isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)) and is_abstract(function)
         for node in ast.walk(function)
     }
-    return [n for n in ast.walk(tree) if isinstance(n, ast.Raise) and is_not_implemented(n.exc) and id(n) not in abstract]
+    return [
+        n for n in ast.walk(tree) if isinstance(n, ast.Raise) and is_not_implemented(n.exc) and id(n) not in abstract
+    ]
 
 
 def _raise_findings(rel: str, tree: ast.AST, *, lines: list[str], seams: frozenset[str]) -> list[str]:

@@ -90,26 +90,20 @@ def _print_text(report: dict[str, object]) -> None:
     for repo, rows in sorted(report["frontier"].items()):
         print(f"### {repo}")
         for row in rows:
-            print(
-                f"  {row['id']}  dependents={row['dependents']}  score={row['score']}"
-            )
+            print(f"  {row['id']}  dependents={row['dependents']}  score={row['score']}")
     print("\n## Size scores (open requirements)")
     for rid, breakdown in report["scores"].items():
         print(f"{rid}: score={breakdown['score']} {breakdown}")
     print("\n## Proposed splits (score > 6, > 2 code roots, or cross-repo)")
     for split in report["splits"]:
         children = ", ".join(child["id"] for child in split["children"])
-        print(
-            f"{split['id']} (score={split['score']}, basis={split['basis']}) -> {children}"
-        )
+        print(f"{split['id']} (score={split['score']}, basis={split['basis']}) -> {children}")
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("roots", nargs="*", help="one or more repository roots")
-    parser.add_argument(
-        "--json", action="store_true", help="emit machine-readable JSON"
-    )
+    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--write", action="store_true", help="apply one proposed split")
     parser.add_argument("--repo", help="repository root to write into")
     parser.add_argument("--req", help="requirement ID to split")

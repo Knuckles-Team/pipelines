@@ -18,17 +18,12 @@ from tests.hooks.conftest import Repo
 CLEAN = "# fixture\n\nThe gate runs the hook.\n"
 BASE_README = "# fixture\n\nThe gate utilizes the wheel context.\n"
 STE_STALE = (
-    "[[tool.pipelines_hooks.ste.staleness]]\n"
-    'pattern = "agent-utilities"\n'
-    'message = "name the current package"\n'
+    '[[tool.pipelines_hooks.ste.staleness]]\npattern = "agent-utilities"\nmessage = "name the current package"\n'
 )
 
 
 def _pyproject(*ste: str) -> str:
-    return (
-        '[project]\nname = "fixture"\nversion = "0"\n\n'
-        '[tool.pipelines_hooks]\npackages = ["pkg"]\n\n' + "".join(ste)
-    )
+    return '[project]\nname = "fixture"\nversion = "0"\n\n[tool.pipelines_hooks]\npackages = ["pkg"]\n\n' + "".join(ste)
 
 
 def test_census_accepts_a_clean_doc(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
@@ -62,11 +57,7 @@ def test_census_fires_on_modal_hedges(repo: Repo, capsys: pytest.CaptureFixture[
 
 
 def test_required_modals_pass(repo: Repo) -> None:
-    readme = (
-        "# fixture\n\n"
-        "The build must fail closed. The gate should log the error. "
-        "The hook may skip locally.\n"
-    )
+    readme = "# fixture\n\nThe build must fail closed. The gate should log the error. The hook may skip locally.\n"
     repo.commit({"README.md": readme})
     assert repo.run("ste-census") == 0
 
@@ -158,9 +149,7 @@ def test_masked_prose_is_not_scanned(repo: Repo, capsys: pytest.CaptureFixture[s
     assert "OK: no findings" in capsys.readouterr().out
 
 
-def test_link_targets_are_masked_and_link_text_is_prose(
-    repo: Repo, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_link_targets_are_masked_and_link_text_is_prose(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     repo.commit({"README.md": "# fixture\n\nThe gate ships [the release](docs/utilize.md) now.\n"})
     assert repo.run("ste-census") == 0
     assert "OK: no findings" in capsys.readouterr().out
@@ -211,11 +200,7 @@ def test_a_broken_staleness_pattern_is_a_configuration_error(repo: Repo, capsys:
 
 @pytest.mark.parametrize("exempt", [True, False], ids=["exempt", "in-scope"])
 def test_exemption_controls_path_scope(repo: Repo, exempt: bool) -> None:
-    config = (
-        '[tool.pipelines_hooks.ste]\nexempt = ["CHANGELOG.md"]\n'
-        if exempt
-        else ""
-    )
+    config = '[tool.pipelines_hooks.ste]\nexempt = ["CHANGELOG.md"]\n' if exempt else ""
     repo.commit(
         {
             "pyproject.toml": _pyproject(config),
@@ -240,9 +225,7 @@ def test_staged_does_not_recount_preexisting_findings(repo: Repo, capsys: pytest
 
 def test_staged_fires_on_a_newly_added_finding(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     repo.commit({"README.md": BASE_README})
-    repo.stage(
-        {"README.md": "# fixture\n\nThe gate utilizes the wheel context.\nThe tool leverages the index.\n"}
-    )
+    repo.stage({"README.md": "# fixture\n\nThe gate utilizes the wheel context.\nThe tool leverages the index.\n"})
     assert repo.run("ste-staged") == 1
     out = capsys.readouterr().out
     assert "leverages -> use" in out
@@ -289,9 +272,7 @@ def test_staleness_staged_fires_on_an_added_claim(repo: Repo, capsys: pytest.Cap
 
 
 def test_staleness_census_reports_and_clears(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
-    repo.commit(
-        {"pyproject.toml": _pyproject(STE_STALE), "README.md": "# fixture\n\nPowered by agent-utilities.\n"}
-    )
+    repo.commit({"pyproject.toml": _pyproject(STE_STALE), "README.md": "# fixture\n\nPowered by agent-utilities.\n"})
     assert repo.run("ste-staleness-census") == 1
     assert "name the current package" in capsys.readouterr().out
     repo.commit({"README.md": "# fixture\n\nThe pack owns the gate.\n"}, "docs")
@@ -327,7 +308,11 @@ def test_doc_gates_ignore_binary_assets_but_scan_architecture_prose(repo: Repo, 
     asset.parent.mkdir()
     asset.write_bytes(b"\x89PNG\r\n\x1a\n\x00\xff")
     repo.git("add", "docs/logo.png")
-    repo.stage({"docs/architecture.md": "# Architecture\n\nThe gate runs the hook.\n\n```mermaid\ngraph TD\n    A[utilizes the hook] --> B[gate]\n```\n"})
+    repo.stage(
+        {
+            "docs/architecture.md": "# Architecture\n\nThe gate runs the hook.\n\n```mermaid\ngraph TD\n    A[utilizes the hook] --> B[gate]\n```\n"
+        }
+    )
     assert repo.run(gate) == 0
     repo.stage({"docs/architecture.md": "# Architecture\n\nThe tool utilizes agent-utilities.\n"})
     assert repo.run(gate) == 1

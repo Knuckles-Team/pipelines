@@ -42,8 +42,12 @@ class ExactTree:
             raise ParityError("asset-not-regular")
         oid = entry.split()[2]
         result = subprocess.run(
-            ["git", "--no-replace-objects", "cat-file", "blob", oid], cwd=self.root,
-            env=sanitized_env(), capture_output=True, check=False, timeout=30,
+            ["git", "--no-replace-objects", "cat-file", "blob", oid],
+            cwd=self.root,
+            env=sanitized_env(),
+            capture_output=True,
+            check=False,
+            timeout=30,
         )
         if result.returncode:
             raise ParityError("asset-unavailable")

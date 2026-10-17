@@ -35,7 +35,9 @@ class Repo:
 
     def git(self, *args: str) -> str:
         identity = ["-c", "user.name=hook-test", "-c", "user.email=hooks@example.invalid", "-c", "commit.gpgsign=false"]
-        result = subprocess.run(["git", *identity, *args], cwd=self.root, env=sanitized_env(), check=True, capture_output=True, text=True)
+        result = subprocess.run(
+            ["git", *identity, *args], cwd=self.root, env=sanitized_env(), check=True, capture_output=True, text=True
+        )
         return result.stdout
 
     def write(self, rel: str, text: str) -> Path:
@@ -97,7 +99,19 @@ def commit_as(root: Path, *, name: str, email: str, message: str = "change", aut
     """
     stage_file(root, f"identity-{abs(hash(message))}.txt", message)
     env = sanitized_env()
-    args = ["git", "-c", f"user.name={name}", "-c", f"user.email={email}", "-c", "commit.gpgsign=false", "commit", "-q", "-m", message]
+    args = [
+        "git",
+        "-c",
+        f"user.name={name}",
+        "-c",
+        f"user.email={email}",
+        "-c",
+        "commit.gpgsign=false",
+        "commit",
+        "-q",
+        "-m",
+        message,
+    ]
     if author is not None:
         args.append(f"--author={author}")
     subprocess.run(args, cwd=root, env=env, check=True, capture_output=True, text=True)

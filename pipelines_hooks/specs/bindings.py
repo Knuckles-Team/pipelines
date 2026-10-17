@@ -19,7 +19,9 @@ MAX_GREP_OUTPUT_BYTES = 16 * 1024 * 1024
 def _grep_bindings(root: Path) -> str:
     command = ["git", "grep", "-n", "-I", "-E", _GREP_PATTERN, "--", ".", *_EXCLUDED_PATHSPECS]
     try:
-        result = subprocess.run(command, cwd=str(root), env=sanitized_env(), capture_output=True, text=True, timeout=60, check=False)
+        result = subprocess.run(
+            command, cwd=str(root), env=sanitized_env(), capture_output=True, text=True, timeout=60, check=False
+        )
     except (OSError, subprocess.SubprocessError) as exc:
         raise CannotRun(f"spec-status: test-binding scan is unavailable: {exc}") from None
     if result.returncode not in {0, 1} or len(result.stdout) > MAX_GREP_OUTPUT_BYTES:

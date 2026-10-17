@@ -86,5 +86,8 @@ def validate_block(start_line: int, block: Sequence[BlockLine]) -> list[Finding]
     diagram = meaningful[0][1].split()[0].lower()
     stack: list[BlockLine] = []
     findings = [f for line, clean in meaningful[1:] for f in _content_findings(diagram, line, clean, stack=stack)]
-    findings.extend({"line": line, "message": f"Unclosed sequence diagram block: '{kind}' has no matching 'end'."} for line, kind in stack)
+    findings.extend(
+        {"line": line, "message": f"Unclosed sequence diagram block: '{kind}' has no matching 'end'."}
+        for line, kind in stack
+    )
     return findings

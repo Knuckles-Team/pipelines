@@ -86,9 +86,7 @@ def _readiness() -> dict[str, Any]:
     }
 
 
-def _fixture(
-    tmp_path: Path, base: str = "https://docs.example.test/"
-) -> tuple[Path, Path, dict[str, Any]]:
+def _fixture(tmp_path: Path, base: str = "https://docs.example.test/") -> tuple[Path, Path, dict[str, Any]]:
     """A flat ``mkdocs build --site-dir site`` tree for a site rooted at ``base``.
 
     ``base`` is the mkdocs ``site_url``; the HTML is always written at the
@@ -118,16 +116,12 @@ def _fixture(
         "<!doctype html><html><head><title>Guide</title></head><body>Guide</body></html>",
         encoding="utf-8",
     )
-    (root / "mkdocs.yml").write_text(
-        f"site_name: Fixture\nsite_url: {base}\n", encoding="utf-8"
-    )
+    (root / "mkdocs.yml").write_text(f"site_name: Fixture\nsite_url: {base}\n", encoding="utf-8")
     readiness = _readiness()
     (root / "pages" / "agent-readiness.schema.json").write_text(
         json.dumps(SCHEMA, sort_keys=True) + "\n", encoding="utf-8"
     )
-    (root / "pages" / "agent-readiness.json").write_text(
-        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    (root / "pages" / "agent-readiness.json").write_text(json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8")
     entries = [
         {
             "source": relative,
@@ -179,9 +173,7 @@ def _fixture(
             ]
         },
     }
-    (root / "markdown-mirror-manifest.json").write_text(
-        json.dumps(mirror, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    (root / "markdown-mirror-manifest.json").write_text(json.dumps(mirror, sort_keys=True) + "\n", encoding="utf-8")
     (root / "agent-readiness-manifest.json").write_text(
         json.dumps(readiness_manifest, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -209,9 +201,7 @@ def test_build_publishes_source_markdown_and_served_mime(
 
     assert result["ok"] is True
     assert (site / "index.md").read_bytes() == (root / "docs/index.md").read_bytes()
-    assert (site / "guide/index.md").read_bytes() == (
-        root / "docs/guide.md"
-    ).read_bytes()
+    assert (site / "guide/index.md").read_bytes() == (root / "docs/guide.md").read_bytes()
     assert (site / "llms.txt").read_bytes() == (root / "llms.txt").read_bytes()
     assert (site / "llms-sections/guides/llms.txt").read_bytes() == (
         root / "llms-sections/guides/llms.txt"
@@ -227,15 +217,9 @@ def test_build_publishes_source_markdown_and_served_mime(
         'alternate="https://docs.example.test/index.md" '
         'llms="https://docs.example.test/llms.txt" -->'
     ) in index_html
-    assert "agent-utilities-markdown" not in (site / "index.md").read_text(
-        encoding="utf-8"
-    )
-    assert (site / "robots.txt").read_text(encoding="utf-8") == (
-        "Sitemap: https://docs.example.test/sitemap.xml\n"
-    )
-    assert "<loc>https://docs.example.test/</loc>" in (site / "sitemap.xml").read_text(
-        encoding="utf-8"
-    )
+    assert "agent-utilities-markdown" not in (site / "index.md").read_text(encoding="utf-8")
+    assert (site / "robots.txt").read_text(encoding="utf-8") == ("Sitemap: https://docs.example.test/sitemap.xml\n")
+    assert "<loc>https://docs.example.test/</loc>" in (site / "sitemap.xml").read_text(encoding="utf-8")
 
     class Handler(http.server.SimpleHTTPRequestHandler):
         extensions_map = {
@@ -246,9 +230,7 @@ def test_build_publishes_source_markdown_and_served_mime(
         def log_message(self, *_args: object) -> None:
             return
 
-    server = http.server.ThreadingHTTPServer(
-        ("127.0.0.1", 0), partial(Handler, directory=str(site))
-    )
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), partial(Handler, directory=str(site)))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -271,9 +253,7 @@ def test_second_build_and_offline_tck_are_idempotent(tmp_path: Path) -> None:
     checked = pages_readiness.build(root, site, check=True)
 
     assert before == after
-    assert (site / "index.html").read_text(encoding="utf-8").count(
-        "agent-utilities-markdown"
-    ) == 1
+    assert (site / "index.html").read_text(encoding="utf-8").count("agent-utilities-markdown") == 1
     assert checked["ok"] is True
 
 
@@ -309,9 +289,7 @@ def test_conflicting_html_directive_fails_closed(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="html-directive-conflict"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="html-directive-conflict"):
         pages_readiness.build(root, site)
 
 
@@ -333,9 +311,7 @@ def test_directive_marker_is_comment_specific(tmp_path: Path) -> None:
     pages_readiness.build(root, site)
     index = site / "index.html"
     index.write_text(
-        index.read_text(encoding="utf-8").replace(
-            "</body>", "agent-utilities-markdown prose</body>"
-        ),
+        index.read_text(encoding="utf-8").replace("</body>", "agent-utilities-markdown prose</body>"),
         encoding="utf-8",
     )
     pages_readiness.build(root, site)
@@ -358,9 +334,7 @@ def test_directive_marker_is_comment_specific(tmp_path: Path) -> None:
     mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="source-agent-directive"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="source-agent-directive"):
         pages_readiness.build(root, site)
 
 
@@ -383,12 +357,8 @@ def test_robot_policy_is_preserved_and_conflicting_sitemap_rejected(
     assert robots.read_text(encoding="utf-8") == policy
 
     root, site, _ = _fixture(tmp_path / "conflict")
-    (site / "robots.txt").write_text(
-        "Sitemap: https://other.example.test/sitemap.xml\n", encoding="utf-8"
-    )
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="robots-sitemap-conflict"
-    ):
+    (site / "robots.txt").write_text("Sitemap: https://other.example.test/sitemap.xml\n", encoding="utf-8")
+    with pytest.raises(pages_readiness.ReadinessTckError, match="robots-sitemap-conflict"):
         pages_readiness.build(root, site)
 
 
@@ -401,9 +371,7 @@ def test_stale_source_digest_fails_closed(tmp_path: Path) -> None:
         pages_readiness.build(root, site, check=True)
 
 
-def test_cli_failure_result_is_versioned(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_cli_failure_result_is_versioned(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     root, _, _ = _fixture(tmp_path)
     (root / "docs/index.md").write_text("# Changed\n", encoding="utf-8")
 
@@ -447,9 +415,7 @@ def test_malformed_or_private_capability_reference_is_rejected(
         json.dumps({"applicable": True, "surface": "api", "source": "docs/index.md"}),
         encoding="utf-8",
     )
-    (root / "pages/agent-readiness.json").write_text(
-        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    (root / "pages/agent-readiness.json").write_text(json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8")
 
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         pages_readiness.build(root, site)
@@ -482,9 +448,7 @@ def test_decoded_json_scan_rejects_escaped_uppercase_numeric_private_url(
         "policy": "operator-reviewed",
         "values": {"reference": "HTTPS://2130706433/private"},
     }
-    encoded = json.dumps(readiness, sort_keys=True).replace(
-        "HTTPS://", "HTTPS\\u003a\\u002f\\u002f"
-    )
+    encoded = json.dumps(readiness, sort_keys=True).replace("HTTPS://", "HTTPS\\u003a\\u002f\\u002f")
     (root / "pages/agent-readiness.json").write_text(encoded, encoding="utf-8")
 
     with pytest.raises(
@@ -502,9 +466,7 @@ def test_decoded_json_scan_rejects_an_uppercase_private_url(
         "policy": "operator-reviewed",
         "values": {"reference": "HTTPS://127.0.0.1/private"},
     }
-    (root / "pages/agent-readiness.json").write_text(
-        json.dumps(readiness, sort_keys=True), encoding="utf-8"
-    )
+    (root / "pages/agent-readiness.json").write_text(json.dumps(readiness, sort_keys=True), encoding="utf-8")
 
     with pytest.raises(
         pages_readiness.ReadinessTckError,
@@ -517,18 +479,14 @@ def test_decoded_json_scan_rejects_an_uppercase_private_url(
     "safe_value",
     ["env://LONG_VARIABLE_NAME", "<redacted>", "redacted-value-placeholder"],
 )
-def test_decoded_secret_key_allows_explicit_placeholders(
-    tmp_path: Path, safe_value: str
-) -> None:
+def test_decoded_secret_key_allows_explicit_placeholders(tmp_path: Path, safe_value: str) -> None:
     root, site, readiness = _fixture(tmp_path)
     signals = {
         "policy": "operator-reviewed",
         "values": {"api_key": safe_value},
     }
     readiness["content_signals"] = signals
-    (root / "pages/agent-readiness.json").write_text(
-        json.dumps(readiness, sort_keys=True), encoding="utf-8"
-    )
+    (root / "pages/agent-readiness.json").write_text(json.dumps(readiness, sort_keys=True), encoding="utf-8")
     manifest_path = root / "agent-readiness-manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["content_signals"] = signals
@@ -584,9 +542,7 @@ def test_public_numeric_ipv4_endpoint_is_not_a_private_url_false_positive(
         ),
     ],
 )
-def test_privacy_scanner_fails_closed_at_canonical_boundaries(
-    value: str, expected: str
-) -> None:
+def test_privacy_scanner_fails_closed_at_canonical_boundaries(value: str, expected: str) -> None:
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         _scan_safe_text(value, "direct")
 
@@ -630,19 +586,13 @@ def test_traversal_symlink_and_oversized_outputs_fail_closed(tmp_path: Path) -> 
     mirror = json.loads(mirror_path.read_text(encoding="utf-8"))
     mirror["entries"][0]["markdown_url"] = "https://docs.example.test/../index.md"
     mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="markdown-path-invalid"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="markdown-path-invalid"):
         pages_readiness.build(root, site)
 
     mirror["entries"][0]["markdown_url"] = "https://docs.example.test/index.md"
     mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
-    (root / "llms.txt").write_bytes(
-        b"x" * (pages_readiness.MAX_GENERATED_FILE_BYTES + 1)
-    )
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="generated-output-oversize"
-    ):
+    (root / "llms.txt").write_bytes(b"x" * (pages_readiness.MAX_GENERATED_FILE_BYTES + 1))
+    with pytest.raises(pages_readiness.ReadinessTckError, match="generated-output-oversize"):
         pages_readiness.build(root, site)
 
 
@@ -663,9 +613,7 @@ def test_source_recursion_and_symlink_fail_closed(tmp_path: Path) -> None:
     }
     mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
     readiness_manifest_path.write_text(json.dumps(readiness_manifest), encoding="utf-8")
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="source-site-recursion"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="source-site-recursion"):
         pages_readiness.build(root, site)
 
     mirror["entries"][0]["source"] = "docs/alias.md"
@@ -699,9 +647,7 @@ def test_source_markdown_secret_is_not_published(tmp_path: Path) -> None:
     mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
     readiness_manifest_path.write_text(json.dumps(readiness_manifest), encoding="utf-8")
 
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="source-secret-like-value"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="source-secret-like-value"):
         pages_readiness.build(root, site)
 
 
@@ -728,12 +674,8 @@ def test_content_source_declares_a_legacy_docs_layout_explicitly(
     """
 
     root, site, _ = _fixture(tmp_path)
-    (root / "pages" / "agent-readiness.json").rename(
-        root / "docs" / "agent-readiness.json"
-    )
-    (root / "pages" / "agent-readiness.schema.json").rename(
-        root / "docs" / "agent-readiness.schema.json"
-    )
+    (root / "pages" / "agent-readiness.json").rename(root / "docs" / "agent-readiness.json")
+    (root / "pages" / "agent-readiness.schema.json").rename(root / "docs" / "agent-readiness.schema.json")
 
     with pytest.raises(pages_readiness.ReadinessTckError, match="readiness-input-"):
         pages_readiness.build(root, site)
@@ -769,17 +711,13 @@ def test_mkdocs_docs_dir_tolerates_the_real_fleet_pymdownx_tag(tmp_path: Path) -
 
 
 def test_mkdocs_docs_dir_missing_key_is_none(tmp_path: Path) -> None:
-    (tmp_path / "mkdocs.yml").write_text(
-        "site_name: Fixture\nnav:\n  - Home: index.md\n", encoding="utf-8"
-    )
+    (tmp_path / "mkdocs.yml").write_text("site_name: Fixture\nnav:\n  - Home: index.md\n", encoding="utf-8")
 
     assert pages_readiness.mkdocs_docs_dir(tmp_path) is None
 
 
 def test_mkdocs_docs_dir_declared_scalar(tmp_path: Path) -> None:
-    (tmp_path / "mkdocs.yml").write_text(
-        "site_name: Fixture\ndocs_dir: pages\n", encoding="utf-8"
-    )
+    (tmp_path / "mkdocs.yml").write_text("site_name: Fixture\ndocs_dir: pages\n", encoding="utf-8")
 
     assert pages_readiness.mkdocs_docs_dir(tmp_path) == "pages"
 
@@ -787,29 +725,21 @@ def test_mkdocs_docs_dir_declared_scalar(tmp_path: Path) -> None:
 def test_mkdocs_docs_dir_non_scalar_fails_loudly(tmp_path: Path) -> None:
     """A `docs_dir` that isn't a plain string is a named error, not a guess."""
 
-    (tmp_path / "mkdocs.yml").write_text(
-        "site_name: Fixture\ndocs_dir:\n  - pages\n  - docs\n", encoding="utf-8"
-    )
+    (tmp_path / "mkdocs.yml").write_text("site_name: Fixture\ndocs_dir:\n  - pages\n  - docs\n", encoding="utf-8")
 
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="content-source-docs-dir-invalid"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="content-source-docs-dir-invalid"):
         pages_readiness.mkdocs_docs_dir(tmp_path)
 
 
 def test_validate_content_source_requires_a_declared_value(tmp_path: Path) -> None:
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="content-source-required"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="content-source-required"):
         pages_readiness.validate_content_source(tmp_path, "")
 
 
 def test_validate_content_source_missing_directory_fails_loudly(
     tmp_path: Path,
 ) -> None:
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="content-source-containment"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="content-source-containment"):
         pages_readiness.validate_content_source(tmp_path, "pages")
 
 
@@ -817,13 +747,9 @@ def test_validate_content_source_mismatched_docs_dir_fails_loudly(
     tmp_path: Path,
 ) -> None:
     (tmp_path / "pages").mkdir()
-    (tmp_path / "mkdocs.yml").write_text(
-        "site_name: Fixture\ndocs_dir: docs\n", encoding="utf-8"
-    )
+    (tmp_path / "mkdocs.yml").write_text("site_name: Fixture\ndocs_dir: docs\n", encoding="utf-8")
 
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="content-source-mismatch"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="content-source-mismatch"):
         pages_readiness.validate_content_source(tmp_path, "pages")
 
 
@@ -864,9 +790,7 @@ def test_validate_content_source_no_mkdocs_yml_is_not_a_mismatch(
     }
 
 
-def test_cli_validate_content_source(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_cli_validate_content_source(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     (tmp_path / "pages").mkdir()
 
     assert (
@@ -1001,9 +925,7 @@ CUSTOM_DOMAIN = "https://docs.example.com/"
         (f"{PROJECT_SITE}installation", PROJECT_SITE, "html", "installation.html"),
     ],
 )
-def test_site_output_path_strips_the_site_url_base(
-    url: str, site_url: str, kind: str, expected: str
-) -> None:
+def test_site_output_path_strips_the_site_url_base(url: str, site_url: str, kind: str, expected: str) -> None:
     assert pages_readiness.site_output_path(url, site_url, kind=kind) == expected
 
 
@@ -1020,12 +942,8 @@ def test_site_output_path_strips_the_site_url_base(
         ),
     ],
 )
-def test_site_output_path_accepts_canonical_public_ipv6(
-    url: str, site_url: str
-) -> None:
-    assert pages_readiness.site_output_path(url, site_url, kind="html") == (
-        "guide/index.html"
-    )
+def test_site_output_path_accepts_canonical_public_ipv6(url: str, site_url: str) -> None:
+    assert pages_readiness.site_output_path(url, site_url, kind="html") == ("guide/index.html")
 
 
 @pytest.mark.parametrize(
@@ -1034,9 +952,7 @@ def test_site_output_path_accepts_canonical_public_ipv6(
 )
 def test_site_output_path_rejects_private_ipv6(site_url: str) -> None:
     with pytest.raises(pages_readiness.ReadinessTckError, match="site-url-private-url"):
-        pages_readiness.site_output_path(
-            f"{site_url}guide/", site_url, kind="html"
-        )
+        pages_readiness.site_output_path(f"{site_url}guide/", site_url, kind="html")
 
 
 @pytest.mark.parametrize(
@@ -1081,20 +997,13 @@ def test_project_page_site_built_flat_passes_build_and_tck(tmp_path: Path) -> No
     assert pages_readiness.build(root, site, check=True)["ok"] is True
 
     assert (site / "index.md").read_bytes() == (root / "docs/index.md").read_bytes()
-    assert (site / "guide/index.md").read_bytes() == (
-        root / "docs/guide.md"
-    ).read_bytes()
+    assert (site / "guide/index.md").read_bytes() == (root / "docs/guide.md").read_bytes()
     assert not (site / "example-connector").exists()
     assert (
-        "<!-- agent-utilities-markdown "
-        f'alternate="{PROJECT_SITE}guide/index.md" llms="{PROJECT_SITE}llms.txt" -->'
+        f'<!-- agent-utilities-markdown alternate="{PROJECT_SITE}guide/index.md" llms="{PROJECT_SITE}llms.txt" -->'
     ) in (site / "guide/index.html").read_text(encoding="utf-8")
-    assert (site / "robots.txt").read_text(encoding="utf-8") == (
-        f"Sitemap: {PROJECT_SITE}sitemap.xml\n"
-    )
-    assert f"<loc>{PROJECT_SITE}guide/</loc>" in (site / "sitemap.xml").read_text(
-        encoding="utf-8"
-    )
+    assert (site / "robots.txt").read_text(encoding="utf-8") == (f"Sitemap: {PROJECT_SITE}sitemap.xml\n")
+    assert f"<loc>{PROJECT_SITE}guide/</loc>" in (site / "sitemap.xml").read_text(encoding="utf-8")
 
 
 def test_use_directory_urls_false_site_passes_build_and_tck(tmp_path: Path) -> None:
@@ -1103,20 +1012,14 @@ def test_use_directory_urls_false_site_passes_build_and_tck(tmp_path: Path) -> N
     (site / "guide").rmdir()
     mirror_path = root / "markdown-mirror-manifest.json"
     mirror = json.loads(mirror_path.read_text(encoding="utf-8"))
-    mirror["entries"][0]["url"] = mirror["entries"][0]["canonical_url"] = (
-        f"{PROJECT_SITE}index.html"
-    )
-    mirror["entries"][1]["url"] = mirror["entries"][1]["canonical_url"] = (
-        f"{PROJECT_SITE}guide.html"
-    )
+    mirror["entries"][0]["url"] = mirror["entries"][0]["canonical_url"] = f"{PROJECT_SITE}index.html"
+    mirror["entries"][1]["url"] = mirror["entries"][1]["canonical_url"] = f"{PROJECT_SITE}guide.html"
     mirror_path.write_text(json.dumps(mirror), encoding="utf-8")
 
     assert pages_readiness.build(root, site)["ok"] is True
     assert pages_readiness.build(root, site, check=True)["ok"] is True
     assert "text/markdown" in (site / "guide.html").read_text(encoding="utf-8")
-    assert (site / "guide/index.md").read_bytes() == (
-        root / "docs/guide.md"
-    ).read_bytes()
+    assert (site / "guide/index.md").read_bytes() == (root / "docs/guide.md").read_bytes()
 
 
 def test_missing_site_url_fails_closed(tmp_path: Path) -> None:
@@ -1136,9 +1039,7 @@ def _declare(
 ) -> None:
     """Write a readiness declaration and the manifest the generator emits for it."""
 
-    (root / "pages/agent-readiness.json").write_text(
-        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    (root / "pages/agent-readiness.json").write_text(json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8")
     manifest_path = root / "agent-readiness-manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["project"] = readiness["project"]
@@ -1166,13 +1067,9 @@ def _connector(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
     readiness["applicability"]["capabilities"] = True
     skill = root / "skills" / "example-connector-reader" / "SKILL.md"
     skill.parent.mkdir(parents=True)
-    skill.write_text(
-        "---\nname: example-connector-reader\n---\n# Reader\n", encoding="utf-8"
-    )
+    skill.write_text("---\nname: example-connector-reader\n---\n# Reader\n", encoding="utf-8")
     (root / "example_connector").mkdir()
-    (root / "example_connector" / "mcp_server.py").write_text(
-        "SERVER = 1\n", encoding="utf-8"
-    )
+    (root / "example_connector" / "mcp_server.py").write_text("SERVER = 1\n", encoding="utf-8")
     (root / "mcp-capability.json").write_text(
         json.dumps(
             {
@@ -1244,9 +1141,7 @@ def test_in_cluster_http_mcp_surface_requires_artifact_proof(tmp_path: Path) -> 
             "skills": {"applicable": False},
         },
     )
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="mcp-transport-not-proven"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="mcp-transport-not-proven"):
         pages_readiness.build(root, site)
 
     artifact = json.loads((root / "mcp-capability.json").read_text(encoding="utf-8"))
@@ -1392,15 +1287,11 @@ def test_inconsistent_surface_reachability_is_rejected(
 ) -> None:
     root, site, readiness = _connector(tmp_path)
     entry: dict[str, Any] = {**STDIO_MCP, "artifact": f"{surface}-capability.json"}
-    overrides = {
-        key: value for key, value in declared.items() if key != "surface_override"
-    }
+    overrides = {key: value for key, value in declared.items() if key != "surface_override"}
     entry.update(overrides)
     entry = {key: value for key, value in entry.items() if value is not None}
     readiness["capabilities"][surface] = entry
-    (root / "pages/agent-readiness.json").write_text(
-        json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    (root / "pages/agent-readiness.json").write_text(json.dumps(readiness, sort_keys=True) + "\n", encoding="utf-8")
 
     with pytest.raises(pages_readiness.ReadinessTckError, match=expected):
         pages_readiness.build(root, site)
@@ -1436,11 +1327,7 @@ def test_discovery_outputs_are_bound_to_the_declaration(
     expected: str,
 ) -> None:
     root, site, readiness = _connector(tmp_path)
-    skills: dict[str, Any] = (
-        {"applicable": True, "path": "skills"}
-        if skills_applicable
-        else {"applicable": False}
-    )
+    skills: dict[str, Any] = {"applicable": True, "path": "skills"} if skills_applicable else {"applicable": False}
     readiness["capabilities"]["mcp"] = dict(STDIO_MCP)
     readiness["capabilities"]["skills"] = skills
     manifest_path = root / "agent-readiness-manifest.json"
@@ -1495,9 +1382,7 @@ def test_public_discovery_outputs_follow_the_discoverability_switch(
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
     artifact["http_transport"] = True
     artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
-    manifest_mcp = {
-        key: value for key, value in public_mcp.items() if key != "endpoint"
-    }
+    manifest_mcp = {key: value for key, value in public_mcp.items() if key != "endpoint"}
     _declare(
         root,
         readiness,
@@ -1515,9 +1400,7 @@ def test_public_discovery_outputs_follow_the_discoverability_switch(
         if discovery is not None:
             assert (site / discovery).is_file()
         return
-    with pytest.raises(
-        pages_readiness.ReadinessTckError, match="generated-discovery-unbound"
-    ):
+    with pytest.raises(pages_readiness.ReadinessTckError, match="generated-discovery-unbound"):
         pages_readiness.build(root, site)
 
 
@@ -1699,9 +1582,7 @@ def _generated_skills_fixture(tmp_path: Path, payload: str) -> tuple[Path, Path]
         ('{"value":"%252525FF"}\n', "generated-output-url-invalid"),
     ],
 )
-def test_generated_discovery_scans_decoded_json_values(
-    tmp_path: Path, case: tuple[str, str]
-) -> None:
+def test_generated_discovery_scans_decoded_json_values(tmp_path: Path, case: tuple[str, str]) -> None:
     payload, expected = case
     root, site = _generated_skills_fixture(tmp_path, payload)
 
@@ -1734,11 +1615,7 @@ def test_generated_discovery_scans_decoded_json_values(
         "ordinary 50% text",
     ],
 )
-def test_generated_discovery_allows_benign_percent_encoding(
-    tmp_path: Path, reference: str
-) -> None:
-    root, site = _generated_skills_fixture(
-        tmp_path, json.dumps({"reference": reference})
-    )
+def test_generated_discovery_allows_benign_percent_encoding(tmp_path: Path, reference: str) -> None:
+    root, site = _generated_skills_fixture(tmp_path, json.dumps({"reference": reference}))
 
     assert pages_readiness.build(root, site)["ok"] is True

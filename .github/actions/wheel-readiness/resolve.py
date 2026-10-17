@@ -4,6 +4,7 @@ Executed only with an isolated interpreter in a disposable venv. The pip
 interfaces used here are checked by offline integration tests; missing interfaces
 are fatal. Never use this module as a general-purpose package installer.
 """
+
 from __future__ import annotations
 
 import os

@@ -57,15 +57,9 @@ def _acceptance(row: dict) -> None:
 
 def _check(raw: object) -> Check:
     row = _keys(raw, set(Check.__annotations__), "check")
-    if not isinstance(row["id"], str) or not re.fullmatch(
-        r"[a-z][a-z0-9-]{0,63}", row["id"]
-    ):
+    if not isinstance(row["id"], str) or not re.fullmatch(r"[a-z][a-z0-9-]{0,63}", row["id"]):
         raise CannotRun("check id must be a stable lowercase name")
-    if (
-        row["group"] != "repository"
-        or not isinstance(row["gate"], str)
-        or row["gate"] not in GATES
-    ):
+    if row["group"] != "repository" or not isinstance(row["gate"], str) or row["gate"] not in GATES:
         raise CannotRun("version 1 supports only the offline repository hygiene gates")
     if type(row["required"]) is not bool:
         raise CannotRun("required must be true or false")
@@ -88,7 +82,5 @@ def load(path: Path) -> Policy:
     checks = [_check(row) for row in rows]
     for field in ("id", "gate"):
         if len({getattr(check, field) for check in checks}) != len(checks):
-            raise CannotRun(
-                f"duplicate check {field}; dispatch each acceptance owner once"
-            )
+            raise CannotRun(f"duplicate check {field}; dispatch each acceptance owner once")
     return Policy(_seconds(document["budget_seconds"], "budget_seconds"), checks)

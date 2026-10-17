@@ -17,9 +17,7 @@ def is_open(req: Requirement) -> bool:
 
 
 def is_unblocked(req: Requirement, delivery_states: dict[str, str]) -> bool:
-    return all(
-        delivery_states.get(dep, "UNKNOWN") in LANDED_STATES for dep in req.depends_on
-    )
+    return all(delivery_states.get(dep, "UNKNOWN") in LANDED_STATES for dep in req.depends_on)
 
 
 def build_reverse_adjacency(reqs: dict[str, Requirement]) -> dict[str, set[str]]:

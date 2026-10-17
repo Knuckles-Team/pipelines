@@ -58,9 +58,7 @@ def _validate_oauth_metadata(root: Path, raw: Mapping[str, Any]) -> None:
             _scan_safe_text(metadata, f"{field}-metadata")
 
 
-def _read_capability_artifact(
-    root: Path, name: str, raw: Mapping[str, Any]
-) -> dict[str, Any]:
+def _read_capability_artifact(root: Path, name: str, raw: Mapping[str, Any]) -> dict[str, Any]:
     """Read the capability artifact named by an applicable declaration."""
 
     artifact = _safe_existing_path(root, raw.get("artifact"), f"{name}-artifact")
@@ -72,17 +70,13 @@ def _validate_artifact_shape(name: str, metadata: Mapping[str, Any]) -> None:
 
     if set(metadata) - _ARTIFACT_METADATA_KEYS:
         _fail("capability-artifact-schema-invalid")
-    if "http_transport" in metadata and (
-        name != "mcp" or type(metadata["http_transport"]) is not bool
-    ):
+    if "http_transport" in metadata and (name != "mcp" or type(metadata["http_transport"]) is not bool):
         _fail("capability-artifact-schema-invalid")
     if metadata.get("applicable") is not True or metadata.get("surface") != name:
         _fail("capability-artifact-unproven")
 
 
-def _validate_mcp_transport(
-    name: str, raw: Mapping[str, Any], metadata: Mapping[str, Any]
-) -> None:
+def _validate_mcp_transport(name: str, raw: Mapping[str, Any], metadata: Mapping[str, Any]) -> None:
     """Require explicit HTTP transport proof for networked MCP surfaces."""
 
     if (
@@ -93,9 +87,7 @@ def _validate_mcp_transport(
         _fail("mcp-transport-not-proven")
 
 
-def _validate_artifact_metadata(
-    name: str, raw: Mapping[str, Any], metadata: Mapping[str, Any]
-) -> str:
+def _validate_artifact_metadata(name: str, raw: Mapping[str, Any], metadata: Mapping[str, Any]) -> str:
     """Validate artifact identity and transport evidence."""
 
     _validate_artifact_shape(name, metadata)
@@ -123,9 +115,7 @@ def _validate_artifact_source(
     _scan_safe_text(metadata, f"{name}-artifact")
 
 
-def _validate_capability_artifact(
-    root: Path, name: str, raw: Mapping[str, Any]
-) -> None:
+def _validate_capability_artifact(root: Path, name: str, raw: Mapping[str, Any]) -> None:
     """Validate one non-skills capability artifact and its source."""
 
     _validate_oauth_metadata(root, raw)

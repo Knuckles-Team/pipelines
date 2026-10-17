@@ -38,9 +38,7 @@ def _parse_public_url(raw: object, label: str) -> tuple[SplitResult, str]:
 
 def _url_path(parsed: SplitResult, label: str) -> str:
     path = unquote(parsed.path)
-    if "\x00" in path or any(
-        part in {"", ".", ".."} for part in path.split("/") if part
-    ):
+    if "\x00" in path or any(part in {"", ".", ".."} for part in path.split("/") if part):
         _fail(f"{label}-path-invalid")
     if not path.startswith("/"):
         _fail(f"{label}-path-invalid")
@@ -109,6 +107,4 @@ def _site_asset_url(site_url: str, name: str) -> str:
     scheme, host, base_path = _public_url(site_url, "site-url")
     if not base_path.endswith("/"):
         _fail("site-url-invalid")
-    return urlunsplit(
-        (scheme, _url_authority(host), f"{base_path}{name}", "", "")
-    )
+    return urlunsplit((scheme, _url_authority(host), f"{base_path}{name}", "", ""))

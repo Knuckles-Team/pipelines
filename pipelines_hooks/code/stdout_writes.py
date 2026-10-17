@@ -34,10 +34,12 @@ def stdout_write(call: ast.Call) -> str | None:
 
 
 def scan(root: Path) -> list[str]:
-    served = string_tuple(load_config(root).section("stdout_writes").get("served_paths", []), "stdout_writes.served_paths")
+    served = string_tuple(
+        load_config(root).section("stdout_writes").get("served_paths", []), "stdout_writes.served_paths"
+    )
     if not served:
         raise CannotRun("[tool.pipelines_hooks.stdout_writes] declares no served_paths")
-    errors = []
+    errors: list[str] = []
     for path in (p for base in served for p in tracked_or_walked(root / base, ("*.py",), root=root)):
         rel = path.relative_to(root).as_posix()
         try:

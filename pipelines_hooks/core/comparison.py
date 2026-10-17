@@ -12,6 +12,17 @@ from pipelines_hooks.core.gitenv import git_text, has_head, nul_split, staged_pa
 from pipelines_hooks.core.settings import setting
 
 
+def _event_value(payload: object, event: str) -> object:
+    """The PR base SHA or the push ``before`` SHA; a malformed payload raises ``KeyError``."""
+    path = ("pull_request", "base", "sha") if event == "pull_request" else ("before",)
+    value = payload
+    for key in path:
+        if not isinstance(value, dict):
+            raise KeyError(key)
+        value = value[key]
+    return value
+
+
 def _event_base() -> str:
     event = setting("GITHUB_EVENT_NAME")
     if event == "workflow_dispatch":
@@ -23,7 +34,7 @@ def _event_base() -> str:
         raise CannotRun("CI comparison needs GITHUB_EVENT_PATH or --base-ref")
     try:
         payload = read_bounded_json(Path(path), 2 * 1024 * 1024, what="GitHub event payload", error=CannotRun)
-        value = payload["pull_request"]["base"]["sha"] if event == "pull_request" else payload["before"]
+        value = _event_value(payload, event)
     except (OSError, UnicodeError, KeyError, TypeError) as exc:
         raise CannotRun("CI comparison needs a readable PR/push base or --base-ref") from exc
     if not isinstance(value, str) or not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", value):
@@ -53,6 +64,7 @@ def _ci_base(root: Path) -> str | None:
 def comparison(root: Path, explicit: str | None = None) -> tuple[list[str], str | None, str]:
     """Return changed paths and before/after blob prefixes; empty means index."""
     staged = staged_paths(root)
+    base: str | None
     if explicit:
         base = _required_commit(root, explicit)
     elif setting("GITHUB_EVENT_NAME"):
@@ -61,5 +73,9 @@ def comparison(root: Path, explicit: str | None = None) -> tuple[list[str], str 
         return staged, "HEAD" if has_head(root) else None, ""
     else:
         base = _required_commit(root, setting("PRE_COMMIT_FROM_REF"))
-    args = ("diff", "--name-only", "-z", "--diff-filter=ACMR", base, "HEAD", "--") if base else ("ls-tree", "-r", "--name-only", "-z", "HEAD")
+    args = (
+        ("diff", "--name-only", "-z", "--diff-filter=ACMR", base, "HEAD", "--")
+        if base
+        else ("ls-tree", "-r", "--name-only", "-z", "HEAD")
+    )
     return sorted(set(nul_split(git_text(root, args)))), base, "HEAD"

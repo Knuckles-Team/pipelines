@@ -1,99 +1,141 @@
 """Linked record inventory and GitHub snapshot sections for the delivery sheet."""
+
 import html
 import re
 from urllib.parse import quote
 
 
 def safe_link(url, label):
-    if not str(url).startswith('https://github.com/'):
+    if not str(url).startswith("https://github.com/"):
         return html.escape(str(label))
     return f'<a href="{html.escape(str(url), quote=True)}">{html.escape(str(label))}</a>'
 
 
 def blob_link(snapshot):
-    base = f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/'
+    base = f"https://github.com/{snapshot['repository']}/blob/{snapshot['revision']}/"
 
-    def link(item, label, key='source'):
-        return safe_link(base + quote(item.get(key, item['source'])), label)
+    def link(item, label, key="source"):
+        return safe_link(base + quote(item.get(key, item["source"])), label)
+
     return link
 
 
 def inventory_rows(snapshot):
     rows = []
     link = blob_link(snapshot)
-    for item in snapshot['records']:
-        cells = [link(item, item['id']) + '<br>' + link(item, item['title'], 'document') + definition_details(snapshot, item),
-                 *[html.escape(str(item[key])) for key in
-                   ('kind', 'parent', 'delivery_state')], evidence_links(snapshot, item)]
-        rows.append('<tr id="req-' + quote(item['id'], safe='') + '">' + ''.join('<td>' + cell + '</td>' for cell in cells) + '</tr>')
-    return ''.join(rows)
+    for item in snapshot["records"]:
+        cells = [
+            link(item, item["id"])
+            + "<br>"
+            + link(item, item["title"], "document")
+            + definition_details(snapshot, item),
+            *[html.escape(str(item[key])) for key in ("kind", "parent", "delivery_state")],
+            evidence_links(snapshot, item),
+        ]
+        rows.append(
+            '<tr id="req-'
+            + quote(item["id"], safe="")
+            + '">'
+            + "".join("<td>" + cell + "</td>" for cell in cells)
+            + "</tr>"
+        )
+    return "".join(rows)
 
 
 def inventory_panel(snapshot):
-    count = len(snapshot['records'])
-    return ('<p>Each status file gives one spec row. Each requirement gives one more row. '
-            'A record without a valid state shows INVALID. Expand a Definition to read the canonical requirement and verification text.</p>'
-            f'<details open><summary>All documented records <span class="mono">({count} rows)</span></summary>'
-            '<div class="scroll"><table class="inventory"><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th><th>Commit / test evidence</th></tr></thead><tbody>'
-            + inventory_rows(snapshot) + '</tbody></table></div></details>')
+    count = len(snapshot["records"])
+    return (
+        "<p>Each status file gives one spec row. Each requirement gives one more row. "
+        "A record without a valid state shows INVALID. Expand a Definition to read the canonical requirement and verification text.</p>"
+        f'<details open><summary>All documented records <span class="mono">({count} rows)</span></summary>'
+        '<div class="scroll"><table class="inventory"><thead><tr><th>ID / source</th><th>Kind</th><th>Parent</th><th>State</th><th>Commit / test evidence</th></tr></thead><tbody>'
+        + inventory_rows(snapshot)
+        + "</tbody></table></div></details>"
+    )
 
 
 def github_sections(snapshot):
     sections = []
-    for label, data in snapshot['github'].items():
-        body = '<p>Not available: ' + html.escape(data.get('error', 'unknown failure')) + '</p>'
-        if data['available']:
-            body = '<p class="mono">' + str(len(data['items'])) + ' open at capture.</p><ul>'
-            body += ''.join('<li>' + safe_link(item['html_url'], f'#{item["number"]} {item["title"]}')
-                            + ' <span class="mono">updated ' + html.escape(item['updated_at']) + '</span></li>'
-                            for item in data['items'])
-            body += '</ul>'
-        sections.append('<h3>' + html.escape(label.replace('_', ' ').title()) + '</h3>' + body)
-    return ''.join(sections) + ('<div class="note"><p>The build reads GitHub one time. '
-                                'This page makes no live API requests.</p></div>')
+    for label, data in snapshot["github"].items():
+        body = "<p>Not available: " + html.escape(data.get("error", "unknown failure")) + "</p>"
+        if data["available"]:
+            body = '<p class="mono">' + str(len(data["items"])) + " open at capture.</p><ul>"
+            body += "".join(
+                "<li>"
+                + safe_link(item["html_url"], f"#{item['number']} {item['title']}")
+                + ' <span class="mono">updated '
+                + html.escape(item["updated_at"])
+                + "</span></li>"
+                for item in data["items"]
+            )
+            body += "</ul>"
+        sections.append("<h3>" + html.escape(label.replace("_", " ").title()) + "</h3>" + body)
+    return "".join(sections) + (
+        '<div class="note"><p>The build reads GitHub one time. This page makes no live API requests.</p></div>'
+    )
 
 
 def evidence_links(snapshot, item):
-    commits = [safe_link(f'https://github.com/{snapshot["repository"]}/commit/{sha}', sha) for sha in item.get('landed_in', [])]
+    commits = [
+        safe_link(f"https://github.com/{snapshot['repository']}/commit/{sha}", sha) for sha in item.get("landed_in", [])
+    ]
     tests = []
-    for test in item.get('verified_by', []):
+    for test in item.get("verified_by", []):
         target = receipt_target(test)
         if target:
-            tests.append(safe_link(f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/' + target, test))
+            tests.append(
+                safe_link(f"https://github.com/{snapshot['repository']}/blob/{snapshot['revision']}/" + target, test)
+            )
         else:
             tests.append(html.escape(test))
-    return '<br>'.join(commits + tests) or 'No recorded commit/test evidence'
+    return "<br>".join(commits + tests) or "No recorded commit/test evidence"
 
 
 def definition_details(snapshot, item):
-    if item['kind'] != 'requirement':
-        return ''
-    context = str(item.get('parent') or 'Unknown spec') + ' / ' + item.get('parent_title', 'Unknown spec title')
-    if 'definition' not in item:
-        return '<p>' + html.escape(context) + ': definition unavailable in requirements.md.</p>'
-    url = f'https://github.com/{snapshot["repository"]}/blob/{snapshot["revision"]}/' + quote(item['definition_source']) + '#L' + str(item['definition_line'])
-    return ('<details><summary>Definition — ' + html.escape(context) + '</summary>'
-            + safe_link(url, 'Canonical requirement and verification source')
-            + '<div class="definition">' + html.escape(item['definition']) + '</div></details>')
+    if item["kind"] != "requirement":
+        return ""
+    context = str(item.get("parent") or "Unknown spec") + " / " + item.get("parent_title", "Unknown spec title")
+    if "definition" not in item:
+        return "<p>" + html.escape(context) + ": definition unavailable in requirements.md.</p>"
+    url = (
+        f"https://github.com/{snapshot['repository']}/blob/{snapshot['revision']}/"
+        + quote(item["definition_source"])
+        + "#L"
+        + str(item["definition_line"])
+    )
+    return (
+        "<details><summary>Definition — "
+        + html.escape(context)
+        + "</summary>"
+        + safe_link(url, "Canonical requirement and verification source")
+        + '<div class="definition">'
+        + html.escape(item["definition"])
+        + "</div></details>"
+    )
 
 
 def receipt_target(receipt):
     """Resolve repo-relative receipts; keep malformed citations as plain text."""
-    match = re.fullmatch(r'([^:\\#?\x00-\x1f]+?)(?::([1-9]\d*)(?:-([1-9]\d*))?)?', receipt.split('::', 1)[0])
+    match = re.fullmatch(r"([^:\\#?\x00-\x1f]+?)(?::([1-9]\d*)(?:-([1-9]\d*))?)?", receipt.split("::", 1)[0])
     if not match:
-        return ''
+        return ""
     path, first, last = match.groups()
-    if path.startswith('/') or any(part in {'', '.', '..'} for part in path.split('/')):
-        return ''
+    if path.startswith("/") or any(part in {"", ".", ".."} for part in path.split("/")):
+        return ""
     if last and int(last) < int(first):
-        return ''
-    fragment = '#L' + first if first else ''
+        return ""
+    fragment = "#L" + first if first else ""
     if last:
-        fragment += '-L' + last
+        fragment += "-L" + last
     return quote(path) + fragment
 
 
 def unparsed_reference_note(row):
-    return ''.join('<p>Unparsed reference declaration: ' + html.escape(note['text'])
-                   + '; source: ' + html.escape(note['declared_in']) + '</p>'
-                   for note in row.get('unparsed_references', []))
+    return "".join(
+        "<p>Unparsed reference declaration: "
+        + html.escape(note["text"])
+        + "; source: "
+        + html.escape(note["declared_in"])
+        + "</p>"
+        for note in row.get("unparsed_references", [])
+    )

@@ -41,19 +41,27 @@ def _scan_public(path: Path, root: Path, findings: Findings) -> None:
     relative = path.relative_to(root)
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     for number in classify.author_metadata_lines(path, lines):
-        findings.add(relative.as_posix(), number, category="non-neutral package author identity", text=lines[number - 1])
+        findings.add(
+            relative.as_posix(), number, category="non-neutral package author identity", text=lines[number - 1]
+        )
     deployment_doc = classify.is_deployment_doc(relative)
     for number, line in enumerate(lines, 1):
-        for category in classify.classify_line(line, identifiers=findings.identifiers, deployment_doc=deployment_doc, display_names=findings.display_names):
+        for category in classify.classify_line(
+            line, identifiers=findings.identifiers, deployment_doc=deployment_doc, display_names=findings.display_names
+        ):
             findings.add(relative.as_posix(), number, category=category, text=line)
 
 
 def _scan_runtime(path: Path, root: Path, findings: Findings) -> None:
     relative = path.relative_to(root)
     if inventory.is_bundled_connector_profile(relative):
-        findings.add(relative.as_posix(), 1, category="bundled environment-specific connector profile", text=relative.as_posix())
+        findings.add(
+            relative.as_posix(), 1, category="bundled environment-specific connector profile", text=relative.as_posix()
+        )
     for number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-        for category in classify.classify_runtime_source_line(line, identifiers=findings.identifiers, display_names=findings.display_names):
+        for category in classify.classify_runtime_source_line(
+            line, identifiers=findings.identifiers, display_names=findings.display_names
+        ):
             findings.add(relative.as_posix(), number, category=category, text=line)
 
 
@@ -87,7 +95,9 @@ def _catalog(path: Path) -> tuple[bytes, ...]:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="tracked-privacy", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    default = platformdirs.user_config_path("agent-utilities", appauthor=False) / "governance" / "prohibited-identities.json"
+    default = (
+        platformdirs.user_config_path("agent-utilities", appauthor=False) / "governance" / "prohibited-identities.json"
+    )
     parser.add_argument("--identity-catalog", type=Path, default=default)
     args = parser.parse_args(argv)
     rows = scan(args.root.resolve(), _catalog(args.identity_catalog))

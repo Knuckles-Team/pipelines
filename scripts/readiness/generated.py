@@ -21,20 +21,13 @@ from .privacy import _scan_safe_text
 def _publicly_discoverable(raw: Mapping[str, Any]) -> bool:
     """Return whether a capability may be advertised publicly."""
 
-    return (
-        raw.get("applicable") is True
-        and raw.get("reachability") not in NON_PUBLIC_REACHABILITY
-    )
+    return raw.get("applicable") is True and raw.get("reachability") not in NON_PUBLIC_REACHABILITY
 
 
 def _discovery_names(normalized: list[str]) -> set[str]:
     """Return the leaf names of declared ``.well-known`` outputs."""
 
-    return {
-        PurePosixPath(item).name
-        for item in normalized
-        if item.startswith(".well-known/")
-    }
+    return {PurePosixPath(item).name for item in normalized if item.startswith(".well-known/")}
 
 
 def _validate_surface_discovery(
@@ -52,23 +45,17 @@ def _validate_surface_discovery(
         _fail("generated-discovery-unbound")
 
 
-def _validate_api_discovery(
-    present: set[str], discoverable: bool, capabilities: Mapping[str, Any]
-) -> None:
+def _validate_api_discovery(present: set[str], discoverable: bool, capabilities: Mapping[str, Any]) -> None:
     """Require an API catalog only when a public surface is declared."""
 
     if "api-catalog" not in present:
         return
-    public_surface = _publicly_discoverable(
-        capabilities["mcp"]
-    ) or _publicly_discoverable(capabilities["a2a"])
+    public_surface = _publicly_discoverable(capabilities["mcp"]) or _publicly_discoverable(capabilities["a2a"])
     if not discoverable or not public_surface:
         _fail("generated-discovery-unbound")
 
 
-def _validate_discovery_outputs(
-    normalized: list[str], readiness_input: Mapping[str, Any]
-) -> None:
+def _validate_discovery_outputs(normalized: list[str], readiness_input: Mapping[str, Any]) -> None:
     """Bind generated ``.well-known`` documents to readiness declarations."""
 
     applicability = readiness_input["applicability"]

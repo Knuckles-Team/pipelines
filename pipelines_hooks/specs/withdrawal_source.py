@@ -64,8 +64,7 @@ def _token_end(source: str, cursor: int) -> int:
 def _without_withdrawal_comments(source: str, ids: set[str]) -> str:
     allowed = {f"// spec: {identifier}" for identifier in ids}
     allowed.update(
-        f"// Partial refusal coverage for {identifier}; "
-        "successful-operation acceptance remains open."
+        f"// Partial refusal coverage for {identifier}; successful-operation acceptance remains open."
         for identifier in ids
     )
     chunks: list[str] = []
@@ -95,8 +94,6 @@ def source_withdrawal_only(before: str, after: str, ids: set[str]) -> bool:
     Literal contents, executable code, and all other comments remain identical.
     """
     try:
-        return _without_withdrawal_comments(
-            before, ids
-        ) == _without_withdrawal_comments(after, ids)
+        return _without_withdrawal_comments(before, ids) == _without_withdrawal_comments(after, ids)
     except ValueError:
         return False

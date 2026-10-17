@@ -71,8 +71,10 @@ class Runtime:
         require(not graph or hex_value(graph, 40), "Invalid Arbora revision")
         require(self.context.is_dir(), "Local build context is required")
         require(not self.destination.exists(), "Runtime destination already exists; refusing overlay")
-        for root, expected in ((self.workspace, self.env["EXPECTED_SOURCE"]),
-                               (self.workspace / ".pipeline-contract", self.env["EXPECTED_PIPELINE"])):
+        for root, expected in (
+            (self.workspace, self.env["EXPECTED_SOURCE"]),
+            (self.workspace / ".pipeline-contract", self.env["EXPECTED_PIPELINE"]),
+        ):
             actual = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
             require(hex_value(expected, 40) and actual == expected, "Checkout revision mismatch")
         require(values["source-revision"] == self.env["EXPECTED_SOURCE"], "Caller source revision mismatch")
@@ -80,14 +82,23 @@ class Runtime:
     def profile(self, manifest: dict) -> dict:
         profile = manifest["profile"]
         require(profile["name"] == self.inputs["profile"], "Profile mismatch")
-        require(profile["target"] == {"python": "3.14", "implementation": "cpython", "os": "linux", "arch": "x86_64"}, "Unsupported runtime target")
+        require(
+            profile["target"] == {"python": "3.14", "implementation": "cpython", "os": "linux", "arch": "x86_64"},
+            "Unsupported runtime target",
+        )
         require(isinstance(profile["explicit_third_party_roots"], list), "Missing explicit roots")
         first_party = {}
         for item in profile["first_party"]:
             name = normalized(item["distribution"])
             require(name not in first_party and item["version"], "Duplicate or incomplete first-party identity")
-            require(hex_value(item["source_sha"], 40) and hex_value(item["pyproject_sha256"]), "Invalid frozen source identity")
-            require(isinstance(item["extras"], list) and all(isinstance(extra, str) for extra in item["extras"]), "Missing extras")
+            require(
+                hex_value(item["source_sha"], 40) and hex_value(item["pyproject_sha256"]),
+                "Invalid frozen source identity",
+            )
+            require(
+                isinstance(item["extras"], list) and all(isinstance(extra, str) for extra in item["extras"]),
+                "Missing extras",
+            )
             first_party[name] = item
         require(first_party, "No first-party sources")
         self.bind_sources(first_party)
@@ -96,9 +107,17 @@ class Runtime:
 
     def bind_sources(self, first_party: dict) -> None:
         caller = self.env["CALLER_REPOSITORY"]
-        repositories = {caller, caller.split("/")[-1], f"https://github.com/{caller}", f"https://github.com/{caller}.git"}
+        repositories = {
+            caller,
+            caller.split("/")[-1],
+            f"https://github.com/{caller}",
+            f"https://github.com/{caller}.git",
+        }
         matches = [item for item in first_party.values() if item["repository"] in repositories]
-        require(len(matches) == 1 and matches[0]["source_sha"] == self.inputs["source-revision"], "Caller source absent or mismatched in freeze")
+        require(
+            len(matches) == 1 and matches[0]["source_sha"] == self.inputs["source-revision"],
+            "Caller source absent or mismatched in freeze",
+        )
         graph = first_party.get("arbora", {}).get("source_sha", "")
         require(graph == self.inputs["arbora-revision"], "Arbora source mismatch")
         profile = self.inputs["profile"]
@@ -112,8 +131,10 @@ class Runtime:
         root = first_party[name]
         extras = ["messaging-mattermost", "messaging-telegram", "webui"] if stage == "default" else [stage]
         require(sorted(root["extras"]) == extras, "Root extras mismatch")
-        version = (r"(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:(?:a|b|rc)[0-9]+)?"
-                   r"(?:\.post[0-9]+)?(?:\.dev[0-9]+)?(?:\+[a-z0-9]+(?:[.-][a-z0-9]+)*)?")
+        version = (
+            r"(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:(?:a|b|rc)[0-9]+)?"
+            r"(?:\.post[0-9]+)?(?:\.dev[0-9]+)?(?:\+[a-z0-9]+(?:[.-][a-z0-9]+)*)?"
+        )
         require(re.fullmatch(version, root["version"]), "Invalid exact root version")
         expected = f"{name}[{','.join(extras)}]=={root['version']}"
         require(profile["root_requirement"] == expected, "Canonical exact root requirement mismatch")
@@ -126,13 +147,19 @@ class Runtime:
             relative = item["path"]
             require(re.fullmatch(r"(?:wheels|eg-wheel)/[A-Za-z0-9_.+!-]+\.whl", relative), "Invalid wheel path")
             require(name not in artifacts and relative not in paths, "Duplicate wheel identity")
-            require(hex_value(item["sha256"]) and digest(local_path(root, relative)) == item["sha256"], "Wheel digest mismatch")
+            require(
+                hex_value(item["sha256"]) and digest(local_path(root, relative)) == item["sha256"],
+                "Wheel digest mismatch",
+            )
             require(hex_value(item["payload_manifest_sha256"]), "Missing payload receipt")
             expected_source = first_party.get(name)
             if expected_source:
                 source = item["source"]
                 require(item["version"] == expected_source["version"], "First-party version mismatch")
-                require(all(source[key] == expected_source[key] for key in ("repository", "source_sha")), "Wheel source mismatch")
+                require(
+                    all(source[key] == expected_source[key] for key in ("repository", "source_sha")),
+                    "Wheel source mismatch",
+                )
                 require(hex_value(source["receipt_sha256"]), "Missing source receipt")
             else:
                 require(item["source"] is None, "Undeclared first-party source")
@@ -156,9 +183,11 @@ class Runtime:
         lines = [line for line in content.splitlines() if not line.lstrip().startswith("#")]
         entries = "\n".join(lines).replace("\\\n", "").splitlines()
         seen = set()
-        pattern = (r"([A-Za-z0-9_.-]+)(?:\[([A-Za-z0-9_,.-]+)\])?\s*"
-                   r"(?:==([^\s;]+)|@\s*file:///opt/arbora-runtime/([^\s;]+))\s+"
-                   r"((?:--hash=sha256:[0-9a-f]{64}\s*)+)")
+        pattern = (
+            r"([A-Za-z0-9_.-]+)(?:\[([A-Za-z0-9_,.-]+)\])?\s*"
+            r"(?:==([^\s;]+)|@\s*file:///opt/arbora-runtime/([^\s;]+))\s+"
+            r"((?:--hash=sha256:[0-9a-f]{64}\s*)+)"
+        )
         for line in filter(str.strip, entries):
             match = re.fullmatch(pattern, line.strip())
             require(match, "Lock must contain only exact hashed wheel requirements")
@@ -170,7 +199,10 @@ class Runtime:
             require(relative == item["path"] if relative else version == item["version"], "Lock artifact mismatch")
             if name in first_party:
                 require(relative == item["path"], "First-party requirement must use its local wheel")
-                require(set((extras or "").split(",")) - {""} == set(first_party[name]["extras"]), "First-party extras mismatch")
+                require(
+                    set((extras or "").split(",")) - {""} == set(first_party[name]["extras"]),
+                    "First-party extras mismatch",
+                )
             seen.add(name)
         require(seen == artifacts.keys(), "Lock does not cover the exact wheel inventory")
 
@@ -178,7 +210,10 @@ class Runtime:
         freeze = local_path(root, "source-freeze.json")
         require(digest(freeze) == self.inputs["freeze-sha256"], "Source freeze digest mismatch")
         manifest = json.loads(freeze.read_text(encoding="utf-8"))
-        require(manifest["schema"] == "arbora-runtime-wheel-inputs/2", "Runtime manifest /2 is required; rebuild the producer context")
+        require(
+            manifest["schema"] == "arbora-runtime-wheel-inputs/2",
+            "Runtime manifest /2 is required; rebuild the producer context",
+        )
         for key in ("resolver_receipt_sha256", "verification_receipt_sha256"):
             require(hex_value(manifest[key]), f"Missing {key}")
         expected_lock = {"path": "requirements.lock", "sha256": self.inputs["lock-sha256"]}
@@ -209,8 +244,12 @@ def main() -> int:
     else:
         require(sys.argv[1:] == ["stage"], "Expected prepare or stage")
         runtime.stage(Path(os.environ["RUNTIME_DOWNLOAD"]))
-        arguments = {"SOURCE_REVISION": "source-revision", "ARBORA_REVISION": "arbora-revision",
-                     "RUNTIME_LOCK_SHA256": "lock-sha256", "SOURCE_FREEZE_SHA256": "freeze-sha256"}
+        arguments = {
+            "SOURCE_REVISION": "source-revision",
+            "ARBORA_REVISION": "arbora-revision",
+            "RUNTIME_LOCK_SHA256": "lock-sha256",
+            "SOURCE_FREEZE_SHA256": "freeze-sha256",
+        }
         values = [f"{name}={runtime.inputs[key]}" for name, key in arguments.items() if runtime.inputs[key]]
         output = "build-args<<RUNTIME_ARGS\n" + "\n".join(values) + "\nRUNTIME_ARGS\n"
     with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as stream:

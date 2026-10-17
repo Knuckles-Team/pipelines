@@ -24,14 +24,31 @@ def test_flat_exhaustive_match_has_no_catch_all() -> None:
 
 
 @pytest.mark.parametrize(
-    "arm", ["_ => 0", "other => 0", "ref rest => 0", "mut rest => 0", "bound @ _ => 0", "n if n > 2 => 0", "Kind::A | leftover => 0"]
+    "arm",
+    [
+        "_ => 0",
+        "other => 0",
+        "ref rest => 0",
+        "mut rest => 0",
+        "bound @ _ => 0",
+        "n if n > 2 => 0",
+        "Kind::A | leftover => 0",
+    ],
 )
 def test_every_irrefutable_arm_shape_is_a_catch_all(arm: str) -> None:
     assert dispatch_shape(_dispatcher(arm), 1).catch_alls == 1
 
 
 @pytest.mark.parametrize(
-    "arm", ["Kind::B => 2", "Kind::B | Kind::C => 2", "Kind::B { field } => 2", "Kind::B(inner) => 2", "kind::lowercase::Path => 2", "MAX_LIMIT => 2"]
+    "arm",
+    [
+        "Kind::B => 2",
+        "Kind::B | Kind::C => 2",
+        "Kind::B { field } => 2",
+        "Kind::B(inner) => 2",
+        "kind::lowercase::Path => 2",
+        "MAX_LIMIT => 2",
+    ],
 )
 def test_discriminating_arms_are_not_catch_alls(arm: str) -> None:
     assert dispatch_shape(_dispatcher(arm), 1).catch_alls == 0
@@ -53,11 +70,16 @@ def test_non_rust_cognitive_residual_and_unattributable_are_never_exempt() -> No
     assert not exhaustive_dispatch_exempt(source, line=1, metrics=(30, 16), caps=CAPS)
     assert not exhaustive_dispatch_exempt(source, line=1, metrics=(13, 1), caps=CAPS)
     assert exhaustive_dispatch_exempt(source, line=1, metrics=(12, 1), caps=CAPS)
-    assert not exhaustive_dispatch_exempt(source, line=1, metrics=(11, 1), caps=CAPS) or dispatch_shape(source, 1).arms < 11
+    assert (
+        not exhaustive_dispatch_exempt(source, line=1, metrics=(11, 1), caps=CAPS)
+        or dispatch_shape(source, 1).arms < 11
+    )
 
 
 def test_a_function_without_any_match_is_never_exempt() -> None:
-    ladder = "fn f(x: u32) -> u32 {\n" + "".join(f"    if x == {i} {{ return {i}; }}\n" for i in range(20)) + "    0\n}\n"
+    ladder = (
+        "fn f(x: u32) -> u32 {\n" + "".join(f"    if x == {i} {{ return {i}; }}\n" for i in range(20)) + "    0\n}\n"
+    )
     assert dispatch_shape(ladder, 1) == (0, 0)
     assert not exhaustive_dispatch_exempt(ladder, line=1, metrics=(21, 2), caps=CAPS)
 

@@ -10,10 +10,7 @@ from spec_graph_load import load_repo
 
 
 def spec_texts(root):
-    return {
-        p.parent.name: p.read_text(encoding="utf-8")
-        for p in sorted(Path(root).glob("specs/*/spec.md"))
-    }
+    return {p.parent.name: p.read_text(encoding="utf-8") for p in sorted(Path(root).glob("specs/*/spec.md"))}
 
 
 def snapshot_edges(root):
@@ -29,8 +26,4 @@ def snapshot_edges(root):
 def snapshot_concepts(root, records):
     """Map spec id to its concept ids (explicit `Concepts:` line or markers in code roots)."""
     texts = spec_texts(root)
-    return {
-        r["id"]: row_concepts(texts.get(r["id"], ""), [], [root])
-        for r in records
-        if r["kind"] == "spec"
-    }
+    return {r["id"]: row_concepts(texts.get(r["id"], ""), [], [root]) for r in records if r["kind"] == "spec"}

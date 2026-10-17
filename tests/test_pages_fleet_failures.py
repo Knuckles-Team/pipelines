@@ -59,7 +59,9 @@ def test_dirty_and_hidden_overlays_never_pass(fleet, overlay):
     assert result["consumers"][1]["status"] == "pass"
 
 
-@pytest.mark.parametrize("failure", ["missing-asset", "symlink-file", "symlink-content", "missing-content", "mkdocs-mismatch"])
+@pytest.mark.parametrize(
+    "failure", ["missing-asset", "symlink-file", "symlink-content", "missing-content", "mkdocs-mismatch"]
+)
 def test_unsafe_or_missing_assets_fail_closed(fleet, failure):
     root, declaration = fleet
 
@@ -104,7 +106,9 @@ def test_unavailable_exact_ref_has_no_fallback(fleet, failure):
     assert result["status"] == "unverified"
 
 
-@pytest.mark.parametrize("failure", ["mutable", "wrong-sha", "missing-workflow", "wrong-content", "duplicate-call", "disabled"])
+@pytest.mark.parametrize(
+    "failure", ["mutable", "wrong-sha", "missing-workflow", "wrong-content", "duplicate-call", "disabled"]
+)
 def test_pages_workflow_must_bind_declared_pipeline(fleet, failure):
     root, declaration = fleet
 
@@ -131,8 +135,18 @@ def test_duplicate_json_and_untracked_declaration_rejected(tmp_path, capsys):
     path = declaration_file(tmp_path / "declaration", {})
     path.write_text('{"schema_version":1,"schema_version":1}')
     git(path.parent, "add", ".")
-    git(path.parent, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
-        "-c", "commit.gpgsign=false", "commit", "-qm", "duplicate")
+    git(
+        path.parent,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+        "commit",
+        "-qm",
+        "duplicate",
+    )
     with pytest.raises(ValueError, match="duplicate-json-key"):
         load(path)
     untracked = path.with_name("untracked.json")
