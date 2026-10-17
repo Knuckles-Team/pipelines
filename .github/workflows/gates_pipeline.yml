@@ -21,6 +21,9 @@ name: Gates
 #
 # paths-ignore leaves a required `gates` check pending; pair it with the
 # templates/workflows/gates-skip.yml companion (the inverse `paths:` filter).
+# Or drop `paths-ignore` from `pull_request` and set `docs-only-paths`: the job
+# then detects a docs-only diff itself and passes in seconds, so exactly one
+# `gates / gates` check exists and a skip run can never mask a failing real run.
 # Every input has a default, so adding the workflow needs no `with:` block.
 #
 # Trailers belong to pull request commits: a squash merge does not carry the
@@ -79,6 +82,14 @@ on:
         required: false
         type: string
         default: ''
+      docs-only-paths:
+        description: >-
+          Space-separated bash patterns (`*` crosses `/`) of docs and spec paths. When
+          set and every file in the pull request diff matches one, the job passes
+          right after checkout without running hooks or tests. Empty disables it.
+        required: false
+        type: string
+        default: ''
       timeout-minutes:
         description: Wall-clock cap for the gates job (15 for pull requests, 60 for main).
         required: false
@@ -102,7 +113,45 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Detect a docs-only change
+        id: scope
+        env:
+          DOCS_ONLY_PATHS: ${{ inputs.docs-only-paths }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          ALL_FILES: ${{ inputs.all-files }}
+        run: |
+          set -euo pipefail
+          set -f
+          if [[ -z "$DOCS_ONLY_PATHS" || "$EVENT_NAME" != "pull_request" || "$ALL_FILES" == "true" ]]; then
+            echo "docs-only=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base="$PR_BASE"
+          if [[ -z "$base" ]] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            git fetch --no-tags origin "$BASE_REF" >/dev/null 2>&1 || true
+            base="$(git merge-base HEAD "origin/$BASE_REF")"
+          fi
+          code=()
+          while IFS= read -r file; do
+            [[ -z "$file" ]] && continue
+            matched=false
+            for pattern in $DOCS_ONLY_PATHS; do
+              # shellcheck disable=SC2053
+              if [[ "$file" == $pattern ]]; then matched=true; break; fi
+            done
+            [[ "$matched" == true ]] || code+=("$file")
+          done < <(git diff --name-only "$base" HEAD)
+          if [[ "${#code[@]}" -eq 0 ]]; then
+            echo "docs-only change: every changed path matches docs-only-paths; the code gates do not apply"
+            echo "docs-only=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code change (${#code[@]} paths, first: ${code[0]}); running the gates"
+            echo "docs-only=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install uv
+        if: steps.scope.outputs.docs-only != 'true'
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           enable-cache: true
@@ -111,11 +160,11 @@ jobs:
             ${{ inputs.config }}
 
       - name: Install Rust toolchain
-        if: inputs.rust
+        if: inputs.rust && steps.scope.outputs.docs-only != 'true'
         run: rustup toolchain install stable --profile minimal
 
       - name: Caller setup
-        if: inputs.setup-command != ''
+        if: inputs.setup-command != '' && steps.scope.outputs.docs-only != 'true'
         env:
           SETUP_COMMAND: ${{ inputs.setup-command }}
           PROHIBITED_IDENTITY_CATALOG: ${{ vars.PROHIBITED_IDENTITY_CATALOG }}
@@ -123,12 +172,14 @@ jobs:
         run: bash -c "$SETUP_COMMAND"
 
       - name: Cache pre-commit environments
+        if: steps.scope.outputs.docs-only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config) }}
 
       - name: Resolve diff range
+        if: steps.scope.outputs.docs-only != 'true'
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
@@ -152,6 +203,7 @@ jobs:
           echo "PRE_COMMIT_RANGE=${range[*]}" >> "$GITHUB_ENV"
 
       - name: pre-commit (commit and pre-push stages)
+        if: steps.scope.outputs.docs-only != 'true'
         env:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
@@ -165,7 +217,7 @@ jobs:
           done
 
       - name: pre-commit (extra manual hooks)
-        if: inputs.extra-manual-hooks != ''
+        if: inputs.extra-manual-hooks != '' && steps.scope.outputs.docs-only != 'true'
         env:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
@@ -180,7 +232,7 @@ jobs:
           done
 
       - name: Affected tests
-        if: inputs.test-scope != ''
+        if: inputs.test-scope != '' && steps.scope.outputs.docs-only != 'true'
         env:
           TEST_SCOPE: ${{ inputs.test-scope }}
           SRC_ROOT: ${{ inputs.src-root }}

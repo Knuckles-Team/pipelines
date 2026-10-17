@@ -17,7 +17,7 @@ SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
     "config", "test-scope", "src-root", "runner", "rust", "all-files",
-    "extra-manual-hooks", "skip-hooks", "setup-command", "timeout-minutes",
+    "extra-manual-hooks", "skip-hooks", "setup-command", "docs-only-paths", "timeout-minutes",
 }  # fmt: skip
 
 
@@ -96,3 +96,51 @@ def test_spec_trailers_is_skipped_on_push_only() -> None:
     for step in hooks:
         assert 'EVENT_NAME" == "push"' in step["run"]
         assert "spec-trailers" in step["run"]
+
+
+def _docs_only_step() -> dict:
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    return next(step for step in steps if step.get("id") == "scope")
+
+
+def _detect(tmp_path: Path, changed: list[str], patterns: str, event: str = "pull_request") -> str:
+    # A git hook exports GIT_DIR/GIT_INDEX_FILE; without this the fixture writes to the real repository.
+    clean = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path.parent)}
+
+    def git(*args: str) -> str:
+        return subprocess.run(["git", "-C", str(tmp_path), "-c", "user.name=t", "-c", "user.email=t@example.com", *args], env=clean, check=True, capture_output=True, text=True).stdout.strip()
+
+    tmp_path.mkdir()
+    git("init", "-q")
+    (tmp_path / "seed").write_text("seed", encoding="utf-8")
+    git("add", "seed")
+    git("commit", "-qm", "seed")
+    base = git("rev-parse", "HEAD")
+    for name in changed:
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(name, encoding="utf-8")
+        git("add", name)
+    git("commit", "-qm", "change")
+    output = tmp_path.parent / f"{tmp_path.name}.out"
+    output.write_text("", encoding="utf-8")
+    env = {"DOCS_ONLY_PATHS": patterns, "EVENT_NAME": event, "PR_BASE": base, "BASE_REF": "main", "ALL_FILES": "false", "GITHUB_OUTPUT": str(output), "PATH": "/usr/bin:/bin"}
+    subprocess.run(["bash", "-c", _docs_only_step()["run"]], cwd=tmp_path, env=env, check=True, capture_output=True, text=True)
+    return output.read_text(encoding="utf-8").strip()
+
+
+DOCS = "specs/* docs/* *.md plans/* LICENSE"
+
+
+def test_docs_only_detection_passes_a_docs_diff_and_gates_a_mixed_one(tmp_path: Path) -> None:
+    assert _detect(tmp_path / "docs", ["docs/a/b.md", "README.md", "specs/x/requirements.md"], DOCS) == "docs-only=true"
+    assert _detect(tmp_path / "mixed", ["docs/a.md", "pkg/module.py"], DOCS) == "docs-only=false"
+    assert _detect(tmp_path / "off", ["docs/a.md"], "") == "docs-only=false"
+    assert _detect(tmp_path / "push", ["docs/a.md"], DOCS, event="push") == "docs-only=false"
+
+
+def test_docs_only_guard_covers_every_later_step() -> None:
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    position = steps.index(_docs_only_step())
+    assert position == 1
+    assert all("steps.scope.outputs.docs-only != 'true'" in step["if"] for step in steps[position + 1 :])
