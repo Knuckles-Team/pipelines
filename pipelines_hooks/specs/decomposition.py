@@ -69,6 +69,13 @@ def _status_rows(status: object) -> list[dict]:
     return [r for r in reqs if isinstance(r, dict) and r.get("id")]
 
 
+def _canonical_status_rows(status: object, aliases: Aliases) -> list[dict]:
+    """status.json rows with each ID canonicalized through the repository's aliases."""
+    return [
+        {**r, "id": canonical_id(str(r["id"]), aliases)} for r in _status_rows(status)
+    ]
+
+
 _NUMBER_TAIL = re.compile(r"R?\d{2,3}(?:\.\d+)*$")
 
 
@@ -108,9 +115,7 @@ def check_spec(spec_dir: Path, aliases: Aliases | None = None) -> list[str]:
     aliases = aliases or {}
     req_counts = _row_ids(texts.get("requirements.md", ""), aliases)
 
-    rows = [
-        {**r, "id": canonical_id(str(r["id"]), aliases)} for r in _status_rows(status)
-    ]
+    rows = _canonical_status_rows(status, aliases)
     status_counts: Counter[str] = Counter(r["id"] for r in rows)
     # First row wins for state lookups; duplicates themselves are flagged by (a).
     state_by_id: dict[str, str] = {}
