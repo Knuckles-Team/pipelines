@@ -121,7 +121,7 @@ def test_pipeline_checkout_collision_fails_before_checkout(tmp_path: Path, colli
     assert sentinel.read_text() == "preserve caller content"
 
 
-@pytest.mark.parametrize("profile", ["graphos", "connector/gitlab-api/mcp", "connector/gitlab-api/agent",
+@pytest.mark.parametrize("profile", ["arbora", "connector/gitlab-api/mcp", "connector/gitlab-api/agent",
     "connector/gramps-mcp/mcp", "connector/gramps-mcp/agent", "connector/onetrust-api/mcp",
     "connector/onetrust-api/agent", "connector-without-graph"])
 def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: str) -> None:
@@ -130,9 +130,9 @@ def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: s
         case["manifest"]["profile"]["first_party"].pop(1)
         removed = case["manifest"]["artifacts"].pop(1)
         (case["download"] / removed["path"]).unlink()
-        case["inputs"]["graph-os-revision"] = ""
+        case["inputs"]["arbora-revision"] = ""
         lock = case["download"] / "requirements.lock"
-        lock.write_text(lock.read_text().replace(f"graph-os @ file:///opt/graphos-runtime/{removed['path']} \\\n    --hash=sha256:{removed['sha256']}\n", ""))
+        lock.write_text(lock.read_text().replace(f"arbora @ file:///opt/arbora-runtime/{removed['path']} \\\n    --hash=sha256:{removed['sha256']}\n", ""))
         case["manifest"]["requirements_lock"]["sha256"] = case["inputs"]["lock-sha256"] = hashlib.sha256(lock.read_bytes()).hexdigest()
     freeze_runtime(case)
     assert not (case["caller"] / ".github/actions").exists()
@@ -146,15 +146,15 @@ def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: s
         if original.is_file():
             assert (destination / original.relative_to(case["download"])).read_bytes() == original.read_bytes()
     output = Path(case["environment"]["GITHUB_OUTPUT"]).read_text()
-    for argument, key in (("SOURCE_REVISION", "source-revision"), ("GRAPH_OS_REVISION", "graph-os-revision"),
+    for argument, key in (("SOURCE_REVISION", "source-revision"), ("ARBORA_REVISION", "arbora-revision"),
                           ("RUNTIME_LOCK_SHA256", "lock-sha256"), ("SOURCE_FREEZE_SHA256", "freeze-sha256")):
         assert (f"{argument}={case['inputs'][key]}\n" in output) == bool(case["inputs"][key])
 
 
-@pytest.mark.parametrize("profile", ["graphos", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
+@pytest.mark.parametrize("profile", ["arbora", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
 @pytest.mark.parametrize(("key", "value"), [("artifact-id", ""), ("artifact-id", "1,2"),
     ("source-revision", "main"), ("source-revision", "a" * 40), ("lock-sha256", ""),
-    ("freeze-sha256", "0" * 64), ("graph-os-revision", "bad"), ("profile", "other"),
+    ("freeze-sha256", "0" * 64), ("arbora-revision", "bad"), ("profile", "other"),
     ("build-context", "../escape"), ("build-context", "/tmp"), ("build-context", ".pipeline-contract"),
     ("profile", "connector/gitlab-api"), ("profile", "connector/gitlab-api/worker"),
     ("build-target", ""), ("build-target", "swap"), ("build-target", "wrong-final")])
@@ -171,7 +171,7 @@ def test_invalid_inputs_refused_before_download(tmp_path: Path, *, key: str, val
     assert not Path(case["environment"]["GITHUB_OUTPUT"]).exists()
 
 
-@pytest.mark.parametrize("profile", ["graphos", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
+@pytest.mark.parametrize("profile", ["arbora", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
 @pytest.mark.parametrize("mutation", ["profile", "target", "source", "version", "missing-wheel", "duplicate-wheel",
     "missing-receipt", "lock-binding", "graph", "unknown-source", "path", "payload", "duplicate-first-party",
     "schema", "image-stage", "missing-stage", "missing-root", "root-name", "root-extra", "root-version",
@@ -179,7 +179,7 @@ def test_invalid_inputs_refused_before_download(tmp_path: Path, *, key: str, val
 def test_semantic_mismatches_refused_even_with_repinned_freeze(tmp_path: Path, mutation: str, profile: str) -> None:
     case = runtime_case(tmp_path, ROOT, profile=profile)
     manifest = case["manifest"]
-    root = manifest["profile"]["first_party"][{"graphos": 1}.get(profile, 0)]
+    root = manifest["profile"]["first_party"][{"arbora": 1}.get(profile, 0)]
     requirement = manifest["profile"]["root_requirement"]
     changes = {
         "profile": lambda: manifest["profile"].update(name="connector/elsewhere"),
@@ -190,12 +190,12 @@ def test_semantic_mismatches_refused_even_with_repinned_freeze(tmp_path: Path, m
         "duplicate-wheel": lambda: manifest["artifacts"].append(manifest["artifacts"][0]),
         "missing-receipt": lambda: manifest.update(verification_receipt_sha256=""),
         "lock-binding": lambda: manifest["requirements_lock"].update(sha256="a" * 64),
-        "graph": lambda: case["inputs"].update({"graph-os-revision": "b" * 40}),
+        "graph": lambda: case["inputs"].update({"arbora-revision": "b" * 40}),
         "unknown-source": lambda: manifest["profile"]["first_party"].pop(2),
         "path": lambda: manifest["artifacts"][0].update(path="../escape.whl"),
         "payload": lambda: manifest["artifacts"][0].update(payload_manifest_sha256=""),
         "duplicate-first-party": lambda: manifest["profile"]["first_party"].append(manifest["profile"]["first_party"][0]),
-        "schema": lambda: manifest.update(schema="graphos-runtime-wheel-inputs/1"),
+        "schema": lambda: manifest.update(schema="arbora-runtime-wheel-inputs/1"),
         "image-stage": lambda: manifest["profile"].update(image_stage={"mcp": "agent"}.get(manifest["profile"]["image_stage"], "mcp")),
         "missing-stage": lambda: manifest["profile"].pop("image_stage"),
         "missing-root": lambda: manifest["profile"].pop("root_requirement"),
@@ -243,8 +243,8 @@ def test_changed_bytes_or_unsafe_staging_never_overwrites_caller(tmp_path: Path,
 @pytest.mark.parametrize("replacement", ["--index-url https://example.invalid/simple", "-e .", "name>=1",
     "agent-utilities==1.0 --hash=sha256:{hash}",
     "agent-utilities @ https://example.invalid/package.whl --hash=sha256:{hash}",
-    "agent-utilities[unselected] @ file:///opt/graphos-runtime/{path} --hash=sha256:{hash}",
-    "agent-utilities @ file:///opt/graphos-runtime/{path} --hash=sha256:" + "b" * 64])
+    "agent-utilities[unselected] @ file:///opt/arbora-runtime/{path} --hash=sha256:{hash}",
+    "agent-utilities @ file:///opt/arbora-runtime/{path} --hash=sha256:" + "b" * 64])
 def test_lock_cannot_reintroduce_resolution_or_unselected_extras(tmp_path: Path, replacement: str) -> None:
     case = runtime_case(tmp_path, ROOT)
     item = case["manifest"]["artifacts"][0]

@@ -16,7 +16,7 @@ Use one deterministic topological sort and dependency closure. Query hosted chec
 
 ## Digest boundary
 
-Reuse source verification in build workflows. Record the registry-returned immutable digest, not a generated tag. Handoff verifies declared consumer manifest references and names each mismatch. GraphOS validates the trusted candidate and owns runtime topological rollout. Deployment owners apply reviewed digest-pinned manifests and publish runtime probes. No cluster login, secret lookup, or manifest mutation belongs in generic order tests.
+Reuse source verification in build workflows. Record the registry-returned immutable digest, not a generated tag. Handoff verifies declared consumer manifest references and names each mismatch. Arbora validates the trusted candidate and owns runtime topological rollout. Deployment owners apply reviewed digest-pinned manifests and publish runtime probes. No cluster login, secret lookup, or manifest mutation belongs in generic order tests.
 
 ## Portable execution
 

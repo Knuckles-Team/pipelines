@@ -24,13 +24,13 @@ def fixture(root, text='', plan=''):
 @pytest.mark.spec("PIPE-PAGES-R013.1")
 @pytest.mark.spec("PIPE-PAGES-R013.5")
 def test_local_and_external_dependencies_have_links_and_canonical_identity(tmp_path):
-    remote = 'https://github.com/Knuckles-Team/graph-os/blob/main/specs/host/spec.md'
+    remote = 'https://github.com/Knuckles-Team/arbora/blob/main/specs/host/spec.md'
     snapshot = fixture(tmp_path, 'Depends-on: AU-OTHER-R001, [host](' + remote + ')\n')
     enrich_records(tmp_path, snapshot)
     first = snapshot['records'][0]
     assert first['id'] == 'AU-CONTROL'
     assert {edge['kind'] for edge in first['relations']} == {'depends on'}
-    assert {edge['repository'] for edge in first['relations']} == {'Knuckles-Team/demo', 'Knuckles-Team/graph-os'}
+    assert {edge['repository'] for edge in first['relations']} == {'Knuckles-Team/demo', 'Knuckles-Team/arbora'}
     page = relationships_panel(snapshot)
     assert 'specs/second/spec.md' in page and remote in page
     assert 'not verified' in page

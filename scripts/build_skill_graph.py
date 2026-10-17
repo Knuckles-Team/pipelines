@@ -12,7 +12,7 @@ Two independent extraction strategies feed the corpus:
 
 1. **Nav-derived** (``skill_graph/nav.py``, every repo that already opted
    into the shared MkDocs theme: ``epistemic-graph``, ``agent-utilities``,
-   ``agent-connector-sdk``, ``graph-os``, ``agent-webui``,
+   ``agent-connector-sdk``, ``arbora``, ``agent-webui``,
    ``agent-terminal-ui``, ``geniusbot``). A repo's own ``mkdocs.yml``
    ``nav:`` tree is itself a committed, machine-readable registry of that
    repo's public documentation surface.
@@ -20,7 +20,7 @@ Two independent extraction strategies feed the corpus:
    repo-specific, richer where a repo has a dedicated machine registry
    beyond its docs nav): EG's ``architecture/component-registry.yml`` +
    ``contract/methods.json``; AU's ``docs/concepts.yaml`` pillars +
-   ``deploy/release/prebundled-skills.catalog.json``. SDK, graph-os, and the
+   ``deploy/release/prebundled-skills.catalog.json``. SDK, arbora, and the
    three UI repos have no additional machine registry today, so only the
    nav-derived strategy applies to them -- named explicitly as a known scope
    limit, not silently skipped (see ``skill_graph/corpus.py``).

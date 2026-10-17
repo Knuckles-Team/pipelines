@@ -220,7 +220,7 @@ _No components._
 
 - **Status** — `status.md`
 
-## Graph OS web UI
+## Arbora web UI
 
 ### Components
 
@@ -1127,7 +1127,7 @@ _No components._
 
 - **Status** — `status.md`
 
-## Graph OS
+## Arbora
 
 ### Architecture
 
@@ -1138,7 +1138,7 @@ _No components._
 - **Fleet scale authority** — `architecture/fleet-scale-authority.md`
 - **Gateway daemon** — `architecture/gateway-daemon.md`
 - **Gateway scaling** — `architecture/gateway-scaling.md`
-- **Self-hosting cutover** — `architecture/graphos-self-hosting.md`
+- **Self-hosting cutover** — `architecture/arbora-self-hosting.md`
 - **Identity inheritance** — `architecture/identity-inheritance.md`
 - **MCP 2026-07-28 protocol surface** — `architecture/mcp-2026-protocol-surface.md`
 - **MCP fleet authentication** — `architecture/mcp-auth.md`
@@ -1183,6 +1183,6 @@ _No components._
 
 - **Skill graph reference** — `reference/skill-graph.generated.md`
 
-### Start Graph OS
+### Start Arbora
 
-- **Start Graph OS** — `get-started.md`
+- **Start Arbora** — `get-started.md`

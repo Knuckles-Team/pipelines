@@ -25,7 +25,7 @@ KNOWN_REPOS = (
     "epistemic-graph",
     "agent-connector-sdk",
     "agent-utilities",
-    "graph-os",
+    "arbora",
     "agent-webui",
     "pipelines",
 )

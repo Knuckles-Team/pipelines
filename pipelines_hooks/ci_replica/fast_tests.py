@@ -28,7 +28,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="fast-tests", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--base-ref", default=setting("PRE_COMMIT_FROM_REF"))
-    parser.add_argument("--src-root", default="graph_os")
+    parser.add_argument("--src-root", default="arbora")
     parser.add_argument("--tests-root", default="tests")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_SECONDS)
     return parser.parse_args(argv)

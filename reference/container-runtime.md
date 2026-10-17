@@ -12,20 +12,20 @@ single-stage recipes. A named `build_target` builds that stage once and fails if
 it is absent. Explicit `mcp` selection retains the mcp leg's existing suffixes
 and tags; other explicit targets use the agent leg's unsuffixed tags. The other
 leg skips the build. Runtime staging requires explicit profile-bound selection:
-GraphOS uses `default`; connector profiles use their `mcp` or `agent` suffix.
+Arbora uses `default`; connector profiles use their `mcp` or `agent` suffix.
 Separate callers publish separate profiles.
 
 ## Opt-in inputs
 
 | Input | Required value for runtime staging |
 | --- | --- |
-| `dockerfile` | The caller's offline runtime recipe, for example `docker/graphos-unified.Dockerfile`. |
+| `dockerfile` | The caller's offline runtime recipe, for example `docker/arbora-unified.Dockerfile`. |
 | `build_context` | Existing caller-relative local directory, default `.`. |
-| `build_target` | `default` for `graphos`; `mcp` or `agent` matching the connector profile suffix. |
+| `build_target` | `default` for `arbora`; `mcp` or `agent` matching the connector profile suffix. |
 | `runtime_artifact_id` | One immutable numeric artifact ID produced earlier in the same workflow run. |
-| `runtime_profile` | `graphos` or `connector/<normalized-distribution>/<mcp\|agent>`. |
+| `runtime_profile` | `arbora` or `connector/<normalized-distribution>/<mcp\|agent>`. |
 | `source_revision` | Full lowercase caller commit SHA equal to `github.sha`, checkout HEAD and the frozen caller source. |
-| `graph_os_revision` | Full frozen `graph-os` SHA when present in the profile; otherwise empty. Required for `graphos`. |
+| `arbora_revision` | Full frozen `arbora` SHA when present in the profile; otherwise empty. Required for `arbora`. |
 | `runtime_lock_sha256` | Expected SHA256 of `requirements.lock`, obtained from the qualified producer. |
 | `source_freeze_sha256` | Expected SHA256 of `source-freeze.json`, obtained from the qualified producer. |
 
@@ -43,7 +43,7 @@ not accepted. The workflow needs no additional token or permission.
 
 ## Producer and manifest contract
 
-The source freeze uses schema `graphos-runtime-wheel-inputs/2`. This is the
+The source freeze uses schema `arbora-runtime-wheel-inputs/2`. This is the
 hard cutover defined by frozen interface revision `2026-10-05.stage-profiles.1`
 (contract SHA256 `602770e54718c77f6769ae5bc33f914bbcea62100d2bb0330873041768d44c25`).
 Artifact-backed producers and callers must update together; /1 manifests and
@@ -66,11 +66,11 @@ Required manifest fields:
   resolution and static verification evidence. All SHA256 fields are full,
   nonzero lowercase digests. Source revisions are full lowercase commit SHAs.
 
-For `graphos`, both `image_stage` and the requested build target must be
+For `arbora`, both `image_stage` and the requested build target must be
 `default`. Its root is
-`graph-os[messaging-mattermost,messaging-telegram,webui]==<frozen-version>`,
-matching the graph-os first-party row's exact version and extras. The caller
-source still binds agent-utilities; `graph_os_revision` separately binds graph-os.
+`arbora[messaging-mattermost,messaging-telegram,webui]==<frozen-version>`,
+matching the arbora first-party row's exact version and extras. The caller
+source still binds agent-utilities; `arbora_revision` separately binds arbora.
 
 For `connector/<distribution>/<mcp|agent>`, the suffix, `image_stage` and requested
 build target must agree. The caller row selects exactly that one stage extra,
@@ -96,12 +96,12 @@ The lock must be fully selected for this target: one requirement per selected
 wheel, with matching SHA256 hashes, no remaining markers, directives, editable
 paths, VCS URLs or remote references. Comments and backslash continuations are
 accepted. All first-party entries use
-`distribution[extras] @ file:///opt/graphos-runtime/wheels/<basename>`;
+`distribution[extras] @ file:///opt/arbora-runtime/wheels/<basename>`;
 `epistemic-graph` uses `eg-wheel` instead. Extras must equal the frozen selection.
 Third-party entries may use an equivalent local wheel reference or an exact
 `distribution==version` pin. Every declared wheel must appear in the lock.
 Connector profiles select the caller distribution's explicit `mcp` or `agent`
-extra and have their own complete closure; MCP, agent and GraphOS locks are not
+extra and have their own complete closure; MCP, agent and Arbora locks are not
 interchangeable.
 
 ## Staging and recipe responsibilities
@@ -118,13 +118,13 @@ existing destination. It never overlays caller files or trusts a downloader's
 digest warning as acceptance.
 
 After verification, every build attempt receives `SOURCE_REVISION`,
-`RUNTIME_LOCK_SHA256`, `SOURCE_FREEZE_SHA256`, and `GRAPH_OS_REVISION` when the
-profile includes GraphOS. These values come from the validated caller inputs;
+`RUNTIME_LOCK_SHA256`, `SOURCE_FREEZE_SHA256`, and `ARBORA_REVISION` when the
+profile includes Arbora. These values come from the validated caller inputs;
 they are not inferred from tags or substituted index packages.
 
 The selected Dockerfile must copy `build-artifacts/runtime/` to
-`/opt/graphos-runtime/`, verify its digests and install with offline, no-index,
+`/opt/arbora-runtime/`, verify its digests and install with offline, no-index,
 no-build and require-hashes options. Keep that path in the Docker build context
 and out of `.dockerignore` exclusions. Existing recipe preflights, feature checks
 and caller release gates still apply. This workflow change alone does not
-publish a complete GraphOS runtime.
+publish a complete Arbora runtime.

@@ -6,7 +6,7 @@ implementation components -- see ``skill_graph/eg.py``.
 ``agent-utilities`` has a components tier too, generated from its own
 ``docs/concepts.yaml`` pillars instead -- see ``render_components_au.py``
 (its own ``architecture/component-registry.yml`` has exactly 1 component,
-too sparse to seed a tier). ``agent-connector-sdk``, ``graph-os``, and
+too sparse to seed a tier). ``agent-connector-sdk``, ``arbora``, and
 ``agent-webui`` have no comparable registry; their own docs nav already IS
 their honest component tier (nav relabeled, not generated -- see
 WRAPUP.md).
