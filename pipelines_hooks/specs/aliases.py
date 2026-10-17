@@ -36,9 +36,7 @@ def _validated(document: dict, path: Path) -> dict[str, str]:
             raise CannotRun(f"{path}: alias {old!r} must map to a string prefix")
         for prefix in (old, new):
             if not _PREFIX_RE.fullmatch(prefix):
-                raise CannotRun(
-                    f"{path}: {prefix!r} is not an ID prefix (upper-case, ending in '-')"
-                )
+                raise CannotRun(f"{path}: {prefix!r} is not an ID prefix (upper-case, ending in '-')")
         if old == new:
             raise CannotRun(f"{path}: alias {old!r} maps to itself")
         aliases[old] = new
@@ -69,7 +67,7 @@ def retired_prefix(rid: str, aliases: Aliases) -> str | None:
 def canonical_id(rid: str, aliases: Aliases) -> str:
     """``rid`` with a retired prefix replaced by its canonical one."""
     old = retired_prefix(rid, aliases)
-    return aliases[old] + rid[len(old):] if old else rid
+    return aliases[old] + rid[len(old) :] if old else rid
 
 
 def canonical_ids(ids: Iterable[str], aliases: Aliases) -> list[str]:

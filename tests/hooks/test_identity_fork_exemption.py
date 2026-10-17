@@ -34,21 +34,27 @@ def _pull_request_payload(*, head_repo: str, base_repo: str) -> dict:
 
 
 def test_same_repository_pull_request_is_checked(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    event = _event_path(tmp_path, _pull_request_payload(head_repo="Knuckles-Team/pipelines", base_repo="Knuckles-Team/pipelines"))
+    event = _event_path(
+        tmp_path, _pull_request_payload(head_repo="Knuckles-Team/pipelines", base_repo="Knuckles-Team/pipelines")
+    )
     monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
     assert is_fork_pull_request() is False
 
 
 def test_fork_pull_request_is_exempt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    event = _event_path(tmp_path, _pull_request_payload(head_repo="someone-else/pipelines", base_repo="Knuckles-Team/pipelines"))
+    event = _event_path(
+        tmp_path, _pull_request_payload(head_repo="someone-else/pipelines", base_repo="Knuckles-Team/pipelines")
+    )
     monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
     assert is_fork_pull_request() is True
 
 
 def test_a_push_is_checked(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    event = _event_path(tmp_path, _pull_request_payload(head_repo="someone-else/pipelines", base_repo="Knuckles-Team/pipelines"))
+    event = _event_path(
+        tmp_path, _pull_request_payload(head_repo="someone-else/pipelines", base_repo="Knuckles-Team/pipelines")
+    )
     monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
     assert is_fork_pull_request() is False
@@ -86,7 +92,9 @@ def test_range_gate_passes_an_exempt_fork_pull_request_with_no_allowlist_configu
     """The range gate never even needs the allowlist for an exempt fork PR."""
     base = repo.git("rev-parse", "HEAD").strip()
     commit_as(repo.root, name=OUTSIDE_NAME, email=OUTSIDE_EMAIL, message="fork-contribution")
-    event = _event_path(repo.root, _pull_request_payload(head_repo="someone-else/pipelines", base_repo="Knuckles-Team/pipelines"))
+    event = _event_path(
+        repo.root, _pull_request_payload(head_repo="someone-else/pipelines", base_repo="Knuckles-Team/pipelines")
+    )
     monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
     monkeypatch.setenv("CI", "true")
@@ -97,7 +105,9 @@ def test_range_gate_still_checks_a_same_repository_pull_request(repo: Repo, monk
     base = repo.git("rev-parse", "HEAD").strip()
     write_identity_allowlist(repo.root, [{"name": "Example Author", "email": "author@example.invalid"}])
     commit_as(repo.root, name=OUTSIDE_NAME, email=OUTSIDE_EMAIL, message="same-repo-bad")
-    event = _event_path(repo.root, _pull_request_payload(head_repo="Knuckles-Team/pipelines", base_repo="Knuckles-Team/pipelines"))
+    event = _event_path(
+        repo.root, _pull_request_payload(head_repo="Knuckles-Team/pipelines", base_repo="Knuckles-Team/pipelines")
+    )
     monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
     monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
     monkeypatch.setenv("CI", "true")

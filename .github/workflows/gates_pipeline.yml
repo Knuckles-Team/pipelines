@@ -1,9 +1,14 @@
 name: Gates
 
-# Shared PR / main gate (CI-STANDARD): the caller's own pre-commit file and its
-# CI-only gate file (.config/ci-gates.yaml, PRECOMMIT standard), run
-# diff-scoped on pull requests (--from-ref/--to-ref) and over every file on a
-# main push, then the affected-test subset. Never publishes.
+# The pull request workflow of the gate standard (reference/gate-standard.md):
+# the caller's own pre-commit file (format, hygiene, secrets at the commit
+# stage; types, spec at the pre-push stage) and its optional CI-only gate file
+# (.config/ci-gates.yaml, PRECOMMIT standard), run diff-scoped on pull requests
+# (--from-ref/--to-ref) and over every file on a main push, then the
+# affected-test subset. The pre-push `tests-fast` hook is skipped here because
+# the affected-test step runs the same subset without the local time cap.
+# Never publishes. Full tests and the dependency audit belong to
+# main_pipeline.yml; advisory scanners to advisory_pipeline.yml.
 #
 # Caller contract (copy; a reusable workflow cannot set the caller's groups):
 #
@@ -218,9 +223,11 @@ jobs:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
           EVENT_NAME: ${{ github.event_name }}
+          TEST_SCOPE: ${{ inputs.test-scope }}
         run: |
           set -euo pipefail
           if [[ "$EVENT_NAME" == "push" ]]; then SKIP="${SKIP:+$SKIP,}spec-trailers"; export SKIP; fi
+          if [[ -n "$TEST_SCOPE" ]]; then SKIP="${SKIP:+$SKIP,}tests-fast,fast-tests"; export SKIP; fi
           for stage in pre-commit pre-push; do
             # shellcheck disable=SC2086
             uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage "$stage" $PRE_COMMIT_RANGE --show-diff-on-failure

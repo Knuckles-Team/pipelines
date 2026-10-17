@@ -51,9 +51,7 @@ from pipelines_hooks.specs.withdrawal import withdrawals
 #: then sha/trailer separator. Both are illegal in a sha or a trailer value.
 _RECORD = "\x01"
 _FIELD = "\x02"
-_LOG_FORMAT = (
-    f"{_RECORD}%H{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
-)
+_LOG_FORMAT = f"{_RECORD}%H{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
 
 _EXEMPT_PREFIXES = ("specs/", "docs/", ".github/")
 
@@ -77,9 +75,7 @@ class _Commit:
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="spec-trailers", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument(
-        "--base-ref", default=None, help="default: see module docstring"
-    )
+    parser.add_argument("--base-ref", default=None, help="default: see module docstring")
     return parser.parse_args(argv)
 
 
@@ -113,9 +109,7 @@ def _is_product_path(path: str) -> bool:
 
 def _missing_trailer_failures(commits: list[_Commit]) -> list[str]:
     """Item 3: a product-path commit exists, but no commit carries ``Spec:`` at all."""
-    touches_product = any(
-        any(_is_product_path(path) for path in commit.paths) for commit in commits
-    )
+    touches_product = any(any(_is_product_path(path) for path in commit.paths) for commit in commits)
     has_trailer = any(commit.trailer_raw.strip() for commit in commits)
     if touches_product and not has_trailer:
         return [
@@ -142,9 +136,7 @@ def _unknown_id_failures(named: list[str], known: set[str]) -> list[str]:
     unknown = sorted({identifier for identifier in named if identifier not in known})
     if not unknown:
         return []
-    return [
-        f"spec-trailers: FAIL: unknown requirement id(s), no requirements.md row: {', '.join(unknown)}"
-    ]
+    return [f"spec-trailers: FAIL: unknown requirement id(s), no requirements.md row: {', '.join(unknown)}"]
 
 
 def _bound_ids(root: Path, aliases: Aliases | None = None) -> set[str]:
@@ -159,9 +151,7 @@ def _bound_ids(root: Path, aliases: Aliases | None = None) -> set[str]:
     return ids
 
 
-def _unbound_id_failures(
-    named: list[str], known: set[str], root: Path, *, aliases: Aliases | None = None
-) -> list[str]:
+def _unbound_id_failures(named: list[str], known: set[str], root: Path, *, aliases: Aliases | None = None) -> list[str]:
     """Item 5: a trailered, known ID with no bound test anywhere in the tree."""
     known_named = sorted({identifier for identifier in named if identifier in known})
     if not known_named:
@@ -170,9 +160,7 @@ def _unbound_id_failures(
     unbound = [identifier for identifier in known_named if identifier not in bound]
     if not unbound:
         return []
-    return [
-        f"spec-trailers: FAIL: requirement id(s) with no bound test in the tree: {', '.join(unbound)}"
-    ]
+    return [f"spec-trailers: FAIL: requirement id(s) with no bound test in the tree: {', '.join(unbound)}"]
 
 
 def main(argv: list[str]) -> int:
@@ -184,9 +172,7 @@ def main(argv: list[str]) -> int:
     # ``Spec:`` trailer must not demand a bound test for work that is gone.
     reverted = reverted_shas(root, "HEAD")
     aliases = load_aliases(root)
-    named = canonical_trailer_ids(
-        [commit.trailer_raw for commit in commits if commit.sha not in reverted], aliases
-    )
+    named = canonical_trailer_ids([commit.trailer_raw for commit in commits if commit.sha not in reverted], aliases)
     known = set(canonical_ids(_known_requirement_ids(root), aliases))
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)
@@ -194,9 +180,7 @@ def main(argv: list[str]) -> int:
         root, base, named=set(named), known=known, bound=_bound_ids(root, aliases)
     )
     failures += withdrawal_errors
-    failures += _unbound_id_failures(
-        [rid for rid in named if rid not in withdrawn], known, root, aliases=aliases
-    )
+    failures += _unbound_id_failures([rid for rid in named if rid not in withdrawn], known, root, aliases=aliases)
     if failures:
         for line in failures:
             print(line)

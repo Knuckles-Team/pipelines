@@ -62,7 +62,12 @@ def check_config(tree: Path) -> Path:
 
 def unknown_keys(document: dict) -> list[str]:
     """``table.key`` for every key kiss 0.4.12 would silently drop its table for."""
-    unknown = [f"{table}.{key}" for table, known in KNOWN_KEYS.items() for key in sorted(document.get(table) or {}) if key not in known]
+    unknown = [
+        f"{table}.{key}"
+        for table, known in KNOWN_KEYS.items()
+        for key in sorted(document.get(table) or {})
+        if key not in known
+    ]
     if "gate" in document:
         unknown.append("[gate] (renamed to [global]/[test] in kiss 0.4.11)")
     return unknown
@@ -76,7 +81,9 @@ def check_config_keys(tree: Path) -> None:
         raise CannotRun(f"cannot read {CONFIG}: {exc}") from exc
     unknown = unknown_keys(document)
     if unknown:
-        raise CannotRun(f"{CONFIG} has key(s) kiss 0.4.12 does not know: {', '.join(unknown)}; kiss would silently drop the whole table")
+        raise CannotRun(
+            f"{CONFIG} has key(s) kiss 0.4.12 does not know: {', '.join(unknown)}; kiss would silently drop the whole table"
+        )
 
 
 def _validated(output: str, status: int, path: str) -> str:
@@ -94,13 +101,18 @@ def _validated(output: str, status: int, path: str) -> str:
 def check(kiss: str, tree: Path, path: str, *, language: str | None = None) -> str:
     """The validated report for ONE path (a file, or a directory with ``language``)."""
     language = language or LANGUAGES.get(Path(path).suffix)
-    if language not in LANGUAGES.values():
+    if language is None or language not in LANGUAGES.values():
         raise CannotRun(f"no KISS language for {path}")
     command = [kiss, "check", "--config", str(check_config(tree)), "--lang", language, path]
     try:
         result = subprocess.run(
-            command, cwd=str(tree), env=sanitized_env(), capture_output=True, text=True,
-            timeout=900, check=False,
+            command,
+            cwd=str(tree),
+            env=sanitized_env(),
+            capture_output=True,
+            text=True,
+            timeout=900,
+            check=False,
         )
     except (OSError, UnicodeError, subprocess.TimeoutExpired) as exc:
         raise CannotRun(f"could not run kiss on {path}: {exc}") from exc
@@ -121,7 +133,9 @@ def materialize_head(root: Path, destination: Path) -> Path | None:
     destination.mkdir(parents=True)
     archive = destination.parent / f"{destination.name}.tar"
     with archive.open("wb") as stream:
-        result = subprocess.run(["git", "archive", "HEAD"], cwd=str(root), env=sanitized_env(), stdout=stream, check=False)
+        result = subprocess.run(
+            ["git", "archive", "HEAD"], cwd=str(root), env=sanitized_env(), stdout=stream, check=False
+        )
     if result.returncode != 0:
         raise CannotRun("git archive HEAD failed")
     with tarfile.open(archive) as bundle:

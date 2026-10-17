@@ -37,11 +37,7 @@ def render_repo_reference_md(corpus: dict[str, Any], slug: str) -> str:
     guide pages.
     """
     nodes_by_id = {n["id"]: n for n in corpus["@graph"]}
-    concepts = [
-        n
-        for n in corpus["@graph"]
-        if n["type"] == "Concept" and n.get("partOfRepo") == f"repo/{slug}"
-    ]
+    concepts = [n for n in corpus["@graph"] if n["type"] == "Concept" and n.get("partOfRepo") == f"repo/{slug}"]
     lines = _header(repo_label(slug))
     for concept in sorted(concepts, key=lambda n: n["label"]):
         lines.append(f"## {concept['label']}")

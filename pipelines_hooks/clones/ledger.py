@@ -95,7 +95,9 @@ def rot_note(pair: DistinctPair, root: Path) -> str | None:
     return None
 
 
-def _classify(finding: dict[str, Any], by_key: dict[PairKey, DistinctPair], root: Path) -> tuple[str | None, str | None]:
+def _classify(
+    finding: dict[str, Any], by_key: dict[PairKey, DistinctPair], root: Path
+) -> tuple[str | None, str | None]:
     """``(bucket, note)``: bucket is ``unregistered``, ``changed`` or ``None``."""
     resolved = resolved_reason(finding, root)
     if resolved is not None:

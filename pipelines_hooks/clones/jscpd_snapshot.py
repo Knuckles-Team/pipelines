@@ -52,8 +52,13 @@ def materialize(root: Path, ref: str, destination: Path) -> Path:
     archive = destination.parent / f"{destination.name}.tar"
     with archive.open("wb") as stream:
         result = subprocess.run(
-            ["git", "archive", "--format=tar", ref], cwd=str(root), env=sanitized_env(),
-            stdout=stream, stderr=subprocess.PIPE, timeout=900, check=False,
+            ["git", "archive", "--format=tar", ref],
+            cwd=str(root),
+            env=sanitized_env(),
+            stdout=stream,
+            stderr=subprocess.PIPE,
+            timeout=900,
+            check=False,
         )
     if result.returncode != 0:
         raise CannotRun(f"git archive {ref} failed: {result.stderr.decode(errors='replace')[:400]}")

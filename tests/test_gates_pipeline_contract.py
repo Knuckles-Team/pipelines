@@ -32,7 +32,13 @@ def _require_tag_script() -> str:
 
 
 def _run_guard(ref: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["bash", "-c", _require_tag_script()], env={"REF": ref, "PATH": "/usr/bin:/bin"}, capture_output=True, text=True, check=False)
+    return subprocess.run(
+        ["bash", "-c", _require_tag_script()],
+        env={"REF": ref, "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
 
 
 def test_gates_workflow_inputs_all_default() -> None:
@@ -49,7 +55,7 @@ def test_gates_workflow_scopes_to_the_diff_and_caps_time() -> None:
     assert job["timeout-minutes"] == "${{ inputs.timeout-minutes }}"
     assert _on(GATES_WORKFLOW)["workflow_call"]["inputs"]["timeout-minutes"]["default"] == 15
     assert "--from-ref" in text and "--to-ref" in text and "--all-files" in text
-    assert "for stage in pre-commit pre-push" in text and "--hook-stage \"$stage\"" in text
+    assert "for stage in pre-commit pre-push" in text and '--hook-stage "$stage"' in text
     assert "pr-test-scope" in text and "fetch-depth: 0" in text
     assert "pipelines-hook" in text and "job.workflow_sha" in text
 
@@ -60,7 +66,9 @@ def test_require_tag_defaults_off_and_guards_the_publish_step() -> None:
     assert spec["default"] is False and spec["required"] is False
     steps = document["jobs"]["publish-pypi"]["steps"]
     first = next(step for step in steps if step.get("name") == "Require a release tag")
-    assert steps.index(first) < next(i for i, step in enumerate(steps) if "uses" in step and "publish-python-package" in step["uses"])
+    assert steps.index(first) < next(
+        i for i, step in enumerate(steps) if "uses" in step and "publish-python-package" in step["uses"]
+    )
     assert first["name"] == "Require a release tag" and first["if"] == "inputs.require-tag"
     # existing inputs unchanged
     assert {"runtime-profiles", "web-assets"} <= set(_on(PYTHON_WORKFLOW)["workflow_call"]["inputs"])
@@ -84,7 +92,10 @@ def test_skip_template_is_the_inverse_of_the_documented_ignore_list() -> None:
 
 def test_fast_tests_is_a_pre_push_published_gate() -> None:
     assert GATES["fast-tests"] == "pipelines_hooks.ci_replica.fast_tests"
-    hooks = {hook["id"]: hook for hook in yaml.safe_load((HOOK_REPOSITORY / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))}
+    hooks = {
+        hook["id"]: hook
+        for hook in yaml.safe_load((HOOK_REPOSITORY / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))
+    }
     assert hooks["fast-tests"]["stages"] == ["pre-push"]
     assert hooks["fast-tests"]["entry"] == "pipelines-hook fast-tests"
 
@@ -108,7 +119,13 @@ def _detect(tmp_path: Path, changed: list[str], patterns: str, event: str = "pul
     clean = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path.parent)}
 
     def git(*args: str) -> str:
-        return subprocess.run(["git", "-C", str(tmp_path), "-c", "user.name=t", "-c", "user.email=t@example.com", *args], env=clean, check=True, capture_output=True, text=True).stdout.strip()
+        return subprocess.run(
+            ["git", "-C", str(tmp_path), "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+            env=clean,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
 
     tmp_path.mkdir()
     git("init", "-q")
@@ -124,8 +141,18 @@ def _detect(tmp_path: Path, changed: list[str], patterns: str, event: str = "pul
     git("commit", "-qm", "change")
     output = tmp_path.parent / f"{tmp_path.name}.out"
     output.write_text("", encoding="utf-8")
-    env = {"DOCS_ONLY_PATHS": patterns, "EVENT_NAME": event, "PR_BASE": base, "BASE_REF": "main", "ALL_FILES": "false", "GITHUB_OUTPUT": str(output), "PATH": "/usr/bin:/bin"}
-    subprocess.run(["bash", "-c", _docs_only_step()["run"]], cwd=tmp_path, env=env, check=True, capture_output=True, text=True)
+    env = {
+        "DOCS_ONLY_PATHS": patterns,
+        "EVENT_NAME": event,
+        "PR_BASE": base,
+        "BASE_REF": "main",
+        "ALL_FILES": "false",
+        "GITHUB_OUTPUT": str(output),
+        "PATH": "/usr/bin:/bin",
+    }
+    subprocess.run(
+        ["bash", "-c", _docs_only_step()["run"]], cwd=tmp_path, env=env, check=True, capture_output=True, text=True
+    )
     return output.read_text(encoding="utf-8").strip()
 
 
@@ -153,3 +180,9 @@ def test_ci_only_gates_run_from_their_own_file_and_skip_when_absent() -> None:
     step = next(step for step in steps if step.get("name") == "CI-only gates")
     assert '--config "$CI_CONFIG" $PRE_COMMIT_RANGE' in step["run"]
     assert 'if [[ ! -f "$CI_CONFIG" ]]' in step["run"]
+
+
+def test_no_workflow_grants_write_all() -> None:
+    for path in WORKFLOWS.glob("*.yml"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            assert line.split("#")[0].strip() != "permissions: write-all", path.name

@@ -78,7 +78,8 @@ def _valid_evidence(path: Path, data: dict, errors: list[str]) -> list[dict]:
 def _merged_head(valid: list[dict]) -> str | None:
     return next(
         (
-            item["commit"] for item in valid
+            item["commit"]
+            for item in valid
             if item.get("kind") == "merged_head"
             and item.get("result") == "passed"
             and item["url"] == f"https://github.com/Knuckles-Team/pipelines/commit/{item['commit']}"
@@ -93,10 +94,7 @@ def _receipt_errors(path: Path, data: dict, valid: list[dict]) -> list[str]:
     if data.get("delivery_state") in {"LANDED", "CLOSED"} and not merged:
         errors.append(f"{path}: merged-head evidence required")
     if data.get("acceptance_state") == "ACCEPTED":
-        kinds = {
-            item.get("kind") for item in valid
-            if item.get("commit") == merged and item.get("result") == "passed"
-        }
+        kinds = {item.get("kind") for item in valid if item.get("commit") == merged and item.get("result") == "passed"}
         if not merged or "test" not in kinds or not kinds & {"consumer", "release"}:
             errors.append(f"{path}: acceptance receipts required")
     return errors

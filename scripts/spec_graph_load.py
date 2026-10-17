@@ -44,20 +44,14 @@ def _requirement_from_entry(
     )
 
 
-def _requirements_from_status(
-    data: dict, *, repo_name: str, spec_dir: Path, reqs: dict[str, Requirement]
-) -> None:
+def _requirements_from_status(data: dict, *, repo_name: str, spec_dir: Path, reqs: dict[str, Requirement]) -> None:
     entries = {
         entry["id"]: entry
         for entry in data.get("requirements", []) or []
         if isinstance(entry, dict) and entry.get("id")
     }
     req_md = spec_dir / "requirements.md"
-    rows = (
-        parse_requirements_md(req_md.read_text(encoding="utf-8"))
-        if req_md.is_file()
-        else {}
-    )
+    rows = parse_requirements_md(req_md.read_text(encoding="utf-8")) if req_md.is_file() else {}
     fallback_state = data.get("delivery_state", "UNKNOWN")
     for rid in data.get("requirement_ids", []) or []:
         if isinstance(rid, str) and rid:
@@ -83,18 +77,14 @@ def _load_status_entries(root: Path, reqs: dict[str, Requirement]) -> list[Path]
     specs_dir = root / "specs"
     if not specs_dir.is_dir():
         return []
-    spec_dirs = sorted(
-        p for p in specs_dir.iterdir() if p.is_dir() and p.name != "_template"
-    )
+    spec_dirs = sorted(p for p in specs_dir.iterdir() if p.is_dir() and p.name != "_template")
     for spec_dir in spec_dirs:
         status_path = spec_dir / "status.json"
         if not status_path.is_file():
             continue
         data = _status_data(status_path)
         if data is not None:
-            _requirements_from_status(
-                data, repo_name=root.name, spec_dir=spec_dir, reqs=reqs
-            )
+            _requirements_from_status(data, repo_name=root.name, spec_dir=spec_dir, reqs=reqs)
     return spec_dirs
 
 

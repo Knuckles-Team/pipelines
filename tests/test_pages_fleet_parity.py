@@ -98,12 +98,24 @@ def test_cli_committed_declaration_json_and_markdown(fleet, tmp_path, capsys):
     assert "declaration-overlay" in capsys.readouterr().out
 
 
-@pytest.mark.parametrize("field,value", [("revision", "main"), ("revision", "a" * 7), ("revision", None),
-                                         ("revision", "A" * 40), ("repository", "../escape")])
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("revision", "main"),
+        ("revision", "a" * 7),
+        ("revision", None),
+        ("revision", "A" * 40),
+        ("repository", "../escape"),
+    ],
+)
 def test_invalid_identity_before_resolution(field, value):
-    data = {"schema_version": 1, "pipeline": {"repository": "example/pipelines", "revision": "a" * 40},
-            "consumers": [{"repository": "example/one", "revision": "b" * 40,
-                           "content_source": "docs", "shared_theme_enabled": True}]}
+    data = {
+        "schema_version": 1,
+        "pipeline": {"repository": "example/pipelines", "revision": "a" * 40},
+        "consumers": [
+            {"repository": "example/one", "revision": "b" * 40, "content_source": "docs", "shared_theme_enabled": True}
+        ],
+    }
     data["consumers"][0][field] = value
     with pytest.raises(ValueError):
         validate(data)

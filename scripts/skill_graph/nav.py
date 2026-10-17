@@ -51,24 +51,18 @@ def _extract_leaf(sink: _NavSink, label: str, target: str) -> None:
 def _extract_child(sink: _NavSink, parent_label: str, child: Any) -> str | None:
     if not isinstance(child, dict) or len(child) != 1:
         return None
-    (child_label, child_target), = child.items()
+    ((child_label, child_target),) = child.items()
     if not isinstance(child_target, str):
         return None  # a third nav level exists nowhere in scope today
     man_id = f"manpage/{sink.slug}/nav/{slugify(child_target)}"
-    sink.graph.add(
-        man_id, "ManPage", label=child_label, sourcePath=child_target, partOfRepo=f"repo/{sink.slug}"
-    )
+    sink.graph.add(man_id, "ManPage", label=child_label, sourcePath=child_target, partOfRepo=f"repo/{sink.slug}")
     comp_id = f"component/{sink.slug}/nav/{slugify(parent_label)}-{slugify(child_label)}"
     sink.graph.add(comp_id, "Component", label=child_label, partOfRepo=f"repo/{sink.slug}", documentedBy=man_id)
     return comp_id
 
 
 def _extract_branch(sink: _NavSink, label: str, children: list[Any]) -> None:
-    component_ids = [
-        comp_id
-        for child in children
-        if (comp_id := _extract_child(sink, label, child)) is not None
-    ]
+    component_ids = [comp_id for child in children if (comp_id := _extract_child(sink, label, child)) is not None]
     sink.graph.add(
         f"concept/{sink.slug}/nav/{slugify(label)}",
         "Concept",
@@ -86,7 +80,7 @@ def extract_nav(graph: Graph, slug: str, repo_root: Path) -> None:
     for entry in nav:
         if not isinstance(entry, dict) or len(entry) != 1:
             continue
-        (label, target), = entry.items()
+        ((label, target),) = entry.items()
         if isinstance(target, str):
             _extract_leaf(sink, label, target)
         elif isinstance(target, list):

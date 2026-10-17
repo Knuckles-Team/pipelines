@@ -1,0 +1,124 @@
+name: Main
+
+# The main/tag workflow of the gate standard (reference/gate-standard.md):
+# the full test suite and one dependency audit. Callers run it on a push to
+# main and on release tags; release build and publish stay in the caller's
+# release workflow. Never publishes.
+#
+# Caller contract (copy):
+#
+#   on:
+#     push:
+#       branches: [main]
+#       tags: ['v*']
+#   concurrency:
+#     group: main-${{ github.workflow }}-${{ github.ref }}
+#     cancel-in-progress: true
+#   jobs:
+#     main:
+#       uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      test-scope:
+        description: Tests directory of the full suite; empty disables the test job.
+        required: false
+        type: string
+        default: tests
+      runner:
+        description: JSON runner label or label list for runs-on.
+        required: false
+        type: string
+        default: '"ubuntu-latest"'
+      rust:
+        description: Audit Cargo.lock with cargo-deny instead of the Python lock with pip-audit.
+        required: false
+        type: boolean
+        default: false
+      setup-command:
+        description: Shell command run once after uv is installed and before the suite.
+        required: false
+        type: string
+        default: ''
+      timeout-minutes:
+        description: Wall-clock cap for each job.
+        required: false
+        type: number
+        default: 60
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tests
+    if: inputs.test-scope != ''
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          enable-cache: true
+
+      - name: Caller setup
+        if: inputs.setup-command != ''
+        env:
+          SETUP_COMMAND: ${{ inputs.setup-command }}
+        run: bash -c "$SETUP_COMMAND"
+
+      - name: Full test suite
+        env:
+          TEST_SCOPE: ${{ inputs.test-scope }}
+          SETUP_COMMAND: ${{ inputs.setup-command }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$SETUP_COMMAND" ]]; then
+            uv run --frozen --no-sync pytest -q "$TEST_SCOPE"
+          else
+            uv sync --frozen
+            uv run --frozen pytest -q "$TEST_SCOPE"
+          fi
+
+  supply-chain:
+    name: supply-chain
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        if: ${{ !inputs.rust }}
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      - name: Audit Python dependencies (pip-audit)
+        if: ${{ !inputs.rust }}
+        run: |
+          set -euo pipefail
+          requirements="$RUNNER_TEMP/requirements.txt"
+          uv export --frozen --format requirements-txt --no-emit-project --no-dev --quiet > "$requirements"
+          uvx pip-audit@2.10.1 --disable-pip -r "$requirements"
+
+      - name: Install cargo-deny
+        if: inputs.rust
+        uses: taiki-e/install-action@328a871ad8f62ecac78390391f463ccabc974b72 # v2.69.9
+        with:
+          tool: cargo-deny
+
+      - name: Audit Rust dependencies (cargo deny)
+        if: inputs.rust
+        run: cargo deny check advisories

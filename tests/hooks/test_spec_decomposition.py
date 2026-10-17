@@ -34,12 +34,7 @@ def test_clean_spec_passes(repo: Repo) -> None:
 
 def test_duplicate_id_in_requirements_fires(repo: Repo) -> None:
     _clean(repo)
-    repo.commit(
-        {
-            "specs/foo/requirements.md": REQ_CLEAN
-            + "| `FOO-001` | **Root again.** Dup row. | Verified. |\n"
-        }
-    )
+    repo.commit({"specs/foo/requirements.md": REQ_CLEAN + "| `FOO-001` | **Root again.** Dup row. | Verified. |\n"})
     assert repo.run("spec-decomposition") == 1
 
 
@@ -51,9 +46,7 @@ def test_duplicate_id_in_status_fires(repo: Repo) -> None:
       ]
     }
     """
-    repo.commit(
-        {"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN}
-    )
+    repo.commit({"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN})
     assert repo.run("spec-decomposition") == 1
 
 
@@ -61,8 +54,7 @@ def test_referenced_child_with_no_status_row_fires(repo: Repo) -> None:
     _clean(repo)
     repo.commit(
         {
-            "specs/foo/requirements.md": REQ_CLEAN
-            + "| `FOO-001.1` | **Slice.** First slice. | Verified. |\n",
+            "specs/foo/requirements.md": REQ_CLEAN + "| `FOO-001.1` | **Slice.** First slice. | Verified. |\n",
         }
     )
     assert repo.run("spec-decomposition") == 1
@@ -76,9 +68,7 @@ def test_status_row_with_no_requirements_row_fires(repo: Repo) -> None:
       ]
     }
     """
-    repo.commit(
-        {"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN}
-    )
+    repo.commit({"specs/foo/status.json": status, "specs/foo/requirements.md": REQ_CLEAN})
     assert repo.run("spec-decomposition") == 1
 
 

@@ -33,11 +33,14 @@ def _hook_entry(repo, outcome, evidence):
     if outcome == "unavailable":
         setup = 'os.environ["PATH"] = ""; '
     if outcome == "timeout":
-        slow = repo.write("slow-tools/git", f"#!/bin/sh\nexec {shlex.quote(sys.executable)} -c 'import time; time.sleep(30)'\n")
+        slow = repo.write(
+            "slow-tools/git", f"#!/bin/sh\nexec {shlex.quote(sys.executable)} -c 'import time; time.sleep(30)'\n"
+        )
         slow.chmod(0o755)
         setup = f'os.environ["PATH"] = {str(slow.parent)!r} + os.pathsep + os.environ["PATH"]; '
     script = (
-        "import os; " + setup
+        "import os; "
+        + setup
         + "from pipelines_hooks.validation.cli import main; "
         + f"raise SystemExit(main(['--evidence-dir', {str(evidence)!r}]))"
     )
@@ -50,7 +53,9 @@ def _hook_entry(repo, outcome, evidence):
 def test_advisory_report_is_visible_through_pre_commit(repo, tmp_path, source, outcome):
     evidence = tmp_path / "evidence"
     evidence.mkdir()
-    repo.write(".config/validation.toml", declaration(required=False).replace("timeout_seconds = 3", "timeout_seconds = 1"))
+    repo.write(
+        ".config/validation.toml", declaration(required=False).replace("timeout_seconds = 3", "timeout_seconds = 1")
+    )
     repo.write(".gitignore", "# missing required patterns\n")
     hook = _registration(source)
     # Use the existing interpreter without creating or installing a hook environment.
@@ -64,7 +69,11 @@ def test_advisory_report_is_visible_through_pre_commit(repo, tmp_path, source, o
     env["PRE_COMMIT_HOME"] = str(tmp_path / "pre-commit")
     result = subprocess.run(
         [*command, "run", "--config", "hooks.yaml", "--all-files", "--hook-stage", "manual"],
-        cwd=repo.root, env=env, text=True, capture_output=True, timeout=15,
+        cwd=repo.root,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=15,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     (report_path,) = evidence.glob("pipelines-validation-*/report.json")
@@ -121,7 +130,9 @@ def test_runner_signal_cleans_worker_group_and_keeps_signal_exit(tmp_path, signu
     env["PYTHONPATH"] = str(HOOK_REPOSITORY)
     pids = []
     with (tmp_path / "runner.log").open("w") as output:
-        process = subprocess.Popen([sys.executable, "-c", code], env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+        process = subprocess.Popen(
+            [sys.executable, "-c", code], env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True
+        )
         try:
             pids = _await_file(pids_path)
             process.send_signal(signum)
@@ -137,10 +148,7 @@ def test_runner_signal_cleans_worker_group_and_keeps_signal_exit(tmp_path, signu
 @pytest.mark.spec("PIPE-VALIDATION-R001.4")
 @pytest.mark.parametrize("mode", ["ignored", "custom"])
 def test_runner_preserves_existing_sigterm_policy(tmp_path, mode):
-    worker = (
-        "import os,signal,time; "
-        "os.kill(os.getppid(), signal.SIGTERM); time.sleep(0.1)"
-    )
+    worker = "import os,signal,time; os.kill(os.getppid(), signal.SIGTERM); time.sleep(0.1)"
     code = (
         "from pathlib import Path; import signal; "
         "from pipelines_hooks.validation.runner import execute; "
@@ -156,7 +164,10 @@ def test_runner_preserves_existing_sigterm_policy(tmp_path, mode):
     env = sanitized_env()
     env["PYTHONPATH"] = str(HOOK_REPOSITORY)
     result = subprocess.run(
-        [sys.executable, "-c", code], env=env,
-        text=True, capture_output=True, timeout=5,
+        [sys.executable, "-c", code],
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=5,
     )
     assert result.returncode == 0, result.stdout + result.stderr

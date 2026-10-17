@@ -78,7 +78,9 @@ def validate_finding(index: int, finding: object, root: Path) -> dict[str, Any]:
 def findings(result: subprocess.CompletedProcess[str], root: Path) -> list[dict[str, Any]]:
     """Validated findings; exit code, schema and payload must all agree."""
     stderr = (result.stderr or "").strip()
-    context = f" (dupehound exited {result.returncode}; stderr: {stderr[:300]})" if stderr else f" (exit {result.returncode})"
+    context = (
+        f" (dupehound exited {result.returncode}; stderr: {stderr[:300]})" if stderr else f" (exit {result.returncode})"
+    )
     if result.returncode not in (0, 1):
         raise CannotRun(f"dupehound exited {result.returncode}: {stderr[:500]}")
     document = _document(result.stdout or "", context)

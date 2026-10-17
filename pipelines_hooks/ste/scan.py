@@ -60,10 +60,24 @@ def _term_findings(
 
 def _tiers(wordlist: Wordlist) -> dict[str, _Tier]:
     return {
-        "modal": _Tier("M", wordlist.modal, lambda t: f"modal hedge '{t}'; state the requirement with must, should, or may"),
-        "modal_adv": _Tier("M", wordlist.modal_advisory, lambda t: "modal 'can' states capability; keep it to capability claims only", True),
-        "fuzzy": _Tier("Q", wordlist.fuzzy, lambda t: f"fuzzy quantity '{t}'; state a measured value or mark it measured: ~N"),
-        "fuzzy_adv": _Tier("Q", wordlist.fuzzy_advisory, lambda t: "fuzzy quantity 'some'; state a measured value or mark it measured: ~N", True),
+        "modal": _Tier(
+            "M", wordlist.modal, lambda t: f"modal hedge '{t}'; state the requirement with must, should, or may"
+        ),
+        "modal_adv": _Tier(
+            "M",
+            wordlist.modal_advisory,
+            lambda t: "modal 'can' states capability; keep it to capability claims only",
+            True,
+        ),
+        "fuzzy": _Tier(
+            "Q", wordlist.fuzzy, lambda t: f"fuzzy quantity '{t}'; state a measured value or mark it measured: ~N"
+        ),
+        "fuzzy_adv": _Tier(
+            "Q",
+            wordlist.fuzzy_advisory,
+            lambda t: "fuzzy quantity 'some'; state a measured value or mark it measured: ~N",
+            True,
+        ),
         "person": _Tier("P", wordlist.person, lambda t: f"first/second person '{t}'; name the actor instead"),
         "idiom": _Tier("I", wordlist.idioms, lambda t: f"idiom '{t}'; say it in plain language"),
     }
@@ -105,7 +119,9 @@ def _sentence_findings(para: Para, path: str, wordlist: Wordlist) -> list[Findin
         if participle:
             out.append(Finding("PV", path, line, f"passive voice '{participle}'; name the actor", advisory=True))
         if noun_run(tokens) >= _NOUN_CHAIN_CAP:
-            out.append(Finding("NC", path, line, "five-or-more stacked content words; split the subject", advisory=True))
+            out.append(
+                Finding("NC", path, line, "five-or-more stacked content words; split the subject", advisory=True)
+            )
     return out
 
 
@@ -127,8 +143,12 @@ def _cluster_findings(masked: list[str], path: str, wordlist: Wordlist) -> list[
                 seen.append((line, base))
         if len(seen) == 2:
             out.append(
-                Finding("C", path, max(line for line, _ in seen),
-                        f"cluster terms {seen[0][1]} and {seen[1][1]} both present; pick one term")
+                Finding(
+                    "C",
+                    path,
+                    max(line for line, _ in seen),
+                    f"cluster terms {seen[0][1]} and {seen[1][1]} both present; pick one term",
+                )
             )
     return out
 

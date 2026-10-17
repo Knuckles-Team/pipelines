@@ -34,8 +34,7 @@ def _load(path: str) -> object:
 def _checks_client(path: str) -> RecordedChecksClient:
     raw = _load(path)
     recorded = {
-        (row["repository"], row["commit"]): tuple(CheckResult(**item) for item in row["results"])
-        for row in raw
+        (row["repository"], row["commit"]): tuple(CheckResult(**item) for item in row["results"]) for row in raw
     }
     return RecordedChecksClient(recorded)
 
@@ -55,7 +54,9 @@ def _main_plan(args: argparse.Namespace) -> int:
     order = topological_order(candidates)
     qualification = qualify(candidates, order, _checks_client(args.checks))
     for component_id in order:
-        state = "eligible" if component_id in qualification.eligible else f"blocked: {qualification.blocked[component_id]}"
+        state = (
+            "eligible" if component_id in qualification.eligible else f"blocked: {qualification.blocked[component_id]}"
+        )
         print(f"{component_id}: {state}")
     return 0 if not qualification.blocked else 1
 

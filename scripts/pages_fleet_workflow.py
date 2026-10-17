@@ -83,5 +83,8 @@ def validate_workflow(tree: ExactTree, consumer: dict, pipeline: dict) -> None:
 def is_pages_call(uses: str, repository: str) -> bool:
     """GitHub repository identity ignores case; the Git workflow path does not."""
     parts = uses.split("/", 2)
-    return (len(parts) == 3 and "/".join(parts[:2]).lower() == repository.lower()
-            and parts[2].startswith(".github/workflows/pages_pipeline.yml@"))
+    return (
+        len(parts) == 3
+        and "/".join(parts[:2]).lower() == repository.lower()
+        and parts[2].startswith(".github/workflows/pages_pipeline.yml@")
+    )

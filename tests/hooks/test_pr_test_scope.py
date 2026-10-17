@@ -54,7 +54,9 @@ def test_conftest_change_still_forces_full_suite(repo: Repo, capsys: pytest.Capt
         },
         "baseline",
     )
-    repo.commit({"tests/conftest.py": "import pytest\n\n\ndef pytest_configure(config):\n    pass\n"}, "change conftest")
+    repo.commit(
+        {"tests/conftest.py": "import pytest\n\n\ndef pytest_configure(config):\n    pass\n"}, "change conftest"
+    )
 
     assert repo.run("pr-test-scope", "--base-ref", base, "--src-root", "pkg", "--tests-root", "tests") == 0
     out = capsys.readouterr().out.splitlines()

@@ -56,9 +56,7 @@ def check_status_id(spec_dir: Path, spec_id: str) -> list[str]:
 
 def check_files(spec_dir: Path) -> list[str]:
     """Missing required files and present forbidden files."""
-    out = [
-        f"missing required file {n}" for n in REQUIRED if not (spec_dir / n).is_file()
-    ]
+    out = [f"missing required file {n}" for n in REQUIRED if not (spec_dir / n).is_file()]
     out += [f"forbidden file {n}" for n in FORBIDDEN if (spec_dir / n).exists()]
     return out
 
@@ -81,17 +79,9 @@ def check_id(spec_dir: Path, spec_id: str) -> list[str]:
     out = []
     if SUFFIX_RE.search(spec_id):
         out.append(f"spec ID {spec_id} has a numeric suffix")
-    rows = (
-        row
-        for line in _read(spec_dir / "requirements.md").splitlines()
-        for row in parse_rows(line)
-    )
+    rows = (row for line in _read(spec_dir / "requirements.md").splitlines() for row in parse_rows(line))
     for row in rows:
-        if (
-            row.retired_reason is None
-            and STANDARD_ROW_RE.search(row.id)
-            and not row.id.startswith(spec_id + "-R")
-        ):
+        if row.retired_reason is None and STANDARD_ROW_RE.search(row.id) and not row.id.startswith(spec_id + "-R"):
             out.append(f"requirements.md row {row.id} does not start with {spec_id}-R")
     return out
 
@@ -111,9 +101,7 @@ def check_names(name: str, spec_id: str | None) -> list[str]:
     out = []
     for label, value in (("directory name", name), ("spec ID", spec_id)):
         tokens = set((value or "").lower().split("-"))
-        out += [
-            f"{label} contains forbidden word '{w}'" for w in sorted(tokens & BAD_WORDS)
-        ]
+        out += [f"{label} contains forbidden word '{w}'" for w in sorted(tokens & BAD_WORDS)]
     return out
 
 
@@ -135,9 +123,7 @@ def _spec_dirs(root: Path) -> list[Path]:
     return [
         d
         for d in sorted((root / "specs").glob("*/"))
-        if d.is_dir()
-        and d.name != "_template"
-        and ((d / "spec.md").is_file() or (d / "status.json").is_file())
+        if d.is_dir() and d.name != "_template" and ((d / "spec.md").is_file() or (d / "status.json").is_file())
     ]
 
 

@@ -47,22 +47,31 @@ def test_git_replacement_cannot_change_declared_tree(fleet):
     assert result["consumers"][0]["tree"] == git(target, "--no-replace-objects", "rev-parse", "HEAD^{tree}")
 
 
-@pytest.mark.parametrize("payload", [
-    "jobs: {pages: {}, pages: {}}",
-    "jobs: !python/object:danger {}",
-    "jobs: {pages: {uses: one, uses: two}}",
-])
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "jobs: {pages: {}, pages: {}}",
+        "jobs: !python/object:danger {}",
+        "jobs: {pages: {uses: one, uses: two}}",
+    ],
+)
 def test_ambiguous_yaml_never_passes(fleet, payload):
     root, declaration = fleet
     changed = revise(root, declaration, lambda target: (target / ".github/workflows/pages.yml").write_text(payload))
     assert verify(changed, root)["status"] == "unverified"
 
 
-@pytest.mark.parametrize("field,value", [
-    ("content_source", "docs/./nested"), ("content_source", "docs//nested"),
-    ("content_source", "/docs"), ("site_url", "https://secret@example.com/"),
-    ("site_url", 123), ("shared_theme_enabled", "true"),
-])
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("content_source", "docs/./nested"),
+        ("content_source", "docs//nested"),
+        ("content_source", "/docs"),
+        ("site_url", "https://secret@example.com/"),
+        ("site_url", 123),
+        ("shared_theme_enabled", "true"),
+    ],
+)
 def test_noncanonical_input_rejected(fleet, field, value):
     _, declaration = fleet
     declaration["consumers"][0][field] = value

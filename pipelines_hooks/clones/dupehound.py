@@ -17,8 +17,18 @@ SUPPORTED_SUFFIXES = frozenset(
 )
 _TEST_DIRECTORIES = frozenset({"tests", "test", "__tests__", "testdata", "spec"})
 _TEST_SUFFIXES = (
-    "_test.go", "_test.py", "_test.rs", "_spec.rb", "_test.rb", "tests.swift", "test.swift",
-    "spec.swift", "test.php", "tests.php", "test.java", "tests.java",
+    "_test.go",
+    "_test.py",
+    "_test.rs",
+    "_spec.rb",
+    "_test.rb",
+    "tests.swift",
+    "test.swift",
+    "spec.swift",
+    "test.php",
+    "tests.php",
+    "test.java",
+    "tests.java",
 )
 
 
@@ -41,7 +51,9 @@ def changed_paths(root: Path, base_ref: str | None) -> list[str]:
     if base_ref:
         raw = git_text(root, ("diff", "--name-only", "-z", "--diff-filter=ACMR", f"{base_ref}...HEAD"))
         return sorted(set(nul_split(raw)))
-    paths = nul_split(git_text(root, ("diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"), preserve_index=True))
+    paths = nul_split(
+        git_text(root, ("diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"), preserve_index=True)
+    )
     if not paths:
         paths = nul_split(git_text(root, ("diff", "--name-only", "-z", "--diff-filter=ACMR", "HEAD")))
         paths += nul_split(git_text(root, ("ls-files", "-z", "--others", "--exclude-standard")))
@@ -56,15 +68,25 @@ def selected_paths(root: Path, paths: list[str]) -> list[str]:
             normalized = relative_to_root(path, root)
         except ValueError as exc:
             raise CannotRun(f"git reported an unsafe changed path: {exc}") from exc
-        if Path(normalized).suffix.lower() in SUPPORTED_SUFFIXES and not is_test_path(normalized) and not is_excluded(normalized):
+        if (
+            Path(normalized).suffix.lower() in SUPPORTED_SUFFIXES
+            and not is_test_path(normalized)
+            and not is_excluded(normalized)
+        ):
             selected.add(normalized)
     return sorted(selected)
 
 
 def command(executable: str, root: Path, base_ref: str | None) -> list[str]:
     arguments = [
-        executable, "check", "--json", "--threshold", str(DUPEHOUND_THRESHOLD),
-        "--min-tokens", str(DUPEHOUND_MIN_TOKENS), "--exclude-tests",
+        executable,
+        "check",
+        "--json",
+        "--threshold",
+        str(DUPEHOUND_THRESHOLD),
+        "--min-tokens",
+        str(DUPEHOUND_MIN_TOKENS),
+        "--exclude-tests",
     ]
     for pattern in EXCLUSIONS:
         arguments.extend(("--exclude", pattern))
@@ -77,9 +99,13 @@ def run(executable: str, root: Path, base_ref: str | None) -> subprocess.Complet
     """Without ``--diff`` dupehound compares the staged index against HEAD."""
     try:
         return subprocess.run(
-            command(executable, root, base_ref), cwd=str(root),
+            command(executable, root, base_ref),
+            cwd=str(root),
             env=sanitized_env(preserve_index=base_ref is None),
-            capture_output=True, text=True, timeout=900, check=False,
+            capture_output=True,
+            text=True,
+            timeout=900,
+            check=False,
         )
     except (OSError, UnicodeError, subprocess.TimeoutExpired) as exc:
         raise CannotRun(f"could not execute dupehound: {exc}") from exc
