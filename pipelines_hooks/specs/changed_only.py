@@ -17,6 +17,7 @@ from pathlib import Path
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.gitenv import git_text, nul_split
 from pipelines_hooks.core.settings import setting
+from pipelines_hooks.specs.aliases import canonical_ids, load_aliases
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN, named_ids
 
@@ -55,7 +56,8 @@ def touched_spec_dirs(root: Path, base: str) -> set[str]:
         ),
     )
     owners = _id_owners(root)
-    dirs |= {owners[rid] for rid in named_ids(raw.splitlines()) if rid in owners}
+    named = canonical_ids(named_ids(raw.splitlines()), load_aliases(root))
+    dirs |= {owners[rid] for rid in named if rid in owners}
     return dirs
 
 
