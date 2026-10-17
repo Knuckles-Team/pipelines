@@ -36,7 +36,7 @@ import argparse
 import tomllib
 from pathlib import Path
 
-from pipelines_hooks.ci_replica.import_graph import module_for_path, test_files_importing
+from pipelines_hooks.ci_replica.import_graph import clear_import_graph_cache, module_for_path, test_files_importing
 from pipelines_hooks.clones.dupehound import changed_paths
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.settings import setting
@@ -121,6 +121,7 @@ def _add_import_graph_matches(scope: _DedupedScope, root: Path, src_prefix: str,
 
 def _python_scope(root: Path, changed: list[str], src_root: str, tests_root: str) -> list[str]:
     src_prefix, tests_prefix = f"{src_root}/", f"{tests_root}/"
+    clear_import_graph_cache()  # one scan per invocation, never a stale tree
     scope = _DedupedScope()
     for path in changed:
         if _handle_python_path(scope, path, root, src_prefix, tests_prefix):

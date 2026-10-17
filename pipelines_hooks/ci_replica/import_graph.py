@@ -11,6 +11,7 @@ changed module directly? (Transitive reach is left to the full suite on main.)
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 
 from pipelines_hooks.ci_replica.import_scan import imports_of, module_name, package_name, scan_tree
@@ -75,9 +76,22 @@ def importers_within_depth(edges: dict[str, set[str]], target: str, max_depth: i
     return seen
 
 
+@lru_cache(maxsize=8)
+def _cached_import_graph(root: Path, src_prefix: str, tests_prefix: str) -> tuple[dict[str, set[str]], dict[str, Path]]:
+    """One scan per tree: a diff with many unmirrored modules used to rescan
+    the whole source and test tree once per module, which made a large train
+    diff run past the gates job timeout."""
+    return build_import_graph(root, src_prefix, tests_prefix)
+
+
+def clear_import_graph_cache() -> None:
+    """Drop cached scans so the next query reads the tree as it is now."""
+    _cached_import_graph.cache_clear()
+
+
 def test_files_importing(root: Path, src_prefix: str, *, tests_prefix: str, changed_module: str) -> list[str]:
     """Repo-relative test paths that reach ``changed_module`` via imports."""
-    edges, modules = build_import_graph(root, src_prefix, tests_prefix)
+    edges, modules = _cached_import_graph(root, src_prefix, tests_prefix)
     if changed_module not in modules:
         return []
     reached = importers_within_depth(edges, changed_module)
