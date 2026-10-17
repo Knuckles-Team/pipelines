@@ -3,13 +3,31 @@ description: Check out the workflow commit and bind it for later integrity check
 runs:
   using: composite
   steps:
+    # actions/checkout empties a workspace that is not yet a clone of the
+    # caller, and clean: false does not prevent that. Park the caller's
+    # .pipeline-contract checkout outside the workspace while the source is
+    # checked out, then put it back so later contract actions resolve.
+    - name: Park the pipeline contract
+      shell: bash
+      run: |
+        if [ -d .pipeline-contract ]; then
+          rm -rf "$RUNNER_TEMP/pipeline-contract"
+          mv .pipeline-contract "$RUNNER_TEMP/pipeline-contract"
+        fi
+
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ github.sha }}
         persist-credentials: false
-        # Keep the caller's .pipeline-contract checkout available.  The
-        # default clean=true would remove that untracked nested repository.
         clean: false
+
+    - name: Restore the pipeline contract
+      shell: bash
+      run: |
+        if [ -d "$RUNNER_TEMP/pipeline-contract" ]; then
+          rm -rf .pipeline-contract
+          mv "$RUNNER_TEMP/pipeline-contract" .pipeline-contract
+        fi
 
     - name: Bind source commit
       uses: ./.pipeline-contract/.github/actions/verify-source-commit
