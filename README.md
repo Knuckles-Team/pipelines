@@ -118,3 +118,5 @@ The default evidence directory is a fresh private temporary directory;
 `--evidence-dir` selects its parent. Version 1 needs POSIX process groups.
 
 Evidence corrections retain their requirement IDs. See [evidence withdrawal](reference/spec-standard.md#withdrawing-invalid-verification-evidence) for the restricted `Spec-Withdraw` contract.
+
+The [privacy identity contract](reference/privacy.md) distinguishes Git display names from strict local identifiers.

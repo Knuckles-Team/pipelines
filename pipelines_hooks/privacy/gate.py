@@ -19,7 +19,7 @@ import platformdirs
 
 from pipelines_hooks.core.errors import CannotRun, Unavailable
 from pipelines_hooks.privacy import classify, inventory
-from pipelines_hooks.privacy.identities import derive_local_identifiers
+from pipelines_hooks.privacy.identities import derive_identity_candidates
 from pipelines_hooks.privacy.identity_catalog import IdentityPolicyError, load_identity_catalog
 from pipelines_hooks.privacy.identity_scan import scan_prohibited_identities
 
@@ -29,6 +29,7 @@ class Findings:
     """Accumulated violations; each is ``(path, line, category)``."""
 
     identifiers: frozenset[str]
+    display_names: frozenset[str] = frozenset()
     rows: set[tuple[str, int, str, str]] = field(default_factory=set)
 
     def add(self, path: str, line: int, *, category: str, text: str) -> None:
@@ -43,7 +44,7 @@ def _scan_public(path: Path, root: Path, findings: Findings) -> None:
         findings.add(relative.as_posix(), number, category="non-neutral package author identity", text=lines[number - 1])
     deployment_doc = classify.is_deployment_doc(relative)
     for number, line in enumerate(lines, 1):
-        for category in classify.classify_line(line, identifiers=findings.identifiers, deployment_doc=deployment_doc):
+        for category in classify.classify_line(line, identifiers=findings.identifiers, deployment_doc=deployment_doc, display_names=findings.display_names):
             findings.add(relative.as_posix(), number, category=category, text=line)
 
 
@@ -52,12 +53,13 @@ def _scan_runtime(path: Path, root: Path, findings: Findings) -> None:
     if inventory.is_bundled_connector_profile(relative):
         findings.add(relative.as_posix(), 1, category="bundled environment-specific connector profile", text=relative.as_posix())
     for number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-        for category in classify.classify_runtime_source_line(line, identifiers=findings.identifiers):
+        for category in classify.classify_runtime_source_line(line, identifiers=findings.identifiers, display_names=findings.display_names):
             findings.add(relative.as_posix(), number, category=category, text=line)
 
 
 def scan(root: Path, identities: tuple[bytes, ...]) -> list[tuple[str, int, str, str]]:
-    findings = Findings(identifiers=derive_local_identifiers(root))
+    local = derive_identity_candidates(root)
+    findings = Findings(identifiers=local.strict, display_names=local.display_names)
     files = sorted(path for path in inventory.candidates(root) if path.is_file() and not path.is_symlink())
     for path in files:
         relative = path.relative_to(root)
