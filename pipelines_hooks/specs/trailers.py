@@ -14,6 +14,11 @@ when:
 5. a trailered, known ID has no bound test anywhere in the tree: a Python
    ``mark.spec("ID")`` call, or a ``// spec: ID`` / ``# spec: ID`` line.
 
+A repository's ``.config/spec-aliases.toml`` (see :mod:`pipelines_hooks.specs.aliases`)
+maps retired ID prefixes to canonical ones: a trailer or binding with a retired
+prefix counts for the canonical ID, and a trailer in the range that still uses a
+retired prefix only prints a WARN line.
+
 Explicit evidence withdrawals additionally validate the complete PR diff against
 its merge base. See ``reference/spec-standard.md`` for the restricted contract.
 
@@ -31,6 +36,13 @@ from pathlib import Path
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git
+from pipelines_hooks.specs.aliases import (
+    Aliases,
+    canonical_id,
+    canonical_ids,
+    load_aliases,
+    retired_prefix,
+)
 from pipelines_hooks.specs.git_log import reverted_shas
 from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN, named_ids
 from pipelines_hooks.specs.withdrawal import withdrawals
@@ -135,7 +147,7 @@ def _unknown_id_failures(named: list[str], known: set[str]) -> list[str]:
     ]
 
 
-def _bound_ids(root: Path) -> set[str]:
+def _bound_ids(root: Path, aliases: Aliases | None = None) -> set[str]:
     """Every requirement ID found on a bound-test line, via the one allowed grep call."""
     result = run_git(root, ("grep", "-n", "-I", "-E", _BOUND_TEST_PATTERN))
     if result.returncode not in (0, 1):
@@ -143,21 +155,33 @@ def _bound_ids(root: Path) -> set[str]:
         raise CannotRun(f"git grep failed: {detail}")
     ids: set[str] = set()
     for line in (result.stdout or "").splitlines():
-        ids.update(_ID_ANYWHERE.findall(line))
+        ids.update(canonical_id(rid, aliases or {}) for rid in _ID_ANYWHERE.findall(line))
     return ids
 
 
-def _unbound_id_failures(named: list[str], known: set[str], root: Path) -> list[str]:
+def _unbound_id_failures(
+    named: list[str], known: set[str], root: Path, aliases: Aliases | None = None
+) -> list[str]:
     """Item 5: a trailered, known ID with no bound test anywhere in the tree."""
     known_named = sorted({identifier for identifier in named if identifier in known})
     if not known_named:
         return []
-    bound = _bound_ids(root)
+    bound = _bound_ids(root, aliases)
     unbound = [identifier for identifier in known_named if identifier not in bound]
     if not unbound:
         return []
     return [
         f"spec-trailers: FAIL: requirement id(s) with no bound test in the tree: {', '.join(unbound)}"
+    ]
+
+
+def _retired_prefix_warnings(named: list[str], aliases: Aliases) -> list[str]:
+    """New commits should name the canonical ID; a retired prefix still counts, so warn only."""
+    retired = sorted({rid for rid in named if retired_prefix(rid, aliases)})
+    return [
+        f"spec-trailers: WARN: retired ID prefix in a new trailer, use {canonical_id(rid, aliases)} "
+        f"instead of {rid} (see .config/spec-aliases.toml)"
+        for rid in retired
     ]
 
 
@@ -169,18 +193,22 @@ def main(argv: list[str]) -> int:
     # A delivery that was reverted in the same range delivers nothing: its
     # ``Spec:`` trailer must not demand a bound test for work that is gone.
     reverted = reverted_shas(root, "HEAD")
-    named = named_ids(
+    aliases = load_aliases(root)
+    raw_named = named_ids(
         commit.trailer_raw for commit in commits if commit.sha not in reverted
     )
-    known = _known_requirement_ids(root)
+    for warning in _retired_prefix_warnings(raw_named, aliases):
+        print(warning)
+    named = canonical_ids(raw_named, aliases)
+    known = set(canonical_ids(_known_requirement_ids(root), aliases))
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)
     withdrawn, withdrawal_errors = withdrawals(
-        root, base, named=set(named), known=known, bound=_bound_ids(root)
+        root, base, named=set(named), known=known, bound=_bound_ids(root, aliases)
     )
     failures += withdrawal_errors
     failures += _unbound_id_failures(
-        [rid for rid in named if rid not in withdrawn], known, root
+        [rid for rid in named if rid not in withdrawn], known, root, aliases
     )
     if failures:
         for line in failures:

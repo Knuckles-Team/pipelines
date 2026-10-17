@@ -14,6 +14,7 @@ from typing import NamedTuple
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text
+from pipelines_hooks.specs.aliases import canonical_lists, canonical_sets, load_aliases
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.git_log import landing_commits, reachable_shas, reverted_shas
 from pipelines_hooks.specs.legacy import legacy_landings
@@ -107,9 +108,10 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
             "fetch full history (git fetch --unshallow or checkout fetch-depth: 0) "
             "before retrying; no status files were changed"
         )
+    aliases = load_aliases(repo)
     commits = landing_commits(repo, head)
-    landed_by = mentioned_tokens(commits)
-    tested_by = test_bindings(repo)
+    landed_by = canonical_sets(mentioned_tokens(commits), aliases)
+    tested_by = canonical_lists(test_bindings(repo), aliases)
     resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
     owner = remote_owner(repo)
     result: dict[Path, dict] = {}
@@ -117,7 +119,8 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
         spec_dir = requirements_path.parent
         status_path = spec_dir / "status.json"
         old = _load_status(status_path)
-        evidence = Evidence(landed_by, tested_by, legacy_landings(old, resolve))
+        legacy_by = canonical_lists(legacy_landings(old, resolve), aliases)
+        evidence = Evidence(landed_by, tested_by, legacy_by)
         rows = parse_rows(requirements_path.read_text(encoding="utf-8"))
         result[status_path] = _spec_document(
             spec_dir, old=old, rows=rows, evidence=evidence,
