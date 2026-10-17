@@ -60,3 +60,32 @@ def test_conftest_change_still_forces_full_suite(repo: Repo, capsys: pytest.Capt
     out = capsys.readouterr().out.splitlines()
 
     assert out == ["FULL"]
+
+
+def test_many_unmapped_modules_scan_the_tree_once(
+    repo: Repo, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from pipelines_hooks.ci_replica import import_graph
+
+    names = [f"mod_{index}" for index in range(5)]
+    base = repo.commit(
+        {
+            **{f"pkg/{name}.py": "VALUE = 1\n" for name in names},
+            "tests/test_importer.py": "from pkg import mod_0\n\n\ndef test_value() -> None:\n    assert mod_0.VALUE\n",
+        },
+        "baseline",
+    )
+    repo.commit({f"pkg/{name}.py": "VALUE = 2\n" for name in names}, "change all")
+    scans: list[object] = []
+    real = import_graph.build_import_graph
+
+    def counting(*args: object) -> object:
+        scans.append(args)
+        return real(*args)
+
+    monkeypatch.setattr(import_graph, "build_import_graph", counting)
+
+    assert repo.run("pr-test-scope", "--base-ref", base, "--src-root", "pkg", "--tests-root", "tests") == 0
+    assert capsys.readouterr().out.splitlines() == ["tests/test_importer.py"]
+    # A large diff of unmirrored modules used to rescan the tree per module.
+    assert len(scans) == 1
