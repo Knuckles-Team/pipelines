@@ -37,13 +37,34 @@ def _has_identifier(line: str, identifiers: frozenset[str]) -> bool:
     return any(re.search(rf"(?<![\w-]){re.escape(value)}(?![\w-])", folded) for value in identifiers)
 
 
-def classify_line(line: str, *, identifiers: frozenset[str], deployment_doc: bool) -> frozenset[str]:
+def _attributed_name(line: str, names: frozenset[str]) -> bool:
+    """Recognize explicit attribution, account fields, and name-role labels."""
+    line = line.casefold()
+    role = r"(?:author|owner|maintainer|committer|contributor|creator|operator|username|user(?:\.name)?|account)"
+    prefix = rf"(?:\b{role}(?:[ _-]name)?[\"']?\s*[:=]\s*|\b(?:authored|written|created|generated|maintained|owned|committed|signed)[ -]by\s+)"
+    prefix += r"|\bgit\s+config\s+(?:(?:--global|--local|--system)\s+)?user\.name\s+"
+    prefix = "(?:" + prefix + ")"
+    for name in names:
+        token = rf"(?<![\w-]){re.escape(name)}(?![\w-])"
+        if re.search(prefix + r"[\"']?" + token, line, re.IGNORECASE):
+            return True
+        if re.search(token + rf"\s*\({role}\)", line, re.IGNORECASE):
+            return True
+    return False
+
+
+def _has_local_identity(line: str, identifiers: frozenset[str], display_names: frozenset[str]) -> bool:
+    """Strict evidence wins; contextual attribution adds display-name evidence."""
+    return _has_identifier(line, identifiers) or _attributed_name(line, display_names)
+
+
+def classify_line(line: str, *, identifiers: frozenset[str], deployment_doc: bool, display_names: frozenset[str] = frozenset()) -> frozenset[str]:
     """Categories for one line of a public text artifact."""
     persisted = _persisted_machine_path(line)
     checks = [
         (persisted, "persisted machine path"),
         (not persisted and patterns.has_real_home_path(line), "machine-specific home path"),
-        (_has_identifier(line, identifiers), "local account or host identifier"),
+        (_has_local_identity(line, identifiers, display_names), "local account or host identifier"),
         (bool(patterns.MACHINE_HOST_ID_RE.search(line)), "machine-specific host identifier"),
     ]
     if deployment_doc:
@@ -55,7 +76,7 @@ def classify_line(line: str, *, identifiers: frozenset[str], deployment_doc: boo
     return frozenset(category for hit, category in checks if hit)
 
 
-def classify_runtime_source_line(line: str, *, identifiers: frozenset[str]) -> frozenset[str]:
+def classify_runtime_source_line(line: str, *, identifiers: frozenset[str], display_names: frozenset[str] = frozenset()) -> frozenset[str]:
     """Categories for one line of runtime or deployment source.
 
     Source legitimately manipulates path-shaped values, so the generic
@@ -64,7 +85,7 @@ def classify_runtime_source_line(line: str, *, identifiers: frozenset[str]) -> f
     """
     checks = (
         (patterns.has_real_home_path(line), "machine-specific home path in runtime source"),
-        (_has_identifier(line, identifiers), "local account or host identifier in runtime source"),
+        (_has_local_identity(line, identifiers, display_names), "local account or host identifier in runtime source"),
         (internal_endpoint_in_line(line), "hard-coded internal endpoint in runtime source"),
         (patterns.credential_uri_leak(line), "credential-bearing URI in runtime source"),
         (bool(patterns.PRIVATE_KEY_LINE_RE.fullmatch(line)), "private key material in runtime source"),

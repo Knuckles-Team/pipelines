@@ -24,3 +24,13 @@ retains its required patterns and tracked build-output checks, and additionally
 checks nested caches. AU moves its existing hand-authored KISS configuration to
 the canonical `.config/kiss.toml` without changing its thresholds. The consumer
 records the replaced hook ID and retained acceptance in its policy and spec.
+
+### 2026-10-17: Approved privacy provenance boundary
+
+The privacy gate separates Git display names from strict local identifiers.
+Only a display name with no independent strict source uses contextual matching.
+Context includes author/account fields, explicit authored-by statements and parenthesized role labels.
+Other identity sources and the prohibited catalog retain unconditional matching.
+This permits product references without a product allowlist.
+A bare personal name outside attribution can pass when only Git supplied that name.
+The user approved this tradeoff before implementation.
