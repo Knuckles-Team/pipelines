@@ -50,8 +50,7 @@ THEME_FILES = (
 
 
 RUNTIME_DIAGRAM_URL = (
-    "https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/main/"
-    "docs/assets/runtime-architecture.svg"
+    "https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/main/docs/assets/runtime-architecture.svg"
 )
 # Any reference to the diagram file; the only accepted target is RUNTIME_DIAGRAM_URL.
 RUNTIME_DIAGRAM_REFERENCE = re.compile(r"[^\s\"'()<>]*runtime-architecture\.svg")
@@ -97,13 +96,9 @@ def _runtime_reference_mismatches(content_root: Path, repository: Path) -> list[
         if page.suffix not in PAGE_SUFFIXES or not page.is_file():
             continue
         text = page.read_text(encoding="utf-8", errors="replace")
-        if any(
-            match.group(0) != RUNTIME_DIAGRAM_URL
-            for match in RUNTIME_DIAGRAM_REFERENCE.finditer(text)
-        ):
+        if any(match.group(0) != RUNTIME_DIAGRAM_URL for match in RUNTIME_DIAGRAM_REFERENCE.finditer(text)):
             mismatches.append(
-                f"runtime diagram must be referenced as {RUNTIME_DIAGRAM_URL}: "
-                f"{page.relative_to(repository)}"
+                f"runtime diagram must be referenced as {RUNTIME_DIAGRAM_URL}: {page.relative_to(repository)}"
             )
     return mismatches
 
@@ -129,9 +124,7 @@ def sync_theme(
     return mismatches
 
 
-def _sync_files(
-    source: Path, content_root: Path, repository: Path, *, mode: Literal["sync", "check"]
-) -> list[str]:
+def _sync_files(source: Path, content_root: Path, repository: Path, *, mode: Literal["sync", "check"]) -> list[str]:
     """Write or compare every theme file and describe each divergence."""
     mismatches: list[str] = []
     for item in THEME_FILES:

@@ -53,7 +53,9 @@ def _rust_spans(source: str, name: str) -> list[tuple[int, int, str]]:
         else:
             end = balanced_span_from(masked, body, opener="{", closer="}")
         start = source.rfind("\n", 0, match.start()) + 1
-        spans.append((source.count("\n", 0, match.start()) + 1, source.count("\n", 0, end) + 1, source[start : end + 1]))
+        spans.append(
+            (source.count("\n", 0, match.start()) + 1, source.count("\n", 0, end) + 1, source[start : end + 1])
+        )
     return spans
 
 

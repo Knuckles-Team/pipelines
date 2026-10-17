@@ -33,16 +33,10 @@ def _merged_head_shas(requirement: dict) -> list[str]:
 
 def _landed_in_prefixes(requirement: dict) -> list[str]:
     """Schema v2 carries prior landings forward as ``landed_in`` SHA prefixes."""
-    return [
-        str(s)
-        for s in requirement.get("landed_in") or []
-        if _PREFIX_RE.fullmatch(str(s))
-    ]
+    return [str(s) for s in requirement.get("landed_in") or [] if _PREFIX_RE.fullmatch(str(s))]
 
 
-def legacy_landings(
-    status: dict, resolve: Callable[[str], str | None]
-) -> dict[str, list[str]]:
+def legacy_landings(status: dict, resolve: Callable[[str], str | None]) -> dict[str, list[str]]:
     """requirement ID -> recorded landing SHAs (v1 ``merged_head`` evidence or v2 ``landed_in``)
     that ``resolve`` maps to a live (reachable, not reverted) full SHA. Carrying v2 landings
     forward keeps regeneration idempotent."""

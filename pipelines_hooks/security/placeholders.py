@@ -13,8 +13,24 @@ from __future__ import annotations
 import re
 
 PLACEHOLDER_TOKENS = frozenset(
-    {"agent", "changeme", "change_me", "example", "fixme", "masked", "password", "placeholder",
-     "redacted", "replace", "sample", "secret", "test", "todo", "xxxx", "your"}
+    {
+        "agent",
+        "changeme",
+        "change_me",
+        "example",
+        "fixme",
+        "masked",
+        "password",
+        "placeholder",
+        "redacted",
+        "replace",
+        "sample",
+        "secret",
+        "test",
+        "todo",
+        "xxxx",
+        "your",
+    }
 )
 URI_SECRET_RE = re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s/@:'\"]+:(?P<secret>[^\s/@'\"]+)@")
 

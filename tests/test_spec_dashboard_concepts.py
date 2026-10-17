@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from scripts.skill_graph.render_pages import render_concepts_md  # noqa: E402

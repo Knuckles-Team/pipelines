@@ -167,9 +167,7 @@ def test_external_caller_fixture_never_resolves_actions_from_caller_checkout(tmp
                 assert action.startswith("./.pipeline-contract/")
                 assert (caller / action[2:]).exists()
 
-    python_workflow = yaml.safe_load(
-        (ROOT / ".github/workflows/python_pipeline.yml").read_text(encoding="utf-8")
-    )
+    python_workflow = yaml.safe_load((ROOT / ".github/workflows/python_pipeline.yml").read_text(encoding="utf-8"))
     for step in python_workflow["jobs"]["publish-pypi"]["steps"]:
         action = step.get("uses", "")
         if action.startswith("./"):
@@ -225,8 +223,7 @@ def test_determine_version_script_works_with_a_shallow_checkout(tmp_path: Path) 
     )
 
     metadata = {
-        line.split("=", 1)[0]: line.split("=", 1)[1]
-        for line in github_env.read_text(encoding="utf-8").splitlines()
+        line.split("=", 1)[0]: line.split("=", 1)[1] for line in github_env.read_text(encoding="utf-8").splitlines()
     }
     assert metadata["BUILD_VERSION"] == "1.2.3"
     assert metadata["LATEST_COMMIT"] == expected

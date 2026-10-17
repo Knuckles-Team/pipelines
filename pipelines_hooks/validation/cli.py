@@ -17,9 +17,7 @@ PASSIVE = frozenset({"post-merge", "post-checkout", "post-rewrite"})
 
 def _summary(report: dict, path: Path) -> None:
     checks = report["checks"]
-    print(
-        f"repository: {len(checks)} checks in {report['seconds']:.3f}s; exit {report['exit_code']}"
-    )
+    print(f"repository: {len(checks)} checks in {report['seconds']:.3f}s; exit {report['exit_code']}")
     for row in checks:
         if row["outcome"] == "pass":
             continue
@@ -30,9 +28,7 @@ def _summary(report: dict, path: Path) -> None:
 
 
 def _run_report(policy, root: Path, args):
-    evidence = Path(
-        tempfile.mkdtemp(prefix="pipelines-validation-", dir=args.evidence_dir)
-    )
+    evidence = Path(tempfile.mkdtemp(prefix="pipelines-validation-", dir=args.evidence_dir))
     report = run(policy, root, evidence)
     report["event"] = args.event
     path = evidence / "report.json"
@@ -41,9 +37,7 @@ def _run_report(policy, root: Path, args):
 
 
 def main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(
-        prog="pipelines-hook validate", description=__doc__
-    )
+    parser = argparse.ArgumentParser(prog="pipelines-hook validate", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument(
         "--event",
@@ -54,20 +48,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--evidence-dir", type=Path)
     args = parser.parse_args(argv)
     if args.event in PASSIVE:
-        print(
-            json.dumps(
-                {"version": 1, "state": "inactive", "event": args.event, "checks": []}
-            )
-        )
+        print(json.dumps({"version": 1, "state": "inactive", "event": args.event, "checks": []}))
         return 0
     root = args.root.resolve()
     policy = load(root / ".config/validation.toml")
     if args.dry_run:
-        print(
-            json.dumps(
-                {"version": 1, "state": "planned", **asdict(policy)}, sort_keys=True
-            )
-        )
+        print(json.dumps({"version": 1, "state": "planned", **asdict(policy)}, sort_keys=True))
         return 0
     try:
         report, path = _run_report(policy, root, args)

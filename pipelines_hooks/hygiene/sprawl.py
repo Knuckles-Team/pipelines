@@ -29,7 +29,9 @@ EXTRA_SKIPS = frozenset({"target", ".hypothesis", ".ruff_cache", ".mypy_cache", 
 def _content_violations(path: Path, relative: Path) -> list[str]:
     if path.suffix not in TEXT_SUFFIXES:
         size = path.stat().st_size
-        return [f"tracked binary > {MAX_BINARY_BYTES} bytes: {relative} ({size} bytes)"] if size > MAX_BINARY_BYTES else []
+        return (
+            [f"tracked binary > {MAX_BINARY_BYTES} bytes: {relative} ({size} bytes)"] if size > MAX_BINARY_BYTES else []
+        )
     text = path.read_text(encoding="utf-8", errors="ignore")
     if path.suffix == ".md":
         text = _MD_INLINE_RE.sub("", _MD_FENCE_RE.sub("", text))

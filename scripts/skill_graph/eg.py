@@ -44,8 +44,7 @@ def _add_component(graph: Graph, component: dict[str, Any]) -> str | None:
         status=component.get("status"),
         capabilityIds=component.get("capability_ids") or [],
         childComponent=[
-            f"component/epistemic-graph/registry/{slugify(c)}"
-            for c in (component.get("child_component_ids") or [])
+            f"component/epistemic-graph/registry/{slugify(c)}" for c in (component.get("child_component_ids") or [])
         ],
         summary=(component.get("summary") or "").strip() or None,
     )
@@ -115,8 +114,7 @@ def extract_contract(graph: Graph, repo_root: Path) -> None:
     data = json.loads(methods_path.read_text(encoding="utf-8"))
     by_domain = _group_methods_by_domain(data.get("methods") or [])
     component_ids = [
-        _add_contract_domain(graph, domain, method_ids)
-        for domain, method_ids in sorted(by_domain.items())
+        _add_contract_domain(graph, domain, method_ids) for domain, method_ids in sorted(by_domain.items())
     ]
     graph.add(
         "concept/epistemic-graph/contract-methods",

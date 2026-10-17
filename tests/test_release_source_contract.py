@@ -1,4 +1,5 @@
 """Production publication wiring and read-only release API boundaries."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -25,8 +26,10 @@ def load_guard():
 def test_every_publisher_checks_tag_before_external_upload():
     python = yaml.safe_load((ROOT / ".github/actions/publish-python-package/action.yml").read_text())
     native = yaml.safe_load((ROOT / ".github/workflows/maturin_pipeline.yml").read_text())
-    for steps, upload in [(python["runs"]["steps"], "Publish package"),
-                          (native["jobs"]["publish"]["steps"], "Publish to PyPI")]:
+    for steps, upload in [
+        (python["runs"]["steps"], "Publish package"),
+        (native["jobs"]["publish"]["steps"], "Publish to PyPI"),
+    ]:
         guards = [i for i, step in enumerate(steps) if step.get("uses") == REFERENCE]
         upload_index = next(i for i, step in enumerate(steps) if step.get("name") == upload)
         assert guards == [upload_index - 1]
@@ -43,8 +46,9 @@ def test_every_publisher_checks_tag_before_external_upload():
     assert workflow["jobs"]["publish-pypi"]["steps"][0]["with"]["ref"] == "${{ github.sha }}"
 
 
-@pytest.mark.parametrize("origin", ["http://api.github.com", "https://user@api.github.com",
-                                   "https://api.github.com/?token=fixture", ""])
+@pytest.mark.parametrize(
+    "origin", ["http://api.github.com", "https://user@api.github.com", "https://api.github.com/?token=fixture", ""]
+)
 def test_api_refuses_unsafe_origins(origin):
     guard = load_guard()
     with pytest.raises(ValueError, match="origin"):
@@ -66,8 +70,9 @@ def test_invalid_metadata_refuses(monkeypatch, payload):
 
     monkeypatch.setattr(guard, "build_opener", lambda *args: Transport())
     with pytest.raises((ValueError, json.JSONDecodeError)):
-        guard.api_get("/repos/Example/package",
-                      {"RELEASE_API_URL": "https://api.github.com", "RELEASE_TOKEN": "fixture"})
+        guard.api_get(
+            "/repos/Example/package", {"RELEASE_API_URL": "https://api.github.com", "RELEASE_TOKEN": "fixture"}
+        )
 
 
 def test_network_failure_writes_no_verified_output(tmp_path, monkeypatch, capsys):

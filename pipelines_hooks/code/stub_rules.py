@@ -37,7 +37,12 @@ def is_not_implemented(node: ast.AST | None) -> bool:
 def seam_constant(node: ast.Raise) -> str | None:
     """``CONST`` of ``raise NotImplementedError(CONST)``, else ``None``."""
     exc = node.exc
-    if isinstance(exc, ast.Call) and is_not_implemented(exc) and len(exc.args) == 1 and isinstance(exc.args[0], ast.Name):
+    if (
+        isinstance(exc, ast.Call)
+        and is_not_implemented(exc)
+        and len(exc.args) == 1
+        and isinstance(exc.args[0], ast.Name)
+    ):
         return exc.args[0].id
     return None
 
@@ -46,7 +51,9 @@ def is_stub_body(body: list[ast.stmt]) -> bool:
     """Only docstrings, ``...``, ``pass`` and ``raise NotImplementedError``."""
     for statement in body:
         constant = statement.value if isinstance(statement, ast.Expr) else None
-        filler = isinstance(constant, ast.Constant) and (constant.value is Ellipsis or isinstance(constant.value, (str, bytes)))
+        filler = isinstance(constant, ast.Constant) and (
+            constant.value is Ellipsis or isinstance(constant.value, (str, bytes))
+        )
         raises = isinstance(statement, ast.Raise) and is_not_implemented(statement.exc)
         if not (filler or raises or isinstance(statement, ast.Pass)):
             return False
@@ -59,10 +66,12 @@ def todo_comments(source: str) -> list[tuple[int, str]]:
         tokens = [t for t in tokenize.generate_tokens(io.StringIO(source).readline) if t.type == tokenize.COMMENT]
     except (tokenize.TokenError, SyntaxError):
         return []
-    found = []
+    found: list[tuple[int, str]] = []
     for token in tokens:
         text = token.string[1:]
-        found.extend((token.start[0], kw) for kw in TODO_KEYWORDS if re.search(rf"\b{re.escape(kw)}\b", text, re.IGNORECASE))
+        found.extend(
+            (token.start[0], kw) for kw in TODO_KEYWORDS if re.search(rf"\b{re.escape(kw)}\b", text, re.IGNORECASE)
+        )
         found.extend((token.start[0], "STUB") for _ in [0] if STUB_TAG_RE.search(text))
     return found
 

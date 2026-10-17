@@ -1,4 +1,5 @@
 """Delivery source links stay distinct from dependency and verification evidence."""
+
 import json
 from copy import deepcopy
 
@@ -9,118 +10,127 @@ from scripts.spec_dashboard_metadata import enrich_records
 from scripts.spec_dashboard_sources import read_records
 
 
-def fixture(root, text='', plan=''):
-    for slug, identifier in [('first', 'AU-CONTROL'), ('second', 'AU-OTHER')]:
-        directory = root / 'specs' / slug
+def fixture(root, text="", plan=""):
+    for slug, identifier in [("first", "AU-CONTROL"), ("second", "AU-OTHER")]:
+        directory = root / "specs" / slug
         directory.mkdir(parents=True)
-        (directory / 'spec.md').write_text('# ' + identifier + '\n' + (text if slug == 'first' else ''))
-        (directory / 'plan.md').write_text(plan if slug == 'first' else '')
-        (directory / 'status.json').write_text(json.dumps({'spec_id': identifier, 'delivery_state': 'SPECIFIED', 'requirement_ids': [identifier + '-R001']}))
-    records = read_records(root, {'sources': [{'glob': 'specs/*/status.json'}]})
-    return {'repository': 'Knuckles-Team/demo', 'revision': 'a' * 40, 'records': records}
+        (directory / "spec.md").write_text("# " + identifier + "\n" + (text if slug == "first" else ""))
+        (directory / "plan.md").write_text(plan if slug == "first" else "")
+        (directory / "status.json").write_text(
+            json.dumps(
+                {"spec_id": identifier, "delivery_state": "SPECIFIED", "requirement_ids": [identifier + "-R001"]}
+            )
+        )
+    records = read_records(root, {"sources": [{"glob": "specs/*/status.json"}]})
+    return {"repository": "Knuckles-Team/demo", "revision": "a" * 40, "records": records}
 
 
 @pytest.mark.spec("PIPE-PAGES-R013")
 @pytest.mark.spec("PIPE-PAGES-R013.1")
 @pytest.mark.spec("PIPE-PAGES-R013.5")
 def test_local_and_external_dependencies_have_links_and_canonical_identity(tmp_path):
-    remote = 'https://github.com/Knuckles-Team/graph-os/blob/main/specs/host/spec.md'
-    snapshot = fixture(tmp_path, 'Depends-on: AU-OTHER-R001, [host](' + remote + ')\n')
+    remote = "https://github.com/Knuckles-Team/graph-os/blob/main/specs/host/spec.md"
+    snapshot = fixture(tmp_path, "Depends-on: AU-OTHER-R001, [host](" + remote + ")\n")
     enrich_records(tmp_path, snapshot)
-    first = snapshot['records'][0]
-    assert first['id'] == 'AU-CONTROL'
-    assert {edge['kind'] for edge in first['relations']} == {'depends on'}
-    assert {edge['repository'] for edge in first['relations']} == {'Knuckles-Team/demo', 'Knuckles-Team/graph-os'}
+    first = snapshot["records"][0]
+    assert first["id"] == "AU-CONTROL"
+    assert {edge["kind"] for edge in first["relations"]} == {"depends on"}
+    assert {edge["repository"] for edge in first["relations"]} == {"Knuckles-Team/demo", "Knuckles-Team/graph-os"}
     page = relationships_panel(snapshot)
-    assert 'specs/second/spec.md' in page and remote in page
-    assert 'not verified' in page
-    assert 'AU-OTHER-R001' in page
-    assert 'host' in page
-    assert 'source: specs/first/spec.md' in page
-    assert 'local spec declaration' in page
-    assert 'depends on' in mermaid(snapshot)
+    assert "specs/second/spec.md" in page and remote in page
+    assert "not verified" in page
+    assert "AU-OTHER-R001" in page
+    assert "host" in page
+    assert "source: specs/first/spec.md" in page
+    assert "local spec declaration" in page
+    assert "depends on" in mermaid(snapshot)
 
 
 def test_mentions_and_shared_code_never_become_dependencies(tmp_path):
-    snapshot = fixture(tmp_path, 'Unblocks AU-OTHER-R001. See [other](../second/spec.md).\nCode: src/entry.py\n')
-    (tmp_path / 'src').mkdir()
-    (tmp_path / 'src/entry.py').write_text('pass\n')
+    snapshot = fixture(tmp_path, "Unblocks AU-OTHER-R001. See [other](../second/spec.md).\nCode: src/entry.py\n")
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/entry.py").write_text("pass\n")
     enrich_records(tmp_path, snapshot)
-    first = snapshot['records'][0]
-    assert [edge['kind'] for edge in first['relations']] == ['references']
-    assert first['code_refs'][0]['role'] == 'implementation'
-    assert 'depends on' not in mermaid(snapshot)
+    first = snapshot["records"][0]
+    assert [edge["kind"] for edge in first["relations"]] == ["references"]
+    assert first["code_refs"][0]["role"] == "implementation"
+    assert "depends on" not in mermaid(snapshot)
 
 
 @pytest.mark.spec("PIPE-PAGES-R012")
 @pytest.mark.spec("PIPE-PAGES-R012.3")
 @pytest.mark.spec("PIPE-PAGES-R012.5")
 def test_implementation_tests_docs_and_missing_sources_are_distinct(tmp_path):
-    snapshot = fixture(tmp_path, 'Code: src/main.py:12 tests/test_main.py docs/guide.md missing.py https://github.com/Knuckles-Team/other/blob/main/src/file.py\n')
-    for file in ['src/main.py', 'tests/test_main.py', 'docs/guide.md']:
+    snapshot = fixture(
+        tmp_path,
+        "Code: src/main.py:12 tests/test_main.py docs/guide.md missing.py https://github.com/Knuckles-Team/other/blob/main/src/file.py\n",
+    )
+    for file in ["src/main.py", "tests/test_main.py", "docs/guide.md"]:
         path = tmp_path / file
         path.parent.mkdir()
-        path.write_text('example')
+        path.write_text("example")
     enrich_records(tmp_path, snapshot)
-    refs = snapshot['records'][0]['code_refs']
-    assert {row['role'] for row in refs} == {'implementation', 'test', 'documentation'}
-    assert any('/blob/' + snapshot['revision'] + '/src/main.py#L12' in row['url'] for row in refs)
+    refs = snapshot["records"][0]["code_refs"]
+    assert {row["role"] for row in refs} == {"implementation", "test", "documentation"}
+    assert any("/blob/" + snapshot["revision"] + "/src/main.py#L12" in row["url"] for row in refs)
     assert_code_roles_and_external_evidence(refs)
-    assert next(row for row in refs if row['label'] == 'missing.py')['url'] == ''
-    assert all('verified' in row['evidence'] or row['evidence'] == 'missing source' for row in refs)
+    assert next(row for row in refs if row["label"] == "missing.py")["url"] == ""
+    assert all("verified" in row["evidence"] or row["evidence"] == "missing source" for row in refs)
 
 
 @pytest.mark.spec("PIPE-PAGES-R013.3")
 @pytest.mark.spec("PIPE-PAGES-R013.6")
 def test_unknowns_empty_and_isolated_specs_remain_discoverable(tmp_path):
-    snapshot = fixture(tmp_path, 'Depends-on: MISSING\n')
+    snapshot = fixture(tmp_path, "Depends-on: MISSING\n")
     enrich_records(tmp_path, snapshot)
-    assert snapshot['records'][0]['relations'][0]['url'] == ''
-    assert 'Unassigned' in architecture_panel(snapshot)
+    assert snapshot["records"][0]["relations"][0]["url"] == ""
+    assert "Unassigned" in architecture_panel(snapshot)
     for number in range(45):
-        snapshot['records'].append({'id': f'ORPHAN-{number}', 'kind': 'spec', 'source': 's.json'})
-    assert all(f'ORPHAN-{number}' in architecture_panel(snapshot) for number in range(45))
-    assert 'dependencies unknown' in relationships_panel(snapshot)
-    assert 'Architecture is unknown' in architecture_panel({'records': []})
+        snapshot["records"].append({"id": f"ORPHAN-{number}", "kind": "spec", "source": "s.json"})
+    assert all(f"ORPHAN-{number}" in architecture_panel(snapshot) for number in range(45))
+    assert "dependencies unknown" in relationships_panel(snapshot)
+    assert "Architecture is unknown" in architecture_panel({"records": []})
 
 
 @pytest.mark.spec("PIPE-PAGES-R013.4")
 def test_deterministic_escaped_output_and_plan_diagram_coverage(tmp_path):
-    snapshot = fixture(tmp_path, 'Component: runtime "]; evil <script>\n', '```mermaid\nflowchart LR\n  A-->B\n```\n')
+    snapshot = fixture(tmp_path, 'Component: runtime "]; evil <script>\n', "```mermaid\nflowchart LR\n  A-->B\n```\n")
     enrich_records(tmp_path, snapshot)
     original = deepcopy(snapshot)
     output = mermaid(snapshot)
-    snapshot['records'].reverse()
+    snapshot["records"].reverse()
     assert output == mermaid(snapshot)
-    assert '<script>' not in architecture_panel(snapshot)
-    assert '<svg' in architecture_panel(snapshot)
-    assert '<script' not in architecture_panel(snapshot)
-    assert '#34;' in output and '#60;script#62;' in output
-    assert 'source plan diagrams' in architecture_panel(snapshot)
-    assert 'no plan diagram declared' in architecture_panel(snapshot)
-    assert original['records'][0]['plan_diagrams'] == ['flowchart LR\n  A-->B\n']
+    assert "<script>" not in architecture_panel(snapshot)
+    assert "<svg" in architecture_panel(snapshot)
+    assert "<script" not in architecture_panel(snapshot)
+    assert "#34;" in output and "#60;script#62;" in output
+    assert "source plan diagrams" in architecture_panel(snapshot)
+    assert "no plan diagram declared" in architecture_panel(snapshot)
+    assert original["records"][0]["plan_diagrams"] == ["flowchart LR\n  A-->B\n"]
 
 
 @pytest.mark.spec("PIPE-PAGES-R012.7")
 def test_examples_unsafe_links_and_parent_escape_are_not_mappings(tmp_path):
-    snapshot = fixture(tmp_path, '```\nDepends-on: AU-OTHER\n```\nCode: [bad](javascript:alert) [escape](../../../../etc/passwd)\n')
+    snapshot = fixture(
+        tmp_path, "```\nDepends-on: AU-OTHER\n```\nCode: [bad](javascript:alert) [escape](../../../../etc/passwd)\n"
+    )
     enrich_records(tmp_path, snapshot)
-    first = snapshot['records'][0]
-    assert not first['relations']
-    assert not any(row['url'] for row in first['code_refs'])
-    assert 'javascript:' not in relationships_panel(snapshot)
+    first = snapshot["records"][0]
+    assert not first["relations"]
+    assert not any(row["url"] for row in first["code_refs"])
+    assert "javascript:" not in relationships_panel(snapshot)
 
 
 def test_enrichment_preserves_delivery_records_and_status_bytes(tmp_path):
-    snapshot = fixture(tmp_path, 'Component: runtime\n')
-    previous = deepcopy(snapshot['records'])
-    files = {path: path.read_bytes() for path in tmp_path.glob('specs/*/status.json')}
-    snapshot['history'] = {'points': [{'date': '2020-01-01', 'remaining': 7}]}
+    snapshot = fixture(tmp_path, "Component: runtime\n")
+    previous = deepcopy(snapshot["records"])
+    files = {path: path.read_bytes() for path in tmp_path.glob("specs/*/status.json")}
+    snapshot["history"] = {"points": [{"date": "2020-01-01", "remaining": 7}]}
     enrich_records(tmp_path, snapshot)
-    for before, after in zip(previous, snapshot['records']):
+    for before, after in zip(previous, snapshot["records"]):
         assert all(after[key] == value for key, value in before.items())
     assert all(path.read_bytes() == content for path, content in files.items())
-    assert snapshot['history']['points'][0]['remaining'] == 7
+    assert snapshot["history"]["points"][0]["remaining"] == 7
 
 
 @pytest.mark.spec("PIPE-PAGES-R012.4")
@@ -132,29 +142,31 @@ def test_code_cells_replace_concepts(tmp_path):
     snapshot = fixture(tmp_path)
     enrich_records(tmp_path, snapshot)
     output = specs_panel(snapshot, lambda row, label: label)
-    assert '<th>Code references</th>' in output and 'Concepts' not in output
-    assert 'Not mapped' in output
-    assert '2 with no code mapped' in count_caption(snapshot)
-    snapshot['records'][0]['code_refs'] = [{'role': 'test', 'url': 'https://github.com/Knuckles-Team/demo/blob/main/tests/test_run.py'}]
-    assert '2 with no code mapped' in count_caption(snapshot)
-    snapshot['records'][0]['code_refs'][0]['role'] = 'implementation'
-    assert '1 with no code mapped' in count_caption(snapshot)
+    assert "<th>Code references</th>" in output and "Concepts" not in output
+    assert "Not mapped" in output
+    assert "2 with no code mapped" in count_caption(snapshot)
+    snapshot["records"][0]["code_refs"] = [
+        {"role": "test", "url": "https://github.com/Knuckles-Team/demo/blob/main/tests/test_run.py"}
+    ]
+    assert "2 with no code mapped" in count_caption(snapshot)
+    snapshot["records"][0]["code_refs"][0]["role"] = "implementation"
+    assert "1 with no code mapped" in count_caption(snapshot)
 
 
 def test_generator_entry_point_writes_architecture(tmp_path, monkeypatch):
     from scripts import spec_dashboard as dashboard
 
-    fixture(tmp_path, 'Component: gateway\nDepends-on: AU-OTHER\n')
-    config = tmp_path / '.config/spec-dashboard.json'
+    fixture(tmp_path, "Component: gateway\nDepends-on: AU-OTHER\n")
+    config = tmp_path / ".config/spec-dashboard.json"
     config.parent.mkdir()
     config.write_text('{"version":1,"sources":[{"glob":"specs/*/status.json"}]}')
-    monkeypatch.setattr(dashboard, 'git', lambda *args: b'a' * 40)
-    monkeypatch.setattr(dashboard, 'github_snapshot', lambda *args: {})
-    assert dashboard.main(['--root', str(tmp_path), '--repository', 'Knuckles-Team/connector']) == 0
-    generated = tmp_path / 'site/spec-delivery'
-    assert 'Spec architecture' in (generated / 'index.html').read_text()
-    assert '-->|depends on|' in (generated / 'architecture.mmd').read_text()
-    assert json.loads((generated / 'snapshot.json').read_text())['records'][0]['component'] == 'gateway'
+    monkeypatch.setattr(dashboard, "git", lambda *args: b"a" * 40)
+    monkeypatch.setattr(dashboard, "github_snapshot", lambda *args: {})
+    assert dashboard.main(["--root", str(tmp_path), "--repository", "Knuckles-Team/connector"]) == 0
+    generated = tmp_path / "site/spec-delivery"
+    assert "Spec architecture" in (generated / "index.html").read_text()
+    assert "-->|depends on|" in (generated / "architecture.mmd").read_text()
+    assert json.loads((generated / "snapshot.json").read_text())["records"][0]["component"] == "gateway"
 
 
 def test_commit_and_bound_test_evidence_survive_normalization(tmp_path):
@@ -162,76 +174,87 @@ def test_commit_and_bound_test_evidence_survive_normalization(tmp_path):
     from scripts.spec_dashboard_sources import record
     from pathlib import Path
 
-    row = record({'id': 'R1', 'landed_in': ['a' * 12, '<bad>'], 'verified_by': ['tests/test_run.py::test_run']}, Path('specs/a/status.json'), 'requirement')
-    assert row['landed_in'] == ['a' * 12]
-    snapshot = {'repository': 'Knuckles-Team/demo', 'revision': 'b' * 40, 'records': [row]}
+    row = record(
+        {"id": "R1", "landed_in": ["a" * 12, "<bad>"], "verified_by": ["tests/test_run.py::test_run"]},
+        Path("specs/a/status.json"),
+        "requirement",
+    )
+    assert row["landed_in"] == ["a" * 12]
+    snapshot = {"repository": "Knuckles-Team/demo", "revision": "b" * 40, "records": [row]}
     output = inventory_panel(snapshot)
-    assert '/commit/' + 'a' * 12 in output
-    assert '/tests/test_run.py' in output
-    assert 'tests/test_run.py::test_run' in output
-    assert 'code_refs' not in row
+    assert "/commit/" + "a" * 12 in output
+    assert "/tests/test_run.py" in output
+    assert "tests/test_run.py::test_run" in output
+    assert "code_refs" not in row
 
 
 @pytest.mark.spec("PIPE-PAGES-R012.1")
 def test_source_declarations_and_citations_in_both_documents(tmp_path):
-    snapshot = fixture(tmp_path, 'Code: src/first.py\nSee [source](src/second.py).\n', 'Code: src/third.py\nUse `src/fourth.py`.\n')
-    (tmp_path / 'src').mkdir()
-    for name in ('first', 'second', 'third', 'fourth'):
-        (tmp_path / 'src' / (name + '.py')).write_text('pass\n')
+    snapshot = fixture(
+        tmp_path, "Code: src/first.py\nSee [source](src/second.py).\n", "Code: src/third.py\nUse `src/fourth.py`.\n"
+    )
+    (tmp_path / "src").mkdir()
+    for name in ("first", "second", "third", "fourth"):
+        (tmp_path / "src" / (name + ".py")).write_text("pass\n")
     enrich_records(tmp_path, snapshot)
-    refs = snapshot['records'][0]['code_refs']
-    assert {row['url'].rsplit('/', 1)[-1] for row in refs} == {'first.py', 'second.py', 'third.py', 'fourth.py'}
-    assert {row['declared_in'] for row in refs} == {'specs/first/spec.md', 'specs/first/plan.md'}
+    refs = snapshot["records"][0]["code_refs"]
+    assert {row["url"].rsplit("/", 1)[-1] for row in refs} == {"first.py", "second.py", "third.py", "fourth.py"}
+    assert {row["declared_in"] for row in refs} == {"specs/first/spec.md", "specs/first/plan.md"}
 
 
 @pytest.mark.spec("PIPE-PAGES-R013.2")
 def test_explicit_edge_kinds_remain_distinct_from_mentions(tmp_path):
-    snapshot = fixture(tmp_path, 'Depends-on: AU-OTHER\nExtends: AU-OTHER\nReferences: AU-OTHER\nUnblocks MENTION-ONLY.\n')
+    snapshot = fixture(
+        tmp_path, "Depends-on: AU-OTHER\nExtends: AU-OTHER\nReferences: AU-OTHER\nUnblocks MENTION-ONLY.\n"
+    )
     enrich_records(tmp_path, snapshot)
-    assert {row['kind'] for row in snapshot['records'][0]['relations']} == {'depends on', 'extends', 'references'}
-    assert len(snapshot['records'][0]['relations']) == 3
-    assert 'MENTION-ONLY' not in mermaid(snapshot)
+    assert {row["kind"] for row in snapshot["records"][0]["relations"]} == {"depends on", "extends", "references"}
+    assert len(snapshot["records"][0]["relations"]) == 3
+    assert "MENTION-ONLY" not in mermaid(snapshot)
 
 
 @pytest.mark.spec("PIPE-PAGES-R013.7")
 def test_large_groups_keep_all_specs_and_relationships(tmp_path):
-    snapshot = fixture(tmp_path, 'Component: runtime\nDepends-on: MISSING\n')
+    snapshot = fixture(tmp_path, "Component: runtime\nDepends-on: MISSING\n")
     enrich_records(tmp_path, snapshot)
-    template = snapshot['records'][0]
+    template = snapshot["records"][0]
     for number in range(45):
-        snapshot['records'].append(dict(template, id=f'LARGE-{number}'))
+        snapshot["records"].append(dict(template, id=f"LARGE-{number}"))
     architecture = architecture_panel(snapshot)
     relations = relationships_panel(snapshot)
-    assert architecture.count('<svg') == 4
-    assert relations.count('<td>depends on</td>') == 46
-    assert mermaid(snapshot).count('-->|depends on|') == 46
-    assert all(f'href="#spec-LARGE-{number}"' in architecture and f'href="#spec-LARGE-{number}"' in relations for number in range(45))
+    assert architecture.count("<svg") == 4
+    assert relations.count("<td>depends on</td>") == 46
+    assert mermaid(snapshot).count("-->|depends on|") == 46
+    assert all(
+        f'href="#spec-LARGE-{number}"' in architecture and f'href="#spec-LARGE-{number}"' in relations
+        for number in range(45)
+    )
 
 
-@pytest.mark.parametrize('indent', range(4))
-@pytest.mark.parametrize('fence', ['```', '~~~~'])
+@pytest.mark.parametrize("indent", range(4))
+@pytest.mark.parametrize("fence", ["```", "~~~~"])
 def test_indented_fences_hide_examples_and_citations(tmp_path, indent, fence):
-    prefix = ' ' * indent
-    text = prefix + fence + '\nDepends-on: HIDDEN\nCode: src/example.py\n[hidden](../second/spec.md)\n'
-    text += prefix + fence[0] * (len(fence) - 1) + '\nDepends-on: ALSO-HIDDEN\n'
-    text += prefix + ('~~~' if fence[0] == '`' else '```') + '\nDepends-on: STILL-HIDDEN\n'
-    text += prefix + fence + '\nDepends-on: AU-OTHER\n'
+    prefix = " " * indent
+    text = prefix + fence + "\nDepends-on: HIDDEN\nCode: src/example.py\n[hidden](../second/spec.md)\n"
+    text += prefix + fence[0] * (len(fence) - 1) + "\nDepends-on: ALSO-HIDDEN\n"
+    text += prefix + ("~~~" if fence[0] == "`" else "```") + "\nDepends-on: STILL-HIDDEN\n"
+    text += prefix + fence + "\nDepends-on: AU-OTHER\n"
     snapshot = fixture(tmp_path, text)
-    (tmp_path / 'src').mkdir()
-    (tmp_path / 'src/example.py').write_text('pass\n')
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/example.py").write_text("pass\n")
     enrich_records(tmp_path, snapshot)
-    assert [row['label'] for row in snapshot['records'][0]['relations']] == ['AU-OTHER']
-    assert snapshot['records'][0]['code_refs'] == []
+    assert [row["label"] for row in snapshot["records"][0]["relations"]] == ["AU-OTHER"]
+    assert snapshot["records"][0]["code_refs"] == []
 
 
 def test_unclosed_fence_hides_remaining_example_text(tmp_path):
-    snapshot = fixture(tmp_path, 'Depends-on: AU-OTHER\n   ```python\nDepends-on: HIDDEN\n')
+    snapshot = fixture(tmp_path, "Depends-on: AU-OTHER\n   ```python\nDepends-on: HIDDEN\n")
     enrich_records(tmp_path, snapshot)
-    assert [row['label'] for row in snapshot['records'][0]['relations']] == ['AU-OTHER']
+    assert [row["label"] for row in snapshot["records"][0]["relations"]] == ["AU-OTHER"]
 
 
 def assert_code_roles_and_external_evidence(refs):
     from scripts.spec_dashboard_architecture import code_links
 
-    assert any(row['evidence'] == 'external declaration; not verified' for row in refs)
-    assert all(role + ':' in code_links(refs) for role in ('implementation', 'test', 'documentation'))
+    assert any(row["evidence"] == "external declaration; not verified" for row in refs)
+    assert all(role + ":" in code_links(refs) for role in ("implementation", "test", "documentation"))

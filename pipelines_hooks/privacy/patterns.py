@@ -17,9 +17,26 @@ HOME_PATH_RE = re.compile(
 #: Documented "not a real account" stand-ins used by fixtures. The ambient
 #: candidates the gate derives (the actual current account) are never here.
 RESERVED_HOME_USERS = frozenset(
-    {"a", "a-different-account", "account", "agent-user", "alice", "app", "bob", "example",
-     "example-user", "exampleuser", "local", "local-account", "operator", "person",
-     "sensitive-account", "some-account", "u", "user"}
+    {
+        "a",
+        "a-different-account",
+        "account",
+        "agent-user",
+        "alice",
+        "app",
+        "bob",
+        "example",
+        "example-user",
+        "exampleuser",
+        "local",
+        "local-account",
+        "operator",
+        "person",
+        "sensitive-account",
+        "some-account",
+        "u",
+        "user",
+    }
 )
 PERSISTED_FIELD_RE = re.compile(
     r"[\"']?(?P<field>workspace_path|source_path|skill_path|local_path|source_file|eg_ledger_path)[\"']?\s*[:=]\s*(?P<value>.+)",
@@ -31,7 +48,9 @@ INTERNAL_ENDPOINT_RE = re.compile(
     r"\b(?:10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})\b"
 )
 PRIVATE_KEY_LINE_RE = re.compile(r"^\s*-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----\s*$")
-CREDENTIAL_URI_RE = re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s/@:]+:(?P<secret>[^\s/@]+)@(?P<cred_host>[^\s/@:\"'<>]+)")
+CREDENTIAL_URI_RE = re.compile(
+    r"(?i)\b[a-z][a-z0-9+.-]*://[^\s/@:]+:(?P<secret>[^\s/@]+)@(?P<cred_host>[^\s/@:\"'<>]+)"
+)
 HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
 # D-EG-PRIVACY-R001-FALSEPOS (mirrored fix): the lookbehind excluded only
 # alnum, so a hyphen-joined requirement ID (`GRAPHOS-FLEET-R016`) matched

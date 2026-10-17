@@ -13,15 +13,65 @@ from pipelines_hooks.core.gitenv import sanitized_env
 
 #: Canonical names of cccc 1.6.0's compiled-in language registry.
 LANGUAGES = (
-    "es", "rust", "go", "php", "ruby", "scheme", "commonlisp", "emacslisp",
-    "clojure", "kotlin", "python", "zig", "c", "perl", "swift", "java", "dart",
+    "es",
+    "rust",
+    "go",
+    "php",
+    "ruby",
+    "scheme",
+    "commonlisp",
+    "emacslisp",
+    "clojure",
+    "kotlin",
+    "python",
+    "zig",
+    "c",
+    "perl",
+    "swift",
+    "java",
+    "dart",
 )
 #: The union of every adapter's default extensions. A file outside this set is
 #: never handed to cccc, so an unsupported type cannot look like "0 functions".
 SUPPORTED_SUFFIXES = frozenset(
-    ".c .cl .clj .cljs .cljc .dart .el .h .java .js .jsx .kt .kts .lisp .lsp "
-    ".mjs .mts .php .pl .pm .py .pyi .rb .rkt .rktd .rktl .rs .scm .sld .ss "
-    ".swift .t .ts .tsx .cjs .zig".split()
+    [
+        ".c",
+        ".cl",
+        ".clj",
+        ".cljs",
+        ".cljc",
+        ".dart",
+        ".el",
+        ".h",
+        ".java",
+        ".js",
+        ".jsx",
+        ".kt",
+        ".kts",
+        ".lisp",
+        ".lsp",
+        ".mjs",
+        ".mts",
+        ".php",
+        ".pl",
+        ".pm",
+        ".py",
+        ".pyi",
+        ".rb",
+        ".rkt",
+        ".rktd",
+        ".rktl",
+        ".rs",
+        ".scm",
+        ".sld",
+        ".ss",
+        ".swift",
+        ".t",
+        ".ts",
+        ".tsx",
+        ".cjs",
+        ".zig",
+    ]
 )
 
 
@@ -39,8 +89,13 @@ def run(executable: str, paths: list[str], *, cwd: Path) -> dict[str, Any]:
     command = [executable, "--no-config", "--min", "0", "--lang", ",".join(LANGUAGES), *paths]
     try:
         result = subprocess.run(
-            command, cwd=str(cwd), env=sanitized_env(), capture_output=True, text=True,
-            timeout=900, check=False,
+            command,
+            cwd=str(cwd),
+            env=sanitized_env(),
+            capture_output=True,
+            text=True,
+            timeout=900,
+            check=False,
         )
     except (OSError, UnicodeError, subprocess.TimeoutExpired) as exc:
         raise CannotRun(f"could not run cccc: {exc}") from exc
@@ -76,7 +131,8 @@ def _row(function: object, prefix: str) -> tuple[Row, list[Any]]:
     children = function.get("children", [])
     if not isinstance(children, list):
         raise CannotRun(f"cccc function {function['name']!r} has invalid children")
-    return Row(f"{prefix}{function['name']}", *values), children
+    cyclomatic, cognitive, line = (value if isinstance(value, int) else 0 for value in values)  # validated above
+    return Row(f"{prefix}{function['name']}", cyclomatic, cognitive, line), children
 
 
 def _walk(functions: list[Any], prefix: str) -> Iterator[Row]:

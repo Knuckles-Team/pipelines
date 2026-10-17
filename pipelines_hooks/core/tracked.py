@@ -13,9 +13,7 @@ from pathlib import Path
 from pipelines_hooks.core.gitenv import git_text, nul_split, run_git
 
 #: Directory names no source gate ever scans.
-SKIP_DIRECTORIES = frozenset(
-    {".git", ".venv", "venv", "node_modules", "__pycache__", "build", "dist", ".tox"}
-)
+SKIP_DIRECTORIES = frozenset({".git", ".venv", "venv", "node_modules", "__pycache__", "build", "dist", ".tox"})
 
 
 def tracked_paths(root: Path, pathspecs: tuple[str, ...] = ()) -> list[str]:
@@ -33,11 +31,7 @@ def _pathspecs(target: Path, root: Path, patterns: tuple[str, ...]) -> list[str]
 
 
 def _walked(target: Path, patterns: tuple[str, ...]) -> list[Path]:
-    found = (
-        [path for pattern in patterns for path in target.rglob(pattern)]
-        if patterns
-        else list(target.rglob("*"))
-    )
+    found = [path for pattern in patterns for path in target.rglob(pattern)] if patterns else list(target.rglob("*"))
     return sorted(path for path in found if path.is_file())
 
 

@@ -48,9 +48,7 @@ class RepoConfig:
             raise CannotRun(f"[tool.pipelines_hooks.{name}] must be a table")
         unknown = sorted(set(value) - SECTIONS[name])
         if unknown:
-            raise CannotRun(
-                f"[tool.pipelines_hooks.{name}] has unknown key(s): {', '.join(unknown)}"
-            )
+            raise CannotRun(f"[tool.pipelines_hooks.{name}] has unknown key(s): {', '.join(unknown)}")
         return value
 
     def packages(self) -> tuple[str, ...]:
@@ -67,9 +65,7 @@ class RepoConfig:
 
 def string_tuple(value: object, name: str) -> tuple[str, ...]:
     """A list of non-empty strings, without duplicates."""
-    if not isinstance(value, list) or any(
-        not isinstance(item, str) or not item.strip() for item in value
-    ):
+    if not isinstance(value, list) or any(not isinstance(item, str) or not item.strip() for item in value):
         raise CannotRun(f"[tool.pipelines_hooks] {name} must be a list of strings")
     items = tuple(item.strip() for item in value)
     if len(set(items)) != len(items):

@@ -21,8 +21,14 @@ def _positive_int(value: object) -> bool:
 def _validate_side(index: int, location: object, *, format_name: str, root: Path) -> str:
     if not isinstance(location, dict) or not isinstance(location.get("name"), str) or not location["name"]:
         raise CannotRun(f"jscpd duplicate {index} has an invalid location")
-    lines = [location.get(p, {}).get("line") if isinstance(location.get(p), dict) else None for p in ("startLoc", "endLoc")]
-    if not all(_positive_int(line) for line in lines) or lines[1] < lines[0]:
+    lines = [
+        location.get(p, {}).get("line") if isinstance(location.get(p), dict) else None for p in ("startLoc", "endLoc")
+    ]
+    start, end = lines
+    if (
+        not (isinstance(start, int) and isinstance(end, int) and _positive_int(start) and _positive_int(end))
+        or end < start
+    ):
         raise CannotRun(f"jscpd duplicate {index} has an invalid or reversed line range")
     name = report_file_path(location["name"], format_name)
     if not Path(name).is_absolute():
@@ -48,7 +54,9 @@ def validate_clone(index: int, clone: object, *, root: Path) -> None:
     format_name = clone["format"]
     first = _validate_side(index, clone["firstFile"], format_name=format_name, root=root)
     second = _validate_side(index, clone["secondFile"], format_name=format_name, root=root)
-    same_range = all(clone["firstFile"].get(k) == clone["secondFile"].get(k) for k in ("start", "end", "startLoc", "endLoc"))
+    same_range = all(
+        clone["firstFile"].get(k) == clone["secondFile"].get(k) for k in ("start", "end", "startLoc", "endLoc")
+    )
     if first == second and same_range:
         raise CannotRun(f"jscpd duplicate {index} is a self-pair: both locations name the same range")
 

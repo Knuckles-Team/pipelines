@@ -1,4 +1,5 @@
 """Site navigation on the spec-delivery page."""
+
 import re
 
 import pytest
@@ -8,8 +9,15 @@ from scripts.spec_dashboard_drilldown import anchor_for, ecosystem_components
 
 
 def _page():
-    return render({'repository': 'Knuckles-Team/' + ecosystem_components()[0], 'revision': 'abcdef123456',
-                   'captured_at': 'now', 'records': [], 'github': {}})
+    return render(
+        {
+            "repository": "Knuckles-Team/" + ecosystem_components()[0],
+            "revision": "abcdef123456",
+            "captured_at": "now",
+            "records": [],
+            "github": {},
+        }
+    )
 
 
 def _nav(page):
@@ -20,7 +28,7 @@ def _nav(page):
 def test_nav_landmark_links_documentation():
     nav = _nav(_page())
     assert nav.count('href="../"') == 2
-    assert '>Documentation</a>' in nav
+    assert ">Documentation</a>" in nav
 
 
 @pytest.mark.spec("PIPE-PAGES-R019.2")
@@ -34,7 +42,7 @@ def test_current_page_is_marked():
 def test_repository_links_equal_single_source():
     nav = _nav(_page())
     links = re.findall(r'<li><a href="([^"]+)"( aria-current="true")?>', nav)
-    assert [url for url, _ in links] == [anchor_for('repository', r, r) for r in ecosystem_components()]
+    assert [url for url, _ in links] == [anchor_for("repository", r, r) for r in ecosystem_components()]
     assert [bool(mark) for _, mark in links] == [True] + [False] * (len(links) - 1)
 
 
@@ -48,5 +56,5 @@ def test_skip_link_targets_main():
 @pytest.mark.spec("PIPE-PAGES-R019.5")
 def test_page_keeps_existing_panels():
     page = _page()
-    for title in ('Delivery structure', 'Delivery states', 'State definitions', 'Specifications'):
+    for title in ("Delivery structure", "Delivery states", "State definitions", "Specifications"):
         assert title in page

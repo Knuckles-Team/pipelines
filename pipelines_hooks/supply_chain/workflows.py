@@ -52,7 +52,13 @@ def _uses_findings(source: Source) -> list[Finding]:
                 )
             )
         elif not _pinned(reference):
-            findings.append(source.at_offset(m.start(), rule="SC-GHA-001", message="external action or reusable workflow is not pinned to a full commit SHA"))
+            findings.append(
+                source.at_offset(
+                    m.start(),
+                    rule="SC-GHA-001",
+                    message="external action or reusable workflow is not pinned to a full commit SHA",
+                )
+            )
     return findings
 
 
@@ -93,7 +99,11 @@ def _permission_findings(source: Source) -> list[Finding]:
     inline = permissions.group(1).strip().casefold()
     findings = []
     if "write-all" in inline:
-        findings.append(source.at_offset(permissions.start(), rule="SC-GHA-003", message="top-level write-all token permissions are forbidden"))
+        findings.append(
+            source.at_offset(
+                permissions.start(), rule="SC-GHA-003", message="top-level write-all token permissions are forbidden"
+            )
+        )
     elif re.search(r"\bwrite\b", inline):
         findings.append(source.at_offset(permissions.start(), rule="SC-GHA-004", message=_REPO_WRITE))
     return findings + _nested_write_findings(source, permissions.end())
@@ -102,6 +112,10 @@ def _permission_findings(source: Source) -> list[Finding]:
 def workflow_findings(source: Source) -> list[Finding]:
     findings = _uses_findings(source) + _checkout_findings(source) + _permission_findings(source)
     for pattern, rule, message in FORBIDDEN:
-        findings.extend(source.each_match(re.compile(pattern, re.IGNORECASE | re.MULTILINE), rule=rule, message=message))
-    findings.extend(source.each_match(NETWORK_TO_SHELL_RE, rule="SC-GHA-009", message="network response is executed by a shell"))
+        findings.extend(
+            source.each_match(re.compile(pattern, re.IGNORECASE | re.MULTILINE), rule=rule, message=message)
+        )
+    findings.extend(
+        source.each_match(NETWORK_TO_SHELL_RE, rule="SC-GHA-009", message="network response is executed by a shell")
+    )
     return findings

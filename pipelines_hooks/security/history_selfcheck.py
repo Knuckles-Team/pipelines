@@ -19,7 +19,10 @@ _MARK = "# sanitizer" + ":ignore"
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(
         ["git", "-c", "user.name=gate", "-c", "user.email=gate@example.invalid", *args],
-        cwd=str(repo), env=sanitized_env(), check=True, capture_output=True,
+        cwd=str(repo),
+        env=sanitized_env(),
+        check=True,
+        capture_output=True,
     )
 
 
@@ -59,7 +62,8 @@ def _repository_checks() -> dict[str, bool]:
         rc_justified, _justified = _run_scan(repo)
         _commit_leak(repo, branch="bare", lines=[f"{_planted_lines()[0]}  {_MARK}"])
         rc_bare, _bare = _run_scan(repo)
-    patterns = {hit["pattern"] for hit in bad["credentialHits"]}
+    hits = bad["credentialHits"]
+    patterns = {hit["pattern"] for hit in hits} if isinstance(hits, list) else set()
     return {
         "caughtPlantedCredential": rc_bad == 1 and len(patterns) >= 4,
         "honoredJustifiedMarker": rc_justified == 0,
@@ -71,7 +75,9 @@ def self_check() -> tuple[int, dict[str, object]]:
     text_hits = scan_text_for_credentials("Session log:\n" + _planted_lines()[3] + "\n", label="t.txt")
     checks = {
         **_repository_checks(),
-        "textModeCaughtPlantedCredential": any(h["pattern"] == "engine_signer_credential_assignment" for h in text_hits),
+        "textModeCaughtPlantedCredential": any(
+            h["pattern"] == "engine_signer_credential_assignment" for h in text_hits
+        ),
         "textModeCleanOnMention": scan_text_for_credentials("rotated the signer_key successfully\n") == [],
     }
     ok = all(checks.values())

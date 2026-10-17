@@ -99,9 +99,7 @@ def test_requirements_md_row_names_a_dependency_and_ignores_a_look_alike(
         "| `X-DEMO-R001` | First. | Checked by case X-T-01. |\n"
         "| `X-DEMO-R002` | Needs `X-DEMO-R001` and mentions itself, X-DEMO-R002. | Plain. |\n"
     )
-    _write_spec(
-        tmp_path, "demo", "x-demo", status=status, requirements_md=requirements_md
-    )
+    _write_spec(tmp_path, "demo", "x-demo", status=status, requirements_md=requirements_md)
     reqs = load_repo(tmp_path / "demo")
     assert reqs["X-DEMO-R002"].depends_on == {"X-DEMO-R001"}
     # X-T-01 looks like an ID but is never a declared requirement_id anywhere,
@@ -176,9 +174,7 @@ def test_frontier_orders_by_dependents_then_score(tmp_path: Path) -> None:
         "| `X-DEMO-R003` | Needs `X-DEMO-R001`. | Check. |\n"
         "| `X-DEMO-R004` | Needs `X-DEMO-R001`. | Check. |\n"
     )
-    _write_spec(
-        tmp_path, "demo", "x-demo", status=status, requirements_md=requirements_md
-    )
+    _write_spec(tmp_path, "demo", "x-demo", status=status, requirements_md=requirements_md)
     reqs = load_repo(tmp_path / "demo")
     rows = frontier(reqs)["demo"]
     assert [row["id"] for row in rows[:1]] == ["X-DEMO-R001"]
@@ -239,8 +235,7 @@ def test_split_basis_prefers_code_roots_then_repo_then_fallback(tmp_path: Path) 
         " | one. two. three. four. five. six. seven. |\n"
     )
     tasks_md = (
-        "- [ ] a X-DEMO-R003.\n- [ ] b X-DEMO-R003.\n- [ ] c X-DEMO-R003.\n"
-        "- [ ] d X-DEMO-R003.\n- [ ] e X-DEMO-R003.\n"
+        "- [ ] a X-DEMO-R003.\n- [ ] b X-DEMO-R003.\n- [ ] c X-DEMO-R003.\n- [ ] d X-DEMO-R003.\n- [ ] e X-DEMO-R003.\n"
     )
     _write_spec(
         tmp_path,
@@ -321,13 +316,8 @@ def test_write_applies_one_split_with_child_ids_and_depends_on(tmp_path: Path) -
 
 def test_write_refuses_a_requirement_under_the_threshold(tmp_path: Path) -> None:
     status = _status("X-DEMO", "demo", [_entry("X-DEMO-R001")])
-    requirements_md = (
-        "| ID | Requirement | Verification |\n|---|---|---|\n"
-        "| `X-DEMO-R001` | Small. | Check. |\n"
-    )
-    _write_spec(
-        tmp_path, "demo", "x-demo", status=status, requirements_md=requirements_md
-    )
+    requirements_md = "| ID | Requirement | Verification |\n|---|---|---|\n| `X-DEMO-R001` | Small. | Check. |\n"
+    _write_spec(tmp_path, "demo", "x-demo", status=status, requirements_md=requirements_md)
     try:
         apply_split(tmp_path / "demo", "X-DEMO-R001")
         raised = False

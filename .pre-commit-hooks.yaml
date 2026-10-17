@@ -3,7 +3,7 @@
 # pyproject.toml [tool.pipelines_hooks] table, never in these definitions.
 # Exit codes: 0 clean, 1 findings, 2 the gate could not run.
 #
-# Consumers pin `rev:` to a full commit SHA. RELEASE readiness inherits manual
+# Consumers reference `rev: main`. RELEASE readiness inherits manual
 # staging here; do not duplicate/override its policy in consumers.
 # Native scanners (cccc, kiss, dupehound, jscpd) must already be installed at
 # the pinned versions (scripts/install_scanners.sh); hooks never install them.
@@ -12,16 +12,54 @@
 # fails closed (exit 2) when $CI is set; locally it prints
 # `SKIPPED (<gate>): <reason>; run scripts/bootstrap.sh [--scanners]` and exits 0.
 
+# --- the gate standard (reference/gate-standard.md) --------------------------
+# Consumers reference only these three ids from this repository, plus the
+# upstream `format` (ruff), `hygiene` (pre-commit-hooks) and `types` (mypy or
+# clippy) hooks the standard names. Every hook below the DEPRECATED marker is
+# kept only until no repository references it; the advisory ones run in the
+# weekly advisory workflow (.github/workflows/advisory_pipeline.yml) instead.
+- id: secrets
+  name: Secrets and identity - credentials, host/identity data, commit identities
+  entry: pipelines-hook secrets
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: tests-fast
+  name: Fast tests - only the tests the pushed diff affects (120 s cap)
+  entry: pipelines-hook tests-fast
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-push]
+- id: spec
+  name: Spec - standard, decomposition, generated status freshness and Spec trailers
+  entry: pipelines-hook spec
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-push, manual]
+
+# ============================ DEPRECATED ======================================
+# Superseded by the gate standard. Do not add new references. Each id stays
+# published until every repository has dropped it; a final cleanup PR deletes
+# them. `secrets` replaces secret-history, security-sanitizer, tracked-privacy,
+# commit-identity and commit-identity-range; `spec` replaces spec-standard,
+# spec-decomposition, spec-status and spec-trailers; `tests-fast` replaces
+# fast-tests. Every other deprecated id is advisory (weekly report) or deleted.
+
 # --- complexity (cccc 1.6.0) ------------------------------------------------
 - id: complexity-staged
-  name: Complexity (cccc) - no new or worsened function over cyclomatic 10 / cognitive 15
+  name: "DEPRECATED (complexity-staged): Complexity (cccc) - no new or worsened function over cyclomatic 10 / cognitive 15"
   entry: pipelines-hook complexity-staged
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: complexity-census
-  name: Complexity census (cccc) - absolute zero outside the terms of acceptance
+  name: "DEPRECATED (complexity-census): Complexity census (cccc) - absolute zero outside the terms of acceptance"
   entry: pipelines-hook complexity-census
   language: python
   pass_filenames: false
@@ -29,14 +67,14 @@
   require_serial: true
 # --- KISS (0.4.12 fork build Knucklessg1/kiss; see core/kiss_fork.py) --------
 - id: kiss-staged
-  name: KISS - staged Python/Rust, diff-scoped
+  name: "DEPRECATED (kiss-staged): KISS - staged Python/Rust, diff-scoped"
   entry: pipelines-hook kiss-staged
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: kiss-census
-  name: KISS census - every tracked file plus orphan modules, enforced
+  name: "DEPRECATED (kiss-census): KISS census - every tracked file plus orphan modules, enforced"
   entry: pipelines-hook kiss-census
   language: python
   pass_filenames: false
@@ -44,171 +82,171 @@
   require_serial: true
 # --- clones (dupehound 0.1.2, jscpd 5.0.16) --------------------------------
 - id: dupehound-changed
-  name: Clone gate - changed functions (dupehound)
+  name: "DEPRECATED (dupehound-changed): Clone gate - changed functions (dupehound)"
   entry: pipelines-hook dupehound-changed
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: jscpd-differential
-  name: Clone gate - new blocks (jscpd, merged-tree differential)
+  name: "DEPRECATED (jscpd-differential): Clone gate - new blocks (jscpd, merged-tree differential)"
   entry: pipelines-hook jscpd-differential
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: jscpd-census
-  name: Clone census - tracked tree (jscpd, advisory)
+  name: "DEPRECATED (jscpd-census): Clone census - tracked tree (jscpd, advisory)"
   entry: pipelines-hook jscpd-census
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: scanner-versions
-  name: Pinned native scanners are installed at their exact versions
+  name: "DEPRECATED (scanner-versions): Pinned native scanners are installed at their exact versions"
   entry: pipelines-hook scanner-versions
   language: python
   pass_filenames: false
   always_run: true
 # --- security, privacy, supply chain ---------------------------------------
 - id: secret-history
-  name: Credential-shaped content in the unpublished commit range
+  name: "DEPRECATED (secret-history): Credential-shaped content in the unpublished commit range"
   entry: pipelines-hook secret-history
   language: python
   pass_filenames: false
   always_run: true
 - id: security-sanitizer
-  name: Security and garbage sanitizer
+  name: "DEPRECATED (security-sanitizer): Security and garbage sanitizer"
   entry: pipelines-hook security-sanitizer
   language: python
   pass_filenames: false
   always_run: true
 - id: tracked-privacy
-  name: Tracked artifacts contain no host-specific data, local or model identities
+  name: "DEPRECATED (tracked-privacy): Tracked artifacts contain no host-specific data, local or model identities"
   entry: pipelines-hook tracked-privacy
   language: python
   pass_filenames: false
   always_run: true
 - id: commit-identity
-  name: Commit identity - the commit being made has an allowlisted author and committer
+  name: "DEPRECATED (commit-identity): Commit identity - the commit being made has an allowlisted author and committer"
   entry: pipelines-hook commit-identity
   language: python
   pass_filenames: false
   always_run: true
 - id: commit-identity-range
-  name: Commit identity (range) - every commit in the outgoing/incoming range is allowlisted
+  name: "DEPRECATED (commit-identity-range): Commit identity (range) - every commit in the outgoing/incoming range is allowlisted"
   entry: pipelines-hook commit-identity-range
   language: python
   pass_filenames: false
   always_run: true
 - id: supply-chain
-  name: Immutable workflow, container and dependency sources
+  name: "DEPRECATED (supply-chain): Immutable workflow, container and dependency sources"
   entry: pipelines-hook supply-chain
   language: python
   pass_filenames: false
   always_run: true
 # --- repository hygiene -----------------------------------------------------
 - id: root-hygiene
-  name: Repository root hygiene (declared entries only)
+  name: "DEPRECATED (root-hygiene): Repository root hygiene (declared entries only)"
   entry: pipelines-hook root-hygiene
   language: python
   pass_filenames: false
   always_run: true
 - id: gitignore-convergence
-  name: .gitignore carries the fleet-shared REQUIRED set
+  name: "DEPRECATED (gitignore-convergence): .gitignore carries the fleet-shared REQUIRED set"
   entry: pipelines-hook gitignore-convergence
   language: python
   pass_filenames: false
   always_run: true
 - id: sprawl
-  name: Anti-sprawl (versioned clones, merge artifacts, tracked binaries)
+  name: "DEPRECATED (sprawl): Anti-sprawl (versioned clones, merge artifacts, tracked binaries)"
   entry: pipelines-hook sprawl
   language: python
   pass_filenames: false
   always_run: true
 - id: pre-commit-patch-safety
-  name: No live uncommitted work parked in the pre-commit patch cache
+  name: "DEPRECATED (pre-commit-patch-safety): No live uncommitted work parked in the pre-commit patch cache"
   entry: pipelines-hook pre-commit-patch-safety
   language: python
   pass_filenames: false
   always_run: true
 - id: mermaid
-  name: Mermaid diagram syntax
+  name: "DEPRECATED (mermaid): Mermaid diagram syntax"
   entry: pipelines-hook mermaid
   language: python
   types: [markdown]
 # --- code shape -------------------------------------------------------------
 - id: no-stub
-  name: No production stub markers or unmarked NotImplementedError
+  name: "DEPRECATED (no-stub): No production stub markers or unmarked NotImplementedError"
   entry: pipelines-hook no-stub
   language: python
   pass_filenames: false
   always_run: true
 - id: stubs
-  name: No stub bodies and no deferred-work comments
+  name: "DEPRECATED (stubs): No stub bodies and no deferred-work comments"
   entry: pipelines-hook stubs
   language: python
   types: [python]
 - id: swallowed-errors
-  name: Swallowed errors - no cause-dropping handler added
+  name: "DEPRECATED (swallowed-errors): Swallowed errors - no cause-dropping handler added"
   entry: pipelines-hook swallowed-errors
   language: python
   pass_filenames: false
   always_run: true
 - id: event-loop-blocking
-  name: Event-loop blocking - no blocking call added in async code
+  name: "DEPRECATED (event-loop-blocking): Event-loop blocking - no blocking call added in async code"
   entry: pipelines-hook event-loop-blocking
   language: python
   pass_filenames: false
   always_run: true
 - id: import-cycles
-  name: Import cycles - zero eager cycles
+  name: "DEPRECATED (import-cycles): Import cycles - zero eager cycles"
   entry: pipelines-hook import-cycles
   language: python
   pass_filenames: false
   always_run: true
 - id: env-sprawl
-  name: Configuration - environment read only in the declared module
+  name: "DEPRECATED (env-sprawl): Configuration - environment read only in the declared module"
   entry: pipelines-hook env-sprawl
   language: python
   pass_filenames: false
   always_run: true
 - id: stdout-writes
-  name: Stdio JSON-RPC purity (no stdout writes in the served surface)
+  name: "DEPRECATED (stdout-writes): Stdio JSON-RPC purity (no stdout writes in the served surface)"
   entry: pipelines-hook stdout-writes
   language: python
   pass_filenames: false
   always_run: true
 # --- public documentation --------------------------------------------------
 - id: public-surface
-  name: Public README/AGENTS surface contract
+  name: "DEPRECATED (public-surface): Public README/AGENTS surface contract"
   entry: pipelines-hook public-surface
   language: python
   pass_filenames: false
   always_run: true
 # --- spec decomposition -----------------------------------------------------
 - id: spec-decomposition
-  name: Spec decomposition - requirements/tasks/test-spec/status.json IDs agree
+  name: "DEPRECATED (spec-decomposition): Spec decomposition - requirements/tasks/test-spec/status.json IDs agree"
   entry: pipelines-hook spec-decomposition
   language: python
   pass_filenames: false
   always_run: true
 - id: spec-standard
-  name: Spec standard - names, file set, title, index
+  name: "DEPRECATED (spec-standard): Spec standard - names, file set, title, index"
   entry: pipelines-hook spec-standard
   language: python
   pass_filenames: false
   always_run: true
 # --- documentation standard (EG-STE-Lite) ----------------------------------
 - id: ste-staged
-  name: EG-STE-Lite - staged or CI docs, diff-scoped
+  name: "DEPRECATED (ste-staged): EG-STE-Lite - staged or CI docs, diff-scoped"
   entry: pipelines-hook ste-staged
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: ste-census
-  name: EG-STE-Lite census - every in-scope doc, enforced
+  name: "DEPRECATED (ste-census): EG-STE-Lite census - every in-scope doc, enforced"
   entry: pipelines-hook ste-census
   language: python
   pass_filenames: false
@@ -216,14 +254,14 @@
   require_serial: true
   stages: [pre-push, manual]
 - id: ste-staleness-staged
-  name: Doc staleness - staged lines, diff-scoped
+  name: "DEPRECATED (ste-staleness-staged): Doc staleness - staged lines, diff-scoped"
   entry: pipelines-hook ste-staleness-staged
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: ste-staleness-census
-  name: Doc staleness census - every in-scope doc, enforced
+  name: "DEPRECATED (ste-staleness-census): Doc staleness census - every in-scope doc, enforced"
   entry: pipelines-hook ste-staleness-census
   language: python
   pass_filenames: false
@@ -243,7 +281,7 @@
 
 # --- spec lifecycle (SPEC-STATUS-LIFECYCLE.md) ------------------------------
 - id: spec-status
-  name: Spec status - generated specs/*/status.json matches requirements.md, git history and test bindings
+  name: "DEPRECATED (spec-status): Spec status - generated specs/*/status.json matches requirements.md, git history and test bindings"
   entry: pipelines-hook spec-status
   language: python
   pass_filenames: false
@@ -262,7 +300,7 @@
 # Affected tests only under a hard 120 s cap (CI-STANDARD pre-push); the base is
 # pre-commit's --from-ref (PRE_COMMIT_FROM_REF). FULL/NONE run nothing locally.
 - id: fast-tests
-  name: Fast tests - only the tests the pushed diff affects (120 s cap)
+  name: "DEPRECATED (fast-tests): Fast tests - only the tests the pushed diff affects (120 s cap)"
   entry: pipelines-hook fast-tests
   language: python
   pass_filenames: false
@@ -271,7 +309,7 @@
 
 # --- spec-status lifecycle (SPEC-STATUS-LIFECYCLE.md S6) -------------------
 - id: spec-trailers
-  name: "Spec trailers - verified delivery or constrained evidence withdrawal"
+  name: "DEPRECATED (spec-trailers): Spec trailers - verified delivery or constrained evidence withdrawal"
   entry: pipelines-hook spec-trailers
   language: python
   pass_filenames: false

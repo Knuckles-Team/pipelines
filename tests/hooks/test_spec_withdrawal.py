@@ -14,8 +14,7 @@ REPLACEMENT = "// Partial refusal coverage for DEMO-R001; successful-operation a
 def setup(repo: Repo) -> str:
     return repo.commit(
         {
-            "specs/demo/requirements.md": _requirements_md(RID)
-            + "| `DEMO-R002` | Other thing. | Needs a test. |\n",
+            "specs/demo/requirements.md": _requirements_md(RID) + "| `DEMO-R002` | Other thing. | Needs a test. |\n",
             "specs/demo/plan.md": "# Plan\n",
             "specs/demo/tasks.md": "- [x] **DEMO-R001:** query\n",
             "src/query.rs": SOURCE,
@@ -46,42 +45,27 @@ def correction(
 @pytest.mark.parametrize("replacement", [REPLACEMENT, ""])
 def test_withdrawal_keeps_requirements_and_tests(repo: Repo, replacement: str) -> None:
     base = setup(repo)
-    correction(
-        repo, {"src/query.rs": SOURCE.replace("// spec: DEMO-R001\n", replacement)}
-    )
+    correction(repo, {"src/query.rs": SOURCE.replace("// spec: DEMO-R001\n", replacement)})
     assert repo.run("spec-trailers", "--base-ref", base) == 0
     assert repo.run("spec-status", "--write") == 0
-    assert (
-        '"delivery_state": "LANDED"'
-        in (repo.root / "specs/demo/status.json").read_text()
-    )
+    assert '"delivery_state": "LANDED"' in (repo.root / "specs/demo/status.json").read_text()
 
 
 # spec: PIPE-CONNSPEC-R001
 @pytest.mark.parametrize(
     "extra",
     [
-        {
-            "src/query.rs": SOURCE.replace("// spec: DEMO-R001\n", "").replace(
-                "true", "false"
-            )
-        },
+        {"src/query.rs": SOURCE.replace("// spec: DEMO-R001\n", "").replace("true", "false")},
         {"Cargo.toml": '[package]\nname = "new-feature"\n'},
         {".github/workflows/ci.yml": "disabled: true\n"},
-        {
-            "specs/demo/requirements.md": _requirements_md(RID).replace(
-                "Verified by a test", "No tests needed"
-            )
-        },
+        {"specs/demo/requirements.md": _requirements_md(RID).replace("Verified by a test", "No tests needed")},
         {"specs/demo/plan.md": f"{RID}: {REASON}\n"},
         {"specs/demo/tasks.md": "- [ ] **DEMO-R001:** weaker requirement\n"},
         {"src/query.rs": SOURCE},
         {"src/other.rs": "// spec: DEMO-R001\n#[test]\nfn retained() {}\n"},
     ],
 )
-def test_withdrawal_refuses_non_evidence_changes(
-    repo: Repo, extra: dict[str, str]
-) -> None:
+def test_withdrawal_refuses_non_evidence_changes(repo: Repo, extra: dict[str, str]) -> None:
     base = setup(repo)
     correction(repo, extra)
     assert repo.run("spec-trailers", "--base-ref", base) == 1
@@ -92,9 +76,7 @@ def test_withdrawal_refuses_non_evidence_changes(
     ("ids", "reason"),
     [(RID, ""), (RID, "short"), ("", REASON), ("UNKNOWN-R002", REASON)],
 )
-def test_withdrawal_requires_known_ids_and_reason(
-    repo: Repo, ids: str, reason: str
-) -> None:
+def test_withdrawal_requires_known_ids_and_reason(repo: Repo, ids: str, reason: str) -> None:
     base = setup(repo)
     correction(repo, ids=ids, reason=reason)
     assert repo.run("spec-trailers", "--base-ref", base) == 1
@@ -152,10 +134,7 @@ def test_withdrawal_keeps_literal_newline_bytes(repo: Repo) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
     correction(
         repo,
-        {
-            "src/query.rs": SOURCE.replace("// spec: DEMO-R001\n", "")
-            + 'const S: &str = "a\nb";\n'
-        },
+        {"src/query.rs": SOURCE.replace("// spec: DEMO-R001\n", "") + 'const S: &str = "a\nb";\n'},
     )
     assert repo.run("spec-trailers", "--base-ref", base) == 1
 

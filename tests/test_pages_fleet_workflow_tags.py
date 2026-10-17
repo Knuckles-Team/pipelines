@@ -7,17 +7,20 @@ from pages_fleet_assertions import assert_unverified_receipt, replace_workflow
 from scripts.pages_fleet_parity import verify
 
 
-@pytest.mark.parametrize("old,new", [
-    ("uses: ", "uses: !custom "),
-    ("uses: ", "uses: !<str> "),
-    ("shared_theme_enabled: true", "shared_theme_enabled: !custom true"),
-    ("content_source: docs", "content_source: !custom docs"),
-    ("jobs:\n", "jobs: !custom\n"),
-    ("with:\n", "with: !custom\n"),
-    ("pages:\n", "pages: !custom\n"),
-    ("jobs:", "!custom jobs:"),
-    ("jobs:\n", "!custom\njobs:\n"),
-])
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("uses: ", "uses: !custom "),
+        ("uses: ", "uses: !<str> "),
+        ("shared_theme_enabled: true", "shared_theme_enabled: !custom true"),
+        ("content_source: docs", "content_source: !custom docs"),
+        ("jobs:\n", "jobs: !custom\n"),
+        ("with:\n", "with: !custom\n"),
+        ("pages:\n", "pages: !custom\n"),
+        ("jobs:", "!custom jobs:"),
+        ("jobs:\n", "!custom\njobs:\n"),
+    ],
+)
 def test_tagged_workflow_authority_fails_receipt(tmp_path, capsys, old, new):
     declaration = fleet_fixture(tmp_path)
 

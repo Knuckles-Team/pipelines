@@ -10,12 +10,15 @@ _ROWS = "| ID | Requirement |\n|---|---|\n| TEST-R001 | Legacy landing. |\n"
 _STATUS = "specs/demo/status.json"
 
 
-@pytest.mark.parametrize("remote", [
-    "https://github.com/Knuckles-Team/graph-os.git",
-    "git@github.com:Knuckles-Team/graph-os.git",
-    "ssh://git@git.example.invalid:2222/team/graph-os.git/",
-    "file:///srv/git/graph-os.git",
-])
+@pytest.mark.parametrize(
+    "remote",
+    [
+        "https://github.com/Knuckles-Team/graph-os.git",
+        "git@github.com:Knuckles-Team/graph-os.git",
+        "ssh://git@git.example.invalid:2222/team/graph-os.git/",
+        "file:///srv/git/graph-os.git",
+    ],
+)
 def test_new_owner_comes_from_remote(repo: Repo, remote: str) -> None:
     # spec: PIPE-CONNSPEC-R001
     repo.git("remote", "add", "origin", remote)
@@ -30,10 +33,13 @@ def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: in
     repo.git("remote", "add", "origin", "https://github.com/Knuckles-Team/graph-os.git")
     repo.commit({"specs/demo/requirements.md": _ROWS}, "add spec")
     sha = repo.commit({"pkg/legacy.py": "value = 1\n"}, "old implementation without ID")
-    receipt = ({"evidence": [{"kind": "merged_head", "commit": sha}]} if version == 1
-               else {"landed_in": [sha[:12]]})
-    old = {"schema_version": version, "spec_id": "stable-spec", "owner_repo": "spec-standard-conform",
-           "requirements": [{"id": "TEST-R001", "delivery_state": "LANDED", **receipt}]}
+    receipt = {"evidence": [{"kind": "merged_head", "commit": sha}]} if version == 1 else {"landed_in": [sha[:12]]}
+    old = {
+        "schema_version": version,
+        "spec_id": "stable-spec",
+        "owner_repo": "spec-standard-conform",
+        "requirements": [{"id": "TEST-R001", "delivery_state": "LANDED", **receipt}],
+    }
     repo.commit({_STATUS: json.dumps(old)}, "record historical evidence")
     worktree = repo.root.parent / "spec-standard-conform"
     repo.git("worktree", "add", "--detach", str(worktree), "HEAD")

@@ -83,9 +83,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _report(
-    root: Path, stale: list[Path], tally: dict[str, int], *, write: bool, scope_note: str = ""
-) -> int:
+def _report(root: Path, stale: list[Path], tally: dict[str, int], *, write: bool, scope_note: str = "") -> int:
     if write:
         print(f"{root.name}: leaf rows {tally}; {len(stale)} status.json rewritten{scope_note}")
         return 0

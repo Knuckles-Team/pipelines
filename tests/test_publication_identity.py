@@ -10,9 +10,7 @@ from urllib.error import HTTPError
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location(
-    "publication", ROOT / ".github/actions/wheel-readiness/publication.py"
-)
+SPEC = importlib.util.spec_from_file_location("publication", ROOT / ".github/actions/wheel-readiness/publication.py")
 publication = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(publication)
 FILE = "example-1.0-py3-none-any.whl"
@@ -21,9 +19,7 @@ URL = "https://pypi.org/pypi/example/1.0/json"
 
 
 def response(files):
-    result = io.StringIO(
-        json.dumps({"info": {"name": "example", "version": "1.0"}, "urls": files})
-    )
+    result = io.StringIO(json.dumps({"info": {"name": "example", "version": "1.0"}, "urls": files}))
     result.status = 200
     result.geturl = lambda: URL
     return result
@@ -62,14 +58,10 @@ def test_conflicts_fail_immediately(files):
 
 @pytest.mark.parametrize("code", [401, 403, 429, 500])
 def test_only_404_is_absence(code):
-    with patch.object(
-        publication, "urlopen", side_effect=HTTPError(URL, code, "test", {}, None)
-    ):
+    with patch.object(publication, "urlopen", side_effect=HTTPError(URL, code, "test", {}, None)):
         with pytest.raises(HTTPError):
             publication.missing(EXPECTED)
-    with patch.object(
-        publication, "urlopen", side_effect=HTTPError(URL, 404, "test", {}, None)
-    ):
+    with patch.object(publication, "urlopen", side_effect=HTTPError(URL, 404, "test", {}, None)):
         assert publication.missing(EXPECTED) == [FILE]
 
 
@@ -87,9 +79,7 @@ def test_propagation_retry_is_bounded():
 def test_staged_files_and_links(tmp_path):
     wheel = tmp_path / FILE
     wheel.write_bytes(b"wheel bytes")
-    assert publication.staged(tmp_path, "example", "1.0") == {
-        FILE: publication.guard.digest(wheel)
-    }
+    assert publication.staged(tmp_path, "example", "1.0") == {FILE: publication.guard.digest(wheel)}
     with pytest.raises(ValueError):
         publication.staged(tmp_path, "example", "2.0")
     wheel.unlink()
@@ -211,13 +201,7 @@ def test_ambiguous_or_partial_json_rejected(tmp_path, monkeypatch, mode, fault):
         info = '"info":{"name":"example","version":"1.0"}'
         raw = "{" + info + ',"urls":' + files + "}"
         if fault == "urls":
-            raw = (
-                "{"
-                + info
-                + ',"urls":[{"filename":"foreign.whl"}],"urls":'
-                + files
-                + "}"
-            )
+            raw = "{" + info + ',"urls":[{"filename":"foreign.whl"}],"urls":' + files + "}"
         elif fault == "identity":
             raw = raw.replace('"name":"example"', '"name":"foreign","name":"example"')
         elif fault == "hash":

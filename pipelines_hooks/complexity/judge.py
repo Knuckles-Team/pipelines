@@ -102,9 +102,7 @@ def judge(before: dict[str, list[Graded]], after: dict[str, list[Graded]]) -> li
     for name, rows in sorted(after.items()):
         prior = before.get(name)
         if prior is None:
-            findings.extend(
-                Finding("NEW", name, (0, 0), (r.cyclomatic, r.cognitive)) for r in rows if r.over_cap()
-            )
+            findings.extend(Finding("NEW", name, (0, 0), (r.cyclomatic, r.cognitive)) for r in rows if r.over_cap())
             continue
         findings.extend(_added_over_cap(name, prior, rows))
         cyc_regressed, cyc_before, cyc_after = _cyclomatic_regressed(prior, rows)

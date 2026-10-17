@@ -47,9 +47,13 @@ def _pipelines_revision_finding(source: Source, number: int, revision: tuple[int
 
 def _external_revision_finding(source: Source, number: int, revision: tuple[int, str] | None) -> Finding | None:
     if revision is None:
-        return source.at_line(number, rule="SC-HOOK-001", message="external pre-commit hook repository has no immutable revision")
+        return source.at_line(
+            number, rule="SC-HOOK-001", message="external pre-commit hook repository has no immutable revision"
+        )
     if not _SHA_RE.fullmatch(revision[1]):
-        return source.at_line(revision[0], rule="SC-HOOK-001", message="external pre-commit hook is not pinned to a full commit SHA")
+        return source.at_line(
+            revision[0], rule="SC-HOOK-001", message="external pre-commit hook is not pinned to a full commit SHA"
+        )
     return None
 
 
@@ -66,7 +70,9 @@ def _revision_findings(source: Source) -> list[Finding]:
 
 
 def _pinned_dependency(dependency: str) -> bool:
-    return bool(_PYTHON_PIN_RE.fullmatch(dependency) or _NPM_PIN_RE.fullmatch(dependency) or _VCS_PIN_RE.search(dependency))
+    return bool(
+        _PYTHON_PIN_RE.fullmatch(dependency) or _NPM_PIN_RE.fullmatch(dependency) or _VCS_PIN_RE.search(dependency)
+    )
 
 
 def precommit_findings(source: Source) -> list[Finding]:
@@ -74,7 +80,9 @@ def precommit_findings(source: Source) -> list[Finding]:
     for match in re.finditer(r"additional_dependencies:\s*\[([^\]]*)\]", source.text, re.DOTALL):
         dependencies = [raw.strip().strip("\"'") for raw in match.group(1).split(",")]
         findings.extend(
-            source.at_offset(match.start(), rule="SC-HOOK-002", message="pre-commit additional dependency is not pinned exactly")
+            source.at_offset(
+                match.start(), rule="SC-HOOK-002", message="pre-commit additional dependency is not pinned exactly"
+            )
             for dependency in dependencies
             if dependency and not _pinned_dependency(dependency)
         )

@@ -124,9 +124,7 @@ def install(prefix: Path, archive: Path | None = None) -> Path:
 
 
 def _publish(staged: Path, executable: Path, receipt: dict) -> None:
-    staged.with_suffix(".provenance.json").write_text(
-        json.dumps(receipt, sort_keys=True, indent=2) + "\n"
-    )
+    staged.with_suffix(".provenance.json").write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n")
     contract.require_corrected_build(str(staged))
     executable.parent.mkdir(exist_ok=True)
     shutil.copy2(

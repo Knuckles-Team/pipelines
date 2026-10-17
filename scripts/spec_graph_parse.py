@@ -40,9 +40,7 @@ def parse_requirements_md(text: str) -> dict[str, tuple[str, str]]:
 def _apply_requirements_md(text: str, reqs: dict[str, Requirement]) -> None:
     """A table row names its own ID's dependencies: the row's own ID depends on
     every other requirement ID its requirement/verification text names."""
-    for rid, (requirement_text, verification_text) in parse_requirements_md(
-        text
-    ).items():
+    for rid, (requirement_text, verification_text) in parse_requirements_md(text).items():
         req = reqs.get(rid)
         if req is None:
             continue
@@ -59,9 +57,7 @@ def _task_primaries(content: str) -> set[str]:
     return primaries
 
 
-def _record_task_line(
-    content: str, checked: bool, reqs: dict[str, Requirement]
-) -> None:
+def _record_task_line(content: str, checked: bool, reqs: dict[str, Requirement]) -> None:
     ids_here = find_ids(content)
     if not checked:
         for rid in ids_here:

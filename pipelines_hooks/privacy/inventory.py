@@ -19,9 +19,28 @@ TEXT_SUFFIXES = frozenset({".md", ".json", ".yaml", ".yml", ".toml"})
 SOURCE_SUFFIXES = frozenset({".js", ".md", ".ps1", ".py", ".rs", ".sh", ".ts", ".yaml", ".yml"})
 PUBLIC_TEXT_TREES = frozenset({"docs", "reference", ".github", "tests", ".specify", "examples"})
 _EXCLUDED_DIRECTORIES = frozenset(
-    {".acp-sessions", ".benchmarks", ".git", ".hypothesis", ".mypy_cache", ".nox", ".pytest_cache",
-     ".pytest_tmp", ".ruff_cache", ".tox", ".venv", "__pycache__", "build", "dist", "htmlcov",
-     "node_modules", "site", "target", "venv", "workspace"}
+    {
+        ".acp-sessions",
+        ".benchmarks",
+        ".git",
+        ".hypothesis",
+        ".mypy_cache",
+        ".nox",
+        ".pytest_cache",
+        ".pytest_tmp",
+        ".ruff_cache",
+        ".tox",
+        ".venv",
+        "__pycache__",
+        "build",
+        "dist",
+        "htmlcov",
+        "node_modules",
+        "site",
+        "target",
+        "venv",
+        "workspace",
+    }
 )
 MAX_SCAN_FILES = 500_000
 
@@ -38,8 +57,11 @@ def _walk(root: Path) -> list[Path]:
     for directory, names, file_names in os.walk(root, topdown=True):
         current = Path(directory)
         names[:] = sorted(
-            n for n in names
-            if n not in _EXCLUDED_DIRECTORIES and not n.endswith(".egg-info") and stat.S_ISDIR((current / n).lstat().st_mode)
+            n
+            for n in names
+            if n not in _EXCLUDED_DIRECTORIES
+            and not n.endswith(".egg-info")
+            and stat.S_ISDIR((current / n).lstat().st_mode)
         )
         files.extend(current / n for n in sorted(file_names) if stat.S_ISREG((current / n).lstat().st_mode))
         if len(files) > MAX_SCAN_FILES:
@@ -59,6 +81,14 @@ def candidates(root: Path) -> list[Path]:
 
 def is_bundled_connector_profile(relative: Path) -> bool:
     parts = tuple(part.casefold() for part in relative.parts)
-    return parts[:4] == ("agent_utilities", "protocols", "source_connectors", "profiles") and relative.suffix.casefold() in {
-        ".py", ".json", ".yaml", ".yml",
+    return parts[:4] == (
+        "agent_utilities",
+        "protocols",
+        "source_connectors",
+        "profiles",
+    ) and relative.suffix.casefold() in {
+        ".py",
+        ".json",
+        ".yaml",
+        ".yml",
     }

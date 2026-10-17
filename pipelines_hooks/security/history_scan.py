@@ -56,7 +56,9 @@ def scan_entropy(patch_lines: list[str]) -> list[dict[str, object]]:
         for token, entropy in high_entropy_tokens(content):
             if (commit, file, token[:12]) not in seen:
                 seen.add((commit, file, token[:12]))
-                hits.append({"commit": commit, "file": file, "entropy": round(entropy, 2), "token_preview": token[:12] + "..."})
+                hits.append(
+                    {"commit": commit, "file": file, "entropy": round(entropy, 2), "token_preview": token[:12] + "..."}
+                )
     return hits
 
 

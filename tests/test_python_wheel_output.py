@@ -38,8 +38,7 @@ def built_wheel(tmp_path_factory):
     (root / "fixture_module.py").write_text("VALUE = 1\n")
     action = yaml.safe_load(PUBLISHER.read_text())
     step = next(item for item in action["runs"]["steps"] if item["name"] == "Build package")
-    commands = [shlex.split(line.strip()) for line in step["run"].splitlines()
-                if line.strip().startswith("uv build ")]
+    commands = [shlex.split(line.strip()) for line in step["run"].splitlines() if line.strip().startswith("uv build ")]
     assert len(commands) == 1
     uv = shutil.which("uv")
     assert uv, "the publisher's uv build tool must be available"

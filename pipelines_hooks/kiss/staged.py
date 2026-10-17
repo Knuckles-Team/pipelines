@@ -15,7 +15,12 @@ from pathlib import Path
 from pipelines_hooks.core.gitenv import repo_root, staged_paths
 from pipelines_hooks.core.tools import verified
 from pipelines_hooks.kiss import runner
-from pipelines_hooks.kiss.report import Violation, attributable, format_violation, parse_report
+from pipelines_hooks.kiss.report import (
+    Violation,
+    attributable,
+    format_violation,
+    parse_report,
+)
 from pipelines_hooks.kiss.scope import in_scope, kiss_paths
 from pipelines_hooks.kiss.spans import spans_for
 
@@ -28,7 +33,7 @@ def _file_findings(kiss: str, trees: tuple[Path, Path | None], path: str) -> lis
     staged = ((staged_tree / path).read_text(encoding="utf-8"), report)
     head_file = None if head_tree is None else head_tree / path
     head = None
-    if head_file is not None and head_file.is_file():
+    if head_tree is not None and head_file is not None and head_file.is_file():
         head = (head_file.read_text(encoding="utf-8"), runner.check(kiss, head_tree, path))
     findings = attributable(staged, head, spans_for(path))
     untouched = len(parse_report(report)) - len(findings)

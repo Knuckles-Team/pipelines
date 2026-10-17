@@ -32,7 +32,13 @@ def _require_tag_script() -> str:
 
 
 def _run_guard(ref: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["bash", "-c", _require_tag_script()], env={"REF": ref, "PATH": "/usr/bin:/bin"}, capture_output=True, text=True, check=False)
+    return subprocess.run(
+        ["bash", "-c", _require_tag_script()],
+        env={"REF": ref, "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
 
 
 def test_gates_workflow_inputs_all_default() -> None:
@@ -49,7 +55,7 @@ def test_gates_workflow_scopes_to_the_diff_and_caps_time() -> None:
     assert job["timeout-minutes"] == "${{ inputs.timeout-minutes }}"
     assert _on(GATES_WORKFLOW)["workflow_call"]["inputs"]["timeout-minutes"]["default"] == 15
     assert "--from-ref" in text and "--to-ref" in text and "--all-files" in text
-    assert "for stage in pre-commit pre-push" in text and "--hook-stage \"$stage\"" in text
+    assert "for stage in pre-commit pre-push" in text and '--hook-stage "$stage"' in text
     assert "pr-test-scope" in text and "fetch-depth: 0" in text
     assert "pipelines-hook" in text and "job.workflow_sha" in text
 
@@ -60,7 +66,9 @@ def test_require_tag_defaults_off_and_guards_the_publish_step() -> None:
     assert spec["default"] is False and spec["required"] is False
     steps = document["jobs"]["publish-pypi"]["steps"]
     first = next(step for step in steps if step.get("name") == "Require a release tag")
-    assert steps.index(first) < next(i for i, step in enumerate(steps) if "uses" in step and "publish-python-package" in step["uses"])
+    assert steps.index(first) < next(
+        i for i, step in enumerate(steps) if "uses" in step and "publish-python-package" in step["uses"]
+    )
     assert first["name"] == "Require a release tag" and first["if"] == "inputs.require-tag"
     # existing inputs unchanged
     assert {"runtime-profiles", "web-assets"} <= set(_on(PYTHON_WORKFLOW)["workflow_call"]["inputs"])
@@ -84,7 +92,10 @@ def test_skip_template_is_the_inverse_of_the_documented_ignore_list() -> None:
 
 def test_fast_tests_is_a_pre_push_published_gate() -> None:
     assert GATES["fast-tests"] == "pipelines_hooks.ci_replica.fast_tests"
-    hooks = {hook["id"]: hook for hook in yaml.safe_load((HOOK_REPOSITORY / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))}
+    hooks = {
+        hook["id"]: hook
+        for hook in yaml.safe_load((HOOK_REPOSITORY / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))
+    }
     assert hooks["fast-tests"]["stages"] == ["pre-push"]
     assert hooks["fast-tests"]["entry"] == "pipelines-hook fast-tests"
 
@@ -96,3 +107,9 @@ def test_spec_trailers_is_skipped_on_push_only() -> None:
     for step in hooks:
         assert 'EVENT_NAME" == "push"' in step["run"]
         assert "spec-trailers" in step["run"]
+
+
+def test_no_workflow_grants_write_all() -> None:
+    for path in WORKFLOWS.glob("*.yml"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            assert line.split("#")[0].strip() != "permissions: write-all", path.name

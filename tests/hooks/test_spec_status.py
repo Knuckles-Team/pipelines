@@ -9,13 +9,8 @@ import pytest
 
 from tests.hooks.conftest import Repo
 
-_LANDED_ROW = (
-    "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R001` | **Landed only.** |\n"
-)
-_RETIRED_ROW = (
-    "# demo\n\n| ID | Requirement |\n|---|---|\n"
-    "| `TEST-R002` | **RETIRED: superseded by TEST-R003.** |\n"
-)
+_LANDED_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R001` | **Landed only.** |\n"
+_RETIRED_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R002` | **RETIRED: superseded by TEST-R003.** |\n"
 _ROLLUP_ROWS = (
     "# demo\n\n| ID | Requirement |\n|---|---|\n"
     "| `TEST-R010` | **Parent.** |\n"
@@ -27,9 +22,7 @@ _STALE_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R040` | **Needs
 
 
 def _status(repo: Repo) -> dict:
-    return json.loads(
-        (repo.root / "specs/demo/status.json").read_text(encoding="utf-8")
-    )
+    return json.loads((repo.root / "specs/demo/status.json").read_text(encoding="utf-8"))
 
 
 def _by_id(repo: Repo) -> dict[str, dict]:
@@ -51,9 +44,7 @@ def test_bound_test_promotes_landed_to_verified(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _LANDED_ROW}, "add spec")
     repo.commit({"pkg/feature.py": "# implements TEST-R001\n"}, "Spec: TEST-R001")
     repo.commit(
-        {
-            "tests/test_feature.py": "# spec: TEST-R001\ndef test_feature() -> None:\n    assert True\n"
-        },
+        {"tests/test_feature.py": "# spec: TEST-R001\ndef test_feature() -> None:\n    assert True\n"},
         "add bound test",
     )
 
@@ -78,9 +69,7 @@ def test_parent_rollup_is_the_minimum_of_its_children(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _ROLLUP_ROWS}, "add spec")
     repo.commit({"pkg/a.py": "# a\n"}, "Spec: TEST-R010.1, TEST-R010.2")
     repo.commit(
-        {
-            "tests/test_a.py": "# spec: TEST-R010.1\ndef test_a() -> None:\n    assert True\n"
-        },
+        {"tests/test_a.py": "# spec: TEST-R010.1\ndef test_a() -> None:\n    assert True\n"},
         "verify child one",
     )
 
@@ -145,9 +134,7 @@ def test_same_line_shorthand_inherits_prefix() -> None:
     assert "-R009" not in out
 
 
-_LEGACY_ROW = (
-    "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R050` | **Legacy landing.** |\n"
-)
+_LEGACY_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R050` | **Legacy landing.** |\n"
 
 
 def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> None:
@@ -162,9 +149,7 @@ def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> Non
             {
                 "id": "TEST-R050",
                 "delivery_state": "LANDED",
-                "evidence": [
-                    {"kind": "merged_head", "result": "passed", "commit": sha}
-                ],
+                "evidence": [{"kind": "merged_head", "result": "passed", "commit": sha}],
             }
         ],
     }
@@ -180,12 +165,8 @@ def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> Non
     assert repo.run("spec-status") == 0
 
 
-_LANDED_ROW_A = (
-    "# a\n\n| ID | Requirement |\n|---|---|\n| `A-R001` | **Landed only.** |\n"
-)
-_LANDED_ROW_B = (
-    "# b\n\n| ID | Requirement |\n|---|---|\n| `B-R001` | **Landed only.** |\n"
-)
+_LANDED_ROW_A = "# a\n\n| ID | Requirement |\n|---|---|\n| `A-R001` | **Landed only.** |\n"
+_LANDED_ROW_B = "# b\n\n| ID | Requirement |\n|---|---|\n| `B-R001` | **Landed only.** |\n"
 
 
 def test_changed_only_skips_an_untouched_stale_dir(repo: Repo) -> None:
@@ -200,24 +181,16 @@ def test_changed_only_skips_an_untouched_stale_dir(repo: Repo) -> None:
     assert repo.run("spec-status", "--write") == 0
     repo.commit(
         {
-            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(
-                encoding="utf-8"
-            ),
-            "specs/b/status.json": (repo.root / "specs/b/status.json").read_text(
-                encoding="utf-8"
-            ),
+            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8"),
+            "specs/b/status.json": (repo.root / "specs/b/status.json").read_text(encoding="utf-8"),
         },
         "commit generated status",
     )
 
     # main advances on spec b without this PR: hand-drift b's committed status.json.
-    drifted = json.loads(
-        (repo.root / "specs/b/status.json").read_text(encoding="utf-8")
-    )
+    drifted = json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))
     drifted["delivery_state"] = "LANDED"
-    repo.commit(
-        {"specs/b/status.json": json.dumps(drifted)}, "simulate b drift on main"
-    )
+    repo.commit({"specs/b/status.json": json.dumps(drifted)}, "simulate b drift on main")
 
     base = repo.git("rev-parse", "HEAD").strip()
 
@@ -225,21 +198,12 @@ def test_changed_only_skips_an_untouched_stale_dir(repo: Repo) -> None:
     repo.commit({"pkg/a.py": "# a\n"}, "land a\n\nSpec: A-R001")
     assert repo.run("spec-status", "--base-ref", base, "--changed-only", "--write") == 0
     repo.commit(
-        {
-            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(
-                encoding="utf-8"
-            )
-        },
+        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
         "regenerate a status",
     )
 
     # The scoped --write never touched b: it is still drifted.
-    assert (
-        json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))[
-            "delivery_state"
-        ]
-        == "LANDED"
-    )
+    assert json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))["delivery_state"] == "LANDED"
 
     assert repo.run("spec-status") == 1  # full-repo mode still catches b's staleness
     assert repo.run("spec-status", "--base-ref", base, "--changed-only") == 0
@@ -250,11 +214,7 @@ def test_changed_only_still_fails_when_the_touched_dir_is_stale(repo: Repo) -> N
     repo.commit({"specs/a/requirements.md": _LANDED_ROW_A}, "add spec a")
     assert repo.run("spec-status", "--write") == 0
     repo.commit(
-        {
-            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(
-                encoding="utf-8"
-            )
-        },
+        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
         "commit generated status",
     )
 

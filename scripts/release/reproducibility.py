@@ -30,7 +30,9 @@ class ReproducibilityResult:
     differences: tuple[str, ...] = ()
 
 
-def build_wheel_twice(source_dir: Path, out_dir_a: Path, out_dir_b: Path, *, source_date_epoch: str) -> tuple[Path, Path]:
+def build_wheel_twice(
+    source_dir: Path, out_dir_a: Path, out_dir_b: Path, *, source_date_epoch: str
+) -> tuple[Path, Path]:
     """Build ``source_dir`` into two fresh output directories; the two wheel paths."""
     return _build_once(source_dir, out_dir_a, source_date_epoch), _build_once(source_dir, out_dir_b, source_date_epoch)
 
@@ -47,7 +49,9 @@ def _build_once(source_dir: Path, out_dir: Path, source_date_epoch: str) -> Path
     out_dir.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "SOURCE_DATE_EPOCH": source_date_epoch}
     command = [sys.executable, "-m", "build", "--no-isolation", "--wheel", "-o", str(out_dir)]
-    result = subprocess.run(command, cwd=source_dir, env=env, capture_output=True, text=True, timeout=_BUILD_TIMEOUT_SECONDS)
+    result = subprocess.run(
+        command, cwd=source_dir, env=env, capture_output=True, text=True, timeout=_BUILD_TIMEOUT_SECONDS
+    )
     if result.returncode != 0:
         raise ReproducibilityError(f"wheel build failed in {out_dir}: {result.stderr.strip()}")
     return _single_wheel(out_dir)
