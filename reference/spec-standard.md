@@ -21,7 +21,7 @@ A requirement that needs two answers becomes two linked rows, one in each owner.
 
 A client must read a served operation. A client must not compute a decision and must not call the engine directly.
 
-graph-os must hold no policy table. agent-utilities must hold no fact store. Only the engine decides among options.
+arbora must hold no policy table. agent-utilities must hold no fact store. Only the engine decides among options.
 
 A design section in `plan.md` must trace the requirement to the live call path. It names the entry point, each function on the path, and the place the new behavior attaches. A row that no production caller reaches is not delivered.
 

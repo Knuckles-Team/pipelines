@@ -84,4 +84,4 @@ def test_generated_spec_status_is_outside_the_jscpd_universe() -> None:
     from pipelines_hooks.clones.contract import is_jscpd_path
 
     assert not is_jscpd_path("specs/portable-deployment/status.json")
-    assert is_jscpd_path("graph_os/api/ops/identity.py")
+    assert is_jscpd_path("arbora/api/ops/identity.py")

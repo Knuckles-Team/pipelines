@@ -11,23 +11,23 @@ _STATUS = "specs/demo/status.json"
 
 
 @pytest.mark.parametrize("remote", [
-    "https://github.com/Knuckles-Team/graph-os.git",
-    "git@github.com:Knuckles-Team/graph-os.git",
-    "ssh://git@git.example.invalid:2222/team/graph-os.git/",
-    "file:///srv/git/graph-os.git",
+    "https://github.com/Knuckles-Team/arbora.git",
+    "git@github.com:Knuckles-Team/arbora.git",
+    "ssh://git@git.example.invalid:2222/team/arbora.git/",
+    "file:///srv/git/arbora.git",
 ])
 def test_new_owner_comes_from_remote(repo: Repo, remote: str) -> None:
     # spec: PIPE-CONNSPEC-R001
     repo.git("remote", "add", "origin", remote)
     repo.commit({"specs/demo/requirements.md": _ROWS}, "add spec")
     assert repo.run("spec-status", "--write") == 0
-    assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "graph-os"
+    assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "arbora"
 
 
 @pytest.mark.parametrize("version", [1, 2])
 def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: int) -> None:
     # spec: PIPE-CONNSPEC-R001
-    repo.git("remote", "add", "origin", "https://github.com/Knuckles-Team/graph-os.git")
+    repo.git("remote", "add", "origin", "https://github.com/Knuckles-Team/arbora.git")
     repo.commit({"specs/demo/requirements.md": _ROWS}, "add spec")
     sha = repo.commit({"pkg/legacy.py": "value = 1\n"}, "old implementation without ID")
     receipt = ({"evidence": [{"kind": "merged_head", "commit": sha}]} if version == 1
@@ -41,7 +41,7 @@ def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: in
     assert lane.run("spec-status", "--write") == 0
     first = (worktree / _STATUS).read_text()
     status = json.loads(first)
-    assert status["owner_repo"] == "graph-os"
+    assert status["owner_repo"] == "arbora"
     assert status["spec_id"] == "stable-spec"
     assert status["requirements"][0]["landed_in"] == [sha[:12]]
     assert status["requirements"][0]["delivery_state"] == "LANDED"

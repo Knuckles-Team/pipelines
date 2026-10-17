@@ -49,7 +49,7 @@ components (level 2, see [Components](components.md)).
 - **Reference** (6 components)
 - **Status** (1 component)
 
-## Graph OS web UI
+## Arbora web UI
 
 - **Components** (4 components)
 - **Home** (1 component)
@@ -255,7 +255,7 @@ components (level 2, see [Components](components.md)).
 - **Reference** (4 components)
 - **Status** (1 component)
 
-## Graph OS
+## Arbora
 
 - **Architecture** (13 components)
 - **Capabilities** (1 component)
@@ -266,4 +266,4 @@ components (level 2, see [Components](components.md)).
 - **Interfaces** (1 component)
 - **Operate** (3 components)
 - **Reference** (1 component)
-- **Start Graph OS** (1 component)
+- **Start Arbora** (1 component)

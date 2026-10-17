@@ -77,7 +77,7 @@ def test_all_seven_product_logo_assets_remain_canonical() -> None:
         "epistemic-graph-logo-v1.png",
         "agent-webui-logo-v1.png",
         "geniusbot-logo-v1.png",
-        "graph-os-logo-v1.png",
+        "arbora-logo-v1.png",
         "agent-utilities-logo-v1.png",
     }
 

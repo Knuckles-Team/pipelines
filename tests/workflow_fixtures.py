@@ -49,7 +49,7 @@ def runtime_artifact(download: Path, name: str, *, source: str = "") -> dict:
 
 
 def runtime_profile(name: str) -> dict:
-    if name == "graphos":
+    if name == "arbora":
         return {"caller": "agent-utilities", "stage": "default", "root_index": 1,
                 "extras": ["messaging-mattermost", "messaging-telegram", "webui"]}
     _, caller, stage = name.split("/")
@@ -59,12 +59,12 @@ def runtime_profile(name: str) -> dict:
 def runtime_lock_entry(item: dict, root: dict) -> str:
     extras = {root["distribution"]: root["extras"]}.get(item["distribution"], [])
     suffix = f"[{','.join(extras)}]" if extras else ""
-    return f"{item['distribution']}{suffix} @ file:///opt/graphos-runtime/{item['path']} \\\n    --hash=sha256:{item['sha256']}"
+    return f"{item['distribution']}{suffix} @ file:///opt/arbora-runtime/{item['path']} \\\n    --hash=sha256:{item['sha256']}"
 
 
-def runtime_manifest(download: Path, source: str, *, profile: str = "graphos") -> dict:
+def runtime_manifest(download: Path, source: str, *, profile: str = "arbora") -> dict:
     selected = runtime_profile(profile)
-    artifacts = [runtime_artifact(download, name, source=source) for name in (selected["caller"], "graph-os", "epistemic-graph")]
+    artifacts = [runtime_artifact(download, name, source=source) for name in (selected["caller"], "arbora", "epistemic-graph")]
     artifacts.append(runtime_artifact(download, "dependency"))
     first_party = [{"distribution": item["distribution"], "version": item["version"],
                     "repository": item["source"]["repository"], "source_sha": source,
@@ -72,10 +72,10 @@ def runtime_manifest(download: Path, source: str, *, profile: str = "graphos") -
     root = first_party[selected["root_index"]]
     root["extras"] = selected["extras"]
     lock = "\n".join(runtime_lock_entry(item, root) for item in artifacts) + "\n"
-    lock = lock.replace(f"dependency @ file:///opt/graphos-runtime/{artifacts[-1]['path']}", "dependency==1.0")
+    lock = lock.replace(f"dependency @ file:///opt/arbora-runtime/{artifacts[-1]['path']}", "dependency==1.0")
     (download / "requirements.lock").write_text(lock, encoding="utf-8")
     receipt = hashlib.sha256(lock.encode()).hexdigest()
-    return {"schema": "graphos-runtime-wheel-inputs/2",
+    return {"schema": "arbora-runtime-wheel-inputs/2",
             "profile": {"name": profile, "image_stage": selected["stage"],
                         "root_requirement": f"{root['distribution']}[{','.join(root['extras'])}]=={root['version']}",
                         "target": {"python": "3.14", "implementation": "cpython", "os": "linux", "arch": "x86_64"},
@@ -84,7 +84,7 @@ def runtime_manifest(download: Path, source: str, *, profile: str = "graphos") -
             "resolver_receipt_sha256": receipt, "verification_receipt_sha256": receipt}
 
 
-def runtime_case(tmp_path: Path, root: Path, *, profile: str = "graphos") -> dict:
+def runtime_case(tmp_path: Path, root: Path, *, profile: str = "arbora") -> dict:
     caller = external_caller(tmp_path, root, "caller", "name: Container caller\n")
     source = runtime_checkout(caller)
     pipeline = runtime_checkout(caller / ".pipeline-contract")
@@ -97,7 +97,7 @@ def runtime_case(tmp_path: Path, root: Path, *, profile: str = "graphos") -> dic
                    "CALLER_REPOSITORY": manifest["artifacts"][0]["source"]["repository"]}
     inputs = {"build-context": ".", "build-target": manifest["profile"]["image_stage"],
               "artifact-id": "1234", "profile": profile, "source-revision": source,
-              "graph-os-revision": source, "lock-sha256": manifest["requirements_lock"]["sha256"], "freeze-sha256": ""}
+              "arbora-revision": source, "lock-sha256": manifest["requirements_lock"]["sha256"], "freeze-sha256": ""}
     return {"caller": caller, "download": download, "manifest": manifest, "environment": environment, "inputs": inputs}
 
 

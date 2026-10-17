@@ -7,7 +7,7 @@ run the full suite unchanged (that path never calls this gate).
 
 ``--lang python`` maps each changed ``<src-root>/**/*.py`` file to its mirror
 ``<tests-root>/.../test_<name>.py`` (the layout most repos in this fleet use:
-``graph_os/fleet/foo.py`` <-> ``tests/fleet/test_foo.py``), and always
+``arbora/fleet/foo.py`` <-> ``tests/fleet/test_foo.py``), and always
 includes a changed file that already lives under ``tests-root``. A changed
 file with no mirror falls back to a static import-graph scan
 (:mod:`pipelines_hooks.ci_replica.import_graph`): every test file that
@@ -55,7 +55,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--base-ref", "--diff", dest="base_ref", required=True)
     parser.add_argument("--lang", choices=("python", "rust"), default="python")
-    parser.add_argument("--src-root", default="graph_os", help="python only: the package under test")
+    parser.add_argument("--src-root", default="arbora", help="python only: the package under test")
     parser.add_argument("--tests-root", default="tests", help="python only: the mirrored test tree")
     parser.add_argument("--workspace-root", default=".", help="rust only: the Cargo workspace root")
     return parser.parse_args(argv)

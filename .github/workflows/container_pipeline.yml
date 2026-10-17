@@ -22,7 +22,7 @@ on:
         type: string
         default: ''
       runtime_profile:
-        description: Verified /2 profile (graphos or connector/<distribution>/<mcp|agent>); empty disables runtime staging.
+        description: Verified /2 profile (arbora or connector/<distribution>/<mcp|agent>); empty disables runtime staging.
         required: false
         type: string
         default: ''
@@ -31,8 +31,8 @@ on:
         required: false
         type: string
         default: ''
-      graph_os_revision:
-        description: Full GraphOS source SHA; required exactly when the profile includes graph-os.
+      arbora_revision:
+        description: Full Arbora source SHA; required exactly when the profile includes arbora.
         required: false
         type: string
         default: ''
@@ -98,7 +98,7 @@ jobs:
           DOCKERFILE: ${{ inputs.dockerfile }}
           REQUESTED_TARGET: ${{ inputs.build_target }}
           MATRIX_TARGET: ${{ matrix.target }}
-          RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.graph_os_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
+          RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.arbora_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
         run: |
           set -euo pipefail
           if [[ -n "$RUNTIME_REQUEST" ]]; then
@@ -168,7 +168,7 @@ jobs:
           artifact-id: ${{ inputs.runtime_artifact_id }}
           profile: ${{ inputs.runtime_profile }}
           source-revision: ${{ inputs.source_revision }}
-          graph-os-revision: ${{ inputs.graph_os_revision }}
+          arbora-revision: ${{ inputs.arbora_revision }}
           lock-sha256: ${{ inputs.runtime_lock_sha256 }}
           freeze-sha256: ${{ inputs.source_freeze_sha256 }}
 

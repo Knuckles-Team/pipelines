@@ -59,7 +59,7 @@ def test_privacy_allows_a_hyphenated_requirement_id_citation(repo: Repo, catalog
     """A requirement ID like ``GRAPHOS-FLEET-R016`` is not a fleet host alias.
 
     Regression for the false-positive flood that broke requirement-ID
-    citations in graph-os PRs: ``MACHINE_HOST_ID_RE``'s lookbehind excluded
+    citations in arbora PRs: ``MACHINE_HOST_ID_RE``'s lookbehind excluded
     only alnum characters, so the hyphen immediately before ``R016`` never
     blocked the match and the requirement ID itself read as a host.
     """

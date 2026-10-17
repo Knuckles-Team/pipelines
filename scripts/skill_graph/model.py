@@ -28,7 +28,7 @@ REPOS: dict[str, tuple[str, str, str]] = {
         "https://knuckles-team.github.io/agent-connector-sdk/",
         "Agent Connector SDK",
     ),
-    "graph-os": ("graph-os", "https://knuckles-team.github.io/graph-os/", "Graph OS"),
+    "arbora": ("arbora", "https://knuckles-team.github.io/arbora/", "Arbora"),
     "agent-webui": (
         "agent-webui",
         "https://knuckles-team.github.io/agent-webui/",

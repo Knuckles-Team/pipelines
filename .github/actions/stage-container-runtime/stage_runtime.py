@@ -27,10 +27,10 @@ def normalized(value: str) -> str:
 
 
 def selection(value: str) -> tuple[str, str]:
-    if value == "graphos":
-        return "graph-os", "default"
+    if value == "arbora":
+        return "arbora", "default"
     match = re.fullmatch(r"connector/([a-z0-9]+(?:-[a-z0-9]+)*)/(mcp|agent)", value)
-    require(match, "Runtime /2 requires graphos or a stage-qualified connector profile")
+    require(match, "Runtime /2 requires arbora or a stage-qualified connector profile")
     return match.groups()
 
 
@@ -67,8 +67,8 @@ class Runtime:
         for key in ("lock-sha256", "freeze-sha256"):
             require(hex_value(values[key]), f"Missing or invalid {key}")
         require(hex_value(values["source-revision"], 40), "Full source revision is required")
-        graph = values["graph-os-revision"]
-        require(not graph or hex_value(graph, 40), "Invalid GraphOS revision")
+        graph = values["arbora-revision"]
+        require(not graph or hex_value(graph, 40), "Invalid Arbora revision")
         require(self.context.is_dir(), "Local build context is required")
         require(not self.destination.exists(), "Runtime destination already exists; refusing overlay")
         for root, expected in ((self.workspace, self.env["EXPECTED_SOURCE"]),
@@ -99,11 +99,11 @@ class Runtime:
         repositories = {caller, caller.split("/")[-1], f"https://github.com/{caller}", f"https://github.com/{caller}.git"}
         matches = [item for item in first_party.values() if item["repository"] in repositories]
         require(len(matches) == 1 and matches[0]["source_sha"] == self.inputs["source-revision"], "Caller source absent or mismatched in freeze")
-        graph = first_party.get("graph-os", {}).get("source_sha", "")
-        require(graph == self.inputs["graph-os-revision"], "GraphOS source mismatch")
+        graph = first_party.get("arbora", {}).get("source_sha", "")
+        require(graph == self.inputs["arbora-revision"], "Arbora source mismatch")
         profile = self.inputs["profile"]
-        require(profile != "graphos" or graph, "GraphOS profile requires graph-os")
-        caller_distribution = "agent-utilities" if profile == "graphos" else selection(profile)[0]
+        require(profile != "arbora" or graph, "Arbora profile requires arbora")
+        caller_distribution = "agent-utilities" if profile == "arbora" else selection(profile)[0]
         require(caller_distribution == normalized(matches[0]["distribution"]), "Profile must match caller distribution")
 
     def bind_root(self, profile: dict, *, first_party: dict) -> None:
@@ -157,7 +157,7 @@ class Runtime:
         entries = "\n".join(lines).replace("\\\n", "").splitlines()
         seen = set()
         pattern = (r"([A-Za-z0-9_.-]+)(?:\[([A-Za-z0-9_,.-]+)\])?\s*"
-                   r"(?:==([^\s;]+)|@\s*file:///opt/graphos-runtime/([^\s;]+))\s+"
+                   r"(?:==([^\s;]+)|@\s*file:///opt/arbora-runtime/([^\s;]+))\s+"
                    r"((?:--hash=sha256:[0-9a-f]{64}\s*)+)")
         for line in filter(str.strip, entries):
             match = re.fullmatch(pattern, line.strip())
@@ -178,7 +178,7 @@ class Runtime:
         freeze = local_path(root, "source-freeze.json")
         require(digest(freeze) == self.inputs["freeze-sha256"], "Source freeze digest mismatch")
         manifest = json.loads(freeze.read_text(encoding="utf-8"))
-        require(manifest["schema"] == "graphos-runtime-wheel-inputs/2", "Runtime manifest /2 is required; rebuild the producer context")
+        require(manifest["schema"] == "arbora-runtime-wheel-inputs/2", "Runtime manifest /2 is required; rebuild the producer context")
         for key in ("resolver_receipt_sha256", "verification_receipt_sha256"):
             require(hex_value(manifest[key]), f"Missing {key}")
         expected_lock = {"path": "requirements.lock", "sha256": self.inputs["lock-sha256"]}
@@ -209,7 +209,7 @@ def main() -> int:
     else:
         require(sys.argv[1:] == ["stage"], "Expected prepare or stage")
         runtime.stage(Path(os.environ["RUNTIME_DOWNLOAD"]))
-        arguments = {"SOURCE_REVISION": "source-revision", "GRAPH_OS_REVISION": "graph-os-revision",
+        arguments = {"SOURCE_REVISION": "source-revision", "ARBORA_REVISION": "arbora-revision",
                      "RUNTIME_LOCK_SHA256": "lock-sha256", "SOURCE_FREEZE_SHA256": "freeze-sha256"}
         values = [f"{name}={runtime.inputs[key]}" for name, key in arguments.items() if runtime.inputs[key]]
         output = "build-args<<RUNTIME_ARGS\n" + "\n".join(values) + "\nRUNTIME_ARGS\n"
