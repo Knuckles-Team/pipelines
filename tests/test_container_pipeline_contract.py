@@ -373,3 +373,59 @@ def test_lock_cannot_reintroduce_resolution_or_unselected_extras(tmp_path: Path,
     result = run_runtime_helper(case)
     assert result.returncode != 0
     assert not (case["caller"] / "build-artifacts/runtime").exists()
+
+
+def _version_step() -> dict:
+    steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+    return next(step for step in steps if step.get("id") == "version")
+
+
+@pytest.mark.parametrize(
+    ("files", "context", "expected"),
+    [
+        ({"pyproject.toml": '[project]\nname = "x"\nversion = "2.2.0"\n'}, ".", "2.2.0"),
+        ({"pyproject.toml": "[project]\r\nversion = '1.0.0rc1'  # pinned\r\n"}, ".", "1.0.0rc1"),
+        ({"pyproject.toml": '[tool.x]\nversion = "9.9.9"\n[project]\nversion = "3.1.4"\n'}, ".", "3.1.4"),
+        ({"pyproject.toml": '[project]\ndynamic = ["version"]\n'}, ".", ""),
+        ({"Cargo.toml": '[package]\nname = "x"\nversion = "0.4.2"\n[dependencies]\n'}, ".", "0.4.2"),
+        (
+            {
+                "pkg/pyproject.toml": '[project]\nversion = "5.0.0"\n',
+                "pyproject.toml": '[project]\nversion = "1.0.0"\n',
+            },
+            "pkg",
+            "5.0.0",
+        ),
+        ({"pyproject.toml": '[project]\nversion = "v1.2.3+local.1"\n'}, ".", "1.2.3-local.1"),
+        ({}, ".", ""),
+        ({"pyproject.toml": '[project]\nversion = "1.0 ;touch x"\n'}, ".", None),
+    ],
+)
+def test_version_tag_source(tmp_path: Path, *, files: dict[str, str], context: str, expected: str | None) -> None:
+    for name, text in files.items():
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_bytes(text.encode())
+    output = tmp_path / "output"
+    environment = {**os.environ, "GITHUB_OUTPUT": str(output), "BUILD_CONTEXT": context}
+    result = subprocess.run(["bash", "-c", _version_step()["run"]], env=environment, cwd=tmp_path, capture_output=True)
+    if expected is None:
+        assert result.returncode != 0
+        return
+    assert result.returncode == 0, result.stderr
+    assert dict(line.split("=", 1) for line in output.read_text().splitlines()) == {"version": expected}
+
+
+def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
+    steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+    meta = next(step for step in steps if step.get("id") == "meta")
+    assert steps.index(_version_step()) < steps.index(meta)
+    assert _version_step()["if"] == "steps.target.outputs.exists == 'true'"
+    on_main = "github.event_name == 'push' && github.ref == 'refs/heads/main'"
+    assert meta["with"]["tags"].splitlines() == [
+        "type=ref,event=branch,suffix=${{ matrix.suffix }}",
+        "type=ref,event=pr,suffix=${{ matrix.suffix }}",
+        "type=sha,suffix=${{ matrix.suffix }}",
+        f"type=raw,value=${{{{ matrix.main_tag }}}},enable=${{{{ {on_main} }}}}",
+        "type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},"
+        f"enable=${{{{ {on_main} && steps.version.outputs.version != '' }}}}",
+    ]
