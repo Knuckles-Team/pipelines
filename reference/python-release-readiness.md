@@ -92,6 +92,11 @@ context. The receipt is preserved as a workflow artifact. Verification rejects
 changed wheel sets, bytes, profiles, scope, source identity, or interpreter.
 Existing before/after source-verification actions remain in place.
 
+The proof runs on Python 3.14 unless the consumer declares
+`[tool.pipelines] readiness-python = "3.12"` (or `"3.13"`) because a runtime
+dependency truly blocks 3.14; nothing below the 3.12 floor is accepted, and the
+repository must record which dependency forces it.
+
 The resolver uses an isolated Python interpreter and disposable stdlib venv,
 `--ignore-installed`, `--only-binary=:all:`, and no package cache. Its working
 and home directories are outside the consumer checkout. Caller pip/uv config,
