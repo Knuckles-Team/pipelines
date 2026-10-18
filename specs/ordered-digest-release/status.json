@@ -534,12 +534,13 @@
       "title": "Python release publishes the wheel and the source distribution together",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "5433baf91995"
+        "5433baf91995",
+        "8d87cddcb719"
       ],
       "verified_by": [
         "tests/test_python_sdist_output.py:27",
-        "tests/test_python_sdist_output.py:47",
-        "tests/test_python_sdist_output.py:55"
+        "tests/test_python_sdist_output.py:49",
+        "tests/test_python_sdist_output.py:57"
       ]
     }
   ]

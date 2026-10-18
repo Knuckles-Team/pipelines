@@ -105,7 +105,7 @@ runs:
         "$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"
         sdists=(dist-sdist/*-"$BUILD_VERSION".tar.gz)
         [ "${#sdists[@]}" -eq 1 ] && [ -f "${sdists[0]}" ] || { echo "the source distribution does not carry release $BUILD_VERSION" >&2; exit 1; }
-        .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ dist/*.whl dist-sdist/*.tar.gz --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
+        .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ --skip-existing dist/*.whl dist-sdist/*.tar.gz --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
 
     - name: Create Release
       uses: ./.pipeline-contract/.github/actions/create-version-release
