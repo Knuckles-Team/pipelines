@@ -135,3 +135,13 @@ remain untouched. Tests in `tests/test_release_source.py` exercise a branch
 advance after source freeze, lightweight and annotated tag conflicts, metadata
 failures and the real shared action wiring using disposable Git repositories.
 No package build, index upload or live release is required by these tests.
+
+
+### Amendment — language-specific PR selection (2026-10-18)
+
+PIPE-RELEASE-R007.2 keeps the shared scope collector neutral to language.
+Python selection filters helper modules before adding test paths; Rust selection
+retains Cargo package names without applying pytest filename rules. Regression
+coverage includes mixed Python/Rust changes, duplicate crate hits, empty and
+unrelated changes, and conservative Rust fallback. This repairs omitted Rust
+checks without changing the full-suite or unavailable-diff contracts.
