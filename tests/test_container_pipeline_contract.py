@@ -387,6 +387,42 @@ def _version_step() -> dict:
         ({"pyproject.toml": "[project]\r\nversion = '1.0.0rc1'  # pinned\r\n"}, ".", "1.0.0rc1"),
         ({"pyproject.toml": '[tool.x]\nversion = "9.9.9"\n[project]\nversion = "3.1.4"\n'}, ".", "3.1.4"),
         ({"pyproject.toml": '[project]\ndynamic = ["version"]\n'}, ".", ""),
+        (
+            {
+                "pyproject.toml": '[project]\ndynamic = ["version"]\n[tool.setuptools.dynamic]\n'
+                'version = {attr = "pkg._version.__version__"}\n',
+                "pkg/_version.py": '"""v."""\n__version__ = "2.3.1"\n',
+            },
+            ".",
+            "2.3.1",
+        ),
+        (
+            {
+                "pyproject.toml": '[project]\ndynamic = ["version"]\n[tool.setuptools.dynamic]\n'
+                "version = { attr = 'pkg.__version__' }\n",
+                "src/pkg/__init__.py": "__version__ = '0.9.0'\n",
+            },
+            ".",
+            "",
+        ),
+        (
+            {
+                "pyproject.toml": '[project]\ndynamic = ["version"]\n[tool.setuptools.dynamic]\n'
+                'version = {attr = "pkg.__version__"}\n',
+                "src/pkg/__init__.py": "__version__ = '0.9.0'\n",
+            },
+            ".",
+            "0.9.0",
+        ),
+        (
+            {
+                "pyproject.toml": '[project]\ndynamic = ["version"]\n[tool.setuptools.dynamic]\n'
+                'version = {attr = "pkg.__version__"}\n',
+                "pkg/__init__.py": '__version__ = "1.0 ;touch x"\n',
+            },
+            ".",
+            None,
+        ),
         ({"Cargo.toml": '[package]\nname = "x"\nversion = "0.4.2"\n[dependencies]\n'}, ".", "0.4.2"),
         (
             {
