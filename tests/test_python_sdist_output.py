@@ -76,3 +76,42 @@ def test_sdist_build_line_produces_one_versioned_archive(tmp_path: Path) -> None
     archives = sorted(p.name for p in (tmp_path / "dist-sdist").iterdir())
     assert archives == ["release_output_fixture-1.0.0.tar.gz"]
     assert not (tmp_path / "dist").exists()
+
+
+MATURIN = ROOT / ".github/workflows/maturin_pipeline.yml"
+READINESS_DOC = ROOT / "reference/python-release-readiness.md"
+
+
+@pytest.mark.spec("PIPE-RELEASE-R008")
+def test_maturin_sdist_covers_the_package_its_wheels_publish() -> None:
+    jobs = yaml.safe_load(MATURIN.read_text())["jobs"]
+    # One package per caller: no job may point maturin at another project.
+    for name, job in jobs.items():
+        for step in job.get("steps", []):
+            args = str((step.get("with") or {}).get("args", ""))
+            assert "--manifest-path" not in args and "-m " not in args, name
+            assert "working-directory" not in step, name
+    sdist = next(step for step in jobs["sdist"]["steps"] if step.get("name") == "Build sdist")
+    assert sdist["with"]["command"] == "sdist" and "--out dist" in sdist["with"]["args"]
+    proof = next(step for step in jobs["sdist"]["steps"] if step.get("name") == "Prove exact source archive rebuild")
+    assert proof["with"]["phase"] == "source"
+    upload = next(step for step in jobs["sdist"]["steps"] if step.get("name") == "Verify source and upload artifact")
+    assert upload["with"]["artifact-name"].startswith("wheels-")
+    publish = jobs["publish"]
+    assert "sdist" in publish["needs"]
+    download = next(step for step in publish["steps"] if step.get("with", {}).get("pattern") == "wheels-*")
+    assert download["with"]["path"] == "dist"
+    pypi = next(step for step in publish["steps"] if step.get("name") == "Publish to PyPI")
+    assert pypi["with"]["packages-dir"] == "dist/"
+
+
+@pytest.mark.spec("PIPE-RELEASE-R008")
+def test_readiness_doc_states_the_wheel_availability_rule() -> None:
+    text = " ".join(READINESS_DOC.read_text().split())
+    assert "builds/uploads wheels only" not in text
+    assert "--only-binary :all:" in text and "allow-source-build" in text
+    assert "compatible with the target interpreter or platform" in text
+    assert "`sdist_missing`" in text and "not a failure" in text
+    assert "only an sdist" in text and "no compatible wheel, fails readiness" in text
+    assert "`partial_publish` only while the forge reports the release run as in progress" in text
+    assert "never replaces a checked wheel at install time" in text
