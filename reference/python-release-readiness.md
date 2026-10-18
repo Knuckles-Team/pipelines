@@ -9,8 +9,29 @@ The release action builds wheels, checks their actual metadata and dependency
 closure, and rechecks their bytes immediately before upload and before creating
 an associated GitHub release. It publishes those wheels without rebuilding or
 `--skip-existing`. `requirements.txt` is a build prerequisite only; a missing
-file is allowed, but a failing install is not ignored. The Python path now
-builds/uploads wheels only: an sdist is not interchangeable with a checked wheel.
+file is allowed, but a failing install is not ignored.
+
+## Publishing, installing and readiness
+
+The rule has three parts (`PIPE-RELEASE-R008`):
+
+- **Publishing.** Every Python release publishes its checked wheel or wheels
+  and an sdist for every package the repository publishes. An isolated wheel
+  rebuild proves the sdist before upload. The sdist does not replace the
+  checked wheel: the wheel guard checks only wheel bytes.
+- **Installing.** Consumers install wheels only, with `--only-binary :all:`.
+  The only exceptions are the packages named in the consumer's
+  `allow-source-build` list (see below). An sdist never replaces a checked
+  wheel at install time.
+- **Readiness.** A dependency version is available when PyPI has a wheel that
+  is compatible with the target interpreter or platform. When that version has
+  a compatible wheel but no sdist, readiness reports the advisory
+  `sdist_missing`. This is a warning, not a failure. A version that has only an
+  sdist, or that has no compatible wheel, fails readiness. The exception is a
+  package on the consumer's `allow-source-build` list. Readiness reports
+  `partial_publish` only while the forge reports the release run as in
+  progress. After the run concludes, readiness applies the rules above to that
+  version.
 
 ## Ownership and inputs
 
