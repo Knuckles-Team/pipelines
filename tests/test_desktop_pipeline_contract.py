@@ -52,3 +52,14 @@ def test_windows_installer_compiles_the_packaging_script() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     assert '"/DMyAppVersion=$VERSION" packaging\\windows\\setup.iss' in text
     assert " setup.iss" not in text.replace("packaging\\windows\\setup.iss", "")
+
+
+def test_source_checkout_keeps_the_contract_checkout() -> None:
+    """actions/checkout empties a fresh workspace, so the contract is parked around it."""
+    action = ROOT / ".github/actions/checkout-verified-source/action.yml"
+    steps = yaml.safe_load(action.read_text(encoding="utf-8"))["runs"]["steps"]
+    names = [step.get("name", step.get("uses", "")) for step in steps]
+    checkout = next(i for i, step in enumerate(steps) if step.get("uses", "").startswith("actions/checkout@"))
+    assert names.index("Park the pipeline contract") < checkout < names.index("Restore the pipeline contract")
+    assert 'mv .pipeline-contract "$RUNNER_TEMP/pipeline-contract"' in steps[0]["run"]
+    assert names.index("Restore the pipeline contract") < names.index("Bind source commit")
