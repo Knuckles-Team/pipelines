@@ -91,3 +91,21 @@ def test_many_unmapped_modules_scan_the_tree_once(
     assert capsys.readouterr().out.splitlines() == ["tests/test_importer.py"]
     # A large diff of unmirrored modules used to rescan the tree per module.
     assert len(scans) == 1
+
+
+def test_scope_never_names_non_test_modules(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    base = repo.commit(
+        {
+            "pkg/mod_a.py": "def helper() -> int:\n    return 1\n",
+            "tests/sub/__init__.py": "",
+            "tests/sub/catalog_fixture.py": "from pkg import mod_a\n",
+            "tests/sub/test_importer.py": "from pkg import mod_a\n\n\ndef test_helper() -> None:\n    assert mod_a.helper() == 1\n",
+        },
+        "baseline",
+    )
+    repo.commit({"pkg/mod_a.py": "def helper() -> int:\n    return 2\n"}, "change mod_a")
+
+    assert repo.run("pr-test-scope", "--base-ref", base, "--src-root", "pkg", "--tests-root", "tests") == 0
+    # A helper module named as a pytest argument is imported as a test module and
+    # shadows its sibling conftest fixtures; only collectable test files are named.
+    assert capsys.readouterr().out.splitlines() == ["tests/sub/test_importer.py"]

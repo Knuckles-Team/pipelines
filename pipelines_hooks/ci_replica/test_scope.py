@@ -80,6 +80,12 @@ class _DedupedScope:
         self._seen: set[str] = set()
 
     def add(self, item: str) -> None:
+        # Only files pytest itself collects belong in a scope: naming a
+        # conftest.py or a helper module as an argument makes pytest import it
+        # as a test module, so its fixtures are never registered for siblings.
+        name = item.rsplit("/", 1)[-1]
+        if not (name.startswith("test_") or name.endswith("_test.py")):
+            return
         if item not in self._seen:
             self._seen.add(item)
             self._selected.append(item)
