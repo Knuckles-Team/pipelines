@@ -16,7 +16,7 @@ PYTHON_WORKFLOW = WORKFLOWS / "python_pipeline.yml"
 SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
-    "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
+    "python-version", "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
     "extra-manual-hooks", "skip-hooks", "setup-command", "docs-only-paths", "timeout-minutes",
 }  # fmt: skip
 
@@ -186,3 +186,12 @@ def test_no_workflow_grants_write_all() -> None:
     for path in WORKFLOWS.glob("*.yml"):
         for line in path.read_text(encoding="utf-8").splitlines():
             assert line.split("#")[0].strip() != "permissions: write-all", path.name
+
+
+def test_reusable_workflows_default_to_the_environment_python() -> None:
+    workflows = GATES_WORKFLOW.parent
+    for name in ("gates_pipeline.yml", "main_pipeline.yml", "desktop_release_pipeline.yml"):
+        inputs = _on(workflows / name)["workflow_call"]["inputs"]
+        assert inputs["python-version"]["default"] == "3.14", name
+    main = _on(workflows / "main_pipeline.yml")["workflow_call"]["inputs"]
+    assert main["backward-python"]["default"] == ""

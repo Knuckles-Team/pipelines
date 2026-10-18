@@ -67,6 +67,8 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: '3.14'
 
       # The gate package and scanner recipes come from the pipelines revision
       # that defines this workflow, outside the caller's tree so tree-wide

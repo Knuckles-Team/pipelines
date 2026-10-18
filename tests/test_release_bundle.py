@@ -29,16 +29,16 @@ def context(target):
         **guard.default_environment(),
         "sys_platform": system,
         "platform_machine": machine,
-        "python_full_version": "3.13.1",
-        "python_version": "3.13",
+        "python_full_version": "3.14.1",
+        "python_version": "3.14",
         "implementation_name": "cpython",
         "platform_python_implementation": "CPython",
-        "implementation_version": "3.13.1",
+        "implementation_version": "3.14.1",
         "os_name": "nt" if system == "win32" else "posix",
         "platform_system": {"linux": "Linux", "darwin": "Darwin", "win32": "Windows"}[system],
     }
-    interpreter = {"platform": system, "machine": machine, "version": "3.13.1", "implementation": "CPython"}
-    return {"environment": environment, "interpreter": interpreter, "tags": ["cp313-cp313-" + tag]}
+    interpreter = {"platform": system, "machine": machine, "version": "3.14.1", "implementation": "CPython"}
+    return {"environment": environment, "interpreter": interpreter, "tags": ["cp314-cp314-" + tag]}
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def release_bundle(tmp_path, monkeypatch):
     proofs = {}
     for target, (_, _, tag) in TARGETS.items():
         observed = context(target)
-        path = wheel(directory, name="fixture-1.0-cp313-cp313-" + tag + ".whl")
+        path = wheel(directory, name="fixture-1.0-cp314-cp314-" + tag + ".whl")
         metadata = guard.metadata(path, observed)
         resolver = report(path, metadata)
         resolver["environment"] = observed["environment"]
@@ -335,7 +335,7 @@ def test_native_windows_receipt_rejects_host_marker_substitution(field, value):
 
 
 @pytest.mark.parametrize(
-    "tag", ["cp313-cp313-manylinux_2_28_x86_64", "cp314-cp314-win_amd64", "cp312-cp312-win_amd64", "cp313-cp313-any"]
+    "tag", ["cp314-cp314-manylinux_2_28_x86_64", "cp315-cp315-win_amd64", "cp313-cp313-win_amd64", "cp314-cp314-any"]
 )
 def test_native_windows_receipt_rejects_foreign_platform_or_interpreter_tags(tag):
     observed = context("windows-x86_64")
@@ -344,7 +344,7 @@ def test_native_windows_receipt_rejects_foreign_platform_or_interpreter_tags(tag
         guard.sibling("targets").validate("windows-x86_64", observed)
 
 
-def test_native_cp313_accepts_older_stable_abi_wheels():
+def test_native_cp314_accepts_older_stable_abi_wheels():
     observed = context("linux-aarch64")
     observed["tags"] = ["cp311-abi3-manylinux_2_28_aarch64", "py3-none-any"]
     guard.sibling("targets").validate("linux-aarch64", observed)
@@ -354,7 +354,7 @@ def test_source_rebuild_must_preserve_python_range(release_bundle):
     directory, evidence, snapshot = release_bundle
     proof = snapshot["source"]["rebuilt_wheel_proof"]
     item = proof["wheels"][0]
-    rebuilt = wheel(evidence, name=item["file"], python=">=3.13")
+    rebuilt = wheel(evidence, name=item["file"], python=">=3.14")
     item["sha256"] = guard.digest(rebuilt)
     item["metadata"] = guard.metadata(rebuilt, proof["context"])
     resolver = report(rebuilt, item["metadata"])
@@ -406,12 +406,12 @@ def test_maturin_producer_selects_the_checker_python_version():
     steps = action["runs"]["steps"]
     selector = next(step for step in steps if step.get("name") == "Select native build interpreter")
     builder = next(step for step in steps if step.get("name") == "Build wheels")
-    assert selector["with"]["python-version"] == "3.13"
+    assert selector["with"]["python-version"] == "3.14"
     assert selector["if"] == "runner.os != 'Linux'"
     assert steps.index(selector) < steps.index(builder)
     assert (
         builder["with"]["args"]
-        == "--release --out dist --interpreter ${{ runner.os == 'Linux' && 'python3.13' || 'python' }}"
+        == "--release --out dist --interpreter ${{ runner.os == 'Linux' && 'python3.14' || 'python' }}"
     )
     checker = yaml.safe_load((ROOT / ".github/actions/wheel-readiness/action.yml").read_text())
-    assert "--python 3.13" in checker["runs"]["steps"][0]["run"]
+    assert "--python 3.14" in checker["runs"]["steps"][0]["run"]

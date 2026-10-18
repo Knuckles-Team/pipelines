@@ -23,7 +23,7 @@ runs:
     - name: Create isolated readiness interpreter
       shell: bash
       run: |
-        uv --no-config run --no-project --python 3.13 python -I "${{ github.action_path }}/bootstrap.py"
+        uv --no-config run --no-project --python 3.14 python -I "${{ github.action_path }}/bootstrap.py"
 
     - name: Prove publication artifacts
       shell: bash

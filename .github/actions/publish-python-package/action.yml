@@ -26,9 +26,9 @@ runs:
       shell: bash
       run: |
         echo "Creating virtual environment"
-        # Pin to 3.13: Python 3.14 breaks native builds of transitive deps
-        # (e.g. litellm's PyO3 chain caps at cp313), failing release CI fleet-wide.
-        uv venv --python 3.13 .venv
+        # Release builds run on the environment version (reference/gate-standard.md
+        # "Python version"); requires-python keeps the 3.12 install floor.
+        uv venv --python 3.14 .venv
         source .venv/bin/activate
         echo "Installing build prerequisites"
         if [ -f requirements.txt ]; then
