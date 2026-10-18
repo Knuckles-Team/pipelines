@@ -100,6 +100,29 @@ Each repository has three workflows:
 
 [The CI standard](ci-standard.md) lists the inputs.
 
+### Python version
+
+Python 3.14 is the environment version. Python 3.12 is the backward-support
+floor.
+
+- Package metadata sets `requires-python = ">=3.12"`. The classifiers list
+  3.12, 3.13 and 3.14.
+- Tooling targets the floor: ruff `target-version = "py312"` and mypy
+  `python_version = "3.12"`. Code never uses syntax newer than 3.12.
+- Everything that runs uses 3.14: `.python-version`, uv venvs, the gates,
+  tests and build jobs, release builds, Dockerfile bases
+  (`python:3.14-slim`, pinned by digest), devcontainers and docs. The
+  reusable workflows default `python-version` to `'3.14'`. A caller that
+  passes a value keeps that value.
+- Each repository has one backward leg on 3.12: the `backward-python: '3.12'`
+  input of `main_pipeline.yml`. It runs an install and import smoke test, plus
+  an optional fast subset in `backward-test-scope`. It is never a full matrix.
+- A native abi3 package keeps its own abi3 floor. Only its CI and tooling move
+  to 3.14.
+- If a dependency has no 3.14 wheel and would need a source build, that
+  repository's CI stays on 3.12 until a wheel is published. The repository
+  records the dependency.
+
 ## Advisory checks
 
 These run only in `advisory_pipeline.yml`. The report lists each check with

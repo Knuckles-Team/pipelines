@@ -18,7 +18,7 @@ runs:
         EXPECTED_WORKFLOW_COMMIT: ${{ job.workflow_sha }}
         PIPELINES_CONTRACT_PATH: .pipeline-contract
       run: |
-        uv run --no-project --python 3.13 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"
+        uv run --no-project --python 3.14 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"
 
     - name: Verify source commit on Windows
       if: runner.os == 'Windows'
@@ -28,4 +28,4 @@ runs:
         EXPECTED_WORKFLOW_COMMIT: ${{ job.workflow_sha }}
         PIPELINES_CONTRACT_PATH: .pipeline-contract
       run: |
-        uv run --no-project --python 3.13 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"
+        uv run --no-project --python 3.14 "${{ github.action_path }}/verify_source_commit.py" "${{ inputs.phase }}"

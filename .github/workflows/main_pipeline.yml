@@ -21,6 +21,29 @@ name: Main
 on:
   workflow_call:
     inputs:
+      python-version:
+        description: Python version uv provisions for the hooks, tests and builds (the environment version; reference/gate-standard.md "Python version").
+        required: false
+        type: string
+        default: '3.14'
+      backward-python:
+        description: >-
+          Backward-support Python version (the requires-python floor, e.g. '3.12'). When set,
+          one extra job syncs the lock on it and imports the package, then runs
+          backward-test-scope if given. Empty disables the job; never a full matrix.
+        required: false
+        type: string
+        default: ''
+      backward-test-scope:
+        description: Space-separated fast test paths run on backward-python; empty runs the import smoke only.
+        required: false
+        type: string
+        default: ''
+      backward-module:
+        description: Module imported by the backward smoke; empty derives it from the pyproject.toml project name.
+        required: false
+        type: string
+        default: ''
       test-scope:
         description: Tests directory of the full suite; empty disables the test job.
         required: false
@@ -68,6 +91,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
+          python-version: ${{ inputs.python-version }}
           enable-cache: true
 
       - name: Caller setup
@@ -89,6 +113,50 @@ jobs:
             uv run --frozen pytest -q "$TEST_SCOPE"
           fi
 
+  backward:
+    name: backward-python
+    if: inputs.backward-python != ''
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: ${{ inputs.backward-python }}
+          enable-cache: true
+
+      - name: Caller setup
+        if: inputs.setup-command != ''
+        env:
+          SETUP_COMMAND: ${{ inputs.setup-command }}
+        run: bash -c "$SETUP_COMMAND"
+
+      - name: Backward-support install smoke
+        env:
+          BACKWARD_SCOPE: ${{ inputs.backward-test-scope }}
+          BACKWARD_MODULE: ${{ inputs.backward-module }}
+          SETUP_COMMAND: ${{ inputs.setup-command }}
+        run: |
+          set -euo pipefail
+          run=(uv run --frozen --no-sync)
+          [[ -n "$SETUP_COMMAND" ]] || uv sync --frozen
+          module="$BACKWARD_MODULE"
+          if [[ -z "$module" ]]; then
+            module="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"].replace("-","_"))')"
+          fi
+          "${run[@]}" python -c 'import importlib, sys; importlib.import_module(sys.argv[1]); print(sys.version)' "$module"
+          if [[ -n "$BACKWARD_SCOPE" ]]; then
+            # shellcheck disable=SC2086
+            "${run[@]}" pytest -q $BACKWARD_SCOPE
+          fi
+
   supply-chain:
     name: supply-chain
     runs-on: ${{ fromJSON(inputs.runner) }}
@@ -104,6 +172,8 @@ jobs:
       - name: Install uv
         if: ${{ !inputs.rust }}
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: ${{ inputs.python-version }}
 
       - name: Audit Python dependencies (pip-audit)
         if: ${{ !inputs.rust }}

@@ -86,9 +86,9 @@ def test_source_verifier_has_one_cross_platform_implementation() -> None:
     script = VERIFY_SCRIPT.read_text(encoding="utf-8")
 
     assert "if: runner.os != 'Windows'" in action
-    assert "shell: bash" in action and "uv run --no-project --python 3.13" in action
+    assert "shell: bash" in action and "uv run --no-project --python 3.14" in action
     assert "if: runner.os == 'Windows'" in action
-    assert "shell: pwsh" in action and "uv run --no-project --python 3.13" in action
+    assert "shell: pwsh" in action and "uv run --no-project --python 3.14" in action
     assert "python3" not in action
     assert "PIPELINES_CONTRACT_PATH" in action
     assert "EXPECTED_WORKFLOW_COMMIT" in action
