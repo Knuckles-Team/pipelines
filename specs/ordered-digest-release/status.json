@@ -532,9 +532,15 @@
     {
       "id": "PIPE-RELEASE-R008",
       "title": "Python release publishes the wheel and the source distribution together",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5433baf91995"
+      ],
+      "verified_by": [
+        "tests/test_python_sdist_output.py:27",
+        "tests/test_python_sdist_output.py:47",
+        "tests/test_python_sdist_output.py:55"
+      ]
     }
   ]
 }
