@@ -14,6 +14,9 @@ inputs:
   receipt:
     description: Unique target receipt filename.
     default: release-readiness.json
+  directory:
+    description: Directory holding the artifacts this phase proves.
+    default: dist
   artifact-name:
     description: Unique proof artifact name.
     default: release-readiness
@@ -34,7 +37,8 @@ runs:
         READINESS_TARGET: ${{ inputs.target }}
         READINESS_PHASE: ${{ inputs.phase }}
         READINESS_RECEIPT: ${{ inputs.receipt }}
-      run: '"$READINESS_PYTHON" -I "${{ github.action_path }}/readiness.py" "$READINESS_PHASE" --receipt "$READINESS_RECEIPT"'
+        READINESS_DIRECTORY: ${{ inputs.directory }}
+      run: '"$READINESS_PYTHON" -I "${{ github.action_path }}/readiness.py" "$READINESS_PHASE" --receipt "$READINESS_RECEIPT" --directory "$READINESS_DIRECTORY"'
 
     - name: Preserve release proof
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

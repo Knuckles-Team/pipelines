@@ -57,3 +57,4 @@ commit).
 - [ ] PIPE-RELEASE-R007.4: Refusal. Implement this contract and bind `test_require_tag_refuses_a_branch_ref_and_names_it` in `tests/test_gates_pipeline_contract.py`.
 - [ ] PIPE-RELEASE-R007.5: Evidence. Implement this contract and bind `test_fast_tests_reports_no_affected_tests` in `tests/hooks/test_fast_tests.py`.
 - [ ] PIPE-RELEASE-R007.6: Hot-path proof. Implement this contract and bind `test_fast_tests_runs_only_the_affected_subset` in `tests/hooks/test_fast_tests.py`.
+- [ ] PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
