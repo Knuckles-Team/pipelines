@@ -104,6 +104,27 @@ files.pythonhosted.org URLs and does not follow redirects. Resolution installs t
 import runtime packages. No interpreter is restarted in a populated venv, so
 installed .pth files are not evaluated.
 
+### Named source-build allowance
+
+A dependency that publishes only a source distribution cannot pass the
+wheel-only rule. The consumer repository may name such packages in its own
+`pyproject.toml`; the list is empty by default:
+
+```toml
+[tool.pipelines]
+allow-source-build = ["uptime-kuma-api"]
+```
+
+Each entry must be an exact distribution name; wildcards such as `:all:` are
+rejected, and the published package itself cannot be listed. Readiness then
+adds `--no-binary=<name>` for only those packages, the transport admits a public
+PyPI source archive only for a listed name, and the report check accepts that
+package's own sdist from files.pythonhosted.org with its SHA-256. The listed
+packages' build backends do execute during resolution; every other dependency
+stays wheel-only. The allowance is recorded in the receipt as `source_builds`,
+and verification fails if the declared list changed. The connector Dockerfile
+must exempt the same names from `--only-binary :all:` with `--no-binary <name>`.
+
 The receipt is workflow evidence, not a signature or an independent attestation
 against a malicious runner or build step. The guard does not establish runtime
 behavior, API correctness, future index availability, or publication of upstream

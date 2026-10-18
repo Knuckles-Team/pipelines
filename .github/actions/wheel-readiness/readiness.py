@@ -14,8 +14,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import warnings
 import zipfile
+from collections.abc import Sequence
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -40,6 +42,7 @@ except ImportError:
 
 PUBLIC_INDEX = "https://pypi.org/simple"
 ADVERTISED = {"mcp", "agent", "all"}
+SOURCE_BUILD_ENV = "READINESS_SOURCE_BUILDS"
 
 
 def sibling(name: str):
@@ -74,6 +77,31 @@ def valid_profile_names(items: list) -> bool:
     return all(
         isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", item) for item in items
     )
+
+
+def source_build_allowance(project: Path | None = None) -> list[str]:
+    """Named dependencies the consumer repo lets readiness build from source.
+
+    Declared in the consumer's ``pyproject.toml`` as
+    ``[tool.pipelines] allow-source-build = ["name", ...]``; empty by default.
+    Only exact distribution names are accepted, never a wildcard, so the
+    wheel-only rule still holds for every package the list does not name.
+    """
+    path = (project or Path.cwd()) / "pyproject.toml"
+    if not path.is_file():
+        return []
+    try:
+        data = tomllib.loads(path.read_text())
+    except tomllib.TOMLDecodeError as error:
+        raise ValueError("pyproject.toml is not valid TOML") from error
+    section = data.get("tool", {}).get("pipelines", {})
+    require(isinstance(section, dict), "[tool.pipelines] must be a table")
+    names = section.get("allow-source-build", [])
+    require(isinstance(names, list), "allow-source-build must be a list of package names")
+    require(valid_profile_names(names), "allow-source-build entries must be exact package names")
+    normalized = [canonicalize_name(name) for name in names]
+    require(len(set(normalized)) == len(normalized), "duplicate allow-source-build entry")
+    return sorted(normalized)
 
 
 def profiles(raw: str, extras: list[str]) -> list[str]:
@@ -136,7 +164,7 @@ def metadata(path: Path, context: dict | None = None) -> dict:
     }
 
 
-def clean_environment(home: Path, wheel: Path) -> dict[str, str]:
+def clean_environment(home: Path, wheel: Path, source_builds: Sequence[str] = ()) -> dict[str, str]:
     # No index, proxy, certificate, source, constraint, Python, or user config
     # inherited from the caller. pip's null config disables even global config.
     return {
@@ -146,6 +174,7 @@ def clean_environment(home: Path, wheel: Path) -> dict[str, str]:
         "PIP_CONFIG_FILE": os.devnull,
         "PYTHONNOUSERSITE": "1",
         "READINESS_ROOT_WHEEL": str(wheel),
+        SOURCE_BUILD_ENV: ",".join(source_builds),
         **({"SYSTEMROOT": os.environ["SYSTEMROOT"]} if "SYSTEMROOT" in os.environ else {}),
     }
 
@@ -158,6 +187,7 @@ def validate_report(
     expected_digest: str | None = None,
     context: dict | None = None,
     root_uri: str | None = None,
+    source_builds: Sequence[str] = (),
 ) -> None:
     context = context or observed_context()
     require(report.get("version") == "1", "unsupported resolver report")
@@ -196,7 +226,14 @@ def validate_report(
             require(
                 url.port in (None, 443) and url.username is None and url.password is None, "invalid artifact origin"
             )
-            require(url.path.endswith(".whl"), "source dependencies cannot prove wheel readiness")
+            if name in source_builds:
+                filename = unquote(url.path.rsplit("/", 1)[-1])
+                require(
+                    filename.endswith(".whl") or parse_sdist_filename(filename)[0] == name,
+                    "allowed source build is not that package's source archive",
+                )
+            else:
+                require(url.path.endswith(".whl"), "source dependencies cannot prove wheel readiness")
         for raw in data.get("requires_dist", []):
             require(Requirement(raw).url is None, "transitive direct URL dependency")
     require(roots == 1, "exactly one root wheel required")
@@ -225,7 +262,9 @@ def check_closure(packages: dict, root: str, profile: str, environment: dict, *,
             pending.extend((dependency, canonicalize_name(item)) for item in {"", *req.extras})
 
 
-def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list[dict]:
+def resolve(
+    wheel: Path, root: dict, selected: list[str], scratch: Path, source_builds: Sequence[str] = ()
+) -> list[dict]:
     resolver = Path(__file__).with_name("resolve.py").resolve()
     bootstrap = sibling("bootstrap")
     pinned_wheel = Path(sys.prefix) / bootstrap.PIN["filename"]
@@ -234,7 +273,7 @@ def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list
     for profile in selected:
         home = scratch / profile
         home.mkdir()
-        env = clean_environment(home, wheel)
+        env = clean_environment(home, wheel, source_builds)
         venv = home / "venv"
         python = bootstrap.create(venv, pinned_wheel)
         report_path = home / "report.json"
@@ -250,6 +289,7 @@ def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list
                 "--disable-pip-version-check",
                 "--no-input",
                 "--only-binary=:all:",
+                *(f"--no-binary={name}" for name in source_builds),
                 "--index-url",
                 PUBLIC_INDEX,
                 "--report",
@@ -264,7 +304,7 @@ def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list
         # Do not start Python in the populated venv: installed .pth files must
         # not execute. Validate the report in the separate checker interpreter.
         report = json.loads(report_path.read_text())
-        validate_report(report, wheel, root, profile)
+        validate_report(report, wheel, root, profile, source_builds=source_builds)
         evidence.append({"profile": profile, "report": report})
     return evidence
 
@@ -302,6 +342,7 @@ def check(directory: Path, receipt: Path, raw: str) -> None:
     context = observed_context()
     if target != "native":
         sibling("targets").validate(target, context)
+    source_builds = source_build_allowance()
     proof = {
         "schema": 1,
         "target": target,
@@ -310,10 +351,12 @@ def check(directory: Path, receipt: Path, raw: str) -> None:
         "scope": "all-runtime-dependencies",
         **identity(),
         "interpreter": interpreter(),
+        "source_builds": source_builds,
         "wheels": [],
     }
     for wheel in wheel_set(directory):
         root = metadata(wheel)
+        require(root["name"] not in source_builds, "the published package itself cannot be a source build")
         selected = profiles(raw, root["provides_extra"])
         original = digest(wheel)
         with tempfile.TemporaryDirectory(prefix="wheel-readiness-") as temp:
@@ -321,7 +364,7 @@ def check(directory: Path, receipt: Path, raw: str) -> None:
             copy = scratch / wheel.name
             shutil.copyfile(wheel, copy)
             require(digest(copy) == original, "wheel changed while copying")
-            evidence = resolve(copy, root, selected, scratch)
+            evidence = resolve(copy, root, selected, scratch, source_builds)
         require(digest(wheel) == original, "wheel changed during readiness check")
         proof["wheels"].append(
             {"file": wheel.name, "sha256": original, "metadata": root, "profiles": selected, "evidence": evidence}
@@ -347,11 +390,13 @@ def verify(directory: Path, receipt: Path, raw: str, evidence: Path = Path("sour
     files = wheel_set(directory)
     require([path.name for path in files] == [item["file"] for item in proof["wheels"]], "wheel set changed")
     require(proof["context"] == observed_context(), "proof target context changed")
+    source_builds = source_build_allowance()
+    require(proof.get("source_builds", []) == source_builds, "source-build allowance changed")
     for path, item in zip(files, proof["wheels"], strict=True):
-        verify_item(path, item, raw, proof["context"])
+        verify_item(path, item, raw, proof["context"], source_builds)
 
 
-def verify_item(path: Path, item: dict, raw: str, context: dict) -> None:
+def verify_item(path: Path, item: dict, raw: str, context: dict, source_builds: Sequence[str] = ()) -> None:
     require(digest(path) == item["sha256"], "wheel bytes changed")
     actual = metadata(path, context)
     require(item["metadata"] == actual, "proof wheel metadata changed")
@@ -369,7 +414,7 @@ def verify_item(path: Path, item: dict, raw: str, context: dict) -> None:
         root_url = urlsplit(uri)
         require(root_url.scheme == "file", "root proof must refer to a local wheel")
         require(Path(unquote(root_url.path)).name == path.name, "proof wheel filename changed")
-        validate_report(report, path, actual, entry["profile"], digest(path), context, uri)
+        validate_report(report, path, actual, entry["profile"], digest(path), context, uri, source_builds)
 
 
 def publication_version(receipt: Path) -> str:
