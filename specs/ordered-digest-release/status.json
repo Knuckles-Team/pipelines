@@ -58,7 +58,8 @@
     "PIPE-RELEASE-R007.3",
     "PIPE-RELEASE-R007.4",
     "PIPE-RELEASE-R007.5",
-    "PIPE-RELEASE-R007.6"
+    "PIPE-RELEASE-R007.6",
+    "PIPE-RELEASE-R008"
   ],
   "requirements": [
     {
@@ -526,6 +527,13 @@
       "landed_in": [
         "4f1e1f0aff4a"
       ],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R008",
+      "title": "Python release publishes the wheel and the source distribution together",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": []
     }
   ]
