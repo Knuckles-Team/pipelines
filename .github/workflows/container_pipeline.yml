@@ -186,8 +186,10 @@ jobs:
       # Version tags (<version> on the agent leg, <version>-mcp on the mcp leg) so a
       # deploy can pin by release instead of a floating tag or a digest. The version is
       # the package's own: [project].version of pyproject.toml, else [package].version
-      # of Cargo.toml, read from the build context and then the repo root. A package
-      # with neither (or a dynamic version) skips the version tags with a notice; the
+      # of Cargo.toml, read from the build context and then the repo root. A setuptools
+      # dynamic version (`[tool.setuptools.dynamic] version = {attr = "..."}`) is read
+      # from that module's literal `__version__`. A package with none of these skips
+      # the version tags with a notice; the
       # other tags are unchanged. A version that is not a valid Docker tag fails.
       - name: Resolve package version
         id: version
@@ -206,10 +208,34 @@ jobs:
                 if (match(line, /^"[^"]*"/) || match(line, /^\047[^\047]*\047/)) {print substr(line, 2, RLENGTH - 2); exit}
               }' "$1"
           }
+          read_dynamic_version() {
+            # $1 = project dir. setuptools `version = {attr = "pkg.mod.__version__"}`:
+            # read the literal `__version__ = "..."` from that module's source (never imported).
+            local attr module file
+            attr="$(awk '
+              {sub(/\r$/, "", $0)}
+              /^[[:space:]]*\[/ {in_table = ($0 ~ "^[[:space:]]*\\[tool\\.setuptools\\.dynamic\\][[:space:]]*(#.*)?$"); next}
+              in_table && /^[[:space:]]*version[[:space:]]*=/ {
+                if (match($0, /attr[[:space:]]*=[[:space:]]*"[A-Za-z0-9_.]+"/)) {
+                  value = substr($0, RSTART, RLENGTH); sub(/^[^"]*"/, "", value); sub(/"$/, "", value); print value; exit
+                }
+              }' "$1/pyproject.toml")"
+            [[ "$attr" == *.* ]] || return 0
+            module="${attr%.*}"; module="${module//.//}"
+            for file in "$1/$module.py" "$1/$module/__init__.py" "$1/src/$module.py" "$1/src/$module/__init__.py"; do
+              if [[ -f "$file" ]]; then
+                sed -nE "s/^${attr##*.}[[:space:]]*=[[:space:]]*[\"']([^\"']+)[\"'].*/\\1/p" "$file" | head -n 1
+                return 0
+              fi
+            done
+          }
           version=''
           for dir in "$BUILD_CONTEXT" .; do
             if [[ -z "$version" && -f "$dir/pyproject.toml" ]]; then
               version="$(read_version "$dir/pyproject.toml" project)"
+            fi
+            if [[ -z "$version" && -f "$dir/pyproject.toml" ]]; then
+              version="$(read_dynamic_version "$dir")"
             fi
             if [[ -z "$version" && -f "$dir/Cargo.toml" ]]; then
               version="$(read_version "$dir/Cargo.toml" package)"
