@@ -23,7 +23,9 @@ runs:
     - name: Create isolated readiness interpreter
       shell: bash
       run: |
-        uv --no-config run --no-project --python 3.14 python -I "${{ github.action_path }}/bootstrap.py"
+        # 3.14 unless the repo declares [tool.pipelines] readiness-python (3.12 floor).
+        version="$(uv --no-config run --no-project --python 3.14 python -I "${{ github.action_path }}/interpreter.py")"
+        uv --no-config run --no-project --python "$version" python -I "${{ github.action_path }}/bootstrap.py"
 
     - name: Prove publication artifacts
       shell: bash

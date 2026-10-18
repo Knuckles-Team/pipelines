@@ -578,3 +578,33 @@ def test_transport_admits_sdists_only_for_named_packages(tmp_path, monkeypatch):
     req.link = SimpleNamespace(is_wheel=False, is_file=True, url=(tmp_path / "u.tar.gz").as_uri())
     with pytest.raises(ValueError, match="public index"):
         Preparer().prepare_linked_requirement(req)
+
+
+def _interpreter():
+    spec = importlib.util.spec_from_file_location("readiness_interpreter", ACTION / "interpreter.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_readiness_python_defaults_to_314(tmp_path):
+    module = _interpreter()
+    assert module.readiness_python(tmp_path) == "3.14"
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n')
+    assert module.readiness_python(tmp_path) == "3.14"
+
+
+def test_readiness_python_is_declared_per_repo_within_the_floor(tmp_path):
+    module = _interpreter()
+    (tmp_path / "pyproject.toml").write_text('[tool.pipelines]\nreadiness-python = "3.12"\n')
+    assert module.readiness_python(tmp_path) == "3.12"
+    for bad in ('"3.11"', '"3"', "3.12", '"latest"'):
+        (tmp_path / "pyproject.toml").write_text(f"[tool.pipelines]\nreadiness-python = {bad}\n")
+        with pytest.raises(ValueError):
+            module.readiness_python(tmp_path)
+
+
+def test_readiness_action_runs_on_the_declared_interpreter():
+    action = (ACTION / "action.yml").read_text()
+    assert "interpreter.py" in action
+    assert '--python "$version" python -I' in action
