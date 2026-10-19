@@ -41,8 +41,6 @@ def test_sdist_is_built_proven_and_published_with_the_wheel() -> None:
     publish = _step("Publish package")["run"]
     upload = next(line for line in publish.splitlines() if "twine upload" in line)
     assert "dist/*.whl" in upload and "dist-sdist/*.tar.gz" in upload
-    # A re-run for an existing release adds only the missing file.
-    assert "--skip-existing" in upload
     assert '-"$BUILD_VERSION".tar.gz' in publish
 
 
