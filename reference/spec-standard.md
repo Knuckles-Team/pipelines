@@ -64,7 +64,7 @@ A requirement states what this platform must do, in this platform's terms.
 - A requirement must not define itself by comparison, such as "like X" or "parity with X".
 - A requirement may name an open protocol, format, or standard that the platform implements.
 - A connector requirement names the one external system it integrates. No other spec names that system.
-- A requirement derived from a research paper cites the paper. The row carries `[arXiv:<id>]`. The spec's `plan.md` lists it under "References" as `arXiv:<id> — <authors>, "<title>" (<year>)`.
+- Spec content is self-contained. A spec row must not reference third-party products, systems, papers, or repositories as inspiration, analysis, or comparator — no product or system names, no "surveyed/comparator/inspired-by" framing, no paper or arXiv citations in rows or in plan References sections. External names may appear only where the row is about integration support, interop, or use of that product's API/protocol (for example a connector for an external service, a git-compatible export, or an arXiv API source type). Comparative analysis, research grounding, and source records (with digests) live in the plans/ audit documents, never in a repository's specs/ tree.
 - A value taken from a paper is a starting default. A measurement on this platform replaces it.
 
 A rollup must include a wiring row and a hot-path proof row. The wiring row names the production call site as `file:line`. The hot-path proof row is an integration test that enters at the real entry point and observes the effect through the wired call site. A unit test of a function that no production caller reaches does not prove a rollup.
