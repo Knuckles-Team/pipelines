@@ -536,14 +536,14 @@
       "landed_in": [
         "5433baf91995",
         "8d87cddcb719",
-        "ced0db276d9f"
+        "c5cad0580cf9"
       ],
       "verified_by": [
-        "tests/test_python_sdist_output.py:108",
+        "tests/test_python_sdist_output.py:106",
         "tests/test_python_sdist_output.py:27",
-        "tests/test_python_sdist_output.py:49",
-        "tests/test_python_sdist_output.py:57",
-        "tests/test_python_sdist_output.py:85"
+        "tests/test_python_sdist_output.py:47",
+        "tests/test_python_sdist_output.py:55",
+        "tests/test_python_sdist_output.py:83"
       ]
     }
   ]
