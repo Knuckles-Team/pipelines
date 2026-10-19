@@ -6,6 +6,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+from types import SimpleNamespace
 import zipfile
 
 import pytest
@@ -469,3 +470,141 @@ def test_canonical_raw_wheel_extras_are_valid(tmp_path, metadata_version):
 def test_ambiguous_wheel_metadata_version_cannot_select_legacy_rules(tmp_path, metadata_version):
     with pytest.raises(ValueError, match="metadata version"):
         guard.metadata(wheel(tmp_path, metadata_version=metadata_version, extras=["MCP"]))
+
+
+def sdist_dependency(name="dep", url="https://files.pythonhosted.org/packages/dep-2.tar.gz"):
+    item = dependency(url=url)
+    item["metadata"]["name"] = name
+    return item
+
+
+def test_source_build_allowance_defaults_to_empty(tmp_path):
+    assert guard.source_build_allowance(tmp_path) == []
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "fixture"\n')
+    assert guard.source_build_allowance(tmp_path) == []
+
+
+def test_source_build_allowance_reads_named_packages(tmp_path):
+    (tmp_path / "pyproject.toml").write_text('[tool.pipelines]\nallow-source-build = ["Uptime_Kuma.API", "pyspark"]\n')
+    assert guard.source_build_allowance(tmp_path) == ["pyspark", "uptime-kuma-api"]
+
+
+@pytest.mark.parametrize("value", ['":all:"', '[":all:"]', '["*"]', '["a", "A"]', "[1]", '["a b"]'])
+def test_source_build_allowance_rejects_wildcards_and_bad_names(tmp_path, value):
+    (tmp_path / "pyproject.toml").write_text(f"[tool.pipelines]\nallow-source-build = {value}\n")
+    with pytest.raises(ValueError):
+        guard.source_build_allowance(tmp_path)
+
+
+def test_source_archive_accepted_only_for_named_package(tmp_path):
+    path = wheel(tmp_path, requires=["dep>=2"])
+    root = guard.metadata(path)
+    with pytest.raises(ValueError, match="source dependencies"):
+        guard.validate_report(report(path, root, [sdist_dependency()]), path, root, "base")
+    with pytest.raises(ValueError, match="source dependencies"):
+        guard.validate_report(report(path, root, [sdist_dependency()]), path, root, "base", source_builds=["other"])
+    guard.validate_report(report(path, root, [sdist_dependency()]), path, root, "base", source_builds=["dep"])
+    renamed = sdist_dependency(url="https://files.pythonhosted.org/packages/other-2.tar.gz")
+    with pytest.raises(ValueError, match="source archive"):
+        guard.validate_report(report(path, root, [renamed]), path, root, "base", source_builds=["dep"])
+    elsewhere = sdist_dependency(url="https://mirror.invalid/dep-2.tar.gz")
+    with pytest.raises(ValueError, match="non-public"):
+        guard.validate_report(report(path, root, [elsewhere]), path, root, "base", source_builds=["dep"])
+
+
+def test_resolver_gets_no_binary_only_for_named_packages(tmp_path, monkeypatch):
+    commands = []
+
+    def run(command, env, **kwargs):
+        commands.append((command, env))
+        report_path = Path(command[command.index("--report") + 1])
+        report_path.write_text("{}")
+
+    bootstrap = SimpleNamespace(PIN={"filename": "pip.whl"}, verify_pin=lambda _: None, create=lambda *_: "python")
+    monkeypatch.setattr(guard, "sibling", lambda _: bootstrap)
+    monkeypatch.setattr(guard.subprocess, "run", run)
+    monkeypatch.setattr(guard, "validate_report", lambda *args, **kwargs: kwargs["source_builds"])
+    path = wheel(tmp_path)
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    guard.resolve(path, guard.metadata(path), ["base"], scratch, ["uptime-kuma-api"])
+    command, env = commands[0]
+    assert "--only-binary=:all:" in command
+    assert [item for item in command if item.startswith("--no-binary")] == ["--no-binary=uptime-kuma-api"]
+    assert env["READINESS_SOURCE_BUILDS"] == "uptime-kuma-api"
+    commands.clear()
+    (scratch / "base").rename(scratch / "old")
+    guard.resolve(path, guard.metadata(path), ["base"], scratch)
+    assert not [item for item in commands[0][0] if item.startswith("--no-binary")]
+    assert commands[0][1]["READINESS_SOURCE_BUILDS"] == ""
+
+
+def test_published_package_cannot_be_its_own_source_build(tmp_path, monkeypatch):
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    wheel(dist)
+    monkeypatch.setattr(guard, "identity", lambda: {})
+    monkeypatch.setattr(guard, "source_build_allowance", lambda: ["fixture"])
+    with pytest.raises(ValueError, match="cannot be a source build"):
+        guard.check(dist, tmp_path / "proof.json", '["base"]')
+
+
+def test_transport_admits_sdists_only_for_named_packages(tmp_path, monkeypatch):
+    import sys
+
+    class Session:
+        def request(self, *args, **kwargs):
+            return SimpleNamespace(status_code=200)
+
+    class Preparer:
+        def prepare_linked_requirement(self, req, *args, **kwargs):
+            return "prepared"
+
+    monkeypatch.setitem(sys.modules, "pip._internal.cli.main", SimpleNamespace(main=lambda _: 0))
+    monkeypatch.setitem(sys.modules, "pip._internal.network.session", SimpleNamespace(PipSession=Session))
+    monkeypatch.setitem(sys.modules, "pip._internal.operations.prepare", SimpleNamespace(RequirementPreparer=Preparer))
+    monkeypatch.setenv("READINESS_SOURCE_BUILDS", "uptime-kuma-api")
+    resolver_spec = importlib.util.spec_from_file_location("resolver_sdist", ACTION / "resolve.py")
+    resolver = importlib.util.module_from_spec(resolver_spec)
+    resolver_spec.loader.exec_module(resolver)
+    resolver.constrain(tmp_path / "fixture.whl")
+    sdist = SimpleNamespace(is_wheel=False, is_file=False, url="https://files.pythonhosted.org/u-1.2.1.tar.gz")
+    req = SimpleNamespace(link=sdist, editable=False, user_supplied=False, is_direct=False, name="Uptime_Kuma_API")
+    assert Preparer().prepare_linked_requirement(req) == "prepared"
+    req.name = "other"
+    with pytest.raises(ValueError, match="non-editable wheels"):
+        Preparer().prepare_linked_requirement(req)
+    req.name = "uptime-kuma-api"
+    req.link = SimpleNamespace(is_wheel=False, is_file=True, url=(tmp_path / "u.tar.gz").as_uri())
+    with pytest.raises(ValueError, match="public index"):
+        Preparer().prepare_linked_requirement(req)
+
+
+def _interpreter():
+    spec = importlib.util.spec_from_file_location("readiness_interpreter", ACTION / "interpreter.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_readiness_python_defaults_to_314(tmp_path):
+    module = _interpreter()
+    assert module.readiness_python(tmp_path) == "3.14"
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n')
+    assert module.readiness_python(tmp_path) == "3.14"
+
+
+def test_readiness_python_is_declared_per_repo_within_the_floor(tmp_path):
+    module = _interpreter()
+    (tmp_path / "pyproject.toml").write_text('[tool.pipelines]\nreadiness-python = "3.12"\n')
+    assert module.readiness_python(tmp_path) == "3.12"
+    for bad in ('"3.11"', '"3"', "3.12", '"latest"'):
+        (tmp_path / "pyproject.toml").write_text(f"[tool.pipelines]\nreadiness-python = {bad}\n")
+        with pytest.raises(ValueError):
+            module.readiness_python(tmp_path)
+
+
+def test_readiness_action_runs_on_the_declared_interpreter():
+    action = (ACTION / "action.yml").read_text()
+    assert "interpreter.py" in action
+    assert '--python "$version" python -I' in action

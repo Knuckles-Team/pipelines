@@ -9,8 +9,29 @@ The release action builds wheels, checks their actual metadata and dependency
 closure, and rechecks their bytes immediately before upload and before creating
 an associated GitHub release. It publishes those wheels without rebuilding or
 `--skip-existing`. `requirements.txt` is a build prerequisite only; a missing
-file is allowed, but a failing install is not ignored. The Python path now
-builds/uploads wheels only: an sdist is not interchangeable with a checked wheel.
+file is allowed, but a failing install is not ignored.
+
+## Publishing, installing and readiness
+
+The rule has three parts (`PIPE-RELEASE-R008`):
+
+- **Publishing.** Every Python release publishes its checked wheel or wheels
+  and an sdist for every package the repository publishes. An isolated wheel
+  rebuild proves the sdist before upload. The sdist does not replace the
+  checked wheel: the wheel guard checks only wheel bytes.
+- **Installing.** Consumers install wheels only, with `--only-binary :all:`.
+  The only exceptions are the packages named in the consumer's
+  `allow-source-build` list (see below). An sdist never replaces a checked
+  wheel at install time.
+- **Readiness.** A dependency version is available when PyPI has a wheel that
+  is compatible with the target interpreter or platform. When that version has
+  a compatible wheel but no sdist, readiness reports the advisory
+  `sdist_missing`. This is a warning, not a failure. A version that has only an
+  sdist, or that has no compatible wheel, fails readiness. The exception is a
+  package on the consumer's `allow-source-build` list. Readiness reports
+  `partial_publish` only while the forge reports the release run as in
+  progress. After the run concludes, readiness applies the rules above to that
+  version.
 
 ## Ownership and inputs
 
@@ -92,6 +113,11 @@ context. The receipt is preserved as a workflow artifact. Verification rejects
 changed wheel sets, bytes, profiles, scope, source identity, or interpreter.
 Existing before/after source-verification actions remain in place.
 
+The proof runs on Python 3.14 unless the consumer declares
+`[tool.pipelines] readiness-python = "3.12"` (or `"3.13"`) because a runtime
+dependency truly blocks 3.14; nothing below the 3.12 floor is accepted, and the
+repository must record which dependency forces it.
+
 The resolver uses an isolated Python interpreter and disposable stdlib venv,
 `--ignore-installed`, `--only-binary=:all:`, and no package cache. Its working
 and home directories are outside the consumer checkout. Caller pip/uv config,
@@ -103,6 +129,27 @@ non-public artifacts are rejected. Transport accepts only HTTPS PyPI and
 files.pythonhosted.org URLs and does not follow redirects. Resolution installs the wheels but does not execute package build backends or
 import runtime packages. No interpreter is restarted in a populated venv, so
 installed .pth files are not evaluated.
+
+### Named source-build allowance
+
+A dependency that publishes only a source distribution cannot pass the
+wheel-only rule. The consumer repository may name such packages in its own
+`pyproject.toml`; the list is empty by default:
+
+```toml
+[tool.pipelines]
+allow-source-build = ["uptime-kuma-api"]
+```
+
+Each entry must be an exact distribution name; wildcards such as `:all:` are
+rejected, and the published package itself cannot be listed. Readiness then
+adds `--no-binary=<name>` for only those packages, the transport admits a public
+PyPI source archive only for a listed name, and the report check accepts that
+package's own sdist from files.pythonhosted.org with its SHA-256. The listed
+packages' build backends do execute during resolution; every other dependency
+stays wheel-only. The allowance is recorded in the receipt as `source_builds`,
+and verification fails if the declared list changed. The connector Dockerfile
+must exempt the same names from `--only-binary :all:` with `--no-binary <name>`.
 
 The receipt is workflow evidence, not a signature or an independent attestation
 against a malicious runner or build step. The guard does not establish runtime

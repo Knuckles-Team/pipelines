@@ -80,12 +80,6 @@ class _DedupedScope:
         self._seen: set[str] = set()
 
     def add(self, item: str) -> None:
-        # Only files pytest itself collects belong in a scope: naming a
-        # conftest.py or a helper module as an argument makes pytest import it
-        # as a test module, so its fixtures are never registered for siblings.
-        name = item.rsplit("/", 1)[-1]
-        if not (name.startswith("test_") or name.endswith("_test.py")):
-            return
         if item not in self._seen:
             self._seen.add(item)
             self._selected.append(item)
@@ -94,19 +88,27 @@ class _DedupedScope:
         return self._selected or [NONE]
 
 
+def _add_python_test(scope: _DedupedScope, path: str) -> None:
+    # Helpers must not become pytest arguments, but Rust crate names have
+    # no Python filename convention and use the collector directly.
+    name = path.rsplit("/", 1)[-1]
+    if name.startswith("test_") or name.endswith("_test.py"):
+        scope.add(path)
+
+
 def _handle_python_path(scope: _DedupedScope, path: str, root: Path, src_prefix: str, tests_prefix: str) -> bool:
     """Apply one changed path to ``scope``. True means the caller must return ``FULL``."""
     if _is_global_trigger(path, _GLOBAL_PYTHON_TRIGGERS):
         return True
     if path.startswith(tests_prefix) and path.endswith(".py"):
-        scope.add(path)
+        _add_python_test(scope, path)
         return False
     if not (path.startswith(src_prefix) and path.endswith(".py")):
         return False
     rel = path[len(src_prefix) :]
     mirror = _mirrored_test(tests_prefix.rstrip("/"), rel, root)
     if mirror is not None:
-        scope.add(mirror)
+        _add_python_test(scope, mirror)
         return False
     _add_import_graph_matches(scope, root, src_prefix, tests_prefix, rel)
     return False
@@ -122,7 +124,7 @@ def _add_import_graph_matches(scope: _DedupedScope, root: Path, src_prefix: str,
     for test_path in test_files_importing(
         root, src_prefix.rstrip("/"), tests_prefix=tests_prefix.rstrip("/"), changed_module=changed_module
     ):
-        scope.add(test_path)
+        _add_python_test(scope, test_path)
 
 
 def _python_scope(root: Path, changed: list[str], src_root: str, tests_root: str) -> list[str]:

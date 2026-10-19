@@ -1,7 +1,8 @@
 name: Build, publish and release a Python package
 description: >-
-  Build a Python package with uv, upload the wheel as a workflow artifact,
-  publish it to PyPI with twine, and create a matching GitHub release.
+  Build a Python package with uv, upload the wheel and sdist as a workflow artifact,
+  publish the wheel and the source distribution to PyPI with twine, and create
+  a matching GitHub release.
 inputs:
   pypi-token:
     description: PyPI API token used by twine.
@@ -63,12 +64,32 @@ runs:
       with:
         runtime-profiles: ${{ inputs.runtime-profiles }}
 
+    # PIPE-RELEASE-R008: the wheel and the source distribution publish together.
+    # The sdist builds into its own directory so dist/ stays wheel-only for the
+    # wheel guard, and the source phase proves it by an isolated wheel rebuild.
+    - name: Build source distribution
+      shell: bash
+      run: |
+        rm -rf dist-sdist
+        uv build --sdist --no-create-gitignore --out-dir dist-sdist
+
+    - name: Prove source distribution rebuild
+      uses: ./.pipeline-contract/.github/actions/wheel-readiness
+      with:
+        phase: source
+        directory: dist-sdist
+        runtime-profiles: ${{ inputs.runtime-profiles }}
+        receipt: sdist-readiness.json
+        artifact-name: release-readiness-sdist
+
     - name: Upload Artifact
       id: upload_artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ github.event.repository.name }}-${{ env.BUILD_VERSION }}
-        path: dist/*.whl
+        path: |
+          dist/*.whl
+          dist-sdist/*.tar.gz
         if-no-files-found: error
 
     - name: Verify release tag before publication
@@ -82,7 +103,9 @@ runs:
       shell: bash
       run: |
         "$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"
-        .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ dist/*.whl --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
+        sdists=(dist-sdist/*-"$BUILD_VERSION".tar.gz)
+        [ "${#sdists[@]}" -eq 1 ] && [ -f "${sdists[0]}" ] || { echo "the source distribution does not carry release $BUILD_VERSION" >&2; exit 1; }
+        .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ --skip-existing dist/*.whl dist-sdist/*.tar.gz --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
 
     - name: Create Release
       uses: ./.pipeline-contract/.github/actions/create-version-release

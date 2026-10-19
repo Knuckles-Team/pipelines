@@ -109,3 +109,57 @@ def test_scope_never_names_non_test_modules(repo: Repo, capsys: pytest.CaptureFi
     # A helper module named as a pytest argument is imported as a test module and
     # shadows its sibling conftest fixtures; only collectable test files are named.
     assert capsys.readouterr().out.splitlines() == ["tests/sub/test_importer.py"]
+
+
+@pytest.mark.parametrize(
+    ("language", "changed", "expected"),
+    [
+        (
+            "rust",
+            [
+                "crates/a/src/lib.rs",
+                "crates/a/src/extra.rs",
+                "crates/b/src/lib.rs",
+                "tests/test_python.py",
+                "README.md",
+            ],
+            ["eg-transaction", "other_crate"],
+        ),
+        (
+            "python",
+            [
+                "tests/test_python.py",
+                "tests/other_test.py",
+                "tests/helper.py",
+                "tests/__init__.py",
+                "crates/a/src/lib.rs",
+            ],
+            ["tests/other_test.py", "tests/test_python.py"],
+        ),
+        ("rust", [], ["NONE"]),
+        ("python", [], ["NONE"]),
+        ("rust", ["README.md", "tests/test_python.py"], ["NONE"]),
+        ("python", ["README.md", "crates/a/src/lib.rs"], ["NONE"]),
+        ("rust", ["Cargo.lock"], ["FULL"]),
+        ("rust", ["unmapped.rs"], ["FULL"]),
+    ],
+)
+def test_language_selection_preserves_names_and_ignores_unrelated_changes(
+    repo: Repo,
+    capsys: pytest.CaptureFixture[str],
+    language: str,
+    changed: list[str],
+    expected: list[str],
+) -> None:
+    base = repo.commit(
+        {
+            "crates/a/Cargo.toml": '[package]\nname = "eg-transaction"\n',
+            "crates/b/Cargo.toml": '[package]\nname = "other_crate"\n',
+            "README.md": "baseline\n",
+        },
+        "workspace baseline",
+    )
+    if changed:
+        repo.commit({path: "# changed\n" for path in changed}, "mixed changes")
+    assert repo.run("pr-test-scope", "--base-ref", base, "--lang", language) == 0
+    assert capsys.readouterr().out.splitlines() == expected
