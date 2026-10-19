@@ -31,8 +31,7 @@ def _history_with_receipts(repo: Repo, schema: int) -> str:
     old = {
         "schema_version": schema,
         "requirements": [
-            {"id": f"TEST-R00{i}", **_receipt(sha, schema)}
-            for i, sha in enumerate((live, reverted, unreachable), 1)
+            {"id": f"TEST-R00{i}", **_receipt(sha, schema)} for i, sha in enumerate((live, reverted, unreachable), 1)
         ],
     }
     repo.commit({"specs/demo/status.json": json.dumps(old)}, "record historical receipts")

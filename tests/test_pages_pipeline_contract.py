@@ -115,9 +115,7 @@ def test_content_source_is_validated_before_any_declared_authority_is_trusted() 
 def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
     document = _workflow()["document"]
     checkout = next(
-        step
-        for step in document["jobs"]["deploy"]["steps"]
-        if step.get("name") == "Checkout pipeline-owned scripts"
+        step for step in document["jobs"]["deploy"]["steps"] if step.get("name") == "Checkout pipeline-owned scripts"
     )
     assert checkout["with"]["sparse-checkout"].splitlines() == [
         "scripts/__init__.py",
@@ -167,7 +165,7 @@ def test_spec_dashboard_is_opt_in_and_after_readiness():
     assert text.index("Build spec delivery snapshot") > text.index("Publish readiness assets")
     assert text.index("Build spec delivery snapshot") < text.index("Upload artifact")
     assert "GITHUB_TOKEN: ${{ github.token }}" in text
-    assert "--repository \"$GITHUB_REPOSITORY\"" in text
+    assert '--repository "$GITHUB_REPOSITORY"' in text
 
 
 def test_dashboard_checkout_is_shallow():

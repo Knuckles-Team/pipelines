@@ -13,9 +13,7 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-spec = importlib.util.spec_from_file_location(
-    "readiness", Path(__file__).with_name("readiness.py")
-)
+spec = importlib.util.spec_from_file_location("readiness", Path(__file__).with_name("readiness.py"))
 assert spec is not None and spec.loader is not None
 guard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(guard)
@@ -23,9 +21,7 @@ require = guard.require
 
 
 def staged(directory: Path, package: str, version: str) -> dict[str, str]:
-    require(
-        directory.is_dir() and not directory.is_symlink(), "invalid staging directory"
-    )
+    require(directory.is_dir() and not directory.is_symlink(), "invalid staging directory")
     files = {}
     for path in sorted(directory.iterdir()):
         info = path.lstat()
@@ -33,11 +29,7 @@ def staged(directory: Path, package: str, version: str) -> dict[str, str]:
             stat.S_ISREG(info.st_mode) and info.st_nlink == 1,
             "linked/nonregular staged file",
         )
-        parser = (
-            guard.parse_wheel_filename
-            if path.name.endswith(".whl")
-            else guard.parse_sdist_filename
-        )
+        parser = guard.parse_wheel_filename if path.name.endswith(".whl") else guard.parse_sdist_filename
         name, release, *_ = parser(path.name)
         require(
             name == package and str(release) == version,
@@ -53,9 +45,7 @@ def manifest(directory: Path, package: str, version: str) -> dict:
     version = str(guard.Version(version))
     require(bool(re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", package)), "invalid package")
     require(bool(re.fullmatch(r"[A-Za-z0-9.!+_-]+", version)), "invalid version")
-    execution = {
-        key: os.environ.get(key, "") for key in ("GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT")
-    }
+    execution = {key: os.environ.get(key, "") for key in ("GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT")}
     require(
         all(re.fullmatch(r"[1-9][0-9]*", value) for value in execution.values()),
         "missing run identity",
@@ -108,11 +98,7 @@ def remote_files(expected: dict) -> dict[str, str]:
     for item in data["urls"]:
         require(isinstance(item, dict), "malformed remote file")
         name = item.get("filename")
-        checksum = (
-            item.get("digests", {}).get("sha256")
-            if isinstance(item.get("digests"), dict)
-            else None
-        )
+        checksum = item.get("digests", {}).get("sha256") if isinstance(item.get("digests"), dict) else None
         require(
             isinstance(name, str) and name in expected["files"],
             "unexpected remote filename",
@@ -122,9 +108,7 @@ def remote_files(expected: dict) -> dict[str, str]:
             isinstance(checksum, str) and bool(re.fullmatch(r"[0-9a-f]{64}", checksum)),
             "invalid remote digest",
         )
-        require(
-            checksum == expected["files"][name], "remote bytes differ from staged bytes"
-        )
+        require(checksum == expected["files"][name], "remote bytes differ from staged bytes")
         result[name] = checksum
     return result
 

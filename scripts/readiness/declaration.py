@@ -80,9 +80,7 @@ def _validate_project_and_applicability(value: Mapping[str, Any]) -> str:
         "readiness-project-invalid",
     )
     applicability = value.get("applicability")
-    _require(
-        isinstance(applicability, Mapping), "readiness-applicability-invalid"
-    )
+    _require(isinstance(applicability, Mapping), "readiness-applicability-invalid")
     _require(
         set(applicability) == APPLICABILITY_KEYS,
         "readiness-applicability-invalid",
@@ -102,24 +100,19 @@ def _validate_standards(standards: object) -> None:
     standard_ids: set[str] = set()
     for standard in standards:
         _require(
-            isinstance(standard, Mapping)
-            and set(standard) == {"id", "kind", "level"},
+            isinstance(standard, Mapping) and set(standard) == {"id", "kind", "level"},
             "readiness-standards-invalid",
         )
         identifier = standard.get("id")
         kind = standard.get("kind")
         level = standard.get("level")
         _require(
-            isinstance(identifier, str)
-            and re.fullmatch(
-                r"[A-Za-z0-9][A-Za-z0-9 .:_/-]{1,127}", identifier
-            ),
+            isinstance(identifier, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 .:_/-]{1,127}", identifier),
             "readiness-standards-invalid",
         )
         _require(identifier not in standard_ids, "readiness-standards-invalid")
         _require(
-            kind in STANDARD_KINDS
-            and level in {"normative", "draft", "advisory"},
+            kind in STANDARD_KINDS and level in {"normative", "draft", "advisory"},
             "readiness-standards-invalid",
         )
         _require(
@@ -174,9 +167,7 @@ def _validate_budgets(budgets: object) -> None:
         )
 
 
-def _validate_readiness_input(
-    value: Mapping[str, Any], schema: Mapping[str, Any]
-) -> dict[str, Any]:
+def _validate_readiness_input(value: Mapping[str, Any], schema: Mapping[str, Any]) -> dict[str, Any]:
     required = _validate_schema(schema)
     _require(
         set(value) == required and value.get("schema_version") == SCHEMA_VERSION,
@@ -201,14 +192,10 @@ def _validate_readiness_input(
     }
 
 
-def _validate_served_capability(
-    name: str, raw: Mapping[str, Any], kind: str
-) -> None:
+def _validate_served_capability(name: str, raw: Mapping[str, Any], kind: str) -> None:
     _require(kind != "library", "library-capability-unsupported")
     _require(kind != "docs-only", "docs-only-served-capability-unsupported")
-    _require(
-        isinstance(raw.get("artifact"), str), "capability-authority-required"
-    )
+    _require(isinstance(raw.get("artifact"), str), "capability-authority-required")
     for field, expected in OAUTH_METADATA_FIELDS.items():
         _require(
             field not in raw or raw[field] == expected,
@@ -244,14 +231,11 @@ def _validate_capability_entry(name: str, raw: object, kind: str) -> None:
     _require(not set(raw) - allowed, "capability-entry-invalid")
     applicable = raw["applicable"]
     if not applicable:
-        _require(
-            set(raw) == {"applicable"}, "capability-entry-inapplicable-data"
-        )
+        _require(set(raw) == {"applicable"}, "capability-entry-inapplicable-data")
         return
     if name == "skills":
         _require(
-            set(raw) == {"applicable", "path"}
-            and isinstance(raw.get("path"), str),
+            set(raw) == {"applicable", "path"} and isinstance(raw.get("path"), str),
             "skills-path-required",
         )
         return

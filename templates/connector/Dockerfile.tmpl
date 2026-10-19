@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1
+# GENERATED from pipelines/templates/connector/Dockerfile.tmpl by
+# pipelines/scripts/connector_dockerfile.py. Do not hand-edit: change the template or
+# the connector's entry in the script's EXCEPTIONS table, then regenerate.
+#
+# Wheel-only connector image. The published @@DIST@@ wheel is installed from PyPI at
+# the exact version in pyproject.toml (kept in sync by .bumpversion.cfg); no source is
+# copied into any stage, and every distribution in the closure must be a wheel
+# (--only-binary :all:). The release pipeline publishes the wheel before this build,
+# so the install retries while the new version propagates through the index.
+#
+#   docker build --target <stage> -t @@DIST@@:local -f docker/Dockerfile .
+#   stages: @@STAGES@@
+FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6 AS builder-base
+COPY --from=ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85ab0f263ef12f492d8476aa3a2e4e1e333f7d67fbdd923d00a506a516a /uv /uvx /bin/
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_SYSTEM_PYTHON=1 \
+    UV_HTTP_TIMEOUT=3600
+@@BUILDERS@@
+@@EXTRA_STAGES@@
+FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6 AS runtime-base
+ARG HOST=@@HOST@@
+ARG PORT=@@PORT@@
+ARG TRANSPORT="stdio"
+ARG AUTH_TYPE="none"
+ENV HOST=${HOST} \
+    PORT=${PORT} \
+    TRANSPORT=${TRANSPORT} \
+    AUTH_TYPE=${AUTH_TYPE} \
+    PYTHONUNBUFFERED=1 \
+    PATH="/usr/local/bin:${PATH}" \
+    HOME=@@HOME@@ \
+    XDG_CONFIG_HOME=@@HOME@@/.config \
+    XDG_CACHE_HOME=@@HOME@@/.cache \
+    XDG_STATE_HOME=@@HOME@@/.local/state
+@@RUNTIME_APT@@@@RUNTIME_COPIES@@# Fixed non-root identity for least-privilege runtime and stable volume ownership.
+RUN groupadd --system --gid @@UID@@ app \
+    && useradd --system --uid @@UID@@ --gid @@UID@@ --no-create-home \
+        --home-dir @@HOME@@ --shell /usr/sbin/nologin app \
+    && install -d -o @@UID@@ -g @@UID@@ -m 0700 \
+        @@HOME@@/.config @@HOME@@/.cache @@HOME@@/.local/state
+@@RUNTIMES@@

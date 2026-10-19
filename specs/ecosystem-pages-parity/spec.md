@@ -21,7 +21,7 @@ An external contributor can inspect a public receipt and see which ecosystem sit
 
 ## Interfaces and exclusions
 
-The declaration contains `{repository, revision, content_source, shared_theme_enabled}` and optional site URL. The schema-versioned receipt carries source/comparison digests and no secrets. Runtime deployment manifests, identity routing, and site content belong to their owners. [graph-os portable deployment](https://github.com/Knuckles-Team/graph-os/tree/main/specs/portable-deployment) owns its runtime contract; [repository-manager](https://github.com/Knuckles-Team/repository-manager/tree/main/specs) owns repository catalog inputs. This spec has sufficient detail without those documents.
+The declaration contains `{repository, revision, content_source, shared_theme_enabled}` and optional site URL. The schema-versioned receipt carries source/comparison digests and no secrets. Runtime deployment manifests, identity routing, and site content belong to their owners. [arbora portable deployment](https://github.com/Knuckles-Team/arbora/tree/main/specs/portable-deployment) owns its runtime contract; [repository-manager](https://github.com/Knuckles-Team/repository-manager/tree/main/specs) owns repository catalog inputs. This spec has sufficient detail without those documents.
 
 ## Traceability
 

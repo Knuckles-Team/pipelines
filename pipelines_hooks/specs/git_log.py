@@ -34,10 +34,7 @@ def _declarations(message: str, trailers: str) -> str:
     subject = message.splitlines()[0] if message else ""
     if subject.lower().startswith("spec:"):
         trailers += "\n" + subject.partition(":")[2].strip()
-    return expand_ranges("\n".join(
-        line for line in trailers.splitlines()
-        if not NONE_EXEMPTION.match(line.strip())
-    ))
+    return expand_ranges("\n".join(line for line in trailers.splitlines() if not NONE_EXEMPTION.match(line.strip())))
 
 
 def _merge_members(root: Path, sha: str) -> set[str]:
@@ -70,8 +67,7 @@ def landing_commits(root: Path, head: str) -> dict[str, str]:
     stops counting as a landing (SPEC-STATUS-LIFECYCLE.md Sec3).
     """
     log_format = (
-        f"--format={_RECORD_SEP}%H{_FIELD_SEP}%B{_FIELD_SEP}"
-        f"%(trailers:key=Spec,valueonly,unfold=true){_FIELD_SEP}"
+        f"--format={_RECORD_SEP}%H{_FIELD_SEP}%B{_FIELD_SEP}%(trailers:key=Spec,valueonly,unfold=true){_FIELD_SEP}"
     )
     raw = git_text(root, ("log", head, "--no-merges", log_format, "--name-only"))
     commits: dict[str, str] = {}

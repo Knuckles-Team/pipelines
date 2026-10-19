@@ -1,0 +1,188 @@
+name: Advisory
+
+# The weekly advisory workflow of the gate standard (reference/gate-standard.md).
+# It runs every advisory scanner over the caller's default branch, writes one
+# Markdown report (job summary and the `advisory-report` artifact) and never
+# fails: a finding, a gate that cannot run and a scanner that cannot be
+# provisioned are all report rows, not a red check.
+#
+# Caller contract (copy):
+#
+#   on:
+#     schedule:
+#       - cron: '17 6 * * 1'
+#     workflow_dispatch: {}
+#   jobs:
+#     advisory:
+#       uses: Knuckles-Team/pipelines/.github/workflows/advisory_pipeline.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      gates:
+        description: Space-separated `pipelines-hook` gate ids to report on.
+        required: false
+        type: string
+        default: >-
+          complexity-census kiss-census jscpd-census ste-census ste-staleness-census
+          no-stub swallowed-errors event-loop-blocking import-cycles env-sprawl stdout-writes
+          public-surface supply-chain root-hygiene gitignore-convergence sprawl
+      python-tools:
+        description: Also report codespell, vulture and bandit (uvx, pinned).
+        required: false
+        type: boolean
+        default: true
+      extra-commands:
+        description: Newline-separated shell commands, each reported as its own row (for example hadolint or a license scan).
+        required: false
+        type: string
+        default: ''
+      scanners:
+        description: Provision the pinned native scanners (cccc, kiss, dupehound, jscpd).
+        required: false
+        type: boolean
+        default: true
+      runner:
+        description: JSON runner label or label list for runs-on.
+        required: false
+        type: string
+        default: '"ubuntu-latest"'
+
+permissions:
+  contents: read
+
+jobs:
+  advisory:
+    name: advisory
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: '3.14'
+
+      # The gate package and scanner recipes come from the pipelines revision
+      # that defines this workflow, outside the caller's tree so tree-wide
+      # gates do not see it.
+      - name: Fetch the pipelines revision of this workflow
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/pipelines-src"
+          git init -q "$src"
+          git -C "$src" fetch -q --depth 1 "https://github.com/$PIPELINES_REPOSITORY" "$PIPELINES_SHA"
+          git -C "$src" checkout -q FETCH_HEAD
+          echo "PIPELINES_SRC=$src" >> "$GITHUB_ENV"
+          echo "SCANNER_ROOT=$RUNNER_TEMP/pipelines-scanners" >> "$GITHUB_ENV"
+          key="$(cd "$src" && cat scripts/install_scanners.sh scripts/install_jscpd.py scripts/patches/jscpd-markdown-glob.patch pipelines_hooks/core/jscpd_build.py | sha256sum | cut -c1-64)"
+          echo "SCANNER_KEY=$key" >> "$GITHUB_ENV"
+
+      - name: Install pinned jscpd build compiler
+        if: inputs.scanners
+        continue-on-error: true
+        run: rustup toolchain install 1.97.0 --profile minimal
+
+      - name: Restore pinned scanner toolchain
+        if: inputs.scanners
+        id: scanner-cache
+        continue-on-error: true
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.SCANNER_ROOT }}
+          key: pipelines-scanners-${{ runner.os }}-${{ runner.arch }}-${{ env.SCANNER_KEY }}
+
+      - name: Provision pinned scanner toolchain
+        if: inputs.scanners && steps.scanner-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: bash "$PIPELINES_SRC/scripts/install_scanners.sh" "$SCANNER_ROOT" >/dev/null
+
+      - name: Save pinned scanner toolchain
+        if: inputs.scanners && steps.scanner-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.SCANNER_ROOT }}
+          key: ${{ steps.scanner-cache.outputs.cache-primary-key }}
+
+      - name: Put scanners on PATH
+        if: inputs.scanners
+        continue-on-error: true
+        run: bash "$PIPELINES_SRC/scripts/install_scanners.sh" "$SCANNER_ROOT" >> "$GITHUB_PATH"
+
+      - name: Write the advisory report
+        env:
+          GATES: ${{ inputs.gates }}
+          PYTHON_TOOLS: ${{ inputs.python-tools }}
+          EXTRA_COMMANDS: ${{ inputs.extra-commands }}
+        run: |
+          set -uo pipefail
+          report="$RUNNER_TEMP/advisory-report.md"
+          details="$RUNNER_TEMP/advisory-details.md"
+          logs="$RUNNER_TEMP/advisory-logs"
+          mkdir -p "$logs"
+          base="$(git rev-list --max-parents=0 HEAD | tail -1)"
+          export PRE_COMMIT_FROM_REF="$base" CX_DUP_BASE_REF="$base"
+          {
+            echo "# Advisory report"
+            echo
+            echo "Commit \`$(git rev-parse HEAD)\`. Advisory only: nothing here blocks a pull request."
+            echo
+            echo "| Check | Exit | Result |"
+            echo "|---|---|---|"
+          } > "$report"
+          : > "$details"
+          row() {
+            local name="$1" log="$logs/$1.log"
+            shift
+            # The step runs under the runner's default `bash -e {0}` wrapper, so
+            # the gate call must be errexit-safe: a finding (exit 1) or a gate
+            # that cannot run (exit 2/124) has to become a report row, never a
+            # red job. The guard keeps the status for the table below while
+            # letting the rest of the script keep its fail-fast behaviour.
+            local status=0
+            timeout 900 bash -c "$*" > "$log" 2>&1 || status=$?
+            local result="clean"
+            case "$status" in 0) ;; 1) result="findings" ;; *) result="could not run" ;; esac
+            echo "| \`$name\` | $status | $result |" >> "$report"
+            if [[ "$status" != 0 ]]; then
+              { echo; echo "## $name"; echo; echo '```text'; tail -n 80 "$log"; echo '```'; } >> "$details"
+            fi
+          }
+          for gate in $GATES; do
+            row "$gate" "uvx --quiet --from '$PIPELINES_SRC' pipelines-hook $gate"
+          done
+          if [[ "$PYTHON_TOOLS" == "true" ]]; then
+            row codespell "uvx --quiet codespell@2.4.1 --skip='*.lock,*.svg,.git' ."
+            row vulture "uvx --quiet vulture@2.14 --min-confidence 80 \$(git ls-files '*.py' | grep -v '^tests/' | head -n 4000)"
+            row bandit "uvx --quiet bandit@1.8.6 -q -ll -r . -x ./tests,./.venv"
+          fi
+          index=0
+          while IFS= read -r command; do
+            [[ -z "$command" ]] && continue
+            index=$((index + 1))
+            row "extra-$index" "$command"
+          done <<< "$EXTRA_COMMANDS"
+          cat "$details" >> "$report"
+          cat "$report" >> "$GITHUB_STEP_SUMMARY"
+          echo "REPORT=$report" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: Upload the advisory report
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: advisory-report
+          path: ${{ env.REPORT }}
+          if-no-files-found: ignore

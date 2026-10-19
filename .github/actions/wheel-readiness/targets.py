@@ -1,4 +1,5 @@
 """Closed target set for the existing Maturin publication matrix."""
+
 from __future__ import annotations
 
 import re
@@ -19,8 +20,8 @@ def validate(target: str, context: dict) -> None:
     environment = context["environment"]
     if interpreter["platform"] != expected_os or interpreter["machine"].lower() not in machines:
         raise ValueError("proof was not produced on the declared target")
-    if interpreter["implementation"] != "CPython" or not interpreter["version"].startswith("3.13."):
-        raise ValueError("target proof requires CPython 3.13")
+    if interpreter["implementation"] != "CPython" or not interpreter["version"].startswith("3.14."):
+        raise ValueError("target proof requires CPython 3.14")
     expected = {
         "sys_platform": expected_os,
         "platform_machine": interpreter["machine"],
@@ -30,7 +31,7 @@ def validate(target: str, context: dict) -> None:
         "os_name": "nt" if expected_os == "win32" else "posix",
         "platform_system": {"linux": "Linux", "darwin": "Darwin", "win32": "Windows"}[expected_os],
         "python_full_version": interpreter["version"],
-        "python_version": "3.13",
+        "python_version": "3.14",
     }
     if any(environment.get(key) != value for key, value in expected.items()):
         raise ValueError("target marker environment disagrees with interpreter")
@@ -63,12 +64,12 @@ def validate_interpreter_tag(implementation: str, abi: str) -> None:
     if implementation == "py3":
         valid = abi == "none"
     elif re.fullmatch(r"py3\d+", implementation):
-        valid = int(implementation[2:]) <= 313 and abi == "none"
-    elif implementation == "cp313":
-        valid = abi in {"cp313", "abi3", "none"}
+        valid = int(implementation[2:]) <= 314 and abi == "none"
+    elif implementation == "cp314":
+        valid = abi in {"cp314", "abi3", "none"}
     elif re.fullmatch(r"cp3\d+", implementation):
-        valid = 32 <= int(implementation[2:]) < 313 and abi == "abi3"
+        valid = 32 <= int(implementation[2:]) < 314 and abi == "abi3"
     else:
         valid = False
     if not valid:
-        raise ValueError("compatibility tag disagrees with CPython 3.13 proof")
+        raise ValueError("compatibility tag disagrees with CPython 3.14 proof")

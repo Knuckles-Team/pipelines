@@ -31,7 +31,7 @@ runs:
       if: runner.os != 'Linux'
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
-        python-version: '3.13'
+        python-version: '3.14'
 
     - name: Build wheels
       uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
@@ -40,7 +40,7 @@ runs:
         manylinux: ${{ inputs.manylinux }}
         # Linux resolves inside the existing manylinux container; other
         # targets resolve the interpreter placed on PATH by setup-python.
-        args: --release --out dist --interpreter ${{ runner.os == 'Linux' && 'python3.13' || 'python' }}
+        args: --release --out dist --interpreter ${{ runner.os == 'Linux' && 'python3.14' || 'python' }}
 
     - name: Prove native wheel readiness
       uses: ./.pipeline-contract/.github/actions/wheel-readiness

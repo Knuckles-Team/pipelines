@@ -58,7 +58,7 @@ python -m pip install pipelines-hooks
 pipelines-hook public-surface
 ```
 
-For one of the reusable gates, configure it in `.config/pre-commit.yaml`, pin this repository to a reviewed full commit SHA, and run:
+For the shared gates, add the `secrets`, `tests-fast` and `spec` hooks to `.config/pre-commit.yaml` with `rev: main` (see [the gate standard](reference/gate-standard.md)), and run:
 
 ```bash
 pre-commit run -c .config/pre-commit.yaml --all-files
@@ -77,7 +77,7 @@ uv run --frozen python -m pytest -q
 uvx pre-commit run --config .config/pre-commit.yaml --all-files
 ```
 
-Open a pull request against `main` from a topic branch; CI runs the same pre-commit configuration.
+Open a pull request against `main` from a topic branch; CI runs the same pre-commit configuration and the affected tests. Main and release tags run the full suite and the dependency audit. The advisory scanners report weekly and never block.
 
 Every new hook invariant needs positive and adversarial fixtures. Workflow changes need contract tests for inputs and permissions. Stage only reviewed files and keep generated environment output untracked.
 
@@ -116,3 +116,7 @@ at most once. Policy requires version 1, a total `budget_seconds` (1–300), and
 [the validation contract](specs/shared-validation/spec.md).
 The default evidence directory is a fresh private temporary directory;
 `--evidence-dir` selects its parent. Version 1 needs POSIX process groups.
+
+Evidence corrections retain their requirement IDs. See [evidence withdrawal](reference/spec-standard.md#withdrawing-invalid-verification-evidence) for the restricted `Spec-Withdraw` contract.
+
+The [privacy identity contract](reference/privacy.md) distinguishes Git display names from strict local identifiers.

@@ -4,10 +4,12 @@ Executed only with an isolated interpreter in a disposable venv. The pip
 interfaces used here are checked by offline integration tests; missing interfaces
 are fatal. Never use this module as a general-purpose package installer.
 """
+
 from __future__ import annotations
 
 import os
 import json
+import re
 from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -46,9 +48,21 @@ def local_wheel_path(url: str) -> Path:
     return path.resolve()
 
 
+def canonicalize_name(name: str) -> str:
+    """PEP 503 normalized distribution name."""
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def source_builds() -> frozenset[str]:
+    """Exact names the caller's declared allowance may build from source."""
+    raw = os.environ.get("READINESS_SOURCE_BUILDS", "")
+    return frozenset(canonicalize_name(name) for name in raw.split(",") if name)
+
+
 def constrain(root: Path | None) -> None:
     request = PipSession.request
     prepare = RequirementPreparer.prepare_linked_requirement
+    allowed = source_builds()
 
     def public_request(self, method, url, *args, **kwargs):
         if not public_url(url):
@@ -62,8 +76,11 @@ def constrain(root: Path | None) -> None:
 
     def wheel_only(self, req, *args, **kwargs):
         link = req.link
-        if link is None or not link.is_wheel or req.editable:
+        sdist_allowed = link is not None and not link.is_wheel and canonicalize_name(req.name or "") in allowed
+        if link is None or req.editable or not (link.is_wheel or sdist_allowed):
             raise ValueError("release resolution requires non-editable wheels")
+        if sdist_allowed and link.is_file:
+            raise ValueError("allowed source builds must come from the public index")
         if link.is_file:
             path = local_wheel_path(link.url)
             if path != root or not req.user_supplied:

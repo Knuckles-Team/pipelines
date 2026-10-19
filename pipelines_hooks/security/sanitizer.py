@@ -17,14 +17,20 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import nul_split, run_git
 from pipelines_hooks.security.marker import is_exempt
 from pipelines_hooks.security.sanitizer_rules import (
-    ALLOWED_TXT_NAMES, EXCLUDED_DIRS, EXCLUDED_EXTENSIONS, MAX_SCAN_BYTES, SECRET_PATTERNS,
-    TRANSIENT_NOTE_PATTERNS, TRANSIENT_PY_PATTERNS, is_placeholder,
+    ALLOWED_TXT_NAMES,
+    EXCLUDED_DIRS,
+    EXCLUDED_EXTENSIONS,
+    MAX_SCAN_BYTES,
+    SECRET_PATTERNS,
+    TRANSIENT_NOTE_PATTERNS,
+    TRANSIENT_PY_PATTERNS,
+    is_placeholder,
 )
 
 
 def _walked_files(root: Path) -> list[Path]:
     """Fallback inventory: hidden source directories stay in, generated trees go."""
-    files = []
+    files: list[Path] = []
     for directory, subdirectories, names in os.walk(root):
         subdirectories[:] = [name for name in subdirectories if name not in EXCLUDED_DIRS]
         files.extend(Path(directory) / name for name in names)
@@ -53,7 +59,9 @@ def naming_violations(relative: Path) -> list[str]:
     if relative.parent != Path("."):
         return found
     if relative.suffix == ".txt" and relative.name.lower() not in ALLOWED_TXT_NAMES:
-        found.append(f"Non-standard root-level text file detected: '{relative.name}'. Only {sorted(ALLOWED_TXT_NAMES)} are allowed.")
+        found.append(
+            f"Non-standard root-level text file detected: '{relative.name}'. Only {sorted(ALLOWED_TXT_NAMES)} are allowed."
+        )
     if relative.suffix == ".py" and any(p.fullmatch(relative.name) for p in TRANSIENT_PY_PATTERNS):
         found.append(f"Transient/temporary script detected in root: '{relative.name}'. Move it or delete it.")
     return found
@@ -63,7 +71,7 @@ def line_secret_labels(line: str) -> list[str]:
     """Credential labels one source line exposes, unless it carries the justified marker."""
     if is_exempt(line):
         return []
-    labels = []
+    labels: list[str] = []
     for label, pattern in SECRET_PATTERNS:
         matches = pattern.findall(line)
         labels.extend(label for m in matches if not is_placeholder(m[0] if isinstance(m, tuple) else m))

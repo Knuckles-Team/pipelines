@@ -58,7 +58,8 @@
     "PIPE-RELEASE-R007.3",
     "PIPE-RELEASE-R007.4",
     "PIPE-RELEASE-R007.5",
-    "PIPE-RELEASE-R007.6"
+    "PIPE-RELEASE-R007.6",
+    "PIPE-RELEASE-R008"
   ],
   "requirements": [
     {
@@ -460,8 +461,10 @@
     {
       "id": "PIPE-RELEASE-R007",
       "title": "Shared gates workflow, tag-only publish guard and fast-tests hook",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": [],
       "rollup_of": [
         "PIPE-RELEASE-R007.1",
@@ -475,44 +478,73 @@
     {
       "id": "PIPE-RELEASE-R007.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
     },
     {
       "id": "PIPE-RELEASE-R007.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "4f1e1f0aff4a"
+      ],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R008",
+      "title": "Python release publishes the wheel and the source distribution together",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5433baf91995",
+        "8d87cddcb719",
+        "c5cad0580cf9"
+      ],
+      "verified_by": [
+        "tests/test_python_sdist_output.py:106",
+        "tests/test_python_sdist_output.py:27",
+        "tests/test_python_sdist_output.py:47",
+        "tests/test_python_sdist_output.py:55",
+        "tests/test_python_sdist_output.py:83"
+      ]
     }
   ]
 }

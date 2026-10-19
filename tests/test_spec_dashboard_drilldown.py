@@ -12,9 +12,7 @@ from scripts.spec_dashboard_drilldown import (
 
 
 def page(components):
-    return "".join(
-        f'<a href="{anchor_for("repository", "", c)}">{c}</a>' for c in components
-    )
+    return "".join(f'<a href="{anchor_for("repository", "", c)}">{c}</a>' for c in components)
 
 
 @pytest.mark.spec("PIPE-PAGES-R014.1")
@@ -37,9 +35,7 @@ def test_unresolved_component_link_fails():
     ok = page(comps) + '<a href="#spec-A"></a><section id="spec-A"></section>'
     assert drilldown_exit(ok) == 0
     assert drilldown_exit(page(comps[1:])) == 1
-    assert check_drilldown_links(ok + '<a href="#req-Z"></a>') == [
-        "unresolved anchor: #req-Z"
-    ]
+    assert check_drilldown_links(ok + '<a href="#req-Z"></a>') == ["unresolved anchor: #req-Z"]
 
 
 @pytest.mark.spec("PIPE-PAGES-R014.3")

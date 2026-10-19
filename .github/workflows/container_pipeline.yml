@@ -22,7 +22,7 @@ on:
         type: string
         default: ''
       runtime_profile:
-        description: Verified /2 profile (graphos or connector/<distribution>/<mcp|agent>); empty disables runtime staging.
+        description: Verified /2 profile (arbora or connector/<distribution>/<mcp|agent>); empty disables runtime staging.
         required: false
         type: string
         default: ''
@@ -31,8 +31,8 @@ on:
         required: false
         type: string
         default: ''
-      graph_os_revision:
-        description: Full GraphOS source SHA; required exactly when the profile includes graph-os.
+      arbora_revision:
+        description: Full Arbora source SHA; required exactly when the profile includes arbora.
         required: false
         type: string
         default: ''
@@ -65,8 +65,8 @@ jobs:
 
     # Two right-sized images from the ONE multi-stage docker/Dockerfile, one matrix
     # leg per build target:
-    #   - agent  (DEFAULT, full runtime): tags latest / <branch> / sha-<sha>
-    #   - mcp    (slim, MCP-server only):  tags mcp / <branch>-mcp / sha-<sha>-mcp
+    #   - agent  (DEFAULT, full runtime): tags latest / <version> / <branch> / sha-<sha>
+    #   - mcp    (slim, MCP-server only):  tags mcp / <version>-mcp / <branch>-mcp / sha-<sha>-mcp
     # The agent image overlaps latest/main; mcp is the slimmed variant tag. fail-fast is
     # off so one leg failing (e.g. a single-server package without that target) never
     # cancels the other.
@@ -98,7 +98,7 @@ jobs:
           DOCKERFILE: ${{ inputs.dockerfile }}
           REQUESTED_TARGET: ${{ inputs.build_target }}
           MATRIX_TARGET: ${{ matrix.target }}
-          RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.graph_os_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
+          RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.arbora_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
         run: |
           set -euo pipefail
           if [[ -n "$RUNTIME_REQUEST" ]]; then
@@ -168,7 +168,7 @@ jobs:
           artifact-id: ${{ inputs.runtime_artifact_id }}
           profile: ${{ inputs.runtime_profile }}
           source-revision: ${{ inputs.source_revision }}
-          graph-os-revision: ${{ inputs.graph_os_revision }}
+          arbora-revision: ${{ inputs.arbora_revision }}
           lock-sha256: ${{ inputs.runtime_lock_sha256 }}
           freeze-sha256: ${{ inputs.source_freeze_sha256 }}
 
@@ -182,6 +182,77 @@ jobs:
           registry: ${{ secrets.DOCKER_REGISTRY }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Version tags (<version> on the agent leg, <version>-mcp on the mcp leg) so a
+      # deploy can pin by release instead of a floating tag or a digest. The version is
+      # the package's own: [project].version of pyproject.toml, else [package].version
+      # of Cargo.toml, read from the build context and then the repo root. A setuptools
+      # dynamic version (`[tool.setuptools.dynamic] version = {attr = "..."}`) is read
+      # from that module's literal `__version__`. A package with none of these skips
+      # the version tags with a notice; the
+      # other tags are unchanged. A version that is not a valid Docker tag fails.
+      - name: Resolve package version
+        id: version
+        if: steps.target.outputs.exists == 'true'
+        env:
+          BUILD_CONTEXT: ${{ inputs.build_context }}
+        run: |
+          set -euo pipefail
+          read_version() {
+            # $1 = manifest, $2 = table holding a static `version = "..."`
+            awk -v table="$2" '
+              {sub(/\r$/, "", $0)}
+              /^[[:space:]]*\[/ {in_table = ($0 ~ "^[[:space:]]*\\[" table "\\][[:space:]]*(#.*)?$"); next}
+              in_table && /^[[:space:]]*version[[:space:]]*=/ {
+                line = $0; sub(/^[^=]*=[[:space:]]*/, "", line)
+                if (match(line, /^"[^"]*"/) || match(line, /^\047[^\047]*\047/)) {print substr(line, 2, RLENGTH - 2); exit}
+              }' "$1"
+          }
+          read_dynamic_version() {
+            # $1 = project dir. setuptools `version = {attr = "pkg.mod.__version__"}`:
+            # read the literal `__version__ = "..."` from that module's source (never imported).
+            local attr module file
+            attr="$(awk '
+              {sub(/\r$/, "", $0)}
+              /^[[:space:]]*\[/ {in_table = ($0 ~ "^[[:space:]]*\\[tool\\.setuptools\\.dynamic\\][[:space:]]*(#.*)?$"); next}
+              in_table && /^[[:space:]]*version[[:space:]]*=/ {
+                if (match($0, /attr[[:space:]]*=[[:space:]]*"[A-Za-z0-9_.]+"/)) {
+                  value = substr($0, RSTART, RLENGTH); sub(/^[^"]*"/, "", value); sub(/"$/, "", value); print value; exit
+                }
+              }' "$1/pyproject.toml")"
+            [[ "$attr" == *.* ]] || return 0
+            module="${attr%.*}"; module="${module//.//}"
+            for file in "$1/$module.py" "$1/$module/__init__.py" "$1/src/$module.py" "$1/src/$module/__init__.py"; do
+              if [[ -f "$file" ]]; then
+                sed -nE "s/^${attr##*.}[[:space:]]*=[[:space:]]*[\"']([^\"']+)[\"'].*/\\1/p" "$file" | head -n 1
+                return 0
+              fi
+            done
+          }
+          version=''
+          for dir in "$BUILD_CONTEXT" .; do
+            if [[ -z "$version" && -f "$dir/pyproject.toml" ]]; then
+              version="$(read_version "$dir/pyproject.toml" project)"
+            fi
+            if [[ -z "$version" && -f "$dir/pyproject.toml" ]]; then
+              version="$(read_dynamic_version "$dir")"
+            fi
+            if [[ -z "$version" && -f "$dir/Cargo.toml" ]]; then
+              version="$(read_version "$dir/Cargo.toml" package)"
+            fi
+          done
+          version="${version#v}"
+          version="${version//+/-}"
+          if [[ -z "$version" ]]; then
+            echo '::notice::No static package version found; skipping version tags.'
+            echo 'version=' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ ! "$version" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,119}$ ]]; then
+            echo '::error::Package version is not a valid Docker tag.'
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Extract metadata for Docker
         id: meta
@@ -198,6 +269,7 @@ jobs:
             type=ref,event=pr,suffix=${{ matrix.suffix }}
             type=sha,suffix=${{ matrix.suffix }}
             type=raw,value=${{ matrix.main_tag }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.version.outputs.version != '' }}
 
       # Build + push with up to 3 attempts. Docker Hub intermittently 400s a layer
       # blob PUT ("400 Bad request" HTML from the CDN edge) on an otherwise-healthy

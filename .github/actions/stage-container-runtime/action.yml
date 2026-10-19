@@ -11,13 +11,13 @@ inputs:
     description: One immutable artifact ID from this workflow run.
     default: ''
   profile:
-    description: /2 graphos or connector/<distribution>/<mcp|agent>; empty is a no-op.
+    description: /2 arbora or connector/<distribution>/<mcp|agent>; empty is a no-op.
     default: ''
   source-revision:
     description: Full source SHA matching the caller checkout and frozen profile.
     default: ''
-  graph-os-revision:
-    description: Full GraphOS SHA if the profile contains graph-os.
+  arbora-revision:
+    description: Full Arbora SHA if the profile contains arbora.
     default: ''
   lock-sha256:
     description: Expected requirements.lock SHA256.
@@ -37,7 +37,7 @@ runs:
       shell: bash
       env:
         PROFILE: ${{ inputs.profile }}
-        PROVENANCE: ${{ inputs.artifact-id }}${{ inputs.source-revision }}${{ inputs.graph-os-revision }}${{ inputs.lock-sha256 }}${{ inputs.freeze-sha256 }}
+        PROVENANCE: ${{ inputs.artifact-id }}${{ inputs.source-revision }}${{ inputs.arbora-revision }}${{ inputs.lock-sha256 }}${{ inputs.freeze-sha256 }}
       run: |
         set -euo pipefail
         if [[ -n "$PROFILE" ]]; then
@@ -53,7 +53,7 @@ runs:
       if: steps.mode.outputs.enabled == 'true'
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
-        python-version: '3.13'
+        python-version: '3.14'
 
     - name: Validate runtime request before download
       id: request

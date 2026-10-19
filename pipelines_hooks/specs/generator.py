@@ -14,12 +14,13 @@ from typing import NamedTuple
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text
+from pipelines_hooks.specs.aliases import canonical_lists, canonical_sets, load_aliases
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.git_log import landing_commits, reachable_shas, reverted_shas
 from pipelines_hooks.specs.legacy import legacy_landings
 from pipelines_hooks.specs.records import build_record, mentioned_tokens
-from pipelines_hooks.specs.requirements_doc import Row, parse_rows
 from pipelines_hooks.specs.repository_identity import remote_owner
+from pipelines_hooks.specs.requirements_doc import Row, parse_rows
 from pipelines_hooks.specs.rollup import apply_rollup, overall_state
 from pipelines_hooks.specs.standard import check_title
 
@@ -46,9 +47,7 @@ def _load_status(path: Path) -> dict:
 
 
 def _requirement_state(rid: str, evidence: Evidence) -> tuple[list[str], list[str]]:
-    landed = sorted(
-        evidence.landed_by.get(rid, set()) | set(evidence.legacy_by.get(rid, []))
-    )
+    landed = sorted(evidence.landed_by.get(rid, set()) | set(evidence.legacy_by.get(rid, [])))
     tests = sorted(set(evidence.tested_by.get(rid, [])))
     return landed, tests
 
@@ -58,16 +57,14 @@ def _spec_identity(spec_dir: Path, old: dict) -> str:
     return check_title(spec_dir)[0] or old.get("spec_id") or spec_dir.name
 
 
-def _spec_document(
-    spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evidence, owner: str
-) -> dict:
+def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evidence, owner: str) -> dict:
     ids = [row.id for row in rows]
     state: dict[str, str] = {}
     records: dict[str, dict[str, object]] = {}
     for row in rows:
         landed, tests = _requirement_state(row.id, evidence)
         records[row.id] = build_record(row, landed, tests)
-        state[row.id] = records[row.id]["delivery_state"]
+        state[row.id] = str(records[row.id]["delivery_state"])
     apply_rollup(ids, state, records)
     return {
         "schema_version": SCHEMA_VERSION,
@@ -84,16 +81,18 @@ def live_resolver(on_head: set[str], reverted: set[str]) -> Callable[[str], str 
     by_prefix = {sha[:12]: sha for sha in on_head}
 
     def resolve(recorded: str) -> str | None:
-        full = (
-            recorded
-            if recorded in on_head
-            else by_prefix.get(recorded[:12])
-            if len(recorded) >= 12
-            else None
-        )
+        full = recorded if recorded in on_head else by_prefix.get(recorded[:12]) if len(recorded) >= 12 else None
         return full if full and full not in reverted else None
 
     return resolve
+
+
+def _history_evidence(
+    repo: Path, head: str, aliases: dict[str, str]
+) -> tuple[dict[str, set[str]], dict[str, list[str]]]:
+    """Trailer landings and test bindings, keyed by canonical requirement ID."""
+    landed_by = canonical_sets(mentioned_tokens(landing_commits(repo, head)), aliases)
+    return landed_by, canonical_lists(test_bindings(repo), aliases)
 
 
 def generate(repo: Path, head: str) -> dict[Path, dict]:
@@ -107,9 +106,8 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
             "fetch full history (git fetch --unshallow or checkout fetch-depth: 0) "
             "before retrying; no status files were changed"
         )
-    commits = landing_commits(repo, head)
-    landed_by = mentioned_tokens(commits)
-    tested_by = test_bindings(repo)
+    aliases = load_aliases(repo)
+    landed_by, tested_by = _history_evidence(repo, head, aliases)
     resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
     owner = remote_owner(repo)
     result: dict[Path, dict] = {}
@@ -117,10 +115,10 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
         spec_dir = requirements_path.parent
         status_path = spec_dir / "status.json"
         old = _load_status(status_path)
-        evidence = Evidence(landed_by, tested_by, legacy_landings(old, resolve))
+        legacy_by = canonical_lists(legacy_landings(old, resolve), aliases)
+        evidence = Evidence(landed_by, tested_by, legacy_by)
         rows = parse_rows(requirements_path.read_text(encoding="utf-8"))
         result[status_path] = _spec_document(
-            spec_dir, old=old, rows=rows, evidence=evidence,
-            owner=owner or old.get("owner_repo") or repo.resolve().name
+            spec_dir, old=old, rows=rows, evidence=evidence, owner=owner or old.get("owner_repo") or repo.resolve().name
         )
     return result

@@ -67,19 +67,24 @@ def changed_python(root: Path, packages: tuple[str, ...]) -> list[str]:
     if not has_head(root):
         return sorted(p for p in tracked_paths(root, packages) if p.endswith(".py"))
     paths: set[str] = set()
-    for args in (("diff", "--cached", "--name-only", "--diff-filter=ACMR", "HEAD"), ("diff", "--name-only", "--diff-filter=ACMR", "HEAD")):
+    for args in (
+        ("diff", "--cached", "--name-only", "--diff-filter=ACMR", "HEAD"),
+        ("diff", "--name-only", "--diff-filter=ACMR", "HEAD"),
+    ):
         paths.update(git_text(root, (*args, "--", *packages), preserve_index=True).splitlines())
     return sorted(p for p in paths if p.endswith(".py"))
 
 
 def added_sites(gate: SiteGate, root: Path, packages: tuple[str, ...]) -> list[tuple[str, str, int]]:
     """``(path, key, added count)`` for content this change ADDS."""
-    added = []
+    added: list[tuple[str, str, int]] = []
     for rel in changed_python(root, packages):
         if not gate.include(rel) or not (root / rel).is_file():
             continue
         before = Counter(site.key for site in gate.scan_source(rel, blob_text(root, f"HEAD:{rel}") or ""))
-        after = Counter(site.key for site in gate.scan_source(rel, (root / rel).read_text(encoding="utf-8", errors="replace")))
+        after = Counter(
+            site.key for site in gate.scan_source(rel, (root / rel).read_text(encoding="utf-8", errors="replace"))
+        )
         added.extend((rel, key, count - before[key]) for key, count in after.items() if count > before[key])
     return added
 

@@ -35,7 +35,7 @@ native `INHERIT:` key -- a real recursive config merge, not a text copy. A
 repository that enables it keeps only its content manifest (`site_name`,
 `site_url`, `nav`, and `docs_dir`/`content_source`); look, structure and
 navigation hierarchy come from the one shared file, identically, across every
-consumer (EG, the connector SDK, AU, graph-os, and the UIs). The shared theme
+consumer (EG, the connector SDK, AU, arbora, and the UIs). The shared theme
 deliberately does not enable the `pymdownx` `mermaid` custom fence: the shared
 documentation standard requires HTML/CSS renderings, not diagrams drawn in
 Markdown.
@@ -159,6 +159,15 @@ the GitHub `job.workflow_repository`/`job.workflow_sha` identity, and all
 third-party actions are immutable SHA references. Results contain only bounded
 counts and a manifest digest; source paths, host paths, credentials, and
 private URLs are never printed.
+
+### Runtime architecture diagram
+
+There is one `runtime-architecture.svg`, owned by Knuckles-Team/epistemic-graph at
+`docs/assets/runtime-architecture.svg`. The theme neither ships nor syncs it, and
+"Verify shared Pages theme assets" requires no local copy. Pages that show the diagram
+reference `https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/main/docs/assets/runtime-architecture.svg`;
+the check fails on any other reference to `runtime-architecture.svg` in the content
+source. Do not commit copies.
 
 ## Caller contract
 

@@ -1,0 +1,16 @@
+name: Advisory
+
+# This repository's weekly advisory report (never blocks a pull request).
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  advisory:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/advisory_pipeline.yml

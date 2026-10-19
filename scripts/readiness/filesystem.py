@@ -37,10 +37,7 @@ def _path_parts(raw: object, label: str) -> tuple[str, ...]:
     relative = PurePosixPath(raw)
     if relative.is_absolute() or not relative.parts:
         _fail(f"{label}-path-invalid")
-    if any(
-        part in {"", ".", ".."} or PATH_CONTROL_PATTERN.search(part)
-        for part in relative.parts
-    ):
+    if any(part in {"", ".", ".."} or PATH_CONTROL_PATTERN.search(part) for part in relative.parts):
         _fail(f"{label}-path-invalid")
     return relative.parts
 
@@ -60,9 +57,7 @@ def _reject_symlink_components(root: Path, candidate: Path, label: str) -> None:
             _fail(f"{label}-unavailable")
 
 
-def _safe_existing_path(
-    root: Path, raw: object, label: str, *, directory: bool = False
-) -> Path:
+def _safe_existing_path(root: Path, raw: object, label: str, *, directory: bool = False) -> Path:
     parts = _path_parts(raw, label)
     candidate = root.joinpath(*parts)
     _reject_symlink_components(root, candidate, label)
@@ -112,9 +107,7 @@ def _regular_bytes(path: Path, label: str, limit: int) -> bytes:
     return payload
 
 
-def _read_json(
-    path: Path, label: str, limit: int = MAX_MANIFEST_BYTES
-) -> dict[str, Any]:
+def _read_json(path: Path, label: str, limit: int = MAX_MANIFEST_BYTES) -> dict[str, Any]:
     payload = _regular_bytes(path, label, limit)
     try:
         value = json.loads(payload.decode("utf-8"))
@@ -140,12 +133,8 @@ def _safe_output_path(site: Path, relative: str, label: str) -> Path:
     return candidate
 
 
-def _temporary_payload(
-    path: Path, payload: bytes, holder: list[Path | None]
-) -> None:
-    with tempfile.NamedTemporaryFile(
-        mode="wb", prefix=f".{path.name}.", dir=path.parent, delete=False
-    ) as handle:
+def _temporary_payload(path: Path, payload: bytes, holder: list[Path | None]) -> None:
+    with tempfile.NamedTemporaryFile(mode="wb", prefix=f".{path.name}.", dir=path.parent, delete=False) as handle:
         holder[0] = Path(handle.name)
         handle.write(payload)
         handle.flush()

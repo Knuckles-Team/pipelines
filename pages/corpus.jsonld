@@ -2417,200 +2417,200 @@
       "documentedBy": "manpage/geniusbot/nav/status-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-agent-bus",
+      "id": "component/arbora/nav/architecture-agent-bus",
       "type": "Component",
       "label": "Agent bus",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-agent-bus-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-agent-bus-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-atlas-source-catalog",
+      "id": "component/arbora/nav/architecture-atlas-source-catalog",
       "type": "Component",
       "label": "Atlas source catalog",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-atlas-source-catalog-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-atlas-source-catalog-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-embedded-fleet-gateway",
+      "id": "component/arbora/nav/architecture-embedded-fleet-gateway",
       "type": "Component",
       "label": "Embedded fleet gateway",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-fleet-gateway-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-fleet-gateway-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-engine-sharding",
+      "id": "component/arbora/nav/architecture-engine-sharding",
       "type": "Component",
       "label": "Engine sharding",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-engine-sharding-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-engine-sharding-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-fleet-autonomy",
+      "id": "component/arbora/nav/architecture-fleet-autonomy",
       "type": "Component",
       "label": "Fleet autonomy",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-fleet-autonomy-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-fleet-autonomy-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-fleet-scale-authority",
+      "id": "component/arbora/nav/architecture-fleet-scale-authority",
       "type": "Component",
       "label": "Fleet scale authority",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-fleet-scale-authority-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-fleet-scale-authority-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-gateway-daemon",
+      "id": "component/arbora/nav/architecture-gateway-daemon",
       "type": "Component",
       "label": "Gateway daemon",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-gateway-daemon-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-gateway-daemon-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-gateway-scaling",
+      "id": "component/arbora/nav/architecture-gateway-scaling",
       "type": "Component",
       "label": "Gateway scaling",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-gateway-scaling-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-gateway-scaling-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-identity-inheritance",
+      "id": "component/arbora/nav/architecture-identity-inheritance",
       "type": "Component",
       "label": "Identity inheritance",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-identity-inheritance-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-identity-inheritance-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-mcp-2026-07-28-protocol-surface",
+      "id": "component/arbora/nav/architecture-mcp-2026-07-28-protocol-surface",
       "type": "Component",
       "label": "MCP 2026-07-28 protocol surface",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-mcp-2026-protocol-surface-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-mcp-2026-protocol-surface-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-mcp-fleet-authentication",
+      "id": "component/arbora/nav/architecture-mcp-fleet-authentication",
       "type": "Component",
       "label": "MCP fleet authentication",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-mcp-auth-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-mcp-auth-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-multi-tenant-streamable-http",
+      "id": "component/arbora/nav/architecture-multi-tenant-streamable-http",
       "type": "Component",
       "label": "Multi-tenant streamable HTTP",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-multi-tenant-streamable-http-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-multi-tenant-streamable-http-md"
     },
     {
-      "id": "component/graph-os/nav/architecture-self-hosting-cutover",
+      "id": "component/arbora/nav/architecture-self-hosting-cutover",
       "type": "Component",
       "label": "Self-hosting cutover",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-graphos-self-hosting-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-arbora-self-hosting-md"
     },
     {
-      "id": "component/graph-os/nav/capabilities",
+      "id": "component/arbora/nav/capabilities",
       "type": "Component",
       "label": "Capabilities",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/capabilities-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/capabilities-md"
     },
     {
-      "id": "component/graph-os/nav/components-browser-control",
+      "id": "component/arbora/nav/components-browser-control",
       "type": "Component",
       "label": "Browser control",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/browser-control-service-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/browser-control-service-md"
     },
     {
-      "id": "component/graph-os/nav/components-fleet-gateway",
+      "id": "component/arbora/nav/components-fleet-gateway",
       "type": "Component",
       "label": "Fleet gateway",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/fleet-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/fleet-md"
     },
     {
-      "id": "component/graph-os/nav/components-mcp-server",
+      "id": "component/arbora/nav/components-mcp-server",
       "type": "Component",
       "label": "MCP server",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/mcp-server-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/mcp-server-md"
     },
     {
-      "id": "component/graph-os/nav/components-rest-gateway",
+      "id": "component/arbora/nav/components-rest-gateway",
       "type": "Component",
       "label": "REST gateway",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/gateway-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/gateway-md"
     },
     {
-      "id": "component/graph-os/nav/components-unary-a2a",
+      "id": "component/arbora/nav/components-unary-a2a",
       "type": "Component",
       "label": "Unary A2A",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/a2a-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/a2a-md"
     },
     {
-      "id": "component/graph-os/nav/glossary",
+      "id": "component/arbora/nav/glossary",
       "type": "Component",
       "label": "Glossary",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/glossary-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/glossary-md"
     },
     {
-      "id": "component/graph-os/nav/home",
+      "id": "component/arbora/nav/home",
       "type": "Component",
       "label": "Home",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/index-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/index-md"
     },
     {
-      "id": "component/graph-os/nav/how-it-fits",
+      "id": "component/arbora/nav/how-it-fits",
       "type": "Component",
       "label": "How it fits",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/architecture-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/architecture-md"
     },
     {
-      "id": "component/graph-os/nav/interfaces",
+      "id": "component/arbora/nav/interfaces",
       "type": "Component",
       "label": "Interfaces",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/interfaces-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/interfaces-md"
     },
     {
-      "id": "component/graph-os/nav/operate-capability-status",
+      "id": "component/arbora/nav/operate-capability-status",
       "type": "Component",
       "label": "Capability status",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/status-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/status-md"
     },
     {
-      "id": "component/graph-os/nav/operate-deployment-and-configuration",
+      "id": "component/arbora/nav/operate-deployment-and-configuration",
       "type": "Component",
       "label": "Deployment and configuration",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/deployment-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/deployment-md"
     },
     {
-      "id": "component/graph-os/nav/operate-quality-gate-terms",
+      "id": "component/arbora/nav/operate-quality-gate-terms",
       "type": "Component",
       "label": "Quality gate terms",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/quality-gate-terms-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/quality-gate-terms-md"
     },
     {
-      "id": "component/graph-os/nav/reference-skill-graph-reference",
+      "id": "component/arbora/nav/reference-skill-graph-reference",
       "type": "Component",
       "label": "Skill graph reference",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/reference-skill-graph-generated-md"
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/reference-skill-graph-generated-md"
     },
     {
-      "id": "component/graph-os/nav/start-graph-os",
+      "id": "component/arbora/nav/start-arbora",
       "type": "Component",
-      "label": "Start Graph OS",
-      "partOfRepo": "repo/graph-os",
-      "documentedBy": "manpage/graph-os/nav/get-started-md"
+      "label": "Start Arbora",
+      "partOfRepo": "repo/arbora",
+      "documentedBy": "manpage/arbora/nav/get-started-md"
     },
     {
       "id": "concept/agent-connector-sdk/nav/architecture",
@@ -4882,111 +4882,111 @@
       ]
     },
     {
-      "id": "concept/graph-os/nav/architecture",
+      "id": "concept/arbora/nav/architecture",
       "type": "Concept",
       "label": "Architecture",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/architecture-agent-bus",
-        "component/graph-os/nav/architecture-atlas-source-catalog",
-        "component/graph-os/nav/architecture-engine-sharding",
-        "component/graph-os/nav/architecture-fleet-autonomy",
-        "component/graph-os/nav/architecture-fleet-scale-authority",
-        "component/graph-os/nav/architecture-gateway-daemon",
-        "component/graph-os/nav/architecture-gateway-scaling",
-        "component/graph-os/nav/architecture-self-hosting-cutover",
-        "component/graph-os/nav/architecture-identity-inheritance",
-        "component/graph-os/nav/architecture-mcp-2026-07-28-protocol-surface",
-        "component/graph-os/nav/architecture-mcp-fleet-authentication",
-        "component/graph-os/nav/architecture-embedded-fleet-gateway",
-        "component/graph-os/nav/architecture-multi-tenant-streamable-http"
+        "component/arbora/nav/architecture-agent-bus",
+        "component/arbora/nav/architecture-atlas-source-catalog",
+        "component/arbora/nav/architecture-engine-sharding",
+        "component/arbora/nav/architecture-fleet-autonomy",
+        "component/arbora/nav/architecture-fleet-scale-authority",
+        "component/arbora/nav/architecture-gateway-daemon",
+        "component/arbora/nav/architecture-gateway-scaling",
+        "component/arbora/nav/architecture-self-hosting-cutover",
+        "component/arbora/nav/architecture-identity-inheritance",
+        "component/arbora/nav/architecture-mcp-2026-07-28-protocol-surface",
+        "component/arbora/nav/architecture-mcp-fleet-authentication",
+        "component/arbora/nav/architecture-embedded-fleet-gateway",
+        "component/arbora/nav/architecture-multi-tenant-streamable-http"
       ]
     },
     {
-      "id": "concept/graph-os/nav/capabilities",
+      "id": "concept/arbora/nav/capabilities",
       "type": "Concept",
       "label": "Capabilities",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/capabilities"
+        "component/arbora/nav/capabilities"
       ]
     },
     {
-      "id": "concept/graph-os/nav/components",
+      "id": "concept/arbora/nav/components",
       "type": "Concept",
       "label": "Components",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/components-mcp-server",
-        "component/graph-os/nav/components-rest-gateway",
-        "component/graph-os/nav/components-fleet-gateway",
-        "component/graph-os/nav/components-unary-a2a",
-        "component/graph-os/nav/components-browser-control"
+        "component/arbora/nav/components-mcp-server",
+        "component/arbora/nav/components-rest-gateway",
+        "component/arbora/nav/components-fleet-gateway",
+        "component/arbora/nav/components-unary-a2a",
+        "component/arbora/nav/components-browser-control"
       ]
     },
     {
-      "id": "concept/graph-os/nav/glossary",
+      "id": "concept/arbora/nav/glossary",
       "type": "Concept",
       "label": "Glossary",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/glossary"
+        "component/arbora/nav/glossary"
       ]
     },
     {
-      "id": "concept/graph-os/nav/home",
+      "id": "concept/arbora/nav/home",
       "type": "Concept",
       "label": "Home",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/home"
+        "component/arbora/nav/home"
       ]
     },
     {
-      "id": "concept/graph-os/nav/how-it-fits",
+      "id": "concept/arbora/nav/how-it-fits",
       "type": "Concept",
       "label": "How it fits",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/how-it-fits"
+        "component/arbora/nav/how-it-fits"
       ]
     },
     {
-      "id": "concept/graph-os/nav/interfaces",
+      "id": "concept/arbora/nav/interfaces",
       "type": "Concept",
       "label": "Interfaces",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/interfaces"
+        "component/arbora/nav/interfaces"
       ]
     },
     {
-      "id": "concept/graph-os/nav/operate",
+      "id": "concept/arbora/nav/operate",
       "type": "Concept",
       "label": "Operate",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/operate-deployment-and-configuration",
-        "component/graph-os/nav/operate-capability-status",
-        "component/graph-os/nav/operate-quality-gate-terms"
+        "component/arbora/nav/operate-deployment-and-configuration",
+        "component/arbora/nav/operate-capability-status",
+        "component/arbora/nav/operate-quality-gate-terms"
       ]
     },
     {
-      "id": "concept/graph-os/nav/reference",
+      "id": "concept/arbora/nav/reference",
       "type": "Concept",
       "label": "Reference",
-      "partOfRepo": "repo/graph-os",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/reference-skill-graph-reference"
+        "component/arbora/nav/reference-skill-graph-reference"
       ]
     },
     {
-      "id": "concept/graph-os/nav/start-graph-os",
+      "id": "concept/arbora/nav/start-arbora",
       "type": "Concept",
-      "label": "Start Graph OS",
-      "partOfRepo": "repo/graph-os",
+      "label": "Start Arbora",
+      "partOfRepo": "repo/arbora",
       "hasComponent": [
-        "component/graph-os/nav/start-graph-os"
+        "component/arbora/nav/start-arbora"
       ]
     },
     {
@@ -6739,200 +6739,200 @@
       "partOfRepo": "repo/geniusbot"
     },
     {
-      "id": "manpage/graph-os/nav/a2a-md",
+      "id": "manpage/arbora/nav/a2a-md",
       "type": "ManPage",
       "label": "Unary A2A",
       "sourcePath": "a2a.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-agent-bus-md",
+      "id": "manpage/arbora/nav/architecture-agent-bus-md",
       "type": "ManPage",
       "label": "Agent bus",
       "sourcePath": "architecture/agent-bus.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-atlas-source-catalog-md",
+      "id": "manpage/arbora/nav/architecture-atlas-source-catalog-md",
       "type": "ManPage",
       "label": "Atlas source catalog",
       "sourcePath": "architecture/atlas-source-catalog.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-engine-sharding-md",
+      "id": "manpage/arbora/nav/architecture-engine-sharding-md",
       "type": "ManPage",
       "label": "Engine sharding",
       "sourcePath": "architecture/engine-sharding.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-fleet-autonomy-md",
+      "id": "manpage/arbora/nav/architecture-fleet-autonomy-md",
       "type": "ManPage",
       "label": "Fleet autonomy",
       "sourcePath": "architecture/fleet-autonomy.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-fleet-gateway-md",
+      "id": "manpage/arbora/nav/architecture-fleet-gateway-md",
       "type": "ManPage",
       "label": "Embedded fleet gateway",
       "sourcePath": "architecture/fleet-gateway.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-fleet-scale-authority-md",
+      "id": "manpage/arbora/nav/architecture-fleet-scale-authority-md",
       "type": "ManPage",
       "label": "Fleet scale authority",
       "sourcePath": "architecture/fleet-scale-authority.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-gateway-daemon-md",
+      "id": "manpage/arbora/nav/architecture-gateway-daemon-md",
       "type": "ManPage",
       "label": "Gateway daemon",
       "sourcePath": "architecture/gateway-daemon.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-gateway-scaling-md",
+      "id": "manpage/arbora/nav/architecture-gateway-scaling-md",
       "type": "ManPage",
       "label": "Gateway scaling",
       "sourcePath": "architecture/gateway-scaling.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-graphos-self-hosting-md",
+      "id": "manpage/arbora/nav/architecture-arbora-self-hosting-md",
       "type": "ManPage",
       "label": "Self-hosting cutover",
-      "sourcePath": "architecture/graphos-self-hosting.md",
-      "partOfRepo": "repo/graph-os"
+      "sourcePath": "architecture/arbora-self-hosting.md",
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-identity-inheritance-md",
+      "id": "manpage/arbora/nav/architecture-identity-inheritance-md",
       "type": "ManPage",
       "label": "Identity inheritance",
       "sourcePath": "architecture/identity-inheritance.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-mcp-2026-protocol-surface-md",
+      "id": "manpage/arbora/nav/architecture-mcp-2026-protocol-surface-md",
       "type": "ManPage",
       "label": "MCP 2026-07-28 protocol surface",
       "sourcePath": "architecture/mcp-2026-protocol-surface.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-mcp-auth-md",
+      "id": "manpage/arbora/nav/architecture-mcp-auth-md",
       "type": "ManPage",
       "label": "MCP fleet authentication",
       "sourcePath": "architecture/mcp-auth.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-md",
+      "id": "manpage/arbora/nav/architecture-md",
       "type": "ManPage",
       "label": "How it fits",
       "sourcePath": "architecture.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/architecture-multi-tenant-streamable-http-md",
+      "id": "manpage/arbora/nav/architecture-multi-tenant-streamable-http-md",
       "type": "ManPage",
       "label": "Multi-tenant streamable HTTP",
       "sourcePath": "architecture/multi-tenant-streamable-http.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/browser-control-service-md",
+      "id": "manpage/arbora/nav/browser-control-service-md",
       "type": "ManPage",
       "label": "Browser control",
       "sourcePath": "browser-control-service.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/capabilities-md",
+      "id": "manpage/arbora/nav/capabilities-md",
       "type": "ManPage",
       "label": "Capabilities",
       "sourcePath": "capabilities.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/deployment-md",
+      "id": "manpage/arbora/nav/deployment-md",
       "type": "ManPage",
       "label": "Deployment and configuration",
       "sourcePath": "deployment.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/fleet-md",
+      "id": "manpage/arbora/nav/fleet-md",
       "type": "ManPage",
       "label": "Fleet gateway",
       "sourcePath": "fleet.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/gateway-md",
+      "id": "manpage/arbora/nav/gateway-md",
       "type": "ManPage",
       "label": "REST gateway",
       "sourcePath": "gateway.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/get-started-md",
+      "id": "manpage/arbora/nav/get-started-md",
       "type": "ManPage",
-      "label": "Start Graph OS",
+      "label": "Start Arbora",
       "sourcePath": "get-started.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/glossary-md",
+      "id": "manpage/arbora/nav/glossary-md",
       "type": "ManPage",
       "label": "Glossary",
       "sourcePath": "glossary.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/index-md",
+      "id": "manpage/arbora/nav/index-md",
       "type": "ManPage",
       "label": "Home",
       "sourcePath": "index.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/interfaces-md",
+      "id": "manpage/arbora/nav/interfaces-md",
       "type": "ManPage",
       "label": "Interfaces",
       "sourcePath": "interfaces.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/mcp-server-md",
+      "id": "manpage/arbora/nav/mcp-server-md",
       "type": "ManPage",
       "label": "MCP server",
       "sourcePath": "mcp-server.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/quality-gate-terms-md",
+      "id": "manpage/arbora/nav/quality-gate-terms-md",
       "type": "ManPage",
       "label": "Quality gate terms",
       "sourcePath": "quality-gate-terms.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/reference-skill-graph-generated-md",
+      "id": "manpage/arbora/nav/reference-skill-graph-generated-md",
       "type": "ManPage",
       "label": "Skill graph reference",
       "sourcePath": "reference/skill-graph.generated.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
-      "id": "manpage/graph-os/nav/status-md",
+      "id": "manpage/arbora/nav/status-md",
       "type": "ManPage",
       "label": "Capability status",
       "sourcePath": "status.md",
-      "partOfRepo": "repo/graph-os"
+      "partOfRepo": "repo/arbora"
     },
     {
       "id": "repo/agent-connector-sdk",
@@ -6955,7 +6955,7 @@
     {
       "id": "repo/agent-webui",
       "type": "Repository",
-      "label": "Graph OS web UI",
+      "label": "Arbora web UI",
       "pagesUrl": "https://knuckles-team.github.io/agent-webui/"
     },
     {
@@ -6971,10 +6971,10 @@
       "pagesUrl": "https://knuckles-team.github.io/geniusbot/"
     },
     {
-      "id": "repo/graph-os",
+      "id": "repo/arbora",
       "type": "Repository",
-      "label": "Graph OS",
-      "pagesUrl": "https://knuckles-team.github.io/graph-os/"
+      "label": "Arbora",
+      "pagesUrl": "https://knuckles-team.github.io/arbora/"
     }
   ]
 }

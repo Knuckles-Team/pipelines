@@ -28,7 +28,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="fast-tests", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--base-ref", default=setting("PRE_COMMIT_FROM_REF"))
-    parser.add_argument("--src-root", default="graph_os")
+    parser.add_argument("--src-root", default="arbora")
     parser.add_argument("--tests-root", default="tests")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_SECONDS)
     return parser.parse_args(argv)
@@ -45,7 +45,9 @@ def main(argv: list[str]) -> int:
     if args.timeout < 1:
         raise CannotRun("--timeout must be a positive number of seconds")
     root = repo_root(args.root)
-    scope = _python_scope(root, changed_paths(root, args.base_ref or None), args.src_root.rstrip("/"), args.tests_root.rstrip("/"))
+    scope = _python_scope(
+        root, changed_paths(root, args.base_ref or None), args.src_root.rstrip("/"), args.tests_root.rstrip("/")
+    )
     if scope == [NONE]:
         print("fast-tests: no affected tests")
         return 0

@@ -71,7 +71,7 @@ def test_patch_safety_fires_while_a_parked_patch_holds_live_work(repo: Repo, tmp
 
 
 def test_mermaid_fires_on_an_unquoted_special_character_and_passes_a_quoted_label(repo: Repo) -> None:
-    repo.commit({"docs/flow.md": "```mermaid\ngraph TD\n  A[\"load (cache)\"] --> B\n```\n"})
+    repo.commit({"docs/flow.md": '```mermaid\ngraph TD\n  A["load (cache)"] --> B\n```\n'})
     assert repo.run("mermaid") == 0
     repo.commit({"docs/flow.md": "```mermaid\ngraph TD\n  A[load (cache)] --> B\n```\n"})
     assert repo.run("mermaid") == 1

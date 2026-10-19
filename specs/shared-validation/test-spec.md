@@ -14,3 +14,8 @@ Report executed tests separately from ordinary hooks and CI.
 installed pre-commit without provisioning an environment. It checks advisory
 fail, unavailable, and timeout output, and sends real signals to a runner with
 a worker and child to verify cleanup and negative signal return codes.
+
+R002 uses `tests/hooks/test_privacy_provenance.py` for CLI and classifier regressions.
+Product references pass only for Git-display-name-only candidates.
+Attribution, independent strict sources, same-line leaks and prohibited catalog matches fail.
+Existing privacy tests retain missing and malformed catalog refusal coverage.

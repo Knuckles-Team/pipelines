@@ -48,7 +48,9 @@ def test_privacy_skips_locally_without_its_catalog(repo: Repo, tmp_path: Path, m
     assert repo.run("tracked-privacy", "--identity-catalog", str(tmp_path / "absent.json")) == 0
 
 
-def test_a_malformed_catalog_is_not_downgraded_locally(repo: Repo, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_malformed_catalog_is_not_downgraded_locally(
+    repo: Repo, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.delenv("CI")
     malformed = tmp_path / "catalog.json"
     malformed.write_text("{not json", encoding="utf-8")
@@ -59,7 +61,7 @@ def test_privacy_allows_a_hyphenated_requirement_id_citation(repo: Repo, catalog
     """A requirement ID like ``GRAPHOS-FLEET-R016`` is not a fleet host alias.
 
     Regression for the false-positive flood that broke requirement-ID
-    citations in graph-os PRs: ``MACHINE_HOST_ID_RE``'s lookbehind excluded
+    citations in arbora PRs: ``MACHINE_HOST_ID_RE``'s lookbehind excluded
     only alnum characters, so the hyphen immediately before ``R016`` never
     blocked the match and the requirement ID itself read as a host.
     """

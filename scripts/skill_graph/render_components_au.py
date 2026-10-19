@@ -84,8 +84,7 @@ def render_components_au(repo_root: Path) -> dict[str, str]:
     pillars = data.get("pillars") or []
     by_pillar = _group_by_pillar(data.get("concepts") or [])
     files = {
-        f"components/{slugify(pillar)}.md": _render_pillar_page(pillar, by_pillar.get(pillar, []))
-        for pillar in pillars
+        f"components/{slugify(pillar)}.md": _render_pillar_page(pillar, by_pillar.get(pillar, [])) for pillar in pillars
     }
     files["components/index.md"] = _render_index(pillars, by_pillar)
     return files

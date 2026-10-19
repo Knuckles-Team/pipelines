@@ -45,9 +45,7 @@ def build_identity() -> dict[str, str]:
 
 
 def cache_key() -> str:
-    return hashlib.sha256(
-        json.dumps(build_identity(), sort_keys=True).encode()
-    ).hexdigest()
+    return hashlib.sha256(json.dumps(build_identity(), sort_keys=True).encode()).hexdigest()
 
 
 def _validated_receipt(executable: Path) -> dict:

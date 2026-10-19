@@ -1,4 +1,5 @@
 """PIPE-RELEASE-R002: immutable release source and fail-closed tag preflight."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -47,10 +48,16 @@ def git_context(tmp_path, monkeypatch, request):
 def case(tmp_path, monkeypatch, git_context):
     source = runtime_checkout(tmp_path)
     monkeypatch.chdir(tmp_path)
-    environment = {"SOURCE_COMMIT": source, "LATEST_COMMIT": source, "EXPECTED_COMMIT": source,
-                   "RELEASE_REPOSITORY": "Example/package", "RELEASE_API_URL": "https://api.github.com",
-                   "RELEASE_TOKEN": "fixture-read-token", "BUILD_VERSION": "1.2.3",
-                   "GITHUB_OUTPUT": str(tmp_path / "output")}
+    environment = {
+        "SOURCE_COMMIT": source,
+        "LATEST_COMMIT": source,
+        "EXPECTED_COMMIT": source,
+        "RELEASE_REPOSITORY": "Example/package",
+        "RELEASE_API_URL": "https://api.github.com",
+        "RELEASE_TOKEN": "fixture-read-token",
+        "BUILD_VERSION": "1.2.3",
+        "GITHUB_OUTPUT": str(tmp_path / "output"),
+    }
     return environment
 
 
@@ -77,15 +84,33 @@ def serve(monkeypatch, guard, responses):
 
 def test_default_branch_advance_cannot_retarget_release(guard, case, monkeypatch, tmp_path):
     source = case["SOURCE_COMMIT"]
-    subprocess.run(["git", "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid",
-                    "-c", "commit.gpgsign=false", "commit", "--allow-empty", "-qm", "branch advances"],
-                   check=True, env=sanitized_env())
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "--allow-empty",
+            "-qm",
+            "branch advances",
+        ],
+        check=True,
+        env=sanitized_env(),
+    )
     advanced = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     subprocess.run(["git", "checkout", "--detach", source], check=True, capture_output=True)
-    calls = serve(monkeypatch, guard, {
-        "/repos/Example/package": {"full_name": "Example/package", "default_branch": "main"},
-        "/repos/Example/package/git/ref/tags/v1.2.3": 404,
-    })
+    calls = serve(
+        monkeypatch,
+        guard,
+        {
+            "/repos/Example/package": {"full_name": "Example/package", "default_branch": "main"},
+            "/repos/Example/package/git/ref/tags/v1.2.3": 404,
+        },
+    )
     for key, value in case.items():
         monkeypatch.setenv(key, value)
     assert guard.main() == 0
@@ -107,9 +132,9 @@ def test_existing_tag_is_compared_to_frozen_source(guard, case, monkeypatch, ann
         "/repos/Example/package": {"full_name": "Example/package"},
         "/repos/Example/package/git/ref/tags/v1.2.3": {
             "ref": "refs/tags/v1.2.3",
-            "object": {"type": "tag" if annotated else "commit", "sha": "a" * 40 if annotated else target}},
-        "/repos/Example/package/git/tags/" + "a" * 40: {
-            "sha": "a" * 40, "object": {"type": "commit", "sha": target}},
+            "object": {"type": "tag" if annotated else "commit", "sha": "a" * 40 if annotated else target},
+        },
+        "/repos/Example/package/git/tags/" + "a" * 40: {"sha": "a" * 40, "object": {"type": "commit", "sha": target}},
     }
     serve(monkeypatch, guard, responses)
     if conflict:
@@ -130,13 +155,16 @@ def test_source_drift_blocks_before_network(guard, case, monkeypatch, field):
     assert calls == []
 
 
-@pytest.mark.parametrize("endpoint,status", [
-    ("/repos/Example/package", 404),
-    ("/repos/Example/package/git/ref/tags/v1.2.3", 401),
-    ("/repos/Example/package/git/ref/tags/v1.2.3", 403),
-    ("/repos/Example/package/git/ref/tags/v1.2.3", 429),
-    ("/repos/Example/package/git/ref/tags/v1.2.3", 500),
-])
+@pytest.mark.parametrize(
+    "endpoint,status",
+    [
+        ("/repos/Example/package", 404),
+        ("/repos/Example/package/git/ref/tags/v1.2.3", 401),
+        ("/repos/Example/package/git/ref/tags/v1.2.3", 403),
+        ("/repos/Example/package/git/ref/tags/v1.2.3", 429),
+        ("/repos/Example/package/git/ref/tags/v1.2.3", 500),
+    ],
+)
 def test_unavailable_metadata_cannot_count_as_absent_tag(guard, case, monkeypatch, endpoint, status):
     responses = {"/repos/Example/package": {"full_name": "Example/package"}, endpoint: status}
     serve(monkeypatch, guard, responses)
@@ -144,11 +172,14 @@ def test_unavailable_metadata_cannot_count_as_absent_tag(guard, case, monkeypatc
         guard.verify(case)
 
 
-@pytest.mark.parametrize("target", [
-    {"type": "tree", "sha": "a" * 40},
-    {"type": "commit", "sha": "main"},
-    {"type": "tag", "sha": "a" * 40},
-])
+@pytest.mark.parametrize(
+    "target",
+    [
+        {"type": "tree", "sha": "a" * 40},
+        {"type": "commit", "sha": "main"},
+        {"type": "tag", "sha": "a" * 40},
+    ],
+)
 def test_unsupported_or_cyclic_tag_refuses(guard, case, monkeypatch, target):
     responses = {
         "/repos/Example/package": {"full_name": "Example/package"},
@@ -162,11 +193,15 @@ def test_unsupported_or_cyclic_tag_refuses(guard, case, monkeypatch, target):
 
 
 def test_conflict_created_after_preflight_is_rechecked(guard, case, monkeypatch):
-    responses = {"/repos/Example/package": {"full_name": "Example/package"},
-                 "/repos/Example/package/git/ref/tags/v1.2.3": 404}
+    responses = {
+        "/repos/Example/package": {"full_name": "Example/package"},
+        "/repos/Example/package/git/ref/tags/v1.2.3": 404,
+    }
     serve(monkeypatch, guard, responses)
     assert guard.verify(case) == case["SOURCE_COMMIT"]
     responses["/repos/Example/package/git/ref/tags/v1.2.3"] = {
-        "ref": "refs/tags/v1.2.3", "object": {"type": "commit", "sha": "b" * 40}}
+        "ref": "refs/tags/v1.2.3",
+        "object": {"type": "commit", "sha": "b" * 40},
+    }
     with pytest.raises(ValueError, match="conflicts"):
         guard.verify(case)

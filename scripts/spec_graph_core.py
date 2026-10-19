@@ -25,7 +25,7 @@ KNOWN_REPOS = (
     "epistemic-graph",
     "agent-connector-sdk",
     "agent-utilities",
-    "graph-os",
+    "arbora",
     "agent-webui",
     "pipelines",
 )
@@ -63,9 +63,7 @@ def apply_signals(req: Requirement, text: str) -> None:
             req.other_repos.add(name)
 
 
-def add_edge(
-    req: Requirement, other_ids: set[str], known: dict[str, Requirement]
-) -> None:
+def add_edge(req: Requirement, other_ids: set[str], known: dict[str, Requirement]) -> None:
     """Only a textually-named ID that is a real, declared requirement (in
     ``known``) becomes a dependency edge -- this is what keeps a spec file's
     own local test/case numbering scheme (for example ``EG-T-04``, which

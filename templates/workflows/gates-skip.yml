@@ -4,8 +4,9 @@ name: Gates skip
 # change skips the real workflow, so this one reports the same required check
 # name as a success and branch protection never waits on it. The `paths:` list
 # is the exact inverse of the caller's `paths-ignore:`.
-# Name the job like the real one (`gates`); a caller whose check shows as
-# `<workflow> / gates` must name this workflow identically.
+# A caller job `gates` that uses gates_pipeline.yml reports the check
+# `gates / gates` (caller job name / reusable job name). This job reports the
+# same name, so one required check covers code PRs and docs/spec-only PRs.
 
 on:
   pull_request:
@@ -25,7 +26,7 @@ concurrency:
 
 jobs:
   gates:
-    name: gates
+    name: gates / gates
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

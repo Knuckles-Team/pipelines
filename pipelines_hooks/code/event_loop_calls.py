@@ -9,18 +9,29 @@ from __future__ import annotations
 import ast
 
 #: Passing a blocking callable by bare reference to one of these is the hop.
-HOP_CALL_NAMES = frozenset({"run_blocking_ordered", "run_blocking", "invoke_client_method", "to_thread", "run_in_executor"})
+HOP_CALL_NAMES = frozenset(
+    {"run_blocking_ordered", "run_blocking", "invoke_client_method", "to_thread", "run_in_executor"}
+)
 BLOCKING_ATTR_SUFFIXES = {
-    "add_node": "engine write: add_node", "add_edge": "engine write: add_edge",
-    "link_nodes": "engine write: link_nodes", "delete_node": "engine write: delete_node",
-    "upsert_node": "engine write: upsert_node", "_upsert_node": "engine write: _upsert_node",
-    "query_cypher": "engine read: query_cypher", "query_cypher_write": "engine write: query_cypher_write",
-    "execute_cypher": "engine: execute_cypher", "run_cypher": "engine: run_cypher",
-    "discover_agents": "registry: discover_agents", "get_discovery_registry": "registry: get_discovery_registry",
-    "read_text": "blocking file read: Path.read_text", "write_text": "blocking file write: Path.write_text",
-    "read_bytes": "blocking file read: Path.read_bytes", "write_bytes": "blocking file write: Path.write_bytes",
+    "add_node": "engine write: add_node",
+    "add_edge": "engine write: add_edge",
+    "link_nodes": "engine write: link_nodes",
+    "delete_node": "engine write: delete_node",
+    "upsert_node": "engine write: upsert_node",
+    "_upsert_node": "engine write: _upsert_node",
+    "query_cypher": "engine read: query_cypher",
+    "query_cypher_write": "engine write: query_cypher_write",
+    "execute_cypher": "engine: execute_cypher",
+    "run_cypher": "engine: run_cypher",
+    "discover_agents": "registry: discover_agents",
+    "get_discovery_registry": "registry: get_discovery_registry",
+    "read_text": "blocking file read: Path.read_text",
+    "write_text": "blocking file write: Path.write_text",
+    "read_bytes": "blocking file read: Path.read_bytes",
+    "write_bytes": "blocking file write: Path.write_bytes",
     "submit_task": "engine write: submit_task (durable WorkItem enqueue)",
-    "get_blast_radius": "engine read: get_blast_radius", "search_hybrid": "engine read: search_hybrid",
+    "get_blast_radius": "engine read: get_blast_radius",
+    "search_hybrid": "engine read: search_hybrid",
     "get_shortest_path": "engine read: get_shortest_path",
     "execute_federated_query": "engine read: execute_federated_query",
     "get_text_embedding": "blocking remote-embedder call: get_text_embedding",
@@ -31,9 +42,15 @@ _MODULE_FUNCTIONS = {
     "requests": frozenset({"get", "post", "put", "delete", "patch", "head"}),
 }
 _SHAPE_PREFIXES = (
-    ("time.sleep", "time_sleep"), ("subprocess.", "subprocess"), ("requests.", "http_request"),
-    ("open()", "open_file"), ("engine write", "engine_write"), ("engine read", "engine_read"),
-    ("engine:", "engine_other"), ("registry:", "registry_call"), ("blocking remote-embedder", "embedder_call"),
+    ("time.sleep", "time_sleep"),
+    ("subprocess.", "subprocess"),
+    ("requests.", "http_request"),
+    ("open()", "open_file"),
+    ("engine write", "engine_write"),
+    ("engine read", "engine_read"),
+    ("engine:", "engine_other"),
+    ("registry:", "registry_call"),
+    ("blocking remote-embedder", "embedder_call"),
 )
 
 
@@ -80,4 +97,5 @@ def _is_hop(node: ast.AST) -> bool:
 
 def hopped_names(function: ast.AsyncFunctionDef) -> set[str]:
     """Nested functions passed by bare reference to a hop call (they run off-loop)."""
-    return {arg.id for node in ast.walk(function) if _is_hop(node) for arg in node.args if isinstance(arg, ast.Name)}
+    calls = [node for node in ast.walk(function) if isinstance(node, ast.Call) and _is_hop(node)]
+    return {arg.id for node in calls for arg in node.args if isinstance(arg, ast.Name)}

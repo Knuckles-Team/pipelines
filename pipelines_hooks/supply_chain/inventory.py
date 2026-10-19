@@ -12,12 +12,27 @@ MAX_SOURCE_BYTES = 8 * 1024 * 1024
 MAX_REPOSITORIES = 1_000
 MAX_DISCOVERY_DEPTH = 5
 SKIP_DIRECTORIES = frozenset(
-    {".cache", ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox", ".venv", ".worktrees",
-     "__pycache__", "dist", "node_modules", "target", "vendor"}
+    {
+        ".cache",
+        ".git",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".tox",
+        ".venv",
+        ".worktrees",
+        "__pycache__",
+        "dist",
+        "node_modules",
+        "target",
+        "vendor",
+    }
 )
 #: A pre-commit suite relocated under ``.config/`` (run with ``pre-commit -c``).
 RELOCATED_PRECOMMIT = (".config", "pre-commit.yaml")
-_INSTALLERS = frozenset({"bootstrap.ps1", "bootstrap.sh", "install.ps1", "install.sh", "setup.ps1", "setup.sh", "promote_local_release.py"})
+_INSTALLERS = frozenset(
+    {"bootstrap.ps1", "bootstrap.sh", "install.ps1", "install.sh", "setup.ps1", "setup.sh", "promote_local_release.py"}
+)
 
 
 def repository_label(repository: Path, fleet_root: Path) -> str:
@@ -33,7 +48,10 @@ def _child_directories(path: Path) -> list[Path]:
         entries = list(os.scandir(path))
     except OSError:
         raise CannotRun("repository discovery is unavailable") from None
-    return sorted((Path(e.path) for e in entries if e.name not in SKIP_DIRECTORIES and e.is_dir(follow_symlinks=False)), reverse=True)
+    return sorted(
+        (Path(e.path) for e in entries if e.name not in SKIP_DIRECTORIES and e.is_dir(follow_symlinks=False)),
+        reverse=True,
+    )
 
 
 def discover_repositories(root: Path) -> tuple[Path, ...]:
@@ -87,7 +105,9 @@ def asset_kinds(relative: PurePath) -> tuple[str, ...]:
     name = relative.name.casefold()
     suffix = relative.suffix.casefold()
     kinds = {
-        "workflow": len(relative.parts) >= 3 and relative.parts[-3:-1] == (".github", "workflows") and suffix in {".yml", ".yaml"},
+        "workflow": len(relative.parts) >= 3
+        and relative.parts[-3:-1] == (".github", "workflows")
+        and suffix in {".yml", ".yaml"},
         "precommit": is_precommit_config(relative),
         "docker": name == "dockerfile" or name.startswith("dockerfile.") or name.endswith(".dockerfile"),
         "compose": suffix in {".yml", ".yaml"} and ("compose" in name or name.endswith((".stack.yml", ".stack.yaml"))),

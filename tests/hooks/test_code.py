@@ -14,7 +14,9 @@ def test_no_stub_fires_on_an_unmarked_raise_and_accepts_abstract_and_declared_se
     repo.commit({"pkg/port.py": abstract})
     assert repo.run("no-stub") == 0
     seams = PYPROJECT + '\n[tool.pipelines_hooks.stubs]\ndeclared_seams = { "pkg/sink.py" = ["PENDING"] }\n'
-    repo.commit({"pyproject.toml": seams, "pkg/sink.py": f"PENDING = 'wave'\n\n\ndef ingest():\n    {UNIMPLEMENTED}(PENDING)\n"})
+    repo.commit(
+        {"pyproject.toml": seams, "pkg/sink.py": f"PENDING = 'wave'\n\n\ndef ingest():\n    {UNIMPLEMENTED}(PENDING)\n"}
+    )
     assert repo.run("no-stub") == 0
 
 
@@ -49,7 +51,12 @@ def test_event_loop_blocking_fires_on_time_sleep_and_accepts_a_thread_hop(repo: 
 
 
 def test_import_cycles_fires_on_an_eager_cycle_and_ignores_type_checking_imports(repo: Repo) -> None:
-    repo.commit({"pkg/a.py": "from pkg import b\n", "pkg/b.py": "from typing import TYPE_CHECKING\nif TYPE_CHECKING:\n    from pkg import a\n"})
+    repo.commit(
+        {
+            "pkg/a.py": "from pkg import b\n",
+            "pkg/b.py": "from typing import TYPE_CHECKING\nif TYPE_CHECKING:\n    from pkg import a\n",
+        }
+    )
     assert repo.run("import-cycles") == 0
     repo.commit({"pkg/b.py": "from pkg import a\n"})
     assert repo.run("import-cycles") == 1
@@ -65,7 +72,9 @@ def test_env_sprawl_fires_outside_the_declared_configuration_module(repo: Repo) 
 
 def test_stdout_writes_fires_on_print_in_the_served_surface(repo: Repo) -> None:
     served = PYPROJECT + '\n[tool.pipelines_hooks.stdout_writes]\nserved_paths = ["pkg"]\n'
-    repo.commit({"pyproject.toml": served, "pkg/serve.py": "import sys\n\n\ndef log(m):\n    print(m, file=sys.stderr)\n"})
+    repo.commit(
+        {"pyproject.toml": served, "pkg/serve.py": "import sys\n\n\ndef log(m):\n    print(m, file=sys.stderr)\n"}
+    )
     assert repo.run("stdout-writes") == 0
     repo.commit({"pkg/serve.py": "def log(m):\n    print(m)\n"})
     assert repo.run("stdout-writes") == 1

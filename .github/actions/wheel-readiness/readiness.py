@@ -1,4 +1,5 @@
 """Fail-closed public-index installability proof for exact Python wheel bytes."""
+
 from __future__ import annotations
 
 import argparse
@@ -13,8 +14,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import warnings
 import zipfile
+from collections.abc import Sequence
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -25,18 +28,21 @@ try:
     from pip._vendor.packaging.requirements import Requirement
     from pip._vendor.packaging.specifiers import SpecifierSet
     from pip._vendor.packaging.tags import sys_tags
-    from pip._vendor.packaging.utils import canonicalize_name, parse_sdist_filename, parse_wheel_filename
+    from pip._vendor.packaging.utils import canonicalize_name, parse_wheel_filename
+    from pip._vendor.packaging.utils import parse_sdist_filename as parse_sdist_filename
     from pip._vendor.packaging.version import Version
 except ImportError:
     from packaging.markers import default_environment
     from packaging.requirements import Requirement
     from packaging.specifiers import SpecifierSet
     from packaging.tags import sys_tags
-    from packaging.utils import canonicalize_name, parse_sdist_filename, parse_wheel_filename
+    from packaging.utils import canonicalize_name, parse_wheel_filename
+    from packaging.utils import parse_sdist_filename as parse_sdist_filename
     from packaging.version import Version
 
 PUBLIC_INDEX = "https://pypi.org/simple"
 ADVERTISED = {"mcp", "agent", "all"}
+SOURCE_BUILD_ENV = "READINESS_SOURCE_BUILDS"
 
 
 def sibling(name: str):
@@ -62,16 +68,40 @@ def identity() -> dict:
     for commit in (source, contract):
         require(bool(re.fullmatch(r"[0-9a-f]{40}", commit)), "missing source/contract identity")
     for directory, expected in ((Path.cwd(), source), (Path(".pipeline-contract"), contract)):
-        actual = subprocess.check_output(
-            ["git", "-C", str(directory), "rev-parse", "HEAD"], text=True
-        ).strip()
+        actual = subprocess.check_output(["git", "-C", str(directory), "rev-parse", "HEAD"], text=True).strip()
         require(actual == expected, "source or contract identity changed")
     return {"source_commit": source, "contract_commit": contract}
 
 
 def valid_profile_names(items: list) -> bool:
-    return all(isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", item)
-               for item in items)
+    return all(
+        isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?", item) for item in items
+    )
+
+
+def source_build_allowance(project: Path | None = None) -> list[str]:
+    """Named dependencies the consumer repo lets readiness build from source.
+
+    Declared in the consumer's ``pyproject.toml`` as
+    ``[tool.pipelines] allow-source-build = ["name", ...]``; empty by default.
+    Only exact distribution names are accepted, never a wildcard, so the
+    wheel-only rule still holds for every package the list does not name.
+    """
+    path = (project or Path.cwd()) / "pyproject.toml"
+    if not path.is_file():
+        return []
+    try:
+        data = tomllib.loads(path.read_text())
+    except tomllib.TOMLDecodeError as error:
+        raise ValueError("pyproject.toml is not valid TOML") from error
+    section = data.get("tool", {}).get("pipelines", {})
+    require(isinstance(section, dict), "[tool.pipelines] must be a table")
+    names = section.get("allow-source-build", [])
+    require(isinstance(names, list), "allow-source-build must be a list of package names")
+    require(valid_profile_names(names), "allow-source-build entries must be exact package names")
+    normalized = [canonicalize_name(name) for name in names]
+    require(len(set(normalized)) == len(normalized), "duplicate allow-source-build entry")
+    return sorted(normalized)
 
 
 def profiles(raw: str, extras: list[str]) -> list[str]:
@@ -105,8 +135,10 @@ def declared_extras(message) -> list[str]:
 def metadata(path: Path, context: dict | None = None) -> dict:
     name, version, _, tags = parse_wheel_filename(path.name)
     context = context or observed_context()
-    require(bool({str(tag) for tag in tags}.intersection(context["tags"])),
-            "wheel needs proof on its target interpreter/platform")
+    require(
+        bool({str(tag) for tag in tags}.intersection(context["tags"])),
+        "wheel needs proof on its target interpreter/platform",
+    )
     with zipfile.ZipFile(path) as wheel:
         names = wheel.namelist()
         records = [item for item in names if item.endswith(".dist-info/METADATA")]
@@ -116,32 +148,47 @@ def metadata(path: Path, context: dict | None = None) -> dict:
     require(len(message.get_all("Version", [])) == 1, "missing/duplicate package version")
     require(canonicalize_name(message["Name"]) == name, "wheel name disagrees with metadata")
     require(Version(message["Version"]) == version, "wheel version disagrees with metadata")
-    require(Version(context["environment"]["python_full_version"]) in SpecifierSet(message.get("Requires-Python", "")),
-            "wheel does not support the readiness interpreter")
+    require(
+        Version(context["environment"]["python_full_version"]) in SpecifierSet(message.get("Requires-Python", "")),
+        "wheel does not support the readiness interpreter",
+    )
     requirements = message.get_all("Requires-Dist", [])
     for raw in requirements:
         require(Requirement(raw).url is None, "direct URL dependency is forbidden")
     return {
-        "name": name, "version": str(version),
+        "name": name,
+        "version": str(version),
         "requires_python": str(SpecifierSet(message.get("Requires-Python", ""))),
         "provides_extra": declared_extras(message),
         "requires_dist": requirements,
     }
 
 
-def clean_environment(home: Path, wheel: Path) -> dict[str, str]:
+def clean_environment(home: Path, wheel: Path, source_builds: Sequence[str] = ()) -> dict[str, str]:
     # No index, proxy, certificate, source, constraint, Python, or user config
     # inherited from the caller. pip's null config disables even global config.
     return {
-        "PATH": os.defpath, "HOME": str(home), "USERPROFILE": str(home),
-        "PIP_CONFIG_FILE": os.devnull, "PYTHONNOUSERSITE": "1",
+        "PATH": os.defpath,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "PIP_CONFIG_FILE": os.devnull,
+        "PYTHONNOUSERSITE": "1",
         "READINESS_ROOT_WHEEL": str(wheel),
+        SOURCE_BUILD_ENV: ",".join(source_builds),
         **({"SYSTEMROOT": os.environ["SYSTEMROOT"]} if "SYSTEMROOT" in os.environ else {}),
     }
 
 
-def validate_report(report: dict, wheel: Path, root: dict, profile: str, expected_digest: str | None = None,
-                    context: dict | None = None, root_uri: str | None = None) -> None:
+def validate_report(
+    report: dict,
+    wheel: Path,
+    root: dict,
+    profile: str,
+    expected_digest: str | None = None,
+    context: dict | None = None,
+    root_uri: str | None = None,
+    source_builds: Sequence[str] = (),
+) -> None:
     context = context or observed_context()
     require(report.get("version") == "1", "unsupported resolver report")
     require(report.get("pip_version") == sibling("bootstrap").PIN["version"], "unreviewed resolver version")
@@ -152,8 +199,10 @@ def validate_report(report: dict, wheel: Path, root: dict, profile: str, expecte
     roots = 0
     for item in installs:
         data = item["metadata"]
-        require(Version(context["environment"]["python_full_version"]) in SpecifierSet(data.get("requires_python", "")),
-                "dependency does not support the readiness interpreter")
+        require(
+            Version(context["environment"]["python_full_version"]) in SpecifierSet(data.get("requires_python", "")),
+            "dependency does not support the readiness interpreter",
+        )
         name = canonicalize_name(data["name"])
         require(name not in packages, "duplicate resolved package")
         packages[name] = data
@@ -166,14 +215,25 @@ def validate_report(report: dict, wheel: Path, root: dict, profile: str, expecte
             require(download["url"] == (root_uri or wheel.as_uri()), "resolver replaced the root wheel")
             require(hashes["sha256"] == (expected_digest or digest(wheel)), "root wheel digest mismatch")
             require(data["version"] == root["version"], "root wheel version mismatch")
-            require(str(SpecifierSet(data.get("requires_python", ""))) == root["requires_python"],
-                    "root Python requirement changed")
+            require(
+                str(SpecifierSet(data.get("requires_python", ""))) == root["requires_python"],
+                "root Python requirement changed",
+            )
             require(data.get("requires_dist", []) == root["requires_dist"], "root requirements changed")
         else:
             require(not item.get("is_direct", False), "direct dependency in resolution")
             require(url.scheme == "https" and url.hostname == "files.pythonhosted.org", "non-public artifact")
-            require(url.port in (None, 443) and url.username is None and url.password is None, "invalid artifact origin")
-            require(url.path.endswith(".whl"), "source dependencies cannot prove wheel readiness")
+            require(
+                url.port in (None, 443) and url.username is None and url.password is None, "invalid artifact origin"
+            )
+            if name in source_builds:
+                filename = unquote(url.path.rsplit("/", 1)[-1])
+                require(
+                    filename.endswith(".whl") or parse_sdist_filename(filename)[0] == name,
+                    "allowed source build is not that package's source archive",
+                )
+            else:
+                require(url.path.endswith(".whl"), "source dependencies cannot prove wheel readiness")
         for raw in data.get("requires_dist", []):
             require(Requirement(raw).url is None, "transitive direct URL dependency")
     require(roots == 1, "exactly one root wheel required")
@@ -202,7 +262,9 @@ def check_closure(packages: dict, root: str, profile: str, environment: dict, *,
             pending.extend((dependency, canonicalize_name(item)) for item in {"", *req.extras})
 
 
-def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list[dict]:
+def resolve(
+    wheel: Path, root: dict, selected: list[str], scratch: Path, source_builds: Sequence[str] = ()
+) -> list[dict]:
     resolver = Path(__file__).with_name("resolve.py").resolve()
     bootstrap = sibling("bootstrap")
     pinned_wheel = Path(sys.prefix) / bootstrap.PIN["filename"]
@@ -211,21 +273,38 @@ def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list
     for profile in selected:
         home = scratch / profile
         home.mkdir()
-        env = clean_environment(home, wheel)
+        env = clean_environment(home, wheel, source_builds)
         venv = home / "venv"
         python = bootstrap.create(venv, pinned_wheel)
         report_path = home / "report.json"
         target = str(wheel) + (f"[{profile}]" if profile != "base" else "")
         subprocess.run(
-            [str(python), "-I", str(resolver), "install", "--ignore-installed",
-             "--no-cache-dir", "--disable-pip-version-check", "--no-input", "--only-binary=:all:",
-             "--index-url", PUBLIC_INDEX, "--report", str(report_path), target],
-            env=env, cwd=home, check=True, timeout=600,
+            [
+                str(python),
+                "-I",
+                str(resolver),
+                "install",
+                "--ignore-installed",
+                "--no-cache-dir",
+                "--disable-pip-version-check",
+                "--no-input",
+                "--only-binary=:all:",
+                *(f"--no-binary={name}" for name in source_builds),
+                "--index-url",
+                PUBLIC_INDEX,
+                "--report",
+                str(report_path),
+                target,
+            ],
+            env=env,
+            cwd=home,
+            check=True,
+            timeout=600,
         )
         # Do not start Python in the populated venv: installed .pth files must
         # not execute. Validate the report in the separate checker interpreter.
         report = json.loads(report_path.read_text())
-        validate_report(report, wheel, root, profile)
+        validate_report(report, wheel, root, profile, source_builds=source_builds)
         evidence.append({"profile": profile, "report": report})
     return evidence
 
@@ -233,20 +312,28 @@ def resolve(wheel: Path, root: dict, selected: list[str], scratch: Path) -> list
 def wheel_set(directory: Path) -> list[Path]:
     files = sorted(directory.iterdir())
     require(bool(files), "no wheels to validate")
-    require(all(path.is_file() and not path.is_symlink() and path.suffix == ".whl" for path in files),
-            "release directory must contain only regular wheels; sdists need separate proof")
+    require(
+        all(path.is_file() and not path.is_symlink() and path.suffix == ".whl" for path in files),
+        "release directory must contain only regular wheels; sdists need separate proof",
+    )
     return files
 
 
 def interpreter() -> dict:
-    return {"implementation": platform.python_implementation(), "version": platform.python_version(),
-            "platform": sys.platform, "machine": platform.machine()}
+    return {
+        "implementation": platform.python_implementation(),
+        "version": platform.python_version(),
+        "platform": sys.platform,
+        "machine": platform.machine(),
+    }
 
 
 def observed_context() -> dict:
-    return {"interpreter": interpreter(), "environment": default_environment(),
-            "tags": [str(tag) for tag in sys_tags()]}
-
+    return {
+        "interpreter": interpreter(),
+        "environment": default_environment(),
+        "tags": [str(tag) for tag in sys_tags()],
+    }
 
 
 def check(directory: Path, receipt: Path, raw: str) -> None:
@@ -255,10 +342,21 @@ def check(directory: Path, receipt: Path, raw: str) -> None:
     context = observed_context()
     if target != "native":
         sibling("targets").validate(target, context)
-    proof = {"schema": 1, "target": target, "context": context, "index": PUBLIC_INDEX, "scope": "all-runtime-dependencies",
-             **identity(), "interpreter": interpreter(), "wheels": []}
+    source_builds = source_build_allowance()
+    proof = {
+        "schema": 1,
+        "target": target,
+        "context": context,
+        "index": PUBLIC_INDEX,
+        "scope": "all-runtime-dependencies",
+        **identity(),
+        "interpreter": interpreter(),
+        "source_builds": source_builds,
+        "wheels": [],
+    }
     for wheel in wheel_set(directory):
         root = metadata(wheel)
+        require(root["name"] not in source_builds, "the published package itself cannot be a source build")
         selected = profiles(raw, root["provides_extra"])
         original = digest(wheel)
         with tempfile.TemporaryDirectory(prefix="wheel-readiness-") as temp:
@@ -266,13 +364,16 @@ def check(directory: Path, receipt: Path, raw: str) -> None:
             copy = scratch / wheel.name
             shutil.copyfile(wheel, copy)
             require(digest(copy) == original, "wheel changed while copying")
-            evidence = resolve(copy, root, selected, scratch)
+            evidence = resolve(copy, root, selected, scratch, source_builds)
         require(digest(wheel) == original, "wheel changed during readiness check")
-        proof["wheels"].append({"file": wheel.name, "sha256": original,
-                                "metadata": root, "profiles": selected, "evidence": evidence})
+        proof["wheels"].append(
+            {"file": wheel.name, "sha256": original, "metadata": root, "profiles": selected, "evidence": evidence}
+        )
     require(identity()["source_commit"] == proof["source_commit"], "source changed")
-    require(len({(item["metadata"]["name"], item["metadata"]["version"]) for item in proof["wheels"]}) == 1,
-            "publication must have one package identity")
+    require(
+        len({(item["metadata"]["name"], item["metadata"]["version"]) for item in proof["wheels"]}) == 1,
+        "publication must have one package identity",
+    )
     receipt.write_text(json.dumps(proof, indent=2) + "\n")
 
 
@@ -289,11 +390,13 @@ def verify(directory: Path, receipt: Path, raw: str, evidence: Path = Path("sour
     files = wheel_set(directory)
     require([path.name for path in files] == [item["file"] for item in proof["wheels"]], "wheel set changed")
     require(proof["context"] == observed_context(), "proof target context changed")
+    source_builds = source_build_allowance()
+    require(proof.get("source_builds", []) == source_builds, "source-build allowance changed")
     for path, item in zip(files, proof["wheels"], strict=True):
-        verify_item(path, item, raw, proof["context"])
+        verify_item(path, item, raw, proof["context"], source_builds)
 
 
-def verify_item(path: Path, item: dict, raw: str, context: dict) -> None:
+def verify_item(path: Path, item: dict, raw: str, context: dict, source_builds: Sequence[str] = ()) -> None:
     require(digest(path) == item["sha256"], "wheel bytes changed")
     actual = metadata(path, context)
     require(item["metadata"] == actual, "proof wheel metadata changed")
@@ -301,25 +404,28 @@ def verify_item(path: Path, item: dict, raw: str, context: dict) -> None:
     require([entry["profile"] for entry in item["evidence"]] == item["profiles"], "profile proof missing")
     for entry in item["evidence"]:
         report = entry["report"]
-        candidates = [candidate for candidate in report["install"]
-                      if canonicalize_name(candidate["metadata"]["name"]) == actual["name"]]
+        candidates = [
+            candidate
+            for candidate in report["install"]
+            if canonicalize_name(candidate["metadata"]["name"]) == actual["name"]
+        ]
         require(len(candidates) == 1, "missing root evidence")
         uri = candidates[0]["download_info"]["url"]
         root_url = urlsplit(uri)
         require(root_url.scheme == "file", "root proof must refer to a local wheel")
         require(Path(unquote(root_url.path)).name == path.name, "proof wheel filename changed")
-        validate_report(report, path, actual, entry["profile"], digest(path), context, uri)
+        validate_report(report, path, actual, entry["profile"], digest(path), context, uri, source_builds)
 
 
 def publication_version(receipt: Path) -> str:
     proof = json.loads(receipt.read_text())
     groups = proof["targets"].values() if proof["schema"] == 2 else (proof,)
-    identities = {(item["metadata"]["name"], item["metadata"]["version"])
-                  for group in groups for item in group["wheels"]}
+    identities = {
+        (item["metadata"]["name"], item["metadata"]["version"]) for group in groups for item in group["wheels"]
+    }
     require(len(identities) == 1, "publication must have one package identity")
     _, version = identities.pop()
     return str(Version(version))
-
 
 
 def main() -> None:
@@ -340,7 +446,9 @@ def main() -> None:
             verify(directory, receipt, raw, args.source_evidence.resolve())
             require(args.release_version == publication_version(receipt), "release version disagrees with wheel proof")
         elif args.phase == "aggregate":
-            sibling("bundle").aggregate(directory, args.receipts.resolve(), receipt, raw, args.source_evidence.resolve())
+            sibling("bundle").aggregate(
+                directory, args.receipts.resolve(), receipt, raw, args.source_evidence.resolve()
+            )
         else:
             sibling("source").check(sys.modules[__name__], directory, receipt, raw, args.source_evidence.resolve())
         if args.phase in {"check", "aggregate"}:

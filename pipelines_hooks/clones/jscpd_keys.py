@@ -49,7 +49,9 @@ def _span(side: dict[str, Any], format_name: str, root: Path) -> Span:
 def clone_spans(clone: dict[str, Any], root: Path) -> tuple[str, str, tuple[Span, Span]]:
     """``(format, fragment digest, sorted spans)`` for one validated clone."""
     format_name = clone["format"]
-    first, second = sorted((_span(clone["firstFile"], format_name, root), _span(clone["secondFile"], format_name, root)))
+    first, second = sorted(
+        (_span(clone["firstFile"], format_name, root), _span(clone["secondFile"], format_name, root))
+    )
     digest = hashlib.sha256(clone["fragment"].encode("utf-8", "surrogatepass")).hexdigest()
     return format_name, digest, (first, second)
 

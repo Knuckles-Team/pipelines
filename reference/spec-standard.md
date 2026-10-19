@@ -31,7 +31,7 @@ A requirement that needs two answers becomes two linked rows, one in each owner.
 
 A client must read a served operation. A client must not compute a decision and must not call the engine directly.
 
-graph-os must hold no policy table. agent-utilities must hold no fact store. Only the engine decides among options.
+arbora must hold no policy table. agent-utilities must hold no fact store. Only the engine decides among options.
 
 A design section in `plan.md` must trace the requirement to the live call path. It names the entry point, each function on the path, and the place the new behavior attaches. A row that no production caller reaches is not delivered.
 
@@ -74,7 +74,7 @@ A rollup must include a wiring row and a hot-path proof row. The wiring row name
 | Item | Rule | Example |
 |---|---|---|
 | Spec ID | `<OWNER>-<AREA>`, upper case, hyphen-separated, no numeric suffix | `EG-IDENTITY` |
-| Owner prefix | The owner map in the repository `specs/README.md` | `EG`, `AU`, `GRAPHOS`, `SDK`, `WEBUI`, `RM`, `PIPE` |
+| Owner prefix | The owner map in the repository `specs/README.md` | `EG`, `AU`, `ARBORA`, `SDK`, `WEBUI`, `RM`, `PIPE` |
 | Directory | The area in lower case, hyphen-separated | `specs/identity/` for `EG-IDENTITY` |
 | Title line | The first line of `spec.md`: `# <ID> — <Title>` with an em dash | `# EG-IDENTITY — Engine identity and scope` |
 | Row ID | `<ID>-R<nnn>`, children `.n`, three digits | `EG-IDENTITY-R007.2` |
@@ -175,3 +175,38 @@ Relationships and code mappings must not change delivery states, recorded histor
 
 
 References declarations accept explicit links, canonical spec or requirement identifiers, and relative file paths. Other prose remains unparsed source evidence; its words do not become relationship targets. Unknown canonical identifiers remain unresolved references.
+
+## Withdrawing invalid verification evidence
+
+Keep the owning IDs in `Spec:` trailers when correcting invalid acceptance evidence.
+Add these trailers to a commit in the correction PR:
+
+```text
+Spec: DEMO-R001
+Spec-Withdraw: DEMO-R001
+Spec-Withdrawal-Reason: Refusal tests do not prove the required successful query.
+```
+
+The reason must contain at least 20 characters. Repeat it exactly in the owning `plan.md`, with each withdrawn ID.
+The declaration applies to the entire PR range from its merge base.
+It may follow earlier correction commits; history need not be rewritten.
+Every withdrawn ID must be known, remain in a `Spec:` trailer, and lose an existing Rust comment binding.
+No acceptance binding for that ID may remain in the current tree.
+
+Allowed changes are deliberately narrow:
+
+- Remove standalone Rust `// spec: ID` comments, or replace them with the canonical comment below.
+- Add text to owning `plan.md` files without deleting existing text.
+- Reopen owning task checkboxes for the declared IDs.
+- Regenerate owning `status.json` files with `spec-status --write`.
+
+```rust
+// Partial refusal coverage for DEMO-R001; successful-operation acceptance remains open.
+```
+
+Requirements, executable code, other comments, file modes, filenames, build configuration and workflows must remain unchanged.
+Markers inside strings or block comments cannot qualify as a source withdrawal.
+Missing reasons, unknown IDs, absent old bindings, retained bindings, and mixed feature changes fail closed.
+Unsupported binding languages remain subject to the ordinary rule.
+Other named IDs still need bound tests. The independent canonical status gate remains mandatory.
+This mechanism withdraws verification evidence; it does not waive acceptance requirements or prove implementation completion.

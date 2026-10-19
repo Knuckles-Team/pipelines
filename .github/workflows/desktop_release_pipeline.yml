@@ -2,6 +2,11 @@ name: Desktop Release Pipeline
 
 on:
   workflow_call:
+    inputs:
+      python-version:
+        description: Python version for the build jobs
+        type: string
+        default: '3.14'
 
 permissions:
   contents: read
@@ -27,7 +32,7 @@ jobs:
       - name: Check out code, set up Python and uv
         uses: ./.pipeline-contract/.github/actions/setup-python-uv
         with:
-          python-version: '3.11'
+          python-version: ${{ inputs.python-version }}
 
       - name: Install dependencies
         run: |
@@ -99,7 +104,7 @@ jobs:
       - name: Check out code, set up Python and uv
         uses: ./.pipeline-contract/.github/actions/setup-python-uv
         with:
-          python-version: '3.11'
+          python-version: ${{ inputs.python-version }}
 
       - name: Install dependencies
         run: |

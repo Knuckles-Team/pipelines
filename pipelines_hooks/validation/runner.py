@@ -120,9 +120,7 @@ def run(policy: Policy, root: Path, evidence: Path) -> dict:
                 "--root",
                 str(root),
             ]
-            result = execute(
-                command, root, log, timeout=min(check.timeout_seconds, remaining)
-            )
+            result = execute(command, root, log, timeout=min(check.timeout_seconds, remaining))
         results.append({**row, **result, "log": str(log)})
     return {
         "version": 1,

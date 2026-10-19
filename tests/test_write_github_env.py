@@ -65,7 +65,7 @@ def test_github_env_receives_the_delimited_form_with_the_value_intact(tmp_path: 
     _, github_env = _run_sourced(tmp_path, print_var="CFLAGS", set_github_env=True)
     lines = github_env.read_text(encoding="utf-8").splitlines()
     opener = next(line for line in lines if line.startswith("CFLAGS<<"))
-    delimiter = opener[len("CFLAGS<<"):]
+    delimiter = opener[len("CFLAGS<<") :]
     start = lines.index(opener)
     assert lines[start + 1] == "-O2 -march=native"
     assert lines[start + 2] == delimiter

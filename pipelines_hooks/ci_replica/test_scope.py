@@ -7,7 +7,7 @@ run the full suite unchanged (that path never calls this gate).
 
 ``--lang python`` maps each changed ``<src-root>/**/*.py`` file to its mirror
 ``<tests-root>/.../test_<name>.py`` (the layout most repos in this fleet use:
-``graph_os/fleet/foo.py`` <-> ``tests/fleet/test_foo.py``), and always
+``arbora/fleet/foo.py`` <-> ``tests/fleet/test_foo.py``), and always
 includes a changed file that already lives under ``tests-root``. A changed
 file with no mirror falls back to a static import-graph scan
 (:mod:`pipelines_hooks.ci_replica.import_graph`): every test file that
@@ -36,7 +36,7 @@ import argparse
 import tomllib
 from pathlib import Path
 
-from pipelines_hooks.ci_replica.import_graph import module_for_path, test_files_importing
+from pipelines_hooks.ci_replica.import_graph import clear_import_graph_cache, module_for_path, test_files_importing
 from pipelines_hooks.clones.dupehound import changed_paths
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.settings import setting
@@ -55,7 +55,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--base-ref", "--diff", dest="base_ref", required=True)
     parser.add_argument("--lang", choices=("python", "rust"), default="python")
-    parser.add_argument("--src-root", default="graph_os", help="python only: the package under test")
+    parser.add_argument("--src-root", default="arbora", help="python only: the package under test")
     parser.add_argument("--tests-root", default="tests", help="python only: the mirrored test tree")
     parser.add_argument("--workspace-root", default=".", help="rust only: the Cargo workspace root")
     return parser.parse_args(argv)
@@ -88,19 +88,27 @@ class _DedupedScope:
         return self._selected or [NONE]
 
 
+def _add_python_test(scope: _DedupedScope, path: str) -> None:
+    # Helpers must not become pytest arguments, but Rust crate names have
+    # no Python filename convention and use the collector directly.
+    name = path.rsplit("/", 1)[-1]
+    if name.startswith("test_") or name.endswith("_test.py"):
+        scope.add(path)
+
+
 def _handle_python_path(scope: _DedupedScope, path: str, root: Path, src_prefix: str, tests_prefix: str) -> bool:
     """Apply one changed path to ``scope``. True means the caller must return ``FULL``."""
     if _is_global_trigger(path, _GLOBAL_PYTHON_TRIGGERS):
         return True
     if path.startswith(tests_prefix) and path.endswith(".py"):
-        scope.add(path)
+        _add_python_test(scope, path)
         return False
     if not (path.startswith(src_prefix) and path.endswith(".py")):
         return False
     rel = path[len(src_prefix) :]
     mirror = _mirrored_test(tests_prefix.rstrip("/"), rel, root)
     if mirror is not None:
-        scope.add(mirror)
+        _add_python_test(scope, mirror)
         return False
     _add_import_graph_matches(scope, root, src_prefix, tests_prefix, rel)
     return False
@@ -116,11 +124,12 @@ def _add_import_graph_matches(scope: _DedupedScope, root: Path, src_prefix: str,
     for test_path in test_files_importing(
         root, src_prefix.rstrip("/"), tests_prefix=tests_prefix.rstrip("/"), changed_module=changed_module
     ):
-        scope.add(test_path)
+        _add_python_test(scope, test_path)
 
 
 def _python_scope(root: Path, changed: list[str], src_root: str, tests_root: str) -> list[str]:
     src_prefix, tests_prefix = f"{src_root}/", f"{tests_root}/"
+    clear_import_graph_cache()  # one scan per invocation, never a stale tree
     scope = _DedupedScope()
     for path in changed:
         if _handle_python_path(scope, path, root, src_prefix, tests_prefix):

@@ -1,4 +1,5 @@
 """Bootstrap the reviewed resolver from one hash-pinned public wheel."""
+
 from __future__ import annotations
 
 import hashlib
@@ -18,8 +19,11 @@ PIN = json.loads(Path(__file__).with_name("resolver-pin.json").read_text())
 def environment(home: Path) -> dict[str, str]:
     """Do not inherit caller indexes, proxies, Python imports, or pip config."""
     return {
-        "PATH": os.defpath, "HOME": str(home), "USERPROFILE": str(home),
-        "PIP_CONFIG_FILE": os.devnull, "PYTHONNOUSERSITE": "1",
+        "PATH": os.defpath,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "PIP_CONFIG_FILE": os.devnull,
+        "PYTHONNOUSERSITE": "1",
         **({"SYSTEMROOT": os.environ["SYSTEMROOT"]} if "SYSTEMROOT" in os.environ else {}),
     }
 
@@ -58,13 +62,28 @@ def download(directory: Path) -> Path:
 def create(directory: Path, pinned_wheel: Path) -> Path:
     verify_pin(pinned_wheel)
     env = environment(directory.parent)
-    subprocess.run([sys.executable, "-I", "-m", "venv", str(directory)],
-                   env=env, cwd=directory.parent, check=True, timeout=120)
+    subprocess.run(
+        [sys.executable, "-I", "-m", "venv", str(directory)], env=env, cwd=directory.parent, check=True, timeout=120
+    )
     python = directory / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     subprocess.run(
-        [str(python), "-I", "-m", "pip", "install", "--no-index", "--no-deps",
-         "--disable-pip-version-check", "--no-cache-dir", "--force-reinstall", str(pinned_wheel)],
-        env=env, cwd=directory.parent, check=True, timeout=120,
+        [
+            str(python),
+            "-I",
+            "-m",
+            "pip",
+            "install",
+            "--no-index",
+            "--no-deps",
+            "--disable-pip-version-check",
+            "--no-cache-dir",
+            "--force-reinstall",
+            str(pinned_wheel),
+        ],
+        env=env,
+        cwd=directory.parent,
+        check=True,
+        timeout=120,
     )
     # Keep the verified input for subsequent profile venvs; they never fetch pip.
     destination = directory / PIN["filename"]

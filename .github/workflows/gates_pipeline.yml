@@ -1,8 +1,14 @@
 name: Gates
 
-# Shared PR / main gate (CI-STANDARD): the caller's own pre-commit file, run
-# diff-scoped on pull requests (--from-ref/--to-ref) and over every file on a
-# main push, then the affected-test subset. Never publishes.
+# The pull request workflow of the gate standard (reference/gate-standard.md):
+# the caller's own pre-commit file (format, hygiene, secrets at the commit
+# stage; types, spec at the pre-push stage) and its optional CI-only gate file
+# (.config/ci-gates.yaml, PRECOMMIT standard), run diff-scoped on pull requests
+# (--from-ref/--to-ref) and over every file on a main push, then the
+# affected-test subset. The pre-push `tests-fast` hook is skipped here because
+# the affected-test step runs the same subset without the local time cap.
+# Never publishes. Full tests and the dependency audit belong to
+# main_pipeline.yml; advisory scanners to advisory_pipeline.yml.
 #
 # Caller contract (copy; a reusable workflow cannot set the caller's groups):
 #
@@ -21,16 +27,36 @@ name: Gates
 #
 # paths-ignore leaves a required `gates` check pending; pair it with the
 # templates/workflows/gates-skip.yml companion (the inverse `paths:` filter).
+# Or drop `paths-ignore` from `pull_request` and set `docs-only-paths`: the job
+# then detects a docs-only diff itself and passes in seconds, so exactly one
+# `gates / gates` check exists and a skip run can never mask a failing real run.
 # Every input has a default, so adding the workflow needs no `with:` block.
+#
+# Trailers belong to pull request commits: a squash merge does not carry the
+# `Spec:` trailer, so on push events the `spec-trailers` hook is added to SKIP.
+# Pull request runs always enforce it.
 
 on:
   workflow_call:
     inputs:
+      python-version:
+        description: Python version uv provisions for the hooks, tests and builds (the environment version; reference/gate-standard.md "Python version").
+        required: false
+        type: string
+        default: '3.14'
       config:
         description: Pre-commit configuration file of the caller.
         required: false
         type: string
         default: .config/pre-commit.yaml
+      ci-config:
+        description: >-
+          CI-only gate file (pre-commit format, never installed as a git hook): the
+          architecture gates, scanners, drift checks and type checks the
+          PRECOMMIT standard keeps out of local hooks. Skipped when the file is absent.
+        required: false
+        type: string
+        default: .config/ci-gates.yaml
       test-scope:
         description: Tests directory for the affected-test subset; empty disables the test step.
         required: false
@@ -75,6 +101,14 @@ on:
         required: false
         type: string
         default: ''
+      docs-only-paths:
+        description: >-
+          Space-separated bash patterns (`*` crosses `/`) of docs and spec paths. When
+          set and every file in the pull request diff matches one, the job passes
+          right after checkout without running hooks or tests. Empty disables it.
+        required: false
+        type: string
+        default: ''
       timeout-minutes:
         description: Wall-clock cap for the gates job (15 for pull requests, 60 for main).
         required: false
@@ -98,20 +132,60 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Detect a docs-only change
+        id: scope
+        env:
+          DOCS_ONLY_PATHS: ${{ inputs.docs-only-paths }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          ALL_FILES: ${{ inputs.all-files }}
+        run: |
+          set -euo pipefail
+          set -f
+          if [[ -z "$DOCS_ONLY_PATHS" || "$EVENT_NAME" != "pull_request" || "$ALL_FILES" == "true" ]]; then
+            echo "docs-only=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base="$PR_BASE"
+          if [[ -z "$base" ]] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            git fetch --no-tags origin "$BASE_REF" >/dev/null 2>&1 || true
+            base="$(git merge-base HEAD "origin/$BASE_REF")"
+          fi
+          code=()
+          while IFS= read -r file; do
+            [[ -z "$file" ]] && continue
+            matched=false
+            for pattern in $DOCS_ONLY_PATHS; do
+              # shellcheck disable=SC2053
+              if [[ "$file" == $pattern ]]; then matched=true; break; fi
+            done
+            [[ "$matched" == true ]] || code+=("$file")
+          done < <(git diff --name-only "$base" HEAD)
+          if [[ "${#code[@]}" -eq 0 ]]; then
+            echo "docs-only change: every changed path matches docs-only-paths; the code gates do not apply"
+            echo "docs-only=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code change (${#code[@]} paths, first: ${code[0]}); running the gates"
+            echo "docs-only=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install uv
+        if: steps.scope.outputs.docs-only != 'true'
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
+          python-version: ${{ inputs.python-version }}
           enable-cache: true
           cache-dependency-glob: |
             uv.lock
             ${{ inputs.config }}
+            ${{ inputs.ci-config }}
 
       - name: Install Rust toolchain
-        if: inputs.rust
+        if: inputs.rust && steps.scope.outputs.docs-only != 'true'
         run: rustup toolchain install stable --profile minimal
 
       - name: Caller setup
-        if: inputs.setup-command != ''
+        if: inputs.setup-command != '' && steps.scope.outputs.docs-only != 'true'
         env:
           SETUP_COMMAND: ${{ inputs.setup-command }}
           PROHIBITED_IDENTITY_CATALOG: ${{ vars.PROHIBITED_IDENTITY_CATALOG }}
@@ -119,12 +193,14 @@ jobs:
         run: bash -c "$SETUP_COMMAND"
 
       - name: Cache pre-commit environments
+        if: steps.scope.outputs.docs-only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config) }}
+          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}
 
       - name: Resolve diff range
+        if: steps.scope.outputs.docs-only != 'true'
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
@@ -148,31 +224,49 @@ jobs:
           echo "PRE_COMMIT_RANGE=${range[*]}" >> "$GITHUB_ENV"
 
       - name: pre-commit (commit and pre-push stages)
+        if: steps.scope.outputs.docs-only != 'true'
         env:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
+          EVENT_NAME: ${{ github.event_name }}
+          TEST_SCOPE: ${{ inputs.test-scope }}
         run: |
           set -euo pipefail
+          if [[ "$EVENT_NAME" == "push" ]]; then SKIP="${SKIP:+$SKIP,}spec-trailers"; export SKIP; fi
+          if [[ -n "$TEST_SCOPE" ]]; then SKIP="${SKIP:+$SKIP,}tests-fast,fast-tests"; export SKIP; fi
           for stage in pre-commit pre-push; do
             # shellcheck disable=SC2086
             uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage "$stage" $PRE_COMMIT_RANGE --show-diff-on-failure
           done
 
+      - name: CI-only gates
+        if: steps.scope.outputs.docs-only != 'true'
+        env:
+          SKIP: ${{ inputs.skip-hooks }}
+          CI_CONFIG: ${{ inputs.ci-config }}
+        run: |
+          set -euo pipefail
+          if [[ ! -f "$CI_CONFIG" ]]; then echo "no $CI_CONFIG; no CI-only gates"; exit 0; fi
+          # shellcheck disable=SC2086
+          uvx --from pre-commit==4.6.2 pre-commit run --config "$CI_CONFIG" $PRE_COMMIT_RANGE --show-diff-on-failure
+
       - name: pre-commit (extra manual hooks)
-        if: inputs.extra-manual-hooks != ''
+        if: inputs.extra-manual-hooks != '' && steps.scope.outputs.docs-only != 'true'
         env:
           SKIP: ${{ inputs.skip-hooks }}
           CONFIG: ${{ inputs.config }}
           HOOKS: ${{ inputs.extra-manual-hooks }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          if [[ "$EVENT_NAME" == "push" ]]; then SKIP="${SKIP:+$SKIP,}spec-trailers"; export SKIP; fi
           for hook in $HOOKS; do
             # shellcheck disable=SC2086
             uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage manual $PRE_COMMIT_RANGE "$hook"
           done
 
       - name: Affected tests
-        if: inputs.test-scope != ''
+        if: inputs.test-scope != '' && steps.scope.outputs.docs-only != 'true'
         env:
           TEST_SCOPE: ${{ inputs.test-scope }}
           SRC_ROOT: ${{ inputs.src-root }}

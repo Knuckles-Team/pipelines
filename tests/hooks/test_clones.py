@@ -71,8 +71,17 @@ def test_the_register_rots_when_a_reviewed_function_changes(tmp_path: Path) -> N
     (tmp_path / "b.py").write_text("def right():\n    return 2\n", encoding="utf-8")
     left = digest_of(normalized_function_text(tmp_path / "a.py", 1, "left"))
     right = digest_of(normalized_function_text(tmp_path / "b.py", 1, "right"))
-    pair = DistinctPair("a.py", "left", left, "b.py", "right", right, "reviewed: " + "semantically unrelated " * 6, "2026-09-13")
-    finding = {"file": "a.py", "line": 1, "name": "left", "original_file": "b.py", "original_line": 1, "original_name": "right"}
+    pair = DistinctPair(
+        "a.py", "left", left, "b.py", "right", right, "reviewed: " + "semantically unrelated " * 6, "2026-09-13"
+    )
+    finding = {
+        "file": "a.py",
+        "line": 1,
+        "name": "left",
+        "original_file": "b.py",
+        "original_line": 1,
+        "original_name": "right",
+    }
     assert partition([finding], [pair], tmp_path)["unregistered"] == []
     (tmp_path / "b.py").write_text("def right():\n    return 3\n", encoding="utf-8")
     assert partition([finding], [pair], tmp_path)["changed"] == [finding]
@@ -84,4 +93,4 @@ def test_generated_spec_status_is_outside_the_jscpd_universe() -> None:
     from pipelines_hooks.clones.contract import is_jscpd_path
 
     assert not is_jscpd_path("specs/portable-deployment/status.json")
-    assert is_jscpd_path("graph_os/api/ops/identity.py")
+    assert is_jscpd_path("arbora/api/ops/identity.py")

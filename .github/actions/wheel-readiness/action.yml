@@ -14,6 +14,9 @@ inputs:
   receipt:
     description: Unique target receipt filename.
     default: release-readiness.json
+  directory:
+    description: Directory holding the artifacts this phase proves.
+    default: dist
   artifact-name:
     description: Unique proof artifact name.
     default: release-readiness
@@ -23,7 +26,9 @@ runs:
     - name: Create isolated readiness interpreter
       shell: bash
       run: |
-        uv --no-config run --no-project --python 3.13 python -I "${{ github.action_path }}/bootstrap.py"
+        # 3.14 unless the repo declares [tool.pipelines] readiness-python (3.12 floor).
+        version="$(uv --no-config run --no-project --python 3.14 python -I "${{ github.action_path }}/interpreter.py")"
+        uv --no-config run --no-project --python "$version" python -I "${{ github.action_path }}/bootstrap.py"
 
     - name: Prove publication artifacts
       shell: bash
@@ -32,7 +37,8 @@ runs:
         READINESS_TARGET: ${{ inputs.target }}
         READINESS_PHASE: ${{ inputs.phase }}
         READINESS_RECEIPT: ${{ inputs.receipt }}
-      run: '"$READINESS_PYTHON" -I "${{ github.action_path }}/readiness.py" "$READINESS_PHASE" --receipt "$READINESS_RECEIPT"'
+        READINESS_DIRECTORY: ${{ inputs.directory }}
+      run: '"$READINESS_PYTHON" -I "${{ github.action_path }}/readiness.py" "$READINESS_PHASE" --receipt "$READINESS_RECEIPT" --directory "$READINESS_DIRECTORY"'
 
     - name: Preserve release proof
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -58,12 +58,15 @@ Run focused or complete checks with:
 
 ```bash
 uv run --frozen python -m pytest -q
-uvx pre-commit run --config .config/pre-commit.yaml --all-files
-uvx pre-commit run --config .config/pre-commit.yaml --all-files --hook-stage manual
+uvx pre-commit run --config .config/pre-commit.yaml --all-files --hook-stage pre-commit
+uvx pre-commit run --config .config/pre-commit.yaml --all-files --hook-stage pre-push
 ```
 
-CI (`.github/workflows/ci.yml`) runs the same two pre-commit invocations with
-the scanners installed by `scripts/install_scanners.sh`.
+The blocking checks are the [gate standard](reference/gate-standard.md).
+CI (`.github/workflows/ci.yml`) calls `gates_pipeline.yml` on pull requests
+and `main_pipeline.yml` on main and release tags. `advisory.yml` runs the
+advisory scanners weekly with the pinned native scanners from
+`scripts/install_scanners.sh`; its report never fails a check.
 
 Use `pipelines-hook <id>` to run one published gate. The command lists the
 available IDs when called without an ID.
