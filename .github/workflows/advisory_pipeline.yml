@@ -145,8 +145,13 @@ jobs:
           row() {
             local name="$1" log="$logs/$1.log"
             shift
-            timeout 900 bash -c "$*" > "$log" 2>&1
-            local status=$?
+            # The step runs under the runner's default `bash -e {0}` wrapper, so
+            # the gate call must be errexit-safe: a finding (exit 1) or a gate
+            # that cannot run (exit 2/124) has to become a report row, never a
+            # red job. The guard keeps the status for the table below while
+            # letting the rest of the script keep its fail-fast behaviour.
+            local status=0
+            timeout 900 bash -c "$*" > "$log" 2>&1 || status=$?
             local result="clean"
             case "$status" in 0) ;; 1) result="findings" ;; *) result="could not run" ;; esac
             echo "| \`$name\` | $status | $result |" >> "$report"

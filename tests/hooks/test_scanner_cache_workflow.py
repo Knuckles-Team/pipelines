@@ -52,3 +52,64 @@ def test_the_advisory_workflow_never_fails_and_only_reads() -> None:
             "Write the advisory report",
         }:
             assert step.get("continue-on-error") is True, step["name"]
+
+
+def test_gate_failures_are_report_rows_not_red_checks() -> None:
+    # The report step runs under the runner's default `bash -e {0}` wrapper.
+    # An unguarded failing gate call would abort the script before REPORT is
+    # exported (main run 39259668552: the upload step then died on the empty
+    # `path` input and the job went red), so the call must capture the exit
+    # status instead of letting errexit kill the step.
+    report = _step("Write the advisory report")
+    run = report["run"]
+    assert "local status=0" in run
+    assert 'timeout 900 bash -c "$*" > "$log" 2>&1 || status=$?' in run
+    # Adversarial: the guard must be the only exit path of the gate call; a
+    # bare `local status=$?` right after an unguarded timeout would still let
+    # errexit abort the step on the first finding.
+    assert 'timeout 900 bash -c "$*" > "$log" 2>&1\n' not in run
+
+
+def test_gate_row_survives_findings_and_unrunnable_gates() -> None:
+    # Semantic check: exec the row() function extracted from the workflow
+    # under the runner's `bash -e` wrapper and prove a finding (exit 1) and
+    # an unrunnable gate (exit 2) both become report rows while the script
+    # itself exits zero. (A timeout is the same code path: 124 is just
+    # another non-zero status.)
+    import subprocess
+    import tempfile
+
+    report = _step("Write the advisory report")
+    # The run block is a YAML literal scalar, so the body is dedented to
+    # column 0 relative to the script; the function's closing brace is the
+    # only bare `}` at the start of a line.
+    function = report["run"].split("row() {", 1)[1].split("\n}", 1)[0]
+    with tempfile.TemporaryDirectory() as tmp:
+        report_path = Path(tmp) / "report.md"
+        details_path = Path(tmp) / "details.md"
+        logs_dir = Path(tmp) / "logs"
+        script = f"""
+set -uo pipefail
+report="{report_path}"
+details="{details_path}"
+logs="{logs_dir}"
+mkdir -p "$logs"
+: > "$report"
+: > "$details"
+row() {{
+{function}
+}}
+row exit-one "true; exit 1"
+row exit-two "true; exit 2"
+exit 0
+"""
+        completed = subprocess.run(
+            ["bash", "-e", "-c", script],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        assert completed.returncode == 0, completed.stderr
+        rows = report_path.read_text()
+        for gate, status in (("exit-one", "1"), ("exit-two", "2")):
+            assert f"| `{gate}` | {status} |" in rows, f"{gate}: {rows}"
