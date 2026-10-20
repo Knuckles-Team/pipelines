@@ -26,7 +26,7 @@ def test_every_registered_gate_is_published() -> None:
 
 
 STANDARD = {"secrets", "spec", "tests-fast"}
-KEPT = {"dependency-readiness", "pr-test-scope", "uv-lock-check", "validate"}
+KEPT = {"dependency-readiness", "gate-set", "pr-test-scope", "uv-lock-check", "validate"}
 
 
 def test_only_the_standard_hooks_are_current() -> None:

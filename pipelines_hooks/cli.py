@@ -51,6 +51,7 @@ GATES: dict[str, str] = {
     "fast-tests": "pipelines_hooks.ci_replica.fast_tests",
     "spec-status": "pipelines_hooks.specs.status",
     "spec-trailers": "pipelines_hooks.specs.trailers",
+    "gate-set": "pipelines_hooks.gate_runner",
 }
 
 #: Grouped checks of the gate standard (reference/gate-standard.md): one hook id

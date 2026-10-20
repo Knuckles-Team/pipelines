@@ -12,16 +12,32 @@
     {
       "id": "PIPE-GATES-R001",
       "title": "Pre-land fast set and post-land full set",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "54442c92173d"
+      ],
+      "verified_by": [
+        "tests/hooks/test_gate_runner.py:119",
+        "tests/hooks/test_gate_runner.py:34",
+        "tests/hooks/test_gate_runner.py:45",
+        "tests/hooks/test_gate_runner.py:55",
+        "tests/hooks/test_gate_runner.py:62"
+      ]
     },
     {
       "id": "PIPE-GATES-R002",
       "title": "Auto-revert versus fix-forward",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5792bcbbd148"
+      ],
+      "verified_by": [
+        "tests/hooks/test_landing_policy.py:100",
+        "tests/hooks/test_landing_policy.py:107",
+        "tests/hooks/test_landing_policy.py:118",
+        "tests/hooks/test_landing_policy.py:124",
+        "tests/hooks/test_landing_policy.py:145"
+      ]
     },
     {
       "id": "PIPE-GATES-R003",

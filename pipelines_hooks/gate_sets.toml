@@ -1,0 +1,13 @@
+# The machine-readable gate set partition of the gate standard
+# (reference/gate-standard.md). The eight blocking gates split into the
+# pre-land fast set and the post-land full set. The fast set runs
+# server-side against the changeset's tree in seconds and alone decides
+# whether the changeset lands; the full set runs after landing. A gate
+# moves between sets only by changing this declaration under review.
+# Advisory checks enter neither set. Landing applies no merge queue.
+
+version = 1
+
+blocking = ["format", "hygiene", "secrets", "types", "tests-fast", "spec", "tests", "supply-chain"]
+fast = ["format", "hygiene", "secrets", "types", "tests-fast"]
+full = ["spec", "tests", "supply-chain"]
