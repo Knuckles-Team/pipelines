@@ -16,6 +16,7 @@ from pathlib import Path
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import nul_split, run_git
 from pipelines_hooks.security.marker import is_exempt
+from pipelines_hooks.source_provider import DiskProvider, FileProvider
 from pipelines_hooks.security.sanitizer_rules import (
     ALLOWED_TXT_NAMES,
     EXCLUDED_DIRS,
@@ -78,13 +79,12 @@ def line_secret_labels(line: str) -> list[str]:
     return labels
 
 
-def secret_violations(path: Path, relative: Path) -> list[str]:
-    if path.suffix.lower() in EXCLUDED_EXTENSIONS:
-        return []
+def content_violations(blob: bytes, relative: Path) -> list[str]:
+    """Findings in one blob's bytes, judged by its declared path alone."""
+    if len(blob) > MAX_SCAN_BYTES:
+        return [f"Source file exceeds security scan boundary: '{relative}'"]
     try:
-        if path.stat().st_size > MAX_SCAN_BYTES:
-            return [f"Source file exceeds security scan boundary: '{relative}'"]
-        lines = path.read_text(encoding="utf-8").splitlines()
+        lines = blob.decode("utf-8").splitlines()
     except (OSError, UnicodeError):
         return [f"Source file could not be inspected: '{relative}'"]
     return [
@@ -93,6 +93,17 @@ def secret_violations(path: Path, relative: Path) -> list[str]:
         for number, line in enumerate(lines, 1)
         for label in line_secret_labels(line)
     ]
+
+
+def secret_violations(path: Path, relative: Path) -> list[str]:
+    if path.suffix.lower() in EXCLUDED_EXTENSIONS:
+        return []
+    try:
+        if path.stat().st_size > MAX_SCAN_BYTES:
+            return [f"Source file exceeds security scan boundary: '{relative}'"]
+        return content_violations(path.read_bytes(), relative)
+    except (OSError, UnicodeError):
+        return [f"Source file could not be inspected: '{relative}'"]
 
 
 def scan_repository(root: Path) -> list[str]:
@@ -106,10 +117,37 @@ def scan_repository(root: Path) -> list[str]:
     return violations
 
 
+def scan_provider(provider: FileProvider) -> list[str]:
+    """The same findings against a tree source, read by path and blob digest.
+
+    No working copy is required: the gate lists the tree's declared files
+    and reads each blob through the provider, which binds the bytes to
+    their declared digest.
+    """
+    violations = []
+    for entry in provider.list_files():
+        relative = Path(entry.path)
+        if relative.suffix.lower() in EXCLUDED_EXTENSIONS:
+            continue
+        violations.extend(naming_violations(relative))
+        violations.extend(content_violations(provider.read(entry.path), relative))
+    return violations
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="security-sanitizer", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    violations = scan_repository(parser.parse_args(argv).root.resolve())
+    parser.add_argument(
+        "--tree",
+        type=Path,
+        default=None,
+        help="a tree source directory, read by path and blob digest with no checkout; wins over --root",
+    )
+    args = parser.parse_args(argv)
+    if args.tree is not None:
+        violations = scan_provider(DiskProvider(args.tree.resolve()))
+    else:
+        violations = scan_repository(args.root.resolve())
     if violations:
         print("SECURITY AND GARBAGE VALIDATION FAILED:")
         for index, violation in enumerate(violations, 1):

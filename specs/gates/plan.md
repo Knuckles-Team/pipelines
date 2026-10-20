@@ -19,3 +19,14 @@ PIPE-GATES-R003 binds every blocking gate to the epistemic-graph tree. A gate re
 ## Quality and release gates
 
 The implementation runs this repository's own gates: format, hygiene, secrets, types, tests-fast, spec, and the affected tests, then the full suite on main. The partition and policy tests are ordinary tests under `tests/`, not new hooks.
+
+## Amendments
+
+- 2026-10-20: The engine tree reads arrive with the epistemic-graph
+  changeset tree (EG-SCM-R004). Until then the source provider interface
+  and the disk provider serve the tree. The verdict-equality contract
+  test runs on the disk provider. The T-004 engine-tree fixture needs the
+  engine reads. The consumer-side gates (format, hygiene, types, tests)
+  run in the consumer environment. The runner fails closed on a gate the
+  environment has not bound. The task window is half-open: a task opened
+  exactly at the window edge does not open it.
