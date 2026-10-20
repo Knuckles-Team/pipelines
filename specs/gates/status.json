@@ -1,0 +1,34 @@
+{
+  "schema_version": 2,
+  "spec_id": "PIPE-GATES",
+  "owner_repo": "pipelines",
+  "delivery_state": "SPECIFIED",
+  "requirement_ids": [
+    "PIPE-GATES-R001",
+    "PIPE-GATES-R002",
+    "PIPE-GATES-R003"
+  ],
+  "requirements": [
+    {
+      "id": "PIPE-GATES-R001",
+      "title": "Pre-land fast set and post-land full set",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R002",
+      "title": "Auto-revert versus fix-forward",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R003",
+      "title": "Gates run against the engine tree",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    }
+  ]
+}

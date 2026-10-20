@@ -11,6 +11,7 @@ This directory is the public build contract for pipeline-owned Arbora ecosystem 
 | [commit-identity-governance](commit-identity-governance/spec.md) | PIPE-IDENTITY-R001 | Commit author/committer identity allowlist enforcement |
 | [connector-spec-delivery](connector-spec-delivery/spec.md) | PIPE-CONNSPEC-R001 | Spec-delivery standard and per-connector rollout |
 | [shared-validation](shared-validation/spec.md) | PIPE-VALIDATION-R001 | Bounded offline repository validation |
+| [gates](gates/spec.md) | PIPE-GATES-R001 | Pre-land versus post-land split of the blocking gates, the auto-revert and fix-forward policy, and gate runs against the engine tree |
 
 States are `SPECIFIED`, `LANDED`, and `VERIFIED`; see the [spec standard](../reference/spec-standard.md#states).
 
