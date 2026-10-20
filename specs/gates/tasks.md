@@ -6,4 +6,4 @@
 - [x] Add the policy test covering the default decision and each threshold. Closes PIPE-GATES-R002.
 - [ ] Bind every blocking gate to the engine tree: reads by path and blob digest, no working copy, verdict equality against a materialized checkout. Closes PIPE-GATES-R003.
 - [ ] Add the tree-based contract test on a fixture tree and an identical checkout. Closes PIPE-GATES-R003.
-- [ ] Regenerate `status.json` with `pipelines-hook spec-status --write`; record executed evidence before advancing any row's state.
+- [x] Regenerate `status.json` with `pipelines-hook spec-status --write`; record executed evidence before advancing any row's state.
