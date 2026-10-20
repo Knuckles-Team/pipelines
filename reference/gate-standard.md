@@ -123,6 +123,31 @@ floor.
   repository's CI stays on 3.12 until a wheel is published. The repository
   records the dependency.
 
+### Gate sets
+
+The eight blocking checks partition into the pre-land fast set and the
+post-land full set. The split is the machine-readable declaration
+`pipelines_hooks/gate_sets.toml`, shipped with the hooks; this section
+states it.
+
+- Pre-land fast set: `format`, `hygiene`, `secrets`, `types`,
+  `tests-fast`. It runs server-side against the changeset's tree in
+  seconds and alone decides whether the changeset lands.
+- Post-land full set: `spec`, `tests`, `supply-chain` — the complement of
+  the fast set within the eight. It runs after landing.
+
+Landing applies no merge queue. A failed post-land gate triggers the
+recorded auto-revert or fix-forward decision of the landing policy
+(`pipelines_hooks/landing_policy.py`). The engine stores the decision
+record beside the changeset. Advisory checks enter neither set. A gate
+moves between sets only by changing the declaration under review.
+
+`pipelines-hook gate-set <fast|full> --root <source>` runs one set's
+pipelines-published gates against the source and records each gate's
+verdict and evidence digest. The set's verdict is the worst member
+status. A gate the caller environment has not bound fails the run
+closed, named, before any gate starts.
+
 ## Advisory checks
 
 These run only in `advisory_pipeline.yml`. The report lists each check with

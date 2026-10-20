@@ -335,3 +335,16 @@
   verbose: true
   require_serial: true
   stages: [pre-commit, pre-push, manual]
+
+# The gate landing policy's runner (PIPE-GATES): run the pre-land fast set or
+# the post-land full set against a source and record each gate's verdict and
+# evidence digest. On demand; a gate the environment has not bound fails the
+# run closed, named.
+- id: gate-set
+  name: Gate sets - run the pre-land fast or the post-land full set against a source
+  entry: pipelines-hook gate-set
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
