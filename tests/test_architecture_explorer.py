@@ -130,3 +130,12 @@ def test_page_builds_offline_with_both_variants(monkeypatch, tmp_path: Path) -> 
     assert not bare.lstrip().lower().startswith("<!doctype") and "<body" not in bare
     assert "<title>Arbora Architecture Explorer</title>" in bare[:8192]
     assert '"EG-SCM-R001"' in bare and "/*__DATA__*/" not in bare
+
+
+def test_theme_link_bypasses_instant_navigation() -> None:
+    """The explorer is a standalone page; instant navigation would swap in its body without its styles."""
+    from pathlib import Path
+
+    html = Path(__file__).resolve().parents[1].joinpath("templates/mkdocs-theme/overrides/main.html").read_text()
+    link = next(line for line in html.splitlines() if "site-architecture__link" in line)
+    assert 'target="_self"' in link
