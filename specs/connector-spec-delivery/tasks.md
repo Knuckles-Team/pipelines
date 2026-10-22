@@ -11,3 +11,7 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [ ] PIPE-CONNSPEC-R006: preserve moved retired IDs using shared parsing; run positive and misleading-prose regressions.
 
 - [x] Refuse spec-status generation with incomplete shallow history before any writes; verify legacy and current receipts survive a full-history fetch while reverted and unreachable receipts are rejected.
+
+- [ ] **PIPE-CONNSPEC-R009:** Requirement state read from the engine (rollup).
+- [ ] **PIPE-CONNSPEC-R009.1:** Wiring.
+- [ ] **PIPE-CONNSPEC-R009.2:** Hot-path proof.

@@ -7,3 +7,7 @@
 - [ ] Bind every blocking gate to the engine tree: reads by path and blob digest, no working copy, verdict equality against a materialized checkout. Closes PIPE-GATES-R003.
 - [ ] Add the tree-based contract test on a fixture tree and an identical checkout. Closes PIPE-GATES-R003.
 - [x] Regenerate `status.json` with `pipelines-hook spec-status --write`; record executed evidence before advancing any row's state.
+
+- [ ] **PIPE-GATES-R004:** Gate verdicts publish to the engine (rollup).
+- [ ] **PIPE-GATES-R004.1:** Wiring.
+- [ ] **PIPE-GATES-R004.2:** Hot-path proof.
