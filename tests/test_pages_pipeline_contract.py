@@ -198,3 +198,5 @@ def test_architecture_explorer_defaults_to_core_repositories_and_builds_before_u
     assert "--page site/architecture/index.html" in text
     assert "npm ci --prefix .pipeline-contract/scripts/architecture_explorer" in text
     assert "ARCHITECTURE_EXPLORER_ENABLED: ${{ steps.explorer.outputs.enabled }}" in text
+    assert "build.py --redirect" in text and "on) enabled=true; build=true ;;" in text
+    assert "secrets.org_site_dispatch_token" in text and "/repos/Knuckles-Team/.github/dispatches" in text
