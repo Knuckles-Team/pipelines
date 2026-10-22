@@ -165,8 +165,10 @@
     {
       "id": "PIPE-GATES-R007",
       "title": "Canonical legacy-concept check",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe83b3b71d06"
+      ],
       "verified_by": [
         "tests/hooks/test_no_legacy_concepts.py:106",
         "tests/hooks/test_no_legacy_concepts.py:20",

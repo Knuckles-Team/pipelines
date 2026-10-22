@@ -4024,7 +4024,7 @@
     {
       "id": "PIPE-PAGES-R043",
       "title": "Agent-readiness and static documentation delivery",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [],
       "verified_by": [],
       "rollup_of": [
@@ -4039,8 +4039,10 @@
     {
       "id": "PIPE-PAGES-R043.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe83b3b71d06"
+      ],
       "verified_by": [
         "tests/test_pages_readiness.py:247"
       ]
@@ -4048,8 +4050,10 @@
     {
       "id": "PIPE-PAGES-R043.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe83b3b71d06"
+      ],
       "verified_by": [
         "tests/test_pages_readiness.py:195"
       ]
@@ -4057,8 +4061,10 @@
     {
       "id": "PIPE-PAGES-R043.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe83b3b71d06"
+      ],
       "verified_by": [
         "tests/test_pages_pipeline_contract.py:87"
       ]
@@ -4066,8 +4072,10 @@
     {
       "id": "PIPE-PAGES-R043.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe83b3b71d06"
+      ],
       "verified_by": [
         "tests/test_pages_readiness.py:367"
       ]
@@ -4075,8 +4083,10 @@
     {
       "id": "PIPE-PAGES-R043.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe83b3b71d06"
+      ],
       "verified_by": [
         "tests/test_pages_readiness.py:377"
       ]
@@ -4084,8 +4094,10 @@
     {
       "id": "PIPE-PAGES-R043.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fe83b3b71d06"
+      ],
       "verified_by": [
         "tests/test_pages_readiness.py:836"
       ]
