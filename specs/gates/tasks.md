@@ -27,3 +27,4 @@
 - [x] Publish the optional lock artifact mirror checker with compatible version and dependency checks. Closes PIPE-GATES-R008.
 - [x] Publish the configurable tracked static import checker without adapter exemptions. Closes PIPE-GATES-R009.
 - [x] Publish the `connector-name` gate for declared connector fleet names. Closes PIPE-GATES-R010.
+- [x] Key the hook cache on pipelines main and skip symlinks in clone snapshots. Closes PIPE-GATES-R011.

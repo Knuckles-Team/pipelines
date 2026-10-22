@@ -58,3 +58,7 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 ## Connector fleet name (PIPE-GATES-R010)
 
 `tests/hooks/test_connector_name.py` builds a fixture connector in a temporary directory. It checks agreement, a disagreeing literal in each of three files, the undeclared warning, `--strict` and a non-connector repository.
+
+## Hook cache and symlink snapshots (PIPE-GATES-R011)
+
+`tests/hooks/test_jscpd_snapshot.py` commits a package manifest and a root symlink to it. The snapshot keeps the target and skips the link.
