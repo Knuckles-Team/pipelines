@@ -32,6 +32,8 @@ GATES: dict[str, str] = {
     "sprawl": "pipelines_hooks.hygiene.sprawl",
     "pre-commit-patch-safety": "pipelines_hooks.hygiene.patch_safety",
     "mermaid": "pipelines_hooks.hygiene.mermaid",
+    "lockfile-version-mirrors": "pipelines_hooks.hygiene.lockfile_version_mirrors",
+    "coupling": "pipelines_hooks.code.coupling",
     "uv-lock-check": "pipelines_hooks.hygiene.uv_lock",
     "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
     "no-stub": "pipelines_hooks.code.no_stub",
