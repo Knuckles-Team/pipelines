@@ -465,7 +465,7 @@
     {
       "id": "PIPE-RELEASE-R007",
       "title": "Shared gates workflow, tag-only publish guard and fast-tests hook",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "LANDED",
       "landed_in": [
         "4f1e1f0aff4a"
       ],
@@ -537,8 +537,10 @@
     {
       "id": "PIPE-RELEASE-R007.7",
       "title": "Release bumps keep the Rust scope narrow",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3cfd039fe3e2"
+      ],
       "verified_by": [
         "tests/hooks/test_pr_test_scope.py:189",
         "tests/hooks/test_pr_test_scope.py:197",
