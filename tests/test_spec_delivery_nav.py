@@ -57,3 +57,12 @@ def test_theme_sync_check_passes_with_entry(tmp_path: Path) -> None:
         assert sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode=mode) == []
     assert "focus-visible" in MAIN and "<style>" in MAIN
     assert "site-spec-delivery" not in (THEME / "extra.css").read_text(encoding="utf-8")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_architecture_explorer_link_opens_the_current_repository_node() -> None:
+    base = (THEME / "base.mkdocs.yml").read_text(encoding="utf-8")
+    assert "architecture_explorer: !ENV [ARCHITECTURE_EXPLORER_ENABLED, false]" in base
+    assert "{% if config.extra.architecture_explorer %}" in MAIN
+    assert 'href="{{ base_url }}/architecture/' in MAIN
+    assert "config.extra.architecture_nodes[config.extra.ecosystem.current]" in MAIN

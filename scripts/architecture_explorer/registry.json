@@ -1,0 +1,543 @@
+{
+ "owner": "Knuckles-Team",
+ "pages_node": {
+  "epistemic-graph": "eg",
+  "arbora": "arbora",
+  "agent-connector-sdk": "sdk",
+  "agent-utilities": "au",
+  "agent-terminal-ui": "tui",
+  "agent-webui": "webui",
+  "pipelines": "pipelines",
+  "universal-skills": "skills"
+ },
+ "repositories": [
+  {
+   "name": "epistemic-graph",
+   "slug": "epistemic-graph",
+   "local": "agent-packages/epistemic-graph",
+   "kind": "core"
+  },
+  {
+   "name": "arbora",
+   "slug": "arbora",
+   "local": "agent-packages/graph-os",
+   "kind": "core"
+  },
+  {
+   "name": "agent-connector-sdk",
+   "slug": "agent-connector-sdk",
+   "local": "agent-packages/agent-connector-sdk",
+   "kind": "core"
+  },
+  {
+   "name": "agent-utilities",
+   "slug": "agent-utilities",
+   "local": "agent-packages/agent-utilities",
+   "kind": "core"
+  },
+  {
+   "name": "agent-terminal-ui",
+   "slug": "agent-terminal-ui",
+   "local": "agent-packages/agent-terminal-ui",
+   "kind": "core"
+  },
+  {
+   "name": "agent-webui",
+   "slug": "agent-webui",
+   "local": "agent-packages/agent-webui",
+   "kind": "core"
+  },
+  {
+   "name": "universal-skills",
+   "slug": "universal-skills",
+   "local": "agent-packages/skills/universal-skills",
+   "kind": "core"
+  },
+  {
+   "name": "pipelines",
+   "slug": "pipelines",
+   "local": "pipelines",
+   "kind": "core"
+  },
+  {
+   "name": "geniusbot",
+   "slug": "geniusbot",
+   "local": "agent-packages/geniusbot",
+   "kind": "client"
+  },
+  {
+   "name": "adguard-home-agent",
+   "slug": "adguard-home-agent",
+   "local": "agent-packages/agents/adguard-home-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "ansible-tower-mcp",
+   "slug": "ansible-tower-mcp",
+   "local": "agent-packages/agents/ansible-tower-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "archimate-mcp",
+   "slug": "archimate-mcp",
+   "local": "agent-packages/agents/archimate-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "archivebox-api",
+   "slug": "archivebox-api",
+   "local": "agent-packages/agents/archivebox-api",
+   "kind": "connector"
+  },
+  {
+   "name": "aris-mcp",
+   "slug": "aris-mcp",
+   "local": "agent-packages/agents/aris-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "arr-mcp",
+   "slug": "arr-mcp",
+   "local": "agent-packages/agents/arr-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "atlassian-agent",
+   "slug": "atlassian-agent",
+   "local": "agent-packages/agents/atlassian-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "audio-transcriber",
+   "slug": "audio-transcriber",
+   "local": "agent-packages/agents/audio-transcriber",
+   "kind": "connector"
+  },
+  {
+   "name": "audiobookshelf-mcp",
+   "slug": "audiobookshelf-mcp",
+   "local": "agent-packages/agents/audiobookshelf-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "bellwether-mcp",
+   "slug": "bellwether-mcp",
+   "local": "agent-packages/agents/bellwether-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "caddy-mcp",
+   "slug": "caddy-mcp",
+   "local": "agent-packages/agents/caddy-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "camunda-mcp",
+   "slug": "camunda-mcp",
+   "local": "agent-packages/agents/camunda-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "ciso-assistant-api",
+   "slug": "ciso-assistant-api",
+   "local": "agent-packages/agents/ciso-assistant-api",
+   "kind": "connector"
+  },
+  {
+   "name": "clarity-api",
+   "slug": "clarity-api",
+   "local": "agent-packages/agents/clarity-api",
+   "kind": "connector"
+  },
+  {
+   "name": "cockpit-api",
+   "slug": "cockpit-api",
+   "local": "agent-packages/agents/cockpit-api",
+   "kind": "connector"
+  },
+  {
+   "name": "container-manager-mcp",
+   "slug": "container-manager-mcp",
+   "local": "agent-packages/agents/container-manager-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "craft-suite-api",
+   "slug": "craft-suite-api",
+   "local": "agent-packages/agents/craft-suite-api",
+   "kind": "connector"
+  },
+  {
+   "name": "data-science-mcp",
+   "slug": "data-science-mcp",
+   "local": "agent-packages/agents/data-science-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "dockerhub-api",
+   "slug": "dockerhub-api",
+   "local": "agent-packages/agents/dockerhub-api",
+   "kind": "connector"
+  },
+  {
+   "name": "documentdb-mcp",
+   "slug": "documentdb-mcp",
+   "local": "agent-packages/agents/documentdb-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "egeria-mcp",
+   "slug": "egeria-mcp",
+   "local": "agent-packages/agents/egeria-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "emerald-exchange",
+   "slug": "emerald-exchange",
+   "local": "agent-packages/agents/emerald-exchange",
+   "kind": "connector"
+  },
+  {
+   "name": "erpnext-agent",
+   "slug": "erpnext-agent",
+   "local": "agent-packages/agents/erpnext-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "fan-manager",
+   "slug": "fan-manager",
+   "local": "agent-packages/agents/fan-manager",
+   "kind": "connector"
+  },
+  {
+   "name": "firefly-iii-mcp",
+   "slug": "firefly-iii-mcp",
+   "local": "agent-packages/agents/firefly-iii-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "freshrss-agent",
+   "slug": "freshrss-agent",
+   "local": "agent-packages/agents/freshrss-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "genius-agent",
+   "slug": "genius-agent",
+   "local": "agent-packages/agents/genius-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "github-agent",
+   "slug": "github-agent",
+   "local": "agent-packages/agents/github-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "gitlab-api",
+   "slug": "gitlab-api",
+   "local": "agent-packages/agents/gitlab-api",
+   "kind": "connector"
+  },
+  {
+   "name": "gramps-mcp",
+   "slug": "gramps-mcp",
+   "local": "agent-packages/agents/gramps-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "hdhomerun-mcp",
+   "slug": "hdhomerun-mcp",
+   "local": "agent-packages/agents/hdhomerun-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "home-assistant-agent",
+   "slug": "home-assistant-agent",
+   "local": "agent-packages/agents/home-assistant-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "immich-api",
+   "slug": "immich-api",
+   "local": "agent-packages/agents/immich-api",
+   "kind": "connector"
+  },
+  {
+   "name": "jellyfin-mcp",
+   "slug": "jellyfin-mcp",
+   "local": "agent-packages/agents/jellyfin-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "jena-mcp",
+   "slug": "jena-mcp",
+   "local": "agent-packages/agents/jena-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "kafka-mcp",
+   "slug": "kafka-mcp",
+   "local": "agent-packages/agents/kafka-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "keycloak-agent",
+   "slug": "keycloak-agent",
+   "local": "agent-packages/agents/keycloak-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "lakekeeper-mcp",
+   "slug": "lakekeeper-mcp",
+   "local": "agent-packages/agents/lakekeeper-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "langfuse-agent",
+   "slug": "langfuse-agent",
+   "local": "agent-packages/agents/langfuse-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "leanix-agent",
+   "slug": "leanix-agent",
+   "local": "agent-packages/agents/leanix-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "legal-peripherals-mcp",
+   "slug": "legal-peripherals-mcp",
+   "local": "agent-packages/agents/legal-peripherals-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "lgtm-mcp",
+   "slug": "lgtm-mcp",
+   "local": "agent-packages/agents/lgtm-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "listmonk-api",
+   "slug": "listmonk-api",
+   "local": "agent-packages/agents/listmonk-api",
+   "kind": "connector"
+  },
+  {
+   "name": "lucerna-mcp",
+   "slug": "lucerna-mcp",
+   "local": "agent-packages/agents/lucerna-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "mattermost-mcp",
+   "slug": "mattermost-mcp",
+   "local": "agent-packages/agents/mattermost-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "mealie-mcp",
+   "slug": "mealie-mcp",
+   "local": "agent-packages/agents/mealie-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "media-downloader",
+   "slug": "media-downloader",
+   "local": "agent-packages/agents/media-downloader",
+   "kind": "connector"
+  },
+  {
+   "name": "microsoft-agent",
+   "slug": "microsoft-agent",
+   "local": "agent-packages/agents/microsoft-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "nextcloud-agent",
+   "slug": "nextcloud-agent",
+   "local": "agent-packages/agents/nextcloud-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "objectstore-mcp",
+   "slug": "objectstore-mcp",
+   "local": "agent-packages/agents/objectstore-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "okta-agent",
+   "slug": "okta-agent",
+   "local": "agent-packages/agents/okta-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "onetrust-api",
+   "slug": "onetrust-api",
+   "local": "agent-packages/agents/onetrust-api",
+   "kind": "connector"
+  },
+  {
+   "name": "openbao-mcp",
+   "slug": "openbao-mcp",
+   "local": "agent-packages/agents/openbao-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "owncast-agent",
+   "slug": "owncast-agent",
+   "local": "agent-packages/agents/owncast-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "paperless-ngx-mcp",
+   "slug": "paperless-ngx-mcp",
+   "local": "agent-packages/agents/paperless-ngx-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "plane-agent",
+   "slug": "plane-agent",
+   "local": "agent-packages/agents/plane-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "portainer-agent",
+   "slug": "portainer-agent",
+   "local": "agent-packages/agents/portainer-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "postiz-agent",
+   "slug": "postiz-agent",
+   "local": "agent-packages/agents/postiz-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "pulselink-mcp",
+   "slug": "pulselink-mcp",
+   "local": "agent-packages/agents/pulselink-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "qbittorrent-agent",
+   "slug": "qbittorrent-agent",
+   "local": "agent-packages/agents/qbittorrent-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "repository-manager",
+   "slug": "repository-manager",
+   "local": "agent-packages/agents/repository-manager",
+   "kind": "connector"
+  },
+  {
+   "name": "rom-manager",
+   "slug": "rom-manager",
+   "local": "agent-packages/agents/rom-manager",
+   "kind": "connector"
+  },
+  {
+   "name": "salesforce-agent",
+   "slug": "salesforce-agent",
+   "local": "agent-packages/agents/salesforce-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "scholarx",
+   "slug": "scholarx",
+   "local": "agent-packages/agents/scholarx",
+   "kind": "connector"
+  },
+  {
+   "name": "searxng-mcp",
+   "slug": "searxng-mcp",
+   "local": "agent-packages/agents/searxng-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "servicenow-api",
+   "slug": "servicenow-api",
+   "local": "agent-packages/agents/servicenow-api",
+   "kind": "connector"
+  },
+  {
+   "name": "spark-mcp",
+   "slug": "spark-mcp",
+   "local": "agent-packages/agents/spark-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "sql-mcp",
+   "slug": "sql-mcp",
+   "local": "agent-packages/agents/sql-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "stirlingpdf-agent",
+   "slug": "stirlingpdf-agent",
+   "local": "agent-packages/agents/stirlingpdf-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "systems-manager",
+   "slug": "systems-manager",
+   "local": "agent-packages/agents/systems-manager",
+   "kind": "connector"
+  },
+  {
+   "name": "technitium-dns-mcp",
+   "slug": "technitium-dns-mcp",
+   "local": "agent-packages/agents/technitium-dns-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "tunnel-manager",
+   "slug": "tunnel-manager",
+   "local": "agent-packages/agents/tunnel-manager",
+   "kind": "connector"
+  },
+  {
+   "name": "twenty-mcp",
+   "slug": "twenty-mcp",
+   "local": "agent-packages/agents/twenty-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "uptime-kuma-agent",
+   "slug": "uptime-kuma-agent",
+   "local": "agent-packages/agents/uptime-kuma-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "vaultwarden-mcp",
+   "slug": "vaultwarden-mcp",
+   "local": "agent-packages/agents/vaultwarden-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "vector-mcp",
+   "slug": "vector-mcp",
+   "local": "agent-packages/agents/vector-mcp",
+   "kind": "connector"
+  },
+  {
+   "name": "webarchiver",
+   "slug": "webarchiver",
+   "local": "agent-packages/agents/webarchiver",
+   "kind": "connector"
+  },
+  {
+   "name": "wger-agent",
+   "slug": "wger-agent",
+   "local": "agent-packages/agents/wger-agent",
+   "kind": "connector"
+  },
+  {
+   "name": "world-reference-mcp",
+   "slug": "world-reference-mcp",
+   "local": "agent-packages/agents/world-reference-mcp",
+   "kind": "connector"
+  }
+ ]
+}

@@ -35,6 +35,8 @@ agent/mcp detection remains the default. See [the runtime contract](reference/co
 for inputs, producer prerequisites, and the boundary between transport and
 runtime qualification.
 
+`scripts/architecture_explorer/` builds the Arbora Architecture Explorer that `pages_pipeline.yml` publishes at `/architecture/` on each core repository site (input `architecture_explorer`, default `auto`). `model.json` holds the architecture parts, `registry.json` the scanned repositories, `layout.mjs` precomputes every level with the pinned layout engine in `package.json`, and `build.py --mode local --workspace PATH` builds it from local clones. Tests live in `tests/test_architecture_explorer.py`.
+
 `scripts/spec_dashboard.py` owns the opt-in static spec delivery dashboard. The adjacent source, history, metrics, chart, and renderer modules keep canonical normalization and bounded first-parent accounting separate. Its version 1 JSON configuration, status semantics, and snapshot contract are documented in `pages/spec-dashboard.md`. Source mappings and grouped architecture live in `scripts/spec_dashboard_metadata.py` and `scripts/spec_dashboard_architecture.py`. They read spec/plan declarations without changing generated status. Fixtures live in `tests/test_spec_dashboard.py` and `tests/test_spec_dashboard_metadata.py`.
 
 ## Setup

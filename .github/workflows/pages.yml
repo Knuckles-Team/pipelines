@@ -10,6 +10,7 @@ on:
       - reference/**
       - .config/spec-dashboard.json
       - scripts/spec_dashboard*.py
+      - scripts/architecture_explorer/**
       - templates/mkdocs-theme/**
       - .github/workflows/pages_pipeline.yml
       - mkdocs.yml

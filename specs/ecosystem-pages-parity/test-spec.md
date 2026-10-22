@@ -276,3 +276,4 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R021.76 | PIPE-PAGES-R021.76 | Run `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-PAGES-R021.77 | PIPE-PAGES-R021.77 | Run `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-PAGES-R021.78 | PIPE-PAGES-R021.78 | Run `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
+| T-PIPE-PAGES-R042 | PIPE-PAGES-R042 | Run `tests/test_architecture_explorer.py`, `test_architecture_explorer_defaults_to_core_repositories_and_builds_before_upload` and `test_architecture_explorer_link_opens_the_current_repository_node`. Assert placement, both page variants and the workflow and theme wiring. |
