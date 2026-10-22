@@ -75,3 +75,10 @@ repos:
     always_run: true
     verbose: true
     stages: [manual]
+  - id: no-legacy-concepts
+    name: No legacy numeric-pillar concept markers
+    entry: uv run --frozen --quiet pipelines-hook no-legacy-concepts
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [manual]

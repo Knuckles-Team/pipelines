@@ -1,4 +1,4 @@
-"""Focused TCKs for CONCEPT:ECO-4.DOCS-DELIVERY.
+"""Focused TCKs for Spec: PIPE-PAGES-R043.
 
 The fixtures model the canonical universal-skills readiness and Markdown mirror
 artifacts; they do not introduce a second production manifest or generator.
@@ -192,6 +192,7 @@ def _snapshot(root: Path) -> dict[str, bytes]:
     }
 
 
+# spec: PIPE-PAGES-R043.2
 def test_build_publishes_source_markdown_and_served_mime(
     tmp_path: Path,
 ) -> None:
@@ -243,6 +244,7 @@ def test_build_publishes_source_markdown_and_served_mime(
         server.server_close()
 
 
+# spec: PIPE-PAGES-R043.1
 def test_second_build_and_offline_tck_are_idempotent(tmp_path: Path) -> None:
     root, site, _ = _fixture(tmp_path)
 
@@ -362,6 +364,7 @@ def test_robot_policy_is_preserved_and_conflicting_sitemap_rejected(
         pages_readiness.build(root, site)
 
 
+# spec: PIPE-PAGES-R043.4
 def test_stale_source_digest_fails_closed(tmp_path: Path) -> None:
     root, site, _ = _fixture(tmp_path)
     pages_readiness.build(root, site)
@@ -371,6 +374,7 @@ def test_stale_source_digest_fails_closed(tmp_path: Path) -> None:
         pages_readiness.build(root, site, check=True)
 
 
+# spec: PIPE-PAGES-R043.5
 def test_cli_failure_result_is_versioned(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     root, _, _ = _fixture(tmp_path)
     (root / "docs/index.md").write_text("# Changed\n", encoding="utf-8")
@@ -829,6 +833,7 @@ def test_cli_validate_content_source(tmp_path: Path, capsys: pytest.CaptureFixtu
     assert failure["error_code"] == "content-source-containment"
 
 
+# spec: PIPE-PAGES-R043.6
 def test_direct_entry_requires_and_loads_the_sparse_readiness_package(
     tmp_path: Path,
 ) -> None:

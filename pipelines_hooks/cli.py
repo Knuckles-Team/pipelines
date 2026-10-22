@@ -34,6 +34,7 @@ GATES: dict[str, str] = {
     "mermaid": "pipelines_hooks.hygiene.mermaid",
     "uv-lock-check": "pipelines_hooks.hygiene.uv_lock",
     "agent-contract": "pipelines_hooks.hygiene.agent_contract",
+    "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
     "no-stub": "pipelines_hooks.code.no_stub",
     "stubs": "pipelines_hooks.code.stubs",
     "swallowed-errors": "pipelines_hooks.code.swallowed_gate",

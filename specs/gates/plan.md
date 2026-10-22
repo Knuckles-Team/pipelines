@@ -45,3 +45,5 @@ Repositories move to engine changesets one wave at a time. The order runs from t
 ## Product names in spec text (R005)
 
 The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines_hooks/specs/third_party_names.toml`. A connector may name its own target system through the `[allow]` table. The check masks inline code, fenced code, URLs, link targets and spec IDs. A lowercase identifier, such as a connector ID, is not a product name.
+
+- 2026-10-22: PIPE-GATES-R007 migrates the removed AU legacy-marker checker to the shared owner. Reuse tracked discovery and sanitized Git execution, explicitly selecting the target repository index rather than an ambient hook index. Keep the original pattern and historical exclusions, without a consumer-owned copy or a ninth blocking gate.

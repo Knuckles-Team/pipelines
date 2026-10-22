@@ -1,4 +1,4 @@
-"""Focused workflow contracts for CONCEPT:ECO-4.DOCS-DELIVERY."""
+"""Focused workflow contracts for Spec: PIPE-PAGES-R043."""
 
 from __future__ import annotations
 
@@ -84,6 +84,7 @@ def test_write_scopes_are_held_only_by_the_deploy_job() -> None:
     }
 
 
+# spec: PIPE-PAGES-R043.3
 def test_enabled_path_checks_strict_build_and_runs_owned_tck() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "if: inputs.agent_readiness_enabled" in text

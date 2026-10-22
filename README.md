@@ -120,3 +120,9 @@ The default evidence directory is a fresh private temporary directory;
 Evidence corrections retain their requirement IDs. See [evidence withdrawal](reference/spec-standard.md#withdrawing-invalid-verification-evidence) for the restricted `Spec-Withdraw` contract.
 
 The [privacy identity contract](reference/privacy.md) distinguishes Git display names from strict local identifiers.
+
+## Legacy concept migration check
+
+Run `pipelines-hook no-legacy-concepts [ROOT ...]` (or `--root ROOT`) to check tracked `.py`, `.rs` and `.md` files for `CONCEPT:[A-Z]+-[0-9]`. With no root it checks the current directory. The optional hook has the same ID. It does not change the eight blocking gates.
+
+The original historical exclusions remain: `check_no_legacy_markers.py`, `CHANGELOG.md`, `concept_map.md`, `concepts.yaml`, and `concept_reservations.yaml`; directories `__pycache__`, `.git`, `.venv`, `node_modules`, `target`, `build`, and `dist` are not scanned. Untracked and ignored output is not input. Each target uses its own index, including from foreign worktrees or Git hooks. Findings include relative paths and line numbers and exit one. Unreadable input or an unavailable Git repository exits two, never a clean verdict.
