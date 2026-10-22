@@ -145,6 +145,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: connector-name
+  name: "Connector names agree with the declared fleet name"
+  entry: pipelines-hook connector-name
+  language: python
+  pass_filenames: false
+  always_run: true
 # --- repository hygiene -----------------------------------------------------
 - id: root-hygiene
   name: "DEPRECATED (root-hygiene): Repository root hygiene (declared entries only)"
