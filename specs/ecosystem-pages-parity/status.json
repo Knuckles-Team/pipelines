@@ -4001,8 +4001,10 @@
     {
       "id": "PIPE-PAGES-R042",
       "title": "Generated architecture explorer on every core Pages site",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "683d9a04db63"
+      ],
       "verified_by": [
         "tests/test_architecture_explorer.py:101",
         "tests/test_architecture_explorer.py:112",
