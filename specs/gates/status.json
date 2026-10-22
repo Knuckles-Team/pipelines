@@ -205,6 +205,7 @@
       "title": "Connector names agree with the declared fleet name",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "41da9b121037",
         "6ecc29e1dd67"
       ],
       "verified_by": [
