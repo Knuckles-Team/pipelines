@@ -466,8 +466,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_agent_contract.py:16",
-        "tests/hooks/test_agent_contract.py:27"
+        "tests/hooks/test_agent_contract.py:20",
+        "tests/hooks/test_agent_contract.py:31"
       ]
     },
     {
