@@ -21,7 +21,8 @@
     "PIPE-GATES-R005",
     "PIPE-GATES-R007",
     "PIPE-GATES-R008",
-    "PIPE-GATES-R009"
+    "PIPE-GATES-R009",
+    "PIPE-GATES-R010"
   ],
   "requirements": [
     {
@@ -197,6 +198,17 @@
       ],
       "verified_by": [
         "tests/hooks/test_coupling.py:17"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R010",
+      "title": "Connector names agree with the declared fleet name",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6ecc29e1dd67"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_name.py:11"
       ]
     }
   ]
