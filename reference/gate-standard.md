@@ -138,7 +138,9 @@ states it.
 
 Landing applies no merge queue. A failed post-land gate triggers the
 recorded auto-revert or fix-forward decision of the landing policy
-(`pipelines_hooks/landing_policy.py`). The engine stores the decision
+(`pipelines_hooks/landing_policy.py`). The failure class decides it. A
+re-run pass counts only for a failure classified as infrastructure, such
+as a lost runner; a product failure never lands on a re-run pass. The engine stores the decision
 record beside the changeset. Advisory checks enter neither set. A gate
 moves between sets only by changing the declaration under review.
 
