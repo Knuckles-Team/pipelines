@@ -139,6 +139,30 @@ def test_sibling_family_title_and_parent_place_rows_before_unmapped() -> None:
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
+def test_a_row_on_a_container_descends_to_a_leaf_or_fails_the_gate() -> None:
+    model = _model()
+    model["children"][0]["children"][0]["children"] = [
+        {"id": "core.solver.exact", "label": "Exact", "desc": "Exact.", "kw": "certificate"}
+    ]
+    tree = Tree(model)
+    rows = [
+        _row("CORE-R003", "Unrelated title", text="Touches `crates/solve/a.rs` and a certificate."),
+        _row("CORE-R004", "Unrelated title", text="Touches `crates/solve/b.rs`."),
+    ]
+    direct = Placer(tree).run(rows)
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert where["CORE-R003"] == "core.solver.exact"
+    assert where["CORE-R004"] == "core.solver"
+    assert unmapped_violations(tree, direct, []) == ["core:CORE-R004"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_no_leftover_bucket_labels_in_the_shipped_model() -> None:
+    tree = Tree(json.loads((PKG / "model.json").read_text()))
+    assert not [n["id"] for n in tree.nodes.values() if n["label"].strip().lower() in {"other", "misc", "unmapped"}]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
 def test_shipped_unmapped_allowlist_is_reviewed_and_empty() -> None:
     """Every unmapped row fails the build unless the model's reviewed allowlist names it; keep it empty."""
     model = json.loads((PKG / "model.json").read_text())
