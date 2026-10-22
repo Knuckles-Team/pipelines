@@ -19,7 +19,9 @@
     "PIPE-GATES-R006.6",
     "PIPE-GATES-R006.7",
     "PIPE-GATES-R005",
-    "PIPE-GATES-R007"
+    "PIPE-GATES-R007",
+    "PIPE-GATES-R008",
+    "PIPE-GATES-R009"
   ],
   "requirements": [
     {
@@ -173,6 +175,28 @@
         "tests/hooks/test_no_legacy_concepts.py:106",
         "tests/hooks/test_no_legacy_concepts.py:20",
         "tests/hooks/test_no_legacy_concepts.py:64"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R008",
+      "title": "Lock artifact version mirrors",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "180d570777d4"
+      ],
+      "verified_by": [
+        "tests/hooks/test_lockfile_version_mirrors.py:14"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R009",
+      "title": "Configured static import boundary",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "180d570777d4"
+      ],
+      "verified_by": [
+        "tests/hooks/test_coupling.py:17"
       ]
     }
   ]
