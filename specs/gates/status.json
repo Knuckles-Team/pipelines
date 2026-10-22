@@ -215,6 +215,7 @@
       "title": "Shared hooks are current and snapshots accept symlinks",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "41b7adbfdab3",
         "b7a29c4d6955"
       ],
       "verified_by": [
