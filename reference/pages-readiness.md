@@ -169,6 +169,14 @@ reference `https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/main/
 the check fails on any other reference to `runtime-architecture.svg` in the content
 source. Do not commit copies.
 
+Every page that shows the diagram wraps it in a link to the live, generated [Arbora
+Architecture Explorer](https://knuckles-team.github.io/.github/architecture/) (deep-
+linked to the repository's node as `#<node-id>` where one exists) and adds the text link
+"Explore the live architecture"; the check fails on a page that shows the diagram
+without that link. The explorer is the canonical, always-current view: it is rebuilt
+every 30 minutes from every repository's default branch, and each core repository's
+`/architecture/` redirects to it.
+
 ## Caller contract
 
 Call `.github/workflows/pages_pipeline.yml@<reviewed-sha>` as a reusable
