@@ -28,6 +28,8 @@ def test_every_registered_gate_is_published() -> None:
 STANDARD = {"secrets", "spec", "tests-fast"}
 KEPT = {
     "agent-contract",
+    "coupling",
+    "lockfile-version-mirrors",
     "no-legacy-concepts",
     "dependency-readiness",
     "gate-set",

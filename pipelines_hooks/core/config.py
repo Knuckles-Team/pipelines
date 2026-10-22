@@ -26,6 +26,7 @@ SECTIONS: dict[str, frozenset[str]] = {
     "ste": frozenset({"paths", "exempt", "code_paths", "staleness"}),
     # No longer read (the public-surface gate needs no identity); still accepted.
     "public_surface": frozenset({"repository", "distribution", "pages_url", "mcp_server"}),
+    "coupling": frozenset({"forbidden", "allowed"}),
     "stubs": frozenset({"declared_seams"}),
     # Retired with the ci-gate-replica hooks (CI runs pre-commit directly);
     # still accepted, and ignored, so a consumer can drop the table at its own pace.

@@ -47,3 +47,10 @@ Repositories move to engine changesets one wave at a time. The order runs from t
 The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines_hooks/specs/third_party_names.toml`. A connector may name its own target system through the `[allow]` table. The check masks inline code, fenced code, URLs, link targets and spec IDs. A lowercase identifier, such as a connector ID, is not a product name.
 
 - 2026-10-22: PIPE-GATES-R007 migrates the removed AU legacy-marker checker to the shared owner. Reuse tracked discovery and sanitized Git execution, explicitly selecting the target repository index rather than an ambient hook index. Keep the original pattern and historical exclusions, without a consumer-owned copy or a ninth blocking gate.
+
+- 2026-10-22: PIPE-GATES-R008 and R009 rehome the removed lock-mirror and
+  static import-boundary checks in the shared package. The metadata check
+  preserves optional artifacts and the editable self-version omission.
+  The import check reads consumer-owned package and module-prefix policy,
+  uses sanitized tracked discovery, and has no obsolete adapter exemptions.
+  Neither gate claims dynamic runtime coverage or changes the gate partition.

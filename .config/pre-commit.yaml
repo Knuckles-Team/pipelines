@@ -82,3 +82,10 @@ repos:
     pass_filenames: false
     always_run: true
     stages: [manual]
+  - id: lockfile-version-mirrors
+    name: Lock artifact version mirrors
+    entry: uv run --frozen --quiet pipelines-hook lockfile-version-mirrors
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [manual]
