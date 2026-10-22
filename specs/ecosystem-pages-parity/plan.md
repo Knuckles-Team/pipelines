@@ -406,10 +406,6 @@ R034.1-.6: Extend portable deployment with single binary/image profile and exter
 
 R035.1-.6: Define stable prompt JSON/Pydantic disk format with exact difference oracle retaining roundtrip coverage.
 
-## PIPE-PAGES-R036
-
-R036.1-.6: Define AU render-receipt consumer and bind EG producer to AU consumer before model transport.
-
 ## PIPE-PAGES-R021.91-.96
 
 R021.91-.96: Complete central-validate behavior inventory and require pre-commit parity across all projects.

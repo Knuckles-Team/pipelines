@@ -251,7 +251,7 @@ function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.
     L.edges.forEach(e=>{ if(!e.label||!e.lp) return; const [x,y]=toS(t.ox+e.lp[0]*t.s, t.oy+e.lp[1]*t.s); if(x<-200||x>W+200||y<-50||y>H+50) return;
       const w=ctx.measureText(e.label).width+8; ctx.fillStyle=C.bg; ctx.globalAlpha=alpha*0.92; ctx.fillRect(x-w/2,y-fs*0.75,w,fs*1.5); ctx.globalAlpha=alpha; ctx.fillStyle=C.muted; ctx.fillText(e.label,x,y); }); }
   ctx.globalAlpha=1; }
-function countsLine(n){ const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
+function countsLine(n){ if(n.external) return [["external entry point",C.muted]]; const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
 function drawRich(parts, x, y, maxW){ let total=0; parts.forEach(p=>total+=ctx.measureText(p[0]).width); if(total>maxW) parts=[parts[0]]; let cx=x-Math.min(total,maxW)/2; ctx.textAlign="left";
   parts.forEach(([s,col])=>{ ctx.fillStyle=col; ctx.fillText(s,cx,y); cx+=ctx.measureText(s).width; }); }
 let hitList=[];
@@ -273,7 +273,7 @@ function drawNode(n, alpha){
       const fr=fs*0.68; if(fr>=6 && sh>fs*4.6 && n.role){ ctx.font="400 "+fr+"px "+C.body; ctx.fillStyle=C.muted; wrapText(n.role, sw-fr*2, sh>fs*7.5?2:1).forEach((ln,i)=>ctx.fillText(ln,cx,y+fr*1.6+i*fr*1.25)); }
       const fc=Math.min(fs*0.66,13); if(fc>=5.5 && sh>fs*3.2){ ctx.font="600 "+fc+"px "+C.mono; drawRich(countsLine(n), cx, sy+sh-sh*0.14, sw-fc); }
       if(n.children.length && fc>=6){ ctx.font="600 "+fc+"px "+C.mono; ctx.fillStyle=col; ctx.textAlign="right"; ctx.fillText(n.children.length+" parts ›", sx+sw-fc*0.8, sy+fc*1.5); } }
-    if(sh>14){ const bx=sx+sw*0.06, bw=sw*0.88, by=sy+sh-Math.max(3,sh*0.06), bh=Math.max(2,Math.min(5,sh*0.03)); let off=0; const c=n.count;
+    if(sh>14 && !n.external){ const bx=sx+sw*0.06, bw=sw*0.88, by=sy+sh-Math.max(3,sh*0.06), bh=Math.max(2,Math.min(5,sh*0.03)); let off=0; const c=n.count;
       ctx.fillStyle=C.line; ctx.fillRect(bx,by,bw,bh); if(c.total) ST.forEach(s=>{ const w=bw*(c[s]||0)/c.total; if(w>0){ ctx.fillStyle=C.st[s]; ctx.fillRect(bx+off,by,w,bh); off+=w; } }); }
   }
   if(op>0.01){ // open: title strip + inner map
@@ -349,9 +349,10 @@ function renderPanel(){
   ph.append(el("h2",{text:n.label})); ph.append(el("div",{class:"path",text:pathTo(n.id).map(i=>nodes[i].label).join(" › ")})); p.append(ph);
   const pb=el("div",{class:"pb"}); p.append(pb);
   pb.append(el("section",{},[el("h3",{text:"Description"}),el("p",{class:"desc",text:n.description}), n.tools?el("p",{class:"tools",text:n.tools+" served operation tools"}):null]));
-  pb.append(el("section",{},[el("h3",{text:"Spec rows in this part and below"}),...statBlock(n.count)]));
+  if(n.external){ pb.append(el("section",{},[el("h3",{text:"External entry point"}),el("p",{class:"muted",text:"This box sits outside the ecosystem. No spec rows are written for it; the parts it calls own the rows that serve it."})])); }
+  else pb.append(el("section",{},[el("h3",{text:"Spec rows in this part and below"}),...statBlock(n.count)]));
   if(n.children.length){ const ul=el("ul",{class:"plain kids"});
-    n.children.forEach(c=>{ const b=el("button",{type:"button"},[el("span",{text:c.label}),el("span",{class:"n",text:fmt(c.count.total)+" · V"+c.count.VERIFIED})]); b.onclick=()=>go(c.id); ul.append(el("li",{},[b])); });
+    n.children.forEach(c=>{ const b=el("button",{type:"button"},[el("span",{text:c.label}),el("span",{class:"n",text:c.external?"external":fmt(c.count.total)+" · V"+c.count.VERIFIED})]); b.onclick=()=>go(c.id); ul.append(el("li",{},[b])); });
     pb.append(el("section",{},[el("h3",{text:"Parts ("+n.children.length+")"}),ul])); }
   if(n.code.length){ const ul=el("ul",{class:"plain code"});
     n.code.forEach(c=>ul.append(el("li",{},[el("span",{class:"repo",text:n.repo}),el("a",{href:gh(n.repo)+"/tree/HEAD/"+c,target:"_blank",rel:"noopener",text:c})])));
@@ -363,6 +364,7 @@ function renderPanel(){
   if(wired.length){ const ul=el("ul",{class:"plain links"});
     wired.forEach(([id,how])=>{ const k=id+how; if(seen.has(k)) return; seen.add(k); const b=el("button",{type:"button"},[el("span",{text:pathTo(id).slice(1).map(i=>nodes[i].label).join(" › ")}),el("span",{class:"n",text:how})]); b.onclick=()=>go(id,{hit:true}); ul.append(el("li",{},[b])); });
     pb.append(el("section",{},[el("h3",{text:"Wired with"}),ul])); }
+  if(n.external) return;
   const all=specRows(n), counts={ALL:all.length}; ST.forEach(s=>counts[s]=0); all.forEach(s=>counts[s.status]++);
   const sec=el("section",{id:"specsec"}); sec.append(el("h3",{text:"Spec rows"}));
   const sc=el("div",{class:"chips",role:"group","aria-label":"Scope"});
