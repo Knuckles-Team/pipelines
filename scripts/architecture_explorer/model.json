@@ -914,7 +914,7 @@
          "links": [
           "eg.evo"
          ],
-         "kw": "harness|evolution|improvement library|proposal|benchmark|remediation|lesson|prompt serialization"
+         "kw": "harness|evolution|improvement library|proposal|benchmark|remediation|lesson|prompt serialization|program optimi|promotion|rollback"
         },
         {
          "id": "ar.ops.dom.source",
@@ -1005,9 +1005,15 @@
           "arbora/api/ops/write_back_models.py"
          ],
          "kw": "write-back"
+        },
+        {
+         "id": "ar.ops.dom.finance",
+         "label": "Finance and markets operations",
+         "role": "market reads, paper orders",
+         "desc": "This domain serves finance and markets operations. Market reads run server-side under the finance scope, and position and paper-trading actions check caller and subject ownership.",
+         "kw": "finance|market|paper-trading|paper order|position"
         }
-       ],
-       "kw": "finance|market|paper-trading|program optimi|promotion|rollback"
+       ]
       }
      ]
     },
@@ -1841,7 +1847,8 @@
         "agent_utilities/harness/constraint_engine.py",
         "agent_utilities/harness/contract_validator.py",
         "agent_utilities/harness/edit_engine.py"
-       ]
+       ],
+       "kw": "changeset|symbol-level edit|development loop"
       }
      ]
     },
@@ -4160,7 +4167,7 @@
           "crates/eg-program/src/contracts.rs",
           "crates/eg-program/src/contracts"
          ],
-         "kw": "signaturespec|training ?corpus|trainingexample|eval set",
+         "kw": "signaturespec|training ?corpus|trainingexample|eval set|task signature",
          "glob": true
         },
         {
@@ -4172,7 +4179,7 @@
           "crates/eg-program/src/optimizer.rs",
           "crates/eg-program/src/plan.rs"
          ],
-         "kw": "optimizerkind|nativecompiler|pareto",
+         "kw": "optimizerkind|nativecompiler|pareto|optimizer loop",
          "glob": true
         },
         {
@@ -4196,7 +4203,7 @@
          "code": [
           "src/server/handlers/jobs/executor_program.rs"
          ],
-         "kw": "jobkind::programoptimize",
+         "kw": "jobkind::programoptimize|optimization job",
          "glob": true
         }
        ]
@@ -5013,7 +5020,7 @@
        "code": [
         "crates/eg-types/src/domain_pack.rs"
        ],
-       "kw": "domain pack|domain vocabular|mapping language|promotion bridge|loader"
+       "kw": "domain pack|domain vocabular|mapping language|promotion bridge|loader|nutrient|food composition"
       },
       {
        "id": "eg.packs.import",
@@ -5114,8 +5121,7 @@
          ],
          "desc": "Terms describe lifecycle records such as releases, deployments and changes. Derived edges link each record to its source."
         }
-       ],
-       "kw": "nutrient|food composition"
+       ]
       },
       {
        "id": "eg.packs.cq",
@@ -5684,7 +5690,7 @@
        "label": "Tenant segments",
        "role": "sharing + secured reads",
        "desc": "Principal-scoped segments hold knowledge. Explicit sharing and parent chains control access.",
-       "kw": "segment|tenant|sharing|parent chain|secured read"
+       "kw": "segment|tenant|sharing|parent chain|secured read|masking|row filter|row security|row-level security"
       },
       {
        "id": "eg.identity.owner",
@@ -5693,8 +5699,7 @@
        "desc": "The engine infers graph ownership from signals. It applies ownership as reversible grants.",
        "kw": "ownership|grant"
       }
-     ],
-     "kw": "masking|row filter|row security|row-level security"
+     ]
     },
     {
      "id": "eg.place",
@@ -6024,7 +6029,7 @@
        "label": "Spec-delivery page",
        "role": "current state only",
        "desc": "The spec page shows the current state of each spec. It maps specs to code.",
-       "kw": "spec-delivery|spec state|three states|drill-down|dependencies|repository switcher|spec delivery"
+       "kw": "spec-delivery|spec state|three states|drill-down|dependencies|repository switcher|spec delivery|reference callers"
       },
       {
        "id": "pipe.pages.docs",

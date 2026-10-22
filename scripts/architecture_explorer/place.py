@@ -208,8 +208,33 @@ class Placer:
         for how, step in steps:
             found = step()
             if found:
-                return found, how
+                return self._descend(row, found), how
         return home, "fallback"
+
+    def _descend(self, row: dict, nid: str) -> str:
+        """Refine a placement on a part with children down to the deepest child the row names.
+
+        Evidence inside the part's subtree, in order: title keywords, the parent row's part,
+        requirement-text keywords. A part with children is a container, never a leftover bucket.
+        """
+        nodes = self.tree.nodes
+        while nodes[nid]["children"]:
+            inner = self.sub[nid] - {nid}
+            pid = row["id"].rsplit(".", 1)[0] if "." in row["id"] else None
+            while pid and pid not in self.placed:
+                pid = pid.rsplit(".", 1)[0] if "." in pid else None
+            found = (
+                self._best([x for x in inner if nodes[x]["_kw"] and nodes[x]["_kw"].search(row["title"])])
+                or (self.placed[pid] if pid and self.placed[pid] in inner else None)
+                or self._best([x for x in inner if nodes[x]["_kw"] and nodes[x]["_kw"].search(row["req"])])
+            )
+            if not found:
+                # Stuck on a container: the parent row's part, when it is a part of the same repository.
+                if pid and self.placed[pid] in self.repo_nodes[row["repo"]] and self.placed[pid] != nid:
+                    return self._descend({**row, "id": pid}, self.placed[pid])
+                break
+            nid = found
+        return nid
 
     def run(self, rows: list[dict]) -> dict[str, list[dict]]:
         direct: dict[str, list[dict]] = defaultdict(list)
@@ -255,7 +280,8 @@ class Placer:
 
 
 def unmapped_violations(tree: Tree, direct: dict[str, list[dict]], allow: list[str]) -> list[str]:
-    """Every row on an Unmapped part that the reviewed allowlist (``repo:ID`` entries) does not name.
+    """Every row on an Unmapped part, or left directly on a part with children, that the reviewed
+    allowlist (``repo:ID`` entries) does not name. Every row must sit on a leaf part at any depth.
 
     A row on an external part is always a violation: external parts take no rows.
     """
@@ -265,6 +291,7 @@ def unmapped_violations(tree: Tree, direct: dict[str, list[dict]], allow: list[s
         node = tree.nodes[nid]
         for row in rows:
             key = f"{row['repo']}:{row['id']}"
-            if node.get("external") or (node.get("unmapped") and key not in allowed):
+            leftover = node.get("unmapped") or bool(node["children"])
+            if node.get("external") or (leftover and key not in allowed):
                 out.append(key)
     return sorted(out)
