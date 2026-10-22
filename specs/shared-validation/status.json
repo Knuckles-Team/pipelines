@@ -19,9 +19,9 @@
       "title": "Bounded shared repository validation",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "b76625874902",
         "0f9f73b150d7",
-        "af9b1ddcb25f"
+        "af9b1ddcb25f",
+        "b76625874902"
       ],
       "verified_by": [
         "tests/hooks/test_validation.py:41",

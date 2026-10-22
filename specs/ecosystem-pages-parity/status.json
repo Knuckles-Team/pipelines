@@ -643,10 +643,10 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0fc12ceeb003",
-        "5b454e4b7eb4",
         "13e5f2f6b948",
-        "6cd983d5fe0b",
-        "6cd8906edd00"
+        "5b454e4b7eb4",
+        "6cd8906edd00",
+        "6cd983d5fe0b"
       ],
       "verified_by": [
         "tests/test_spec_dashboard_metadata.py:28",
@@ -872,8 +872,8 @@
       "title": "Spec-delivery page shows only the current spec state",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "a81cc87849a5",
-        "9e705970e4c9"
+        "9e705970e4c9",
+        "a81cc87849a5"
       ],
       "verified_by": [
         "tests/test_spec_dashboard.py:149",
