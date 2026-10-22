@@ -59,7 +59,10 @@
     "PIPE-RELEASE-R007.4",
     "PIPE-RELEASE-R007.5",
     "PIPE-RELEASE-R007.6",
-    "PIPE-RELEASE-R008"
+    "PIPE-RELEASE-R008",
+    "PIPE-RELEASE-R009",
+    "PIPE-RELEASE-R009.1",
+    "PIPE-RELEASE-R009.2"
   ],
   "requirements": [
     {
@@ -545,6 +548,31 @@
         "tests/test_python_sdist_output.py:55",
         "tests/test_python_sdist_output.py:83"
       ]
+    },
+    {
+      "id": "PIPE-RELEASE-R009",
+      "title": "Release records publish to the engine (rollup)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-RELEASE-R009.1",
+        "PIPE-RELEASE-R009.2"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R009.1",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R009.2",
+      "title": "Hot-path proof",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }

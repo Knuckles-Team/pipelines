@@ -30,3 +30,11 @@ The implementation runs this repository's own gates: format, hygiene, secrets, t
   run in the consumer environment. The runner fails closed on a gate the
   environment has not bound. The task window is half-open: a task opened
   exactly at the window edge does not open it.
+
+## Engine records (PIPE-GATES-R004, PIPE-CONNSPEC-R009, PIPE-RELEASE-R009)
+
+Three pipelines steps write lifecycle records to the engine. Each step uses plain HTTP to the
+arbora operations and imports no ecosystem package. Gate runs publish verdicts (EG-SCM-R008).
+The status generator compares its output with the engine-derived state (EG-SDLC-R005). The
+release workflow records each release (EG-SDLC-R002). A failed post never changes a verdict,
+a status file or a published release.
