@@ -34,3 +34,14 @@ def test_a_conformant_repository_passes_strict(repo: Repo) -> None:
     assert repo.run("agent-contract", "--strict") == 0
     repo.commit({"AGENTS.md": "# a\n\n" + SECTION.replace("**Gates:**", "gates")})
     assert repo.run("agent-contract", "--strict") == 1
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R175")
+def test_bootstrap_that_pipes_a_network_response_into_a_shell_is_flagged(repo: Repo, capsys) -> None:
+    piped = "#!/bin/sh\npip install uv || curl -LsSf https://astral.sh/uv/install.sh | sh\n"
+    repo.commit({"AGENTS.md": "# a\n\n" + SECTION, "scripts/bootstrap.sh": piped})
+    assert repo.run("agent-contract", "--strict") == 1
+    assert "scripts/bootstrap.sh:2: SC-INSTALL-001" in capsys.readouterr().out
+    clean = "#!/bin/sh\n# curl x | sh is only a comment\npython3 -m pip install --user uv\n"
+    repo.commit({"scripts/bootstrap.sh": clean})
+    assert repo.run("agent-contract", "--strict") == 0

@@ -463,11 +463,14 @@
     {
       "id": "PIPE-CONNSPEC-R175",
       "title": "Every repository ships one-command agent setup",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "322d13cd939a"
+      ],
       "verified_by": [
         "tests/hooks/test_agent_contract.py:20",
-        "tests/hooks/test_agent_contract.py:31"
+        "tests/hooks/test_agent_contract.py:31",
+        "tests/hooks/test_agent_contract.py:39"
       ]
     },
     {
