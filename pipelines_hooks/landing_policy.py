@@ -1,14 +1,24 @@
 """The post-land failure policy: auto-revert by default, fix-forward past a threshold.
 
-A failed post-land gate produces a recorded decision between auto-revert
-and a fix-forward task. Auto-revert is the default: the failed changeset
-reverts without operator action. Fix-forward applies only past a
-threshold -- the owner opens a fix-forward task within the window of the
-failed verdict, or the failed gate passes its immediate second run. The
-decision record carries the gate ID, the changeset ID, the verdict, the
-threshold that fired and the evidence digest, and it is replayable:
-replaying the record's inputs yields the same decision. Pipelines
-publishes the policy; the engine stores the record beside the changeset.
+A failed post-land gate produces a recorded decision. The failure itself
+decides it: the gate runner classifies each failure as ``product`` (the
+changeset's own result) or ``infrastructure`` (the gate never produced a
+result, for example a lost runner). Unclassified failures are ``product``.
+
+A product failure auto-reverts by default. Fix-forward applies only when
+the owner opens a fix-forward task within the window of the failed
+verdict. A passing re-run never changes a product failure's decision:
+the zero-flake policy never gates on a re-run pass.
+
+An infrastructure failure may be re-run once. A passing re-run records
+``infrastructure-rerun``: the re-run's verdict stands and nothing reverts.
+A failing or unavailable re-run falls back to the product rules.
+
+The decision record carries the gate ID, the changeset ID, the verdict,
+the failure class, the threshold that fired and the evidence digest, and
+it is replayable: replaying the record's inputs yields the same decision.
+Pipelines publishes the policy; the engine stores the record beside the
+changeset.
 """
 
 from __future__ import annotations
@@ -22,15 +32,20 @@ from pipelines_hooks.core.errors import CannotRun
 #: The starting default; a measured latency on this platform replaces it.
 DEFAULT_WINDOW_SECONDS = 300.0
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 #: Threshold names the decision record carries.
 THRESHOLD_DEFAULT = "default"
 THRESHOLD_TASK_WINDOW = "fix-forward-task-window"
-THRESHOLD_SECOND_RUN_PASS = "second-run-pass"
+THRESHOLD_INFRASTRUCTURE_RERUN = "infrastructure-rerun-pass"
 
-DECISIONS = frozenset({"auto-revert", "fix-forward"})
-THRESHOLDS = frozenset({THRESHOLD_DEFAULT, THRESHOLD_TASK_WINDOW, THRESHOLD_SECOND_RUN_PASS})
+#: Failure classes the gate runner assigns to a failed verdict.
+FAILURE_PRODUCT = "product"
+FAILURE_INFRASTRUCTURE = "infrastructure"
+FAILURE_CLASSES = frozenset({FAILURE_PRODUCT, FAILURE_INFRASTRUCTURE})
+
+DECISIONS = frozenset({"auto-revert", "fix-forward", "infrastructure-rerun"})
+THRESHOLDS = frozenset({THRESHOLD_DEFAULT, THRESHOLD_TASK_WINDOW, THRESHOLD_INFRASTRUCTURE_RERUN})
 SECOND_RUN_STATUSES = frozenset({"pass", "fail", "unavailable"})
 
 
@@ -43,6 +58,8 @@ class FailedVerdict:
     verdict: str
     verdict_at: datetime
     evidence_digest: str
+    #: ``product`` unless the runner proved the gate produced no result.
+    failure_class: str = FAILURE_PRODUCT
 
 
 @dataclass(frozen=True)
@@ -54,7 +71,10 @@ class FixForwardTask:
 
 @dataclass(frozen=True)
 class SecondRun:
-    """The failed gate's immediate second run, when one happened."""
+    """The failed gate's immediate re-run, when one happened.
+
+    Only an infrastructure failure's re-run can change the decision.
+    """
 
     status: str
     ran_at: datetime
@@ -69,6 +89,7 @@ class DecisionRecord:
     verdict: str
     verdict_at: datetime
     evidence_digest: str
+    failure_class: str
     task_opened_at: datetime | None
     second_run_status: str | None
     second_run_at: datetime | None
@@ -100,11 +121,13 @@ def decide(
 ) -> DecisionRecord:
     """The recorded decision for one failed post-land verdict.
 
-    Auto-revert is the default. Fix-forward fires past a threshold: the
-    owner opens a fix-forward task inside the window, or the failed gate
-    passes its immediate second run. When both fire, the explicit owner
-    action names the threshold in the record.
+    Auto-revert is the default. An infrastructure failure whose re-run
+    passes records ``infrastructure-rerun``. Otherwise fix-forward fires
+    only when the owner opens a fix-forward task inside the window. A
+    product failure's re-run result never changes the decision.
     """
+    if failed.failure_class not in FAILURE_CLASSES:
+        raise CannotRun(f"landing policy: unknown failure class {failed.failure_class!r}")
     _aware(failed.verdict_at, "verdict_at")
     if task is not None:
         _aware(task.opened_at, "task opened_at")
@@ -113,9 +136,12 @@ def decide(
             raise CannotRun(f"landing policy: unknown second-run status {second_run.status!r}")
         _aware(second_run.ran_at, "second_run ran_at")
     decision, threshold = "auto-revert", THRESHOLD_DEFAULT
-    if second_run is not None and second_run.status == "pass":
-        decision, threshold = "fix-forward", THRESHOLD_SECOND_RUN_PASS
-    if task is not None and _task_opens_window(failed, task, window_seconds):
+    infrastructure_pass = (
+        failed.failure_class == FAILURE_INFRASTRUCTURE and second_run is not None and second_run.status == "pass"
+    )
+    if infrastructure_pass:
+        decision, threshold = "infrastructure-rerun", THRESHOLD_INFRASTRUCTURE_RERUN
+    elif task is not None and _task_opens_window(failed, task, window_seconds):
         decision, threshold = "fix-forward", THRESHOLD_TASK_WINDOW
     return DecisionRecord(
         gate_id=failed.gate_id,
@@ -123,6 +149,7 @@ def decide(
         verdict=failed.verdict,
         verdict_at=failed.verdict_at,
         evidence_digest=failed.evidence_digest,
+        failure_class=failed.failure_class,
         task_opened_at=task.opened_at if task is not None else None,
         second_run_status=second_run.status if second_run is not None else None,
         second_run_at=second_run.ran_at if second_run is not None else None,
@@ -140,7 +167,12 @@ def replay(record: DecisionRecord) -> DecisionRecord:
     decision, which is how a tampered record is detected.
     """
     failed = FailedVerdict(
-        record.gate_id, record.changeset_id, record.verdict, record.verdict_at, record.evidence_digest
+        record.gate_id,
+        record.changeset_id,
+        record.verdict,
+        record.verdict_at,
+        record.evidence_digest,
+        record.failure_class,
     )
     task = FixForwardTask(record.task_opened_at) if record.task_opened_at is not None else None
     second_run = (
@@ -159,6 +191,7 @@ def _fields(record: DecisionRecord) -> dict[str, object]:
         "verdict": record.verdict,
         "verdict_at": record.verdict_at,
         "evidence_digest": record.evidence_digest,
+        "failure_class": record.failure_class,
         "task_opened_at": record.task_opened_at,
         "second_run_status": record.second_run_status,
         "second_run_at": record.second_run_at,
@@ -197,7 +230,9 @@ def _required_moment(value: object, key: str) -> datetime:
 
 def from_dict(payload: Mapping[str, object]) -> DecisionRecord:
     """One stored record, validated strictly; a deviation is a configuration error."""
-    expected = set(_fields(DecisionRecord("", "", "", datetime.now(timezone.utc), "", None, None, None, 0.0, "", "")))
+    expected = set(
+        _fields(DecisionRecord("", "", "", datetime.now(timezone.utc), "", "", None, None, None, 0.0, "", ""))
+    )
     if set(payload) != expected:
         raise CannotRun(f"landing policy: record keys must be exactly {', '.join(sorted(expected))}")
     if payload["schema"] != SCHEMA_VERSION:
@@ -221,6 +256,9 @@ def from_dict(payload: Mapping[str, object]) -> DecisionRecord:
     threshold = payload["threshold"]
     if threshold not in THRESHOLDS:
         raise CannotRun(f"landing policy: unknown threshold {threshold!r}")
+    failure_class = payload["failure_class"]
+    if failure_class not in FAILURE_CLASSES:
+        raise CannotRun(f"landing policy: unknown failure class {failure_class!r}")
     second_run_status = payload["second_run_status"]
     if second_run_status is not None and second_run_status not in SECOND_RUN_STATUSES:
         raise CannotRun(f"landing policy: unknown second-run status {second_run_status!r}")
@@ -230,6 +268,7 @@ def from_dict(payload: Mapping[str, object]) -> DecisionRecord:
         verdict=verdict,
         verdict_at=_required_moment(payload["verdict_at"], "verdict_at"),
         evidence_digest=evidence_digest,
+        failure_class=str(failure_class),
         task_opened_at=_moment(payload["task_opened_at"], "task_opened_at"),
         second_run_status=second_run_status,
         second_run_at=_moment(payload["second_run_at"], "second_run_at"),
