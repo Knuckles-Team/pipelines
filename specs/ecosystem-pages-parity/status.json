@@ -3939,6 +3939,7 @@
       "title": "Generated architecture explorer on every core Pages site",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "40010846fc5f",
         "52f5fd07f94b",
         "5ad40df25e6a",
         "f32e737431a3"
@@ -3948,7 +3949,7 @@
         "tests/test_architecture_explorer.py:114",
         "tests/test_architecture_explorer.py:124",
         "tests/test_architecture_explorer.py:141",
-        "tests/test_architecture_explorer.py:148"
+        "tests/test_architecture_explorer.py:159"
       ]
     }
   ]
