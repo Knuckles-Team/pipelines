@@ -16,3 +16,11 @@ T-001 also fails a configuration missing one blocking gate or declaring a ninth.
 ## Quality and release proof
 
 Run `uv run --frozen python -m pytest -q` and the pre-commit and pre-push hook stages on the implementation. Record the revision, each command, and the pass or fail. A test in this repository is not served acceptance for the engine-side tree reads.
+
+## Gate verdicts published to the engine
+
+| Row | Proving test |
+|---|---|
+| `PIPE-GATES-R004` | See each child. |
+| `PIPE-GATES-R004.1` | `tests/test_verdict_publish.py::test_gate_run_posts_one_verdict` |
+| `PIPE-GATES-R004.2` | `tests/test_verdict_publish.py::test_fast_set_publishes_and_survives_endpoint_error` |

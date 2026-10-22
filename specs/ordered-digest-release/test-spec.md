@@ -63,3 +63,11 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R007.5 | PIPE-RELEASE-R007.5 | Run `test_fast_tests_reports_no_affected_tests` in `tests/hooks/test_fast_tests.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-RELEASE-R007.6 | PIPE-RELEASE-R007.6 | Run `test_fast_tests_runs_only_the_affected_subset` in `tests/hooks/test_fast_tests.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-RELEASE-R008 | PIPE-RELEASE-R008 | Run `tests/test_python_sdist_output.py`; observe the sdist built, proven and uploaded with the wheel, the maturin sdist job covering its package, and the documented readiness rule. |
+
+## Release records published to the engine
+
+| Row | Proving test |
+|---|---|
+| `PIPE-RELEASE-R009` | See each child. |
+| `PIPE-RELEASE-R009.1` | `tests/test_release_record_step.py::test_workflow_has_record_step_after_publish` |
+| `PIPE-RELEASE-R009.2` | `tests/test_release_record_step.py::test_step_posts_release_with_digests` |

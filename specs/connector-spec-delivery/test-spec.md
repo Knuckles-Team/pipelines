@@ -10,3 +10,11 @@
 PIPE-CONNSPEC-R001 is also bound by tests/hooks/test_spec_landing_attribution.py: explicit declarations retain the actual commit SHA; pending siblings, prose-only mentions and none exemption reasons do not land. Range, shorthand and multiple-trailer cases remain supported. Existing spec-status tests retain legacy receipt idempotence and revert coverage.
 
 PIPE-CONNSPEC-R001 also binds tests/hooks/test_spec_repository_identity.py: remote ownership corrects stale worktree names for new and legacy status files, live receipts survive migration and regeneration, and absent or ambiguous remotes retain safe fallback behavior.
+
+## Requirement state read from the engine
+
+| Row | Proving test |
+|---|---|
+| `PIPE-CONNSPEC-R009` | See each child. |
+| `PIPE-CONNSPEC-R009.1` | `tests/hooks/test_engine_state.py::test_difference_names_rows` |
+| `PIPE-CONNSPEC-R009.2` | `tests/hooks/test_engine_state.py::test_generator_and_engine_agree` |

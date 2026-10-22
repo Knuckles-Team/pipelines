@@ -6,7 +6,10 @@
   "requirement_ids": [
     "PIPE-GATES-R001",
     "PIPE-GATES-R002",
-    "PIPE-GATES-R003"
+    "PIPE-GATES-R003",
+    "PIPE-GATES-R004",
+    "PIPE-GATES-R004.1",
+    "PIPE-GATES-R004.2"
   ],
   "requirements": [
     {
@@ -42,6 +45,31 @@
     {
       "id": "PIPE-GATES-R003",
       "title": "Gates run against the engine tree",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R004",
+      "title": "Gate verdicts publish to the engine (rollup)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-GATES-R004.1",
+        "PIPE-GATES-R004.2"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R004.1",
+      "title": "Wiring",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R004.2",
+      "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
