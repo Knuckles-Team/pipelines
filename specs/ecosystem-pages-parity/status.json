@@ -3987,11 +3987,11 @@
       "title": "One generated architecture explorer, always current",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "07e22bc44394",
         "1127e9047bfa",
         "40010846fc5f",
         "52f5fd07f94b",
-        "5ad40df25e6a",
-        "f32e737431a3"
+        "5ad40df25e6a"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:105",
