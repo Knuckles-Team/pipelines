@@ -18,8 +18,18 @@
       "id": "PIPE-VALIDATION-R001",
       "title": "Bounded shared repository validation",
       "delivery_state": "VERIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "landed_in": [
+        "0f9f73b150d7",
+        "af9b1ddcb25f",
+        "b76625874902"
+      ],
+      "verified_by": [
+        "tests/hooks/test_validation.py:41",
+        "tests/hooks/test_validation.py:48",
+        "tests/hooks/test_validation.py:120",
+        "tests/hooks/test_validation.py:70",
+        "tests/hooks/test_validation.py:87"
+      ],
       "rollup_of": [
         "PIPE-VALIDATION-R001.1",
         "PIPE-VALIDATION-R001.2",
