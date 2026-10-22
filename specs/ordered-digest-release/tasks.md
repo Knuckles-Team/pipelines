@@ -50,13 +50,14 @@ commit).
 - [ ] PIPE-RELEASE-R001.10: Refusal. Implement this contract and bind `test_major_upgrade_pre_pin_refusal` in `tests/hooks/test_major_upgrade_pre_pin.py`.
 - [ ] PIPE-RELEASE-R001.11: Evidence. Implement this contract and bind `test_major_upgrade_pre_pin_evidence` in `tests/hooks/test_major_upgrade_pre_pin.py`.
 - [ ] PIPE-RELEASE-R001.12: Hot-path proof. Implement this contract and bind `test_major_upgrade_pre_pin_cli` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- [ ] PIPE-RELEASE-R007: Deliver all six children; keep every new input optional.
+- [ ] PIPE-RELEASE-R007: Deliver all seven children; keep every new input optional.
 - [ ] PIPE-RELEASE-R007.1: Model. Implement this contract and bind `test_gates_workflow_inputs_all_default` in `tests/test_gates_pipeline_contract.py`.
 - [ ] PIPE-RELEASE-R007.2: Behavior. Implement this contract and bind `test_gates_workflow_scopes_to_the_diff_and_caps_time` in `tests/test_gates_pipeline_contract.py`.
 - [ ] PIPE-RELEASE-R007.3: Wiring. Implement this contract and bind `test_require_tag_defaults_off_and_guards_the_publish_step` in `tests/test_gates_pipeline_contract.py`.
 - [ ] PIPE-RELEASE-R007.4: Refusal. Implement this contract and bind `test_require_tag_refuses_a_branch_ref_and_names_it` in `tests/test_gates_pipeline_contract.py`.
 - [ ] PIPE-RELEASE-R007.5: Evidence. Implement this contract and bind `test_fast_tests_reports_no_affected_tests` in `tests/hooks/test_fast_tests.py`.
 - [ ] PIPE-RELEASE-R007.6: Hot-path proof. Implement this contract and bind `test_fast_tests_runs_only_the_affected_subset` in `tests/hooks/test_fast_tests.py`.
+- [ ] PIPE-RELEASE-R007.7: Release bumps. Ignore member-version-only manifest and lock changes in the Rust scope; bind the three tests in `tests/hooks/test_pr_test_scope.py`.
 - [ ] PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
 
 - [ ] **PIPE-RELEASE-R009:** Release records publish to the engine (rollup).
