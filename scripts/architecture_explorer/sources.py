@@ -14,6 +14,8 @@ from pathlib import Path
 
 ROW_RE = re.compile(r"^\|\s*`([A-Za-z0-9][A-Za-z0-9.\-]*)`\s*\|(.*)$")
 OWNER = "Knuckles-Team"
+# Organization repositories with ``specs/`` that are not runtime parts (the front door hub).
+IGNORED = frozenset({".github"})
 
 
 @dataclass
@@ -59,13 +61,14 @@ class GitReader:
 class GitHubReader:
     """Read a public repository over the GitHub REST API and raw content URLs."""
 
-    def __init__(self, slug: str, token: str | None = None) -> None:
+    def __init__(self, slug: str, token: str | None = None, sha: str = "") -> None:
         self.slug = slug
         self.token = token
-        meta = self._json(f"https://api.github.com/repos/{OWNER}/{slug}")
-        branch = meta["default_branch"]
-        commit = self._json(f"https://api.github.com/repos/{OWNER}/{slug}/commits/{branch}")
-        self.sha = commit["sha"]
+        if not sha:
+            meta = self._json(f"https://api.github.com/repos/{OWNER}/{slug}")
+            branch = meta["default_branch"]
+            sha = self._json(f"https://api.github.com/repos/{OWNER}/{slug}/commits/{branch}")["sha"]
+        self.sha = sha
 
     def _get(self, url: str) -> bytes:
         req = urllib.request.Request(url, headers={"User-Agent": "architecture-explorer"})
@@ -145,13 +148,93 @@ def snapshot(entry: dict, mode: str, workspace: Path | None, token: str | None) 
         if mode == "local":
             reader = GitReader(workspace / entry["local"])
         else:
-            reader = GitHubReader(entry["slug"], token)
+            reader = GitHubReader(entry["slug"], token, entry.get("sha", ""))
         snap.head = reader.head()
         snap.files = reader.files()
         snap.rows = rows_for(reader, entry["name"], snap.files)
     except (OSError, KeyError, ValueError, urllib.error.URLError) as exc:
         snap.error = f"{type(exc).__name__}: {exc}"
     return snap
+
+
+DISCOVER_QUERY = (
+    """
+query($cursor: String) {
+  organization(login: "%s") {
+    repositories(first: 50, after: $cursor, orderBy: {field: NAME, direction: ASC}) {
+      pageInfo { hasNextPage endCursor }
+      nodes {
+        name isArchived isPrivate
+        defaultBranchRef { target { oid } }
+        specs: object(expression: "HEAD:specs") { ... on Tree { entries { name type } } }
+      }
+    }
+  }
+}
+"""
+    % OWNER
+)
+
+
+def _graphql(token: str, cursor: str | None) -> dict:
+    body = json.dumps({"query": DISCOVER_QUERY, "variables": {"cursor": cursor}}).encode()
+    req = urllib.request.Request(
+        "https://api.github.com/graphql",
+        data=body,
+        headers={"Authorization": f"Bearer {token}", "User-Agent": "architecture-explorer"},
+    )
+    with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310 - fixed https host
+        out = json.loads(resp.read())
+    if out.get("errors"):
+        raise ValueError(f"discovery failed: {out['errors'][0].get('message')}")
+    return out["data"]["organization"]["repositories"]
+
+
+def org_repositories(token: str) -> dict[str, str]:
+    """Map each public, unarchived organization repository with a ``specs/`` tree to its head SHA."""
+    found: dict[str, str] = {}
+    cursor = None
+    while True:
+        page = _graphql(token, cursor)
+        for repo in page["nodes"]:
+            ref = repo.get("defaultBranchRef") or {}
+            if repo["isArchived"] or repo["isPrivate"] or not repo.get("specs") or not ref:
+                continue
+            if "entries" in repo["specs"]:
+                found[repo["name"]] = ref["target"]["oid"]
+        if not page["pageInfo"]["hasNextPage"]:
+            return found
+        cursor = page["pageInfo"]["endCursor"]
+
+
+def reconcile(registry: list[dict], found: dict[str, str]) -> list[dict]:
+    """Return the scan set: registered repositories that still exist plus every newly discovered one.
+
+    A registered repository that is gone, archived or private, or that no longer has
+    ``specs/``, drops out so its rows disappear; a new organization repository with
+    ``specs/`` joins as a connector so its rows appear without a registry edit.
+    """
+    out = [{**e, "sha": found[e["slug"]]} for e in registry if e["slug"] in found]
+    known = {e["slug"] for e in registry}
+    for slug in sorted(set(found) - known - IGNORED):
+        out.append(
+            {
+                "name": slug,
+                "slug": slug,
+                "local": f"agent-packages/agents/{slug}",
+                "kind": "connector",
+                "sha": found[slug],
+                "discovered": True,
+            }
+        )
+    return out
+
+
+def scan_set(registry: list[dict], mode: str, token: str | None) -> list[dict]:
+    """Discover the repositories to scan; github mode asks the organization, local mode uses the registry."""
+    if mode != "github" or not token:
+        return registry
+    return reconcile(registry, org_repositories(token))
 
 
 def load_all(registry: list[dict], mode: str, workspace: Path | None = None, workers: int = 12) -> list[Snapshot]:

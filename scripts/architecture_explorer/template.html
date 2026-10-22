@@ -62,6 +62,9 @@ main.work{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:12px;flex:1
 .canvas canvas.fade{opacity:0;transition:none}
 .zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px;z-index:2}
 .zoom .btn{width:34px;padding:0;font:600 16px var(--font-mono)}
+.fresh{position:absolute;left:10px;top:10px;z-index:2;font:500 11px var(--font-mono);color:var(--muted);background:color-mix(in srgb,var(--sheet) 85%,transparent);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:calc(100% - 70px)}
+.fresh summary{cursor:pointer}
+.fresh ul{margin:6px 0 0;padding:0;list-style:none;max-height:40vh;overflow:auto;columns:2;column-gap:14px}
 .hint{position:absolute;left:10px;bottom:10px;font:500 11px var(--font-body);color:var(--muted);background:color-mix(in srgb,var(--sheet) 85%,transparent);border:1px solid var(--line);border-radius:6px;padding:4px 8px;pointer-events:none;max-width:calc(100% - 70px)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-body);color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
@@ -142,6 +145,7 @@ footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wr
         <button class="btn" id="zout" type="button" aria-label="Zoom out">&#8722;</button>
         <button class="btn" id="zfit" type="button" aria-label="Show the whole map">&#9635;</button>
       </div>
+      <details class="fresh" id="fresh"><summary id="freshsum">Built</summary><ul id="freshlist"></ul></details>
       <div class="hint" id="hint">Click a part to zoom in. Scroll or pinch to zoom. Drag to pan. Esc zooms out.</div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
@@ -413,6 +417,10 @@ q.addEventListener("focus",()=>{ if(q.value.trim().length>=2) doSearch(); });
   $("sub").textContent="Runtime architecture mapped to "+fmt(META.rows)+" spec rows from "+META.families+" spec families. "+fmt(META.nodes)+" parts, "+META.connectors+" connectors, "+META.depth+" levels deep. Edge crossings: "+META.crossings.total+".";
   const f=$("foot"); Object.keys(META.heads).filter(r=>META.pages_node[r]).forEach(r=>f.append(el("span",{text:r+"@"+META.heads[r]})));
   f.append(el("span",{text:"+"+(Object.keys(META.heads).length-Object.keys(META.pages_node).filter(r=>META.heads[r]).length)+" more repositories"}));
+  const heads=Object.keys(META.heads).sort(), built=META.built_at||"";
+  $("freshsum").textContent="Built "+built.replace("T"," ").replace("Z"," UTC")+" from "+heads.length+" repository heads";
+  $("fresh").title="Generated from each repository's default branch at the commits listed here.";
+  heads.forEach(r=>$("freshlist").append(el("li",{},[el("a",{href:gh(r)+"/commit/"+META.heads[r],target:"_blank",rel:"noopener",text:r+"@"+META.heads[r]})])));
   f.append(el("span",{text:"mapped "+fmt(META.mapped)+" / unmapped "+fmt(META.unmapped)}));
   const lg=$("legend"); Object.keys(LAYERS).forEach(k=>lg.append(el("span",{style:"color:var(--l-"+k+")"},[el("i"),el("span",{style:"color:var(--muted)",text:LAYERS[k]})]))); })();
 const rootEl=document.documentElement; const saved=store.get("arbora-arch-theme"); if(saved==="dark"||saved==="light") rootEl.setAttribute("data-theme",saved);

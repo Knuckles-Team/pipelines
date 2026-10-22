@@ -3977,20 +3977,21 @@
     },
     {
       "id": "PIPE-PAGES-R042",
-      "title": "Generated architecture explorer on every core Pages site",
+      "title": "One generated architecture explorer, always current",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "1127e9047bfa",
         "40010846fc5f",
         "52f5fd07f94b",
         "5ad40df25e6a",
         "f32e737431a3"
       ],
       "verified_by": [
-        "tests/test_architecture_explorer.py:103",
-        "tests/test_architecture_explorer.py:114",
-        "tests/test_architecture_explorer.py:124",
-        "tests/test_architecture_explorer.py:141",
-        "tests/test_architecture_explorer.py:159"
+        "tests/test_architecture_explorer.py:105",
+        "tests/test_architecture_explorer.py:116",
+        "tests/test_architecture_explorer.py:126",
+        "tests/test_architecture_explorer.py:143",
+        "tests/test_architecture_explorer.py:161"
       ]
     }
   ]
