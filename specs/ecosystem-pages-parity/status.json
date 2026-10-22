@@ -643,10 +643,17 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0fc12ceeb003",
-        "5b454e4b7eb4"
+        "5b454e4b7eb4",
+        "13e5f2f6b948",
+        "6cd983d5fe0b",
+        "6cd8906edd00"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:28"
+        "tests/test_spec_dashboard_metadata.py:28",
+        "tests/test_spec_dashboard_metadata.py:29",
+        "tests/test_spec_dashboard_metadata.py:205",
+        "tests/test_spec_dashboard_reference_prose.py:10",
+        "tests/test_spec_dashboard_metadata.py:81"
       ],
       "rollup_of": [
         "PIPE-PAGES-R013.1",
@@ -864,8 +871,17 @@
       "id": "PIPE-PAGES-R016",
       "title": "Spec-delivery page shows only the current spec state",
       "delivery_state": "VERIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "landed_in": [
+        "a81cc87849a5",
+        "9e705970e4c9"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard.py:149",
+        "tests/test_spec_dashboard.py:157",
+        "tests/test_spec_dashboard.py:164",
+        "tests/test_spec_dashboard.py:198",
+        "tests/test_spec_dashboard.py:186"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R016.1",
         "PIPE-PAGES-R016.2",
@@ -933,8 +949,14 @@
       "id": "PIPE-PAGES-R017",
       "title": "Three states only",
       "delivery_state": "VERIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "landed_in": [
+        "71203d08a166"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_states.py:28",
+        "tests/test_spec_dashboard_states.py:35",
+        "tests/test_spec_dashboard_states.py:43"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R017.1",
         "PIPE-PAGES-R017.2",
@@ -978,8 +1000,19 @@
       "id": "PIPE-PAGES-R018",
       "title": "Spec delivery is a native menu entry on every documentation site",
       "delivery_state": "VERIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "landed_in": [
+        "2f6747267768",
+        "64ce2e92a6da",
+        "7eca7920c666",
+        "ffddb8aba2bc"
+      ],
+      "verified_by": [
+        "tests/test_spec_delivery_nav.py:21",
+        "tests/test_spec_delivery_nav.py:29",
+        "tests/test_spec_delivery_nav.py:36",
+        "tests/test_spec_delivery_nav.py:42",
+        "tests/test_spec_delivery_nav.py:54"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R018.1",
         "PIPE-PAGES-R018.2",
@@ -1050,8 +1083,16 @@
       "id": "PIPE-PAGES-R019",
       "title": "The spec-delivery page carries the documentation site's navigation",
       "delivery_state": "VERIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "landed_in": [
+        "556a2a4e800e"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard_nav.py:27",
+        "tests/test_spec_dashboard_nav.py:34",
+        "tests/test_spec_dashboard_nav.py:41",
+        "tests/test_spec_dashboard_nav.py:49",
+        "tests/test_spec_dashboard_nav.py:56"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R019.1",
         "PIPE-PAGES-R019.2",
