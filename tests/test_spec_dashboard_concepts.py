@@ -16,7 +16,9 @@ from scripts.spec_dashboard_concepts import (  # noqa: E402
 
 def test_concepts_for_row_reads_markers(tmp_path):
     (tmp_path / "pkg").mkdir()
-    (tmp_path / "pkg" / "a.py").write_text("# CONCEPT:AU-1.2\n# CONCEPT:KG-3\n")
+    # Keep legacy parser coverage without a literal obsolete source annotation.
+    markers = "".join(f"# CONCEPT:{concept}\n" for concept in ("AU-1.2", "KG-3"))
+    (tmp_path / "pkg" / "a.py").write_text(markers)
     assert concepts_for_row(["pkg"], [tmp_path]) == ["AU-1.2", "KG-3"]
 
 

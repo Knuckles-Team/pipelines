@@ -16,9 +16,13 @@ from pipelines_hooks.core.gitenv import git_text, nul_split, run_git
 SKIP_DIRECTORIES = frozenset({".git", ".venv", "venv", "node_modules", "__pycache__", "build", "dist", ".tox"})
 
 
-def tracked_paths(root: Path, pathspecs: tuple[str, ...] = ()) -> list[str]:
-    """Every tracked path (repository-relative), failing closed on git errors."""
-    raw = git_text(root, ("ls-files", "-z", "--", *pathspecs), preserve_index=True)
+def tracked_paths(root: Path, pathspecs: tuple[str, ...] = (), *, preserve_index: bool = True) -> list[str]:
+    """Every tracked path (repository-relative), failing closed on git errors.
+
+    Explicit foreign-target scans may disable the caller's alternate index;
+    staged gates retain it by default.
+    """
+    raw = git_text(root, ("ls-files", "-z", "--", *pathspecs), preserve_index=preserve_index)
     return nul_split(raw)
 
 
