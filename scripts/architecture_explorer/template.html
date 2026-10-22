@@ -178,7 +178,7 @@ function place(n, rect, isRoot){
   const L=n.layout; if(!L) return;
   let s, ox, oy;
   if(isRoot){ s=1; ox=0; oy=0; }
-  else { const head=rect[3]*0.16, pad=rect[2]*0.025;
+  else { const head=rect[3]*0.09, pad=rect[2]*0.01;
     s=Math.min((rect[2]-2*pad)/L.w, (rect[3]-head-pad)/L.h);
     ox=rect[0]+(rect[2]-L.w*s)/2; oy=rect[1]+head+((rect[3]-head-pad)-L.h*s)/2; }
   LT[n.id]={s,ox,oy};
@@ -272,9 +272,9 @@ function drawNode(n, alpha){
       ctx.fillStyle=C.line; ctx.fillRect(bx,by,bw,bh); if(c.total) ST.forEach(s=>{ const w=bw*(c[s]||0)/c.total; if(w>0){ ctx.fillStyle=C.st[s]; ctx.fillRect(bx+off,by,w,bh); off+=w; } }); }
   }
   if(op>0.01){ // open: title strip + inner map
-    const head=sh*0.16; const fs=Math.min(26, head*0.42, sw/28);
+    const head=sh*0.09; const fs=Math.min(26, head*0.62, sw/28);
     ctx.globalAlpha=alpha*op; if(fs>=6){ ctx.font="700 "+fs+"px "+C.display; ctx.fillStyle=C.fg; ctx.textAlign="left"; ctx.textBaseline="middle";
-      ctx.fillText(fitText(n.label, sw*0.5), sx+sw*0.025, sy+head*0.42);
+      ctx.fillText(fitText(n.label, sw*0.5), sx+sw*0.01, sy+head*0.45);
       ctx.font="600 "+(fs*0.55)+"px "+C.mono; drawRich(countsLine(n), sx+sw*0.75, sy+head*0.42, sw*0.45); }
     drawInner(n, alpha*op);
   }

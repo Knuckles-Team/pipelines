@@ -16,7 +16,7 @@ const layered = (banded) => ({
   "elk.layered.mergeEdges": "true",
   "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
   "elk.layered.spacing.nodeNodeBetweenLayers": "80",
-  "elk.spacing.nodeNode": "46",
+  "elk.spacing.nodeNode": "34",
   "elk.spacing.edgeNode": "22",
   "elk.spacing.edgeEdge": "14",
   "elk.spacing.edgeLabel": "4",
@@ -24,13 +24,13 @@ const layered = (banded) => ({
   "elk.layered.edgeLabels.sideSelection": "SMART_DOWN",
   "elk.aspectRatio": "1.7",
   "elk.partitioning.activate": banded ? "true" : "false",
-  "elk.padding": "[top=70,left=60,bottom=50,right=60]",
+  "elk.padding": "[top=28,left=18,bottom=16,right=18]",
 });
 const packed = {
   "elk.algorithm": "rectpacking",
   "elk.aspectRatio": "1.7",
-  "elk.spacing.nodeNode": "34",
-  "elk.padding": "[top=70,left=50,bottom=50,right=50]",
+  "elk.spacing.nodeNode": "24",
+  "elk.padding": "[top=28,left=16,bottom=16,right=16]",
 };
 
 function sizeOf(level, done) {
@@ -76,7 +76,7 @@ function bandedGraph(level, byId, done) {
       layoutOptions: {
         "elk.partitioning.partition": String(b),
         "elk.direction": "RIGHT",
-        "elk.padding": "[top=46,left=40,bottom=30,right=40]",
+        "elk.padding": "[top=30,left=16,bottom=14,right=16]",
         "elk.spacing.nodeNode": "60",
         "elk.layered.spacing.nodeNodeBetweenLayers": "90",
       },
