@@ -22,7 +22,10 @@ skips the test step entirely.
 ``--lang rust`` maps each changed file under ``--workspace-root`` to the
 nearest ancestor crate (the directory holding its ``Cargo.toml``) and prints
 one crate name per line for ``cargo test -p <crate>``; a workspace-wide file
-(the root ``Cargo.toml``/``Cargo.lock``) forces ``FULL``.
+(the root ``Cargo.toml``/``Cargo.lock``) forces ``FULL``. A manifest or lock
+change that only moves workspace-member versions (a release bump) maps to no
+crate: it changes no code any test compiles against, so it never forces the
+full workspace sweep onto the pull-request budget.
 
 Output contract (stdout, one token per line): ``NONE`` | ``FULL`` | a
 newline-separated, order-stable list of test paths (python) or crate names
@@ -38,7 +41,7 @@ from pathlib import Path
 
 from pipelines_hooks.ci_replica.import_graph import clear_import_graph_cache, module_for_path, test_files_importing
 from pipelines_hooks.clones.dupehound import changed_paths
-from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.core.gitenv import git_text, repo_root, run_git
 from pipelines_hooks.core.settings import setting
 
 FULL = "FULL"
@@ -164,8 +167,87 @@ def _rust_root_cargo_toml(workspace_root: str) -> str:
     return f"{trimmed}/Cargo.toml".lstrip("/")
 
 
-def _handle_rust_path(scope: _DedupedScope, root: Path, ws: Path, workspace_root: str, path: str) -> bool:
+_DEPENDENCY_TABLES = ("dependencies", "dev-dependencies", "build-dependencies")
+
+
+def _strip_dependency_versions(table: object) -> None:
+    """Drop ``version`` from path/workspace dependencies: those name members."""
+    if not isinstance(table, dict):
+        return
+    for spec in table.values():
+        if isinstance(spec, dict) and ("path" in spec or spec.get("workspace") is True):
+            spec.pop("version", None)
+
+
+def _manifest_without_member_versions(text: str) -> dict[str, object] | None:
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:
+        return None
+    for owner in (data, data.get("workspace", {})):
+        if isinstance(owner, dict):
+            package = owner.get("package")
+            if isinstance(package, dict):
+                package.pop("version", None)
+            for name in _DEPENDENCY_TABLES:
+                _strip_dependency_versions(owner.get(name))
+    for target in (data.get("target") or {}).values():
+        if isinstance(target, dict):
+            for name in _DEPENDENCY_TABLES:
+                _strip_dependency_versions(target.get(name))
+    return data
+
+
+def _lock_without_member_versions(text: str) -> list[object] | None:
+    try:
+        packages = tomllib.loads(text).get("package", [])
+    except tomllib.TOMLDecodeError:
+        return None
+    members = {entry.get("name") for entry in packages if isinstance(entry, dict) and "source" not in entry}
+    normalized: list[object] = []
+    for entry in packages:
+        if not isinstance(entry, dict):
+            return None
+        entry = dict(entry)
+        if entry.get("name") in members:
+            entry.pop("version", None)
+        deps = entry.get("dependencies")
+        if isinstance(deps, list):
+            entry["dependencies"] = [
+                str(dep).split(" ")[0] if str(dep).split(" ")[0] in members else dep for dep in deps
+            ]
+        normalized.append(entry)
+    return normalized
+
+
+def _base_text(root: Path, base_ref: str | None, path: str) -> str | None:
+    if not base_ref:
+        return None
+    merge_base = git_text(root, ("merge-base", base_ref, "HEAD")).strip()
+    result = run_git(root, ("show", f"{merge_base}:{path}"))
+    return result.stdout if result.returncode == 0 else None
+
+
+def _member_versions_only(root: Path, base_ref: str | None, path: str) -> bool:
+    """True when ``path`` (a manifest or lock) differs from the base only in member versions."""
+    before = _base_text(root, base_ref, path)
+    try:
+        after = (root / path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    if before is None:
+        return False
+    normalize = _lock_without_member_versions if path.endswith("Cargo.lock") else _manifest_without_member_versions
+    old, new = normalize(before), normalize(after)
+    return old is not None and old == new
+
+
+def _handle_rust_path(
+    scope: _DedupedScope, root: Path, ws: Path, workspace_root: str, path: str, base_ref: str | None = None
+) -> bool:
     """Apply one changed path to ``scope``. True means the caller must return ``FULL``."""
+    if (path.endswith("Cargo.toml") or path.endswith("Cargo.lock")) and _member_versions_only(root, base_ref, path):
+        return False
     if _is_global_trigger(path, _GLOBAL_RUST_TRIGGERS) or path == _rust_root_cargo_toml(workspace_root):
         return True
     if not path.endswith(".rs") and not path.endswith("Cargo.toml"):
@@ -179,11 +261,11 @@ def _handle_rust_path(scope: _DedupedScope, root: Path, ws: Path, workspace_root
     return False
 
 
-def _rust_scope(root: Path, changed: list[str], workspace_root: str) -> list[str]:
+def _rust_scope(root: Path, changed: list[str], workspace_root: str, base_ref: str | None = None) -> list[str]:
     ws = (root / workspace_root).resolve()
     scope = _DedupedScope()
     for path in changed:
-        if _handle_rust_path(scope, root, ws, workspace_root, path):
+        if _handle_rust_path(scope, root, ws, workspace_root, path, base_ref):
             return [FULL]
     return scope.resolve()
 
@@ -196,6 +278,6 @@ def main(argv: list[str]) -> int:
     if args.lang == "python":
         result = _python_scope(root, changed, args.src_root.rstrip("/"), args.tests_root.rstrip("/"))
     else:
-        result = _rust_scope(root, changed, args.workspace_root)
+        result = _rust_scope(root, changed, args.workspace_root, base_ref)
     print("\n".join(result))
     return 0
