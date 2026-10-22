@@ -22,7 +22,8 @@
     "PIPE-GATES-R007",
     "PIPE-GATES-R008",
     "PIPE-GATES-R009",
-    "PIPE-GATES-R010"
+    "PIPE-GATES-R010",
+    "PIPE-GATES-R011"
   ],
   "requirements": [
     {
@@ -203,13 +204,21 @@
     {
       "id": "PIPE-GATES-R010",
       "title": "Connector names agree with the declared fleet name",
-      "delivery_state": "VERIFIED",
-      "landed_in": [
-        "41da9b121037",
-        "6ecc29e1dd67"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_name.py:11"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R011",
+      "title": "Shared hooks are current and snapshots accept symlinks",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b7a29c4d6955"
+      ],
+      "verified_by": [
+        "tests/hooks/test_jscpd_snapshot.py:13"
       ]
     }
   ]
