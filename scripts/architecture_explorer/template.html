@@ -213,7 +213,12 @@ function zoomAt(f, sx, sy){ anim=null; const wx=cam.x+sx/cam.k, wy=cam.y+sy/cam.
   setCam({x:wx-sx/k, y:wy-sy/k, k}); }
 
 // ---------- drawing ----------
-function openness(n, sw){ if(!n.layout) return 0; const o0=Math.min(380, W*0.5), o1=Math.min(620, W*0.85); return Math.max(0,Math.min(1,(sw-o0)/(o1-o0))); }
+// A box starts to open only once it is clearly larger than it is in the home (whole-map) view,
+// so the home view and the zoom-out button always show every top-level box closed.
+function homeK(){ return W ? fitCam(R[T.id]).k : 1; }
+function openness(n, sw){ if(!n.layout) return 0; const homeSW=R[n.id][2]*homeK();
+  const o0=Math.max(Math.min(380, W*0.5), homeSW*1.15), o1=Math.max(Math.min(620, W*0.85), o0*1.6);
+  return Math.max(0,Math.min(1,(sw-o0)/(o1-o0))); }
 function rr(x,y,w,h,r){ r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function fitText(t, maxW){ if(ctx.measureText(t).width<=maxW) return t; let lo=0, hi=t.length; while(lo<hi){ const m=(lo+hi+1)>>1; if(ctx.measureText(t.slice(0,m)+"…").width<=maxW) lo=m; else hi=m-1; } return lo>0? t.slice(0,lo)+"…" : ""; }
 function wrapText(t, maxW, maxLines){ const words=String(t).split(/\s+/), lines=[]; let cur="";
