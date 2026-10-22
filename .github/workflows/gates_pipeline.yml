@@ -192,12 +192,23 @@ jobs:
           FORK_PULL_REQUEST: ${{ github.event.pull_request.head.repo.fork || false }}
         run: bash -c "$SETUP_COMMAND"
 
+      # Consumers pin the shared hooks at the mutable rev ``main``, and
+      # pre-commit never refreshes an installed mutable rev. Keying the cache on
+      # the config alone restored stale hooks after pipelines main moved, so the
+      # key also carries the current pipelines main commit.
+      - name: Resolve the shared hook revision
+        id: hook-rev
+        if: steps.scope.outputs.docs-only != 'true'
+        run: |
+          set -euo pipefail
+          echo "sha=$(git ls-remote https://github.com/Knuckles-Team/pipelines refs/heads/main | cut -f1)" >> "$GITHUB_OUTPUT"
+
       - name: Cache pre-commit environments
         if: steps.scope.outputs.docs-only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}
+          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}
 
       - name: Resolve diff range
         if: steps.scope.outputs.docs-only != 'true'

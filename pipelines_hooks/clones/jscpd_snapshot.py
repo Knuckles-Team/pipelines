@@ -63,7 +63,10 @@ def materialize(root: Path, ref: str, destination: Path) -> Path:
     if result.returncode != 0:
         raise CannotRun(f"git archive {ref} failed: {result.stderr.decode(errors='replace')[:400]}")
     with tarfile.open(archive, mode="r:") as bundle:
-        members = bundle.getmembers()
+        # A tracked symlink is skipped, not followed: its in-tree target is
+        # scanned as itself (following it would report a clone of the target),
+        # and an out-of-tree target is not repository content.
+        members = [member for member in bundle.getmembers() if not member.issym()]
         for member in members:
             _safe_member(member, destination)
         bundle.extractall(destination, members=members, filter="data")
