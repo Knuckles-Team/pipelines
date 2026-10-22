@@ -65,6 +65,15 @@ on:
         required: false
         type: string
         default: agent-readiness-manifest.json
+      architecture_explorer:
+        description: >-
+          Build the Arbora Architecture Explorer at /architecture/. "auto"
+          builds it on the core repositories only; "on" and "off" force it.
+          The build reads the public spec rows of every core repository and
+          connector over the GitHub API at build time.
+        required: false
+        type: string
+        default: auto
       markdown_manifest:
         description: "Canonical generated Markdown mirror manifest path."
         required: false
@@ -106,8 +115,27 @@ jobs:
         run: |
           pip install mkdocs-material==9.7.6 mkdocs-awesome-pages-plugin==2.10.1
 
+      - name: Resolve architecture explorer
+        id: explorer
+        env:
+          EXPLORER_MODE: ${{ inputs.architecture_explorer }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          enabled=false
+          case "$EXPLORER_MODE" in
+            on) enabled=true ;;
+            off) enabled=false ;;
+            auto)
+              case "$REPOSITORY_NAME" in
+                epistemic-graph|arbora|agent-connector-sdk|agent-utilities|agent-terminal-ui|agent-webui|pipelines|universal-skills) enabled=true ;;
+              esac ;;
+            *) echo "architecture_explorer must be auto, on or off" >&2; exit 1 ;;
+          esac
+          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
+
       - name: Checkout pipeline-owned scripts
-        if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled || inputs.spec_dashboard_enabled
+        if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled || inputs.spec_dashboard_enabled || steps.explorer.outputs.enabled == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
@@ -140,6 +168,7 @@ jobs:
             scripts/spec_graph_load.py
             scripts/spec_graph_parse.py
             scripts/readiness
+            scripts/architecture_explorer
 
       - name: Validate declared content source
         if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
@@ -187,6 +216,7 @@ jobs:
           READINESS_ENABLED: ${{ inputs.agent_readiness_enabled }}
           CONTENT_SOURCE: ${{ inputs.content_source }}
           SPEC_DELIVERY_ENABLED: ${{ inputs.spec_dashboard_enabled }}
+          ARCHITECTURE_EXPLORER_ENABLED: ${{ steps.explorer.outputs.enabled }}
         run: |
           set -euo pipefail
           if [ -f "mkdocs.yml" ]; then
@@ -240,6 +270,16 @@ jobs:
           python .pipeline-contract/scripts/spec_dashboard.py \
             --root "$GITHUB_WORKSPACE" --config "$DASHBOARD_CONFIG" \
             --output site/spec-delivery --repository "$GITHUB_REPOSITORY"
+
+      - name: Build architecture explorer
+        if: steps.explorer.outputs.enabled == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          npm ci --prefix .pipeline-contract/scripts/architecture_explorer --no-audit --no-fund
+          python .pipeline-contract/scripts/architecture_explorer/build.py --mode github \
+            --page site/architecture/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

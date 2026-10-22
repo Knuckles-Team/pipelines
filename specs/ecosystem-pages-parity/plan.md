@@ -433,3 +433,7 @@ R040.1-.6: Extend AU approval criteria to reject coverage-decreasing proposals.
 ## PIPE-PAGES-R041
 
 R041.1-.6: Configured structural limits with named-function failure reporting in shared gate.
+
+## PIPE-PAGES-R042
+
+R042: `scripts/architecture_explorer/` reads spec rows over the GitHub API, places them on `model.json`, precomputes layouts with the pinned layout engine (`layout.mjs`) and renders `template.html`. `pages_pipeline.yml` builds it for the core repositories (`architecture_explorer: auto`).

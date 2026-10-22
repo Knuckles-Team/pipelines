@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -143,6 +144,7 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/spec_graph_load.py",
         "scripts/spec_graph_parse.py",
         "scripts/readiness",
+        "scripts/architecture_explorer",
     ]
 
 
@@ -180,3 +182,19 @@ def test_dashboard_caller_checkout_materializes_source_files():
     checkout = next(step for step in document["jobs"]["deploy"]["steps"] if step.get("name") == "Checkout Repository")
     assert "sparse-checkout" not in checkout["with"]
     assert checkout["with"]["fetch-depth"] == 1
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_architecture_explorer_defaults_to_core_repositories_and_builds_before_upload() -> None:
+    contract = _workflow()
+    inputs = contract["on"]["workflow_call"]["inputs"]
+    assert inputs["architecture_explorer"]["default"] == "auto"
+    text = WORKFLOW.read_text(encoding="utf-8")
+    assert (
+        "epistemic-graph|arbora|agent-connector-sdk|agent-utilities|agent-terminal-ui|agent-webui|pipelines|universal-skills"
+        in text
+    )
+    assert text.index("Build architecture explorer") < text.index("Upload artifact")
+    assert "--page site/architecture/index.html" in text
+    assert "npm ci --prefix .pipeline-contract/scripts/architecture_explorer" in text
+    assert "ARCHITECTURE_EXPLORER_ENABLED: ${{ steps.explorer.outputs.enabled }}" in text

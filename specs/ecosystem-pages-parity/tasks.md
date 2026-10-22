@@ -368,3 +368,4 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R041.4: Refusal. Missing limits or unsupported measurement fail.
 - [ ] PIPE-PAGES-R041.5: Evidence. Record policy digest and function counts.
 - [ ] PIPE-PAGES-R041.6: Hot-path proof. Build fails on excess arguments.
+- [x] PIPE-PAGES-R042: Generated architecture explorer at /architecture/ on every core Pages site, linked from the shared theme.

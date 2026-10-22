@@ -1,0 +1,9 @@
+{
+  "name": "architecture-explorer-layout",
+  "private": true,
+  "description": "Precomputes the explorer layout with the pinned layered layout engine.",
+  "type": "module",
+  "dependencies": {
+    "elkjs": "0.12.0"
+  }
+}

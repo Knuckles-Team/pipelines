@@ -422,7 +422,8 @@
     "PIPE-PAGES-R041.3",
     "PIPE-PAGES-R041.4",
     "PIPE-PAGES-R041.5",
-    "PIPE-PAGES-R041.6"
+    "PIPE-PAGES-R041.6",
+    "PIPE-PAGES-R042"
   ],
   "requirements": [
     {
@@ -3996,6 +3997,22 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-PAGES-R042",
+      "title": "Generated architecture explorer on every core Pages site",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "52f5fd07f94b",
+        "f32e737431a3"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:101",
+        "tests/test_architecture_explorer.py:112",
+        "tests/test_architecture_explorer.py:53",
+        "tests/test_architecture_explorer.py:75",
+        "tests/test_architecture_explorer.py:83"
+      ]
     }
   ]
 }
