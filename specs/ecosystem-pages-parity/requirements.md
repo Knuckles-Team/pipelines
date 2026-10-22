@@ -373,13 +373,6 @@
 | `PIPE-PAGES-R035.4` | **Refusal.** Semantic roundtrip cannot weaken earlier R094 export coverage. | Run coverage refusal test. |
 | `PIPE-PAGES-R035.5` | **Evidence.** Disk-format semantics and difference oracle proof bound to snapshots. | Run oracle evidence test. |
 | `PIPE-PAGES-R035.6` | **Hot-path proof.** Equal/older/newer disk format round-trip verified via published CLI. | Run `test_au121_roundtrip_cli`. |
-| `PIPE-PAGES-R036` | **AU pre-transport render-receipt consumer definition and dispatch binding.** Rollup of the children below. Define AU consumer interface and bind EG producer to consumer before actual model transport. | The rollup is the minimum state of its children. |
-| `PIPE-PAGES-R036.1` | **Model.** Define AU render-receipt consumer definition and call site with dispatch rules. | Run consumer definition model test. |
-| `PIPE-PAGES-R036.2` | **Behavior.** Publish AU consumer interface and exact dispatch semantics. | Run dispatch behavior test. |
-| `PIPE-PAGES-R036.3` | **Wiring.** Bind EG producer to AU consumer before transport through gate. | Run producer-consumer wiring test. |
-| `PIPE-PAGES-R036.4` | **Refusal.** Receipt without AU consumer definition stays partial; no source-writeback substitution. | Run partial refusal test. |
-| `PIPE-PAGES-R036.5` | **Evidence.** AU consumer definition and dispatch location bound to source snapshots. | Run consumer location evidence test. |
-| `PIPE-PAGES-R036.6` | **Hot-path proof.** AU consumer definition and receipt name published and verified via CLI. | Run `test_eg15_consumer_binding_cli`. |
 | `PIPE-PAGES-R021.91` | **Model.** Record former validate behaviors and their deployment state. | Complete inventory lists every validation action. |
 | `PIPE-PAGES-R021.92` | **Behavior.** Map each behavior to every supported project hook. | Hook adopters configure and pass both success and failure cases. |
 | `PIPE-PAGES-R021.93` | **Wiring.** Require configured pre-commit parity before hook passes. | Pre-commit configuration names every mapped behavior for all projects. |
