@@ -37,14 +37,16 @@ def apply_rollup(ids: list[str], state: dict[str, str], records: dict[str, dict[
 
 
 def _merged_evidence(records: dict[str, dict[str, object]], parent: str, children: list[str], field: str) -> list[str]:
-    """The parent's own evidence, then each live child's, de-duplicated in order."""
-    merged: list[str] = []
+    """The parent's own evidence and each live child's, de-duplicated and sorted.
+
+    Sorted, not first-seen: the next run carries this list forward as the parent's own
+    landings, so any order that depends on the input would rewrite the file every run.
+    """
+    merged: set[str] = set()
     for rid in [parent, *children]:
         values = records[rid].get(field, [])
-        for value in values if isinstance(values, list) else []:
-            if value not in merged:
-                merged.append(value)
-    return merged[:MAX_EVIDENCE_SHOWN]
+        merged.update(values if isinstance(values, list) else [])
+    return sorted(merged)[:MAX_EVIDENCE_SHOWN]
 
 
 def overall_state(state: dict[str, str]) -> str:
