@@ -102,6 +102,20 @@ def test_verified_rollup_carries_its_childrens_evidence(repo: Repo) -> None:
     assert parent["verified_by"] == ["tests/test_a.py:1", "tests/test_b.py:1"]
 
 
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_rollup_evidence_is_stable_across_regenerations(repo: Repo) -> None:
+    repo.commit({"specs/demo/requirements.md": _ROLLUP_ROWS}, "add spec")
+    repo.commit({"pkg/b.py": "# b\n"}, "Spec: TEST-R010.2")
+    repo.commit({"pkg/a.py": "# a\n"}, "Spec: TEST-R010.1")
+
+    assert repo.run("spec-status", "--write") == 0
+    first = _status(repo)
+    assert len(first["requirements"][0]["landed_in"]) == 2
+    assert repo.run("spec-status", "--write") == 0
+    assert _status(repo) == first
+    assert repo.run("spec-status") == 0
+
+
 def test_reverted_commit_does_not_count_as_landed(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _REVERT_ROW}, "add spec")
     landing_sha = repo.commit({"pkg/b.py": "# b\n"}, "Spec: TEST-R030")
