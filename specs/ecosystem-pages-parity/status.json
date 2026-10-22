@@ -375,13 +375,6 @@
     "PIPE-PAGES-R035.4",
     "PIPE-PAGES-R035.5",
     "PIPE-PAGES-R035.6",
-    "PIPE-PAGES-R036",
-    "PIPE-PAGES-R036.1",
-    "PIPE-PAGES-R036.2",
-    "PIPE-PAGES-R036.3",
-    "PIPE-PAGES-R036.4",
-    "PIPE-PAGES-R036.5",
-    "PIPE-PAGES-R036.6",
     "PIPE-PAGES-R021.91",
     "PIPE-PAGES-R021.92",
     "PIPE-PAGES-R021.93",
@@ -3615,63 +3608,6 @@
       "verified_by": []
     },
     {
-      "id": "PIPE-PAGES-R036",
-      "title": "AU pre-transport render-receipt consumer definition and dispatch binding",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
-      "rollup_of": [
-        "PIPE-PAGES-R036.1",
-        "PIPE-PAGES-R036.2",
-        "PIPE-PAGES-R036.3",
-        "PIPE-PAGES-R036.4",
-        "PIPE-PAGES-R036.5",
-        "PIPE-PAGES-R036.6"
-      ]
-    },
-    {
-      "id": "PIPE-PAGES-R036.1",
-      "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
-    },
-    {
-      "id": "PIPE-PAGES-R036.2",
-      "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
-    },
-    {
-      "id": "PIPE-PAGES-R036.3",
-      "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
-    },
-    {
-      "id": "PIPE-PAGES-R036.4",
-      "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
-    },
-    {
-      "id": "PIPE-PAGES-R036.5",
-      "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
-    },
-    {
-      "id": "PIPE-PAGES-R036.6",
-      "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
-    },
-    {
       "id": "PIPE-PAGES-R021.91",
       "title": "Model",
       "delivery_state": "SPECIFIED",
@@ -4003,15 +3939,17 @@
       "title": "Generated architecture explorer on every core Pages site",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "40010846fc5f",
         "52f5fd07f94b",
+        "5ad40df25e6a",
         "f32e737431a3"
       ],
       "verified_by": [
-        "tests/test_architecture_explorer.py:101",
-        "tests/test_architecture_explorer.py:112",
-        "tests/test_architecture_explorer.py:53",
-        "tests/test_architecture_explorer.py:75",
-        "tests/test_architecture_explorer.py:83"
+        "tests/test_architecture_explorer.py:103",
+        "tests/test_architecture_explorer.py:114",
+        "tests/test_architecture_explorer.py:124",
+        "tests/test_architecture_explorer.py:141",
+        "tests/test_architecture_explorer.py:159"
       ]
     }
   ]

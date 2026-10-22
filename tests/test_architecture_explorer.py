@@ -13,7 +13,7 @@ ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.architecture_explorer import build as explorer  # noqa: E402
 from scripts.architecture_explorer.geometry import count_crossings, crossings_in  # noqa: E402
-from scripts.architecture_explorer.place import Placer, Tree, validate_code  # noqa: E402
+from scripts.architecture_explorer.place import Placer, Tree, unmapped_violations, validate_code  # noqa: E402
 from scripts.architecture_explorer.sources import Snapshot, requirement_text, spec_dirs  # noqa: E402
 
 PKG = ROOT / "scripts/architecture_explorer"
@@ -70,6 +70,119 @@ def test_rows_land_on_the_deepest_matching_part() -> None:
     assert where["CORE-R010"] == "core.unmapped"
     assert where["OTHER-R001"] == "root.unmapped"
     assert sum(len(v) for v in direct.values()) == len(rows)
+
+
+def _model_with_external() -> dict:
+    model = _model()
+    model["children"].insert(
+        0,
+        {
+            "id": "people",
+            "label": "People",
+            "desc": "People.",
+            "repo": "core",
+            "external": True,
+            "fam": ["fam"],
+            "kw": "solver",
+        },
+    )
+    model["children"][1]["children"].append({"id": "core.misc", "label": "Misc", "desc": "Misc.", "kw": "sibling part"})
+    model["children"].append(
+        {
+            "id": "side",
+            "label": "Side",
+            "desc": "Side.",
+            "repo": "core",
+            "fam": ["side"],
+            "children": [{"id": "side.a", "label": "A", "desc": "A.", "kw": "alpha"}],
+        }
+    )
+    return model
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_external_parts_never_take_rows() -> None:
+    tree = Tree(_model_with_external())
+    rows = [_row("CORE-R001", "Exact solver certificate"), _row("CORE-R010", "No rule matches this")]
+    direct = Placer(tree).run(rows)
+    assert not direct.get("people")
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert where["CORE-R001"] == "core.solver"
+    assert unmapped_violations(tree, {"people": rows[:1]}, ["core:CORE-R001"]) == ["core:CORE-R001"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_shipped_external_parts_take_no_rows_and_declare_no_rules() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    tree = Tree(model)
+    external = [n for n in tree.nodes.values() if n.get("external")]
+    assert {n["id"] for n in external} >= {"people", "clients"}
+    for node in external:
+        assert not node["children"] and not node.get("fam") and not node.get("kw") and not node.get("ids")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_sibling_family_title_and_parent_place_rows_before_unmapped() -> None:
+    tree = Tree(_model_with_external())
+    rows = [
+        _row("SIDE-R001", "Belongs to a sibling part", family="side"),
+        _row("SIDE-R001.1", "Model", family="side"),
+        _row("SIDE-R002", "Nothing names it", family="side"),
+    ]
+    direct = Placer(tree).run(rows)
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert where["SIDE-R001"] == "core.misc"
+    assert where["SIDE-R001.1"] == "core.misc"
+    assert where["SIDE-R002"] == "side.unmapped"
+    assert unmapped_violations(tree, direct, []) == ["core:SIDE-R002"]
+    assert unmapped_violations(tree, direct, ["core:SIDE-R002"]) == []
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_a_row_on_a_container_descends_to_a_leaf_or_fails_the_gate() -> None:
+    model = _model()
+    model["children"][0]["children"][0]["children"] = [
+        {"id": "core.solver.exact", "label": "Exact", "desc": "Exact.", "kw": "certificate"}
+    ]
+    tree = Tree(model)
+    rows = [
+        _row("CORE-R003", "Unrelated title", text="Touches `crates/solve/a.rs` and a certificate."),
+        _row("CORE-R004", "Unrelated title", text="Touches `crates/solve/b.rs`."),
+    ]
+    direct = Placer(tree).run(rows)
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert where["CORE-R003"] == "core.solver.exact"
+    assert where["CORE-R004"] == "core.solver"
+    assert unmapped_violations(tree, direct, []) == ["core:CORE-R004"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_no_leftover_bucket_labels_in_the_shipped_model() -> None:
+    tree = Tree(json.loads((PKG / "model.json").read_text()))
+    assert not [n["id"] for n in tree.nodes.values() if n["label"].strip().lower() in {"other", "misc", "unmapped"}]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_shipped_unmapped_allowlist_is_reviewed_and_empty() -> None:
+    """Every unmapped row fails the build unless the model's reviewed allowlist names it; keep it empty."""
+    model = json.loads((PKG / "model.json").read_text())
+    assert model["unmapped_allow"] == []
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_build_fails_on_an_unmapped_row(monkeypatch) -> None:
+    rows = [_row("EG-SCM-R999", "Nothing names this row", family="source-changesets", repo="epistemic-graph")]
+
+    def fake_load(registry, mode, workspace=None, workers=12):
+        return [
+            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "epistemic-graph" else [])
+            for e in registry
+        ]
+
+    monkeypatch.setattr(explorer, "load_all", fake_load)
+    monkeypatch.setattr(explorer, "run_layout", lambda levels: {})
+    _, meta = explorer.build("github", None)
+    assert meta["unmapped_violations"] == ["epistemic-graph:EG-SCM-R999"]
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
