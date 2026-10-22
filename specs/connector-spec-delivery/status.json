@@ -467,7 +467,8 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_agent_contract.py:20",
-        "tests/hooks/test_agent_contract.py:31"
+        "tests/hooks/test_agent_contract.py:31",
+        "tests/hooks/test_agent_contract.py:39"
       ]
     },
     {

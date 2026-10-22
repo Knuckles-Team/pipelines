@@ -1,6 +1,7 @@
 """agent-contract: the repository gives a cold agent one-command setup and the standard AGENTS.md section.
 
-Warn level (exit 0): a missing ``scripts/bootstrap.sh``, a missing
+Warn level (exit 0): a missing ``scripts/bootstrap.sh`` (or one that trips the
+SC-INSTALL-001/002 installer rules, such as ``curl ... | sh``), a missing
 ``AGENTS.md``, or an ``AGENTS.md`` without the marked standard section is
 reported but does not fail. ``--strict`` makes the findings blocking, for the
 day the fleet has converged. Reads the tracked set only, never the filesystem.
@@ -13,6 +14,8 @@ from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.tracked import tracked_paths
+from pipelines_hooks.supply_chain.dependencies import installer_findings
+from pipelines_hooks.supply_chain.finding import Source
 
 START = "<!-- agent-contract:start -->"
 END = "<!-- agent-contract:end -->"
@@ -26,6 +29,12 @@ def inspect(root: Path, paths: list[str]) -> list[str]:
     findings: list[str] = []
     if "scripts/bootstrap.sh" not in paths:
         findings.append("scripts/bootstrap.sh is not tracked")
+    else:
+        script = (root / "scripts/bootstrap.sh").read_text(encoding="utf-8", errors="replace")
+        findings.extend(
+            f"scripts/bootstrap.sh:{f.line}: {f.rule} {f.message}"
+            for f in installer_findings(Source(root.name, "scripts/bootstrap.sh", script))
+        )
     if "AGENTS.md" not in paths:
         findings.append("AGENTS.md is not tracked")
         return findings
