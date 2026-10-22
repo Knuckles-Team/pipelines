@@ -334,3 +334,32 @@ def test_repository_copies_redirect_to_the_canonical_explorer(tmp_path: Path) ->
     assert html.startswith("<!doctype html>")
     assert 'location.replace("https://knuckles-team.github.io/.github/architecture/" + location.hash)' in html
     assert '<link rel="canonical" href="https://knuckles-team.github.io/.github/architecture/">' in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_agent_contract_rows_land_on_the_connector_delivery_standard() -> None:
+    """The agent-contract standard rows must place on a part, not fail the build as unmapped."""
+    model = json.loads((PKG / "model.json").read_text())
+    rows = [
+        _row(
+            "PIPE-CONNSPEC-R175",
+            "Every repository ships one-command agent setup.",
+            "connector-spec-delivery",
+            "pipelines",
+        ),
+        _row(
+            "PIPE-CONNSPEC-R176",
+            "Every repository carries the standard tool-neutral AGENTS.md section.",
+            "connector-spec-delivery",
+            "pipelines",
+        ),
+        _row(
+            "PIPE-CONNSPEC-R177",
+            "The agent-contract check is warn-level first.",
+            "connector-spec-delivery",
+            "pipelines",
+        ),
+    ]
+    direct = Placer(Tree(model)).run(rows)
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert {where[r["id"]] for r in rows} == {"pipe.connspec.std"}

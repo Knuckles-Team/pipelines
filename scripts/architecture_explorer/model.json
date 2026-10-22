@@ -6075,7 +6075,7 @@
        "label": "Delivery standard",
        "role": "shared rules",
        "desc": "These rows set the delivery rules that every connector follows.",
-       "kw": "generated status|test binding|lane contract|retired identit|changed prose|canonical title|requirement state|status generator"
+       "kw": "generated status|test binding|lane contract|retired identit|changed prose|canonical title|requirement state|status generator|agent setup|agent-contract|AGENTS\\.md section"
       }
      ]
     },
