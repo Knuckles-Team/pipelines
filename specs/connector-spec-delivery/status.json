@@ -11,6 +11,9 @@
     "PIPE-CONNSPEC-R005",
     "PIPE-CONNSPEC-R006",
     "PIPE-CONNSPEC-R007",
+    "PIPE-CONNSPEC-R009",
+    "PIPE-CONNSPEC-R010",
+    "PIPE-CONNSPEC-R011",
     "PIPE-CONNSPEC-R101",
     "PIPE-CONNSPEC-R101.1",
     "PIPE-CONNSPEC-R101.2",
@@ -382,7 +385,6 @@
     "PIPE-CONNSPEC-R174.3",
     "PIPE-CONNSPEC-R174.4",
     "PIPE-CONNSPEC-R008",
-    "PIPE-CONNSPEC-R009",
     "PIPE-CONNSPEC-R009.1",
     "PIPE-CONNSPEC-R009.2"
   ],
@@ -456,6 +458,31 @@
       "verified_by": [
         "tests/hooks/test_ste_ci.py:31"
       ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R009",
+      "title": "Every repository ships one-command agent setup",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-CONNSPEC-R009.1",
+        "PIPE-CONNSPEC-R009.2"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R010",
+      "title": "Every repository carries the standard tool-neutral AGENTS.md section",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R011",
+      "title": "The agent-contract check is warn-level first",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     },
     {
       "id": "PIPE-CONNSPEC-R101",
@@ -3500,17 +3527,6 @@
       ],
       "verified_by": [
         "tests/hooks/test_spec_status.py:242"
-      ]
-    },
-    {
-      "id": "PIPE-CONNSPEC-R009",
-      "title": "Requirement state read from the engine (rollup)",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
-      "rollup_of": [
-        "PIPE-CONNSPEC-R009.1",
-        "PIPE-CONNSPEC-R009.2"
       ]
     },
     {
