@@ -11,6 +11,8 @@ PIPE-CONNSPEC-R001 is also bound by tests/hooks/test_spec_landing_attribution.py
 
 PIPE-CONNSPEC-R001 also binds tests/hooks/test_spec_repository_identity.py: remote ownership corrects stale worktree names for new and legacy status files, live receipts survive migration and regeneration, and absent or ambiguous remotes retain safe fallback behavior.
 
+PIPE-CONNSPEC-R001 also binds `test_verified_rollup_carries_its_childrens_evidence` in tests/hooks/test_spec_status.py. A rollup that reaches VERIFIED names its children's landing commits and bound tests. A LANDED rollup names their landing commits.
+
 ## Requirement state read from the engine
 
 | Row | Proving test |

@@ -79,6 +79,27 @@ def test_parent_rollup_is_the_minimum_of_its_children(repo: Repo) -> None:
     assert by_id["TEST-R010.2"]["delivery_state"] == "LANDED"
     assert by_id["TEST-R010"]["delivery_state"] == "LANDED"
     assert by_id["TEST-R010"]["rollup_of"] == ["TEST-R010.1", "TEST-R010.2"]
+    assert by_id["TEST-R010"]["landed_in"] == by_id["TEST-R010.1"]["landed_in"]
+    assert by_id["TEST-R010"]["verified_by"] == []
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_verified_rollup_carries_its_childrens_evidence(repo: Repo) -> None:
+    repo.commit({"specs/demo/requirements.md": _ROLLUP_ROWS}, "add spec")
+    repo.commit({"pkg/a.py": "# a\n"}, "Spec: TEST-R010.1, TEST-R010.2")
+    repo.commit(
+        {
+            "tests/test_a.py": "# spec: TEST-R010.1\ndef test_a() -> None:\n    assert True\n",
+            "tests/test_b.py": "# spec: TEST-R010.2\ndef test_b() -> None:\n    assert True\n",
+        },
+        "verify both children",
+    )
+
+    assert repo.run("spec-status", "--write") == 0
+    parent = _by_id(repo)["TEST-R010"]
+    assert parent["delivery_state"] == "VERIFIED"
+    assert parent["landed_in"], "a delivered rollup names its landing commits"
+    assert parent["verified_by"] == ["tests/test_a.py:1", "tests/test_b.py:1"]
 
 
 def test_reverted_commit_does_not_count_as_landed(repo: Repo) -> None:
