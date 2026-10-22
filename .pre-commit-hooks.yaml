@@ -316,6 +316,15 @@
   files: (^|/)(pyproject\.toml|uv\.lock)$
   stages: [pre-push]
 
+# One-command setup and the standard AGENTS.md section (PIPE-CONNSPEC-R009); warn level.
+- id: agent-contract
+  name: agent contract (scripts/bootstrap.sh and the standard AGENTS.md section; warns)
+  entry: pipelines-hook agent-contract
+  language: python
+  pass_filenames: false
+  files: (^|/)(AGENTS\.md|scripts/bootstrap\.sh)$
+  stages: [pre-push]
+
 # --- spec-status lifecycle (SPEC-STATUS-LIFECYCLE.md S6) -------------------
 - id: spec-trailers
   name: "DEPRECATED (spec-trailers): Spec trailers - verified delivery or constrained evidence withdrawal"
