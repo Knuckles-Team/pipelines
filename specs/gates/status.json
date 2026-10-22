@@ -32,14 +32,15 @@
       "title": "Auto-revert versus fix-forward",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "47057b890626",
         "5792bcbbd148"
       ],
       "verified_by": [
-        "tests/hooks/test_landing_policy.py:100",
-        "tests/hooks/test_landing_policy.py:107",
-        "tests/hooks/test_landing_policy.py:118",
-        "tests/hooks/test_landing_policy.py:124",
-        "tests/hooks/test_landing_policy.py:145"
+        "tests/hooks/test_landing_policy.py:103",
+        "tests/hooks/test_landing_policy.py:111",
+        "tests/hooks/test_landing_policy.py:119",
+        "tests/hooks/test_landing_policy.py:127",
+        "tests/hooks/test_landing_policy.py:133"
       ]
     },
     {

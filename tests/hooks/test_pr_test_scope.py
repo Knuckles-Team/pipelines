@@ -163,3 +163,50 @@ def test_language_selection_preserves_names_and_ignores_unrelated_changes(
         repo.commit({path: "# changed\n" for path in changed}, "mixed changes")
     assert repo.run("pr-test-scope", "--base-ref", base, "--lang", language) == 0
     assert capsys.readouterr().out.splitlines() == expected
+
+
+_ROOT_MANIFEST = '[workspace]\nmembers = ["crates/a"]\n\n[workspace.package]\nversion = "{v}"\n'
+_MEMBER_MANIFEST = (
+    '[package]\nname = "eg-transaction"\nversion = "{v}"\n\n'
+    '[dependencies]\nother_crate = {{ path = "../b", version = "{v}" }}\nserde = "1.0.{serde}"\n'
+)
+_LOCK = (
+    'version = 4\n\n[[package]]\nname = "eg-transaction"\nversion = "{v}"\n'
+    'dependencies = [\n "serde",\n]\n\n[[package]]\nname = "serde"\nversion = "1.0.{serde}"\n'
+    'source = "registry+https://github.com/rust-lang/crates.io-index"\n'
+)
+
+
+def _workspace(v: str, serde: int = 200) -> dict[str, str]:
+    return {
+        "Cargo.toml": _ROOT_MANIFEST.format(v=v),
+        "crates/a/Cargo.toml": _MEMBER_MANIFEST.format(v=v, serde=serde),
+        "Cargo.lock": _LOCK.format(v=v, serde=serde),
+    }
+
+
+def test_a_release_version_bump_forces_no_crate_sweep(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    # spec: PIPE-RELEASE-R007.7
+    base = repo.commit(_workspace("2.27.4"), "workspace baseline")
+    repo.commit(_workspace("2.27.5"), "release bump")
+    assert repo.run("pr-test-scope", "--base-ref", base, "--lang", "rust") == 0
+    assert capsys.readouterr().out.splitlines() == ["NONE"]
+
+
+def test_a_registry_dependency_bump_still_forces_the_full_sweep(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    # spec: PIPE-RELEASE-R007.7
+    base = repo.commit(_workspace("2.27.4"), "workspace baseline")
+    repo.commit(_workspace("2.27.4", serde=201), "dependency bump")
+    assert repo.run("pr-test-scope", "--base-ref", base, "--lang", "rust") == 0
+    assert capsys.readouterr().out.splitlines() == ["FULL"]
+
+
+def test_a_member_manifest_change_beyond_versions_maps_to_its_crate(
+    repo: Repo, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # spec: PIPE-RELEASE-R007.7
+    base = repo.commit(_workspace("2.27.4"), "workspace baseline")
+    manifest = _MEMBER_MANIFEST.format(v="2.27.4", serde=200) + 'anyhow = "1"\n'
+    repo.commit({"crates/a/Cargo.toml": manifest}, "new dependency")
+    assert repo.run("pr-test-scope", "--base-ref", base, "--lang", "rust") == 0
+    assert capsys.readouterr().out.splitlines() == ["eg-transaction"]

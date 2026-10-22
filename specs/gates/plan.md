@@ -10,7 +10,7 @@ PIPE-GATES-R001 publishes the split. The pre-land fast set is `format`, `hygiene
 
 ## Failure policy
 
-PIPE-GATES-R002 fixes the post-land decision. Auto-revert is the default: the failed changeset reverts without operator action. Fix-forward applies only past a threshold. The owner opens a fix-forward task within 300 s of the failed verdict, or the failed gate passes its immediate second run. The decision record carries the gate ID, the changeset ID, the verdict, the threshold that fired, and the evidence digest, and it is replayable. Pipelines publishes the policy; the engine stores the record beside the changeset. The 300 s window is a starting default; a measured latency on this platform replaces it.
+PIPE-GATES-R002 fixes the post-land decision. Auto-revert is the default: the failed changeset reverts without operator action. The gate runner classifies each failure as `product` or `infrastructure`; an unclassified failure is `product`. Fix-forward applies only when the owner opens a fix-forward task within 300 s of the failed verdict. A passing re-run never changes a product failure's decision, under the zero-flake policy. An infrastructure failure, such as a lost runner, may re-run once. A passing re-run records `infrastructure-rerun`. The decision record carries the gate ID, the changeset ID, the verdict, the failure class, the threshold that fired, and the evidence digest, and it is replayable. Pipelines publishes the policy; the engine stores the record beside the changeset. The 300 s window is a starting default; a measured latency on this platform replaces it.
 
 ## Tree-based execution
 
