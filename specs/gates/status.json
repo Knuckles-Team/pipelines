@@ -9,7 +9,16 @@
     "PIPE-GATES-R003",
     "PIPE-GATES-R004",
     "PIPE-GATES-R004.1",
-    "PIPE-GATES-R004.2"
+    "PIPE-GATES-R004.2",
+    "PIPE-GATES-R006",
+    "PIPE-GATES-R006.1",
+    "PIPE-GATES-R006.2",
+    "PIPE-GATES-R006.3",
+    "PIPE-GATES-R006.4",
+    "PIPE-GATES-R006.5",
+    "PIPE-GATES-R006.6",
+    "PIPE-GATES-R006.7",
+    "PIPE-GATES-R005"
   ],
   "requirements": [
     {
@@ -74,6 +83,83 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R006",
+      "title": "Changeset migration waves with entry and exit criteria (rollup)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [],
+      "rollup_of": [
+        "PIPE-GATES-R006.1",
+        "PIPE-GATES-R006.2",
+        "PIPE-GATES-R006.3",
+        "PIPE-GATES-R006.4",
+        "PIPE-GATES-R006.5",
+        "PIPE-GATES-R006.6",
+        "PIPE-GATES-R006.7"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R006.1",
+      "title": "Wave 1: webarchiver",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R006.2",
+      "title": "Wave 2: small connectors",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R006.3",
+      "title": "Wave 3: the remaining connectors",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R006.4",
+      "title": "Wave 4: skills, pipelines and the user interfaces",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R006.5",
+      "title": "Wave 5: the SDK and the harness",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R006.6",
+      "title": "Wave 6: arbora",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R006.7",
+      "title": "Wave 7: epistemic-graph, last",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R005",
+      "title": "Spec text names no third-party product",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d0cb9114aec1"
+      ],
+      "verified_by": [
+        "tests/test_spec_third_party_names.py:50",
+        "tests/test_spec_third_party_names.py:87"
+      ]
     }
   ]
 }
