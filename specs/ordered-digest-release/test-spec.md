@@ -72,3 +72,4 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | `PIPE-RELEASE-R009` | See each child. |
 | `PIPE-RELEASE-R009.1` | `tests/test_release_record_step.py::test_workflow_has_record_step_after_publish` |
 | `PIPE-RELEASE-R009.2` | `tests/test_release_record_step.py::test_step_posts_release_with_digests` |
+| T-PIPE-RELEASE-R010 | PIPE-RELEASE-R010 | Run the `test_source_build_allowance_*` and `test_published_package_cannot_be_its_own_source_build` tests in `tests/test_wheel_readiness.py`; observe the empty default, the named list, the refusals and the recorded receipt list. |

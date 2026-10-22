@@ -479,18 +479,21 @@ def sdist_dependency(name="dep", url="https://files.pythonhosted.org/packages/de
 
 
 def test_source_build_allowance_defaults_to_empty(tmp_path):
+    # spec: PIPE-RELEASE-R010
     assert guard.source_build_allowance(tmp_path) == []
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "fixture"\n')
     assert guard.source_build_allowance(tmp_path) == []
 
 
 def test_source_build_allowance_reads_named_packages(tmp_path):
+    # spec: PIPE-RELEASE-R010
     (tmp_path / "pyproject.toml").write_text('[tool.pipelines]\nallow-source-build = ["Uptime_Kuma.API", "pyspark"]\n')
     assert guard.source_build_allowance(tmp_path) == ["pyspark", "uptime-kuma-api"]
 
 
 @pytest.mark.parametrize("value", ['":all:"', '[":all:"]', '["*"]', '["a", "A"]', "[1]", '["a b"]'])
 def test_source_build_allowance_rejects_wildcards_and_bad_names(tmp_path, value):
+    # spec: PIPE-RELEASE-R010
     (tmp_path / "pyproject.toml").write_text(f"[tool.pipelines]\nallow-source-build = {value}\n")
     with pytest.raises(ValueError):
         guard.source_build_allowance(tmp_path)
@@ -540,6 +543,7 @@ def test_resolver_gets_no_binary_only_for_named_packages(tmp_path, monkeypatch):
 
 
 def test_published_package_cannot_be_its_own_source_build(tmp_path, monkeypatch):
+    # spec: PIPE-RELEASE-R010
     dist = tmp_path / "dist"
     dist.mkdir()
     wheel(dist)

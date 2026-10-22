@@ -38,3 +38,10 @@ arbora operations and imports no ecosystem package. Gate runs publish verdicts (
 The status generator compares its output with the engine-derived state (EG-SDLC-R005). The
 release workflow records each release (EG-SDLC-R002). A failed post never changes a verdict,
 a status file or a published release.
+## Migration waves (R006)
+
+Repositories move to engine changesets one wave at a time. The order runs from the lowest risk to the highest: webarchiver, small connectors, the other connectors, skills with pipelines and the user interfaces, the SDK with the harness, arbora, and epistemic-graph last. RM-SCM-R001 and RM-SCM-R002 import history and keep the GitHub mirror in sync. A wave exits only when the mirror matches every landed changeset for 7 days. Wave 7 also needs two restores of the engine source from the mirror.
+
+## Product names in spec text (R005)
+
+The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines_hooks/specs/third_party_names.toml`. A connector may name its own target system through the `[allow]` table. The check masks inline code, fenced code, URLs, link targets and spec IDs. A lowercase identifier, such as a connector ID, is not a product name.

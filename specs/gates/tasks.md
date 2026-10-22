@@ -11,3 +11,14 @@
 - [ ] **PIPE-GATES-R004:** Gate verdicts publish to the engine (rollup).
 - [ ] **PIPE-GATES-R004.1:** Wiring.
 - [ ] **PIPE-GATES-R004.2:** Hot-path proof.
+## Migration waves and the product-name check (R005, R006)
+
+- [ ] **PIPE-GATES-R006:** Changeset migration waves with entry and exit criteria (rollup).
+- [ ] **PIPE-GATES-R006.1:** Wave 1: webarchiver.
+- [ ] **PIPE-GATES-R006.2:** Wave 2: small connectors.
+- [ ] **PIPE-GATES-R006.3:** Wave 3: the remaining connectors.
+- [ ] **PIPE-GATES-R006.4:** Wave 4: skills, pipelines and the user interfaces.
+- [ ] **PIPE-GATES-R006.5:** Wave 5: the SDK and the harness.
+- [ ] **PIPE-GATES-R006.6:** Wave 6: arbora.
+- [ ] **PIPE-GATES-R006.7:** Wave 7: epistemic-graph, last.
+- [x] **PIPE-GATES-R005:** Spec text names no third-party product.

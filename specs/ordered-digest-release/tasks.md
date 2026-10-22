@@ -63,3 +63,4 @@ commit).
 - [ ] **PIPE-RELEASE-R009:** Release records publish to the engine (rollup).
 - [ ] **PIPE-RELEASE-R009.1:** Wiring.
 - [ ] **PIPE-RELEASE-R009.2:** Hot-path proof.
+- [x] PIPE-RELEASE-R010: Named per-repository source-build allowance. Bind the existing allowance tests in `tests/test_wheel_readiness.py`.
