@@ -14,7 +14,9 @@ pytestmark = pytest.mark.spec("PIPE-GATES-R011")
 
 
 def _git(root: Path, *args: str) -> str:
-    env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid"}
+    # Drop ambient GIT_* (a pre-push hook exports GIT_DIR for the outer repository).
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    env |= {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.invalid"}
     env |= {"GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.invalid"}
     return subprocess.run(["git", *args], cwd=root, env=env, check=True, capture_output=True, text=True).stdout
 
