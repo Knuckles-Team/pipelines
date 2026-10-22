@@ -43,7 +43,7 @@ A design section in `plan.md` must trace the requirement to the live call path. 
 | New rollup | Add a requirement that the spec owns but does not state | Next free `R###` at the end of the same spec |
 | Correction | Change a wrong or outdated statement | Edit the row and the `plan.md` text in place. The commit message states the reason. |
 
-A spec states the current requirements only. A moved or renamed row takes its new ID in every file; no row is left behind under the old ID. A removed requirement is deleted from the spec. Git history holds every previous state. A delivered row keeps its ID, because tests and commit trailers bind to it; a row ID in an older form, such as `DS-01`, stays as it is.
+A spec states the current requirements only. A moved or renamed row takes its new ID in every file; no row is left behind under the old ID. A removed requirement is deleted from the spec. Git history holds every previous state. A delivered row keeps its ID, because tests and commit trailers bind to it. Every active row ID matches `^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-R[0-9]{3}(\.[0-9]+)*$`; an older form such as `DS-01` is renamed, and the `.config/spec-aliases.toml` entry `"DS-01" = "<ID>-R012"` keeps old `Spec:` trailers resolving.
 
 ## Audits, reviews, and carry-overs
 
@@ -137,7 +137,7 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 |---|---|
 | File set | A required file is absent, or a forbidden file exists |
 | Title line | `spec.md` line 1 does not match `# <ID> — <Title>` |
-| Spec ID | The ID has a numeric suffix, or a `-R###` row ID does not start with the ID |
+| Spec ID | The ID has a numeric suffix, or an active row ID does not match the row-ID regex or does not start with the ID |
 | Names | The directory name or the ID contains a forbidden word |
 | Index | `specs/README.md` does not list the spec |
 | Third-party names | Authored `specs/**/*.md` text names a product or project on the denylist in `pipelines_hooks/specs/third_party_names.toml` |

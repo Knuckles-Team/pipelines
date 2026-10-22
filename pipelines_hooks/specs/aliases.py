@@ -6,6 +6,11 @@ retired prefix to its canonical replacement, one top-level string entry each::
 
     "GRAPHOS-" = "ARBORA-"
 
+A single renumbered row maps by its exact old ID, for example a pre-standard
+``DS-01`` that became ``WEBUI-DESIGN-R012``::
+
+    "DS-01" = "WEBUI-DESIGN-R012"
+
 Every spec gate reads IDs through :func:`canonical_id`, so a historical trailer
 or test binding that uses the old prefix counts for the canonical (new) ID. The
 canonical ID is always the new one: requirements.md rows and status.json carry
@@ -25,6 +30,8 @@ from pipelines_hooks.specs.trailer_ids import named_ids
 
 ALIAS_FILE = ".config/spec-aliases.toml"
 _PREFIX_RE = re.compile(r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-")
+_OLD_ID_RE = re.compile(r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]+(?:\.[0-9]+)*")
+_NEW_ID_RE = re.compile(r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-R[0-9]{3}(?:\.[0-9]+)*")
 
 Aliases = Mapping[str, str]
 
@@ -34,9 +41,13 @@ def _validated(document: dict, path: Path) -> dict[str, str]:
     for old, new in document.items():
         if not isinstance(new, str):
             raise CannotRun(f"{path}: alias {old!r} must map to a string prefix")
-        for prefix in (old, new):
-            if not _PREFIX_RE.fullmatch(prefix):
-                raise CannotRun(f"{path}: {prefix!r} is not an ID prefix (upper-case, ending in '-')")
+        if _PREFIX_RE.fullmatch(old):
+            if not _PREFIX_RE.fullmatch(new):
+                raise CannotRun(f"{path}: {new!r} is not an ID prefix (upper-case, ending in '-')")
+        elif not (_OLD_ID_RE.fullmatch(old) and _NEW_ID_RE.fullmatch(new)):
+            raise CannotRun(
+                f"{path}: {old!r} must be an ID prefix ending in '-' or an exact old row ID mapped to a standard ID"
+            )
         if old == new:
             raise CannotRun(f"{path}: alias {old!r} maps to itself")
         aliases[old] = new
@@ -59,15 +70,19 @@ def load_aliases(root: Path) -> dict[str, str]:
 
 
 def retired_prefix(rid: str, aliases: Aliases) -> str | None:
-    """The longest retired prefix ``rid`` starts with, or ``None``."""
-    matches = [old for old in aliases if rid.startswith(old)]
+    """The exact retired ID ``rid``, else the longest retired prefix it starts with, or ``None``."""
+    if rid in aliases:
+        return rid
+    matches = [old for old in aliases if old.endswith("-") and rid.startswith(old)]
     return max(matches, key=len) if matches else None
 
 
 def canonical_id(rid: str, aliases: Aliases) -> str:
     """``rid`` with a retired prefix replaced by its canonical one."""
     old = retired_prefix(rid, aliases)
-    return aliases[old] + rid[len(old) :] if old else rid
+    if old is None:
+        return rid
+    return aliases[old] if old == rid else aliases[old] + rid[len(old) :]
 
 
 def canonical_ids(ids: Iterable[str], aliases: Aliases) -> list[str]:

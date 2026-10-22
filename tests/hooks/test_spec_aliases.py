@@ -40,6 +40,20 @@ def test_canonical_id_replaces_only_a_retired_prefix() -> None:
     assert canonical_id("XOLD-R001", aliases) == "XOLD-R001"
 
 
+def test_exact_id_alias_maps_only_that_row_and_its_children() -> None:
+    aliases = {"DS-01": "FOO-R012", "DS-01.1": "FOO-R012.1"}
+    assert canonical_id("DS-01", aliases) == "FOO-R012"
+    assert canonical_id("DS-01.1", aliases) == "FOO-R012.1"
+    assert canonical_id("DS-010", aliases) == "DS-010"
+    assert canonical_id("DS-01.2", aliases) == "DS-01.2"
+
+
+def test_exact_id_alias_loads(tmp_path: Path) -> None:
+    (tmp_path / ".config").mkdir()
+    (tmp_path / ".config/spec-aliases.toml").write_text('"DS-01" = "FOO-R012"\n"OLD-" = "NEW-"\n', encoding="utf-8")
+    assert load_aliases(tmp_path) == {"DS-01": "FOO-R012", "OLD-": "NEW-"}
+
+
 def test_canonical_maps_merge_old_and_new_evidence() -> None:
     aliases = {"OLD-": "NEW-"}
     assert canonical_sets({"OLD-R001": {"a"}, "NEW-R001": {"b"}}, aliases) == {"NEW-R001": {"a", "b"}}
@@ -57,6 +71,8 @@ def test_missing_alias_file_means_no_aliases(tmp_path: Path) -> None:
         '"OLD" = "NEW-"\n',
         '"OLD-" = 3\n',
         '"OLD-" = "OLD-"\n',
+        '"DS-01" = "FOO-01"\n',
+        '"DS-01" = "FOO-"\n',
         '"A-" = "B-"\n"B-" = "C-"\n',
         "not toml =",
     ],

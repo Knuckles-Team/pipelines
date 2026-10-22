@@ -30,8 +30,11 @@ BAD_WORDS = {"audit", "review", "gap", "carryover", "followup", "fix"}
 TITLE_RE = re.compile(r"^# ([A-Z0-9]+(?:-[A-Z0-9]+)*) — \S.*$")
 SUFFIX_RE = re.compile(r"-\d+$")
 
-#: A row ID in the standard form; older forms keep their permanent IDs.
-STANDARD_ROW_RE = re.compile(r"-R\d{3}(?:\.\d+)*$")
+#: The one row ID shape: `<PREFIX>-R<nnn>` with optional `.n` children (reference/spec-standard.md).
+ROW_ID_RE = re.compile(r"^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-R[0-9]{3}(\.[0-9]+)*$")
+
+#: The ID in the first cell of a requirements.md table row, whatever its shape.
+FIRST_CELL_RE = re.compile(r"^\|\s*`([^`\s|]+)`\s*\|", re.M)
 
 #: Advisory until every repository has deleted its tombstone rows; `--tombstones` enforces it.
 TOMBSTONE = "is a tombstone for a moved row"
@@ -74,18 +77,22 @@ def check_title(spec_dir: Path) -> tuple[str | None, list[str]]:
 
 
 def check_id(spec_dir: Path, spec_id: str) -> list[str]:
-    """No numeric suffix; every ``-R###`` row ID starts with ``<ID>-R``.
+    """No numeric suffix; every active row ID matches ``ROW_ID_RE`` and starts with ``<ID>-R``.
 
-    A row ID in an older form (``DS-01``) is permanent and is not a finding.
-    Retired rows retain their original IDs when moved between owning specs.
+    Retired rows retain their original IDs when moved between owning specs, so they are exempt.
     """
     out = []
     if SUFFIX_RE.search(spec_id):
         out.append(f"spec ID {spec_id} has a numeric suffix")
-    rows = (row for line in _read(spec_dir / "requirements.md").splitlines() for row in parse_rows(line))
-    for row in rows:
-        if row.retired_reason is None and STANDARD_ROW_RE.search(row.id) and not row.id.startswith(spec_id + "-R"):
-            out.append(f"requirements.md row {row.id} does not start with {spec_id}-R")
+    text = _read(spec_dir / "requirements.md")
+    retired = {row.id for row in parse_rows(text) if row.retired_reason is not None}
+    for rid in dict.fromkeys(FIRST_CELL_RE.findall(text)):
+        if rid in retired:
+            continue
+        if not ROW_ID_RE.match(rid):
+            out.append(f"requirements.md row {rid} does not match <PREFIX>-R<nnn>[.n] ({ROW_ID_RE.pattern})")
+        elif not rid.startswith(spec_id + "-R"):
+            out.append(f"requirements.md row {rid} does not start with {spec_id}-R")
     return out
 
 
