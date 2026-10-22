@@ -63,7 +63,8 @@
     "PIPE-RELEASE-R008",
     "PIPE-RELEASE-R009",
     "PIPE-RELEASE-R009.1",
-    "PIPE-RELEASE-R009.2"
+    "PIPE-RELEASE-R009.2",
+    "PIPE-RELEASE-R010"
   ],
   "requirements": [
     {
@@ -588,6 +589,20 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-RELEASE-R010",
+      "title": "Named per-repository source-build allowance",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d0cb9114aec1"
+      ],
+      "verified_by": [
+        "tests/test_wheel_readiness.py:482",
+        "tests/test_wheel_readiness.py:489",
+        "tests/test_wheel_readiness.py:496",
+        "tests/test_wheel_readiness.py:546"
+      ]
     }
   ]
 }

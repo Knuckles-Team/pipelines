@@ -1,7 +1,9 @@
 """spec-standard: every ``specs/<dir>/`` follows the spec standard (reference/spec-standard.md).
 
 Checks per spec directory: file set, title line, spec ID shape, forbidden name words,
-and the ``specs/README.md`` index entry. No baseline and no suppression.
+and the ``specs/README.md`` index entry. Across every authored ``specs/**/*.md`` file:
+no third-party product or project names (``third_party_names.toml``). No baseline and
+no suppression.
 """
 
 from __future__ import annotations
@@ -13,6 +15,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.specs.requirements_doc import parse_rows
+from pipelines_hooks.specs.third_party_names import check_repository
 
 REQUIRED = (
     "spec.md",
@@ -142,6 +145,10 @@ def main(argv: list[str]) -> int:
     found = [f for d in dirs for f in check_spec(d, index)]
     advisory = () if args.tombstones else (TOMBSTONE, STATUS_ID)
     findings = [f for f in found if not any(mark in f for mark in advisory)]
+    if (root / "specs").is_dir():
+        named = check_repository(root)
+        found += named
+        findings += named
     for finding in found:
         print(finding if finding in findings else f"ADV {finding}")
     if findings:

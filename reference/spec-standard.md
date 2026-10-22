@@ -140,8 +140,11 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Spec ID | The ID has a numeric suffix, or a `-R###` row ID does not start with the ID |
 | Names | The directory name or the ID contains a forbidden word |
 | Index | `specs/README.md` does not list the spec |
+| Third-party names | Authored `specs/**/*.md` text names a product or project on the denylist in `pipelines_hooks/specs/third_party_names.toml` |
 
 The gate exits 0 when clean, 1 on a finding, and 2 when it cannot run. It has no baseline and no suppression.
+
+The third-party name check ignores inline code, fenced code, URLs, link targets, spec IDs and recorded `evidence/` files. A lowercase identifier, such as a connector ID, is not a product name. The `[allow]` table in the same file lists the target system that a connector repository may name.
 
 ## Delivery relationships and implementation mapping
 

@@ -40,7 +40,7 @@ where = ["."]
 include = ["pipelines_hooks*"]
 
 [tool.setuptools.package-data]
-pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json", "ste/ste_words.toml", "gate_sets.toml"]
+pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json", "ste/ste_words.toml", "gate_sets.toml", "specs/third_party_names.toml"]
 
 [tool.ruff]
 line-length = 120

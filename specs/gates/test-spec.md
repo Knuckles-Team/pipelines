@@ -24,3 +24,15 @@ Run `uv run --frozen python -m pytest -q` and the pre-commit and pre-push hook s
 | `PIPE-GATES-R004` | See each child. |
 | `PIPE-GATES-R004.1` | `tests/test_verdict_publish.py::test_gate_run_posts_one_verdict` |
 | `PIPE-GATES-R004.2` | `tests/test_verdict_publish.py::test_fast_set_publishes_and_survives_endpoint_error` |
+## Migration waves and the product-name check (R005, R006)
+
+| Test ID | Requirement | Level | Setup and input | Expected observation |
+|---|---|---|---|---|
+| T-R006.1 | PIPE-GATES-R006.1 | Unit | A fixture migration ledger | `tests/hooks/test_migration_waves.py::test_wave_1_entry_and_exit` evaluates a fixture ledger and asserts each criterion. |
+| T-R006.2 | PIPE-GATES-R006.2 | Unit | A fixture migration ledger | `test_wave_2_entry_and_exit` asserts the size bound and the per-repository exit. |
+| T-R006.3 | PIPE-GATES-R006.3 | Unit | A fixture migration ledger | `test_wave_3_entry_and_exit` asserts the criteria. |
+| T-R006.4 | PIPE-GATES-R006.4 | Unit | A fixture migration ledger | `test_wave_4_entry_and_exit` asserts the criteria. |
+| T-R006.5 | PIPE-GATES-R006.5 | Unit | A fixture migration ledger | `test_wave_5_entry_and_exit` asserts the criteria. |
+| T-R006.6 | PIPE-GATES-R006.6 | Unit | A fixture migration ledger | `test_wave_6_entry_and_exit` asserts the criteria. |
+| T-R006.7 | PIPE-GATES-R006.7 | Unit | A fixture migration ledger | `test_wave_7_entry_and_exit` asserts the criteria and the two restores. |
+| T-R005 | PIPE-GATES-R005 | Contract | Fixture spec trees with named products, identifiers and allowances | `tests/test_spec_third_party_names.py` asserts a finding for each named product, a pass for identifiers, code, links and standards, and the per-repository allowance. |

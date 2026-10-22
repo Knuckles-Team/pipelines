@@ -1,0 +1,105 @@
+# Third-party product and project names that spec text must not contain
+# (PIPE-GATES-R005, reference/spec-standard.md "Own words").
+#
+# Spec text describes our own capability by intent. Comparisons, inspirations
+# and named vendors belong in workspace plans/ notes, never in specs/.
+#
+# Not listed, and therefore always allowed: open standards and protocols
+# (OWL, RDF, SPARQL, SHACL, OpenTelemetry, OIDC, OAuth, MCP, A2A, the git wire
+# protocol, the Bolt protocol, the PostgreSQL wire protocol), and the systems a
+# platform adapter integrates as a data source.
+#
+# Matching is case-insensitive on whole words. Text inside inline code spans,
+# fenced code blocks, URLs and Markdown link targets is ignored. An
+# all-lowercase match of a capitalized term is one of our identifiers (the
+# `langfuse` connector ID); a term spelled in lowercase here is an identifier
+# only when glued to identifier punctuation (`-`, `_`, `.`, `/`).
+
+[names]
+terms = [
+  "Agno",
+  "Aider",
+  "Alation",
+  "AllegroGraph",
+  "AlphaEvolve",
+  "Anthropic",
+  "ArangoDB",
+  "Atlan",
+  "AutoGen",
+  "AutoGPT",
+  "BabyAGI",
+  "ChatGPT",
+  "ChromaDB",
+  "Claude",
+  "Cline",
+  "Codex",
+  "Cognee",
+  "Collibra",
+  "Copilot",
+  "Crawl4AI",
+  "CrewAI",
+  "Devin",
+  "Dify",
+  "DSPy",
+  "FalkorDB",
+  "Firecrawl",
+  "Flowise",
+  "Fuseki",
+  "Gemini",
+  "Glean",
+  "Graphiti",
+  "harness2",
+  "Harness²",
+  "Hermes",
+  "Kiro",
+  "LangChain",
+  "Langfuse",
+  "LangGraph",
+  "LangSmith",
+  "Letta",
+  "LiteLLM",
+  "LlamaIndex",
+  "Mastra",
+  "Mem0",
+  "MemGPT",
+  "Memgraph",
+  "MetaGPT",
+  "Milvus",
+  "MLflow",
+  "ModernRelay",
+  "Neo4j",
+  "Ollama",
+  "Omnigraph",
+  "Onyx",
+  "OpenAI",
+  "openclaw",
+  "OpenCode",
+  "OpenEvolve",
+  "OpenHands",
+  "OpenRouter",
+  "Ontotext",
+  "Palantir",
+  "Perplexity",
+  "Phidata",
+  "Pinecone",
+  "Qdrant",
+  "RDFLib",
+  "Scion",
+  "smolagents",
+  "Spec Kit",
+  "SQLancer",
+  "Stardog",
+  "SWE-agent",
+  "Tavily",
+  "TextGrad",
+  "TigerGraph",
+  "Weaviate",
+  "Windsurf",
+  "Zep",
+]
+
+# A connector exists to talk to its own target system, so its specs may name it.
+# Keys are repository names as resolved from the origin remote.
+[allow]
+langfuse-agent = ["Langfuse"]
+vector-mcp = ["Qdrant"]
