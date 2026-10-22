@@ -262,7 +262,7 @@ function drawNode(n, alpha){
   const closed=1-op;
   if(closed>0.02 && sw>=26){ // closed content
     ctx.globalAlpha=alpha*closed; ctx.textAlign="center"; ctx.textBaseline="alphabetic";
-    const fs=Math.min(19, sw/10, sh/4.2); const cx=sx+sw/2;
+    const fs=Math.max(Math.min(19, sw/10, sh/4.2), sw>=48&&sh>=26?7:0); const cx=sx+sw/2;
     if(fs>=5.5){ ctx.font="700 "+fs+"px "+C.display; ctx.fillStyle=C.fg;
       const lines=wrapText(n.label, sw-fs*1.2, sh>fs*6?2:1); let y=sy+sh*0.12+fs+(n.children.length?Math.min(fs*0.66,13)*1.3:0); lines.forEach((ln,i)=>ctx.fillText(ln,cx,y+i*fs*1.1)); y+= (lines.length-1)*fs*1.1;
       const fr=fs*0.68; if(fr>=6 && sh>fs*4.6 && n.role){ ctx.font="400 "+fr+"px "+C.body; ctx.fillStyle=C.muted; wrapText(n.role, sw-fr*2, sh>fs*7.5?2:1).forEach((ln,i)=>ctx.fillText(ln,cx,y+fr*1.6+i*fr*1.25)); }
