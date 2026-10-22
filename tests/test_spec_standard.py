@@ -90,10 +90,19 @@ def test_index(root, capsys):
     assert "not listed in specs/README.md" in _run(root, capsys)[1]
 
 
-def test_older_row_id_form_is_permanent(root, capsys):
+@pytest.mark.parametrize("bad", ["DS-01", "FOO-01", "FOO-R01", "FOO-R0001", "foo-R001", "FOO-R001.", "FOO-001"])
+def test_nonstandard_row_id_is_a_finding(root, capsys, bad):
     req = _spec(root) / "requirements.md"
-    req.write_text(req.read_text() + "| `DS-01` | An older row keeps its ID. |\n")
-    assert _run(root, capsys) == (0, "spec-standard: clean (1 spec(s) checked)\n")
+    req.write_text(req.read_text() + f"| `{bad}` | A nonconforming row ID. |\n")
+    code, out = _run(root, capsys)
+    assert code == 1
+    assert f"row {bad} does not match <PREFIX>-R<nnn>[.n]" in out
+
+
+def test_child_and_nested_prefix_row_ids_pass(root, capsys):
+    req = _spec(root) / "requirements.md"
+    req.write_text(req.read_text() + "| `FOO-R001.2` | child |\n| `FOO-R002.1.3` | grandchild |\n")
+    assert _run(root, capsys)[0] == 0
 
 
 @pytest.mark.parametrize(
