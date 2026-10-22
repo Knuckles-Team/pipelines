@@ -1,9 +1,12 @@
 """Place every spec row on the deepest architecture node it belongs to.
 
-Order of evidence: explicit ID rules, title keywords, cited code paths (longest
-prefix), the placement of the parent row, then requirement-text keywords. A row
-that only reaches its family home node goes to that node's "Unmapped" child
-when the home node has children, so nothing is lost and nothing is guessed.
+Order of evidence: explicit ID rules (any part of the row's repository), title
+keywords, cited code paths (longest prefix), the placement of the parent row,
+requirement-text keywords, title keywords across the whole repository (a row
+filed under a sibling family still names its part), then the parent row's part
+wherever it sits. A row that only reaches its family home node goes to that
+node's "Unmapped" child when the home node has children, so nothing is lost and
+nothing is guessed. External nodes (people, outside clients) never take rows.
 """
 
 from __future__ import annotations
@@ -117,11 +120,14 @@ class Placer:
         self.repo_nodes: dict[str, list[str]] = defaultdict(list)
         for nid in tree.order:
             node = tree.nodes[nid]
+            if node.get("external"):
+                continue
             for fam in node.get("fam", []):
                 self.home[(node["repo"], fam)] = nid
             if node["repo"]:
                 self.repo_nodes[node["repo"]].append(nid)
-        self.sub = {nid: tree.subtree(nid) for nid in tree.nodes}
+        self.external = {nid for nid in tree.order if tree.nodes[nid].get("external")}
+        self.sub = {nid: tree.subtree(nid) - self.external for nid in tree.nodes}
         self.placed: dict[str, str] = {}
         self.how: dict[str, str] = {}
 
@@ -146,27 +152,46 @@ class Placer:
                     best = max(best, key) if best else key
         return best[3] if best and best[3] != home else None
 
-    def _parent_match(self, row: dict, allowed: set[str]) -> str | None:
+    def _parent_match(self, row: dict, allowed: set[str] | None) -> str | None:
+        """The parent row's part: inside ``allowed``, or anywhere when the parent left its family
+        by repository-wide evidence (``allowed`` None means any part of the repository)."""
         pid = row["id"].rsplit(".", 1)[0] if "." in row["id"] else None
         while pid and pid not in self.placed:
             pid = pid.rsplit(".", 1)[0] if "." in pid else None
-        if pid and self.how.get(pid) != "fallback" and self.placed[pid] in allowed:
+        if not pid or self.how.get(pid) == "fallback":
+            return None
+        if allowed is None or self.placed[pid] in allowed or self.how[pid] in ("id", "repo"):
             return self.placed[pid]
         return None
+
+    def _repo_title(self, row: dict, home: str) -> str | None:
+        """Title keywords of any part of the same repository outside the home subtree.
+
+        Only for a home with children: a row on a leaf home is already placed.
+        The longest keyword match wins, then the deepest part.
+        """
+        nodes = self.tree.nodes
+        if len(self.sub[home]) == 1:
+            return None
+        hits = []
+        for x in self.repo_nodes[row["repo"]]:
+            match = nodes[x]["_kw"].search(row["title"]) if nodes[x]["_kw"] and x not in self.sub[home] else None
+            if match and x not in self.external:
+                hits.append((-len(match.group(0)), -nodes[x]["level"], self.tree.pre[x], x))
+        return min(hits)[3] if hits else None
 
     def place(self, row: dict) -> tuple[str | None, str]:
         nodes = self.tree.nodes
         home = self._home(row)
         if home is None:
             return None, "orphan"
+        repo = set(self.repo_nodes[row["repo"]]) - self.external
         glob = {x for x in self.repo_nodes[row["repo"]] if nodes[x].get("glob") and x not in self.sub[home]}
         scope = [x for x in self.sub[home] if x != home]
         steps = (
             (
                 "id",
-                lambda: self._best(
-                    [x for x in self.sub[home] | glob if any(p.match(row["id"]) for p in nodes[x]["_ids"])]
-                ),
+                lambda: self._best([x for x in repo if any(p.match(row["id"]) for p in nodes[x]["_ids"])]),
             ),
             (
                 "title",
@@ -177,6 +202,8 @@ class Placer:
             ("code", lambda: self._code_match(row, home)),
             ("parent", lambda: self._parent_match(row, self.sub[home] | glob)),
             ("body", lambda: self._best([x for x in scope if nodes[x]["_kw"] and nodes[x]["_kw"].search(row["req"])])),
+            ("repo", lambda: self._repo_title(row, home)),
+            ("parent", lambda: self._parent_match(row, None) if len(self.sub[home]) > 1 else None),
         )
         for how, step in steps:
             found = step()
@@ -225,3 +252,19 @@ class Placer:
             self.tree.add_child(nid, unm)
             direct[unm["id"]] = loose
             direct[nid] = [r for r in direct[nid] if self.how[r["id"]] != "fallback"]
+
+
+def unmapped_violations(tree: Tree, direct: dict[str, list[dict]], allow: list[str]) -> list[str]:
+    """Every row on an Unmapped part that the reviewed allowlist (``repo:ID`` entries) does not name.
+
+    A row on an external part is always a violation: external parts take no rows.
+    """
+    allowed = set(allow)
+    out = []
+    for nid, rows in direct.items():
+        node = tree.nodes[nid]
+        for row in rows:
+            key = f"{row['repo']}:{row['id']}"
+            if node.get("external") or (node.get("unmapped") and key not in allowed):
+                out.append(key)
+    return sorted(out)

@@ -3,6 +3,7 @@
  "label": "Arbora ecosystem",
  "role": "runtime architecture",
  "desc": "People and agents enter through Arbora. Arbora admits each request. Agent Utilities runs the harness. Epistemic Graph stores and reasons. Source systems connect through the SDK.",
+ "unmapped_allow": [],
  "edges": [
   [
    "people",
@@ -102,7 +103,8 @@
    "role": "",
    "desc": "People use the system to ask questions and to run work. They send requests through a front end or a chat channel. They receive answers that cite their evidence.",
    "layer": "person",
-   "band": 0
+   "band": 0,
+   "external": true
   },
   {
    "id": "clients",
@@ -115,7 +117,8 @@
     "ar.a2a"
    ],
    "layer": "person",
-   "band": 0
+   "band": 0,
+   "external": true
   },
   {
    "id": "webui",
@@ -535,7 +538,7 @@
       "arbora/messaging/base.py",
       "arbora/messaging/capabilities.py"
      ],
-     "kw": "channel \\(|relay|bot|\\bsms\\b|webhook channel|push|channel$"
+     "kw": "channel \\(|relay|bot|\\bsms\\b|webhook channel|push|channel$|adapter set|adapter contract"
     },
     {
      "id": "msg.gateway",
@@ -703,7 +706,7 @@
         "arbora/identity/mfa.py",
         "arbora/identity/api_keys.py"
        ],
-       "kw": "mfa|totp|webauthn|recovery code|local account|api key|password"
+       "kw": "mfa|totp|webauthn|recovery code|local account|api key|password|credentials for mcp"
       },
       {
        "id": "ar.door.scim",
@@ -766,7 +769,7 @@
         "arbora/identity/admin_console.py",
         "arbora/identity/mail_capability.py"
        ],
-       "kw": "admin console|mail|audit event|register identity"
+       "kw": "admin console|mail|audit event|register identity|\\bcli\\b|doctor"
       },
       {
        "id": "ar.door.ingress",
@@ -832,7 +835,7 @@
         "arbora/api/http",
         "arbora/api/generated"
        ],
-       "kw": "http api|openapi|generated|swagger|client artifact|drift gate|documentation|route parity|artifacts routes"
+       "kw": "http api|openapi|generated|swagger|client artifact|drift gate|documentation|route parity|artifacts routes|api surface|compatibility drift"
       },
       {
        "id": "ar.ops.invoke",
@@ -1003,7 +1006,8 @@
          ],
          "kw": "write-back"
         }
-       ]
+       ],
+       "kw": "finance|market|paper-trading|program optimi|promotion|rollback"
       }
      ]
     },
@@ -1061,7 +1065,7 @@
         "arbora/mcp_server/bootstrap.py",
         "arbora/mcp_server/composition.py"
        ],
-       "kw": "intent tool|intent surface|six verbs|six resident|eight-tool|mcp projection|mcp verbs|bridge"
+       "kw": "intent tool|intent surface|six verbs|six resident|eight-tool|mcp projection|mcp verbs|bridge|fastmcp"
       },
       {
        "id": "ar.mcp.backing",
@@ -1179,7 +1183,7 @@
         "arbora/a2a/work_items.py",
         "arbora/a2a/terminal_event.py"
        ],
-       "kw": "task|approval|input-required|work.?item|tool-subset|harvest"
+       "kw": "task|approval|input-required|work.?item|tool-subset|harvest|push notification"
       },
       {
        "id": "ar.a2a.conv",
@@ -1896,7 +1900,7 @@
        "label": "Run loop stays",
        "role": "kept in AU",
        "desc": "The run loop stays in Agent Utilities.",
-       "kw": "run loop stays|stays in agent utilities|one run"
+       "kw": "run loop stays|stays in agent utilities|one run|render receipt"
       },
       {
        "id": "au.boundary.census",
@@ -1931,7 +1935,7 @@
        "label": "Deleted",
        "role": "retired code",
        "desc": "These modules were deleted or retired.",
-       "kw": "delete|retire|removed|legacy|fabricated|repoint|relocate"
+       "kw": "delete|retire|removed|legacy|fabricated|repoint|relocate|repository-manager"
       }
      ]
     }
@@ -3529,7 +3533,7 @@
         "agent_connector_sdk/entitlements.py",
         "agent_connector_sdk/signing.py"
        ],
-       "kw": "credential|token|secret|pkce|entitlement|vault|identity|root-bundle"
+       "kw": "credential|token|secret|pkce|entitlement|vault|identity|root-bundle|acting user"
       },
       {
        "id": "sdk.control.eg",
@@ -4001,7 +4005,7 @@
         "crates/eg-numeric/src/evaluation",
         "crates/eg-numeric/src/decision/audit.rs"
        ],
-       "kw": "off-policy|propensit|importance sampl|effective sample|audit sampl|decisioneval|bandit|full-label|gold-label|explor"
+       "kw": "off-policy|propensit|importance sampl|effective sample|audit sampl|decisioneval|bandit|full-label|gold-label|explor|outcome aggregate|outcome link|independent outcomes|retrieval outcomes|outcome evidence"
       },
       {
        "id": "eg.decide.fit",
@@ -4039,7 +4043,7 @@
        "label": "Decide contract and parser",
        "role": "DecideText, closure rules",
        "desc": "The decide contract fixes the wire shapes, the parser and the component closure rules. Publish-time checks refuse invalid topology shapes.",
-       "kw": "decidetext|lexer|grammar|client wrappers|contract freeze|component-id|component-kind|forbidden decision|topology-shape|wire contract|embedding admission|package identity"
+       "kw": "decidetext|lexer|grammar|client wrappers|contract freeze|component-id|component-kind|forbidden decision|topology-shape|wire contract|embedding admission|package identity|component schema"
       },
       {
        "id": "eg.decide.belief",
@@ -4053,7 +4057,7 @@
        "label": "Memory and context",
        "role": "episodes, notes, retention",
        "desc": "The engine holds agent memory as layers and episodes. It decides rewrites, retention and context reads.",
-       "kw": "memory|episode|session-note|retention|temporal context|table of contents|span-read|confusion|relevance judgment|search-state|conversation log|study intake"
+       "kw": "memory|episode|session-note|retention|temporal context|table of contents|span-read|confusion|relevance judgment|search-state|conversation log|study intake|corrections become"
       },
       {
        "id": "eg.decide.agents",
@@ -4401,6 +4405,13 @@
          "role": "one write path",
          "desc": "One path writes every connector record with provenance. It filters by hash and finds near-duplicates.",
          "kw": "materializ|near-duplicate|locality|governance properties|row-version"
+        },
+        {
+         "id": "eg.ingest.worker.sync",
+         "label": "Source sync and reconciliation",
+         "role": "permissions, deletions, containers, versions",
+         "desc": "The worker keeps held source records in step with their source. It refreshes access and group membership, deletes records the source no longer holds, keeps the container tree and chains content versions per stream.",
+         "kw": "permission|group sync|deletion reconcil|container hierarch|content versions chain|per stream"
         }
        ]
       },
@@ -4577,7 +4588,8 @@
          "role": "code graph follows changesets",
          "desc": "The code graph updates with each accepted changeset.",
          "ids": [
-          "EG-SCM-R006"
+          "EG-SCM-R006",
+          "EG-SCM-R013"
          ]
         },
         {
@@ -4762,6 +4774,16 @@
        "kw": "sparql|cypher|\\bsql\\b|graphql"
       },
       {
+       "id": "eg.query.wire",
+       "label": "Wire protocol listeners",
+       "role": "PostgreSQL wire, Bolt, RESP, S3",
+       "desc": "Standard clients reach the one store through wire protocols. Each listener admits its caller through the same authenticated path as the served methods and serves catalog views that outside tools read at connect.",
+       "kw": "wire protocol|protocol listener|postgresql wire|one store behind|wire authentication|catalog views|sql dialect",
+       "ids": [
+        "EG-ENGINE-PARITY-R008"
+       ]
+      },
+      {
        "id": "eg.query.predict",
        "label": "Link prediction",
        "role": "hypotheses only",
@@ -4777,7 +4799,7 @@
         "crates/eg-shacl",
         "crates/eg-shex"
        ],
-       "kw": "shacl|shex|shape"
+       "kw": "shacl|shex|shape|constraints: unique|foreign.key"
       },
       {
        "id": "eg.query.viewport",
@@ -4799,7 +4821,7 @@
        "label": "Table projections",
        "role": "read-only outputs",
        "desc": "Table outputs are read-only projections of the graph. Live artifacts re-derive from a query.",
-       "kw": "iceberg|table output|read-only projection|catalog interoperability|live artifact|re-derive"
+       "kw": "iceberg|table output|read-only projection|catalog interoperability|live artifact|re-derive|stored quer|materialized (result|view)|query workspace"
       },
       {
        "id": "eg.query.series",
@@ -4998,7 +5020,7 @@
        "label": "Pack import and validation",
        "role": "archive, entries, pins",
        "desc": "The importer checks archive integrity, entry bodies and schemas. It records per-entry contract versions. A guard refuses mass withdrawal without an admin override.",
-       "kw": "import|archive|digest|utf-8|json body|skill\\.md|front-matter|input schema|empty description|sibling reference|withdraw|violation count|contract_version|\\bpins?\\b|schema attach|owner-layout|blank-node|turtle|agent library|agentcomponent|body"
+       "kw": "import|archive|digest|utf-8|json body|skill\\.md|front-matter|input schema|empty description|sibling reference|withdraw|violation count|contract_version|\\bpins?\\b|schema attach|owner-layout|blank-node|turtle|agent library|agentcomponent|body|well-formed"
       },
       {
        "id": "eg.packs.skills",
@@ -5026,6 +5048,13 @@
        "role": "kg/ontology",
        "desc": "The ontology object model is part of the engine. Schema changes list the row types they affect.",
        "kw": "ontology object model|kg/ontology|schema bump|row types|draft validation|ontology|property types|object sets|markings|classification|restricted view|governed edits|revert|record models|graphschemaclasses|opkind|native graph relationships|core schema source|shape artifacts"
+      },
+      {
+       "id": "eg.packs.gov",
+       "label": "Stewardship and data products",
+       "role": "stewards, change requests, data contracts",
+       "desc": "Governed assets have stewards. A change to a governed asset goes through a change request, and a steward may certify it. Data products bundle datasets and terms under a data contract.",
+       "kw": "steward|change request|certification|data product|data contract|critical data element"
       },
       {
        "id": "eg.packs.vocab",
@@ -5085,7 +5114,8 @@
          ],
          "desc": "Terms describe lifecycle records such as releases, deployments and changes. Derived edges link each record to its source."
         }
-       ]
+       ],
+       "kw": "nutrient|food composition"
       },
       {
        "id": "eg.packs.cq",
@@ -5144,7 +5174,8 @@
       "crates/eg-transaction"
      ],
      "fam": [
-      "durable-graph-kernel"
+      "durable-graph-kernel",
+      "engine-parity"
      ],
      "edges": [
       [
@@ -5202,7 +5233,7 @@
         "src/server/mutation_batch",
         "src/mutation_apply.rs"
        ],
-       "kw": "transaction|atomic|saga|cross-store|mutation batch|audited"
+       "kw": "transaction|atomic|saga|cross-store|mutation batch|audited|idempotent retry|committer|group commit|fsync|disjoint keys|lock-free"
       },
       {
        "id": "eg.durable.mirror",
@@ -5239,7 +5270,7 @@
         "src/agent_lifecycle_statechart.rs",
         "src/server/handlers/statechart.rs"
        ],
-       "kw": "statechart|state machine"
+       "kw": "statechart|state machine|trigger"
       },
       {
        "id": "eg.durable.change",
@@ -5284,7 +5315,7 @@
        "label": "Consensus and shard writers",
        "role": "raft, fan-out",
        "desc": "Consensus seals native commands and routes placement. Cross-graph writes fan out across shard writers.",
-       "kw": "raft|shard|placement routing|consensus|leader|fan out|heartbeat"
+       "kw": "raft|shard|placement routing|consensus|leader|fan out|heartbeat|replica"
       },
       {
        "id": "eg.durable.lineage",
@@ -5298,7 +5329,7 @@
        "label": "Build and test hygiene",
        "role": "lint, clones, benches",
        "desc": "Lint, clone and benchmark gates run on every commit. Tests isolate their own events.",
-       "kw": "clippy|jscpd|clone gate|benchmark|avx2|threading|tests pass|trace capture|eviction test|guard test|memory test|flake"
+       "kw": "clippy|jscpd|clone gate|benchmark|avx2|threading|tests pass|trace capture|eviction test|guard test|memory test|flake|waiter cancellation|cancellation is deterministic|loaded execution"
       },
       {
        "id": "eg.durable.tenancy",
@@ -5312,14 +5343,14 @@
        "label": "Versioned writes and bitemporal state",
        "role": "conflicts, as-of",
        "desc": "Writes check versions and return a typed conflict. Bitemporal validity supports as-of reads. Each key-value namespace declares a durability class.",
-       "kw": "version-checked|bitemporal|as-of|versioned|concurrent writes|kv namespace|durability class|memory synchronization|kv-cache|key-value modality|memory read"
+       "kw": "version-checked|bitemporal|as-of|versioned|concurrent writes|kv namespace|durability class|memory synchronization|kv-cache|key-value modality|memory read|optimistic concurrency|mvcc"
       },
       {
        "id": "eg.durable.queues",
        "label": "Task queues and workers",
        "role": "enqueue, claim, ack",
        "desc": "A durable task queue supports enqueue, claim and ack. A served worker registry admits reserved workers.",
-       "kw": "task-queue|task queue|worker registry|reserved-worker|scheduler|lane floors|shard-writer|dispatch queue|turn claim|work items|operation payload"
+       "kw": "task-queue|task queue|worker registry|reserved-worker|scheduler|lane floors|shard-writer|dispatch queue|turn claim|work items|operation payload|workitem"
       },
       {
        "id": "eg.durable.reviews",
@@ -5391,7 +5422,7 @@
         "src/store_authority.rs",
         "src/sidecar_store.rs"
        ],
-       "kw": "redb|hot store|write coalesc|direct state|physical layout|store authority"
+       "kw": "redb|hot.store|write coalesc|direct state|physical layout|store authority|store files|parallel writers"
       },
       {
        "id": "eg.storage.lake",
@@ -5403,7 +5434,7 @@
         "src/server/lake",
         "crates/eg-viz-columnstore"
        ],
-       "kw": "\\blake\\b|lakehouse|iceberg|delta table|parquet|columnar|datafusion|acceleration"
+       "kw": "\\blake\\b|lakehouse|iceberg|delta table|parquet|columnar materializ|columnar|datafusion|acceleration"
       },
       {
        "id": "eg.storage.tsdb",
@@ -5469,7 +5500,10 @@
         "src/server/cold_tier_impl.rs",
         "src/server/secondary_indexes.rs"
        ],
-       "kw": "bloom|cold tier|evict|read-through|secondary index"
+       "kw": "bloom|cold tier|evict|read-through|secondary index|indexes\\b",
+       "ids": [
+        "EG-ENGINE-PARITY-R013"
+       ]
       },
       {
        "id": "eg.storage.hybrid",
@@ -5535,7 +5569,7 @@
         "src/server/cdc_sink",
         "crates/eg-types/src/debezium_bridge.rs"
        ],
-       "kw": "change capture|\\bcdc\\b|debezium|captured"
+       "kw": "change capture|\\bcdc\\b|debezium|captured|change data capture"
       },
       {
        "id": "eg.udp.restore",
@@ -5546,7 +5580,7 @@
         "crates/eg-types/src/restore_drill.rs",
         "crates/eg-types/src/pitr_schedule.rs"
        ],
-       "kw": "restore|backup|pitr|drill"
+       "kw": "restore|backup|pitr|drill|point-in-time"
       },
       {
        "id": "eg.udp.safety",
@@ -5580,6 +5614,13 @@
         "crates/eg-types/src/document_conformance.rs"
        ],
        "kw": "conformance|parity|compatib|proven feature|failing-then-passing"
+      },
+      {
+       "id": "eg.udp.quality",
+       "label": "Data quality",
+       "role": "rules, scores, incidents",
+       "desc": "The data plane evaluates declared quality rules over datasets and graphs. It records a score per dimension, accepts scores from outside checkers and opens a quality incident on a breach.",
+       "kw": "quality|rule proposals from profiles"
       },
       {
        "id": "eg.udp.virtual",
@@ -5652,7 +5693,8 @@
        "desc": "The engine infers graph ownership from signals. It applies ownership as reversible grants.",
        "kw": "ownership|grant"
       }
-     ]
+     ],
+     "kw": "masking|row filter|row security|row-level security"
     },
     {
      "id": "eg.place",
@@ -5673,7 +5715,7 @@
        "label": "Deployment placement",
        "role": "targets + feasibility",
        "desc": "A target registry lists placement targets. A pure feasibility function filters them. Why-not explains each rejected target.",
-       "kw": "placement|target|feasib|why-not|step graph|label"
+       "kw": "placement|target|feasib|why-not|step graph|label|payload bound"
       },
       {
        "id": "eg.place.worker",
@@ -5693,7 +5735,7 @@
         "crates/eg-types/src/capacity_throttle",
         "crates/eg-types/src/capacity_throttle.rs"
        ],
-       "kw": "schedul|admission pacing|priority|capacity|leader"
+       "kw": "schedul|admission pacing|priority|capacity|leader|heavy compute|declares the capability"
       }
      ]
     },
@@ -5732,7 +5774,7 @@
        "code": [
         "crates/eg-numeric/src/series"
        ],
-       "kw": "kernel|ewma|ornstein|sharpe|cross-validation|regime|execution|factor|portfolio|risk|mean-reversion|alias|caller migration|time-series exposure|volatil"
+       "kw": "kernel|ewma|ornstein|sharpe|cross-validation|regime|execution|factor|portfolio|risk|mean-reversion|alias|caller migration|time-series exposure|volatil|strategyspec evaluator|\\bdca\\b"
       },
       {
        "id": "eg.fin.records",
@@ -5743,7 +5785,7 @@
         "crates/eg-types/src/finance_event_envelope.rs",
         "crates/eg-core/ontology/finance-v1.ttl"
        ],
-       "kw": "finance-v1|record|account|lot\\b|position|outbox|alert|split basis|schema version"
+       "kw": "finance-v1|record|account|lot\\b|position|outbox|alert|split basis|schema version|ohlcv|bar-series"
       }
      ]
     },
@@ -5787,7 +5829,7 @@
        "label": "Contract gates",
        "role": "parity, reachability, hooks",
        "desc": "Gates check parity, dispatch reachability and scanner results. They run without bypass flags.",
-       "kw": "gate|hook|scanner|pre-commit|lint|privacy|cpu|compile|parity|reachab|fan-out|manifest|method variants|clippy|\\btests?\\b|fixtures|credential|config keys|differential|documentation"
+       "kw": "gate|hook|scanner|pre-commit|lint|privacy|cpu|compile|parity|reachab|fan-out|manifest|method variants|clippy|\\btests?\\b|fixtures|credential|config keys|differential|documentation|signal-killed|test binar"
       },
       {
        "id": "eg.contract.dist",
@@ -5796,7 +5838,8 @@
        "desc": "The wheel ships the contract and extension modules only. Each platform publishes on its own.",
        "kw": "wheel|distribution|server binary|executable|platform|version|install"
       }
-     ]
+     ],
+     "kw": "contract regeneration|generated client|client method|library methods"
     }
    ],
    "band": 4,
@@ -5999,6 +6042,16 @@
         "tests/hooks"
        ],
        "kw": "quality|hook|gate|grading|similarity|mutation|structural|coverage|test|skill|dependency|packaging|portab|version|ontology governance|prompt|workflow export|installer|single-binary|release coordination|schema generation|tooling|claims"
+      },
+      {
+       "id": "pipe.pages.explorer",
+       "label": "Architecture explorer",
+       "role": "generated architecture map",
+       "desc": "One generator reads the spec rows of every registered repository and places each on the deepest architecture part. A pinned layered layout engine lays out each level.",
+       "kw": "architecture explorer",
+       "code": [
+        "scripts/architecture_explorer"
+       ]
       }
      ]
     },
@@ -6017,7 +6070,7 @@
        "label": "Delivery standard",
        "role": "shared rules",
        "desc": "These rows set the delivery rules that every connector follows.",
-       "kw": "generated status|test binding|lane contract|retired identit|changed prose|canonical title"
+       "kw": "generated status|test binding|lane contract|retired identit|changed prose|canonical title|requirement state|status generator"
       }
      ]
     },

@@ -23,7 +23,7 @@ if __package__ in (None, ""):
     __package__ = "scripts.architecture_explorer"
 
 from .geometry import count_crossings  # noqa: E402
-from .place import Placer, Tree, add_dynamic_groups, validate_code  # noqa: E402
+from .place import Placer, Tree, add_dynamic_groups, unmapped_violations, validate_code  # noqa: E402
 from .sources import load_all  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -100,7 +100,7 @@ def emit(node: dict, direct: dict, layouts: dict) -> dict:
         ],
         "children": [emit(c, direct, layouts) for c in node["children"]],
     }
-    for key in ("tools", "unmapped"):
+    for key in ("tools", "unmapped", "external"):
         if node.get(key):
             out[key] = node[key]
     if node["id"] in layouts:
@@ -124,6 +124,7 @@ def build(mode: str, workspace: Path | None) -> tuple[dict, dict]:
             layouts[nid] = node["fixed_layout"]
     data = emit(tree.root, direct, layouts)
     unmapped = sum(len(v) for k, v in direct.items() if tree.nodes[k].get("unmapped"))
+    violations = unmapped_violations(tree, direct, model.get("unmapped_allow", []))
     meta = {
         "heads": {s.repo: s.head for s in snaps if s.head},
         "errors": {s.repo: s.error for s in snaps if s.error},
@@ -133,6 +134,7 @@ def build(mode: str, workspace: Path | None) -> tuple[dict, dict]:
         "rows": len(rows),
         "mapped": len(rows) - unmapped,
         "unmapped": unmapped,
+        "unmapped_violations": violations,
         "status": dict(Counter(r["status"] for r in rows)),
         "nodes": len(tree.nodes),
         "depth": max(n["level"] for n in tree.nodes.values()),
@@ -169,6 +171,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.tree:
         args.tree.write_text(json.dumps({"tree": data, "meta": meta}, indent=1))
     print(json.dumps({k: v for k, v in meta.items() if k not in ("heads", "slugs", "pages_node")}, indent=1))
+    if meta["unmapped_violations"]:
+        print("unmapped rows not on the reviewed allowlist: " + ", ".join(meta["unmapped_violations"]), file=sys.stderr)
+        return 1
     return 1 if meta["errors"] and args.mode == "github" else 0
 
 
