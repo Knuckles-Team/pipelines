@@ -437,3 +437,21 @@ R041.1-.6: Configured structural limits with named-function failure reporting in
 ## PIPE-PAGES-R042
 
 R042: `scripts/architecture_explorer/` reads spec rows over the GitHub API, places them on `model.json`, precomputes layouts with the pinned layout engine (`layout.mjs`) and renders `template.html`. `pages_pipeline.yml` builds it for the core repositories (`architecture_explorer: auto`).
+
+## Agent-readiness and static delivery (PIPE-PAGES-R043)
+
+This requirement explicitly assigns the existing readiness and static delivery contract to this spec.
+It introduces ownership, not a concept alias or a behavior change.
+The former documentation-delivery label does not establish a historical one-to-one mapping.
+PIPE-GATES-R007 separately owns rejection of obsolete machine annotations.
+
+Code: ../../reference/pages-readiness.md ../../tests/test_pages_readiness.py ../../tests/test_pages_pipeline_contract.py ../../scripts/pages_readiness.py ../../scripts/readiness/cli.py ../../scripts/readiness/delivery.py ../../.github/workflows/pages_pipeline.yml
+
+The workflow calls `scripts/pages_readiness.py` at `.github/workflows/pages_pipeline.yml:253`.
+The entry calls `scripts/readiness/cli.py:68` (`main`), then `_main_build`, then `delivery.build`.
+The content-source command calls `_main_validate_content_source` and `validate_content_source`.
+The existing validator consumes canonical manifests; this requirement adds no generator or policy store.
+`reference/pages-readiness.md` documents the contract.
+`tests/test_pages_readiness.py` owns validation, static delivery, refusal, and direct-entry evidence.
+`tests/test_pages_pipeline_contract.py` owns opt-in workflow and strict-build wiring evidence.
+Public-site acceptance and the supported interpreter remain separate qualification obligations.

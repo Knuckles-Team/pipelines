@@ -36,3 +36,7 @@ Run `uv run --frozen python -m pytest -q` and the pre-commit and pre-push hook s
 | T-R006.6 | PIPE-GATES-R006.6 | Unit | A fixture migration ledger | `test_wave_6_entry_and_exit` asserts the criteria. |
 | T-R006.7 | PIPE-GATES-R006.7 | Unit | A fixture migration ledger | `test_wave_7_entry_and_exit` asserts the criteria and the two restores. |
 | T-R005 | PIPE-GATES-R005 | Contract | Fixture spec trees with named products, identifiers and allowances | `tests/test_spec_third_party_names.py` asserts a finding for each named product, a pass for identifiers, code, links and standards, and the per-repository allowance. |
+
+## Legacy concept migration (PIPE-GATES-R007)
+
+`tests/hooks/test_no_legacy_concepts.py` runs the registered CLI and a subprocess entry point. Positive and adversarial fixtures assert the original regex across Python/Rust/Markdown, exact historical exclusions, tracked versus ignored/untracked input, and relative line diagnostics. Foreign worktrees with polluted repository and index selectors must still inspect the requested tree. Deleted files are absent source; unreadable files and unavailable repositories fail closed. `tests/hooks/test_catalogue.py` binds the same CLI to the published hook and manual self-run configuration. This optional migration invariant does not change the eight-gate landing partition.

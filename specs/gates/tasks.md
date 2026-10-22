@@ -22,3 +22,5 @@
 - [ ] **PIPE-GATES-R006.6:** Wave 6: arbora.
 - [ ] **PIPE-GATES-R006.7:** Wave 7: epistemic-graph, last.
 - [x] **PIPE-GATES-R005:** Spec text names no third-party product.
+- [x] Publish the canonical no-legacy-concepts migration gate and retain original detection, scope, historical exclusions, diagnostics and failure semantics. Closes PIPE-GATES-R007.
+- [x] Bind PIPE-GATES-R007 to real Git fixtures covering tracked/ignored source, foreign worktrees, ambient Git selectors and nonzero CLI exits.

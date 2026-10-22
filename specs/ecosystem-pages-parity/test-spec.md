@@ -277,3 +277,14 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R021.77 | PIPE-PAGES-R021.77 | Run `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-PAGES-R021.78 | PIPE-PAGES-R021.78 | Run `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-PAGES-R042 | PIPE-PAGES-R042 | Run `tests/test_architecture_explorer.py`, `test_architecture_explorer_defaults_to_core_repositories_and_builds_before_upload` and `test_architecture_explorer_link_opens_the_current_repository_node`. Assert placement, both page variants and the workflow and theme wiring. |
+
+## Agent-readiness and static delivery
+
+| ID | Requirement | Test and expected result |
+|---|---|---|
+| T-PIPE-PAGES-R043.1 | PIPE-PAGES-R043.1 | `tests/test_pages_readiness.py::test_second_build_and_offline_tck_are_idempotent`. The readiness validator must consume declared input, schema, readiness manifest, and Markdown mirror manifest without another generator. |
+| T-PIPE-PAGES-R043.2 | PIPE-PAGES-R043.2 | `tests/test_pages_readiness.py::test_build_publishes_source_markdown_and_served_mime`. The delivery builder must publish declared Markdown fallbacks and discovery files while preserving existing site directives. |
+| T-PIPE-PAGES-R043.3 | PIPE-PAGES-R043.3 | `tests/test_pages_pipeline_contract.py::test_enabled_path_checks_strict_build_and_runs_owned_tck`. The workflow at `.github/workflows/pages_pipeline.yml:223` must invoke the readiness CLI only through explicit opt-in. |
+| T-PIPE-PAGES-R043.4 | PIPE-PAGES-R043.4 | `tests/test_pages_readiness.py::test_stale_source_digest_fails_closed`. The validator must reject stale source digests and private capability references before publication. |
+| T-PIPE-PAGES-R043.5 | PIPE-PAGES-R043.5 | `tests/test_pages_readiness.py::test_cli_failure_result_is_versioned`. The CLI must report versioned failure results rather than imply successful validation. |
+| T-PIPE-PAGES-R043.6 | PIPE-PAGES-R043.6 | `tests/test_pages_readiness.py::test_direct_entry_requires_and_loads_the_sparse_readiness_package`. The direct script entry must load the sparse readiness package and validate the declared content source. |

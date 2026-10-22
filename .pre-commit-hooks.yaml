@@ -348,3 +348,12 @@
   always_run: true
   require_serial: true
   stages: [manual]
+
+# Opt-in migration invariant; not a ninth gate in the landing partition.
+- id: no-legacy-concepts
+  name: No legacy numeric-pillar concept markers
+  entry: pipelines-hook no-legacy-concepts
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit, pre-push, manual]

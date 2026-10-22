@@ -18,7 +18,8 @@
     "PIPE-GATES-R006.5",
     "PIPE-GATES-R006.6",
     "PIPE-GATES-R006.7",
-    "PIPE-GATES-R005"
+    "PIPE-GATES-R005",
+    "PIPE-GATES-R007"
   ],
   "requirements": [
     {
@@ -159,6 +160,17 @@
       "verified_by": [
         "tests/test_spec_third_party_names.py:50",
         "tests/test_spec_third_party_names.py:87"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R007",
+      "title": "Canonical legacy-concept check",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_no_legacy_concepts.py:106",
+        "tests/hooks/test_no_legacy_concepts.py:20",
+        "tests/hooks/test_no_legacy_concepts.py:64"
       ]
     }
   ]

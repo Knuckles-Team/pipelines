@@ -369,3 +369,9 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R041.5: Evidence. Record policy digest and function counts.
 - [ ] PIPE-PAGES-R041.6: Hot-path proof. Build fails on excess arguments.
 - [x] PIPE-PAGES-R042: Generated architecture explorer at /architecture/ on every core Pages site, linked from the shared theme.
+- [ ] PIPE-PAGES-R043.1: Model. Bind the existing implementation and `tests/test_pages_readiness.py::test_second_build_and_offline_tck_are_idempotent`.
+- [ ] PIPE-PAGES-R043.2: Behavior. Bind the existing implementation and `tests/test_pages_readiness.py::test_build_publishes_source_markdown_and_served_mime`.
+- [ ] PIPE-PAGES-R043.3: Wiring. Bind the existing implementation and `tests/test_pages_pipeline_contract.py::test_enabled_path_checks_strict_build_and_runs_owned_tck`.
+- [ ] PIPE-PAGES-R043.4: Refusal. Bind the existing implementation and `tests/test_pages_readiness.py::test_stale_source_digest_fails_closed`.
+- [ ] PIPE-PAGES-R043.5: Evidence. Bind the existing implementation and `tests/test_pages_readiness.py::test_cli_failure_result_is_versioned`.
+- [ ] PIPE-PAGES-R043.6: Hot-path proof. Bind the existing implementation and `tests/test_pages_readiness.py::test_direct_entry_requires_and_loads_the_sparse_readiness_package`.

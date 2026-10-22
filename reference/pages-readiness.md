@@ -1,7 +1,7 @@
 # Pages agent-readiness delivery
 
 This reusable workflow provides the static Pages half of the documentation
-delivery contract (`CONCEPT:ECO-4.DOCS-DELIVERY`). It keeps the existing Pages
+delivery contract (`Spec: PIPE-PAGES-R043`). It keeps the existing Pages
 build unchanged unless a caller explicitly sets `agent_readiness_enabled:
 true` and/or `shared_theme_enabled: true`.
 
