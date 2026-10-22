@@ -126,3 +126,33 @@ The [privacy identity contract](reference/privacy.md) distinguishes Git display 
 Run `pipelines-hook no-legacy-concepts [ROOT ...]` (or `--root ROOT`) to check tracked `.py`, `.rs` and `.md` files for `CONCEPT:[A-Z]+-[0-9]`. With no root it checks the current directory. The optional hook has the same ID. It does not change the eight blocking gates.
 
 The original historical exclusions remain: `check_no_legacy_markers.py`, `CHANGELOG.md`, `concept_map.md`, `concepts.yaml`, and `concept_reservations.yaml`; directories `__pycache__`, `.git`, `.venv`, `node_modules`, `target`, `build`, and `dist` are not scanned. Untracked and ignored output is not input. Each target uses its own index, including from foreign worktrees or Git hooks. Findings include relative paths and line numbers and exit one. Unreadable input or an unavailable Git repository exits two, never a clean verdict.
+
+### Optional consumer metadata and import checks
+
+`pipelines-hook lockfile-version-mirrors --root ROOT` checks the self-package
+version in `uv.lock` and direct dependency pins/ranges in `requirements.txt`
+against `pyproject.toml`. Missing artifacts and editable self entries without a
+version are valid. Dynamic versions fall back to `.bumpversion.cfg`.
+This is not `uv-lock-check`, which runs `uv lock --check`.
+
+`pipelines-hook coupling --root ROOT` checks static Python imports in tracked
+consumer packages. ROOT must be the consumer repository root (default: current
+directory), not a package or sibling path. The consumer declares its policy:
+
+```toml
+[tool.pipelines_hooks]
+packages = ["geniusbot"]
+
+[tool.pipelines_hooks.coupling]
+forbidden = ["agent_utilities", "epistemic_graph", "arbora", "agent_terminal_ui", "agent_webui"]
+allowed = ["arbora.client"]
+```
+
+This example follows [the ecosystem boundary](reference/ecosystem-boundaries.md).
+No adapter file exemption applies. Module prefixes match at dot boundaries;
+`from arbora import client` is allowed, but importing the parent itself is not.
+Missing configuration, package source, invalid Python or Git errors refuse with
+exit two; prohibited static imports fail with exit one. The scanner uses the
+consumer's own tracked index, ignores untracked build output, and does not
+claim dynamic import or runtime isolation coverage. Both hooks are opt-in and
+do not alter the eight-gate landing partition.

@@ -24,3 +24,5 @@
 - [x] **PIPE-GATES-R005:** Spec text names no third-party product.
 - [x] Publish the canonical no-legacy-concepts migration gate and retain original detection, scope, historical exclusions, diagnostics and failure semantics. Closes PIPE-GATES-R007.
 - [x] Bind PIPE-GATES-R007 to real Git fixtures covering tracked/ignored source, foreign worktrees, ambient Git selectors and nonzero CLI exits.
+- [x] Publish the optional lock artifact mirror checker with compatible version and dependency checks. Closes PIPE-GATES-R008.
+- [x] Publish the configurable tracked static import checker without adapter exemptions. Closes PIPE-GATES-R009.

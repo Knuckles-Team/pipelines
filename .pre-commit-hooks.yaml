@@ -366,3 +366,19 @@
   pass_filenames: false
   always_run: true
   stages: [pre-commit, pre-push, manual]
+
+- id: lockfile-version-mirrors
+  name: lockfile-version-mirrors
+  entry: pipelines-hook lockfile-version-mirrors
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit, pre-push, manual]
+
+- id: coupling
+  name: coupling
+  entry: pipelines-hook coupling
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit, pre-push, manual]

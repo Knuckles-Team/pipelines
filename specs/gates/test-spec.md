@@ -40,3 +40,17 @@ Run `uv run --frozen python -m pytest -q` and the pre-commit and pre-push hook s
 ## Legacy concept migration (PIPE-GATES-R007)
 
 `tests/hooks/test_no_legacy_concepts.py` runs the registered CLI and a subprocess entry point. Positive and adversarial fixtures assert the original regex across Python/Rust/Markdown, exact historical exclusions, tracked versus ignored/untracked input, and relative line diagnostics. Foreign worktrees with polluted repository and index selectors must still inspect the requested tree. Deleted files are absent source; unreadable files and unavailable repositories fail closed. `tests/hooks/test_catalogue.py` binds the same CLI to the published hook and manual self-run configuration. This optional migration invariant does not change the eight-gate landing partition.
+
+## Metadata and static import checks (PIPE-GATES-R008, PIPE-GATES-R009)
+
+`tests/hooks/test_lockfile_version_mirrors.py` exercises the registered CLI on
+optional artifacts, literal and editable self entries, dynamic version fallback,
+and accepted or drifting direct pins and ranges. It rejects a package-directory
+root instead of silently inspecting its parent.
+
+`tests/hooks/test_coupling.py` exercises consumer-declared module prefixes through
+the registered CLI. Client imports pass; runtime and sibling UI imports fail with
+path and line diagnostics, including in former adapter files. Malformed source,
+missing policy and untracked-only packages refuse. Ambient Git selectors cannot
+replace the target's index; untracked generated files are outside the scan.
+These checks prove static AST behavior, not dynamic runtime isolation.
