@@ -19,7 +19,7 @@ A repository that adopts `gates_pipeline.yml` through a caller job named `gates`
 
 ## Agent contract
 
-Every repository gives a cold agent the same setup and the same orientation (PIPE-CONNSPEC-R009 to R011):
+Every repository gives a cold agent the same setup and the same orientation (PIPE-CONNSPEC-R175 to R177):
 
 - `scripts/bootstrap.sh` is idempotent and non-interactive. It installs a current uv, the Python pinned in `.python-version` (default 3.14), runs `uv sync --locked` (plain `uv sync` until the repository has a `uv.lock`), installs the pre-commit and pre-push hooks, and prints the gate command. A repository with extra setup (sibling pins, native builds) extends the script and keeps these steps.
 - `AGENTS.md` carries the block between `<!-- agent-contract:start -->` and `<!-- agent-contract:end -->`. The block states the **Owner boundary** (with a link to [ecosystem boundaries](ecosystem-boundaries.md)), **Setup** (`scripts/bootstrap.sh`), **Gates** (`uvx pre-commit run --all-files`), **Commits** (Spec trailer, assisting-agent `Co-Authored-By:` trailer, explicit staging, own Git identity) and a link to the [organization AGENTS.md](https://github.com/Knuckles-Team/.github/blob/main/AGENTS.md). The text is tool-neutral. Content outside the markers belongs to the repository. `CLAUDE.md`, where present, only imports `@AGENTS.md`.

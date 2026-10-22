@@ -13,7 +13,7 @@ SECTION = (
 )
 
 
-@pytest.mark.spec("PIPE-CONNSPEC-R009")
+@pytest.mark.spec("PIPE-CONNSPEC-R175")
 def test_missing_bootstrap_and_section_warn_without_failing(repo: Repo, capsys) -> None:
     repo.commit({"README.md": "x\n"})
     assert repo.run("agent-contract") == 0
@@ -24,7 +24,7 @@ def test_missing_bootstrap_and_section_warn_without_failing(repo: Repo, capsys) 
     assert "lacks the" in capsys.readouterr().out
 
 
-@pytest.mark.spec("PIPE-CONNSPEC-R009")
+@pytest.mark.spec("PIPE-CONNSPEC-R175")
 def test_a_conformant_repository_passes_strict(repo: Repo) -> None:
     repo.commit({"AGENTS.md": "# a\n\n" + SECTION, "scripts/bootstrap.sh": "#!/bin/sh\n"})
     assert repo.run("agent-contract", "--strict") == 0

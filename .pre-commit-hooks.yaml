@@ -316,7 +316,7 @@
   files: (^|/)(pyproject\.toml|uv\.lock)$
   stages: [pre-push]
 
-# One-command setup and the standard AGENTS.md section (PIPE-CONNSPEC-R009); warn level.
+# One-command setup and the standard AGENTS.md section (PIPE-CONNSPEC-R175); warn level.
 - id: agent-contract
   name: agent contract (scripts/bootstrap.sh and the standard AGENTS.md section; warns)
   entry: pipelines-hook agent-contract
