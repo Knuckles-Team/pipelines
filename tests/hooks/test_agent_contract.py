@@ -5,7 +5,11 @@ from __future__ import annotations
 import pytest
 
 from pipelines_hooks.hygiene.agent_contract import ORG_AGENTS, START, END
+from tests.hooks import conftest
 from tests.hooks.conftest import Repo
+
+# Re-registered here: another test module imports the conftest first, so pytest may not register its fixture.
+repo = conftest.repo
 
 SECTION = (
     f"{START}\n## Agent contract\n- **Owner boundary:** x\n- **Setup:** y\n- **Gates:** z\n- **Commits:** w\n"
