@@ -8,7 +8,13 @@ import sys
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.sync_mkdocs_theme import RUNTIME_DIAGRAM_URL, THEME_FILES, ThemeSyncError, sync_theme
+from scripts.sync_mkdocs_theme import (
+    ARCHITECTURE_EXPLORER_URL,
+    RUNTIME_DIAGRAM_URL,
+    THEME_FILES,
+    ThemeSyncError,
+    sync_theme,
+)
 
 
 ROOT = Path(__file__).parents[1]
@@ -118,7 +124,7 @@ def _page(tmp_path: Path, text: str) -> Path:
 
 
 def test_check_requires_no_local_runtime_diagram_copy(tmp_path: Path) -> None:
-    root = _page(tmp_path, f"![Runtime]({RUNTIME_DIAGRAM_URL})\n")
+    root = _page(tmp_path, f"[![Runtime]({RUNTIME_DIAGRAM_URL})]({ARCHITECTURE_EXPLORER_URL})\n")
     assert not (root / "docs/assets/runtime-architecture.svg").exists()
     assert sync_theme(source_root=ROOT, repository_root=root, content_source="docs", mode="check") == []
 
@@ -128,4 +134,12 @@ def test_check_rejects_local_runtime_diagram_references(tmp_path: Path, target: 
     root = _page(tmp_path, f"![Runtime]({target})\n")
     assert sync_theme(source_root=ROOT, repository_root=root, content_source="docs", mode="check") == [
         f"runtime diagram must be referenced as {RUNTIME_DIAGRAM_URL}: docs/index.md"
+    ]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_check_requires_the_diagram_to_link_the_explorer(tmp_path: Path) -> None:
+    root = _page(tmp_path, f"![Runtime]({RUNTIME_DIAGRAM_URL})\n")
+    assert sync_theme(source_root=ROOT, repository_root=root, content_source="docs", mode="check") == [
+        f"runtime diagram must link the explorer at {ARCHITECTURE_EXPLORER_URL}: docs/index.md"
     ]

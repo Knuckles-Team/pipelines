@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -12,6 +13,7 @@ import pytest
 ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.architecture_explorer import build as explorer  # noqa: E402
+from scripts.architecture_explorer import sources  # noqa: E402
 from scripts.architecture_explorer.geometry import count_crossings, crossings_in  # noqa: E402
 from scripts.architecture_explorer.place import Placer, Tree, unmapped_violations, validate_code  # noqa: E402
 from scripts.architecture_explorer.sources import Snapshot, requirement_text, spec_dirs  # noqa: E402
@@ -235,6 +237,7 @@ def test_page_builds_offline_with_both_variants(monkeypatch, tmp_path: Path) -> 
             for e in registry
         ]
 
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     monkeypatch.setattr(explorer, "load_all", fake_load)
     page, body = tmp_path / "index.html", tmp_path / "artifact.html"
     assert explorer.main(["--mode", "github", "--page", str(page), "--artifact", str(body)]) == 0
@@ -252,3 +255,82 @@ def test_theme_link_bypasses_instant_navigation() -> None:
     html = Path(__file__).resolve().parents[1].joinpath("templates/mkdocs-theme/overrides/main.html").read_text()
     link = next(line for line in html.splitlines() if "site-architecture__link" in line)
     assert 'target="_self"' in link
+
+
+def _fake_loader(rows_by_repo: dict[str, list[dict]]):
+    def fake_load(registry, mode, workspace=None, workers=12):
+        return [
+            Snapshot(repo=e["name"], slug=e["slug"], head="h-" + e["name"][:4], rows=rows_by_repo.get(e["name"], []))
+            for e in registry
+        ]
+
+    return fake_load
+
+
+def _ids(node: dict) -> set[str]:
+    out = {s["id"] for s in node["specs"]}
+    for child in node["children"]:
+        out |= _ids(child)
+    return out
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@pytest.mark.skipif(
+    shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
+)
+def test_a_deleted_row_disappears_from_the_generated_tree(monkeypatch) -> None:
+    keep = _row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="epistemic-graph")
+    gone = _row("EG-SCM-R002", "Changeset replay", family="source-changesets", repo="epistemic-graph")
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(explorer, "load_all", _fake_loader({"epistemic-graph": [keep, gone]}))
+    before, meta = explorer.build("github", None)
+    assert {"EG-SCM-R001", "EG-SCM-R002"} <= _ids(before)
+    monkeypatch.setattr(explorer, "load_all", _fake_loader({"epistemic-graph": [keep]}))
+    after, meta = explorer.build("github", None)
+    assert "EG-SCM-R001" in _ids(after) and "EG-SCM-R002" not in _ids(after)
+    assert meta["rows"] == 1 and meta["heads"]["epistemic-graph"] == "h-epis"
+    assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", meta["built_at"])
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_discovery_drops_removed_repositories_and_adds_new_ones() -> None:
+    registry = [
+        {"name": "arbora", "slug": "arbora", "local": "x", "kind": "core"},
+        {"name": "old-mcp", "slug": "old-mcp", "local": "y", "kind": "connector"},
+    ]
+    found = {"arbora": "a" * 40, "new-mcp": "b" * 40, ".github": "c" * 40}
+    scanned = sources.reconcile(registry, found)
+    assert [e["name"] for e in scanned] == ["arbora", "new-mcp"]
+    assert scanned[0]["sha"] == "a" * 40 and scanned[1]["discovered"] is True
+    assert sources.scan_set(registry, "local", "token") == registry
+    assert sources.scan_set(registry, "github", None) == registry
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_the_fleet_matches_the_scan_set() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    registry = json.loads((PKG / "registry.json").read_text())["repositories"]
+    scanned = [e for e in registry if e["name"] != "adguard-home-agent"]
+    scanned.append({"name": "brand-new-mcp", "slug": "brand-new-mcp", "kind": "connector", "discovered": True})
+    explorer.fit_fleet(model, scanned)
+    tree = Tree(model)
+    repos = {n["repo"] for n in tree.nodes.values() if n["id"].startswith("conn.") and not n["children"]}
+    assert "adguard-home-agent" not in repos
+    assert tree.nodes["conn.discovered.brand-new-mcp"]["fam"] == ["*"]
+    assert tree.nodes["connectors"]["role"].startswith(f"{len(repos)} connectors")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_page_carries_a_freshness_stamp() -> None:
+    html = (PKG / "template.html").read_text()
+    assert 'id="fresh"' in html and "META.built_at" in html and "/commit/" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_repository_copies_redirect_to_the_canonical_explorer(tmp_path: Path) -> None:
+    page = tmp_path / "architecture/index.html"
+    assert explorer.main(["--redirect", "--page", str(page)]) == 0
+    html = page.read_text()
+    assert html.startswith("<!doctype html>")
+    assert 'location.replace("https://knuckles-team.github.io/.github/architecture/" + location.hash)' in html
+    assert '<link rel="canonical" href="https://knuckles-team.github.io/.github/architecture/">' in html
