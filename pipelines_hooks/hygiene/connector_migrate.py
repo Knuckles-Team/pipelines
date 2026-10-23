@@ -509,6 +509,32 @@ _PROMPT_KEY_ASSERT = re.compile(
 )
 
 
+_ENTITY_ARGS = re.compile(
+    r"""(?P<ind>[ \t]*)id=(?P<rec>\w+)\.get\("id"\),\n(?P=ind)node_type=(?P=rec)\.get\("node_type"\),\n"""
+)
+_ENTITY_COMMENT = re.compile(r"(?m)^[ \t]*# id/node_type are intentionally read with \.get\(\).*\n(?:[ \t]*#.*\n)*")
+_REQUIRED_TEXT = """def _required_text(record: dict[str, Any], key: str) -> str:
+    value = record.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"entity needs a non-empty {key!r}, got {value!r}")
+    return value
+
+
+"""
+
+
+def validate_entity_args(text: str) -> str:
+    """R016.36: SDK 0.4 ``Entity`` takes ``str`` ids; ``record.get("id")`` (``Any | None``) becomes a validated read."""
+    m = _ENTITY_ARGS.search(text)
+    if not m or "_required_text" in text or not re.search(r"(?m)^from typing import .*\bAny\b", text):
+        return text
+    rec, ind = m.group("rec"), m.group("ind")
+    new_args = f'{ind}id=_required_text({rec}, "id"),\n{ind}node_type=_required_text({rec}, "node_type"),\n'
+    out = _ENTITY_COMMENT.sub("", text[: m.start()] + new_args + text[m.end() :])
+    at = out.rfind("\ndef ", 0, out.index("_required_text(")) + 1
+    return out[:at] + _REQUIRED_TEXT + out[at:]
+
+
 def drop_prompt_key_assertions(text: str) -> str:
     """R016.32: the prompt keeps no top-level ``extends``/``compose`` once stripped, so a test asserting them goes too."""
     return _PROMPT_KEY_ASSERT.sub("", text)
@@ -891,6 +917,7 @@ def migrate_sources_text(root: Path, pkg: Path, scripts: tuple[str, ...], change
                     rewrite_py_prose(drop_manifest_path_kw(t), pkg.name) if any(w in t for w in _CUT_WORDS) else None
                 ),
             )
+            edit(p, validate_entity_args)
         elif p.suffix == ".ttl":
             edit(p, lambda t: rewrite_ttl_prose(t, pkg.name))
 
