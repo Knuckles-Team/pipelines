@@ -827,9 +827,7 @@ def _git(wt: Path, *args: str) -> str:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.29")
-def test_commit_restages_after_a_formatter_hook_stops_when_nothing_changes_and_reports_noop(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_commit_restages_after_a_formatter_hook_stops_when_nothing_changes_and_reports_noop(tmp_path: Path) -> None:
     from scripts import connector_migrate_batch as batch
 
     wt = tmp_path / "wt"
@@ -847,7 +845,6 @@ def test_commit_restages_after_a_formatter_hook_stops_when_nothing_changes_and_r
     )
     hook.chmod(0o755)
     (wt / "a.txt").write_text("changed\n", encoding="utf-8")
-    monkeypatch.setattr(batch.shutil, "which", lambda *a, **k: None)
     led = batch.Ledger(tmp_path / "ledger.json")
     batch.commit_all(wt, ["a.txt"], "commit", {}, led, "r", "msg")
     assert led.data["r"]["commit_attempts"] == 2
@@ -863,3 +860,4 @@ def test_commit_restages_after_a_formatter_hook_stops_when_nothing_changes_and_r
         batch.commit_all(wt, ["a.txt"], "commit", {}, led, "r", "msg")
     src = Path(batch.__file__).read_text(encoding="utf-8")
     assert 'env["PATH"] = f"{venv}/bin:' in src and "--served-tools" in src and ".pre.patch" in src
+    assert '"--recount"' in src
