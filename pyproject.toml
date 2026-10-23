@@ -21,6 +21,9 @@ dependencies = [
     "PyYAML==6.0.3",
 ]
 
+[project.optional-dependencies]
+graph-check = ["rdflib==7.6.0"]
+
 [project.scripts]
 pipelines-hook = "pipelines_hooks.cli:main"
 
@@ -31,6 +34,7 @@ dev = [
     "pip==25.1.1",
     "pre-commit==4.6.2",
     "pytest==9.1.1",
+    "rdflib==7.6.0",
     "setuptools>=84.0.0",
     "types-networkx==3.6.1.20261006",
     "types-PyYAML==6.0.12.20260906",
@@ -77,3 +81,7 @@ allow_files = ["pipelines_hooks/core/settings.py"]
 
 [tool.pipelines_hooks.ste]
 exempt = ["specs/*", "specs/**/*"]
+
+[[tool.mypy.overrides]]
+module = ["rdflib", "rdflib.*"]
+ignore_missing_imports = true

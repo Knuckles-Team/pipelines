@@ -129,7 +129,7 @@ class Finding:
     detail: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
-        out = {"code": self.code, "message": self.message, "module": self.module, "pack": self.pack}
+        out: dict[str, Any] = {"code": self.code, "message": self.message, "module": self.module, "pack": self.pack}
         if self.file:
             out["file"] = self.file
         if self.line:
@@ -761,9 +761,9 @@ def module_graph(m: Model) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
                 both[d].add(mod)
     for iri, ds in declared.items():
         if len(ds) > 1 and _checkable(iri):
-            ds = sorted(ds)
-            for a in ds:
-                for b in ds:
+            ordered = sorted(ds)
+            for a in ordered:
+                for b in ordered:
                     if a != b:
                         both[a].add(b)
     return both, ref
