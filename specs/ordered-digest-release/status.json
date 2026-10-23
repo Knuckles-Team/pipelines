@@ -635,8 +635,8 @@
       "verified_by": [
         "tests/test_connector_release_pipeline.py:18",
         "tests/test_connector_release_pipeline.py:19",
-        "tests/test_connector_release_pipeline.py:39",
-        "tests/test_connector_release_pipeline.py:40"
+        "tests/test_connector_release_pipeline.py:40",
+        "tests/test_connector_release_pipeline.py:41"
       ]
     },
     {
@@ -647,10 +647,10 @@
         "3d0455152b96"
       ],
       "verified_by": [
-        "tests/test_connector_release_pipeline.py:80",
         "tests/test_connector_release_pipeline.py:81",
-        "tests/test_connector_release_pipeline.py:86",
-        "tests/test_connector_release_pipeline.py:87"
+        "tests/test_connector_release_pipeline.py:82",
+        "tests/test_connector_release_pipeline.py:87",
+        "tests/test_connector_release_pipeline.py:88"
       ]
     },
     {
