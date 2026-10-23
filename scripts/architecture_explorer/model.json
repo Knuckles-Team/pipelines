@@ -1978,6 +1978,18 @@
      "links": [
       "ar.ops.dom.research"
      ]
+    },
+    {
+     "id": "skills.mcpbuilder",
+     "label": "MCP builder scaffold",
+     "role": "connector scaffold",
+     "desc": "The MCP builder skill scaffolds a connector. It declares the HTTP client, TLS profile, credential references, SDK extras, fleet identity and version bookkeeping once, and its checklist runs in strict pipeline hooks.",
+     "fam": [
+      "mcp-builder"
+     ],
+     "links": [
+      "sdk.control"
+     ]
     }
    ],
    "band": 3
@@ -3491,7 +3503,10 @@
         "agent_connector_sdk/_turtle.py",
         "agent_connector_sdk/taxonomy"
        ],
-       "kw": "pack|certif|contract.pin|fingerprint|annotation|turtle|ontolog|manifest|seed graph|owl:imports|identifier gate|datapoint"
+       "kw": "pack|certif|contract.pin|fingerprint|annotation|turtle|ontolog|manifest|seed graph|owl:imports|identifier gate|datapoint",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(27|28|29|30|37)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.control.mcp",
@@ -3502,7 +3517,10 @@
         "agent_connector_sdk/mcp",
         "agent_connector_sdk/adapters/mcp_tool.py"
        ],
-       "kw": "tool per|one tool|one typed tool|tool contract|prompt|\\bmcp\\b|tool context|template|operation tool|split action|explicit additional registration|semantic coverage"
+       "kw": "tool per|one tool|one typed tool|tool contract|prompt|\\bmcp\\b|tool context|template|operation tool|split action|explicit additional registration|semantic coverage",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(14|15)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.control.a2a",
@@ -3512,7 +3530,10 @@
        "code": [
         "agent_connector_sdk/a2a"
        ],
-       "kw": "a2a|agent-card|agent card"
+       "kw": "a2a|agent-card|agent card",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(17)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.control.transport",
@@ -3526,7 +3547,10 @@
         "agent_connector_sdk/tls",
         "agent_connector_sdk/streaming.py"
        ],
-       "kw": "transport|http|egress|tls|safe_post|graphql introspection|message-stream|change envelope|search-grounding"
+       "kw": "transport|http|egress|tls|safe_post|graphql introspection|message-stream|change envelope|search-grounding",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(01|02|03|04|05|06|08|16)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.control.auth",
@@ -3540,7 +3564,10 @@
         "agent_connector_sdk/entitlements.py",
         "agent_connector_sdk/signing.py"
        ],
-       "kw": "credential|token|secret|pkce|entitlement|vault|identity|root-bundle|acting user"
+       "kw": "credential|token|secret|pkce|entitlement|vault|identity|root-bundle|acting user",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(09|10|11|12|13|35)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.control.eg",
@@ -3552,7 +3579,10 @@
         "agent_connector_sdk/compute",
         "agent_connector_sdk/decide"
        ],
-       "kw": "\\beg\\b|epistemic-graph|engine|decision-service|graph-client|compute adapter|capability-to-existing|certification producer|scaling proposals"
+       "kw": "\\beg\\b|epistemic-graph|engine|decision-service|graph-client|compute adapter|capability-to-existing|certification producer|scaling proposals",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(18)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.control.fleet",
@@ -3571,7 +3601,10 @@
         "agent_connector_sdk/config_git.py",
         "agent_connector_sdk/paths.py"
        ],
-       "kw": "config|settings|environment|library-file|health endpoint|durability boundary|current-plan"
+       "kw": "config|settings|environment|library-file|health endpoint|durability boundary|current-plan",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(34)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.control.ports",
@@ -3591,7 +3624,20 @@
        "code": [
         "agent_connector_sdk/payments.py"
        ],
-       "kw": "payment"
+       "kw": "payment",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(07)(\\.|$)"
+       ]
+      },
+      {
+       "id": "sdk.control.deps",
+       "label": "Extras and optional dependencies",
+       "role": "SDK extras",
+       "desc": "Optional dependencies come from SDK extras. A connector declares an extra and never pins the library itself.",
+       "kw": "extras|optional dependenc",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(40)(\\.|$)"
+       ]
       }
      ]
     },
@@ -3640,7 +3686,10 @@
        "code": [
         "agent_connector_sdk/runner"
        ],
-       "kw": "runner|ingest worker|ingest-worker|synchroniz|resume|stage|engine-accepted|connectorpack"
+       "kw": "runner|ingest worker|ingest-worker|synchroniz|resume|stage|engine-accepted|connectorpack",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(32)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.ingest.drift",
@@ -3661,7 +3710,10 @@
        "code": [
         "agent_connector_sdk/vendor_extractors"
        ],
-       "kw": "extractor|enrichment extraction|ports the|write-back sinks|vendor write-back"
+       "kw": "extractor|enrichment extraction|ports the|write-back sinks|vendor write-back",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(26)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.ingest.sources",
@@ -3673,7 +3725,10 @@
         "agent_connector_sdk/earth_observations",
         "agent_connector_sdk/sinks"
        ],
-       "kw": "document-source|document source|database source|graphql document|mcp package|bookmark|transcript|feed|conversation|paper|occurrence|weather|taxon|fallback|sql source|chain transaction|workspace document|enterprise operations|query receiving"
+       "kw": "document-source|document source|database source|graphql document|mcp package|bookmark|transcript|feed|conversation|paper|occurrence|weather|taxon|fallback|sql source|chain transaction|workspace document|enterprise operations|query receiving",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(19|20|21|22|39)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.ingest.prep",
@@ -3687,7 +3742,10 @@
         "agent_connector_sdk/privacy_rules.py",
         "agent_connector_sdk/privacy_reference.py"
        ],
-       "kw": "data preparation|privacy"
+       "kw": "data preparation|privacy",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(24|25)(\\.|$)"
+       ]
       },
       {
        "id": "sdk.ingest.voice",
@@ -3753,7 +3811,10 @@
        "code": [
         "agent_connector_sdk/writeback_sinks"
        ],
-       "kw": "sink|writebackport|adapter|test suite"
+       "kw": "sink|writebackport|adapter|test suite",
+       "ids": [
+        "SDK-CENTRALIZED-CAPABILITIES-R0(31)(\\.|$)"
+       ]
       }
      ]
     },
@@ -3790,7 +3851,8 @@
        "role": "R001",
        "desc": "The source client reads and writes engine changesets.",
        "ids": [
-        "SDK-SCM-R001(\\.|$)"
+        "SDK-SCM-R001(\\.|$)",
+        "SDK-CENTRALIZED-CAPABILITIES-R0(36)(\\.|$)"
        ]
       },
       {
@@ -3814,6 +3876,9 @@
      ],
      "fam": [
       "SDK-FINANCE-SOURCES"
+     ],
+     "ids": [
+      "SDK-CENTRALIZED-CAPABILITIES-R0(23)(\\.|$)"
      ]
     },
     {
@@ -3823,6 +3888,9 @@
      "desc": "Monitoring, security-audit and delivery events join the durable source pipeline.",
      "fam": [
       "SDK-OBSERVABILITY-FEEDS"
+     ],
+     "ids": [
+      "SDK-CENTRALIZED-CAPABILITIES-R0(33)(\\.|$)"
      ]
     },
     {
@@ -3832,11 +3900,17 @@
      "desc": "The SDK builds against published engine wheels. Scanners check public documentation.",
      "fam": [
       "SDK-QUALITY-RELEASE"
+     ],
+     "ids": [
+      "SDK-CENTRALIZED-CAPABILITIES-R0(38)(\\.|$)"
      ]
     }
    ],
    "band": 4,
-   "scale": 1.15
+   "scale": 1.15,
+   "fam": [
+    "centralized-capabilities"
+   ]
   },
   {
    "id": "eg",
@@ -6075,7 +6149,7 @@
        "label": "Delivery standard",
        "role": "shared rules",
        "desc": "These rows set the delivery rules that every connector follows.",
-       "kw": "generated status|test binding|lane contract|retired identit|changed prose|canonical title|requirement state|status generator|agent setup|agent-contract|AGENTS\\.md section"
+       "kw": "generated status|test binding|lane contract|retired identit|changed prose|canonical title|requirement state|status generator|agent setup|agents\\.md|agent-contract"
       }
      ]
     },
