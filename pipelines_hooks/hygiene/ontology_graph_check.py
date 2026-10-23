@@ -945,6 +945,7 @@ def fix_plan(m: Model, results: list[dict[str, Any]]) -> dict[str, list[dict[str
     plan: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
 
     def add(owner: str, key: str, why: str, triples: list[str]) -> None:
+        owner = "epistemic-graph" if owner == "eg" else owner
         plan[owner].setdefault(key, {"why": [], "triples": triples})["why"].append(why)
 
     def cls_triples(name: str) -> list[str]:
