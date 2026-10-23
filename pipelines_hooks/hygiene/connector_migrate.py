@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import configparser
 import json
+import os
 import re
 import subprocess
 import sys
@@ -478,8 +479,11 @@ def migrate_tests(root: Path, pkg: str, changed: list[str], deleted: list[str], 
 def leftover_references(root: Path, review: Review) -> None:
     """Any file still naming a cut file after the codemod is a review item (hard cutover)."""
     skip = {"uv.lock", "CHANGELOG.md"}
-    tracked = subprocess.run(["git", "ls-files", "-z"], cwd=root, capture_output=True, text=True)
-    names = {n for n in tracked.stdout.split("\0") if n} if tracked.returncode == 0 else None
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    tracked = subprocess.run(["git", "ls-files", "-z"], cwd=root, capture_output=True, text=True, env=env)
+    names = (
+        {n for n in tracked.stdout.split("\0") if n} if (root / ".git").exists() and tracked.returncode == 0 else None
+    )
     for p in walk(root):
         if names is not None and str(p.relative_to(root)) not in names:
             continue
