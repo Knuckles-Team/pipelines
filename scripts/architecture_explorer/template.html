@@ -54,6 +54,16 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 .results .k{font:500 10.5px var(--font-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center}
 .results .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .results .s{grid-column:2;color:var(--muted);font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.results .res{display:flex;align-items:stretch;gap:4px;border-radius:6px}
+.results .res:hover,.results .res[aria-selected="true"]{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.results .res button{background:none;flex:1 1 auto;min-width:0}
+.results .res button:hover{background:none}
+.results .res a.src{align-self:center;flex:none;font:500 11px var(--font-mono);color:var(--accent);padding:4px 6px;border-radius:4px;text-decoration:none;border:1px solid var(--line)}
+.results .res a.src:focus-visible,.results .res button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.results .res .t{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.results .rid{font:500 12px var(--font-mono);color:var(--accent)}
+.results .rrepo{font:500 11px var(--font-mono);color:var(--muted)}
 .results .none{padding:10px;color:var(--muted)}
 main.work{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:12px;flex:1;min-height:0}
 .canvas{position:relative;background:var(--sheet);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:560px;height:calc(100vh - 150px);touch-action:none}
@@ -132,8 +142,9 @@ footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wr
     <button class="btn" id="up" type="button" title="Zoom out one level (Esc)">&#8593; Up</button>
     <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
     <div class="search" role="search">
-      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search spec ID, part name or code path" aria-label="Search spec ID, part name or code path" aria-controls="results">
-      <div class="results" id="results" role="listbox" hidden></div>
+      <input id="q" type="search" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-haspopup="listbox" aria-keyshortcuts="/" autocomplete="off" spellcheck="false" placeholder="Search a capability, spec ID or part  ( / )" aria-label="Search a capability, spec ID or part. Press slash to focus." aria-controls="results">
+      <div class="results" id="results" role="listbox" aria-label="Search results" hidden></div>
+      <div class="sr" id="qstatus" role="status" aria-live="polite"></div>
     </div>
     <button class="btn" id="theme" type="button" title="Switch light or dark">Theme</button>
   </div>
@@ -202,7 +213,7 @@ const fitCam = (rect, margin) => { const m=margin||1.08; const k=Math.min(W/(rec
 const toS = (x,y) => [(x-cam.x)*cam.k, (y-cam.y)*cam.k];
 function setCam(c){ cam=c; dirty=true; scheduleSettle(); }
 function flyTo(rect, margin, opts){
-  const target=fitCam(rect, margin); if(!W) { cam=target; return; }
+  const target=(opts&&opts.cam)||fitCam(rect, margin); if(!W) { cam=target; return; }
   if(reduced() || (opts&&opts.instant)){ cv.classList.add("fade"); setCam(target); requestAnimationFrame(()=>requestAnimationFrame(()=>cv.classList.remove("fade"))); return; }
   const a={...cam}, b=target, t0=performance.now(), dur=Math.min(1100, 450+120*Math.abs(Math.log(b.k/a.k)));
   const ca=[a.x+W/(2*a.k), a.y+H/(2*a.k)], cb=[b.x+W/(2*b.k), b.y+H/(2*b.k)];
@@ -223,6 +234,13 @@ function homeK(){ return W ? fitCam(R[T.id]).k : 1; }
 function openness(n, sw){ if(!n.layout) return 0; const homeSW=R[n.id][2]*homeK();
   const o0=Math.max(Math.min(380, W*0.5), homeSW*1.15), o1=Math.max(Math.min(620, W*0.85), o0*1.6);
   return Math.max(0,Math.min(1,(sw-o0)/(o1-o0))); }
+// Camera for a search landing: the usual fit, zoomed in just enough that every ancestor box is fully open
+// (so the target is drawn, not hidden inside a closed box), never past the point where the target overflows the view.
+function openCam(id, margin){ const c=fitCam(R[id], margin); if(!W) return c;
+  const cx=c.x+W/(2*c.k), cy=c.y+H/(2*c.k), cap=fitCam(R[id],1.05).k; let k=c.k;
+  for(let a=parentOf[id]; a; a=parentOf[a]){ const n=nodes[a]; if(!n.layout||a==="root") continue; if(openness(n,R[a][2]*k)>=1) continue;
+    const homeSW=R[a][2]*homeK(), o0=Math.max(Math.min(380,W*0.5),homeSW*1.15), o1=Math.max(Math.min(620,W*0.85),o0*1.6); k=Math.max(k,o1/R[a][2]); }
+  k=Math.min(k,Math.max(cap,c.k)); return {x:cx-W/(2*k), y:cy-H/(2*k), k}; }
 function rr(x,y,w,h,r){ r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function fitText(t, maxW){ if(ctx.measureText(t).width<=maxW) return t; let lo=0, hi=t.length; while(lo<hi){ const m=(lo+hi+1)>>1; if(ctx.measureText(t.slice(0,m)+"…").width<=maxW) lo=m; else hi=m-1; } return lo>0? t.slice(0,lo)+"…" : ""; }
 function wrapText(t, maxW, maxLines){ const words=String(t).split(/\s+/), lines=[]; let cur="";
@@ -304,11 +322,12 @@ function focusAt(){ const cx=W/2, cy=H/2; let f="root";
 function settle(){ const f=focusAt(); if(f!==focus){ focus=f; renderCrumbs(); }
   const sp=pathTo(selected);
   if(!sp.includes(focus) || (selected!==focus && pathTo(focus).includes(selected))){ selected=focus; resetSpecs(); renderPanel(); }
-  try{ window.history.replaceState(null,"","#"+(selected==="root"?"":selected)); }catch(_){} }
+  syncHash(); }
+function syncHash(){ try{ window.history.replaceState(null,"",ArchSearch.hashFor(selected,activeQ)||location.pathname+location.search); }catch(_){} }
 function go(id, opts){ opts=opts||{}; const n=nodes[id]; if(!n) return; hist.push({...cam}); if(hist.length>60) hist.shift();
   selected=id; hitId=opts.hit?id:null; if(!opts.keepSpecs) resetSpecs();
   const m = n.layout ? 1.04 : (n.id==="root"?1.02:2.6);
-  flyTo(R[id], m, opts); renderPanel(); $("back").disabled=false; }
+  flyTo(R[id], m, {...opts, cam: opts.open?openCam(id,m):null}); renderPanel(); $("back").disabled=false; }
 function up(){ const target = parentOf[focus] || "root"; go(focus==="root"?"root":target); }
 $("back").onclick=()=>{ const c=hist.pop(); if(!c) return; if(reduced()) setCam(c); else { const r=[c.x, c.y, W/c.k, H/c.k]; flyTo(r,1); } $("back").disabled=!hist.length; };
 $("up").onclick=up; $("zin").onclick=()=>zoomAt(1.6,W/2,H/2); $("zout").onclick=()=>zoomAt(1/1.6,W/2,H/2); $("zfit").onclick=()=>go("root");
@@ -340,8 +359,8 @@ document.addEventListener("keydown",e=>{ if(e.target===$("q")) return;
     else if(e.key==="ArrowUp") setCam({...cam,y:cam.y-step}); else if(e.key==="ArrowDown") setCam({...cam,y:cam.y+step}); else return; e.preventDefault(); } });
 
 // ---------- panel ----------
-let scope="node", filt="ALL", limit=150, flashSpec=null;
-function resetSpecs(){ const n=nodes[selected]; scope=(n&&n.specs.length)?"node":"tree"; filt="ALL"; limit=150; flashSpec=null; }
+let scope="node", filt="ALL", limit=150, flashSpec=null, flashIds=new Set();
+function resetSpecs(){ const n=nodes[selected]; scope=(n&&n.specs.length)?"node":"tree"; filt="ALL"; limit=150; flashSpec=null; flashIds=new Set(); }
 function specRows(n){ if(scope==="node") return n.specs; const out=[]; (function w(x){ out.push(...x.specs); x.children.forEach(w); })(n); return out; }
 function statBlock(c){ const d=el("div",{class:"stat"});
   [["total","SPECS",""],["VERIFIED","VERIFIED","v"],["LANDED","LANDED","l"],["SPECIFIED","SPECIFIED","s"],["RETIRED","RETIRED","r"]].forEach(([k,l,cl])=>d.append(el("div",{class:cl},[el("b",{text:fmt(c[k]||0)}),el("span",{text:l})])));
@@ -379,7 +398,7 @@ function renderPanel(){
   const rows=all.filter(s=>filt==="ALL"||s.status===filt);
   if(!rows.length) sec.append(el("p",{class:"muted",text: n.children.length&&scope==="node" ? "No rows sit on this part itself. Choose “Include parts below” to list the rows of its parts." : "No spec rows map to this part."}));
   const ul=el("ul",{class:"plain specs"});
-  rows.slice(0,limit).forEach(s=>{ const li=el("li",{"data-spec":s.id}); if(s.id===flashSpec) li.className="flash";
+  rows.slice(0,limit).forEach(s=>{ const li=el("li",{"data-spec":s.id}); if(flashIds.has(s.id)||s.id===flashSpec) li.className="flash";
     li.append(el("span",{class:"badge "+s.status,text:s.status}), el("a",{class:"id",href:gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md",target:"_blank",rel:"noopener",text:s.id}),
       el("span",{class:"ti",text:s.title||"(untitled)"}), el("span",{class:"fa",text:s.repo+" · "+s.family})); ul.append(li); });
   sec.append(ul);
@@ -389,27 +408,44 @@ function renderPanel(){
 }
 
 // ---------- search ----------
-const SI=[]; Object.values(nodes).forEach(n=>{ SI.push({k:"part",id:n.id,t:n.label,s:pathTo(n.id).slice(1,-1).map(i=>nodes[i].label).join(" › ")||"top level",h:(n.label+" "+n.id).toLowerCase()});
-  n.code.forEach(c=>SI.push({k:"code",id:n.id,t:c,s:n.label+" · "+n.repo,h:c.toLowerCase()}));
-  n.specs.forEach(s=>SI.push({k:"spec",id:n.id,spec:s.id,t:s.id,s:s.title+" · "+n.label,h:s.id.toLowerCase(),h2:s.title.toLowerCase()})); });
-const q=$("q"), res=$("results"); let hits=[], cur=-1;
-function doSearch(){ const v=q.value.trim().toLowerCase(); res.textContent=""; cur=-1; if(v.length<2){ res.hidden=true; return; }
-  const sc=[]; for(const it of SI){ let s=-1;
-    if(it.h===v) s=100; else if(it.h.startsWith(v)) s=80-Math.min(20,it.h.length-v.length)/2; else if(it.h.includes(v)) s=50; else if(it.h2&&it.h2.includes(v)) s=20;
-    if(s>=0){ if(it.k==="part") s+=8; sc.push([s,it]); } }
-  sc.sort((a,b)=>b[0]-a[0]); hits=sc.slice(0,40).map(x=>x[1]);
-  if(!hits.length){ res.append(el("div",{class:"none",text:"No part, code path or spec row matches “"+q.value.trim()+"”."})); res.hidden=false; return; }
-  hits.forEach((h,i)=>{ const b=el("button",{type:"button",role:"option","aria-selected":"false"},[el("span",{class:"k",text:h.k}),el("span",{class:"t",text:h.t}),el("span",{class:"s",text:h.s})]);
-    b.onmousedown=e=>e.preventDefault(); b.onclick=()=>choose(i); res.append(b); }); res.hidden=false; }
-function choose(i){ const h=hits[i]; if(!h) return; res.hidden=true; q.blur();
-  if(h.spec){ selected=h.id; go(h.id,{hit:true,keepSpecs:true}); scope="node"; filt="ALL"; const idx=nodes[h.id].specs.findIndex(s=>s.id===h.spec); limit=Math.max(150,idx+20); flashSpec=h.spec; renderPanel(); }
-  else go(h.id,{hit:true}); }
-q.addEventListener("input",doSearch);
-q.addEventListener("keydown",e=>{ const bs=[...res.querySelectorAll("button")];
-  if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(!bs.length) return; cur=(cur+(e.key==="ArrowDown"?1:-1)+bs.length)%bs.length; bs.forEach((b,i)=>b.setAttribute("aria-selected",String(i===cur))); bs[cur].scrollIntoView({block:"nearest"}); }
-  else if(e.key==="Enter"){ e.preventDefault(); choose(cur<0?0:cur); } else if(e.key==="Escape"){ res.hidden=true; } });
-q.addEventListener("blur",()=>setTimeout(()=>res.hidden=true,150));
+/*__SEARCH__*/
+const SX = ArchSearch.create(PAYLOAD.search);
+const q=$("q"), res=$("results"), qstat=$("qstatus"); let hits=[], cur=-1, activeQ="";
+function setCur(i){ const bs=[...res.querySelectorAll(".res")]; cur=i; bs.forEach((b,k)=>b.setAttribute("aria-selected",String(k===i)));
+  if(i>=0&&bs[i]){ q.setAttribute("aria-activedescendant",bs[i].id); bs[i].scrollIntoView({block:"nearest"}); } else q.removeAttribute("aria-activedescendant"); }
+function showResults(open){ res.hidden=!open; q.setAttribute("aria-expanded",String(open)); }
+function doSearch(){ const v=q.value.trim(); res.textContent=""; cur=-1; q.removeAttribute("aria-activedescendant");
+  if(v.length<2){ hits=[]; showResults(false); qstat.textContent=""; return; }
+  hits=SX.search(v);
+  if(!hits.length){ res.append(el("div",{class:"none",text:"No capability, part or spec row matches “"+v+"”."})); showResults(true); qstat.textContent="No results"; return; }
+  hits.forEach((h,i)=>{ const isRow=h.kind==="row", n=nodes[h.node];
+    const where=pathTo(h.node).slice(1).map(x=>nodes[x].label).join(" › ")||n.label;
+    const main=el("button",{type:"button",tabindex:"-1","aria-label":(isRow?h.id+", "+h.title+", ":h.title+", part, ")+h.repo+(isRow?", in "+where:"")},[
+      el("span",{class:"k",text:isRow?"spec":"part"}),
+      el("span",{class:"t"},[isRow?el("span",{class:"rid",text:h.id+"  "}):null, document.createTextNode(h.title)]),
+      el("span",{class:"s"},[el("span",{class:"rrepo",text:h.repo||"architecture"}), document.createTextNode(" · "+where)])]);
+    main.onmousedown=e=>e.preventDefault(); main.onclick=()=>choose(i);
+    const row=el("div",{class:"res",role:"option",id:"res-"+i,"aria-selected":"false"},[main]);
+    if(isRow){ const a=el("a",{class:"src",href:gh(h.repo)+"/blob/HEAD/specs/"+h.family+"/requirements.md",target:"_blank",rel:"noopener",tabindex:"-1","aria-label":"Open "+h.id+" in the "+h.repo+" repository on GitHub",text:"spec \u2197"}); a.onmousedown=e=>e.preventDefault(); row.append(a); }
+    res.append(row); });
+  showResults(true); setCur(0); qstat.textContent=hits.length+" result"+(hits.length===1?"":"s")+" for "+v; }
+// Show the rows of the current search that sit on the chosen part (the picked row first).
+function showMatches(h){ const ids=hits.filter(x=>x.kind==="row"&&x.node===h.node).map(x=>x.id);
+  if(h.kind==="row"&&!ids.includes(h.id)) ids.unshift(h.id);
+  const specs=nodes[h.node].specs; flashIds=new Set(ids); flashSpec=h.kind==="row"?h.id:ids[0]||null;
+  scope="node"; filt="ALL"; const idx=Math.max(0,...ids.map(i=>specs.findIndex(s=>s.id===i))); limit=Math.max(150,idx+20); }
+function choose(i, keep){ const h=hits[i]; if(!h) return; if(!keep){ showResults(false); q.blur(); } activeQ=q.value.trim();
+  go(h.node,{hit:true,keepSpecs:true,open:true}); showMatches(h); renderPanel(); syncHash(); }
+q.addEventListener("input",()=>{ if(!q.value.trim()) activeQ=""; doSearch(); });
+q.addEventListener("keydown",e=>{ const n=res.querySelectorAll(".res").length;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(res.hidden){ doSearch(); return; } if(!n) return; setCur((cur+(e.key==="ArrowDown"?1:-1)+n)%n); }
+  else if(e.key==="Home"&&n&&!res.hidden&&e.ctrlKey){ e.preventDefault(); setCur(0); }
+  else if(e.key==="Enter"){ e.preventDefault(); if(res.hidden) doSearch(); if(hits.length) choose(cur<0?0:cur); }
+  else if(e.key==="Escape"){ if(!res.hidden||q.value){ e.preventDefault(); e.stopPropagation(); if(!res.hidden) showResults(false); else { q.value=""; activeQ=""; syncHash(); } } else q.blur(); } });
+q.addEventListener("blur",()=>setTimeout(()=>{ if(document.activeElement!==q) showResults(false); },150));
 q.addEventListener("focus",()=>{ if(q.value.trim().length>=2) doSearch(); });
+document.addEventListener("pointerdown",e=>{ if(!res.hidden&&!e.target.closest(".search")) showResults(false); });
+document.addEventListener("keydown",e=>{ if(e.key==="/"&&!e.ctrlKey&&!e.metaKey&&!e.altKey){ const t=e.target, tag=t&&t.tagName; if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT"||(t&&t.isContentEditable)) return; e.preventDefault(); q.focus(); q.select(); } });
 
 // ---------- header, theme, boot ----------
 (function header(){ const c=T.count, t=$("totals");
@@ -431,10 +467,14 @@ if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEvent
 themeLabel(); readColors(); resize();
 new ResizeObserver(()=>{ const c=[cam.x+W/(2*cam.k), cam.y+H/(2*cam.k)]; resize(); cam={x:c[0]-W/(2*cam.k), y:c[1]-H/(2*cam.k), k:cam.k}; dirty=true; }).observe(cv);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{dirty=true;});
-let start="root"; try{ const h=decodeURIComponent((location.hash||"").slice(1)); if(h&&nodes[h]) start=h; }catch(_){}
-cam=fitCam(R.root,1.02); selected=start; resetSpecs(); renderPanel(); renderCrumbs();
-if(start!=="root"){ const n=nodes[start]; cam=fitCam(R[start], n.layout?1.04:2.6); }
+function applyHash(instant){ const h=ArchSearch.parseHash(location.hash);
+  if(h.q){ q.value=h.q; doSearch(); if(hits.length){ activeQ=h.q; const top=hits[0]; go(top.node,{hit:true,keepSpecs:true,open:true,instant}); showMatches(top); renderPanel(); } }
+  if(h.node&&nodes[h.node]){ go(h.node,{hit:true,open:true,instant}); if(h.q&&hits.length){ const mine=hits.find(x=>x.node===h.node); if(mine){ showMatches(mine); renderPanel(); } } }
+  showResults(!!(h.q&&hits.length)); }
+cam=fitCam(R.root,1.02); selected="root"; resetSpecs(); renderPanel(); renderCrumbs();
+if(location.hash.length>1) applyHash(true);
+window.addEventListener("hashchange",()=>{ const h=ArchSearch.parseHash(location.hash); if((h.node||"root")!==selected||h.q!==activeQ) applyHash(false); });
 scheduleSettle(); requestAnimationFrame(frame);
-window.__arch={ get cam(){return cam;}, get focus(){return focus;}, get selected(){return selected;}, rect:id=>R[id], meta:META, go, up, hitAt, visible:()=>hitList.length };
+window.__arch={ search:SX.search, get hits(){return hits;}, get cam(){return cam;}, get focus(){return focus;}, get selected(){return selected;}, rect:id=>R[id], meta:META, go, up, hitAt, visible:()=>hitList.length };
 })();
 </script>

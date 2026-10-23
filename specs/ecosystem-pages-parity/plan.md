@@ -434,6 +434,8 @@ R041.1-.6: Configured structural limits with named-function failure reporting in
 
 R042: `scripts/architecture_explorer/` discovers the organization repositories that have `specs/` in one paged query (`sources.org_repositories`, reconciled with `registry.json`), reads their spec rows, fits the connector fleet in `model.json` to the scan set, places the rows, precomputes layouts with the pinned layout engine (`layout.mjs`) and renders `template.html` with a build-time and head-commit stamp. The organization site workflow in Knuckles-Team/.github builds the canonical copy every 30 minutes and on `repository_dispatch: specs-changed`. `pages_pipeline.yml` gives each core repository a `/architecture/` redirect to it (`architecture_explorer: auto`, `build.py --redirect`) and sends the dispatch when `org_site_dispatch_token` is set. One canonical build is simpler than rebuilding eight copies on a schedule and keeps every link current.
 
+R042.1 to R042.4: `build.search_index` turns the placed tree into the compact index that `render` embeds next to the tree; `search.cjs` holds the ranking and hash parsing and is inlined into `template.html` and loaded by node in the tests. The search box reuses `go`, `fitCam` and `openness` through `openCam`, so a result opens its ancestors the way a manual zoom does. `sources.read_aliases` reads each repository's alias file.
+
 ## Agent-readiness and static delivery (PIPE-PAGES-R043)
 
 This requirement explicitly assigns the existing readiness and static delivery contract to this spec.

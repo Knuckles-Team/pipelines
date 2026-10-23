@@ -6,6 +6,7 @@ import json
 import os
 import re
 import subprocess
+import tomllib
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -27,6 +28,7 @@ class Snapshot:
     head: str = ""
     files: set[str] = field(default_factory=set)
     rows: list[dict] = field(default_factory=list)
+    aliases: dict[str, str] = field(default_factory=dict)
     error: str = ""
 
 
@@ -141,6 +143,20 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
     return rows
 
 
+ALIAS_FILE = ".config/spec-aliases.toml"
+
+
+def read_aliases(reader, files: set[str]) -> dict[str, str]:
+    """Retired ID prefix or row ID -> canonical, from a repository's alias file (empty when absent or unreadable)."""
+    if ALIAS_FILE not in files:
+        return {}
+    try:
+        doc = tomllib.loads(reader.read(ALIAS_FILE))
+    except (tomllib.TOMLDecodeError, OSError, ValueError, urllib.error.URLError):
+        return {}
+    return {k: v for k, v in doc.items() if isinstance(k, str) and isinstance(v, str)}
+
+
 def snapshot(entry: dict, mode: str, workspace: Path | None, token: str | None) -> Snapshot:
     """Read one registry entry."""
     snap = Snapshot(repo=entry["name"], slug=entry["slug"])
@@ -152,6 +168,7 @@ def snapshot(entry: dict, mode: str, workspace: Path | None, token: str | None) 
         snap.head = reader.head()
         snap.files = reader.files()
         snap.rows = rows_for(reader, entry["name"], snap.files)
+        snap.aliases = read_aliases(reader, snap.files)
     except (OSError, KeyError, ValueError, urllib.error.URLError) as exc:
         snap.error = f"{type(exc).__name__}: {exc}"
     return snap
