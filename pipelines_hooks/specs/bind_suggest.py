@@ -19,7 +19,8 @@ import json
 import re
 from collections import defaultdict
 from pathlib import Path
-from typing import NamedTuple
+from dataclasses import dataclass
+from typing import ClassVar
 
 from pipelines_hooks.core.gitenv import git_text, repo_root
 from pipelines_hooks.specs.aliases import load_aliases
@@ -43,10 +44,12 @@ MIN_TERMS = 2
 MIN_TERM_RATIO = 0.4
 
 
-class TestCase(NamedTuple):
+@dataclass(frozen=True)
+class TestCase:
     """One discovered test: where it is, what it is called, and the text a row may match."""
 
-    __test__ = False
+    __test__: ClassVar[bool] = False
+
     path: str
     name: str
     head: str  # name + docstring words
