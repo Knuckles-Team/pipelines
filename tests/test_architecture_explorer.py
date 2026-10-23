@@ -363,3 +363,216 @@ def test_agent_contract_rows_land_on_the_connector_delivery_standard() -> None:
     direct = Placer(Tree(model)).run(rows)
     where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
     assert {where[r["id"]] for r in rows} == {"pipe.connspec.std"}
+
+
+# ---------------------------------------------------------------- capability search (PIPE-PAGES-R042.1 to R042.4)
+
+_NEEDS_LAYOUT = pytest.mark.skipif(
+    shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
+)
+_SEARCH_ROWS = {
+    "agent-connector-sdk": [
+        _row(
+            "SDK-CONNECTOR-CONTROL-R030",
+            "SDK provides GraphQL introspection context helpers for connector tools",
+            "SDK-CONNECTOR-CONTROL",
+            "agent-connector-sdk",
+        ),
+        _row(
+            "SDK-CONNECTOR-CONTROL-R030.1",
+            "SDK owns the one GraphQL client for connectors",
+            "SDK-CONNECTOR-CONTROL",
+            "agent-connector-sdk",
+        ),
+        _row(
+            "SDK-CONNECTOR-CONTROL-R043",
+            "SDK declares a source access contract for the engine client",
+            "SDK-CONNECTOR-CONTROL",
+            "agent-connector-sdk",
+        ),
+    ],
+    "adguard-home-agent": [
+        _row("CONN-ADGUARD-HOME-AGENT-R002", "Shared GraphQL client", "connector-identity", "adguard-home-agent")
+    ],
+    "ansible-tower-mcp": [
+        _row("CONN-ANSIBLE-TOWER-MCP-R002", "Shared GraphQL client", "connector-identity", "ansible-tower-mcp")
+    ],
+}
+
+
+def _build_page(monkeypatch, tmp_path: Path, rows_by_repo: dict, aliases: dict | None = None) -> str:
+    def fake_load(registry, mode, workspace=None, workers=12):
+        return [
+            Snapshot(
+                repo=e["name"],
+                slug=e["slug"],
+                head="h",
+                rows=rows_by_repo.get(e["name"], []),
+                aliases=aliases or {} if e["name"] == "agent-connector-sdk" else {},
+            )
+            for e in registry
+        ]
+
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(explorer, "load_all", fake_load)
+    page = tmp_path / "index.html"
+    assert explorer.main(["--mode", "github", "--artifact", str(page)]) == 0
+    return page.read_text()
+
+
+def _payload(html: str) -> dict:
+    start = html.index("const PAYLOAD = ") + len("const PAYLOAD = ")
+    return json.loads(html[start : html.index(";\n(function(){", start)].replace("<\\/", "</"))
+
+
+def _node_search(index: dict, queries: list[str]) -> list[list[dict]]:
+    """Run the page's own search module under node and return the hits for each query."""
+    import subprocess
+
+    script = (
+        "const A=require('./search.cjs');const s=A.create(JSON.parse(process.argv[1]));"
+        "console.log(JSON.stringify(JSON.parse(process.argv[2]).map(q=>s.search(q))));"
+    )
+    out = subprocess.run(
+        ["node", "-e", script, json.dumps(index), json.dumps(queries)],
+        cwd=PKG,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return json.loads(out.stdout)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.1")
+@_NEEDS_LAYOUT
+def test_search_index_covers_every_row_and_maps_it_to_a_node(monkeypatch, tmp_path: Path) -> None:
+    payload = _payload(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS))
+    index, tree = payload["search"], payload["tree"]
+    expected = {r["id"] for rows in _SEARCH_ROWS.values() for r in rows}
+    assert {r[0] for r in index["rows"]} == expected == _ids(tree)
+    assert len(index["rows"]) == payload["meta"]["rows"]
+    holders: dict[str, str] = {}
+
+    def walk(node: dict) -> None:
+        holders.update({s["id"]: node["id"] for s in node["specs"]})
+        for child in node["children"]:
+            walk(child)
+
+    walk(tree)
+    for rid, title, node_idx, repo_idx, fam_idx, status_idx in index["rows"]:
+        assert index["nodes"][node_idx][0] == holders[rid]
+        assert index["repos"][repo_idx] and index["fams"][fam_idx] and index["st"][status_idx]
+    assert len(index["nodes"]) == payload["meta"]["nodes"]
+    assert all(n[1] and n[2] for n in index["nodes"])
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.1")
+@_NEEDS_LAYOUT
+def test_search_index_carries_repository_aliases(monkeypatch, tmp_path: Path) -> None:
+    html = _build_page(monkeypatch, tmp_path, _SEARCH_ROWS, aliases={"OLDSDK-": "SDK-CONNECTOR-CONTROL-"})
+    index = _payload(html)["search"]
+    assert index["aliases"] == {"OLDSDK-": "SDK-CONNECTOR-CONTROL-"}
+    (hits,) = _node_search(index, ["OLDSDK-R030.1"])
+    assert hits[0]["id"] == "SDK-CONNECTOR-CONTROL-R030.1"
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.2")
+@_NEEDS_LAYOUT
+def test_a_capability_search_ranks_the_owning_row_first(monkeypatch, tmp_path: Path) -> None:
+    index = _payload(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS))["search"]
+    (hits,) = _node_search(index, ["GraphQL client"])
+    ids = [h["id"] for h in hits]
+    assert ids[0] == "SDK-CONNECTOR-CONTROL-R030.1"
+    assert {"CONN-ADGUARD-HOME-AGENT-R002", "SDK-CONNECTOR-CONTROL-R030"} <= set(ids[:4])
+    assert hits[0]["repo"] == "agent-connector-sdk" and hits[0]["kind"] == "row"
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.2")
+@_NEEDS_LAYOUT
+def test_an_id_search_is_exact(monkeypatch, tmp_path: Path) -> None:
+    index = _payload(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS))["search"]
+    exact, lower, parent, prefix, nothing = _node_search(
+        index,
+        [
+            "SDK-CONNECTOR-CONTROL-R030.1",
+            "sdk-connector-control-r030.1",
+            "SDK-CONNECTOR-CONTROL-R030",
+            "SDK-CONNECTOR-CONTROL-R04",
+            "SDK-CONNECTOR-CONTROL-R999",
+        ],
+    )
+    assert [h["id"] for h in exact] == ["SDK-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in lower] == ["SDK-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in parent] == ["SDK-CONNECTOR-CONTROL-R030", "SDK-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in prefix] == ["SDK-CONNECTOR-CONTROL-R043"]
+    assert nothing == []
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.3")
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_deep_links_parse() -> None:
+    import subprocess
+
+    script = (
+        "const A=require('./search.cjs');"
+        "console.log(JSON.stringify(['#q=GraphQL%20client','#q=GraphQL+client&node=sdk.control.transport',"
+        "'#node=conn.infra.x','#sdk.control.transport','','#q=%E0%A4%A'].map(A.parseHash)));"
+        "console.log(A.hashFor('sdk.control.transport','GraphQL client'),A.hashFor('root',''));"
+    )
+    lines = subprocess.run(
+        ["node", "-e", script], cwd=PKG, capture_output=True, text=True, check=True
+    ).stdout.splitlines()
+    assert json.loads(lines[0]) == [
+        {"node": "", "q": "GraphQL client"},
+        {"node": "sdk.control.transport", "q": "GraphQL client"},
+        {"node": "conn.infra.x", "q": ""},
+        {"node": "sdk.control.transport", "q": ""},
+        {"node": "", "q": ""},
+        {"node": "", "q": "%E0%A4%A"},
+    ]
+    assert lines[1] == "#node=sdk.control.transport&q=GraphQL%20client "
+
+
+def _chrome() -> str | None:
+    import glob
+
+    for pattern in (
+        "/opt/pw-browsers/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell",
+        str(
+            Path.home()
+            / ".cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell"
+        ),
+    ):
+        found = sorted(glob.glob(pattern))
+        if found:
+            return found[-1]
+    return shutil.which("chromium") or shutil.which("google-chrome")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.4")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_path: Path) -> None:
+    import subprocess
+
+    page = tmp_path / "index.html"
+    page.write_text(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS))
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--no-sandbox",
+            "--disable-gpu",
+            "--host-resolver-rules=MAP * ~NOTFOUND",
+            "--window-size=1500,950",
+            "--virtual-time-budget=6000",
+            "--dump-dom",
+            page.as_uri() + "#q=GraphQL%20client",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    assert re.search(r'<li data-spec="SDK-CONNECTOR-CONTROL-R030.1" class="flash"', out)
+    assert 'role="combobox"' in out and 'aria-label="Search results"' in out
+    assert re.search(r'<input id="q"[^>]*>', out) and "GraphQL client" in out

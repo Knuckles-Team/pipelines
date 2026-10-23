@@ -363,6 +363,10 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R041.5: Evidence. Record policy digest and function counts.
 - [ ] PIPE-PAGES-R041.6: Hot-path proof. Build fails on excess arguments.
 - [x] PIPE-PAGES-R042: Generated architecture explorer at /architecture/ on every core Pages site, linked from the shared theme.
+- [x] PIPE-PAGES-R042.1: Search index. Bound to tests/test_architecture_explorer.py::test_search_index_covers_every_row_and_maps_it_to_a_node.
+- [x] PIPE-PAGES-R042.2: Ranking. Bound to tests/test_architecture_explorer.py::test_a_capability_search_ranks_the_owning_row_first.
+- [x] PIPE-PAGES-R042.3: Deep links. Bound to tests/test_architecture_explorer.py::test_deep_links_parse.
+- [x] PIPE-PAGES-R042.4: Landing and access. Bound to tests/test_architecture_explorer.py::test_a_q_deep_link_lands_on_the_owning_part_in_a_browser.
 - [ ] PIPE-PAGES-R043.1: Model. Bind the existing implementation and `tests/test_pages_readiness.py::test_second_build_and_offline_tck_are_idempotent`.
 - [ ] PIPE-PAGES-R043.2: Behavior. Bind the existing implementation and `tests/test_pages_readiness.py::test_build_publishes_source_markdown_and_served_mime`.
 - [ ] PIPE-PAGES-R043.3: Wiring. Bind the existing implementation and `tests/test_pages_pipeline_contract.py::test_enabled_path_checks_strict_build_and_runs_owned_tck`.

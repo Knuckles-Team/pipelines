@@ -111,6 +111,46 @@ def emit(node: dict, direct: dict, layouts: dict) -> dict:
     return out
 
 
+def search_index(data: dict, aliases: dict[str, str] | None = None) -> dict:
+    """Return the compact capability-search index for the placed tree.
+
+    Every spec row is `[id, title, node, repo, family, status]` (numbers index the shared tables) and
+    every node is `[id, label, description, repo, code paths]`; `aliases` maps retired IDs and prefixes
+    from each repository's `.config/spec-aliases.toml` to their canonical form.
+    """
+    repos: dict[str, int] = {}
+    fams: dict[str, int] = {}
+
+    def intern(table: dict[str, int], key: str) -> int:
+        return table.setdefault(key, len(table))
+
+    nodes: list[list] = []
+    rows: list[list] = []
+    for node in _walk(data):
+        idx = len(nodes)
+        nodes.append([node["id"], node["label"], node["description"], intern(repos, node["repo"] or ""), node["code"]])
+        for spec in node["specs"]:
+            rows.append(
+                [
+                    spec["id"],
+                    spec["title"],
+                    idx,
+                    intern(repos, spec["repo"]),
+                    intern(fams, spec["family"]),
+                    STATUSES.index(spec["status"]) if spec["status"] in STATUSES else 1,
+                ]
+            )
+    return {
+        "v": 1,
+        "repos": list(repos),
+        "fams": list(fams),
+        "st": list(STATUSES),
+        "nodes": nodes,
+        "rows": rows,
+        "aliases": dict(sorted((aliases or {}).items())),
+    }
+
+
 FLEET = "connectors"
 DISCOVERED = "conn.discovered"
 
@@ -209,14 +249,19 @@ def build(mode: str, workspace: Path | None) -> tuple[dict, dict]:
         "families": len({(r["repo"], r["family"]) for r in rows}),
         "how": dict(Counter(placer.how.values())),
         "dropped_code": len(dropped),
+        "aliases": {k: v for snap in reversed(snaps) for k, v in snap.aliases.items()},
         "crossings": count_crossings(layouts),
     }
     return data, meta
 
 
 def render(data: dict, meta: dict) -> str:
-    payload = json.dumps({"tree": data, "meta": meta}, separators=(",", ":")).replace("</", "<\\/")
-    return (HERE / "template.html").read_text().replace("/*__DATA__*/null", payload)
+    aliases = meta.get("aliases", {})
+    meta = {k: v for k, v in meta.items() if k != "aliases"}
+    index = search_index(data, aliases)
+    payload = json.dumps({"tree": data, "meta": meta, "search": index}, separators=(",", ":")).replace("</", "<\\/")
+    page = (HERE / "template.html").read_text().replace("/*__SEARCH__*/", (HERE / "search.cjs").read_text())
+    return page.replace("/*__DATA__*/null", payload)
 
 
 CANONICAL = "https://knuckles-team.github.io/.github/architecture/"
@@ -266,7 +311,7 @@ def main(argv: list[str] | None = None) -> int:
             path.write_text(text)
     if args.tree:
         args.tree.write_text(json.dumps({"tree": data, "meta": meta}, indent=1))
-    print(json.dumps({k: v for k, v in meta.items() if k not in ("heads", "slugs", "pages_node")}, indent=1))
+    print(json.dumps({k: v for k, v in meta.items() if k not in ("heads", "slugs", "pages_node", "aliases")}, indent=1))
     if meta["unmapped_violations"]:
         print("unmapped rows not on the reviewed allowlist: " + ", ".join(meta["unmapped_violations"]), file=sys.stderr)
         return 1

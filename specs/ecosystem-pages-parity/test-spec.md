@@ -277,6 +277,10 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R021.77 | PIPE-PAGES-R021.77 | Run `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-PAGES-R021.78 | PIPE-PAGES-R021.78 | Run `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-PAGES-R042 | PIPE-PAGES-R042 | Run `tests/test_architecture_explorer.py`, `test_architecture_explorer_defaults_to_core_repositories_and_builds_before_upload` `test_architecture_explorer_link_opens_the_current_repository_node` and `test_check_requires_the_diagram_to_link_the_explorer`. Assert placement, deleted-row removal, discovery reconciliation, the freshness stamp, the page and redirect variants, the dispatch step, the theme wiring and the diagram link. |
+| T-PIPE-PAGES-R042.1 | PIPE-PAGES-R042.1 | `tests/test_architecture_explorer.py::test_search_index_covers_every_row_and_maps_it_to_a_node` and `tests/test_architecture_explorer.py::test_search_index_carries_repository_aliases`. Index every row and node. Bind the mapped node of each row to the tree. Carry the alias table so a retired ID resolves. |
+| T-PIPE-PAGES-R042.2 | PIPE-PAGES-R042.2 | `tests/test_architecture_explorer.py::test_a_capability_search_ranks_the_owning_row_first` and `tests/test_architecture_explorer.py::test_an_id_search_is_exact`. Rank capability terms. Keep ID search exact. Put the owning row ahead of repeated boilerplate titles. |
+| T-PIPE-PAGES-R042.3 | PIPE-PAGES-R042.3 | `tests/test_architecture_explorer.py::test_deep_links_parse`. Parse every deep-link form. Write the hash back. |
+| T-PIPE-PAGES-R042.4 | PIPE-PAGES-R042.4 | `tests/test_architecture_explorer.py::test_a_q_deep_link_lands_on_the_owning_part_in_a_browser` loads the page in a headless Chromium when one is installed. Land on the owning node with the matching rows shown. Expose the combobox and listbox roles. |
 
 ## Agent-readiness and static delivery
 
