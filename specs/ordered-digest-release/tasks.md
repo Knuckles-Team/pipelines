@@ -64,3 +64,6 @@ commit).
 - [ ] **PIPE-RELEASE-R009.1:** Wiring.
 - [ ] **PIPE-RELEASE-R009.2:** Hot-path proof.
 - [x] PIPE-RELEASE-R010: Named per-repository source-build allowance. Bind the existing allowance tests in `tests/test_wheel_readiness.py`.
+- [ ] PIPE-RELEASE-R011: Connector pull request workflow. Bind the two tests in `tests/test_connector_release_pipeline.py`.
+- [ ] PIPE-RELEASE-R012: Post-release verification of PyPI and Docker. Bind the verification tests in `tests/test_connector_release_pipeline.py`.
+- [ ] PIPE-RELEASE-R013: Release-standard check. Bind `tests/hooks/test_release_standard.py`.
