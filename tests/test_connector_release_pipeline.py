@@ -19,14 +19,14 @@ def _on(document: dict) -> dict:
 @pytest.mark.spec("PIPE-RELEASE-R011")
 def test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes() -> None:
     document = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
-    assert set(_on(document)["workflow_call"]["inputs"]) == {"runner", "test-scope"}
+    assert set(_on(document)["workflow_call"]["inputs"]) == {"runner", "test-scope", "sync-args"}
     assert document["permissions"] == {"contents": "read"}
     job = document["jobs"]["gates"]
     assert job["uses"] == "Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main"
     assert job["with"]["stages"] == "pre-commit"
     assert job["with"]["skip-hooks"] == "docker-compose-check"
     setup = job["with"]["setup-command"]
-    assert "uv sync --frozen --all-extras --all-groups" in setup
+    assert "uv sync --frozen ${{ inputs.sync-args }}" in setup
     assert 'npm install --global --prefix "$HOME/.npm-global" bun' in setup
     assert "PYTHONPATH=" in setup and '>> "$GITHUB_ENV"' in setup
     assert "uv tool install bump2version" in setup and '.venv/bin" >> "$GITHUB_PATH"' in setup
