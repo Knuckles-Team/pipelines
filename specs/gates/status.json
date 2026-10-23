@@ -58,7 +58,12 @@
     "PIPE-GATES-R016.27",
     "PIPE-GATES-R016.28",
     "PIPE-GATES-R016.29",
-    "PIPE-GATES-R016.30"
+    "PIPE-GATES-R016.30",
+    "PIPE-GATES-R016.31",
+    "PIPE-GATES-R016.32",
+    "PIPE-GATES-R016.33",
+    "PIPE-GATES-R016.34",
+    "PIPE-GATES-R016.35"
   ],
   "requirements": [
     {
@@ -343,7 +348,12 @@
         "PIPE-GATES-R016.27",
         "PIPE-GATES-R016.28",
         "PIPE-GATES-R016.29",
-        "PIPE-GATES-R016.30"
+        "PIPE-GATES-R016.30",
+        "PIPE-GATES-R016.31",
+        "PIPE-GATES-R016.32",
+        "PIPE-GATES-R016.33",
+        "PIPE-GATES-R016.34",
+        "PIPE-GATES-R016.35"
       ]
     },
     {
@@ -650,7 +660,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "16df550a8c49",
-        "5e66d79f0209"
+        "9667f5c5649c"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:745",
@@ -703,6 +713,51 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:878"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.31",
+      "title": "Scripts that drive a deleted script",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:890"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.32",
+      "title": "Prompt key assertions",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:914"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.33",
+      "title": "Package name from `pyproject.toml`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:926"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.34",
+      "title": "Empty-source module and file endings",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:952"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.35",
+      "title": "Hooks a connector's own workflow covers",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_connector_release_pipeline.py:99"
       ]
     }
   ]
