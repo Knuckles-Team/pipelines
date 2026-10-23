@@ -472,6 +472,7 @@
       "delivery_state": "LANDED",
       "landed_in": [
         "3cfd039fe3e2",
+        "3d0455152b96",
         "4f1e1f0aff4a"
       ],
       "verified_by": [],
@@ -488,29 +489,38 @@
     {
       "id": "PIPE-RELEASE-R007.1",
       "title": "Model",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
+        "3d0455152b96",
         "4f1e1f0aff4a"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_gates_pipeline_contract.py:44"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R007.2",
       "title": "Behavior",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
+        "3d0455152b96",
         "4f1e1f0aff4a"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_gates_pipeline_contract.py:52"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R007.3",
       "title": "Wiring",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
+        "3d0455152b96",
         "4f1e1f0aff4a"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_gates_pipeline_contract.py:65"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R007.4",
@@ -533,11 +543,14 @@
     {
       "id": "PIPE-RELEASE-R007.6",
       "title": "Hot-path proof",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
+        "3d0455152b96",
         "4f1e1f0aff4a"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_fast_tests.py:10"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R007.7",
@@ -611,21 +624,29 @@
     {
       "id": "PIPE-RELEASE-R011",
       "title": "Connector pull request workflow",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3d0455152b96"
+      ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:18",
-        "tests/test_connector_release_pipeline.py:32"
+        "tests/test_connector_release_pipeline.py:19",
+        "tests/test_connector_release_pipeline.py:33",
+        "tests/test_connector_release_pipeline.py:34"
       ]
     },
     {
       "id": "PIPE-RELEASE-R012",
       "title": "A connector release publishes PyPI and Docker, and verifies both",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3d0455152b96"
+      ],
       "verified_by": [
-        "tests/test_connector_release_pipeline.py:72",
-        "tests/test_connector_release_pipeline.py:77"
+        "tests/test_connector_release_pipeline.py:74",
+        "tests/test_connector_release_pipeline.py:75",
+        "tests/test_connector_release_pipeline.py:80",
+        "tests/test_connector_release_pipeline.py:81"
       ]
     },
     {
