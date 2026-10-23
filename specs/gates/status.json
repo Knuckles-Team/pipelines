@@ -425,7 +425,7 @@
       "title": "Declarations from the retired files (migrate a)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "233a00174fc6"
+        "64c83743091d"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:127",
@@ -466,8 +466,8 @@
       "title": "Tests (migrate f)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "233a00174fc6",
-        "56e71980a65f"
+        "64c83743091d",
+        "fbcdac36c764"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:202",
@@ -482,7 +482,7 @@
       "title": "Idempotent hard cutover",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "9fffad6b1179"
+        "569c0031884d"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:225",
@@ -495,13 +495,15 @@
       "title": "Batch driver and verify",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "233a00174fc6",
-        "7f91da3571c6"
+        "64c83743091d",
+        "6feb14333fd2",
+        "e018d82a0d26"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:366",
-        "tests/hooks/test_connector_migrate.py:381",
-        "tests/hooks/test_connector_migrate.py:395"
+        "tests/hooks/test_connector_migrate.py:367",
+        "tests/hooks/test_connector_migrate.py:382",
+        "tests/hooks/test_connector_migrate.py:396",
+        "tests/hooks/test_connector_migrate.py:403"
       ]
     }
   ]
