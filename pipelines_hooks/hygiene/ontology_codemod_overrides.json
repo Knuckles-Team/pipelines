@@ -1,0 +1,291 @@
+{
+ "*": {
+  "AccessControlEntry": "Policy",
+  "AccessPolicy": "Policy",
+  "AdministrativeTask": "WorkItem",
+  "Asset": "Resource",
+  "AssetStack": "Collection",
+  "AuthenticationFactor": "Credential",
+  "Budget": "Plan",
+  "Build": "Artifact",
+  "Certificate": "Credential",
+  "CertificateAuthority": "Agent",
+  "Change": "WorkItem",
+  "ChannelLineup": "Collection",
+  "ConfigurationItemCollection": "ResourceGroup",
+  "Cookie": "Artifact",
+  "CookieDomain": "Place",
+  "DataAsset": "Dataset",
+  "DataCatalog": "Dataset",
+  "DatasetSplit": "Dataset",
+  "DatasetVersion": "Dataset",
+  "Deployment": "RunEvent",
+  "EvaluationMeasure": "Metric",
+  "ExchangeRate": "Observation",
+  "FinancialAnalysis": "Assessment",
+  "Genre": "Category",
+  "IdentityRealm": "Organization",
+  "Implementation": "Tool",
+  "Incident": "WorkItem",
+  "IndexingRun": "RunEvent",
+  "InformationSource": "Resource",
+  "Invoice": "Document",
+  "LegalBasis": "Requirement",
+  "MediaCollection": "Collection",
+  "MediaLibrary": "Collection",
+  "MediaRequest": "WorkItem",
+  "MediaResource": "CreativeWork",
+  "MembershipRule": "GovernanceRule",
+  "ModelArtifact": "Model",
+  "ModelEvaluation": "Assessment",
+  "Portfolio": "ResourceGroup",
+  "PriceObservation": "Observation",
+  "Problem": "WorkItem",
+  "QualityProfile": "Policy",
+  "QuantitativeModel": "Model",
+  "Quote": "Observation",
+  "Recording": "CreativeWork",
+  "RiskAssessment": "Assessment",
+  "Scope": "Requirement",
+  "SearchResult": "Document",
+  "Setting": "Policy",
+  "Share": "Resource",
+  "Snapshot": "Artifact",
+  "Token": "Credential",
+  "TransformationRun": "RunEvent",
+  "TrustAnchor": "Credential",
+  "WebCapture": "Rendition",
+  "WebResource": "Document"
+ },
+ "ansible-tower-mcp": {
+  "AdHocCommand": "ActionInvocation",
+  "AnsibleProject": "SoftwareProject",
+  "InventoryGroup": "ResourceGroup",
+  "Job": "PipelineRun",
+  "JobTemplate": "WorkflowDefinition",
+  "WorkflowJob": "PipelineRun",
+  "WorkflowJobTemplate": "WorkflowDefinition"
+ },
+ "archimate-mcp": {
+  "ArchimateModel": null,
+  "ArchimateRelationship": null
+ },
+ "archivebox-api": {
+  "ArchiveResult": "File",
+  "Snapshot": "Document"
+ },
+ "aris-mcp": {
+  "EPCObject": null
+ },
+ "arr-mcp": {
+  "RootFolder": "Folder"
+ },
+ "atlassian-agent": {
+  "Sprint": "Iteration"
+ },
+ "audiobookshelf-mcp": {
+  "PodcastEpisode": "CreativeWork"
+ },
+ "camunda-mcp": {
+  "Job": null,
+  "Task": "WorkItem"
+ },
+ "ciso-assistant-api": {
+  "RiskScenario": null
+ },
+ "clarity-api": {
+  "ClaritySession": null
+ },
+ "container-manager-mcp": {
+  "ContainerNetwork": "Network",
+  "ContainerVolume": "Volume"
+ },
+ "craft-suite-api": {
+  "ArtcraftResource": null
+ },
+ "data-science-mcp": {
+  "EvaluationMetric": "Metric",
+  "InterpretabilityTest": null,
+  "ModelArtifact": null
+ },
+ "dockerhub-api": {
+  "Repository": null
+ },
+ "emerald-exchange": {
+  "BacktestMetric": "Metric",
+  "FinanceAlgorithm": null,
+  "IModel": null,
+  "ModelDisplay": null,
+  "RiskFactor": null,
+  "RiskMitigation": null,
+  "Trade": null,
+  "TradingSwarmEntity": null
+ },
+ "erpnext-agent": {
+  "Customer": null,
+  "Item": "SupplyChainItem",
+  "OrgUnit": "Department",
+  "PurchaseOrder": "Order",
+  "SalesOrder": "Order"
+ },
+ "fan-manager": {
+  "FanSpeedSetting": null
+ },
+ "freshrss-agent": {
+  "FeedCategory": "Category"
+ },
+ "github-agent": {
+  "CheckRun": "Job",
+  "Release": null,
+  "Repository": "SoftwareProject",
+  "WorkflowRun": "PipelineRun"
+ },
+ "gitlab-api": {
+  "CheckRun": "Job",
+  "Job": null,
+  "Pipeline": "PipelineRun",
+  "Project": "SoftwareProject",
+  "Release": null
+ },
+ "hdhomerun-mcp": {
+  "Channel": null,
+  "Lineup": null,
+  "Recording": null,
+  "RecordingRule": null,
+  "Tuner": "Device"
+ },
+ "home-assistant-agent": {
+  "LogbookEntry": "Event"
+ },
+ "immich-api": {
+  "ImmichAlbum": null,
+  "ImmichAlbumMembership": null,
+  "ImmichAsset": "AssetOccurrence",
+  "ImmichAssetStack": null
+ },
+ "jena-mcp": {
+  "AdminTask": null
+ },
+ "kafka-mcp": {
+  "Broker": "Server",
+  "ConsumerGroup": "ResourceGroup",
+  "ReplicationSlot": null
+ },
+ "lakekeeper-mcp": {
+  "IcebergNamespace": "Namespace"
+ },
+ "langfuse-agent": {
+  "DatasetRun": null
+ },
+ "legal-peripherals-mcp": {
+  "BoardResolution": "Decision",
+  "MaterialContract": "Agreement",
+  "WrittenConsent": "Document"
+ },
+ "lgtm-mcp": {
+  "Dashboard": null,
+  "Panel": null
+ },
+ "listmonk-api": {
+  "EmailTemplate": "Template",
+  "TransactionalMessage": "Message"
+ },
+ "lucerna-mcp": {
+  "SearchAlias": null,
+  "SearchIndex": null
+ },
+ "mealie-mcp": {
+  "RecipeCategory": "Category",
+  "RecipeTool": null
+ },
+ "media-downloader": {
+  "MediaOccurrence": "AssetOccurrence"
+ },
+ "microsoft-agent": {
+  "Message": null
+ },
+ "objectstore-mcp": {
+  "Object": "Blob"
+ },
+ "okta-agent": {
+  "GroupRule": null
+ },
+ "onetrust-api": {
+  "AssessmentTemplate": "Template",
+  "DataSubject": "Person"
+ },
+ "openbao-mcp": {
+  "SecretMount": null
+ },
+ "owncast-agent": {
+  "ChatMessage": "Message"
+ },
+ "plane-agent": {
+  "Cycle": "Iteration",
+  "Label": "Tag"
+ },
+ "portainer-agent": {
+  "EndpointGroup": "ResourceGroup"
+ },
+ "qbittorrent-agent": {
+  "TorrentCategory": "Category"
+ },
+ "repository-manager": {
+  "GitRepository": "SoftwareProject",
+  "Project": "SoftwareProject"
+ },
+ "rom-manager": {
+  "GameCollection": "Collection",
+  "GameSave": null,
+  "GameState": null,
+  "GameSystem": null
+ },
+ "salesforce-agent": {
+  "Case": "Ticket",
+  "Opportunity": null
+ },
+ "scholarx": {
+  "ResearchCategory": "Category"
+ },
+ "searxng-mcp": {
+  "SearchResult": null
+ },
+ "servicenow-api": {
+  "ConfigurationItem": "AssetInstance"
+ },
+ "spark-mcp": {
+  "SparkJob": "Job"
+ },
+ "stirlingpdf-agent": {
+  "PdfPipeline": null,
+  "PdfTool": null
+ },
+ "systems-manager": {
+  "DiskVolume": "Volume"
+ },
+ "tunnel-manager": {
+  "FileTransfer": "ActionInvocation",
+  "HostGroup": "ResourceGroup"
+ },
+ "twenty-mcp": {
+  "Opportunity": null,
+  "PipelineStage": null
+ },
+ "uptime-kuma-agent": {
+  "StatusPage": null
+ },
+ "vaultwarden-mcp": {
+  "VaultwardenCollection": "Collection",
+  "VaultwardenFolder": "Folder",
+  "VaultwardenItem": "Credential"
+ },
+ "vector-mcp": {
+  "VectorCollection": "Collection"
+ },
+ "webarchiver": {
+  "WebarchiverResource": null
+ },
+ "world-reference-mcp": {
+  "ReferenceSyncRun": "RunEvent"
+ }
+}

@@ -6,7 +6,9 @@ connector pack (``<pkg>/ontology/*.ttl``, shapes, ``connector_manifest.yml`` and
 machine-readable code (PIPE-GATES-R016):
 
 * ``PARSE_ERROR``: a Turtle, YAML or JSON file does not parse.
-* ``ORPHAN_CLASS``: a class has no ``subClassOf``/``equivalentClass``/intersection path to the root.
+* ``PACK_IMPORTS_CORE``: a pack ``owl:imports`` an EG ontology (an antipattern, not a bridge).
+* ``NOT_ROLLED_UP_TO_CORE``: a pack class never reaches a class declared in an EG module.
+* ``ORPHAN_CLASS`` (EG modules only): a class has no ``subClassOf``/``equivalentClass``/intersection path to the root.
 * ``ISLAND_MODULE`` / ``ISLAND_PACK``: a module or pack is outside the main connected component.
 * ``DANGLING_REFERENCE``: an IRI is used as a parent, domain, range, property, shape target or
   mapping target but declared nowhere.
@@ -88,7 +90,10 @@ CODES = (
     "CONFLICTING_PARENT",
     "DUPLICATE_LABEL",
     "CQ_PATH_BROKEN",
+    "PACK_IMPORTS_CORE",
+    "NOT_ROLLED_UP_TO_CORE",
 )
+EG_CATALOG_IRI = "http://knuckles.team/kg"
 DEFAULT_CQ = Path(__file__).with_name("ontology_cqs.json")
 
 
@@ -221,6 +226,7 @@ class Model:
     domains: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
     ranges: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
     imports: list[tuple[str, str]] = field(default_factory=list)  # importing module, imported ontology IRI
+    import_refs: list[tuple[str, str, str]] = field(default_factory=list)  # module, file, imported ontology IRI
     ontology_mods: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))  # ontology IRI -> modules
     type_refs: list[tuple[str, str]] = field(default_factory=list)  # class IRI typed by an individual, module
     refs: list[tuple[str, str, str, str]] = field(default_factory=list)  # iri, role, module, file
@@ -333,6 +339,7 @@ def compose(sources: list[Source]) -> Model:
         for _, _, obj in g.triples((None, OWL.imports, None)):
             if isinstance(obj, URIRef):
                 m.imports.append((mod, str(obj)))
+                m.import_refs.append((mod, s.path, str(obj)))
         for subj, _, typ in g.triples((None, RDF.type, None)):
             if isinstance(subj, URIRef) and isinstance(typ, URIRef) and not str(typ).startswith(OWL_NS):
                 m.type_refs.append((str(typ), mod))
@@ -404,9 +411,61 @@ def _pack_of(m: Model, module: str) -> str:
     return module if m.kind.get(module) == "pack" else "eg"
 
 
+def _eg_declared(m: Model, iri: str) -> bool:
+    return any(m.kind.get(x) == "eg" for x in m.class_mods.get(iri, ()))
+
+
+def _is_eg_import(m: Model, onto: str) -> bool:
+    if onto.rstrip("#/") == EG_CATALOG_IRI:
+        return True
+    return any(m.kind.get(x) == "eg" for x in m.ontology_mods.get(onto, ()))
+
+
+def check_pack_imports(m: Model) -> None:
+    """PACK_IMPORTS_CORE: a pack importing an EG ontology is an antipattern, never a bridge."""
+    by_path = {(s.module, s.path): s for s in m.sources}
+    for mod, path, onto in sorted(set(m.import_refs)):
+        if m.kind.get(mod) == "pack" and _is_eg_import(m, onto):
+            m.findings.append(
+                Finding(
+                    "PACK_IMPORTS_CORE",
+                    f"{mod} imports the EG ontology <{onto}>; a pack extends EG classes and never imports it",
+                    mod,
+                    mod,
+                    path,
+                    _line_of(by_path[(mod, path)], "imports") if (mod, path) in by_path else 0,
+                    onto,
+                )
+            )
+
+
+def check_rollup(m: Model) -> None:
+    """NOT_ROLLED_UP_TO_CORE: a pack class whose parent chain never reaches a class declared in an EG module."""
+    for iri in sorted(m.class_mods):
+        if not _checkable(iri) or _eg_declared(m, iri):
+            continue
+        if any(_eg_declared(m, a) for a in m.ancestors(iri)):
+            continue
+        mod = _module_of(m, iri)
+        f, ln = _file_for(m, mod, iri)
+        top = sorted(a for a in m.ancestors(iri) if _checkable(a))
+        m.findings.append(
+            Finding(
+                "NOT_ROLLED_UP_TO_CORE",
+                f"{local(iri)} never reaches an EG core class through subClassOf/equivalentClass",
+                mod,
+                _pack_of(m, mod),
+                f,
+                ln,
+                iri,
+                {"ancestors": [local(a) for a in top]},
+            )
+        )
+
+
 def check_orphans(m: Model) -> None:
     for iri in sorted(m.class_mods):
-        if not _checkable(iri):
+        if not _checkable(iri) or not _eg_declared(m, iri):
             continue
         seen = {iri: 0}
         todo = [iri]
@@ -765,8 +824,12 @@ def module_graph(m: Model) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
     declared = {**{k: v for k, v in m.class_mods.items()}}
     for k, v in m.prop_mods.items():
         declared.setdefault(k, set()).update(v)
-    pack_ref = [(i, mod) for i, _, mod, _ in m.refs] + list(m.type_refs)
-    for mod, onto in m.imports:  # owl:imports bridges the importing module to the imported ontology's module
+    # class and property edges only; an individual's type bridges EG modules, never packs
+    pack_ref = [(i, mod) for i, _, mod, _ in m.refs] + [(i, x) for i, x in m.type_refs if m.kind.get(x) != "pack"]
+    # owl:imports bridges EG-internal modules only; a pack import of EG is an antipattern (PACK_IMPORTS_CORE)
+    for mod, onto in m.imports:
+        if m.kind.get(mod) == "pack":
+            continue
         for d in m.ontology_mods.get(onto, ()):
             if d != mod:
                 for adj in (ref, both):
@@ -1109,6 +1172,8 @@ def _cq_fix(m: Model, h: dict[str, Any], miss: str) -> list[tuple[str, str, list
 def run(sources: list[Source], questions: list[dict[str, Any]], *, with_plan: bool = True) -> dict[str, Any]:
     m = compose(sources)
     check_orphans(m)
+    check_pack_imports(m)
+    check_rollup(m)
     check_dangling(m)
     check_properties(m)
     data_only = check_isolated(m)

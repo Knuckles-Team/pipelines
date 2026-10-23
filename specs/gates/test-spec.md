@@ -83,3 +83,5 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 `tests/hooks/test_ontology_graph_check.py` builds small fixture ontologies, a manifest and an ingest file. It checks that every finding code fires, the parse error file, the orphan chain length, the dangling file and line, the island pack, the mapping and ingest checks, the conflicts, the competency question hops, the owner grouping of the fix plan, determinism, the exit codes with `--warn`, and the command against a temporary git repository.
 
 The module-graph tests (PIPE-GATES-R016.1 to R016.3) cover an import-only module, an individuals-only module and the fixture-directory path rule.
+
+The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9) is tested on fixture packs in `tests/hooks/test_ontology_codemod.py`: one test per rule family, idempotence, input-order independence, the projected finding counts and the dry-run command. R016.4 and R016.5 are in `tests/hooks/test_ontology_graph_check.py`.
