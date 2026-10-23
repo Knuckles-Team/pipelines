@@ -51,6 +51,8 @@ jobs:
         uv sync --frozen --all-extras --all-groups
         uv tool install bump2version
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+        # pre-commit runs under uvx, whose own python precedes PATH: expose the project packages too.
+        echo "PYTHONPATH=$("$PWD/.venv/bin/python" -c 'import site;print(site.getsitepackages()[0])'):$PWD" >> "$GITHUB_ENV"
         echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
         npm install --global --prefix "$HOME/.npm-global" bun
         echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"

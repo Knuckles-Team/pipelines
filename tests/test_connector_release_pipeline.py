@@ -28,6 +28,7 @@ def test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes() -> Non
     setup = job["with"]["setup-command"]
     assert "uv sync --frozen --all-extras --all-groups" in setup
     assert 'npm install --global --prefix "$HOME/.npm-global" bun' in setup
+    assert "PYTHONPATH=" in setup and '>> "$GITHUB_ENV"' in setup
     assert "uv tool install bump2version" in setup and '.venv/bin" >> "$GITHUB_PATH"' in setup
     assert job["with"]["config"] == ".pre-commit-config.yaml"
     assert job["with"]["timeout-minutes"] <= 10
