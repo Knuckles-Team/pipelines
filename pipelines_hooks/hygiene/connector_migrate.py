@@ -15,12 +15,15 @@ Everything a rule does not cover is a ``review`` item (``blocking`` stops the re
 
 from __future__ import annotations
 
+import ast
 import configparser
+import io
 import json
 import os
 import re
 import subprocess
 import sys
+import tokenize
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -169,6 +172,13 @@ def build_sources(inputs: dict[str, Any], review: Review) -> dict[str, Any] | No
                 "declarations", f"preset {name!r} differs from manifest sync raw; preset file used", blocking=False
             )
         tool = p.pop("tool", None)
+        action = p.get("action")
+        if tool and isinstance(action, str) and action:
+            # R016.24: the SDK splits an action tool into one tool per action, named <tool>_<action>.
+            tool = f"{tool}_{action}"
+            p.pop("action")
+            if isinstance(p.get("args"), dict):
+                p["args"].pop("action", None)
         if not tool or not _SOURCE_ID.match(name) or not p.get("id_field"):
             review.add("declarations", f"preset {name!r} lacks tool, id_field or a valid source id")
             continue
@@ -331,20 +341,11 @@ def strip_prompt(text: str) -> str | None:
 
 
 def strip_certification(root: Path, pkg: Path, changed: list[str], review: Review) -> None:
-    """Drop the cut files from the certification artifact digests (format-preserving only)."""
+    """Drop the cut files from the certification artifact digests; the file is rewritten in canonical format."""
     p = pkg / "ontology" / "certification.json"
     if not p.is_file():
         return
-    text = p.read_text(encoding="utf-8")
-    data = json.loads(text)
-    if json.dumps(data, indent=2, sort_keys=True) + "\n" != text:
-        if any(n in text for n in CUT_NAMES):
-            review.add(
-                "certification",
-                "certification.json is not in canonical format; strip by hand",
-                str(p.relative_to(root)),
-            )
-        return
+    data = json.loads(p.read_text(encoding="utf-8"))
     arts = data.get("artifacts", {})
     kept = {k: v for k, v in arts.items() if Path(k).name not in CUT_NAMES}
     if kept != arts:
@@ -395,7 +396,7 @@ def bump_patch(root: Path, changed: list[str], review: Review) -> str | None:
         search = cfg[section].get("search", "{current_version}").replace("{current_version}", cur)
         replace = cfg[section].get("replace", "{new_version}").replace("{new_version}", new)
         if not target.is_file() or search not in target.read_text(encoding="utf-8"):
-            review.add("version", f"bump target {fname} does not contain {search!r}", fname)
+            review.add("version", f"bump target {fname} skipped: it does not contain {search!r}", fname, blocking=False)
             continue
         target.write_text(target.read_text(encoding="utf-8").replace(search, replace), encoding="utf-8")
         changed.append(fname)
@@ -422,7 +423,8 @@ _MANIFEST_READ = re.compile(
     re.M,
 )
 _NAME_READ = re.compile(
-    r'^( *)manifest = \(\w+ / "connector_manifest\.yml"\)\.read_text\([^)]*\)\n'
+    r"^( *)(?:manifest_path = [^\n]*\n\1if not manifest_path\.is_file\(\):\n\1 +manifest_path = [^\n]*\n\1)?"
+    r'manifest = (?:\(\w+ / "connector_manifest\.yml"\)|manifest_path)\.read_text\([^)]*\)\n'
     r"\1match = re\.search\([^\n]*manifest[^\n]*\)\n"
     r"\1assert match is not None and match\.group\(1\) == (\w+)\n",
     re.M,
@@ -444,6 +446,170 @@ _PARENT_IMPORT = re.compile(
 def drop_parent_import_assertion(text: str) -> str:
     """Remove the scaffolded assertion that a pack imports the EG ontology (R1 removes that import)."""
     return _PARENT_IMPORT.sub("", text)
+
+
+# R016.19: reference strings of the live layout (``connector:<name>#mappings/<T>`` and ``#relations/<C>/<R>``)
+_REF_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r'"resources/(\w+)/relations/(\w+)"'), r'"relations/\1/\2"'),
+    (re.compile(r'(endswith\(\s*f?")/?relations/(\{?\w+\}?)"'), r'\1/\2"'),
+    (re.compile(r'(endswith\(\s*f?")schema_mappings/'), r"\1mappings/"),
+    (re.compile(r'manifest:([^#"\s]+)#schema_mappings/'), r"connector:\1#mappings/"),
+    (re.compile(r'manifest:([^#"\s]+)#resources/([^/"\s]+)/relations/'), r"connector:\1#relations/\2/"),
+    (re.compile(r'rsplit\("/relations/", 1\)\[-1\]'), 'rsplit("/", 1)[-1]'),
+)
+_SDK_LITERAL = re.compile(r"(agent-connector-sdk(?:\[[^\]]*\])?>=)(\d+\.\d+\.\d+)")
+
+
+def rewrite_references(text: str) -> str:
+    """Point reference-string assertions at the live layout and raise stale SDK floor literals."""
+    for rx, repl in _REF_RULES:
+        text = rx.sub(repl, text)
+    return _SDK_LITERAL.sub(lambda m: m.group(1) + SDK_FLOOR if _vt(m.group(2)) < _vt(SDK_FLOOR) else m.group(0), text)
+
+
+# R016.20: a bare string-literal list item naming a cut file is an assertion about a cut file
+_CUT_ITEM = re.compile(
+    r'^[ \t]*[rf]?["\'](?:[\w./-]*/)?(?:' + "|".join(re.escape(n) for n in CUT_NAMES) + r')["\'],?[ \t]*\n',
+    re.M,
+)
+
+
+def drop_cut_list_items(text: str) -> str:
+    return _CUT_ITEM.sub("", text)
+
+
+# R016.20: a test function that reads a cut file or the manifest resource is deleted whole
+def delete_cut_tests(text: str, words: tuple[str, ...]) -> tuple[str, list[str], list[str]]:
+    """(new text, deleted test names, spec ids they were bound to); the file is unchanged when nothing matches."""
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return text, [], []
+    lines = text.splitlines(keepends=True)
+    cuts: list[tuple[int, int, str]] = []
+    nodes = list(tree.body) + [m for c in tree.body if isinstance(c, ast.ClassDef) for m in c.body]
+    for node in nodes:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) or not node.name.startswith("test"):
+            continue
+        start = min([node.lineno] + [d.lineno for d in node.decorator_list]) - 1
+        if any(w in "".join(lines[start : node.end_lineno]) for w in words):
+            cuts.append((start, node.end_lineno, node.name))
+    if not cuts:
+        return text, [], []
+    specs = sorted(set(re.findall(r'spec\("([^"]+)"\)', "".join("".join(lines[a:b]) for a, b, _ in cuts))))
+    for a, b, _ in sorted(cuts, reverse=True):
+        del lines[a:b]
+    out = re.sub(r"\n{4,}", "\n\n\n", "".join(lines))
+    return out, [n for _, _, n in cuts], specs
+
+
+def prune_unused_imports(path: Path) -> None:
+    """Remove top-level imports whose names are no longer used (ruff F401 would fail the hook otherwise)."""
+    ruff = subprocess.run(["ruff", "check", "--select", "F401", "--fix", "--quiet", str(path)], capture_output=True)
+    del ruff
+
+
+def has_tests(text: str) -> bool:
+    return bool(re.search(r"(?m)^\s*(?:async )?def test", text))
+
+
+# R016.21: prose that names a cut file (docstrings, comments) points at the generated declaration instead
+_MENTION = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in CUT_NAMES if n != "data_resources.json") + r")\b")
+
+
+def _doc_comment_lines(text: str) -> set[int]:
+    lines: set[int] = set()
+    try:
+        tree = ast.parse(text)
+        for node in ast.walk(tree):
+            body = getattr(node, "body", None)
+            if isinstance(body, list) and body and isinstance(body[0], ast.Expr):
+                v = body[0].value
+                if isinstance(v, ast.Constant) and isinstance(v.value, str):
+                    lines.update(range(body[0].lineno, body[0].end_lineno + 1))
+        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+            if tok.type == tokenize.COMMENT:
+                lines.add(tok.start[0])
+    except (SyntaxError, tokenize.TokenError):
+        return set()
+    return lines
+
+
+def rewrite_py_prose(text: str, pkg: str) -> str:
+    """Docstring and comment mentions of cut files become the generated ``connector_sources`` module."""
+    prose = _doc_comment_lines(text)
+    out = []
+    for i, ln in enumerate(text.splitlines(keepends=True), 1):
+        out.append(_MENTION.sub(f"{pkg}.connector_sources", ln) if i in prose else ln)
+    return "".join(out)
+
+
+_FACTORY_DOC = '"""Connector package; the data sources are declared in ``{pkg}.connector_sources``."""\n'
+
+
+def rewrite_connectors_init(text: str, pkg: str) -> str | None:
+    """A connectors package whose __init__ is only a docstring (plus the future import) gets the fixed docstring."""
+    try:
+        body = ast.parse(text).body
+    except SyntaxError:
+        return None
+    rest = [n for n in body[1:] if not (isinstance(n, ast.ImportFrom) and n.module == "__future__")]
+    if not body or rest or not (isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant)):
+        return None
+    return _FACTORY_DOC.format(pkg=pkg)
+
+
+_MANIFEST_PATH_KW = re.compile(r'^[ \t]*manifest_path=[^\n]*connector_manifest\.yml"\)?,[ \t]*\n', re.M)
+
+
+def drop_manifest_path_kw(text: str) -> str:
+    """``ConnectorContent`` takes no manifest path in the live layout."""
+    return _MANIFEST_PATH_KW.sub("", text)
+
+
+_PROVIDER_TABLE = re.compile(
+    r'(?:^#[^\n]*\n)*^\[project\.entry-points\."agent_connector_sdk\.source_connector_providers"\]\n(?:^(?!\[)[^\n]*\S[^\n]*\n)*\n?',
+    re.M,
+)
+_COMMENT_BLOCK = re.compile(r"(?:^[ \t]*#[^\n]*\n)+", re.M)
+
+
+def strip_pyproject_cut_refs(text: str) -> str:
+    """Drop the source-provider entry point (the presets it served are cut) and comment blocks naming cut files."""
+    text = _PROVIDER_TABLE.sub("", text)
+
+    def block(m: re.Match[str]) -> str:
+        return "" if any(w in m.group(0) for w in _CUT_WORDS) else m.group(0)
+
+    return _COMMENT_BLOCK.sub(block, text)
+
+
+_ALT = "|".join(re.escape(n) for n in CUT_NAMES)
+_REGEX_ALT = re.compile(r"(?:[\w/]*(?:" + "|".join(re.escape(re.escape(n)) for n in CUT_NAMES) + r")\|)")
+
+
+def strip_regex_alternatives(text: str) -> str:
+    """Remove ``connector_manifest\\.yml|`` style alternatives from hook exclude patterns."""
+    return _REGEX_ALT.sub("", text)
+
+
+_CUT_SCRIPTS = ("generate_tool_schemas.py", "compute_tool_fingerprints.py")
+
+
+def drop_script_hooks(text: str, scripts: list[str]) -> str:
+    """Remove ``local`` pre-commit hook entries whose entry runs a deleted script."""
+    if not scripts:
+        return text
+    parts = re.split(r"(?m)^(?=[ \t]*- (?:id|repo): )", text)
+    kept = [p for p in parts if not any(s in p for s in scripts) or not p.lstrip().startswith("- id: ")]
+    return "".join(kept)
+
+
+_TTL_COMMENT = re.compile(r"^#.*$", re.M)
+
+
+def rewrite_ttl_prose(text: str, pkg: str) -> str:
+    return _TTL_COMMENT.sub(lambda m: _MENTION.sub(f"{pkg}.connector_sources", m.group(0)), text)
 
 
 def rewrite_test(text: str, name: str, pkg: str) -> tuple[str | None, str]:
@@ -502,18 +668,51 @@ def rewrite_test(text: str, name: str, pkg: str) -> tuple[str | None, str]:
     return new, "rewrite"
 
 
-def migrate_tests(root: Path, pkg: str, changed: list[str], deleted: list[str], review: Review) -> None:
+def migrate_tests(
+    root: Path, pkg: str, changed: list[str], deleted: list[str], review: Review, extra_words: tuple[str, ...] = ()
+) -> None:
+    words = (*_CUT_WORDS, *extra_words)
     for p in walk(root / "tests") if (root / "tests").is_dir() else []:
         if p.suffix != ".py":
             continue
-        text = p.read_text(encoding="utf-8")
+        original = text = p.read_text(encoding="utf-8")
         rel = str(p.relative_to(root))
-        dropped = drop_parent_import_assertion(text)
-        if dropped != text:
-            p.write_text(dropped, encoding="utf-8")
-            changed.append(rel)
-            text = dropped
+        text = rewrite_references(drop_cut_list_items(drop_parent_import_assertion(text)))
         new, action = rewrite_test(text, p.name, pkg)
+        if action == "review" or (action == "keep" and any(w in text for w in extra_words)):
+            cut, names, specs = delete_cut_tests(text, words)
+            if any(e in cut for e in extra_words):
+                # the module itself imports a deleted module: nothing in it can run
+                specs = sorted(set(re.findall(r'spec\("([^"]+)"\)', text)))
+                p.unlink()
+                deleted.append(rel)
+                review.add(
+                    "tests",
+                    f"deleted; imports a deleted module; was bound to {specs}: rebind or retire",
+                    rel,
+                    blocking=False,
+                )
+                continue
+            if (
+                names
+                and not any(w in cut for w in words if w != "ingest_sources.json")
+                and "ingest_sources.json" not in cut
+            ):
+                if has_tests(cut):
+                    new, action = cut, "rewrite"
+                    review.add(
+                        "tests", f"deleted {names}; were bound to specs {specs}: rebind or retire", rel, blocking=False
+                    )
+                else:
+                    p.unlink()
+                    deleted.append(rel)
+                    review.add(
+                        "tests",
+                        f"deleted; was bound to specs {specs}: rebind or retire those rows",
+                        rel,
+                        blocking=False,
+                    )
+                    continue
         if action == "delete":
             specs = sorted(set(re.findall(r'spec\("([^"]+)"\)', text)))
             p.unlink()
@@ -521,12 +720,64 @@ def migrate_tests(root: Path, pkg: str, changed: list[str], deleted: list[str], 
             review.add(
                 "tests", f"deleted; was bound to specs {specs}: rebind or retire those rows", rel, blocking=False
             )
-        elif action == "rewrite" and new is not None and new != text:
+        elif action in ("rewrite", "keep") and new is not None and new != original:
             p.write_text(new, encoding="utf-8")
+            prune_unused_imports(p)
             changed.append(rel)
         elif action == "review":
-            hits = [i + 1 for i, ln in enumerate(text.splitlines()) if any(w in ln for w in _CUT_WORDS)]
+            hits = [i + 1 for i, ln in enumerate(text.splitlines()) if any(w in ln for w in words)]
             review.add("tests", f"no fixed rule for lines {hits[:8]}", rel)
+
+
+# ---------------------------------------------------------------- g. scripts, packaging and source prose
+def drop_cut_scripts(root: Path, pkg: Path, deleted: list[str]) -> tuple[str, ...]:
+    """Delete the scripts that generate cut files (and scripts that only drive them); returns names to retire elsewhere."""
+    gone: list[str] = []
+    scripts = root / "scripts"
+    for name in _CUT_SCRIPTS:
+        p = scripts / name
+        if p.is_file() and any(w in p.read_text(encoding="utf-8") for w in _CUT_WORDS):
+            gone.append(name)
+            deleted.append(f"scripts/{name}")
+            p.unlink()
+    for p in sorted(scripts.glob("*.py")) if scripts.is_dir() else []:
+        if any(g in p.read_text(encoding="utf-8") for g in gone):
+            gone.append(p.name)
+            deleted.append(f"scripts/{p.name}")
+            p.unlink()
+    adapters = pkg / "connectors" / "adapters.py"
+    if adapters.is_file() and any(w in adapters.read_text(encoding="utf-8") for w in _CUT_WORDS):
+        deleted.append(str(adapters.relative_to(root)))
+        adapters.unlink()
+        gone.append(f"{pkg.name}.connectors.adapters")
+    return tuple(gone)
+
+
+def migrate_sources_text(root: Path, pkg: Path, scripts: tuple[str, ...], changed: list[str]) -> None:
+    def edit(p: Path, fn: Any) -> None:
+        text = p.read_text(encoding="utf-8")
+        new = fn(text)
+        if new is not None and new != text:
+            p.write_text(new, encoding="utf-8")
+            changed.append(str(p.relative_to(root)))
+
+    edit(root / "pyproject.toml", strip_pyproject_cut_refs)
+    pc = root / ".pre-commit-config.yaml"
+    if pc.is_file():
+        edit(pc, lambda t: drop_script_hooks(strip_regex_alternatives(t), [x for x in scripts if x.endswith(".py")]))
+    init = pkg / "connectors" / "__init__.py"
+    if init.is_file():
+        edit(init, lambda t: rewrite_connectors_init(t, pkg.name) if any(w in t for w in _CUT_WORDS) else None)
+    for p in walk(pkg):
+        if p.suffix == ".py" and "tests" not in p.parts:
+            edit(
+                p,
+                lambda t: (
+                    rewrite_py_prose(drop_manifest_path_kw(t), pkg.name) if any(w in t for w in _CUT_WORDS) else None
+                ),
+            )
+        elif p.suffix == ".ttl":
+            edit(p, lambda t: rewrite_ttl_prose(t, pkg.name))
 
 
 def leftover_references(root: Path, review: Review) -> None:
@@ -593,6 +844,13 @@ def rebump(root: Path, lock: bool = True) -> dict[str, Any]:
         bump_patch(root, changed, review)
         if lock and (root / "uv.lock").is_file():
             refresh_lock(root, review, changed)
+        for p in walk(root / "tests") if (root / "tests").is_dir() else []:
+            if p.suffix == ".py":
+                text = p.read_text(encoding="utf-8")
+                new = rewrite_references(text)
+                if new != text:
+                    p.write_text(new, encoding="utf-8")
+                    changed.append(str(p.relative_to(root)))
     return {"changed": sorted(set(changed)), "deleted": [], "review": review.items}
 
 
@@ -630,6 +888,8 @@ def migrate(root: Path, eg_repo: Path | None = None, ref: str = "origin/main", l
                 deleted.append(str(p.relative_to(root)))
                 p.unlink()
     _strip_packaging(root, changed)
+    dropped = drop_cut_scripts(root, pkg, deleted)
+    migrate_sources_text(root, pkg, dropped, changed)
     strip_certification(root, pkg, changed, review)
     for p in sorted((pkg / "prompts").glob("*.json")) if (pkg / "prompts").is_dir() else []:
         text = p.read_text(encoding="utf-8")
@@ -643,7 +903,7 @@ def migrate(root: Path, eg_repo: Path | None = None, ref: str = "origin/main", l
         bump_patch(root, changed, review)
         if lock and (root / "uv.lock").is_file():
             refresh_lock(root, review, changed)
-    migrate_tests(root, pkg.name, changed, deleted, review)
+    migrate_tests(root, pkg.name, changed, deleted, review, dropped)
     migrate_docs(root, changed)
     leftover_references(root, review)
     return {"changed": sorted(set(changed)), "deleted": sorted(set(deleted)), "review": review.items}

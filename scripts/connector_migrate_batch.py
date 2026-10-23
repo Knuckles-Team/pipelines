@@ -85,6 +85,27 @@ class Ledger:
         return self.data.get(repo, {}).get("status") in ("merged", "dry-run-verified")
 
 
+def workflow_sync_args(wt: Path) -> list[str] | None:
+    """The ``sync-args:`` the repo's own PR gate passes to ``uv sync`` (``connector-pr.yml``), if any."""
+    wf = wt / ".github/workflows/connector-pr.yml"
+    if not wf.is_file():
+        return None
+    m = re.search(r"(?m)^\s*sync-args:\s*(.+?)\s*$", wf.read_text(encoding="utf-8"))
+    return m.group(1).split() if m else None
+
+
+def sync(step: str, wt: Path, env: dict[str, str], led: Ledger, repo: str) -> None:
+    """``uv sync --frozen`` with every extra; when that cannot build (CUDA extras), the PR gate's own extras (R016.25)."""
+    try:
+        sh(step, ["uv", "sync", "--frozen", "--all-extras", "--all-groups"], wt, env)
+    except StepFailed:
+        args = workflow_sync_args(wt)
+        if not args:
+            raise
+        sh(step, ["uv", "sync", "--frozen", *args], wt, env)
+        led.record(repo, sync_args=" ".join(args))
+
+
 def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
     src = a.fleet / repo
     kind = "sdk-rebump" if a.rebump else "manifest-cut"
@@ -93,17 +114,25 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
     branch = f"chore/{kind}"
     tmp = Path(a.tmpdir) / repo
     tmp.mkdir(parents=True, exist_ok=True)
-    env = {"TMPDIR": str(tmp)}
+    pc_home = Path(a.tmpdir).parent / "pc" / repo
+    pc_home.mkdir(parents=True, exist_ok=True)
+    # R016.25: one pre-commit cache per repo; the shared sqlite cache reports "database is locked" under concurrency.
+    env = {"TMPDIR": str(tmp), "PRE_COMMIT_HOME": str(pc_home)}
     step = "worktree"
     try:
         sh(step, ["git", "fetch", "origin", "main"], src)
+        if wt.exists() and led.data.get(repo, {}).get("status") == "failed":
+            # R016.25: a re-run starts from clean origin/main, never from the half-migrated tree of the failed run.
+            sh(step, ["git", "worktree", "remove", "--force", str(wt)], src)
+            sh(step, ["git", "branch", "-D", branch], src, ok=(0, 1))
+            led.record(repo, status="retry", rerun=True)
         if not wt.exists():
             wt.parent.mkdir(parents=True, exist_ok=True)
             sh(step, ["git", "worktree", "add", str(wt), "-b", branch, "origin/main"], src)
         step = "sync"
         venv = str(tmp / "venv")
         env["UV_PROJECT_ENVIRONMENT"] = venv
-        sh(step, ["uv", "sync", "--frozen", "--all-extras", "--all-groups"], wt, env)
+        sync(step, wt, env, led, repo)
         if a.sdk_path:
             sh(
                 step,
@@ -153,6 +182,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             sh(step, commit, wt, env)
             led.record(repo, restaged_after_hook=True)
         step = "verify"
+        # R016.25: the migrate step raised the SDK floor and lock; the venv synced before it still holds the old SDK.
+        sync(step, wt, env, led, repo)
         py = f"{venv}/bin/python"
         v = sh(
             step,
