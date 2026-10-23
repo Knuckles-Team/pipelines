@@ -559,7 +559,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:478",
-        "tests/hooks/test_connector_migrate.py:694"
+        "tests/hooks/test_connector_migrate.py:705"
       ]
     },
     {
@@ -577,8 +577,10 @@
     {
       "id": "PIPE-GATES-R016.20",
       "title": "Cut reads in tests (migrate f)",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "cb93b1b3caf8"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:529",
         "tests/hooks/test_connector_migrate.py:597",
@@ -614,7 +616,7 @@
     },
     {
       "id": "PIPE-GATES-R016.24",
-      "title": "Action tools (migrate a)",
+      "title": "Action tools and list values (migrate a)",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -627,7 +629,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:705"
+        "tests/hooks/test_connector_migrate.py:716"
       ]
     }
   ]

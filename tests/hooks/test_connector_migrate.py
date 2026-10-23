@@ -683,12 +683,23 @@ def test_certification_is_canonicalized_then_stripped_and_missing_bump_targets_a
 
 
 @pytest.mark.spec("PIPE-GATES-R016.24")
-def test_an_action_preset_names_the_split_tool(tmp_path: Path) -> None:
+def test_an_action_preset_is_reported_and_lists_in_presets_stay_json_lists() -> None:
     review = cm.Review()
-    presets = {"demo-rules": {"server": "demo-mcp", "tool": "dvr_operations", "action": "list_rules", "id_field": "id"}}
-    out = cm.build_sources({"manifest": {"connector": "demo-mcp"}, "presets": presets, "ingest": {}}, review)
-    assert out is not None and out["entries"][0]["tool"] == "dvr_operations_list_rules"
-    assert "action" not in out["entries"][0]["preset"]
+    presets = {
+        "demo-rules": {
+            "server": "demo-mcp",
+            "tool": "dvr_operations",
+            "action": "list_rules",
+            "id_field": "id",
+            "id_fallback_fields": ["id", "guid"],
+        }
+    }
+    ingest = {"sources": [{"source_id": "rules", "record_type": "Rule", "tools": ["dvr_operations"], "id_field": "id"}]}
+    out = cm.build_sources({"manifest": {"connector": "demo-mcp"}, "presets": presets, "ingest": ingest}, review)
+    assert out is not None and [e["tool"] for e in out["entries"]] == ["dvr_operations"]
+    assert [i for i in review.items if "action" in i["detail"] and not i["blocking"]]
+    module = cm.render_module(out)
+    assert '"id_fallback_fields": [' in module and '"id_fallback_fields": (' not in module
 
 
 @pytest.mark.spec("PIPE-GATES-R016.18")
