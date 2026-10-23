@@ -567,6 +567,7 @@
       "title": "Reference strings (migrate f)",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "121cbc301c5b",
         "247e6ba37066"
       ],
       "verified_by": [
