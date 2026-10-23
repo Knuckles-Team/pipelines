@@ -417,6 +417,10 @@
     "PIPE-PAGES-R041.5",
     "PIPE-PAGES-R041.6",
     "PIPE-PAGES-R042",
+    "PIPE-PAGES-R042.1",
+    "PIPE-PAGES-R042.2",
+    "PIPE-PAGES-R042.3",
+    "PIPE-PAGES-R042.4",
     "PIPE-PAGES-R043",
     "PIPE-PAGES-R043.1",
     "PIPE-PAGES-R043.2",
@@ -3999,6 +4003,58 @@
         "tests/test_architecture_explorer.py:126",
         "tests/test_architecture_explorer.py:143",
         "tests/test_architecture_explorer.py:161"
+      ],
+      "rollup_of": [
+        "PIPE-PAGES-R042.1",
+        "PIPE-PAGES-R042.2",
+        "PIPE-PAGES-R042.3",
+        "PIPE-PAGES-R042.4"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.1",
+      "title": "Index",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f34a17a62c04"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:446",
+        "tests/test_architecture_explorer.py:469"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.2",
+      "title": "Ranking",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f34a17a62c04"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:479",
+        "tests/test_architecture_explorer.py:490"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.3",
+      "title": "Deep links",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f34a17a62c04"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:511"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.4",
+      "title": "Landing and access",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f34a17a62c04"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:552"
       ]
     },
     {
