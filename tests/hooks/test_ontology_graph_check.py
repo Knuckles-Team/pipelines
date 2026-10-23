@@ -205,12 +205,18 @@ def test_packaged_questions_load() -> None:
     assert {q["id"] for q in data["questions"]} >= {"CQ-a", "CQ-b", "CQ-c", "CQ-d1", "CQ-d10"}
 
 
-def test_cli_graph_check_reads_git_repos(tmp_path: Path) -> None:
+def test_cli_graph_check_reads_git_repos(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import os
     import subprocess
+
+    for name in [n for n in os.environ if n.startswith("GIT_")]:
+        monkeypatch.delenv(name)  # a git hook exports GIT_DIR and friends
 
     def git(repo: Path, *a: str) -> None:
         subprocess.run(
-            ["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@t", *a], check=True, capture_output=True
+            ["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", *a],
+            check=True,
+            capture_output=True,
         )
 
     eg = tmp_path / "eg"
