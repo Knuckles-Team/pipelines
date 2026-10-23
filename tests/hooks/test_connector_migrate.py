@@ -491,3 +491,241 @@ def test_rebump_raises_the_floor_bumps_the_patch_and_touches_nothing_else(tmp_pa
     after = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
     assert {k for k in after if after[k] != before.get(k)} == {Path(c) for c in report["changed"]}
     assert cm.rebump(root, lock=False)["changed"] == []
+
+
+FLEET_NAME_TEST = '''"""CONN-X-R002: the connector is filed under its fleet name."""
+
+from __future__ import annotations
+
+import ast
+import json
+import re
+import tomllib
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PACKAGE = ROOT / "demo_agent"
+FLEET = "demo-mcp"
+
+
+def test_connector_name_is_the_fleet_name() -> None:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert pyproject["project"]["entry-points"]["agent_connector_sdk.connector"] == {FLEET: "demo_agent"}
+    manifest_path = PACKAGE / "connector_manifest.yml"
+    if not manifest_path.is_file():
+        manifest_path = ROOT / "connector_manifest.yml"
+    manifest = manifest_path.read_text(encoding="utf-8")
+    match = re.search(r'^\\s*"?connector"?\\s*:\\s*"?([^"\\s,]+)', manifest, re.MULTILINE)
+    assert match is not None and match.group(1) == FLEET
+    fingerprints = PACKAGE / "connectors" / "tool_schema_fingerprints.json"
+    if fingerprints.is_file():
+        assert (
+            json.loads(fingerprints.read_text(encoding="utf-8"))["connector"] == FLEET
+        )
+    assert ast and PACKAGE
+'''
+
+
+@pytest.mark.spec("PIPE-GATES-R016.20")
+def test_fleet_name_test_with_manifest_path_fallback_reads_connector_name_instead() -> None:
+    new, action = cm.rewrite_test(FLEET_NAME_TEST, "test_fleet_name.py", "demo_agent")
+    assert action == "rewrite" and new is not None
+    assert 'assert connector_name("demo_agent") == FLEET' in new
+    assert "connector_manifest" not in new and "tool_schema_fingerprints" not in new
+    assert "import re\n" not in new and "import json\n" not in new and "import ast\n" in new
+    assert new.index("from agent_connector_sdk.connector_identity import connector_name") < new.index("import ast")
+
+
+REF_TEST = """
+def test_refs(request, relation_refs) -> None:
+    assert request.relationships[0].relation_reference.endswith(
+        "resources/Job/relations/launchedFrom"
+    )
+    assert any(ref.endswith("relations/usesInventory") for ref in relation_refs)
+    assert rel.relation_reference.endswith("/relations/onDevice")
+    assert rel.relation_reference.endswith(f"/relations/{relationship}")
+    assert record.mapping_reference.endswith("schema_mappings/Project")
+    assert x == rel.relation_reference.rsplit("/relations/", 1)[-1]
+    return f"manifest:{connector}#schema_mappings/{node_type}", f"manifest:{c}#resources/{t}/relations/{r}"
+    assert "agent-connector-sdk[mcp]>=0.3.18,<1.0.0" in deps
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R016.19")
+def test_reference_strings_follow_the_live_layout_and_sdk_literals_follow_the_floor() -> None:
+    new = cm.rewrite_references(REF_TEST)
+    assert '"relations/Job/launchedFrom"' in new and 'endswith("/usesInventory")' in new
+    assert 'endswith("/onDevice")' in new and 'endswith(f"/{relationship}")' in new
+    assert 'endswith("mappings/Project")' in new and 'rsplit("/", 1)[-1]' in new
+    assert 'f"connector:{connector}#mappings/{node_type}"' in new
+    assert 'f"connector:{c}#relations/{t}/{r}"' in new
+    assert "agent-connector-sdk[mcp]>=0.4.1,<1.0.0" in new
+    assert cm.rewrite_references(new) == new
+
+
+CUT_READS = """import json
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(".")
+
+
+def test_names() -> None:
+    assert [
+        "LICENSE",
+        "demo_agent/connector_manifest.yml",
+    ]
+
+
+@pytest.mark.spec("CONN-X-R003")
+def test_presets() -> None:
+    presets = json.loads((ROOT / "demo_agent/connectors/mcp_source_presets.json").read_text())
+    assert presets
+
+
+async def test_served() -> None:
+    body = await client.read_resource("manifest://connector")
+    assert body
+
+
+def test_other() -> None:
+    assert 1
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R016.20")
+def test_list_items_naming_cut_files_and_test_functions_reading_them_are_deleted() -> None:
+    text = cm.drop_cut_list_items(CUT_READS)
+    assert "demo_agent/connector_manifest.yml" not in text and '"LICENSE"' in text
+    new, names, specs = cm.delete_cut_tests(text, cm._CUT_WORDS)
+    assert names == ["test_presets", "test_served"] and specs == ["CONN-X-R003"]
+    assert "def test_other" in new and "mcp_source_presets" not in new and "manifest://" not in new
+    only, _, _ = cm.delete_cut_tests("def test_a():\n    open('connector_manifest.yml')\n", cm._CUT_WORDS)
+    assert not cm.has_tests(only)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.20")
+def test_migrate_deletes_cut_tests_and_files_left_without_tests(tmp_path: Path) -> None:
+    root = make(tmp_path)
+    (root / "tests" / "test_cut_reads.py").write_text(CUT_READS, encoding="utf-8")
+    (root / "tests" / "test_only_cut.py").write_text("def test_a():\n    open('mcp_source_presets.json')\n")
+    report = run(root)
+    assert "tests/test_only_cut.py" in report["deleted"]
+    assert "def test_other" in (root / "tests" / "test_cut_reads.py").read_text(encoding="utf-8")
+    assert not [i for i in report["review"] if i["blocking"] and i["step"] in ("tests", "leftover")]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.21")
+def test_prose_mentions_the_connectors_init_and_manifest_path_follow_the_generated_module() -> None:
+    doc = '"""Presets.\n\n``mcp_source_presets.json`` is read here.\n"""\n\nX = 1  # see connector_manifest.yml\nY = "connector_manifest.yml"\n'
+    new = cm.rewrite_py_prose(doc, "demo_agent")
+    assert "``demo_agent.connector_sources`` is read" in new and "# see demo_agent.connector_sources" in new
+    assert 'Y = "connector_manifest.yml"' in new
+    init = '"""Governed presets.\n\n``mcp_source_presets.json`` and fingerprints.\n"""\n\nfrom __future__ import annotations\n'
+    assert "``demo_agent.connector_sources``" in (cm.rewrite_connectors_init(init, "demo_agent") or "")
+    assert cm.rewrite_connectors_init('"""x"""\nVALUE = 1\n', "demo_agent") is None
+    kw = '        ConnectorContent(\n            package_root=r,\n            manifest_path=package_root / "connector_manifest.yml",\n        )\n'
+    assert "manifest_path" not in cm.drop_manifest_path_kw(kw)
+    ttl = "# resolved by `connectors/mcp_source_presets.json`\n<a> a <b> .\n"
+    assert "demo_agent.connector_sources" in cm.rewrite_ttl_prose(ttl, "demo_agent")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.22")
+def test_provider_entry_point_hook_alternatives_scripts_and_adapters_go(tmp_path: Path) -> None:
+    pp = (
+        '[project]\nname = "d"\n\n# presets (connectors/mcp_source_presets.json) are served by the hub\n'
+        '[project.entry-points."agent_connector_sdk.source_connector_providers"]\nd = "d.connectors"\n\n'
+        "[tool.x]\na = 1\n\n# generated by connector_manifest tooling\n# second line\n[tool.y]\nb = 2\n"
+    )
+    new = cm.strip_pyproject_cut_refs(pp)
+    assert "source_connector_providers" not in new and "[tool.x]" in new and "[tool.y]" in new
+    assert "connector_manifest" not in new and "mcp_source_presets" not in new
+    hook = "    exclude: ^(connector_manifest\\.yml|d/connectors/.*\\.json|d/ontology/.*)$\n"
+    assert cm.strip_regex_alternatives(hook) == "    exclude: ^(d/connectors/.*\\.json|d/ontology/.*)$\n"
+    yml = (
+        "- repo: local\n  hooks:\n  - id: keep\n    entry: python a.py\n"
+        "  - id: schemas\n    entry: python scripts/generate_tool_schemas.py --check\n"
+        "  - id: last\n    entry: pytest\n"
+    )
+    out = cm.drop_script_hooks(yml, ["generate_tool_schemas.py"])
+    assert "schemas" not in out and "id: keep" in out and "id: last" in out
+    root = make(tmp_path)
+    (root / "scripts").mkdir()
+    (root / "scripts" / "generate_tool_schemas.py").write_text("load_manifest('connector_manifest.yml')\n")
+    (root / "scripts" / "verify_generated_schemas.py").write_text("run('scripts/generate_tool_schemas.py')\n")
+    (root / "scripts" / "other.py").write_text("print(1)\n")
+    (root / "demo_agent" / "connectors" / "adapters.py").write_text("import x\nread('mcp_source_presets.json')\n")
+    (root / "tests" / "test_adapters.py").write_text(
+        "from demo_agent.connectors.adapters import build\n\n\ndef test_a():\n    assert build\n"
+    )
+    report = run(root)
+    assert {"scripts/generate_tool_schemas.py", "scripts/verify_generated_schemas.py"} <= set(report["deleted"])
+    assert (root / "scripts" / "other.py").is_file() and "demo_agent/connectors/adapters.py" in report["deleted"]
+    assert "tests/test_adapters.py" in report["deleted"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.23")
+def test_certification_is_canonicalized_then_stripped_and_missing_bump_targets_are_skipped(tmp_path: Path) -> None:
+    root = make(tmp_path)
+    cert = root / "demo_agent" / "ontology" / "certification.json"
+    cert.write_text(
+        '{"artifacts": {"demo_agent/connector_manifest.yml": "a", "demo_agent/ontology/x.ttl": "b"},\n"live": false}',
+        encoding="utf-8",
+    )
+    (root / "docker" / "Dockerfile").write_text("nothing here\n", encoding="utf-8")
+    report = run(root)
+    data = json.loads(cert.read_text(encoding="utf-8"))
+    assert list(data["artifacts"]) == ["demo_agent/ontology/x.ttl"]
+    assert cert.read_text(encoding="utf-8") == json.dumps(data, indent=2, sort_keys=True) + "\n"
+    skipped = [i for i in report["review"] if i["step"] == "version"]
+    assert skipped and not skipped[0]["blocking"] and "skipped" in skipped[0]["detail"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.24")
+def test_an_action_preset_names_the_split_tool(tmp_path: Path) -> None:
+    review = cm.Review()
+    presets = {"demo-rules": {"server": "demo-mcp", "tool": "dvr_operations", "action": "list_rules", "id_field": "id"}}
+    out = cm.build_sources({"manifest": {"connector": "demo-mcp"}, "presets": presets, "ingest": {}}, review)
+    assert out is not None and out["entries"][0]["tool"] == "dvr_operations_list_rules"
+    assert "action" not in out["entries"][0]["preset"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.18")
+def test_rebump_also_points_reference_assertions_at_the_live_layout(tmp_path: Path) -> None:
+    root = make(tmp_path)
+    py = root / "pyproject.toml"
+    py.write_text(py.read_text(encoding="utf-8").replace(">=0.3.18", ">=0.4.0"), encoding="utf-8")
+    (root / "tests" / "test_refs.py").write_text(REF_TEST, encoding="utf-8")
+    report = cm.rebump(root, lock=False)
+    assert "tests/test_refs.py" in report["changed"]
+    assert '"relations/Job/launchedFrom"' in (root / "tests" / "test_refs.py").read_text(encoding="utf-8")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.25")
+def test_driver_sync_falls_back_to_the_pr_gate_extras_and_each_repo_gets_its_own_pre_commit_home(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts import connector_migrate_batch as batch
+
+    wt = tmp_path / "wt"
+    (wt / ".github/workflows").mkdir(parents=True)
+    (wt / ".github/workflows/connector-pr.yml").write_text(
+        "with:\n  sync-args: --all-groups --extra mcp --extra test\n", encoding="utf-8"
+    )
+    assert batch.workflow_sync_args(wt) == ["--all-groups", "--extra", "mcp", "--extra", "test"]
+    calls: list[list[str]] = []
+
+    def fake_sh(step, cmd, cwd=None, env=None, ok=(0,)):  # noqa: ANN001
+        calls.append(cmd)
+        if "--all-extras" in cmd:
+            raise batch.StepFailed(step, "flash-attn build failed")
+        return ""
+
+    monkeypatch.setattr(batch, "sh", fake_sh)
+    led = batch.Ledger(tmp_path / "ledger.json")
+    batch.sync("sync", wt, {}, led, "r")
+    assert calls[-1][-5:] == ["--all-groups", "--extra", "mcp", "--extra", "test"][-5:]
+    assert led.data["r"]["sync_args"].startswith("--all-groups")
+    src = Path(batch.__file__).read_text(encoding="utf-8")
+    assert '"PRE_COMMIT_HOME"' in src and 'worktree", "remove", "--force"' in src
