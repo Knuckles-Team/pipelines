@@ -1,25 +1,10 @@
 --- a/tests/test_cq_paths.py
 +++ b/tests/test_cq_paths.py
-@@ -34,9 +34,21 @@
-     assert re.search(r"rdfs:domain \[ a owl:Class ; owl:unionOf \( :Issue ", block)
+@@ -35,7 +35,8 @@
 
 
-+# Parents the epistemic-graph ontology (sdlc_lifecycle-v1.ttl) declares for the classes this pack
-+# references: MergeRequest and PullRequest are siblings under CodeChangeProposal, not parent and child.
-+EG_PARENTS = {
-+    "MergeRequest": "CodeChangeProposal",
-+    "PullRequest": "CodeChangeProposal",
-+    "CheckRun": "PipelineRun",
-+}
-+
-+
  def test_merge_request_and_check_run_extend_shared_classes() -> None:
 -    assert "rdfs:subClassOf :PullRequest" in _block("MergeRequest")
-+    # The pack does not subclass the sibling PullRequest; MergeRequest's parent is the EG one.
++    # The EG ontology owns MergeRequest's parent (a sibling of PullRequest); the pack gives it none.
 +    assert "rdfs:subClassOf" not in _block("MergeRequest")
-+    assert EG_PARENTS["MergeRequest"] == EG_PARENTS["PullRequest"] == "CodeChangeProposal"
      assert "rdfs:subClassOf :PipelineRun" in _block("CheckRun")
-+    assert EG_PARENTS["CheckRun"] == "PipelineRun"
-
-
- def test_no_mapping_has_a_null_ontology_class() -> None:
