@@ -779,6 +779,7 @@ def main(argv: list[str]) -> int:
     m.add_argument("--no-lock", action="store_true")
     m.add_argument("--rebump", action="store_true")
     m.add_argument("--out", type=Path, default=None)
+    m.add_argument("--served-tools", type=Path, default=None)
     args = parser.parse_args(argv)
     if args.command == "migrate":
         from pipelines_hooks.hygiene import connector_migrate
@@ -790,6 +791,7 @@ def main(argv: list[str]) -> int:
         )
         extra += ["--eg-repo", str(args.eg_repo)] if args.eg_repo else []
         extra += ["--out", str(args.out)] if args.out else []
+        extra += ["--served-tools", str(args.served_tools)] if args.served_tools else []
         return connector_migrate.main(extra)
     if args.command == "fix":
         from pipelines_hooks.hygiene import ontology_codemod as oc

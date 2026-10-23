@@ -861,3 +861,27 @@ def test_commit_restages_after_a_formatter_hook_stops_when_nothing_changes_and_r
     src = Path(batch.__file__).read_text(encoding="utf-8")
     assert 'env["PATH"] = f"{venv}/bin:' in src and "--served-tools" in src and ".pre.patch" in src
     assert '"--recount"' in src
+
+
+@pytest.mark.spec("PIPE-GATES-R016.27")
+def test_the_hook_dispatcher_forwards_the_served_tools_file(tmp_path: Path) -> None:
+    from pipelines_hooks.hygiene import ontology_orphan_map as om
+
+    root = make(tmp_path)
+    served = tmp_path / "served.json"
+    served.write_text("[]", encoding="utf-8")
+    out = tmp_path / "report.json"
+    om.main(["migrate", "--root", str(root), "--no-lock", "--served-tools", str(served), "--out", str(out)])
+    assert out.is_file()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.30")
+def test_mapping_subscripts_on_the_declaration_become_attribute_reads() -> None:
+    text = (
+        "import yaml\nfrom pathlib import Path\n\n\ndef test_x():\n"
+        '    manifest = yaml.safe_load(Path("connector_manifest.yml").read_text())\n'
+        '    assert manifest["schema_mappings"][name]["ontology_class"] == parent\n'
+    )
+    new, action = cm.rewrite_test(text, "test_x.py", "demo_agent")
+    assert action == "rewrite" and new is not None
+    assert "declared_sources().schema_mappings[name].ontology_class == parent" in new

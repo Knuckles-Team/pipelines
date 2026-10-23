@@ -181,22 +181,23 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
                 env,
             )
         # R016.29: hooks that run `python` (check-cli-help, env-var-drift) must see the synced repo environment.
-        env["VIRTUAL_ENV"] = venv
         env["PATH"] = f"{venv}/bin:{os.environ.get('PATH', '')}"
         env_file = wt / ".env"  # R016.29: an ignored, missing .env fails the compose-check hook of a fresh worktree
         if not env_file.exists() and sh(step, ["git", "check-ignore", ".env"], wt, ok=(0, 1)).strip():
-            example = wt / ".env.example"
-            env_file.write_text(example.read_text(encoding="utf-8") if example.is_file() else "", encoding="utf-8")
+            env_file.write_text("", encoding="utf-8")  # empty: .env.example values would leak into the tests
         step = "migrate"
         pre_paths = apply_repo_patch(a.patches / f"{repo}.pre.patch", wt, [], led, repo)
         served_path = tmp / "served-tools.json"
         served_path.unlink(missing_ok=True)
         try:  # R016.27: the served tool names resolve action presets; a server that cannot list them leaves them to verify
             out = sh(step, [f"{venv}/bin/python", str(HERE / "connector_served_tools.py"), str(wt)], wt, env)
-            served_path.write_text([ln for ln in out.splitlines() if ln.startswith("[")][-1], encoding="utf-8")
+            served_path.write_text(
+                [ln for ln in out.splitlines() if ln.startswith("SERVED_TOOLS ")][-1].split(" ", 1)[1], encoding="utf-8"
+            )
         except (StepFailed, IndexError):
             pass
         report_path = tmp / "migrate.json"
+        report_path.unlink(missing_ok=True)  # a report of an earlier run must never stand in for this one
         cmd = hook(
             "connector-ontology-map",
             "migrate",
@@ -214,11 +215,9 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         if a.sdk_path:
             cmd.append("--no-lock")
         sh(step, cmd, wt, {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}, ok=(0, 2))
-        report = (
-            json.loads(report_path.read_text())
-            if report_path.exists()
-            else {"review": [], "changed": [], "deleted": []}
-        )
+        if not report_path.exists():  # R016.29: exit 0 or 2 without a report means the codemod never ran
+            raise StepFailed(step, "migrate wrote no report")
+        report = json.loads(report_path.read_text())
         led.record(repo, review=report["review"], changed=len(report["changed"]), deleted=len(report["deleted"]))
         blocking = [i for i in report["review"] if i["blocking"]]
         if blocking:
@@ -275,6 +274,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             wt,
             {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)},
         ).strip()
+        scope = re.sub(r"\s*warning: .*", "", scope, flags=re.S).strip()  # uv's environment warning shares stderr
         led.record(
             repo,
             test_scope="FULL"
