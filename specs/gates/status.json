@@ -508,13 +508,14 @@
         "64c83743091d",
         "6feb14333fd2",
         "7f6c5b8b9975",
-        "fc8c7477d5a2"
+        "a61425052f67"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:367",
         "tests/hooks/test_connector_migrate.py:382",
         "tests/hooks/test_connector_migrate.py:396",
-        "tests/hooks/test_connector_migrate.py:403"
+        "tests/hooks/test_connector_migrate.py:403",
+        "tests/hooks/test_connector_migrate.py:429"
       ]
     }
   ]
