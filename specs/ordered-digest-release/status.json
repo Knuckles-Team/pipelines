@@ -656,12 +656,15 @@
     {
       "id": "PIPE-RELEASE-R013",
       "title": "Release-standard check",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "71d576184a00"
+      ],
       "verified_by": [
         "tests/hooks/test_release_standard.py:19",
         "tests/hooks/test_release_standard.py:28",
-        "tests/hooks/test_release_standard.py:36"
+        "tests/hooks/test_release_standard.py:36",
+        "tests/hooks/test_release_standard.py:47"
       ]
     },
     {

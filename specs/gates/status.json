@@ -225,8 +225,10 @@
     {
       "id": "PIPE-GATES-R010",
       "title": "Connector names agree with the declared fleet name",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "71d576184a00"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_name.py:11"
       ]
@@ -290,9 +292,9 @@
       "landed_in": [
         "197c2b37817f",
         "296583a3f006",
+        "71d576184a00",
         "9389c84a38bf",
-        "9c5228d41640",
-        "e2c99922f0a7"
+        "9c5228d41640"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_graph_check.py:15"
@@ -324,7 +326,7 @@
         "296583a3f006"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:262"
+        "tests/hooks/test_ontology_graph_check.py:257"
       ]
     },
     {
@@ -335,7 +337,7 @@
         "296583a3f006"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:276"
+        "tests/hooks/test_ontology_graph_check.py:271"
       ]
     },
     {
@@ -346,7 +348,7 @@
         "296583a3f006"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:287"
+        "tests/hooks/test_ontology_graph_check.py:282"
       ]
     },
     {
@@ -357,7 +359,7 @@
         "1e870800c5cb"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:308"
+        "tests/hooks/test_ontology_graph_check.py:303"
       ]
     },
     {
@@ -368,7 +370,7 @@
         "1e870800c5cb"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:320"
+        "tests/hooks/test_ontology_graph_check.py:315"
       ]
     },
     {
@@ -380,8 +382,8 @@
         "ac14690526b3"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_codemod.py:75",
-        "tests/hooks/test_ontology_codemod.py:82"
+        "tests/hooks/test_ontology_codemod.py:79",
+        "tests/hooks/test_ontology_codemod.py:86"
       ]
     },
     {
@@ -392,7 +394,7 @@
         "1e870800c5cb"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_codemod.py:92"
+        "tests/hooks/test_ontology_codemod.py:96"
       ]
     },
     {
@@ -403,8 +405,8 @@
         "1e870800c5cb"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_codemod.py:109",
-        "tests/hooks/test_ontology_codemod.py:117"
+        "tests/hooks/test_ontology_codemod.py:113",
+        "tests/hooks/test_ontology_codemod.py:121"
       ]
     },
     {
@@ -415,9 +417,9 @@
         "1e870800c5cb"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_codemod.py:130",
-        "tests/hooks/test_ontology_codemod.py:140",
-        "tests/hooks/test_ontology_codemod.py:153"
+        "tests/hooks/test_ontology_codemod.py:134",
+        "tests/hooks/test_ontology_codemod.py:144",
+        "tests/hooks/test_ontology_codemod.py:157"
       ]
     },
     {
@@ -466,8 +468,8 @@
       "title": "Tests (migrate f)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "3b7362930d12",
         "64c83743091d",
+        "65d2cf8bb640",
         "fbcdac36c764"
       ],
       "verified_by": [
