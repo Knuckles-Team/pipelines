@@ -14,7 +14,6 @@ import argparse
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import threading
@@ -45,7 +44,7 @@ def apply_repo_patch(patch: Path, wt: Path, paths: list[str], led: Ledger, repo:
     """Apply a reviewed one-off patch for this repo (not a codemod rule); returns the extended path list."""
     if not patch.is_file():
         return paths
-    sh("patch", ["git", "apply", str(patch)], wt)
+    sh("patch", ["git", "apply", "--recount", str(patch)], wt)
     touched = re.findall(r"(?m)^\+\+\+ b/(\S+)", patch.read_text(encoding="utf-8"))
     led.record(repo, repo_patch=patch.name, repo_patch_files=touched)
     return sorted(set(paths) | set(touched))
@@ -62,13 +61,12 @@ def worktree_diff(wt: Path) -> str:
 def commit_all(
     wt: Path, paths: list[str], step: str, env: dict[str, str], led: Ledger, repo: str, message: str
 ) -> None:
-    """R016.29: format with the repo's own hooks until the tree stops changing, stage the allowlist, commit.
+    """R016.29: stage the allowlist and commit; the commit hooks format the files.
 
     A formatter hook that rewrites files fails the commit; the allowlist is re-staged and the commit retried while each
     attempt changes something. A run that changes nothing is a real failure. A commit already present ahead of
     origin/main (an earlier attempt) is kept; with nothing to stage and nothing ahead, the repo is a no-op.
     """
-    pre_commit = shutil.which("pre-commit", path=env.get("PATH"))
     seen = ""
     for attempt in range(1, 5):
         stage(wt, paths, step)
@@ -79,12 +77,6 @@ def commit_all(
                 led.record(repo, already_committed=True)
                 return
             raise NoOp(repo)
-        if pre_commit and attempt == 1:
-            for _ in range(3):
-                sh(step, [pre_commit, "run", "--files", *[p for p in paths if (wt / p).exists()]], wt, env, ok=(0, 1))
-                if not worktree_diff(wt):
-                    break
-                stage(wt, paths, step)
         led.record(repo, diffstat=stat)
         try:
             sh(step, ["git", "commit", "-m", message, "-m", TRAILER], wt, env)
