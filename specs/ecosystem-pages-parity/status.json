@@ -3990,7 +3990,7 @@
     {
       "id": "PIPE-PAGES-R042",
       "title": "One generated architecture explorer, always current",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "07e22bc44394",
         "1127e9047bfa",
@@ -4062,8 +4062,10 @@
     {
       "id": "PIPE-PAGES-R042.5",
       "title": "Viewport",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4e2a2ebbff40"
+      ],
       "verified_by": [
         "tests/test_architecture_explorer.py:581"
       ]
