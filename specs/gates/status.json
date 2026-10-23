@@ -462,8 +462,10 @@
     {
       "id": "PIPE-GATES-R016.14",
       "title": "Tests (migrate f)",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "56e71980a65f"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:200",
         "tests/hooks/test_connector_migrate.py:212",
