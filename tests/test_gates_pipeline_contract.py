@@ -17,7 +17,7 @@ SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
     "python-version", "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
-    "extra-manual-hooks", "skip-hooks", "setup-command", "docs-only-paths", "timeout-minutes",
+    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "docs-only-paths", "timeout-minutes",
 }  # fmt: skip
 
 
@@ -55,7 +55,7 @@ def test_gates_workflow_scopes_to_the_diff_and_caps_time() -> None:
     assert job["timeout-minutes"] == "${{ inputs.timeout-minutes }}"
     assert _on(GATES_WORKFLOW)["workflow_call"]["inputs"]["timeout-minutes"]["default"] == 15
     assert "--from-ref" in text and "--to-ref" in text and "--all-files" in text
-    assert "for stage in pre-commit pre-push" in text and '--hook-stage "$stage"' in text
+    assert "for stage in $STAGES" in text and '--hook-stage "$stage"' in text
     assert "pr-test-scope" in text and "fetch-depth: 0" in text
     assert "pipelines-hook" in text and "job.workflow_sha" in text
 

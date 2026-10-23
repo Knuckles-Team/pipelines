@@ -39,6 +39,7 @@ GATES: dict[str, str] = {
     "connector-graphql": "pipelines_hooks.hygiene.connector_graphql",
     "sdk-conformance": "pipelines_hooks.hygiene.sdk_conformance",
     "agent-contract": "pipelines_hooks.hygiene.agent_contract",
+    "release-standard": "pipelines_hooks.hygiene.release_standard",
     "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
     "no-stub": "pipelines_hooks.code.no_stub",
     "stubs": "pipelines_hooks.code.stubs",

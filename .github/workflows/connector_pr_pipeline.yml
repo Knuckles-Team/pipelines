@@ -1,0 +1,48 @@
+name: Connector PR
+
+# The fast pull request workflow of the connector fleet (PIPE-RELEASE-R011): the
+# caller's pre-commit file at the commit stage, then the affected unit tests, in at
+# most 10 minutes. It wraps gates_pipeline.yml with the connector defaults and never
+# publishes: release build and publish stay in the connector's own pipeline.yml.
+#
+# Caller contract (copy; a reusable workflow cannot set the caller's groups):
+#
+#   on: pull_request
+#   concurrency:
+#     group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
+#     cancel-in-progress: true
+#   permissions:
+#     contents: read
+#   jobs:
+#     gates:
+#       uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: JSON runner label or label list for runs-on.
+        required: false
+        type: string
+        default: '"ubuntu-latest"'
+      test-scope:
+        description: Tests directory for the affected-test subset; empty disables the test step.
+        required: false
+        type: string
+        default: tests
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: gates
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main
+    with:
+      config: .pre-commit-config.yaml
+      stages: pre-commit
+      timeout-minutes: 10
+      runner: ${{ inputs.runner }}
+      test-scope: ${{ inputs.test-scope }}
