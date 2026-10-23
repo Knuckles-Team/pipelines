@@ -151,6 +151,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: connector-graphql
+  name: "Connector GraphQL is declared via the SDK graphql extra (warns)"
+  entry: pipelines-hook connector-graphql
+  language: python
+  pass_filenames: false
+  always_run: true
 # --- repository hygiene -----------------------------------------------------
 - id: root-hygiene
   name: "DEPRECATED (root-hygiene): Repository root hygiene (declared entries only)"

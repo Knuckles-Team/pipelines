@@ -59,6 +59,10 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 
 `tests/hooks/test_connector_name.py` builds a fixture connector in a temporary directory. It checks agreement, a disagreeing literal in each of three files, the undeclared warning, `--strict` and a non-connector repository.
 
+## Connector GraphQL declaration (PIPE-GATES-R012)
+
+`tests/hooks/test_connector_graphql.py` builds fixture repositories in a temporary directory. It checks the declared extra, the default warning and `--strict` failure, direct declarations, function-level imports, skipped tests and exempt repositories.
+
 ## Hook cache and symlink snapshots (PIPE-GATES-R011)
 
 `tests/hooks/test_jscpd_snapshot.py` commits a package manifest and a root symlink to it. The snapshot keeps the target and skips the link.
