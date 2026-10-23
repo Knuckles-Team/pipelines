@@ -539,4 +539,26 @@ def dir_sources(root: Path) -> list[ogc.Source]:
     return out
 
 
-__all__ = ["run_fix", "patch_sources", "write_outputs", "dir_sources", "apply_to_dir", "BNode"]
+def fix_pack(
+    pack: Path,
+    eg_repo: Path,
+    ref: str = "origin/main",
+    eg_extra_ref: str | None = None,
+    overrides_path: Path | None = None,
+    questions_path: Path | None = None,
+    apply: bool = True,
+) -> tuple[dict[str, Any], list[str]]:
+    """Run the codemod over one pack checkout; write the patched .ttl files when ``apply``."""
+    sources = ogc.eg_sources(eg_repo, ref, eg_extra_ref)
+    pack_srcs = dir_sources(pack)
+    questions = json.loads((questions_path or ogc.DEFAULT_CQ).read_text(encoding="utf-8"))["questions"]
+    overrides = json.loads((overrides_path or DEFAULT_OVERRIDES).read_text(encoding="utf-8"))
+    result = run_fix(sources + pack_srcs, questions, overrides)
+    changed: list[str] = []
+    if apply:
+        new = [s for s in result["patched_sources"] if s.kind == "pack"]
+        changed = apply_to_dir(pack, pack_srcs, new)
+    return result, changed
+
+
+__all__ = ["fix_pack", "run_fix", "patch_sources", "write_outputs", "dir_sources", "apply_to_dir", "BNode"]
