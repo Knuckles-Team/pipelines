@@ -6,8 +6,7 @@ the single entry point of the ``agent_connector_sdk.connector`` group in
 ``pyproject.toml``. This gate reads that declaration and every literal that
 also names the connector:
 
-* ``connector`` in each packaged ``connector_manifest.yml``;
-* ``connector`` in each ``connectors/tool_schema_fingerprints.json``;
+* ``CONNECTOR = "..."`` in each generated ``connector_sources.py``;
 * ``connector="..."`` in a ``ConnectorContent(...)`` or ``IngestBinding(...)`` call.
 
 A literal that disagrees with the declaration fails the gate. A repository
@@ -19,7 +18,7 @@ that warning a failure. A repository with neither passes.
 from __future__ import annotations
 
 import argparse
-import json
+import ast
 import re
 import tomllib
 from collections.abc import Iterator
@@ -27,7 +26,6 @@ from pathlib import Path
 
 GROUP = "agent_connector_sdk.connector"
 _SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "build", "dist", ".pipeline-theme", "tests"}
-_MANIFEST_CONNECTOR = re.compile(r"""^\s*["']?connector["']?\s*:\s*["']?([^"',\s]+)""", re.MULTILINE)
 _CALL = re.compile(r"\b(?:ConnectorContent|IngestBinding)\s*\(")
 _CONNECTOR_KWARG = re.compile(r"""\bconnector\s*=\s*["']([^"']+)["']""")
 
@@ -64,19 +62,25 @@ def _call_literals(text: str) -> Iterator[str]:
             yield match.group(1)
 
 
+def _declared_constant(text: str) -> str | None:
+    """The ``CONNECTOR`` string of a generated declaration module, read by AST."""
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return None
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "CONNECTOR" for t in node.targets):
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                return node.value.value
+    return None
+
+
 def literals(root: Path) -> list[tuple[str, str]]:
     """Every ``(relative path, name)`` literal that names the connector."""
     found: list[tuple[str, str]] = []
-    for path in _files(root, "connector_manifest.yml"):
-        match = _MANIFEST_CONNECTOR.search(path.read_text(encoding="utf-8", errors="replace"))
-        if match:
-            found.append((str(path.relative_to(root)), match.group(1)))
-    for path in _files(root, "tool_schema_fingerprints.json"):
-        try:
-            name = json.loads(path.read_text(encoding="utf-8")).get("connector")
-        except (ValueError, AttributeError):
-            continue
-        if isinstance(name, str):
+    for path in _files(root, "connector_sources.py"):
+        name = _declared_constant(path.read_text(encoding="utf-8", errors="replace"))
+        if name:
             found.append((str(path.relative_to(root)), name))
     for path in _files(root, "*.py"):
         text = path.read_text(encoding="utf-8", errors="replace")

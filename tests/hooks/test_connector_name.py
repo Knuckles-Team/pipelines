@@ -18,11 +18,8 @@ _DECLARED = (
 def _connector(root: Path, *, pyproject: str, name: str) -> Path:
     (root / "pyproject.toml").write_text(pyproject, encoding="utf-8")
     package = root / "demo_api"
-    (package / "connectors").mkdir(parents=True)
-    (package / "connector_manifest.yml").write_text(f"connector: {name}\n", encoding="utf-8")
-    (package / "connectors" / "tool_schema_fingerprints.json").write_text(
-        f'{{"connector": "{name}", "tools": {{}}}}', encoding="utf-8"
-    )
+    package.mkdir()
+    (package / "connector_sources.py").write_text(f'CONNECTOR = "{name}"\nSOURCES = ()\n', encoding="utf-8")
     (package / "kg_ingest.py").write_text(
         f'_BINDING = IngestBinding(\n    connector="{name}", stream="demo"\n)\n', encoding="utf-8"
     )
@@ -38,7 +35,7 @@ def test_a_disagreeing_literal_fails_and_names_the_file(tmp_path: Path, capsys) 
     root = _connector(tmp_path, pyproject=_DECLARED, name="demo-api")
     assert connector_name.main(["--root", str(root)]) == 1
     output = capsys.readouterr().out
-    for path in ("connector_manifest.yml", "tool_schema_fingerprints.json", "kg_ingest.py"):
+    for path in ("connector_sources.py", "kg_ingest.py"):
         assert path in output
 
 
@@ -52,3 +49,10 @@ def test_undeclared_connector_warns_unless_strict(tmp_path: Path, capsys) -> Non
 def test_non_connector_repository_passes(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n', encoding="utf-8")
     assert connector_name.main(["--root", str(tmp_path), "--strict"]) == 0
+
+
+def test_the_name_comes_from_the_entry_point_and_legacy_files_are_ignored(tmp_path: Path) -> None:
+    root = _connector(tmp_path, pyproject=_DECLARED, name="demo-mcp")
+    (root / "demo_api" / "connector_manifest.yml").write_text("connector: other\n", encoding="utf-8")
+    assert connector_name.declared_name(root) == "demo-mcp"
+    assert connector_name.main(["--root", str(root), "--strict"]) == 0

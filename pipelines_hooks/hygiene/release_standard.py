@@ -1,7 +1,7 @@
 """release-standard: a connector release publishes both a PyPI package and a Docker image (PIPE-RELEASE-R013).
 
-Warn level (exit 0): a connector repository (one that tracks ``connector_manifest.yml`` or
-depends on ``agent-connector-sdk``) must track ``docker/Dockerfile`` and a workflow whose
+Warn level (exit 0): a connector repository (one that declares the
+``agent_connector_sdk.connector`` entry point or tracks a ``connector_sources.py``) must track ``docker/Dockerfile`` and a workflow whose
 job calls the shared ``container_pipeline.yml`` with the Docker publish enabled (the job is
 not switched off by a literal ``if: false``). ``--strict`` makes the findings blocking.
 """
@@ -9,6 +9,7 @@ not switched off by a literal ``if: false``). ``--strict`` makes the findings bl
 from __future__ import annotations
 
 import argparse
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -16,15 +17,22 @@ import yaml
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.tracked import tracked_paths
 
+ENTRY_POINT_GROUP = "agent_connector_sdk.connector"
 CONTAINER = "Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml"
 
 
 def is_connector(root: Path, paths: list[str]) -> bool:
-    """A connector tracks the generated manifest or depends on the SDK."""
-    if "connector_manifest.yml" in paths:
+    """A connector declares the SDK connector entry point or tracks a generated ``connector_sources.py``."""
+    if any(path.rsplit("/", 1)[-1] == "connector_sources.py" for path in paths):
         return True
     pyproject = root / "pyproject.toml"
-    return pyproject.is_file() and "agent-connector-sdk" in pyproject.read_text(encoding="utf-8", errors="replace")
+    if not pyproject.is_file():
+        return False
+    try:
+        document = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError:
+        return False
+    return bool(document.get("project", {}).get("entry-points", {}).get(ENTRY_POINT_GROUP))
 
 
 def _enabled(job: dict) -> bool:

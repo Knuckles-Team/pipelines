@@ -315,7 +315,7 @@ class Plan:
                     "resolves to a class in the composed graph (report only, manifests are not patched)"
                     if tgt
                     else "no class of that name; never invented",
-                    "connector_manifest.yml",
+                    ogc.DECLARATION,
                 )
 
     def r7(self, repo: str) -> None:
@@ -532,9 +532,7 @@ def dir_sources(root: Path) -> list[ogc.Source]:
         rel = p.relative_to(root).as_posix()
         if not p.is_file() or ".git/" in rel or ogc.is_fixture_path(rel):
             continue
-        if (
-            "/ontology/" in "/" + rel and (rel.endswith(".ttl") or rel.endswith("/ingest_sources.json"))
-        ) or rel == "connector_manifest.yml":
+        if ("/ontology/" in "/" + rel and rel.endswith(".ttl")) or rel.endswith("/" + ogc.DECLARATION):
             out.append(ogc.Source(module=root.name, kind="pack", path=rel, text=p.read_text(encoding="utf-8")))
     return out
 

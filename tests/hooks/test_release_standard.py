@@ -9,7 +9,7 @@ from tests.hooks.conftest import Repo
 
 repo = conftest.repo
 
-CONNECTOR = '[project]\nname = "x-mcp"\ndependencies = ["agent-connector-sdk>=0.3"]\n'
+CONNECTOR = '[project]\nname = "x-mcp"\n[project.entry-points."agent_connector_sdk.connector"]\nx-mcp = "x_mcp"\n'
 PIPELINE = (
     "jobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n"
     "  publish-docker:\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n"
@@ -42,3 +42,12 @@ def test_a_disabled_docker_job_is_flagged_and_a_non_connector_is_exempt(repo: Re
     assert repo.run("release-standard", "--strict") == 1
     repo.commit({"pyproject.toml": '[project]\nname = "lib"\n'})
     assert repo.run("release-standard", "--strict") == 0
+
+
+@pytest.mark.spec("PIPE-RELEASE-R013")
+def test_a_connector_is_detected_by_entry_point_or_sources_module_not_by_dependency_or_manifest(repo: Repo) -> None:
+    sdk_only = '[project]\nname = "x"\ndependencies = ["agent-connector-sdk>=0.4"]\n'
+    repo.commit({"pyproject.toml": sdk_only, "connector_manifest.yml": "connector: x\n"})
+    assert repo.run("release-standard", "--strict") == 0
+    repo.commit({"pyproject.toml": sdk_only, "x/connector_sources.py": 'CONNECTOR = "x"\n'})
+    assert repo.run("release-standard", "--strict") == 1
