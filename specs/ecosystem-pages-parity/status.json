@@ -3996,7 +3996,7 @@
         "1127e9047bfa",
         "22a4c85e6a09",
         "26f5095aaa92",
-        "2ed3d8dbc0ad"
+        "40010846fc5f"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:105",
@@ -4064,8 +4064,8 @@
       "title": "Viewport",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2ed3d8dbc0ad",
-        "4e2a2ebbff40"
+        "5ca115dab2f1",
+        "c1c4645b2f48"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:581"
