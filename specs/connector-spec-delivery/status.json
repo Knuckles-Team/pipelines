@@ -3571,8 +3571,10 @@
     {
       "id": "PIPE-CONNSPEC-R011",
       "title": "Explicit retired standard-ID aliases",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "026b93b29c01"
+      ],
       "verified_by": [
         "tests/hooks/test_spec_standard_aliases.py:14"
       ]
