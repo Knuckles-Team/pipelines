@@ -262,6 +262,7 @@
       "title": "Orphan connector classes get a reviewed parent class",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "4e42d46ec605",
         "cea83a8142b2"
       ],
       "verified_by": [
