@@ -237,7 +237,7 @@
       "title": "A connector uses the SDK capability instead of its own copy",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "8e77583dc61a"
+        "635e34079332"
       ],
       "verified_by": [
         "tests/hooks/test_sdk_conformance.py:11"
