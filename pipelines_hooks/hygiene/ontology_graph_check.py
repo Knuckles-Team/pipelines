@@ -23,6 +23,7 @@ The result is deterministic: sorted findings, no timestamps.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 from collections import Counter, defaultdict
@@ -39,6 +40,7 @@ KG_NS = "http://knuckles.team/"
 SH = "http://www.w3.org/ns/shacl#"
 BFO_ROOT = "http://purl.obolibrary.org/obo/BFO_0000001"
 ROOTS = {str(OWL.Thing), BFO_ROOT, str(RDFS.Resource)}
+OWL_NS = "http://www.w3.org/2002/07/owl#"
 CLASS_TYPES = {OWL.Class, RDFS.Class}
 PROP_TYPES = {
     OWL.ObjectProperty,
@@ -145,18 +147,31 @@ class Finding:
 
 
 def _git(repo: Path, *args: str) -> str:
-    done = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=False)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}  # a hook exports GIT_DIR
+    done = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=False, env=env)
     return done.stdout if done.returncode == 0 else ""
+
+
+FIXTURE_DIR_SUFFIXES = ("fixture", "fixtures")
+
+
+def is_fixture_path(path: str) -> bool:
+    """Path rule: a file under any directory whose name ends in ``fixture`` or ``fixtures`` is test data, not corpus."""
+    return any(d.endswith(FIXTURE_DIR_SUFFIXES) for d in path.split("/")[:-1])
 
 
 def eg_sources(repo: Path, ref: str, overlay: str | None = None) -> list[Source]:
     """Every ``*.ttl`` of the EG repo at ``ref``; with ``overlay``, the files that ref changed replace the base."""
-    paths = {p: ref for p in _git(repo, "ls-tree", "-r", "--name-only", ref).splitlines() if p.endswith(".ttl")}
+    paths = {
+        p: ref
+        for p in _git(repo, "ls-tree", "-r", "--name-only", ref).splitlines()
+        if p.endswith(".ttl") and not is_fixture_path(p)
+    }
     if overlay:
         base = _git(repo, "merge-base", ref, overlay).strip() or ref
         for line in _git(repo, "diff", "--name-status", base, overlay).splitlines():
             status, _, path = line.partition("\t")
-            if path.endswith(".ttl"):
+            if path.endswith(".ttl") and not is_fixture_path(path):
                 if status.startswith("D"):
                     paths.pop(path, None)
                 else:
@@ -170,6 +185,8 @@ def eg_sources(repo: Path, ref: str, overlay: str | None = None) -> list[Source]
 def pack_sources(repo: Path, ref: str) -> list[Source]:
     out = []
     for p in sorted(_git(repo, "ls-tree", "-r", "--name-only", ref).splitlines()):
+        if is_fixture_path(p):
+            continue
         ontology = "/ontology/" in p and (p.endswith(".ttl") or p.endswith("/ingest_sources.json"))
         if ontology or p == "connector_manifest.yml":
             text = _git(repo, "show", f"{ref}:{p}")
@@ -203,6 +220,9 @@ class Model:
     main_labels: dict[str, dict[str, set[str]]] = field(default_factory=lambda: defaultdict(lambda: defaultdict(set)))
     domains: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
     ranges: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
+    imports: list[tuple[str, str]] = field(default_factory=list)  # importing module, imported ontology IRI
+    ontology_mods: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))  # ontology IRI -> modules
+    type_refs: list[tuple[str, str]] = field(default_factory=list)  # class IRI typed by an individual, module
     refs: list[tuple[str, str, str, str]] = field(default_factory=list)  # iri, role, module, file
     manifests: dict[str, dict[str, Any]] = field(default_factory=dict)
     ingest: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
@@ -302,12 +322,20 @@ def compose(sources: list[Source]) -> Model:
         for subj, _, typ in g.triples((None, RDF.type, None)):
             if not isinstance(subj, URIRef):
                 continue
-            if typ in CLASS_TYPES:
+            if typ == OWL.Ontology:
+                m.ontology_mods[str(subj)].add(mod)
+            elif typ in CLASS_TYPES:
                 m.class_mods[str(subj)].add(mod)
             elif typ in PROP_TYPES:
                 m.prop_mods[str(subj)].add(mod)
                 if typ == OWL.ObjectProperty:
                     m.obj_props.add(str(subj))
+        for _, _, obj in g.triples((None, OWL.imports, None)):
+            if isinstance(obj, URIRef):
+                m.imports.append((mod, str(obj)))
+        for subj, _, typ in g.triples((None, RDF.type, None)):
+            if isinstance(subj, URIRef) and isinstance(typ, URIRef) and not str(typ).startswith(OWL_NS):
+                m.type_refs.append((str(typ), mod))
         for subj, pred, obj in g:
             if not isinstance(subj, URIRef):
                 continue
@@ -737,7 +765,13 @@ def module_graph(m: Model) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
     declared = {**{k: v for k, v in m.class_mods.items()}}
     for k, v in m.prop_mods.items():
         declared.setdefault(k, set()).update(v)
-    pack_ref = [(i, mod) for i, _, mod, _ in m.refs]
+    pack_ref = [(i, mod) for i, _, mod, _ in m.refs] + list(m.type_refs)
+    for mod, onto in m.imports:  # owl:imports bridges the importing module to the imported ontology's module
+        for d in m.ontology_mods.get(onto, ()):
+            if d != mod:
+                for adj in (ref, both):
+                    adj[mod].add(d)
+                    adj[d].add(mod)
     for pack, man in m.manifests.items():
         for typ, spec in (man.get("schema_mappings") or {}).items():
             t = (spec or {}).get("ontology_class")

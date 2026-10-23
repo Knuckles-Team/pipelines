@@ -308,7 +308,7 @@
     {
      "kind": "edge",
      "from": "Skill",
-     "property": "appliesTo",
+     "property": "canHandle",
      "to": "Incident",
      "owner": "epistemic-graph"
     },
