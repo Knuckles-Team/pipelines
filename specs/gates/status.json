@@ -495,9 +495,9 @@
       "title": "Batch driver and verify",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "10797d760f22",
         "64c83743091d",
-        "6feb14333fd2",
-        "e018d82a0d26"
+        "6feb14333fd2"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:367",
