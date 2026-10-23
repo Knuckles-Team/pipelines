@@ -483,6 +483,8 @@ _FINGERPRINT_BLOCK = re.compile(
     r'^( *)fingerprints = [^\n]*tool_schema_fingerprints\.json"\n\1if fingerprints\.is_file\(\):\n(?:\1 +[^\n]*\n)+',
     re.M,
 )
+# R016.30: the declaration's mappings are models: ``schema_mappings[name]["fields"]`` reads as attributes
+_MAPPING_SUBSCRIPT = re.compile(r'(declared_sources\(\)\.schema_mappings\[[^\]\n]+\])\["(ontology_class|fields)"\]')
 _DELETE_NAME = re.compile(r"test_.*(manifest|fingerprint|preset)", re.I)
 
 
@@ -731,6 +733,7 @@ def rewrite_test(text: str, name: str, pkg: str) -> tuple[str | None, str]:
             body = re.sub(line, "", new, count=1)
             if not re.search(rf"(?<!from ){re.escape(ident)}\b(?!\.{MODULE_NAME})", body):
                 new = body
+    new = _MAPPING_SUBSCRIPT.sub(r"\1.\2", new)
     if any(w in new for w in _CUT_WORDS if w != "ingest_sources.json") or "ingest_sources.json" in new:
         return None, "review"
     return new, "rewrite"

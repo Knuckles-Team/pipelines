@@ -1,6 +1,6 @@
 """List the tool names one connector serves over stdio (run with the connector's own python).
 
-Usage: connector_served_tools.py <repo-root>. Prints one JSON list of names (PIPE-GATES-R016.27).
+Usage: connector_served_tools.py <repo-root>. Prints one `SERVED_TOOLS <JSON list>` line of names (PIPE-GATES-R016.27).
 """
 
 from __future__ import annotations
@@ -30,4 +30,4 @@ async def served(root: Path) -> list[str]:
 
 
 if __name__ == "__main__":
-    print(json.dumps(asyncio.run(served(Path(sys.argv[1]).resolve()))))
+    print("SERVED_TOOLS " + json.dumps(asyncio.run(served(Path(sys.argv[1]).resolve()))))
