@@ -658,7 +658,7 @@
       "title": "Release-standard check",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "71d576184a00"
+        "cf912c89cd2f"
       ],
       "verified_by": [
         "tests/hooks/test_release_standard.py:19",
