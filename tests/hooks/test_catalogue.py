@@ -33,6 +33,7 @@ KEPT = {
     "coupling",
     "lockfile-version-mirrors",
     "sdk-conformance",
+    "connector-surface-audit",
     "spec-bind-suggest",
     "no-legacy-concepts",
     "release-standard",
