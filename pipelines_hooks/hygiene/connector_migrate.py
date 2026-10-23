@@ -21,6 +21,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tokenize
@@ -505,9 +506,10 @@ def delete_cut_tests(text: str, words: tuple[str, ...]) -> tuple[str, list[str],
 
 
 def prune_unused_imports(path: Path) -> None:
-    """Remove top-level imports whose names are no longer used (ruff F401 would fail the hook otherwise)."""
-    ruff = subprocess.run(["ruff", "check", "--select", "F401", "--fix", "--quiet", str(path)], capture_output=True)
-    del ruff
+    """Remove imports a deleted test left unused (ruff F401 would fail the commit hook); a missing ruff is skipped."""
+    ruff = shutil.which("ruff")
+    if ruff:
+        subprocess.run([ruff, "check", "--select", "F401", "--fix", "--quiet", str(path)], capture_output=True)
 
 
 def has_tests(text: str) -> bool:
