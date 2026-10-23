@@ -3559,8 +3559,10 @@
     {
       "id": "PIPE-CONNSPEC-R010",
       "title": "Binding suggester ranks existing tests for unverified rows",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c9681d3a4727"
+      ],
       "verified_by": [
         "tests/hooks/test_spec_bind_suggest.py:41"
       ]
