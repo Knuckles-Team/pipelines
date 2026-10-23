@@ -283,9 +283,9 @@
       "landed_in": [
         "197c2b37817f",
         "296583a3f006",
+        "73b1525235ff",
         "850599c8c86e",
-        "9389c84a38bf",
-        "9c5228d41640"
+        "9389c84a38bf"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_codemod.py:109",
@@ -366,6 +366,7 @@
       "title": "`connector-ontology-map fix` drops imports and stops redeclaration (R1, R2)",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "73b1525235ff",
         "850599c8c86e"
       ],
       "verified_by": [
