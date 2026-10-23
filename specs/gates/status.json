@@ -249,7 +249,7 @@
       "title": "A connector ships and serves all five surfaces with a parent-linked ontology",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "b61628d1c455"
+        "419ce947d7f2"
       ],
       "verified_by": [
         "tests/hooks/test_connector_surface.py:12"
