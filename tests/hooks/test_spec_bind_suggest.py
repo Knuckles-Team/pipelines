@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 
 from pipelines_hooks.specs.bind_suggest import suggest
+import pytest
+
 from tests.hooks.conftest import Repo
 
 _ROWS = (
@@ -21,6 +23,14 @@ _TESTS = (
     "def test_cache_eviction_honours_capacity() -> None:\n    assert True\n\n"
     "def test_noise() -> None:\n    assert True\n"
 )
+
+
+@pytest.fixture
+def repo(tmp_path: Path) -> Repo:
+    fixture = Repo(tmp_path / "repo")
+    fixture.root.mkdir()
+    fixture.git("init", "-q", "-b", "main")
+    return fixture
 
 
 def _fixture(repo: Repo) -> Path:
