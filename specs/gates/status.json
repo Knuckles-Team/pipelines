@@ -23,7 +23,8 @@
     "PIPE-GATES-R008",
     "PIPE-GATES-R009",
     "PIPE-GATES-R010",
-    "PIPE-GATES-R011"
+    "PIPE-GATES-R011",
+    "PIPE-GATES-R012"
   ],
   "requirements": [
     {
@@ -213,13 +214,21 @@
     {
       "id": "PIPE-GATES-R011",
       "title": "Shared hooks are current and snapshots accept symlinks",
-      "delivery_state": "VERIFIED",
-      "landed_in": [
-        "41b7adbfdab3",
-        "b7a29c4d6955"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": [
         "tests/hooks/test_jscpd_snapshot.py:13"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R012",
+      "title": "A connector that imports GraphQL declares it via the SDK extra",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1a40f0f425e4"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_graphql.py:11"
       ]
     }
   ]
