@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -206,7 +208,6 @@ def test_packaged_questions_load() -> None:
 
 
 def test_cli_graph_check_reads_git_repos(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import os
     import subprocess
 
     for name in [n for n in os.environ if n.startswith("GIT_")]:
@@ -247,3 +248,54 @@ def test_cli_graph_check_reads_git_repos(tmp_path: Path, monkeypatch: pytest.Mon
     ]
     assert omap.main(argv) == 0
     assert json.loads(out.read_text())["summary"]["total"] == 0
+
+
+def _components(srcs: list[ogc.Source]) -> int:
+    both, _ = ogc.module_graph(ogc.compose(srcs))
+    return len(ogc.components(both))
+
+
+@pytest.mark.spec("PIPE-GATES-R016.1")
+def test_owl_imports_bridges_modules() -> None:
+    target = HEAD + "<http://x/core> a owl:Ontology .\n:A a owl:Class ; rdfs:subClassOf owl:Thing ."
+    catalog = HEAD + "<http://x/catalog> a owl:Ontology ; owl:imports <http://x/core> ."
+    srcs = [ogc.Source("eg:core", "eg", "a/core.ttl", target), ogc.Source("eg:catalog", "eg", "a/catalog.ttl", catalog)]
+    assert _components(srcs) == 1
+    assert (
+        _components(
+            srcs[:1] + [ogc.Source("eg:catalog", "eg", "a/catalog.ttl", HEAD + "<http://x/c> a owl:Ontology .")]
+        )
+        == 2
+    )
+
+
+@pytest.mark.spec("PIPE-GATES-R016.2")
+def test_individual_type_bridges_modules() -> None:
+    core = HEAD + ":A a owl:Class ; rdfs:subClassOf owl:Thing ."
+    srcs = [
+        ogc.Source("eg:core", "eg", "a/core.ttl", core),
+        ogc.Source("eg:concepts", "eg", "a/concepts.ttl", HEAD + ":x a :A ."),
+    ]
+    assert _components(srcs) == 1
+    assert _components([srcs[0], ogc.Source("eg:concepts", "eg", "a/concepts.ttl", HEAD + ":x a :B .")]) == 2
+
+
+@pytest.mark.spec("PIPE-GATES-R016.3")
+def test_fixture_dirs_are_excluded(tmp_path: Path) -> None:
+    assert ogc.is_fixture_path("crates/ontology_codegen_fixtures/codegen_selftest-v1.ttl")
+    assert ogc.is_fixture_path("a/test_fixture/x.ttl")
+    assert not ogc.is_fixture_path("crates/ontology/fixtures_not.ttl")
+    assert not ogc.is_fixture_path("crates/ontology/core-v1.ttl")
+    repo = tmp_path / "eg"
+    for rel in ("ontology/core.ttl", "ontology_codegen_fixtures/self.ttl"):
+        (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+        (repo / rel).write_text(CORE)
+    env = ["-c", "user.name=t", "-c", "user.email=t@t"]
+    clean = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}  # hooks export GIT_DIR
+    for cmd in (
+        ["init", "-q", "-b", "main"],
+        ["add", "--", "ontology/core.ttl", "ontology_codegen_fixtures/self.ttl"],
+        [*env, "commit", "-qm", "x"],
+    ):
+        subprocess.run(["git", "-C", str(repo), *cmd], check=True, env=clean)
+    assert [s.path for s in ogc.eg_sources(repo, "main")] == ["ontology/core.ttl"]
