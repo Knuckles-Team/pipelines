@@ -39,6 +39,16 @@ def stage(wt: Path, paths: list[str], step: str) -> None:
         sh(step, ["git", "rm", "--cached", "--ignore-unmatch", "-q", "--", *gone], wt)
 
 
+def apply_repo_patch(patch: Path, wt: Path, paths: list[str], led: Ledger, repo: str) -> list[str]:
+    """Apply a reviewed one-off patch for this repo (not a codemod rule); returns the extended path list."""
+    if not patch.is_file():
+        return paths
+    sh("patch", ["git", "apply", str(patch)], wt)
+    touched = re.findall(r"(?m)^\+\+\+ b/(\S+)", patch.read_text(encoding="utf-8"))
+    led.record(repo, repo_patch=patch.name, repo_patch_files=touched)
+    return sorted(set(paths) | set(touched))
+
+
 def hook(*args: str) -> list[str]:
     return ["uv", "run", "--project", str(PIPELINES), "--frozen", "pipelines-hook", *args]
 
@@ -124,6 +134,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             raise StepFailed(step, json.dumps(blocking, indent=1))
         step = "commit"
         paths = sorted(set(report["changed"]) | set(report["deleted"]))
+        paths = apply_repo_patch(a.patches / f"{repo}.patch", wt, paths, led, repo)
         stage(wt, paths, step)
         stat = sh(step, ["git", "diff", "--cached", "--shortstat"], wt).strip()
         led.record(repo, diffstat=stat)
@@ -266,6 +277,9 @@ def main() -> int:
     ap.add_argument("--review", type=Path, default=Path("/var/tmp/connector-migrate/review.json"))
     ap.add_argument("--tmpdir", default="/var/tmp/connector-migrate/tmp")
     ap.add_argument("--pipelines-venv", type=Path, default=Path("/var/tmp/cm/venv"))
+    ap.add_argument(
+        "--patches", type=Path, default=HERE / "connector_migrate_patches", help="reviewed per-repo <repo>.patch files"
+    )
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--dry-run", action="store_true", help="migrate and verify only; no push")
     ap.add_argument("--sdk-path", type=Path, default=None, help="install this SDK checkout instead of PyPI (dry-run)")

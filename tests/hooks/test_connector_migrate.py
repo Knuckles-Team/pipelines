@@ -359,6 +359,7 @@ def _driver(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, verify: str = '{"ok
         pipelines_venv=tmp_path,
         sdk_path=None,
         dry_run=True,
+        patches=tmp_path / "patches",
     )
     return drv, args, drv.Ledger(tmp_path / "ledger.json"), calls
 
@@ -397,3 +398,16 @@ def test_gates_checks_are_read_from_plain_gh_output(tmp_path: Path, monkeypatch:
     drv, _, _, _ = _driver(tmp_path, monkeypatch)
     text = "gates / pre-commit\tpass\t1m\thttps://x\nother\tfail\t1s\thttps://y\ngates / tests\tpending\t0\thttps://z\n"
     assert drv.parse_checks(text) == {"gates / pre-commit": "pass", "gates / tests": "pending"}
+
+
+@pytest.mark.spec("PIPE-GATES-R016.16")
+def test_driver_applies_a_reviewed_per_repo_patch_after_migrate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    drv, args, led, calls = _driver(tmp_path, monkeypatch)
+    (tmp_path / "patches").mkdir()
+    (tmp_path / "patches" / "demo-agent.patch").write_text("--- a/tests/x.py\n+++ b/tests/x.py\n", encoding="utf-8")
+    drv.migrate_repo("demo-agent", args, led)
+    row = json.loads((tmp_path / "ledger.json").read_text(encoding="utf-8"))["demo-agent"]
+    assert row["repo_patch_files"] == ["tests/x.py"]
+    assert any(c[:2] == ["git", "apply"] for c in calls)
