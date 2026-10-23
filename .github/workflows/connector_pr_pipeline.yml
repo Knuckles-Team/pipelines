@@ -30,6 +30,11 @@ on:
         required: false
         type: string
         default: tests
+      sync-args:
+        description: Extra arguments for `uv sync --frozen`. A connector with an extra that cannot build on a CPU runner (for example GPU-only wheels) lists the extras to install instead of `--all-extras`.
+        required: false
+        type: string
+        default: --all-extras --all-groups
 
 permissions:
   contents: read
@@ -48,7 +53,7 @@ jobs:
       # environment (all extras and groups, so the test extra's pytest-asyncio is
       # present), bump2version and bun (mermaid-validate) on PATH, as the release pipeline provides.
       setup-command: |
-        uv sync --frozen --all-extras --all-groups
+        uv sync --frozen ${{ inputs.sync-args }}
         uv tool install bump2version
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
         # pre-commit runs under uvx, whose own python precedes PATH: expose the project packages too.
