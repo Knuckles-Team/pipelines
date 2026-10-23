@@ -497,7 +497,8 @@
       "landed_in": [
         "10797d760f22",
         "64c83743091d",
-        "6feb14333fd2"
+        "6feb14333fd2",
+        "a7f679181e23"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:367",
