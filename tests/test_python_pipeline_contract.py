@@ -50,3 +50,13 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
         "persist-credentials": False,
     }
     assert publisher["uses"] == "./.pipeline-contract/.github/actions/publish-python-package"
+
+
+def test_publish_action_persists_uv_cache_in_tool_cache() -> None:
+    # spec: PIPE-RELEASE-R016
+    steps = yaml.safe_load(ACTION.read_text(encoding="utf-8"))["runs"]["steps"]
+    cache = next(step for step in steps if step["name"] == "Persist uv downloads across runs")
+    assert steps.index(cache) == 0  # before any step that runs uv
+    assert 'echo "UV_CACHE_DIR=$root/uv-cache"' in cache["run"]
+    assert 'echo "UV_PYTHON_INSTALL_DIR=$root/uv-python"' in cache["run"]
+    assert "RUNNER_TOOL_CACHE" in cache["run"]

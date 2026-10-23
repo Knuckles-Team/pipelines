@@ -67,3 +67,6 @@ commit).
 - [ ] PIPE-RELEASE-R011: Connector pull request workflow. Bind the two tests in `tests/test_connector_release_pipeline.py`.
 - [ ] PIPE-RELEASE-R012: Post-release verification of PyPI and Docker. Bind the verification tests in `tests/test_connector_release_pipeline.py`.
 - [ ] PIPE-RELEASE-R013: Release-standard check. Bind `tests/hooks/test_release_standard.py`.
+- [ ] PIPE-RELEASE-R014: Concurrent, uncompiled runtime-profile proofs. Bind the two tests in `tests/test_wheel_readiness.py`.
+- [ ] PIPE-RELEASE-R015: Persistent BuildKit builder. Bind `tests/test_container_pipeline_contract.py::test_release_builds_use_one_persistent_builder`.
+- [ ] PIPE-RELEASE-R016: Persistent uv cache. Bind `tests/test_python_pipeline_contract.py::test_publish_action_persists_uv_cache_in_tool_cache`.

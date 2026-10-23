@@ -465,3 +465,25 @@ def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
         "type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},"
         f"enable=${{{{ {on_main} && steps.version.outputs.version != '' }}}}",
     ]
+
+
+def test_release_builds_use_one_persistent_builder() -> None:
+    # spec: PIPE-RELEASE-R015
+    text = WORKFLOW.read_text()
+    assert "docker/setup-buildx-action" not in text
+    assert "buildx rm --force" in text  # a wedged builder is replaced, never a healthy one removed per job
+    steps = yaml.safe_load(text)["jobs"]["publish-docker"]["steps"]
+    builder = next(step for step in steps if step.get("id") == "builder")
+    assert 'buildx create --name "$BUILDER_NAME"' in builder["run"]
+    assert 'buildx inspect "$BUILDER_NAME" > /dev/null' in builder["run"]
+    assert "timeout 300" in builder["run"]
+    builds = [step for step in steps if "docker/build-push-action@" in step.get("uses", "")]
+    assert len(builds) == 3
+    assert all(build["with"]["builder"] == "${{ steps.builder.outputs.name }}" for build in builds)
+    assert steps.index(builder) < steps.index(builds[0])
+    cache = builds[0]["with"]
+    assert cache["cache-from"].endswith(":buildcache-${{ steps.target.outputs.cache-key }}")
+    assert "mode=max" in cache["cache-to"]
+    assert "ignore-error=true" in cache["cache-to"]
+    prune = next(step for step in steps if step["name"] == "Bound the builder cache")
+    assert "--keep-storage" in prune["run"] and prune["if"].startswith("always()")
