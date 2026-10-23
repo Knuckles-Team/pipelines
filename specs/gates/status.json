@@ -649,7 +649,8 @@
       "title": "Typed module and test rules",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "16df550a8c49"
+        "16df550a8c49",
+        "5e66d79f0209"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:745",
@@ -661,8 +662,8 @@
       "title": "Action tools resolved from the served tool list",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "12d89ca88e3f",
-        "16df550a8c49"
+        "16df550a8c49",
+        "aaf473b4312d"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:778",
@@ -685,9 +686,9 @@
       "title": "Driver commit loop and reviewed patches",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "12d89ca88e3f",
         "16df550a8c49",
-        "27ead1c901f9"
+        "27ead1c901f9",
+        "aaf473b4312d"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:829"
@@ -698,7 +699,7 @@
       "title": "Mapping reads in tests",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "12d89ca88e3f"
+        "aaf473b4312d"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:878"
