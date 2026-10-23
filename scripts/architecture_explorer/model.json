@@ -345,6 +345,19 @@
      "links": [
       "ar.door"
      ]
+    },
+    {
+     "id": "webui.dash",
+     "label": "Agent dashboards",
+     "role": "panels + WebMCP tools",
+     "desc": "People and agents build dashboards of query panels. Agents edit them through WebMCP tools, and every edit is visible and undoable.",
+     "code": [
+      "src/components/dashboards",
+      "src/lib/dashboards"
+     ],
+     "fam": [
+      "agent-dashboards"
+     ]
     }
    ],
    "band": 1
@@ -1367,6 +1380,16 @@
         "arbora/fleet/epistemic_adapter.py"
        ],
        "kw": "binding generator|eg-direct|domain pack reads|typed operations"
+      },
+      {
+       "id": "ar.fleet.vgraph",
+       "label": "Virtual-graph sources",
+       "role": "query-time source reads",
+       "desc": "Queries over connector data reach approved sources at query time. arbora runs each source read through governed fleet calls and reports the sources used.",
+       "code": [
+        "arbora/fleet/source_executor.py"
+       ],
+       "kw": "virtual-graph|virtual graph|source executor|federat"
       }
      ]
     },
@@ -6178,103 +6201,103 @@
   "Serving and delivery"
  ],
  "fixed_layout": {
-  "w": 2400,
+  "w": 3360,
   "h": 1960,
   "kids": {
    "people": [
-    1100,
+    1540,
     90,
-    240,
+    336,
     110
    ],
    "clients": [
-    1900,
+    2660,
     90,
-    300,
+    420,
     110
    ],
    "webui": [
-    720,
+    1008,
     290,
-    230,
+    322,
     150
    ],
    "tui": [
-    980,
+    1372,
     290,
-    230,
+    322,
     150
    ],
    "geniusbot": [
-    1240,
+    1736,
     290,
-    230,
+    322,
     150
    ],
    "messaging": [
-    1500,
+    2100,
     290,
-    230,
+    322,
     150
    ],
    "arbora": [
-    700,
+    980,
     520,
-    1000,
+    1400,
     280
    ],
    "au": [
-    720,
+    1008,
     880,
-    560,
+    784,
     150
    ],
    "skills": [
-    1360,
+    1904,
     880,
-    340,
+    476,
     150
    ],
    "root.unmapped": [
-    1860,
+    2604,
     880,
-    480,
+    672,
     150
    ],
    "connectors": [
-    40,
+    56,
     470,
-    520,
+    728,
     700
    ],
    "sources": [
-    40,
+    56,
     1240,
-    240,
+    336,
     150
    ],
    "sdk": [
-    320,
+    448,
     1240,
-    240,
+    336,
     150
    ],
    "eg": [
-    700,
+    980,
     1100,
-    1000,
+    1400,
     640
    ],
    "egserver": [
-    950,
+    1330,
     1800,
-    500,
+    700,
     120
    ],
    "pipelines": [
-    1860,
+    2604,
     1160,
-    480,
+    672,
     280
    ]
   },
@@ -6285,24 +6308,24 @@
     "label": "asks",
     "pts": [
      [
-      1220,
+      1708,
       200
      ],
      [
-      1220,
+      1708,
       245
      ],
      [
-      835,
+      1169,
       245
      ],
      [
-      835,
+      1169,
       290
      ]
     ],
     "lp": [
-     1010,
+     1414,
      232
     ]
    },
@@ -6312,19 +6335,19 @@
     "label": "commands",
     "pts": [
      [
-      1220,
+      1708,
       200
      ],
      [
-      1220,
+      1708,
       245
      ],
      [
-      1095,
+      1533,
       245
      ],
      [
-      1095,
+      1533,
       290
      ]
     ],
@@ -6336,19 +6359,19 @@
     "label": "operates",
     "pts": [
      [
-      1220,
+      1708,
       200
      ],
      [
-      1220,
+      1708,
       245
      ],
      [
-      1355,
+      1897,
       245
      ],
      [
-      1355,
+      1897,
       290
      ]
     ],
@@ -6360,24 +6383,24 @@
     "label": "chats",
     "pts": [
      [
-      1220,
+      1708,
       200
      ],
      [
-      1220,
+      1708,
       245
      ],
      [
-      1615,
+      2261,
       245
      ],
      [
-      1615,
+      2261,
       290
      ]
     ],
     "lp": [
-     1440,
+     2016,
      232
     ]
    },
@@ -6387,16 +6410,16 @@
     "label": "typed operations",
     "pts": [
      [
-      835,
+      1169,
       440
      ],
      [
-      835,
+      1169,
       520
      ]
     ],
     "lp": [
-     835,
+     1169,
      480
     ]
    },
@@ -6406,16 +6429,16 @@
     "label": "REST operations",
     "pts": [
      [
-      1095,
+      1533,
       440
      ],
      [
-      1095,
+      1533,
       520
      ]
     ],
     "lp": [
-     1095,
+     1533,
      480
     ]
    },
@@ -6425,16 +6448,16 @@
     "label": "operations",
     "pts": [
      [
-      1355,
+      1897,
       440
      ],
      [
-      1355,
+      1897,
       520
      ]
     ],
     "lp": [
-     1355,
+     1897,
      480
     ]
    },
@@ -6444,16 +6467,16 @@
     "label": "messages",
     "pts": [
      [
-      1615,
+      2261,
       440
      ],
      [
-      1615,
+      2261,
       520
      ]
     ],
     "lp": [
-     1615,
+     2261,
      480
     ]
    },
@@ -6463,20 +6486,20 @@
     "label": "MCP / REST / A2A",
     "pts": [
      [
-      2050,
+      2870,
       200
      ],
      [
-      2050,
+      2870,
       660
      ],
      [
-      1700,
+      2380,
       660
      ]
     ],
     "lp": [
-     1875,
+     2625,
      645
     ]
    },
@@ -6486,16 +6509,16 @@
     "label": "tool calls",
     "pts": [
      [
-      700,
+      980,
       660
      ],
      [
-      560,
+      784,
       660
      ]
     ],
     "lp": [
-     630,
+     882,
      645
     ]
    },
@@ -6505,16 +6528,16 @@
     "label": "run plans",
     "pts": [
      [
-      1000,
+      1400,
       800
      ],
      [
-      1000,
+      1400,
       880
      ]
     ],
     "lp": [
-     1000,
+     1400,
      840
     ]
    },
@@ -6524,16 +6547,16 @@
     "label": "find / load",
     "pts": [
      [
-      1530,
+      2142,
       800
      ],
      [
-      1530,
+      2142,
       880
      ]
     ],
     "lp": [
-     1530,
+     2142,
      840
     ]
    },
@@ -6543,16 +6566,16 @@
     "label": "facts, decisions",
     "pts": [
      [
-      1000,
+      1400,
       1030
      ],
      [
-      1000,
+      1400,
       1100
      ]
     ],
     "lp": [
-     1000,
+     1400,
      1065
     ]
    },
@@ -6562,16 +6585,16 @@
     "label": "records",
     "pts": [
      [
-      160,
+      224,
       1240
      ],
      [
-      160,
+      224,
       1170
      ]
     ],
     "lp": [
-     160,
+     224,
      1205
     ]
    },
@@ -6581,16 +6604,16 @@
     "label": "built on",
     "pts": [
      [
-      440,
+      616,
       1170
      ],
      [
-      440,
+      616,
       1240
      ]
     ],
     "lp": [
-     440,
+     616,
      1205
     ]
    },
@@ -6600,16 +6623,16 @@
     "label": "SourceIngest",
     "pts": [
      [
-      560,
+      784,
       1315
      ],
      [
-      700,
+      980,
       1315
      ]
     ],
     "lp": [
-     630,
+     882,
      1300
     ]
    },
@@ -6619,16 +6642,16 @@
     "label": "installs matching server",
     "pts": [
      [
-      1200,
+      1680,
       1740
      ],
      [
-      1200,
+      1680,
       1800
      ]
     ],
     "lp": [
-     1310,
+     1834,
      1770
     ]
    },
@@ -6638,20 +6661,20 @@
     "label": "gates + release",
     "pts": [
      [
-      2100,
+      2940,
       1440
      ],
      [
-      2100,
+      2940,
       1860
      ],
      [
-      1450,
+      2030,
       1860
      ]
     ],
     "lp": [
-     1780,
+     2492,
      1845
     ]
    }
@@ -6691,16 +6714,16 @@
   "zones": [
    [
     "External systems and connectors",
-    20,
+    28,
     450,
-    560,
+    784,
     960
    ],
    [
     "Delivery",
-    1840,
+    2576,
     1130,
-    520,
+    728,
     330
    ]
   ],

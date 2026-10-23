@@ -576,3 +576,16 @@ def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_pa
     assert re.search(r'<li data-spec="SDK-CONNECTOR-CONTROL-R030.1" class="flash"', out)
     assert 'role="combobox"' in out and 'aria-label="Search results"' in out
     assert re.search(r'<input id="q"[^>]*>', out) and "GraphQL client" in out
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.5")
+def test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle() -> None:
+    """PIPE-PAGES-R042.5: no page width cap, the map fills the viewport height, wide overview."""
+    html = (ROOT / "scripts/architecture_explorer/template.html").read_text()
+    assert "max-width:1880px" not in html
+    assert ".app{display:flex;flex-direction:column;height:100vh;height:100dvh;" in html
+    assert "calc(100vh - 150px)" not in html
+    assert 'id="zfull"' in html and "requestFullscreen" in html and ".canvas:fullscreen" in html
+    assert 'id="zpanel"' in html and "main.work.nopanel" in html
+    fixed = json.loads((ROOT / "scripts/architecture_explorer/model.json").read_text())["fixed_layout"]
+    assert fixed["w"] / fixed["h"] >= 1.6

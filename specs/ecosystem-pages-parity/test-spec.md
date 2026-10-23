@@ -281,6 +281,7 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R042.2 | PIPE-PAGES-R042.2 | `tests/test_architecture_explorer.py::test_a_capability_search_ranks_the_owning_row_first` and `tests/test_architecture_explorer.py::test_an_id_search_is_exact`. Rank capability terms. Keep ID search exact. Put the owning row ahead of repeated boilerplate titles. |
 | T-PIPE-PAGES-R042.3 | PIPE-PAGES-R042.3 | `tests/test_architecture_explorer.py::test_deep_links_parse`. Parse every deep-link form. Write the hash back. |
 | T-PIPE-PAGES-R042.4 | PIPE-PAGES-R042.4 | `tests/test_architecture_explorer.py::test_a_q_deep_link_lands_on_the_owning_part_in_a_browser` loads the page in a headless Chromium when one is installed. Land on the owning node with the matching rows shown. Expose the combobox and listbox roles. |
+| T-PIPE-PAGES-R042.5 | PIPE-PAGES-R042.5 | `tests/test_architecture_explorer.py::test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle`. Assert no width cap, full-height layout, the full-screen and panel controls, and a wide overview layout. |
 
 ## Agent-readiness and static delivery
 
