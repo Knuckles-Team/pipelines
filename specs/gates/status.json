@@ -26,7 +26,8 @@
     "PIPE-GATES-R011",
     "PIPE-GATES-R012",
     "PIPE-GATES-R013",
-    "PIPE-GATES-R014"
+    "PIPE-GATES-R014",
+    "PIPE-GATES-R015"
   ],
   "requirements": [
     {
@@ -254,6 +255,17 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_surface.py:12"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R015",
+      "title": "Orphan connector classes get a reviewed parent class",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "cea83a8142b2"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_orphan_map.py:12"
       ]
     }
   ]
