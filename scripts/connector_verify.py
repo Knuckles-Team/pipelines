@@ -1,7 +1,7 @@
 """Verify one migrated connector over stdio (run with the connector's own python).
 
 Starts the MCP server, checks ``connector://resources`` lists every declared source and that ``ontology://``
-and ``shapes://`` resources read. Usage: connector_verify.py <repo-root> [--allow-manifest-alias] (the flag is for dry-runs against the pre-cutover SDK branch). Prints one JSON line; exit 1 on failure.
+and ``shapes://`` resources read. Usage: connector_verify.py <repo-root>. Prints one JSON line; exit 1 on failure.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ def declared_source_ids(root: Path) -> list[str]:
     return sorted(set(re.findall(r'^        source_id="([^"]+)"', text, re.M)))
 
 
-async def check(root: Path, allow_alias: bool = False) -> dict:
+async def check(root: Path) -> dict:
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
 
@@ -45,7 +45,7 @@ async def check(root: Path, allow_alias: bool = False) -> dict:
             if served != want:
                 out["error"] = f"connector://resources lists {served}, declared {want}"
                 return out
-            if "manifest://connector" in uris and not allow_alias:
+            if "manifest://connector" in uris:
                 out["error"] = "manifest://connector is still served (hard cutover)"
                 return out
             for prefix in ("ontology://", "shapes://"):
@@ -64,7 +64,7 @@ async def check(root: Path, allow_alias: bool = False) -> dict:
 
 if __name__ == "__main__":
     try:
-        result = asyncio.run(check(Path(sys.argv[1]).resolve(), "--allow-manifest-alias" in sys.argv))
+        result = asyncio.run(check(Path(sys.argv[1]).resolve()))
     except Exception as exc:  # noqa: BLE001 - the verdict is the failure text
         result = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
     print(json.dumps(result, sort_keys=True))

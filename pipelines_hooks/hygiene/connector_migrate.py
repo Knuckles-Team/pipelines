@@ -196,17 +196,30 @@ def build_sources(inputs: dict[str, Any], review: Review) -> dict[str, Any] | No
                 e.setdefault("preset", {})[k] = v
         e.setdefault("preset", {})
         entries.append(e)
-    for s in sorted(ingest.get("sources", []), key=lambda s: s["source_id"]):
-        if len(s.get("tools", [])) != 1:
-            review.add("declarations", f"ingest source {s['source_id']!r} must name exactly one tool")
+    by_tool = {e["tool"]: e for e in entries}
+    entries = []
+    merged: set[str] = set()
+    for src in sorted(ingest.get("sources", []), key=lambda s: s["source_id"]):
+        if len(src.get("tools", [])) != 1:
+            review.add("declarations", f"ingest source {src['source_id']!r} must name exactly one tool")
             continue
-        e = {
+        own = {
             k: v
-            for k, v in s.items()
-            if k != "tools" and v not in (None, "", {}, False) or k in ("record_type", "id_field", "source_id")
+            for k, v in src.items()
+            if k != "tools" and (v not in (None, "", {}, False) or k in ("record_type", "id_field", "source_id"))
         }
-        e["tool"] = s["tools"][0]
-        entries.append(e)
+        tool = src["tools"][0]
+        base = by_tool.get(tool)
+        if base is not None and tool not in merged:
+            # One source per tool: the ingest id wins, the preset id is dropped; ingest fields override preset fields.
+            merged.add(tool)
+            entry = {**base, **own, "tool": tool}
+            entry["preset"] = base.get("preset", {})
+        else:
+            entry = {**own, "tool": tool}
+        entries.append(entry)
+    entries += [e for t, e in by_tool.items() if t not in merged]
+    entries.sort(key=lambda e: e["source_id"])
     ids = [e["source_id"] for e in entries]
     for dup in sorted({i for i in ids if ids.count(i) > 1}):
         review.add("declarations", f"source id {dup!r} is declared twice")
@@ -408,6 +421,16 @@ _MANIFEST_READ = re.compile(
     r"^(?P<i>[ \t]*)manifest = yaml\.safe_load\((?:[^\n]*\n)*?(?P=i)\)\n|^[ \t]*manifest = yaml\.safe_load\([^\n]*\)\n",
     re.M,
 )
+_NAME_READ = re.compile(
+    r'^( *)manifest = \(\w+ / "connector_manifest\.yml"\)\.read_text\([^)]*\)\n'
+    r"\1match = re\.search\([^\n]*manifest[^\n]*\)\n"
+    r"\1assert match is not None and match\.group\(1\) == (\w+)\n",
+    re.M,
+)
+_FINGERPRINT_BLOCK = re.compile(
+    r'^( *)fingerprints = [^\n]*tool_schema_fingerprints\.json"\n\1if fingerprints\.is_file\(\):\n(?:\1 +[^\n]*\n)+',
+    re.M,
+)
 _DELETE_NAME = re.compile(r"test_.*(manifest|fingerprint|preset)", re.I)
 
 
@@ -418,6 +441,19 @@ def rewrite_test(text: str, name: str, pkg: str) -> tuple[str | None, str]:
     if _DELETE_NAME.match(name) and "load_ingest_sources" not in text:
         return None, "delete"
     new = text
+    if _NAME_READ.search(new):
+        new = _NAME_READ.sub(lambda m: f'{m.group(1)}assert connector_name("{pkg}") == {m.group(2)}\n', new)
+        new = _FINGERPRINT_BLOCK.sub("", new)
+        new = re.sub(
+            r"(?m)^((?:import|from) (?!__future__))",
+            lambda m: "from agent_connector_sdk.connector_identity import connector_name\n" + m.group(1),
+            new,
+            count=1,
+        )
+        for ident, line in (("re", r"import re\n"), ("json", r"import json\n")):
+            body = re.sub(line, "", new, count=1)
+            if not re.search(rf"\b{ident}\.", body):
+                new = body
     if "load_ingest_sources" not in new and _MANIFEST_READ.search(new):
         new = _MANIFEST_READ.sub(lambda m: "" if "connector_manifest.yml" in m.group(0) else m.group(0), new)
         new = new.replace('manifest["schema_mappings"]', "declared_sources().schema_mappings")
