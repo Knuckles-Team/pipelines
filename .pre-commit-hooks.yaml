@@ -169,6 +169,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: connector-ontology-map
+  name: "Propose and apply parent classes for orphan connector ontology classes (manual)"
+  entry: pipelines-hook connector-ontology-map
+  language: python
+  pass_filenames: false
+  stages: [manual]
 # --- repository hygiene -----------------------------------------------------
 - id: root-hygiene
   name: "DEPRECATED (root-hygiene): Repository root hygiene (declared entries only)"

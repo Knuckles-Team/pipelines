@@ -31,3 +31,4 @@
 - [x] Publish the `connector-graphql` gate, warning by default, for GraphQL declared via the SDK extra. Closes PIPE-GATES-R012.
 - [x] Publish the `sdk-conformance` gate, warning by default, for connectors that reimplement an SDK capability. Closes PIPE-GATES-R013.
 - [x] Publish the `connector-surface-audit` report of the five connector surfaces and the parent-ontology link. Closes PIPE-GATES-R014.
+- [x] Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes. Closes PIPE-GATES-R015.

@@ -73,3 +73,7 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 ## Hook cache and symlink snapshots (PIPE-GATES-R011)
 
 `tests/hooks/test_jscpd_snapshot.py` commits a package manifest and a root symlink to it. The snapshot keeps the target and skips the link.
+
+## Connector ontology orphan mapping (PIPE-GATES-R015)
+
+`tests/hooks/test_ontology_orphan_map.py` builds a fixture parent ontology and connector ontologies in a temporary directory. It checks the exact, head-noun and synonym signals, the generic-class rule, a synonym entry that names a parent class the ontology lacks, the new-parent candidate, the override check, the `apply` output and its idempotence, and deterministic output.
