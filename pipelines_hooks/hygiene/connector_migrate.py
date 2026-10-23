@@ -7,7 +7,7 @@ live-declaration layout, with no transitional file, alias or deprecation note.
 * b. delete the five cut files and their package-data / MANIFEST.in entries
 * c. strip ``extends`` / ``compose`` from ``<pkg>/prompts/*.json``
 * d. ontology rules R1-R4 through ``fix --pack`` (run before b so manifest relations still inform R8)
-* e. SDK floor ``>=0.4.0`` and a patch bump from ``.bumpversion.cfg``; ``uv lock``
+* e. SDK floor ``>=0.4.1`` and a patch bump from ``.bumpversion.cfg``; ``uv lock``
 * f. rewrite tests by fixed rules; anything else goes to the review list, never edited by hand
 
 Everything a rule does not cover is a ``review`` item (``blocking`` stops the repo in the batch driver).
@@ -27,7 +27,7 @@ from typing import Any
 
 import yaml
 
-SDK_FLOOR = "0.4.0"
+SDK_FLOOR = "0.4.1"
 CUT_NAMES = (
     "connector_manifest.yml",
     "mcp_source_presets.json",
@@ -362,7 +362,7 @@ _SDK_SPEC = re.compile(r"(agent-connector-sdk(?:\[[^\]]*\])?\s*>=\s*)(\d+(?:\.\d
 
 
 def bump_sdk_floor(root: Path, changed: list[str]) -> bool:
-    """Raise every SDK floor below 0.4.0; True when something changed."""
+    """Raise every SDK floor below the codemod floor; True when something changed."""
     hit = False
     for name in ("pyproject.toml", "requirements.txt"):
         p = root / name
@@ -556,7 +556,46 @@ def leftover_references(root: Path, review: Review) -> None:
             )
 
 
+# ---------------------------------------------------------------- docs
+_NAME = r"(?:[\w./-]*/)?(?:" + "|".join(re.escape(n) for n in CUT_NAMES) + ")"
+_DOC_LINE = [
+    re.compile(rf"^\s*(?:[-*+]|\d+\.)?\s*[`\"']?{_NAME}[`\"']?\s*$"),
+    re.compile(rf"^[\s│├└─|+`\-*]*{_NAME}\s*(?:#.*)?$"),
+    re.compile(rf"^\s*\|\s*`?{_NAME}`?\s*\|.*\|\s*$"),
+]
+
+
+def strip_doc_mentions(text: str) -> str:
+    """Remove lines and table rows that only name a cut file; any other mention stays for review."""
+    kept = [ln for ln in text.splitlines(keepends=True) if not any(rx.match(ln.rstrip("\n")) for rx in _DOC_LINE)]
+    return "".join(kept)
+
+
+def migrate_docs(root: Path, changed: list[str]) -> None:
+    for p in walk(root):
+        rel = p.relative_to(root)
+        if p.suffix not in {".md", ".rst"} or p.name == "CHANGELOG.md" or "specs" in rel.parts or p.is_symlink():
+            continue
+        text = p.read_text(encoding="utf-8")
+        new = strip_doc_mentions(text)
+        if new != text:
+            p.write_text(new, encoding="utf-8")
+            changed.append(str(rel))
+
+
 # ---------------------------------------------------------------- driver
+def rebump(root: Path, lock: bool = True) -> dict[str, Any]:
+    """Already-migrated repo: raise the SDK floor, bump the patch version, refresh the lock. Nothing else."""
+    root = Path(root)
+    review = Review()
+    changed: list[str] = []
+    if bump_sdk_floor(root, changed):
+        bump_patch(root, changed, review)
+        if lock and (root / "uv.lock").is_file():
+            refresh_lock(root, review, changed)
+    return {"changed": sorted(set(changed)), "deleted": [], "review": review.items}
+
+
 def migrate(root: Path, eg_repo: Path | None = None, ref: str = "origin/main", lock: bool = True) -> dict[str, Any]:
     """Run every transform on one connector checkout and return the report."""
     root = Path(root)
@@ -605,6 +644,7 @@ def migrate(root: Path, eg_repo: Path | None = None, ref: str = "origin/main", l
         if lock and (root / "uv.lock").is_file():
             refresh_lock(root, review, changed)
     migrate_tests(root, pkg.name, changed, deleted, review)
+    migrate_docs(root, changed)
     leftover_references(root, review)
     return {"changed": sorted(set(changed)), "deleted": sorted(set(deleted)), "review": review.items}
 
@@ -622,9 +662,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("--ref", default="origin/main")
     ap.add_argument("--no-lock", action="store_true", help="skip the uv.lock refresh")
+    ap.add_argument("--rebump", action="store_true", help="already-migrated repo: SDK floor, patch bump and lock only")
     ap.add_argument("--out", type=Path, default=None, help="write the JSON report here")
     args = ap.parse_args(argv)
-    report = migrate(args.root, args.eg_repo, args.ref, not args.no_lock)
+    report = (
+        rebump(args.root, not args.no_lock)
+        if args.rebump
+        else migrate(args.root, args.eg_repo, args.ref, not args.no_lock)
+    )
     text = json.dumps(report, indent=1, sort_keys=True)
     if args.out:
         args.out.write_text(text + "\n", encoding="utf-8")

@@ -185,7 +185,7 @@ def test_sdk_floor_and_patch_bump_follow_the_repo_bump_config(tmp_path: Path) ->
     root = make(tmp_path)
     run(root)
     py = (root / "pyproject.toml").read_text(encoding="utf-8")
-    assert "agent-connector-sdk[mcp]>=0.4.0,<1.0.0" in py and 'version = "1.0.5"' in py
+    assert "agent-connector-sdk[mcp]>=0.4.1,<1.0.0" in py and 'version = "1.0.5"' in py
     assert "current_version = 1.0.5" in (root / ".bumpversion.cfg").read_text(encoding="utf-8")
     assert "==1.0.5" in (root / "docker" / "Dockerfile").read_text(encoding="utf-8")
 
@@ -360,6 +360,7 @@ def _driver(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, verify: str = '{"ok
         sdk_path=None,
         dry_run=True,
         patches=tmp_path / "patches",
+        rebump=False,
     )
     return drv, args, drv.Ledger(tmp_path / "ledger.json"), calls
 
@@ -431,3 +432,62 @@ def test_driver_runs_tests_without_pytest_plugin_flags_and_merges_by_repo_slug()
     text = (Path(__file__).resolve().parents[2] / "scripts" / "connector_migrate_batch.py").read_text(encoding="utf-8")
     assert '"-p", "no:cacheprovider"' not in text
     assert '"-R", slug, "--squash"' in text
+
+
+DOC = """# Demo
+
+Config lives in code.
+
+- `connector_manifest.yml`
+- demo_agent/connectors/mcp_source_presets.json
+- keep: see `connector_manifest.yml` for the old layout
+
+| File | Purpose |
+|---|---|
+| `tool_schema_fingerprints.json` | pins |
+| `pyproject.toml` | build |
+
+```
+demo_agent/
+\u251c\u2500\u2500 connector_manifest.yml   # retired
+\u2514\u2500\u2500 prompts/
+```
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R016.17")
+def test_docs_lines_that_only_name_a_cut_file_are_removed_and_ambiguous_ones_stay() -> None:
+    new = cm.strip_doc_mentions(DOC)
+    assert "- `connector_manifest.yml`\n" not in new and "mcp_source_presets.json\n" not in new.replace("keep", "")
+    assert "tool_schema_fingerprints" not in new and "# retired" not in new
+    assert "| `pyproject.toml` | build |" in new and "prompts/" in new
+    assert "keep: see `connector_manifest.yml` for the old layout" in new
+    assert cm.strip_doc_mentions(new) == new
+
+
+@pytest.mark.spec("PIPE-GATES-R016.17")
+def test_migrate_edits_docs_and_leaves_ambiguous_mentions_as_non_blocking_review(tmp_path: Path) -> None:
+    root = make(tmp_path)
+    (root / "README.md").write_text(DOC, encoding="utf-8")
+    report = run(root)
+    assert "README.md" in report["changed"]
+    left = [i for i in report["review"] if i["step"] == "leftover" and i["path"] == "README.md"]
+    assert left and not left[0]["blocking"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.18")
+def test_rebump_raises_the_floor_bumps_the_patch_and_touches_nothing_else(tmp_path: Path) -> None:
+    root = make(tmp_path)
+    py = root / "pyproject.toml"
+    py.write_text(py.read_text(encoding="utf-8").replace(">=0.3.18", ">=0.4.0"), encoding="utf-8")
+    before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+    report = cm.rebump(root, lock=False)
+    assert report["deleted"] == [] and set(report["changed"]) <= {
+        "pyproject.toml",
+        ".bumpversion.cfg",
+        "docker/Dockerfile",
+    }
+    assert ">=0.4.1" in py.read_text(encoding="utf-8") and 'version = "1.0.5"' in py.read_text(encoding="utf-8")
+    after = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+    assert {k for k in after if after[k] != before.get(k)} == {Path(c) for c in report["changed"]}
+    assert cm.rebump(root, lock=False)["changed"] == []
