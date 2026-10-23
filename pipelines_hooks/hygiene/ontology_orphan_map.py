@@ -771,7 +771,20 @@ def main(argv: list[str]) -> int:
     x.add_argument("--overrides", type=Path, default=None, help="reviewed parent table (default: packaged)")
     x.add_argument("--out", type=Path, default=None, help="directory for patches/, summary.json, review-queue.json")
     x.add_argument("--dry-run", action="store_true", help="write patches and reports only, change no checkout")
+    m = sub.add_parser("migrate", help="manifest-cut codemod for one connector repo (PIPE-GATES-R016.10)")
+    m.add_argument("--root", type=Path, default=Path.cwd())
+    m.add_argument("--eg-repo", type=Path, default=None)
+    m.add_argument("--ref", default="origin/main")
+    m.add_argument("--no-lock", action="store_true")
+    m.add_argument("--out", type=Path, default=None)
     args = parser.parse_args(argv)
+    if args.command == "migrate":
+        from pipelines_hooks.hygiene import connector_migrate
+
+        extra = ["--root", str(args.root), "--ref", args.ref] + (["--no-lock"] if args.no_lock else [])
+        extra += ["--eg-repo", str(args.eg_repo)] if args.eg_repo else []
+        extra += ["--out", str(args.out)] if args.out else []
+        return connector_migrate.main(extra)
     if args.command == "fix":
         from pipelines_hooks.hygiene import ontology_codemod as oc
         from pipelines_hooks.hygiene import ontology_graph_check as ogc
