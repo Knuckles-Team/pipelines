@@ -647,7 +647,7 @@
       "title": "Typed module and test rules",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "4b50df1890d3"
+        "16df550a8c49"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:745",
@@ -659,7 +659,7 @@
       "title": "Action tools resolved from the served tool list",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "4b50df1890d3"
+        "16df550a8c49"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:778"
@@ -670,7 +670,7 @@
       "title": "Changelog entry",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "4b50df1890d3"
+        "16df550a8c49"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:805"
@@ -681,7 +681,8 @@
       "title": "Driver commit loop and reviewed patches",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "4b50df1890d3"
+        "0d963ffcb109",
+        "16df550a8c49"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:829"
