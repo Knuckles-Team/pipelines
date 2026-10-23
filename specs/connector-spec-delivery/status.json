@@ -3562,7 +3562,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_spec_bind_suggest.py:31"
+        "tests/hooks/test_spec_bind_suggest.py:41"
       ]
     }
   ]
