@@ -15,6 +15,7 @@ def _on(document: dict) -> dict:
     return document.get(True, document.get("on"))
 
 
+# spec: PIPE-RELEASE-R011
 @pytest.mark.spec("PIPE-RELEASE-R011")
 def test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes() -> None:
     document = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
@@ -29,6 +30,7 @@ def test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes() -> Non
     assert "secrets" not in text and "pypi" not in text.lower()
 
 
+# spec: PIPE-RELEASE-R011
 @pytest.mark.spec("PIPE-RELEASE-R011")
 def test_gates_stage_loop_reads_the_stages_input() -> None:
     document = yaml.safe_load((WORKFLOWS / "gates_pipeline.yml").read_text(encoding="utf-8"))
@@ -69,11 +71,13 @@ def _run_verify(tmp_path: Path, missing: str) -> subprocess.CompletedProcess[str
     )
 
 
+# spec: PIPE-RELEASE-R012
 @pytest.mark.spec("PIPE-RELEASE-R012")
 def test_verification_passes_when_both_artifacts_exist(tmp_path: Path) -> None:
     assert _run_verify(tmp_path, "").returncode == 0
 
 
+# spec: PIPE-RELEASE-R012
 @pytest.mark.spec("PIPE-RELEASE-R012")
 @pytest.mark.parametrize(
     ("missing", "message"),
