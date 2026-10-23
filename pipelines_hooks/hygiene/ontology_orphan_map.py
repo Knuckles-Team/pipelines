@@ -37,6 +37,7 @@ import argparse
 import json
 import re
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -804,8 +805,12 @@ def main(argv: list[str]) -> int:
         if args.pack and not args.dry_run:
             old = [s for s in pack_srcs]
             new = [s for s in result["patched_sources"] if s.kind == "pack"]
-            for path in oc.apply_to_dir(args.pack, old, new):
-                print(f"patched {path}")
+            try:
+                for path in oc.apply_to_dir(args.pack, old, new):
+                    print(f"patched {path}")
+            except oc.UnparseableOutput as exc:
+                print(f"error: {exc}", file=sys.stderr)
+                return 1
         for rule, n in result["rule_totals"].items():
             print(f"{rule}: {n}")
         print(f"findings: {result['findings']['total_before']} -> {result['findings']['total_after']}")

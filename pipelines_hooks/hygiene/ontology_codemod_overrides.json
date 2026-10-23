@@ -148,8 +148,8 @@
   "Release": null
  },
  "hdhomerun-mcp": {
-  "Channel": null,
-  "Lineup": null,
+  "Channel": "BroadcastChannel",
+  "Lineup": "ChannelLineup",
   "Recording": null,
   "RecordingRule": null,
   "Tuner": "Device"
@@ -158,10 +158,10 @@
   "LogbookEntry": "Event"
  },
  "immich-api": {
-  "ImmichAlbum": null,
+  "ImmichAlbum": "Album",
   "ImmichAlbumMembership": null,
   "ImmichAsset": "AssetOccurrence",
-  "ImmichAssetStack": null
+  "ImmichAssetStack": "AssetStack"
  },
  "jena-mcp": {
   "AdminTask": null
@@ -169,13 +169,13 @@
  "kafka-mcp": {
   "Broker": "Server",
   "ConsumerGroup": "ResourceGroup",
-  "ReplicationSlot": null
+  "ReplicationSlot": "ChangeDataCapture"
  },
  "lakekeeper-mcp": {
   "IcebergNamespace": "Namespace"
  },
  "langfuse-agent": {
-  "DatasetRun": null
+  "DatasetRun": "ExperimentRun"
  },
  "legal-peripherals-mcp": {
   "BoardResolution": "Decision",
@@ -191,7 +191,7 @@
   "TransactionalMessage": "Message"
  },
  "lucerna-mcp": {
-  "SearchAlias": null,
+  "SearchAlias": "IndexAlias",
   "SearchIndex": null
  },
  "mealie-mcp": {
@@ -283,7 +283,7 @@
   "VectorCollection": "Collection"
  },
  "webarchiver": {
-  "WebarchiverResource": null
+  "WebarchiverResource": "WebResource"
  },
  "world-reference-mcp": {
   "ReferenceSyncRun": "RunEvent"
