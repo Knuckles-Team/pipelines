@@ -57,7 +57,8 @@
     "PIPE-GATES-R016.26",
     "PIPE-GATES-R016.27",
     "PIPE-GATES-R016.28",
-    "PIPE-GATES-R016.29"
+    "PIPE-GATES-R016.29",
+    "PIPE-GATES-R016.30"
   ],
   "requirements": [
     {
@@ -341,7 +342,8 @@
         "PIPE-GATES-R016.26",
         "PIPE-GATES-R016.27",
         "PIPE-GATES-R016.28",
-        "PIPE-GATES-R016.29"
+        "PIPE-GATES-R016.29",
+        "PIPE-GATES-R016.30"
       ]
     },
     {
@@ -659,10 +661,12 @@
       "title": "Action tools resolved from the served tool list",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "12d89ca88e3f",
         "16df550a8c49"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:778"
+        "tests/hooks/test_connector_migrate.py:778",
+        "tests/hooks/test_connector_migrate.py:866"
       ]
     },
     {
@@ -681,11 +685,23 @@
       "title": "Driver commit loop and reviewed patches",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0d963ffcb109",
-        "16df550a8c49"
+        "12d89ca88e3f",
+        "16df550a8c49",
+        "27ead1c901f9"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:829"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.30",
+      "title": "Mapping reads in tests",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "12d89ca88e3f"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:878"
       ]
     }
   ]
