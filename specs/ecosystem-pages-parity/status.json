@@ -421,6 +421,7 @@
     "PIPE-PAGES-R042.2",
     "PIPE-PAGES-R042.3",
     "PIPE-PAGES-R042.4",
+    "PIPE-PAGES-R042.5",
     "PIPE-PAGES-R043",
     "PIPE-PAGES-R043.1",
     "PIPE-PAGES-R043.2",
@@ -3989,7 +3990,7 @@
     {
       "id": "PIPE-PAGES-R042",
       "title": "One generated architecture explorer, always current",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "SPECIFIED",
       "landed_in": [
         "07e22bc44394",
         "1127e9047bfa",
@@ -4008,7 +4009,8 @@
         "PIPE-PAGES-R042.1",
         "PIPE-PAGES-R042.2",
         "PIPE-PAGES-R042.3",
-        "PIPE-PAGES-R042.4"
+        "PIPE-PAGES-R042.4",
+        "PIPE-PAGES-R042.5"
       ]
     },
     {
@@ -4055,6 +4057,15 @@
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:552"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.5",
+      "title": "Viewport",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:581"
       ]
     },
     {

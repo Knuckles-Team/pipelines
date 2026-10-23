@@ -4,8 +4,8 @@
 import ELK from "elkjs/lib/elk.bundled.js";
 
 const elk = new ELK();
-const LEAF = { w: 240, h: 112 };
-const UNMAPPED = { w: 200, h: 96 };
+const LEAF = { w: 300, h: 112 };
+const UNMAPPED = { w: 250, h: 96 };
 
 const layered = (banded) => ({
   "elk.algorithm": "layered",
@@ -22,13 +22,13 @@ const layered = (banded) => ({
   "elk.spacing.edgeLabel": "4",
   "elk.edgeLabels.placement": "CENTER",
   "elk.layered.edgeLabels.sideSelection": "SMART_DOWN",
-  "elk.aspectRatio": "1.7",
+  "elk.aspectRatio": "2.0",
   "elk.partitioning.activate": banded ? "true" : "false",
   "elk.padding": "[top=28,left=18,bottom=16,right=18]",
 });
 const packed = {
   "elk.algorithm": "rectpacking",
-  "elk.aspectRatio": "1.7",
+  "elk.aspectRatio": "2.0",
   "elk.spacing.nodeNode": "24",
   "elk.padding": "[top=28,left=16,bottom=16,right=16]",
 };
@@ -39,7 +39,7 @@ function sizeOf(level, done) {
   const sub = done[level.id];
   if (!sub) return LEAF;
   const aspect = sub.w / sub.h;
-  const w = 280;
+  const w = 350;
   return { w, h: Math.round(Math.min(230, Math.max(124, w / aspect))) };
 }
 
