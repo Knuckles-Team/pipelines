@@ -27,7 +27,8 @@
     "PIPE-GATES-R012",
     "PIPE-GATES-R013",
     "PIPE-GATES-R014",
-    "PIPE-GATES-R015"
+    "PIPE-GATES-R015",
+    "PIPE-GATES-R016"
   ],
   "requirements": [
     {
@@ -264,6 +265,17 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_ontology_orphan_map.py:12"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016",
+      "title": "The composed ontology graph is reachable and bridged",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "bd3f499ab5c2"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_graph_check.py:13"
       ]
     }
   ]
