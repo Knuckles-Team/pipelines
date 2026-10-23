@@ -1,0 +1,19 @@
+diff --git a/tests/test_init_dynamics.py b/tests/test_init_dynamics.py
+index 5699fda..bca437f 100644
+--- a/tests/test_init_dynamics.py
++++ b/tests/test_init_dynamics.py
+@@ -10,10 +10,11 @@ PKG_NAME = __name__.rsplit(".", 1)[0] if "." in __name__ else None
+ def _get_pkg_name():
+     """Derive package name from test location."""
+     import pathlib
++    import tomllib
+
+-    test_dir = pathlib.Path(__file__).resolve().parent
+-    project_dir = test_dir.parent
+-    return project_dir.name.replace("-", "_")
++    project_dir = pathlib.Path(__file__).resolve().parent.parent
++    pyproject = tomllib.loads((project_dir / "pyproject.toml").read_text(encoding="utf-8"))
++    return pyproject["project"]["name"].replace("-", "_")
+
+
+ @pytest.fixture

@@ -1,0 +1,69 @@
+diff --git a/scripts/generate_immich_content.py b/scripts/generate_immich_content.py
+index 819e549..bcf1389 100644
+--- a/scripts/generate_immich_content.py
++++ b/scripts/generate_immich_content.py
+@@ -180,58 +180,6 @@ def artifacts():
+         resources.append({"name": class_name, "relations": relations})
+         mappings[class_name] = {"ontology_class": class_name, "fields": fields}
+     ontology_text, shapes_text = "\n".join(ontology), "\n".join(shapes)
+-    manifest = json.loads((PACKAGE / "connector_manifest.yml").read_text())
+-    manifest.update(
+-        {
+-            "resources": resources,
+-            "identity": {
+-                "id_field": {
+-                    name: "immich" + name.removeprefix("Immich") + "Id"
+-                    for name in mappings
+-                    if name != "ImmichAlbumMembership"
+-                },
+-                "title_field": {
+-                    "ImmichAlbum": "immichAlbumAlbumName",
+-                    "ImmichPersonRecord": "immichPersonRecordName",
+-                    "ImmichUser": "immichUserName",
+-                    "ImmichLibrary": "immichLibraryName",
+-                    "ImmichTag": "immichTagName",
+-                },
+-                "updated_field": {
+-                    "ImmichAlbum": "immichAlbumUpdatedAt",
+-                    "ImmichAsset": "immichAssetUpdatedAt",
+-                },
+-            },
+-            "schema_mappings": mappings,
+-            "policy": {
+-                "pii_fields": {
+-                    "ImmichAlbum": ["immichAlbumAlbumName"],
+-                    "ImmichPersonRecord": ["immichPersonRecordName"],
+-                    "ImmichUser": ["immichUserName"],
+-                    "ImmichTag": ["immichTagName"],
+-                }
+-            },
+-            "provenance": {
+-                "generated_by": "scripts/generate_immich_content.py",
+-                "source_artifacts": [
+-                    "openapi_contract.json",
+-                    "ontology/schema-provenance.json",
+-                    "ontology/immich.ttl",
+-                    "ontology/shapes/immich.ttl",
+-                ],
+-                "integrity": {
+-                    "algorithm": "sha256",
+-                    "hash": hashlib.sha256(ontology_text.encode()).hexdigest(),
+-                },
+-            },
+-            "review_todos": [
+-                "Structural schema declarations are not evidence of live EG capture or semantic identity alignment.",
+-                "Only the bounded album metadata projection is implemented for ingestion; remaining DTO classes are structural declarations.",
+-                "Require explicit source/account binding, existing scoped credentials and a verified EG receipt/readback before enabling ingestion.",
+-                "Ontology integrity is a byte SHA256, not canonical RDF or release certification.",
+-            ],
+-        }
+-    )
+     evidence = {
+         "status": "schema-derived; live ingestion unverified",
+         "source_version": "3.2.2",
+@@ -263,7 +211,6 @@ def artifacts():
+             evidence, indent=2, sort_keys=True
+         )
+         + "\n",
+-        PACKAGE / "connector_manifest.yml": json.dumps(manifest, indent=2) + "\n",
+     }

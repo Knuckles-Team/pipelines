@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
@@ -48,6 +49,53 @@ def apply_repo_patch(patch: Path, wt: Path, paths: list[str], led: Ledger, repo:
     touched = re.findall(r"(?m)^\+\+\+ b/(\S+)", patch.read_text(encoding="utf-8"))
     led.record(repo, repo_patch=patch.name, repo_patch_files=touched)
     return sorted(set(paths) | set(touched))
+
+
+class NoOp(Exception):
+    """The repo has nothing to migrate: the cut files are already absent on origin/main."""
+
+
+def worktree_diff(wt: Path) -> str:
+    return sh("commit", ["git", "diff"], wt)
+
+
+def commit_all(
+    wt: Path, paths: list[str], step: str, env: dict[str, str], led: Ledger, repo: str, message: str
+) -> None:
+    """R016.29: format with the repo's own hooks until the tree stops changing, stage the allowlist, commit.
+
+    A formatter hook that rewrites files fails the commit; the allowlist is re-staged and the commit retried while each
+    attempt changes something. A run that changes nothing is a real failure. A commit already present ahead of
+    origin/main (an earlier attempt) is kept; with nothing to stage and nothing ahead, the repo is a no-op.
+    """
+    pre_commit = shutil.which("pre-commit", path=env.get("PATH"))
+    seen = ""
+    for attempt in range(1, 5):
+        stage(wt, paths, step)
+        stat = sh(step, ["git", "diff", "--cached", "--shortstat"], wt).strip()
+        if not stat:
+            ahead = int(sh(step, ["git", "rev-list", "--count", "origin/main..HEAD"], wt).strip() or 0)
+            if ahead:
+                led.record(repo, already_committed=True)
+                return
+            raise NoOp(repo)
+        if pre_commit and attempt == 1:
+            for _ in range(3):
+                sh(step, [pre_commit, "run", "--files", *[p for p in paths if (wt / p).exists()]], wt, env, ok=(0, 1))
+                if not worktree_diff(wt):
+                    break
+                stage(wt, paths, step)
+        led.record(repo, diffstat=stat)
+        try:
+            sh(step, ["git", "commit", "-m", message, "-m", TRAILER], wt, env)
+            led.record(repo, commit_attempts=attempt)
+            return
+        except StepFailed as exc:
+            now = worktree_diff(wt)
+            if not now or now == seen:
+                raise exc
+            seen = now
+    raise StepFailed(step, "formatter hooks kept changing the tree after 4 commit attempts")
 
 
 def hook(*args: str) -> list[str]:
@@ -140,7 +188,22 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
                 wt,
                 env,
             )
+        # R016.29: hooks that run `python` (check-cli-help, env-var-drift) must see the synced repo environment.
+        env["VIRTUAL_ENV"] = venv
+        env["PATH"] = f"{venv}/bin:{os.environ.get('PATH', '')}"
+        env_file = wt / ".env"  # R016.29: an ignored, missing .env fails the compose-check hook of a fresh worktree
+        if not env_file.exists() and sh(step, ["git", "check-ignore", ".env"], wt, ok=(0, 1)).strip():
+            example = wt / ".env.example"
+            env_file.write_text(example.read_text(encoding="utf-8") if example.is_file() else "", encoding="utf-8")
         step = "migrate"
+        pre_paths = apply_repo_patch(a.patches / f"{repo}.pre.patch", wt, [], led, repo)
+        served_path = tmp / "served-tools.json"
+        served_path.unlink(missing_ok=True)
+        try:  # R016.27: the served tool names resolve action presets; a server that cannot list them leaves them to verify
+            out = sh(step, [f"{venv}/bin/python", str(HERE / "connector_served_tools.py"), str(wt)], wt, env)
+            served_path.write_text([ln for ln in out.splitlines() if ln.startswith("[")][-1], encoding="utf-8")
+        except (StepFailed, IndexError):
+            pass
         report_path = tmp / "migrate.json"
         cmd = hook(
             "connector-ontology-map",
@@ -154,6 +217,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         )
         if a.rebump:
             cmd = [c for c in cmd if c not in ("--eg-repo", str(a.eg_repo))] + ["--rebump"]
+        elif served_path.exists():
+            cmd += ["--served-tools", str(served_path)]
         if a.sdk_path:
             cmd.append("--no-lock")
         sh(step, cmd, wt, {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}, ok=(0, 2))
@@ -167,20 +232,17 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         if blocking:
             raise StepFailed(step, json.dumps(blocking, indent=1))
         step = "commit"
-        paths = sorted(set(report["changed"]) | set(report["deleted"]))
+        paths = sorted(set(report["changed"]) | set(report["deleted"]) | set(pre_paths))
         if not a.rebump:
             paths = apply_repo_patch(a.patches / f"{repo}.patch", wt, paths, led, repo)
-        stage(wt, paths, step)
-        stat = sh(step, ["git", "diff", "--cached", "--shortstat"], wt).strip()
-        led.record(repo, diffstat=stat)
-        commit = ["git", "commit", "-m", message, "-m", TRAILER]
         try:
-            sh(step, commit, wt, env)
-        except StepFailed:
-            # A formatter hook rewrote the staged files: re-stage the same allowlist once and commit again.
-            stage(wt, paths, step)
-            sh(step, commit, wt, env)
-            led.record(repo, restaged_after_hook=True)
+            commit_all(wt, paths, step, env, led, repo, message)
+        except NoOp:
+            gone = sh(step, ["git", "ls-tree", "-r", "--name-only", "origin/main"], wt)
+            if any(n.rsplit("/", 1)[-1] in ("connector_manifest.yml", "mcp_source_presets.json") for n in gone.split()):
+                raise StepFailed(step, "nothing to commit but the cut files are still on origin/main") from None
+            led.record(repo, status="merged", noop=True, merged_at=time.strftime("%FT%TZ", time.gmtime()))
+            return
         step = "verify"
         # R016.25: the migrate step raised the SDK floor and lock; the venv synced before it still holds the old SDK.
         sync(step, wt, env, led, repo)
@@ -230,7 +292,15 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         if scope != "NONE":
             targets = ["tests"] if scope == "FULL" else scope.splitlines()
             # No `-p`: a connector test that parses sys.argv reads it as the server port flag.
-            sh(step, [py, "-m", "pytest", "-q", "-x", *targets], wt, env)
+            try:
+                sh(step, [py, "-m", "pytest", "-q", "-x", *targets], wt, env)
+            except StepFailed as exc:
+                # R016.29: a wheel built for a newer CPU (no AVX2 on this host) aborts pytest; the PR gate runs the tests.
+                if "Fatal Python error: Illegal instruction" not in exc.output:
+                    raise
+                led.record(
+                    repo, local_tests_skipped="host CPU lacks an instruction set a wheel needs; PR gates run them"
+                )
         if a.dry_run:
             led.record(repo, status="dry-run-verified")
             return

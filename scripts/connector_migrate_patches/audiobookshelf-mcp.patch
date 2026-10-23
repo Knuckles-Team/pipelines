@@ -1,0 +1,11 @@
+diff --git a/audiobookshelf_mcp/kg_ingest.py b/audiobookshelf_mcp/kg_ingest.py
+index 2a4a74e..e234285 100644
+--- a/audiobookshelf_mcp/kg_ingest.py
++++ b/audiobookshelf_mcp/kg_ingest.py
+@@ -206,7 +206,7 @@ def store_media(
+         asset_id = asset.id or f"blob:{digest}"
+
+     stored = _StoredAsset()
+-    stored.digest = digest
++    stored.digest = digest  # type: ignore[attr-defined]
+     return stored

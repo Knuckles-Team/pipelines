@@ -740,3 +740,126 @@ def test_driver_sync_falls_back_to_the_pr_gate_extras_and_each_repo_gets_its_own
     assert led.data["r"]["sync_args"].startswith("--all-groups")
     src = Path(batch.__file__).read_text(encoding="utf-8")
     assert '"PRE_COMMIT_HOME"' in src and 'worktree", "remove", "--force"' in src
+
+
+@pytest.mark.spec("PIPE-GATES-R016.26")
+def test_generated_module_is_fully_typed_and_test_rules_follow_the_live_layout() -> None:
+    module = cm.render_module({"connector": "demo-mcp", "entries": [], "mappings": {}, "resources": []})
+    for needle in (
+        "SOURCES: tuple[Any, ...]",
+        "SCHEMA_MAPPINGS: dict[str, Any]",
+        "RESOURCES: tuple[",
+        "specs: list[IngestSourceSpec] = []",
+    ):
+        assert needle in module
+    compile(module, "connector_sources.py", "exec")
+    assert "assert HUB_IRI in imports" not in cm.drop_parent_import_assertion(
+        "    imports = set(g.objects(U, OWL.imports))\n    assert HUB_IRI in imports\n    assert LEGAL_IRI in imports\n"
+    )
+    assert 'assert ">=0.4.1" in sdk' in cm.rewrite_references('    assert ">=0.3.18" in sdk\n')
+    assert ">=0.3.18" in cm.rewrite_references('    assert ">=0.3.18" in other\n')
+    text = "def test_providers():\n    assert ep['agent_connector_sdk.source_connector_providers'] == {}\n\n\ndef test_ok():\n    assert 1\n"
+    cut, names, _ = cm.delete_cut_tests(text, cm._CUT_WORDS)
+    assert names == ["test_providers"] and "test_ok" in cut
+
+
+@pytest.mark.spec("PIPE-GATES-R016.26")
+def test_validation_evidence_is_not_a_leftover_and_verify_needs_shapes_only_with_shape_files(tmp_path: Path) -> None:
+    root = make(tmp_path)
+    (root / "validation").mkdir()
+    (root / "validation" / "evidence.json").write_text('{"x": "manifest://connector"}', encoding="utf-8")
+    review = cm.Review()
+    cm.leftover_references(root, review)
+    assert not [i for i in review.items if i["path"].startswith("validation/")]
+    src = (Path(cm.__file__).parents[2] / "scripts" / "connector_verify.py").read_text(encoding="utf-8")
+    assert 'has_shapes = any(root.glob("*/ontology/shapes/*.ttl"))' in src
+
+
+@pytest.mark.spec("PIPE-GATES-R016.27")
+def test_an_action_preset_resolves_to_the_one_served_split_tool_else_is_a_blocking_review_item() -> None:
+    served = {"demo_dvr_list_rules", "demo_list_rules", "other_tool"}
+    assert cm.action_tool_candidates("demo_dvr", "list_rules", "demo-mcp", served) == [
+        "demo_dvr_list_rules",
+        "demo_list_rules",
+    ]
+    assert cm.action_tool_candidates("vault_meta", "meta_snapshot", "vault-mcp", {"vault_meta_meta_snapshot"}) == [
+        "vault_meta_meta_snapshot"
+    ]
+    assert cm.action_tool_candidates("objects", "list", "objectstore-mcp", {"objectstore_list_objects"}) == [
+        "objectstore_list_objects"
+    ]
+    presets = {"p": {"server": "demo-mcp", "tool": "uptime_kuma_monitors", "action": "get_monitors", "id_field": "id"}}
+    inputs = {"manifest": {"connector": "demo-mcp"}, "presets": presets, "ingest": {}}
+    review = cm.Review()
+    out = cm.build_sources(inputs, review, {"uptime_kuma_get_monitors"})
+    assert out is not None and out["entries"][0]["tool"] == "uptime_kuma_get_monitors"
+    assert "action" not in out["entries"][0]["preset"] and not [i for i in review.items if i["blocking"]]
+    review = cm.Review()
+    cm.build_sources(inputs, review, {"uptime_get_monitors", "uptime_kuma_get_monitors"})
+    assert [i for i in review.items if i["blocking"] and "2 served tools" in i["detail"]]
+    review = cm.Review()
+    cm.build_sources(inputs, review, {"unrelated"})
+    assert [i for i in review.items if i["blocking"] and "0 served tools" in i["detail"]]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.28")
+def test_changelog_gets_one_fixed_entry_for_the_bumped_version(tmp_path: Path) -> None:
+    (tmp_path / "CHANGELOG.md").write_text(
+        "# Changelog\n\nintro\n\n## [1.0.4] - 2026-01-01\n\n- old\n", encoding="utf-8"
+    )
+    changed: list[str] = []
+    cm.add_changelog(tmp_path, "1.0.5", changed, "2026-10-23")
+    text = (tmp_path / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert text.index("## [1.0.5] - 2026-10-23") < text.index("## [1.0.4]") and changed == ["CHANGELOG.md"]
+    cm.add_changelog(tmp_path, "1.0.5", changed, "2026-10-24")
+    assert (tmp_path / "CHANGELOG.md").read_text(encoding="utf-8") == text
+    (tmp_path / "CHANGELOG.md").write_text("no headings\n", encoding="utf-8")
+    cm.add_changelog(tmp_path, "1.0.6", changed, "2026-10-23")
+    assert (tmp_path / "CHANGELOG.md").read_text(encoding="utf-8") == "no headings\n"
+
+
+def _git(wt: Path, *args: str) -> str:
+    import os
+    import subprocess
+
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}  # a hook run leaks GIT_DIR into tests
+    return subprocess.run(["git", *args], cwd=wt, env=env, capture_output=True, text=True, check=True).stdout
+
+
+@pytest.mark.spec("PIPE-GATES-R016.29")
+def test_commit_restages_after_a_formatter_hook_stops_when_nothing_changes_and_reports_noop(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts import connector_migrate_batch as batch
+
+    wt = tmp_path / "wt"
+    wt.mkdir()
+    _git(wt, "init", "-q", "-b", "main")
+    _git(wt, "config", "user.email", "t@example.com")
+    _git(wt, "config", "user.name", "T")
+    (wt / "a.txt").write_text("a\n", encoding="utf-8")
+    _git(wt, "add", "--", "a.txt")
+    _git(wt, "commit", "-q", "-m", "base")
+    _git(wt, "update-ref", "refs/remotes/origin/main", "HEAD")
+    hook = wt / ".git" / "hooks" / "pre-commit"
+    hook.write_text(
+        "#!/bin/sh\nif ! grep -q formatted a.txt; then echo formatted >> a.txt; exit 1; fi\nexit 0\n", encoding="utf-8"
+    )
+    hook.chmod(0o755)
+    (wt / "a.txt").write_text("changed\n", encoding="utf-8")
+    monkeypatch.setattr(batch.shutil, "which", lambda *a, **k: None)
+    led = batch.Ledger(tmp_path / "ledger.json")
+    batch.commit_all(wt, ["a.txt"], "commit", {}, led, "r", "msg")
+    assert led.data["r"]["commit_attempts"] == 2
+    assert "formatted" in _git(wt, "show", "HEAD:a.txt")
+    batch.commit_all(wt, ["a.txt"], "commit", {}, led, "r", "msg")
+    assert led.data["r"]["already_committed"] is True
+    _git(wt, "update-ref", "refs/remotes/origin/main", "HEAD")
+    with pytest.raises(batch.NoOp):
+        batch.commit_all(wt, ["a.txt"], "commit", {}, led, "r", "msg")
+    hook.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    (wt / "a.txt").write_text("again\n", encoding="utf-8")
+    with pytest.raises(batch.StepFailed):
+        batch.commit_all(wt, ["a.txt"], "commit", {}, led, "r", "msg")
+    src = Path(batch.__file__).read_text(encoding="utf-8")
+    assert 'env["PATH"] = f"{venv}/bin:' in src and "--served-tools" in src and ".pre.patch" in src

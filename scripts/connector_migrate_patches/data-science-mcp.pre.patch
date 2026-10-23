@@ -1,0 +1,32 @@
+diff --git a/tests/test_kg_ingest.py b/tests/test_kg_ingest.py
+index 99e235d..785414f 100644
+--- a/tests/test_kg_ingest.py
++++ b/tests/test_kg_ingest.py
+@@ -16,7 +16,6 @@ PKG = Path(__file__).resolve().parent.parent / "data_science_mcp"
+ ONTOLOGY = PKG / "ontology" / "datascience.ttl"
+ PROMPT = PKG / "prompts" / "datascience_specialist.json"
+ SKILLS_DIR = PKG / "skills"
+-PRESETS = PKG / "connectors" / "mcp_source_presets.json"
+
+ EXPECTED_SKILLS = {
+     "data-science-model-training",
+@@ -82,12 +81,12 @@ def test_three_real_skills_present_and_prefixed():
+
+
+ def test_source_preset_uses_real_tool_and_fields():
+-    presets = json.loads(PRESETS.read_text())
+-    preset = presets["datascience-model-registry"]
+-    assert preset["server"] == "data-science-mcp"
++    from data_science_mcp.connector_sources import declaration
++
++    source = next(s for s in declaration().sources if s.source_id == "datascience-model-registry")
+     # rank_models is a real registered MCP tool
+-    assert preset["tool"] == "rank_models"
+-    assert preset["records_path"] == "ranked_models"
++    assert source.tools == ("rank_models",)
++    assert source.records_path == "ranked_models"
+     # id/title map to real ranked_models record fields
+-    assert preset["id_field"] == "model_id"
+-    assert preset["title_field"] == "model_str"
++    assert source.id_field == "model_id"
++    assert source.title_field == "model_str"

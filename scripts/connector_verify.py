@@ -48,7 +48,8 @@ async def check(root: Path) -> dict:
             if "manifest://connector" in uris:
                 out["error"] = "manifest://connector is still served (hard cutover)"
                 return out
-            for prefix in ("ontology://", "shapes://"):
+            has_shapes = any(root.glob("*/ontology/shapes/*.ttl"))  # R016.26: shapes:// exists only with shape files
+            for prefix in ("ontology://", "shapes://") if has_shapes else ("ontology://",):
                 found = [u for u in uris if u.startswith(prefix)]
                 if not found:
                     out["error"] = f"no {prefix} resource listed"
