@@ -468,7 +468,7 @@ def migrate_tests(root: Path, pkg: str, changed: list[str], deleted: list[str], 
             review.add(
                 "tests", f"deleted; was bound to specs {specs}: rebind or retire those rows", rel, blocking=False
             )
-        elif action == "rewrite" and new != text:
+        elif action == "rewrite" and new is not None and new != text:
             p.write_text(new, encoding="utf-8")
             changed.append(rel)
         elif action == "review":
