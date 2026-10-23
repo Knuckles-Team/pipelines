@@ -64,7 +64,9 @@
     "PIPE-GATES-R016.33",
     "PIPE-GATES-R016.34",
     "PIPE-GATES-R016.35",
-    "PIPE-GATES-R016.36"
+    "PIPE-GATES-R016.36",
+    "PIPE-GATES-R016.37",
+    "PIPE-GATES-R016.38"
   ],
   "requirements": [
     {
@@ -355,7 +357,9 @@
         "PIPE-GATES-R016.33",
         "PIPE-GATES-R016.34",
         "PIPE-GATES-R016.35",
-        "PIPE-GATES-R016.36"
+        "PIPE-GATES-R016.36",
+        "PIPE-GATES-R016.37",
+        "PIPE-GATES-R016.38"
       ]
     },
     {
@@ -722,7 +726,7 @@
       "title": "Scripts that drive a deleted script",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0ce9ee54cc47"
+        "12a4ba5cbca4"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:890"
@@ -733,7 +737,7 @@
       "title": "Prompt key assertions",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0ce9ee54cc47"
+        "12a4ba5cbca4"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:914"
@@ -744,7 +748,7 @@
       "title": "Package name from `pyproject.toml`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0ce9ee54cc47"
+        "12a4ba5cbca4"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:926"
@@ -755,7 +759,7 @@
       "title": "Empty-source module and file endings",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0ce9ee54cc47"
+        "12a4ba5cbca4"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:952"
@@ -766,7 +770,7 @@
       "title": "Hooks a connector's own workflow covers",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0ce9ee54cc47"
+        "12a4ba5cbca4"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:99"
@@ -777,10 +781,33 @@
       "title": "Entity ids are validated strings",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "70c359fe1d20"
+        "0b0f40e78fa0",
+        "2e3dfbb4af02"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:973"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.37",
+      "title": "Provider entry point under either group",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0b0f40e78fa0"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:999"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.38",
+      "title": "Illegal-instruction detection",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0b0f40e78fa0"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:1010"
       ]
     }
   ]
