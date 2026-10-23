@@ -227,7 +227,7 @@
       "title": "Connector names agree with the declared fleet name",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "71d576184a00"
+        "cf912c89cd2f"
       ],
       "verified_by": [
         "tests/hooks/test_connector_name.py:11"
@@ -292,9 +292,9 @@
       "landed_in": [
         "197c2b37817f",
         "296583a3f006",
-        "71d576184a00",
         "9389c84a38bf",
-        "9c5228d41640"
+        "9c5228d41640",
+        "cf912c89cd2f"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_graph_check.py:15"
@@ -379,9 +379,12 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "1e870800c5cb",
-        "ac14690526b3"
+        "ac14690526b3",
+        "d4ed5468cb9c"
       ],
       "verified_by": [
+        "tests/hooks/test_ontology_codemod.py:235",
+        "tests/hooks/test_ontology_codemod.py:247",
         "tests/hooks/test_ontology_codemod.py:79",
         "tests/hooks/test_ontology_codemod.py:86"
       ]
@@ -391,9 +394,12 @@
       "title": "Roll-up is mechanical, the residue is reviewed (R3, R4, R5)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "1e870800c5cb"
+        "1e870800c5cb",
+        "d4ed5468cb9c"
       ],
       "verified_by": [
+        "tests/hooks/test_ontology_codemod.py:186",
+        "tests/hooks/test_ontology_codemod.py:205",
         "tests/hooks/test_ontology_codemod.py:96"
       ]
     },
