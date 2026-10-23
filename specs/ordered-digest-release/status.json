@@ -626,7 +626,8 @@
       "title": "Connector pull request workflow",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "3d0455152b96"
+        "3d0455152b96",
+        "8f223cc5bbbd"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:18",
