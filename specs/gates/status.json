@@ -46,7 +46,14 @@
     "PIPE-GATES-R016.15",
     "PIPE-GATES-R016.16",
     "PIPE-GATES-R016.17",
-    "PIPE-GATES-R016.18"
+    "PIPE-GATES-R016.18",
+    "PIPE-GATES-R016.19",
+    "PIPE-GATES-R016.20",
+    "PIPE-GATES-R016.21",
+    "PIPE-GATES-R016.22",
+    "PIPE-GATES-R016.23",
+    "PIPE-GATES-R016.24",
+    "PIPE-GATES-R016.25"
   ],
   "requirements": [
     {
@@ -319,7 +326,14 @@
         "PIPE-GATES-R016.15",
         "PIPE-GATES-R016.16",
         "PIPE-GATES-R016.17",
-        "PIPE-GATES-R016.18"
+        "PIPE-GATES-R016.18",
+        "PIPE-GATES-R016.19",
+        "PIPE-GATES-R016.20",
+        "PIPE-GATES-R016.21",
+        "PIPE-GATES-R016.22",
+        "PIPE-GATES-R016.23",
+        "PIPE-GATES-R016.24",
+        "PIPE-GATES-R016.25"
       ]
     },
     {
@@ -468,7 +482,7 @@
       "title": "SDK floor and version (migrate e)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f3c5462830e8"
+        "e51a658f9189"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:183",
@@ -529,7 +543,7 @@
       "title": "Docs (migrate g)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f3c5462830e8"
+        "e51a658f9189"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:458",
@@ -541,10 +555,78 @@
       "title": "Re-bump of a migrated repo",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f3c5462830e8"
+        "e51a658f9189"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:478"
+        "tests/hooks/test_connector_migrate.py:478",
+        "tests/hooks/test_connector_migrate.py:694"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.19",
+      "title": "Reference strings (migrate f)",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "247e6ba37066"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:554"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.20",
+      "title": "Cut reads in tests (migrate f)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:529",
+        "tests/hooks/test_connector_migrate.py:597",
+        "tests/hooks/test_connector_migrate.py:608"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.21",
+      "title": "Source prose and wiring (migrate g)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:619"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.22",
+      "title": "Packaging and generator scripts (migrate b)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:634"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.23",
+      "title": "Certification and version targets (migrate b, e)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:668"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.24",
+      "title": "Action tools (migrate a)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:685"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.25",
+      "title": "Driver isolation and sync",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:705"
       ]
     }
   ]

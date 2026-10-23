@@ -492,8 +492,9 @@ def delete_cut_tests(text: str, words: tuple[str, ...]) -> tuple[str, list[str],
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) or not node.name.startswith("test"):
             continue
         start = min([node.lineno] + [d.lineno for d in node.decorator_list]) - 1
-        if any(w in "".join(lines[start : node.end_lineno]) for w in words):
-            cuts.append((start, node.end_lineno, node.name))
+        end = node.end_lineno or node.lineno
+        if any(w in "".join(lines[start:end]) for w in words):
+            cuts.append((start, end, node.name))
     if not cuts:
         return text, [], []
     specs = sorted(set(re.findall(r'spec\("([^"]+)"\)', "".join("".join(lines[a:b]) for a, b, _ in cuts))))
@@ -526,7 +527,7 @@ def _doc_comment_lines(text: str) -> set[int]:
             if isinstance(body, list) and body and isinstance(body[0], ast.Expr):
                 v = body[0].value
                 if isinstance(v, ast.Constant) and isinstance(v.value, str):
-                    lines.update(range(body[0].lineno, body[0].end_lineno + 1))
+                    lines.update(range(body[0].lineno, (body[0].end_lineno or body[0].lineno) + 1))
         for tok in tokenize.generate_tokens(io.StringIO(text).readline):
             if tok.type == tokenize.COMMENT:
                 lines.add(tok.start[0])
