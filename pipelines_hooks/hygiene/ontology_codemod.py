@@ -152,8 +152,8 @@ def rewrite_iri(text: str, g: Graph | None, old: str, new: str) -> str:
     """Replace one IRI wherever it is written (angle form or prefixed form)."""
     text = text.replace(f"<{old}>", f"<{new}>")
     if g is not None:
-        for pfx, ns in g.namespaces():
-            ns = str(ns)
+        for pfx, ns_ref in g.namespaces():
+            ns = str(ns_ref)
             if old.startswith(ns) and re.fullmatch(r"[\w-]+", old[len(ns) :]):
                 tgt = (
                     f"{pfx}:{new[len(ns) :]}"
@@ -350,20 +350,21 @@ class Plan:
             for shape in g.subjects(URIRef(SH + "targetClass"), None):
                 for tc in g.objects(shape, URIRef(SH + "targetClass")):
                     for prop in g.objects(shape, URIRef(SH + "property")):
-                        for p in g.objects(prop, URIRef(SH + "path")):
-                            if isinstance(p, URIRef) and isinstance(tc, URIRef):
-                                dom[str(p)].add(str(tc))
+                        for path_node in g.objects(prop, URIRef(SH + "path")):
+                            if isinstance(path_node, URIRef) and isinstance(tc, URIRef):
+                                p = str(path_node)
+                                dom[p].add(str(tc))
                                 for c in g.objects(prop, URIRef(SH + "class")):
                                     if isinstance(c, URIRef):
-                                        rng[str(p)].add(str(c))
+                                        rng[p].add(str(c))
         for res in (m.manifests.get(repo) or {}).get("resources") or []:
             for rel in res.get("relations") or []:
-                p = m.find_prop(rel.get("name") or "")
+                rp = m.find_prop(rel.get("name") or "")
                 a, b = m.find_class(res.get("name") or ""), m.find_class(rel.get("target") or "")
-                if p and a:
-                    dom[p].add(a)
-                if p and b:
-                    rng[p].add(b)
+                if rp and a:
+                    dom[rp].add(a)
+                if rp and b:
+                    rng[rp].add(b)
         for p in sorted(m.obj_props):
             if not ogc._checkable(p) or repo not in m.prop_mods.get(p, ()):
                 continue
