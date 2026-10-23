@@ -54,6 +54,14 @@ class TestCase:
     name: str
     head: str  # name + docstring words
     body: str  # source with spec-binding lines removed
+    head_ids: frozenset[str] = frozenset()
+    body_ids: frozenset[str] = frozenset()
+    head_terms: frozenset[str] = frozenset()
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "head_ids", frozenset(TOKEN_RE.findall(self.head)))
+        object.__setattr__(self, "body_ids", frozenset(TOKEN_RE.findall(self.body)))
+        object.__setattr__(self, "head_terms", frozenset(_terms(self.head)))
 
 
 def _terms(text: str) -> set[str]:
@@ -70,10 +78,11 @@ def _python_cases(path: str, source: str) -> list[TestCase]:
         tree = ast.parse(source)
     except SyntaxError:
         return []
+    lines = source.splitlines()
     cases = []
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test"):
-            segment = ast.get_source_segment(source, node) or ""
+            segment = "\n".join(lines[node.lineno - 1 : node.end_lineno])
             doc = ast.get_docstring(node) or ""
             cases.append(TestCase(path, node.name, f"{node.name}\n{doc}", _strip_bindings(segment)))
     return cases
@@ -120,24 +129,23 @@ def _id_names(rid: str, aliases: dict[str, str]) -> set[str]:
     return names
 
 
-def _mentions(text: str, names: set[str]) -> bool:
-    return any(token in names for token in TOKEN_RE.findall(text))
-
-
 def _score_case(
-    case: TestCase, names: set[str], title_terms: set[str], row_text: str, by_name: dict[str, list[TestCase]]
+    case: TestCase,
+    names: set[str],
+    title_terms: set[str],
+    refs: set[tuple[str, str]],
+    named: set[str],
+    by_name: dict[str, list[TestCase]],
 ):
-    refs = {(p, n) for p, n in _REF_RE.findall(row_text)}
     if any(case.path.endswith(p) and case.name == n for p, n in refs):
         return 100, "row names this test"
-    named = set(_NAME_RE.findall(row_text))
     if case.name in named and len(by_name[case.name]) == 1:
         return 85, "row names this test function"
-    if _mentions(case.head, names):
+    if case.head_ids & names:
         return 90, "test name or docstring names the row ID"
-    if _mentions(case.body, names):
+    if case.body_ids & names:
         return 80, "test body names the row ID"
-    common = title_terms & _terms(case.head)
+    common = title_terms & case.head_terms
     if len(common) >= MIN_TERMS and len(common) / len(title_terms) >= MIN_TERM_RATIO:
         return round(60 * len(common) / len(title_terms)), "title terms in test name: " + ", ".join(sorted(common))
     return 0, ""
@@ -169,9 +177,11 @@ def suggest(root: Path, head: str = "HEAD") -> dict:
                 continue
             rid = record["id"]
             names, terms = _id_names(rid, aliases), _terms(titles.get(rid, ""))
+            text = row_text.get(rid, "")
+            refs, named = set(_REF_RE.findall(text)), set(_NAME_RE.findall(text))
             scored = []
             for case in tests:
-                score, reason = _score_case(case, names, terms, row_text.get(rid, ""), by_name)
+                score, reason = _score_case(case, names, terms, refs, named, by_name)
                 if score:
                     scored.append((-score, case.path, case.name, reason))
             for neg, path, name, reason in sorted(scored)[:MAX_PER_ROW]:
