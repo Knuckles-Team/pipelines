@@ -611,10 +611,8 @@
     {
       "id": "PIPE-RELEASE-R011",
       "title": "Connector pull request workflow",
-      "delivery_state": "VERIFIED",
-      "landed_in": [
-        "2b15c33267eb"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:18",
         "tests/test_connector_release_pipeline.py:32"
@@ -623,10 +621,8 @@
     {
       "id": "PIPE-RELEASE-R012",
       "title": "A connector release publishes PyPI and Docker, and verifies both",
-      "delivery_state": "VERIFIED",
-      "landed_in": [
-        "2b15c33267eb"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:72",
         "tests/test_connector_release_pipeline.py:77"
@@ -635,10 +631,8 @@
     {
       "id": "PIPE-RELEASE-R013",
       "title": "Release-standard check",
-      "delivery_state": "VERIFIED",
-      "landed_in": [
-        "2b15c33267eb"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": [
         "tests/hooks/test_release_standard.py:19",
         "tests/hooks/test_release_standard.py:28",
