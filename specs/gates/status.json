@@ -53,7 +53,11 @@
     "PIPE-GATES-R016.22",
     "PIPE-GATES-R016.23",
     "PIPE-GATES-R016.24",
-    "PIPE-GATES-R016.25"
+    "PIPE-GATES-R016.25",
+    "PIPE-GATES-R016.26",
+    "PIPE-GATES-R016.27",
+    "PIPE-GATES-R016.28",
+    "PIPE-GATES-R016.29"
   ],
   "requirements": [
     {
@@ -333,7 +337,11 @@
         "PIPE-GATES-R016.22",
         "PIPE-GATES-R016.23",
         "PIPE-GATES-R016.24",
-        "PIPE-GATES-R016.25"
+        "PIPE-GATES-R016.25",
+        "PIPE-GATES-R016.26",
+        "PIPE-GATES-R016.27",
+        "PIPE-GATES-R016.28",
+        "PIPE-GATES-R016.29"
       ]
     },
     {
@@ -567,8 +575,8 @@
       "title": "Reference strings (migrate f)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "121cbc301c5b",
-        "247e6ba37066"
+        "25a9ac7195f6",
+        "2cf12e1a110e"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:554"
@@ -579,7 +587,7 @@
       "title": "Cut reads in tests (migrate f)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "cb93b1b3caf8"
+        "abd6a72f11b7"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:529",
@@ -619,7 +627,7 @@
       "title": "Action tools and list values (migrate a)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "7d53ddf55b18"
+        "ac8d6790d275"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:685"
@@ -632,6 +640,51 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:716"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.26",
+      "title": "Typed module and test rules",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4b50df1890d3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:745",
+        "tests/hooks/test_connector_migrate.py:766"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.27",
+      "title": "Action tools resolved from the served tool list",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4b50df1890d3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:778"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.28",
+      "title": "Changelog entry",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4b50df1890d3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:805"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.29",
+      "title": "Driver commit loop and reviewed patches",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4b50df1890d3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:829"
       ]
     }
   ]
