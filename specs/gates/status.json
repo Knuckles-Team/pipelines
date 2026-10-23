@@ -24,7 +24,8 @@
     "PIPE-GATES-R009",
     "PIPE-GATES-R010",
     "PIPE-GATES-R011",
-    "PIPE-GATES-R012"
+    "PIPE-GATES-R012",
+    "PIPE-GATES-R013"
   ],
   "requirements": [
     {
@@ -225,10 +226,21 @@
       "title": "A connector that imports GraphQL declares it via the SDK extra",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "1a40f0f425e4"
+        "c16b8de6ac2d"
       ],
       "verified_by": [
         "tests/hooks/test_connector_graphql.py:11"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R013",
+      "title": "A connector uses the SDK capability instead of its own copy",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8e77583dc61a"
+      ],
+      "verified_by": [
+        "tests/hooks/test_sdk_conformance.py:11"
       ]
     }
   ]
