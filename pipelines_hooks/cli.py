@@ -36,6 +36,7 @@ GATES: dict[str, str] = {
     "coupling": "pipelines_hooks.code.coupling",
     "uv-lock-check": "pipelines_hooks.hygiene.uv_lock",
     "connector-name": "pipelines_hooks.hygiene.connector_name",
+    "connector-graphql": "pipelines_hooks.hygiene.connector_graphql",
     "agent-contract": "pipelines_hooks.hygiene.agent_contract",
     "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
     "no-stub": "pipelines_hooks.code.no_stub",

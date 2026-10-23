@@ -28,3 +28,4 @@
 - [x] Publish the configurable tracked static import checker without adapter exemptions. Closes PIPE-GATES-R009.
 - [x] Publish the `connector-name` gate for declared connector fleet names. Closes PIPE-GATES-R010.
 - [x] Key the hook cache on pipelines main and skip symlinks in clone snapshots. Closes PIPE-GATES-R011.
+- [x] Publish the `connector-graphql` gate, warning by default, for GraphQL declared via the SDK extra. Closes PIPE-GATES-R012.
