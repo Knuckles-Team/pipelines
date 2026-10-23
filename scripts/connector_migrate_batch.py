@@ -222,13 +222,23 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         led.record(repo, status="failed", failed_step=step, output_tail=f"{type(exc).__name__}: {exc}")
 
 
+def parse_checks(text: str) -> dict[str, str]:
+    """``{check name: pass|fail|pending|cancel|skipping}`` from plain `gh pr checks` output (tab separated)."""
+    out = {}
+    for line in text.splitlines():
+        cols = line.split("\t")
+        if len(cols) >= 2 and re.search(r"gates", cols[0]):
+            out[cols[0]] = cols[1].strip()
+    return out
+
+
 def wait_gates(repo: str, url: str, wt: Path, led: Ledger) -> None:
     """Wait for the ``gates`` check; one infra re-run is allowed for a cancelled run and is recorded."""
     reran = False
     for _ in range(120):
-        out = sh("gates", ["gh", "pr", "checks", url, "--json", "name,bucket"], wt, ok=(0, 1, 8))
-        checks = [c for c in json.loads(out or "[]") if re.search(r"gates", c["name"])]
-        buckets = {c["bucket"] for c in checks}
+        out = sh("gates", ["gh", "pr", "checks", url], wt, ok=(0, 1, 8))
+        checks = parse_checks(out)
+        buckets = set(checks.values())
         if checks and buckets == {"pass"}:
             return
         if "cancel" in buckets and not reran:
