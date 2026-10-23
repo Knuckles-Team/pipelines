@@ -474,8 +474,10 @@
     {
       "id": "PIPE-GATES-R016.15",
       "title": "Idempotent hard cutover",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "9fffad6b1179"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:223",
         "tests/hooks/test_connector_migrate.py:236",
