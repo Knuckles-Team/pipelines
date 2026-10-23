@@ -424,3 +424,10 @@ def test_scaffolded_parent_import_assertion_is_dropped_because_r1_removes_the_im
     new = cm.drop_parent_import_assertion(text)
     assert "imports" not in new and "_orphans(triples) == set()" in new
     assert cm.drop_parent_import_assertion(new) == new
+
+
+@pytest.mark.spec("PIPE-GATES-R016.16")
+def test_driver_runs_tests_without_pytest_plugin_flags_and_merges_by_repo_slug() -> None:
+    text = (Path(__file__).resolve().parents[2] / "scripts" / "connector_migrate_batch.py").read_text(encoding="utf-8")
+    assert '"-p", "no:cacheprovider"' not in text
+    assert '"-R", slug, "--squash"' in text

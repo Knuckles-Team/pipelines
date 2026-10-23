@@ -192,7 +192,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         )
         if scope != "NONE":
             targets = ["tests"] if scope == "FULL" else scope.splitlines()
-            sh(step, [py, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", *targets], wt, env)
+            # No `-p`: a connector test that parses sys.argv reads it as the server port flag.
+            sh(step, [py, "-m", "pytest", "-q", "-x", *targets], wt, env)
         if a.dry_run:
             led.record(repo, status="dry-run-verified")
             return
@@ -225,7 +226,9 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         step = "gates"
         wait_gates(repo, url, wt, led)
         step = "merge"
-        sh(step, ["gh", "pr", "merge", url, "--squash", "--delete-branch"], wt)
+        slug = url.split("github.com/", 1)[1].split("/pull/")[0]
+        # -R keeps gh from checking main out in the shared checkout, where main is already in use.
+        sh(step, ["gh", "pr", "merge", url, "-R", slug, "--squash", "--delete-branch"], wt)
         led.record(repo, status="merged", merged_at=time.strftime("%FT%TZ", time.gmtime()))
     except StepFailed as exc:
         led.record(repo, status="failed", failed_step=exc.step, output_tail=exc.output)
