@@ -1,0 +1,325 @@
+{
+ "questions": [
+  {
+   "id": "CQ-a",
+   "question": "Who owns ServiceNow incidents, and where does that data come from?",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "Incident",
+     "property": "affects",
+     "to": "ConfigurationItem",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "ConfigurationItem",
+     "property": "ownedBy",
+     "to": "AssignmentGroup",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "has_property",
+     "class": "Incident",
+     "property": [
+      "sourceRecordRef",
+      "wasDerivedFrom",
+      "hadPrimarySource",
+      "derivedFrom"
+     ],
+     "owner": "epistemic-graph"
+    }
+   ]
+  },
+  {
+   "id": "CQ-b",
+   "question": "Show open issues across GitHub, GitLab and Plane.",
+   "hops": [
+    {
+     "kind": "shared_ancestor",
+     "packs": {
+      "github-agent": "Issue",
+      "gitlab-api": "Issue",
+      "plane-agent": "Issue"
+     },
+     "property": "state",
+     "shared": "Issue"
+    }
+   ]
+  },
+  {
+   "id": "CQ-c",
+   "question": "Which prompts can act as a system prompt for incident triage?",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "Prompt",
+     "property": "systemPromptFor",
+     "to": "Task",
+     "owner": "epistemic-graph"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d1",
+   "question": "Blast radius of a server outage: which applications run on it, which business services depend on them, who owns those services?",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "Application",
+     "property": [
+      "hostedOn",
+      "runsOn"
+     ],
+     "to": "Server",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "BusinessService",
+     "property": "dependsOn",
+     "to": "Application",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "BusinessService",
+     "property": "ownedBy",
+     "to": "AssignmentGroup",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d2",
+   "question": "Blast radius of an application outage, including application-to-application dependency.",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "Application",
+     "property": "dependsOn",
+     "to": "Application",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "BusinessService",
+     "property": "dependsOn",
+     "to": "Application",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "BusinessService",
+     "property": "ownedBy",
+     "to": "AssignmentGroup",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d3",
+   "question": "Which business services depend on retired technology and have open incidents?",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "ConfigurationItem",
+     "property": "usesTechnology",
+     "to": "TRMStandard",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "TRMStandard",
+     "property": "hasPhase",
+     "to": "TRMPhase",
+     "owner": "epistemic-graph"
+    },
+    {
+     "kind": "edge",
+     "from": "Incident",
+     "property": "affects",
+     "to": "ConfigurationItem",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "BusinessService",
+     "property": "dependsOn",
+     "to": "Application",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d4",
+   "question": "Which technologies in use have an open TRM request, and where?",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "TechnologyRequest",
+     "property": "requestsTechnology",
+     "to": "TRMStandard",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "ConfigurationItem",
+     "property": "usesTechnology",
+     "to": "TRMStandard",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d5",
+   "question": "Which change requests touch CIs with open P1/P2 incidents?",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "ChangeRequest",
+     "property": "touches",
+     "to": "ConfigurationItem",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "Incident",
+     "property": "affects",
+     "to": "ConfigurationItem",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "has_property",
+     "class": "Incident",
+     "property": "priority",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d6",
+   "question": "Change risk by technology state: touched CIs joined to technology and TRM phase.",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "ChangeRequest",
+     "property": "touches",
+     "to": "ConfigurationItem",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "ConfigurationItem",
+     "property": "usesTechnology",
+     "to": "TRMStandard",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "TRMStandard",
+     "property": "hasPhase",
+     "to": "TRMPhase",
+     "owner": "epistemic-graph"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d7",
+   "question": "Technology debt by owner group of the dependent service.",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "ConfigurationItem",
+     "property": "usesTechnology",
+     "to": "TRMStandard",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "BusinessService",
+     "property": "dependsOn",
+     "to": "Application",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "BusinessService",
+     "property": "ownedBy",
+     "to": "AssignmentGroup",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d8",
+   "question": "Orphan and isolated CIs: servers that host no application.",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "Application",
+     "property": [
+      "hostedOn",
+      "runsOn"
+     ],
+     "to": "Server",
+     "owner": "servicenow-api"
+    },
+    {
+     "kind": "edge",
+     "from": "ConfigurationItem",
+     "property": "usesTechnology",
+     "to": "TRMStandard",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d9",
+   "question": "Cross-source: repositories and work items for an affected application.",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "Repository",
+     "property": "relatedTo",
+     "to": "BusinessApplication",
+     "owner": "epistemic-graph"
+    },
+    {
+     "kind": "edge",
+     "from": "Issue",
+     "property": "relatedTo",
+     "to": "BusinessApplication",
+     "owner": "epistemic-graph"
+    },
+    {
+     "kind": "edge",
+     "from": "Incident",
+     "property": "affects",
+     "to": "ConfigurationItem",
+     "owner": "servicenow-api"
+    }
+   ]
+  },
+  {
+   "id": "CQ-d10",
+   "question": "Which prompts, skills or agents could triage this incident.",
+   "hops": [
+    {
+     "kind": "edge",
+     "from": "Skill",
+     "property": "appliesTo",
+     "to": "Incident",
+     "owner": "epistemic-graph"
+    },
+    {
+     "kind": "edge",
+     "from": "Prompt",
+     "property": "systemPromptFor",
+     "to": "Task",
+     "owner": "epistemic-graph"
+    }
+   ]
+  }
+ ]
+}

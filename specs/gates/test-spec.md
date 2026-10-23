@@ -77,3 +77,7 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 ## Connector ontology orphan mapping (PIPE-GATES-R015)
 
 `tests/hooks/test_ontology_orphan_map.py` builds a fixture parent ontology and connector ontologies in a temporary directory. It checks the exact, head-noun and synonym signals, the generic-class rule, a synonym entry that names a parent class the ontology lacks, the new-parent candidate, the override check, the `apply` output and its idempotence, and deterministic output.
+
+## Ontology graph check (PIPE-GATES-R016)
+
+`tests/hooks/test_ontology_graph_check.py` builds small fixture ontologies, a manifest and an ingest file. It checks that every finding code fires, the parse error file, the orphan chain length, the dangling file and line, the island pack, the mapping and ingest checks, the conflicts, the competency question hops, the owner grouping of the fix plan, determinism, the exit codes with `--warn`, and the command against a temporary git repository.

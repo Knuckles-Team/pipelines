@@ -750,7 +750,33 @@ def main(argv: list[str]) -> int:
         required=True,
         help='JSON {"<file>": {"<class>": "<parent>"}}, or a decision file from decide',
     )
+    g = sub.add_parser("graph-check", help="validate that every ontology is reachable and bridged (PIPE-GATES-R016)")
+    g.add_argument("--fleet", type=Path, required=True, help="directory of connector repositories")
+    g.add_argument("--eg-repo", type=Path, required=True, help="the epistemic-graph repository")
+    g.add_argument("--ref", default="origin/main", help="git ref read in every repository")
+    g.add_argument("--eg-extra-ref", default=None, help="a ref whose changed EG ontology files overlay the base")
+    g.add_argument("--exclude", action="append", default=[])
+    g.add_argument("--questions", type=Path, default=None, help="competency questions JSON (default: packaged)")
+    g.add_argument("--json", type=Path, default=None, help="write the full result as JSON")
+    g.add_argument("--markdown", type=Path, default=None, help="write the Markdown report")
+    g.add_argument("--warn", action="store_true", help="report findings but always exit 0")
     args = parser.parse_args(argv)
+    if args.command == "graph-check":
+        from pipelines_hooks.hygiene import ontology_graph_check as ogc
+
+        sources = ogc.eg_sources(args.eg_repo, args.ref, args.eg_extra_ref)
+        sources += ogc.fleet_sources(args.fleet, args.ref, args.exclude)
+        qpath = args.questions or ogc.DEFAULT_CQ
+        questions = json.loads(qpath.read_text(encoding="utf-8"))["questions"]
+        result = ogc.run(sources, questions)
+        if args.json:
+            args.json.write_text(json.dumps(result, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+        if args.markdown:
+            args.markdown.write_text(ogc.render_markdown(result), encoding="utf-8")
+        for code, n in result["summary"]["by_code"].items():
+            if n:
+                print(f"{code}: {n}")
+        return ogc.exit_code(result, args.warn)
     if args.command == "apply":
         loaded = json.loads(args.decisions.read_text(encoding="utf-8"))
         problems = apply_repo(args.root, loaded.get("links", loaded) if "new_parent_candidates" in loaded else loaded)

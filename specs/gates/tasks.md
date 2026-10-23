@@ -32,3 +32,4 @@
 - [x] Publish the `sdk-conformance` gate, warning by default, for connectors that reimplement an SDK capability. Closes PIPE-GATES-R013.
 - [x] Publish the `connector-surface-audit` report of the five connector surfaces and the parent-ontology link. Closes PIPE-GATES-R014.
 - [x] Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes. Closes PIPE-GATES-R015.
+- [x] Add the `graph-check` subcommand to `connector-ontology-map`: whole-ecosystem ontology reachability, bridging, broken and missing edges, virtual-graph checks and competency questions. Closes PIPE-GATES-R016.
