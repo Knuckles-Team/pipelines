@@ -107,7 +107,7 @@ def drop_triples(text: str, drop: Any) -> tuple[str, int]:
         if re.match(r"\s*(@prefix|@base|PREFIX|BASE)", body, re.I):
             out.append(chunk)
             continue
-        g = Graph()
+        g = Graph(bind_namespaces="none")  # only the file's own prefixes, no rdflib defaults (schema1:)
         try:
             g.parse(data=header + "\n" + body, format="turtle")
         except Exception:  # noqa: BLE001 - leave an unparseable statement alone
@@ -186,7 +186,7 @@ class Plan:
         self.pack_props_by_key: dict[str, set[str]] = defaultdict(set)
         self.eg_classes = sorted(i for i in m.class_mods if ogc._checkable(i) and ogc._eg_declared(m, i))
         for i in self.eg_classes:
-            for k in {norm_key(ogc.local(i)), *(norm_key(x) for per in m.main_labels.get(i, {}).values() for x in per)}:
+            for k in {norm_key(ogc.local(i)), *(norm_key(x) for per in m.labels.get(i, {}).values() for x in per)}:
                 if k:
                     self.eg_by_key[k].add(i)
         for i in m.class_mods:
@@ -515,14 +515,27 @@ def write_outputs(result: dict[str, Any], out: Path) -> None:
     )
 
 
+class UnparseableOutput(ValueError):
+    """A patched ``.ttl`` file does not re-parse, so nothing is written."""
+
+
 def apply_to_dir(root: Path, old: list[ogc.Source], new: list[ogc.Source]) -> list[str]:
-    """Write changed ``.ttl`` files into a pack checkout (not used by the fleet dry-run)."""
-    changed = []
-    for a, b in zip(old, new, strict=True):
-        if a.text != b.text and a.path.endswith(".ttl"):
-            (root / a.path).write_text(b.text, encoding="utf-8")
-            changed.append(a.path)
-    return changed
+    """Write changed ``.ttl`` files into a pack checkout (not used by the fleet dry-run).
+
+    Every changed file must re-parse as Turtle; otherwise nothing is written and ``UnparseableOutput`` is raised.
+    """
+    todo = [(a.path, b.text) for a, b in zip(old, new, strict=True) if a.text != b.text and a.path.endswith(".ttl")]
+    bad = []
+    for path, text in todo:
+        try:
+            Graph().parse(data=text, format="turtle")
+        except Exception as exc:  # noqa: BLE001 - any parse failure blocks the write
+            bad.append(f"{path}: {exc}")
+    if bad:
+        raise UnparseableOutput("refusing to write files that do not re-parse: " + "; ".join(bad))
+    for path, text in todo:
+        (root / path).write_text(text, encoding="utf-8")
+    return [path for path, _ in todo]
 
 
 def dir_sources(root: Path) -> list[ogc.Source]:
@@ -559,4 +572,13 @@ def fix_pack(
     return result, changed
 
 
-__all__ = ["fix_pack", "run_fix", "patch_sources", "write_outputs", "dir_sources", "apply_to_dir", "BNode"]
+__all__ = [
+    "UnparseableOutput",
+    "fix_pack",
+    "run_fix",
+    "patch_sources",
+    "write_outputs",
+    "dir_sources",
+    "apply_to_dir",
+    "BNode",
+]

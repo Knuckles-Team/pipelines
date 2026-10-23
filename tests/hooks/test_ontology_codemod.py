@@ -167,3 +167,95 @@ def test_cli_dry_run_writes_patch_summary_and_queue(tmp_path: Path, monkeypatch:
     assert json.loads((out / "review-queue.json").read_text())["p"]
     assert omap.main(["fix", "--pack", str(pack), "--eg-repo", str(tmp_path), "--out", str(out)]) == 0
     assert "owl:imports <http://knuckles.team/kg>" not in (pack / "p" / "ontology" / "p.ttl").read_text()
+
+
+EG_ALIAS = (
+    HEAD
+    + """<http://knuckles.team/kg> a owl:Ontology .
+:Thing0 a owl:Class ; rdfs:subClassOf owl:Thing .
+:BroadcastChannel a owl:Class ; rdfs:subClassOf :Thing0 ; rdfs:label "Broadcast Channel" ; skos:altLabel "Tuner Station" , "Feed" .
+:Subscription a owl:Class ; rdfs:subClassOf :Thing0 ; skos:altLabel "Feed" .
+"""
+)
+
+
+def _alias_pack(*names: str) -> str:
+    return HEAD + "".join(f":{n} a owl:Class .\n" for n in names)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.7")
+def test_r3_matches_eg_alt_label_and_sends_shared_alias_to_review() -> None:
+    pk = [
+        ogc.Source("eg:core", "eg", "eg/core.ttl", EG_ALIAS),
+        ogc.Source("p", "pack", "p/ontology/p.ttl", _alias_pack("TunerStations", "Feed")),
+    ]
+    new, plan = oc.patch_sources(pk, {})
+    g = ogc.Graph()
+    g.parse(data=new[1].text, format="turtle")
+
+    def parents(n: str) -> set[str]:
+        return {ogc.local(str(o)) for o in g.objects(ogc.URIRef(f"http://knuckles.team/kg#{n}"), ogc.RDFS.subClassOf)}
+
+    assert parents("TunerStations") == {"BroadcastChannel"}  # altLabel, case-insensitive and singularized
+    assert parents("Feed") == set()  # alias shared by two EG classes: no choice made
+    q = queue(plan, "R3")["Feed"]
+    assert q["candidates"] == sorted([ogc.KG_NS + "kg#BroadcastChannel", ogc.KG_NS + "kg#Subscription"])
+
+
+@pytest.mark.spec("PIPE-GATES-R016.7")
+def test_overrides_map_the_domain_module_classes() -> None:
+    table = json.loads(oc.DEFAULT_OVERRIDES.read_text(encoding="utf-8"))
+    expected = {
+        "hdhomerun": {"Channel": "BroadcastChannel", "Lineup": "ChannelLineup"},
+        "immich": {"ImmichAlbum": "Album", "ImmichAssetStack": "AssetStack"},
+        "kafka": {"ReplicationSlot": "ChangeDataCapture"},
+        "langfuse": {"DatasetRun": "ExperimentRun"},
+        "lucerna": {"SearchAlias": "IndexAlias"},
+        "webarchiver": {"WebarchiverResource": "WebResource"},
+    }
+    for repo, entries in expected.items():
+        for name, target in entries.items():
+            assert any(per.get(name) == target for key, per in table.items() if repo in key), (repo, name)
+
+
+SCHEMA_PACK = """@prefix : <http://knuckles.team/kg#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+
+<http://x/f> a owl:Ontology .
+:Server a owl:Class ;
+    rdfs:subClassOf :Thing0 ;
+    rdfs:label "Server" ;
+    rdfs:seeAlso schema:Server ;
+    schema:name "keep" .
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R016.6")
+def test_drop_triples_keeps_schema_org_prefix_and_reparses() -> None:
+    text, n = oc.drop_triples(SCHEMA_PACK, lambda s, p, o: p == ogc.RDFS.label)
+    assert n == 1 and "schema1" not in text
+    g = ogc.Graph()
+    g.parse(data=text, format="turtle")
+    server = ogc.URIRef("http://knuckles.team/kg#Server")
+    assert (server, ogc.URIRef("http://schema.org/name"), None) in g
+    assert (server, ogc.RDFS.seeAlso, ogc.URIRef("http://schema.org/Server")) in g
+    assert (server, ogc.RDFS.label, None) not in g
+
+
+@pytest.mark.spec("PIPE-GATES-R016.6")
+def test_codemod_refuses_to_write_a_file_that_does_not_reparse(tmp_path: Path) -> None:
+    good = ogc.Source("p", "pack", "p/ontology/a.ttl", SCHEMA_PACK)
+    bad = ogc.Source("p", "pack", "p/ontology/b.ttl", SCHEMA_PACK)
+    (tmp_path / "p" / "ontology").mkdir(parents=True)
+    for s in (good, bad):
+        (tmp_path / s.path).write_text(s.text)
+    new = [
+        ogc.Source("p", "pack", good.path, SCHEMA_PACK + ":Extra a owl:Class .\n"),
+        ogc.Source("p", "pack", bad.path, SCHEMA_PACK + "schema1:Broken a owl:Class .\n"),
+    ]
+    with pytest.raises(oc.UnparseableOutput, match="b.ttl"):
+        oc.apply_to_dir(tmp_path, [good, bad], new)
+    assert (tmp_path / good.path).read_text() == SCHEMA_PACK  # nothing was written
+    assert (tmp_path / bad.path).read_text() == SCHEMA_PACK
