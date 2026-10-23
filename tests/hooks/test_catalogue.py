@@ -35,6 +35,7 @@ KEPT = {
     "sdk-conformance",
     "spec-bind-suggest",
     "no-legacy-concepts",
+    "release-standard",
     "dependency-readiness",
     "gate-set",
     "pr-test-scope",

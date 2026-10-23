@@ -73,3 +73,6 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | `PIPE-RELEASE-R009.1` | `tests/test_release_record_step.py::test_workflow_has_record_step_after_publish` |
 | `PIPE-RELEASE-R009.2` | `tests/test_release_record_step.py::test_step_posts_release_with_digests` |
 | T-PIPE-RELEASE-R010 | PIPE-RELEASE-R010 | Run the `test_source_build_allowance_*` and `test_published_package_cannot_be_its_own_source_build` tests in `tests/test_wheel_readiness.py`; observe the empty default, the named list, the refusals and the recorded receipt list. |
+| T-PIPE-RELEASE-R011 | PIPE-RELEASE-R011 | Run `test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes` in `tests/test_connector_release_pipeline.py`. Assert the commit-stage-only, 10-minute, no-publish contract. |
+| T-PIPE-RELEASE-R012 | PIPE-RELEASE-R012 | Run `test_verification_fails_naming_the_missing_artifact` in `tests/test_connector_release_pipeline.py`. Assert the step fails naming the missing tag or version. |
+| T-PIPE-RELEASE-R013 | PIPE-RELEASE-R013 | Run `tests/hooks/test_release_standard.py`. Assert warn, strict, disabled-job and exempt behavior. |

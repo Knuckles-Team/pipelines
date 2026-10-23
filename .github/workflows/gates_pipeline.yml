@@ -77,6 +77,11 @@ on:
         required: false
         type: boolean
         default: false
+      stages:
+        description: Space-separated hook stages run over the diff (a connector pull request runs `pre-commit` only).
+        required: false
+        type: string
+        default: pre-commit pre-push
       all-files:
         description: Run every file (main push) instead of the pull request diff.
         required: false
@@ -241,11 +246,12 @@ jobs:
           CONFIG: ${{ inputs.config }}
           EVENT_NAME: ${{ github.event_name }}
           TEST_SCOPE: ${{ inputs.test-scope }}
+          STAGES: ${{ inputs.stages }}
         run: |
           set -euo pipefail
           if [[ "$EVENT_NAME" == "push" ]]; then SKIP="${SKIP:+$SKIP,}spec-trailers"; export SKIP; fi
           if [[ -n "$TEST_SCOPE" ]]; then SKIP="${SKIP:+$SKIP,}tests-fast,fast-tests"; export SKIP; fi
-          for stage in pre-commit pre-push; do
+          for stage in $STAGES; do
             # shellcheck disable=SC2086
             uvx --from pre-commit==4.6.2 pre-commit run --config "$CONFIG" --hook-stage "$stage" $PRE_COMMIT_RANGE --show-diff-on-failure
           done
