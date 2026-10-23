@@ -31,7 +31,13 @@
     "PIPE-GATES-R016",
     "PIPE-GATES-R016.1",
     "PIPE-GATES-R016.2",
-    "PIPE-GATES-R016.3"
+    "PIPE-GATES-R016.3",
+    "PIPE-GATES-R016.4",
+    "PIPE-GATES-R016.5",
+    "PIPE-GATES-R016.6",
+    "PIPE-GATES-R016.7",
+    "PIPE-GATES-R016.8",
+    "PIPE-GATES-R016.9"
   ],
   "requirements": [
     {
@@ -276,21 +282,28 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "197c2b37817f",
+        "296583a3f006",
+        "850599c8c86e",
         "9389c84a38bf",
-        "97f7a14afcb2",
-        "9c5228d41640",
-        "e2c99922f0a7"
+        "9c5228d41640"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:15",
-        "tests/hooks/test_ontology_graph_check.py:258",
-        "tests/hooks/test_ontology_graph_check.py:272",
-        "tests/hooks/test_ontology_graph_check.py:283"
+        "tests/hooks/test_ontology_codemod.py:109",
+        "tests/hooks/test_ontology_codemod.py:117",
+        "tests/hooks/test_ontology_codemod.py:130",
+        "tests/hooks/test_ontology_codemod.py:140",
+        "tests/hooks/test_ontology_codemod.py:153"
       ],
       "rollup_of": [
         "PIPE-GATES-R016.1",
         "PIPE-GATES-R016.2",
-        "PIPE-GATES-R016.3"
+        "PIPE-GATES-R016.3",
+        "PIPE-GATES-R016.4",
+        "PIPE-GATES-R016.5",
+        "PIPE-GATES-R016.6",
+        "PIPE-GATES-R016.7",
+        "PIPE-GATES-R016.8",
+        "PIPE-GATES-R016.9"
       ]
     },
     {
@@ -298,10 +311,10 @@
       "title": "An import bridges modules",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "97f7a14afcb2"
+        "296583a3f006"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:258"
+        "tests/hooks/test_ontology_graph_check.py:262"
       ]
     },
     {
@@ -309,10 +322,10 @@
       "title": "An individual's type is a reference",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "97f7a14afcb2"
+        "296583a3f006"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:272"
+        "tests/hooks/test_ontology_graph_check.py:276"
       ]
     },
     {
@@ -320,10 +333,80 @@
       "title": "Test-fixture ontologies are outside the corpus",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "97f7a14afcb2"
+        "296583a3f006"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:283"
+        "tests/hooks/test_ontology_graph_check.py:287"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.4",
+      "title": "A pack import of EG is a finding, never a bridge",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "850599c8c86e"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_graph_check.py:308"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.5",
+      "title": "Every pack class rolls up to EG core",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "850599c8c86e"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_graph_check.py:320"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.6",
+      "title": "`connector-ontology-map fix` drops imports and stops redeclaration (R1, R2)",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "850599c8c86e"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_codemod.py:75",
+        "tests/hooks/test_ontology_codemod.py:82"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.7",
+      "title": "Roll-up is mechanical, the residue is reviewed (R3, R4, R5)",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "850599c8c86e"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_codemod.py:92"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.8",
+      "title": "Mappings and dangling references never invent classes (R6, R7)",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "850599c8c86e"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_codemod.py:109",
+        "tests/hooks/test_ontology_codemod.py:117"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.9",
+      "title": "Untyped properties and the run contract (R8)",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "850599c8c86e"
+      ],
+      "verified_by": [
+        "tests/hooks/test_ontology_codemod.py:130",
+        "tests/hooks/test_ontology_codemod.py:140",
+        "tests/hooks/test_ontology_codemod.py:153"
       ]
     }
   ]
