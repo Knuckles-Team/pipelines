@@ -390,3 +390,10 @@ def test_driver_failure_stops_that_repo_and_lands_in_the_ledger(
     row = json.loads((tmp_path / "ledger.json").read_text(encoding="utf-8"))["demo-agent"]
     assert row["status"] == "failed" and row["failed_step"] == "migrate" and "test_odd.py" in row["output_tail"]
     assert not led.done("demo-agent")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.16")
+def test_gates_checks_are_read_from_plain_gh_output(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    drv, _, _, _ = _driver(tmp_path, monkeypatch)
+    text = "gates / pre-commit\tpass\t1m\thttps://x\nother\tfail\t1s\thttps://y\ngates / tests\tpending\t0\thttps://z\n"
+    assert drv.parse_checks(text) == {"gates / pre-commit": "pass", "gates / tests": "pending"}
