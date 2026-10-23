@@ -163,6 +163,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: connector-surface-audit
+  name: "Connector ships and serves tools, prompts, skills, resources and a parent-linked ontology (reports)"
+  entry: pipelines-hook connector-surface-audit
+  language: python
+  pass_filenames: false
+  always_run: true
 # --- repository hygiene -----------------------------------------------------
 - id: root-hygiene
   name: "DEPRECATED (root-hygiene): Repository root hygiene (declared entries only)"

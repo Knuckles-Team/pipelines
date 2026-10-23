@@ -30,3 +30,4 @@
 - [x] Key the hook cache on pipelines main and skip symlinks in clone snapshots. Closes PIPE-GATES-R011.
 - [x] Publish the `connector-graphql` gate, warning by default, for GraphQL declared via the SDK extra. Closes PIPE-GATES-R012.
 - [x] Publish the `sdk-conformance` gate, warning by default, for connectors that reimplement an SDK capability. Closes PIPE-GATES-R013.
+- [x] Publish the `connector-surface-audit` report of the five connector surfaces and the parent-ontology link. Closes PIPE-GATES-R014.

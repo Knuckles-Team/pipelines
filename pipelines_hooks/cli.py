@@ -38,6 +38,7 @@ GATES: dict[str, str] = {
     "connector-name": "pipelines_hooks.hygiene.connector_name",
     "connector-graphql": "pipelines_hooks.hygiene.connector_graphql",
     "sdk-conformance": "pipelines_hooks.hygiene.sdk_conformance",
+    "connector-surface-audit": "pipelines_hooks.hygiene.connector_surface",
     "agent-contract": "pipelines_hooks.hygiene.agent_contract",
     "release-standard": "pipelines_hooks.hygiene.release_standard",
     "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
