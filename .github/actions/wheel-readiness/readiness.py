@@ -18,6 +18,7 @@ import tomllib
 import warnings
 import zipfile
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -41,6 +42,8 @@ except ImportError:
     from packaging.version import Version
 
 PUBLIC_INDEX = "https://pypi.org/simple"
+# Profiles proven concurrently; bounded so a runner never fans out unboundedly.
+PROFILE_WORKERS = 4
 ADVERTISED = {"mcp", "agent", "all"}
 SOURCE_BUILD_ENV = "READINESS_SOURCE_BUILDS"
 
@@ -269,8 +272,8 @@ def resolve(
     bootstrap = sibling("bootstrap")
     pinned_wheel = Path(sys.prefix) / bootstrap.PIN["filename"]
     bootstrap.verify_pin(pinned_wheel)
-    evidence = []
-    for profile in selected:
+
+    def prove(profile: str) -> dict:
         home = scratch / profile
         home.mkdir()
         env = clean_environment(home, wheel, source_builds)
@@ -286,6 +289,9 @@ def resolve(
                 "install",
                 "--ignore-installed",
                 "--no-cache-dir",
+                # The venv is discarded and never imported: bytecode compilation
+                # is pure cost and changes no resolution evidence.
+                "--no-compile",
                 "--disable-pip-version-check",
                 "--no-input",
                 "--only-binary=:all:",
@@ -305,8 +311,13 @@ def resolve(
         # not execute. Validate the report in the separate checker interpreter.
         report = json.loads(report_path.read_text())
         validate_report(report, wheel, root, profile, source_builds=source_builds)
-        evidence.append({"profile": profile, "report": report})
-    return evidence
+        return {"profile": profile, "report": report}
+
+    # Every profile resolves in its own disposable home and venv, so the proofs
+    # are independent; run them concurrently. map() keeps the declared profile
+    # order, and the first failure still fails the whole proof.
+    with ThreadPoolExecutor(max_workers=max(1, min(PROFILE_WORKERS, len(selected)))) as pool:
+        return list(pool.map(prove, selected))
 
 
 def wheel_set(directory: Path) -> list[Path]:

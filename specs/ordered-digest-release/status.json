@@ -67,7 +67,10 @@
     "PIPE-RELEASE-R010",
     "PIPE-RELEASE-R011",
     "PIPE-RELEASE-R012",
-    "PIPE-RELEASE-R013"
+    "PIPE-RELEASE-R013",
+    "PIPE-RELEASE-R014",
+    "PIPE-RELEASE-R015",
+    "PIPE-RELEASE-R016"
   ],
   "requirements": [
     {
@@ -618,7 +621,7 @@
         "tests/test_wheel_readiness.py:482",
         "tests/test_wheel_readiness.py:489",
         "tests/test_wheel_readiness.py:496",
-        "tests/test_wheel_readiness.py:546"
+        "tests/test_wheel_readiness.py:600"
       ]
     },
     {
@@ -659,6 +662,40 @@
         "tests/hooks/test_release_standard.py:19",
         "tests/hooks/test_release_standard.py:28",
         "tests/hooks/test_release_standard.py:36"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R014",
+      "title": "Release readiness proves runtime profiles concurrently and without bytecode compilation",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1dfbbb803479"
+      ],
+      "verified_by": [
+        "tests/test_wheel_readiness.py:553",
+        "tests/test_wheel_readiness.py:583"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R015",
+      "title": "Release image builds reuse one persistent BuildKit builder per runner pod",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1dfbbb803479"
+      ],
+      "verified_by": [
+        "tests/test_container_pipeline_contract.py:471"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R016",
+      "title": "Release builds keep uv downloads and managed interpreters in the runner tool cache",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1dfbbb803479"
+      ],
+      "verified_by": [
+        "tests/test_python_pipeline_contract.py:56"
       ]
     }
   ]

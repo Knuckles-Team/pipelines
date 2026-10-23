@@ -542,6 +542,60 @@ def test_resolver_gets_no_binary_only_for_named_packages(tmp_path, monkeypatch):
     assert commands[0][1]["READINESS_SOURCE_BUILDS"] == ""
 
 
+def _fake_resolve_environment(monkeypatch, run):
+    bootstrap = SimpleNamespace(PIN={"filename": "pip.whl"}, verify_pin=lambda _: None, create=lambda *_: "python")
+    monkeypatch.setattr(guard, "sibling", lambda _: bootstrap)
+    monkeypatch.setattr(guard.subprocess, "run", run)
+    monkeypatch.setattr(guard, "validate_report", lambda *args, **kwargs: None)
+
+
+def test_profiles_are_proven_concurrently_in_declared_order(tmp_path, monkeypatch):
+    # spec: PIPE-RELEASE-R014
+    import threading
+
+    profiles = ["base", "mcp", "agent", "all"]
+    barrier = threading.Barrier(len(profiles), timeout=10)
+
+    def run(command, env, **kwargs):
+        barrier.wait()  # only passes when every profile is in flight at once
+        Path(command[command.index("--report") + 1]).write_text(json.dumps({"target": command[-1]}))
+
+    _fake_resolve_environment(monkeypatch, run)
+    path = wheel(tmp_path)
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    evidence = guard.resolve(path, guard.metadata(path), profiles, scratch)
+    assert [item["profile"] for item in evidence] == profiles
+
+    def failing(command, env, **kwargs):
+        if command[-1].endswith("[agent]"):
+            raise guard.subprocess.CalledProcessError(1, command)
+        Path(command[command.index("--report") + 1]).write_text("{}")
+
+    _fake_resolve_environment(monkeypatch, failing)
+    other = tmp_path / "other"
+    other.mkdir()
+    with pytest.raises(guard.subprocess.CalledProcessError):
+        guard.resolve(path, guard.metadata(path), profiles, other)
+
+
+def test_profile_install_skips_bytecode_compilation(tmp_path, monkeypatch):
+    # spec: PIPE-RELEASE-R014
+    commands = []
+
+    def run(command, env, **kwargs):
+        commands.append(command)
+        Path(command[command.index("--report") + 1]).write_text("{}")
+
+    _fake_resolve_environment(monkeypatch, run)
+    path = wheel(tmp_path)
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    guard.resolve(path, guard.metadata(path), ["base"], scratch)
+    assert "--no-compile" in commands[0] and "--no-cache-dir" in commands[0]
+    assert "--only-binary=:all:" in commands[0]
+
+
 def test_published_package_cannot_be_its_own_source_build(tmp_path, monkeypatch):
     # spec: PIPE-RELEASE-R010
     dist = tmp_path / "dist"

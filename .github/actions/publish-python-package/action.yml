@@ -17,6 +17,23 @@ inputs:
 runs:
   using: composite
   steps:
+    # PIPE-RELEASE-R016: uv downloads and managed interpreters persist in the
+    # runner tool cache (the runner work volume outlives each job; the runner
+    # home does not). uv's cache is content-addressed by package, version and
+    # hash, so a lock change simply misses; nothing here relaxes a check.
+    - name: Persist uv downloads across runs
+      shell: bash
+      run: |
+        root="${RUNNER_TOOL_CACHE:-}"
+        if [ -z "$root" ]; then
+          exit 0
+        fi
+        mkdir -p "$root/uv-cache" "$root/uv-python"
+        {
+          echo "UV_CACHE_DIR=$root/uv-cache"
+          echo "UV_PYTHON_INSTALL_DIR=$root/uv-python"
+        } >> "$GITHUB_ENV"
+
     - name: Bind source commit
       uses: ./.pipeline-contract/.github/actions/verify-source-commit
       with:
