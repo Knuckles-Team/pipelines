@@ -516,7 +516,9 @@ _ENTITY_COMMENT = re.compile(r"(?m)^[ \t]*# id/node_type are intentionally read 
 _REQUIRED_TEXT = """def _required_text(record: dict[str, Any], key: str) -> str:
     value = record.get(key)
     if not isinstance(value, str) or not value:
-        raise ValueError(f"entity needs a non-empty {key!r}, got {value!r}")
+        from agent_connector_sdk.ingest import IngestError
+
+        raise IngestError(f"every entity needs an id and a node_type, got {key}={value!r}")
     return value
 
 
@@ -524,7 +526,7 @@ _REQUIRED_TEXT = """def _required_text(record: dict[str, Any], key: str) -> str:
 
 
 def validate_entity_args(text: str) -> str:
-    """R016.36: SDK 0.4 ``Entity`` takes ``str`` ids; ``record.get("id")`` (``Any | None``) becomes a validated read."""
+    """R016.36: SDK 0.4 ``Entity`` takes ``str`` ids; ``record.get("id")`` (``Any | None``) becomes a validated read (``IngestError``)."""
     m = _ENTITY_ARGS.search(text)
     if not m or "_required_text" in text or not re.search(r"(?m)^from typing import .*\bAny\b", text):
         return text
@@ -695,7 +697,7 @@ def drop_manifest_path_kw(text: str) -> str:
 
 
 _PROVIDER_TABLE = re.compile(
-    r'(?:^#[^\n]*\n)*^\[project\.entry-points\."agent_connector_sdk\.source_connector_providers"\]\n(?:^(?!\[)[^\n]*\S[^\n]*\n)*\n?',
+    r'(?:^#[^\n]*\n)*^\[project\.entry-points\."(?:agent_connector_sdk|agent_utilities)\.source_connector_providers"\]\n(?:^(?!\[)[^\n]*\S[^\n]*\n)*\n?',
     re.M,
 )
 _COMMENT_BLOCK = re.compile(r"(?:^[ \t]*#[^\n]*\n)+", re.M)

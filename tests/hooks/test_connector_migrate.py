@@ -982,8 +982,35 @@ def test_entity_ids_read_with_get_become_validated_strings() -> None:
     compile(new, "kg_ingest.py", "exec")
     assert 'id=_required_text(record, "id")' in new and "intentionally" not in new
     assert new.index("def _required_text") < new.index("def _to_entity")
+    import sys
+    import types
+
+    fake = types.ModuleType("agent_connector_sdk.ingest")
+    fake.IngestError = type("IngestError", (Exception,), {})  # type: ignore[attr-defined]
+    sys.modules.setdefault("agent_connector_sdk", types.ModuleType("agent_connector_sdk"))
+    sys.modules["agent_connector_sdk.ingest"] = fake
     scope: dict[str, object] = {}
     exec(new.replace("from x import Entity", "Entity = dict"), scope)
-    with pytest.raises(ValueError):
+    with pytest.raises(Exception, match="id and a node_type"):
         scope["_to_entity"]({"id": None, "node_type": "T"})  # type: ignore[operator]
     assert cm.validate_entity_args(new) == new
+
+
+@pytest.mark.spec("PIPE-GATES-R016.37")
+def test_the_source_provider_entry_point_is_dropped_under_either_group() -> None:
+    for group in ("agent_connector_sdk", "agent_utilities"):
+        pp = (
+            f'[project.entry-points."{group}.source_connector_providers"]\nd = "d.connectors"\n\n'
+            '[project.entry-points."agent_utilities.skill_providers"]\nd = "d.skills"\n'
+        )
+        new = cm.strip_pyproject_cut_refs(pp)
+        assert "source_connector_providers" not in new and "skill_providers" in new
+
+
+@pytest.mark.spec("PIPE-GATES-R016.38")
+def test_an_illegal_instruction_abort_is_found_in_the_full_output_not_the_cut_tail() -> None:
+    from scripts import connector_migrate_batch as batch
+
+    out = "Fatal Python error: Illegal instruction\n" + "x" * 5000
+    exc = batch.StepFailed("verify", out)
+    assert "Illegal instruction" not in exc.output and "Fatal Python error: Illegal instruction" in exc.full
