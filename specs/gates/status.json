@@ -423,12 +423,14 @@
     {
       "id": "PIPE-GATES-R016.10",
       "title": "Declarations from the retired files (migrate a)",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "233a00174fc6"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:127",
-        "tests/hooks/test_connector_migrate.py:142",
-        "tests/hooks/test_connector_migrate.py:149"
+        "tests/hooks/test_connector_migrate.py:144",
+        "tests/hooks/test_connector_migrate.py:151"
       ]
     },
     {
@@ -437,7 +439,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:160"
+        "tests/hooks/test_connector_migrate.py:162"
       ]
     },
     {
@@ -446,7 +448,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:172"
+        "tests/hooks/test_connector_migrate.py:174"
       ]
     },
     {
@@ -455,8 +457,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:181",
-        "tests/hooks/test_connector_migrate.py:191"
+        "tests/hooks/test_connector_migrate.py:183",
+        "tests/hooks/test_connector_migrate.py:193"
       ]
     },
     {
@@ -464,13 +466,15 @@
       "title": "Tests (migrate f)",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "233a00174fc6",
         "56e71980a65f"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:200",
-        "tests/hooks/test_connector_migrate.py:212",
-        "tests/hooks/test_connector_migrate.py:257",
-        "tests/hooks/test_connector_migrate.py:281"
+        "tests/hooks/test_connector_migrate.py:202",
+        "tests/hooks/test_connector_migrate.py:214",
+        "tests/hooks/test_connector_migrate.py:259",
+        "tests/hooks/test_connector_migrate.py:283",
+        "tests/hooks/test_connector_migrate.py:295"
       ]
     },
     {
@@ -481,17 +485,22 @@
         "9fffad6b1179"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:223",
-        "tests/hooks/test_connector_migrate.py:236",
-        "tests/hooks/test_connector_migrate.py:245"
+        "tests/hooks/test_connector_migrate.py:225",
+        "tests/hooks/test_connector_migrate.py:238",
+        "tests/hooks/test_connector_migrate.py:247"
       ]
     },
     {
       "id": "PIPE-GATES-R016.16",
       "title": "Batch driver and verify",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "233a00174fc6"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:366",
+        "tests/hooks/test_connector_migrate.py:381"
+      ]
     }
   ]
 }
