@@ -379,8 +379,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "1e870800c5cb",
-        "ac14690526b3",
-        "d4ed5468cb9c"
+        "6f525f99c1b7",
+        "ac14690526b3"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_codemod.py:235",
@@ -395,7 +395,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "1e870800c5cb",
-        "d4ed5468cb9c"
+        "6f525f99c1b7"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_codemod.py:186",
