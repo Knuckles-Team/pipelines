@@ -315,6 +315,14 @@
   always_run: true
   stages: [manual]
 
+- id: spec-bind-suggest
+  name: Spec bind suggest - rank existing tests that may verify a SPECIFIED or LANDED row (read-only)
+  entry: pipelines-hook spec-bind-suggest
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+
 # Affected tests only under a hard 120 s cap (CI-STANDARD pre-push); the base is
 # pre-commit's --from-ref (PRE_COMMIT_FROM_REF). FULL/NONE run nothing locally.
 - id: fast-tests

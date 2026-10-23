@@ -387,7 +387,8 @@
     "PIPE-CONNSPEC-R008",
     "PIPE-CONNSPEC-R009",
     "PIPE-CONNSPEC-R009.1",
-    "PIPE-CONNSPEC-R009.2"
+    "PIPE-CONNSPEC-R009.2",
+    "PIPE-CONNSPEC-R010"
   ],
   "requirements": [
     {
@@ -3554,6 +3555,15 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
+    },
+    {
+      "id": "PIPE-CONNSPEC-R010",
+      "title": "Binding suggester ranks existing tests for unverified rows",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_spec_bind_suggest.py:41"
+      ]
     }
   ]
 }
