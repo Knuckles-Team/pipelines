@@ -307,7 +307,9 @@ def declaration() -> IngestSourceDeclaration:
     specs: list[IngestSourceSpec] = []
     for item in SOURCES:
         for entry in item["connector_sources"]:
-            body: dict[str, Any] = {{k: v for k, v in entry.items() if k not in ("tool", "mapping")}}
+            body: dict[str, Any] = {{
+                k: v for k, v in entry.items() if k not in ("tool", "mapping")
+            }}
             spec = {{**body, "tools": (entry["tool"],)}}
             specs.append(IngestSourceSpec.model_validate(spec))
     return IngestSourceDeclaration.model_validate(
