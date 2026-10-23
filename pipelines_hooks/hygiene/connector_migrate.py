@@ -90,19 +90,21 @@ def package_dir(root: Path) -> Path | None:
 
 
 # ---------------------------------------------------------------- a. declarations
-def _py(obj: Any, level: int = 0) -> str:
+def _py(obj: Any, level: int = 0, nested: bool = False) -> str:
     """A deterministic, ruff-stable Python literal: sorted keys, one item per line, trailing commas."""
     pad = "    " * (level + 1)
     end = "    " * level
     if isinstance(obj, dict):
         if not obj:
             return "{}"
-        body = "".join(f"{pad}{json.dumps(str(k))}: {_py(obj[k], level + 1)},\n" for k in sorted(obj, key=str))
+        body = "".join(f"{pad}{json.dumps(str(k))}: {_py(obj[k], level + 1, True)},\n" for k in sorted(obj, key=str))
         return "{\n" + body + end + "}"
     if isinstance(obj, (list, tuple)):
+        # a list inside a dict is a JSON value (the SDK model rejects tuples there); a top-level list stays a tuple
+        o, c, empty = ("[", "]", "[]") if nested else ("(", ")", "()")
         if not obj:
-            return "()"
-        return "(\n" + "".join(f"{pad}{_py(v, level + 1)},\n" for v in obj) + end + ")"
+            return empty
+        return o + "\n" + "".join(f"{pad}{_py(v, level + 1, nested)},\n" for v in obj) + end + c
     if isinstance(obj, str):
         return json.dumps(obj)
     return repr(obj)
@@ -173,13 +175,13 @@ def build_sources(inputs: dict[str, Any], review: Review) -> dict[str, Any] | No
                 "declarations", f"preset {name!r} differs from manifest sync raw; preset file used", blocking=False
             )
         tool = p.pop("tool", None)
-        action = p.get("action")
-        if tool and isinstance(action, str) and action:
-            # R016.24: the SDK splits an action tool into one tool per action, named <tool>_<action>.
-            tool = f"{tool}_{action}"
-            p.pop("action")
-            if isinstance(p.get("args"), dict):
-                p["args"].pop("action", None)
+        if tool and isinstance(p.get("action"), str):
+            # R016.24: the SDK's split tool names are not derivable from <tool> and <action>; verify decides.
+            review.add(
+                "declarations",
+                f"preset {name!r} calls tool {tool!r} with an action; check the split tool name",
+                blocking=False,
+            )
         if not tool or not _SOURCE_ID.match(name) or not p.get("id_field"):
             review.add("declarations", f"preset {name!r} lacks tool, id_field or a valid source id")
             continue
@@ -684,6 +686,11 @@ def migrate_tests(
         new, action = rewrite_test(text, p.name, pkg)
         if action == "review" or (action == "keep" and any(w in text for w in extra_words)):
             cut, names, specs = delete_cut_tests(text, words)
+            if names:
+                p.write_text(cut, encoding="utf-8")
+                prune_unused_imports(p)
+                cut = p.read_text(encoding="utf-8")
+                p.write_text(original, encoding="utf-8")
             if any(e in cut for e in extra_words):
                 # the module itself imports a deleted module: nothing in it can run
                 specs = sorted(set(re.findall(r'spec\("([^"]+)"\)', text)))
