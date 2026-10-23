@@ -968,3 +968,22 @@ def test_a_connector_without_sources_renders_an_import_free_empty_tuple_and_cut_
     src = "def test_keep():\n    assert 1\n\n\ndef test_cut():\n    open('connector_manifest.yml')\n\n\n"
     new, names, _ = cm.delete_cut_tests(src, cm._CUT_WORDS)
     assert names == ["test_cut"] and new.endswith("assert 1\n") and not new.endswith("\n\n")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.36")
+def test_entity_ids_read_with_get_become_validated_strings() -> None:
+    src = (
+        "from typing import Any\n\nfrom x import Entity\n\n\ndef _to_entity(record: dict[str, Any]) -> Entity:\n"
+        "    # id/node_type are intentionally read with .get(): a missing one must reach\n"
+        "    # the SDK's own builder.\n"
+        '    return Entity(\n        id=record.get("id"),\n        node_type=record.get("node_type"),\n        properties={},\n    )\n'
+    )
+    new = cm.validate_entity_args(src)
+    compile(new, "kg_ingest.py", "exec")
+    assert 'id=_required_text(record, "id")' in new and "intentionally" not in new
+    assert new.index("def _required_text") < new.index("def _to_entity")
+    scope: dict[str, object] = {}
+    exec(new.replace("from x import Entity", "Entity = dict"), scope)
+    with pytest.raises(ValueError):
+        scope["_to_entity"]({"id": None, "node_type": "T"})  # type: ignore[operator]
+    assert cm.validate_entity_args(new) == new
