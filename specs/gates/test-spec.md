@@ -66,6 +66,10 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 
 `tests/hooks/test_sdk_conformance.py` builds fixture repositories in a temporary directory. It checks each pattern and the row it cites, clean SDK use, one finding per pinned package, the skipped paths, non-connector and SDK repositories, the default warning and `--strict` failure.
 
+## Connector surface audit (PIPE-GATES-R014)
+
+`tests/hooks/test_connector_surface.py` builds fixture connectors and a fixture parent ontology in a temporary directory. It checks a complete connector, an orphan vocabulary, unserved content, a plugin group outside the SDK namespace, the Turtle reader on IRIs and literals, deterministic output and `--strict`.
+
 ## Hook cache and symlink snapshots (PIPE-GATES-R011)
 
 `tests/hooks/test_jscpd_snapshot.py` commits a package manifest and a root symlink to it. The snapshot keeps the target and skips the link.

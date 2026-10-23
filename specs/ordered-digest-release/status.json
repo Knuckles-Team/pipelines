@@ -626,7 +626,6 @@
       "title": "Connector pull request workflow",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "1e8e54091762",
         "3d0455152b96"
       ],
       "verified_by": [

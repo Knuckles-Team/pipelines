@@ -25,7 +25,8 @@
     "PIPE-GATES-R010",
     "PIPE-GATES-R011",
     "PIPE-GATES-R012",
-    "PIPE-GATES-R013"
+    "PIPE-GATES-R013",
+    "PIPE-GATES-R014"
   ],
   "requirements": [
     {
@@ -241,6 +242,17 @@
       ],
       "verified_by": [
         "tests/hooks/test_sdk_conformance.py:11"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R014",
+      "title": "A connector ships and serves all five surfaces with a parent-linked ontology",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b61628d1c455"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_surface.py:12"
       ]
     }
   ]
