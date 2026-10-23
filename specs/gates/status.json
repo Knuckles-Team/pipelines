@@ -617,8 +617,10 @@
     {
       "id": "PIPE-GATES-R016.24",
       "title": "Action tools and list values (migrate a)",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "7d53ddf55b18"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:685"
       ]
