@@ -626,13 +626,14 @@
       "title": "Connector pull request workflow",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "3d0455152b96"
+        "3d0455152b96",
+        "f17caacb23e0"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:18",
         "tests/test_connector_release_pipeline.py:19",
-        "tests/test_connector_release_pipeline.py:33",
-        "tests/test_connector_release_pipeline.py:34"
+        "tests/test_connector_release_pipeline.py:34",
+        "tests/test_connector_release_pipeline.py:35"
       ]
     },
     {
@@ -643,10 +644,10 @@
         "3d0455152b96"
       ],
       "verified_by": [
-        "tests/test_connector_release_pipeline.py:74",
         "tests/test_connector_release_pipeline.py:75",
-        "tests/test_connector_release_pipeline.py:80",
-        "tests/test_connector_release_pipeline.py:81"
+        "tests/test_connector_release_pipeline.py:76",
+        "tests/test_connector_release_pipeline.py:81",
+        "tests/test_connector_release_pipeline.py:82"
       ]
     },
     {

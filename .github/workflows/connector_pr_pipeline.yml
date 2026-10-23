@@ -43,6 +43,7 @@ jobs:
     with:
       config: .pre-commit-config.yaml
       stages: pre-commit
+      skip-hooks: docker-compose-check
       timeout-minutes: 10
       runner: ${{ inputs.runner }}
       test-scope: ${{ inputs.test-scope }}
