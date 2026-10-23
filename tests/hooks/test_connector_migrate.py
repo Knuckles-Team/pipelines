@@ -411,3 +411,16 @@ def test_driver_applies_a_reviewed_per_repo_patch_after_migrate(
     row = json.loads((tmp_path / "ledger.json").read_text(encoding="utf-8"))["demo-agent"]
     assert row["repo_patch_files"] == ["tests/x.py"]
     assert any(c[:2] == ["git", "apply"] for c in calls)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.14")
+def test_scaffolded_parent_import_assertion_is_dropped_because_r1_removes_the_import() -> None:
+    text = (
+        "def test_x(path):\n    triples = []\n"
+        '    imports = {o for s, p, o in triples if p == OWL + "imports"}\n'
+        '    assert any(i == PARENT_IRI or i.startswith(PARENT_IRI + "/") for i in imports)\n'
+        "    assert _orphans(triples) == set()\n"
+    )
+    new = cm.drop_parent_import_assertion(text)
+    assert "imports" not in new and "_orphans(triples) == set()" in new
+    assert cm.drop_parent_import_assertion(new) == new

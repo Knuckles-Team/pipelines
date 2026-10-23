@@ -434,6 +434,18 @@ _FINGERPRINT_BLOCK = re.compile(
 _DELETE_NAME = re.compile(r"test_.*(manifest|fingerprint|preset)", re.I)
 
 
+_PARENT_IMPORT = re.compile(
+    r'^( *)imports = \{o for s, p, o in triples if p == OWL \+ "imports"\}\n'
+    r'\1assert any\(i == PARENT_IRI or i\.startswith\(PARENT_IRI \+ "/"\) for i in imports\)\n',
+    re.M,
+)
+
+
+def drop_parent_import_assertion(text: str) -> str:
+    """Remove the scaffolded assertion that a pack imports the EG ontology (R1 removes that import)."""
+    return _PARENT_IMPORT.sub("", text)
+
+
 def rewrite_test(text: str, name: str, pkg: str) -> tuple[str | None, str]:
     """(new text, action) with action in keep/rewrite/delete/review; new text None for delete/review."""
     if not any(w in text for w in _CUT_WORDS):
@@ -495,8 +507,13 @@ def migrate_tests(root: Path, pkg: str, changed: list[str], deleted: list[str], 
         if p.suffix != ".py":
             continue
         text = p.read_text(encoding="utf-8")
-        new, action = rewrite_test(text, p.name, pkg)
         rel = str(p.relative_to(root))
+        dropped = drop_parent_import_assertion(text)
+        if dropped != text:
+            p.write_text(dropped, encoding="utf-8")
+            changed.append(rel)
+            text = dropped
+        new, action = rewrite_test(text, p.name, pkg)
         if action == "delete":
             specs = sorted(set(re.findall(r'spec\("([^"]+)"\)', text)))
             p.unlink()
