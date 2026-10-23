@@ -669,7 +669,7 @@
       "title": "Release readiness proves runtime profiles concurrently and without bytecode compilation",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "1dfbbb803479"
+        "e472a39e297d"
       ],
       "verified_by": [
         "tests/test_wheel_readiness.py:553",
@@ -681,7 +681,7 @@
       "title": "Release image builds reuse one persistent BuildKit builder per runner pod",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "1dfbbb803479"
+        "e472a39e297d"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:471"
@@ -692,7 +692,7 @@
       "title": "Release builds keep uv downloads and managed interpreters in the runner tool cache",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "1dfbbb803479"
+        "e472a39e297d"
       ],
       "verified_by": [
         "tests/test_python_pipeline_contract.py:56"
