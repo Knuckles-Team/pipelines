@@ -15,3 +15,5 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [ ] **PIPE-CONNSPEC-R009:** Requirement state read from the engine (rollup).
 - [ ] **PIPE-CONNSPEC-R009.1:** Wiring.
 - [ ] **PIPE-CONNSPEC-R009.2:** Hot-path proof.
+
+- [ ] PIPE-CONNSPEC-R011: support explicit retired standard-ID aliases with current-row validation, preserved historical evidence and unchanged unknown/unbound trailer refusal.

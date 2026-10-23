@@ -11,6 +11,15 @@ A single renumbered row maps by its exact old ID, for example a pre-standard
 
     "DS-01" = "WEBUI-DESIGN-R012"
 
+An already standardized retired ID can also map to one active current row::
+
+    "FOO-R002.2.2.3.1" = "FOO-R002.2.3.1"
+
+Standard-ID alias sources must have no current row, including retired rows.
+Aliases must not target absent or retired rows,
+chain through another alias, or overlap retired prefixes. Exact aliases never
+implicitly map children. Trailer checks still require the target to be bound.
+
 Every spec gate reads IDs through :func:`canonical_id`, so a historical trailer
 or test binding that uses the old prefix counts for the canonical (new) ID. The
 canonical ID is always the new one: requirements.md rows and status.json carry
@@ -26,6 +35,7 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.trailer_ids import named_ids
 
 ALIAS_FILE = ".config/spec-aliases.toml"
@@ -44,7 +54,7 @@ def _validated(document: dict, path: Path) -> dict[str, str]:
         if _PREFIX_RE.fullmatch(old):
             if not _PREFIX_RE.fullmatch(new):
                 raise CannotRun(f"{path}: {new!r} is not an ID prefix (upper-case, ending in '-')")
-        elif not (_OLD_ID_RE.fullmatch(old) and _NEW_ID_RE.fullmatch(new)):
+        elif not ((_OLD_ID_RE.fullmatch(old) or _NEW_ID_RE.fullmatch(old)) and _NEW_ID_RE.fullmatch(new)):
             raise CannotRun(
                 f"{path}: {old!r} must be an ID prefix ending in '-' or an exact old row ID mapped to a standard ID"
             )
@@ -66,7 +76,33 @@ def load_aliases(root: Path) -> dict[str, str]:
         document = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise CannotRun(f"{path}: unreadable spec alias file ({exc})") from exc
-    return _validated(document, path)
+    aliases = _validated(document, path)
+    _validate_standard_aliases(root, aliases, path)
+    return aliases
+
+
+def _validate_standard_aliases(root: Path, aliases: Aliases, path: Path) -> None:
+    """A standardized alias retires an exact identity, not a live row or prefix."""
+    standard = {old: new for old, new in aliases.items() if _NEW_ID_RE.fullmatch(old)}
+    if not standard:
+        return
+    current: set[str] = set()
+    active: set[str] = set()
+    for requirements in sorted(root.glob("specs/*/requirements.md")):
+        try:
+            rows = parse_rows(requirements.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError) as exc:
+            raise CannotRun(f"{path}: could not read {requirements}: {exc}") from exc
+        current.update(row.id for row in rows)
+        active.update(row.id for row in rows if row.retired_reason is None)
+    prefixes = {old: new for old, new in aliases.items() if old.endswith("-")}
+    for old, new in standard.items():
+        if retired_prefix(old, prefixes) or retired_prefix(new, aliases):
+            raise CannotRun(f"{path}: standard alias {old!r} overlaps a retired prefix or chains through an alias")
+        if old in current:
+            raise CannotRun(f"{path}: standard alias {old!r} still has a requirement row; remove the old row")
+        if new not in active:
+            raise CannotRun(f"{path}: standard alias {old!r} target {new!r} is not an active requirement row")
 
 
 def retired_prefix(rid: str, aliases: Aliases) -> str | None:

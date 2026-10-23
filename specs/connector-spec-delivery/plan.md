@@ -37,3 +37,7 @@ Only actual Rust comment bindings may be removed, with owning plan additions, ta
 Every withdrawn ID must lose an existing binding and retain its reason in the owning plan.
 Unknown IDs, missing reasons, altered code, requirements, modes, workflow or build configuration fail closed.
 Other IDs still require ordinary acceptance bindings. Status remains generated from the corrected evidence.
+
+## Amendment: exact standard-ID renumbering (2026-10-23)
+
+PIPE-CONNSPEC-R011 extends the existing alias loader, not trailer acceptance rules. Parse current requirement rows with the shared parser before accepting an exact standard-ID alias. The source must have no current requirement row, including a retired tombstone; the target must be an active row, not a prose mention or another alias. Reject source or target collisions with retired prefixes. Existing prefix aliases and pre-standard exact aliases retain their one-hop behavior. The ordinary trailer gate still requires a bound target test and refuses unrelated unknown IDs. A renumbering fixture checks the historical range and the current PR range independently, and preserves the original landing receipt under the new ID.
