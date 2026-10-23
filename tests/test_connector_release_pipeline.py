@@ -25,6 +25,9 @@ def test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes() -> Non
     assert job["uses"] == "Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main"
     assert job["with"]["stages"] == "pre-commit"
     assert job["with"]["skip-hooks"] == "docker-compose-check"
+    setup = job["with"]["setup-command"]
+    assert "uv sync --frozen --all-extras --all-groups" in setup
+    assert "uv tool install bump2version" in setup and '.venv/bin" >> "$GITHUB_PATH"' in setup
     assert job["with"]["config"] == ".pre-commit-config.yaml"
     assert job["with"]["timeout-minutes"] <= 10
     text = (WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8")
