@@ -7,6 +7,7 @@ import pytest
 from tests.hooks.conftest import Repo
 
 
+# spec: PIPE-RELEASE-R007.6
 def test_fast_tests_runs_only_the_affected_subset(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     base = repo.commit(
         {

@@ -3993,9 +3993,9 @@
       "landed_in": [
         "07e22bc44394",
         "1127e9047bfa",
+        "22a4c85e6a09",
         "40010846fc5f",
-        "52f5fd07f94b",
-        "5ad40df25e6a"
+        "52f5fd07f94b"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:105",
@@ -4016,7 +4016,7 @@
       "title": "Index",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f34a17a62c04"
+        "22a4c85e6a09"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:446",
@@ -4028,7 +4028,7 @@
       "title": "Ranking",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f34a17a62c04"
+        "22a4c85e6a09"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:479",
@@ -4040,7 +4040,7 @@
       "title": "Deep links",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f34a17a62c04"
+        "22a4c85e6a09"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:511"
@@ -4051,7 +4051,7 @@
       "title": "Landing and access",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f34a17a62c04"
+        "22a4c85e6a09"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:552"

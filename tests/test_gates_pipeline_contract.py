@@ -41,6 +41,7 @@ def _run_guard(ref: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+# spec: PIPE-RELEASE-R007.1
 def test_gates_workflow_inputs_all_default() -> None:
     inputs = _on(GATES_WORKFLOW)["workflow_call"]["inputs"]
     assert set(inputs) == EXPECTED_INPUTS
@@ -48,6 +49,7 @@ def test_gates_workflow_inputs_all_default() -> None:
     assert _on(GATES_WORKFLOW)["workflow_call"].get("secrets") is None
 
 
+# spec: PIPE-RELEASE-R007.2
 def test_gates_workflow_scopes_to_the_diff_and_caps_time() -> None:
     text = GATES_WORKFLOW.read_text(encoding="utf-8")
     document = yaml.safe_load(text)
@@ -60,6 +62,7 @@ def test_gates_workflow_scopes_to_the_diff_and_caps_time() -> None:
     assert "pipelines-hook" in text and "job.workflow_sha" in text
 
 
+# spec: PIPE-RELEASE-R007.3
 def test_require_tag_defaults_off_and_guards_the_publish_step() -> None:
     document = yaml.safe_load(PYTHON_WORKFLOW.read_text(encoding="utf-8"))
     spec = _on(PYTHON_WORKFLOW)["workflow_call"]["inputs"]["require-tag"]
