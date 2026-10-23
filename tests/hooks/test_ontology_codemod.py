@@ -50,7 +50,11 @@ PACK = (
 """
 )
 SHAPE = HEAD + ":S a sh:NodeShape ; sh:targetClass :Person ; sh:property [ sh:path :owns ; sh:class :File ] ."
-MANIFEST = "connector: p\nresources: []\nschema_mappings:\n  Person: {ontology_class: null, fields: {}}\n  Zed: {ontology_class: null, fields: {}}\n"
+DECLARATION = (
+    'CONNECTOR = "p"\n'
+    'SCHEMA_MAPPINGS = {"Person": {"ontology_class": None, "fields": {}}, "Zed": {"ontology_class": None, "fields": {}}}\n'
+    "RESOURCES = []\n"
+)
 OVERRIDES = {"*": {"Genre": "Category"}, "p": {"Lonely": None}}
 
 
@@ -59,7 +63,7 @@ def srcs() -> list[ogc.Source]:
         ogc.Source("eg:core", "eg", "eg/core.ttl", EG),
         ogc.Source("p", "pack", "p/ontology/p.ttl", PACK),
         ogc.Source("p", "pack", "p/ontology/shapes/s.ttl", SHAPE),
-        ogc.Source("p", "pack", "connector_manifest.yml", MANIFEST),
+        ogc.Source("p", "pack", "p/connector_sources.py", DECLARATION),
     ]
 
 
@@ -107,9 +111,9 @@ def test_r3_exact_name_singularized_and_r4_override_and_r5_proposal() -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.8")
-def test_r6_report_only_never_patches_manifest() -> None:
+def test_r6_report_only_never_patches_declaration() -> None:
     text, plan = patched()
-    assert text["connector_manifest.yml"] == MANIFEST
+    assert text["p/connector_sources.py"] == DECLARATION
     q = queue(plan, "R6")
     assert q["Person"]["candidates"] and not q["Zed"]["candidates"]
 

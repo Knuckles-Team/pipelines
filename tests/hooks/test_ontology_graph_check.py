@@ -55,25 +55,21 @@ PACK_B = (
 """
 )
 SHAPE = HEAD + ":S a sh:NodeShape ; sh:targetClass :NoSuchClass ; sh:property [ sh:path :noSuchProp ] ."
-MANIFEST = """connector: a
-resources:
-- name: Bug
-  relations:
-  - name: nowhere
-    target: Missing
-schema_mappings:
-  Bug: {ontology_class: Bug, fields: {}}
-  Other: {ontology_class: null, fields: {}}
-  Third: {ontology_class: NotAClass, fields: {}}
-"""
-INGEST = json.dumps(
-    {
-        "sources": [
-            {"source_id": "s", "record_type": "NoType", "id_field": "id"},
-            {"source_id": "t", "record_type": "Bug"},
-        ]
-    }
+DECLARATION = """CONNECTOR = "a"
+
+SOURCES = (
+    source_meta(tool="list_s", source_id="s", record_type="NoType", id_field="id"),
+    source_meta(tool="list_t", source_id="t", record_type="Bug"),
 )
+
+SCHEMA_MAPPINGS = {
+    "Bug": {"ontology_class": "Bug", "fields": {}},
+    "Other": {"ontology_class": None, "fields": {}},
+    "Third": {"ontology_class": "NotAClass", "fields": {}},
+}
+
+RESOURCES = [{"name": "Bug", "relations": [{"name": "nowhere", "target": "Missing"}]}]
+"""
 
 
 def sources() -> list[ogc.Source]:
@@ -81,8 +77,7 @@ def sources() -> list[ogc.Source]:
         ogc.Source("eg:core", "eg", "crates/core.ttl", CORE),
         ogc.Source("packa", "pack", "pa/ontology/a.ttl", PACK_A),
         ogc.Source("packa", "pack", "pa/ontology/shapes/s.ttl", SHAPE),
-        ogc.Source("packa", "pack", "connector_manifest.yml", MANIFEST),
-        ogc.Source("packa", "pack", "pa/ontology/ingest_sources.json", INGEST),
+        ogc.Source("packa", "pack", "pa/connector_sources.py", DECLARATION),
         ogc.Source("packb", "pack", "pb/ontology/b.ttl", PACK_B),
         ogc.Source("packc", "pack", "pc/ontology/c.ttl", "this is not turtle {"),
         ogc.Source("packd", "pack", "pd/ontology/d.ttl", HEAD + ":Lonely a owl:Class ; rdfs:subClassOf owl:Thing ."),
@@ -330,3 +325,24 @@ def test_rollup_requires_eg_class_not_bfo_or_pack_root() -> None:
     bad = {f["iri"].rsplit("#", 1)[1] for f in out["findings"] if f["code"] == "NOT_ROLLED_UP_TO_CORE"}
     assert bad == {"Root", "Leaf"}
     assert not [f for f in out["findings"] if f["code"] == "ORPHAN_CLASS"]
+
+
+def test_declaration_is_parsed_statically_and_never_imported() -> None:
+    """The declaration is read by AST: a module that would fail on import still yields its entries."""
+    text = 'raise RuntimeError("imported")\nCONNECTOR = "a"\nSCHEMA_MAPPINGS = {"T": {"ontology_class": "C"}}\n'
+    text += 'RESOURCES = []\nX = source_meta(tool="t", source_id="s", record_type="T", id_field="id")\n'
+    entries, body = ogc.parse_declaration(text)
+    assert entries == [{"tool": "t", "source_id": "s", "record_type": "T", "id_field": "id"}]
+    assert body["schema_mappings"] == {"T": {"ontology_class": "C"}}
+
+
+def test_a_broken_declaration_is_a_parse_finding() -> None:
+    model = ogc.compose([ogc.Source("p", "pack", "p/connector_sources.py", "def (")])
+    assert [f.code for f in model.findings] == ["PARSE_ERROR"]
+
+
+def test_a_legacy_manifest_is_not_read() -> None:
+    """Hard cutover: pack_sources picks up only ontology TTL and connector_sources.py."""
+    assert ogc.DECLARATION == "connector_sources.py"
+    model = ogc.compose([ogc.Source("p", "pack", "connector_manifest.yml", "connector: p\n")])
+    assert not model.manifests and not model.ingest

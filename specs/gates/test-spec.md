@@ -57,7 +57,7 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 
 ## Connector fleet name (PIPE-GATES-R010)
 
-`tests/hooks/test_connector_name.py` builds a fixture connector in a temporary directory. It checks agreement, a disagreeing literal in each of three files, the undeclared warning, `--strict` and a non-connector repository.
+`tests/hooks/test_connector_name.py` builds a fixture connector in a temporary directory. It checks agreement, a disagreeing literal in `connector_sources.py` and in a call, a leftover manifest that is ignored, the undeclared warning, `--strict` and a non-connector repository.
 
 ## Connector GraphQL declaration (PIPE-GATES-R012)
 
@@ -80,7 +80,7 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 
 ## Ontology graph check (PIPE-GATES-R016)
 
-`tests/hooks/test_ontology_graph_check.py` builds small fixture ontologies, a manifest and an ingest file. It checks that every finding code fires, the parse error file, the orphan chain length, the dangling file and line, the island pack, the mapping and ingest checks, the conflicts, the competency question hops, the owner grouping of the fix plan, determinism, the exit codes with `--warn`, and the command against a temporary git repository.
+`tests/hooks/test_ontology_graph_check.py` builds small fixture ontologies, a `connector_sources.py` declaration. It checks that every finding code fires, the parse error file, the orphan chain length, the dangling file and line, the island pack, the mapping and ingest checks, the conflicts, the competency question hops, the owner grouping of the fix plan, determinism, the exit codes with `--warn`, and the command against a temporary git repository.
 
 The module-graph tests (PIPE-GATES-R016.1 to R016.3) cover an import-only module, an individuals-only module and the fixture-directory path rule.
 

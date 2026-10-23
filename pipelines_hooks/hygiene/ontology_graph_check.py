@@ -1,11 +1,10 @@
 """connector-ontology-map graph-check: validate that every ontology is reachable and bridged.
 
 ``graph-check`` composes the epistemic-graph (EG) ontology modules and every fleet
-connector pack (``<pkg>/ontology/*.ttl``, shapes, ``connector_manifest.yml`` and
-``ontology/ingest_sources.json``) into one rdflib graph and reports findings, each with a
+connector pack (``<pkg>/ontology/*.ttl``, shapes, the generated ``connector_sources.py`` declaration) into one rdflib graph and reports findings, each with a
 machine-readable code (PIPE-GATES-R016):
 
-* ``PARSE_ERROR``: a Turtle, YAML or JSON file does not parse.
+* ``PARSE_ERROR``: a Turtle file or the declaration does not parse.
 * ``PACK_IMPORTS_CORE``: a pack ``owl:imports`` an EG ontology (an antipattern, not a bridge).
 * ``NOT_ROLLED_UP_TO_CORE``: a pack class never reaches a class declared in an EG module.
 * ``ORPHAN_CLASS`` (EG modules only): a class has no ``subClassOf``/``equivalentClass``/intersection path to the root.
@@ -24,7 +23,7 @@ The result is deterministic: sorted findings, no timestamps.
 
 from __future__ import annotations
 
-import json
+import ast
 import os
 import re
 import subprocess
@@ -33,7 +32,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import yaml
 from rdflib import BNode, Graph, Literal, URIRef
 from rdflib.collection import Collection
 from rdflib.namespace import OWL, RDF, RDFS
@@ -187,16 +185,46 @@ def eg_sources(repo: Path, ref: str, overlay: str | None = None) -> list[Source]
     ]
 
 
+DECLARATION = "connector_sources.py"
+
+
+def parse_declaration(text: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Statically read ``connector_sources.py``: the ``source_meta(...)`` entries, schema mappings and resources.
+
+    The module is parsed by AST and never imported; only literal keyword values are read.
+    """
+    tree = ast.parse(text)
+    entries: list[dict[str, Any]] = []
+    declared: dict[str, Any] = {}
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Call)
+            and (getattr(node.func, "id", None) or getattr(node.func, "attr", None)) == "source_meta"
+        ):
+            entry: dict[str, Any] = {}
+            for kw in node.keywords:
+                if kw.arg:
+                    try:
+                        entry[kw.arg] = ast.literal_eval(kw.value)
+                    except ValueError:
+                        entry[kw.arg] = None
+            entries.append(entry)
+        elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+            if node.targets[0].id in ("SCHEMA_MAPPINGS", "RESOURCES", "CONNECTOR"):
+                declared[node.targets[0].id] = ast.literal_eval(node.value)
+    body = {"schema_mappings": declared.get("SCHEMA_MAPPINGS") or {}, "resources": declared.get("RESOURCES") or {}}
+    if isinstance(body["resources"], dict):  # a name -> spec mapping; the checks read a list of named specs
+        body["resources"] = [{"name": k, **(v if isinstance(v, dict) else {})} for k, v in body["resources"].items()]
+    return entries, body
+
+
 def pack_sources(repo: Path, ref: str) -> list[Source]:
     out = []
     for p in sorted(_git(repo, "ls-tree", "-r", "--name-only", ref).splitlines()):
         if is_fixture_path(p):
             continue
-        ontology = "/ontology/" in p and (p.endswith(".ttl") or p.endswith("/ingest_sources.json"))
-        if ontology or p == "connector_manifest.yml":
+        if ("/ontology/" in p and p.endswith(".ttl")) or p.endswith("/" + DECLARATION):
             text = _git(repo, "show", f"{ref}:{p}")
-            if p.endswith(".yml") and "\n" not in text.strip() and text.strip().endswith(".yml"):
-                text = _git(repo, "show", f"{ref}:{text.strip()}")  # a symlink to the packaged manifest
             out.append(Source(module=repo.name, kind="pack", path=p, text=text))
     return out
 
@@ -304,16 +332,10 @@ def compose(sources: list[Source]) -> Model:
             if s.path.endswith(".ttl"):
                 s.graph = Graph()
                 s.graph.parse(data=s.text, format="turtle")
-            elif s.path.endswith(".json"):
-                data = json.loads(s.text)
-                if not isinstance(data, dict):
-                    raise ValueError("ingest_sources.json is not an object")
-                m.ingest.setdefault(s.module, []).extend(data.get("sources", []))
-            else:
-                loaded = yaml.safe_load(s.text) or {}
-                if not isinstance(loaded, dict):
-                    raise ValueError("connector_manifest.yml is not a mapping")
-                m.manifests[s.module] = loaded
+            elif s.path.endswith(DECLARATION):
+                entries, body = parse_declaration(s.text)
+                m.ingest.setdefault(s.module, []).extend(entries)
+                m.manifests[s.module] = body
         except Exception as exc:  # noqa: BLE001 - every parse failure is a finding
             s.graph = None
             m.findings.append(
@@ -539,7 +561,7 @@ def check_dangling(m: Model) -> None:
                             f"manifest relation {res.get('name')}.{rel.get('name')} targets undeclared class {tgt}",
                             pack,
                             pack,
-                            "connector_manifest.yml",
+                            DECLARATION,
                             0,
                             KG_NS + "kg#" + tgt,
                             {"role": "class", "source": "manifest_relation", "owner_type": res.get("name")},
@@ -552,7 +574,7 @@ def check_dangling(m: Model) -> None:
                             f"manifest relation {res.get('name')}.{rel['name']} names an undeclared property",
                             pack,
                             pack,
-                            "connector_manifest.yml",
+                            DECLARATION,
                             0,
                             KG_NS + "kg#" + rel["name"],
                             {
@@ -765,7 +787,7 @@ def check_virtual(m: Model) -> None:
                         f"ingest source {src.get('source_id')} record type {rt or '(none)'} is not a class",
                         pack,
                         pack,
-                        "ingest_sources.json",
+                        DECLARATION,
                         0,
                         KG_NS + "kg#" + rt,
                         {"source_id": src.get("source_id"), "record_type": rt},
@@ -788,7 +810,7 @@ def check_virtual(m: Model) -> None:
                         ),
                         pack,
                         pack,
-                        "ingest_sources.json",
+                        DECLARATION,
                         0,
                         cls or "",
                         {"source_id": src.get("source_id"), "record_type": rt, "id_field": src.get("id_field")},
@@ -805,7 +827,7 @@ def check_virtual(m: Model) -> None:
                         + ("no class" if not tgt else "which is not a declared class"),
                         pack,
                         pack,
-                        "connector_manifest.yml",
+                        DECLARATION,
                         0,
                         KG_NS + "kg#" + str(tgt) if tgt else "",
                         {"type": typ, "ontology_class": tgt},
