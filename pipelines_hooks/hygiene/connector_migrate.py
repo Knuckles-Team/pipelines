@@ -324,12 +324,16 @@ def declaration() -> IngestSourceDeclaration:
 
 
 def render_module(content: dict[str, Any]) -> str:
-    return TEMPLATE.format(
+    text = TEMPLATE.format(
         connector=json.dumps(content["connector"]),
         sources="".join(_call(e) for e in content["entries"]),
         mappings=_py(content["mappings"]),
         resources=_py(content["resources"]),
     )
+    if not content["entries"]:  # R016.34: no source -> no unused import and the formatter's one-line empty tuple
+        text = text.replace("SOURCES: tuple[Any, ...] = (\n)", "SOURCES: tuple[Any, ...] = ()")
+        text = text.replace("from agent_connector_sdk.ingest.live_declaration import source_meta\n", "")
+    return text
 
 
 # ---------------------------------------------------------------- b. delete
@@ -500,6 +504,30 @@ _PARENT_IMPORT = re.compile(
 _HUB_IMPORT_ASSERT = re.compile(r"^[ \t]*assert (?:HUB|PARENT|KG)_IRI in imports[ \t]*\n", re.M)
 
 
+_PROMPT_KEY_ASSERT = re.compile(
+    r"""(?m)^[ \t]*assert\s+(?:\w+\[["'](?:extends|compose)["']\]\s*(?:==|is\b).*|["'](?:extends|compose)["']\s+in\s+\w+\s*)\n"""
+)
+
+
+def drop_prompt_key_assertions(text: str) -> str:
+    """R016.32: the prompt keeps no top-level ``extends``/``compose`` once stripped, so a test asserting them goes too."""
+    return _PROMPT_KEY_ASSERT.sub("", text)
+
+
+_PKG_FROM_DIRNAME = re.compile(
+    r"""__import__\("pathlib"\)\s*\.Path\(__file__\)\s*\.resolve\(\)\s*\.parent\.parent\.name\.replace\(\s*["']-["'],\s*["']_["']\s*\)"""
+)
+_PKG_FROM_PYPROJECT = (
+    '__import__("tomllib").loads(__import__("pathlib").Path(__file__).resolve().parent.parent'
+    '.joinpath("pyproject.toml").read_text(encoding="utf-8"))["project"]["name"].replace("-", "_")'
+)
+
+
+def derive_package_from_pyproject(text: str) -> str:
+    """R016.33: a startup test deriving the package from the checkout directory name breaks in a worktree dir; read pyproject."""
+    return _PKG_FROM_DIRNAME.sub(lambda _m: _PKG_FROM_PYPROJECT, text)
+
+
 def drop_parent_import_assertion(text: str) -> str:
     """Remove the assertion that a pack imports the EG ontology (R1 removes that import); R016.26 adds ``assert HUB_IRI in imports``."""
     return _HUB_IMPORT_ASSERT.sub("", _PARENT_IMPORT.sub("", text))
@@ -571,6 +599,7 @@ def delete_cut_tests(text: str, words: tuple[str, ...]) -> tuple[str, list[str],
     for a, b, _ in sorted(cuts, reverse=True):
         del lines[a:b]
     out = re.sub(r"\n{4,}", "\n\n\n", "".join(lines))
+    out = out.rstrip("\n") + "\n" if out.strip() else out  # R016.34: no blank lines at the end of file
     return out, [n for _, _, n in cuts], specs
 
 
@@ -750,6 +779,7 @@ def migrate_tests(
             continue
         original = text = p.read_text(encoding="utf-8")
         rel = str(p.relative_to(root))
+        text = derive_package_from_pyproject(drop_prompt_key_assertions(text))
         text = rewrite_references(drop_cut_list_items(drop_parent_import_assertion(text)))
         new, action = rewrite_test(text, p.name, pkg)
         if action == "review" or (action == "keep" and any(w in text for w in extra_words)):
@@ -818,17 +848,24 @@ def drop_cut_scripts(root: Path, pkg: Path, deleted: list[str]) -> tuple[str, ..
             gone.append(name)
             deleted.append(f"scripts/{name}")
             p.unlink()
-    for p in sorted(scripts.glob("*.py")) if scripts.is_dir() else []:
-        if any(g in p.read_text(encoding="utf-8") for g in gone):
-            gone.append(p.name)
-            deleted.append(f"scripts/{p.name}")
-            p.unlink()
+    # R016.31: to a fixed point (a driver sorted before the script it drives is found on the next pass), and by module
+    # stem too, because an import names `verify_generated_schemas`, not `verify_generated_schemas.py`.
+    grew = True
+    while grew:
+        grew = False
+        refs = [*gone, *(g.removesuffix(".py") for g in gone)]
+        for p in sorted(scripts.glob("*.py")) if scripts.is_dir() else []:
+            if any(g in p.read_text(encoding="utf-8") for g in refs):
+                gone.append(p.name)
+                deleted.append(f"scripts/{p.name}")
+                p.unlink()
+                grew = True
     adapters = pkg / "connectors" / "adapters.py"
     if adapters.is_file() and any(w in adapters.read_text(encoding="utf-8") for w in _CUT_WORDS):
         deleted.append(str(adapters.relative_to(root)))
         adapters.unlink()
         gone.append(f"{pkg.name}.connectors.adapters")
-    return tuple(gone)
+    return tuple([*gone, *(g.removesuffix(".py") for g in gone if g.endswith(".py"))])
 
 
 def migrate_sources_text(root: Path, pkg: Path, scripts: tuple[str, ...], changed: list[str]) -> None:

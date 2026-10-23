@@ -1,0 +1,10 @@
+--- a/legal_peripherals_mcp/connectors/mcp_source_presets.json
++++ b/legal_peripherals_mcp/connectors/mcp_source_presets.json
+@@ -3,7 +3,6 @@
+   "legal-sos-entities": {
+     "server": "legal-peripherals-mcp",
+     "tool": "legal_ingest_sos_entities",
+-    "action": "list",
+     "records_path": "entities",
+     "id_field": "id",
+     "title_field": "name",

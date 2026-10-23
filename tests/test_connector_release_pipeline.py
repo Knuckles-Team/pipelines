@@ -19,12 +19,13 @@ def _on(document: dict) -> dict:
 @pytest.mark.spec("PIPE-RELEASE-R011")
 def test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes() -> None:
     document = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
-    assert set(_on(document)["workflow_call"]["inputs"]) == {"runner", "test-scope", "sync-args"}
+    assert set(_on(document)["workflow_call"]["inputs"]) == {"runner", "test-scope", "sync-args", "skip-hooks"}
     assert document["permissions"] == {"contents": "read"}
     job = document["jobs"]["gates"]
     assert job["uses"] == "Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main"
     assert job["with"]["stages"] == "pre-commit"
-    assert job["with"]["skip-hooks"] == "docker-compose-check"
+    assert job["with"]["skip-hooks"] == "${{ inputs.skip-hooks }}"
+    assert _on(document)["workflow_call"]["inputs"]["skip-hooks"]["default"] == "docker-compose-check"
     setup = job["with"]["setup-command"]
     assert "uv sync --frozen ${{ inputs.sync-args }}" in setup
     assert 'npm install --global --prefix "$HOME/.npm-global" bun' in setup
@@ -93,3 +94,14 @@ def test_verification_fails_naming_the_missing_artifact(tmp_path: Path, missing:
     result = _run_verify(tmp_path, missing)
     assert result.returncode == 1
     assert message in result.stdout + result.stderr
+
+
+@pytest.mark.spec("PIPE-GATES-R016.35")
+def test_connector_pr_workflow_forwards_skip_hooks_and_the_webarchiver_patch_skips_the_scanner_hook() -> None:
+    document = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
+    assert _on(document)["workflow_call"]["inputs"]["skip-hooks"]["default"] == "docker-compose-check"
+    assert document["jobs"]["gates"]["with"]["skip-hooks"] == "${{ inputs.skip-hooks }}"
+    patch = (Path(__file__).parents[1] / "scripts/connector_migrate_patches/webarchiver.patch").read_text(
+        encoding="utf-8"
+    )
+    assert "+      skip-hooks: docker-compose-check,scanner-versions" in patch
