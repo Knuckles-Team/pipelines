@@ -603,6 +603,125 @@ def decide(record: dict[str, Any], overrides: dict[str, str | None], parent: Par
     }
 
 
+_TEST_TEMPLATE = r'''"""Every class of the packaged ontology reaches an epistemic-graph parent class ({spec_id})."""
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.spec("{spec_id}")
+
+PARENT_IRI = "http://knuckles.team/kg"
+ONTOLOGIES = sorted((Path(__file__).resolve().parents[1] / "{package}" / "ontology").glob("*.ttl"))
+OWL = "http://www.w3.org/2002/07/owl#"
+RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+SUBCLASS = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+# Parent classes of the epistemic-graph ontology that this connector links to or redeclares.
+PARENT_CLASSES = frozenset(
+    (
+{parents}
+    )
+)
+# Classes for which the parent ontology has no fitting class yet. Each is a candidate for a new
+# parent class (see the orphan mapping report); a class leaves this set when it gains a parent.
+PENDING_NEW_PARENT: frozenset[str] = {pending}
+
+_STRING = re.compile(r'"""(?:.|\n)*?"""|"(?:[^"\\\n]|\\.)*"')
+_IRI = re.compile(r"<([^<>\s]*)>")
+_PREFIX = re.compile(r"(?im)^\s*@?prefix\s+([A-Za-z][\w.-]*)?:\s+\x00(\d+)\s*\.?")
+_END = re.compile(r"\s\.(?=\s|$)|(?<=[\]>)\w\"'])\.(?=\s|$)")
+
+
+def _triples(text: str) -> list[tuple[str, str, str]]:
+    """Subject, predicate and object of a Turtle file; names are expanded, literals dropped."""
+    iris: list[str] = []
+
+    def keep(match: re.Match[str]) -> str:
+        iris.append(match.group(1))
+        return f" \x00{{len(iris)}} "
+
+    body = re.sub(r"(?m)#[^\n]*$", "", _IRI.sub(keep, _STRING.sub(' "" ', text)))
+    prefixes = {{m.group(1) or "": iris[int(m.group(2)) - 1] for m in _PREFIX.finditer(body)}}
+    body = re.sub(r"\[[^\[\]]*\]", " _:b ", _PREFIX.sub("", body))
+
+    def expand(token: str) -> str:
+        if token.startswith("\x00"):
+            return iris[int(token[1:]) - 1]
+        prefix, sep, local = token.partition(":")
+        return prefixes[prefix] + local if sep and prefix in prefixes else RDF_TYPE if token == "a" else token
+
+    triples: list[tuple[str, str, str]] = []
+    for statement in _END.split(body):
+        tokens = statement.replace(";", " ; ").replace(",", " , ").split()
+        subject, predicate, fresh = "", "", True
+        for index, token in enumerate(tokens):
+            if index == 0:
+                subject = expand(token)
+            elif token == ";":
+                fresh = True
+            elif token != ",":
+                if fresh:
+                    predicate, fresh = expand(token), False
+                else:
+                    triples.append((subject, predicate, expand(token)))
+    return triples
+
+
+def _orphans(triples: list[tuple[str, str, str]]) -> set[str]:
+    declared = {{s for s, p, o in triples if p == RDF_TYPE and o == OWL + "Class"}}
+    linked: set[str] = set()
+    changed = True
+    while changed:
+        changed = False
+        for cls in declared - linked - PARENT_CLASSES:
+            ups = {{o for s, p, o in triples if s == cls and p == SUBCLASS}}
+            if ups & (PARENT_CLASSES | linked):
+                linked.add(cls)
+                changed = True
+    return declared - linked - PARENT_CLASSES
+
+
+@pytest.mark.parametrize("path", ONTOLOGIES, ids=lambda p: p.name)
+def test_ontology_joins_the_parent_graph(path: Path) -> None:
+    triples = _triples(path.read_text(encoding="utf-8"))
+    declared = {{s for s, p, o in triples if p == RDF_TYPE and o == OWL + "Class"}}
+    if not declared:
+        pytest.skip("declares no classes")
+    imports = {{o for s, p, o in triples if p == OWL + "imports"}}
+    assert any(i == PARENT_IRI or i.startswith(PARENT_IRI + "/") for i in imports)
+    assert _orphans(triples) == PENDING_NEW_PARENT & declared
+'''
+
+
+def scaffold_test(
+    root: Path, spec_id: str, links: dict[str, dict[str, str]], pending: dict[str, list[str]], parent: Parent
+) -> Path:
+    """Write ``tests/test_ontology_parent_link.py`` for the connector checkout at ``root``."""
+    files = sorted(root.glob("*/ontology/*.ttl"))
+    package = files[0].relative_to(root).parts[0]
+    used: set[str] = set()
+    pend: set[str] = set()
+    for path in files:
+        graph = parse(path.read_text(encoding="utf-8"))
+        mentioned = {t for triple in graph.triples for t in triple}
+        used |= {iri for iri in mentioned if iri in parent.classes}
+    for classes in pending.values():
+        pend |= set(classes)
+
+    def block(items: set[str]) -> str:
+        return "\n".join(f'        "{iri}",' for iri in sorted(items)) or ""
+
+    pending_literal = "frozenset(\n    (\n" + block(pend) + "\n    )\n)" if pend else "frozenset()"
+    text = _TEST_TEMPLATE.format(spec_id=spec_id, package=package, parents=block(used), pending=pending_literal)
+    out = root / "tests" / "test_ontology_parent_link.py"
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(text, encoding="utf-8")
+    return out
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="connector-ontology-map", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -618,16 +737,35 @@ def main(argv: list[str]) -> int:
     d.add_argument("--overrides", type=Path, required=True, help='JSON {"<repository>": {"<Class>": "<Parent>"|null}}')
     d.add_argument("--parent-ontology", type=Path, required=True)
     d.add_argument("--out", type=Path, required=True)
+    c = sub.add_parser("scaffold", help="write the connector's parent-link test from decisions")
+    c.add_argument("--root", type=Path, default=Path.cwd())
+    c.add_argument("--decided", type=Path, required=True, help="a decision file written by decide")
+    c.add_argument("--spec-id", required=True)
+    c.add_argument("--parent-ontology", type=Path, required=True)
     a = sub.add_parser("apply", help="write accepted links into a connector checkout")
     a.add_argument("--root", type=Path, default=Path.cwd())
-    a.add_argument("--decisions", type=Path, required=True, help='JSON {"<file>": {"<class>": "<parent>"}}')
+    a.add_argument(
+        "--decisions",
+        type=Path,
+        required=True,
+        help='JSON {"<file>": {"<class>": "<parent>"}}, or a decision file from decide',
+    )
     args = parser.parse_args(argv)
     if args.command == "apply":
-        problems = apply_repo(args.root, json.loads(args.decisions.read_text(encoding="utf-8")))
+        loaded = json.loads(args.decisions.read_text(encoding="utf-8"))
+        problems = apply_repo(args.root, loaded.get("links", loaded) if "new_parent_candidates" in loaded else loaded)
         for line in problems:
             print(line)
         return 1 if problems else 0
     parent = load_parent(args.parent_ontology)
+    if args.command == "scaffold":
+        decided = json.loads(args.decided.read_text(encoding="utf-8"))
+        pending: dict[str, list[str]] = {}
+        for entry in decided["new_parent_candidates"]:
+            pending.setdefault(entry["file"], []).append(entry["class"])
+            pending[entry["file"]] += entry["subclasses_resolved"]
+        print(scaffold_test(args.root, args.spec_id, decided["links"], pending, parent))
+        return 0
     if args.command == "decide":
         overrides = json.loads(args.overrides.read_text(encoding="utf-8"))
         args.out.mkdir(parents=True, exist_ok=True)

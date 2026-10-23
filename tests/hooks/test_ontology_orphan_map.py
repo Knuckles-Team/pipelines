@@ -151,3 +151,29 @@ def test_output_is_deterministic_and_propose_cli_writes_json(tmp_path: Path, par
     assert json.dumps(omap.propose_file(CONNECTOR, parent), sort_keys=True) == json.dumps(
         omap.propose_file(CONNECTOR, parent), sort_keys=True
     )
+
+
+def test_scaffold_writes_a_test_that_passes_and_names_pending_classes(tmp_path: Path, parent: omap.Parent) -> None:
+    root = tmp_path / "conn"
+    ontology = root / "demo_mcp" / "ontology"
+    ontology.mkdir(parents=True)
+    linked, problems = omap.apply_links(
+        CONNECTOR, {"http://knuckles.team/kg#Issue": "http://knuckles.team/kg#WorkItem"}
+    )
+    assert problems == []
+    (ontology / "demo.ttl").write_text(linked)
+    pending = {"demo_mcp/ontology/demo.ttl": ["http://knuckles.team/kg#Gadget", "http://knuckles.team/kg#SubGadget"]}
+    written = omap.scaffold_test(root, "CONN-DEMO-R002", {}, pending, parent)
+    source = written.read_text()
+    namespace: dict = {"__file__": str(written), "__name__": "scaffolded"}
+    # The pytest.mark.spec marker is unknown here; the module body must still run and its test pass or fail on content.
+    exec(
+        compile(source.replace("pytestmark = pytest.mark.spec", "pytestmark = (lambda *a: a)"), str(written), "exec"),
+        namespace,
+    )
+    assert namespace["PENDING_NEW_PARENT"] == frozenset(
+        {"http://knuckles.team/kg#Gadget", "http://knuckles.team/kg#SubGadget"}
+    )
+    triples = namespace["_triples"](linked)
+    # Paper, GitLabDocument and Wrapper remain orphans here, so the generated test would fail on this file.
+    assert "http://knuckles.team/kg#Paper" in namespace["_orphans"](triples)
