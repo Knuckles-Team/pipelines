@@ -57,6 +57,7 @@ GATES: dict[str, str] = {
     "pr-test-scope": "pipelines_hooks.ci_replica.test_scope",
     "fast-tests": "pipelines_hooks.ci_replica.fast_tests",
     "spec-status": "pipelines_hooks.specs.status",
+    "spec-bind-suggest": "pipelines_hooks.specs.bind_suggest",
     "spec-trailers": "pipelines_hooks.specs.trailers",
     "gate-set": "pipelines_hooks.gate_runner",
 }
