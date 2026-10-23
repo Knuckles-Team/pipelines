@@ -20,3 +20,5 @@ PIPE-CONNSPEC-R001 also binds `test_verified_rollup_carries_its_childrens_eviden
 | `PIPE-CONNSPEC-R009` | See each child. |
 | `PIPE-CONNSPEC-R009.1` | `tests/hooks/test_engine_state.py::test_difference_names_rows` |
 | `PIPE-CONNSPEC-R009.2` | `tests/hooks/test_engine_state.py::test_generator_and_engine_agree` |
+
+PIPE-CONNSPEC-R011 binds tests/hooks/test_spec_standard_aliases.py: exact renumbering preserves historical landings and test bindings; historical and current trailer ranges pass. Active or retired source rows (including retired-first active duplicates), missing or retired targets, prose-only targets, chains, cycles and prefix collisions refuse. Unbound targets and unknown trailers still fail. Unlisted children do not inherit an exact alias. Existing alias tests continue to pass.

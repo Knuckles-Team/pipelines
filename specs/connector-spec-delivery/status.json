@@ -388,7 +388,8 @@
     "PIPE-CONNSPEC-R009",
     "PIPE-CONNSPEC-R009.1",
     "PIPE-CONNSPEC-R009.2",
-    "PIPE-CONNSPEC-R010"
+    "PIPE-CONNSPEC-R010",
+    "PIPE-CONNSPEC-R011"
   ],
   "requirements": [
     {
@@ -3565,6 +3566,15 @@
       ],
       "verified_by": [
         "tests/hooks/test_spec_bind_suggest.py:41"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R011",
+      "title": "Explicit retired standard-ID aliases",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_spec_standard_aliases.py:14"
       ]
     }
   ]
