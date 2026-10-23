@@ -273,15 +273,19 @@
     {
       "id": "PIPE-GATES-R016",
       "title": "The composed ontology graph is reachable and bridged",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "197c2b37817f",
         "9389c84a38bf",
+        "97f7a14afcb2",
         "9c5228d41640",
         "e2c99922f0a7"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:15"
+        "tests/hooks/test_ontology_graph_check.py:15",
+        "tests/hooks/test_ontology_graph_check.py:258",
+        "tests/hooks/test_ontology_graph_check.py:272",
+        "tests/hooks/test_ontology_graph_check.py:283"
       ],
       "rollup_of": [
         "PIPE-GATES-R016.1",
@@ -292,8 +296,10 @@
     {
       "id": "PIPE-GATES-R016.1",
       "title": "An import bridges modules",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "97f7a14afcb2"
+      ],
       "verified_by": [
         "tests/hooks/test_ontology_graph_check.py:258"
       ]
@@ -301,8 +307,10 @@
     {
       "id": "PIPE-GATES-R016.2",
       "title": "An individual's type is a reference",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "97f7a14afcb2"
+      ],
       "verified_by": [
         "tests/hooks/test_ontology_graph_check.py:272"
       ]
@@ -310,8 +318,10 @@
     {
       "id": "PIPE-GATES-R016.3",
       "title": "Test-fixture ontologies are outside the corpus",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "97f7a14afcb2"
+      ],
       "verified_by": [
         "tests/hooks/test_ontology_graph_check.py:283"
       ]
