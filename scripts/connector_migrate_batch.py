@@ -97,7 +97,7 @@ def hook(*args: str) -> list[str]:
 class StepFailed(Exception):
     def __init__(self, step: str, output: str) -> None:
         super().__init__(step)
-        self.step, self.output = step, output[-2000:]
+        self.step, self.output, self.full = step, output[-2000:], output
 
 
 def sh(
@@ -288,7 +288,9 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
                 sh(step, [py, "-m", "pytest", "-q", "-x", *targets], wt, env)
             except StepFailed as exc:
                 # R016.29: a wheel built for a newer CPU (no AVX2 on this host) aborts pytest; the PR gate runs the tests.
-                if "Fatal Python error: Illegal instruction" not in exc.output:
+                if (
+                    "Fatal Python error: Illegal instruction" not in exc.full
+                ):  # R016.37: the header is cut from the 2000-char tail
                     raise
                 led.record(
                     repo, local_tests_skipped="host CPU lacks an instruction set a wheel needs; PR gates run them"
