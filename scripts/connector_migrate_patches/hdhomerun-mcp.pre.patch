@@ -1,0 +1,14 @@
+diff --git a/hdhomerun_mcp/connectors/mcp_source_presets.json b/hdhomerun_mcp/connectors/mcp_source_presets.json
+index 88aede1..82117be 100644
+--- a/hdhomerun_mcp/connectors/mcp_source_presets.json
++++ b/hdhomerun_mcp/connectors/mcp_source_presets.json
+@@ -13,8 +13,7 @@
+   },
+   "hdhomerun-recording-rules": {
+     "server": "hdhomerun-mcp",
+-    "tool": "dvr_operations",
+-    "action": "list_rules",
++    "tool": "hdhomerun_list_recording_rules",
+     "records_path": "rules",
+     "id_field": "RecordingRuleID",
+     "title_field": "Title",

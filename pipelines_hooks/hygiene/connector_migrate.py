@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import ast
 import configparser
+import datetime
 import io
 import json
 import os
@@ -54,6 +55,7 @@ _CUT_WORDS = (
     "ConnectorManifest",
     "load_tool_presets",
     "manifest://",
+    "source_connector_providers",
 )
 
 
@@ -158,7 +160,22 @@ def _load_inputs(root: Path, pkg: Path, review: Review) -> dict[str, Any]:
     return {"found": found, "manifest": manifest, "presets": presets, "ingest": ingest}
 
 
-def build_sources(inputs: dict[str, Any], review: Review) -> dict[str, Any] | None:
+def action_tool_candidates(tool: str, action: str, server: str, served: set[str]) -> list[str]:
+    """R016.27: served tools named <tool prefix> + action words, or <server stem> / <tool prefix> + action + the rest of the tool."""
+    words = tool.split("_")
+    stem = re.sub(r"[-_](mcp|agent|api)$", "", server or "").replace("-", "_")
+    names: set[str] = {f"{tool}_{action}"}
+    for k in range(1, len(words) + 1):
+        pre = "_".join(words[:k])
+        names.add(f"{pre}_{action}")
+        if k < len(words):
+            names.add(f"{pre}_{action}_{'_'.join(words[k:])}")
+    if stem:
+        names |= {f"{stem}_{action}", f"{stem}_{action}_{tool}"}
+    return sorted(names & served)
+
+
+def build_sources(inputs: dict[str, Any], review: Review, served: set[str] | None = None) -> dict[str, Any] | None:
     """The module content, or None when no input file exists (already migrated)."""
     manifest, presets, ingest = inputs["manifest"], inputs["presets"], inputs["ingest"]
     if not (manifest or presets or ingest):
@@ -175,8 +192,17 @@ def build_sources(inputs: dict[str, Any], review: Review) -> dict[str, Any] | No
                 "declarations", f"preset {name!r} differs from manifest sync raw; preset file used", blocking=False
             )
         tool = p.pop("tool", None)
-        if tool and isinstance(p.get("action"), str):
-            # R016.24: the SDK's split tool names are not derivable from <tool> and <action>; verify decides.
+        if tool and isinstance(p.get("action"), str) and served is not None:
+            found = action_tool_candidates(tool, p["action"], str(p.get("server", "")), served)
+            if len(found) == 1:
+                tool = found[0]
+                p.pop("action")
+            else:
+                review.add(
+                    "declarations",
+                    f"preset {name!r} calls tool {tool!r} with action {p['action']!r}: {len(found)} served tools match {found}",
+                )
+        elif tool and isinstance(p.get("action"), str):
             review.add(
                 "declarations",
                 f"preset {name!r} calls tool {tool!r} with an action; check the split tool name",
@@ -261,26 +287,29 @@ Served live as ``connector://resources``. Regenerate by editing the declarations
 # ruff: noqa: E501
 from __future__ import annotations
 
+from typing import Any
+
 from agent_connector_sdk.ingest.live_declaration import source_meta
 from agent_connector_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
 
-CONNECTOR = {connector}
+CONNECTOR: str = {connector}
 
-SOURCES = (
+SOURCES: tuple[Any, ...] = (
 {sources})
 
-SCHEMA_MAPPINGS = {mappings}
+SCHEMA_MAPPINGS: dict[str, Any] = {mappings}
 
-RESOURCES = {resources}
+RESOURCES: tuple[dict[str, str], ...] = {resources}
 
 
 def declaration() -> IngestSourceDeclaration:
     """The declaration the server assembles from this module."""
-    specs = []
+    specs: list[IngestSourceSpec] = []
     for item in SOURCES:
         for entry in item["connector_sources"]:
-            body = {{k: v for k, v in entry.items() if k not in ("tool", "mapping")}}
-            specs.append(IngestSourceSpec.model_validate({{**body, "tools": (entry["tool"],)}}))
+            body: dict[str, Any] = {{k: v for k, v in entry.items() if k not in ("tool", "mapping")}}
+            spec = {{**body, "tools": (entry["tool"],)}}
+            specs.append(IngestSourceSpec.model_validate(spec))
     return IngestSourceDeclaration.model_validate(
         {{
             "connector": CONNECTOR,
@@ -409,6 +438,24 @@ def bump_patch(root: Path, changed: list[str], review: Review) -> str | None:
     return new
 
 
+def add_changelog(root: Path, version: str | None, changed: list[str], today: str | None = None) -> None:
+    """R016.28: a Keep-a-Changelog file gets one fixed entry for the bumped version (release tests pin it)."""
+    path = root / "CHANGELOG.md"
+    if version is None or not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8")
+    first = re.search(r"(?m)^## \[", text)
+    if first is None or re.search(rf"(?m)^## \[{re.escape(version)}\]", text):
+        return
+    day = today or datetime.date.today().isoformat()
+    entry = (
+        f"## [{version}] - {day}\n\n### Changed\n"
+        f"- Requires `agent-connector-sdk>={SDK_FLOOR}`; data sources are declared in code (`connector_sources`).\n\n"
+    )
+    path.write_text(text[: first.start()] + entry + text[first.start() :], encoding="utf-8")
+    changed.append("CHANGELOG.md")
+
+
 def refresh_lock(root: Path, review: Review, changed: list[str]) -> None:
     r = subprocess.run(
         ["uv", "lock", "--upgrade-package", "agent-connector-sdk"], cwd=root, capture_output=True, text=True
@@ -446,9 +493,12 @@ _PARENT_IMPORT = re.compile(
 )
 
 
+_HUB_IMPORT_ASSERT = re.compile(r"^[ \t]*assert (?:HUB|PARENT|KG)_IRI in imports[ \t]*\n", re.M)
+
+
 def drop_parent_import_assertion(text: str) -> str:
-    """Remove the scaffolded assertion that a pack imports the EG ontology (R1 removes that import)."""
-    return _PARENT_IMPORT.sub("", text)
+    """Remove the assertion that a pack imports the EG ontology (R1 removes that import); R016.26 adds ``assert HUB_IRI in imports``."""
+    return _HUB_IMPORT_ASSERT.sub("", _PARENT_IMPORT.sub("", text))
 
 
 # R016.19: reference strings of the live layout (``connector:<name>#mappings/<T>`` and ``#relations/<C>/<R>``)
@@ -463,10 +513,23 @@ _REF_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
 _SDK_LITERAL = re.compile(r"(agent-connector-sdk(?:\[[^\]]*\])?>=)(\d+\.\d+\.\d+)")
 
 
+_FLOOR_LITERAL = re.compile(r"(>=\s*)(\d+\.\d+\.\d+)")
+
+
+def _raise_line_floor(line: str) -> str:
+    """R016.26: a ``>=X.Y.Z`` literal on a line that names the SDK is raised to the floor when it is lower."""
+    if "sdk" not in line.lower():
+        return line
+    return _FLOOR_LITERAL.sub(
+        lambda m: m.group(1) + SDK_FLOOR if _vt(m.group(2)) < _vt(SDK_FLOOR) else m.group(0), line
+    )
+
+
 def rewrite_references(text: str) -> str:
     """Point reference-string assertions at the live layout and raise stale SDK floor literals."""
     for rx, repl in _REF_RULES:
         text = rx.sub(repl, text)
+    text = "".join(_raise_line_floor(ln) for ln in text.splitlines(keepends=True))
     return _SDK_LITERAL.sub(lambda m: m.group(1) + SDK_FLOOR if _vt(m.group(2)) < _vt(SDK_FLOOR) else m.group(0), text)
 
 
@@ -801,7 +864,14 @@ def leftover_references(root: Path, review: Review) -> None:
     for p in walk(root):
         if names is not None and str(p.relative_to(root)) not in names:
             continue
-        if p.suffix in {".pyc", ".png", ".svg", ".lock"} or p.name in skip or "specs" in p.relative_to(root).parts:
+        parts = p.relative_to(root).parts
+        # R016.26: ``validation/`` holds frozen, hash-pinned evidence records; they are history, not references
+        if (
+            p.suffix in {".pyc", ".png", ".svg", ".lock"}
+            or p.name in skip
+            or "specs" in parts
+            or parts[0] == "validation"
+        ):
             continue
         try:
             text = p.read_text(encoding="utf-8")
@@ -851,7 +921,7 @@ def rebump(root: Path, lock: bool = True) -> dict[str, Any]:
     review = Review()
     changed: list[str] = []
     if bump_sdk_floor(root, changed):
-        bump_patch(root, changed, review)
+        add_changelog(root, bump_patch(root, changed, review), changed)
         if lock and (root / "uv.lock").is_file():
             refresh_lock(root, review, changed)
         for p in walk(root / "tests") if (root / "tests").is_dir() else []:
@@ -864,7 +934,13 @@ def rebump(root: Path, lock: bool = True) -> dict[str, Any]:
     return {"changed": sorted(set(changed)), "deleted": [], "review": review.items}
 
 
-def migrate(root: Path, eg_repo: Path | None = None, ref: str = "origin/main", lock: bool = True) -> dict[str, Any]:
+def migrate(
+    root: Path,
+    eg_repo: Path | None = None,
+    ref: str = "origin/main",
+    lock: bool = True,
+    served: set[str] | None = None,
+) -> dict[str, Any]:
     """Run every transform on one connector checkout and return the report."""
     root = Path(root)
     review = Review()
@@ -875,7 +951,7 @@ def migrate(root: Path, eg_repo: Path | None = None, ref: str = "origin/main", l
         review.add("discover", "no agent_connector_sdk.connector entry point resolves to a package")
         return {"changed": [], "deleted": [], "review": review.items}
     inputs = _load_inputs(root, pkg, review)
-    content = build_sources(inputs, review)
+    content = build_sources(inputs, review, served)
     if content is not None and not any(i["blocking"] and i["step"] == "declarations" for i in review.items):
         target = pkg / f"{MODULE_NAME}.py"
         target.write_text(render_module(content), encoding="utf-8")
@@ -910,7 +986,7 @@ def migrate(root: Path, eg_repo: Path | None = None, ref: str = "origin/main", l
             p.write_text(new, encoding="utf-8")
             changed.append(str(p.relative_to(root)))
     if bump_sdk_floor(root, changed):
-        bump_patch(root, changed, review)
+        add_changelog(root, bump_patch(root, changed, review), changed)
         if lock and (root / "uv.lock").is_file():
             refresh_lock(root, review, changed)
     migrate_tests(root, pkg.name, changed, deleted, review, dropped)
@@ -934,11 +1010,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--no-lock", action="store_true", help="skip the uv.lock refresh")
     ap.add_argument("--rebump", action="store_true", help="already-migrated repo: SDK floor, patch bump and lock only")
     ap.add_argument("--out", type=Path, default=None, help="write the JSON report here")
+    ap.add_argument("--served-tools", type=Path, default=None, help="JSON list of the tool names the server serves")
     args = ap.parse_args(argv)
+    served = set(json.loads(args.served_tools.read_text())) if args.served_tools else None
     report = (
         rebump(args.root, not args.no_lock)
         if args.rebump
-        else migrate(args.root, args.eg_repo, args.ref, not args.no_lock)
+        else migrate(args.root, args.eg_repo, args.ref, not args.no_lock, served)
     )
     text = json.dumps(report, indent=1, sort_keys=True)
     if args.out:
