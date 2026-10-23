@@ -37,7 +37,14 @@
     "PIPE-GATES-R016.6",
     "PIPE-GATES-R016.7",
     "PIPE-GATES-R016.8",
-    "PIPE-GATES-R016.9"
+    "PIPE-GATES-R016.9",
+    "PIPE-GATES-R016.10",
+    "PIPE-GATES-R016.11",
+    "PIPE-GATES-R016.12",
+    "PIPE-GATES-R016.13",
+    "PIPE-GATES-R016.14",
+    "PIPE-GATES-R016.15",
+    "PIPE-GATES-R016.16"
   ],
   "requirements": [
     {
@@ -279,20 +286,16 @@
     {
       "id": "PIPE-GATES-R016",
       "title": "The composed ontology graph is reachable and bridged",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "SPECIFIED",
       "landed_in": [
         "197c2b37817f",
         "296583a3f006",
-        "73b1525235ff",
-        "850599c8c86e",
-        "9389c84a38bf"
+        "9389c84a38bf",
+        "9c5228d41640",
+        "e2c99922f0a7"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_codemod.py:109",
-        "tests/hooks/test_ontology_codemod.py:117",
-        "tests/hooks/test_ontology_codemod.py:130",
-        "tests/hooks/test_ontology_codemod.py:140",
-        "tests/hooks/test_ontology_codemod.py:153"
+        "tests/hooks/test_ontology_graph_check.py:15"
       ],
       "rollup_of": [
         "PIPE-GATES-R016.1",
@@ -303,7 +306,14 @@
         "PIPE-GATES-R016.6",
         "PIPE-GATES-R016.7",
         "PIPE-GATES-R016.8",
-        "PIPE-GATES-R016.9"
+        "PIPE-GATES-R016.9",
+        "PIPE-GATES-R016.10",
+        "PIPE-GATES-R016.11",
+        "PIPE-GATES-R016.12",
+        "PIPE-GATES-R016.13",
+        "PIPE-GATES-R016.14",
+        "PIPE-GATES-R016.15",
+        "PIPE-GATES-R016.16"
       ]
     },
     {
@@ -344,7 +354,7 @@
       "title": "A pack import of EG is a finding, never a bridge",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "850599c8c86e"
+        "1e870800c5cb"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_graph_check.py:308"
@@ -355,7 +365,7 @@
       "title": "Every pack class rolls up to EG core",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "850599c8c86e"
+        "1e870800c5cb"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_graph_check.py:320"
@@ -366,8 +376,8 @@
       "title": "`connector-ontology-map fix` drops imports and stops redeclaration (R1, R2)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "73b1525235ff",
-        "850599c8c86e"
+        "1e870800c5cb",
+        "ac14690526b3"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_codemod.py:75",
@@ -379,7 +389,7 @@
       "title": "Roll-up is mechanical, the residue is reviewed (R3, R4, R5)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "850599c8c86e"
+        "1e870800c5cb"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_codemod.py:92"
@@ -390,7 +400,7 @@
       "title": "Mappings and dangling references never invent classes (R6, R7)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "850599c8c86e"
+        "1e870800c5cb"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_codemod.py:109",
@@ -402,13 +412,82 @@
       "title": "Untyped properties and the run contract (R8)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "850599c8c86e"
+        "1e870800c5cb"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_codemod.py:130",
         "tests/hooks/test_ontology_codemod.py:140",
         "tests/hooks/test_ontology_codemod.py:153"
       ]
+    },
+    {
+      "id": "PIPE-GATES-R016.10",
+      "title": "Declarations from the retired files (migrate a)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:127",
+        "tests/hooks/test_connector_migrate.py:142",
+        "tests/hooks/test_connector_migrate.py:149"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.11",
+      "title": "Cut files and packaging (migrate b)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:160"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.12",
+      "title": "Prompts (migrate c)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:172"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.13",
+      "title": "SDK floor and version (migrate e)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:181",
+        "tests/hooks/test_connector_migrate.py:191"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.14",
+      "title": "Tests (migrate f)",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:200",
+        "tests/hooks/test_connector_migrate.py:212",
+        "tests/hooks/test_connector_migrate.py:257",
+        "tests/hooks/test_connector_migrate.py:281"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.15",
+      "title": "Idempotent hard cutover",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:223",
+        "tests/hooks/test_connector_migrate.py:236",
+        "tests/hooks/test_connector_migrate.py:245"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.16",
+      "title": "Batch driver and verify",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }
