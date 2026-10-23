@@ -29,11 +29,15 @@ CORE = (
 :Person a owl:Class ; rdfs:subClassOf :Concept .
 :assignedTo a owl:ObjectProperty ; rdfs:domain :Ticket ; rdfs:range :Person .
 :blank a owl:ObjectProperty .
+:EgStray a owl:Class ; rdfs:subClassOf :EgStray2 .
+:EgStray2 a owl:Class .
+<http://knuckles.team/kg> a owl:Ontology .
 """
 )
 PACK_A = (
     HEAD
     + """
+<http://x/packa> a owl:Ontology ; owl:imports <http://knuckles.team/kg> .
 :Issue a owl:Class ; rdfs:label "Issue" .
 :Bug a owl:Class ; rdfs:subClassOf :Ticket , :Ghost .
 :Server a owl:Class ; rdfs:subClassOf :Concept , :Thing2 .
@@ -125,8 +129,8 @@ def test_parse_error_names_file(result: dict) -> None:
 
 def test_orphan_reports_chain_length(result: dict) -> None:
     orphans = {f["iri"].rsplit("#", 1)[1]: f for f in result["findings"] if f["code"] == "ORPHAN_CLASS"}
-    assert "Issue" in orphans and orphans["Issue"]["detail"]["chain_length"] >= 0
-    assert "Ticket" not in orphans
+    assert orphans["EgStray"]["detail"]["chain_length"] >= 0
+    assert "Ticket" not in orphans and "Issue" not in orphans  # pack classes use NOT_ROLLED_UP_TO_CORE
 
 
 def test_dangling_has_file_and_line(result: dict) -> None:
@@ -299,3 +303,30 @@ def test_fixture_dirs_are_excluded(tmp_path: Path) -> None:
     ):
         subprocess.run(["git", "-C", str(repo), *cmd], check=True, env=clean)
     assert [s.path for s in ogc.eg_sources(repo, "main")] == ["ontology/core.ttl"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.4")
+def test_pack_import_of_eg_is_finding_and_not_a_bridge() -> None:
+    core = HEAD + "<http://knuckles.team/kg> a owl:Ontology .\n:A a owl:Class ; rdfs:subClassOf owl:Thing ."
+    pack = HEAD + "<http://x/p> a owl:Ontology ; owl:imports <http://knuckles.team/kg> .\n:P a owl:Class ."
+    srcs = [ogc.Source("eg:core", "eg", "a/core.ttl", core), ogc.Source("pk", "pack", "pk/ontology/p.ttl", pack)]
+    assert _components(srcs) == 2
+    out = ogc.run(srcs, [], with_plan=False)
+    imp = [f for f in out["findings"] if f["code"] == "PACK_IMPORTS_CORE"]
+    assert len(imp) == 1 and imp[0]["pack"] == "pk" and imp[0]["file"] == "pk/ontology/p.ttl"
+    assert not [f for f in out["findings"] if f["code"] == "PACK_IMPORTS_CORE" and f["pack"] == "eg"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.5")
+def test_rollup_requires_eg_class_not_bfo_or_pack_root() -> None:
+    core = HEAD + ":Doc a owl:Class ; rdfs:subClassOf owl:Thing ."
+    pack = HEAD + (
+        ":Root a owl:Class ; rdfs:subClassOf <http://purl.obolibrary.org/obo/BFO_0000001> .\n"
+        ":Leaf a owl:Class ; rdfs:subClassOf :Root .\n:Good a owl:Class ; rdfs:subClassOf :Doc .\n"
+        ":Deep a owl:Class ; rdfs:subClassOf :Good ."
+    )
+    srcs = [ogc.Source("eg:core", "eg", "a/core.ttl", core), ogc.Source("pk", "pack", "pk/ontology/p.ttl", pack)]
+    out = ogc.run(srcs, [], with_plan=False)
+    bad = {f["iri"].rsplit("#", 1)[1] for f in out["findings"] if f["code"] == "NOT_ROLLED_UP_TO_CORE"}
+    assert bad == {"Root", "Leaf"}
+    assert not [f for f in out["findings"] if f["code"] == "ORPHAN_CLASS"]

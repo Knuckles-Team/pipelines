@@ -760,7 +760,43 @@ def main(argv: list[str]) -> int:
     g.add_argument("--json", type=Path, default=None, help="write the full result as JSON")
     g.add_argument("--markdown", type=Path, default=None, help="write the Markdown report")
     g.add_argument("--warn", action="store_true", help="report findings but always exit 0")
+    x = sub.add_parser("fix", help="deterministic ontology codemod, fleet dry-run or one pack dir (PIPE-GATES-R016.6)")
+    x.add_argument("--fleet", type=Path, default=None, help="directory of connector repositories (dry-run only)")
+    x.add_argument("--pack", type=Path, default=None, help="one pack checkout, read from its working tree")
+    x.add_argument("--eg-repo", type=Path, required=True)
+    x.add_argument("--ref", default="origin/main")
+    x.add_argument("--eg-extra-ref", default=None)
+    x.add_argument("--exclude", action="append", default=[])
+    x.add_argument("--questions", type=Path, default=None)
+    x.add_argument("--overrides", type=Path, default=None, help="reviewed parent table (default: packaged)")
+    x.add_argument("--out", type=Path, default=None, help="directory for patches/, summary.json, review-queue.json")
+    x.add_argument("--dry-run", action="store_true", help="write patches and reports only, change no checkout")
     args = parser.parse_args(argv)
+    if args.command == "fix":
+        from pipelines_hooks.hygiene import ontology_codemod as oc
+        from pipelines_hooks.hygiene import ontology_graph_check as ogc
+
+        if bool(args.fleet) == bool(args.pack):
+            parser.error("fix needs exactly one of --fleet or --pack")
+        if args.fleet and not args.dry_run:
+            parser.error("--fleet is dry-run only; apply one pack with --pack")
+        sources = ogc.eg_sources(args.eg_repo, args.ref, args.eg_extra_ref)
+        pack_srcs = oc.dir_sources(args.pack) if args.pack else ogc.fleet_sources(args.fleet, args.ref, args.exclude)
+        qpath = args.questions or ogc.DEFAULT_CQ
+        questions = json.loads(qpath.read_text(encoding="utf-8"))["questions"]
+        overrides = json.loads((args.overrides or oc.DEFAULT_OVERRIDES).read_text(encoding="utf-8"))
+        result = oc.run_fix(sources + pack_srcs, questions, overrides)
+        if args.out:
+            oc.write_outputs(result, args.out)
+        if args.pack and not args.dry_run:
+            old = [s for s in pack_srcs]
+            new = [s for s in result["patched_sources"] if s.kind == "pack"]
+            for path in oc.apply_to_dir(args.pack, old, new):
+                print(f"patched {path}")
+        for rule, n in result["rule_totals"].items():
+            print(f"{rule}: {n}")
+        print(f"findings: {result['findings']['total_before']} -> {result['findings']['total_after']}")
+        return 0
     if args.command == "graph-check":
         from pipelines_hooks.hygiene import ontology_graph_check as ogc
 
