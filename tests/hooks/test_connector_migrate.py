@@ -885,3 +885,86 @@ def test_mapping_subscripts_on_the_declaration_become_attribute_reads() -> None:
     new, action = cm.rewrite_test(text, "test_x.py", "demo_agent")
     assert action == "rewrite" and new is not None
     assert "declared_sources().schema_mappings[name].ontology_class == parent" in new
+
+
+@pytest.mark.spec("PIPE-GATES-R016.31")
+def test_scripts_driving_a_deleted_script_go_to_a_fixed_point_and_tests_importing_them_are_deleted(
+    tmp_path: Path,
+) -> None:
+    root = make(tmp_path)
+    (root / "scripts").mkdir()
+    (root / "scripts" / "generate_tool_schemas.py").write_text("load_manifest('connector_manifest.yml')\n")
+    (root / "scripts" / "verify_generated_schemas.py").write_text("import generate_tool_schemas\n")
+    # sorts before the script it imports: a single pass in file order would keep it
+    (root / "scripts" / "a_clones.py").write_text("from verify_generated_schemas import MANIFEST\n")
+    (root / "scripts" / "other.py").write_text("print(1)\n")
+    (root / "tests" / "test_schema_policy.py").write_text(
+        "from scripts import a_clones as clones\nfrom scripts import verify_generated_schemas as v\n\n\n"
+        "def test_a():\n    assert clones and v\n"
+    )
+    report = run(root)
+    assert {"scripts/generate_tool_schemas.py", "scripts/verify_generated_schemas.py", "scripts/a_clones.py"} <= set(
+        report["deleted"]
+    )
+    assert (root / "scripts" / "other.py").is_file()
+    assert "tests/test_schema_policy.py" in report["deleted"]
+    assert not [i for i in report["review"] if i["blocking"]]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.32")
+def test_assertions_on_the_stripped_prompt_keys_are_dropped() -> None:
+    text = (
+        'def test_p():\n    data = load()\n    assert data["type"] == "prompt"\n'
+        '    assert data[\'extends\'] == "agent-connector-sdk:base"\n    assert data["compose"] == "append"\n'
+        '    assert "extends" in data\n    assert data["identity"]["role"]\n'
+    )
+    new = cm.drop_prompt_key_assertions(text)
+    assert "extends" not in new and "compose" not in new
+    assert 'data["type"] == "prompt"' in new and 'data["identity"]["role"]' in new
+
+
+@pytest.mark.spec("PIPE-GATES-R016.33")
+def test_a_startup_test_reads_the_package_name_from_pyproject_not_the_checkout_directory(tmp_path: Path) -> None:
+    src = (
+        'def test_module_runnable():\n    pkg_name = (\n        __import__("pathlib")\n        .Path(__file__)\n'
+        '        .resolve()\n        .parent.parent.name.replace("-", "_")\n    )\n    assert pkg_name\n'
+    )
+    new = cm.derive_package_from_pyproject(src)
+    assert "pyproject.toml" in new and ".parent.parent.name" not in new
+    project = tmp_path / "not-the-package-name"
+    (project / "tests").mkdir(parents=True)
+    (project / "pyproject.toml").write_text('[project]\nname = "demo-agent"\n', encoding="utf-8")
+    test = project / "tests" / "test_startup.py"
+    test.write_text(new, encoding="utf-8")
+    scope: dict[str, object] = {"__file__": str(test)}
+    exec(
+        compile(
+            new.replace("def test_module_runnable", "def probe").replace("assert pkg_name", "return pkg_name")
+            + "\nresult = probe()\n",
+            str(test),
+            "exec",
+        ),
+        scope,
+    )
+    assert scope["result"] == "demo_agent"
+
+
+@pytest.mark.spec("PIPE-GATES-R016.34")
+def test_a_connector_without_sources_renders_an_import_free_empty_tuple_and_cut_tests_leave_no_trailing_blank_lines() -> (
+    None
+):
+    text = cm.render_module({"connector": "demo-mcp", "entries": [], "mappings": {}, "resources": []})
+    assert "SOURCES: tuple[Any, ...] = ()\n" in text and "source_meta" not in text
+    compile(text, "connector_sources.py", "exec")
+    with_sources = cm.render_module(
+        {
+            "connector": "demo-mcp",
+            "entries": [{"tool": "t", "source_id": "s", "record_type": "R", "id_field": "id"}],
+            "mappings": {},
+            "resources": [],
+        }
+    )
+    assert "import source_meta" in with_sources
+    src = "def test_keep():\n    assert 1\n\n\ndef test_cut():\n    open('connector_manifest.yml')\n\n\n"
+    new, names, _ = cm.delete_cut_tests(src, cm._CUT_WORDS)
+    assert names == ["test_cut"] and new.endswith("assert 1\n") and not new.endswith("\n\n")

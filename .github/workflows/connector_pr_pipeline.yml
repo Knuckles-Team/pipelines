@@ -35,6 +35,11 @@ on:
         required: false
         type: string
         default: --all-extras --all-groups
+      skip-hooks:
+        description: Comma-separated hook ids exported as SKIP. A connector whose own self-hosted workflow runs the native scanners lists the scanner hooks here (hosted runners have none).
+        required: false
+        type: string
+        default: docker-compose-check
 
 permissions:
   contents: read
@@ -48,7 +53,7 @@ jobs:
     with:
       config: .pre-commit-config.yaml
       stages: pre-commit
-      skip-hooks: docker-compose-check
+      skip-hooks: ${{ inputs.skip-hooks }}
       # The connector hooks are `language: system`: they need the project's own
       # environment (all extras and groups, so the test extra's pytest-asyncio is
       # present), bump2version and bun (mermaid-validate) on PATH, as the release pipeline provides.
