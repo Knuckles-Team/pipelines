@@ -29,3 +29,4 @@
 - [x] Publish the `connector-name` gate for declared connector fleet names. Closes PIPE-GATES-R010.
 - [x] Key the hook cache on pipelines main and skip symlinks in clone snapshots. Closes PIPE-GATES-R011.
 - [x] Publish the `connector-graphql` gate, warning by default, for GraphQL declared via the SDK extra. Closes PIPE-GATES-R012.
+- [x] Publish the `sdk-conformance` gate, warning by default, for connectors that reimplement an SDK capability. Closes PIPE-GATES-R013.
