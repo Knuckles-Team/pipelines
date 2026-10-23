@@ -495,11 +495,13 @@
       "title": "Batch driver and verify",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "233a00174fc6"
+        "233a00174fc6",
+        "7f91da3571c6"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:366",
-        "tests/hooks/test_connector_migrate.py:381"
+        "tests/hooks/test_connector_migrate.py:381",
+        "tests/hooks/test_connector_migrate.py:395"
       ]
     }
   ]
