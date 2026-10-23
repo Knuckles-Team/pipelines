@@ -777,12 +777,17 @@ def main(argv: list[str]) -> int:
     m.add_argument("--eg-repo", type=Path, default=None)
     m.add_argument("--ref", default="origin/main")
     m.add_argument("--no-lock", action="store_true")
+    m.add_argument("--rebump", action="store_true")
     m.add_argument("--out", type=Path, default=None)
     args = parser.parse_args(argv)
     if args.command == "migrate":
         from pipelines_hooks.hygiene import connector_migrate
 
-        extra = ["--root", str(args.root), "--ref", args.ref] + (["--no-lock"] if args.no_lock else [])
+        extra = (
+            ["--root", str(args.root), "--ref", args.ref]
+            + (["--no-lock"] if args.no_lock else [])
+            + (["--rebump"] if args.rebump else [])
+        )
         extra += ["--eg-repo", str(args.eg_repo)] if args.eg_repo else []
         extra += ["--out", str(args.out)] if args.out else []
         return connector_migrate.main(extra)

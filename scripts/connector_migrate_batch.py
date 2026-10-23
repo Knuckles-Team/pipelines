@@ -23,7 +23,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PIPELINES = HERE.parent
-FIXED_MESSAGE = "chore: cut the connector manifest files; declare data sources in code (SDK 0.4.0)"
+FIXED_MESSAGE = "chore: cut the connector manifest files; declare data sources in code (SDK 0.4.1)"
+REBUMP_MESSAGE = "chore: require agent-connector-sdk>=0.4.1"
 TRAILER = "Spec: SDK-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 STEPS = ("worktree", "sync", "migrate", "commit", "verify", "push", "pr", "gates", "merge")
 lock = threading.Lock()
@@ -86,8 +87,10 @@ class Ledger:
 
 def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
     src = a.fleet / repo
-    wt = a.worktrees / repo / "manifest-cut"
-    branch = "chore/manifest-cut"
+    kind = "sdk-rebump" if a.rebump else "manifest-cut"
+    message = REBUMP_MESSAGE if a.rebump else FIXED_MESSAGE
+    wt = a.worktrees / repo / kind
+    branch = f"chore/{kind}"
     tmp = Path(a.tmpdir) / repo
     tmp.mkdir(parents=True, exist_ok=True)
     env = {"TMPDIR": str(tmp)}
@@ -120,6 +123,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             "--out",
             str(report_path),
         )
+        if a.rebump:
+            cmd = [c for c in cmd if c not in ("--eg-repo", str(a.eg_repo))] + ["--rebump"]
         if a.sdk_path:
             cmd.append("--no-lock")
         sh(step, cmd, wt, {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}, ok=(0, 2))
@@ -134,11 +139,12 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             raise StepFailed(step, json.dumps(blocking, indent=1))
         step = "commit"
         paths = sorted(set(report["changed"]) | set(report["deleted"]))
-        paths = apply_repo_patch(a.patches / f"{repo}.patch", wt, paths, led, repo)
+        if not a.rebump:
+            paths = apply_repo_patch(a.patches / f"{repo}.patch", wt, paths, led, repo)
         stage(wt, paths, step)
         stat = sh(step, ["git", "diff", "--cached", "--shortstat"], wt).strip()
         led.record(repo, diffstat=stat)
-        commit = ["git", "commit", "-m", FIXED_MESSAGE, "-m", TRAILER]
+        commit = ["git", "commit", "-m", message, "-m", TRAILER]
         try:
             sh(step, commit, wt, env)
         except StepFailed:
@@ -212,10 +218,14 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
                     "--head",
                     branch,
                     "--title",
-                    FIXED_MESSAGE,
+                    message,
                     "--body",
-                    "Mechanical manifest-cut migration (pipelines `connector-ontology-map migrate`).\n\n"
-                    "Spec: SDK-CONNECTOR-CONTROL-R075\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+                    (
+                        "SDK floor, patch bump and lock refresh only (pipelines `connector-ontology-map migrate --rebump`).\n\n"
+                        if a.rebump
+                        else "Mechanical manifest-cut migration (pipelines `connector-ontology-map migrate`).\n\n"
+                    )
+                    + "Spec: SDK-CONNECTOR-CONTROL-R075\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
                 ],
                 wt,
             )
@@ -283,6 +293,7 @@ def main() -> int:
     ap.add_argument(
         "--patches", type=Path, default=HERE / "connector_migrate_patches", help="reviewed per-repo <repo>.patch files"
     )
+    ap.add_argument("--rebump", action="store_true", help="already-migrated repos: SDK floor, patch bump and lock only")
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--dry-run", action="store_true", help="migrate and verify only; no push")
     ap.add_argument("--sdk-path", type=Path, default=None, help="install this SDK checkout instead of PyPI (dry-run)")
