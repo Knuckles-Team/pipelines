@@ -34,6 +34,7 @@ KEPT = {
     "lockfile-version-mirrors",
     "sdk-conformance",
     "connector-surface-audit",
+    "connector-ontology-map",
     "spec-bind-suggest",
     "no-legacy-concepts",
     "release-standard",
