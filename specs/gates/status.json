@@ -63,7 +63,8 @@
     "PIPE-GATES-R016.32",
     "PIPE-GATES-R016.33",
     "PIPE-GATES-R016.34",
-    "PIPE-GATES-R016.35"
+    "PIPE-GATES-R016.35",
+    "PIPE-GATES-R016.36"
   ],
   "requirements": [
     {
@@ -353,7 +354,8 @@
         "PIPE-GATES-R016.32",
         "PIPE-GATES-R016.33",
         "PIPE-GATES-R016.34",
-        "PIPE-GATES-R016.35"
+        "PIPE-GATES-R016.35",
+        "PIPE-GATES-R016.36"
       ]
     },
     {
@@ -768,6 +770,17 @@
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:99"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.36",
+      "title": "Entity ids are validated strings",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "70c359fe1d20"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:973"
       ]
     }
   ]
