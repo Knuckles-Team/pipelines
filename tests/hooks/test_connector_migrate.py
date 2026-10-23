@@ -131,8 +131,10 @@ def test_declarations_are_generated_sorted_and_loadable(tmp_path: Path) -> None:
     text = (root / "demo_agent" / "connector_sources.py").read_text(encoding="utf-8")
     ns: dict = {}
     # The module imports the SDK; check the literal shape without it.
-    assert 'tool="demo_get_things"' in text and 'source_id="demo-things"' in text and 'source_id="things"' in text
-    assert text.index('source_id="demo-things"') < text.index('source_id="things"')
+    # One source per tool: the ingest id wins and the preset id is dropped.
+    assert text.count('tool="demo_get_things"') == 1 and 'source_id="things"' in text
+    assert "demo-things" not in text
+    assert '"per_page": 50' in text and 'id_field="id"' in text and 'title_field="name"' in text
     assert '"page_kind": "number"' in text and 'cursor_field="updated_at"' in text
     assert 'record_type="Thing"' in text and '"ontology_class": "Item"' in text
     assert not [i for i in report["review"] if i["blocking"]]
@@ -288,3 +290,103 @@ def test_mapping_item_access_follows_the_declaration_model() -> None:
     new, action = cm.rewrite_test(text, "test_x.py", "demo_agent")
     assert action == "rewrite" and new is not None
     assert "if not mapping.ontology_class" in new and "declared_sources().schema_mappings" in new
+
+
+@pytest.mark.spec("PIPE-GATES-R016.14")
+def test_connector_name_read_from_the_manifest_uses_the_entry_point_identity() -> None:
+    text = (
+        'import json\nimport re\nimport tomllib\nfrom pathlib import Path\n\nPACKAGE = Path("p")\nFLEET = "demo-mcp"\n\n\n'
+        "def test_name() -> None:\n"
+        '    manifest = (PACKAGE / "connector_manifest.yml").read_text(encoding="utf-8")\n'
+        "    match = re.search(r'^connector: (.+)', manifest, re.MULTILINE)\n"
+        "    assert match is not None and match.group(1) == FLEET\n"
+        '    fingerprints = PACKAGE / "connectors" / "tool_schema_fingerprints.json"\n'
+        "    if fingerprints.is_file():\n"
+        "        assert (\n"
+        '            json.loads(fingerprints.read_text(encoding="utf-8"))["connector"] == FLEET\n'
+        "        )\n"
+    )
+    new, action = cm.rewrite_test(text, "test_fleet_name.py", "demo_agent")
+    assert action == "rewrite" and new is not None
+    assert 'assert connector_name("demo_agent") == FLEET' in new
+    assert "from agent_connector_sdk.connector_identity import connector_name" in new
+    assert "connector_manifest" not in new and "fingerprints" not in new
+    assert "import re\n" not in new and "import json\n" not in new
+    # A manifest reader of anything else is still a review item.
+    other = "def test_x():\n    t = open('connector_manifest.yml').read()\n    assert 'actions' in t\n"
+    assert cm.rewrite_test(other, "test_other.py", "demo_agent")[1] == "review"
+
+
+def _driver(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, verify: str = '{"ok": true}'):
+    import argparse
+    import importlib.util
+    import sys
+
+    spec = importlib.util.spec_from_file_location(
+        "connector_migrate_batch", Path(__file__).resolve().parents[2] / "scripts" / "connector_migrate_batch.py"
+    )
+    assert spec and spec.loader
+    drv = importlib.util.module_from_spec(spec)
+    sys.modules["connector_migrate_batch"] = drv
+    spec.loader.exec_module(drv)
+    worktrees = tmp_path / "wt"
+    root = make(worktrees / "demo-agent" / "x")
+    (worktrees / "demo-agent" / "manifest-cut").symlink_to(root)
+    calls: list[list[str]] = []
+
+    def fake(step, cmd, cwd=None, env=None, ok=(0,)):
+        calls.append(cmd)
+        if "migrate" in cmd:
+            report = cm.migrate(Path(cmd[cmd.index("--root") + 1]), None, lock=False)
+            Path(cmd[cmd.index("--out") + 1]).write_text(json.dumps(report), encoding="utf-8")
+            return ""
+        if cmd[:3] == ["git", "diff", "--cached"]:
+            return " 5 files changed, 10 insertions(+)\n"
+        if any(str(c).endswith("connector_verify.py") for c in cmd):
+            return "banner\n" + verify + "\n"
+        if "graph-check" in cmd:
+            return "ORPHAN_CLASS: 1\n"
+        if "pr-test-scope" in cmd:
+            return "NONE\n"
+        return ""
+
+    monkeypatch.setattr(drv, "sh", fake)
+    args = argparse.Namespace(
+        fleet=tmp_path / "fleet",
+        worktrees=worktrees,
+        tmpdir=str(tmp_path / "tmp"),
+        eg_repo=tmp_path,
+        pipelines_venv=tmp_path,
+        sdk_path=None,
+        dry_run=True,
+    )
+    return drv, args, drv.Ledger(tmp_path / "ledger.json"), calls
+
+
+@pytest.mark.spec("PIPE-GATES-R016.16")
+def test_driver_dry_run_migrates_commits_verifies_and_records_the_ledger(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    drv, args, led, calls = _driver(tmp_path, monkeypatch)
+    drv.migrate_repo("demo-agent", args, led)
+    row = json.loads((tmp_path / "ledger.json").read_text(encoding="utf-8"))["demo-agent"]
+    assert row["status"] == "dry-run-verified" and row["verify"] == {"ok": True}
+    assert row["diffstat"].startswith("5 files changed") and row["test_scope"] == "NONE"
+    commit = next(c for c in calls if c[:2] == ["git", "commit"])
+    assert commit[3] == drv.FIXED_MESSAGE and "--no-verify" not in commit
+    assert not any(c[:2] == ["git", "push"] for c in calls)
+    assert led.done("demo-agent")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.16")
+def test_driver_failure_stops_that_repo_and_lands_in_the_ledger(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    drv, args, led, _ = _driver(tmp_path, monkeypatch)
+    (tmp_path / "wt" / "demo-agent" / "manifest-cut" / "tests" / "test_odd.py").write_text(
+        "x = 'mcp_source_presets'\n", encoding="utf-8"
+    )
+    drv.migrate_repo("demo-agent", args, led)
+    row = json.loads((tmp_path / "ledger.json").read_text(encoding="utf-8"))["demo-agent"]
+    assert row["status"] == "failed" and row["failed_step"] == "migrate" and "test_odd.py" in row["output_tail"]
+    assert not led.done("demo-agent")

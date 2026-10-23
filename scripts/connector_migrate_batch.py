@@ -5,7 +5,7 @@ Per connector: worktree -> sync -> migrate -> commit -> verify -> push -> PR -> 
 At most ``--jobs`` (default 4) repos are in flight. Outcomes go to a JSON ledger the driver resumes from; a failure stops
 that repo only and lands in ``review.json`` with the step and an output tail. No retries, except one infra re-run of a
 cancelled/infra-failed ``gates`` run (stated in the ledger as ``infra_rerun``) and one re-stage after a formatter hook.
-``--dry-run`` stops after verify (no push) and installs ``--sdk-path`` into the connector venv instead of PyPI.
+``--dry-run`` stops after verify (no push). ``--sdk-path`` installs a local SDK checkout instead of PyPI (pre-release use only).
 """
 
 from __future__ import annotations
@@ -112,12 +112,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         )
         if a.sdk_path:
             cmd.append("--no-lock")
-        r = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            env={**os.environ, **env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)},
-        )
+        sh(step, cmd, wt, {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}, ok=(0, 2))
         report = (
             json.loads(report_path.read_text())
             if report_path.exists()
@@ -125,18 +120,14 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         )
         led.record(repo, review=report["review"], changed=len(report["changed"]), deleted=len(report["deleted"]))
         blocking = [i for i in report["review"] if i["blocking"]]
-        if r.returncode not in (0, 2) or blocking:
-            raise StepFailed(step, json.dumps(blocking, indent=1) + (r.stderr or "")[-800:])
+        if blocking:
+            raise StepFailed(step, json.dumps(blocking, indent=1))
         step = "commit"
         paths = sorted(set(report["changed"]) | set(report["deleted"]))
         stage(wt, paths, step)
         stat = sh(step, ["git", "diff", "--cached", "--shortstat"], wt).strip()
         led.record(repo, diffstat=stat)
         commit = ["git", "commit", "-m", FIXED_MESSAGE, "-m", TRAILER]
-        if a.dry_run:
-            # SDK 0.4.0 is not on PyPI, so the `uv run` hook cannot resolve; the local-only commit skips that one hook.
-            env["SKIP"] = "check-cli-help"
-            led.record(repo, dry_run_skipped_hook="check-cli-help (SDK 0.4.0 not on PyPI)")
         try:
             sh(step, commit, wt, env)
         except StepFailed:
@@ -148,7 +139,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         py = f"{venv}/bin/python"
         v = sh(
             step,
-            [py, str(HERE / "connector_verify.py"), str(wt), *(["--allow-manifest-alias"] if a.dry_run else [])],
+            [py, str(HERE / "connector_verify.py"), str(wt)],
             wt,
             env,
         )
