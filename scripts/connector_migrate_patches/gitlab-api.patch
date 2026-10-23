@@ -1,8 +1,6 @@
 --- a/tests/test_cq_paths.py
 +++ b/tests/test_cq_paths.py
-@@ -35,7 +35,8 @@
-
-
+@@ -37,3 +37,4 @@
  def test_merge_request_and_check_run_extend_shared_classes() -> None:
 -    assert "rdfs:subClassOf :PullRequest" in _block("MergeRequest")
 +    # The EG ontology owns MergeRequest's parent (a sibling of PullRequest); the pack gives it none.
