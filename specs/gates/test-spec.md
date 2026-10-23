@@ -62,6 +62,9 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 ## Connector GraphQL declaration (PIPE-GATES-R012)
 
 `tests/hooks/test_connector_graphql.py` builds fixture repositories in a temporary directory. It checks the declared extra, the default warning and `--strict` failure, direct declarations, function-level imports, skipped tests and exempt repositories.
+## SDK capability conformance (PIPE-GATES-R013)
+
+`tests/hooks/test_sdk_conformance.py` builds fixture repositories in a temporary directory. It checks each pattern and the row it cites, clean SDK use, one finding per pinned package, the skipped paths, non-connector and SDK repositories, the default warning and `--strict` failure.
 
 ## Hook cache and symlink snapshots (PIPE-GATES-R011)
 
