@@ -253,11 +253,12 @@ function wrapText(t, maxW, maxLines){ const words=String(t).split(/\s+/), lines=
   for(const w of words){ const nx=cur?cur+" "+w:w; if(ctx.measureText(nx).width<=maxW) cur=nx; else { if(cur) lines.push(cur); cur=w; } }
   if(cur) lines.push(cur); if(lines.length>maxLines){ lines.length=maxLines; lines[maxLines-1]=fitText(lines[maxLines-1]+" …",maxW); } return lines.map(l=>fitText(l,maxW)); }
 function arrow(x1,y1,x2,y2,size){ const a=Math.atan2(y2-y1,x2-x1); ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-size*Math.cos(a-0.45), y2-size*Math.sin(a-0.45)); ctx.lineTo(x2-size*Math.cos(a+0.45), y2-size*Math.sin(a+0.45)); ctx.closePath(); ctx.fill(); }
+// Overview bands span the whole canvas width; their labels stay at the layout's right edge.
 function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.bands.length) return;
   const r=R[n.id]; const x0=n.id==="root"?r[0]:t.ox, w=n.id==="root"?r[2]:L.w*t.s;
   L.bands.forEach((b,i)=>{ const [sx,sy]=toS(x0, t.oy+b[1]*t.s), sh=(b[2]-b[1])*t.s*cam.k, sw=w*cam.k;
     if(sy>H||sy+sh<0) return;
-    ctx.globalAlpha=alpha; ctx.fillStyle=i%2?C.bandB:C.bandA; ctx.fillRect(sx,sy,sw,sh);
+    ctx.globalAlpha=alpha; ctx.fillStyle=i%2?C.bandB:C.bandA; if(n.id==="root") ctx.fillRect(0,sy,W,sh); else ctx.fillRect(sx,sy,sw,sh);
     const fs=Math.min(15, sh*0.11, sw*0.02); if(fs>=6.5){ ctx.fillStyle=C.muted; ctx.font="600 "+fs+"px "+C.display; ctx.textAlign="right"; ctx.textBaseline="top";
       ctx.globalAlpha=alpha*0.9; ctx.fillText(b[0].toUpperCase(), sx+sw-fs*0.8, sy+fs*0.6);
       if(i<L.bands.length-1){ ctx.globalAlpha=alpha*0.35; ctx.fillStyle=C.faint; const cx=sx+sw-fs*1.6, cy=sy+sh-fs*0.2; ctx.beginPath(); ctx.moveTo(cx-fs*0.6,cy-fs*0.6); ctx.lineTo(cx,cy); ctx.lineTo(cx+fs*0.6,cy-fs*0.6); ctx.lineWidth=Math.max(1,fs/7); ctx.strokeStyle=C.faint; ctx.stroke(); } } });
