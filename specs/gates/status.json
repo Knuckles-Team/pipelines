@@ -1776,7 +1776,7 @@
       "title": "A method call is not an internal hostname",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "8389a03e7a2d"
+        "54cb9fede351"
       ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:10"
