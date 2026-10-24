@@ -13,7 +13,7 @@ import pytest
 ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.architecture_explorer import build as explorer  # noqa: E402
-from scripts.architecture_explorer import sources  # noqa: E402
+from scripts.architecture_explorer import details, sources  # noqa: E402
 from scripts.architecture_explorer.geometry import count_crossings, crossings_in  # noqa: E402
 from scripts.architecture_explorer.place import Placer, Tree, unmapped_violations, validate_code  # noqa: E402
 from scripts.architecture_explorer.sources import Snapshot, requirement_text, spec_dirs  # noqa: E402
@@ -627,3 +627,279 @@ def test_webui_composed_acceptance_row_places_on_its_part_not_the_allowlist() ->
     assert where["WEBUI-APPS-R050"] == "webui.apps.accept"
     assert unmapped_violations(tree, direct, []) == []
     assert model["unmapped_allow"] == []
+
+
+# ------------------------------------------------------------- spec details (PIPE-PAGES-R042.6 to R042.8)
+
+FULL_TEXT = "Zq-FULLTEXT-MARKER " + "The long tail of the requirement stays out of the page. " * 40
+REQ_MD = (
+    "# FAM requirements\n\n| ID | Requirement | Verification |\n|---|---|---|\n"
+    "| `FAM-R001` | **Solver certificate.** Emit a signed certificate for every solve. " + FULL_TEXT + " "
+    "| A fixture proves the `certificate` field; see [the plan](plan.md) and [site](https://example.org/x). |\n"
+    "| `FAM-R002` | Plain row without a bold lead that explains itself in one line. Second sentence. | Checked by hand. |\n"
+)
+PLAN_MD = "# Plan\n\nDesign notes.\n\n- one\n- two\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n```\ncode <b>x</b>\n```\n"
+TEST_MD = "| ID | Requirement | Test |\n|---|---|---|\n| P-1 | FAM-R001 | Certificate is signed. |\n| P-2 | FAM-R001.1 | Other row. |\n"
+
+
+def _detail_snapshots(with_plan: bool = True) -> list[Snapshot]:
+    def rows_for(repo: str) -> list[dict]:
+        out = []
+        for rid, title in (("FAM-R001", "Solver certificate"), ("FAM-R002", "Plain row")):
+            body = requirement_text(REQ_MD)[rid]
+            row = _row(rid, title, family="fam", repo=repo, text=body)
+            row["desc"] = details.describe(details.row_parts(body)[0], title)
+            row.update(
+                landed_in=["abcdef123456"],
+                verified_by=["tests/test_x.py:12", "../escape.py:1"],
+                rollup_of=["FAM-R001.1"],
+            )
+            out.append(row)
+        return out
+
+    docs = (
+        {"plan.md": PLAN_MD, "test-spec.md": TEST_MD, "architecture.md": "# Arch\n\nBoxes."}
+        if with_plan
+        else {"test-spec.md": TEST_MD}
+    )
+    return [
+        Snapshot(
+            repo=e["name"],
+            slug=e["slug"],
+            head="h",
+            files={"specs/fam/requirements.md", "specs/fam/plan.md"} if e["name"] == "pipelines" else set(),
+            rows=rows_for(e["name"]) if e["name"] == "pipelines" else [],
+            docs={"fam": docs} if e["name"] == "pipelines" else {},
+        )
+        for e in json.loads((PKG / "registry.json").read_text())["repositories"]
+    ]
+
+
+def _build_with_details(monkeypatch, tmp_path: Path, snaps: list[Snapshot]) -> Path:
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(explorer, "load_all", lambda registry, mode, workspace=None, workers=12: snaps)
+    page = tmp_path / "architecture" / "index.html"
+    assert explorer.main(["--mode", "github", "--page", str(page)]) in (0, 1)
+    return page
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.6")
+def test_description_is_the_first_plain_sentence_capped_at_160() -> None:
+    assert (
+        details.describe("Emit a **signed** `certificate` per solve. Another sentence.")
+        == "Emit a signed certificate per solve."
+    )
+    # A bold lead that repeats the title is skipped; a different lead stays.
+    assert (
+        details.describe("**Solver certificate.** Emit one per solve. More.", "Solver certificate")
+        == "Emit one per solve."
+    )
+    assert details.describe("**Other lead.** Body sentence.", "Title") == "Other lead."
+    # Links keep their label only, and a long sentence is cut on a word with an ellipsis.
+    assert details.describe("See [the plan](plan.md) for it.") == "See the plan for it."
+    long = details.describe("word " * 80)
+    assert len(long) <= details.DESC_MAX and long.endswith("…")
+    assert details.describe("") == ""
+    # Pipes inside code spans stay in their cell; the second cell is the acceptance text.
+    assert details.row_parts(" Use `a | b` here. | Check it. |") == ("Use `a | b` here.", "Check it.")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.6")
+def test_page_rows_carry_desc_and_never_the_full_text(monkeypatch, tmp_path: Path) -> None:
+    page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
+    html = page.read_text()
+    assert "Zq-FULLTEXT-MARKER" not in html
+    payload = _payload(html)
+    rows = {}
+
+    def walk(node: dict) -> None:
+        rows.update({s["id"]: s for s in node["specs"]})
+        for child in node["children"]:
+            walk(child)
+
+    walk(payload["tree"])
+    assert rows["FAM-R001"]["desc"].startswith("Emit a signed certificate for every solve.")
+    assert len(rows["FAM-R001"]["desc"]) <= details.DESC_MAX
+    assert rows["FAM-R002"]["desc"] == "Plain row without a bold lead that explains itself in one line."
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.7")
+def test_one_family_json_is_written_per_family_with_full_row_detail(monkeypatch, tmp_path: Path) -> None:
+    page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
+    files = sorted(p.relative_to(page.parent).as_posix() for p in (page.parent / "spec-details").rglob("*.json"))
+    assert files == ["spec-details/pipelines/fam.json"]
+    doc = json.loads((page.parent / files[0]).read_text())
+    row = doc["rows"]["FAM-R001"]
+    assert "Zq-FULLTEXT-MARKER" in row["req"] and "<script" not in row["req"]
+    assert "certificate" in row["acc"] and "https://example.org/x" in row["acc"]
+    assert "https://github.com/Knuckles-Team/pipelines/blob/HEAD/specs/fam/plan.md" in row["acc"]
+    assert row["landed_in"] == [
+        {"label": "abcdef123456", "url": "https://github.com/Knuckles-Team/pipelines/commit/abcdef123456"}
+    ]
+    assert row["verified_by"][0]["url"] == "https://github.com/Knuckles-Team/pipelines/blob/HEAD/tests/test_x.py#L12"
+    assert row["verified_by"][1]["url"] == ""  # a path that leaves the repository is not linked
+    assert row["rollup_of"] == ["FAM-R001.1"]
+    assert len(row["tests"]) == 1 and "Certificate is signed." in row["tests"][0]  # R001.1 is another row
+    assert [d["label"] for d in doc["docs"]] == ["Plan", "Design: architecture", "Test spec"]
+    plan = next(d for d in doc["docs"] if d["name"] == "plan.md")
+    assert (
+        "<h3>Plan</h3>" in plan["html"]
+        and "<li>one</li>" in plan["html"]
+        and '<div class="tbl"><table>' in plan["html"]
+    )
+    assert "code &lt;b&gt;x&lt;/b&gt;" in plan["html"]
+    assert {f["name"] for f in doc["files"]} == {"requirements.md", "plan.md", "architecture.md", "test-spec.md"}
+    # A rebuild with the family gone removes its file.
+    snaps = _detail_snapshots()
+    snaps[[s.repo for s in snaps].index("pipelines")].rows = []
+    _build_with_details(monkeypatch, tmp_path, snaps)
+    assert not list((page.parent / "spec-details").rglob("*.json"))
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.7")
+def test_a_row_whose_family_has_no_plan_still_gets_detail(monkeypatch, tmp_path: Path) -> None:
+    page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots(with_plan=False))
+    doc = json.loads((page.parent / "spec-details/pipelines/fam.json").read_text())
+    assert [d["name"] for d in doc["docs"]] == ["test-spec.md"]
+    assert "Zq-FULLTEXT-MARKER" in doc["rows"]["FAM-R001"]["req"]
+    assert "tests" not in doc["rows"]["FAM-R002"] and "acc" in doc["rows"]["FAM-R002"]
+    bare = details.family_detail(
+        "pipelines", "pipelines", "none", [_row("N-R001", "No files", family="none")], {}, set()
+    )
+    assert bare["docs"] == [] and bare["rows"]["N-R001"]["req"] == "" and bare["files"][0]["name"] == "requirements.md"
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.8")
+def test_markdown_escapes_raw_html_and_drops_unsafe_links() -> None:
+    ctx = details.Ctx("pipelines", "fam")
+    out = details.render_markdown(
+        "<script>alert(1)</script>\n\n"
+        "Text <img src=x onerror=alert(1)> and **<b>bold</b>**.\n\n"
+        "[bad](javascript:alert(1)) [data](data:text/html,x) [proto](//evil.example/x) [up](../../../etc/passwd) "
+        "[ok](https://example.org/a?b=1&c=2) [rel](../other/plan.md#top) [anchor](#x)\n\n"
+        "- <iframe src=//x></iframe>\n\n"
+        "| h<script> |\n|---|\n| <svg onload=alert(1)> |\n\n"
+        "```html\n<script>alert(2)</script>\n```\n\n"
+        "> <style>x{}</style>\n\n`<script>`\n",
+        ctx,
+    )
+    assert (
+        "<script" not in out
+        and "<img" not in out
+        and "<iframe" not in out
+        and "<svg" not in out
+        and "<style" not in out
+    )
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in out and "&lt;script&gt;alert(2)&lt;/script&gt;" in out
+    assert "onerror=alert(1)&gt;" in out  # the attribute text is inert text, not a tag
+    hrefs = re.findall(r'href="([^"]*)"', out)
+    assert hrefs == [
+        "https://example.org/a?b=1&amp;c=2",
+        "https://github.com/Knuckles-Team/pipelines/blob/HEAD/specs/other/plan.md#top",
+    ]
+    assert "javascript:" not in " ".join(hrefs) and "bad</a>" not in out and ">bad<" not in out.replace("bad ", "")
+    # A script inside a spec file reaches the family JSON escaped as well.
+    row = _row("FAM-R9", "t", text=" <script>alert(3)</script> | <script>alert(4)</script> |")
+    doc = details.family_detail("r", "r", "fam", [row], {"plan.md": "<script>alert(5)</script>"}, set())
+    assert "<script" not in json.dumps(doc) and "&lt;script&gt;alert(5)" in doc["docs"][0]["html"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.8")
+def test_page_never_assigns_markup_and_exposes_the_expand_controls() -> None:
+    html = (PKG / "template.html").read_text()
+    assert "innerHTML" not in html and "insertAdjacentHTML" not in html and "document.write" not in html
+    for needle in (
+        '"aria-expanded"',
+        "Expand all shown",
+        "Collapse all",
+        "spec-details/",
+        "new DOMParser()",
+        "DET_TAGS",
+    ):
+        assert needle in html
+    # Wide tables and code scroll in their own block; the expanded body may not widen the page.
+    assert ".xbody .md .tbl{overflow-x:auto" in html and ".xbody .md pre{overflow-x:auto" in html
+    assert ".specs .de{" in html and "-webkit-line-clamp:2" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.6")
+def test_page_size_grows_by_a_bounded_amount_per_row(monkeypatch, tmp_path: Path) -> None:
+    """Measure the page with and without descriptions: the growth per row stays within the description cap."""
+    snaps = _detail_snapshots()
+    with_desc = len(_build_with_details(monkeypatch, tmp_path / "a", snaps).read_bytes())
+    for snap in snaps:
+        for row in snap.rows:
+            row["desc"] = ""
+    without = len(_build_with_details(monkeypatch, tmp_path / "b", snaps).read_bytes())
+    rows = sum(len(s.rows) for s in snaps)
+    growth = with_desc - without
+    assert 0 < growth <= rows * (details.DESC_MAX + 16), f"{rows} rows: {without} -> {with_desc} bytes (+{growth})"
+    assert with_desc - without < 0.1 * without
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.6")
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_search_matches_a_description_only_after_title_and_id_matches() -> None:
+    import subprocess
+
+    index = {
+        "v": 1,
+        "repos": ["r"],
+        "fams": ["f"],
+        "st": ["VERIFIED"],
+        "nodes": [["n", "Node", "Part.", 0, []]],
+        "rows": [["A-R001", "Plain title", 0, 0, 0, 0], ["A-R002", "Quartz engine", 0, 0, 0, 0]],
+        "aliases": {},
+    }
+    script = (
+        "const A=require('./search.cjs');const ix=JSON.parse(process.argv[1]);"
+        "const d={'A-R001':'Uses the quartz crystal oscillator.'};"
+        "const a=A.create(ix,id=>d[id]).search('quartz').map(h=>h.id);const b=A.create(ix).search('quartz').map(h=>h.id);"
+        "console.log(JSON.stringify([a,b]));"
+    )
+    out = subprocess.run(["node", "-e", script, json.dumps(index)], cwd=PKG, capture_output=True, text=True, check=True)
+    with_desc, without = json.loads(out.stdout)
+    assert with_desc == ["A-R002", "A-R001"] and without == ["A-R002"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.7")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+def test_expanding_a_row_fetches_its_family_once_and_renders_it_safely(monkeypatch, tmp_path: Path) -> None:
+    import functools
+    import http.server
+    import subprocess
+    import threading
+
+    page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
+    hook = (
+        "<script>setTimeout(()=>{const b=document.querySelector('[data-spec=\"FAM-R001\"] button.ti');if(b)b.click();},800);"
+        "setTimeout(()=>{const d=document.querySelector('[data-spec=\"FAM-R001\"] details');if(d)d.open=true;},1800);</script></body>"
+    )
+    page.write_text(page.read_text().replace("</body>", hook))
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(page.parent))
+    handler.log_message = lambda *a, **k: None  # type: ignore[method-assign]
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        out = subprocess.run(
+            [
+                _chrome(),
+                "--no-sandbox",
+                "--disable-gpu",
+                "--window-size=1500,950",
+                "--virtual-time-budget=8000",
+                "--dump-dom",
+                f"http://127.0.0.1:{server.server_port}/index.html#q=FAM-R001",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        ).stdout
+    finally:
+        server.shutdown()
+    li = out[out.index('data-spec="FAM-R001"') :]
+    assert 'aria-expanded="true"' in li[:1200] and 'class="xbody"' in li
+    assert "Zq-FULLTEXT-MARKER" in li and "landed_in" in li and "Plan (plan.md)" in li and "<h3>Plan</h3>" in li
+    assert li.count('class="xbody"') >= 1 and "Expand all shown" in out and "Collapse all" in out

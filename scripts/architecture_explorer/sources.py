@@ -13,6 +13,8 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .details import describe, family_docs, row_parts
+
 ROW_RE = re.compile(r"^\|\s*`([A-Za-z0-9][A-Za-z0-9.\-]*)`\s*\|(.*)$")
 OWNER = "Knuckles-Team"
 # Organization repositories with ``specs/`` that are not runtime parts (the front door hub).
@@ -29,6 +31,7 @@ class Snapshot:
     files: set[str] = field(default_factory=set)
     rows: list[dict] = field(default_factory=list)
     aliases: dict[str, str] = field(default_factory=dict)
+    docs: dict[str, dict[str, str]] = field(default_factory=dict)
     error: str = ""
 
 
@@ -129,10 +132,15 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
         text = requirement_text(reader.read(f"specs/{family}/requirements.md"))
         for req in status.get("requirements", []):
             body = text.get(req["id"], "")
+            title = (req.get("title") or "").strip()
             rows.append(
                 {
                     "id": req["id"],
-                    "title": (req.get("title") or "").strip(),
+                    "title": title,
+                    "desc": describe(row_parts(body)[0], title),
+                    "landed_in": req.get("landed_in") or [],
+                    "verified_by": req.get("verified_by") or [],
+                    "rollup_of": req.get("rollup_of") or [],
                     "status": req.get("delivery_state", "SPECIFIED"),
                     "repo": repo,
                     "family": family,
@@ -168,6 +176,7 @@ def snapshot(entry: dict, mode: str, workspace: Path | None, token: str | None) 
         snap.head = reader.head()
         snap.files = reader.files()
         snap.rows = rows_for(reader, entry["name"], snap.files)
+        snap.docs = {f: family_docs(reader, snap.files, f) for f in {r["family"] for r in snap.rows}}
         snap.aliases = read_aliases(reader, snap.files)
     except (OSError, KeyError, ValueError, urllib.error.URLError) as exc:
         snap.error = f"{type(exc).__name__}: {exc}"
