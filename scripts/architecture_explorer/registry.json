@@ -8,7 +8,8 @@
   "agent-terminal-ui": "tui",
   "agent-webui": "webui",
   "pipelines": "pipelines",
-  "universal-skills": "skills"
+  "universal-skills": "skills",
+  "skill-graphs": "skills"
  },
  "repositories": [
   {
@@ -51,6 +52,12 @@
    "name": "universal-skills",
    "slug": "universal-skills",
    "local": "agent-packages/skills/universal-skills",
+   "kind": "core"
+  },
+  {
+   "name": "skill-graphs",
+   "slug": "skill-graphs",
+   "local": "agent-packages/skills/skill-graphs",
    "kind": "core"
   },
   {

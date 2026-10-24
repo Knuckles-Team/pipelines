@@ -371,6 +371,7 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [x] PIPE-PAGES-R042.6: Row description. Bound to tests/test_architecture_explorer.py::test_description_is_the_first_plain_sentence_capped_at_160.
 - [x] PIPE-PAGES-R042.7: Expandable full spec. Bound to tests/test_architecture_explorer.py::test_one_family_json_is_written_per_family_with_full_row_detail.
 - [x] PIPE-PAGES-R042.8: Safe rendering. Bound to tests/test_architecture_explorer.py::test_markdown_escapes_raw_html_and_drops_unsafe_links.
+- [x] PIPE-PAGES-R042.9: Every scanned repository has a part. Bound to tests/test_architecture_explorer.py::test_every_registered_repository_has_a_part_and_its_rows_place_without_the_allowlist.
 - [ ] PIPE-PAGES-R043.1: Model. Bind the existing implementation and `tests/test_pages_readiness.py::test_second_build_and_offline_tck_are_idempotent`.
 - [ ] PIPE-PAGES-R043.2: Behavior. Bind the existing implementation and `tests/test_pages_readiness.py::test_build_publishes_source_markdown_and_served_mime`.
 - [ ] PIPE-PAGES-R043.3: Wiring. Bind the existing implementation and `tests/test_pages_pipeline_contract.py::test_enabled_path_checks_strict_build_and_runs_owned_tck`.
