@@ -1060,7 +1060,7 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.g3`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "4939cad05c49"
+        "56a34a613573"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_g3_clusters.py:1004",
@@ -1493,6 +1493,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.o`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "2238eb390902",
         "8e8272f805dd"
       ],
       "verified_by": [
