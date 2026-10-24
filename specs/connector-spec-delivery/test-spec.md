@@ -25,6 +25,6 @@ PIPE-CONNSPEC-R011 binds tests/hooks/test_spec_standard_aliases.py: exact renumb
 
 PIPE-CONNSPEC-R012 binds tests/hooks/test_goal_priority.py: Row-level Depends-on.
 PIPE-CONNSPEC-R013 binds tests/hooks/test_goal_priority.py: Priority from competency questions.
-PIPE-CONNSPEC-R014 binds tests/hooks/test_goal_priority.py: Generated priority, frontier, and unserved.
+PIPE-CONNSPEC-R014 binds tests/hooks/test_goal_priority.py: Priority, frontier, and unserved from the organization aggregate.
 PIPE-CONNSPEC-R015 binds tests/hooks/test_goal_priority.py: Derived release bundles.
 PIPE-CONNSPEC-R016 binds tests/test_architecture_delivery.py: Architecture page delivery views.

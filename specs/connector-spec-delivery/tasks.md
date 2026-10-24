@@ -20,6 +20,6 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 
 - [ ] **PIPE-CONNSPEC-R012:** Row-level Depends-on.
 - [ ] **PIPE-CONNSPEC-R013:** Priority from competency questions.
-- [ ] **PIPE-CONNSPEC-R014:** Generated priority, frontier, and unserved.
+- [ ] **PIPE-CONNSPEC-R014:** Priority, frontier, and unserved from the organization aggregate.
 - [ ] **PIPE-CONNSPEC-R015:** Derived release bundles.
 - [ ] **PIPE-CONNSPEC-R016:** Architecture page delivery views.
