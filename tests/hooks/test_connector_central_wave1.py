@@ -1483,3 +1483,15 @@ def test_l4_a_test_asserting_the_old_sdk_requirement_follows_the_new_pin(tmp_pat
     ctx.applied.clear()
     _run(ctx, ("w1.l4",))
     assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_drops_the_deleted_bootstrap_names_from_all(tmp_path: Path) -> None:
+    server = MCP_SERVER % "" + '\n__all__ = ["get_mcp_instance", "mcp_server", "register_things_tools"]\n'
+    root = _make(tmp_path, server=server)
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3",))
+    text = _text(root, "demo_mcp/mcp_server.py")
+    assert "__all__" in text and "register_things_tools'" in text
+    assert "get_mcp_instance'" not in text and "'mcp_server'" not in text
+    ast.parse(text)
