@@ -476,6 +476,12 @@ def main() -> int:
     ap.add_argument("repos", nargs="*", help="connector repo names (default: the fleet list file)")
     ap.add_argument("--fleet", type=Path, default=Path("/home/apps/workspace/agent-packages/agents"))
     ap.add_argument("--fleet-list", type=Path, default=None, help="file with one repo name per line")
+    ap.add_argument(
+        "--workspace",
+        type=Path,
+        default=Path("/home/apps/workspace/workspace.yml"),
+        help="workspace manifest; the repo set is its agents group intersected with the non-archived GitHub repos",
+    )
     ap.add_argument("--eg-repo", type=Path, default=Path("/home/apps/workspace/agent-packages/epistemic-graph"))
     ap.add_argument(
         "--worktrees",
@@ -496,7 +502,14 @@ def main() -> int:
     ap.add_argument("--sdk-path", type=Path, default=None, help="install this SDK checkout instead of PyPI (dry-run)")
     a = ap.parse_args()
     a.jobs = min(a.jobs, 4)
-    repos = a.repos or [ln.strip() for ln in a.fleet_list.read_text().splitlines() if ln.strip()]
+    sys.path.insert(0, str(PIPELINES))
+    from pipelines_hooks.hygiene.connector_central.fleet import connector_repos, only_active
+
+    if a.repos or a.fleet_list:
+        asked = a.repos or [ln.strip() for ln in a.fleet_list.read_text().splitlines() if ln.strip()]
+        repos = only_active(asked, a.workspace)
+    else:
+        repos = connector_repos(a.workspace)
     a.ledger.parent.mkdir(parents=True, exist_ok=True)
     led = Ledger(a.ledger)
     todo = [r for r in repos if not led.done(r)]

@@ -16,7 +16,7 @@ import sys
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
-ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab", "pl.ac")
+ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab", "pl.ac", "pl.ad")
 _IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
@@ -264,3 +264,26 @@ def docs_credential_examples(ctx: Ctx) -> None:
         new = mask_markdown(text)
         if new != text:
             ctx.write(ctx.rel(path), new, "pl.ac")
+
+
+#: The fleet's reviewed pins (the same lines `archimate-mcp`, `arr-mcp` and `gitlab-api` already commit).
+PINNED_ACTIONS = {
+    "actions/checkout": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+    "actions/setup-python": "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0",
+}
+_MUTABLE_ACTION = re.compile(
+    r"(?m)^(\s*(?:-\s*)?uses:\s*)(actions/(?:checkout|setup-python))@v\d+(?:\.\d+){0,2}[ \t]*$"
+)
+
+
+@rule("pl.ad")
+def pin_actions(ctx: Ctx) -> None:
+    """A mutable ``@vN`` tag of ``actions/checkout`` or ``actions/setup-python`` becomes the fleet's reviewed SHA pin.
+
+    Other mutable actions are left alone; the connector-security check reports them.
+    """
+    for path in sorted((ctx.root / ".github" / "workflows").glob("*.y*ml")):
+        text = path.read_text(encoding="utf-8")
+        new = _MUTABLE_ACTION.sub(lambda m: m.group(1) + PINNED_ACTIONS[m.group(2)], text)
+        if new != text:
+            ctx.write(ctx.rel(path), new, "pl.ad")
