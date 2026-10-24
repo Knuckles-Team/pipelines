@@ -371,7 +371,7 @@ def central_verify(wt: Path, py: str, env: dict[str, str], led: Ledger, repo: st
     venv_env = {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}
     connector = ["uv", "run", "--project", str(PIPELINES), "--frozen", "pipelines-connector"]
     checks = {
-        "conformance": ([py, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-k", "connector_conformance"], env),
+        "conformance": ([py, "-m", "pytest", "-q", "-k", "connector_conformance"], env),
         "connector_standard": (hook("connector-standard"), venv_env),
         "render_check": ([*connector, "render", "--root", str(wt), "--check"], venv_env),
     }

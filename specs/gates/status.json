@@ -686,11 +686,11 @@
         "a118821c57fb"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:368",
-        "tests/hooks/test_connector_migrate.py:383",
-        "tests/hooks/test_connector_migrate.py:397",
-        "tests/hooks/test_connector_migrate.py:404",
-        "tests/hooks/test_connector_migrate.py:430"
+        "tests/hooks/test_connector_migrate.py:369",
+        "tests/hooks/test_connector_migrate.py:384",
+        "tests/hooks/test_connector_migrate.py:398",
+        "tests/hooks/test_connector_migrate.py:405",
+        "tests/hooks/test_connector_migrate.py:431"
       ]
     },
     {
@@ -701,8 +701,8 @@
         "e51a658f9189"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:458",
-        "tests/hooks/test_connector_migrate.py:468"
+        "tests/hooks/test_connector_migrate.py:459",
+        "tests/hooks/test_connector_migrate.py:469"
       ]
     },
     {
@@ -713,8 +713,8 @@
         "e51a658f9189"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:478",
-        "tests/hooks/test_connector_migrate.py:705"
+        "tests/hooks/test_connector_migrate.py:479",
+        "tests/hooks/test_connector_migrate.py:706"
       ]
     },
     {
@@ -726,7 +726,7 @@
         "2cf12e1a110e"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:554"
+        "tests/hooks/test_connector_migrate.py:555"
       ]
     },
     {
@@ -737,9 +737,9 @@
         "abd6a72f11b7"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:529",
-        "tests/hooks/test_connector_migrate.py:597",
-        "tests/hooks/test_connector_migrate.py:608"
+        "tests/hooks/test_connector_migrate.py:530",
+        "tests/hooks/test_connector_migrate.py:598",
+        "tests/hooks/test_connector_migrate.py:609"
       ]
     },
     {
@@ -748,7 +748,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:619"
+        "tests/hooks/test_connector_migrate.py:620"
       ]
     },
     {
@@ -757,7 +757,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:634"
+        "tests/hooks/test_connector_migrate.py:635"
       ]
     },
     {
@@ -766,7 +766,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:668"
+        "tests/hooks/test_connector_migrate.py:669"
       ]
     },
     {
@@ -777,7 +777,7 @@
         "ac8d6790d275"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:685"
+        "tests/hooks/test_connector_migrate.py:686"
       ]
     },
     {
@@ -786,7 +786,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:716"
+        "tests/hooks/test_connector_migrate.py:717"
       ]
     },
     {
@@ -798,8 +798,8 @@
         "9667f5c5649c"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:745",
-        "tests/hooks/test_connector_migrate.py:766"
+        "tests/hooks/test_connector_migrate.py:746",
+        "tests/hooks/test_connector_migrate.py:767"
       ]
     },
     {
@@ -811,8 +811,8 @@
         "aaf473b4312d"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:778",
-        "tests/hooks/test_connector_migrate.py:866"
+        "tests/hooks/test_connector_migrate.py:779",
+        "tests/hooks/test_connector_migrate.py:867"
       ]
     },
     {
@@ -823,7 +823,7 @@
         "16df550a8c49"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:805"
+        "tests/hooks/test_connector_migrate.py:806"
       ]
     },
     {
@@ -836,7 +836,7 @@
         "aaf473b4312d"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:829"
+        "tests/hooks/test_connector_migrate.py:830"
       ]
     },
     {
@@ -847,7 +847,7 @@
         "aaf473b4312d"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:878"
+        "tests/hooks/test_connector_migrate.py:879"
       ]
     },
     {
@@ -858,7 +858,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:890"
+        "tests/hooks/test_connector_migrate.py:891"
       ]
     },
     {
@@ -869,7 +869,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:914"
+        "tests/hooks/test_connector_migrate.py:915"
       ]
     },
     {
@@ -880,7 +880,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:926"
+        "tests/hooks/test_connector_migrate.py:927"
       ]
     },
     {
@@ -891,7 +891,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:952"
+        "tests/hooks/test_connector_migrate.py:953"
       ]
     },
     {
@@ -914,7 +914,7 @@
         "9a1fb34a84ee"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:973"
+        "tests/hooks/test_connector_migrate.py:974"
       ]
     },
     {
@@ -925,7 +925,7 @@
         "9a1fb34a84ee"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:999"
+        "tests/hooks/test_connector_migrate.py:1000"
       ]
     },
     {
@@ -936,7 +936,7 @@
         "9a1fb34a84ee"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:1010"
+        "tests/hooks/test_connector_migrate.py:1011"
       ]
     },
     {
@@ -972,7 +972,7 @@
         "8ac2fce8e6c1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:1019"
+        "tests/hooks/test_connector_migrate.py:1020"
       ]
     },
     {
