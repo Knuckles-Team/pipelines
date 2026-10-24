@@ -2615,20 +2615,22 @@ def g2(ctx: Ctx) -> None:
     sec = _toml_section(lines, "[project.scripts]")
     if sec is None:
         return
-    for i in range(*sec):
-        m = re.match(rf'^(\s*{re.escape(ctx.fleet)}\s*=\s*)"([^"]*)"(.*)$', lines[i])
-        if not m:
-            continue
-        value = m.group(2)
-        if value == "agent_connector_sdk.cli:serve":
-            return
-        moved = (ctx.options.get(_G3_KEY) or {}).get("module", "")
-        if value not in (
-            f"{ctx.pkg_name}.mcp_server:mcp_server",
-            f"{ctx.pkg_name}.__main__:main",
-            f"{moved}:mcp_server",
-        ):
-            ctx.note("w1.g2", f"console script {value!r} is not the bootstrap function", "pyproject.toml", True)
+    moved = (ctx.options.get(_G3_KEY) or {}).get("module", "")
+    bootstrap = (
+        f"{ctx.pkg_name}.mcp_server:mcp_server",
+        f"{ctx.pkg_name}.__main__:main",
+        f"{moved}:mcp_server",
+    )
+    entry = re.compile(r'^(\s*[A-Za-z0-9_.-]+\s*=\s*)"([^"]*)"(.*)$')
+    rows = [(i, m) for i in range(*sec) if (m := entry.match(lines[i]))]
+    named = [(i, m) for i, m in rows if re.match(rf"^\s*{re.escape(ctx.fleet)}\s*=", lines[i])]
+    if any(m.group(2) == "agent_connector_sdk.cli:serve" for _, m in rows):
+        return
+    # the script is named for the fleet, or (when it is named otherwise: `adguard-mcp`) is the bootstrap function itself
+    targets = named or [(i, m) for i, m in rows if m.group(2) in bootstrap]
+    for i, m in targets:
+        if m.group(2) not in bootstrap:
+            ctx.note("w1.g2", f"console script {m.group(2)!r} is not the bootstrap function", "pyproject.toml", True)
             return
         if not _declared(ctx):
             return
