@@ -110,3 +110,35 @@ def test_no_mkdocs_site_means_no_theme_files(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
     identity.theme_files(ctx)
     assert not (ctx.root / "docs").exists() and not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.106")
+def test_authors_block_becomes_the_neutral_organisation_author_and_passes_the_privacy_classifier(
+    tmp_path: Path,
+) -> None:
+    from pipelines_hooks.privacy import classify
+
+    ctx = _ctx(tmp_path)
+    pp = ctx.root / "pyproject.toml"
+    pp.write_text(
+        pp.read_text(encoding="utf-8")
+        + '\n[[project.authors]]\nname = "Some Person"\nemail = "p@home.example"\n\n[tool.x]\na = 1\n',
+        encoding="utf-8",
+    )
+    identity.neutral_author(ctx)
+    text = pp.read_text(encoding="utf-8")
+    assert f'name = "{identity.NEUTRAL_AUTHOR_NAME}"' in text and f'email = "{identity.NEUTRAL_AUTHOR_EMAIL}"' in text
+    assert "[tool.x]" in text and classify.author_metadata_lines(pp, text.splitlines()) == []
+    ctx.applied.clear()
+    identity.neutral_author(ctx)
+    assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.106")
+def test_authors_block_with_other_fields_is_reviewed_untouched(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    pp = ctx.root / "pyproject.toml"
+    pp.write_text(pp.read_text(encoding="utf-8") + '\n[[project.authors]]\nname = "A"\nurl = "x"\n', encoding="utf-8")
+    before = pp.read_text(encoding="utf-8")
+    identity.neutral_author(ctx)
+    assert pp.read_text(encoding="utf-8") == before and ctx.review.items

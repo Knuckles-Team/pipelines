@@ -16,7 +16,7 @@ import sys
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
-ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa")
+ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab")
 _IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
@@ -184,3 +184,36 @@ def theme_files(ctx: Ctx) -> None:
         ctx.changed.add(rel)
         if "pl.aa" not in ctx.applied:
             ctx.applied.append("pl.aa")
+
+
+NEUTRAL_AUTHOR_NAME = "Repository Maintainers"
+NEUTRAL_AUTHOR_EMAIL = "maintainers@knuckles.team"
+_AUTHORS = re.compile(r"(?m)^\[\[project\.authors\]\]\n((?:(?!\[)[^\n]*\n?)*)")
+_AUTHOR_FIELD = re.compile(r'(?m)^(name|email)\s*=\s*"[^"\n]*"[ \t]*$')
+
+
+@rule("pl.ab")
+def neutral_author(ctx: Ctx) -> None:
+    """Every ``[[project.authors]]`` block carries the neutral organisation name and role address (tracked-privacy).
+
+    A block whose fields are not plain ``name``/``email`` strings is left alone and reviewed.
+    """
+    text = ctx.read("pyproject.toml")
+
+    def fix(m: re.Match[str]) -> str:
+        body = m.group(1)
+        fields = {f.group(1) for f in _AUTHOR_FIELD.finditer(body)}
+        if not fields <= {"name", "email"} or {x for x in re.findall(r"(?m)^(\w+)\s*=", body)} - {"name", "email"}:
+            ctx.note("pl.ab", "authors block has fields other than plain name/email strings", "pyproject.toml")
+            return m.group(0)
+        new = _AUTHOR_FIELD.sub(
+            lambda f: (
+                f'name = "{NEUTRAL_AUTHOR_NAME}"' if f.group(1) == "name" else f'email = "{NEUTRAL_AUTHOR_EMAIL}"'
+            ),
+            body,
+        )
+        return "[[project.authors]]\n" + new
+
+    new_text = _AUTHORS.sub(fix, text)
+    if new_text != text:
+        ctx.write("pyproject.toml", new_text, "pl.ab")
