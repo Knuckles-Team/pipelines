@@ -746,8 +746,8 @@
       "title": "A pull request builds the image when a container input changes",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "4d6d08b577c5",
-        "cf1d17cef82b"
+        "149439ae20cc",
+        "2cdfc98f4b32"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:111",
