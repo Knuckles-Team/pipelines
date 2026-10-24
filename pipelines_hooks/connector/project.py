@@ -24,7 +24,9 @@ CONTAINER_KEYS = frozenset(
         "extra_runtime_stages",
         "debug_apt",
         "debug_extras",
+        "install_extras",
         "compose_env",
+        "env_file_optional",
         "limits",
     }
 )

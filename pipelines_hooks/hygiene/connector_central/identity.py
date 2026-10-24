@@ -11,11 +11,12 @@ from __future__ import annotations
 
 import ast
 import re
+import sys
 
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
-ORDER = ("id.name", "pl.w", "pl.y", "pl.z")
+ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa")
 _IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
@@ -137,3 +138,49 @@ def spec_index(ctx: Ctx) -> None:
     block = "\n".join(lines)
     new = text.replace(_NO_SPECS, block, 1) if _NO_SPECS in text else text.rstrip("\n") + "\n" + block + "\n"
     ctx.write("specs/README.md", new, "pl.z")
+
+
+def _docs_dir(ctx: Ctx) -> str | None:
+    """The MkDocs content directory: ``docs_dir`` of ``mkdocs.yml`` or ``docs``; None without a MkDocs site."""
+    if not ctx.exists("mkdocs.yml"):
+        return None
+    m = re.search(r"(?m)^docs_dir:\s*[\"']?([\w./-]+)[\"']?\s*$", ctx.read("mkdocs.yml"))
+    return m.group(1) if m else "docs"
+
+
+@rule("pl.aa")
+def theme_files(ctx: Ctx) -> None:
+    """Missing or stale generated theme files are synced from the canonical copy (``scripts/sync_mkdocs_theme.py``).
+
+    Only the generated-file mismatches are acted on; a runtime-diagram reference in a page is reported, not edited.
+    """
+    import importlib.util
+
+    docs = _docs_dir(ctx)
+    root = pipelines_root(ctx)
+    script = root / "scripts" / "sync_mkdocs_theme.py"
+    if docs is None or not script.is_file() or not (ctx.root / docs).is_dir():
+        return
+    spec = importlib.util.spec_from_file_location("sync_mkdocs_theme", script)
+    if spec is None or spec.loader is None:
+        return
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["sync_mkdocs_theme"] = mod  # dataclasses resolve their module through sys.modules
+    spec.loader.exec_module(mod)
+    try:
+        mismatches = mod.sync_theme(source_root=root, repository_root=ctx.root, content_source=docs, mode="check")
+    except (OSError, mod.ThemeSyncError) as exc:
+        ctx.note("pl.aa", f"theme check cannot run: {exc}", docs, blocking=True)
+        return
+    stale = [m for m in mismatches if m.startswith(("missing generated file", "generated file differs"))]
+    for other in mismatches:
+        if other not in stale:
+            ctx.note("pl.aa", other, docs, blocking=False)
+    if not stale:
+        return
+    mod.sync_theme(source_root=root, repository_root=ctx.root, content_source=docs, mode="sync")
+    for m in stale:
+        rel = m.split(": ", 1)[1]
+        ctx.changed.add(rel)
+        if "pl.aa" not in ctx.applied:
+            ctx.applied.append("pl.aa")

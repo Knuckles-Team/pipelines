@@ -1,0 +1,346 @@
+{
+  "dockerfile_forms": {
+    "350298e9e271236c": 10
+  },
+  "rewrites": [
+    {
+      "file": "debug.Dockerfile",
+      "id": "fb4050bfca",
+      "new": [
+        "    PATH=\"/usr/local/cargo/bin:/usr/local/bin:${PATH}\" \\"
+      ],
+      "old": [
+        "    PATH=\"/usr/local/cargo/bin:/root/.local/bin:/usr/local/bin:${PATH}\" \\"
+      ],
+      "reason": "debug PATH no longer names /root/.local/bin",
+      "repos": 8
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "8cb867685e",
+      "new": [
+        "    UV_COMPILE_BYTECODE=1"
+      ],
+      "old": [
+        "    UV_COMPILE_BYTECODE=1 \\",
+        "    RUSTUP_HOME=\"/usr/local/rustup\" \\",
+        "    CARGO_HOME=\"/usr/local/cargo\""
+      ],
+      "reason": "debug image no longer sets the rustup/cargo homes of the curl-installed toolchain",
+      "repos": 6
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "b5fd02ae46",
+      "new": [
+        "      - \"127.0.0.1:<PORT>:<PORT>\""
+      ],
+      "old": [
+        "      - \"<PORT>:<PORT>\""
+      ],
+      "reason": "the published port binds to 127.0.0.1 (hardening)",
+      "repos": 6
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "7a18cc06d2",
+      "new": [
+        "RUN uv pip install --system --no-cache --break-system-packages .<EXTRAS>"
+      ],
+      "old": [
+        "RUN uv pip install --system --upgrade --verbose --no-cache --break-system-packages .<EXTRAS>"
+      ],
+      "reason": "debug install drops --upgrade --verbose",
+      "repos": 5
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "f6c7c4e788",
+      "new": [
+        "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"
+      ],
+      "old": [
+        "    image: ${<DISTVAR>_AGENT_IMAGE:?set-<DISTVAR>_AGENT_IMAGE-to-image@sha256-digest}"
+      ],
+      "reason": "the mcp service names its own <DIST>_MCP_IMAGE variable, not the agent one",
+      "repos": 5
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "00af4ded7a",
+      "new": [
+        "    && apt-get install -y --no-install-recommends ripgrep tree fd-find curl nano build-essential cmake libssl-dev libcurl4-openssl-dev pkg-config cargo rustc \\"
+      ],
+      "old": [
+        "    && apt-get install -y default-jre ripgrep tree fd-find curl nano build-essential cmake libssl-dev libcurl4-openssl-dev pkg-config \\",
+        "    && curl -LsSf https://astral.sh/uv/install.sh | sh \\",
+        "    && curl -sS https://starship.rs/install.sh | sh -s -- --yes \\",
+        "    && curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile minimal \\",
+        "    && mkdir -p /root/.config \\",
+        "    && echo \"eval \\\"\\$(starship init bash)\\\"\" >> /root/.bashrc \\"
+      ],
+      "reason": "debug image installs distro packages (cargo, rustc) instead of curl-piped installers",
+      "repos": 4
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "1a320107f9",
+      "new": [
+        "    PATH=\"/usr/local/cargo/bin:/usr/local/bin:${PATH}\" \\"
+      ],
+      "old": [
+        "    PATH=\"/usr/local/bin:${PATH}\" \\"
+      ],
+      "reason": "debug PATH names the cargo bin directory",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "41d7fc51c6",
+      "new": [
+        "ARG TRANSPORT=\"stdio\""
+      ],
+      "old": [
+        "ARG TRANSPORT=\"http\""
+      ],
+      "reason": "debug default transport is stdio, as the runtime image",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "4b09c53a59",
+      "new": [
+        "FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6"
+      ],
+      "old": [
+        "FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de"
+      ],
+      "reason": "debug base image python:3.12 becomes the fleet python:3.14",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "6f304d57c6",
+      "new": [
+        "FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6"
+      ],
+      "old": [
+        "FROM python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3"
+      ],
+      "reason": "debug base image python:3.11 becomes the fleet python:3.14",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "71b18f0cc9",
+      "new": [],
+      "old": [
+        "    TOKEN_JWKS_URI=${TOKEN_JWKS_URI} \\",
+        "    TOKEN_ISSUER=${TOKEN_ISSUER} \\",
+        "    TOKEN_AUDIENCE=${TOKEN_AUDIENCE} \\",
+        "    OAUTH_UPSTREAM_AUTH_ENDPOINT=${OAUTH_UPSTREAM_AUTH_ENDPOINT} \\",
+        "    OAUTH_UPSTREAM_TOKEN_ENDPOINT=${OAUTH_UPSTREAM_TOKEN_ENDPOINT} \\",
+        "    OAUTH_UPSTREAM_CLIENT_ID=${OAUTH_UPSTREAM_CLIENT_ID} \\",
+        "    OAUTH_BASE_URL=${OAUTH_BASE_URL} \\",
+        "    OIDC_CONFIG_URL=${OIDC_CONFIG_URL} \\",
+        "    OIDC_CLIENT_ID=${OIDC_CLIENT_ID} \\",
+        "    OIDC_BASE_URL=${OIDC_BASE_URL} \\",
+        "    REMOTE_AUTH_SERVERS=${REMOTE_AUTH_SERVERS} \\",
+        "    REMOTE_BASE_URL=${REMOTE_BASE_URL} \\",
+        "    ALLOWED_CLIENT_REDIRECT_URIS=${ALLOWED_CLIENT_REDIRECT_URIS} \\",
+        "    EUNOMIA_TYPE=${EUNOMIA_TYPE} \\",
+        "    EUNOMIA_POLICY_FILE=${EUNOMIA_POLICY_FILE} \\",
+        "    EUNOMIA_REMOTE_URL=${EUNOMIA_REMOTE_URL} \\"
+      ],
+      "reason": "debug image drops the per-image OAuth/OIDC/Eunomia environment lines",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "946f0b12be",
+      "new": [],
+      "old": [
+        "ARG TOKEN_JWKS_URI=\"\"",
+        "ARG TOKEN_ISSUER=\"\"",
+        "ARG TOKEN_AUDIENCE=\"\"",
+        "ARG OAUTH_UPSTREAM_AUTH_ENDPOINT=\"\"",
+        "ARG OAUTH_UPSTREAM_TOKEN_ENDPOINT=\"\"",
+        "ARG OAUTH_UPSTREAM_CLIENT_ID=\"\"",
+        "ARG OAUTH_BASE_URL=\"\"",
+        "ARG OIDC_CONFIG_URL=\"\"",
+        "ARG OIDC_CLIENT_ID=\"\"",
+        "ARG OIDC_BASE_URL=\"\"",
+        "ARG REMOTE_AUTH_SERVERS=\"\"",
+        "ARG REMOTE_BASE_URL=\"\"",
+        "ARG ALLOWED_CLIENT_REDIRECT_URIS=\"\"",
+        "ARG EUNOMIA_TYPE=\"none\"",
+        "ARG EUNOMIA_POLICY_FILE=\"mcp_policies.json\"",
+        "ARG EUNOMIA_REMOTE_URL=\"\""
+      ],
+      "reason": "debug image drops the per-image OAuth/OIDC/Eunomia build args",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "b249e6ba78",
+      "new": [
+        "FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6",
+        "COPY --from=ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85ab0f263ef12f492d8476aa3a2e4e1e333f7d67fbdd923d00a506a516a /uv /uvx /bin/"
+      ],
+      "old": [
+        "FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6"
+      ],
+      "reason": "debug image copies the pinned uv binary the install line uses",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "pre-release-install",
+      "new": [
+        "RUN uv pip install --system --no-cache --break-system-packages .<EXTRAS>"
+      ],
+      "old": [
+        "RUN uv pip install --system --upgrade --verbose --no-cache --break-system-packages --prerelease=allow .<EXTRAS>"
+      ],
+      "reason": "the earlier debug image allowed pre-releases and upgraded in verbose mode; the render installs the stable release",
+      "repos": 11
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "root-starship-copy",
+      "new": [],
+      "old": [
+        "COPY docker/starship.toml /root/.config/starship.toml"
+      ],
+      "reason": "the earlier debug image ran as root and copied a starship config into /root; the render is non-root",
+      "repos": 5
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "debug-app-user",
+      "new": [
+        "RUN uv pip install --system --no-cache --break-system-packages .<EXTRAS>",
+        "RUN groupadd --system --gid 10001 app \\",
+        "    && useradd --system --uid 10001 --gid 10001 --no-create-home \\",
+        "        --home-dir /tmp --shell /usr/sbin/nologin app \\",
+        "    && chown -R 10001:10001 /app",
+        "ENV HOME=/tmp \\",
+        "    XDG_CONFIG_HOME=/tmp/.config \\",
+        "    XDG_CACHE_HOME=/tmp/.cache",
+        "USER 10001:10001"
+      ],
+      "old": [
+        "RUN uv pip install --system --no-cache --break-system-packages .<EXTRAS>"
+      ],
+      "reason": "the earlier debug image ran as root; the render creates the app user after the install",
+      "repos": 10
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "debug-merged-apt-install",
+      "new": [
+        "RUN apt-get update \\",
+        "    && apt-get install -y --no-install-recommends <PKGS> \\",
+        "    && apt-get clean \\",
+        "    && rm -rf /var/lib/apt/lists/*",
+        "WORKDIR /app",
+        "COPY . /app",
+        "RUN uv pip install --system --no-cache --break-system-packages .<EXTRAS>"
+      ],
+      "old": [
+        "WORKDIR /app",
+        "COPY . /app",
+        "RUN apt-get update \\",
+        "    && apt-get install -y --no-install-recommends <PKGS> \\",
+        "    && uv pip install --system --no-cache --break-system-packages .<EXTRAS> \\",
+        "    && rm -rf /var/lib/apt/lists/*"
+      ],
+      "reason": "the earlier debug image installed the packages and the wheel in one layer after the source copy",
+      "repos": 3
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-hardening",
+      "new": [
+        "  <DIST>-mcp:",
+        "    init: true",
+        "    user: \"10001:10001\"",
+        "    read_only: true",
+        "    cap_drop:",
+        "      - ALL",
+        "    security_opt:",
+        "      - no-new-privileges:true",
+        "    pids_limit: 256",
+        "    mem_limit: ${MCP_CONTAINER_MEMORY_LIMIT:-2g}",
+        "    cpus: ${MCP_CONTAINER_CPU_LIMIT:-1.0}",
+        "    tmpfs:",
+        "      - /tmp:rw,noexec,nosuid,nodev,size=64m"
+      ],
+      "old": [
+        "  <DIST>-mcp:"
+      ],
+      "reason": "the earlier compose file carried none of the container hardening the render declares",
+      "repos": 14
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-fixed-image",
+      "new": [
+        "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"
+      ],
+      "old": [
+        "    image: knucklessg1/<ANY>"
+      ],
+      "reason": "the earlier compose file named a fixed registry tag; the render takes an immutable image from the environment",
+      "repos": 4
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-restart",
+      "new": [
+        "    restart: always"
+      ],
+      "old": [
+        "    restart: unless-stopped"
+      ],
+      "reason": "the earlier compose file restarted unless stopped; the render restarts always",
+      "repos": 4
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-image-variable-without-kind",
+      "new": [
+        "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"
+      ],
+      "old": [
+        "    image: ${<DISTVAR>_IMAGE:?set-<DISTVAR>_IMAGE-to-image@sha256-digest}"
+      ],
+      "reason": "the earlier compose file named the image variable after the connector only; the render adds the image kind",
+      "repos": 4
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-container-name",
+      "new": [
+        "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}",
+        "    container_name: <DIST>-mcp",
+        "    hostname: <DIST>-mcp",
+        "    restart: always"
+      ],
+      "old": [
+        "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}",
+        "    restart: always"
+      ],
+      "reason": "the earlier compose file left the container and host name to the engine; the render names both",
+      "repos": 3
+    }
+  ],
+  "stubs": {
+    "debug.Dockerfile": {
+      "9ec7f6b0e9d4c2d9": 4
+    },
+    "mcp.compose.yml": {
+      "4dfe2502292b37e0": 7
+    }
+  }
+}

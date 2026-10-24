@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import ast
 import builtins
+import difflib
 import hashlib
 import json
 import re
 import tomllib
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeGuard
 
@@ -81,6 +83,8 @@ def declaration() -> IngestSourceDeclaration:
     )
 '''
 _G3_KEY = "_w1_g3"
+_G4_NOTES = "_w1_g4_notes"
+_G4_FILES = "_w1_g4_files"
 
 
 # --- text and AST helpers ------------------------------------------------------------------------------------
@@ -257,18 +261,269 @@ def _one_param(fn: ast.FunctionDef) -> bool:
     return len(a.args) == 1 and not (a.posonlyargs or a.vararg or a.kwonlyargs or a.kwarg)
 
 
-def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDef]) -> dict[str, Any]:
+_REGISTRAR = re.compile(r"register_(.+)_tools")
+_TRANSPORTS = ("stdio", "streamable-http", "sse")
+_LOG_METHODS = ("debug", "info", "warning", "error")
+
+
+@dataclass
+class _Env:
+    """What the g.3 analysis knows about the module around ``get_mcp_instance``."""
+
+    ctx: Ctx
+    tree: ast.Module
+    imports: dict[str, tuple[str, str] | None]
+
+
+def _bad(stmt: ast.stmt, why: str = "is outside the allowed bootstrap statements") -> _Reject:
+    return _Reject(f"line {stmt.lineno}: `{ast.unparse(stmt)[:70]}` {why}")
+
+
+def _bound_names(tree: ast.Module) -> set[str]:
+    names = _top_defs(tree)
+    for n in tree.body:
+        if isinstance(n, ast.Import | ast.ImportFrom):
+            names |= {_bound(a, n) for a in n.names}
+    return names
+
+
+def _module_file(ctx: Ctx, dotted: str) -> Path | None:
+    """The source file of ``dotted`` when it is a module of this package, else None."""
+    if dotted.split(".")[0] != ctx.pkg_name:
+        return None
+    base = ctx.root / dotted.replace(".", "/")
+    for cand in (base.with_suffix(".py"), base / "__init__.py"):
+        if cand.is_file():
+            return cand
+    return None
+
+
+def _package_module(ctx: Ctx, imports: dict[str, tuple[str, str] | None], name: str) -> str | None:
+    """The dotted module a plain name is bound to by an import, when that module lives in this package."""
+    hit = imports.get(name)
+    if not hit:
+        return None
+    mod, orig = hit
+    if orig:
+        dotted = f"{mod}.{orig}"
+    elif name == mod or ("." in mod and name != mod.split(".")[0]):
+        dotted = mod
+    else:
+        return None
+    return dotted if _module_file(ctx, dotted) else None
+
+
+def _literal_registry(entries: ast.expr, ns: set[str]) -> set[str]:
+    """Registrar names of a literal ``[(tag, toggle, fn)]`` that SDK discovery reproduces exactly, else _Reject."""
+    if not isinstance(entries, ast.List | ast.Tuple):
+        raise _Reject("the tool registry is not a literal list")
+    fns: set[str] = set()
+    off: list[str] = []
+    for e in entries.elts:
+        parts = e.elts if isinstance(e, ast.Tuple) else []
+        if not (
+            len(parts) == 3
+            and isinstance(parts[0], ast.Constant)
+            and isinstance(parts[0].value, str)
+            and isinstance(parts[1], ast.Constant)
+            and isinstance(parts[1].value, str)
+            and isinstance(parts[2], ast.Name)
+        ):
+            raise _Reject("a tool registry entry is not a literal (tag, toggle, function name)")
+        tag, toggle, fn = parts[0].value, parts[1].value, parts[2].id
+        found = _REGISTRAR.fullmatch(fn)
+        if not found or found.group(1) != tag or toggle != tag.upper() + "TOOL":
+            off.append(f"({tag!r}, {toggle!r}, {fn})")
+        fns.add(fn)
+    if off:
+        raise _Reject(
+            "SDK gap: Connector cannot carry a tool_registry (the SDK only derives tag and toggle from the "
+            f"`register_<tag>_tools` name); entries that differ: {', '.join(off[:3])}"
+            + (" ..." if len(off) > 3 else "")
+        )
+    _check_discovery(fns, ns)
+    return fns
+
+
+def _check_discovery(fns: set[str], ns: set[str]) -> None:
+    """The module namespace must hold exactly the registrars, since the SDK registers every `register_*_tools`."""
+    missing = sorted(fns - ns)
+    if missing:
+        raise _Reject(f"registrar {missing[0]} is not bound at module level, so SDK discovery would not find it")
+    extra = sorted(n for n in ns - fns if _REGISTRAR.fullmatch(n))
+    if extra:
+        raise _Reject(f"the module also binds {extra[0]}, which SDK discovery would register as well")
+
+
+def _tools_target(
+    stmt: ast.stmt, kw: dict[str, ast.expr], env: _Env, imports: dict[str, tuple[str, str] | None]
+) -> dict[str, Any]:
+    """Resolve how register_tool_surface finds its registrar tools: the module to name in ``Connector(tools=...)``."""
+    own = f"{env.ctx.pkg_name}.mcp_server"
+    sources = [k for k in ("tools_module", "tool_registry", "registrars") if k in kw]
+    if len(sources) > 1:
+        raise _bad(stmt, f"passes {' and '.join(sources)}; the SDK honours exactly one")
+    ns = _bound_names(env.tree)
+    out: dict[str, Any] = {"tools": None, "keep": set()}
+    if not sources:
+        return out
+    node = kw[sources[0]]
+    if sources[0] == "tools_module":
+        if ast.dump(node) == ast.dump(_expr_of("sys.modules[__name__]")):
+            out["tools"] = own
+        else:
+            mod = _package_module(env.ctx, imports, node.id) if isinstance(node, ast.Name) else None
+            if mod is None:
+                raise _bad(
+                    stmt, "passes a tools_module that is neither sys.modules[__name__] nor a module of this package"
+                )
+            out["tools"] = mod
+    elif sources[0] == "registrars":
+        if not (isinstance(node, ast.List | ast.Tuple) and all(isinstance(e, ast.Name) for e in node.elts)):
+            raise _bad(stmt, "passes registrars that are not a literal list of plain names")
+        names = {e.id for e in node.elts if isinstance(e, ast.Name)}
+        bad = sorted(n for n in names if not _REGISTRAR.fullmatch(n))
+        if bad:
+            raise _bad(stmt, f"passes registrar {bad[0]}, whose name is not register_<tag>_tools")
+        try:
+            _check_discovery(names, ns)
+        except _Reject as err:
+            raise _bad(stmt, str(err)) from None
+        out["tools"], out["keep"], out["ordered"] = own, names, True
+    else:
+        out.update(_registry_target(stmt, node, env, imports, ns))
+    return out
+
+
+def _registry_target(
+    stmt: ast.stmt, node: ast.expr, env: _Env, imports: dict[str, tuple[str, str] | None], ns: set[str]
+) -> dict[str, Any]:
+    if not isinstance(node, ast.Name):
+        raise _bad(stmt, "passes a tool_registry that is not a plain name")
+    own = f"{env.ctx.pkg_name}.mcp_server"
+    assigns = {
+        t.id: n.value for n in env.tree.body if isinstance(n, ast.Assign) for t in n.targets if isinstance(t, ast.Name)
+    }
+    try:
+        if node.id in assigns:
+            fns = _literal_registry(assigns[node.id], ns)
+            return {"tools": own, "keep": fns, "ordered": True}
+        hit = imports.get(node.id)
+        file = _module_file(env.ctx, hit[0]) if hit and hit[1] else None
+        if hit is None or file is None:
+            raise _Reject("the tool registry is neither defined here nor imported from a module of this package")
+        mod = _parse(file.read_text(encoding="utf-8"))
+        defs = (
+            {t.id: n.value for n in mod.body if isinstance(n, ast.Assign) for t in n.targets if isinstance(t, ast.Name)}
+            if mod
+            else {}
+        )
+        if hit[1] not in defs:
+            raise _Reject(f"{hit[0]} does not define {hit[1]} as a literal list")
+        assert mod is not None
+        _literal_registry(defs[hit[1]], _bound_names(mod))
+        return {"tools": hit[0], "keep": set(), "ordered": True}
+    except _Reject as err:
+        raise _bad(stmt, str(err)) from None
+
+
+def _is_health_route(route: ast.FunctionDef | ast.AsyncFunctionDef, mcp_n: str) -> bool:
+    d = route.decorator_list[0]
+    return (
+        len(route.decorator_list) == 1
+        and isinstance(d, ast.Call)
+        and isinstance(d.func, ast.Attribute)
+        and d.func.attr == "custom_route"
+        and isinstance(d.func.value, ast.Name)
+        and d.func.value.id == mcp_n
+        and bool(d.args)
+        and isinstance(d.args[0], ast.Constant)
+        and d.args[0].value == "/health"
+    )
+
+
+def _dead_log(stmt: ast.stmt, tags: str | None) -> bool:
+    """A logger call or `_ = tags` that reads only the registered-tags value (deleted with the bootstrap)."""
+    if (
+        isinstance(stmt, ast.Assign)
+        and len(stmt.targets) == 1
+        and isinstance(stmt.targets[0], ast.Name)
+        and stmt.targets[0].id == "_"
+    ):
+        return tags is not None and isinstance(stmt.value, ast.Name) and stmt.value.id == tags
+    call = _bare_call(stmt)
+    if call is None or not (
+        isinstance(call.func, ast.Attribute)
+        and isinstance(call.func.value, ast.Name)
+        and call.func.value.id == "logger"
+        and call.func.attr in _LOG_METHODS
+    ):
+        return False
+    allowed = {"logger", tags} if tags else {"logger"}
+    return all(n in allowed or hasattr(builtins, n) for n in _name_loads([call]))
+
+
+def _empty_list_name(stmt: ast.stmt) -> str | None:
+    if (
+        isinstance(stmt, ast.Assign)
+        and len(stmt.targets) == 1
+        and isinstance(stmt.targets[0], ast.Name)
+        and isinstance(stmt.value, ast.List)
+        and not stmt.value.elts
+    ):
+        return stmt.targets[0].id
+    return None
+
+
+def _dead_loop(stmt: ast.stmt, dead: set[str], mcp_n: str) -> bool:
+    """`for x in <always-empty list>: mcp.add_tool(x)` (or add_resource)."""
+    if not (
+        isinstance(stmt, ast.For)
+        and isinstance(stmt.target, ast.Name)
+        and isinstance(stmt.iter, ast.Name)
+        and stmt.iter.id in dead
+        and not stmt.orelse
+        and len(stmt.body) == 1
+    ):
+        return False
+    return any(
+        ast.dump(stmt.body[0]) == ast.dump(ast.parse(f"{mcp_n}.{m}({stmt.target.id})").body[0])
+        for m in ("add_tool", "add_resource")
+    )
+
+
+def _inert_openapi(stmt: ast.stmt, args_n: str) -> bool:
+    """`if getattr(args, "openapi_file", None): ...` — the SDK parser defines no such flag, so it never runs."""
+    return (
+        isinstance(stmt, ast.If)
+        and not stmt.orelse
+        and ast.dump(stmt.test) == ast.dump(_expr_of(f'getattr({args_n}, "openapi_file", None)'))
+    )
+
+
+def _forwards_command_args(fn: ast.FunctionDef, value: ast.expr) -> bool:
+    """``command_args=command_args`` (or ``[] if command_args is None else command_args``) of the function's own parameter."""
+    params = {a.arg for a in [*fn.args.args, *fn.args.kwonlyargs]}
+    if "command_args" not in params:
+        return False
+    plain = isinstance(value, ast.Name) and value.id == "command_args"
+    guarded = ast.dump(value) == ast.dump(_expr_of("[] if command_args is None else command_args"))
+    return plain or guarded
+
+
+def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDef], env: _Env) -> dict[str, Any]:
     body = list(fn.body)
     if body and _doc(body[0]):
         body = body[1:]
-    info: dict[str, Any] = {"health": False, "env": [], "tags": None, "extra": []}
-    env = [(s, _env_key(s)) for s in body]
-    info["env"] = [k for _s, k in env if k]
-    body = [s for s, k in env if not k]
+    info: dict[str, Any] = {"health": False, "env": [], "tags": None, "extra": [], "inert": False}
+    envs = [(s, _env_key(s)) for s in body]
+    info["env"] = [k for _s, k in envs if k]
+    body = [s for s, k in envs if not k]
+    imports = dict(env.imports)
     i = 0
 
     def bad(stmt: ast.stmt, why: str = "is outside the allowed bootstrap statements") -> _Reject:
-        return _Reject(f"line {stmt.lineno}: `{ast.unparse(stmt)[:70]}` {why}")
+        return _bad(stmt, why)
 
     head = body[i] if i < len(body) else None
     if isinstance(head, ast.Expr) and _is_call(head.value, "load_config"):
@@ -291,35 +546,54 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
     args_n, mcp_n, mw_n = (e.id for e in stmt.targets[0].elts if isinstance(e, ast.Name))
     call = stmt.value
     assert isinstance(call, ast.Call)
-    kw = {k.arg: k.value for k in call.keywords}
-    if call.args or None in kw or set(kw) - {"name", "version", "instructions"}:
-        raise bad(stmt, "passes arguments beyond name, version and instructions to create_mcp_server")
-    version = kw.get("version")
+    ckw = {k.arg: k.value for k in call.keywords}
+    if call.args or None in ckw:
+        raise bad(stmt, "passes positional or ** arguments to create_mcp_server")
+    extra_kw = set(ckw) - {"name", "version", "instructions"}
+    if "command_args" in extra_kw and _forwards_command_args(fn, ckw["command_args"]):
+        extra_kw.discard("command_args")  # the SDK's own serve() passes the process arguments
+    if extra_kw:
+        raise bad(
+            stmt,
+            f"passes {sorted(str(k) for k in extra_kw)} to create_mcp_server (beyond name, version and instructions)",
+        )
+    version = ckw.get("version")
     if not (isinstance(version, ast.Name) and version.id == "__version__"):
         raise bad(stmt, "does not pass version=__version__")
-    if "instructions" not in kw:
+    if "instructions" not in ckw:
         raise bad(stmt, "has no instructions=")
-    info["instructions"] = kw["instructions"]
-    info["mcp"] = mcp_n
+    info["instructions"] = ckw["instructions"]
+    info["mcp"], info["args"] = mcp_n, args_n
     i += 1
-    route = body[i] if i < len(body) else None
-    if isinstance(route, ast.AsyncFunctionDef | ast.FunctionDef) and route.decorator_list:
-        d = route.decorator_list[0]
-        ok = (
-            len(route.decorator_list) == 1
-            and isinstance(d, ast.Call)
-            and isinstance(d.func, ast.Attribute)
-            and d.func.attr == "custom_route"
-            and isinstance(d.func.value, ast.Name)
-            and d.func.value.id == mcp_n
-            and d.args
-            and isinstance(d.args[0], ast.Constant)
-            and d.args[0].value == "/health"
-        )
-        rbody = [s for s in route.body if not _doc(s)]
-        if not (ok and len(rbody) == 1 and isinstance(rbody[0], ast.Return)):
-            raise bad(route, "is not the plain /health route")
-        info["health"] = True
+    dead: set[str] = set()
+    local_imports: list[ast.ImportFrom] = []
+    while i < len(body):  # statements between the server and the surface registration
+        s = body[i]
+        if isinstance(s, ast.AsyncFunctionDef | ast.FunctionDef) and s.decorator_list:
+            rbody = [x for x in s.body if not _doc(x)]
+            if not info["health"] and _is_health_route(s, mcp_n):
+                pass
+            elif isinstance(s.decorator_list[0], ast.Call) and "custom_route" in ast.unparse(s.decorator_list[0].func):
+                raise bad(s, "is not the plain /health route (SDK gap: Connector declares no custom routes)")
+            else:
+                raise bad(s, "registers a tool inline in the bootstrap (SDK gap: Connector has no inline-tool hook)")
+            if not (len(rbody) == 1 and isinstance(rbody[0], ast.Return)):
+                raise bad(
+                    s,
+                    "is not the plain /health route: it probes the backend (SDK gap: the SDK /health is "
+                    "liveness-only and Connector has no readiness probe)",
+                )
+            info["health"] = True
+        elif (name := _empty_list_name(s)) is not None:
+            dead.add(name)
+        elif _inert_openapi(s, args_n):
+            info["inert"] = True
+        elif isinstance(s, ast.ImportFrom) and s.level == 0 and not any(a.name == "*" for a in s.names):
+            for a in s.names:
+                imports[a.asname or a.name] = (s.module or "", a.name)
+            local_imports.append(s)
+        else:
+            break
         i += 1
     if i >= len(body):
         raise _Reject("no register_tool_surface call")
@@ -335,22 +609,43 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
     elif isinstance(stmt, ast.Expr) and _is_call(stmt.value, "register_tool_surface"):
         call = stmt.value
     else:
+        if isinstance(stmt, ast.Assign) and any(
+            isinstance(t, ast.Name) and t.id == "tool_registry" for t in stmt.targets
+        ):
+            try:
+                _literal_registry(stmt.value, _bound_names(env.tree))
+            except _Reject as err:
+                raise bad(stmt, str(err)) from None
         raise bad(stmt)
     if len(call.args) != 1 or not (isinstance(call.args[0], ast.Name) and call.args[0].id == mcp_n):
         raise bad(stmt, "does not pass the server as the only positional argument")
-    kw = {k.arg: k.value for k in call.keywords}
-    allowed = {"client_cls", "get_client", "service", "tools_module", *_SURFACE_KWARGS}
-    if None in kw or set(kw) - allowed:
-        raise bad(stmt, f"passes unsupported keywords {sorted(k for k in kw if k and k not in allowed)}")
+    kw = {k.arg: k.value for k in call.keywords if k.arg}
+    if len(kw) != len(call.keywords):
+        raise bad(stmt, "passes **kwargs to register_tool_surface")
+    allowed = {"client_cls", "get_client", "service", "tools_module", "tool_registry", "registrars", "manifest"}
+    allowed |= set(_SURFACE_KWARGS)
+    if set(kw) - allowed:
+        raise bad(stmt, f"passes unsupported keywords {sorted(k for k in kw if k not in allowed)}")
+    if ("client_cls" in kw) != ("get_client" in kw):
+        raise bad(stmt, "passes only one of client_cls and get_client")
     for need in ("client_cls", "get_client"):
-        if not isinstance(kw.get(need), ast.Name):
+        if need in kw and not isinstance(kw[need], ast.Name):
             raise bad(stmt, f"does not pass {need} as a plain name")
-    if "tools_module" in kw and ast.dump(kw["tools_module"]) != ast.dump(_expr_of("sys.modules[__name__]")):
-        raise bad(stmt, "passes a tools_module other than sys.modules[__name__]")
+    if "manifest" in kw and "client_cls" not in kw:
+        raise bad(stmt, "passes a manifest without a client")
+    used = _name_loads([call])
+    for imp in local_imports:
+        if any((a.asname or a.name) not in used for a in imp.names):
+            raise bad(imp, "imports a name the surface registration does not use")
+    info.update(_tools_target(stmt, kw, env, imports))
     info["surface"] = kw
     i += 1
     while i < len(body):
-        extra = _bare_call(body[i])
+        s = body[i]
+        if _dead_log(s, info["tags"]) or _dead_loop(s, dead, mcp_n):
+            i += 1
+            continue
+        extra = _bare_call(s)
         if extra is None or not isinstance(extra.func, ast.Name) or _is_call(extra, "register_tool_surface"):
             break
         name = extra.func.id
@@ -362,10 +657,11 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
         ):
             break
         target = local_funcs.get(name)
-        if target is None or not _one_param(target):
+        if target is None and name in imports:
+            pass  # an imported callable is run with the server exactly as `extra_registrations` does
+        elif target is None or not _one_param(target):
             raise bad(
-                body[i],
-                f"calls `{name}`, which is not a top-level function of mcp_server.py taking exactly one parameter",
+                s, f"calls `{name}`, which is not a top-level function of mcp_server.py taking exactly one parameter"
             )
         info["extra"].append(name)
         i += 1
@@ -383,20 +679,102 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
         and ast.dump(stmt.body[0].value) == ast.dump(_expr_of(f"{mcp_n}.add_middleware({stmt.target.id})"))
     )
     if not loop_ok:
+        text = ast.unparse(stmt)
+        if "register_split_action_tools" in text or "serve_action_tools" in text:
+            raise bad(
+                stmt,
+                "registers action-routed tools (SDK gap: Connector has no action-routed registration such as "
+                "register_split_action_tools / serve_action_tools with prefixes)",
+            )
         raise bad(stmt)
     i += 1
     final = body[i] if i < len(body) else None
     if not isinstance(final, ast.Return) or i != len(body) - 1:
         raise bad(body[min(i, len(body) - 1)], "is not the final return")
-    if final.value is not None and not (
-        isinstance(final.value, ast.Tuple) and all(isinstance(e, ast.Name) for e in final.value.elts)
-    ):
-        raise bad(final)
-    del args_n
+    info["ret"] = []
+    if final.value is not None:
+        if not (isinstance(final.value, ast.Tuple) and all(isinstance(e, ast.Name) for e in final.value.elts)):
+            raise bad(final)
+        info["ret"] = [e.id for e in final.value.elts if isinstance(e, ast.Name)]
+    info["imports"] = imports
     return info
 
 
-def _analyse_entry(fn: ast.FunctionDef) -> None:
+def _is_stderr_print(stmt: ast.stmt) -> bool:
+    banner_call = _expr_of('print("x", file=sys.stderr)')
+    assert isinstance(banner_call, ast.Call)
+    return (
+        isinstance(stmt, ast.Expr)
+        and _is_call(stmt.value, "print")
+        and len(stmt.value.keywords) == 1
+        and ast.dump(stmt.value.keywords[0]) == ast.dump(banner_call.keywords[0])
+    )
+
+
+def _run_stmt(stmt: ast.stmt, mcp_n: str, args_n: str, transport: str) -> bool:
+    network = transport != "stdio"
+    host = f", host={args_n}.host, port={args_n}.port" if network else ""
+    want = _expr_of(f'{mcp_n}.run(transport="{transport}"{host})')
+    return isinstance(stmt, ast.Expr) and ast.dump(stmt.value) == ast.dump(want)
+
+
+def _transport_of(test: ast.expr, args_n: str) -> str | None:
+    for t in _TRANSPORTS:
+        if ast.dump(test) == ast.dump(_expr_of(f'{args_n}.transport == "{t}"')):
+            return t
+    return None
+
+
+def _error_exit(tail: list[ast.stmt]) -> bool:
+    """An else branch that reports the bad transport on stderr or the logger and exits non-zero."""
+    if not tail:
+        return False
+    *report, last = tail
+    exits = {ast.dump(_expr_of("sys.exit(1)")), ast.dump(ast.parse("raise SystemExit(1)").body[0])}
+    if (ast.dump(last.value) if isinstance(last, ast.Expr) else ast.dump(last)) not in exits:
+        return False
+    for s in report:
+        call = _bare_call(s)
+        is_log = (
+            call is not None
+            and isinstance(call.func, ast.Attribute)
+            and isinstance(call.func.value, ast.Name)
+            and call.func.value.id == "logger"
+        )
+        if not (is_log or _is_stderr_print(s)):
+            return False
+    return True
+
+
+def _dispatch(last: ast.stmt, mcp_n: str, args_n: str) -> tuple[str, ...] | None:
+    """The transports a hand-written dispatch serves (None = all of the SDK's); _Reject unless it is a plain one."""
+    served: list[str] = []
+    node: ast.stmt = last
+    while True:
+        if not isinstance(node, ast.If):
+            raise _Reject(f"line {node.lineno}: mcp_server() does not end with a transport dispatch on args.transport")
+        t = _transport_of(node.test, args_n)
+        if t is None or t in served or len(node.body) != 1 or not _run_stmt(node.body[0], mcp_n, args_n, t):
+            raise _Reject(
+                f"line {node.lineno}: mcp_server() does not end with the standard transport dispatch "
+                "(each branch must be `mcp.run(transport=...)` with host/port from args for network transports)"
+            )
+        served.append(t)
+        if len(node.orelse) == 1 and isinstance(node.orelse[0], ast.If):
+            node = node.orelse[0]
+            continue
+        tail = node.orelse
+        break
+    if len(tail) == 1 and _run_stmt(tail[0], mcp_n, args_n, "stdio"):
+        if "stdio" not in served:
+            served.append("stdio")
+    elif not _error_exit(tail):
+        raise _Reject(f"line {node.lineno}: the transport dispatch does not end in stdio or an error exit")
+    got = tuple(t for t in _TRANSPORTS if t in served)
+    return None if got == _TRANSPORTS else got
+
+
+def _analyse_entry(fn: ast.FunctionDef) -> dict[str, Any]:
     body = list(fn.body)
     if body and _doc(body[0]):
         body = body[1:]
@@ -410,21 +788,33 @@ def _analyse_entry(fn: ast.FunctionDef) -> None:
         and not first.value.args
     ):
         raise _Reject(f"line {first.lineno}: mcp_server() does not start with get_mcp_instance()")
-    banner_call = _expr_of('print("x", file=sys.stderr)')
-    assert isinstance(banner_call, ast.Call)
-    banner = banner_call.keywords[0]
+    names = first.targets[0].elts
+    if not (len(names) >= 2 and isinstance(names[0], ast.Name) and isinstance(names[1], ast.Name)):
+        raise _Reject(f"line {first.lineno}: mcp_server() does not unpack the server and its arguments")
     for stmt in body[1:-1]:
-        ok = (
-            isinstance(stmt, ast.Expr)
-            and _is_call(stmt.value, "print")
-            and len(stmt.value.keywords) == 1
-            and ast.dump(stmt.value.keywords[0]) == ast.dump(banner)
-        )
-        if not ok:
+        if not _is_stderr_print(stmt):
             raise _Reject(f"line {stmt.lineno}: `{ast.unparse(stmt)[:70]}` is outside the banner/dispatch shape")
-    last = body[-1]
-    if len(body) < 2 or ast.dump(last) != ast.dump(ast.parse(_DISPATCH).body[0]):
-        raise _Reject(f"line {last.lineno}: mcp_server() does not end with the standard transport dispatch")
+    if len(body) < 2:
+        raise _Reject(f"line {first.lineno}: mcp_server() does not end with the standard transport dispatch")
+    return {"transports": _dispatch(body[-1], names[0].id, names[1].id), "mcp": names[0].id, "args": names[1].id}
+
+
+def _uses_name(text: str, name: str) -> bool:
+    """Whether code (not a comment or docstring prose) names ``name``: an identifier, an alias or a dotted string."""
+    tree = _parse(text)
+    if tree is None:
+        return re.search(rf"\b{name}\b", text) is not None
+    dotted = re.compile(rf"(?:[\w]+\.)*{name}")
+    for n in ast.walk(tree):
+        if (
+            (isinstance(n, ast.Name) and n.id == name)
+            or (isinstance(n, ast.Attribute) and n.attr == name)
+            or (isinstance(n, ast.alias) and name in (n.name.split(".")[-1], n.asname))
+            or (isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef) and n.name == name)
+            or (isinstance(n, ast.Constant) and isinstance(n.value, str) and dotted.fullmatch(n.value))
+        ):
+            return True
+    return False
 
 
 def _import_map(tree: ast.Module, pkg: str, own_module: str) -> dict[str, tuple[str, str] | None]:
@@ -458,6 +848,16 @@ def _import_for(name: str, imports: dict, local: set[str], own: str) -> str | No
     return f"from {mod} import {orig}" + (f" as {name}" if name != orig else "")
 
 
+def _runs_mcp_server(body: list[ast.stmt]) -> bool:
+    """The body is ``mcp_server()``, alone or under ``if "pytest" not in sys.modules:`` (home-assistant-agent)."""
+    if len(body) != 1:
+        return False
+    only = body[0]
+    if isinstance(only, ast.If) and not only.orelse:
+        return ast.dump(only.test) == ast.dump(_expr_of('"pytest" not in sys.modules')) and _runs_mcp_server(only.body)
+    return isinstance(only, ast.Expr) and _is_call(only.value, "mcp_server")
+
+
 @rule("w1.g3")
 def g3(ctx: Ctx) -> None:
     path = ctx.pkg / "mcp_server.py"
@@ -473,13 +873,39 @@ def g3(ctx: Ctx) -> None:
     if "get_mcp_instance" not in funcs:
         if "mcp_server" in funcs:
             ctx.note(
-                "w1.g3", "mcp_server() exists without get_mcp_instance(); not the bootstrap shape", rel, blocking=True
+                "w1.g3",
+                "mcp_server() exists without get_mcp_instance(); the server is built by hand, not the bootstrap shape "
+                "(SDK gap: Connector.extra_registrations are called with the server only, so registrars that take "
+                "shared state such as a clients holder cannot be declared)",
+                rel,
+                blocking=True,
             )
+        else:
+            moved = [
+                f"{n.module}"
+                for n in tree.body
+                if isinstance(n, ast.ImportFrom)
+                and n.level == 0
+                and n.module
+                and any(a.name == "get_mcp_instance" for a in n.names)
+            ]
+            if moved:
+                ctx.note(
+                    "w1.g3",
+                    f"mcp_server.py only re-exports get_mcp_instance from {moved[0]}; the bootstrap lives there and "
+                    "is not extracted from a second module, hand-write Connector",
+                    rel,
+                    blocking=True,
+                )
         return
+    env = _Env(ctx, tree, _import_map(tree, ctx.pkg_name, f"{ctx.pkg_name}.mcp_server"))
+    entry: dict[str, Any] = {"transports": None}
     try:
-        info = _analyse_instance(funcs["get_mcp_instance"], funcs)
+        info = _analyse_instance(funcs["get_mcp_instance"], funcs, env)
         if "mcp_server" in funcs:
-            _analyse_entry(funcs["mcp_server"])
+            entry = _analyse_entry(funcs["mcp_server"])
+            if info["ret"][:2] != [info["mcp"], info["args"]]:
+                raise _Reject("get_mcp_instance() does not return the server and its arguments first")
     except _Reject as err:
         ctx.note(
             "w1.g3", f"get_mcp_instance/mcp_server is not the plain bootstrap, hand-write Connector: {err}", rel, True
@@ -494,10 +920,8 @@ def g3(ctx: Ctx) -> None:
         for n in tree.body
         if isinstance(n, ast.If)
         and ast.dump(n.test) == ast.dump(_expr_of('__name__ == "__main__"'))
-        and len(n.body) == 1
         and not n.orelse
-        and isinstance(n.body[0], ast.Expr)
-        and _is_call(n.body[0].value, "mcp_server")
+        and _runs_mcp_server(n.body)
     ]
     dele += main_if
     kept = [n for n in tree.body if n not in dele]
@@ -549,15 +973,27 @@ def g3(ctx: Ctx) -> None:
     if tags and tags in _name_loads(n for n in kept):
         ctx.note("w1.g3", f"`{tags}` (the registered tags) is used outside the bootstrap; hand-migrate", rel, True)
         return
+    # the rest of mcp_server.py must not call the deleted functions
+    gone = {"get_mcp_instance", "mcp_server"}
+    for n in kept:
+        if n not in dele and (gone & _name_loads([n])):
+            ctx.note(
+                "w1.g3",
+                f"line {n.lineno}: mcp_server.py itself still uses {sorted(gone & _name_loads([n]))[0]} outside the "
+                "bootstrap (a wrapper such as build_server); hand-migrate it and its importers",
+                rel,
+                True,
+            )
+            return
     # other modules must not import the deleted functions
     for other in _py_files(ctx.pkg):
         if other == path or other.name == "__main__.py" and other.parent == ctx.pkg:
             continue
-        if re.search(r"\bget_mcp_instance\b", other.read_text(encoding="utf-8")):
+        if _uses_name(other.read_text(encoding="utf-8"), "get_mcp_instance"):
             ctx.note("w1.g3", "another module uses get_mcp_instance; hand-migrate", ctx.rel(other), True)
             return
     # extraction
-    imports = _import_map(tree, ctx.pkg_name, f"{ctx.pkg_name}.mcp_server")
+    imports = info["imports"]
     local = _top_defs(ast.Module(body=kept, type_ignores=[]))
     own = f"{ctx.pkg_name}.mcp_server"
     import_lines: list[str] = []
@@ -582,12 +1018,31 @@ def g3(ctx: Ctx) -> None:
         else:
             raise _Reject("instructions= is neither a string literal nor a module constant")
         surf = info["surface"]
-        exprs["api"] = surf["client_cls"].id
-        exprs["get_client"] = surf["get_client"].id
-        need(surf["client_cls"], "client_cls")
-        need(surf["get_client"], "get_client")
+        if "client_cls" in surf:
+            need(surf["client_cls"], "client_cls")
+            need(surf["get_client"], "get_client")
+        if "manifest" in surf:
+            need(surf["manifest"], "manifest")
+            main = ast.Dict(
+                keys=[ast.Constant("client_cls"), ast.Constant("get_client"), ast.Constant("manifest")],
+                values=[surf["client_cls"], surf["get_client"], surf["manifest"]],
+            )
+            given = surf.get("verbose_targets")
+            more: list[ast.expr] = (
+                []
+                if given is None
+                else list(given.elts)
+                if isinstance(given, ast.List)
+                else [ast.Starred(given, ast.Load())]
+            )
+            exprs["verbose_targets"] = ast.unparse(ast.Tuple(elts=[main, *more], ctx=ast.Load()))
+            if given is not None:
+                need(given, "verbose_targets")
+        elif "client_cls" in surf:
+            exprs["api"] = surf["client_cls"].id
+            exprs["get_client"] = surf["get_client"].id
         for key in _SURFACE_KWARGS:
-            if key not in surf:
+            if key not in surf or (key == "verbose_targets" and "manifest" in surf):
                 continue
             node = surf[key]
             if key == "verbose_targets":
@@ -598,7 +1053,16 @@ def g3(ctx: Ctx) -> None:
                 exprs[key] = _src(node)
                 need(node, key)
         for name in info["extra"]:
-            import_lines.append(f"from {own} import {name}")
+            line = _import_for(name, imports, local, own)
+            if line is None:
+                raise _Reject(f"extra registration `{name}` is neither defined nor imported by mcp_server.py")
+            import_lines.append(line)
+        if info["tools"] is None and _module_file(ctx, f"{ctx.pkg_name}.tools"):
+            raise _Reject(f"no tools_module is passed, but {ctx.pkg_name}.tools exists and the SDK loads it by default")
+        if info["tools"]:
+            exprs["tools"] = info["tools"]
+        if entry["transports"]:
+            exprs["transports"] = "(" + ", ".join(json.dumps(t) for t in entry["transports"]) + ",)"
     except _Reject as err:
         ctx.note("w1.g3", f"cannot extract Connector values: {err}", rel, True)
         return
@@ -607,7 +1071,7 @@ def g3(ctx: Ctx) -> None:
     if any(f"from {own} import {n}" in import_lines for n in deleted_names):
         ctx.note("w1.g3", "a Connector value names a function the bootstrap deletes", rel, True)
         return
-    candidates = _name_loads(dele)
+    candidates = _name_loads(dele) - set(info["keep"])
     new = _delete_spans(text, [_span(n) for n in dele])
     new = _prune_imports(new, candidates)
     ctx.write(rel, new, "w1.g3")
@@ -617,6 +1081,24 @@ def g3(ctx: Ctx) -> None:
         "health": info["health"],
         "extra": list(info["extra"]),
     }
+    if entry["transports"]:
+        ctx.note(
+            "w1.g3",
+            "mcp_server() served only " + ", ".join(entry["transports"]) + "; declared as Connector(transports=...)",
+            rel,
+        )
+    if info.get("ordered"):
+        ctx.note(
+            "w1.g3",
+            "registrar tools register in the SDK's sorted register_<tag>_tools order instead of the listed order",
+            rel,
+        )
+    if info["inert"]:
+        ctx.note(
+            "w1.g3",
+            "dropped the `--openapi-file` import block; the SDK parser defines no such flag, so it never ran",
+            rel,
+        )
     if info["env"]:
         ctx.note(
             "w1.g3",
@@ -738,10 +1220,14 @@ def _rewrite_pkg_imports(ctx: Ctx, owner: dict[str, str]) -> tuple[dict[str, str
         if f == ctx.pkg / "__init__.py":
             continue
         text = f.read_text(encoding="utf-8")
-        if f"from {ctx.pkg_name} import" not in text and not _relative_init_import(ctx, f):
+        if not re.search(rf"\b{ctx.pkg_name}\b", text) and not _relative_init_import(ctx, f):
             continue
         tree = _parse(text)
         if tree is None:
+            continue
+        original = text
+        text, tree = _drop_scaffold_tests(ctx, f, text, tree, bad)
+        if ctx.rel(f) in ctx.options.get(_G4_FILES, ()):
             continue
         rep: list[tuple[int, int, str]] = []
         for n in ast.walk(tree):
@@ -764,9 +1250,125 @@ def _rewrite_pkg_imports(ctx: Ctx, owner: dict[str, str]) -> tuple[dict[str, str
             rep.append((n.lineno, n.end_lineno or n.lineno, "\n".join(lines)))
         for start, end, new in sorted(rep, reverse=True):
             text = _replace_span(text, start, end, new)
-        if rep:
+        if rep or text != original:
             edits[ctx.rel(f)] = text
     return edits, bad
+
+
+_SCAFFOLD_TEST_NAMES = _SCAFFOLD_NAMES - {"__version__"}
+_SCAFFOLD_ATTR = re.compile(
+    r"_[A-Z][A-Z_]*_AVAILABLE|_AVAILABILITY_FLAGS|CORE_MODULES|OPTIONAL_MODULES|_expose_members|_import_module_safely"
+    r"|_loaded_optional_modules|_resolve_from_optional_modules|_load_optional_module|_optional_module_is_available"
+)
+
+
+def _enclosing_test(tree: ast.Module, line: int) -> ast.FunctionDef | ast.AsyncFunctionDef | None:
+    for n in tree.body:
+        scope = n.body if isinstance(n, ast.ClassDef) else [n]
+        for m in scope:
+            if (
+                isinstance(m, ast.FunctionDef | ast.AsyncFunctionDef)
+                and m.name.startswith("test")
+                and m.lineno <= line <= (m.end_lineno or m.lineno)
+            ):
+                return m
+    return None
+
+
+def _dunder_arg(call: ast.Call) -> bool:
+    """``hasattr(m, "__version__")``-style reads of a module dunder, which the scaffold does not provide."""
+    arg = call.args[1] if len(call.args) > 1 else None
+    return (
+        isinstance(arg, ast.Constant)
+        and isinstance(arg.value, str)
+        and arg.value.startswith("__")
+        and arg.value.endswith("__")
+    )
+
+
+def _scaffold_reader(ctx: Ctx, tree: ast.Module, within: ast.AST | None = None) -> str | None:
+    """What, if anything, still reads the package through the lazy-import scaffold (module attributes, dir()).
+
+    ``within`` limits the search to one subtree (a test function); the package aliases come from the whole module.
+    """
+    aliases = {
+        a.asname or a.name
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Import)
+        for a in n.names
+        if a.name == ctx.pkg_name
+    }
+    for n in ast.walk(within if within is not None else tree):
+        if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) and n.value.id in aliases:
+            if _SCAFFOLD_ATTR.fullmatch(n.attr):
+                return f"{n.value.id}.{n.attr}"
+        if (
+            isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Name)
+            and n.func.id in ("dir", "hasattr", "getattr", "vars")
+            and n.args
+            and isinstance(n.args[0], ast.Name)
+            and n.args[0].id in aliases
+            and not _dunder_arg(n)
+        ):
+            return f"{n.func.id}({n.args[0].id})"
+        if isinstance(n, ast.Constant) and isinstance(n.value, str) and n.value.startswith(ctx.pkg_name + "."):
+            if _SCAFFOLD_ATTR.fullmatch(n.value.rsplit(".", 1)[-1]):
+                return n.value
+    return None
+
+
+def _drop_scaffold_tests(ctx: Ctx, f: Path, text: str, tree: ast.Module, bad: list[str]) -> tuple[str, ast.Module]:
+    """Delete the test functions that exercise the scaffold itself; keep the file when anything else reads it.
+
+    A test exercises the scaffold when it imports one of its helpers or reads the package through it (a lazily
+    exposed attribute, ``dir``/``hasattr``/``getattr`` of the package, a scaffold table). When that leaves the file
+    without a test, the file goes whole (its path is recorded under ``_G4_FILES``).
+    """
+    hits = [
+        n
+        for n in ast.walk(tree)
+        if isinstance(n, ast.ImportFrom)
+        and _targets_pkg_init(ctx, f, n)
+        and any(a.name in _SCAFFOLD_TEST_NAMES for a in n.names)
+    ]
+    doomed: dict[int, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    for n in hits:
+        fn = _enclosing_test(tree, n.lineno)
+        if fn is None:
+            bad.append(f"{ctx.rel(f)}: {', '.join(a.name for a in n.names)} (imported outside a test function)")
+            return text, tree
+        doomed[fn.lineno] = fn
+    for _name, fn, _cls in _test_nodes(tree):
+        if _scaffold_reader(ctx, tree, fn) is not None:
+            doomed[fn.lineno] = fn
+    if not doomed:
+        return text, tree
+    new = _delete_spans(text, [_span(fn) for fn in doomed.values()])
+    new = _prune_imports(new, _name_loads(doomed.values()))
+    new_tree = _parse(new)
+    if new_tree is None:
+        return text, tree
+    reader = _scaffold_reader(ctx, new_tree)
+    if reader is not None:
+        bad.append(f"{ctx.rel(f)}: {reader} (read outside a test function or by a test that is not scaffold-only)")
+        return text, tree
+    names = ", ".join(sorted(fn.name for fn in doomed.values()))
+    ctx.options.setdefault(_G4_NOTES, []).append(
+        (ctx.rel(f), f"deleted test(s) {names}: they exercise the removed lazy-import scaffold itself")
+    )
+    if not _test_nodes(new_tree) and _test_nodes(tree):
+        stem = f.stem
+        users = [
+            ctx.rel(o)
+            for o in _py_files(ctx.root)
+            if o != f and re.search(rf"\b(?:from|import)\s+(?:[\w.]*\.)?{re.escape(stem)}\b", o.read_text("utf-8"))
+        ]
+        if users:
+            bad.append(f"{ctx.rel(f)}: every test exercises the scaffold, but {users[0]} imports the file")
+            return text, tree
+        ctx.options.setdefault(_G4_FILES, []).append(ctx.rel(f))
+    return new, new_tree
 
 
 def _relative_init_import(ctx: Ctx, f: Path) -> bool:
@@ -787,15 +1389,21 @@ def _remove_scaffold(ctx: Ctx, rule_id: str) -> str | None:
     head, owner = edit
     edits, bad = _rewrite_pkg_imports(ctx, owner)
     if bad:
+        ctx.options.pop(_G4_NOTES, None)
+        ctx.options.pop(_G4_FILES, None)
         ctx.note(
             rule_id,
-            f"lazy-import scaffold kept: names with no core module owner: {bad}",
+            f"lazy-import scaffold kept: names with no core module owner or tests that still exercise it: {bad}",
             ctx.rel(ctx.pkg / "__init__.py"),
             True,
         )
         return None
     for rel, new in edits.items():
         ctx.write(rel, new, rule_id)
+    for rel in ctx.options.pop(_G4_FILES, []):
+        ctx.delete(rel, rule_id)
+    for rel, why in ctx.options.pop(_G4_NOTES, []):
+        ctx.note(rule_id, why, rel)
     _delete_scaffold_tests(ctx)
     return head
 
@@ -811,6 +1419,8 @@ def g4(ctx: Ctx) -> None:
         mcp = ctx.pkg / "mcp_server.py"
         if mcp.is_file() and "def get_mcp_instance" in mcp.read_text(encoding="utf-8"):
             return  # g3 reviewed it
+        if any(i["step"] == "w1.g3" and i["blocking"] for i in ctx.review.items):
+            return  # g3 already said why there is nothing to extract
         ctx.note(
             "w1.g4", "no `connector = Connector(...)` in the package and no bootstrap to extract it from", rel, True
         )
@@ -819,16 +1429,15 @@ def g4(ctx: Ctx) -> None:
     head = _remove_scaffold(ctx, "w1.g4")
     base = head if head is not None else text
     exprs = stash["exprs"]
-    pkg = ctx.pkg_name
     sdk = "from agent_connector_sdk.connector import Connector"
     lines = [sdk, "", *stash["imports"]]
-    kw = [
-        f"    api={exprs['api']},",
-        f"    get_client={exprs['get_client']},",
-        f'    tools="{pkg}.mcp_server",',
-        f"    instructions={exprs['instructions']},",
-    ]
-    kw += [f"    {k}={exprs[k]}," for k in _SURFACE_KWARGS if k in exprs]
+    kw = []
+    if "api" in exprs:
+        kw += [f"    api={exprs['api']},", f"    get_client={exprs['get_client']},"]
+    if "tools" in exprs:
+        kw.append(f'    tools="{exprs["tools"]}",')
+    kw.append(f"    instructions={exprs['instructions']},")
+    kw += [f"    {k}={exprs[k]}," for k in ("transports", *_SURFACE_KWARGS) if k in exprs]
     extra = stash.get("extra") or []
     if extra:
         kw.append(f"    extra_registrations=({', '.join(extra)}{',' if len(extra) == 1 else ''}),")
@@ -850,9 +1459,14 @@ def g5(ctx: Ctx) -> None:
     if mcp.is_file() and "def get_mcp_instance" in mcp.read_text(encoding="utf-8"):
         return  # bootstrap kept, __main__ still valid
     tree = _parse(path.read_text(encoding="utf-8"))
-    ok = tree is not None and len(tree.body) == 2
-    if tree is not None and ok:
-        imp, main = tree.body
+    body = (
+        [n for n in tree.body if not _doc(n) and not (isinstance(n, ast.ImportFrom) and n.module == "__future__")]
+        if tree is not None
+        else []
+    )
+    ok = len(body) == 2
+    if ok:
+        imp, main = body
         ok = (
             isinstance(imp, ast.ImportFrom)
             and imp.module == f"{ctx.pkg_name}.mcp_server"
@@ -1009,6 +1623,26 @@ def _is_version_assert(n: ast.stmt) -> bool:
         return False
     if _is_version_ref(n.test):
         return True
+    t = n.test
+    if isinstance(t, ast.Call) and isinstance(t.func, ast.Name) and not t.keywords:
+        # presence checks: hasattr(m, "__version__"), isinstance(m.__version__, str)
+        if t.func.id == "hasattr" and len(t.args) == 2:
+            return isinstance(t.args[1], ast.Constant) and t.args[1].value == "__version__"
+        if t.func.id == "isinstance" and len(t.args) == 2:
+            return _is_version_ref(t.args[0])
+    if (
+        isinstance(t, ast.Compare)
+        and len(t.ops) == 1
+        and isinstance(t.ops[0], ast.Gt)
+        and isinstance(t.left, ast.Call)
+        and isinstance(t.left.func, ast.Name)
+        and t.left.func.id == "len"
+        and len(t.left.args) == 1
+        and _is_version_ref(t.left.args[0])
+        and isinstance(t.comparators[0], ast.Constant)
+        and t.comparators[0].value == 0
+    ):
+        return True
     if not isinstance(n.test, ast.Compare) or len(n.test.ops) != 1 or not _is_version_ref(n.test.left):
         return False
     op, right = n.test.ops[0], n.test.comparators[0]
@@ -1032,7 +1666,9 @@ def _clean_version_asserts(text: str) -> str:
             hits = [s for s in stmts if _is_version_assert(s)]
             if not hits:
                 continue
-            rest = [s for s in stmts if s not in hits and not _doc(s)]
+            rest = [
+                s for s in stmts if s not in hits and not _doc(s) and not isinstance(s, ast.Import | ast.ImportFrom)
+            ]
             if not rest and isinstance(parent, ast.FunctionDef | ast.AsyncFunctionDef) and field == "body":
                 spans.append(_span(parent))
                 candidates |= _name_loads([parent])
@@ -1043,6 +1679,11 @@ def _clean_version_asserts(text: str) -> str:
                     spans.append(_span(h))
                     candidates |= _name_loads([h])
     del parents
+    # a class left with nothing but its docstring goes too
+    for cls in (c for c in ast.walk(tree) if isinstance(c, ast.ClassDef)):
+        body = [b for b in cls.body if not _doc(b)]
+        if body and all(any(sp[0] <= _span(b)[0] and _span(b)[1] <= sp[1] for sp in spans) for b in body):
+            spans.append(_span(cls))
     # drop spans nested in another span
     spans = [s for s in spans if not any(o != s and o[0] <= s[0] and s[1] <= o[1] for o in spans)]
     if not spans:
@@ -1076,6 +1717,102 @@ def _version_importers(ctx: Ctx, mod: str) -> list[tuple[Path, ast.ImportFrom]]:
     return out
 
 
+def _import_anchor(tree: ast.Module) -> int:
+    """The line after which a new top-level import goes: the last top-level import, else the docstring, else 0."""
+    end = 0
+    for i, n in enumerate(tree.body):
+        if isinstance(n, ast.Import | ast.ImportFrom) or (i == 0 and _doc(n)):
+            end = max(end, n.end_lineno or n.lineno)
+    return end
+
+
+def _add_lines(text: str, lines: list[str], *, after: int | None = None) -> str:
+    """Insert ``lines`` after line ``after`` (default: the import anchor of ``text``)."""
+    tree = _parse(text)
+    at = after if after is not None else (_import_anchor(tree) if tree is not None else 0)
+    parts = text.split("\n")
+    parts[at:at] = lines
+    return "\n".join(parts)
+
+
+def _replace_nodes(text: str, nodes: Sequence[ast.expr], new: str) -> str | None:
+    """Replace single-line expression nodes by ``new``; ``None`` when one spans lines."""
+    rows = text.split("\n")
+    for node in sorted(nodes, key=lambda n: (n.lineno, n.col_offset), reverse=True):
+        ln, col, eln, ecol = _pos(node)
+        if ln != eln:
+            return None
+        line = rows[ln - 1].encode("utf-8")
+        rows[ln - 1] = (line[:col] + new.encode() + line[ecol:]).decode("utf-8")
+    return "\n".join(rows)
+
+
+def _drop_from_all(text: str) -> str:
+    """Remove the ``"__version__"`` entry from a literal top-level ``__all__``."""
+    tree = _parse(text)
+    if tree is None:
+        return text
+    for n in tree.body:
+        target = n.targets[0] if isinstance(n, ast.Assign) and len(n.targets) == 1 else getattr(n, "target", None)
+        if not (isinstance(n, ast.Assign | ast.AnnAssign) and isinstance(target, ast.Name) and target.id == "__all__"):
+            continue
+        if not isinstance(n.value, ast.List | ast.Tuple):
+            continue
+        keep = [e for e in n.value.elts if not (isinstance(e, ast.Constant) and e.value == "__version__")]
+        if len(keep) == len(n.value.elts):
+            continue
+        n.value.elts = keep
+        return _replace_span(text, n.lineno, n.end_lineno or n.lineno, ast.unparse(n))
+    return text
+
+
+def _all_names_version(tree: ast.Module) -> bool:
+    for n in tree.body:
+        value = n.value if isinstance(n, ast.Assign | ast.AnnAssign) else None
+        if value is not None and "__all__" in ast.unparse(n).split("=")[0]:
+            return any(isinstance(e, ast.Constant) and e.value == "__version__" for e in ast.walk(value))
+    return False
+
+
+def _metadata_alias(text: str) -> str:
+    return "_v" if not re.search(r"\b_v\b", text) or re.search(r"import version as _v\b", text) else "_pkg_version"
+
+
+_META_IMPORT = "from importlib.metadata import version as"
+
+
+def _importer_rewrite(ctx: Ctx, imp_file: Path, node: ast.ImportFrom) -> None:
+    """``from m import a, __version__`` keeps ``a`` and defines ``__version__`` from the installed metadata."""
+    t = imp_file.read_text(encoding="utf-8")
+    keep = [a for a in node.names if a.name != "__version__"]
+    alias = _metadata_alias(t)
+    t = _replace_span(t, node.lineno, node.end_lineno or node.lineno, _import_text(node, keep) if keep else "")
+    t = _add_lines(t, [f"{_META_IMPORT} {alias}"] if f"{_META_IMPORT} {alias}" not in t else [])
+    t = _add_lines(t, ["", f'__version__ = {alias}("{ctx.dist}")'])
+    ctx.write(ctx.rel(imp_file), t, "w1.k1")
+
+
+def _module_readers(rest: list[ast.stmt]) -> tuple[list[ast.expr], str | None]:
+    """The ``__version__`` loads in a module's remaining body, or why they cannot be rewritten."""
+    reads: list[ast.expr] = []
+    for root in rest:
+        for n in ast.walk(root):
+            if isinstance(n, ast.Name) and n.id == "__version__":
+                if isinstance(n.ctx, ast.Load):
+                    reads.append(n)
+                else:
+                    return [], "`__version__` is assigned elsewhere in the module"
+            elif isinstance(n, ast.Global | ast.Nonlocal) and "__version__" in n.names:
+                return [], "`__version__` is declared global"
+    return reads, None
+
+
+def _test_files(ctx: Ctx) -> list[Path]:
+    return [
+        tf for tf in _py_files(ctx.root) if "tests" in tf.relative_to(ctx.root).parts or tf.name.startswith("test_")
+    ]
+
+
 @rule("w1.k1")
 def k1(ctx: Ctx) -> None:
     for f in _py_files(ctx.pkg):
@@ -1091,38 +1828,80 @@ def k1(ctx: Ctx) -> None:
         rel = ctx.rel(f)
         mod = _module_name(ctx, f)
         # tests: asserts are removed by k4 first
-        for tf in _py_files(ctx.root):
-            if "tests" in tf.relative_to(ctx.root).parts or tf.name.startswith("test_"):
-                tt = tf.read_text(encoding="utf-8")
-                cleaned = _clean_version_asserts(tt)
-                if cleaned != tt:
-                    ctx.write(ctx.rel(tf), cleaned, "w1.k4")
+        tests = _test_files(ctx)
+        for tf in tests:
+            tt = tf.read_text(encoding="utf-8")
+            cleaned = _clean_version_asserts(tt)
+            if cleaned != tt:
+                ctx.write(ctx.rel(tf), cleaned, "w1.k4")
         rest = [n for n in tree.body if n not in hits]
-        if "__version__" in _name_loads(rest):
-            ctx.note("w1.k1", "`__version__` is still read inside the module; rewrite that use by hand", rel, True)
+        reads, why = _module_readers(rest)
+        if why:
+            ctx.note("w1.k1", f"{why}; rewrite that use by hand", rel, True)
             continue
         importers = _version_importers(ctx, mod)
         blocked = False
         rewrites: list[tuple[Path, ast.ImportFrom]] = []
         for imp_file, node in importers:
-            is_test = "tests" in imp_file.relative_to(ctx.root).parts or imp_file.name.startswith("test_")
-            if is_test or [a.name for a in node.names] != ["__version__"] or node.names[0].asname:
+            is_test = imp_file in tests
+            top_level = node.col_offset == 0 and sum(1 for i in importers if i[0] == imp_file) == 1
+            if is_test or any(a.asname for a in node.names if a.name == "__version__") or not top_level:
                 ctx.note("w1.k1", f"`__version__` of {mod} is imported here; rewrite by hand", ctx.rel(imp_file), True)
                 blocked = True
             else:
                 rewrites.append((imp_file, node))
         attr = re.compile(rf"\b{re.escape(mod)}\.__version__")
+        test_attr: list[Path] = []
         for tf in _py_files(ctx.root):
-            if tf != f and attr.search(tf.read_text(encoding="utf-8")):
+            if tf == f or not attr.search(tf.read_text(encoding="utf-8")):
+                continue
+            if tf in tests:
+                test_attr.append(tf)
+            else:
                 ctx.note("w1.k1", f"`{mod}.__version__` is read here; rewrite by hand", ctx.rel(tf), True)
                 blocked = True
+        if _all_names_version(tree) and any(
+            re.search(r"__all__", tf.read_text(encoding="utf-8")) for tf in tests if tf != f
+        ):
+            ctx.note("w1.k1", f"a test reads {mod}.__all__, which lists `__version__`; rewrite by hand", rel, True)
+            blocked = True
         if blocked:
             continue
         for imp_file, node in rewrites:
-            t = imp_file.read_text(encoding="utf-8")
-            new = f'from importlib.metadata import version as _v\n\n__version__ = _v("{ctx.dist}")'
-            ctx.write(ctx.rel(imp_file), _replace_span(t, node.lineno, node.end_lineno or node.lineno, new), "w1.k1")
-        new_text = _delete_spans(text, [_span(n) for n in hits])
+            _importer_rewrite(ctx, imp_file, node)
+        for tf in test_attr:
+            tt = tf.read_text(encoding="utf-8")
+            ttree = _parse(tt)
+            if ttree is None:
+                continue
+            nodes = [
+                n
+                for n in ast.walk(ttree)
+                if isinstance(n, ast.Attribute) and n.attr == "__version__" and ast.unparse(n.value) == mod
+            ]
+            out = _replace_nodes(tt, nodes, f'importlib.metadata.version("{ctx.dist}")')
+            if out is None:
+                ctx.note("w1.k1", f"`{mod}.__version__` is read across lines here; rewrite by hand", ctx.rel(tf), True)
+                continue
+            if not re.search(r"^import importlib\.metadata$", out, re.M):
+                out = _add_lines(out, ["import importlib.metadata"])
+            ctx.write(ctx.rel(tf), _prune_imports(out, {mod.split(".")[0]}), "w1.k1")
+        new_text = text
+        if reads:
+            alias = _metadata_alias(text)
+            replaced = _replace_nodes(new_text, reads, f'{alias}("{ctx.dist}")')
+            if replaced is None:
+                ctx.note("w1.k1", "`__version__` is read across lines; rewrite that use by hand", rel, True)
+                continue
+            new_text = replaced
+            if f"{_META_IMPORT} {alias}" not in new_text:
+                new_text = _add_lines(new_text, [f"{_META_IMPORT} {alias}"])
+        new_text = _drop_from_all(new_text)
+        new_tree = _parse(new_text)
+        if new_tree is None:
+            ctx.note("w1.k1", "the rewritten module does not parse; rewrite by hand", rel, True)
+            continue
+        new_text = _delete_spans(new_text, [_span(n) for n in new_tree.body if _is_version_assign(n)])
         new_tree = _parse(new_text)
         only_docs = all(_doc(n) or isinstance(n, ast.Import | ast.ImportFrom) for n in (new_tree or tree).body)
         if f.name != "__init__.py" and (
@@ -1190,12 +1969,86 @@ def k4(ctx: Ctx) -> None:
 
 
 # --- i: connector_sources becomes data only -------------------------------------------------------------
+# The same assembly with annotated locals and the per-entry spec bound to a name first (28 fleet connectors).
+_DECLARATION_TYPED = '''\
+def declaration() -> IngestSourceDeclaration:
+    """The declaration the server assembles from this module."""
+    specs: list[IngestSourceSpec] = []
+    for item in SOURCES:
+        for entry in item["connector_sources"]:
+            body: dict[str, Any] = {
+                k: v for k, v in entry.items() if k not in ("tool", "mapping")
+            }
+            spec = {**body, "tools": (entry["tool"],)}
+            specs.append(IngestSourceSpec.model_validate(spec))
+    return IngestSourceDeclaration.model_validate(
+        {
+            "connector": CONNECTOR,
+            "sources": specs,
+            "schema_mappings": SCHEMA_MAPPINGS,
+            "resources": RESOURCES,
+        }
+    )
+'''
+
+
+def _normal_declaration_src(node: ast.FunctionDef) -> str:
+    """Source of ``node`` without its docstring and with annotated assignments read as plain ones."""
+    fn = ast.parse(ast.unparse(node)).body[0]
+    assert isinstance(fn, ast.FunctionDef)
+    if fn.body and _doc(fn.body[0]):
+        fn.body = fn.body[1:]
+
+    class _Plain(ast.NodeTransformer):
+        def visit_AnnAssign(self, n: ast.AnnAssign) -> ast.AST:
+            self.generic_visit(n)
+            return ast.Assign(targets=[n.target], value=n.value, lineno=n.lineno) if n.value else n
+
+    return ast.unparse(ast.fix_missing_locations(_Plain().visit(fn)))
+
+
+def _normal_declaration(node: ast.FunctionDef) -> str:
+    return ast.dump(ast.parse(_normal_declaration_src(node)).body[0])
+
+
 def _canonical_declaration() -> str:
     return ast.dump(ast.parse(_DECLARATION).body[0])
 
 
+def _declaration_variant(node: ast.FunctionDef) -> str | None:
+    """Which accepted assembly ``node`` is (equal to ``load_declaration``), else ``None``."""
+    if ast.dump(node) == _canonical_declaration():
+        return "standard"
+    got = _normal_declaration(node)
+    for name, src in (("standard", _DECLARATION), ("typed", _DECLARATION_TYPED)):
+        fn = ast.parse(src).body[0]
+        assert isinstance(fn, ast.FunctionDef)
+        if got == _normal_declaration(fn):
+            return name
+    return None
+
+
+def _declaration_difference(node: ast.FunctionDef) -> str:
+    """The first statement where ``node`` departs from the closest accepted body, as written in the module."""
+    got = ast.unparse(ast.parse(_normal_declaration_src(node)).body[0]).splitlines()
+    best: tuple[float, str] = (-1.0, "")
+    for src in (_DECLARATION, _DECLARATION_TYPED):
+        fn = ast.parse(src).body[0]
+        assert isinstance(fn, ast.FunctionDef)
+        want = ast.unparse(ast.parse(_normal_declaration_src(fn)).body[0]).splitlines()
+        matcher = difflib.SequenceMatcher(None, got, want, autojunk=False)
+        extra = [g.strip() for tag, i1_, i2_, _, _ in matcher.get_opcodes() if tag != "equal" for g in got[i1_:i2_]]
+        missing = [w.strip() for tag, _, _, j1_, j2_ in matcher.get_opcodes() if tag != "equal" for w in want[j1_:j2_]]
+        detail = (
+            f"`{extra[0]}` is not in the plain assembly" if extra else f"`{missing[0]}` is missing" if missing else ""
+        )
+        if matcher.ratio() > best[0]:
+            best = (matcher.ratio(), detail)
+    return best[1]
+
+
 def _declaration_equal(node: ast.FunctionDef) -> bool:
-    return ast.dump(node) == _canonical_declaration()
+    return _declaration_variant(node) is not None
 
 
 def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
@@ -1216,6 +2069,7 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
         const_names: set[str] = set()
         mod_names: set[str] = set()
         import_edits: list[tuple[int, int, str]] = []
+        import_cols: list[int] = []  # indentation of each edited import (a nested import keeps its block)
         for n in ast.walk(tree):
             if isinstance(n, ast.ImportFrom) and n.level == 0 and n.module == mod:
                 keep = []
@@ -1228,6 +2082,7 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
                         keep.append(a)
                 if len(keep) != len(n.names):
                     import_edits.append((n.lineno, n.end_lineno or n.lineno, _import_text(n, keep) if keep else ""))
+                    import_cols.append(n.col_offset)
             elif isinstance(n, ast.ImportFrom) and n.level == 0 and n.module == ctx.pkg_name:
                 keep = []
                 for a in n.names:
@@ -1289,6 +2144,9 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
         if need_name and "import connector_name" not in text2:
             adds.append("from agent_connector_sdk.connector_identity import connector_name")
         # imports: replace the first edited statement with the new imports; delete the rest
+        ind = " " * (import_cols[import_edits.index(min(import_edits))] if import_edits else 0)
+        if len(set(import_cols)) > 1:
+            bad.append(f"{ctx.rel(f)}: connector_sources is imported at different nesting levels")
         first = True
         for start, end, repl in sorted(import_edits, key=lambda e: -e[0]):
             lines2 = text2.split("\n")
@@ -1298,7 +2156,7 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
         if adds:
             ins = min((e[0] for e in import_edits), default=None)
             keep_lines = [e[2] for e in import_edits if e[2]]
-            block = "\n".join([*adds, *keep_lines])
+            block = "\n".join(ind + ln for ln in "\n".join([*adds, *keep_lines]).split("\n"))
             lines2 = text2.split("\n")
             at = (ins - 1) if ins else _first_import_line(tree)
             lines2[at:at] = block.split("\n")
@@ -1306,7 +2164,7 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
         elif import_edits:
             lines2 = text2.split("\n")
             at = min(e[0] for e in import_edits) - 1
-            lines2[at:at] = [e[2] for e in import_edits if e[2]]
+            lines2[at:at] = [ind + ln for e in import_edits if e[2] for ln in e[2].split("\n")]
             text2 = "\n".join(lines2)
         del first
         text2 = _prune_imports(text2, mod_names)
@@ -1336,7 +2194,13 @@ def i1(ctx: Ctx) -> None:
     if not decl:
         return
     if not _declaration_equal(decl[0]):
-        ctx.note("w1.i1", "declaration() is not the standard 18-line body; hand-migrate to load_declaration", rel, True)
+        ctx.note(
+            "w1.i1",
+            "declaration() is not a plain assembly of SOURCES/SCHEMA_MAPPINGS/RESOURCES (it does something else: "
+            f"{_declaration_difference(decl[0])}); hand-migrate to load_declaration",
+            rel,
+            True,
+        )
         return
     edits, bad = _rewrite_declaration_users(ctx)
     if bad:
@@ -1345,13 +2209,14 @@ def i1(ctx: Ctx) -> None:
     for erel, etext in edits.items():
         ctx.write(erel, etext, "w1.i1")
     new = _delete_spans(text, [_span(decl[0])])
-    cand = {"IngestSourceDeclaration", "IngestSourceSpec"}
+    cand = {"IngestSourceDeclaration", "IngestSourceSpec", "Any"}
     new_tree = _parse(new)
     if new_tree is not None:
         consts = [
             n
             for n in new_tree.body
-            if isinstance(n, ast.Assign) and len(n.targets) == 1 and ast.unparse(n.targets[0]) == "CONNECTOR"
+            if (isinstance(n, ast.Assign) and len(n.targets) == 1 and ast.unparse(n.targets[0]) == "CONNECTOR")
+            or (isinstance(n, ast.AnnAssign) and ast.unparse(n.target) == "CONNECTOR")
         ]
         if consts and "CONNECTOR" not in _name_loads(n for n in new_tree.body if n not in consts):
             new = _delete_spans(new, [_span(consts[0])])
@@ -1387,9 +2252,15 @@ def i2(ctx: Ctx) -> None:
     if {"FIELD_SETS", "SCHEMA_VERSION"} & _top_defs(tree):
         return
     node = next(
-        (n for n in tree.body if isinstance(n, ast.Assign) and ast.unparse(n.targets[0]) == "SCHEMA_MAPPINGS"), None
+        (
+            n
+            for n in tree.body
+            if (isinstance(n, ast.Assign) and ast.unparse(n.targets[0]) == "SCHEMA_MAPPINGS")
+            or (isinstance(n, ast.AnnAssign) and ast.unparse(n.target) == "SCHEMA_MAPPINGS" and n.value is not None)
+        ),
+        None,
     )
-    if node is None:
+    if node is None or node.value is None:
         return
     try:
         mappings = ast.literal_eval(node.value)
@@ -1423,7 +2294,11 @@ def i2(ctx: Ctx) -> None:
             }
         else:
             out[key] = m
-    block = f"SCHEMA_VERSION = 2\n\nFIELD_SETS = {_emit(field_sets, 0)}\n\nSCHEMA_MAPPINGS = {_emit(out, 0)}"
+    hint = f": {ast.unparse(node.annotation)}" if isinstance(node, ast.AnnAssign) else ""
+    block = (
+        f"SCHEMA_VERSION = 2\n\nFIELD_SETS{': dict[str, dict[str, str]]' if hint else ''} = {_emit(field_sets, 0)}"
+        f"\n\nSCHEMA_MAPPINGS{hint} = {_emit(out, 0)}"
+    )
     ctx.write(rel, _replace_span(text, node.lineno, node.end_lineno or node.lineno, block), "w1.i2")
 
 
@@ -1680,18 +2555,29 @@ def l4(ctx: Ctx) -> None:
 
 # --- g.7 tests importing the deleted functions ------------------------------------------------------------
 def _deleted_symbol_users_in(ctx: Ctx, text: str) -> list[str]:
+    """The deleted names the code uses; a name only mentioned in a docstring or comment is not a use."""
     tree = _parse(text)
     if tree is None:
         return []
-    hits = []
+    hits: list[str] = []
     mod = f"{ctx.pkg_name}.mcp_server"
+    docs = {id(n.value) for n in ast.walk(tree) if isinstance(n, ast.Expr)}
     for n in ast.walk(tree):
         if isinstance(n, ast.ImportFrom) and n.module in (mod, ctx.pkg_name):
             hits += [a.name for a in n.names if a.name in ("get_mcp_instance", "mcp_server")]
             if n.module == mod:
                 hits += [a.name for a in n.names if a.name == "__version__"]
-    if re.search(r"\bget_mcp_instance\b", text) and "get_mcp_instance" not in hits:
-        hits.append("get_mcp_instance")
+        elif (
+            (isinstance(n, ast.Name) and n.id == "get_mcp_instance")
+            or (isinstance(n, ast.Attribute) and n.attr == "get_mcp_instance")
+            or (
+                isinstance(n, ast.Constant)
+                and isinstance(n.value, str)
+                and id(n) not in docs
+                and re.search(r"\bget_mcp_instance\b", n.value)
+            )
+        ):
+            hits.append("get_mcp_instance")
     return sorted(set(hits))
 
 
@@ -1711,7 +2597,7 @@ def _scope_of(node: ast.AST, parents: dict[ast.AST, ast.AST], tree: ast.Module) 
     return tree
 
 
-def _splice(text: str, node: ast.stmt, new: str) -> str:
+def _splice(text: str, node: ast.stmt | ast.expr, new: str) -> str:
     """Replace the exact source segment of ``node`` with ``new`` (later lines keep the node's indentation)."""
     assert node.end_lineno is not None and node.end_col_offset is not None
     lines = text.split("\n")
@@ -1745,6 +2631,72 @@ def _build_server_targets(target: ast.expr, scope: ast.AST) -> tuple[str | None,
     return f"{args_n}, {plain[0].id}", None
 
 
+def _is_instance_call(node: ast.AST) -> TypeGuard[ast.Call]:
+    """``get_mcp_instance()`` or ``<name>.get_mcp_instance()``."""
+    if not isinstance(node, ast.Call):
+        return False
+    f = node.func
+    return (isinstance(f, ast.Name) and f.id == "get_mcp_instance") or (
+        isinstance(f, ast.Attribute) and f.attr == "get_mcp_instance" and isinstance(f.value, ast.Name)
+    )
+
+
+def _argv_of(node: ast.AST, parents: dict[ast.AST, ast.AST]) -> tuple[str, str | None]:
+    """The ``command_args`` source for a call: the literal ``sys.argv`` an enclosing ``with`` patches, else ``[]``."""
+    cur: ast.AST | None = parents.get(node)
+    while cur is not None:
+        if isinstance(cur, ast.With | ast.AsyncWith):
+            for item in cur.items:
+                ex = item.context_expr
+                if not (isinstance(ex, ast.Call) and "argv" in ast.unparse(ex)):
+                    continue
+                val = ex.args[-1] if ex.args else None
+                if (
+                    isinstance(val, ast.List)
+                    and val.elts
+                    and all(isinstance(e, ast.Constant) and isinstance(e.value, str) for e in val.elts)
+                ):
+                    return repr([e.value for e in val.elts[1:] if isinstance(e, ast.Constant)]), None
+                return "[]", "patches sys.argv with something other than a literal list of strings"
+        cur = parents.get(cur)
+    return "[]", None
+
+
+def _note_receiver(
+    call: ast.Call, _stmt: ast.AST, _parents: dict[ast.AST, ast.AST], _tree: ast.Module, receivers: set[str]
+) -> None:
+    if isinstance(call.func, ast.Attribute) and isinstance(call.func.value, ast.Name):
+        receivers.add(call.func.value.id)
+
+
+def _is_module_import(stmt: ast.stmt, name: str) -> bool:
+    """``name = importlib.import_module("...")`` (or ``import_module``)."""
+    if not (isinstance(stmt, ast.Assign) and len(stmt.targets) == 1 and isinstance(stmt.targets[0], ast.Name)):
+        return False
+    call = stmt.value
+    return (
+        stmt.targets[0].id == name
+        and isinstance(call, ast.Call)
+        and len(call.args) == 1
+        and not call.keywords
+        and ast.unparse(call.func) in ("importlib.import_module", "import_module")
+    )
+
+
+def _drop_unused_receivers(text: str, receivers: set[str]) -> str:
+    """Delete ``name = importlib.import_module(...)`` for receivers nothing reads any more."""
+    tree = _parse(text)
+    if tree is None or not receivers:
+        return text
+    loads = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    dead = [
+        n for n in ast.walk(tree) if isinstance(n, ast.stmt) and any(_is_module_import(n, r) for r in receivers - loads)
+    ]
+    if not dead:
+        return text
+    return _prune_imports(_delete_nodes(text, dead), {"importlib", "import_module"})
+
+
 def _rewrite_server_test(ctx: Ctx, text: str) -> tuple[str | None, list[str]]:
     """Rewrite the ``get_mcp_instance()`` unpack form to ``build_server``; (new text | None, blocking reasons)."""
     tree = _parse(text)
@@ -1752,9 +2704,10 @@ def _rewrite_server_test(ctx: Ctx, text: str) -> tuple[str | None, list[str]]:
         return None, []
     mod = f"{ctx.pkg_name}.mcp_server"
     parents = {c: p for p in ast.walk(tree) for c in ast.iter_child_nodes(p)}
-    edits: list[tuple[ast.stmt, str]] = []
+    edits: list[tuple[ast.stmt | ast.expr, str]] = []
     problems: list[str] = []
     handled: set[ast.AST] = set()
+    receivers: set[str] = set()
     for n in ast.walk(tree):
         if isinstance(n, ast.ImportFrom) and n.level == 0 and n.module == mod:
             hit = [a for a in n.names if a.name == "get_mcp_instance"]
@@ -1767,16 +2720,38 @@ def _rewrite_server_test(ctx: Ctx, text: str) -> tuple[str | None, list[str]]:
             pad = " " * n.col_offset
             new = _BUILD_IMPORT if not keep else _import_text(n, keep) + "\n" + pad + _BUILD_IMPORT
             edits.append((n, new))
-        elif isinstance(n, ast.Assign) and _is_call(n.value, "get_mcp_instance"):
-            handled.add(n.value.func)
-            if n.value.args or n.value.keywords or len(n.targets) != 1:
-                problems.append(f"line {n.lineno}: calls get_mcp_instance with arguments")
-                continue
-            tgt, why = _build_server_targets(n.targets[0], _scope_of(n, parents, tree))
+    for n in ast.walk(tree):
+        if not _is_instance_call(n):
+            continue
+        handled.add(n.func)
+        if n.args or n.keywords:
+            problems.append(f"line {n.lineno}: calls get_mcp_instance with arguments")
+            continue
+        up = parents.get(n)
+        argv, why = _argv_of(n, parents)
+        if why is not None:
+            problems.append(f"line {n.lineno}: {why}")
+            continue
+        call = f'build_server("{ctx.pkg_name}", command_args={argv})'
+        if isinstance(up, ast.Assign) and up.value is n and len(up.targets) == 1:
+            tgt, why = _build_server_targets(up.targets[0], _scope_of(up, parents, tree))
             if tgt is None:
                 problems.append(f"line {n.lineno}: {why}")
                 continue
-            edits.append((n, f'{tgt} = build_server("{ctx.pkg_name}", command_args=[])'))
+            edits.append((up, f"{tgt} = {call}"))
+            _note_receiver(n, up, parents, tree, receivers)
+        elif (
+            isinstance(up, ast.Subscript)
+            and up.value is n
+            and isinstance(up.slice, ast.Constant)
+            and up.slice.value in (0, 1)
+        ):
+            edits.append((up, f"{call}[{1 - up.slice.value}]"))
+            _note_receiver(n, up, parents, tree, receivers)
+        else:
+            problems.append(
+                f"line {n.lineno}: uses the get_mcp_instance() result other than as `<targets> = ...` or `[0]`/`[1]`"
+            )
     for n in ast.walk(tree):
         if isinstance(n, ast.Name) and n.id == "get_mcp_instance" and n not in handled:
             problems.append(f"line {n.lineno}: references get_mcp_instance outside `<targets> = get_mcp_instance()`")
@@ -1789,6 +2764,9 @@ def _rewrite_server_test(ctx: Ctx, text: str) -> tuple[str | None, list[str]]:
     out = text
     for node, new in sorted(edits, key=lambda e: (e[0].lineno, e[0].col_offset), reverse=True):
         out = _splice(out, node, new)
+    if edits and _BUILD_IMPORT not in out:
+        out = _add_lines(out, [_BUILD_IMPORT])
+    out = _drop_unused_receivers(out, receivers)
     left = _deleted_symbol_users_in(ctx, out)
     return (out, []) if not left else (None, [f"still uses {left} after the rewrite"])
 

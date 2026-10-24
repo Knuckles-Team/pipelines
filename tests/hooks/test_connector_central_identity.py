@@ -87,3 +87,26 @@ def test_unindexed_local_spec_is_added_to_the_readme_index(tmp_path: Path) -> No
     assert "- [`CONN-DEMO-CONNECTOR-CONTENT`](connector-content/spec.md)" in text and "no local spec yet" not in text
     identity.spec_index(ctx)
     assert readme.read_text(encoding="utf-8") == text
+
+
+@pytest.mark.spec("PIPE-GATES-R016.105")
+def test_missing_theme_files_are_synced_from_the_canonical_copy_and_a_second_run_is_a_no_op(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    (ctx.root / "mkdocs.yml").write_text("site_name: demo\n", encoding="utf-8")
+    (ctx.root / "docs").mkdir()
+    identity.theme_files(ctx)
+    logo = ctx.root / "docs/assets/brands/arbora-logo-v1.png"
+    assert logo.is_file() and "docs/assets/brands/arbora-logo-v1.png" in ctx.changed and "pl.aa" in ctx.applied
+    ctx.applied.clear()
+    identity.theme_files(ctx)
+    assert not ctx.applied
+    (ctx.root / "docs/assets/brands/arbora-logo-v1.png").unlink()
+    identity.theme_files(ctx)
+    assert logo.is_file()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.105")
+def test_no_mkdocs_site_means_no_theme_files(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    identity.theme_files(ctx)
+    assert not (ctx.root / "docs").exists() and not ctx.applied

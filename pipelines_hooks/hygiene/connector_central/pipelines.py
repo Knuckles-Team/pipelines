@@ -27,6 +27,7 @@ import yaml
 import pipelines_hooks
 from pipelines_hooks.connector import api_parity, codespell, container, generate, project, security
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.hygiene.connector_central import container_generations as generations
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 
 ORDER: tuple[str, ...] = ("pl.n", "pl.o", "pl.p", "pl.q", "pl.r", "pl.t", "pl.u", "pl.v", "pl.s")
@@ -340,6 +341,7 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
     stages = _stages(current)
     by_name = {name: lines for name, lines in stages if name}
     names = [name for name, _ in stages]
+    older = "runtime-base" not in names and generations.is_older_dockerfile(current, dist)
     table: dict[str, Any] = {}
     uid = _first(r"^USER\s+(\d+)", current, "") or _first(r"useradd[^\n]*--uid\s+(\d+)", current, "10001")
     home = _first(r"^\s*(?:ENV\s+)?HOME=(\S+?)\s*\\?$", current, "/tmp")
@@ -370,7 +372,7 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
     declared = {t: n for t, n in entries.items() if n != _default_entry(t, scripts, dist)}
     if declared:
         table["entrypoints"] = declared
-    sdists: list[str] = []
+    sdists: list[str] = generations.older_sdist_deps(current) if older else []
     for target in container.RUNTIME_TARGETS:
         for name in re.findall(r"--no-binary (\S+)", "\n".join(by_name.get(f"builder-{target}", []))):
             if name not in sdists:
@@ -396,13 +398,15 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
         *container.RUNTIME_TARGETS,
         *(f"builder-{t}" for t in container.RUNTIME_TARGETS),
     }
-    if "runtime-base" not in names:
-        raise _Unmatched("no runtime-base stage")
-    split = names.index("runtime-base")
-    extra = [_stage_text(by_name[n]).rstrip("\n") for n in names[:split] if n and n not in known]
-    extra_rt = [_stage_text(by_name[n]).rstrip("\n") for n in names[split:] if n and n not in known]
+    if "runtime-base" not in names and not older:
+        raise _Unmatched(
+            "no runtime-base stage, and the single-stage Dockerfile is not one of the recorded older generator forms"
+        )
     if any(n is None for n in names):
         raise _Unmatched("an unnamed stage")
+    split = names.index("runtime-base") if "runtime-base" in names else len(names)
+    extra = [_stage_text(by_name[n]).rstrip("\n") for n in names[:split] if n and n not in known and not older]
+    extra_rt = [_stage_text(by_name[n]).rstrip("\n") for n in names[split:] if n and n not in known and not older]
     if extra:
         table["extra_stages"] = extra
     if extra_rt:
@@ -419,14 +423,30 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
         want = sorted(set(meta.get("optional-dependencies", {})) & set(container.RUNTIME_TARGETS))
         if got != want:
             table["debug_extras"] = got
-    limits = _committed_limits(ctx)
+    # which extras of the wheel each image installs: only a deviation from the renderer's default is recorded
+    have = set(meta.get("optional-dependencies", {}))
+    installs: dict[str, list[str]] = {}
+    for target in container.RUNTIME_TARGETS:
+        pin = re.search(
+            rf'"{re.escape(dist)}(?:\[([A-Za-z0-9_,-]+)\])?==', "\n".join(by_name.get(f"builder-{target}", []))
+        )
+        if pin is None:
+            continue
+        # an extra rule l4 removed from the wheel was only a hollow pin of the SDK; the image no longer names it
+        got = [e for e in (pin.group(1) or "").split(",") if e and e in have]
+        default = [target] if target in have else (["all"] if "all" in have else [])
+        if got != default:
+            installs[target] = got
+    if installs:
+        table["install_extras"] = installs
+    limits = _committed_limits(ctx, set(by_name))
     if limits:
         table["limits"] = limits
     # compose extras
     env: list[str] = []
     for target in container.RUNTIME_TARGETS:
         name = f"docker/{target}.compose.yml"
-        if ctx.exists(name):
+        if ctx.exists(name) and target in by_name:
             block = re.search(r"^    environment:\n((?:      - .*\n)+)", ctx.read(name), re.M)
             items = [ln[8:].rstrip() for ln in (block.group(1).splitlines() if block else [])]
             fixed = [*STANDARD_COMPOSE_ENV[:2], f"PORT={port}", STANDARD_COMPOSE_ENV[2]]
@@ -436,6 +456,15 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
                         env.append(item)
     if env:
         table["compose_env"] = env
+    optional = [
+        t
+        for t in container.RUNTIME_TARGETS
+        if t in by_name
+        and ctx.exists(f"docker/{t}.compose.yml")
+        and container.ENV_FILE_OPTIONAL in ctx.read(f"docker/{t}.compose.yml")
+    ]
+    if optional:
+        table["env_file_optional"] = True
     return table
 
 
@@ -447,12 +476,12 @@ _LIMIT_LINES = (
 )
 
 
-def _committed_limits(ctx: Ctx) -> dict[str, dict[str, str]]:
+def _committed_limits(ctx: Ctx, entries: set[str]) -> dict[str, dict[str, str]]:
     """Per image kind, the compose ``mem_limit``/``cpus`` ``${VAR:-default}`` settings that differ from the template."""
     out: dict[str, dict[str, str]] = {}
     for target in container.RUNTIME_TARGETS:
         name = f"docker/{target}.compose.yml"
-        if not ctx.exists(name):
+        if not ctx.exists(name) or target not in entries:
             continue
         text = ctx.read(name)
         found: dict[str, str] = {}
@@ -519,12 +548,7 @@ def _normalise_dockerfile(text: str, new: bool) -> str:
 
 
 def _normalise_loose(text: str) -> str:
-    keep = [
-        ln
-        for ln in text.splitlines()
-        if ln.strip() and not ln.lstrip().startswith("#") and not ln.startswith("version:")
-    ]
-    return "\n".join(keep) + "\n"
+    return "\n".join(generations.loose_lines(text)) + "\n"
 
 
 def _compose_old_to_new(ctx: Ctx, name: str, text: str, dist: str) -> str:
@@ -539,37 +563,67 @@ def _compose_old_to_new(ctx: Ctx, name: str, text: str, dist: str) -> str:
     return text.replace(old_var, new_var).replace(old, new)
 
 
-def _container_diff(ctx: Ctx, rendered: dict[str, str], dist: str) -> list[str]:
+def container_pair(ctx: Ctx, name: str, new: str, dist: str, port: str, rewrite: bool = True) -> tuple[str, str] | None:
+    """``(committed, rendered)`` normalised for comparison; None when the committed file is a recorded older form.
+
+    ``rewrite=False`` leaves the recorded block rewrites out (the script that records them needs the raw difference).
+    """
+    rel = f"docker/{name}"
+    old = ctx.read(rel)
+    if name == "Dockerfile" and generations.is_older_dockerfile(old, dist):
+        return None  # a recorded single-stage older generator form; the render is its modern equivalent
+    if name != "Dockerfile" and generations.is_stub(name, old):
+        return None  # a recorded stub of the earlier scaffold; the render is the complete file
+    if name.endswith("compose.yml"):
+        old = _compose_old_to_new(ctx, rel, old, dist)
+    if name in ("Dockerfile", "debug.Dockerfile"):
+        old = _align_dist_version(old, new, dist)
+    if name == "Dockerfile":
+        old = _drop_dist_extras(old, new, dist)
+        return _normalise_dockerfile(old, False), _normalise_dockerfile(new, True)
+    a, b = _normalise_loose(old), _normalise_loose(new)
+    if rewrite:
+        # Recorded rewrites name the install line as the older generator wrote it (``.[mcp]``), so they run before rule l4's
+        # dropped extras are removed from it; running them after would never match once l4 had changed ``pyproject.toml``.
+        a = generations.apply_rewrites(name, a, dist, port)
+    if name == "debug.Dockerfile":
+        a = _drop_debug_extras(a, set(ctx.pyproject()["project"].get("optional-dependencies", {})))
+    return a, b
+
+
+def _container_diff(ctx: Ctx, rendered: dict[str, str], dist: str, port: str = "8000") -> list[str]:
     problems: list[str] = []
     for name, new in rendered.items():
         rel = f"docker/{name}"
         if not ctx.exists(rel):
             continue
-        old = ctx.read(rel)
-        if name.endswith("compose.yml"):
-            try:
-                old = _compose_old_to_new(ctx, rel, old, dist)
-            except _Unmatched as exc:
-                problems.append(str(exc))
-                continue
-        if name == "debug.Dockerfile":
-            old = _drop_debug_extras(old, set(ctx.pyproject()["project"].get("optional-dependencies", {})))
-        if name in ("Dockerfile", "debug.Dockerfile"):
-            old = _align_dist_version(old, new, dist)
-        if name == "Dockerfile":
-            old = _drop_dist_extras(old, new, dist)
-            a, b = _normalise_dockerfile(old, False), _normalise_dockerfile(new, True)
-        else:
-            a, b = _normalise_loose(old), _normalise_loose(new)
-        if a != b:
+        try:
+            pair = container_pair(ctx, name, new, dist, port)
+        except _Unmatched as exc:
+            problems.append(str(exc))
+            continue
+        if pair is not None and pair[0] != pair[1]:
             diff = "".join(
-                difflib.unified_diff(a.splitlines(True), b.splitlines(True), f"committed/{rel}", f"rendered/{rel}")
+                difflib.unified_diff(
+                    pair[0].splitlines(True), pair[1].splitlines(True), f"committed/{rel}", f"rendered/{rel}"
+                )
             )
             problems.append(f"{rel} differs from the rendered file beyond the expected changes:\n{diff}")
     for name in container.OUTPUT_FILES:
-        if ctx.exists(f"docker/{name}") and name not in rendered:
+        if ctx.exists(f"docker/{name}") and name not in rendered and not _orphan_agent_compose(ctx, name):
             problems.append(f"docker/{name} is committed but nothing renders it")
     return problems
+
+
+def _orphan_agent_compose(ctx: Ctx, name: str) -> bool:
+    """``agent.compose.yml`` of a connector whose agent runtime is gone: no agent stage, no ``*-agent`` entry point.
+
+    The earlier scaffold kept the agent service after it removed the agent image, so the file names an image no stage
+    builds; the render writes ``mcp.compose.yml`` only.
+    """
+    if name != "agent.compose.yml" or not ctx.exists("docker/Dockerfile"):
+        return False
+    return "agent" not in {stage for stage, _ in _stages(ctx.read("docker/Dockerfile")) if stage}
 
 
 def _job_span(lines: list[str], uses: str) -> tuple[int, int] | None:
@@ -646,7 +700,7 @@ def rule_o(ctx: Ctx) -> None:
     except (_Unmatched, CannotRun, KeyError, tomllib.TOMLDecodeError) as exc:
         ctx.note("pl.o", f"container files cannot be reproduced from pyproject.toml: {exc}", "docker/Dockerfile", True)
         return
-    problems = _container_diff(ctx, rendered, dist)
+    problems = _container_diff(ctx, rendered, dist, str(table.get("port", 8000)))
     if problems:
         ctx.note("pl.o", "committed container files stay:\n" + "\n".join(problems), "docker/Dockerfile", True)
         return
@@ -700,6 +754,21 @@ def _stage_ontology(ctx: Ctx, tmp: Path, ptext: str) -> None:
             shutil.copytree(ctx.pkg / sub, tmp / ctx.pkg_name / sub, dirs_exist_ok=True)
 
 
+def _renamed_ontology(ctx: Ctx, source: str) -> str | None:
+    """The stem of the ontology file when it is not ``<ontology_source>.ttl`` and is the only ``*.ttl`` there."""
+    match = generate.SOURCE_RE.search(ctx.read(source))
+    folder = ctx.pkg / "ontology"
+    if match is None or (folder / f"{match.group(1)}.ttl").is_file():
+        return None
+    found = sorted(p.stem for p in folder.glob("*.ttl"))
+    return found[0] if len(found) == 1 else None
+
+
+def _with_ontology_table(ptext: str, values: dict[str, Any]) -> str:
+    body = "".join(f"{k} = {_toml_scalar(v)}\n" for k, v in values.items())
+    return ptext.rstrip("\n") + f"\n\n[tool.pipelines.ontology]\n{body}"
+
+
 def _generated(ctx: Ctx, tmp: Path, epoch: str) -> dict[str, str]:
     with _source_date_epoch(epoch):
         files = generate.generate(tmp)
@@ -742,6 +811,19 @@ def rule_p(ctx: Ctx) -> None:
     committed = ctx.read(shapes)
     table_values: dict[str, Any] | None = None
     review_widen = False
+    existing = tomllib.loads(ptext).get("tool", {}).get("pipelines", {}).get("ontology")
+    named = _renamed_ontology(ctx, source)
+    if named and existing:
+        ctx.note(
+            "pl.p",
+            "[tool.pipelines.ontology] already exists while the ontology file is not <ontology_source>.ttl",
+            "pyproject.toml",
+            True,
+        )
+        return
+    if named:
+        table_values = {"ttl": named}
+        ptext = _with_ontology_table(ptext, table_values)
     try:
         with tempfile.TemporaryDirectory() as scratch:
             tmp = Path(scratch)
@@ -749,15 +831,10 @@ def rule_p(ctx: Ctx) -> None:
             produced = _generated(ctx, tmp, epoch)
             if produced[shapes] != committed:
                 classes = sorted(set(_SHAPE.findall(committed)))
-                table_values = {"shape_classes": classes}
-                if not classes or tomllib.loads(ptext).get("tool", {}).get("pipelines", {}).get("ontology"):
+                table_values = {**(table_values or {}), "shape_classes": classes}
+                if not classes or existing:
                     raise CannotRun("committed shapes are not a subset expressible as shape_classes")
-                again = (
-                    ptext.rstrip("\n")
-                    + "\n\n[tool.pipelines.ontology]\nshape_classes = "
-                    + _toml_scalar(classes)
-                    + "\n"
-                )
+                again = _with_ontology_table(ctx.read("pyproject.toml"), table_values)
                 _stage_ontology(ctx, tmp, again)
                 produced = _generated(ctx, tmp, epoch)
                 if produced[shapes] != committed:
@@ -1025,26 +1102,72 @@ def rule_u(ctx: Ctx) -> None:
         ctx.write(name, "".join(out), "pl.u")
 
 
+def _literal_baselines(source: str) -> dict[str, float] | None:
+    """The module-level literal ``BASELINES`` table, or None when the script has none."""
+    baselines: dict[str, float] | None = None
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "BASELINES" for t in node.targets):
+            baselines = {str(k): float(v) for k, v in ast.literal_eval(node.value).items()}
+    return baselines
+
+
+_EXACT_PARITY = re.compile(r"""print\(\s*f?["'][^"'\n]*\b100(?:\.0)?%[^"'\n]*["']\s*\)""")
+
+
+def _implied_baseline(source: str) -> float | None:
+    """The coverage a script without a ``BASELINES`` table enforces, when it states it exactly.
+
+    Two shapes only: one numeric ``baseline = <n>`` assignment that the script compares coverage against
+    (``coverage < baseline - ...``), or an exact-parity script that fails (``return 1`` / ``sys.exit(1)``) on any
+    mismatch and otherwise prints a literal 100% line, with no other numeric threshold. Anything else is None.
+    """
+    tree = ast.parse(source)
+    assigns = [
+        n.value.value
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Assign)
+        and len(n.targets) == 1
+        and isinstance(n.targets[0], ast.Name)
+        and n.targets[0].id == "baseline"
+        and isinstance(n.value, ast.Constant)
+        and isinstance(n.value.value, (int, float))
+    ]
+    if len(assigns) == 1 and re.search(r"coverage\"?\]?\s*<\s*\(?\s*baseline\b", source):
+        return float(assigns[0])
+    exits = "return 1" in source or "sys.exit(1)" in source
+    if not assigns and "baseline" not in source.lower() and exits and _EXACT_PARITY.search(source):
+        return 100.0
+    return None
+
+
 # --- pl.v: verify_api_integration.py -----------------------------------------------------------------------------------
 @rule("pl.v")
 def rule_v(ctx: Ctx) -> None:
     script = "scripts/verify_api_integration.py"
     if not ctx.exists(script):
         return
+    source = ctx.read(script)
     try:
-        tree = ast.parse(ctx.read(script))
-        baselines: dict[str, float] | None = None
-        for node in tree.body:
-            if isinstance(node, ast.Assign) and any(
-                isinstance(t, ast.Name) and t.id == "BASELINES" for t in node.targets
-            ):
-                baselines = {str(k): float(v) for k, v in ast.literal_eval(node.value).items()}
+        baselines = _literal_baselines(source)
     except (SyntaxError, ValueError, TypeError, AttributeError):
         ctx.note("pl.v", "BASELINES cannot be read from the committed script; script stays", script, True)
         return
     if baselines is None:
-        ctx.note("pl.v", "script has no literal BASELINES table; script stays", script, True)
-        return
+        implied = _implied_baseline(source)
+        if implied is None:
+            kind = (
+                "it is a --source OpenAPI contract check, which connector-api-parity does not replace"
+                if "--source" in source
+                else "it states no coverage threshold and does not require exact 100% parity"
+            )
+            ctx.note(
+                "pl.v",
+                f"script has no literal BASELINES table or `baseline = <number>` threshold, and {kind}; script stays",
+                script,
+                True,
+            )
+            return
+        baselines = {ctx.dist: implied}
     key = next((k for k in (ctx.dist, ctx.root.name, ctx.fleet) if k in baselines), "")
     baseline = baselines.get(key, 0.0)
     test = "tests/test_verify_api_integration.py"

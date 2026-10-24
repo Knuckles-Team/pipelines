@@ -741,6 +741,60 @@ def test_g7_class_loses_its_unexpressible_methods_and_goes_when_none_are_left(tm
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_a_docstring_or_comment_naming_the_function_is_not_a_use(tmp_path: Path) -> None:
+    """portainer-agent, atlassian-agent, servicenow-api, qbittorrent-agent: prose that names get_mcp_instance."""
+    body = (
+        '"""Pins what ``get_mcp_instance()`` served."""\n\n\n'
+        "def test_x():\n    # get_mcp_instance() used to build this\n    assert 1\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    assert not _notes(ctx, "w1.g7") and after == body
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_module_attribute_call_becomes_build_server_and_the_dead_import_goes(tmp_path: Path) -> None:
+    """atlassian-agent: `srv = importlib.import_module(...)` then `mcp, _a, _m = srv.get_mcp_instance()`."""
+    body = (
+        "import importlib\n\nfrom demo_mcp import api_client\n\n\n"
+        "def surface():\n"
+        "    srv = importlib.import_module('demo_mcp.mcp_server')\n"
+        "    mcp, _args, _mw = srv.get_mcp_instance()\n    return mcp, api_client\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    assert not _notes(ctx, "w1.g7")
+    assert '_, mcp = build_server("demo_mcp", command_args=[])' in after
+    assert "srv" not in after and "importlib" not in after and "get_mcp_instance" not in after
+    assert "from agent_connector_sdk.connector import build_server" in after
+    ast.parse(after)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_subscript_of_the_result_and_a_literal_argv_patch(tmp_path: Path) -> None:
+    """adguard-home-agent: `with patch.object(sys, "argv", [...]): return mod.get_mcp_instance()[0]`."""
+    body = (
+        "import importlib\nimport sys\nfrom unittest.mock import patch\n\n"
+        "server_module = importlib.import_module('demo_mcp.mcp_server')\n\n\n"
+        "def _server():\n"
+        "    with patch.object(sys, 'argv', ['prog', '--transport', 'stdio']):\n"
+        "        return server_module.get_mcp_instance()[0]\n\n\n"
+        "def _args():\n    return server_module.get_mcp_instance()[1]\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    assert not _notes(ctx, "w1.g7")
+    assert "build_server(\"demo_mcp\", command_args=['--transport', 'stdio'])[1]" in after
+    assert 'build_server("demo_mcp", command_args=[])[0]' in after
+    assert "server_module" not in after and "get_mcp_instance" not in after
+    ast.parse(after)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_other_uses_of_the_result_are_refused_untouched(tmp_path: Path) -> None:
+    body = "import demo_mcp.mcp_server as m\n\ngot = m.get_mcp_instance()\n\n\ndef test_x():\n    assert got[2]\n"
+    ctx, _root, after = _g7(tmp_path, body)
+    assert _notes(ctx, "w1.g7")[0]["blocking"] and after == body
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
 def test_g7_orphaned_fixture_is_pruned_but_a_fixture_use_blocks(tmp_path: Path) -> None:
     body = (
         "import pytest\nfrom demo_mcp.mcp_server import mcp_server\n\n\n"
@@ -837,7 +891,7 @@ def test_k1_version_assignments_are_deleted(tmp_path: Path) -> None:
 def test_k1_version_still_read_in_the_module_is_reviewed(tmp_path: Path) -> None:
     root = _make(tmp_path)
     (root / "demo_mcp" / "api_client.py").write_text(
-        '__version__ = "1.0.0"\n\n\ndef v():\n    return __version__\n', encoding="utf-8"
+        '__version__ = "1.0.0"\n\n\ndef v():\n    global __version__\n    __version__ = "2"\n', encoding="utf-8"
     )
     ctx = _ctx(root)
     _run(ctx, ("w1.k1",))
@@ -1094,7 +1148,8 @@ def test_l3_tests_asserting_the_deleted_scaffold_are_deleted(tmp_path: Path) -> 
     _run(ctx, ("w1.g3", "w1.g4", "w1.l3"))
     text = test.read_text(encoding="utf-8")
     assert "test_keep" in text and "_MCP_AVAILABLE" not in text
-    assert any("lazy-import scaffold" in i["detail"] and not i["blocking"] for i in _notes(ctx, "w1.l3"))
+    deleted = [*_notes(ctx, "w1.g4"), *_notes(ctx, "w1.l3")]  # g4 meets the scaffold-reading test first
+    assert any("lazy-import scaffold" in i["detail"] and not i["blocking"] for i in deleted)
     before = text
     _run(ctx, ("w1.l3",))
     assert test.read_text(encoding="utf-8") == before

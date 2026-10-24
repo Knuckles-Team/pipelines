@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  aris-mcp:
+    image: knucklessg1/aris-mcp:1.3.0
+    container_name: aris-mcp
+    hostname: aris-mcp
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HOST=0.0.0.0
+      - PORT=8000
+      - TRANSPORT=streamable-http
+      - ARIS_API_BASE
+      - ARIS_OAUTH_URL
+      - ARIS_CLIENT_ID
+      - ARIS_CLIENT_SECRET
+      - ARIS_TENANT
+      - ARIS_TOKEN
+      - ARIS_USERNAME
+      - ARIS_PASSWORD
+      - ARIS_PATHS_JSON
+      - ARIS_ENABLE_WRITE
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
