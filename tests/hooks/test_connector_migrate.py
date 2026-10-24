@@ -361,6 +361,7 @@ def _driver(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, verify: str = '{"ok
         dry_run=True,
         patches=tmp_path / "patches",
         rebump=False,
+        central=False,
     )
     return drv, args, drv.Ledger(tmp_path / "ledger.json"), calls
 
