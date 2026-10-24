@@ -921,6 +921,17 @@ def _check_toml(ctx: Ctx, rule_id: str, text: str) -> bool:
     return True
 
 
+def _entry_point_assertions(ctx: Ctx) -> None:
+    """Tests asserting the entry-point table ``{FLEET: "<pkg>"}`` / ``{"<fleet>": "<pkg>"}`` follow the ``<pkg>:connector`` value."""
+    pkg = re.escape(ctx.pkg_name)
+    pattern = re.compile(rf'((?:\bFLEET|"{re.escape(ctx.fleet)}")\s*:\s*)"{pkg}"(\s*,?\s*\}})')
+    for path in sorted((ctx.root / "tests").glob("**/*.py")):
+        text = path.read_text(encoding="utf-8")
+        new = pattern.sub(lambda m: f'{m.group(1)}"{ctx.pkg_name}:connector"{m.group(2)}', text)
+        if new != text:
+            ctx.write(ctx.rel(path), new, "w1.g1")
+
+
 @rule("w1.g1")
 def g1(ctx: Ctx) -> None:
     text = ctx.read("pyproject.toml")
@@ -943,6 +954,7 @@ def g1(ctx: Ctx) -> None:
         new = "\n".join(lines)
         if _check_toml(ctx, "w1.g1", new):
             ctx.write("pyproject.toml", new, "w1.g1")
+            _entry_point_assertions(ctx)
         return
 
 

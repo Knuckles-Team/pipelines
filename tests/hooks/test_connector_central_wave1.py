@@ -292,6 +292,23 @@ def test_g1_entry_point_names_the_connector_value(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.50")
+def test_g1_tests_asserting_the_entry_point_table_follow_the_connector_value(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    (root / "tests").mkdir(exist_ok=True)
+    test = root / "tests/test_fleet_name.py"
+    test.write_text(
+        'FLEET = "demo-mcp"\n\n\ndef test_x():\n    assert eps == {\n        FLEET: "demo_mcp"\n    }\n',
+        encoding="utf-8",
+    )
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4", "w1.g1"))
+    assert 'FLEET: "demo_mcp:connector"' in test.read_text(encoding="utf-8")
+    before = test.read_text(encoding="utf-8")
+    _run(ctx, ("w1.g1",))
+    assert test.read_text(encoding="utf-8") == before
+
+
+@pytest.mark.spec("PIPE-GATES-R016.50")
 def test_g1_unmatched_value_goes_to_review_and_unreviewed_bootstrap_is_untouched(tmp_path: Path) -> None:
     root = _make(tmp_path)
     text = _text(root, "pyproject.toml").replace('demo-mcp = "demo_mcp"\n', 'demo-mcp = "demo_mcp.other"\n')

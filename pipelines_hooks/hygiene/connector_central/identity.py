@@ -15,7 +15,7 @@ import re
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
-ORDER = ("id.name", "pl.w", "pl.y")
+ORDER = ("id.name", "pl.w", "pl.y", "pl.z")
 _IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
@@ -107,3 +107,33 @@ def org_site(ctx: Ctx) -> None:
     if not (pipelines_root(ctx) / ".github" / "workflows" / "notify_org_site.yml").is_file():
         return
     ctx.write(".github/workflows/org-site.yml", ORG_SITE, "pl.y")
+
+
+_SPEC_TITLE = re.compile(r"(?m)^#\s+(\S+)\s+[\u2014-]+\s+(.+?)\s*$")
+_NO_SPECS = "This repository has no local spec yet."
+
+
+@rule("pl.z")
+def spec_index(ctx: Ctx) -> None:
+    """Every ``specs/<area>/spec.md`` is indexed in ``specs/README.md`` (the ``spec-standard`` gate fails otherwise)."""
+    readme = ctx.root / "specs" / "README.md"
+    if not readme.is_file():
+        return
+    text = readme.read_text(encoding="utf-8")
+    lines: list[str] = []
+    for spec in sorted((ctx.root / "specs").glob("*/spec.md")):
+        area = spec.parent.name
+        if area.startswith("_") or f"({area}/spec.md)" in text:
+            continue
+        m = _SPEC_TITLE.search(spec.read_text(encoding="utf-8"))
+        if m is None:
+            ctx.note(
+                "pl.z", f"specs/{area}/spec.md has no `# <ID> \u2014 <title>` heading to index", f"specs/{area}/spec.md"
+            )
+            continue
+        lines.append(f"- [`{m.group(1)}`]({area}/spec.md) \u2014 {m.group(2).rstrip('.')}.")
+    if not lines:
+        return
+    block = "\n".join(lines)
+    new = text.replace(_NO_SPECS, block, 1) if _NO_SPECS in text else text.rstrip("\n") + "\n" + block + "\n"
+    ctx.write("specs/README.md", new, "pl.z")
