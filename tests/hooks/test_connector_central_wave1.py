@@ -600,6 +600,22 @@ def test_g4_init_declares_the_connector(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.53")
+def test_g4_init_keeps_all_when_a_test_reads_it(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    (root / "tests" / "test_init_dynamics.py").write_text(
+        'import importlib\n\n\ndef test_x():\n    assert hasattr(importlib.import_module("demo_mcp"), "__all__")\n',
+        encoding="utf-8",
+    )
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4"))
+    init = _text(root, "demo_mcp/__init__.py")
+    assert init.rstrip().endswith('__all__ = ["connector"]')
+    ctx.applied.clear()
+    _run(ctx, ("w1.g3", "w1.g4"))
+    assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.53")
 def test_g4_without_an_extractable_bootstrap_is_reviewed(tmp_path: Path) -> None:
     root = _make(tmp_path, server="x = 1\n")
     ctx = _ctx(root)
