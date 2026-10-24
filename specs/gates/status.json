@@ -1143,8 +1143,10 @@
     {
       "id": "PIPE-GATES-R016.58",
       "title": "Wave 1 (sdk 0.5) rule `w1.k1`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3bc12f8172fe"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:34",
         "tests/hooks/test_connector_central_fixes7b.py:63",
@@ -1182,8 +1184,8 @@
         "tests/hooks/test_connector_central_fixes7b.py:147",
         "tests/hooks/test_connector_central_fixes7b.py:156",
         "tests/hooks/test_connector_central_fixes7b.py:170",
-        "tests/hooks/test_connector_central_i1_clusters.py:299",
-        "tests/hooks/test_connector_central_i1_clusters.py:331"
+        "tests/hooks/test_connector_central_i1_clusters.py:314",
+        "tests/hooks/test_connector_central_i1_clusters.py:346"
       ]
     },
     {
@@ -1196,7 +1198,7 @@
         "tests/hooks/test_connector_central_i1_clusters.py:135",
         "tests/hooks/test_connector_central_i1_clusters.py:143",
         "tests/hooks/test_connector_central_i1_clusters.py:155",
-        "tests/hooks/test_connector_central_i1_clusters.py:346"
+        "tests/hooks/test_connector_central_i1_clusters.py:361"
       ]
     },
     {
@@ -1613,12 +1615,15 @@
     {
       "id": "PIPE-GATES-R016.100",
       "title": "Connector identity rule `id.name`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3bc12f8172fe"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:103",
         "tests/hooks/test_connector_central_fixes7b.py:86",
-        "tests/hooks/test_connector_central_identity.py:24"
+        "tests/hooks/test_connector_central_identity.py:24",
+        "tests/hooks/test_connector_central_identity.py:42"
       ]
     },
     {
@@ -1627,7 +1632,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:42"
+        "tests/hooks/test_connector_central_identity.py:58"
       ]
     },
     {
@@ -1651,7 +1656,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:58"
+        "tests/hooks/test_connector_central_identity.py:74"
       ]
     },
     {
@@ -1662,7 +1667,7 @@
         "b0453687acf9"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:75"
+        "tests/hooks/test_connector_central_identity.py:91"
       ]
     },
     {
@@ -1675,7 +1680,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:109",
-        "tests/hooks/test_connector_central_identity.py:93"
+        "tests/hooks/test_connector_central_identity.py:125"
       ]
     },
     {
@@ -1688,9 +1693,9 @@
         "eee545e082ed"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:116",
-        "tests/hooks/test_connector_central_identity.py:138",
-        "tests/hooks/test_connector_central_identity.py:239"
+        "tests/hooks/test_connector_central_identity.py:132",
+        "tests/hooks/test_connector_central_identity.py:154",
+        "tests/hooks/test_connector_central_identity.py:255"
       ]
     },
     {
@@ -1703,8 +1708,8 @@
         "fb079953f3db"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:148",
-        "tests/hooks/test_connector_central_identity.py:182"
+        "tests/hooks/test_connector_central_identity.py:164",
+        "tests/hooks/test_connector_central_identity.py:198"
       ]
     },
     {
@@ -1713,7 +1718,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:203"
+        "tests/hooks/test_connector_central_identity.py:219"
       ]
     },
     {
@@ -1722,7 +1727,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:223"
+        "tests/hooks/test_connector_central_identity.py:239"
       ]
     },
     {
