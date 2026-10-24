@@ -85,6 +85,7 @@ RULE_TABLE: tuple[tuple[str, str, str], ...] = (
     ),
     ("pl.z", "pipelines", "every local spec is indexed in `specs/README.md`"),
     ("pl.aa", "pipelines", "the shared MkDocs theme files match the canonical copy"),
+    ("pl.ab", "pipelines", "the `[[project.authors]]` block is the neutral organisation author"),
 )
 FIRST_ROW = 50
 RULE_ROWS: dict[str, str] = {rid: f"PIPE-GATES-R016.{FIRST_ROW + i}" for i, (rid, _s, _t) in enumerate(RULE_TABLE)}

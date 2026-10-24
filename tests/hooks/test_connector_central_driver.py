@@ -80,7 +80,7 @@ def _fixture(tmp_path: Path) -> Path:
     return root
 
 
-@pytest.mark.spec("PIPE-GATES-R016.106")
+@pytest.mark.spec("PIPE-GATES-R016.107")
 def test_central_pass_is_idempotent_and_bumps_once(tmp_path: Path) -> None:
     root = _fixture(tmp_path)
     opts = {"no_lock": True}
@@ -92,14 +92,14 @@ def test_central_pass_is_idempotent_and_bumps_once(tmp_path: Path) -> None:
     assert 'version = "1.0.5"' in (root / "pyproject.toml").read_text(encoding="utf-8")
 
 
-@pytest.mark.spec("PIPE-GATES-R016.106")
+@pytest.mark.spec("PIPE-GATES-R016.107")
 def test_every_rule_is_ordered_once_and_counted_by_source() -> None:
     order = cc.rule_order()
     assert len(order) == len(set(order)) == len(cc.RULE_TABLE)
     assert sum(cc.rule_counts().values()) == len(cc.RULE_TABLE)
 
 
-@pytest.mark.spec("PIPE-GATES-R016.106")
+@pytest.mark.spec("PIPE-GATES-R016.107")
 def test_central_driver_flags(tmp_path: Path) -> None:
     root = _fixture(tmp_path)
     out = tmp_path / "report.json"
@@ -114,7 +114,7 @@ def test_central_driver_flags(tmp_path: Path) -> None:
     assert batch.CENTRAL_MESSAGE and callable(batch.central_verify)
 
 
-@pytest.mark.spec("PIPE-GATES-R016.106")
+@pytest.mark.spec("PIPE-GATES-R016.107")
 def test_tidy_sorts_imports_and_drops_unused_ones_in_rewritten_files(tmp_path: Path) -> None:
     root = _fixture(tmp_path)
     ctx = cc.make_ctx(root, {})
