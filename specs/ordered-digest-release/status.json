@@ -673,10 +673,10 @@
         "8f223cc5bbbd"
       ],
       "verified_by": [
-        "tests/test_connector_release_pipeline.py:18",
         "tests/test_connector_release_pipeline.py:19",
-        "tests/test_connector_release_pipeline.py:40",
-        "tests/test_connector_release_pipeline.py:41"
+        "tests/test_connector_release_pipeline.py:20",
+        "tests/test_connector_release_pipeline.py:41",
+        "tests/test_connector_release_pipeline.py:42"
       ]
     },
     {
@@ -687,10 +687,10 @@
         "3d0455152b96"
       ],
       "verified_by": [
-        "tests/test_connector_release_pipeline.py:81",
         "tests/test_connector_release_pipeline.py:82",
-        "tests/test_connector_release_pipeline.py:87",
-        "tests/test_connector_release_pipeline.py:88"
+        "tests/test_connector_release_pipeline.py:83",
+        "tests/test_connector_release_pipeline.py:88",
+        "tests/test_connector_release_pipeline.py:89"
       ]
     },
     {
@@ -744,11 +744,14 @@
     {
       "id": "PIPE-RELEASE-R017",
       "title": "A pull request builds the image when a container input changes",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4d6d08b577c5",
+        "cf1d17cef82b"
+      ],
       "verified_by": [
-        "tests/test_connector_release_pipeline.py:110",
-        "tests/test_connector_release_pipeline.py:111"
+        "tests/test_connector_release_pipeline.py:111",
+        "tests/test_connector_release_pipeline.py:112"
       ]
     }
   ]

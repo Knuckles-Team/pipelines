@@ -910,7 +910,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/test_connector_release_pipeline.py:99"
+        "tests/test_connector_release_pipeline.py:100"
       ]
     },
     {
