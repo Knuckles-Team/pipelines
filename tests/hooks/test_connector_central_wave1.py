@@ -1369,3 +1369,34 @@ def test_k4_not_none_and_bare_version_asserts_are_deleted(tmp_path: Path) -> Non
     _run(ctx, ("w1.k4",))
     after = _text(root, "tests/test_v.py")
     assert "test_a" not in after and "test_b" not in after and "test_c" in after
+
+
+@pytest.mark.spec("PIPE-GATES-R016.67")
+def test_l4_an_all_extra_naming_the_deleted_mcp_extra_is_dropped_with_it(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    pp = root / "pyproject.toml"
+    text = pp.read_text(encoding="utf-8")
+    text = text.replace('all = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]', 'all = [ "demo-mcp[mcp]>=2.0.1",]')
+    pp.write_text(text, encoding="utf-8")
+    ctx = _ctx(root)
+    _run(ctx, ("w1.l4",))
+    data = tomllib.loads(pp.read_text(encoding="utf-8"))
+    assert list(data["project"].get("optional-dependencies", {})) == ["test"]
+    ctx.applied.clear()
+    _run(ctx, ("w1.l4",))
+    assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.67")
+def test_l4_repairs_an_already_migrated_repo_whose_all_extra_dangles(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    pp = root / "pyproject.toml"
+    ctx = _ctx(root)
+    _run(ctx, ("w1.l4",))
+    text = pp.read_text(encoding="utf-8")
+    assert "[project.optional-dependencies]" in text
+    pp.write_text(text.rstrip("\n") + "\n", encoding="utf-8")
+    broken = text.replace("test = [", 'all = [ "demo-mcp[mcp]>=2.0.1",]\ntest = [', 1)
+    pp.write_text(broken, encoding="utf-8")
+    _run(ctx, ("w1.l4",))
+    assert "all" not in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["optional-dependencies"]

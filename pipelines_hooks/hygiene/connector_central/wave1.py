@@ -3715,6 +3715,61 @@ def l4(ctx: Ctx) -> None:
     new = "\n".join(lines)
     if new != text and _check_toml(ctx, "w1.l4", new):
         ctx.write("pyproject.toml", new, "w1.l4")
+    _drop_dangling_self_extras(ctx)
+
+
+_SELF_EXTRA = re.compile(r"^(\s*)([A-Za-z0-9_.-]+)\s*\[([^\]]+)\](.*)$")
+
+
+def _drop_dangling_self_extras(ctx: Ctx) -> None:
+    """A self-reference to an extra that no longer exists fails the release readiness check ("unknown transitive extra").
+
+    ``all = ["<dist>[mcp]"]`` after l4 deleted ``mcp``: the undefined extra leaves the entry's bracket list
+    (``<dist>[mcp,postgres]`` becomes ``<dist>[postgres]``), and an entry left with no extras goes, an emptied extra with it.
+    """
+    text = ctx.read("pyproject.toml")
+    data = ctx.pyproject()
+    opt = data.get("project", {}).get("optional-dependencies", {})
+    dist = re.sub(r"[-_.]+", "-", ctx.dist).lower()
+    defined = set(opt)
+    rewritten: dict[str, list[str]] = {}
+    for key, items in opt.items():
+        out: list[str] = []
+        changed = False
+        for item in items:
+            m = _SELF_EXTRA.match(item)
+            if m and re.sub(r"[-_.]+", "-", m.group(2)).lower() == dist:
+                names = [e.strip() for e in m.group(3).split(",") if e.strip()]
+                kept = [e for e in names if e in defined]
+                if len(kept) != len(names):
+                    changed = True
+                    if kept:
+                        out.append(f"{m.group(2)}[{','.join(kept)}]{m.group(4)}")
+                    continue
+            out.append(item)
+        if changed:
+            rewritten[key] = out
+    if not rewritten:
+        return
+    lines = text.split("\n")
+    for key, items in rewritten.items():
+        sec = _toml_section(lines, "[project.optional-dependencies]")
+        if sec is None:
+            return
+        for a in range(sec[0] + 1, sec[1]):
+            if re.match(rf"^\s*{re.escape(key)}\s*=\s*\[", lines[a]):
+                end = _array_end(lines, a)
+                if items:
+                    lines[a : end + 1] = [f"{key} = [ " + ", ".join(f'"{i}"' for i in items) + ",]"]
+                else:
+                    del lines[a : end + 1]
+                break
+    sec = _toml_section(lines, "[project.optional-dependencies]")
+    if sec is not None and all(not ln.strip() or ln.strip().startswith("#") for ln in lines[sec[0] + 1 : sec[1]]):
+        del lines[sec[0] : sec[1]]
+    new = "\n".join(lines)
+    if new != text and _check_toml(ctx, "w1.l4", new):
+        ctx.write("pyproject.toml", new, "w1.l4")
 
 
 # --- g.7 tests importing the deleted functions ------------------------------------------------------------
