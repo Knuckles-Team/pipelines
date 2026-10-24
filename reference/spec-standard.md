@@ -187,7 +187,7 @@ A competency question is an ordinary spec row whose ID starts with `EG-CQ-`. No 
 | `X-R001` | **Title.** Text. Depends-on: EG-FOO-R004, SDK-BAR-R002. | Verification |
 ```
 
-The generator writes `priority` on each open row of `status.json`. A person never edits it.
+The organization architecture page computes `priority` for each open row. No `status.json` carries it and a person never edits it.
 
 ```text
 priority = (10 x competency-question rows that transitively depend on the row
@@ -196,8 +196,8 @@ priority = (10 x competency-question rows that transitively depend on the row
 
 - An open row is `SPECIFIED`. A `LANDED`, `VERIFIED`, or `RETIRED` row is done and has no `priority`.
 - A row in a spec whose ID holds `GATES`, `PAGES`, `DOCS`, `HYGIENE`, or `STANDARD` is non-functional.
-- Each `status.json` lists `frontier` (open leaf rows whose prerequisites are all done) and `unserved` (open functional leaf rows that no competency question reaches).
-- A repository sees only its own rows. The architecture page recomputes every score over all repositories and labels the unserved rows "Not linked to any competency question".
+- The page also lists `frontier` (open leaf rows whose prerequisites are all done) and `unserved` (open functional leaf rows that no competency question reaches).
+- Only the page sees every repository, so cross-repository `Depends-on` edges count. It labels the unserved rows "Not linked to any competency question".
 - A release bundle is a group of open rows joined by cross-repository `Depends-on` edges. The page derives it and nobody declares it. Its steps follow the release train: epistemic-graph, agent-connector-sdk, agent-utilities, arbora, the front ends, then connectors. Its priority is the maximum row priority.
 
 ## Withdrawing invalid verification evidence

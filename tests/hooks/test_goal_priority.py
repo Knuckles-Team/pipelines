@@ -86,23 +86,18 @@ def test_frontier_and_unserved() -> None:
 
 
 # spec: PIPE-CONNSPEC-R014
-def test_generator_writes_priority_frontier_unserved(repo: Repo) -> None:
+def test_generator_leaves_status_shape_unchanged(repo: Repo) -> None:
     rows = (
         "# demo\n\n| ID | Requirement |\n|---|---|\n"
         "| `TEST-R001` | **First.** |\n"
-        "| `TEST-R002` | **Second.** Depends-on: TEST-R001. |\n"
-        "| `TEST-R003` | **Question.** Depends-on: TEST-R002. |\n"
-        "| `TEST-R004` | **Untouched.** |\n"
+        "| `TEST-R002` | **Second.** Depends on `R001`. |\n"
     )
     repo.commit({"specs/demo/requirements.md": rows}, "add spec")
     assert repo.run("spec-status", "--write") == 0
     doc = json.loads((repo.root / "specs/demo/status.json").read_text())
-    by_id = {r["id"]: r for r in doc["requirements"]}
-    assert by_id["TEST-R001"]["priority"] == 4  # unblocks TEST-R002 and TEST-R003
-    assert by_id["TEST-R002"]["priority"] == 2
-    assert by_id["TEST-R002"]["depends_on"] == ["TEST-R001"]
-    assert doc["frontier"] == ["TEST-R001", "TEST-R004"]
-    assert doc["unserved"] == ["TEST-R001", "TEST-R002", "TEST-R003", "TEST-R004"]
+    assert set(doc) == {"schema_version", "spec_id", "owner_repo", "delivery_state", "requirement_ids", "requirements"}
+    for record in doc["requirements"]:
+        assert not {"priority", "depends_on", "frontier", "unserved"} & set(record)
 
 
 # spec: PIPE-CONNSPEC-R015
