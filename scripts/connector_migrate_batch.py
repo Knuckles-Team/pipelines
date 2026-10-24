@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
@@ -166,6 +167,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
     tmp = Path(a.tmpdir) / repo
     tmp.mkdir(parents=True, exist_ok=True)
     pc_home = Path(a.tmpdir).parent / "pc" / repo
+    # A `rev: main` hook checkout is never updated after its first install: a cache of an earlier run runs stale hook code.
+    shutil.rmtree(pc_home, ignore_errors=True)
     pc_home.mkdir(parents=True, exist_ok=True)
     # R016.25: one pre-commit cache per repo; the shared sqlite cache reports "database is locked" under concurrency.
     env = {"TMPDIR": str(tmp), "PRE_COMMIT_HOME": str(pc_home)}
@@ -367,6 +370,9 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         check_status_on_main(wt, env, a, led, repo)
     except StepFailed as exc:
         led.record(repo, status="failed", failed_step=exc.step, output_tail=exc.output)
+        (tmp / f"failed-{exc.step}.log").write_text(
+            exc.full, encoding="utf-8"
+        )  # the ledger keeps only the last 2000 chars
     except Exception as exc:  # noqa: BLE001 - recorded, then this repo stops
         led.record(repo, status="failed", failed_step=step, output_tail=f"{type(exc).__name__}: {exc}")
 
