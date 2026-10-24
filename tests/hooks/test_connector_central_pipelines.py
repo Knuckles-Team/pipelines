@@ -695,3 +695,25 @@ def test_x_second_run_changes_nothing(repo: Path) -> None:
     after = snapshot(repo)
     second = run(repo, "pl.x")
     assert snapshot(repo) == after and not second.deleted and not second.changed
+
+
+@pytest.mark.spec("PIPE-GATES-R016.94")
+def test_q_ports_the_ruff_exclude_to_extend_exclude(repo: Path) -> None:
+    (repo / "tests").mkdir(exist_ok=True)
+    (repo / "scripts").mkdir(exist_ok=True)
+    (repo / ".pre-commit-config.yaml").write_text(
+        "repos:\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: v0.17.1\n  hooks:\n"
+        '  - id: ruff-check\n    args: ["--fix"]\n    exclude: ^(tests/|test/|scripts/|script/)\n'
+        "  - id: ruff-format\n    exclude: ^(tests/|test/|scripts/|script/)\n",
+        encoding="utf-8",
+    )
+    run(repo, "pl.q")
+    data = tomllib.loads((repo / "pyproject.toml").read_text(encoding="utf-8"))
+    assert data["tool"]["ruff"]["extend-exclude"] == ["tests", "scripts"]
+    again = (repo / "pyproject.toml").read_text(encoding="utf-8")
+    (repo / ".pre-commit-config.yaml").write_text(
+        (P.pipelines_root(make_ctx(repo, {})) / "templates/connector/pre-commit-config.yaml").read_text(),
+        encoding="utf-8",
+    )
+    run(repo, "pl.q")
+    assert (repo / "pyproject.toml").read_text(encoding="utf-8") == again

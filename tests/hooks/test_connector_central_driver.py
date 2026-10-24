@@ -112,3 +112,14 @@ def test_central_driver_flags(tmp_path: Path) -> None:
     batch = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(batch)
     assert batch.CENTRAL_MESSAGE and callable(batch.central_verify)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.104")
+def test_tidy_sorts_imports_and_drops_unused_ones_in_rewritten_files(tmp_path: Path) -> None:
+    root = _fixture(tmp_path)
+    ctx = cc.make_ctx(root, {})
+    assert ctx is not None
+    (root / "demo_agent/mod.py").write_text("import sys\nimport os\n\nprint(os.name)\n", encoding="utf-8")
+    ctx.changed.add("demo_agent/mod.py")
+    cc.tidy(ctx)
+    assert (root / "demo_agent/mod.py").read_text(encoding="utf-8") == "import os\n\nprint(os.name)\n"
