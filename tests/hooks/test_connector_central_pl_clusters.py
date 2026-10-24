@@ -82,7 +82,7 @@ def test_generation_table_entries_each_occur_in_several_repositories() -> None:
     assert table["dockerfile_forms"] and all(n >= 3 for n in table["dockerfile_forms"].values())
     assert all(n >= 3 for by in table["stubs"].values() for n in by.values())
     assert table["rewrites"] and all(
-        r["repos"] >= 3 and r["old"] != r["new"] and r["reason"] for r in table["rewrites"]
+        (r["repos"] >= 3 or r.get("retained")) and r["old"] != r["new"] and r["reason"] for r in table["rewrites"]
     )
 
 

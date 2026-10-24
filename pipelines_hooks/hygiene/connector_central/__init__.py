@@ -17,6 +17,7 @@ from __future__ import annotations
 import ast
 import datetime
 import importlib
+import json
 import re
 import shutil
 import subprocess
@@ -92,9 +93,10 @@ def add_changelog(ctx: Ctx, version: str, today: str | None = None) -> None:
 
 
 def tidy(ctx: Ctx) -> None:
-    """Import order and unused imports in the files the rules rewrote, then format, so the commit hooks find nothing to fix.
+    """Fix and format the files the rules rewrote with the repo's own ruff table, so the commit hooks find nothing.
 
-    Both use the repo's own ruff table (``extend-exclude`` is honoured). A file ruff still rejects is a review item.
+    Every selected rule runs with its safe fixes (``extend-exclude`` is honoured). A finding ruff cannot fix is a
+    blocking review item with its rule ids; nothing is ignored on the way.
     """
     files = [f for f in sorted(ctx.changed) if f.endswith(".py") and (ctx.root / f).is_file()]
     if not files:
@@ -104,12 +106,45 @@ def tidy(ctx: Ctx) -> None:
         ctx.note("tidy", "ruff is not installed; imports and formatting left to the commit hooks", "", blocking=True)
         return
     base = [*ruff.split(), "--config", str(ctx.root / "pyproject.toml")]
-    subprocess.run(
-        [*base, "check", "--select", "I,F401", "--fix", "--force-exclude", "--quiet", *files],
+    subprocess.run([*base, "check", "--fix", "--force-exclude", "--quiet", *files], cwd=ctx.root, capture_output=True)
+    subprocess.run([*base, "format", "--force-exclude", "--quiet", *files], cwd=ctx.root, capture_output=True)
+    left = subprocess.run(
+        [*base, "check", "--force-exclude", "--output-format", "json", "--no-cache", *files],
         cwd=ctx.root,
         capture_output=True,
+        text=True,
     )
-    subprocess.run([*base, "format", "--force-exclude", "--quiet", *files], cwd=ctx.root, capture_output=True)
+    try:
+        found = json.loads(left.stdout or "[]")
+    except ValueError:
+        ctx.note("tidy", f"ruff check output cannot be read: {(left.stderr or left.stdout)[-300:]}", "", blocking=True)
+        return
+    by_file: dict[str, list[str]] = {}
+    for item in found:
+        name = Path(item["filename"])
+        try:
+            rel = name.resolve().relative_to(ctx.root.resolve()).as_posix()
+        except ValueError:
+            rel = str(name)
+        by_file.setdefault(rel, []).append(f"{item.get('code')} line {item['location']['row']}")
+    for rel, hits in sorted(by_file.items()):
+        ctx.note("tidy", f"ruff still reports after the fix pass: {', '.join(hits)}", rel, blocking=True)
+
+
+def spell_check(ctx: Ctx) -> None:
+    """Run the central codespell check on the migrated tree; a finding is a blocking review item, never ignored."""
+    if not ctx.applied:
+        return
+    from pipelines_hooks.connector import codespell
+
+    try:
+        lines = codespell.findings(ctx.root, extra=sorted(ctx.changed - ctx.deleted))
+    except Exception as exc:  # noqa: BLE001 - an unavailable codespell is reported, the migration continues
+        ctx.note("codespell", f"codespell could not run: {exc}", "", blocking=False)
+        return
+    for line in lines:
+        rel, _, rest = line.partition(":")
+        ctx.note("codespell", f"central codespell would fail: {rest.strip()}", rel, blocking=True)
 
 
 def refresh_lock(ctx: Ctx) -> None:
@@ -145,6 +180,7 @@ def migrate_central(root: Path, options: dict[str, Any] | None = None) -> dict[s
         for item in ctx.review.items[before:]:
             item.setdefault("rule", rid)
     tidy(ctx)
+    spell_check(ctx)
     for rel in sorted(ctx.changed):
         if rel.endswith(".py"):
             try:

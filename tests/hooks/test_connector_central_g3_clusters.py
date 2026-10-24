@@ -236,6 +236,40 @@ def test_surface_without_client_declares_no_api(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
+def test_verbose_targets_computed_from_the_configuration_is_refused(tmp_path: Path) -> None:
+    """atlassian-agent: `_operation_targets()` picks Cloud or Server classes after `load_config()`; `Connector` runs at import."""
+    top = (
+        "def facade_class(product):\n    return Api\n\n\n"
+        "def _operation_targets():\n"
+        "    targets = [{'client_cls': facade_class(p), 'get_client': get_client, 'prefix': p} for p in ('jira',)]\n"
+        "    return targets\n"
+    )
+    server = _server(top=top, surface=OWN + "        verbose_targets=_operation_targets(),\n")
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    detail = _refused_untouched(ctx, server)
+    assert "after load_config()" in detail and "no lazy verbose_targets" in detail and "facade_class" in detail
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_verbose_targets_from_a_function_that_reads_nothing_moves_to_import_time(tmp_path: Path) -> None:
+    """salesforce-agent: `_operation_targets()` only pairs classes with lazy lambdas."""
+    top = (
+        "def _operation_targets():\n"
+        "    resources = {'soql': Api}\n"
+        "    return [\n"
+        "        {'client_cls': c, 'get_client': (lambda name=n: getattr(get_client(), name)), 'prefix': n}\n"
+        "        for n, c in resources.items()\n"
+        "    ]\n"
+    )
+    server = _server(top=top, surface=OWN + "        verbose_targets=_operation_targets(),\n")
+    ctx = _repo(tmp_path, server)
+    init = _migrate(ctx)
+    assert "verbose_targets=tuple(_operation_targets())" in init
+    assert not _blocking(ctx)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
 def test_computed_client_class_stays_in_review(tmp_path: Path) -> None:
     """uptime-kuma-agent: `client_cls=_optional_client_type()`."""
     server = _server(surface="        client_cls=make(),\n        get_client=get_client,\n" + OWN)

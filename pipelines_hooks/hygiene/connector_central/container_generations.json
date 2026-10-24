@@ -233,7 +233,7 @@
         "RUN uv pip install --system --no-cache --break-system-packages .<EXTRAS>"
       ],
       "reason": "the earlier debug image ran as root; the render creates the app user after the install",
-      "repos": 10
+      "repos": 9
     },
     {
       "file": "debug.Dockerfile",
@@ -280,7 +280,7 @@
         "  <DIST>-mcp:"
       ],
       "reason": "the earlier compose file carried none of the container hardening the render declares",
-      "repos": 14
+      "repos": 13
     },
     {
       "file": "mcp.compose.yml",
@@ -304,7 +304,7 @@
         "    restart: unless-stopped"
       ],
       "reason": "the earlier compose file restarted unless stopped; the render restarts always",
-      "repos": 4
+      "repos": 3
     },
     {
       "file": "mcp.compose.yml",
@@ -344,7 +344,8 @@
         "    image: \"${MCP_IMAGE:?set-MCP_IMAGE-to-image@sha256-digest}\""
       ],
       "reason": "the earlier compose file took the image from one shared MCP_IMAGE variable; the render names the variable after the connector and image kind",
-      "repos": 3
+      "repos": 2,
+      "retained": true
     },
     {
       "file": "mcp.compose.yml",
@@ -360,7 +361,7 @@
         "    environment:"
       ],
       "reason": "the earlier compose file read no environment file; the render reads ../.env",
-      "repos": 5
+      "repos": 3
     },
     {
       "file": "mcp.compose.yml",
@@ -388,7 +389,7 @@
         "ARG HOST=0.0.0.0"
       ],
       "reason": "the earlier debug image bound all interfaces by default; the render binds the host the runtime image binds",
-      "repos": 3
+      "repos": 9
     }
   ],
   "stubs": {

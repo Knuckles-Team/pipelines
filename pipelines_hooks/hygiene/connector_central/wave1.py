@@ -1742,6 +1742,56 @@ def _g3_second_module(ctx: Ctx, dotted: str, wrapper: Path) -> None:
     _g3_run(ctx, real, dotted, wrapper)
 
 
+_PURE_CALLS = frozenset({"getattr", "dict", "list", "tuple", "set", "frozenset", "len", "str", "int", "bool", "sorted"})
+_PURE_METHODS = frozenset({"items", "keys", "values", "append", "extend", "get", "copy"})
+
+
+def _check_targets_timing(node: ast.expr, kept: Sequence[ast.stmt]) -> None:
+    """``verbose_targets=f()`` ran while the server was built, after ``load_config()``; ``Connector`` evaluates it at import.
+
+    Only a call to a local function that reads nothing at call time (no calls outside a lambda but pure builtins, no
+    ``environ``) moves exactly. Any other call may read the configuration (a deployment switch) and is refused: the SDK
+    has no lazy form of ``verbose_targets`` (an SDK gap, not a rewrite the codemod can make exact).
+    """
+    if not isinstance(node, ast.Call):
+        return
+    func = next(
+        (
+            n
+            for n in kept
+            if isinstance(n, ast.FunctionDef) and isinstance(node.func, ast.Name) and n.name == node.func.id
+        ),
+        None,
+    )
+    reason = "calls a function this module does not define"
+    if func is not None and not node.args and not node.keywords:
+        reason = ""
+
+        def walk(n: ast.AST) -> None:
+            nonlocal reason
+            if isinstance(n, ast.Lambda | ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef) and n is not func:
+                return
+            pure = isinstance(n, ast.Call) and (
+                (isinstance(n.func, ast.Name) and n.func.id in _PURE_CALLS)
+                or (isinstance(n.func, ast.Attribute) and n.func.attr in _PURE_METHODS)
+            )
+            if isinstance(n, ast.Call) and not pure and not reason:
+                reason = f"`{ast.unparse(n.func)}(...)` runs inside it"
+            elif isinstance(n, ast.Attribute) and n.attr in ("environ", "getenv") and not reason:
+                reason = "it reads the environment"
+            for child in ast.iter_child_nodes(n):
+                walk(child)
+
+        walk(func)
+    elif func is not None:
+        reason = "it takes arguments"
+    if reason:
+        raise _Reject(
+            f"verbose_targets={ast.unparse(node)} is evaluated when the server is built (after load_config()) but "
+            f"Connector(verbose_targets=...) is evaluated at import ({reason}); SDK gap: no lazy verbose_targets"
+        )
+
+
 def _g3_run(ctx: Ctx, path: Path, modname: str, wrapper: Path | None) -> None:
     rel = ctx.rel(path)
     text = path.read_text(encoding="utf-8")
@@ -1932,6 +1982,7 @@ def _g3_run(ctx: Ctx, path: Path, modname: str, wrapper: Path | None) -> None:
             )
             exprs["verbose_targets"] = ast.unparse(ast.Tuple(elts=[main, *more], ctx=ast.Load()))
             if given is not None:
+                _check_targets_timing(given, kept)
                 need(given, "verbose_targets")
         elif "client_cls" in surf:
             exprs["api"] = surf["client_cls"].id
@@ -1943,6 +1994,7 @@ def _g3_run(ctx: Ctx, path: Path, modname: str, wrapper: Path | None) -> None:
             if key == "verbose_targets":
                 node = ast.Tuple(elts=node.elts, ctx=ast.Load()) if isinstance(node, ast.List) else None
                 exprs[key] = ast.unparse(node) if node else f"tuple({ast.unparse(surf[key])})"
+                _check_targets_timing(surf[key], kept)
                 need(surf[key], key)
             else:
                 exprs[key] = _src(node)
@@ -2628,7 +2680,95 @@ def _is_version_assert(n: ast.stmt) -> bool:
     )
 
 
-def _clean_version_asserts(text: str) -> str:
+_PURE_ATTRS = {"loads", "import_module", "read_text", "read_bytes", "resolve", "joinpath", "parents", "parent"}
+
+
+def _pure_setup(e: ast.expr) -> bool:
+    """A read-only value: tomllib.loads / read_text / importlib.import_module / Path(...) chains over constants."""
+    for n in ast.walk(e):
+        if isinstance(n, ast.Call):
+            f = n.func
+            if not (
+                isinstance(f, ast.Name) and f.id == "Path" or isinstance(f, ast.Attribute) and f.attr in _PURE_ATTRS
+            ):
+                return False
+        elif isinstance(n, ast.Attribute):
+            if n.attr not in _PURE_ATTRS and not (
+                isinstance(n.value, ast.Name) and n.value.id in {"tomllib", "importlib"}
+            ):
+                return False
+        elif not isinstance(
+            n,
+            ast.Name
+            | ast.Constant
+            | ast.JoinedStr
+            | ast.FormattedValue
+            | ast.BinOp
+            | ast.Div
+            | ast.Load
+            | ast.Subscript
+            | ast.Tuple
+            | ast.keyword,
+        ):
+            return False
+    return True
+
+
+def _inside(node: ast.AST, spans: list[tuple[int, int]]) -> bool:
+    line = getattr(node, "lineno", 0)
+    return any(a <= line <= b for a, b in spans)
+
+
+def _dead_setup(tree: ast.Module, spans: list[tuple[int, int]]) -> tuple[list[tuple[int, int]], set[str], list[str]]:
+    """Spans of pure assignments (and loops/functions left empty) that only fed the deleted assertions."""
+    extra: list[tuple[int, int]] = []
+    names: set[str] = set()
+    dropped: list[str] = []
+    fns = [f for f in ast.walk(tree) if isinstance(f, ast.FunctionDef | ast.AsyncFunctionDef)]
+    for fn in fns:
+        fs = _span(fn)
+        if _inside(fn, spans) or not any(fs[0] <= a and b <= fs[1] for a, b in spans):
+            continue
+        local = list(spans)
+        changed = True
+        while changed:
+            changed = False
+            loads = {
+                n.id
+                for n in ast.walk(fn)
+                if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and not _inside(n, local)
+            }
+            for n in ast.walk(fn):
+                if _inside(n, local) or not isinstance(n, ast.stmt):
+                    continue
+                dead_assign = (
+                    isinstance(n, ast.Assign)
+                    and len(n.targets) == 1
+                    and isinstance(n.targets[0], ast.Name)
+                    and n.targets[0].id not in loads
+                    and _pure_setup(n.value)
+                )
+                dead_loop = (
+                    isinstance(n, ast.For | ast.AsyncFor)
+                    and not n.orelse
+                    and all(_inside(b, local) or _doc(b) for b in n.body)
+                    and _pure_setup(n.iter)
+                )
+                if dead_assign or dead_loop:
+                    local.append(_span(n))
+                    names |= _name_loads([n])
+                    changed = True
+        body = [b for b in fn.body if not _doc(b)]
+        if body and all(_inside(b, local) for b in body):
+            extra.append(fs)
+            names |= _name_loads([fn])
+            dropped.append(fn.name)
+        else:
+            extra.extend(x for x in local if x not in spans)
+    return extra, names, dropped
+
+
+def _clean_version_asserts(text: str, dropped: list[str] | None = None) -> str:
     tree = _parse(text)
     if tree is None or "__version__" not in text:
         return text
@@ -2665,6 +2805,12 @@ def _clean_version_asserts(text: str) -> str:
     spans = [s for s in spans if not any(o != s and o[0] <= s[0] and s[1] <= o[1] for o in spans)]
     if not spans:
         return text
+    extra, more, gone = _dead_setup(tree, spans)
+    spans += extra
+    candidates |= more
+    if dropped is not None:
+        dropped.extend(gone)
+    spans = [s for s in spans if not any(o != s and o[0] <= s[0] and s[1] <= o[1] for o in spans)]
     return _prune_imports(_delete_spans(text, spans), candidates)
 
 
@@ -2790,6 +2936,42 @@ def _test_files(ctx: Ctx) -> list[Path]:
     ]
 
 
+def _module_aliases(tree: ast.AST, mod: str) -> set[str]:
+    """Every spelling by which a file reaches module ``mod``: the dotted path, ``import mod as a``, ``from parent import leaf``
+    and ``a = importlib.import_module("mod")`` (a test reads ``mcp_server.__version__`` through such a name)."""
+    parent, _, leaf = mod.rpartition(".")
+    names = {mod}
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Import):
+            names |= {a.asname for a in n.names if a.name == mod and a.asname}
+        elif isinstance(n, ast.ImportFrom) and parent and n.module == parent and n.level == 0:
+            names |= {a.asname or a.name for a in n.names if a.name == leaf}
+        elif isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name):
+            call = n.value
+            if (
+                isinstance(call, ast.Call)
+                and ast.unparse(call.func) in ("importlib.import_module", "import_module")
+                and call.args
+                and isinstance(call.args[0], ast.Constant)
+                and call.args[0].value == mod
+            ):
+                names.add(n.targets[0].id)
+    return names
+
+
+def _version_reads(text: str, mod: str) -> list[ast.Attribute]:
+    """The ``<module>.__version__`` attribute reads of ``mod`` in ``text``, whatever name the file binds the module to."""
+    tree = _parse(text)
+    if tree is None or "__version__" not in text:
+        return []
+    names = _module_aliases(tree, mod)
+    return [
+        n
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Attribute) and n.attr == "__version__" and ast.unparse(n.value) in names
+    ]
+
+
 @rule("w1.k1")
 def k1(ctx: Ctx) -> None:
     for f in _py_files(ctx.pkg):
@@ -2807,10 +2989,7 @@ def k1(ctx: Ctx) -> None:
         # tests: asserts are removed by k4 first
         tests = _test_files(ctx)
         for tf in tests:
-            tt = tf.read_text(encoding="utf-8")
-            cleaned = _clean_version_asserts(tt)
-            if cleaned != tt:
-                ctx.write(ctx.rel(tf), cleaned, "w1.k4")
+            _clean_test_file(ctx, tf)
         rest = [n for n in tree.body if n not in hits]
         reads, why = _module_readers(rest)
         if why:
@@ -2827,10 +3006,9 @@ def k1(ctx: Ctx) -> None:
                 blocked = True
             else:
                 rewrites.append((imp_file, node))
-        attr = re.compile(rf"\b{re.escape(mod)}\.__version__")
         test_attr: list[Path] = []
         for tf in _py_files(ctx.root):
-            if tf == f or not attr.search(tf.read_text(encoding="utf-8")):
+            if tf == f or not _version_reads(tf.read_text(encoding="utf-8"), mod):
                 continue
             if tf in tests:
                 test_attr.append(tf)
@@ -2851,11 +3029,7 @@ def k1(ctx: Ctx) -> None:
             ttree = _parse(tt)
             if ttree is None:
                 continue
-            nodes = [
-                n
-                for n in ast.walk(ttree)
-                if isinstance(n, ast.Attribute) and n.attr == "__version__" and ast.unparse(n.value) == mod
-            ]
+            nodes = _version_reads(tt, mod)
             out = _replace_nodes(tt, nodes, f'importlib.metadata.version("{ctx.dist}")')
             if out is None:
                 ctx.note("w1.k1", f"`{mod}.__version__` is read across lines here; rewrite by hand", ctx.rel(tf), True)
@@ -2933,16 +3107,24 @@ def k3(ctx: Ctx) -> None:
         ctx.write(ctx.rel(f), new, "w1.k3")
 
 
+def _clean_test_file(ctx: Ctx, f: Path) -> None:
+    old = f.read_text(encoding="utf-8")
+    gone: list[str] = []
+    new = _clean_version_asserts(old, gone)
+    if new != old and not new.strip():
+        ctx.delete(ctx.rel(f), "w1.k4")
+    elif new != old:
+        ctx.write(ctx.rel(f), new, "w1.k4")
+    if gone:
+        ctx.note("w1.k4", f"deleted test function(s) left with only dead setup: {', '.join(gone)}", ctx.rel(f))
+
+
 @rule("w1.k4")
 def k4(ctx: Ctx) -> None:
     for f in _py_files(ctx.root):
         parts = f.relative_to(ctx.root).parts
-        if "tests" not in parts and not f.name.startswith("test_"):
-            continue
-        old = f.read_text(encoding="utf-8")
-        new = _clean_version_asserts(old)
-        if new != old:
-            ctx.write(ctx.rel(f), new, "w1.k4")
+        if ("tests" in parts or f.name.startswith("test_")) and f.is_file():
+            _clean_test_file(ctx, f)
 
 
 # --- i: connector_sources becomes data only -------------------------------------------------------------
@@ -3491,7 +3673,18 @@ def l4(ctx: Ctx) -> None:
     if not m:
         ctx.note("w1.l4", f"agent-connector-sdk requirement {hit[0]!r} has an unsupported form", "pyproject.toml", True)
         return
-    extras = sorted({e.strip() for e in (m.group(2) or "").split(",") if e.strip()} | {"mcp"})
+    opt = data.get("project", {}).get("optional-dependencies", {})
+    drop = [
+        k
+        for k in ("mcp", "all")
+        if k in opt and len(opt[k]) == 1 and opt[k][0].replace(" ", "").startswith("agent-connector-sdk")
+    ]
+    # the SDK extras of a dropped one-element extra (`mcp = ["agent-connector-sdk[mcp,stream]>=..."]`) move to the pin
+    dropped_extras: set[str] = set()
+    for key in drop:
+        dm = re.match(r"^agent-connector-sdk\s*\[([^\]]*)\]", opt[key][0].strip())
+        dropped_extras |= {e.strip() for e in (dm.group(1) if dm else "").split(",") if e.strip()}
+    extras = sorted({e.strip() for e in (m.group(2) or "").split(",") if e.strip()} | dropped_extras | {"mcp"})
     pin = f"agent-connector-sdk[{','.join(extras)}]" + SDK_PIN.split("]", 1)[1]
     sec = _toml_section(lines, "[project]")
     assert sec is not None  # `dependencies` was read from [project] above
@@ -3506,12 +3699,6 @@ def l4(ctx: Ctx) -> None:
     # drop one-element mcp/all extras holding only the SDK requirement
     extras_sec = _toml_section(lines, "[project.optional-dependencies]")
     if extras_sec is not None:
-        opt = data.get("project", {}).get("optional-dependencies", {})
-        drop = [
-            k
-            for k in ("mcp", "all")
-            if k in opt and len(opt[k]) == 1 and opt[k][0].replace(" ", "").startswith("agent-connector-sdk")
-        ]
         for key in drop:
             opt_sec = _toml_section(lines, "[project.optional-dependencies]")
             assert opt_sec is not None  # the header was found above and deletes only remove array lines
