@@ -99,9 +99,9 @@ class _Edits:
                 i = last + 1
                 continue
             line = lines[i - 1]
-            for ln, c0, c1, new, st in sorted(self.spans, key=lambda s: -s[1]):
+            for ln, c0, c1, text, st in sorted(self.spans, key=lambda s: -s[1]):
                 if ln == i and st <= stage:
-                    line = line[:c0] + new + line[c1:]
+                    line = line[:c0] + text + line[c1:]
             out.append((line, False))
             i += 1
         return _collapse(out, self.text.endswith("\n"))
@@ -141,7 +141,7 @@ def _char_col(text_lines: list[str], lineno: int, col_bytes: int) -> int:
     return len(text_lines[lineno - 1].encode("utf-8")[:col_bytes].decode("utf-8", "ignore"))
 
 
-def _first_line(node: ast.AST) -> int:
+def _first_line(node: ast.stmt) -> int:
     decos = getattr(node, "decorator_list", None) or []
     return min([node.lineno, *(d.lineno for d in decos)])
 
@@ -244,8 +244,9 @@ def _norm_fn(fn: ast.AST, names: dict[str, str], consts: dict[str, tuple[str, ..
     fn = copy.deepcopy(fn)
     assert isinstance(fn, ast.FunctionDef | ast.AsyncFunctionDef)
     body = fn.body
-    if body and isinstance(body[0], ast.Expr) and isinstance(getattr(body[0], "value", None), ast.Constant):
-        if isinstance(body[0].value.value, str):
+    if body and isinstance(body[0], ast.Expr):
+        doc = body[0].value
+        if isinstance(doc, ast.Constant) and isinstance(doc.value, str):
             body = body[1:]
     fn.body = body or [ast.Pass()]
     fn.name = "FN"
@@ -594,6 +595,7 @@ def _build_plan(ctx: Ctx) -> _Plan | None:  # noqa: C901 - one linear preflight,
     resolved: dict[str, str] = {}
     used_consts: list[str] = []
     for key, val in kw.items():
+        assert key is not None  # kw keys were checked against {"connector", "stream"} above
         if isinstance(val, ast.Constant) and isinstance(val.value, str):
             resolved[key] = val.value
         elif isinstance(val, ast.Name) and val.id in strs:
@@ -612,7 +614,7 @@ def _build_plan(ctx: Ctx) -> _Plan | None:  # noqa: C901 - one linear preflight,
 
     # standard functions
     defs = [n for n in tree.body if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef)]
-    helpers: dict[str, ast.AST] = {}
+    helpers: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
     for fn in defs:
         if isinstance(fn, ast.FunctionDef) and not fn.decorator_list:
             norm = _norm_fn(fn, {}, consts, True)
@@ -623,7 +625,7 @@ def _build_plan(ctx: Ctx) -> _Plan | None:  # noqa: C901 - one linear preflight,
                     helpers[kind] = fn
     names = {getattr(fn, "name", ""): _TOKEN[k] for k, fn in helpers.items()}
     names[bname] = "BINDING"
-    ingests: dict[str, ast.AST] = {}
+    ingests: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
     for fn in defs:
         if isinstance(fn, ast.AsyncFunctionDef) and not fn.decorator_list:
             norm = _norm_fn(fn, names, consts, False)
@@ -785,8 +787,8 @@ def _plan_other(  # noqa: C901 - one linear site check per file
         if owner is None or not is_test:
             raise _Refuse(f"{rel}:{r} uses a removed kg_ingest helper outside a test function")
         del_spans.append((_first_line(owner), owner.end_lineno or owner.lineno))
-    for a, b in del_spans:
-        edits.block(a, b, None, 3)
+    for d0, d1 in del_spans:
+        edits.block(d0, d1, None, 3)
 
     def outside(row: int) -> bool:
         return not any(a <= row <= b for a, b in del_spans)
@@ -820,16 +822,16 @@ def _plan_other(  # noqa: C901 - one linear site check per file
             end = _char_col(tl, f.end_lineno, f.end_col_offset)
             sites[(f.end_lineno, end - len(f.attr))] = (len(f.attr), f"STREAM.{target[f.attr]}")
     live_calls = 0
-    for r, c, n in toks.names:
-        if n == "STREAM" and outside(r):
+    for r, c, nm in toks.names:
+        if nm == "STREAM" and outside(r):
             raise _Refuse(f"{rel}:{r} already uses the name `STREAM`")
-        if n not in target or not outside(r) or r in import_rows:
+        if nm not in target or not outside(r) or r in import_rows:
             continue
         if (r, c) not in sites:
-            raise _Refuse(f"{rel}:{r} references `{n}` other than by a direct call")
-        ln, new = sites[(r, c)]
-        edits.span(r, c, c + ln, new, 3)
-        live_calls += 1 if n in imported else 0
+            raise _Refuse(f"{rel}:{r} references `{nm}` other than by a direct call")
+        ln, repl = sites[(r, c)]
+        edits.span(r, c, c + ln, repl, 3)
+        live_calls += 1 if nm in imported else 0
     # imports from kg_ingest; other names used only by the deleted tests
     dead = _dead_names(tree, toks, del_spans)
     for n in kg_imports:
@@ -845,12 +847,12 @@ def _plan_other(  # noqa: C901 - one linear site check per file
                 continue
             new.append(a.name)
         edits.block(n.lineno, n.end_lineno or n.lineno, _render_import(tl, n, new), 3)
-    for n in tree.body:
-        if isinstance(n, ast.ImportFrom) and n not in kg_imports and any(a.name in dead for a in n.names):
-            if any(a.asname for a in n.names):
+    for top in tree.body:
+        if isinstance(top, ast.ImportFrom) and top not in kg_imports and any(a.name in dead for a in top.names):
+            if any(a.asname for a in top.names):
                 continue
-            keep = [a.name for a in n.names if a.name not in dead]
-            edits.block(n.lineno, n.end_lineno or n.lineno, _render_import(tl, n, keep), 3)
+            keep = [a.name for a in top.names if a.name not in dead]
+            edits.block(top.lineno, top.end_lineno or top.lineno, _render_import(tl, top, keep), 3)
     if not edits.blocks and not edits.spans:
         return None
     return edits
@@ -868,12 +870,12 @@ def _dead_names(tree: ast.Module, toks: _Toks, del_spans: list[tuple[int, int]])
             names.update(a.name for a in n.names if not a.asname)
     inside: dict[str, int] = {}
     out: dict[str, int] = {}
-    for r, _c, n in toks.names:
-        if n not in names or r in imp_rows:
+    for r, _c, nm in toks.names:
+        if nm not in names or r in imp_rows:
             continue
         bucket = inside if any(a <= r <= b for a, b in del_spans) else out
-        bucket[n] = bucket.get(n, 0) + 1
-    return {n for n in inside if not out.get(n)}
+        bucket[nm] = bucket.get(nm, 0) + 1
+    return {nm for nm in inside if not out.get(nm)}
 
 
 def _plan(ctx: Ctx) -> _Plan | None:

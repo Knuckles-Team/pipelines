@@ -15,7 +15,7 @@ import re
 import tomllib
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeGuard
 
 from pipelines_hooks.hygiene.connector_central.base import SDK_PIN, Ctx, rule
 
@@ -184,7 +184,9 @@ def _py_files(root: Path) -> list[Path]:
 def _declared(ctx: Ctx) -> bool:
     init = ctx.pkg / "__init__.py"
     tree = _parse(init.read_text(encoding="utf-8")) if init.is_file() else None
-    return bool(tree) and any(
+    if tree is None:
+        return False
+    return any(
         isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "connector" for t in n.targets)
         for n in tree.body
     )
@@ -213,7 +215,20 @@ class _Reject(Exception):
     pass
 
 
-def _is_call(node: ast.AST, name: str) -> bool:
+def _pos(node: ast.expr) -> tuple[int, int, int, int]:
+    """Start/end line and column of a node parsed from source (end positions are always set)."""
+    assert node.end_lineno is not None and node.end_col_offset is not None
+    return node.lineno, node.col_offset, node.end_lineno, node.end_col_offset
+
+
+def _expr_of(src: str) -> ast.expr:
+    """Parse a constant one-expression source snippet and return that expression."""
+    stmt = ast.parse(src).body[0]
+    assert isinstance(stmt, ast.Expr)
+    return stmt.value
+
+
+def _is_call(node: ast.AST, name: str) -> TypeGuard[ast.Call]:
     return isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == name
 
 
@@ -227,9 +242,10 @@ def _analyse_instance(fn: ast.FunctionDef) -> dict[str, Any]:
     def bad(stmt: ast.stmt, why: str = "is outside the allowed bootstrap statements") -> _Reject:
         return _Reject(f"line {stmt.lineno}: `{ast.unparse(stmt)[:70]}` {why}")
 
-    if i < len(body) and isinstance(body[i], ast.Expr) and _is_call(body[i].value, "load_config"):
-        if body[i].value.args or body[i].value.keywords:
-            raise bad(body[i])
+    head = body[i] if i < len(body) else None
+    if isinstance(head, ast.Expr) and _is_call(head.value, "load_config"):
+        if head.value.args or head.value.keywords:
+            raise bad(head)
         i += 1
     if i >= len(body):
         raise _Reject("no create_mcp_server call")
@@ -243,20 +259,23 @@ def _analyse_instance(fn: ast.FunctionDef) -> dict[str, Any]:
         and _is_call(stmt.value, "create_mcp_server")
     ):
         raise bad(stmt)
-    args_n, mcp_n, mw_n = (e.id for e in stmt.targets[0].elts)
+    assert isinstance(stmt, ast.Assign) and isinstance(stmt.targets[0], ast.Tuple)  # guaranteed by the check above
+    args_n, mcp_n, mw_n = (e.id for e in stmt.targets[0].elts if isinstance(e, ast.Name))
     call = stmt.value
+    assert isinstance(call, ast.Call)
     kw = {k.arg: k.value for k in call.keywords}
     if call.args or None in kw or set(kw) - {"name", "version", "instructions"}:
         raise bad(stmt, "passes arguments beyond name, version and instructions to create_mcp_server")
-    if not (isinstance(kw.get("version"), ast.Name) and kw["version"].id == "__version__"):
+    version = kw.get("version")
+    if not (isinstance(version, ast.Name) and version.id == "__version__"):
         raise bad(stmt, "does not pass version=__version__")
     if "instructions" not in kw:
         raise bad(stmt, "has no instructions=")
     info["instructions"] = kw["instructions"]
     info["mcp"] = mcp_n
     i += 1
-    if i < len(body) and isinstance(body[i], ast.AsyncFunctionDef | ast.FunctionDef) and body[i].decorator_list:
-        route = body[i]
+    route = body[i] if i < len(body) else None
+    if isinstance(route, ast.AsyncFunctionDef | ast.FunctionDef) and route.decorator_list:
         d = route.decorator_list[0]
         ok = (
             len(route.decorator_list) == 1
@@ -285,13 +304,11 @@ def _analyse_instance(fn: ast.FunctionDef) -> dict[str, Any]:
     kw = {k.arg: k.value for k in call.keywords}
     allowed = {"client_cls", "get_client", "service", "tools_module", *_SURFACE_KWARGS}
     if None in kw or set(kw) - allowed:
-        raise bad(stmt, f"passes unsupported keywords {sorted(k for k in kw if k not in allowed)}")
+        raise bad(stmt, f"passes unsupported keywords {sorted(k for k in kw if k and k not in allowed)}")
     for need in ("client_cls", "get_client"):
         if not isinstance(kw.get(need), ast.Name):
             raise bad(stmt, f"does not pass {need} as a plain name")
-    if "tools_module" in kw and ast.dump(kw["tools_module"]) != ast.dump(
-        ast.parse("sys.modules[__name__]").body[0].value
-    ):
+    if "tools_module" in kw and ast.dump(kw["tools_module"]) != ast.dump(_expr_of("sys.modules[__name__]")):
         raise bad(stmt, "passes a tools_module other than sys.modules[__name__]")
     info["surface"] = kw
     i += 1
@@ -306,18 +323,18 @@ def _analyse_instance(fn: ast.FunctionDef) -> dict[str, Any]:
         and not stmt.orelse
         and len(stmt.body) == 1
         and isinstance(stmt.body[0], ast.Expr)
-        and ast.dump(stmt.body[0].value)
-        == ast.dump(ast.parse(f"{mcp_n}.add_middleware({stmt.target.id})").body[0].value)
+        and ast.dump(stmt.body[0].value) == ast.dump(_expr_of(f"{mcp_n}.add_middleware({stmt.target.id})"))
     )
     if not loop_ok:
         raise bad(stmt)
     i += 1
-    if i >= len(body) or not isinstance(body[i], ast.Return) or i != len(body) - 1:
+    final = body[i] if i < len(body) else None
+    if not isinstance(final, ast.Return) or i != len(body) - 1:
         raise bad(body[min(i, len(body) - 1)], "is not the final return")
-    if body[i].value is not None and not (
-        isinstance(body[i].value, ast.Tuple) and all(isinstance(e, ast.Name) for e in body[i].value.elts)
+    if final.value is not None and not (
+        isinstance(final.value, ast.Tuple) and all(isinstance(e, ast.Name) for e in final.value.elts)
     ):
-        raise bad(body[i])
+        raise bad(final)
     del args_n
     return info
 
@@ -336,7 +353,9 @@ def _analyse_entry(fn: ast.FunctionDef) -> None:
         and not first.value.args
     ):
         raise _Reject(f"line {first.lineno}: mcp_server() does not start with get_mcp_instance()")
-    banner = ast.parse('print("x", file=sys.stderr)').body[0].value.keywords[0]
+    banner_call = _expr_of('print("x", file=sys.stderr)')
+    assert isinstance(banner_call, ast.Call)
+    banner = banner_call.keywords[0]
     for stmt in body[1:-1]:
         ok = (
             isinstance(stmt, ast.Expr)
@@ -417,7 +436,7 @@ def g3(ctx: Ctx) -> None:
         n
         for n in tree.body
         if isinstance(n, ast.If)
-        and ast.dump(n.test) == ast.dump(ast.parse('__name__ == "__main__"').body[0].value)
+        and ast.dump(n.test) == ast.dump(_expr_of('__name__ == "__main__"'))
         and len(n.body) == 1
         and not n.orelse
         and isinstance(n.body[0], ast.Expr)
@@ -600,7 +619,9 @@ def _scaffold_edit(ctx: Ctx) -> tuple[str, dict[str, str]] | None:
         return None
     text = init.read_text(encoding="utf-8")
     tree = _parse(text)
-    sc = _scaffold(tree) if tree else None
+    if tree is None:
+        return None
+    sc = _scaffold(tree)
     if sc is None:
         return None
     head = ""
@@ -653,8 +674,8 @@ def _rewrite_pkg_imports(ctx: Ctx, owner: dict[str, str]) -> tuple[dict[str, str
                 continue
             lines = []
             for mod, aliases in groups.items():
-                new = ast.ImportFrom(module=mod or ctx.pkg_name, names=aliases, level=0)
-                lines.append(_import_text(new, aliases))
+                new_imp = ast.ImportFrom(module=mod or ctx.pkg_name, names=aliases, level=0)
+                lines.append(_import_text(new_imp, aliases))
             rep.append((n.lineno, n.end_lineno or n.lineno, "\n".join(lines)))
         for start, end, new in sorted(rep, reverse=True):
             text = _replace_span(text, start, end, new)
@@ -741,14 +762,14 @@ def g5(ctx: Ctx) -> None:
         return  # bootstrap kept, __main__ still valid
     tree = _parse(path.read_text(encoding="utf-8"))
     ok = tree is not None and len(tree.body) == 2
-    if ok:
+    if tree is not None and ok:
         imp, main = tree.body
         ok = (
             isinstance(imp, ast.ImportFrom)
             and imp.module == f"{ctx.pkg_name}.mcp_server"
             and [a.name for a in imp.names] == ["mcp_server"]
             and isinstance(main, ast.If)
-            and ast.dump(main.test) == ast.dump(ast.parse('__name__ == "__main__"').body[0].value)
+            and ast.dump(main.test) == ast.dump(_expr_of('__name__ == "__main__"'))
             and len(main.body) == 1
             and isinstance(main.body[0], ast.Expr)
             and _is_call(main.body[0].value, "mcp_server")
@@ -999,8 +1020,11 @@ def k1(ctx: Ctx) -> None:
             new = f'from importlib.metadata import version as _v\n\n__version__ = _v("{ctx.dist}")'
             ctx.write(ctx.rel(imp_file), _replace_span(t, node.lineno, node.end_lineno or node.lineno, new), "w1.k1")
         new_text = _delete_spans(text, [_span(n) for n in hits])
-        only_docs = all(_doc(n) or isinstance(n, ast.Import | ast.ImportFrom) for n in (_parse(new_text) or tree).body)
-        if f.name != "__init__.py" and (not new_text.strip() or (only_docs and not _parse(new_text).body)):
+        new_tree = _parse(new_text)
+        only_docs = all(_doc(n) or isinstance(n, ast.Import | ast.ImportFrom) for n in (new_tree or tree).body)
+        if f.name != "__init__.py" and (
+            not new_text.strip() or (only_docs and new_tree is not None and not new_tree.body)
+        ):
             ctx.delete(rel, "w1.k1")
         else:
             ctx.write(rel, new_text, "w1.k1")
@@ -1123,22 +1147,12 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
             if isinstance(n, ast.Name) and n.id in decl_names and isinstance(n.ctx, ast.Load):
                 par = parents.get(id(n))
                 if isinstance(par, ast.Call) and par.func is n and not par.args and not par.keywords:
-                    reps.append(
-                        (
-                            par.lineno,
-                            par.col_offset,
-                            par.end_lineno,
-                            par.end_col_offset,
-                            f'load_declaration("{ctx.pkg_name}")',
-                        )
-                    )
+                    reps.append((*_pos(par), f'load_declaration("{ctx.pkg_name}")'))
                     need_load = True
                 else:
                     bad.append(f"{ctx.rel(f)}:{n.lineno} uses declaration other than as `declaration()`")
             elif isinstance(n, ast.Name) and n.id in const_names and isinstance(n.ctx, ast.Load):
-                reps.append(
-                    (n.lineno, n.col_offset, n.end_lineno, n.end_col_offset, f'connector_name("{ctx.pkg_name}")')
-                )
+                reps.append((*_pos(n), f'connector_name("{ctx.pkg_name}")'))
                 need_name = True
             elif isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) and n.value.id in mod_names:
                 par = parents.get(id(n))
@@ -1149,20 +1163,10 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
                     and not par.args
                     and not par.keywords
                 ):
-                    reps.append(
-                        (
-                            par.lineno,
-                            par.col_offset,
-                            par.end_lineno,
-                            par.end_col_offset,
-                            f'load_declaration("{ctx.pkg_name}")',
-                        )
-                    )
+                    reps.append((*_pos(par), f'load_declaration("{ctx.pkg_name}")'))
                     need_load = True
                 elif n.attr == "CONNECTOR":
-                    reps.append(
-                        (n.lineno, n.col_offset, n.end_lineno, n.end_col_offset, f'connector_name("{ctx.pkg_name}")')
-                    )
+                    reps.append((*_pos(n), f'connector_name("{ctx.pkg_name}")'))
                     need_name = True
                 else:
                     bad.append(f"{ctx.rel(f)}:{n.lineno} uses connector_sources.{n.attr}")
@@ -1309,10 +1313,10 @@ def i2(ctx: Ctx) -> None:
     field_sets = {names[g]: mappings[keys[0]]["fields"] for g, keys in shared.items()}
     out: dict[str, Any] = {}
     for key, m in mappings.items():
-        g = json.dumps(m.get("fields"), sort_keys=True) if m.get("fields") else None
-        if g in shared:
+        gk = json.dumps(m.get("fields"), sort_keys=True) if m.get("fields") else None
+        if gk in shared:
             out[key] = {
-                ("field_sets" if k == "fields" else k): ([names[g]] if k == "fields" else v) for k, v in m.items()
+                ("field_sets" if k == "fields" else k): ([names[gk]] if k == "fields" else v) for k, v in m.items()
             }
         else:
             out[key] = m
@@ -1486,6 +1490,7 @@ def l4(ctx: Ctx) -> None:
     extras = sorted({e.strip() for e in (m.group(2) or "").split(",") if e.strip()} | {"mcp"})
     pin = f"agent-connector-sdk[{','.join(extras)}]" + SDK_PIN.split("]", 1)[1]
     sec = _toml_section(lines, "[project]")
+    assert sec is not None  # `dependencies` was read from [project] above
     dep_idx = [i for i in range(sec[0], sec[1]) if re.match(r"^\s*dependencies\s*=", lines[i])]
     if not dep_idx:
         ctx.note("w1.l4", "could not locate the dependencies array textually", "pyproject.toml", True)
@@ -1504,12 +1509,16 @@ def l4(ctx: Ctx) -> None:
             if k in opt and len(opt[k]) == 1 and opt[k][0].replace(" ", "").startswith("agent-connector-sdk")
         ]
         for key in drop:
-            s, e = _toml_section(lines, "[project.optional-dependencies]")
+            opt_sec = _toml_section(lines, "[project.optional-dependencies]")
+            assert opt_sec is not None  # the header was found above and deletes only remove array lines
+            s, e = opt_sec
             for a in range(s + 1, e):
                 if re.match(rf"^\s*{key}\s*=\s*\[", lines[a]):
                     del lines[a : _array_end(lines, a) + 1]
                     break
-        s, e = _toml_section(lines, "[project.optional-dependencies]")
+        opt_sec = _toml_section(lines, "[project.optional-dependencies]")
+        assert opt_sec is not None
+        s, e = opt_sec
         if all(not ln.strip() or ln.strip().startswith("#") for ln in lines[s + 1 : e]):
             del lines[s:e]
     new = "\n".join(lines)
