@@ -153,6 +153,8 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .badge.VERIFIED{color:var(--s-verified)} .badge.LANDED{color:var(--s-landed)} .badge.SPECIFIED{color:var(--s-specified)} .badge.RETIRED{color:var(--s-retired)}
 .more{align-self:flex-start}
 .muted{color:var(--muted)}
+.note{margin:0;font:12px var(--font-body);color:var(--muted)}
+.note a{color:var(--accent)}
 footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wrap:wrap;gap:4px 14px}
 @media (max-width: 520px){ .stat{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .stat span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
@@ -203,6 +205,7 @@ footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wr
     <aside class="panel" id="panel" aria-live="polite"></aside>
   </main>
   <div class="legend" id="legend" aria-label="Layer colors"></div>
+  <p class="note" id="note">Want to build one of these? Read the <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">contribution guide</a> &middot; <a href="https://knuckles-team.github.io/.github/">Front door</a>. Rebuilt on every merge to main, and at least every 30 minutes.</p>
   <footer class="foot" id="foot"></footer>
 </div>
 
@@ -433,6 +436,7 @@ function detailBody(s,d){ const r=d.rows[s.id], box=document.createDocumentFragm
   if(r.verified_by.length){ ev.append(el("span",{class:"k",text:"verified_by"})); r.verified_by.forEach(t=>ev.append(linkEl(t.label,t.url))); }
   if(r.rollup_of.length){ ev.append(el("span",{class:"k",text:"rollup_of"})); r.rollup_of.forEach(id=>ev.append(el("a",{href:"#q="+encodeURIComponent(id),text:id}))); }
   box.append(sect("Status and evidence",ev));
+  if(s.status==="SPECIFIED"){ box.append(el("p",{class:"open-work"},[el("span",{text:"Open work. To pick it up, follow the "}),linkEl("contribution guide","https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md"),el("span",{text:". Owner specs: "}),linkEl("specs/"+s.family+"/",gh(s.repo)+"/tree/HEAD/specs/"+s.family)])); }
   if(r.tests&&r.tests.length){ const ul=el("ul",{class:"tl"}); r.tests.forEach(t=>ul.append(safeHtml(el("li"),t))); box.append(sect("Test spec lines",ul)); }
   const fl=el("div",{class:"ev"}); d.files.forEach(f=>fl.append(linkEl(f.name,f.url))); box.append(sect("Files on GitHub",fl));
   if(d.docs.length){ const wrap=el("div",{class:"xs"},[el("h4",{class:"xh",text:"Design"})]);

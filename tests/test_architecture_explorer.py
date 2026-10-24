@@ -927,3 +927,61 @@ def test_every_registered_repository_has_a_part_and_its_rows_place_without_the_a
     assert tree.nodes["skills.graphs"]["label"] == "Skill graphs" and tree.nodes["skills.graphs"]["level"] > 0
     assert unmapped_violations(tree, direct, model.get("unmapped_allow", [])) == []
     assert registry["pages_node"]["skill-graphs"] == "skills"
+
+
+_GUIDE = "https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md"
+_FRONT_DOOR = "https://knuckles-team.github.io/.github/"
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.10")
+@_NEEDS_LAYOUT
+def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide(
+    monkeypatch, tmp_path: Path
+) -> None:
+    import functools
+    import http.server
+    import subprocess
+    import threading
+
+    snaps = _detail_snapshots()
+    for snap in snaps:
+        for row in snap.rows:
+            if row["id"] == "FAM-R002":
+                row["status"] = "VERIFIED"
+    page = _build_with_details(monkeypatch, tmp_path, snaps)
+    html = page.read_text()
+    foot = html[html.index('id="note"') : html.index('id="foot"')]
+    assert f'href="{_GUIDE}"' in foot and f'href="{_FRONT_DOOR}"' in foot and "at least every 30 minutes" in foot
+    head = html[html.index("<header") : html.index("</header>")]
+    assert "CONTRIBUTING.md" not in head and _FRONT_DOOR not in head
+    hook = (
+        "<script>setTimeout(()=>{document.querySelectorAll('button.ti').forEach(b=>b.click());},800);</script></body>"
+    )
+    page.write_text(html.replace("</body>", hook))
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(page.parent))
+    handler.log_message = lambda *a, **k: None  # type: ignore[method-assign]
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        out = subprocess.run(
+            [
+                _chrome(),
+                "--no-sandbox",
+                "--disable-gpu",
+                "--window-size=1500,950",
+                "--virtual-time-budget=8000",
+                "--dump-dom",
+                f"http://127.0.0.1:{server.server_port}/index.html#q=FAM-R",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        ).stdout
+    finally:
+        server.shutdown()
+    specified = out[out.index('data-spec="FAM-R001"') : out.index('data-spec="FAM-R002"')]
+    verified = out[out.index('data-spec="FAM-R002"') :]
+    verified = verified[: verified.find("</ul>")]
+    assert "Open work. To pick it up" in specified and _GUIDE in specified and "/tree/HEAD/specs/fam" in specified
+    assert "Open work" not in verified and _GUIDE not in verified

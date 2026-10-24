@@ -286,6 +286,7 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R042.7 | PIPE-PAGES-R042.7 | `tests/test_architecture_explorer.py::test_one_family_json_is_written_per_family_with_full_row_detail`, `tests/test_architecture_explorer.py::test_a_row_whose_family_has_no_plan_still_gets_detail` and `tests/test_architecture_explorer.py::test_expanding_a_row_fetches_its_family_once_and_renders_it_safely`. Check one file per family, evidence links, test-spec lines, design documents, a family without a plan, and an inline expand in a browser. |
 | T-PIPE-PAGES-R042.8 | PIPE-PAGES-R042.8 | `tests/test_architecture_explorer.py::test_markdown_escapes_raw_html_and_drops_unsafe_links` and `tests/test_architecture_explorer.py::test_page_never_assigns_markup_and_exposes_the_expand_controls`. A script in a spec file comes out escaped, unsafe links are dropped and the page assigns no markup. |
 | T-PIPE-PAGES-R042.9 | PIPE-PAGES-R042.9 | `tests/test_architecture_explorer.py::test_every_registered_repository_has_a_part_and_its_rows_place_without_the_allowlist`. Every registry repository is owned by a part, and skill-graphs rows place on Skill graphs with an empty allowlist. |
+| T-PIPE-PAGES-R042.10 | PIPE-PAGES-R042.10 | `tests/test_architecture_explorer.py::test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide`. The footer links the guide and front door, the header does not, and only the `SPECIFIED` row detail points to the guide. |
 
 ## Agent-readiness and static delivery
 
