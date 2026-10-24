@@ -1,0 +1,99 @@
+name: Connector SDK rebuild
+
+# PIPE-RELEASE-R001.14: a new agent-connector-sdk release reaches running connector images
+# with no commit in any connector. The caller triggers this workflow on a repository_dispatch
+# from the SDK release (type sdk-release, client_payload.sdk_version) and on a daily schedule
+# (the scheduled check). It resolves the SDK version, skips when the registry already holds
+# the image tagged <version>-sdk<sdk> and otherwise rebuilds both images through
+# container_pipeline.yml with the files rendered from pyproject.toml.
+#
+# Caller contract (copy):
+#
+#   on:
+#     repository_dispatch:
+#       types: [sdk-release]
+#     schedule:
+#       - cron: '17 5 * * *'
+#     workflow_dispatch:
+#   jobs:
+#     rebuild:
+#       uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
+#       secrets: inherit
+
+on:
+  workflow_call:
+    inputs:
+      sdk_version:
+        description: SDK version to build against; empty resolves the dispatch payload, then the latest release on PyPI.
+        required: false
+        type: string
+        default: ''
+    secrets:
+      DOCKER_REGISTRY:
+        required: false
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: resolve
+    runs-on: self-hosted
+    outputs:
+      sdk_version: ${{ steps.sdk.outputs.sdk_version }}
+      stale: ${{ steps.sdk.outputs.stale }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Log in to Docker registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Resolve the SDK version and whether the image is stale
+        id: sdk
+        env:
+          INPUT_SDK: ${{ inputs.sdk_version }}
+          PAYLOAD_SDK: ${{ github.event.client_payload.sdk_version }}
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+          IMAGE: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          sdk="${INPUT_SDK:-${PAYLOAD_SDK:-}}"
+          if [[ -z "$sdk" ]]; then
+            sdk="$(python3 -c 'import json,urllib.request as u;print(json.load(u.urlopen("https://pypi.org/pypi/agent-connector-sdk/json"))["info"]["version"])')"
+          fi
+          if [[ ! "$sdk" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::SDK version is not MAJOR.MINOR.PATCH."
+            exit 1
+          fi
+          python3 -m pip install --quiet uv
+          version="$(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root . read)"
+          stale=true
+          if docker buildx imagetools inspect "${IMAGE}:${version}-sdk${sdk}" > /dev/null 2>&1; then
+            stale=false
+          fi
+          echo "sdk_version=$sdk" >> "$GITHUB_OUTPUT"
+          echo "stale=$stale" >> "$GITHUB_OUTPUT"
+
+  rebuild:
+    name: rebuild
+    needs: resolve
+    if: needs.resolve.outputs.stale == 'true'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
+    with:
+      render_connector: true
+      sdk_version: ${{ needs.resolve.outputs.sdk_version }}
+    secrets: inherit

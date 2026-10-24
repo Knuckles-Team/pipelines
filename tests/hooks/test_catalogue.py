@@ -29,6 +29,7 @@ STANDARD = {"secrets", "spec", "tests-fast"}
 KEPT = {
     "agent-contract",
     "connector-graphql",
+    "connector-standard",
     "connector-name",
     "coupling",
     "lockfile-version-mirrors",

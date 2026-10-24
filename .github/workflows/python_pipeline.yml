@@ -15,6 +15,14 @@ on:
         required: false
         type: boolean
         default: false
+      connector:
+        description: >-
+          Connector repository: generate ontology/shapes/connector.shacl.ttl and
+          ontology/certification.json into the build tree before the wheel is built
+          (pipelines-connector generate, PIPE-GATES-R016.39). The connector commits neither.
+        required: false
+        type: boolean
+        default: false
       require-tag:
         description: >-
           Fail before building unless the triggering ref is a v* tag, so a
@@ -96,6 +104,16 @@ jobs:
           else
             npm run build
           fi
+
+      - name: Generate the connector ontology artifacts
+        if: inputs.connector
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet uv
+          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector generate --root .
 
       - name: Build, publish and release
         uses: ./.pipeline-contract/.github/actions/publish-python-package

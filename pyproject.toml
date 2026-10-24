@@ -26,6 +26,7 @@ graph-check = ["rdflib==7.6.0"]
 
 [project.scripts]
 pipelines-hook = "pipelines_hooks.cli:main"
+pipelines-connector = "pipelines_hooks.connector.cli:main"
 
 [dependency-groups]
 dev = [
@@ -45,7 +46,7 @@ where = ["."]
 include = ["pipelines_hooks*"]
 
 [tool.setuptools.package-data]
-pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json", "ste/ste_words.toml", "gate_sets.toml", "specs/third_party_names.toml", "hygiene/ontology_cqs.json", "hygiene/ontology_codemod_overrides.json"]
+pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json", "ste/ste_words.toml", "gate_sets.toml", "specs/third_party_names.toml", "hygiene/ontology_cqs.json", "hygiene/ontology_codemod_overrides.json", "connector/templates/*.tmpl", "connector/defaults/codespellignore"]
 
 [tool.ruff]
 line-length = 120

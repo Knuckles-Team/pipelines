@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
-# GENERATED from pipelines/templates/connector/Dockerfile.tmpl by
-# pipelines/scripts/connector_dockerfile.py. Do not hand-edit: change the template or
-# the connector's entry in the script's EXCEPTIONS table, then regenerate.
+# GENERATED at build time from pipelines_hooks/connector/templates/Dockerfile.tmpl by
+# `pipelines-connector render`. Never committed: change the template or
+# the connector's [tool.pipelines.container] table in pyproject.toml.
 #
 # Wheel-only connector image. The published @@DIST@@ wheel is installed from PyPI at
-# the exact version in pyproject.toml (kept in sync by .bumpversion.cfg); no source is
+# the exact version in pyproject.toml (read from pyproject.toml); no source is
 # copied into any stage, and every distribution in the closure must be a wheel
 # (--only-binary :all:). The release pipeline publishes the wheel before this build,
 # so the install retries while the new version propagates through the index.

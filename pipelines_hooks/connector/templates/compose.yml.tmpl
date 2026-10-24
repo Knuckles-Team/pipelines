@@ -1,0 +1,40 @@
+# GENERATED at build time by `pipelines-connector render` from
+# pipelines_hooks/connector/templates/compose.yml.tmpl. Never committed.
+services:
+  @@SERVICE@@:
+    init: true
+    user: "@@UID@@:@@UID@@"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: ${MCP_CONTAINER_MEMORY_LIMIT:-2g}
+    cpus: ${MCP_CONTAINER_CPU_LIMIT:-1.0}
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    image: ${@@IMAGE_VAR@@:?set-@@IMAGE_VAR@@-to-image@sha256-digest}
+    container_name: @@SERVICE@@
+    hostname: @@SERVICE@@
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HOST=0.0.0.0
+      - PORT=@@PORT@@
+      - TRANSPORT=streamable-http
+@@COMPOSE_ENV@@    ports:
+      - "127.0.0.1:@@PORT@@:@@PORT@@"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:@@PORT@@/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

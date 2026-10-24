@@ -11,6 +11,22 @@ on:
         required: false
         type: string
         default: '.'
+      render_connector:
+        description: >-
+          Connector repository: render docker/Dockerfile, docker/debug.Dockerfile and the
+          compose files from pyproject.toml and the shared templates before the build
+          (pipelines-connector render, PIPE-RELEASE-R001.13). The connector commits none of them.
+        required: false
+        type: boolean
+        default: false
+      sdk_version:
+        description: >-
+          agent-connector-sdk version this build re-resolves inside the wheel's supported range
+          (PIPE-RELEASE-R001.14). Passed as build-arg SDK_VERSION and added to the image tags as
+          <version>-sdk<sdk_version>. Empty resolves nothing and adds no tag.
+        required: false
+        type: string
+        default: ''
       build_target:
         description: Empty preserves agent/mcp detection; default builds the final stage once; otherwise select one named stage.
         required: false
@@ -87,6 +103,21 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
+
+      - name: Render the connector container files
+        id: render
+        if: inputs.render_connector
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+          SDK_VERSION: ${{ inputs.sdk_version }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet uv
+          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector render --root . --out docker
+          if [[ -n "$SDK_VERSION" ]]; then
+            printf 'build-args<<EOF\nSDK_VERSION=%s\nEOF\n' "$SDK_VERSION" >> "$GITHUB_OUTPUT"
+          fi
 
       # Single-surface packages ship only one stage (e.g. an agent-only or mcp-only
       # package). If this leg's target stage isn't in the Dockerfile, skip the build
@@ -293,6 +324,7 @@ jobs:
             type=sha,suffix=${{ matrix.suffix }}
             type=raw,value=${{ matrix.main_tag }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
             type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.version.outputs.version != '' }}
+            type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' }}
 
       # Build + push with up to 3 attempts. Docker Hub intermittently 400s a layer
       # blob PUT ("400 Bad request" HTML from the CDN edge) on an otherwise-healthy
@@ -320,7 +352,9 @@ jobs:
           context: ${{ inputs.build_context }}
           file: ${{ inputs.dockerfile }}
           target: ${{ steps.target.outputs.target }}
-          build-args: ${{ steps.runtime.outputs.build-args }}
+          build-args: |
+            ${{ steps.runtime.outputs.build-args }}
+            ${{ steps.render.outputs.build-args }}
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
