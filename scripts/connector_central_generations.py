@@ -91,6 +91,34 @@ IMAGE = "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha2
 #: only when its old block matches the committed file in at least ``--min-repos`` repositories, like ``ACCEPTED``.
 MANUAL: list[dict[str, Any]] = [
     {
+        "file": "mcp.compose.yml",
+        "id": "compose-image-shared-variable-quoted",
+        "new": ["    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"],
+        "old": ['    image: "${MCP_IMAGE:?set-MCP_IMAGE-to-image@sha256-digest}"'],
+        "reason": "the earlier compose file took the image from one shared MCP_IMAGE variable; the render names the variable after the connector and image kind",
+    },
+    {
+        "file": "mcp.compose.yml",
+        "id": "compose-env-file",
+        "new": ["    restart: always", "    env_file:", "      - ../.env", "    environment:"],
+        "old": ["    restart: always", "    environment:"],
+        "reason": "the earlier compose file read no environment file; the render reads ../.env",
+    },
+    {
+        "file": "mcp.compose.yml",
+        "id": "compose-env-file-after-volumes",
+        "new": ["        read_only: true", "    env_file:", "      - ../.env", "    environment:"],
+        "old": ["        read_only: true", "    environment:"],
+        "reason": "the earlier compose file read no environment file; the render reads ../.env after the mounted volumes",
+    },
+    {
+        "file": "debug.Dockerfile",
+        "id": "debug-host-default",
+        "new": ["ARG HOST=<HOST>"],
+        "old": ["ARG HOST=0.0.0.0"],
+        "reason": "the earlier debug image bound all interfaces by default; the render binds the host the runtime image binds",
+    },
+    {
         "id": "pre-release-install",
         "reason": "the earlier debug image allowed pre-releases and upgraded in verbose mode; the render installs the stable release",
         "file": "debug.Dockerfile",
