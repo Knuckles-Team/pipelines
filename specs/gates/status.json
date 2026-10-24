@@ -1686,10 +1686,13 @@
     {
       "id": "PIPE-GATES-R016.107",
       "title": "Pipelines-owned boilerplate rule `pl.ac`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b91e7e3830db"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:147"
+        "tests/hooks/test_connector_central_identity.py:147",
+        "tests/hooks/test_connector_central_identity.py:181"
       ]
     },
     {
@@ -1698,7 +1701,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:181"
+        "tests/hooks/test_connector_central_identity.py:201"
       ]
     },
     {
@@ -1707,7 +1710,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:201"
+        "tests/hooks/test_connector_central_identity.py:221"
       ]
     },
     {
@@ -1715,7 +1718,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.af`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "50a6c6ed6c2c",
+        "295d80aff385",
         "9d2259faab12",
         "fb3e2489a321"
       ],
