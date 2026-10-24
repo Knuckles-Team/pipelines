@@ -118,9 +118,27 @@ def test_shipped_external_parts_take_no_rows_and_declare_no_rules() -> None:
     model = json.loads((PKG / "model.json").read_text())
     tree = Tree(model)
     external = [n for n in tree.nodes.values() if n.get("external")]
-    assert {n["id"] for n in external} >= {"people", "clients"}
+    assert {n["id"] for n in external} >= {"people", "clients", "sources"}
     for node in external:
         assert not node["children"] and not node.get("fam") and not node.get("kw") and not node.get("ids")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.4")
+def test_every_person_layer_top_node_is_external_and_no_row_places_on_it() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    tree = Tree(model)
+    people_layer = [n for n in model["children"] if n.get("layer") == "person"]
+    assert {n["id"] for n in people_layer} == {"people", "clients", "sources"}
+    assert all(n.get("external") for n in people_layer)
+    rows = [
+        _row("CORE-R001", "Exact solver certificate"),
+        _row("CORE-R002", "Source system record read"),
+        _row("CORE-R003", "No rule matches this"),
+    ]
+    direct = Placer(tree).run(rows)
+    external = {n["id"] for n in tree.nodes.values() if n.get("external")}
+    assert external >= {"people", "clients", "sources"}
+    assert not [nid for nid in direct if nid in external and direct[nid]]
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")

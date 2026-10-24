@@ -280,7 +280,7 @@ function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.
     L.edges.forEach(e=>{ if(!e.label||!e.lp) return; const [x,y]=toS(t.ox+e.lp[0]*t.s, t.oy+e.lp[1]*t.s); if(x<-200||x>W+200||y<-50||y>H+50) return;
       const w=ctx.measureText(e.label).width+8; ctx.fillStyle=C.bg; ctx.globalAlpha=alpha*0.92; ctx.fillRect(x-w/2,y-fs*0.75,w,fs*1.5); ctx.globalAlpha=alpha; ctx.fillStyle=C.muted; ctx.fillText(e.label,x,y); }); }
   ctx.globalAlpha=1; }
-function countsLine(n){ if(n.external) return [["external entry point",C.muted]]; const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
+function countsLine(n){ if(n.external) return [["external system",C.muted]]; const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
 function drawRich(parts, x, y, maxW){ let total=0; parts.forEach(p=>total+=ctx.measureText(p[0]).width); if(total>maxW) parts=[parts[0]]; let cx=x-Math.min(total,maxW)/2; ctx.textAlign="left";
   parts.forEach(([s,col])=>{ ctx.fillStyle=col; ctx.fillText(s,cx,y); cx+=ctx.measureText(s).width; }); }
 let hitList=[];
@@ -385,7 +385,7 @@ function renderPanel(){
   ph.append(el("h2",{text:n.label})); ph.append(el("div",{class:"path",text:pathTo(n.id).map(i=>nodes[i].label).join(" › ")})); p.append(ph);
   const pb=el("div",{class:"pb"}); p.append(pb);
   pb.append(el("section",{},[el("h3",{text:"Description"}),el("p",{class:"desc",text:n.description}), n.tools?el("p",{class:"tools",text:n.tools+" served operation tools"}):null]));
-  if(n.external){ pb.append(el("section",{},[el("h3",{text:"External entry point"}),el("p",{class:"muted",text:"This box sits outside the ecosystem. No spec rows are written for it; the parts it calls own the rows that serve it."})])); }
+  if(n.external){ pb.append(el("section",{},[el("h3",{text:"Outside the ecosystem"}),el("p",{class:"muted",text:"No spec rows are written for this box. The parts connected to it own the rows."})])); }
   else pb.append(el("section",{},[el("h3",{text:"Spec rows in this part and below"}),...statBlock(n.count)]));
   if(n.children.length){ const ul=el("ul",{class:"plain kids"});
     n.children.forEach(c=>{ const b=el("button",{type:"button"},[el("span",{text:c.label}),el("span",{class:"n",text:c.external?"external":fmt(c.count.total)+" · V"+c.count.VERIFIED})]); b.onclick=()=>go(c.id); ul.append(el("li",{},[b])); });
