@@ -1618,8 +1618,8 @@
       "title": "Connector identity rule `id.name`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "1af3f83b7fb7",
         "545ef1911dce",
-        "71518a31f484",
         "efa9b98ace15"
       ],
       "verified_by": [
