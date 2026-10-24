@@ -63,8 +63,17 @@ def _add_import(text: str) -> str:
     return "".join(lines)
 
 
+def _names_the_connector(n: ast.expr) -> bool:
+    """``x.connector``, ``x.source`` or ``x["source"]`` / ``x["connector"]``: where a record carries its connector name."""
+    if isinstance(n, ast.Attribute):
+        return n.attr in ("connector", "source")
+    return (
+        isinstance(n, ast.Subscript) and isinstance(n.slice, ast.Constant) and n.slice.value in ("source", "connector")
+    )
+
+
 def _retarget_tests(ctx: Ctx, old_names: set[str]) -> None:
-    """``<x>.connector == "<old name>"`` in a test now compares with the fleet name the ingest module derives."""
+    """``<x>.connector`` / ``<x>["source"] == "<old name>"`` in a test now compares with the fleet name the ingest module derives."""
     for path in sorted((ctx.root / "tests").rglob("*.py")):
         text = path.read_text(encoding="utf-8")
         if not any(old in text for old in old_names):
@@ -80,8 +89,7 @@ def _retarget_tests(ctx: Ctx, old_names: set[str]) -> None:
             pair = (n.left, n.comparators[0])
             for attr, const in (pair, pair[::-1]):
                 if (
-                    isinstance(attr, ast.Attribute)
-                    and attr.attr == "connector"
+                    _names_the_connector(attr)
                     and isinstance(const, ast.Constant)
                     and const.value in old_names
                     and const.lineno == const.end_lineno

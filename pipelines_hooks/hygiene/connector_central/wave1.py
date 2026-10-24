@@ -2984,6 +2984,40 @@ def _version_reads(text: str, mod: str) -> list[ast.Attribute]:
 
 @rule("w1.k1")
 def k1(ctx: Ctx) -> None:
+    _k1_modules(ctx)
+    _k1_orphan_reads(ctx)
+
+
+def _k1_orphan_reads(ctx: Ctx) -> None:
+    """A test reading ``<pkg>.__version__`` after g4 rewrote the package init (no assignment left) reads the metadata.
+
+    ``assert re.fullmatch(r"\\d+\\.\\d+\\.\\d+", salesforce_agent.__version__)`` fails with an AttributeError otherwise.
+    """
+    init = ctx.pkg / "__init__.py"
+    if not init.is_file():
+        return
+    tree = _parse(init.read_text(encoding="utf-8"))
+    if tree is None or any(_is_version_assign(n) for n in tree.body):
+        return
+    mod = ctx.pkg_name
+    for tf in _test_files(ctx):
+        _clean_test_file(ctx, tf)
+        if not tf.is_file():
+            continue
+        tt = tf.read_text(encoding="utf-8")
+        nodes = _version_reads(tt, mod)
+        if not nodes:
+            continue
+        out = _replace_nodes(tt, nodes, f'importlib.metadata.version("{ctx.dist}")')
+        if out is None:
+            ctx.note("w1.k1", f"`{mod}.__version__` is read across lines here; rewrite by hand", ctx.rel(tf), True)
+            continue
+        if not re.search(r"^import importlib\.metadata$", out, re.M):
+            out = _add_lines(out, ["import importlib.metadata"])
+        ctx.write(ctx.rel(tf), _prune_imports(out, {mod.split(".")[0]}), "w1.k1")
+
+
+def _k1_modules(ctx: Ctx) -> None:
     for f in _py_files(ctx.pkg):
         if f.name not in _VERSION_MODULES and f.name != f"{ctx.pkg_name}.py":
             continue

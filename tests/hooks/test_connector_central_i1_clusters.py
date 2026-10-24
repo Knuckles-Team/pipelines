@@ -285,6 +285,21 @@ def test_k1_test_attribute_reads_use_installed_metadata(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.58")
+def test_k1_test_reads_after_the_init_lost_its_assignment_use_installed_metadata(tmp_path: Path) -> None:
+    test = (
+        "import re\n\n\ndef test_startup():\n    import demo_mcp\n\n"
+        '    assert re.fullmatch(r"\\d+\\.\\d+\\.\\d+", demo_mcp.__version__)\n'
+    )
+    root = _repo(tmp_path, "", tests={"test_startup.py": test}, pkg_files={"__init__.py": "connector = 1\n"})
+    ctx = _run(root, "w1.k1")
+    assert not _notes(ctx, "w1.k1")
+    out = _text(root, "tests/test_startup.py")
+    assert 'importlib.metadata.version("demo-mcp")' in out and "demo_mcp.__version__" not in out
+    ast.parse(out)
+    ctx.applied.clear()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.58")
 def test_k1_non_test_attribute_read_is_reviewed(tmp_path: Path) -> None:
     root = _repo(
         tmp_path,
