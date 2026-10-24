@@ -2060,6 +2060,7 @@ def _g3_run(ctx: Ctx, path: Path, modname: str, wrapper: Path | None) -> None:
     for line in dict.fromkeys(mcp_imports):
         new = _add_sorted_import(new, line)
     new = _prune_imports(new, candidates | prune_extra)
+    new = _drop_gone_from_all(new, gone)
     if info["tools"] == modname:
         new = _export_registrars(new)  # SDK discovery reads this namespace; the unused-import tidy must keep it
     if wrapper is not None:
@@ -2892,6 +2893,25 @@ def _drop_from_all(text: str) -> str:
         if not isinstance(n.value, ast.List | ast.Tuple):
             continue
         keep = [e for e in n.value.elts if not (isinstance(e, ast.Constant) and e.value == "__version__")]
+        if len(keep) == len(n.value.elts):
+            continue
+        n.value.elts = keep
+        return _replace_span(text, n.lineno, n.end_lineno or n.lineno, ast.unparse(n))
+    return text
+
+
+def _drop_gone_from_all(text: str, names: set[str]) -> str:
+    """Remove the deleted bootstrap names from a literal top-level ``__all__`` (ruff F822: undefined name in ``__all__``)."""
+    tree = _parse(text)
+    if tree is None:
+        return text
+    for n in tree.body:
+        target = n.targets[0] if isinstance(n, ast.Assign) and len(n.targets) == 1 else getattr(n, "target", None)
+        if not (isinstance(n, ast.Assign | ast.AnnAssign) and isinstance(target, ast.Name) and target.id == "__all__"):
+            continue
+        if not isinstance(n.value, ast.List | ast.Tuple):
+            continue
+        keep = [e for e in n.value.elts if not (isinstance(e, ast.Constant) and e.value in names)]
         if len(keep) == len(n.value.elts):
             continue
         n.value.elts = keep
