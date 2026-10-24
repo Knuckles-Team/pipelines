@@ -621,12 +621,15 @@ def _g7(tmp_path: Path, body: str, name: str = "test_custom.py") -> tuple[base.C
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
-def test_g7_test_calling_the_deleted_entry_point_is_reviewed(tmp_path: Path) -> None:
+def test_g7_test_calling_the_deleted_entry_point_is_deleted(tmp_path: Path) -> None:
     body = "from demo_mcp.mcp_server import mcp_server\n\n\ndef test_x():\n    mcp_server()\n"
-    ctx, _root, after = _g7(tmp_path, body)
-    note = _notes(ctx, "w1.g7")[0]
-    assert note["path"] == "tests/test_custom.py" and "build_server" in note["detail"] and note["blocking"]
-    assert "calls mcp_server() directly" in note["detail"] and after == body
+    root = _make(tmp_path)
+    (root / "tests" / "test_custom.py").write_text(body, encoding="utf-8")
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g7"))
+    (note,) = _notes(ctx, "w1.g7")
+    assert not note["blocking"] and "test_x" in note["detail"]
+    assert not (root / "tests" / "test_custom.py").exists()
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
@@ -675,28 +678,91 @@ def test_g7_other_names_in_the_import_are_kept(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
-def test_g7_reading_middlewares_or_tags_stays_blocking_and_untouched(tmp_path: Path) -> None:
+def test_g7_test_reading_middlewares_is_deleted_with_a_non_blocking_item(tmp_path: Path) -> None:
     body = (
-        "from demo_mcp.mcp_server import get_mcp_instance\n\n\n"
-        "def test_x():\n    mcp, args, middlewares = get_mcp_instance()\n    assert middlewares\n"
+        "import pytest\nfrom demo_mcp.mcp_server import get_mcp_instance\n\n\n"
+        "@pytest.mark.spec('X')\ndef test_x():\n    mcp, args, middlewares = get_mcp_instance()\n    assert middlewares\n\n\n"
+        "def test_keep():\n    assert 1\n"
     )
     ctx, _root, after = _g7(tmp_path, body)
-    note = _notes(ctx, "w1.g7")[0]
-    assert note["blocking"] and "middlewares" in note["detail"] and after == body
+    (note,) = _notes(ctx, "w1.g7")
+    assert not note["blocking"] and "test_x" in note["detail"] and "connector_conformance" in note["detail"]
+    assert note["path"] == "tests/test_custom.py"
+    assert after == "def test_keep():\n    assert 1\n" and "w1.g7" in ctx.applied
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
-def test_g7_patching_get_mcp_instance_or_module_names_stays_blocking(tmp_path: Path) -> None:
+def test_g7_patching_tests_are_deleted_one_by_one_and_unused_imports_pruned(tmp_path: Path) -> None:
+    body = (
+        "from unittest.mock import patch\nfrom demo_mcp.mcp_server import get_mcp_instance\n\n\n"
+        "def test_a():\n    with patch('demo_mcp.mcp_server.get_client'):\n        mcp, _, _ = get_mcp_instance()\n\n\n"
+        "def test_b():\n    mcp, _, _ = get_mcp_instance()\n    assert mcp\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    (note,) = _notes(ctx, "w1.g7")
+    assert not note["blocking"] and "test_a" in note["detail"] and "test_b" not in note["detail"]
+    assert "patch" not in after and "build_server" in after and "def test_b" in after
+    ast.parse(after)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_class_loses_its_unexpressible_methods_and_goes_when_none_are_left(tmp_path: Path) -> None:
+    body = (
+        "from demo_mcp.mcp_server import get_mcp_instance\n\n\n"
+        "class TestA:\n    def test_one(self):\n        m = get_mcp_instance()\n\n"
+        "    def test_two(self):\n        m = get_mcp_instance()\n\n\n"
+        "class TestB:\n    def test_three(self):\n        m = get_mcp_instance()\n\n"
+        "    def test_ok(self):\n        assert 1\n\n\n"
+        "def test_top():\n    assert 2\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    (note,) = _notes(ctx, "w1.g7")
+    assert not note["blocking"] and "TestA.test_one" in note["detail"] and "TestB.test_three" in note["detail"]
+    assert "TestA" not in after and "class TestB" in after and "test_ok" in after and "test_three" not in after
+    assert "get_mcp_instance" not in after
+    ast.parse(after)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_orphaned_fixture_is_pruned_but_a_fixture_use_blocks(tmp_path: Path) -> None:
+    body = (
+        "import pytest\nfrom demo_mcp.mcp_server import mcp_server\n\n\n"
+        "@pytest.fixture\ndef cfg():\n    return 1\n\n\n"
+        "def test_x(cfg):\n    mcp_server()\n\n\ndef test_keep():\n    assert 1\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    assert after == "def test_keep():\n    assert 1\n", after
+    assert not [i for i in ctx.review.items if i["blocking"]]
+    fixture_use = (
+        "import pytest\nfrom demo_mcp.mcp_server import mcp_server\n\n\n"
+        "@pytest.fixture\ndef srv():\n    return mcp_server()\n\n\ndef test_x(srv):\n    assert srv\n"
+    )
+    ctx2, _root2, after2 = _g7(tmp_path / "b", fixture_use)
+    assert _notes(ctx2, "w1.g7")[0]["blocking"] and after2 == fixture_use
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_module_level_use_next_to_a_test_use_keeps_the_file_untouched(tmp_path: Path) -> None:
     for i, body in enumerate(
         (
-            'from unittest.mock import patch\n\n\ndef test_x():\n    with patch("demo_mcp.mcp_server.get_mcp_instance"):\n        pass\n',
-            'from unittest.mock import patch\nfrom demo_mcp.mcp_server import get_mcp_instance\n\n\ndef test_x():\n    with patch("demo_mcp.mcp_server.get_client"):\n        mcp, _, _ = get_mcp_instance()\n',
-            "from demo_mcp.mcp_server import get_mcp_instance\n\nm = get_mcp_instance()\n",
+            "from demo_mcp.mcp_server import get_mcp_instance\n\nm = get_mcp_instance()\n\n\ndef test_x():\n    m = get_mcp_instance()\n",
             "from demo_mcp.mcp_server import get_mcp_instance as g\n\nmcp, _, _ = g()\n",
+            "from unittest.mock import patch\nimport demo_mcp\n\nX = 'demo_mcp.mcp_server.get_client'\n\n\ndef test_x():\n    from demo_mcp.mcp_server import get_mcp_instance\n    with patch('demo_mcp.mcp_server.get_mcp_instance'):\n        pass\n",
         )
     ):
         ctx, _root, after = _g7(tmp_path / str(i), body)
-        assert _notes(ctx, "w1.g7")[0]["blocking"] and after == body, i
+        notes = _notes(ctx, "w1.g7")
+        assert notes[0]["blocking"] and after == body, i
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_deleting_tests_is_idempotent(tmp_path: Path) -> None:
+    body = "from demo_mcp.mcp_server import mcp_server\n\n\ndef test_x():\n    mcp_server()\n\n\ndef test_keep():\n    assert 1\n"
+    ctx, root, after = _g7(tmp_path, body)
+    snap = _snapshot(root)
+    n = len(ctx.review.items)
+    _run(ctx, ("w1.g7",))
+    assert _snapshot(root) == snap and len(ctx.review.items) == n
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")

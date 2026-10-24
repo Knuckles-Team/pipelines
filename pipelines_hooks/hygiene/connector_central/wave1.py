@@ -1731,6 +1731,107 @@ def _rewrite_server_test(ctx: Ctx, text: str) -> tuple[str | None, list[str]]:
     return (out, []) if not left else (None, [f"still uses {left} after the rewrite"])
 
 
+_G7_REASON = "tests the bootstrap the SDK now owns; covered by the connector_conformance startup check"
+
+
+def _test_nodes(tree: ast.Module) -> list[tuple[str, ast.FunctionDef | ast.AsyncFunctionDef, ast.ClassDef | None]]:
+    """Test functions at module level and in module-level classes: (display name, node, owning class)."""
+    out: list[tuple[str, ast.FunctionDef | ast.AsyncFunctionDef, ast.ClassDef | None]] = []
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) and node.name.startswith("test"):
+            out.append((node.name, node, None))
+        elif isinstance(node, ast.ClassDef):
+            for m in node.body:
+                if isinstance(m, ast.FunctionDef | ast.AsyncFunctionDef) and m.name.startswith("test"):
+                    out.append((f"{node.name}.{m.name}", m, node))
+    return out
+
+
+def _has_test(text: str) -> bool:
+    tree = _parse(text)
+    return tree is not None and bool(_test_nodes(tree))
+
+
+def _is_fixture(node: ast.stmt) -> bool:
+    if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+        return False
+    return any("fixture" in ast.unparse(d) for d in node.decorator_list)
+
+
+def _delete_nodes(text: str, nodes: Iterable[ast.stmt]) -> str:
+    return _delete_spans(text, [_span(n) for n in nodes])
+
+
+def _prune_orphan_fixtures(text: str) -> tuple[str, set[str]]:
+    """Delete module-level fixtures nothing requests any more (not autouse); returns (text, names they loaded)."""
+    loaded: set[str] = set()
+    while True:
+        tree = _parse(text)
+        if tree is None:
+            return text, loaded
+        wanted = {
+            a.arg for n in ast.walk(tree) if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef) for a in n.args.args
+        }
+        wanted |= _name_loads([tree])
+        dead = [
+            n
+            for n in tree.body
+            if _is_fixture(n)
+            and isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef)
+            and "autouse" not in "".join(ast.unparse(d) for d in n.decorator_list)
+            and n.name not in wanted
+        ]
+        if not dead:
+            return text, loaded
+        loaded |= _name_loads(dead)
+        text = _delete_nodes(text, dead)
+
+
+def _delete_unexpressible_tests(ctx: Ctx, text: str) -> tuple[str | None, list[str]]:
+    """Delete the test functions that use the deleted bootstrap in ways ``build_server`` cannot express.
+
+    Returns (new text, deleted test names); (None, []) when an offending use sits outside the test functions
+    (module level, a fixture, a helper) or the rewrite still fails: the file is then left alone.
+    """
+    tree = _parse(text)
+    if tree is None:
+        return None, []
+    mod = f"{ctx.pkg_name}.mcp_server"
+    use = re.compile(rf"\bget_mcp_instance\b|\bmcp_server\b|{re.escape(mod)}\.")
+    lines = text.split("\n")
+    cands = [t for t in _test_nodes(tree) if use.search("\n".join(lines[_span(t[1])[0] - 1 : _span(t[1])[1]]))]
+    if not cands:
+        return None, []
+
+    def without(drop: Iterable[ast.stmt]) -> str:
+        return _delete_nodes(text, drop)
+
+    # a candidate the recipe can rewrite on its own (every other candidate removed) is kept and rewritten
+    doomed: list[tuple[str, ast.FunctionDef | ast.AsyncFunctionDef, ast.ClassDef | None]] = []
+    for item in cands:
+        others = [c[1] for c in cands if c is not item]
+        new, _problems = _rewrite_server_test(ctx, without(others))
+        if new is None:
+            doomed.append(item)
+    if not doomed:
+        return None, []
+    gone: list[ast.stmt] = [d[1] for d in doomed]
+    for cls in {id(d[2]): d[2] for d in doomed if d[2] is not None}.values():
+        left = [
+            m for m in cls.body if isinstance(m, ast.FunctionDef | ast.AsyncFunctionDef) and m.name.startswith("test")
+        ]
+        if all(m in gone for m in left):
+            gone = [g for g in gone if g not in cls.body]
+            gone.append(cls)
+    names = [d[0] for d in doomed]
+    out, fixture_names = _prune_orphan_fixtures(without(gone))
+    out = _prune_imports(out, _name_loads(gone) | fixture_names | {"get_mcp_instance", "mcp_server"})
+    rewritten, _problems = _rewrite_server_test(ctx, out)
+    if rewritten is None:
+        return None, []
+    return rewritten, names
+
+
 @rule("w1.g7")
 def g7(ctx: Ctx) -> None:
     mcp = ctx.pkg / "mcp_server.py"
@@ -1753,6 +1854,14 @@ def g7(ctx: Ctx) -> None:
         new, problems = _rewrite_server_test(ctx, text)
         if new is not None:
             ctx.write(ctx.rel(f), new, "w1.g7")
+            continue
+        trimmed, deleted = _delete_unexpressible_tests(ctx, text)
+        if trimmed is not None:
+            if _has_test(trimmed):
+                ctx.write(ctx.rel(f), trimmed, "w1.g7")
+            else:
+                ctx.delete(ctx.rel(f), "w1.g7")
+            ctx.note("w1.g7", f"deleted tests {deleted}: {_G7_REASON}", ctx.rel(f), False)
             continue
         why = "; ".join(problems[:3]) + (f"; and {len(problems) - 3} more" if len(problems) > 3 else "")
         ctx.note(
