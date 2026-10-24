@@ -25,6 +25,8 @@ HERE = Path(__file__).resolve().parent
 PIPELINES = HERE.parent
 FIXED_MESSAGE = "chore: cut the connector manifest files; declare data sources in code (SDK 0.4.1)"
 REBUMP_MESSAGE = "chore: require agent-connector-sdk>=0.4.1"
+CENTRAL_MESSAGE = "chore: move the connector onto the central SDK and pipelines components (SDK 0.5.2)"
+CENTRAL_TRAILER = "Spec: PIPE-GATES-R016.50\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 TRAILER = "Spec: SDK-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 STEPS = ("worktree", "sync", "migrate", "commit", "verify", "push", "pr", "gates", "merge")
 lock = threading.Lock()
@@ -59,7 +61,14 @@ def worktree_diff(wt: Path) -> str:
 
 
 def commit_all(
-    wt: Path, paths: list[str], step: str, env: dict[str, str], led: Ledger, repo: str, message: str
+    wt: Path,
+    paths: list[str],
+    step: str,
+    env: dict[str, str],
+    led: Ledger,
+    repo: str,
+    message: str,
+    trailer: str = TRAILER,
 ) -> None:
     """R016.29: stage the allowlist and commit; the commit hooks format the files.
 
@@ -79,7 +88,7 @@ def commit_all(
             raise NoOp(repo)
         led.record(repo, diffstat=stat)
         try:
-            sh(step, ["git", "commit", "-m", message, "-m", TRAILER], wt, env)
+            sh(step, ["git", "commit", "-m", message, "-m", trailer], wt, env)
             led.record(repo, commit_attempts=attempt)
             return
         except StepFailed as exc:
@@ -148,8 +157,8 @@ def sync(step: str, wt: Path, env: dict[str, str], led: Ledger, repo: str) -> No
 
 def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
     src = a.fleet / repo
-    kind = "sdk-rebump" if a.rebump else "manifest-cut"
-    message = REBUMP_MESSAGE if a.rebump else FIXED_MESSAGE
+    kind = "sdk-rebump" if a.rebump else ("central" if a.central else "manifest-cut")
+    message = REBUMP_MESSAGE if a.rebump else (CENTRAL_MESSAGE if a.central else FIXED_MESSAGE)
     wt = a.worktrees / repo / kind
     branch = f"chore/{kind}"
     tmp = Path(a.tmpdir) / repo
@@ -173,7 +182,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         venv = str(tmp / "venv")
         env["UV_PROJECT_ENVIRONMENT"] = venv
         sync(step, wt, env, led, repo)
-        if a.sdk_path:
+        if a.sdk_path:  # after the central migrate the floor is 0.5.2; the lock cannot resolve it before PyPI has it
             sh(
                 step,
                 ["uv", "pip", "install", "--python", f"{venv}/bin/python", "--no-deps", "-e", str(a.sdk_path)],
@@ -186,10 +195,12 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         if not env_file.exists() and sh(step, ["git", "check-ignore", ".env"], wt, ok=(0, 1)).strip():
             env_file.write_text("", encoding="utf-8")  # empty: .env.example values would leak into the tests
         step = "migrate"
-        pre_paths = apply_repo_patch(a.patches / f"{repo}.pre.patch", wt, [], led, repo)
+        pre_paths = [] if a.central else apply_repo_patch(a.patches / f"{repo}.pre.patch", wt, [], led, repo)
         served_path = tmp / "served-tools.json"
         served_path.unlink(missing_ok=True)
-        try:  # R016.27: the served tool names resolve action presets; a server that cannot list them leaves them to verify
+        try:  # R016.27: the served tool names (the central pass does not read them)
+            if a.central:
+                raise IndexError
             out = sh(step, [f"{venv}/bin/python", str(HERE / "connector_served_tools.py"), str(wt)], wt, env)
             served_path.write_text(
                 [ln for ln in out.splitlines() if ln.startswith("SERVED_TOOLS ")][-1].split(" ", 1)[1], encoding="utf-8"
@@ -208,11 +219,19 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             "--out",
             str(report_path),
         )
-        if a.rebump:
+        if a.central:
+            cmd = [c for c in cmd if c not in ("--eg-repo", str(a.eg_repo))] + [
+                "--central",
+                "--pipelines-root",
+                str(PIPELINES),
+            ]
+            if a.sdk_path:
+                cmd += ["--sdk-path", str(a.sdk_path)]
+        elif a.rebump:
             cmd = [c for c in cmd if c not in ("--eg-repo", str(a.eg_repo))] + ["--rebump"]
         elif served_path.exists():
             cmd += ["--served-tools", str(served_path)]
-        if a.sdk_path:
+        if a.sdk_path and not a.central:
             cmd.append("--no-lock")
         sh(step, cmd, wt, {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}, ok=(0, 2))
         if not report_path.exists():  # R016.29: exit 0 or 2 without a report means the codemod never ran
@@ -224,10 +243,10 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             raise StepFailed(step, json.dumps(blocking, indent=1))
         step = "commit"
         paths = sorted(set(report["changed"]) | set(report["deleted"]) | set(pre_paths))
-        if not a.rebump:
+        if not a.rebump and not a.central:
             paths = apply_repo_patch(a.patches / f"{repo}.patch", wt, paths, led, repo)
         try:
-            commit_all(wt, paths, step, env, led, repo, message)
+            commit_all(wt, paths, step, env, led, repo, message, CENTRAL_TRAILER if a.central else TRAILER)
         except NoOp:
             gone = sh(step, ["git", "ls-tree", "-r", "--name-only", "origin/main"], wt)
             if any(n.rsplit("/", 1)[-1] in ("connector_manifest.yml", "mcp_source_presets.json") for n in gone.split()):
@@ -236,7 +255,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             return
         step = "verify"
         # R016.25: the migrate step raised the SDK floor and lock; the venv synced before it still holds the old SDK.
-        sync(step, wt, env, led, repo)
+        if not a.sdk_path:
+            sync(step, wt, env, led, repo)
         py = f"{venv}/bin/python"
         v = sh(
             step,
@@ -245,6 +265,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             env,
         )
         led.record(repo, verify=json.loads([ln for ln in v.splitlines() if ln.startswith("{")][-1]))
+        if a.central:
+            central_verify(wt, py, env, led, repo, a)
         fleet_dir = tmp / "fleet"
         fleet_dir.mkdir(exist_ok=True)
         link = fleet_dir / repo
@@ -267,7 +289,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)},
         )
         led.record(repo, graph_check=g.strip().splitlines()[-12:])
-        pkg = next(p.name for p in wt.iterdir() if (p / "connector_sources.py").exists())
+        pkg = next(p.name for p in sorted(wt.iterdir()) if (p / "connector_sources.py").exists())
         scope = sh(
             step,
             hook("pr-test-scope", "--base-ref", "origin/main", "--src-root", pkg, "--tests-root", "tests"),
@@ -341,6 +363,28 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         led.record(repo, status="failed", failed_step=step, output_tail=f"{type(exc).__name__}: {exc}")
 
 
+def central_verify(wt: Path, py: str, env: dict[str, str], led: Ledger, repo: str, a: argparse.Namespace) -> None:
+    """R016.100: the central pass's own checks: SDK conformance plugin, ``connector-standard`` and ``render --check``.
+
+    A failing check fails the repo; in ``--dry-run`` it is recorded in the ledger instead so the pilot reports it.
+    """
+    venv_env = {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}
+    connector = ["uv", "run", "--project", str(PIPELINES), "--frozen", "pipelines-connector"]
+    checks = {
+        "conformance": ([py, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-k", "connector_conformance"], env),
+        "connector_standard": (hook("connector-standard"), venv_env),
+        "render_check": ([*connector, "render", "--root", str(wt), "--check"], venv_env),
+    }
+    for name, (cmd, cenv) in checks.items():
+        try:
+            out = sh("verify", cmd, wt, cenv)
+            led.record(repo, **{name: "pass: " + (out.strip().splitlines() or [""])[-1][-200:]})
+        except StepFailed as exc:
+            led.record(repo, **{name: "FAIL: " + exc.output[-1200:]})
+            if not a.dry_run:
+                raise
+
+
 def parse_checks(text: str) -> dict[str, str]:
     """``{check name: pass|fail|pending|cancel|skipping}`` from plain `gh pr checks` output (tab separated)."""
     out = {}
@@ -388,6 +432,7 @@ def main() -> int:
     ap.add_argument(
         "--patches", type=Path, default=HERE / "connector_migrate_patches", help="reviewed per-repo <repo>.patch files"
     )
+    ap.add_argument("--central", action="store_true", help="the central connector migration (rules R016.50 to R016.99)")
     ap.add_argument("--rebump", action="store_true", help="already-migrated repos: SDK floor, patch bump and lock only")
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--dry-run", action="store_true", help="migrate and verify only; no push")

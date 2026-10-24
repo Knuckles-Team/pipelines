@@ -1,6 +1,6 @@
 """Verify one migrated connector over stdio (run with the connector's own python).
 
-Starts the MCP server, checks ``connector://resources`` lists every declared source and that ``ontology://``
+Starts the MCP server over stdio, lists tools and prompts, checks ``connector://resources`` lists every declared source and that ``ontology://``
 and ``shapes://`` resources read. Usage: connector_verify.py <repo-root>. Prints one JSON line; exit 1 on failure.
 """
 
@@ -36,6 +36,15 @@ async def check(root: Path) -> dict:
     async with stdio_client(StdioServerParameters(command=cmd[0], args=cmd[1:])) as (r, w):
         async with ClientSession(r, w) as s:
             await s.initialize()
+            tools = [t.name for t in (await s.list_tools()).tools]
+            prompts = [p.name for p in (await s.list_prompts()).prompts]
+            out["tools"], out["prompts"] = len(tools), len(prompts)
+            if not tools:
+                out["error"] = "no tools listed"
+                return out
+            if any(root.glob("*/prompts/*.json")) and not prompts:
+                out["error"] = "prompt files exist but no prompts are served"
+                return out
             uris = [str(x.uri) for x in (await s.list_resources()).resources]
             out["resources"] = len(uris)
             body = json.loads((await s.read_resource("connector://resources")).contents[0].text)
