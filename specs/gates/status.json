@@ -1714,14 +1714,15 @@
       "title": "Pipelines-owned boilerplate rule `pl.af`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "64d2ed95d394"
+        "64d2ed95d394",
+        "b7a535e39a33"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_spelling.py:102",
-        "tests/hooks/test_connector_central_spelling.py:110",
-        "tests/hooks/test_connector_central_spelling.py:119",
-        "tests/hooks/test_connector_central_spelling.py:128",
-        "tests/hooks/test_connector_central_spelling.py:139"
+        "tests/hooks/test_connector_central_spelling.py:100",
+        "tests/hooks/test_connector_central_spelling.py:108",
+        "tests/hooks/test_connector_central_spelling.py:117",
+        "tests/hooks/test_connector_central_spelling.py:126",
+        "tests/hooks/test_connector_central_spelling.py:137"
       ]
     },
     {
