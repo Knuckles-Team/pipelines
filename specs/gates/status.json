@@ -1717,11 +1717,11 @@
         "64d2ed95d394"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_spelling.py:103",
-        "tests/hooks/test_connector_central_spelling.py:112",
-        "tests/hooks/test_connector_central_spelling.py:123",
-        "tests/hooks/test_connector_central_spelling.py:47",
-        "tests/hooks/test_connector_central_spelling.py:56"
+        "tests/hooks/test_connector_central_spelling.py:102",
+        "tests/hooks/test_connector_central_spelling.py:110",
+        "tests/hooks/test_connector_central_spelling.py:119",
+        "tests/hooks/test_connector_central_spelling.py:128",
+        "tests/hooks/test_connector_central_spelling.py:139"
       ]
     },
     {

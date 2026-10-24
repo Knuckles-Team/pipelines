@@ -150,6 +150,7 @@
       "title": "One reference connector configuration",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "37a92cd4e6fd",
         "5ff231c270b1"
       ],
       "verified_by": [
