@@ -4053,7 +4053,8 @@
       "title": "Landing and access",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "22a4c85e6a09"
+        "22a4c85e6a09",
+        "5c5e5970ed2d"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:126",
