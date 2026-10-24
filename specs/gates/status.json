@@ -137,7 +137,8 @@
     "PIPE-GATES-R016.110",
     "PIPE-GATES-R016.111",
     "PIPE-GATES-R016.112",
-    "PIPE-GATES-R016.113"
+    "PIPE-GATES-R016.113",
+    "PIPE-GATES-R016.114"
   ],
   "requirements": [
     {
@@ -516,7 +517,8 @@
         "PIPE-GATES-R016.110",
         "PIPE-GATES-R016.111",
         "PIPE-GATES-R016.112",
-        "PIPE-GATES-R016.113"
+        "PIPE-GATES-R016.113",
+        "PIPE-GATES-R016.114"
       ]
     },
     {
@@ -1765,6 +1767,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "27bde72e9d5c",
+        "51b03b485c5d",
         "8408c527fc35"
       ],
       "verified_by": [
@@ -1791,10 +1794,23 @@
       "title": "An endpoint route literal is not a home path",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "51b03b485c5d",
         "7888b25e7587"
       ],
       "verified_by": [
-        "tests/hooks/test_privacy_hostnames.py:19"
+        "tests/hooks/test_privacy_hostnames.py:19",
+        "tests/hooks/test_privacy_hostnames.py:29"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.114",
+      "title": "A variable reference is not a URI credential",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "51b03b485c5d"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_hostnames.py:37"
       ]
     }
   ]
