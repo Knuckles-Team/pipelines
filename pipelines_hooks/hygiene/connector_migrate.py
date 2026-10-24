@@ -1094,7 +1094,26 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--rebump", action="store_true", help="already-migrated repo: SDK floor, patch bump and lock only")
     ap.add_argument("--out", type=Path, default=None, help="write the JSON report here")
     ap.add_argument("--served-tools", type=Path, default=None, help="JSON list of the tool names the server serves")
+    ap.add_argument(
+        "--central",
+        action="store_true",
+        help="the central pass: wave 1, auth, ingest and pipelines rules (PIPE-GATES-R016.50 to R016.100)",
+    )
+    ap.add_argument("--sdk-path", type=Path, default=None, help="--central dry run: SDK checkout installed from a path")
+    ap.add_argument(
+        "--pipelines-root", type=Path, default=None, help="--central: pipelines checkout (templates, defaults)"
+    )
     args = ap.parse_args(argv)
+    if args.central:
+        from pipelines_hooks.hygiene.connector_central import migrate_central
+
+        options = {"sdk_path": args.sdk_path, "pipelines_root": args.pipelines_root, "no_lock": args.no_lock}
+        report = migrate_central(args.root, {k: v for k, v in options.items() if v})
+        text = json.dumps(report, indent=1, sort_keys=True)
+        if args.out:
+            args.out.write_text(text + "\n", encoding="utf-8")
+        print(text)
+        return 2 if any(i["blocking"] for i in report["review"]) else 0
     served = set(json.loads(args.served_tools.read_text())) if args.served_tools else None
     report = (
         rebump(args.root, not args.no_lock)
