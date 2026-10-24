@@ -264,6 +264,21 @@ def test_connector_pr_workflow_builds_the_pinned_dupehound_instead_of_skipping_i
     assert 'install_scanners.sh" "$ROOT" $SCANNERS' in steps[build]["run"]
 
 
+@pytest.mark.spec("PIPE-GATES-R016.42")
+def test_connector_pr_workflow_installs_the_identity_catalog_from_the_callers_variable_and_stays_fail_closed() -> None:
+    pr = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
+    setup = pr["jobs"]["gates"]["with"]["setup-command"]
+    assert "printf '%s' \"$PROHIBITED_IDENTITY_CATALOG\"" in setup and "prohibited-identities.json" in setup
+    assert setup.index("PROHIBITED_IDENTITY_CATALOG") < setup.index("uv sync")
+    gates = yaml.safe_load((WORKFLOWS / "gates_pipeline.yml").read_text(encoding="utf-8"))
+    step = next(s for s in gates["jobs"]["gates"]["steps"] if s.get("name") == "Caller setup")
+    assert step["env"]["PROHIBITED_IDENTITY_CATALOG"] == "${{ vars.PROHIBITED_IDENTITY_CATALOG }}"
+    assert (
+        "tracked-privacy" not in pr["jobs"]["gates"]["with"]["skip-hooks"]
+        and "secrets" not in pr[True]["workflow_call"]["inputs"]["skip-hooks"]["default"]
+    )
+
+
 @pytest.mark.spec("PIPE-GATES-R016.40")
 def test_scanner_installer_installs_only_the_named_scanners(tmp_path: Path) -> None:
     fake = tmp_path / "bin"
