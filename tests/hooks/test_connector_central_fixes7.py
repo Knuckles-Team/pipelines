@@ -7,12 +7,15 @@ from __future__ import annotations
 
 import importlib.util
 import shutil
+import os
 import subprocess
 import sys
 import tomllib
 from pathlib import Path
 
 import pytest
+
+from pipelines_hooks.hygiene.connector_central import load_rules
 
 from pipelines_hooks.connector import codespell, standard
 from pipelines_hooks.hygiene.connector_central import tidy
@@ -40,6 +43,9 @@ RUFF_HOOKS = """repos:
   - id: ruff-format
     exclude: {exclude}
 """
+
+
+load_rules()  # registers every rule when this file runs alone
 
 
 @pytest.fixture
@@ -174,9 +180,17 @@ def test_r_words_already_central_leave_no_table(repo: Path) -> None:
     assert not (repo / ".codespellignore").exists()
 
 
+@pytest.fixture(autouse=True)
+def _no_hook_git_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in [k for k in os.environ if k.startswith("GIT_")]:
+        monkeypatch.delenv(key)
+
+
 def _git_repo(root: Path) -> None:
+    """A throwaway repository; GIT_* variables of a hook run are stripped so the real repository is never touched."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
     for cmd in (["init", "-q"], ["add", "-A"]):
-        subprocess.run(["git", *cmd], cwd=root, check=True, capture_output=True)
+        subprocess.run(["git", *cmd], cwd=root, check=True, capture_output=True, env=env)
 
 
 @pytest.mark.spec("PIPE-GATES-R016.95")
