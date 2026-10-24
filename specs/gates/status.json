@@ -575,9 +575,9 @@
       "landed_in": [
         "10797d760f22",
         "64c83743091d",
-        "6f488c229edf",
         "6feb14333fd2",
-        "7f6c5b8b9975"
+        "7f6c5b8b9975",
+        "a118821c57fb"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:368",
@@ -863,7 +863,7 @@
       "title": "The repo-local version hook leaves the connector (migrate e)",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "a10001ef97d1"
+        "8ac2fce8e6c1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:1019"
