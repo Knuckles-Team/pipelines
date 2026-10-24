@@ -1498,7 +1498,7 @@ def test_g3_drops_the_deleted_bootstrap_names_from_all(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.51")
-def test_g2_a_script_not_named_for_the_fleet_is_rewritten_when_it_is_the_bootstrap(tmp_path: Path) -> None:
+def test_g2_a_script_not_named_for_the_fleet_takes_the_fleet_name_when_it_is_the_bootstrap(tmp_path: Path) -> None:
     root = _make(tmp_path)
     pp = root / "pyproject.toml"
     text = pp.read_text(encoding="utf-8")
@@ -1509,4 +1509,6 @@ def test_g2_a_script_not_named_for_the_fleet_is_rewritten_when_it_is_the_bootstr
     )
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4", "w1.g2"))
-    assert 'demo-server = "agent_connector_sdk.cli:serve"' in pp.read_text(encoding="utf-8")
+    text = pp.read_text(encoding="utf-8")
+    assert 'demo-mcp = "agent_connector_sdk.cli:serve"' in text and "demo-server" not in text
+    assert any("demo-server" in n["detail"] and not n["blocking"] for n in _notes(ctx, "w1.g2"))
