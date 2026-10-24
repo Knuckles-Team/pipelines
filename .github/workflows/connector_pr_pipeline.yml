@@ -61,6 +61,13 @@ jobs:
       # environment (all extras and groups, so the test extra's pytest-asyncio is
       # present), and bun (mermaid-validate) on PATH, as the release pipeline provides.
       setup-command: |
+        # The prohibited-identity catalog is operator-owned and never committed: it comes from the caller's
+        # PROHIBITED_IDENTITY_CATALOG Actions variable, as in the core repos' CI. A caller without the variable
+        # keeps the tracked-privacy hook failing closed (PIPE-GATES-R016.42).
+        if [ -n "${PROHIBITED_IDENTITY_CATALOG:-}" ]; then
+          mkdir -p "$HOME/.config/agent-utilities/governance"
+          printf '%s' "$PROHIBITED_IDENTITY_CATALOG" > "$HOME/.config/agent-utilities/governance/prohibited-identities.json"
+        fi
         uv sync --frozen ${{ inputs.sync-args }}
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
         # pre-commit runs under uvx, whose own python precedes PATH: expose the project packages too.
