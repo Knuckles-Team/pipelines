@@ -2634,10 +2634,23 @@ def g2(ctx: Ctx) -> None:
             return
         if not _declared(ctx):
             return
-        lines[i] = f'{m.group(1)}"agent_connector_sdk.cli:serve"{m.group(3)}'
+        # `serve` picks the connector whose fleet name is the script's name (several are installed in one image), so a
+        # bootstrap script named otherwise takes the fleet name: `adguard-mcp` becomes `adguard-home-agent`.
+        key = re.match(r"^(\s*)([A-Za-z0-9_.-]+)(\s*=\s*)$", m.group(1))
+        assert key is not None
+        old_name = key.group(2)
+        lines[i] = f'{key.group(1)}{ctx.fleet}{key.group(3)}"agent_connector_sdk.cli:serve"{m.group(3)}'
         new = "\n".join(lines)
         if _check_toml(ctx, "w1.g2", new):
             ctx.write("pyproject.toml", new, "w1.g2")
+            if old_name != ctx.fleet:
+                ctx.note(
+                    "w1.g2",
+                    f"console script `{old_name}` is now `{ctx.fleet}` (the fleet name `serve` resolves); "
+                    "update the commands that name the old script",
+                    "pyproject.toml",
+                    False,
+                )
         return
 
 

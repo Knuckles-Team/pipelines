@@ -1063,6 +1063,7 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.g2`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "30ef5ecba1fc",
         "39e835a22c93"
       ],
       "verified_by": [
@@ -1539,14 +1540,16 @@
     {
       "id": "PIPE-GATES-R016.93",
       "title": "Pipelines-owned boilerplate rule `pl.p`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "54057df19bfb"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_pipelines.py:438",
         "tests/hooks/test_connector_central_pipelines.py:448",
         "tests/hooks/test_connector_central_pipelines.py:457",
-        "tests/hooks/test_connector_central_pipelines.py:469",
-        "tests/hooks/test_connector_central_pl_clusters.py:502"
+        "tests/hooks/test_connector_central_pipelines.py:472",
+        "tests/hooks/test_connector_central_pipelines.py:484"
       ]
     },
     {
@@ -1579,7 +1582,7 @@
         "tests/hooks/test_connector_central_fixes7.py:175",
         "tests/hooks/test_connector_central_fixes7.py:196",
         "tests/hooks/test_connector_central_fixes7.py:222",
-        "tests/hooks/test_connector_central_pipelines.py:522"
+        "tests/hooks/test_connector_central_pipelines.py:537"
       ]
     },
     {
@@ -1588,8 +1591,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_pipelines.py:653",
-        "tests/hooks/test_connector_central_pipelines.py:667"
+        "tests/hooks/test_connector_central_pipelines.py:668",
+        "tests/hooks/test_connector_central_pipelines.py:682"
       ]
     },
     {
@@ -1598,8 +1601,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_pipelines.py:564",
-        "tests/hooks/test_connector_central_pipelines.py:575"
+        "tests/hooks/test_connector_central_pipelines.py:579",
+        "tests/hooks/test_connector_central_pipelines.py:590"
       ]
     },
     {
@@ -1608,8 +1611,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_pipelines.py:588",
-        "tests/hooks/test_connector_central_pipelines.py:599"
+        "tests/hooks/test_connector_central_pipelines.py:603",
+        "tests/hooks/test_connector_central_pipelines.py:614"
       ]
     },
     {
@@ -1618,10 +1621,10 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_pipelines.py:615",
-        "tests/hooks/test_connector_central_pipelines.py:627",
-        "tests/hooks/test_connector_central_pipelines.py:635",
-        "tests/hooks/test_connector_central_pipelines.py:644",
+        "tests/hooks/test_connector_central_pipelines.py:630",
+        "tests/hooks/test_connector_central_pipelines.py:642",
+        "tests/hooks/test_connector_central_pipelines.py:650",
+        "tests/hooks/test_connector_central_pipelines.py:659",
         "tests/hooks/test_connector_central_pl_clusters.py:456"
       ]
     },
@@ -1659,11 +1662,11 @@
         "dea7f89e4bfd"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_pipelines.py:709",
-        "tests/hooks/test_connector_central_pipelines.py:717",
-        "tests/hooks/test_connector_central_pipelines.py:734",
-        "tests/hooks/test_connector_central_pipelines.py:747",
-        "tests/hooks/test_connector_central_pipelines.py:758"
+        "tests/hooks/test_connector_central_pipelines.py:724",
+        "tests/hooks/test_connector_central_pipelines.py:732",
+        "tests/hooks/test_connector_central_pipelines.py:749",
+        "tests/hooks/test_connector_central_pipelines.py:762",
+        "tests/hooks/test_connector_central_pipelines.py:773"
       ]
     },
     {
@@ -1771,6 +1774,7 @@
       "title": "Central driver and verify",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0e879efdfea4",
         "27bde72e9d5c",
         "39e835a22c93",
         "8408c527fc35",

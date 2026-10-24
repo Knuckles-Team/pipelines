@@ -389,7 +389,12 @@
     "PIPE-CONNSPEC-R009.1",
     "PIPE-CONNSPEC-R009.2",
     "PIPE-CONNSPEC-R010",
-    "PIPE-CONNSPEC-R011"
+    "PIPE-CONNSPEC-R011",
+    "PIPE-CONNSPEC-R012",
+    "PIPE-CONNSPEC-R013",
+    "PIPE-CONNSPEC-R014",
+    "PIPE-CONNSPEC-R015",
+    "PIPE-CONNSPEC-R016"
   ],
   "requirements": [
     {
@@ -3577,6 +3582,66 @@
       ],
       "verified_by": [
         "tests/hooks/test_spec_standard_aliases.py:14"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R012",
+      "title": "Row-level Depends-on",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "645ed8876446",
+        "a7d9241136c9"
+      ],
+      "verified_by": [
+        "tests/hooks/test_goal_priority.py:12",
+        "tests/hooks/test_goal_priority.py:20"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R013",
+      "title": "Priority from competency questions",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a7d9241136c9"
+      ],
+      "verified_by": [
+        "tests/hooks/test_goal_priority.py:58"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R014",
+      "title": "Priority, frontier, and unserved from the organization aggregate",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a7d9241136c9",
+        "dea979c8f29a"
+      ],
+      "verified_by": [
+        "tests/hooks/test_goal_priority.py:81",
+        "tests/hooks/test_goal_priority.py:88"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R015",
+      "title": "Derived release bundles",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a7d9241136c9"
+      ],
+      "verified_by": [
+        "tests/hooks/test_goal_priority.py:103"
+      ]
+    },
+    {
+      "id": "PIPE-CONNSPEC-R016",
+      "title": "Architecture page delivery views",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a7d9241136c9"
+      ],
+      "verified_by": [
+        "tests/test_architecture_delivery.py:41",
+        "tests/test_architecture_delivery.py:52"
       ]
     }
   ]

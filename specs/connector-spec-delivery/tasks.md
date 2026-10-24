@@ -17,3 +17,9 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [ ] **PIPE-CONNSPEC-R009.2:** Hot-path proof.
 
 - [ ] PIPE-CONNSPEC-R011: support explicit retired standard-ID aliases with current-row validation, preserved historical evidence and unchanged unknown/unbound trailer refusal.
+
+- [ ] **PIPE-CONNSPEC-R012:** Row-level Depends-on.
+- [ ] **PIPE-CONNSPEC-R013:** Priority from competency questions.
+- [ ] **PIPE-CONNSPEC-R014:** Priority, frontier, and unserved from the organization aggregate.
+- [ ] **PIPE-CONNSPEC-R015:** Derived release bundles.
+- [ ] **PIPE-CONNSPEC-R016:** Architecture page delivery views.

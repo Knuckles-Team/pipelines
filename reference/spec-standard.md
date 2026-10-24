@@ -179,6 +179,27 @@ Relationships and code mappings must not change delivery states, recorded histor
 
 References declarations accept explicit links, canonical spec or requirement identifiers, and relative file paths. Other prose remains unparsed source evidence; its words do not become relationship targets. Unknown canonical identifiers remain unresolved references.
 
+## Priority from competency questions
+
+A competency question is an ordinary spec row whose ID starts with `EG-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:
+
+```markdown
+| `X-R001` | **Title.** Text. Depends-on: EG-FOO-R004, SDK-BAR-R002. | Verification |
+```
+
+The organization architecture page computes `priority` for each open row. No `status.json` carries it and a person never edits it.
+
+```text
+priority = (10 x competency-question rows that transitively depend on the row
+            + 2 x open rows it transitively unblocks) x 0.5 if non-functional
+```
+
+- An open row is `SPECIFIED`. A `LANDED`, `VERIFIED`, or `RETIRED` row is done and has no `priority`.
+- A row in a spec whose ID holds `GATES`, `PAGES`, `DOCS`, `HYGIENE`, or `STANDARD` is non-functional.
+- The page also lists `frontier` (open leaf rows whose prerequisites are all done) and `unserved` (open functional leaf rows that no competency question reaches).
+- Only the page sees every repository, so cross-repository `Depends-on` edges count. It labels the unserved rows "Not linked to any competency question".
+- A release bundle is a group of open rows joined by cross-repository `Depends-on` edges. The page derives it and nobody declares it. Its steps follow the release train: epistemic-graph, agent-connector-sdk, agent-utilities, arbora, the front ends, then connectors. Its priority is the maximum row priority.
+
 ## Withdrawing invalid verification evidence
 
 Keep the owning IDs in `Spec:` trailers when correcting invalid acceptance evidence.

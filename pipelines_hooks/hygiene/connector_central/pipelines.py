@@ -914,6 +914,12 @@ def _generated(ctx: Ctx, tmp: Path, epoch: str) -> dict[str, str]:
     return {p.relative_to(tmp).as_posix(): t for p, t in files.items()}
 
 
+def _shape_blocks(text: str) -> list[str]:
+    """The prefix header and the node shapes sorted: the order shapes were appended in carries no meaning."""
+    head, *blocks = re.split(r"(?m)^(?=shape:\w+GovernanceShape a sh:NodeShape)", text)
+    return [head, *sorted(b.strip() for b in blocks)]
+
+
 @rule("pl.p")
 def rule_p(ctx: Ctx) -> None:
     shapes = f"{ctx.pkg_name}/ontology/shapes/connector.shacl.ttl"
@@ -976,8 +982,8 @@ def rule_p(ctx: Ctx) -> None:
                 again = _with_ontology_table(ctx.read("pyproject.toml"), table_values)
                 _stage_ontology(ctx, tmp, again)
                 produced = _generated(ctx, tmp, epoch)
-                if produced[shapes] != committed:
-                    raise CannotRun("shape_classes does not reproduce the committed shapes byte for byte")
+                if produced[shapes] != committed and _shape_blocks(produced[shapes]) != _shape_blocks(committed):
+                    raise CannotRun("shape_classes does not reproduce the committed shapes (blocks differ)")
                 review_widen = True
     except (CannotRun, OSError, KeyError) as exc:
         ctx.note("pl.p", f"generated shapes cannot be matched: {exc}", shapes, True)

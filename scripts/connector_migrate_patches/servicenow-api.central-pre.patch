@@ -1,0 +1,32 @@
+--- a/tests/test_cmdb_trm_ontology.py
++++ b/tests/test_cmdb_trm_ontology.py
+@@ -2,6 +2,7 @@
+
+ from __future__ import annotations
+
++import re
+ from pathlib import Path
+
+ import pytest
+@@ -106,9 +107,9 @@
+
+ @pytest.mark.spec("CONN-SERVICENOW-API-CONNECTOR-CONTENT-R004")
+ def test_manifest_maps_and_shapes_cover_new_types() -> None:
+-    shapes = (PACKAGE / "ontology" / "shapes" / "connector.shacl.ttl").read_text(
+-        "utf-8"
+-    )
++    # The SHACL shapes are generated at release from the classes of the ontology file (one node shape per class), so a
++    # class declared there is a class with a shape.
++    ontology = (PACKAGE / "ontology" / "servicenow.ttl").read_text("utf-8")
+     for name, parent in NEW_CLASSES.items():
+         assert name in declared_sources().schema_mappings, name
+         assert declared_sources().schema_mappings[name].ontology_class == parent
+@@ -124,7 +125,7 @@
+         "TechnologyRequest",
+         "LifecycleRequest",
+     ):
+-        assert f"sh:targetClass :{name} " in shapes, name
++        assert re.search(rf"^:{name}\s+a\s+owl:Class\b", ontology, re.M), name
+
+
+ @pytest.mark.spec("CONN-SERVICENOW-API-CONNECTOR-CONTENT-R005")

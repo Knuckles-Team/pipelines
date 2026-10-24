@@ -162,6 +162,19 @@ footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wr
 @media (max-width: 520px){ .stat{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .stat span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 .tools{font:500 12px var(--font-mono);color:var(--muted)}
+.goal{font:600 10px var(--font-mono);letter-spacing:.04em;padding:1px 6px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
+.goal.none{border-color:var(--l-unmapped);color:var(--l-unmapped)}
+.prio{font:600 10px var(--font-mono);padding:1px 6px;border-radius:4px;background:var(--fg);color:var(--surface);white-space:nowrap}
+.specs .gb{grid-column:2;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+select.sel{font:500 12px var(--font-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-height:30px;max-width:100%}
+.dl-list li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;padding:7px 0;border-top:1px solid var(--line)}
+.dl-list .ti{grid-column:2;min-width:0;overflow-wrap:anywhere}
+.step{border:1px solid var(--line);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
+.step b{font:600 12px var(--font-mono);color:var(--accent)}
+.step .un{font:11px var(--font-mono);color:var(--muted);overflow-wrap:anywhere}
+.bundle{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:8px}
+.bundle h4{margin:0;font:600 12px var(--font-mono);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbar .btn[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
 @media (max-width: 980px){
   main.work{grid-template-columns:minmax(0,1fr)}
   .app{height:auto}
@@ -190,6 +203,8 @@ footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wr
       <div class="results" id="results" role="listbox" aria-label="Search results" hidden></div>
       <div class="sr" id="qstatus" role="status" aria-live="polite"></div>
     </div>
+    <button class="btn" id="vnext" type="button" aria-pressed="false" title="Open rows whose prerequisites are done, best first">Next up</button>
+    <button class="btn" id="vpath" type="button" aria-pressed="false" title="Cross-repository release bundles in train order">Delivery path</button>
     <button class="btn" id="theme" type="button" title="Switch light or dark">Theme</button>
   </div>
   <main class="work">
@@ -383,7 +398,7 @@ function settle(){ const f=focusAt(); if(f!==focus){ focus=f; renderCrumbs(); }
   syncHash(); }
 function syncHash(){ try{ window.history.replaceState(null,"",ArchSearch.hashFor(selected,activeQ)||location.pathname+location.search); }catch(_){} }
 function go(id, opts){ opts=opts||{}; const n=nodes[id]; if(!n) return; hist.push({...cam}); if(hist.length>60) hist.shift();
-  selected=id; hitId=opts.hit?id:null; if(!opts.keepSpecs) resetSpecs();
+  selected=id; hitId=opts.hit?id:null; if(!opts.keepSpecs) resetSpecs(); setView("map",true);
   const m = n.layout ? 1.04 : (n.id==="root"?1.02:2.6);
   flyTo(R[id], m, {...opts, cam: opts.open?openCam(id,m):null}); renderPanel(); $("back").disabled=false; }
 function up(){ const target = parentOf[focus] || "root"; go(focus==="root"?"root":target); }
@@ -424,6 +439,9 @@ document.addEventListener("keydown",e=>{ if(e.target===$("q")) return; if((e.key
 
 // ---------- panel ----------
 let scope="node", filt="ALL", limit=150, flashSpec=null, flashIds=new Set();
+let view="map", sortBy="default", goalF="", onlyUnserved=false;
+const DEL = T.delivery || {questions:[],next:[],bundles:[],counts:{open:0,frontier:0,unserved:0}};
+const GOALW = {}; DEL.questions.forEach(g=>GOALW[g.id]=g);
 const cssId=t=>String(t).replace(/[^A-Za-z0-9_-]/g,"_");
 const openRows=new Set(), detailCache=new Map();
 const DET_TAGS=new Set(["P","H3","H4","H5","H6","UL","OL","LI","CODE","PRE","STRONG","EM","A","TABLE","THEAD","TBODY","TR","TH","TD","BLOCKQUOTE","HR","BR","DIV"]);
@@ -466,7 +484,30 @@ function specRows(n){ if(scope==="node") return n.specs; const out=[]; (function
 function statBlock(c){ const d=el("div",{class:"stat"});
   [["total","SPECS",""],["VERIFIED","VERIFIED","v"],["LANDED","LANDED","l"],["SPECIFIED","SPECIFIED","s"],["RETIRED","RETIRED","r"]].forEach(([k,l,cl])=>d.append(el("div",{class:cl},[el("b",{text:fmt(c[k]||0)}),el("span",{text:l})])));
   const bar=el("div",{class:"sbar","aria-hidden":"true"}); if(c.total) ST.forEach(s=>{ if(c[s]) bar.append(el("i",{style:"width:"+(100*c[s]/c.total)+"%;background:var(--s-"+s.toLowerCase()+")"})); }); return [d,bar]; }
+function setView(v, quiet){ view=v; $("vnext").setAttribute("aria-pressed",String(v==="next")); $("vpath").setAttribute("aria-pressed",String(v==="path")); if(!quiet) renderPanel(); }
+function rowLink(r){ return el("a",{class:"id",href:gh(r.repo)+"/blob/HEAD/specs/"+(r.family||"")+"/requirements.md",target:"_blank",rel:"noopener",text:r.id}); }
+function goalBadges(serves){ const w=el("span",{class:"gb"}); (serves||[]).forEach(g=>w.append(el("span",{class:"goal",title:(GOALW[g]?GOALW[g].title:"Competency question"),text:g}))); return w; }
+function renderDelivery(){
+  const p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-delivery)");
+  const ph=el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Delivery"}),el("span",{text:fmt(DEL.counts.open)+" open"}),el("span",{text:fmt(DEL.counts.frontier)+" ready"}),el("span",{text:fmt(DEL.counts.unserved)+" not linked to a CQ"})]),el("h2",{text:view==="next"?"Next up":"Delivery path"})]);
+  p.append(ph); const pb=el("div",{class:"pb"}); p.append(pb);
+  if(view==="next"){
+    pb.append(el("p",{class:"note",text:"Open rows whose prerequisites are all done, by priority: 10 for each competency question that depends on them plus 2 for each open row they unblock, halved for non-functional rows."}));
+    if(!DEL.next.length) pb.append(el("p",{class:"muted",text:"No open row is ready."}));
+    const ul=el("ul",{class:"plain dl-list"}); DEL.next.forEach(r=>{ const li=el("li",{}); li.append(el("span",{class:"prio",text:"P "+r.priority}),rowLink(r),el("span",{class:"ti",text:r.title||"(untitled)"}),el("span",{class:"fa",text:r.repo})); if(r.cqs.length) li.append(goalBadges(r.cqs)); ul.append(li); });
+    pb.append(ul);
+  } else {
+    pb.append(el("p",{class:"note",text:"Open rows joined by cross-repository prerequisites, derived from the rows. Steps follow the release train. Each row lists the bundle rows it unblocks."}));
+    if(!DEL.bundles.length) pb.append(el("p",{class:"muted",text:"No open rows are joined across repositories."}));
+    DEL.bundles.forEach(b=>{ const box=el("div",{class:"bundle"},[el("h4",{},[el("span",{class:"prio",text:"P "+b.priority}),el("span",{text:b.id}),el("span",{class:"muted",text:b.rows+" rows · "+b.steps.length+" steps"})])]);
+      b.steps.forEach((st,i)=>{ const sb=el("div",{class:"step"},[el("b",{text:(i+1)+". "+st.repo})]);
+        st.rows.forEach(r=>sb.append(el("div",{},[el("span",{class:"prio",text:"P "+r.priority})," ",rowLink({id:r.id,repo:st.repo,family:r.family}),el("div",{class:"ti",text:r.title||""}),r.unblocks.length?el("div",{class:"un",text:"unblocks "+r.unblocks.slice(0,6).join(", ")+(r.unblocks.length>6?" +"+(r.unblocks.length-6):"")}):null])));
+        box.append(sb); });
+      pb.append(box); });
+  }
+}
 function renderPanel(){
+  if(view!=="map") return renderDelivery();
   const n=nodes[selected], p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-"+(n.layer||"core")+")");
   const ph=el("div",{class:"ph"});
   ph.append(el("div",{class:"eyebrow"},[el("span",{text:n.id==="root"?"Overview":(LAYERS[n.layer]||"")}),el("span",{text:"Level "+n.level}),n.repo?el("span",{text:n.repo}):null]));
@@ -496,7 +537,16 @@ function renderPanel(){
   const fc=el("div",{class:"chips",role:"group","aria-label":"Status filter"});
   ["ALL",...ST].forEach(s=>{ if(s!=="ALL"&&!counts[s]) return; const b=el("button",{class:"chip",type:"button","aria-pressed":String(filt===s),text:(s==="ALL"?"All":s)+" "+fmt(counts[s])}); b.onclick=()=>{filt=s;limit=150;renderPanel();}; fc.append(b); });
   sec.append(sc,fc);
-  const rows=all.filter(s=>filt==="ALL"||s.status===filt);
+  const gc=el("div",{class:"chips",role:"group","aria-label":"Delivery filters"});
+  const sortB=el("button",{class:"chip",type:"button","aria-pressed":String(sortBy==="priority"),text:"Sort by priority"}); sortB.onclick=()=>{sortBy=sortBy==="priority"?"default":"priority";renderPanel();};
+  const unB=el("button",{class:"chip",type:"button","aria-pressed":String(onlyUnserved),text:"Not linked to a competency question "+fmt(all.filter(s=>s.unserved).length)}); unB.onclick=()=>{onlyUnserved=!onlyUnserved;limit=150;renderPanel();};
+  const sel=el("select",{class:"sel","aria-label":"Filter by competency question"},[el("option",{value:"",text:"All competency questions"})]);
+  DEL.questions.forEach(g=>sel.append(el("option",{value:g.id,text:g.id+" · "+(g.title||"").slice(0,48)}))); sel.value=goalF; sel.onchange=()=>{goalF=sel.value;limit=150;renderPanel();};
+  gc.append(sortB,unB); if(DEL.questions.length) gc.append(sel); sec.append(gc);
+  let rows=all.filter(s=>filt==="ALL"||s.status===filt);
+  if(goalF) rows=rows.filter(s=>(s.cqs||[]).includes(goalF));
+  if(onlyUnserved) rows=rows.filter(s=>s.unserved);
+  if(sortBy==="priority") rows=rows.slice().sort((a,b)=>(b.priority||0)-(a.priority||0)||(a.id<b.id?-1:1));
   if(!rows.length) sec.append(el("p",{class:"muted",text: n.children.length&&scope==="node" ? "No rows sit on this part itself. Choose “Include parts below” to list the rows of its parts." : "No spec rows map to this part."}));
   const ul=el("ul",{class:"plain specs"}), shown=rows.slice(0,limit), items=[];
   // Open or close one row in place, so the list keeps its scroll position.
@@ -515,7 +565,8 @@ function renderPanel(){
     tg.setAttribute("aria-label","Expand "+s.id+", "+(s.title||"untitled"));
     li.append(el("span",{class:"badge "+s.status,text:s.status}), el("a",{class:"id",href:gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md",target:"_blank",rel:"noopener",text:s.id}), tg);
     if(s.desc) li.append(el("span",{class:"de",text:s.desc}));
-    li.append(el("span",{class:"fa",text:s.repo+" · "+s.family}));
+    li.append(el("span",{class:"fa",text:s.repo+" · "+s.family+(s.priority!==undefined?" · priority "+s.priority:"")}));
+    if((s.cqs||[]).length) li.append(goalBadges(s.cqs)); else if(s.unserved) li.append(el("span",{class:"gb"},[el("span",{class:"goal none",title:"No competency question reaches this row through Depends-on",text:"not linked to a CQ"})]));
     const it={li,s,tg}; items.push(it); const flip=()=>{ setOpen(it,!openRows.has(s.id)); sync(); };
     tg.onclick=e=>{ e.stopPropagation(); flip(); };
     li.addEventListener("click",e=>{ if(e.target.closest("a,button,summary,details,.xbody")) return; const sel=window.getSelection&&window.getSelection(); if(sel&&String(sel)) return; flip(); });
@@ -582,6 +633,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="/"&&!e.ctrlKey&&!e.metaKey&
 const rootEl=document.documentElement; const saved=store.get("arbora-arch-theme"); if(saved==="dark"||saved==="light") rootEl.setAttribute("data-theme",saved);
 function curDark(){ const t=rootEl.getAttribute("data-theme"); if(t) return t==="dark"; return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches; }
 function themeLabel(){ $("theme").textContent=curDark()?"Light theme":"Dark theme"; }
+$("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path");
 $("theme").onclick=()=>{ const t=curDark()?"light":"dark"; rootEl.setAttribute("data-theme",t); store.set("arbora-arch-theme",t); themeLabel(); readColors(); };
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
 themeLabel(); readColors(); resize();
