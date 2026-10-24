@@ -106,10 +106,10 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f9f73b150d7",
-        "217b856f46b9",
+        "455654369f2f",
+        "8b68968bb542",
         "d6a43376acc9",
-        "df7212f102bb",
-        "e9f2aba5afbb"
+        "df7212f102bb"
       ],
       "verified_by": [
         "tests/test_release_version_guard.py:110",

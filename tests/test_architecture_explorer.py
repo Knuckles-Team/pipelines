@@ -590,3 +590,22 @@ def test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle() -> None:
     assert 'if(n.id==="root") ctx.fillRect(0,sy,W,sh)' in html
     fixed = json.loads((ROOT / "scripts/architecture_explorer/model.json").read_text())["fixed_layout"]
     assert fixed["w"] / fixed["h"] >= 1.6
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_webui_composed_acceptance_row_places_on_its_part_not_the_allowlist() -> None:
+    """WEBUI-APPS-R050 failed every publish as unmapped; it must place on the acceptance part."""
+    model = json.loads((PKG / "model.json").read_text())
+    row = _row(
+        "WEBUI-APPS-R050",
+        "Composed deployment and shared-backend acceptance.",
+        "arbora-app-surface",
+        "agent-webui",
+        "Qualify the installed WebUI with real Arbora served operations.",
+    )
+    tree = Tree(model)
+    direct = Placer(tree).run([row])
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert where["WEBUI-APPS-R050"] == "webui.apps.accept"
+    assert unmapped_violations(tree, direct, []) == []
+    assert model["unmapped_allow"] == []

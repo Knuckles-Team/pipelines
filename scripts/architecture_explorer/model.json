@@ -285,6 +285,13 @@
         "src/components/renderers"
        ],
        "kw": "design|sandbox|editor extension"
+      },
+      {
+       "id": "webui.apps.accept",
+       "label": "Composed deployment acceptance",
+       "role": "real Arbora, every auth mode",
+       "desc": "The installed web UI is qualified against real Arbora served operations in no-auth, built-in and external sign-in modes.",
+       "kw": "composed deployment|shared-backend"
       }
      ]
     },
