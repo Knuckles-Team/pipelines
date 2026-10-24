@@ -44,7 +44,7 @@ def apply_repo_patch(patch: Path, wt: Path, paths: list[str], led: Ledger, repo:
     """Apply a reviewed one-off patch for this repo (not a codemod rule); returns the extended path list."""
     if not patch.is_file():
         return paths
-    sh("patch", ["git", "apply", "--recount", str(patch)], wt)
+    sh("patch", ["git", "apply", "--recount", "--unidiff-zero", str(patch)], wt)
     touched = re.findall(r"(?m)^\+\+\+ b/(\S+)", patch.read_text(encoding="utf-8"))
     led.record(repo, repo_patch=patch.name, repo_patch_files=touched)
     return sorted(set(paths) | set(touched))
