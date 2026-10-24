@@ -1513,6 +1513,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.o`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "79bf72331148",
         "8e8272f805dd",
         "f74978beb345"
       ],
@@ -1534,7 +1535,7 @@
         "tests/hooks/test_connector_central_pipelines.py:448",
         "tests/hooks/test_connector_central_pipelines.py:457",
         "tests/hooks/test_connector_central_pipelines.py:469",
-        "tests/hooks/test_connector_central_pl_clusters.py:486"
+        "tests/hooks/test_connector_central_pl_clusters.py:502"
       ]
     },
     {
@@ -1610,7 +1611,7 @@
         "tests/hooks/test_connector_central_pipelines.py:627",
         "tests/hooks/test_connector_central_pipelines.py:635",
         "tests/hooks/test_connector_central_pipelines.py:644",
-        "tests/hooks/test_connector_central_pl_clusters.py:440"
+        "tests/hooks/test_connector_central_pl_clusters.py:456"
       ]
     },
     {
