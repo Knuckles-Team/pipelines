@@ -270,3 +270,24 @@ def test_inline_authors_array_becomes_the_neutral_organisation_author(tmp_path: 
     ctx.applied.clear()
     identity.neutral_author(ctx)
     assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.107")
+def test_internal_hostnames_in_docs_and_skills_become_the_reserved_example_form(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    (ctx.root / "README.md").write_text(
+        "Use `http://qbittorrent-mcp.arpa/mcp` or https://x.example.com.\n", encoding="utf-8"
+    )
+    skill = ctx.pkg / "skills" / "dns" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text("Map `gitlab.arpa` to 10.0.0.12 in zone home.arpa now\n", encoding="utf-8")
+    (skill.parent / "run.sh").write_text("# TWENTY_URL=http://twenty.arpa \\\n", encoding="utf-8")
+    identity.docs_credential_examples(ctx)
+    assert "qbittorrent-mcp.example/mcp" in (ctx.root / "README.md").read_text(encoding="utf-8")
+    assert "https://x.example.com" in (ctx.root / "README.md").read_text(encoding="utf-8")
+    text = skill.read_text(encoding="utf-8")
+    assert "gitlab.example" in text and "home.example" in text and ".arpa" not in text
+    assert "twenty.example" in (skill.parent / "run.sh").read_text(encoding="utf-8")
+    ctx.applied.clear()
+    identity.docs_credential_examples(ctx)
+    assert not ctx.applied
