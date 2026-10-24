@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -232,4 +233,24 @@ def test_publication_workflow_test_expects_the_shared_main_revision(tmp_path: Pa
     assert 'assert repo["rev"] == "main"' in test.read_text(encoding="utf-8")
     ctx.applied.clear()
     identity.publication_test_rev(ctx)
+    assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.106")
+def test_inline_authors_array_becomes_the_neutral_organisation_author(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    pp = ctx.root / "pyproject.toml"
+    pp.write_text(
+        pp.read_text(encoding="utf-8").replace(
+            "[project]\n", '[project]\nauthors = [{ name = "Some Person", email = "p@home.example" }]\n', 1
+        ),
+        encoding="utf-8",
+    )
+    identity.neutral_author(ctx)
+    data = tomllib.loads(pp.read_text(encoding="utf-8"))
+    assert data["project"]["authors"] == [
+        {"name": identity.NEUTRAL_AUTHOR_NAME, "email": identity.NEUTRAL_AUTHOR_EMAIL}
+    ]
+    ctx.applied.clear()
+    identity.neutral_author(ctx)
     assert not ctx.applied
