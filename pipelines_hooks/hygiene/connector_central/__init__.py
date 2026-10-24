@@ -99,11 +99,11 @@ def tidy(ctx: Ctx) -> None:
     files = [f for f in sorted(ctx.changed) if f.endswith(".py") and (ctx.root / f).is_file()]
     if not files:
         return
-    ruff = shutil.which("ruff")
+    ruff = shutil.which("ruff") or (f"{shutil.which('uvx')} ruff" if shutil.which("uvx") else None)
     if ruff is None:
         ctx.note("tidy", "ruff is not installed; imports and formatting left to the commit hooks", "", blocking=True)
         return
-    base = [ruff, "--config", str(ctx.root / "pyproject.toml")]
+    base = [*ruff.split(), "--config", str(ctx.root / "pyproject.toml")]
     subprocess.run(
         [*base, "check", "--select", "I,F401", "--fix", "--force-exclude", "--quiet", *files],
         cwd=ctx.root,
