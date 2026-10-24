@@ -185,7 +185,7 @@ def test_internal_hostnames_in_tests_become_the_reserved_example_form(tmp_path: 
     t = ctx.root / "tests/test_auth.py"
     t.write_text(
         'BASE = "https://aris.internal/abs/api"\nOK = "https://svc.example.com"\nK = "db.ns.svc.cluster.local"\n'
-        'assert BASE.startswith("https://aris.internal")\nx = ipmi.lan("print")\n',
+        'assert BASE.startswith("https://aris.internal")\nx = ipmi.lan("print")\nT = "http://{host}.lan:9180"\n',
         encoding="utf-8",
     )
     identity.docs_credential_examples(ctx)
@@ -193,6 +193,7 @@ def test_internal_hostnames_in_tests_become_the_reserved_example_form(tmp_path: 
     assert "https://aris.example/abs/api" in text and 'startswith("https://aris.example")' in text
     assert "db.ns.svc.cluster.example" in text and "https://svc.example.com" in text
     assert ".internal" not in text and 'ipmi.lan("print")' in text
+    assert 'T = "http://{host}.example:9180"' in text
     ctx.applied.clear()
     identity.docs_credential_examples(ctx)
     assert not ctx.applied

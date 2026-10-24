@@ -33,6 +33,8 @@ DOC_SUFFIXES = (".md", ".rst", ".txt")
 _FINDING = re.compile(r"^(?P<path>.+?):(?P<line>\d+): (?P<word>\S+) ==> (?P<fix>.*)$")
 _GENERATED = re.compile(r"(?i)(auto-?generated|generated (by|from|file)|do not (edit|modify)|@generated)")
 _TABLE = ("tool", "pipelines", "codespell")
+#: Tracked tool working directories whose generated reports are not connector prose.
+GENERATED_DIRS = (".specify/",)
 _HEADER = "[tool.pipelines.codespell]"
 
 
@@ -203,6 +205,41 @@ def merge_ignore_words(text: str, words: set[str]) -> str | None:
     return new
 
 
+def merge_exclude(text: str, paths: set[str]) -> str | None:
+    """``pyproject.toml`` text whose ``[tool.pipelines.codespell] exclude`` holds ``paths`` too (None: not editable exactly)."""
+    data = tomllib.loads(text)
+    table: Any = data
+    for key in _TABLE:
+        table = table.get(key, {}) if isinstance(table, dict) else {}
+    have = list(table.get("exclude", [])) if isinstance(table, dict) else []
+    merged = sorted({str(p) for p in have} | paths)
+    if merged == have:
+        return text
+    array = "exclude = [" + ", ".join(f'"{p}"' for p in merged) + "]"
+    header = re.search(rf"(?m)^{re.escape(_HEADER)}[ \t]*$", text)
+    if header is None:
+        new = text.rstrip("\n") + f"\n\n{_HEADER}\n{array}\n"
+    else:
+        end = re.search(r"(?m)^\[", text[header.end() :])
+        section_end = header.end() + end.start() if end else len(text)
+        section = text[header.end() : section_end]
+        existing = re.search(r"(?ms)^exclude[ \t]*=[ \t]*\[.*?\]", section)
+        if existing:
+            section = section[: existing.start()] + array + section[existing.end() :]
+        else:
+            section = "\n" + array + section
+        new = text[: header.end()] + section + text[section_end:]
+    try:
+        check: Any = tomllib.loads(new)
+        for key in _TABLE:
+            check = check[key]
+        if check["exclude"] != merged:
+            return None
+    except (tomllib.TOMLDecodeError, KeyError, TypeError):
+        return None
+    return new
+
+
 # --- the rule ------------------------------------------------------------------------------------------------------
 def _remember(ctx: Ctx, hit: Hit, reason: str) -> None:
     ctx.options.setdefault(REASONS_KEY, {})[f"{hit.path}:{hit.line}:{hit.word}"] = reason
@@ -299,7 +336,11 @@ def rule_af(ctx: Ctx) -> None:
     for hit in parse_findings(found):
         by_file.setdefault(hit.path, []).append(hit)
     ignore: set[str] = set()
+    skip_dirs: set[str] = set()
     for rel, hits in sorted(by_file.items()):
+        if rel.startswith(GENERATED_DIRS):  # tool working directories (code-enhancer reports): excluded, not edited
+            skip_dirs.add(rel.split("/", 1)[0])
+            continue
         edits, words = classify_file(ctx, rel, hits)
         if edits:
             text = ctx.read(rel)
@@ -313,6 +354,12 @@ def rule_af(ctx: Ctx) -> None:
                     new = text
             ctx.write(rel, new, "pl.af")
         ignore |= words
+    if skip_dirs and ctx.exists("pyproject.toml"):
+        merged_ex = merge_exclude(ctx.read("pyproject.toml"), skip_dirs)
+        if merged_ex is None:
+            ctx.note("pl.af", "cannot edit [tool.pipelines.codespell] exclude exactly", "pyproject.toml", True)
+        else:
+            ctx.write("pyproject.toml", merged_ex, "pl.af")
     if ignore and ctx.exists("pyproject.toml"):
         text = ctx.read("pyproject.toml")
         merged = merge_ignore_words(text, ignore)

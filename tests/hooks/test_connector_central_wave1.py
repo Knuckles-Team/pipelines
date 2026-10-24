@@ -663,6 +663,18 @@ def test_g7_test_calling_the_deleted_entry_point_is_deleted(tmp_path: Path) -> N
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_test_running_the_deleted_main_bootstrap_is_deleted(tmp_path: Path) -> None:
+    body = (
+        'import runpy\n\n\ndef test_main():\n    runpy.run_module("demo_mcp.mcp_server", run_name="__main__")\n\n\n'
+        "def test_other():\n    assert 1\n"
+    )
+    ctx, root, text = _g7(tmp_path, body)
+    (note,) = _notes(ctx, "w1.g7")
+    assert not note["blocking"] and "test_main" in note["detail"]
+    assert "run_module" not in text and "test_other" in text
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
 def test_g7_three_tuple_unpack_becomes_build_server_in_a_function(tmp_path: Path) -> None:
     body = (
         "from fastmcp import FastMCP\nfrom demo_mcp.mcp_server import get_mcp_instance\n\n\n"

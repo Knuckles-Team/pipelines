@@ -282,3 +282,19 @@ def test_generations_recorded_entries_survive_while_one_repo_carries_them(tmp_pa
     out = tmp_path / "g.json"
     out.write_text('{"rewrites": [{"id": "compose-env-file"}]}', encoding="utf-8")
     assert script.recorded_ids(out) == {"compose-env-file"} and script.recorded_ids(tmp_path / "none") == set()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.94")
+def test_tidy_uses_the_ruff_version_the_shared_template_pins(repo: Path) -> None:
+    from pipelines_hooks.hygiene.connector_central import _hook_ruff
+
+    ctx = make_ctx(repo)
+    assert ctx is not None
+    pinned = _hook_ruff(ctx)
+    template = Path(__file__).resolve().parents[2] / "templates" / "connector" / "pre-commit-config.yaml"
+    text = template.read_text()
+    version = text.split("ruff-pre-commit", 1)[1].split("# v", 1)[1].split()[0]
+    if shutil.which("uvx") is None:
+        assert pinned is None
+    else:
+        assert pinned is not None and pinned.endswith(f"ruff@{version}")
