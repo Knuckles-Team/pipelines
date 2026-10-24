@@ -26,7 +26,7 @@ PIPELINES = HERE.parent
 FIXED_MESSAGE = "chore: cut the connector manifest files; declare data sources in code (SDK 0.4.1)"
 REBUMP_MESSAGE = "chore: require agent-connector-sdk>=0.4.1"
 CENTRAL_MESSAGE = "chore: move the connector onto the central SDK and pipelines components (SDK 0.5.2)"
-CENTRAL_TRAILER = "Spec: PIPE-GATES-R016.50\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+CENTRAL_TRAILER = "Spec: none (mechanical central migration, PIPE-GATES-R016.50)\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 TRAILER = "Spec: SDK-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 STEPS = ("worktree", "sync", "migrate", "commit", "verify", "push", "pr", "gates", "merge")
 lock = threading.Lock()
@@ -253,6 +253,8 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
                 raise StepFailed(step, "nothing to commit but the cut files are still on origin/main") from None
             led.record(repo, status="merged", noop=True, merged_at=time.strftime("%FT%TZ", time.gmtime()))
             return
+        if a.central:
+            regenerate_status(wt, env, a, led, repo)
         step = "verify"
         # R016.25: the migrate step raised the SDK floor and lock; the venv synced before it still holds the old SDK.
         if not a.sdk_path:
@@ -361,6 +363,36 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         led.record(repo, status="failed", failed_step=exc.step, output_tail=exc.output)
     except Exception as exc:  # noqa: BLE001 - recorded, then this repo stops
         led.record(repo, status="failed", failed_step=step, output_tail=f"{type(exc).__name__}: {exc}")
+
+
+def regenerate_status(wt: Path, env: dict[str, str], a: argparse.Namespace, led: Ledger, repo: str) -> None:
+    """Generated ``specs/*/status.json`` is regenerated after the migration commit and committed last (own commit)."""
+    if not (wt / "specs").is_dir():
+        return
+    sh(
+        "status",
+        hook("spec-status", "--root", str(wt), "--write"),
+        wt,
+        {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)},
+    )
+    changed = [p for p in sh("status", ["git", "status", "--short", "--", "specs"], wt).splitlines() if p.strip()]
+    if not changed:
+        return
+    sh("status", ["git", "add", "--", *[p[3:] for p in changed if p[3:].endswith("status.json")]], wt)
+    sh(
+        "status",
+        [
+            "git",
+            "commit",
+            "-m",
+            "chore(spec): regenerate status",
+            "-m",
+            "Spec: none (generated status)\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>",
+        ],
+        wt,
+        env,
+    )
+    led.record(repo, status_commit=True)
 
 
 def central_verify(wt: Path, py: str, env: dict[str, str], led: Ledger, repo: str, a: argparse.Namespace) -> None:

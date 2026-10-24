@@ -69,3 +69,21 @@ def test_org_site_workflow_is_written_only_when_pipelines_provides_the_shared_on
     ctx.applied.clear()
     identity.org_site(ctx)
     assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.104")
+def test_unindexed_local_spec_is_added_to_the_readme_index(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    (ctx.root / "specs/connector-content").mkdir(parents=True)
+    (ctx.root / "specs/connector-content/spec.md").write_text(
+        "# CONN-DEMO-CONNECTOR-CONTENT — The connector serves its packaged content\n\nOwner: demo.\n", encoding="utf-8"
+    )
+    readme = ctx.root / "specs/README.md"
+    readme.write_text(
+        "# specs\n\n## Local specifications\n\nThis repository has no local spec yet.\n", encoding="utf-8"
+    )
+    identity.spec_index(ctx)
+    text = readme.read_text(encoding="utf-8")
+    assert "- [`CONN-DEMO-CONNECTOR-CONTENT`](connector-content/spec.md)" in text and "no local spec yet" not in text
+    identity.spec_index(ctx)
+    assert readme.read_text(encoding="utf-8") == text
