@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -129,7 +130,8 @@ def test_connector_pr_builds_the_image_only_when_a_container_input_changes(tmp_p
         assert pattern in script
 
     def git(*args: str) -> None:
-        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
+        clean = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+        subprocess.run(["git", *args], cwd=tmp_path, env=clean, check=True, capture_output=True)
 
     def run_detect(base: str = "main") -> str:
         output = tmp_path / "out"
