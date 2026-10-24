@@ -3998,11 +3998,11 @@
       "title": "One generated architecture explorer, always current",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0328769ac5b3",
         "07e22bc44394",
         "0a82ba72ff9d",
         "1127e9047bfa",
-        "22a4c85e6a09"
+        "22a4c85e6a09",
+        "26f5095aaa92"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:1011",
@@ -4153,7 +4153,7 @@
       "title": "The explorer states the contribution path in a form a person or an agent finds without guessing",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0328769ac5b3"
+        "dbbaf2116d8c"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:1011",
