@@ -146,6 +146,9 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
                     "family": family,
                     "text": body,
                     "req": body.split("|")[0],
+                    "spec_id": status.get("spec_id", ""),
+                    "depends_on": req.get("depends_on", []),
+                    "rollup": "rollup_of" in req,
                 }
             )
     return rows

@@ -26,11 +26,14 @@ if __package__ in (None, ""):
     __package__ = "scripts.architecture_explorer"
 
 from .details import write_details  # noqa: E402
+from .delivery import aggregate  # noqa: E402
 from .geometry import count_crossings  # noqa: E402
 from .place import Placer, Tree, add_dynamic_groups, unmapped_violations, validate_code  # noqa: E402
 from .sources import load_all, scan_set  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
+NEXT_UP = 25
+CQ_BADGES = 8
 STATUSES = ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED")
 FRONT_DOOR = "https://knuckles-team.github.io/.github/"
 CONTRIBUTING = "https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md"
@@ -103,7 +106,52 @@ def run_layout(levels: list[dict]) -> dict:
     return json.loads(proc.stdout)
 
 
-def emit(node: dict, direct: dict, layouts: dict) -> dict:
+def spec_entry(r: dict, delivery: dict) -> dict:
+    """One spec row on the page: identity, state, and its delivery facts when it has any."""
+    entry = {"id": r["id"], "title": r["title"], "status": r["status"], "repo": r["repo"], "family": r["family"]}
+    if r["id"] in delivery["scores"]:
+        entry["priority"] = delivery["scores"][r["id"]]["priority"]
+    cqs = delivery["scores"].get(r["id"], {}).get("cqs", [])
+    if cqs:
+        entry["cqs"] = cqs[:CQ_BADGES]
+    if r["id"] in delivery["frontier_set"]:
+        entry["frontier"] = True
+    if r["id"] in delivery["unserved_set"]:
+        entry["unserved"] = True
+    return entry
+
+
+def page_delivery(delivery: dict, rows: list[dict]) -> dict:
+    """The compact delivery block embedded in the page: competency questions, Next up, bundles, and counts."""
+    by_id = {r["id"]: r for r in rows}
+    nxt = [
+        {
+            "id": rid,
+            "title": by_id[rid]["title"],
+            "repo": by_id[rid]["repo"],
+            "family": by_id[rid]["family"],
+            "priority": delivery["scores"][rid]["priority"],
+            "cqs": delivery["scores"][rid]["cqs"][:CQ_BADGES],
+        }
+        for rid in delivery["frontier"][:NEXT_UP]
+    ]
+    for bundle in delivery["bundles"]:
+        for step in bundle["steps"]:
+            for row in step["rows"]:
+                row["family"] = by_id[row["id"]]["family"]
+    return {
+        "questions": delivery["questions"],
+        "next": nxt,
+        "bundles": delivery["bundles"],
+        "counts": {
+            "open": len(delivery["scores"]),
+            "frontier": len(delivery["frontier"]),
+            "unserved": len(delivery["unserved"]),
+        },
+    }
+
+
+def emit(node: dict, direct: dict, layouts: dict, delivery: dict) -> dict:
     out = {
         "id": node["id"],
         "label": node["label"],
@@ -115,17 +163,10 @@ def emit(node: dict, direct: dict, layouts: dict) -> dict:
         "code": node.get("code", []),
         "links": node.get("links", []),
         "specs": [
-            {
-                "id": r["id"],
-                "title": r["title"],
-                "status": r["status"],
-                "repo": r["repo"],
-                "family": r["family"],
-                **({"desc": r["desc"]} if r.get("desc") else {}),
-            }
+            {**spec_entry(r, delivery), **({"desc": r["desc"]} if r.get("desc") else {})}
             for r in sorted(direct.get(node["id"], []), key=lambda r: natkey(r["id"]))
         ],
-        "children": [emit(c, direct, layouts) for c in node["children"]],
+        "children": [emit(c, direct, layouts, delivery) for c in node["children"]],
     }
     for key in ("tools", "unmapped", "external"):
         if node.get(key):
@@ -257,7 +298,10 @@ def build_with_sources(mode: str, workspace: Path | None) -> tuple[dict, dict, l
     for nid, node in tree.nodes.items():
         if node.get("fixed_layout"):
             layouts[nid] = node["fixed_layout"]
-    data = emit(tree.root, direct, layouts)
+    delivery = aggregate(rows)
+    delivery["frontier_set"], delivery["unserved_set"] = set(delivery["frontier"]), set(delivery["unserved"])
+    data = emit(tree.root, direct, layouts, delivery)
+    data["delivery"] = page_delivery(delivery, rows)
     unmapped = sum(len(v) for k, v in direct.items() if tree.nodes[k].get("unmapped"))
     violations = unmapped_violations(tree, direct, model.get("unmapped_allow", []))
     meta = {
