@@ -150,8 +150,8 @@
       "title": "One reference connector configuration",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "37a92cd4e6fd",
-        "5ff231c270b1"
+        "5ff231c270b1",
+        "d9ae8754cd03"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:240"

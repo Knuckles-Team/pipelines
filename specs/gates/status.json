@@ -1244,6 +1244,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "a879bf2fe9bb",
+        "c1102b44f094",
         "f4b1cc173371"
       ],
       "verified_by": [
@@ -1714,8 +1715,8 @@
       "title": "Pipelines-owned boilerplate rule `pl.af`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "64d2ed95d394",
-        "b7a535e39a33"
+        "9d2259faab12",
+        "fb3e2489a321"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_spelling.py:100",
