@@ -1027,8 +1027,8 @@
       "title": "The connector repository set is the workspace manifest's `agents` group intersected with the non-archived GitHub repositories",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "7b82e010533f",
-        "f233f17f6b79"
+        "313d63c9dbce",
+        "7b82e010533f"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fleet.py:32",
@@ -1115,8 +1115,8 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.g7`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "74ad5d0baab0",
-        "f233f17f6b79"
+        "313d63c9dbce",
+        "74ad5d0baab0"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:653",
@@ -1681,9 +1681,9 @@
       "title": "Pipelines-owned boilerplate rule `pl.ab`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "313d63c9dbce",
         "8e8272f805dd",
-        "eee545e082ed",
-        "f233f17f6b79"
+        "eee545e082ed"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:116",
