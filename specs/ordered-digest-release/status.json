@@ -52,6 +52,8 @@
     "PIPE-RELEASE-R001.10",
     "PIPE-RELEASE-R001.11",
     "PIPE-RELEASE-R001.12",
+    "PIPE-RELEASE-R001.13",
+    "PIPE-RELEASE-R001.14",
     "PIPE-RELEASE-R007",
     "PIPE-RELEASE-R007.1",
     "PIPE-RELEASE-R007.2",
@@ -93,7 +95,9 @@
         "PIPE-RELEASE-R001.9",
         "PIPE-RELEASE-R001.10",
         "PIPE-RELEASE-R001.11",
-        "PIPE-RELEASE-R001.12"
+        "PIPE-RELEASE-R001.12",
+        "PIPE-RELEASE-R001.13",
+        "PIPE-RELEASE-R001.14"
       ]
     },
     {
@@ -470,6 +474,33 @@
       "verified_by": []
     },
     {
+      "id": "PIPE-RELEASE-R001.13",
+      "title": "Versions and container files are derived",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "99f1989eb7f3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central.py:104",
+        "tests/hooks/test_connector_central.py:113",
+        "tests/hooks/test_connector_central.py:288",
+        "tests/hooks/test_connector_central.py:64",
+        "tests/hooks/test_connector_central.py:78"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R001.14",
+      "title": "A new SDK release rebuilds connector images",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "99f1989eb7f3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central.py:126",
+        "tests/hooks/test_connector_central.py:138"
+      ]
+    },
+    {
       "id": "PIPE-RELEASE-R007",
       "title": "Shared gates workflow, tag-only publish guard and fast-tests hook",
       "delivery_state": "LANDED",
@@ -687,7 +718,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:471"
+        "tests/test_container_pipeline_contract.py:475"
       ]
     },
     {

@@ -21,6 +21,7 @@
     "PIPE-GATES-R005",
     "PIPE-GATES-R007",
     "PIPE-GATES-R008",
+    "PIPE-GATES-R008.1",
     "PIPE-GATES-R009",
     "PIPE-GATES-R010",
     "PIPE-GATES-R011",
@@ -66,7 +67,9 @@
     "PIPE-GATES-R016.35",
     "PIPE-GATES-R016.36",
     "PIPE-GATES-R016.37",
-    "PIPE-GATES-R016.38"
+    "PIPE-GATES-R016.38",
+    "PIPE-GATES-R016.39",
+    "PIPE-GATES-R016.40"
   ],
   "requirements": [
     {
@@ -227,10 +230,26 @@
       "title": "Lock artifact version mirrors",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "180d570777d4"
+        "180d570777d4",
+        "99f1989eb7f3"
       ],
       "verified_by": [
+        "tests/hooks/test_connector_central.py:190",
         "tests/hooks/test_lockfile_version_mirrors.py:14"
+      ],
+      "rollup_of": [
+        "PIPE-GATES-R008.1"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R008.1",
+      "title": "No version mirror outside `pyproject.toml`",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "99f1989eb7f3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central.py:190"
       ]
     },
     {
@@ -359,7 +378,9 @@
         "PIPE-GATES-R016.35",
         "PIPE-GATES-R016.36",
         "PIPE-GATES-R016.37",
-        "PIPE-GATES-R016.38"
+        "PIPE-GATES-R016.38",
+        "PIPE-GATES-R016.39",
+        "PIPE-GATES-R016.40"
       ]
     },
     {
@@ -781,8 +802,8 @@
       "title": "Entity ids are validated strings",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0b0f40e78fa0",
-        "2e3dfbb4af02"
+        "2e3dfbb4af02",
+        "9a1fb34a84ee"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:973"
@@ -793,7 +814,7 @@
       "title": "Provider entry point under either group",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0b0f40e78fa0"
+        "9a1fb34a84ee"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:999"
@@ -804,10 +825,35 @@
       "title": "Illegal-instruction detection",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0b0f40e78fa0"
+        "9a1fb34a84ee"
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:1010"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.39",
+      "title": "Ontology artifacts are generated at release, not committed",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "99f1989eb7f3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central.py:150",
+        "tests/hooks/test_connector_central.py:170",
+        "tests/hooks/test_connector_central.py:181"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.40",
+      "title": "The connector PR gate runs dupehound",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "99f1989eb7f3"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central.py:253",
+        "tests/hooks/test_connector_central.py:267"
       ]
     }
   ]
