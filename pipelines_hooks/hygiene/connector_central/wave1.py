@@ -3717,6 +3717,20 @@ def l4(ctx: Ctx) -> None:
         ctx.write("pyproject.toml", new, "w1.l4")
     _drop_dangling_self_extras(ctx)
     _drop_undefined_sync_extras(ctx)
+    _follow_pin_in_tests(ctx, hit[0].strip(), pin)
+
+
+def _follow_pin_in_tests(ctx: Ctx, old: str, new: str) -> None:
+    """A test that asserts the connector's SDK requirement string follows the pin l4 wrote (``test_sdk_floor_...``)."""
+    if old == new:
+        return
+    for path in sorted((ctx.root / "tests").glob("**/*.py")):
+        text = path.read_text(encoding="utf-8")
+        fixed = text
+        for quote in ('"', "'"):
+            fixed = fixed.replace(f"{quote}{old}{quote}", f"{quote}{new}{quote}")
+        if fixed != text:
+            ctx.write(ctx.rel(path), fixed, "w1.l4")
 
 
 _SYNC_ARGS = re.compile(r"(?m)^(\s*sync-args:\s*)(.+?)\s*$")
