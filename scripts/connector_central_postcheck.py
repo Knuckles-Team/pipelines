@@ -13,7 +13,8 @@ import shutil
 from pathlib import Path
 
 WT = Path.home() / ".local/state/repository-worktrees"
-VERIFY = WT / "pipelines/central-migrate2/scripts/connector_verify.py"
+VERIFY = Path(__file__).resolve().parent / "connector_verify.py"
+VERIFY_PREV = Path(__file__).resolve().parent / "connector_prev_tools.py"
 
 
 def sh(cmd, **kw):
@@ -83,13 +84,57 @@ def check(repo):
         [str(venv / "bin/python"), "-c", "import importlib.metadata as m;print(m.version('agent-connector-sdk'))"]
     ).stdout.strip()
     out["sdk"] = sdk
-    p = sh([str(venv / "bin/python"), str(VERIFY), str(wt)])
+    p = sh([str(venv / "bin/python"), str(VERIFY), str(wt), "--names"])
     try:
         out["startup"] = json.loads([ln for ln in p.stdout.splitlines() if ln.startswith("{")][-1])
     except Exception:
         out["startup"] = {"ok": False, "error": (p.stdout + p.stderr)[-300:]}
     shutil.rmtree(venv, ignore_errors=True)
+    names = out["startup"].pop("tool_names", None)
+    out["tool_names_vs_pre_migration"] = compare_tool_names(repo, dist, ver, names)
     return out
+
+
+def previous_version(dist, ver):
+    """The PyPI release just below ``ver`` (the last pre-migration release), or None."""
+    r = sh(["pip", "index", "versions", dist])
+    line = next((ln for ln in r.stdout.splitlines() if ln.startswith("Available versions:")), "")
+    versions = [v.strip() for v in line.split(":", 1)[-1].split(",") if v.strip()]
+    older = [
+        v
+        for v in versions
+        if v != ver and tuple(int(x) for x in v.split(".")[:3]) < tuple(int(x) for x in ver.split(".")[:3])
+    ]
+    return older[0] if older else None
+
+
+def compare_tool_names(repo, dist, ver, names):
+    """Tool names of the migrated release against the last earlier release, listed over stdio in a fresh install."""
+    if names is None:
+        return {"status": "no names listed"}
+    prev = previous_version(dist, ver)
+    if prev is None:
+        return {"status": "no earlier release"}
+    venv = Path(f"/var/tmp/connector-central/pc-venv/{repo}-prev")
+    shutil.rmtree(venv, ignore_errors=True)
+    sh(["uv", "venv", "-q", str(venv), "--python", "3.14"])
+    p = sh(["uv", "pip", "install", "-q", "--python", str(venv / "bin/python"), f"{dist}=={prev}"])
+    if p.returncode:
+        return {"status": "earlier release not installable", "previous": prev}
+    q = sh([str(venv / "bin/python"), str(VERIFY_PREV), str(venv / "bin/python"), dist])
+    shutil.rmtree(venv, ignore_errors=True)
+    try:
+        before = json.loads([ln for ln in q.stdout.splitlines() if ln.startswith("[")][-1])
+    except Exception:
+        return {"status": "earlier release did not start", "previous": prev, "detail": (q.stdout + q.stderr)[-200:]}
+    return {
+        "status": "same" if sorted(before) == sorted(names) else "differs",
+        "previous": prev,
+        "before": len(before),
+        "after": len(names),
+        "removed": sorted(set(before) - set(names)),
+        "added": sorted(set(names) - set(before)),
+    }
 
 
 if __name__ == "__main__":
