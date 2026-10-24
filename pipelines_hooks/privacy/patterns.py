@@ -7,10 +7,12 @@ import re
 from pipelines_hooks.privacy.hosts import is_reserved_hostname
 from pipelines_hooks.security.placeholders import is_placeholder_secret
 
+# POSIX home directories are case-sensitive path segments (`/home/`, `/Users/`); a lowercase `/users/me/` is an API
+# route, not a filesystem path. Windows drive paths stay case-insensitive.
 HOME_PATH_RE = re.compile(
-    r"(?:(?<![A-Za-z0-9_.-])/home/(?P<home_user>[A-Za-z0-9_.-]+)(?:/|\b)|"
-    r"(?<![A-Za-z0-9_.-])/Users/(?P<users_user>[A-Za-z0-9_.-]+)(?:/|\b)|"
-    r"(?<![A-Za-z0-9_.-])/mnt/[A-Za-z]/Users/(?P<mnt_user>[A-Za-z0-9_.-]+)(?:/|\b)|"
+    r"(?:(?<![A-Za-z0-9_.-])(?-i:/home/)(?P<home_user>[A-Za-z0-9_.-]+)(?:/|\b)|"
+    r"(?<![A-Za-z0-9_.-])(?-i:/Users/)(?P<users_user>[A-Za-z0-9_.-]+)(?:/|\b)|"
+    r"(?<![A-Za-z0-9_.-])/mnt/[A-Za-z]/(?-i:Users/)(?P<mnt_user>[A-Za-z0-9_.-]+)(?:/|\b)|"
     r"(?<![A-Za-z0-9_.-])[A-Za-z]:[\\/]Users[\\/](?P<win_user>[^\\/\s]+)(?:[\\/]|\b))",
     re.IGNORECASE,
 )

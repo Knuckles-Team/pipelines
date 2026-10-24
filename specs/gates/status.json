@@ -72,6 +72,7 @@
     "PIPE-GATES-R016.40",
     "PIPE-GATES-R016.41",
     "PIPE-GATES-R016.42",
+    "PIPE-GATES-R016.43",
     "PIPE-GATES-R016.50",
     "PIPE-GATES-R016.51",
     "PIPE-GATES-R016.52",
@@ -129,7 +130,8 @@
     "PIPE-GATES-R016.104",
     "PIPE-GATES-R016.105",
     "PIPE-GATES-R016.106",
-    "PIPE-GATES-R016.107"
+    "PIPE-GATES-R016.107",
+    "PIPE-GATES-R016.108"
   ],
   "requirements": [
     {
@@ -443,6 +445,7 @@
         "PIPE-GATES-R016.40",
         "PIPE-GATES-R016.41",
         "PIPE-GATES-R016.42",
+        "PIPE-GATES-R016.43",
         "PIPE-GATES-R016.50",
         "PIPE-GATES-R016.51",
         "PIPE-GATES-R016.52",
@@ -500,7 +503,8 @@
         "PIPE-GATES-R016.104",
         "PIPE-GATES-R016.105",
         "PIPE-GATES-R016.106",
-        "PIPE-GATES-R016.107"
+        "PIPE-GATES-R016.107",
+        "PIPE-GATES-R016.108"
       ]
     },
     {
@@ -692,7 +696,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "10797d760f22",
-        "570e02f553a0",
+        "3c9520af33c8",
         "64c83743091d",
         "6feb14333fd2",
         "7a345cc4295e"
@@ -996,6 +1000,18 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:267"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.43",
+      "title": "Home paths are case-sensitive path segments",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f20f3fe5ff3d"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy.py:32",
+        "tests/hooks/test_privacy.py:38"
       ]
     },
     {
@@ -1626,6 +1642,15 @@
     },
     {
       "id": "PIPE-GATES-R016.107",
+      "title": "Pipelines-owned boilerplate rule `pl.ac`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_identity.py:147"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.108",
       "title": "Central driver and verify",
       "delivery_state": "SPECIFIED",
       "landed_in": [],

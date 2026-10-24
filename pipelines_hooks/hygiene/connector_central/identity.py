@@ -16,7 +16,7 @@ import sys
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
-ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab")
+ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab", "pl.ac")
 _IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
@@ -217,3 +217,50 @@ def neutral_author(ctx: Ctx) -> None:
     new_text = _AUTHORS.sub(fix, text)
     if new_text != text:
         ctx.write("pyproject.toml", new_text, "pl.ab")
+
+
+_CRED_URI = re.compile(r"(?i)(\b[a-z][a-z0-9+.-]*://)([^\s/@:`'\"]+):([^\s/@`'\"]+)(@)")
+_FENCE = re.compile(r"^\s*(```|~~~)")
+_INLINE = re.compile(r"`[^`\n]+`")
+PLACEHOLDER_USER = "USER"
+PLACEHOLDER_SECRET = "PASSWORD"
+
+
+def _mask_uris(text: str) -> str:
+    from pipelines_hooks.security.placeholders import is_placeholder_secret
+
+    def sub(m: re.Match[str]) -> str:
+        if is_placeholder_secret(m.group(3)):
+            return m.group(0)
+        return f"{m.group(1)}{PLACEHOLDER_USER}:{PLACEHOLDER_SECRET}{m.group(4)}"
+
+    return _CRED_URI.sub(sub, text)
+
+
+def mask_markdown(text: str) -> str:
+    """Example credential URIs inside fenced code blocks and inline code become ``scheme://USER:PASSWORD@host``."""
+    out: list[str] = []
+    fence: str | None = None
+    for line in text.split("\n"):
+        m = _FENCE.match(line)
+        if m:
+            fence = None if fence == m.group(1) else (fence or m.group(1))
+            out.append(line)
+        elif fence:
+            out.append(_mask_uris(line))
+        else:
+            out.append(_INLINE.sub(lambda c: _mask_uris(c.group(0)), line))
+    return "\n".join(out)
+
+
+@rule("pl.ac")
+def docs_credential_examples(ctx: Ctx) -> None:
+    """Only ``README.md`` and ``docs/**/*.md``, only code (fences and inline code), only a secret the gate would flag."""
+    files = [ctx.root / "README.md", *sorted((ctx.root / "docs").glob("**/*.md"))]
+    for path in files:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        new = mask_markdown(text)
+        if new != text:
+            ctx.write(ctx.rel(path), new, "pl.ac")
