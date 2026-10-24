@@ -796,6 +796,7 @@ def _remove_scaffold(ctx: Ctx, rule_id: str) -> str | None:
         return None
     for rel, new in edits.items():
         ctx.write(rel, new, rule_id)
+    _delete_scaffold_tests(ctx)
     return head
 
 
@@ -1536,6 +1537,55 @@ def l2(ctx: Ctx) -> None:
         ctx.write("pyproject.toml", new_text, "w1.l2")
     for sub in markers:
         ctx.delete(ctx.rel(ctx.pkg / sub / "__init__.py"), "w1.l2")
+
+
+_SCAFFOLD_ATTRS = re.compile(
+    r"\b(?:_MCP_AVAILABLE|_loaded_optional_modules|_expose_members|_import_module_safely|CORE_MODULES|OPTIONAL_MODULES)\b"
+)
+
+
+def _delete_scaffold_tests(ctx: Ctx) -> None:
+    """Test functions that assert the deleted lazy-import scaffold (its flags and helpers) are deleted with it."""
+    for f in _py_files(ctx.root):
+        if "tests" not in f.relative_to(ctx.root).parts and not f.name.startswith("test_"):
+            continue
+        text = f.read_text(encoding="utf-8")
+        tree = _parse(text)
+        if tree is None or not _SCAFFOLD_ATTRS.search(text):
+            continue
+        lines = text.split("\n")
+        hit = [
+            t
+            for t in _test_nodes(tree)
+            if _SCAFFOLD_ATTRS.search("\n".join(lines[_span(t[1])[0] - 1 : _span(t[1])[1]]))
+        ]
+        if not hit:
+            continue
+        gone: list[ast.stmt] = [t[1] for t in hit]
+        for cls in {id(t[2]): t[2] for t in hit if t[2] is not None}.values():
+            left = [
+                m
+                for m in cls.body
+                if isinstance(m, ast.FunctionDef | ast.AsyncFunctionDef) and m.name.startswith("test")
+            ]
+            if all(m in gone for m in left):
+                gone = [g for g in gone if g not in cls.body]
+                gone.append(cls)
+        out, fixture_names = _prune_orphan_fixtures(_delete_nodes(text, gone))
+        out = _prune_imports(out, _name_loads(gone) | fixture_names)
+        if _SCAFFOLD_ATTRS.search(out):
+            ctx.note("w1.l3", "scaffold names are still used outside the test functions", ctx.rel(f), True)
+            continue
+        if _has_test(out):
+            ctx.write(ctx.rel(f), out, "w1.l3")
+        else:
+            ctx.delete(ctx.rel(f), "w1.l3")
+        ctx.note(
+            "w1.l3",
+            f"deleted tests {[t[0] for t in hit]}: they assert the lazy-import scaffold that l3 deleted",
+            ctx.rel(f),
+            False,
+        )
 
 
 @rule("w1.l3")
