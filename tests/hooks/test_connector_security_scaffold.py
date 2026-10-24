@@ -76,6 +76,38 @@ def test_a_risky_workflow_is_a_finding_and_fails_the_check(tmp_path: Path, workf
     assert security.violations(CLEAN_WORKFLOW) == [] and security.violations("./local@x") == []
 
 
+OWN = "Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main"
+
+
+def _caller(ref: str) -> str:
+    return f"on: push\npermissions: {{}}\njobs:\n  x:\n    uses: {ref}\n"
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.10")
+def test_the_organizations_own_shared_workflows_are_allowed_at_main(tmp_path: Path) -> None:
+    assert security.violations(_caller(OWN)) == []
+    root = _repo(tmp_path)
+    _write(root, ".github/workflows/ci.yml", _caller(OWN))
+    assert security.check(root) == []
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.10")
+@pytest.mark.parametrize(
+    "ref",
+    [
+        "Knuckles-Team/other-repo/.github/workflows/python_pipeline.yml@main",
+        "Knuckles-Team/pipelines-evil/.github/workflows/python_pipeline.yml@main",
+        "Other-Org/pipelines/.github/workflows/python_pipeline.yml@main",
+        "Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@v1",
+        "Knuckles-Team/pipelines/.github/actions/x@main",
+        "actions/checkout@main",
+        "actions/checkout@v4",
+    ],
+)
+def test_every_other_branch_or_tag_reference_stays_a_mutable_action(ref: str) -> None:
+    assert "mutable action" in security.violations(_caller(ref))
+
+
 @pytest.mark.spec("PIPE-VALIDATION-R001.10")
 def test_contract_is_the_shared_default_plus_pyproject_license_additions(tmp_path: Path) -> None:
     root = _repo(tmp_path)
