@@ -38,7 +38,9 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
     ]
     builds = [step for step in steps if "docker/build-push-action@" in step.get("uses", "")]
     assert len(builds) == 3 and builds[0]["with"] == builds[1]["with"] == builds[2]["with"]
-    assert builds[0]["with"]["build-args"] == "${{ steps.runtime.outputs.build-args }}"
+    assert builds[0]["with"]["build-args"] == (
+        "${{ steps.runtime.outputs.build-args }}\n${{ steps.render.outputs.build-args }}\n"
+    )
     assert builds[0]["with"]["target"] == "${{ steps.target.outputs.target }}"
     assert builds[0]["with"]["push"] == "${{ github.event_name == 'push' }}"
     assert steps.index(next(step for step in steps if step.get("id") == "runtime")) < steps.index(builds[0])
@@ -464,6 +466,8 @@ def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
         f"type=raw,value=${{{{ matrix.main_tag }}}},enable=${{{{ {on_main} }}}}",
         "type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},"
         f"enable=${{{{ {on_main} && steps.version.outputs.version != '' }}}}",
+        "type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},"
+        "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' }}",
     ]
 
 

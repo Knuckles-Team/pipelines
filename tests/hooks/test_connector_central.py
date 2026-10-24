@@ -1,0 +1,294 @@
+"""Connector release and config boilerplate owned by pipelines (PIPE-RELEASE-R001.13-.15, PIPE-GATES-R008.1,
+PIPE-GATES-R016.39-.40, PIPE-VALIDATION-R001.7-.9)."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+
+import pytest
+import yaml
+
+from pipelines_hooks.cli import GATES, run_gate
+from pipelines_hooks.connector import cli as connector_cli
+from pipelines_hooks.connector import codespell, container, files, generate, version
+from pipelines_hooks.core.errors import CannotRun
+from tests.git_fixture_environment import fixture_git_environment
+
+ROOT = Path(__file__).parents[2]
+WORKFLOWS = ROOT / ".github/workflows"
+
+PYPROJECT = """[project]
+name = "demo-mcp"
+version = "1.2.3"  # keep
+[project.optional-dependencies]
+mcp = []
+agent = []
+[project.scripts]
+demo-mcp = "demo_mcp.mcp_server:main"
+demo-agent = "demo_mcp.agent_server:main"
+[project.entry-points."agent_connector_sdk.connector"]
+demo-mcp = "demo_mcp"
+[tool.pipelines.container]
+port = 9000
+runtime_apt = ["ffmpeg"]
+"""
+
+
+def _git(root: Path, *args: str) -> None:
+    subprocess.run(["git", "-C", str(root), *args], env=fixture_git_environment(), check=True, capture_output=True)
+
+
+def _repo(tmp_path: Path, pyproject: str = PYPROJECT) -> Path:
+    root = tmp_path / "demo-mcp"
+    (root / "demo_mcp" / "ontology" / "mappings").mkdir(parents=True)
+    (root / "pyproject.toml").write_text(pyproject, encoding="utf-8")
+    (root / "demo_mcp" / "ontology" / "mappings" / "source.yaml").write_text(
+        "ontology_source: media\n", encoding="utf-8"
+    )
+    (root / "demo_mcp" / "ontology" / "media.ttl").write_text(
+        ':Book a owl:Class ;\n    rdfs:label "Book" .\n:Author a owl:Class .\n', encoding="utf-8"
+    )
+    (root / "connector_manifest.yml").write_text("connector: demo-mcp\n", encoding="utf-8")
+    _git(root, "init", "-q")
+    return root
+
+
+def _commit_all(root: Path, *names: str) -> None:
+    _git(root, "add", "--", *names)
+
+
+# --- PIPE-RELEASE-R001.13: version and container files ---------------------------------------------------------
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_bump_changes_pyproject_only_and_keeps_the_comment(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    (root / "README.md").write_text("Version: 1.2.3\n", encoding="utf-8")
+    before = {p.name: p.read_bytes() for p in root.iterdir() if p.is_file()}
+    assert version.main(["--root", str(root), "bump", "patch"]) == 0
+    after = {p.name: p.read_bytes() for p in root.iterdir() if p.is_file()}
+    assert [n for n in after if after[n] != before[n]] == ["pyproject.toml"]
+    assert 'version = "1.2.4"  # keep' in (root / "pyproject.toml").read_text(encoding="utf-8")
+    assert version.bumped("1.2.9", "minor") == "1.3.0" and version.bumped("1.2.9", "major") == "2.0.0"
+    with pytest.raises(CannotRun):
+        version.bumped("1.2", "patch")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_version_bump_ignores_other_tables(tmp_path: Path) -> None:
+    root = _repo(tmp_path, '[tool.x]\nversion = "9.9.9"\n' + PYPROJECT)
+    assert version.read_version(root) == "1.2.3"
+    version.write_version(root, "1.2.4")
+    assert 'version = "9.9.9"' in (root / "pyproject.toml").read_text(encoding="utf-8")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_is_deterministic_and_driven_by_the_table(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    first, second = container.render(root), container.render(root)
+    assert first == second and set(first) == {"Dockerfile", "debug.Dockerfile", "mcp.compose.yml", "agent.compose.yml"}
+    docker = first["Dockerfile"]
+    assert "demo-mcp[mcp]==1.2.3" in docker and "demo-mcp[agent]==1.2.3" in docker
+    assert "ARG PORT=9000" in docker and "ffmpeg" in docker and "ARG SDK_VERSION=" in docker
+    assert "--upgrade-package agent-connector-sdk" in docker and "COPY . " not in docker
+    assert 'CMD ["demo-mcp"]' in docker and 'CMD ["demo-agent"]' in docker
+    assert "@@" not in "".join(first.values())
+    assert 'CMD ["demo-mcp"]' in first["debug.Dockerfile"] and "COPY . /app" in first["debug.Dockerfile"]
+    compose = yaml.safe_load(first["mcp.compose.yml"])["services"]["demo-mcp-mcp"]
+    assert compose["ports"] == ["127.0.0.1:9000:9000"] and compose["user"] == "10001:10001"
+    version.write_version(root, "1.2.4")
+    assert "demo-mcp[mcp]==1.2.4" in container.render(root)["Dockerfile"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_refuses_an_unknown_table_key_and_a_missing_entrypoint(tmp_path: Path) -> None:
+    with pytest.raises(CannotRun, match="unknown keys"):
+        container.render(_repo(tmp_path, PYPROJECT + "bogus = 1\n"))
+    bare = PYPROJECT.replace('demo-mcp = "demo_mcp.mcp_server:main"\ndemo-agent = "demo_mcp.agent_server:main"\n', "")
+    with pytest.raises(CannotRun, match="entrypoint"):
+        container.render(_repo(tmp_path / "b", bare))
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_writes_files_and_check_fails_on_a_committed_rendering(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    out = tmp_path / "out"
+    assert container.main(["--root", str(root), "--out", str(out)]) == 0
+    assert (out / "Dockerfile").read_text(encoding="utf-8") == container.render(root)["Dockerfile"]
+    assert container.main(["--root", str(root), "--check"]) == 0
+    (root / "docker").mkdir()
+    (root / "docker" / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
+    _commit_all(root, "docker/Dockerfile")
+    assert container.main(["--root", str(root), "--check"]) == 1
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.14")
+def test_container_workflow_renders_and_tags_by_sdk_version() -> None:
+    document = yaml.safe_load((WORKFLOWS / "container_pipeline.yml").read_text(encoding="utf-8"))
+    inputs = document[True]["workflow_call"]["inputs"]
+    assert inputs["render_connector"]["default"] is False and inputs["sdk_version"]["default"] == ""
+    steps = document["jobs"]["publish-docker"]["steps"]
+    render = next(s for s in steps if s.get("id") == "render")
+    assert "pipelines-connector render" in render["run"] and render["if"] == "inputs.render_connector"
+    meta = next(s for s in steps if s.get("id") == "meta")
+    assert "-sdk${{ inputs.sdk_version }}" in meta["with"]["tags"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.14")
+def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_container_pipeline() -> None:
+    document = yaml.safe_load((WORKFLOWS / "connector_sdk_rebuild_pipeline.yml").read_text(encoding="utf-8"))
+    resolve, rebuild = document["jobs"]["resolve"], document["jobs"]["rebuild"]
+    script = next(s for s in resolve["steps"] if s.get("id") == "sdk")["run"]
+    assert "imagetools inspect" in script and "-sdk${sdk}" in script and "pypi.org/pypi/agent-connector-sdk" in script
+    assert rebuild["needs"] == "resolve" and rebuild["if"] == "needs.resolve.outputs.stale == 'true'"
+    assert rebuild["uses"].endswith("/container_pipeline.yml@main")
+    assert rebuild["with"] == {"render_connector": True, "sdk_version": "${{ needs.resolve.outputs.sdk_version }}"}
+
+
+# --- generated ontology artifacts ------------------------------------------------------------------------------
+@pytest.mark.spec("PIPE-GATES-R016.39")
+def test_generate_is_deterministic_and_derives_shapes_from_declared_classes(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1700000000")
+    root = _repo(tmp_path)
+    assert generate.main(["--root", str(root)]) == 0
+    shapes = root / "demo_mcp/ontology/shapes/connector.shacl.ttl"
+    cert = root / "demo_mcp/ontology/certification.json"
+    first = (shapes.read_bytes(), cert.read_bytes())
+    assert generate.main(["--root", str(root)]) == 0 and first == (shapes.read_bytes(), cert.read_bytes())
+    text = shapes.read_text(encoding="utf-8")
+    assert "shape:AuthorGovernanceShape a sh:NodeShape" in text and "shape:BookGovernanceShape" in text
+    assert text.index("AuthorGovernance") < text.index("BookGovernance")
+    assert "<http://knuckles.team/kg/media/shape#>" in text and text.count("sh:path :provenanceReference") == 2
+    record = json.loads(cert.read_text(encoding="utf-8"))
+    assert record["validated_at"] == "2023-11-14T22:13:20Z" and record["connector"] == "demo-mcp"
+    digest = hashlib.sha256(shapes.read_bytes()).hexdigest()
+    assert record["artifacts"]["demo_mcp/ontology/shapes/connector.shacl.ttl"] == digest
+    assert "connector_manifest.yml" in record["artifacts"] and record["signature"] is None
+
+
+@pytest.mark.spec("PIPE-GATES-R016.39")
+def test_generate_honours_the_shape_classes_override_and_refuses_a_missing_source(tmp_path: Path) -> None:
+    root = _repo(tmp_path, PYPROJECT + '[tool.pipelines.ontology]\nshape_classes = ["Zed"]\n')
+    generate.main(["--root", str(root)])
+    text = (root / "demo_mcp/ontology/shapes/connector.shacl.ttl").read_text(encoding="utf-8")
+    assert "ZedGovernanceShape" in text and "BookGovernanceShape" not in text
+    (root / "demo_mcp/ontology/mappings/source.yaml").unlink()
+    with pytest.raises(CannotRun):
+        generate.generate(root)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.39")
+def test_python_release_workflow_generates_before_the_build() -> None:
+    document = yaml.safe_load((WORKFLOWS / "python_pipeline.yml").read_text(encoding="utf-8"))
+    assert document[True]["workflow_call"]["inputs"]["connector"]["default"] is False
+    steps = [s["name"] for s in next(iter(document["jobs"].values()))["steps"]]
+    assert steps.index("Generate the connector ontology artifacts") < steps.index("Build, publish and release")
+
+
+# --- standard files are provided, not committed ----------------------------------------------------------------
+@pytest.mark.spec("PIPE-GATES-R008.1")
+def test_a_hardcoded_package_version_is_a_finding_and_metadata_is_not(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    (root / "demo_mcp/__init__.py").write_text('__version__ = "1.2.3"\n', encoding="utf-8")
+    _commit_all(root, "demo_mcp/__init__.py")
+    assert any("spells the package version" in f for f in files.findings(root))
+    (root / "demo_mcp/__init__.py").write_text(
+        "from importlib.metadata import version\n__version__ = version('demo-mcp')\n", encoding="utf-8"
+    )
+    assert files.findings(root) == []
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.7")
+def test_committed_copies_of_central_files_fail_and_a_clean_repo_passes(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    assert files.main(["--root", str(root)]) == 0
+    planted = {
+        "scripts/security_sanitizer.py": "x\n",
+        ".bumpversion.cfg": "[bumpversion]\n",
+        "docker/Dockerfile": "FROM scratch\n",
+        "demo_mcp/ontology/certification.json": "{}\n",
+        "demo_mcp/ontology/shapes/connector.shacl.ttl": "\n",
+    }
+    for name, text in planted.items():
+        (root / name).parent.mkdir(parents=True, exist_ok=True)
+        (root / name).write_text(text, encoding="utf-8")
+    _commit_all(root, *planted)
+    found = files.findings(root)
+    assert len(found) == len(planted) and files.main(["--root", str(root)]) == 1
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.7")
+def test_connector_standard_is_a_group_and_a_published_hook() -> None:
+    assert GATES["connector-standard"] == "pipelines_hooks.connector.standard"
+    hooks = {h["id"]: h for h in yaml.safe_load((ROOT / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))}
+    assert hooks["connector-standard"]["entry"] == "pipelines-hook connector-standard"
+    assert "codespell==2.4.2" in hooks["connector-standard"]["additional_dependencies"]
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.8")
+def test_codespell_defaults_are_shared_and_extended_from_pyproject(tmp_path: Path) -> None:
+    root = _repo(tmp_path, PYPROJECT + '[tool.pipelines.codespell]\nignore_words = ["zorp"]\n')
+    words = codespell.ignore_words(root)
+    assert "zorp" in words and "linar" in words and words == sorted(set(words))
+    (root / "README.md").write_text("A fine readme with a wrold typo.\n", encoding="utf-8")
+    _commit_all(root, "README.md")
+    status = run_gate("connector-standard", ["--root", str(root)])
+    assert status in (1, 2)  # 1 when codespell runs here, 2 fail-closed without it under CI
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.9")
+def test_reference_connector_config_names_only_published_hooks() -> None:
+    config = yaml.safe_load((ROOT / "templates/connector/pre-commit-config.yaml").read_text(encoding="utf-8"))
+    ours = next(r for r in config["repos"] if r["repo"].endswith("/pipelines"))
+    assert ours["rev"] == "main"
+    published = {h["id"] for h in yaml.safe_load((ROOT / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))}
+    ids = {h["id"] for h in ours["hooks"]}
+    assert ids <= published and {"connector-standard", "secrets"} <= ids
+    assert not any(h["id"] in {"security-sanitizer", "check-bumpversion"} for r in config["repos"] for h in r["hooks"])
+    assert len(yaml.safe_dump(config).splitlines()) < 60
+
+
+# --- dupehound on pull requests --------------------------------------------------------------------------------
+@pytest.mark.spec("PIPE-GATES-R016.40")
+def test_connector_pr_workflow_builds_the_pinned_dupehound_instead_of_skipping_it() -> None:
+    pr = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
+    assert pr["jobs"]["gates"]["with"]["scanners"] == "dupehound"
+    assert "dupehound" not in pr[True]["workflow_call"]["inputs"]["skip-hooks"]["default"]
+    gates = yaml.safe_load((WORKFLOWS / "gates_pipeline.yml").read_text(encoding="utf-8"))
+    assert gates[True]["workflow_call"]["inputs"]["scanners"]["default"] == ""
+    steps = gates["jobs"]["gates"]["steps"]
+    names = [s.get("name") for s in steps]
+    build = names.index("Build the pinned scanners and put them on PATH")
+    assert build < names.index("pre-commit (commit and pre-push stages)")
+    assert 'install_scanners.sh" "$ROOT" $SCANNERS' in steps[build]["run"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.40")
+def test_scanner_installer_installs_only_the_named_scanners(tmp_path: Path) -> None:
+    fake = tmp_path / "bin"
+    fake.mkdir()
+    (fake / "cargo").write_text(
+        '#!/usr/bin/env bash\nroot=""\nwhile [[ $# -gt 0 ]]; do [[ "$1" == --root ]] && root="$2"; shift; done\nmkdir -p "$root/bin"; : > "$root/bin/$(basename "$root")"; chmod +x "$root/bin/$(basename "$root")"\n',
+        encoding="utf-8",
+    )
+    (fake / "cargo").chmod(0o755)
+    root = tmp_path / "scanners"
+    done = subprocess.run(
+        ["bash", str(ROOT / "scripts/install_scanners.sh"), str(root), "dupehound"],
+        env={"PATH": f"{fake}:/usr/bin:/bin", "HOME": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert done.stdout.split() == [str(root / "dupehound/bin")]
+    assert (root / "dupehound/bin/dupehound").exists() and not (root / "cccc").exists() and not (root / "kiss").exists()
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_pipelines_connector_command_dispatches_and_refuses_unknown(tmp_path: Path, capsys) -> None:
+    root = _repo(tmp_path)
+    assert connector_cli.main(["version", "--root", str(root), "read"]) == 0
+    assert capsys.readouterr().out.strip() == "1.2.3"
+    assert connector_cli.main(["nope"]) == 2
+    assert connector_cli.main(["render", "--root", str(tmp_path / "missing")]) == 2

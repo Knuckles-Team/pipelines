@@ -97,6 +97,15 @@ on:
         required: false
         type: string
         default: ''
+      scanners:
+        description: >-
+          Space-separated native scanners (cccc kiss dupehound jscpd) built at their pinned
+          versions by scripts/install_scanners.sh and put on PATH before the hooks run. A hook
+          that needs a scanner fails closed in CI when it is absent, so a caller whose hooks
+          include one lists it here. Empty installs nothing.
+        required: false
+        type: string
+        default: ''
       setup-command:
         description: >-
           Shell command run once after uv is installed and before the hooks, for a
@@ -188,6 +197,45 @@ jobs:
       - name: Install Rust toolchain
         if: inputs.rust && steps.scope.outputs.docs-only != 'true'
         run: rustup toolchain install stable --profile minimal
+
+      # Pinned native scanners (inputs.scanners), built from the pipelines revision that
+      # defines this workflow and cached on the installer's content.
+      - name: Fetch the scanner recipes
+        id: scanner-src
+        if: inputs.scanners != '' && steps.scope.outputs.docs-only != 'true'
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+          SCANNERS: ${{ inputs.scanners }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/pipelines-src"
+          git init -q "$src"
+          git -C "$src" fetch -q --depth 1 "https://github.com/$PIPELINES_REPOSITORY" "$PIPELINES_SHA"
+          git -C "$src" checkout -q FETCH_HEAD
+          key="$(cd "$src" && cat scripts/install_scanners.sh scripts/install_jscpd.py | sha256sum | cut -c1-64)"
+          echo "src=$src" >> "$GITHUB_OUTPUT"
+          echo "root=$RUNNER_TEMP/pipelines-scanners" >> "$GITHUB_OUTPUT"
+          echo "key=${key}-${SCANNERS// /-}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the scanner toolchain
+        id: scanner-cache
+        if: inputs.scanners != '' && steps.scope.outputs.docs-only != 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.scanner-src.outputs.root }}
+          key: pipelines-scanners-${{ runner.os }}-${{ runner.arch }}-${{ steps.scanner-src.outputs.key }}
+
+      - name: Build the pinned scanners and put them on PATH
+        if: inputs.scanners != '' && steps.scope.outputs.docs-only != 'true'
+        env:
+          SRC: ${{ steps.scanner-src.outputs.src }}
+          ROOT: ${{ steps.scanner-src.outputs.root }}
+          SCANNERS: ${{ inputs.scanners }}
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086
+          bash "$SRC/scripts/install_scanners.sh" "$ROOT" $SCANNERS >> "$GITHUB_PATH"
 
       - name: Caller setup
         if: inputs.setup-command != '' && steps.scope.outputs.docs-only != 'true'

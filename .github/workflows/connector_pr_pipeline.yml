@@ -36,7 +36,7 @@ on:
         type: string
         default: --all-extras --all-groups
       skip-hooks:
-        description: Comma-separated hook ids exported as SKIP. A connector whose own self-hosted workflow runs the native scanners lists the scanner hooks here (hosted runners have none).
+        description: Comma-separated hook ids exported as SKIP, for hooks that cannot run on a hosted runner. The native scanners are installed below, so none is listed here.
         required: false
         type: string
         default: docker-compose-check
@@ -54,12 +54,14 @@ jobs:
       config: .pre-commit-config.yaml
       stages: pre-commit
       skip-hooks: ${{ inputs.skip-hooks }}
+      # The dupehound-changed hook fails closed in CI without its scanner: the PR gate
+      # builds the pinned dupehound (cached) instead of skipping the hook.
+      scanners: dupehound
       # The connector hooks are `language: system`: they need the project's own
       # environment (all extras and groups, so the test extra's pytest-asyncio is
-      # present), bump2version and bun (mermaid-validate) on PATH, as the release pipeline provides.
+      # present), and bun (mermaid-validate) on PATH, as the release pipeline provides.
       setup-command: |
         uv sync --frozen ${{ inputs.sync-args }}
-        uv tool install bump2version
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
         # pre-commit runs under uvx, whose own python precedes PATH: expose the project packages too.
         echo "PYTHONPATH=$("$PWD/.venv/bin/python" -c 'import site;print(site.getsitepackages()[0])'):$PWD" >> "$GITHUB_ENV"

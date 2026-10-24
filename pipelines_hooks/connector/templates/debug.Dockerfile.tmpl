@@ -1,0 +1,41 @@
+# syntax=docker/dockerfile:1
+# GENERATED at build time by `pipelines-connector render` from
+# pipelines_hooks/connector/templates/debug.Dockerfile.tmpl. Never committed.
+FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6
+COPY --from=ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85ab0f263ef12f492d8476aa3a2e4e1e333f7d67fbdd923d00a506a516a /uv /uvx /bin/
+
+ARG HOST=@@HOST@@
+ARG PORT=@@PORT@@
+ARG TRANSPORT="stdio"
+ARG AUTH_TYPE="none"
+
+ENV HOST=${HOST} \
+    PORT=${PORT} \
+    TRANSPORT=${TRANSPORT} \
+    AUTH_TYPE=${AUTH_TYPE} \
+    PYTHONUNBUFFERED=1 \
+    PATH="/usr/local/cargo/bin:/usr/local/bin:${PATH}" \
+    UV_HTTP_TIMEOUT=3600 \
+    UV_SYSTEM_PYTHON=1 \
+    UV_COMPILE_BYTECODE=1
+
+# Bounded development dependencies; the running service stays unprivileged.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends @@DEBUG_APT@@ \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . /app
+RUN uv pip install --system --no-cache --break-system-packages .@@DEBUG_EXTRAS@@
+
+RUN groupadd --system --gid @@UID@@ app \
+    && useradd --system --uid @@UID@@ --gid @@UID@@ --no-create-home \
+        --home-dir @@HOME@@ --shell /usr/sbin/nologin app \
+    && chown -R @@UID@@:@@UID@@ /app
+ENV HOME=@@HOME@@ \
+    XDG_CONFIG_HOME=@@HOME@@/.config \
+    XDG_CACHE_HOME=@@HOME@@/.cache
+USER @@UID@@:@@UID@@
+
+CMD ["@@ENTRY@@"]
