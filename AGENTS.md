@@ -134,7 +134,14 @@ or pre-push gate.
 
 ## Release
 
-Release from a reviewed commit after the full test and hook suites pass. Keep
+Release from a reviewed commit after the full test and hook suites pass.
+Bump first, then tag: (1) bump the version with the repository's own method
+(`bump2version` plus `pyproject.toml`) and refresh the lock and fixtures;
+(2) merge the bump; (3) run `python3 -I .github/actions/verify-release-version/verify_release_version.py --root . --ref refs/tags/vX.Y.Z`
+on the merged commit; (4) only then push the tag; (5) confirm wheel and sdist on
+PyPI; (6) wrong-commit tag with nothing published: delete and re-tag, otherwise
+cut the next patch. The shared release workflows run the same guard before any
+build. Full text: `reference/python-release-readiness.md`. Keep
 the package version in `pyproject.toml`, the single version source
 (`bump2version --config-file .config/bumpversion.cfg`). Consumers
 pin published workflow references to an immutable commit and record the release

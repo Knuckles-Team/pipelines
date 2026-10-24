@@ -73,6 +73,11 @@ jobs:
           path: .pipeline-contract
           persist-credentials: false
 
+      # PIPE-RELEASE-R002: refuse a stale-version tag, a bumpversion mismatch or an
+      # already-published version before any build time is spent.
+      - name: Verify release version
+        uses: ./.pipeline-contract/.github/actions/verify-release-version
+
       - name: Setup Node.js
         if: inputs.web-assets && hashFiles('package.json') != ''
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
