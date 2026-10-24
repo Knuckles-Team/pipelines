@@ -989,24 +989,127 @@ KNOWN_LOCAL = frozenset(
 OPTION_TOOLS = frozenset({"ruff", "ruff-check", "ruff-format", "mypy", "vulture", "codespell", "bandit"})
 
 
-_RUFF_EXCLUDE = re.compile(r"^\^\(((?:[\w.-]+/\|?)+)\)$")
+RUFF_HOOKS = ("ruff", "ruff-check", "ruff-format")
+_PLAIN_PATH = re.compile(r"^[\w./-]+$")
 
 
-def _port_ruff_exclude(ctx: Ctx, excludes: set[str]) -> None:
-    """``exclude: ^(tests/|scripts/)`` on the ruff hooks becomes ``[tool.ruff] extend-exclude`` (one agreed pattern only)."""
-    if len(excludes) != 1:
+def _exclude_paths(pattern: str, *, partial: bool = False) -> list[str] | None:
+    """The plain paths a pre-commit ``exclude`` regex lists (``^(a/|b/|c\\.py$)``, ``a|b``); ``None`` when it is more
+    (``partial``: the plain alternatives only, the rest is left to the caller's central scope)."""
+    body = pattern.strip()
+    if body.startswith("(?x)"):
+        return None
+    body = body.removeprefix("^")
+    if body.startswith("(") and body.endswith(")"):
+        body = body[1:-1]
+    paths: list[str] = []
+    for alt in body.split("|"):
+        alt = alt.removeprefix("^").removeprefix("\\./").removeprefix("./").removesuffix("$").replace("\\.", ".")
+        alt = alt.rstrip("/")
+        if not alt or not _PLAIN_PATH.match(alt):
+            if partial:
+                continue
+            return None
+        paths.append(alt)
+    return paths
+
+
+def _port_ruff_exclude(ctx: Ctx, patterns: set[str]) -> None:
+    """The ruff hooks' ``exclude:`` (and the config-wide one) becomes ``[tool.ruff] extend-exclude`` entries.
+
+    Only paths that exist are listed. A pattern that is not a plain list of paths is a blocking review item.
+    """
+    wanted: list[str] = []
+    for pattern in sorted(patterns):
+        paths = _exclude_paths(pattern)
+        if paths is None:
+            ctx.note(
+                "pl.q",
+                f"ruff exclude {pattern!r} is not a plain list of paths; port it to [tool.ruff] extend-exclude",
+                ".pre-commit-config.yaml",
+                True,
+            )
+            continue
+        wanted += [d for d in paths if ctx.exists(d)]
+    dirs = list(dict.fromkeys(wanted))
+    if not dirs:
         return
-    m = _RUFF_EXCLUDE.match(next(iter(excludes)))
-    if m is None:
-        return
-    dirs = [d for d in dict.fromkeys(x.rstrip("/") for x in m.group(1).split("|")) if d and ctx.exists(d)]
     text = ctx.read("pyproject.toml")
-    if not dirs or "extend-exclude" in text:
+    have = _lookup(tomllib.loads(text), ("tool", "ruff", "extend-exclude"))
+    if have is not None:
+        missing = [d for d in dirs if d not in have]
+        if missing:
+            ctx.note(
+                "pl.q",
+                f"[tool.ruff] extend-exclude {have!r} lacks the old hook exclusions {missing}",
+                "pyproject.toml",
+                True,
+            )
         return
     line = "extend-exclude = [" + ", ".join(f'"{d}"' for d in dirs) + "]\n"
     table = re.search(r"(?m)^\[tool\.ruff\]\n", text)
     new = text[: table.end()] + line + text[table.end() :] if table else text.rstrip("\n") + "\n\n[tool.ruff]\n" + line
     ctx.write("pyproject.toml", new, "pl.q")
+
+
+_IGNORE_FLAG = re.compile(r"^--(?:extend-)?ignore(?:=(.*))?$")
+
+
+def _arg_values(args: list[str], flag: re.Pattern[str]) -> list[str]:
+    """The comma-separated values of every ``--flag=v`` / ``--flag v`` argument matching ``flag``."""
+    out: list[str] = []
+    for i, arg in enumerate(args):
+        m = flag.match(arg)
+        if m is None:
+            continue
+        value = m.group(1) if m.lastindex and m.group(1) is not None else (args[i + 1] if i + 1 < len(args) else "")
+        out += [v.strip() for v in value.split(",") if v.strip()]
+    return out
+
+
+def _port_ruff_ignores(ctx: Ctx, codes: list[str]) -> None:
+    """Rule codes the old ruff hook ignored on its command line go into ``[tool.ruff.lint] ignore`` (only those)."""
+    data = tomllib.loads(ctx.read("pyproject.toml"))
+    lint = _lookup(data, ("tool", "ruff", "lint")) or {}
+    have = [str(c) for c in [*lint.get("ignore", []), *lint.get("extend-ignore", [])]]
+    missing = [c for c in dict.fromkeys(codes) if c not in have]
+    if not missing:
+        return
+    text = ctx.read("pyproject.toml")
+    existing = (
+        re.search(r"(?m)^ignore\s*=\s*\[([^\]]*)\]", text[text.find("[tool.ruff.lint]") :])
+        if "ignore" in lint
+        else None
+    )
+    if existing is not None:
+        start = text.find("[tool.ruff.lint]") + existing.start(1)
+        end = text.find("[tool.ruff.lint]") + existing.end(1)
+        merged = [*lint["ignore"], *missing]
+        new = text[:start] + ", ".join(f'"{c}"' for c in merged) + text[end:]
+    elif "ignore" in lint:
+        ctx.note("pl.q", f"cannot extend [tool.ruff.lint] ignore with {missing}", "pyproject.toml", True)
+        return
+    else:
+        entry = "ignore = [" + ", ".join(f'"{c}"' for c in missing) + "]\n"
+        header = re.search(r"(?m)^\[tool\.ruff\.lint\]\n", text)
+        new = (
+            text[: header.end()] + entry + text[header.end() :]
+            if header
+            else text.rstrip("\n") + "\n\n[tool.ruff.lint]\n" + entry
+        )
+    try:
+        got = _lookup(tomllib.loads(new), ("tool", "ruff", "lint", "ignore")) or []
+    except tomllib.TOMLDecodeError as exc:
+        ctx.note("pl.q", f"cannot write ruff ignores {missing}: {exc}", "pyproject.toml", True)
+        return
+    if not set(missing) <= set(got):
+        ctx.note("pl.q", f"cannot write ruff ignores {missing} exactly", "pyproject.toml", True)
+        return
+    ctx.write("pyproject.toml", new, "pl.q")
+
+
+_CODESPELL_WORDS_FLAG = re.compile(r"^(?:-L|--ignore-words-list)(?:=(.*))?$")
+CODESPELL_PENDING = "pending_codespell_words"
 
 
 @rule("pl.q")
@@ -1024,6 +1127,11 @@ def rule_q(ctx: Ctx) -> None:
         unknown: list[str] = []
         options: list[str] = []
         ruff_excludes: set[str] = set()
+        ruff_ignores: list[str] = []
+        spell_words: list[str] = []
+        spell_paths: list[str] = []
+        if config.get("exclude"):
+            ruff_excludes.add(str(config["exclude"]))
         for repo in repos:
             url = str(repo.get("repo", ""))
             for hook in repo.get("hooks", []):
@@ -1036,9 +1144,20 @@ def rule_q(ctx: Ctx) -> None:
                     unknown.append(f"{hid} ({url})")
                 if hid in ("ruff", "ruff-check", "ruff-format") and hook.get("exclude"):
                     ruff_excludes.add(str(hook["exclude"]))
+                args = [str(a) for a in hook.get("args") or []]
+                if hid in RUFF_HOOKS:
+                    ruff_ignores += _arg_values(args, _IGNORE_FLAG)
+                if hid == "codespell":
+                    spell_words += _arg_values(args, _CODESPELL_WORDS_FLAG)
+                    for pattern in filter(None, [hook.get("exclude"), config.get("exclude")]):
+                        spell_paths += [d for d in _exclude_paths(str(pattern), partial=True) or [] if ctx.exists(d)]
                 if hid in OPTION_TOOLS and (hook.get("args") or hook.get("exclude")):
                     options.append(f"{hid}: args={hook.get('args')} exclude={hook.get('exclude')}")
         _port_ruff_exclude(ctx, ruff_excludes)
+        _port_ruff_ignores(ctx, ruff_ignores)
+        pending = ctx.options.setdefault(CODESPELL_PENDING, {"ignore_words": [], "exclude": []})
+        pending["ignore_words"].extend(spell_words)
+        pending["exclude"].extend(spell_paths)
     except (yaml.YAMLError, AttributeError, TypeError) as exc:
         ctx.note(
             "pl.q",
@@ -1103,20 +1222,48 @@ def rule_r(ctx: Ctx) -> None:
             if "security_sanitizer" in path.read_text(encoding="utf-8", errors="replace"):
                 ctx.note("pl.r", "test still references the removed security_sanitizer.py", ctx.rel(path), True)
         _doc_mentions(ctx, "pl.r", ("security_sanitizer",))
+    _port_codespell_words(ctx)
+
+
+def _port_codespell_words(ctx: Ctx) -> None:
+    """The repo's own ``.codespellignore`` and old ``-L`` words (less the central defaults) and plain-path excludes
+    become its ``[tool.pipelines.codespell]`` table; the central default list and scope are never widened."""
     ignore = ".codespellignore"
+    default = {
+        w.strip()
+        for w in codespell.DEFAULT_IGNORE.read_text(encoding="utf-8").splitlines()
+        if w.strip() and not w.startswith("#")
+    }
+    own = (
+        {w.strip() for w in ctx.read(ignore).splitlines() if w.strip() and not w.lstrip().startswith("#")}
+        if ctx.exists(ignore)
+        else set()
+    )
+    pending = ctx.options.get(CODESPELL_PENDING, {})
+    wanted: dict[str, Any] = {}
+    words = sorted((own | {str(w) for w in pending.get("ignore_words", [])}) - default)
+    paths = sorted({str(p) for p in pending.get("exclude", [])} - {"tests", "test", "scripts", "script"})
+    if words:
+        wanted["ignore_words"] = words
+    if paths:
+        wanted["exclude"] = paths
+    if wanted:
+        have = _lookup(tomllib.loads(ctx.read("pyproject.toml")), ("tool", "pipelines", "codespell"))
+        if have is None:
+            if _append_table(ctx, "pl.r", ("tool", "pipelines", "codespell"), wanted) is None:
+                return
+        else:
+            lacking = {k: sorted(set(v) - set(have.get(k, []))) for k, v in wanted.items()}
+            lacking = {k: v for k, v in lacking.items() if v}
+            if lacking:
+                ctx.note(
+                    "pl.r",
+                    f"[tool.pipelines.codespell] {have!r} lacks the old entries {lacking}",
+                    "pyproject.toml",
+                    True,
+                )
+                return
     if ctx.exists(ignore):
-        words = sorted(
-            {w.strip() for w in ctx.read(ignore).splitlines() if w.strip() and not w.lstrip().startswith("#")}
-            - {
-                w.strip()
-                for w in codespell.DEFAULT_IGNORE.read_text(encoding="utf-8").splitlines()
-                if w.strip() and not w.startswith("#")
-            }
-        )
-        if not _sha(ctx.read(ignore).encode()).startswith(CODESPELL_SHA) and not words:
-            pass
-        if words and _append_table(ctx, "pl.r", ("tool", "pipelines", "codespell"), {"ignore_words": words}) is None:
-            return
         ctx.delete(ignore, "pl.r")
 
 

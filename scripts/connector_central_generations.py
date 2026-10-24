@@ -1,6 +1,7 @@
 """Build ``container_generations.json`` (recorded older container-file generations) from the connector fleet.
 
-For each connector repository under the fleet directory, ``git archive origin/main`` is extracted, the container files
+The repositories are the driver's set (``fleet.connector_repos()``: the workspace ``agents`` group that is active on
+GitHub), never whatever directories sit under the fleet directory. For each one ``git archive origin/main`` is extracted, the container files
 are rendered from ``pyproject.toml`` exactly as rule ``pl.o`` does, and the committed file is compared with the render.
 
 * ``dockerfile_forms``: fingerprints of single-stage ``Dockerfile`` files (no ``runtime-base`` stage).
@@ -26,6 +27,7 @@ import sys
 import tempfile
 import tomllib
 from collections import defaultdict
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +40,7 @@ from pipelines_hooks.hygiene.connector_central import container_generations as g
 from pipelines_hooks.hygiene.connector_central import pipelines as P  # noqa: E402
 from pipelines_hooks.hygiene.connector_central import rule_order  # noqa: E402
 from pipelines_hooks.hygiene.connector_central.base import RULES, make_ctx  # noqa: E402
+from pipelines_hooks.hygiene.connector_central.fleet import connector_repos  # noqa: E402
 
 DEFAULT_FLEET = Path("/home/apps/workspace/agent-packages/agents")
 
@@ -87,37 +90,10 @@ HARDENING = [
 ]
 INSTALL = "RUN uv pip install --system --no-cache --break-system-packages .<EXTRAS>"
 IMAGE = "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"
-#: Reviewed blocks whose hunks are not a plain line diff (moved or inserted blocks), in application order. Each is kept
+#: Reviewed blocks whose hunks are not a plain line diff (moved or inserted blocks), in application order (the compose
+#: environment-file and image-variable blocks come last: they match the text the earlier compose rewrites produce). Each is kept
 #: only when its old block matches the committed file in at least ``--min-repos`` repositories, like ``ACCEPTED``.
 MANUAL: list[dict[str, Any]] = [
-    {
-        "file": "mcp.compose.yml",
-        "id": "compose-image-shared-variable-quoted",
-        "new": ["    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"],
-        "old": ['    image: "${MCP_IMAGE:?set-MCP_IMAGE-to-image@sha256-digest}"'],
-        "reason": "the earlier compose file took the image from one shared MCP_IMAGE variable; the render names the variable after the connector and image kind",
-    },
-    {
-        "file": "mcp.compose.yml",
-        "id": "compose-env-file",
-        "new": ["    restart: always", "    env_file:", "      - ../.env", "    environment:"],
-        "old": ["    restart: always", "    environment:"],
-        "reason": "the earlier compose file read no environment file; the render reads ../.env",
-    },
-    {
-        "file": "mcp.compose.yml",
-        "id": "compose-env-file-after-volumes",
-        "new": ["        read_only: true", "    env_file:", "      - ../.env", "    environment:"],
-        "old": ["        read_only: true", "    environment:"],
-        "reason": "the earlier compose file read no environment file; the render reads ../.env after the mounted volumes",
-    },
-    {
-        "file": "debug.Dockerfile",
-        "id": "debug-host-default",
-        "new": ["ARG HOST=<HOST>"],
-        "old": ["ARG HOST=0.0.0.0"],
-        "reason": "the earlier debug image bound all interfaces by default; the render binds the host the runtime image binds",
-    },
     {
         "id": "pre-release-install",
         "reason": "the earlier debug image allowed pre-releases and upgraded in verbose mode; the render installs the stable release",
@@ -236,6 +212,34 @@ MANUAL: list[dict[str, Any]] = [
         "old": [IMAGE, "    restart: always"],
         "new": [IMAGE, "    container_name: <DIST>-mcp", "    hostname: <DIST>-mcp", "    restart: always"],
     },
+    {
+        "file": "mcp.compose.yml",
+        "id": "compose-image-shared-variable-quoted",
+        "new": ["    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"],
+        "old": ['    image: "${MCP_IMAGE:?set-MCP_IMAGE-to-image@sha256-digest}"'],
+        "reason": "the earlier compose file took the image from one shared MCP_IMAGE variable; the render names the variable after the connector and image kind",
+    },
+    {
+        "file": "mcp.compose.yml",
+        "id": "compose-env-file",
+        "new": ["    restart: always", "    env_file:", "      - ../.env", "    environment:"],
+        "old": ["    restart: always", "    environment:"],
+        "reason": "the earlier compose file read no environment file; the render reads ../.env",
+    },
+    {
+        "file": "mcp.compose.yml",
+        "id": "compose-env-file-after-volumes",
+        "new": ["        read_only: true", "    env_file:", "      - ../.env", "    environment:"],
+        "old": ["        read_only: true", "    environment:"],
+        "reason": "the earlier compose file read no environment file; the render reads ../.env after the mounted volumes",
+    },
+    {
+        "file": "debug.Dockerfile",
+        "id": "debug-host-default",
+        "new": ["ARG HOST=<HOST>"],
+        "old": ["ARG HOST=0.0.0.0"],
+        "reason": "the earlier debug image bound all interfaces by default; the render binds the host the runtime image binds",
+    },
 ]
 
 
@@ -252,10 +256,24 @@ def _extract(repo: Path, dest: Path) -> bool:
     return True
 
 
+def repo_paths(fleet: Path, names: Sequence[str] | None = None) -> list[Path]:
+    """The checkouts of the driver's connector set (workspace ``agents`` group, active on GitHub), sorted by name.
+
+    A directory under ``fleet`` that is not in that set (a retired or archived clone) is never scanned, and a
+    connector in the set without a checkout is reported on stderr, not dropped silently.
+    """
+    wanted = sorted(connector_repos() if names is None else names)
+    paths = [fleet / name for name in wanted if (fleet / name / ".git").exists()]
+    for name in wanted:
+        if not (fleet / name / ".git").exists():
+            print(f"connector_central_generations: no checkout of {name} under {fleet}", file=sys.stderr)
+    return paths
+
+
 def scan(fleet: Path) -> dict[str, dict[str, Any]]:
     """Per repo: the single-stage Dockerfile fingerprint, stub fingerprints and the raw (committed, render) pairs."""
     out: dict[str, dict[str, Any]] = {}
-    for repo in sorted(p for p in fleet.iterdir() if (p / ".git").exists()):
+    for repo in repo_paths(fleet):
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
             if not _extract(repo, root) or not (root / "docker" / "Dockerfile").is_file():
@@ -347,7 +365,22 @@ def candidates(scanned: dict[str, dict[str, Any]], min_repos: int) -> list[tuple
     return sorted(rows, key=lambda x: (-x[0], x[1]))
 
 
-def build(scanned: dict[str, dict[str, Any]], min_repos: int) -> dict[str, Any]:
+def recorded_ids(path: Path) -> set[str]:
+    """The rewrite ids already recorded in ``path``: a generation stays recorded while any repository still carries it.
+
+    Migrated repositories stop carrying an older block, so counting them again would drop the entry that the
+    remaining, not yet migrated repositories still need. Such an entry is marked ``retained``; a new entry still needs
+    ``--min-repos`` repositories.
+    """
+    try:
+        return {str(r["id"]) for r in json.loads(path.read_text(encoding="utf-8")).get("rewrites", [])}
+    except (OSError, ValueError, KeyError, TypeError):
+        return set()
+
+
+def build(
+    scanned: dict[str, dict[str, Any]], min_repos: int, recorded: frozenset[str] | set[str] = frozenset()
+) -> dict[str, Any]:
     forms: dict[str, set[str]] = defaultdict(set)
     stubs: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
     for repo, info in scanned.items():
@@ -356,9 +389,17 @@ def build(scanned: dict[str, dict[str, Any]], min_repos: int) -> dict[str, Any]:
         for name, h in info["stubs"].items():
             stubs[name][h].add(repo)
     rewrites = [
-        {"id": cid, "reason": ACCEPTED[cid], "file": name, "old": old, "new": new, "repos": count}
-        for count, cid, name, old, new in candidates(scanned, min_repos)
-        if cid in ACCEPTED
+        {
+            "id": cid,
+            "reason": ACCEPTED[cid],
+            "file": name,
+            "old": old,
+            "new": new,
+            "repos": count,
+            **({"retained": True} if count < min_repos else {}),
+        }
+        for count, cid, name, old, new in candidates(scanned, 1)
+        if cid in ACCEPTED and (count >= min_repos or cid in recorded)
     ]
     for entry in MANUAL:
         seen = 0
@@ -370,6 +411,8 @@ def build(scanned: dict[str, dict[str, Any]], min_repos: int) -> dict[str, Any]:
                 seen += bool(counts.get(len(rewrites)))
         if seen >= min_repos:
             rewrites.append({**entry, "repos": seen})
+        elif seen and entry["id"] in recorded:
+            rewrites.append({**entry, "repos": seen, "retained": True})
     return {
         "dockerfile_forms": {h: len(r) for h, r in sorted(forms.items()) if len(r) >= min_repos},
         "stubs": {
@@ -392,7 +435,7 @@ def main(argv: list[str] | None = None) -> int:
         for count, cid, name, old, new in candidates(scanned, args.min_repos):
             print(f"== {cid} {count} {name}\n-" + "\n-".join(old) + "\n+" + "\n+".join(new))
         return 0
-    table = build(scanned, args.min_repos)
+    table = build(scanned, args.min_repos, recorded_ids(args.out))
     args.out.write_text(json.dumps(table, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
         f"{len(table['dockerfile_forms'])} Dockerfile form(s); "
