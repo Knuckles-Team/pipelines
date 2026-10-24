@@ -159,14 +159,16 @@
     {
       "id": "PIPE-VALIDATION-R001.10",
       "title": "The security scaffold is provided",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "347203177a82"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_security_scaffold.py:101",
         "tests/hooks/test_connector_security_scaffold.py:111",
+        "tests/hooks/test_connector_security_scaffold.py:133",
+        "tests/hooks/test_connector_security_scaffold.py:143",
         "tests/hooks/test_connector_security_scaffold.py:40",
-        "tests/hooks/test_connector_security_scaffold.py:56",
-        "tests/hooks/test_connector_security_scaffold.py:79"
+        "tests/hooks/test_connector_security_scaffold.py:56"
       ]
     },
     {
@@ -175,7 +177,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_security_scaffold.py:130"
+        "tests/hooks/test_connector_security_scaffold.py:162"
       ]
     },
     {
@@ -184,10 +186,10 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_security_scaffold.py:171",
-        "tests/hooks/test_connector_security_scaffold.py:182",
-        "tests/hooks/test_connector_security_scaffold.py:196",
-        "tests/hooks/test_connector_security_scaffold.py:209"
+        "tests/hooks/test_connector_security_scaffold.py:203",
+        "tests/hooks/test_connector_security_scaffold.py:214",
+        "tests/hooks/test_connector_security_scaffold.py:228",
+        "tests/hooks/test_connector_security_scaffold.py:241"
       ]
     },
     {
