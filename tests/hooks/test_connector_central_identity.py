@@ -308,3 +308,12 @@ def test_a_binding_constant_outside_the_kg_modules_derives_from_the_sdk_identity
     assert 'CONNECTOR_ID = connector_name("demo_agent")' in sync.read_text(encoding="utf-8")
     assert 'OTHER = "demo-agent"' in sync.read_text(encoding="utf-8")
     assert other.read_text(encoding="utf-8") == '_SOURCE = "demo-agent"\n'
+
+
+@pytest.mark.spec("PIPE-GATES-R016.100")
+def test_the_identity_import_lands_before_the_first_use_when_imports_come_late(tmp_path: Path) -> None:
+    text = identity._add_import(
+        'import os\n\nCONNECTOR_ID = connector_name("demo_agent")\n\n\nfrom demo_agent.x import y\n'
+    )
+    lines = text.splitlines()
+    assert lines.index(identity._IMPORT) < lines.index('CONNECTOR_ID = connector_name("demo_agent")')

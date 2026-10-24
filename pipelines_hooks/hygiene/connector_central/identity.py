@@ -51,13 +51,16 @@ def _source_literals(text: str, kg: bool = True) -> list[ast.Assign]:
 
 
 def _add_import(text: str) -> str:
+    """Add the ``connector_name`` import after the last import that precedes its first use (late import blocks exist)."""
     if _IMPORT in text:
         return text
     tree = ast.parse(text)
+    use = next((i + 1 for i, ln in enumerate(text.splitlines()) if "connector_name(" in ln), None)
     imports = [n for n in tree.body if isinstance(n, ast.Import | ast.ImportFrom)]
-    if not imports:
+    before = [n for n in imports if use is None or (n.end_lineno or n.lineno) < use]
+    if not before:
         return _IMPORT + "\n" + text
-    last = imports[-1].end_lineno or imports[-1].lineno
+    last = before[-1].end_lineno or before[-1].lineno
     lines = text.splitlines(keepends=True)
     lines.insert(last, _IMPORT + "\n")
     return "".join(lines)
