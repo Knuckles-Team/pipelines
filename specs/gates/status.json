@@ -138,7 +138,8 @@
     "PIPE-GATES-R016.111",
     "PIPE-GATES-R016.112",
     "PIPE-GATES-R016.113",
-    "PIPE-GATES-R016.114"
+    "PIPE-GATES-R016.114",
+    "PIPE-GATES-R016.115"
   ],
   "requirements": [
     {
@@ -518,7 +519,8 @@
         "PIPE-GATES-R016.111",
         "PIPE-GATES-R016.112",
         "PIPE-GATES-R016.113",
-        "PIPE-GATES-R016.114"
+        "PIPE-GATES-R016.114",
+        "PIPE-GATES-R016.115"
       ]
     },
     {
@@ -1815,6 +1817,21 @@
       ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:37"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.115",
+      "title": "The skill gates are a `connector-standard` member",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "848bbf8c7efe"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_skills.py:34",
+        "tests/hooks/test_connector_skills.py:40",
+        "tests/hooks/test_connector_skills.py:49",
+        "tests/hooks/test_connector_skills.py:60",
+        "tests/hooks/test_connector_skills.py:78"
       ]
     }
   ]
