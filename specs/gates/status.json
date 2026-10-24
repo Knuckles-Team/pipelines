@@ -1145,7 +1145,7 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.k1`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "3bc12f8172fe"
+        "efa9b98ace15"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:34",
@@ -1617,7 +1617,7 @@
       "title": "Connector identity rule `id.name`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "3bc12f8172fe"
+        "efa9b98ace15"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:103",
