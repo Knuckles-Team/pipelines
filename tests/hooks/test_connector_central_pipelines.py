@@ -262,6 +262,30 @@ def test_o_other_extra_difference_stays_blocking(repo: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_accepts_a_stale_semver_on_the_dist_own_pin(repo: Path) -> None:
+    old_docker(repo)
+    docker = repo / "docker" / "Dockerfile"
+    assert re.search(r'"demo-mcp(\[mcp\])?==1\.2\.3"', docker.read_text())
+    docker.write_text(
+        re.sub(r'("demo-mcp(?:\[mcp\])?==)1\.2\.3"', r'\g<1>1.2.2"', docker.read_text()), encoding="utf-8"
+    )
+    ctx = run(repo, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert not docker.exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_another_package_pin_difference_stays_blocking(repo: Path) -> None:
+    old_docker(repo)
+    docker = repo / "docker" / "Dockerfile"
+    docker.write_text(
+        re.sub(r'"demo-mcp(\[mcp\])?==1\.2\.3"', '"other-mcp==1.2.2"', docker.read_text()), encoding="utf-8"
+    )
+    ctx = run(repo, "pl.o")
+    assert blocking(ctx, "pl.o") and docker.exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
 def test_o_ports_compose_limits_only_when_they_differ_from_the_template(repo: Path) -> None:
     old_docker(repo)
     compose = repo / "docker" / "mcp.compose.yml"

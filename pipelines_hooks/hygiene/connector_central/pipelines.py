@@ -482,6 +482,20 @@ def _drop_dist_extras(committed: str, rendered: str, dist: str) -> str:
     )
 
 
+def _align_dist_version(committed: str, rendered: str, dist: str) -> str:
+    """Accept a committed ``"<dist>==x.y.z"`` pin whose only difference from the render is the semver.
+
+    The central pass bumps the wheel version in ``pyproject.toml``; the committed pin still names the old release.
+    Only the dist's own install requirement (same name, same extras, same quoting) is aligned.
+    """
+    pin = re.compile(rf'("{re.escape(dist)}(?:\[[A-Za-z0-9_,-]+\])?==)(\d+\.\d+\.\d+)(")')
+    versions = {m.group(2) for m in pin.finditer(rendered)}
+    if len(versions) != 1:
+        return committed
+    (version,) = versions
+    return pin.sub(lambda m: f"{m.group(1)}{version}{m.group(3)}", committed)
+
+
 def _drop_debug_extras(committed: str, extras: set[str]) -> str:
     """Remove dropped ``mcp``/``agent``/``all`` extras from the debug image's ``uv pip install ... .[extras]`` line."""
 
@@ -540,6 +554,8 @@ def _container_diff(ctx: Ctx, rendered: dict[str, str], dist: str) -> list[str]:
                 continue
         if name == "debug.Dockerfile":
             old = _drop_debug_extras(old, set(ctx.pyproject()["project"].get("optional-dependencies", {})))
+        if name in ("Dockerfile", "debug.Dockerfile"):
+            old = _align_dist_version(old, new, dist)
         if name == "Dockerfile":
             old = _drop_dist_extras(old, new, dist)
             a, b = _normalise_dockerfile(old, False), _normalise_dockerfile(new, True)
