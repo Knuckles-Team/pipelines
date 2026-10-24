@@ -178,6 +178,26 @@ def test_example_credential_uris_in_docs_code_become_the_gate_placeholder_form(t
     assert not ctx.applied
 
 
+@pytest.mark.spec("PIPE-GATES-R016.107")
+def test_internal_hostnames_in_tests_become_the_reserved_example_form(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    (ctx.root / "tests").mkdir()
+    t = ctx.root / "tests/test_auth.py"
+    t.write_text(
+        'BASE = "https://aris.internal/abs/api"\nOK = "https://svc.example.com"\nK = "db.ns.svc.cluster.local"\n'
+        'assert BASE.startswith("https://aris.internal")\n',
+        encoding="utf-8",
+    )
+    identity.docs_credential_examples(ctx)
+    text = t.read_text(encoding="utf-8")
+    assert "https://aris.example/abs/api" in text and 'startswith("https://aris.example")' in text
+    assert "db.ns.svc.cluster.example" in text and "https://svc.example.com" in text
+    assert ".internal" not in text
+    ctx.applied.clear()
+    identity.docs_credential_examples(ctx)
+    assert not ctx.applied
+
+
 @pytest.mark.spec("PIPE-GATES-R016.108")
 def test_mutable_checkout_and_setup_python_tags_become_the_fleet_pins(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)

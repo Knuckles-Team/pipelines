@@ -314,6 +314,31 @@ def docs_credential_examples(ctx: Ctx) -> None:
         new = mask_markdown(text)
         if new != text:
             ctx.write(ctx.rel(path), new, "pl.ac")
+    _reserve_test_hostnames(ctx)
+
+
+def _reserve_test_hostname(m: re.Match[str]) -> str:
+    """``aris.internal`` becomes ``aris.example``; ``db.svc.cluster.local`` becomes ``db.svc.cluster.example``."""
+    from pipelines_hooks.privacy.hosts import is_reserved_hostname
+
+    host = m.group(0)
+    if is_reserved_hostname(host):
+        return host
+    return host.rsplit(".", 1)[0] + ".example"
+
+
+def _reserve_test_hostnames(ctx: Ctx) -> None:
+    """An internal hostname literal in a test file (the tracked-privacy gate flags it) becomes the reserved ``.example`` form.
+
+    Every occurrence in the file changes together, so an assertion against a value the test built from the same literal holds.
+    """
+    from pipelines_hooks.privacy.hosts import BARE_INTERNAL_HOSTNAME_RE
+
+    for path in sorted((ctx.root / "tests").glob("**/*.py")):
+        text = path.read_text(encoding="utf-8")
+        new = BARE_INTERNAL_HOSTNAME_RE.sub(_reserve_test_hostname, text)
+        if new != text:
+            ctx.write(ctx.rel(path), new, "pl.ac")
 
 
 #: The fleet's reviewed pins (the same lines `archimate-mcp`, `arr-mcp` and `gitlab-api` already commit).
