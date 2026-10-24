@@ -1734,8 +1734,10 @@
     {
       "id": "PIPE-GATES-R016.111",
       "title": "Central driver and verify",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f58c367699cf"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_driver.py:102",
         "tests/hooks/test_connector_central_driver.py:117",
