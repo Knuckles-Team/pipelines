@@ -1065,7 +1065,8 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.g3`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "56a34a613573"
+        "56a34a613573",
+        "c7b19f157a8c"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_g3_clusters.py:1003",
