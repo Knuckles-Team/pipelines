@@ -2,7 +2,7 @@
   "schema_version": 2,
   "spec_id": "PIPE-VALIDATION",
   "owner_repo": "pipelines",
-  "delivery_state": "VERIFIED",
+  "delivery_state": "SPECIFIED",
   "requirement_ids": [
     "PIPE-VALIDATION-R001",
     "PIPE-VALIDATION-R001.1",
@@ -14,26 +14,23 @@
     "PIPE-VALIDATION-R001.7",
     "PIPE-VALIDATION-R001.8",
     "PIPE-VALIDATION-R001.9",
+    "PIPE-VALIDATION-R001.10",
+    "PIPE-VALIDATION-R001.11",
+    "PIPE-VALIDATION-R001.12",
     "PIPE-VALIDATION-R002"
   ],
   "requirements": [
     {
       "id": "PIPE-VALIDATION-R001",
       "title": "Bounded shared repository validation",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "SPECIFIED",
       "landed_in": [
         "0f9f73b150d7",
         "5ff231c270b1",
         "af9b1ddcb25f",
         "b76625874902"
       ],
-      "verified_by": [
-        "tests/hooks/test_connector_central.py:202",
-        "tests/hooks/test_connector_central.py:221",
-        "tests/hooks/test_connector_central.py:229",
-        "tests/hooks/test_connector_central.py:240",
-        "tests/hooks/test_validation.py:100"
-      ],
+      "verified_by": [],
       "rollup_of": [
         "PIPE-VALIDATION-R001.1",
         "PIPE-VALIDATION-R001.2",
@@ -43,7 +40,10 @@
         "PIPE-VALIDATION-R001.6",
         "PIPE-VALIDATION-R001.7",
         "PIPE-VALIDATION-R001.8",
-        "PIPE-VALIDATION-R001.9"
+        "PIPE-VALIDATION-R001.9",
+        "PIPE-VALIDATION-R001.10",
+        "PIPE-VALIDATION-R001.11",
+        "PIPE-VALIDATION-R001.12"
       ]
     },
     {
@@ -154,6 +154,40 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:240"
+      ]
+    },
+    {
+      "id": "PIPE-VALIDATION-R001.10",
+      "title": "The security scaffold is provided",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_security_scaffold.py:101",
+        "tests/hooks/test_connector_security_scaffold.py:111",
+        "tests/hooks/test_connector_security_scaffold.py:40",
+        "tests/hooks/test_connector_security_scaffold.py:56",
+        "tests/hooks/test_connector_security_scaffold.py:79"
+      ]
+    },
+    {
+      "id": "PIPE-VALIDATION-R001.11",
+      "title": "`scripts/bootstrap.sh` is not provided",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_security_scaffold.py:130"
+      ]
+    },
+    {
+      "id": "PIPE-VALIDATION-R001.12",
+      "title": "API-to-MCP parity is a shared check",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_security_scaffold.py:171",
+        "tests/hooks/test_connector_security_scaffold.py:182",
+        "tests/hooks/test_connector_security_scaffold.py:196",
+        "tests/hooks/test_connector_security_scaffold.py:209"
       ]
     },
     {
