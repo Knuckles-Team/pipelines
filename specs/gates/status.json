@@ -135,7 +135,8 @@
     "PIPE-GATES-R016.108",
     "PIPE-GATES-R016.109",
     "PIPE-GATES-R016.110",
-    "PIPE-GATES-R016.111"
+    "PIPE-GATES-R016.111",
+    "PIPE-GATES-R016.112"
   ],
   "requirements": [
     {
@@ -512,7 +513,8 @@
         "PIPE-GATES-R016.108",
         "PIPE-GATES-R016.109",
         "PIPE-GATES-R016.110",
-        "PIPE-GATES-R016.111"
+        "PIPE-GATES-R016.111",
+        "PIPE-GATES-R016.112"
       ]
     },
     {
@@ -1767,6 +1769,17 @@
         "tests/hooks/test_connector_central_driver.py:117",
         "tests/hooks/test_connector_central_driver.py:83",
         "tests/hooks/test_connector_central_driver.py:95"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.112",
+      "title": "A method call is not an internal hostname",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8389a03e7a2d"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_hostnames.py:10"
       ]
     }
   ]
