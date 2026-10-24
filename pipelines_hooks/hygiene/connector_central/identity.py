@@ -328,15 +328,43 @@ def _reserve_test_hostname(m: re.Match[str]) -> str:
 
 
 def _reserve_test_hostnames(ctx: Ctx) -> None:
-    """An internal hostname literal in a test file (the tracked-privacy gate flags it) becomes the reserved ``.example`` form.
+    """An internal hostname literal inside a string of a test file (the tracked-privacy gate flags it) becomes ``.example``.
 
-    Every occurrence in the file changes together, so an assertion against a value the test built from the same literal holds.
+    Only string constants change (``ipmi.lan(...)`` is code, not a host); every string of the file changes together, so an
+    assertion against a value built from the same literal holds.
     """
     from pipelines_hooks.privacy.hosts import BARE_INTERNAL_HOSTNAME_RE
 
     for path in sorted((ctx.root / "tests").glob("**/*.py")):
         text = path.read_text(encoding="utf-8")
-        new = BARE_INTERNAL_HOSTNAME_RE.sub(_reserve_test_hostname, text)
+        if not BARE_INTERNAL_HOSTNAME_RE.search(text):
+            continue
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            continue
+        data = text.encode("utf-8")
+        starts = [0]
+        for ln in data.split(b"\n"):
+            starts.append(starts[-1] + len(ln) + 1)
+        spans = sorted(
+            (
+                starts[n.lineno - 1] + n.col_offset,
+                starts[n.end_lineno - 1] + n.end_col_offset,
+            )
+            for n in ast.walk(tree)
+            if isinstance(n, ast.Constant)
+            and isinstance(n.value, str)
+            and n.end_lineno is not None
+            and n.end_col_offset is not None
+        )
+        out = data
+        for a, b in reversed(spans):
+            seg = out[a:b].decode("utf-8")
+            fixed = BARE_INTERNAL_HOSTNAME_RE.sub(_reserve_test_hostname, seg)
+            if fixed != seg:
+                out = out[:a] + fixed.encode("utf-8") + out[b:]
+        new = out.decode("utf-8")
         if new != text:
             ctx.write(ctx.rel(path), new, "pl.ac")
 
