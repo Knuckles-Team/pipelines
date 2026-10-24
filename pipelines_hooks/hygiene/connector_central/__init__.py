@@ -30,7 +30,7 @@ from pipelines_hooks.hygiene.connector_central.base import (
     make_ctx,
 )
 
-MODULES = ("wave1", "auth", "ingest", "pipelines")
+MODULES = ("wave1", "auth", "ingest", "identity", "pipelines")
 FINAL_STEP = "central"
 
 
@@ -42,7 +42,13 @@ def load_rules() -> dict[str, Any]:
 def rule_order() -> list[str]:
     """The fixed rule order: wave 1, auth, ingest, wave 1 tests, pipelines."""
     mods = load_rules()
-    order = [*mods["wave1"].ORDER, *mods["auth"].ORDER, *mods["ingest"].ORDER, *mods["wave1"].ORDER_LAST]
+    order = [
+        *mods["wave1"].ORDER,
+        *mods["auth"].ORDER,
+        *mods["ingest"].ORDER,
+        *mods["identity"].ORDER,
+        *mods["wave1"].ORDER_LAST,
+    ]
     order += mods["pipelines"].ORDER
     missing = sorted(set(RULE_ROWS) - set(order))
     if missing:
