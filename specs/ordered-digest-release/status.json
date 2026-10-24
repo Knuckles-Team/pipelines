@@ -491,7 +491,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
         "tests/hooks/test_connector_central.py:113",
-        "tests/hooks/test_connector_central.py:288",
+        "tests/hooks/test_connector_central.py:303",
         "tests/hooks/test_connector_central.py:64",
         "tests/hooks/test_connector_central.py:78"
       ]
