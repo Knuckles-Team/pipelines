@@ -18,6 +18,7 @@ from pipelines_hooks.specs.aliases import canonical_lists, canonical_sets, load_
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.git_log import landing_commits, reachable_shas, reverted_shas
 from pipelines_hooks.specs.legacy import legacy_landings
+from pipelines_hooks.specs.priority import Node, frontier, is_functional, score, unserved
 from pipelines_hooks.specs.records import build_record, mentioned_tokens
 from pipelines_hooks.specs.repository_identity import remote_owner
 from pipelines_hooks.specs.requirements_doc import Row, parse_rows
@@ -57,6 +58,12 @@ def _spec_identity(spec_dir: Path, old: dict) -> str:
     return check_title(spec_dir)[0] or old.get("spec_id") or spec_dir.name
 
 
+def _annotate(record: dict[str, object], row: Row) -> None:
+    """Carry the row's declared prerequisites."""
+    if row.depends_on:
+        record["depends_on"] = list(row.depends_on)
+
+
 def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evidence, owner: str) -> dict:
     ids = [row.id for row in rows]
     state: dict[str, str] = {}
@@ -64,6 +71,7 @@ def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evid
     for row in rows:
         landed, tests = _requirement_state(row.id, evidence)
         records[row.id] = build_record(row, landed, tests)
+        _annotate(records[row.id], row)
         state[row.id] = str(records[row.id]["delivery_state"])
     apply_rollup(ids, state, records)
     return {
@@ -74,6 +82,41 @@ def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evid
         "requirement_ids": ids,
         "requirements": [records[rid] for rid in ids],
     }
+
+
+def _nodes(documents: dict[Path, dict], parsed: dict[Path, list[Row]], owner: str) -> dict[str, Node]:
+    nodes: dict[str, Node] = {}
+    for path, rows in parsed.items():
+        for row, record in zip(rows, documents[path]["requirements"], strict=True):
+            nodes[row.id] = Node(
+                row.id,
+                owner,
+                str(record["delivery_state"]),
+                row.depends_on,
+                is_functional(str(documents[path]["spec_id"])),
+                "rollup_of" in record,
+                str(record["title"]),
+            )
+    return nodes
+
+
+def apply_priority(documents: dict[Path, dict], parsed: dict[Path, list[Row]], owner: str) -> None:
+    """Add ``priority`` to open rows and ``frontier``/``unserved`` to each spec, over the whole repository.
+
+    Scores here see only this repository: a prerequisite in another repository counts as open,
+    so ``frontier`` is conservative, and competency-question rows of other repositories are unseen. The
+    organization page recomputes with every repository.
+    """
+    nodes = _nodes(documents, parsed, owner)
+    scores = score(nodes)
+    front, bare = set(frontier(nodes, unknown_blocks=True)), set(unserved(nodes, scores))
+    for document in documents.values():
+        for record in document["requirements"]:
+            if record["id"] in scores:
+                record["priority"] = scores[record["id"]]["priority"]
+        ids = document["requirement_ids"]
+        document["frontier"] = [rid for rid in ids if rid in front]
+        document["unserved"] = [rid for rid in ids if rid in bare]
 
 
 def live_resolver(on_head: set[str], reverted: set[str]) -> Callable[[str], str | None]:
@@ -111,6 +154,7 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
     resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
     owner = remote_owner(repo)
     result: dict[Path, dict] = {}
+    parsed: dict[Path, list[Row]] = {}
     for requirements_path in requirements_paths:
         spec_dir = requirements_path.parent
         status_path = spec_dir / "status.json"
@@ -118,7 +162,8 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
         legacy_by = canonical_lists(legacy_landings(old, resolve), aliases)
         evidence = Evidence(landed_by, tested_by, legacy_by)
         rows = parse_rows(requirements_path.read_text(encoding="utf-8"))
-        result[status_path] = _spec_document(
-            spec_dir, old=old, rows=rows, evidence=evidence, owner=owner or old.get("owner_repo") or repo.resolve().name
-        )
+        repo_owner = owner or old.get("owner_repo") or repo.resolve().name
+        result[status_path] = _spec_document(spec_dir, old=old, rows=rows, evidence=evidence, owner=repo_owner)
+        parsed[status_path] = rows
+    apply_priority(result, parsed, repo.resolve().name)
     return result

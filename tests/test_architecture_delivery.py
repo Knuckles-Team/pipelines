@@ -1,0 +1,71 @@
+"""Organization view of delivery: aggregate over repositories and the page's delivery views."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.architecture_explorer import build as explorer  # noqa: E402
+from scripts.architecture_explorer.delivery import aggregate  # noqa: E402
+
+PKG = ROOT / "scripts/architecture_explorer"
+
+
+def _row(rid: str, repo: str, status: str = "SPECIFIED", depends_on=(), family: str = "fam") -> dict:
+    return {
+        "id": rid,
+        "title": f"title {rid}",
+        "status": status,
+        "repo": repo,
+        "family": family,
+        "spec_id": "FIX",
+        "depends_on": list(depends_on),
+    }
+
+
+CQ = "EG-CQ-ORCH-R001"
+
+
+def _fixture() -> list[dict]:
+    return [
+        _row("EG-A-R001", "epistemic-graph"),
+        _row("AR-A-R001", "arbora", depends_on=["EG-A-R001"]),
+        _row("AR-A-R002", "arbora", depends_on=["EG-A-R001", "NOWHERE-R001"]),
+        _row("AR-A-R003", "arbora"),
+        _row(CQ, "epistemic-graph", depends_on=["AR-A-R001"]),
+    ]
+
+
+# spec: PIPE-CONNSPEC-R016
+def test_aggregate_over_repositories() -> None:
+    got = aggregate(_fixture())
+    assert got["scores"]["EG-A-R001"]["priority"] == 10 + 2 * 3
+    assert got["scores"]["AR-A-R001"]["cqs"] == [CQ]
+    assert got["frontier"][0] == "EG-A-R001" and "AR-A-R001" not in got["frontier"]
+    assert got["unserved"] == ["AR-A-R002", "AR-A-R003"]
+    assert [q["id"] for q in got["questions"]] == [CQ]
+    assert [s["repo"] for s in got["bundles"][0]["steps"]] == ["epistemic-graph", "arbora"]
+
+
+# spec: PIPE-CONNSPEC-R016
+def test_page_embeds_delivery_views() -> None:
+    template = (PKG / "template.html").read_text()
+    for marker in (
+        'id="vnext"',
+        'id="vpath"',
+        "Sort by priority",
+        "Filter by competency question",
+        "Not linked to a competency question",
+        "goalBadges",
+    ):
+        assert marker in template
+    rows = _fixture()
+    delivery = aggregate(rows)
+    delivery["frontier_set"], delivery["unserved_set"] = set(delivery["frontier"]), set(delivery["unserved"])
+    entry = explorer.spec_entry(rows[1], delivery)
+    assert entry["priority"] == 10 + 2 and entry["cqs"] == [CQ]
+    assert explorer.spec_entry(rows[3], delivery)["unserved"] is True
+    block = explorer.page_delivery(delivery, rows)
+    assert block["next"][0]["id"] == "EG-A-R001" and block["counts"]["unserved"] == 2
