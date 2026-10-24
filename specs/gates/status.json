@@ -1598,7 +1598,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.p`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2126ba6fbb52"
+        "54057df19bfb"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_pipelines.py:438",
