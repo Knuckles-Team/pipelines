@@ -4,6 +4,12 @@
 
 Deterministic: the output depends only on the shared templates and the connector's
 ``pyproject.toml`` (``[project]`` and the optional ``[tool.pipelines.container]`` table).
+Compose resource limits default to ``${MCP_CONTAINER_MEMORY_LIMIT:-2g}`` / ``${MCP_CONTAINER_CPU_LIMIT:-1.0}`` for both
+image kinds; a repo that runs differently sets ``limits`` per kind, each key optional::
+
+    [tool.pipelines.container]
+    limits = {agent = {memory_limit_env = "AGENT_CONTAINER_MEMORY_LIMIT", memory_limit = "4g",
+                       cpu_limit_env = "AGENT_CONTAINER_CPU_LIMIT", cpu_limit = "2.0"}}
 Nothing is read from a committed Dockerfile; a connector commits none of these files.
 ``--check`` renders into memory and fails when a tracked copy exists under ``docker/``
 (a committed rendering is a second source of truth), printing nothing else.
@@ -26,6 +32,12 @@ from pipelines_hooks.core.errors import CannotRun
 TEMPLATES = Path(__file__).resolve().parent / "templates"
 RUNTIME_TARGETS = ("mcp", "agent")
 OUTPUT_FILES = ("Dockerfile", "debug.Dockerfile", "mcp.compose.yml", "agent.compose.yml")
+DEFAULT_LIMITS = {
+    "memory_limit_env": "MCP_CONTAINER_MEMORY_LIMIT",
+    "memory_limit": "2g",
+    "cpu_limit_env": "MCP_CONTAINER_CPU_LIMIT",
+    "cpu_limit": "1.0",
+}
 DEFAULT_DEBUG_APT = (
     "ripgrep tree fd-find curl nano build-essential cmake libssl-dev libcurl4-openssl-dev pkg-config cargo rustc"
 )
@@ -142,6 +154,7 @@ def render(root: Path) -> dict[str, str]:
     env = "".join(f"      - {line}\n" for line in table.get("compose_env", []))
     for target in entries:
         service = f"{dist}-{target}"
+        limits = {**DEFAULT_LIMITS, **dict(table.get("limits", {}).get(target, {}))}
         files[f"{target}.compose.yml"] = _fill(
             TEMPLATES / "compose.yml.tmpl",
             {
@@ -150,6 +163,10 @@ def render(root: Path) -> dict[str, str]:
                 "@@UID@@": uid,
                 "@@PORT@@": port,
                 "@@COMPOSE_ENV@@": env,
+                "@@MEMORY_ENV@@": str(limits["memory_limit_env"]),
+                "@@MEMORY@@": str(limits["memory_limit"]),
+                "@@CPU_ENV@@": str(limits["cpu_limit_env"]),
+                "@@CPU@@": str(limits["cpu_limit"]),
             },
         )
     return files

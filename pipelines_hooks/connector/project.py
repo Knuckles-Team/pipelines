@@ -25,8 +25,10 @@ CONTAINER_KEYS = frozenset(
         "debug_apt",
         "debug_extras",
         "compose_env",
+        "limits",
     }
 )
+LIMIT_KEYS = frozenset({"memory_limit_env", "memory_limit", "cpu_limit_env", "cpu_limit"})
 
 
 def load(root: Path) -> dict[str, Any]:
@@ -44,6 +46,12 @@ def container_table(pyproject: dict[str, Any]) -> dict[str, Any]:
     unknown = sorted(set(table) - CONTAINER_KEYS)
     if unknown:
         raise CannotRun(f"[tool.pipelines.container] has unknown keys: {', '.join(unknown)}")
+    for kind, values in dict(table.get("limits", {})).items():
+        bad = sorted(set(values) - LIMIT_KEYS) if isinstance(values, dict) else ["<not a table>"]
+        if kind not in ("mcp", "agent") or bad:
+            raise CannotRun(
+                f"[tool.pipelines.container] limits.{kind} is not an mcp/agent table of {sorted(LIMIT_KEYS)}"
+            )
     return dict(table)
 
 

@@ -366,15 +366,162 @@ def test_g3_registration_beyond_the_plain_surface_goes_to_review_untouched(tmp_p
     assert _snapshot(root) == before
 
 
-@pytest.mark.spec("PIPE-GATES-R016.52")
-def test_g3_os_environ_lines_registered_tags_and_prompts_go_to_review(tmp_path: Path) -> None:
+def _gitlab_server(
+    *, env: str = "", tags: bool = False, extra: str = "", prompts: bool = True, banner: bool = False
+) -> str:
+    """The demo bootstrap in the gitlab-api shape: env lines, tags assignment, 4-tuple return, extra registration."""
     server = MCP_SERVER % ""
-    server = server.replace("    load_config()\n", "    load_config()\n    os.environ['TERM'] = 'dumb'\n")
+    server = server.replace("    load_config()\n", "    load_config()\n" + env)
+    if tags:
+        server = server.replace("    register_tool_surface(", "    registered_tags = register_tool_surface(")
+        server = server.replace("return mcp, args, middlewares\n", "return mcp, args, middlewares, registered_tags\n")
+        server = server.replace(
+            'print("\\nStarting MCP Server", file=sys.stderr)\n',
+            'print("\\nStarting MCP Server", file=sys.stderr)\n'
+            '    print(f"  Dynamic Tags Loaded: {len(set(registered_tags))}", file=sys.stderr)\n',
+        )
+        server = server.replace(
+            "mcp, args, middlewares = get_mcp_instance()", "mcp, args, middlewares, tags = get_mcp_instance()"
+        )
+    if prompts:
+        server = server.replace(
+            "def get_mcp_instance",
+            "def register_prompts(mcp: FastMCP):\n    @mcp.prompt()\n    def hello() -> str:\n        return 'hi'\n\n\ndef get_mcp_instance",
+        )
+    if extra:
+        server = server.replace("\n    for mw in middlewares:", "\n" + extra + "\n    for mw in middlewares:")
+    if banner:
+        server = server.replace(
+            '__version__ = "0.1.37"\n', '__version__ = "0.1.37"\nprint(f"Demo MCP v{__version__}", file=sys.stderr)\n'
+        )
+    return server
+
+
+_ENV = (
+    "    os.environ['FASTMCP_LOG_LEVEL'] = 'ERROR'\n    os.environ['TERM'] = 'dumb'\n    os.environ['NO_COLOR'] = '1'\n"
+)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_known_os_environ_lines_are_dropped_with_a_non_blocking_note(tmp_path: Path) -> None:
+    root = _make(
+        tmp_path,
+        server=_gitlab_server(env=_ENV, prompts=False).replace("import logging\n", "import logging\nimport os\n"),
+    )
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4"))
+    text = _text(root, "demo_mcp/mcp_server.py")
+    assert "os.environ" not in text and "import os" not in text
+    (note,) = _notes(ctx, "w1.g3")
+    assert not note["blocking"] and "FASTMCP_LOG_LEVEL, TERM, NO_COLOR" in note["detail"]
+    assert "connector = Connector(" in _text(root, "demo_mcp/__init__.py")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_any_other_os_environ_key_or_value_stays_blocking(tmp_path: Path) -> None:
+    for line in ("    os.environ['DEMO_X'] = '1'\n", "    os.environ['TERM'] = get_term()\n"):
+        root = _make(tmp_path / str(abs(hash(line))), server=_gitlab_server(env=line, prompts=False))
+        before = _snapshot(root)
+        ctx = _ctx(root)
+        _run(ctx, ("w1.g3",))
+        assert _notes(ctx, "w1.g3")[0]["blocking"] and "os.environ" in _notes(ctx, "w1.g3")[0]["detail"]
+        assert _snapshot(root) == before
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_registered_tags_assignment_and_tags_banner_are_deleted_with_the_bootstrap(tmp_path: Path) -> None:
+    root = _make(tmp_path, server=_gitlab_server(tags=True, prompts=False))
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4"))
+    text = _text(root, "demo_mcp/mcp_server.py")
+    assert "registered_tags" not in text and "get_mcp_instance" not in text
+    assert not [i for i in ctx.review.items if i["blocking"]]
+    assert "extra_registrations" not in _text(root, "demo_mcp/__init__.py")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_registered_tags_used_outside_the_bootstrap_stays_blocking(tmp_path: Path) -> None:
+    server = _gitlab_server(tags=True, prompts=False) + "\n\ndef report():\n    return registered_tags\n"
     root = _make(tmp_path, server=server)
     before = _snapshot(root)
     ctx = _ctx(root)
     _run(ctx, ("w1.g3",))
-    assert "os.environ" in _notes(ctx, "w1.g3")[0]["detail"] and _snapshot(root) == before
+    assert _notes(ctx, "w1.g3")[0]["blocking"] and "registered_tags" in _notes(ctx, "w1.g3")[0]["detail"]
+    assert _snapshot(root) == before
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_bare_local_function_call_becomes_extra_registrations_in_source_order(tmp_path: Path) -> None:
+    server = _gitlab_server(extra="    register_prompts(mcp)\n    register_more(mcp)\n").replace(
+        "def get_mcp_instance", "def register_more(mcp):\n    return None\n\n\ndef get_mcp_instance"
+    )
+    root = _make(tmp_path, server=server)
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4"))
+    init = _text(root, "demo_mcp/__init__.py")
+    assert "extra_registrations=(register_prompts, register_more)," in init
+    assert (
+        "from demo_mcp.mcp_server import register_more" in init
+        and "from demo_mcp.mcp_server import register_prompts" in init
+    )
+    text = _text(root, "demo_mcp/mcp_server.py")
+    assert "def register_prompts" in text and "def register_more" in text
+    ast.parse(init)
+    one = _make(tmp_path / "one", server=_gitlab_server(extra="    register_prompts(mcp)\n"))
+    _run(_ctx(one), ("w1.g3", "w1.g4"))
+    assert "extra_registrations=(register_prompts,)," in _text(one, "demo_mcp/__init__.py")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_bare_call_outside_the_allowed_set_stays_blocking(tmp_path: Path) -> None:
+    cases = {
+        "two parameters": ("def register_two(mcp, other):\n    return None\n", "register_two"),
+        "async": ("async def register_two(mcp):\n    return None\n", "register_two"),
+        "undefined": ("", "register_two"),
+    }
+    for label, (defn, name) in cases.items():
+        server = _gitlab_server(extra=f"    {name}(mcp)\n").replace(
+            "def get_mcp_instance", defn + "\n\ndef get_mcp_instance"
+        )
+        root = _make(tmp_path / label.replace(" ", "_"), server=server)
+        before = _snapshot(root)
+        ctx = _ctx(root)
+        _run(ctx, ("w1.g3",))
+        assert _notes(ctx, "w1.g3")[0]["blocking"] and name in _notes(ctx, "w1.g3")[0]["detail"], label
+        assert _snapshot(root) == before, label
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_bare_call_before_the_surface_registration_stays_blocking(tmp_path: Path) -> None:
+    server = _gitlab_server().replace("    @mcp.custom_route", "    register_prompts(mcp)\n\n    @mcp.custom_route")
+    root = _make(tmp_path, server=server)
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3",))
+    assert _notes(ctx, "w1.g3")[0]["blocking"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_version_banner_goes_with_the_version_and_k1_no_longer_blocks(tmp_path: Path) -> None:
+    root = _make(tmp_path, server=_gitlab_server(banner=True, extra="    register_prompts(mcp)\n"))
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4", "w1.k1"))
+    text = _text(root, "demo_mcp/mcp_server.py")
+    assert "__version__" not in text and "Demo MCP v" not in text
+    assert not [i for i in ctx.review.items if i["blocking"]]
+    assert any("version banner" in i["detail"] for i in _notes(ctx, "w1.g3"))
+    again = _snapshot(root)
+    _run(ctx, ("w1.g3", "w1.g4", "w1.k1"))
+    assert _snapshot(root) == again
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_version_banner_is_kept_when_the_version_is_read_elsewhere(tmp_path: Path) -> None:
+    server = _gitlab_server(banner=True) + "\n\ndef version():\n    return __version__\n"
+    root = _make(tmp_path, server=server)
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3",))
+    text = _text(root, "demo_mcp/mcp_server.py")
+    assert 'print(f"Demo MCP v{__version__}"' in text and '__version__ = "0.1.37"' in text
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
@@ -465,16 +612,120 @@ def test_g5_other_main_is_reviewed(tmp_path: Path) -> None:
 
 
 # --- g.7 ------------------------------------------------------------------------------------------------------
-@pytest.mark.spec("PIPE-GATES-R016.56")
-def test_g7_test_importing_deleted_function_is_reviewed(tmp_path: Path) -> None:
+def _g7(tmp_path: Path, body: str, name: str = "test_custom.py") -> tuple[base.Ctx, Path, str]:
     root = _make(tmp_path)
-    (root / "tests" / "test_custom.py").write_text(
-        "from demo_mcp.mcp_server import get_mcp_instance\n", encoding="utf-8"
-    )
+    (root / "tests" / name).write_text(body, encoding="utf-8")
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g7"))
+    return ctx, root, _text(root, f"tests/{name}")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_test_calling_the_deleted_entry_point_is_reviewed(tmp_path: Path) -> None:
+    body = "from demo_mcp.mcp_server import mcp_server\n\n\ndef test_x():\n    mcp_server()\n"
+    ctx, _root, after = _g7(tmp_path, body)
     note = _notes(ctx, "w1.g7")[0]
     assert note["path"] == "tests/test_custom.py" and "build_server" in note["detail"] and note["blocking"]
+    assert "calls mcp_server() directly" in note["detail"] and after == body
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_three_tuple_unpack_becomes_build_server_in_a_function(tmp_path: Path) -> None:
+    body = (
+        "from fastmcp import FastMCP\nfrom demo_mcp.mcp_server import get_mcp_instance\n\n\n"
+        "def test_x():\n    mcp, args, middlewares = get_mcp_instance()\n    assert isinstance(mcp, FastMCP)\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    assert not _notes(ctx, "w1.g7") and "w1.g7" in ctx.applied
+    assert "from agent_connector_sdk.connector import build_server" in after and "get_mcp_instance" not in after
+    assert '    _, mcp = build_server("demo_mcp", command_args=[])\n' in after
+    ast.parse(after)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_args_are_kept_when_read_and_the_old_tags_slot_is_dropped(tmp_path: Path) -> None:
+    body = (
+        "def test_x():\n    from demo_mcp.mcp_server import get_mcp_instance\n\n"
+        "    mcp, args, _, _tags = get_mcp_instance()\n    assert args.transport and mcp\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    assert not _notes(ctx, "w1.g7")
+    assert '    args, mcp = build_server("demo_mcp", command_args=[])\n' in after
+    assert "    from agent_connector_sdk.connector import build_server\n" in after
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_star_target_and_module_level_unpack(tmp_path: Path) -> None:
+    body = "from demo_mcp.mcp_server import get_mcp_instance\n\nmcp, *_ = get_mcp_instance()\nm2, _, _, _ = get_mcp_instance()\n"
+    ctx, _root, after = _g7(tmp_path, body)
+    assert not _notes(ctx, "w1.g7")
+    assert after.count('_, mcp = build_server("demo_mcp", command_args=[])') == 1
+    assert '_, m2 = build_server("demo_mcp", command_args=[])' in after
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_other_names_in_the_import_are_kept(tmp_path: Path) -> None:
+    body = (
+        "from demo_mcp.mcp_server import get_mcp_instance, helper\n\n\n"
+        "def test_x():\n    mcp, _, _ = get_mcp_instance()\n    assert helper(mcp)\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    assert not _notes(ctx, "w1.g7")
+    assert "from demo_mcp.mcp_server import helper\nfrom agent_connector_sdk.connector import build_server\n" in after
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_reading_middlewares_or_tags_stays_blocking_and_untouched(tmp_path: Path) -> None:
+    body = (
+        "from demo_mcp.mcp_server import get_mcp_instance\n\n\n"
+        "def test_x():\n    mcp, args, middlewares = get_mcp_instance()\n    assert middlewares\n"
+    )
+    ctx, _root, after = _g7(tmp_path, body)
+    note = _notes(ctx, "w1.g7")[0]
+    assert note["blocking"] and "middlewares" in note["detail"] and after == body
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_patching_get_mcp_instance_or_module_names_stays_blocking(tmp_path: Path) -> None:
+    for i, body in enumerate(
+        (
+            'from unittest.mock import patch\n\n\ndef test_x():\n    with patch("demo_mcp.mcp_server.get_mcp_instance"):\n        pass\n',
+            'from unittest.mock import patch\nfrom demo_mcp.mcp_server import get_mcp_instance\n\n\ndef test_x():\n    with patch("demo_mcp.mcp_server.get_client"):\n        mcp, _, _ = get_mcp_instance()\n',
+            "from demo_mcp.mcp_server import get_mcp_instance\n\nm = get_mcp_instance()\n",
+            "from demo_mcp.mcp_server import get_mcp_instance as g\n\nmcp, _, _ = g()\n",
+        )
+    ):
+        ctx, _root, after = _g7(tmp_path / str(i), body)
+        assert _notes(ctx, "w1.g7")[0]["blocking"] and after == body, i
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_rewrite_is_idempotent_and_leaves_no_stale_import(tmp_path: Path) -> None:
+    body = (
+        "from demo_mcp.mcp_server import get_mcp_instance\n\n\ndef test_x():\n    mcp, args, mw = get_mcp_instance()\n"
+    )
+    ctx, root, after = _g7(tmp_path, body)
+    snap = _snapshot(root)
+    _run(ctx, ("w1.g7",))
+    assert _snapshot(root) == snap and "get_mcp_instance" not in after
+
+
+@pytest.mark.spec("PIPE-GATES-R016.56")
+def test_g7_with_k1_and_k4_a_package_version_assert_leaves_nothing_blocking(tmp_path: Path) -> None:
+    body = (
+        "import demo_mcp\nfrom demo_mcp.mcp_server import get_mcp_instance\n\n\n"
+        "def test_instance():\n    mcp, args, middlewares = get_mcp_instance()\n    assert mcp\n\n\n"
+        "def test_import():\n    assert demo_mcp.__version__ is not None\n\n\n"
+        "def test_eq():\n    assert demo_mcp.__version__ == '0.1.0'\n"
+    )
+    root = _make(tmp_path)
+    (root / "tests" / "test_init.py").write_text(body, encoding="utf-8")
+    ctx = _ctx(root)
+    _run(ctx, ORDER)
+    assert not [i for i in ctx.review.items if i["blocking"]], ctx.review.items
+    after = _text(root, "tests/test_init.py")
+    assert "__version__" not in after and "get_mcp_instance" not in after and "build_server" in after
+    ast.parse(after)
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
@@ -935,3 +1186,17 @@ def test_unmigrated_shape_is_left_whole_and_a_second_run_is_stable(tmp_path: Pat
     ctx2 = _ctx(root)
     _run(ctx2, ORDER + ORDER_LAST)
     assert _snapshot(root) == first
+
+
+@pytest.mark.spec("PIPE-GATES-R016.61")
+def test_k4_not_none_and_bare_version_asserts_are_deleted(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    (root / "tests" / "test_v.py").write_text(
+        "import demo_mcp\n\n\ndef test_a():\n    assert demo_mcp.__version__ is not None\n\n\n"
+        "def test_b():\n    assert demo_mcp.__version__\n\n\ndef test_c():\n    assert demo_mcp.__version__ is None\n",
+        encoding="utf-8",
+    )
+    ctx = _ctx(root)
+    _run(ctx, ("w1.k4",))
+    after = _text(root, "tests/test_v.py")
+    assert "test_a" not in after and "test_b" not in after and "test_c" in after

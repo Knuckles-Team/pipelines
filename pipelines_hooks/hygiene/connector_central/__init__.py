@@ -31,7 +31,7 @@ from pipelines_hooks.hygiene.connector_central.base import (
     make_ctx,
 )
 
-MODULES = ("wave1", "auth", "ingest", "identity", "pipelines")
+MODULES = ("wave1", "auth", "ingest", "identity", "pipelines", "scaffold")
 FINAL_STEP = "central"
 
 
@@ -41,7 +41,7 @@ def load_rules() -> dict[str, Any]:
 
 
 def rule_order() -> list[str]:
-    """The fixed rule order: wave 1, auth, ingest, wave 1 tests, pipelines."""
+    """The fixed rule order: wave 1, auth, ingest, wave 1 tests, pipelines, scaffold."""
     mods = load_rules()
     order = [
         *mods["wave1"].ORDER,
@@ -51,6 +51,7 @@ def rule_order() -> list[str]:
         *mods["wave1"].ORDER_LAST,
     ]
     order += mods["pipelines"].ORDER
+    order += mods["scaffold"].ORDER
     missing = sorted(set(RULE_ROWS) - set(order))
     if missing:
         raise RuntimeError(f"rules registered but not ordered: {missing}")
@@ -121,7 +122,6 @@ def migrate_central(root: Path, options: dict[str, Any] | None = None) -> dict[s
             ctx.review.add(rid, f"rule crashed: {type(exc).__name__}: {exc}", "", True)
         for item in ctx.review.items[before:]:
             item.setdefault("rule", rid)
-    scaffold_delta(ctx)
     for rel in sorted(ctx.changed):
         if rel.endswith(".py"):
             try:
@@ -140,24 +140,6 @@ def migrate_central(root: Path, options: dict[str, Any] | None = None) -> dict[s
         "applied": ctx.applied,
         "rules": len(order),
     }
-
-
-#: Top-level entries the canonical scaffold (universal-skills ``scaffold_connector.py``) does not have and that no rule owns.
-SCAFFOLD_DELTA = (
-    "MANIFEST.in",
-    "requirements.txt",
-    ".dockerignore",
-    ".env.example",
-    "mcp_config.json",
-    "opencode.json",
-)
-
-
-def scaffold_delta(ctx: Ctx) -> None:
-    """Informational: files still present that the canonical scaffold tree does not contain (no rule deletes them)."""
-    left = [n for n in SCAFFOLD_DELTA if ctx.exists(n)]
-    if left:
-        ctx.note("scaffold-delta", "present but not in the canonical scaffold tree: " + ", ".join(left))
 
 
 def rule_counts() -> dict[str, int]:

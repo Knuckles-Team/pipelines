@@ -52,3 +52,20 @@ def test_own_workflow_refs_are_main(tmp_path: Path) -> None:
     assert "connector_pr_pipeline.yml@main" in text and "actions/checkout@v4" in text
     identity.workflow_refs(ctx)
     assert wf.read_text(encoding="utf-8") == text
+
+
+@pytest.mark.spec("PIPE-GATES-R016.103")
+def test_org_site_workflow_is_written_only_when_pipelines_provides_the_shared_one(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    pl = tmp_path / "pl"
+    (pl / ".github/workflows").mkdir(parents=True)
+    ctx.options["pipelines_root"] = pl
+    identity.org_site(ctx)
+    assert not (ctx.root / ".github/workflows/org-site.yml").exists()
+    (pl / ".github/workflows/notify_org_site.yml").write_text("name: x\n", encoding="utf-8")
+    identity.org_site(ctx)
+    text = (ctx.root / ".github/workflows/org-site.yml").read_text(encoding="utf-8")
+    assert text == identity.ORG_SITE and "secrets: inherit" in text
+    ctx.applied.clear()
+    identity.org_site(ctx)
+    assert not ctx.applied
