@@ -3969,10 +3969,12 @@
       "title": "Row-level Depends-on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "02d9a96fcd11"
+        "02d9a96fcd11",
+        "aef066f982c1"
       ],
       "verified_by": [
-        "tests/hooks/test_goal_priority.py:12"
+        "tests/hooks/test_goal_priority.py:12",
+        "tests/hooks/test_goal_priority.py:20"
       ]
     },
     {
@@ -3983,7 +3985,7 @@
         "02d9a96fcd11"
       ],
       "verified_by": [
-        "tests/hooks/test_goal_priority.py:35"
+        "tests/hooks/test_goal_priority.py:58"
       ]
     },
     {
@@ -3994,8 +3996,8 @@
         "02d9a96fcd11"
       ],
       "verified_by": [
-        "tests/hooks/test_goal_priority.py:58",
-        "tests/hooks/test_goal_priority.py:65"
+        "tests/hooks/test_goal_priority.py:81",
+        "tests/hooks/test_goal_priority.py:88"
       ]
     },
     {
@@ -4006,7 +4008,7 @@
         "02d9a96fcd11"
       ],
       "verified_by": [
-        "tests/hooks/test_goal_priority.py:85"
+        "tests/hooks/test_goal_priority.py:108"
       ]
     },
     {
