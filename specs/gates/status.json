@@ -692,17 +692,17 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "10797d760f22",
+        "570e02f553a0",
         "64c83743091d",
         "6feb14333fd2",
-        "7a345cc4295e",
-        "7f6c5b8b9975"
+        "7a345cc4295e"
       ],
       "verified_by": [
+        "tests/hooks/test_connector_migrate.py:1045",
         "tests/hooks/test_connector_migrate.py:369",
         "tests/hooks/test_connector_migrate.py:384",
         "tests/hooks/test_connector_migrate.py:398",
-        "tests/hooks/test_connector_migrate.py:405",
-        "tests/hooks/test_connector_migrate.py:431"
+        "tests/hooks/test_connector_migrate.py:405"
       ]
     },
     {
@@ -1617,7 +1617,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "8e8272f805dd",
-        "c5d88f1699d3"
+        "eee545e082ed"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:115",
