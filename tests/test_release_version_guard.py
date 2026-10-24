@@ -36,25 +36,30 @@ def present(name, version, base):
     return True
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_matching_tag_passes(guard, tmp_path):
     assert guard.verify(package(tmp_path, bump="0.5.1"), "refs/tags/v0.5.1", lookup=absent) == "0.5.1"
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_stale_version_under_new_tag_is_refused(guard, tmp_path):
     with pytest.raises(guard.GuardError, match="tag v0.5.1 does not match package version 0.5.0"):
         guard.verify(package(tmp_path, "0.5.0"), "refs/tags/v0.5.1", lookup=absent)
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_version_already_on_pypi_is_refused(guard, tmp_path):
     with pytest.raises(guard.GuardError, match="already on PyPI"):
         guard.verify(package(tmp_path), "refs/tags/v0.5.1", lookup=present)
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_bumpversion_disagreement_is_refused(guard, tmp_path):
     with pytest.raises(guard.GuardError, match="current_version 0.5.0 differs"):
         guard.verify(package(tmp_path, bump="0.5.0"), "refs/tags/v0.5.1", lookup=absent)
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_config_dir_bumpversion_is_read(guard, tmp_path):
     package(tmp_path)
     (tmp_path / ".config").mkdir()
@@ -63,12 +68,14 @@ def test_config_dir_bumpversion_is_read(guard, tmp_path):
         guard.verify(tmp_path, "refs/tags/v0.5.1", lookup=absent)
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_non_tag_ref_still_checks_pypi(guard, tmp_path):
     assert guard.verify(package(tmp_path), "refs/heads/main", lookup=absent) == "0.5.1"
     with pytest.raises(guard.GuardError, match="already on PyPI"):
         guard.verify(package(tmp_path), "refs/heads/main", lookup=present)
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_maturin_dynamic_version_reads_the_manifest(guard, tmp_path):
     (tmp_path / "crates/py").mkdir(parents=True)
     (tmp_path / "pyproject.toml").write_text(
@@ -80,12 +87,14 @@ def test_maturin_dynamic_version_reads_the_manifest(guard, tmp_path):
         guard.verify(tmp_path, "refs/tags/v2.27.7", lookup=absent)
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_unresolvable_version_is_refused(guard, tmp_path):
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n')
     with pytest.raises(guard.GuardError, match="neither a static nor a dynamic"):
         guard.verify(tmp_path, "refs/tags/v1.0.0", lookup=absent)
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_pypi_outage_fails_closed(guard, monkeypatch):
     def boom(*args, **kwargs):
         raise guard.URLError("down")
@@ -98,6 +107,7 @@ def test_pypi_outage_fails_closed(guard, monkeypatch):
         guard.pypi_has_version("demo", "1.0.0")
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_main_reports_mismatch(guard, tmp_path, capsys):
     package(tmp_path, "0.5.0")
     code = guard.main(["--root", str(tmp_path), "--ref", "refs/tags/v0.5.1", "--pypi", "https://127.0.0.1:9"])
@@ -105,6 +115,7 @@ def test_main_reports_mismatch(guard, tmp_path, capsys):
     assert "does not match package version 0.5.0" in capsys.readouterr().err
 
 
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_every_shared_release_path_runs_the_guard_before_building():
     python = yaml.safe_load((ROOT / ".github/workflows/python_pipeline.yml").read_text())
     steps = python["jobs"]["publish-pypi"]["steps"]
