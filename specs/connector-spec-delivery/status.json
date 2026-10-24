@@ -3969,8 +3969,8 @@
       "title": "Row-level Depends-on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "02d9a96fcd11",
-        "aef066f982c1"
+        "645ed8876446",
+        "a7d9241136c9"
       ],
       "verified_by": [
         "tests/hooks/test_goal_priority.py:12",
@@ -3982,7 +3982,7 @@
       "title": "Priority from competency questions",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "02d9a96fcd11"
+        "a7d9241136c9"
       ],
       "verified_by": [
         "tests/hooks/test_goal_priority.py:58"
@@ -3993,7 +3993,7 @@
       "title": "Generated priority, frontier, and unserved",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "02d9a96fcd11"
+        "a7d9241136c9"
       ],
       "verified_by": [
         "tests/hooks/test_goal_priority.py:81",
@@ -4005,7 +4005,7 @@
       "title": "Derived release bundles",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "02d9a96fcd11"
+        "a7d9241136c9"
       ],
       "verified_by": [
         "tests/hooks/test_goal_priority.py:108"
@@ -4016,7 +4016,7 @@
       "title": "Architecture page delivery views",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "02d9a96fcd11"
+        "a7d9241136c9"
       ],
       "verified_by": [
         "tests/test_architecture_delivery.py:41",
