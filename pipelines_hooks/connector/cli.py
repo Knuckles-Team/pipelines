@@ -1,4 +1,4 @@
-"""``pipelines-connector {version,render,generate} ...``: the connector build commands (not hooks)."""
+"""``pipelines-connector {version,render,generate,security,api-parity} ...``: the connector build commands (not hooks)."""
 
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ COMMANDS = {
     "version": "pipelines_hooks.connector.version",
     "render": "pipelines_hooks.connector.container",
     "generate": "pipelines_hooks.connector.generate",
+    "security": "pipelines_hooks.connector.security",
+    "api-parity": "pipelines_hooks.connector.api_parity",
 }
 
 
