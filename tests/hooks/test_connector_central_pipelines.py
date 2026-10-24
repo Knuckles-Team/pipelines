@@ -226,11 +226,79 @@ def test_o_ports_exceptions_into_the_container_table(repo: Path) -> None:
 def test_o_unexpected_difference_is_blocking_and_files_stay(repo: Path) -> None:
     old_docker(repo)
     compose = repo / "docker" / "mcp.compose.yml"
-    compose.write_text(compose.read_text().replace("2g", "4g"), encoding="utf-8")
+    compose.write_text(compose.read_text().replace("pids_limit: 256", "pids_limit: 512"), encoding="utf-8")
     before = snapshot(repo)
     ctx = run(repo, "pl.o")
-    assert blocking(ctx, "pl.o") and "4g" in blocking(ctx, "pl.o")[0]["detail"]
+    assert blocking(ctx, "pl.o") and "512" in blocking(ctx, "pl.o")[0]["detail"]
     assert snapshot(repo) == before
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_accepts_the_dist_extra_that_rule_l4_dropped(repo: Path) -> None:
+    (repo / "pyproject.toml").write_text(
+        PYPROJECT.replace("[project.optional-dependencies]\nmcp = []\n", ""), encoding="utf-8"
+    )
+    old_docker(repo)
+    docker = repo / "docker" / "Dockerfile"
+    docker.write_text(docker.read_text().replace('"demo-mcp==1.2.3"', '"demo-mcp[mcp]==1.2.3"'), encoding="utf-8")
+    dbg = repo / "docker" / "debug.Dockerfile"
+    dbg.write_text(re.sub(r"( \.)\s*$", r"\1[mcp]\n", dbg.read_text()), encoding="utf-8")
+    ctx = run(repo, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert not docker.exists()
+    assert "debug_extras" not in toml(repo).get("tool", {}).get("pipelines", {}).get("container", {})
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_other_extra_difference_stays_blocking(repo: Path) -> None:
+    (repo / "pyproject.toml").write_text(
+        PYPROJECT.replace("[project.optional-dependencies]\nmcp = []\n", ""), encoding="utf-8"
+    )
+    old_docker(repo)
+    docker = repo / "docker" / "Dockerfile"
+    docker.write_text(docker.read_text().replace('"demo-mcp==1.2.3"', '"demo-mcp[gpu]==1.2.3"'), encoding="utf-8")
+    ctx = run(repo, "pl.o")
+    assert blocking(ctx, "pl.o") and docker.exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_ports_compose_limits_only_when_they_differ_from_the_template(repo: Path) -> None:
+    old_docker(repo)
+    compose = repo / "docker" / "mcp.compose.yml"
+    text = compose.read_text()
+    text = text.replace("${MCP_CONTAINER_MEMORY_LIMIT:-2g}", "${AGENT_CONTAINER_MEMORY_LIMIT:-4g}")
+    text = text.replace("${MCP_CONTAINER_CPU_LIMIT:-1.0}", "${MCP_CONTAINER_CPU_LIMIT:-2.0}")
+    compose.write_text(text, encoding="utf-8")
+    ctx = run(repo, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert toml(repo)["tool"]["pipelines"]["container"]["limits"] == {
+        "mcp": {"memory_limit_env": "AGENT_CONTAINER_MEMORY_LIMIT", "memory_limit": "4g", "cpu_limit": "2.0"}
+    }
+    out = container.render(repo)["mcp.compose.yml"]
+    assert "mem_limit: ${AGENT_CONTAINER_MEMORY_LIMIT:-4g}\n    cpus: ${MCP_CONTAINER_CPU_LIMIT:-2.0}\n" in out
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_default_limits_leave_the_render_and_table_unchanged(repo: Path) -> None:
+    old_docker(repo)
+    ctx = run(repo, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert "pipelines" not in toml(repo).get("tool", {})
+    out = container.render(repo)
+    assert (
+        "mem_limit: ${MCP_CONTAINER_MEMORY_LIMIT:-2g}\n    cpus: ${MCP_CONTAINER_CPU_LIMIT:-1.0}\n"
+        in out["mcp.compose.yml"]
+    )
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_container_limits_table_rejects_unknown_keys(repo: Path) -> None:
+    from pipelines_hooks.connector import project
+    from pipelines_hooks.core.errors import CannotRun
+
+    bad = {"tool": {"pipelines": {"container": {"limits": {"mcp": {"memory": "1g"}}}}}}
+    with pytest.raises(CannotRun):
+        project.container_table(bad)
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")
@@ -507,3 +575,99 @@ def test_second_run_changes_nothing(repo: Path) -> None:
     assert snapshot(repo) == after_first
     assert not second.changed and not second.deleted
     assert re.search(r"connector: true", (repo / ".github/workflows/pipeline.yml").read_text())
+
+
+# --- pl.x -------------------------------------------------------------------------------------------------------
+ROW_X = "PIPE-GATES-R016.102"
+
+
+def extras(root: Path, *names: str) -> None:
+    for name in names:
+        (root / name).write_text("x\n", encoding="utf-8")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_row_and_order() -> None:
+    from pipelines_hooks.hygiene.connector_central import base, rule_order, scaffold
+
+    assert base.RULE_ROWS["pl.x"] == ROW_X and scaffold.ORDER == ("pl.x",)
+    assert rule_order()[-1] == "pl.x"
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_deletes_unreferenced_files(repo: Path) -> None:
+    names = ("MANIFEST.in", "requirements.txt", ".dockerignore", ".env.example", "mcp_config.json", "opencode.json")
+    extras(repo, *names)
+    ctx = run(repo, "pl.x")
+    assert ctx.deleted == set(names)
+    assert not any((repo / n).exists() for n in names) and not ctx.review.items
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_referenced_file_stays_with_a_review_item_naming_the_referrers(repo: Path) -> None:
+    extras(repo, "requirements.txt", "opencode.json")
+    (repo / "README.md").write_text("Install with `pip install -r requirements.txt`.\n", encoding="utf-8")
+    (repo / "CHANGELOG.md").write_text("opencode.json was added\n", encoding="utf-8")
+    (repo / "uv.lock").write_text("requirements.txt\n", encoding="utf-8")
+    ctx = run(repo, "pl.x")
+    assert (repo / "requirements.txt").exists() and not (repo / "opencode.json").exists()
+    [item] = ctx.review.items
+    assert item["step"] == "pl.x" and not item["blocking"] and "README.md" in item["detail"]
+    assert item["path"] == "requirements.txt"
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_match_is_a_whole_name(repo: Path) -> None:
+    extras(repo, "requirements.txt")
+    (repo / "README.md").write_text("see dev-requirements.txt and requirements.txt.bak\n", encoding="utf-8")
+    ctx = run(repo, "pl.x")
+    assert ctx.deleted == {"requirements.txt"}
+    (repo / "requirements.txt").write_text("x\n", encoding="utf-8")
+    (repo / "README.md").write_text("see docs/requirements.txt.\n", encoding="utf-8")
+    assert run(repo, "pl.x").review.items
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_dockerignore_stays_while_a_dockerfile_exists(repo: Path) -> None:
+    extras(repo, ".dockerignore")
+    (repo / "docker").mkdir()
+    (repo / "docker" / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
+    ctx = run(repo, "pl.x")
+    assert (repo / ".dockerignore").exists() and "docker/Dockerfile" in ctx.review.items[0]["detail"]
+    (repo / "docker" / "Dockerfile").unlink()
+    assert run(repo, "pl.x").deleted == {".dockerignore"}
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_dockerignore_goes_after_pl_o_removes_the_dockerfile(repo: Path) -> None:
+    old_docker(repo)
+    extras(repo, ".dockerignore")
+    ctx = run(repo, "pl.o", "pl.x")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert ".dockerignore" in ctx.deleted
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_mcp_config_is_referenced_by_package_data_and_manifest_globs(repo: Path) -> None:
+    extras(repo, "mcp_config.json")
+    (repo / "pyproject.toml").write_text(PYPROJECT + "\n[tool.setuptools.package-data]\n", encoding="utf-8")
+    base = PYPROJECT.replace('demo_mcp = ["ontology/**"]', 'demo_mcp = ["ontology/**"]\n"" = ["mcp_config.json"]')
+    (repo / "pyproject.toml").write_text(base, encoding="utf-8")
+    ctx = run(repo, "pl.x")
+    assert (repo / "mcp_config.json").exists() and "pyproject.toml" in ctx.review.items[0]["detail"]
+    (repo / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
+    extras(repo, "MANIFEST.in")
+    (repo / "MANIFEST.in").write_text("include *.json\n", encoding="utf-8")
+    ctx = run(repo, "pl.x")
+    # MANIFEST.in itself is unreferenced and goes first, so its glob stops counting
+    assert ctx.deleted == {"MANIFEST.in", "mcp_config.json"} and not ctx.review.items
+
+
+@pytest.mark.spec("PIPE-GATES-R016.102")
+def test_x_second_run_changes_nothing(repo: Path) -> None:
+    extras(repo, "requirements.txt", "opencode.json", ".env.example")
+    (repo / "README.md").write_text("uses .env.example\n", encoding="utf-8")
+    run(repo, "pl.x")
+    after = snapshot(repo)
+    second = run(repo, "pl.x")
+    assert snapshot(repo) == after and not second.deleted and not second.changed

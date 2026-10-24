@@ -232,11 +232,39 @@ def _is_call(node: ast.AST, name: str) -> TypeGuard[ast.Call]:
     return isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == name
 
 
-def _analyse_instance(fn: ast.FunctionDef) -> dict[str, Any]:
+_ENV_KEYS = ("FASTMCP_LOG_LEVEL", "TERM", "NO_COLOR")
+
+
+def _env_key(stmt: ast.stmt) -> str | None:
+    """The key of an allowed `os.environ["KEY"] = "<const str>"` statement, else None."""
+    if not (isinstance(stmt, ast.Assign) and len(stmt.targets) == 1):
+        return None
+    t, v = stmt.targets[0], stmt.value
+    if not (isinstance(t, ast.Subscript) and ast.dump(t.value) == ast.dump(_expr_of("os.environ"))):
+        return None
+    key = t.slice
+    if not (isinstance(key, ast.Constant) and key.value in _ENV_KEYS):
+        return None
+    return str(key.value) if isinstance(v, ast.Constant) and isinstance(v.value, str) else None
+
+
+def _bare_call(stmt: ast.stmt) -> ast.Call | None:
+    return stmt.value if isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call) else None
+
+
+def _one_param(fn: ast.FunctionDef) -> bool:
+    a = fn.args
+    return len(a.args) == 1 and not (a.posonlyargs or a.vararg or a.kwonlyargs or a.kwarg)
+
+
+def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDef]) -> dict[str, Any]:
     body = list(fn.body)
     if body and _doc(body[0]):
         body = body[1:]
-    info: dict[str, Any] = {"health": False}
+    info: dict[str, Any] = {"health": False, "env": [], "tags": None, "extra": []}
+    env = [(s, _env_key(s)) for s in body]
+    info["env"] = [k for _s, k in env if k]
+    body = [s for s, k in env if not k]
     i = 0
 
     def bad(stmt: ast.stmt, why: str = "is outside the allowed bootstrap statements") -> _Reject:
@@ -296,9 +324,18 @@ def _analyse_instance(fn: ast.FunctionDef) -> dict[str, Any]:
     if i >= len(body):
         raise _Reject("no register_tool_surface call")
     stmt = body[i]
-    if not (isinstance(stmt, ast.Expr) and _is_call(stmt.value, "register_tool_surface")):
+    if (
+        isinstance(stmt, ast.Assign)
+        and len(stmt.targets) == 1
+        and isinstance(stmt.targets[0], ast.Name)
+        and _is_call(stmt.value, "register_tool_surface")
+    ):
+        info["tags"] = stmt.targets[0].id
+        call = stmt.value
+    elif isinstance(stmt, ast.Expr) and _is_call(stmt.value, "register_tool_surface"):
+        call = stmt.value
+    else:
         raise bad(stmt)
-    call = stmt.value
     if len(call.args) != 1 or not (isinstance(call.args[0], ast.Name) and call.args[0].id == mcp_n):
         raise bad(stmt, "does not pass the server as the only positional argument")
     kw = {k.arg: k.value for k in call.keywords}
@@ -312,6 +349,26 @@ def _analyse_instance(fn: ast.FunctionDef) -> dict[str, Any]:
         raise bad(stmt, "passes a tools_module other than sys.modules[__name__]")
     info["surface"] = kw
     i += 1
+    while i < len(body):
+        extra = _bare_call(body[i])
+        if extra is None or not isinstance(extra.func, ast.Name) or _is_call(extra, "register_tool_surface"):
+            break
+        name = extra.func.id
+        if not (
+            len(extra.args) == 1
+            and not extra.keywords
+            and isinstance(extra.args[0], ast.Name)
+            and extra.args[0].id == mcp_n
+        ):
+            break
+        target = local_funcs.get(name)
+        if target is None or not _one_param(target):
+            raise bad(
+                body[i],
+                f"calls `{name}`, which is not a top-level function of mcp_server.py taking exactly one parameter",
+            )
+        info["extra"].append(name)
+        i += 1
     if i >= len(body):
         raise _Reject("no middleware loop")
     stmt = body[i]
@@ -420,7 +477,7 @@ def g3(ctx: Ctx) -> None:
             )
         return
     try:
-        info = _analyse_instance(funcs["get_mcp_instance"])
+        info = _analyse_instance(funcs["get_mcp_instance"], funcs)
         if "mcp_server" in funcs:
             _analyse_entry(funcs["mcp_server"])
     except _Reject as err:
@@ -470,11 +527,28 @@ def g3(ctx: Ctx) -> None:
         and isinstance(n.value, ast.Constant)
         and isinstance(n.value.value, str)
     ]
-    rest = [n for n in kept if n not in logger_nodes and n not in ver_nodes]
+    stderr_kw = _expr_of('print("x", file=sys.stderr)')
+    assert isinstance(stderr_kw, ast.Call)
+    banner_nodes = [
+        n
+        for n in kept
+        if isinstance(n, ast.Expr)
+        and _is_call(n.value, "print")
+        and len(n.value.keywords) == 1
+        and ast.dump(n.value.keywords[0]) == ast.dump(stderr_kw.keywords[0])
+        and "__version__" in _name_loads([n])
+        and _name_loads([n]) <= {"print", "sys", "__version__"}
+    ]
+    rest = [n for n in kept if n not in logger_nodes and n not in ver_nodes and n not in banner_nodes]
     if logger_nodes and "logger" not in _name_loads(n for n in rest if n not in logger_nodes):
         dele += logger_nodes
     if ver_nodes and "__version__" not in _name_loads(rest + [n for n in logger_nodes if n not in dele]):
         dele += ver_nodes
+        dele += banner_nodes
+    tags = info["tags"]
+    if tags and tags in _name_loads(n for n in kept):
+        ctx.note("w1.g3", f"`{tags}` (the registered tags) is used outside the bootstrap; hand-migrate", rel, True)
+        return
     # other modules must not import the deleted functions
     for other in _py_files(ctx.pkg):
         if other == path or other.name == "__main__.py" and other.parent == ctx.pkg:
@@ -523,6 +597,8 @@ def g3(ctx: Ctx) -> None:
             else:
                 exprs[key] = _src(node)
                 need(node, key)
+        for name in info["extra"]:
+            import_lines.append(f"from {own} import {name}")
     except _Reject as err:
         ctx.note("w1.g3", f"cannot extract Connector values: {err}", rel, True)
         return
@@ -539,7 +615,16 @@ def g3(ctx: Ctx) -> None:
         "exprs": exprs,
         "imports": sorted(set(import_lines), key=lambda s: (s.startswith("from agent"), s)),
         "health": info["health"],
+        "extra": list(info["extra"]),
     }
+    if info["env"]:
+        ctx.note(
+            "w1.g3",
+            "dropped os.environ lines for " + ", ".join(info["env"]) + "; the SDK server does not set them",
+            rel,
+        )
+    if banner_nodes and banner_nodes[0] in dele:
+        ctx.note("w1.g3", "deleted the module-level stderr version banner; the SDK serves the version", rel)
     if info["health"]:
         ctx.applied.append("w1.g6") if "w1.g6" not in ctx.applied else None
 
@@ -743,6 +828,9 @@ def g4(ctx: Ctx) -> None:
         f"    instructions={exprs['instructions']},",
     ]
     kw += [f"    {k}={exprs[k]}," for k in _SURFACE_KWARGS if k in exprs]
+    extra = stash.get("extra") or []
+    if extra:
+        kw.append(f"    extra_registrations=({', '.join(extra)}{',' if len(extra) == 1 else ''}),")
     block = "\n".join([*lines, "", "connector = Connector(", *kw, ")"]) + "\n"
     out = (base.rstrip() + "\n\n" if base.strip() else "") + block
     ctx.write(rel, out, "w1.g4")
@@ -898,19 +986,21 @@ def _is_version_assign(n: ast.stmt) -> bool:
     return ok and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str)
 
 
+def _is_version_ref(e: ast.expr) -> bool:
+    return isinstance(e, ast.Name) and e.id == "__version__" or isinstance(e, ast.Attribute) and e.attr == "__version__"
+
+
 def _is_version_assert(n: ast.stmt) -> bool:
-    if not isinstance(n, ast.Assert) or not isinstance(n.test, ast.Compare):
+    """`assert [pkg.]__version__ == ...`, `... is not None`, or the bare truthiness `assert [pkg.]__version__`."""
+    if not isinstance(n, ast.Assert):
         return False
-    left = n.test.left
-    return (
-        len(n.test.ops) == 1
-        and isinstance(n.test.ops[0], ast.Eq)
-        and (
-            isinstance(left, ast.Name)
-            and left.id == "__version__"
-            or isinstance(left, ast.Attribute)
-            and left.attr == "__version__"
-        )
+    if _is_version_ref(n.test):
+        return True
+    if not isinstance(n.test, ast.Compare) or len(n.test.ops) != 1 or not _is_version_ref(n.test.left):
+        return False
+    op, right = n.test.ops[0], n.test.comparators[0]
+    return isinstance(op, ast.Eq) or (
+        isinstance(op, ast.IsNot) and isinstance(right, ast.Constant) and right.value is None
     )
 
 
@@ -1527,8 +1617,7 @@ def l4(ctx: Ctx) -> None:
 
 
 # --- g.7 tests importing the deleted functions ------------------------------------------------------------
-def _deleted_symbol_users(ctx: Ctx, f: Path) -> list[str]:
-    text = f.read_text(encoding="utf-8")
+def _deleted_symbol_users_in(ctx: Ctx, text: str) -> list[str]:
     tree = _parse(text)
     if tree is None:
         return []
@@ -1544,6 +1633,104 @@ def _deleted_symbol_users(ctx: Ctx, f: Path) -> list[str]:
     return sorted(set(hits))
 
 
+def _deleted_symbol_users(ctx: Ctx, f: Path) -> list[str]:
+    return _deleted_symbol_users_in(ctx, f.read_text(encoding="utf-8"))
+
+
+_BUILD_IMPORT = "from agent_connector_sdk.connector import build_server"
+
+
+def _scope_of(node: ast.AST, parents: dict[ast.AST, ast.AST], tree: ast.Module) -> ast.AST:
+    cur: ast.AST | None = parents.get(node)
+    while cur is not None:
+        if isinstance(cur, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
+            return cur
+        cur = parents.get(cur)
+    return tree
+
+
+def _splice(text: str, node: ast.stmt, new: str) -> str:
+    """Replace the exact source segment of ``node`` with ``new`` (later lines keep the node's indentation)."""
+    assert node.end_lineno is not None and node.end_col_offset is not None
+    lines = text.split("\n")
+    first, last = lines[node.lineno - 1].encode(), lines[node.end_lineno - 1].encode()
+    pad = " " * node.col_offset
+    head = first[: node.col_offset].decode()
+    tail = last[node.end_col_offset :].decode()
+    body = new.split("\n")
+    body = [body[0], *[pad + ln for ln in body[1:]]]
+    lines[node.lineno - 1 : node.end_lineno] = (head + "\n".join(body) + tail).split("\n")
+    return "\n".join(lines)
+
+
+def _build_server_targets(target: ast.expr, scope: ast.AST) -> tuple[str | None, str | None]:
+    """The new ``args, mcp`` targets for an old ``(mcp, args, middlewares[, tags])`` unpack, or (None, reason)."""
+    if not isinstance(target, ast.Tuple):
+        return None, "assigns the result to a single name"
+    elts = list(target.elts)
+    stars = [e for e in elts if isinstance(e, ast.Starred)]
+    plain = [e for e in elts if isinstance(e, ast.Name)]
+    if len(plain) + len(stars) != len(elts) or len(stars) > 1 or (stars and not isinstance(elts[-1], ast.Starred)):
+        return None, "unpacks into something other than plain names (star only last)"
+    if (not stars and len(plain) not in (3, 4)) or not plain or len(plain) > 4:
+        return None, f"unpacks {len(plain)} values, not the old (mcp, args, middlewares[, tags]) shape"
+    loads = {n.id for n in ast.walk(scope) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    rest = [e.id for e in plain[2:]] + [e.value.id for e in stars if isinstance(e.value, ast.Name)]
+    read = [n for n in rest if n in loads]
+    if read:
+        return None, f"reads {read} (middlewares or tags), which build_server does not return"
+    args_n = plain[1].id if len(plain) > 1 and plain[1].id in loads else "_"
+    return f"{args_n}, {plain[0].id}", None
+
+
+def _rewrite_server_test(ctx: Ctx, text: str) -> tuple[str | None, list[str]]:
+    """Rewrite the ``get_mcp_instance()`` unpack form to ``build_server``; (new text | None, blocking reasons)."""
+    tree = _parse(text)
+    if tree is None:
+        return None, []
+    mod = f"{ctx.pkg_name}.mcp_server"
+    parents = {c: p for p in ast.walk(tree) for c in ast.iter_child_nodes(p)}
+    edits: list[tuple[ast.stmt, str]] = []
+    problems: list[str] = []
+    handled: set[ast.AST] = set()
+    for n in ast.walk(tree):
+        if isinstance(n, ast.ImportFrom) and n.level == 0 and n.module == mod:
+            hit = [a for a in n.names if a.name == "get_mcp_instance"]
+            if not hit:
+                continue
+            if hit[0].asname:
+                problems.append(f"line {n.lineno}: imports get_mcp_instance under an alias")
+                continue
+            keep = [a for a in n.names if a.name != "get_mcp_instance"]
+            pad = " " * n.col_offset
+            new = _BUILD_IMPORT if not keep else _import_text(n, keep) + "\n" + pad + _BUILD_IMPORT
+            edits.append((n, new))
+        elif isinstance(n, ast.Assign) and _is_call(n.value, "get_mcp_instance"):
+            handled.add(n.value.func)
+            if n.value.args or n.value.keywords or len(n.targets) != 1:
+                problems.append(f"line {n.lineno}: calls get_mcp_instance with arguments")
+                continue
+            tgt, why = _build_server_targets(n.targets[0], _scope_of(n, parents, tree))
+            if tgt is None:
+                problems.append(f"line {n.lineno}: {why}")
+                continue
+            edits.append((n, f'{tgt} = build_server("{ctx.pkg_name}", command_args=[])'))
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Name) and n.id == "get_mcp_instance" and n not in handled:
+            problems.append(f"line {n.lineno}: references get_mcp_instance outside `<targets> = get_mcp_instance()`")
+        elif _is_call(n, "mcp_server"):
+            problems.append(f"line {n.lineno}: calls mcp_server() directly")
+        elif isinstance(n, ast.Constant) and isinstance(n.value, str) and n.value.startswith(mod + "."):
+            problems.append(f"line {n.lineno}: patches {n.value!r}; build_server does not read the module's names")
+    if problems:
+        return None, problems
+    out = text
+    for node, new in sorted(edits, key=lambda e: (e[0].lineno, e[0].col_offset), reverse=True):
+        out = _splice(out, node, new)
+    left = _deleted_symbol_users_in(ctx, out)
+    return (out, []) if not left else (None, [f"still uses {left} after the rewrite"])
+
+
 @rule("w1.g7")
 def g7(ctx: Ctx) -> None:
     mcp = ctx.pkg / "mcp_server.py"
@@ -1556,16 +1743,22 @@ def g7(ctx: Ctx) -> None:
         used = _deleted_symbol_users(ctx, f)
         if not used:
             continue
+        text = f.read_text(encoding="utf-8")
         if (
             f.name in SCAFFOLD_TESTS
             and f.parent == ctx.root / "tests"
-            and fingerprint(ctx, f.read_text(encoding="utf-8")) in table.get(f.name, ())
+            and fingerprint(ctx, text) in table.get(f.name, ())
         ):
             continue  # rule h deletes it
+        new, problems = _rewrite_server_test(ctx, text)
+        if new is not None:
+            ctx.write(ctx.rel(f), new, "w1.g7")
+            continue
+        why = "; ".join(problems[:3]) + (f"; and {len(problems) - 3} more" if len(problems) > 3 else "")
         ctx.note(
             "w1.g7",
-            f"test uses {used}; rewrite get_mcp_instance() as agent_connector_sdk.connector.build_server("
-            f'"{ctx.pkg_name}", command_args=[...]) which returns (args, mcp)',
+            f"test uses {used}: {why or 'not the rewritable shape'}. Rewrite by hand with "
+            f'agent_connector_sdk.connector.build_server("{ctx.pkg_name}", command_args=[...]) which returns (args, mcp)',
             ctx.rel(f),
             True,
         )

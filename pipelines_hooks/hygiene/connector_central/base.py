@@ -77,6 +77,12 @@ RULE_TABLE: tuple[tuple[str, str, str], ...] = (
         "hard-coded connector names in `kg_*.py` and `mappings/*.yaml` derive from or match the SDK identity",
     ),
     ("pl.w", "pipelines", "own pipelines workflow refs are `@main`"),
+    ("pl.x", "pipelines", "unreferenced non-scaffold root files are deleted"),
+    (
+        "pl.y",
+        "pipelines",
+        "`.github/workflows/org-site.yml` notifies the org site (only when pipelines main provides it)",
+    ),
 )
 FIRST_ROW = 50
 RULE_ROWS: dict[str, str] = {rid: f"PIPE-GATES-R016.{FIRST_ROW + i}" for i, (rid, _s, _t) in enumerate(RULE_TABLE)}

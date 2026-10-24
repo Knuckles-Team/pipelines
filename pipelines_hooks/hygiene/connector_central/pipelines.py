@@ -70,6 +70,8 @@ def _toml_scalar(value: Any) -> str:
         return repr(value)
     if isinstance(value, list):
         return "[" + ", ".join(_toml_scalar(v) for v in value) + "]"
+    if isinstance(value, dict):
+        return "{" + ", ".join(f"{json.dumps(str(k))} = {_toml_scalar(v)}" for k, v in value.items()) + "}"
     return json.dumps(str(value), ensure_ascii=False)
 
 
@@ -413,9 +415,13 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
             table["debug_apt"] = pk[0].split()
         ext = re.search(r"uv pip install [^\n]*? \.(?:\[([^\]]*)\])?\s*$", dbg, re.M)
         got = [e for e in (ext.group(1) or "").split(",") if e] if ext else []
+        got = [e for e in got if e in meta.get("optional-dependencies", {}) or e not in DROPPABLE_EXTRAS]
         want = sorted(set(meta.get("optional-dependencies", {})) & set(container.RUNTIME_TARGETS))
         if got != want:
             table["debug_extras"] = got
+    limits = _committed_limits(ctx)
+    if limits:
+        table["limits"] = limits
     # compose extras
     env: list[str] = []
     for target in container.RUNTIME_TARGETS:
@@ -431,6 +437,59 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
     if env:
         table["compose_env"] = env
     return table
+
+
+#: Extras rule l4 may have dropped from the wheel; a committed install line naming one is an expected difference.
+DROPPABLE_EXTRAS = frozenset({"mcp", "agent", "all"})
+_LIMIT_LINES = (
+    ("memory_limit", "mem_limit", "memory_limit_env"),
+    ("cpu_limit", "cpus", "cpu_limit_env"),
+)
+
+
+def _committed_limits(ctx: Ctx) -> dict[str, dict[str, str]]:
+    """Per image kind, the compose ``mem_limit``/``cpus`` ``${VAR:-default}`` settings that differ from the template."""
+    out: dict[str, dict[str, str]] = {}
+    for target in container.RUNTIME_TARGETS:
+        name = f"docker/{target}.compose.yml"
+        if not ctx.exists(name):
+            continue
+        text = ctx.read(name)
+        found: dict[str, str] = {}
+        for value_key, yaml_key, env_key in _LIMIT_LINES:
+            match = re.search(rf"^    {yaml_key}: \$\{{([A-Za-z0-9_]+):-([^}}\s]*)\}}[ \t]*$", text, re.M)
+            if match is None:
+                continue
+            if match.group(1) != container.DEFAULT_LIMITS[env_key]:
+                found[env_key] = match.group(1)
+            if match.group(2) != container.DEFAULT_LIMITS[value_key]:
+                found[value_key] = match.group(2)
+        if found:
+            out[target] = found
+    return out
+
+
+def _drop_dist_extras(committed: str, rendered: str, dist: str) -> str:
+    """Accept ``"<dist>[mcp]==v"`` (committed) where the render has ``"<dist>==v"``: rule l4 dropped that extra.
+
+    Only extras the render no longer requests on the dist's own install requirement are removed; nothing else is touched.
+    """
+    kept = set(re.findall(rf'"{re.escape(dist)}\[([A-Za-z0-9_,-]+)\]==', rendered))
+    return re.sub(
+        rf'"{re.escape(dist)}\[(mcp|agent|all)\]==',
+        lambda m: m.group(0) if m.group(1) in kept else f'"{dist}==',
+        committed,
+    )
+
+
+def _drop_debug_extras(committed: str, extras: set[str]) -> str:
+    """Remove dropped ``mcp``/``agent``/``all`` extras from the debug image's ``uv pip install ... .[extras]`` line."""
+
+    def fix(match: re.Match[str]) -> str:
+        keep = [e for e in match.group(2).split(",") if e and (e in extras or e not in DROPPABLE_EXTRAS)]
+        return f"{match.group(1)}[{','.join(keep)}]" if keep else match.group(1)
+
+    return re.sub(r"(?m)^(.*uv pip install [^\n]*? \.)\[([^\]]*)\](\s*)$", lambda m: fix(m) + m.group(3), committed)
 
 
 def _normalise_dockerfile(text: str, new: bool) -> str:
@@ -479,7 +538,10 @@ def _container_diff(ctx: Ctx, rendered: dict[str, str], dist: str) -> list[str]:
             except _Unmatched as exc:
                 problems.append(str(exc))
                 continue
+        if name == "debug.Dockerfile":
+            old = _drop_debug_extras(old, set(ctx.pyproject()["project"].get("optional-dependencies", {})))
         if name == "Dockerfile":
+            old = _drop_dist_extras(old, new, dist)
             a, b = _normalise_dockerfile(old, False), _normalise_dockerfile(new, True)
         else:
             a, b = _normalise_loose(old), _normalise_loose(new)

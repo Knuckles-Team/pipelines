@@ -13,8 +13,9 @@ import ast
 import re
 
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
+from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
-ORDER = ("id.name", "pl.w")
+ORDER = ("id.name", "pl.w", "pl.y")
 _IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
@@ -82,3 +83,27 @@ def workflow_refs(ctx: Ctx) -> None:
         new = _USES.sub(lambda m: m.group(1) + "main", text)
         if new != text:
             ctx.write(ctx.rel(path), new, "pl.w")
+
+
+ORG_SITE = """name: Notify org site
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    uses: Knuckles-Team/pipelines/.github/workflows/notify_org_site.yml@main
+    secrets: inherit
+"""
+
+
+@rule("pl.y")
+def org_site(ctx: Ctx) -> None:
+    """``org-site.yml`` has exactly this content; skipped (silently) while pipelines main has no ``notify_org_site.yml``."""
+    if not (pipelines_root(ctx) / ".github" / "workflows" / "notify_org_site.yml").is_file():
+        return
+    ctx.write(".github/workflows/org-site.yml", ORG_SITE, "pl.y")
