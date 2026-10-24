@@ -21,7 +21,7 @@
   {
    "name": "arbora",
    "slug": "arbora",
-   "local": "agent-packages/graph-os",
+   "local": "agent-packages/arbora",
    "kind": "core"
   },
   {
