@@ -1824,7 +1824,7 @@
       "title": "The skill gates are a `connector-standard` member",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "848bbf8c7efe"
+        "cb2d1a651c7f"
       ],
       "verified_by": [
         "tests/hooks/test_connector_skills.py:34",
