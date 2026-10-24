@@ -222,12 +222,10 @@ def test_o_accepts_a_config_mount_with_a_default_host_path(tmp_path: Path) -> No
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")
-def test_o_an_image_default_recorded_in_fewer_than_three_repositories_stays_blocking(tmp_path: Path) -> None:
+def test_o_an_image_variable_with_a_default_becomes_the_required_digest_form(tmp_path: Path) -> None:
     root = stage(tmp_path, "vaultwarden-mcp")
     ctx = run(root, "pl.o")
-    (item,) = blocking(ctx, "pl.o")
-    assert "knucklessg1/vaultwarden-mcp@sha256" in item["detail"] and "volumes" not in item["detail"]
-    assert (root / "docker" / "mcp.compose.yml").exists()
+    assert not blocking(ctx, "pl.o") and migrated(root)
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")
@@ -314,13 +312,31 @@ def test_o_accepts_the_recorded_older_debug_image(tmp_path: Path, name: str, nee
 
 # --- pl.o: a difference outside every recognised cluster ----------------------------------------------------------
 @pytest.mark.spec("PIPE-GATES-R016.92")
-def test_o_a_difference_outside_the_clusters_stays_blocking(tmp_path: Path) -> None:
+def test_o_an_env_example_env_file_is_dropped_as_not_functional(tmp_path: Path) -> None:
     root = stage(tmp_path, "ansible-tower-mcp")
-    before = {p.name: p.read_bytes() for p in (root / "docker").iterdir()}
     ctx = run(root, "pl.o")
-    (item,) = blocking(ctx, "pl.o")
-    assert ".env.example" in item["detail"]
-    assert {p.name: p.read_bytes() for p in (root / "docker").iterdir()} == before
+    assert not [i for i in blocking(ctx, "pl.o") if ".env.example" in i["detail"]]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_nonfunctional_compose_and_dockerfile_differences_are_normalised() -> None:
+    compose = (
+        '    image: "${X_IMAGE:-repo/x@sha256:0}"\n    env_file:\n      - path: ../.env.example\n        required: true\n'
+        "      - path: ../.env\n        required: false\n"
+        '      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen(\'http://localhost:8000/health\', timeout=5).close()"]\n'
+    )
+    out = P._compose_nonfunctional(compose)
+    assert "X_IMAGE:?set-X_IMAGE-to-image@sha256-digest" in out and ".env.example" not in out
+    assert "urlopen('http://localhost:8000/health')" in out
+    docker = P._dockerfile_nonfunctional('ARG PORT=8004\nENTRYPOINT ["x"]\n')
+    assert docker == 'ARG PORT=<PORT>\nCMD ["x"]\n'
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_the_sdist_names_of_a_single_stage_dockerfile_are_not_part_of_its_form() -> None:
+    plain = "RUN pip install --only-binary :all: demo[mcp]==1.2.3 \\\n    && true\n"
+    sdist = "RUN pip install --only-binary :all: --no-binary dep demo[mcp]==1.2.3 \\\n    && true\n"
+    assert gen.dockerfile_form(plain, "demo") == gen.dockerfile_form(sdist, "demo")
 
 
 # --- pl.o in the integrated pass: rule l4 has already dropped the hollow extras -----------------------------------------

@@ -61,6 +61,7 @@ def dockerfile_form(text: str, dist: str) -> str:
     home = _first(r"^\s*(?:ENV\s+)?HOME=(\S+?)\s*\\?$", text, "/tmp")
     out = "\n".join(loose_lines(text))
     out = out.replace(dist, "<DIST>").replace(dist.replace("-", "_"), "<PKG>")
+    out = re.sub(r" --no-binary \S+", "", out)  # the sdist names go to the table (``sdist_deps``), not the fingerprint
     out = re.sub(r"==\d+\.\d+\.\d+", "==<SEMVER>", out)
     out = _DIGEST.sub("@sha256:<DIGEST>", out)
     out = re.sub(r'(?m)^CMD \["[^"]+"\]$', 'CMD ["<ENTRY>"]', out)
