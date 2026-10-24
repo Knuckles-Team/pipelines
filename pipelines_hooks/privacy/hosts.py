@@ -19,7 +19,7 @@ _IPV4_RESERVED = tuple(
 _IPV6_RESERVED = tuple(ipaddress.ip_network(cidr) for cidr in ("fe80::/10", "2001:db8::/32"))
 _LABEL = r"[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?"
 BARE_INTERNAL_HOSTNAME_RE = re.compile(
-    rf"(?<![A-Za-z0-9_.-])(?:(?:{_LABEL}\.)+(?:arpa|internal|corp|lan)|(?:{_LABEL}\.)*svc\.cluster\.local)(?![A-Za-z0-9_.-])"
+    rf"(?<![A-Za-z0-9_.-])(?:(?:{_LABEL}\.)+(?:arpa|internal|corp|lan)|(?:{_LABEL}\.)*svc\.cluster\.local)(?![A-Za-z0-9_.-])(?!\()"
 )
 
 
