@@ -978,8 +978,10 @@
     {
       "id": "PIPE-GATES-R016.50",
       "title": "Wave 1 (sdk 0.5) rule `w1.g1`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "378a6ddf7ed3"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:276",
         "tests/hooks/test_connector_central_wave1.py:284",
@@ -1520,8 +1522,10 @@
     {
       "id": "PIPE-GATES-R016.102",
       "title": "Central driver and verify",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4ad213cc9d23"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_driver.py:102",
         "tests/hooks/test_connector_central_driver.py:83",
