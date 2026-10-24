@@ -71,6 +71,7 @@
     "PIPE-GATES-R016.39",
     "PIPE-GATES-R016.40",
     "PIPE-GATES-R016.41",
+    "PIPE-GATES-R016.42",
     "PIPE-GATES-R016.50",
     "PIPE-GATES-R016.51",
     "PIPE-GATES-R016.52",
@@ -439,6 +440,7 @@
         "PIPE-GATES-R016.39",
         "PIPE-GATES-R016.40",
         "PIPE-GATES-R016.41",
+        "PIPE-GATES-R016.42",
         "PIPE-GATES-R016.50",
         "PIPE-GATES-R016.51",
         "PIPE-GATES-R016.52",
@@ -967,7 +969,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:253",
-        "tests/hooks/test_connector_central.py:267"
+        "tests/hooks/test_connector_central.py:282"
       ]
     },
     {
@@ -979,6 +981,17 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:1020"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.42",
+      "title": "The connector PR gate installs the identity catalog from the caller's variable",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8a8087f4d3c4"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central.py:267"
       ]
     },
     {
