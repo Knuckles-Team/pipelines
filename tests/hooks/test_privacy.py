@@ -29,6 +29,27 @@ def test_privacy_fires_on_a_real_home_path_in_runtime_source(repo: Repo, catalog
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 1
 
 
+@pytest.mark.spec("PIPE-GATES-R016.43")
+def test_privacy_ignores_a_lowercase_users_api_route(repo: Repo, catalog: Path) -> None:
+    repo.commit({"pkg/api.py": 'ROUTE = "/users/me/"\nOTHER = "/api/v1/users/someone/profile"\n'})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0
+
+
+@pytest.mark.spec("PIPE-GATES-R016.43")
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/Us" + "ers/realperson7/cache",
+        "/ho" + "me/realperson7/cache",
+        "C:\\Us" + "ers\\realperson7\\x",
+        "c:/us" + "ers/realperson7/x",
+    ],
+)
+def test_privacy_still_fires_on_real_home_paths(repo: Repo, catalog: Path, path: str) -> None:
+    repo.commit({"pkg/paths.py": f"CACHE = '{path}'\n"})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 1
+
+
 def test_privacy_accepts_a_documented_stand_in_account(repo: Repo, catalog: Path) -> None:
     repo.commit({"pkg/paths.py": "CACHE = '" + "/ho" + "me/example-user/cache'\n"})
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0

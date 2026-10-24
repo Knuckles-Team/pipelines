@@ -142,3 +142,37 @@ def test_authors_block_with_other_fields_is_reviewed_untouched(tmp_path: Path) -
     before = pp.read_text(encoding="utf-8")
     identity.neutral_author(ctx)
     assert pp.read_text(encoding="utf-8") == before and ctx.review.items
+
+
+@pytest.mark.spec("PIPE-GATES-R016.107")
+def test_example_credential_uris_in_docs_code_become_the_gate_placeholder_form(tmp_path: Path) -> None:
+    from pipelines_hooks.privacy.patterns import credential_uri_leak
+
+    SECRET = "s3cret" + "value"  # sanitizer:ignore - synthetic fixture credential
+    ctx = _ctx(tmp_path)
+    (ctx.root / "docs").mkdir()
+    doc = ctx.root / "docs/platform.md"
+    doc.write_text(
+        f"Prose keeps postgresql://realuser:{SECRET}@db.example.com/x as is.\n\n```yaml\n"  # sanitizer:ignore - synthetic fixture credential
+        f'  DATABASE_URL: "postgresql://plane:{SECRET}@plane-db/plane"\n  OK: "amqp://u:changeme@mq"\n```\n\n'  # sanitizer:ignore - synthetic fixture credential
+        f"Inline `redis://app:{SECRET}@cache:6379/0` too.\n",  # sanitizer:ignore - synthetic fixture credential
+        encoding="utf-8",
+    )
+    (ctx.root / ".env").write_text(
+        f"DATABASE_URL=postgresql://plane:{SECRET}@db/x\n", encoding="utf-8"
+    )  # sanitizer:ignore - synthetic fixture credential
+    identity.docs_credential_examples(ctx)
+    text = doc.read_text(encoding="utf-8")
+    assert (
+        "postgresql://USER:PASSWORD@plane-db/plane" in text and "`redis://USER:PASSWORD@cache:6379/0`" in text
+    )  # sanitizer:ignore - synthetic fixture credential
+    assert (
+        "amqp://u:changeme@mq" in text and f"postgresql://realuser:{SECRET}@db.example.com/x" in text
+    )  # sanitizer:ignore - synthetic fixture credential
+    assert (ctx.root / ".env").read_text(encoding="utf-8").count(f"{SECRET}") == 1
+    assert not any(
+        credential_uri_leak(ln) for ln in text.splitlines() if ln.strip().startswith(("DATABASE_URL", "Inline"))
+    )
+    ctx.applied.clear()
+    identity.docs_credential_examples(ctx)
+    assert not ctx.applied
