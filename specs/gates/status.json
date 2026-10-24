@@ -1112,8 +1112,10 @@
     {
       "id": "PIPE-GATES-R016.56",
       "title": "Wave 1 (sdk 0.5) rule `w1.g7`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "b24ee9c328e2"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:653",
         "tests/hooks/test_connector_central_wave1.py:665",
@@ -1532,6 +1534,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.q`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "b24ee9c328e2",
         "dce5c83d89db"
       ],
       "verified_by": [
@@ -1688,6 +1691,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.ac`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "b24ee9c328e2",
         "bc1c1dffa20b",
         "fb079953f3db"
       ],
@@ -1721,6 +1725,7 @@
       "landed_in": [
         "295d80aff385",
         "9d2259faab12",
+        "b24ee9c328e2",
         "fb3e2489a321"
       ],
       "verified_by": [
