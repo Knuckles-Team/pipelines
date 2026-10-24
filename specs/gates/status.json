@@ -136,7 +136,8 @@
     "PIPE-GATES-R016.109",
     "PIPE-GATES-R016.110",
     "PIPE-GATES-R016.111",
-    "PIPE-GATES-R016.112"
+    "PIPE-GATES-R016.112",
+    "PIPE-GATES-R016.113"
   ],
   "requirements": [
     {
@@ -514,7 +515,8 @@
         "PIPE-GATES-R016.109",
         "PIPE-GATES-R016.110",
         "PIPE-GATES-R016.111",
-        "PIPE-GATES-R016.112"
+        "PIPE-GATES-R016.112",
+        "PIPE-GATES-R016.113"
       ]
     },
     {
@@ -1780,6 +1782,17 @@
       ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:10"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.113",
+      "title": "An endpoint route literal is not a home path",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0729977ae03c"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_hostnames.py:19"
       ]
     }
   ]
