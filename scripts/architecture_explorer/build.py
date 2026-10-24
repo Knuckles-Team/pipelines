@@ -25,6 +25,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     __package__ = "scripts.architecture_explorer"
 
+from .details import write_details  # noqa: E402
 from .geometry import count_crossings  # noqa: E402
 from .place import Placer, Tree, add_dynamic_groups, unmapped_violations, validate_code  # noqa: E402
 from .sources import load_all, scan_set  # noqa: E402
@@ -98,7 +99,14 @@ def emit(node: dict, direct: dict, layouts: dict) -> dict:
         "code": node.get("code", []),
         "links": node.get("links", []),
         "specs": [
-            {"id": r["id"], "title": r["title"], "status": r["status"], "repo": r["repo"], "family": r["family"]}
+            {
+                "id": r["id"],
+                "title": r["title"],
+                "status": r["status"],
+                "repo": r["repo"],
+                "family": r["family"],
+                **({"desc": r["desc"]} if r.get("desc") else {}),
+            }
             for r in sorted(direct.get(node["id"], []), key=lambda r: natkey(r["id"]))
         ],
         "children": [emit(c, direct, layouts) for c in node["children"]],
@@ -213,6 +221,11 @@ def _walk(node: dict):
 
 
 def build(mode: str, workspace: Path | None) -> tuple[dict, dict]:
+    data, meta, _ = build_with_sources(mode, workspace)
+    return data, meta
+
+
+def build_with_sources(mode: str, workspace: Path | None) -> tuple[dict, dict, list]:
     model = json.loads((HERE / "model.json").read_text())
     registry = json.loads((HERE / "registry.json").read_text())
     scanned = scan_set(registry["repositories"], mode, os.environ.get("GITHUB_TOKEN") or None)
@@ -252,7 +265,7 @@ def build(mode: str, workspace: Path | None) -> tuple[dict, dict]:
         "aliases": {k: v for snap in reversed(snaps) for k, v in snap.aliases.items()},
         "crossings": count_crossings(layouts),
     }
-    return data, meta
+    return data, meta, snaps
 
 
 def render(data: dict, meta: dict) -> str:
@@ -303,8 +316,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.mode == "local" and not args.workspace:
         parser.error("--workspace is required in local mode")
-    data, meta = build(args.mode, args.workspace)
+    data, meta, snaps = build_with_sources(args.mode, args.workspace)
     body = render(data, meta)
+    target = args.page or args.artifact
+    if target:
+        meta["detail_files"] = len(write_details(target.parent, snaps))
     for path, text in ((args.artifact, body), (args.page, DOC_HEAD + body + DOC_TAIL)):
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)

@@ -36,7 +36,8 @@ const ArchSearch = (function () {
     return parts.length ? "#" + parts.join("&") : "";
   }
 
-  function create(index) {
+  // `descOf(id)` optionally supplies each row's short description (the page already holds it, so the index does not repeat it).
+  function create(index, descOf) {
     const aliases = {};
     Object.keys(index.aliases || {}).forEach(k => { aliases[k.toLowerCase()] = String(index.aliases[k]).toLowerCase(); });
     const titleCount = {};
@@ -48,7 +49,7 @@ const ArchSearch = (function () {
     }));
     const rows = index.rows.map(r => ({
       id: r[0], title: r[1], node: nodes[r[2]].id, ni: r[2], repo: index.repos[r[3]], family: index.fams[r[4]],
-      status: index.st[r[5]], lid: r[0].toLowerCase(), lt: r[1].toLowerCase(), tw: words(r[1]),
+      status: index.st[r[5]], ld: String((descOf && descOf(r[0])) || "").toLowerCase(), lid: r[0].toLowerCase(), lt: r[1].toLowerCase(), tw: words(r[1]),
     }));
 
     // A retired prefix or row ID resolves to its canonical form, so old names still land on the row.
@@ -84,6 +85,7 @@ const ArchSearch = (function () {
           if (best < 4 && r.lt.includes(t)) best = 4;
           if (best < 3 && (r.lid.includes(t) || r.family.toLowerCase().includes(t) || n.ld.includes(t))) best = 3;
           if (best < 2 && (n.ll.includes(t) || r.repo.toLowerCase().includes(t))) best = 2;
+          if (!best && r.ld.includes(t)) best = 1; // a description-only match ranks below every title, ID, family and part match
           if (!best) { ok = false; break; }
           s += best;
         }

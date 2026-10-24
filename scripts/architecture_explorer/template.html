@@ -114,6 +114,41 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .specs .id{font:500 12px var(--font-mono);color:var(--accent);text-decoration:none;word-break:break-all}
 .specs .ti{grid-column:2;min-width:0;overflow-wrap:anywhere}
 .specs .fa{grid-column:2;font:11px var(--font-mono);color:var(--faint)}
+.specs li{cursor:pointer}
+.specs button.ti{display:flex;gap:6px;align-items:baseline;text-align:left;background:none;border:0;padding:0;margin:0;color:var(--fg);font:inherit;cursor:pointer}
+.specs button.ti .tw{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.specs button.ti .cv{flex:none;color:var(--muted);font:600 12px var(--font-mono);transition:transform .12s ease}
+.specs li[data-open="1"] button.ti .cv{transform:rotate(90deg)}
+.specs button.ti:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+.specs .de{grid-column:2;min-width:0;color:var(--muted);font-size:12.5px;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.specs li[data-open="1"] .de{display:none}
+.xtools{display:flex;flex-wrap:wrap;gap:6px}
+.xbody{grid-column:1/-1;min-width:0;cursor:auto;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:color-mix(in srgb,var(--accent) 4%,var(--surface));display:flex;flex-direction:column;gap:10px;overflow-wrap:anywhere}
+.xbody h4.xh{font:600 10.5px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+.xbody .xs{min-width:0}
+.xbody .md{min-width:0;font-size:13px;line-height:1.5}
+.xbody .md>*:first-child{margin-top:0} .xbody .md>*:last-child{margin-bottom:0}
+.xbody .md p,.xbody .md ul,.xbody .md ol,.xbody .md blockquote,.xbody .md pre,.xbody .md .tbl{margin:0 0 .6em}
+.xbody .md ul,.xbody .md ol{padding-left:1.3em}
+.xbody .md h3,.xbody .md h4,.xbody .md h5,.xbody .md h6{font:600 13px var(--font-body);color:var(--fg);letter-spacing:0;text-transform:none;margin:.8em 0 .3em}
+.xbody .md code{font:12px var(--font-mono);background:var(--band-a);border-radius:3px;padding:0 3px}
+.xbody .md pre{overflow-x:auto;background:var(--band-a);border:1px solid var(--line);border-radius:6px;padding:8px;max-width:100%}
+.xbody .md pre code{background:none;padding:0;white-space:pre}
+.xbody .md .tbl{overflow-x:auto;max-width:100%}
+.xbody .md table{border-collapse:collapse;font-size:12px}
+.xbody .md th,.xbody .md td{border:1px solid var(--line);padding:3px 6px;text-align:left;vertical-align:top}
+.xbody .md th{background:var(--band-a)}
+.xbody .md blockquote{border-left:3px solid var(--line);padding-left:10px;color:var(--muted)}
+.xbody .md a,.xbody a{color:var(--accent)}
+.xbody .ev{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font:12px var(--font-mono)}
+.xbody .ev .k{color:var(--muted);font-weight:500}
+.xbody .ev a,.xbody .ev code{word-break:break-all}
+.xbody ul.tl{margin:0;padding-left:1.1em;font-size:12.5px}
+.xbody details{border:1px solid var(--line);border-radius:6px;background:var(--surface);min-width:0}
+.xbody details>summary{cursor:pointer;padding:6px 10px;font:600 12.5px var(--font-body);min-height:32px;display:flex;align-items:center}
+.xbody details>summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:6px}
+.xbody details>.md{padding:0 10px 8px}
+.xbody details>.dl{padding:0 10px 4px;font:11.5px var(--font-mono)}
 .badge{font:600 10px var(--font-mono);letter-spacing:.05em;padding:2px 6px;border-radius:4px;border:1px solid currentColor;align-self:start;white-space:nowrap}
 .badge.VERIFIED{color:var(--s-verified)} .badge.LANDED{color:var(--s-landed)} .badge.SPECIFIED{color:var(--s-specified)} .badge.RETIRED{color:var(--s-retired)}
 .more{align-self:flex-start}
@@ -373,6 +408,42 @@ document.addEventListener("keydown",e=>{ if(e.target===$("q")) return; if((e.key
 
 // ---------- panel ----------
 let scope="node", filt="ALL", limit=150, flashSpec=null, flashIds=new Set();
+const cssId=t=>String(t).replace(/[^A-Za-z0-9_-]/g,"_");
+const openRows=new Set(), detailCache=new Map();
+const DET_TAGS=new Set(["P","H3","H4","H5","H6","UL","OL","LI","CODE","PRE","STRONG","EM","A","TABLE","THEAD","TBODY","TR","TH","TD","BLOCKQUOTE","HR","BR","DIV"]);
+// Build-time HTML is escaped already; it is still parsed inertly and copied through an allowlist, never assigned as markup.
+function copySafe(src,dst){ src.childNodes.forEach(n=>{ if(n.nodeType===3){ dst.append(document.createTextNode(n.nodeValue)); return; }
+  if(n.nodeType!==1||!DET_TAGS.has(n.tagName)) return; const e=document.createElement(n.tagName.toLowerCase());
+  if(n.tagName==="A"){ const h=n.getAttribute("href")||""; if(/^https?:\/\//i.test(h)){ e.setAttribute("href",h); e.setAttribute("target","_blank"); e.setAttribute("rel","noopener noreferrer"); } }
+  if(n.tagName==="DIV"&&n.className==="tbl") e.className="tbl"; copySafe(n,e); dst.append(e); }); }
+function safeHtml(host,markup){ copySafe(new DOMParser().parseFromString(markup,"text/html").body,host); return host; }
+const safeName=t=>{ const o=String(t).replace(/[^A-Za-z0-9._-]/g,"_"); return (o===""||o==="."||o==="..")?"_":o; };
+function loadDetail(s){ const key=s.repo+"/"+s.family; if(!detailCache.has(key)){
+  const p=fetch("spec-details/"+safeName(s.repo)+"/"+safeName(s.family)+".json").then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); });
+  p.catch(()=>detailCache.delete(key)); detailCache.set(key,p); } return detailCache.get(key); }
+function linkEl(label,url){ return /^https:\/\/github\.com\//.test(url||"")?el("a",{href:url,target:"_blank",rel:"noopener noreferrer",text:label}):el("code",{text:label}); }
+function sect(title,body){ return el("div",{class:"xs"},[el("h4",{class:"xh",text:title}),body]); }
+function mdBox(markup){ return safeHtml(el("div",{class:"md"}),markup); }
+function detailBody(s,d){ const r=d.rows[s.id], box=document.createDocumentFragment();
+  if(!r){ box.append(el("p",{class:"muted",text:"No detail was published for this row."})); return box; }
+  box.append(sect("Requirement",r.req?mdBox(r.req):el("p",{class:"muted",text:"No requirement text was found in requirements.md."})));
+  if(r.acc) box.append(sect("Acceptance criteria",mdBox(r.acc)));
+  const ev=el("div",{class:"ev"},[el("span",{class:"badge "+s.status,text:s.status})]);
+  if(r.landed_in.length){ ev.append(el("span",{class:"k",text:"landed_in"})); r.landed_in.forEach(c=>ev.append(linkEl(c.label,c.url))); }
+  if(r.verified_by.length){ ev.append(el("span",{class:"k",text:"verified_by"})); r.verified_by.forEach(t=>ev.append(linkEl(t.label,t.url))); }
+  if(r.rollup_of.length){ ev.append(el("span",{class:"k",text:"rollup_of"})); r.rollup_of.forEach(id=>ev.append(el("a",{href:"#q="+encodeURIComponent(id),text:id}))); }
+  box.append(sect("Status and evidence",ev));
+  if(r.tests&&r.tests.length){ const ul=el("ul",{class:"tl"}); r.tests.forEach(t=>ul.append(safeHtml(el("li"),t))); box.append(sect("Test spec lines",ul)); }
+  const fl=el("div",{class:"ev"}); d.files.forEach(f=>fl.append(linkEl(f.name,f.url))); box.append(sect("Files on GitHub",fl));
+  if(d.docs.length){ const wrap=el("div",{class:"xs"},[el("h4",{class:"xh",text:"Design"})]);
+    d.docs.forEach(doc=>{ const det=el("details"), sum=el("summary",{text:doc.label+" ("+doc.name+")"}); det.append(sum); let done=false;
+      det.addEventListener("toggle",()=>{ if(det.open&&!done){ done=true; det.append(mdBox(doc.html)); det.append(el("div",{class:"dl"},[linkEl("Open "+doc.name+" on GitHub",doc.url)])); } }); wrap.append(det); });
+    box.append(wrap); }
+  return box; }
+function fillBody(box,s){ box.textContent=""; box.append(el("p",{class:"muted",role:"status",text:"Loading full spec…"}));
+  loadDetail(s).then(d=>{ box.textContent=""; box.append(detailBody(s,d)); }).catch(()=>{ box.textContent="";
+    const b=el("button",{class:"btn",type:"button",text:"Retry"}); b.onclick=()=>fillBody(box,s);
+    box.append(el("p",{class:"muted",role:"alert",text:"The full spec could not be loaded. "}),b,el("div",{class:"ev"},[linkEl("Open requirements.md on GitHub",gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md")])); }); }
 function resetSpecs(){ const n=nodes[selected]; scope=(n&&n.specs.length)?"node":"tree"; filt="ALL"; limit=150; flashSpec=null; flashIds=new Set(); }
 function specRows(n){ if(scope==="node") return n.specs; const out=[]; (function w(x){ out.push(...x.specs); x.children.forEach(w); })(n); return out; }
 function statBlock(c){ const d=el("div",{class:"stat"});
@@ -410,10 +481,28 @@ function renderPanel(){
   sec.append(sc,fc);
   const rows=all.filter(s=>filt==="ALL"||s.status===filt);
   if(!rows.length) sec.append(el("p",{class:"muted",text: n.children.length&&scope==="node" ? "No rows sit on this part itself. Choose “Include parts below” to list the rows of its parts." : "No spec rows map to this part."}));
-  const ul=el("ul",{class:"plain specs"});
-  rows.slice(0,limit).forEach(s=>{ const li=el("li",{"data-spec":s.id}); if(flashIds.has(s.id)||s.id===flashSpec) li.className="flash";
-    li.append(el("span",{class:"badge "+s.status,text:s.status}), el("a",{class:"id",href:gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md",target:"_blank",rel:"noopener",text:s.id}),
-      el("span",{class:"ti",text:s.title||"(untitled)"}), el("span",{class:"fa",text:s.repo+" · "+s.family})); ul.append(li); });
+  const ul=el("ul",{class:"plain specs"}), shown=rows.slice(0,limit), items=[];
+  // Open or close one row in place, so the list keeps its scroll position.
+  function setOpen(it,open){ const {li,s,tg}=it; if(open) openRows.add(s.id); else openRows.delete(s.id);
+    li.setAttribute("data-open",open?"1":"0"); tg.setAttribute("aria-expanded",String(open)); tg.setAttribute("aria-label",(open?"Collapse ":"Expand ")+s.id+", "+(s.title||"untitled"));
+    const have=li.querySelector(":scope > .xbody");
+    if(open&&!have){ const body=el("div",{class:"xbody",id:"x-"+cssId(s.id),role:"region","aria-label":s.id+" full spec"}); li.append(body); fillBody(body,s); }
+    else if(!open&&have) have.remove(); }
+  let collapse=null; const sync=()=>{ if(collapse) collapse.disabled=!openRows.size; };
+  if(shown.length){ const xt=el("div",{class:"xtools"}), ea=el("button",{class:"btn",type:"button",text:"Expand all shown ("+fmt(shown.length)+")"});
+    collapse=el("button",{class:"btn",type:"button",text:"Collapse all"});
+    ea.onclick=()=>{ items.forEach(it=>{ if(!openRows.has(it.s.id)) setOpen(it,true); }); sync(); };
+    collapse.onclick=()=>{ items.forEach(it=>setOpen(it,false)); openRows.clear(); sync(); }; xt.append(ea,collapse); sec.append(xt); sync(); }
+  shown.forEach(s=>{ const open=openRows.has(s.id), li=el("li",{"data-spec":s.id}); if(flashIds.has(s.id)||s.id===flashSpec) li.className="flash"; li.setAttribute("data-open","0");
+    const tg=el("button",{class:"ti",type:"button","aria-expanded":"false","aria-controls":"x-"+cssId(s.id)},[el("span",{class:"tw",text:s.title||"(untitled)"}),el("span",{class:"cv","aria-hidden":"true",text:"\u25B8"})]);
+    tg.setAttribute("aria-label","Expand "+s.id+", "+(s.title||"untitled"));
+    li.append(el("span",{class:"badge "+s.status,text:s.status}), el("a",{class:"id",href:gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md",target:"_blank",rel:"noopener",text:s.id}), tg);
+    if(s.desc) li.append(el("span",{class:"de",text:s.desc}));
+    li.append(el("span",{class:"fa",text:s.repo+" · "+s.family}));
+    const it={li,s,tg}; items.push(it); const flip=()=>{ setOpen(it,!openRows.has(s.id)); sync(); };
+    tg.onclick=e=>{ e.stopPropagation(); flip(); };
+    li.addEventListener("click",e=>{ if(e.target.closest("a,button,summary,details,.xbody")) return; const sel=window.getSelection&&window.getSelection(); if(sel&&String(sel)) return; flip(); });
+    ul.append(li); if(open) setOpen(it,true); });
   sec.append(ul);
   if(rows.length>limit){ const m=el("button",{class:"btn more",type:"button",text:"Show "+Math.min(300,rows.length-limit)+" more of "+fmt(rows.length-limit)}); m.onclick=()=>{limit+=300;renderPanel();}; sec.append(m); }
   pb.append(sec);
@@ -422,7 +511,8 @@ function renderPanel(){
 
 // ---------- search ----------
 /*__SEARCH__*/
-const SX = ArchSearch.create(PAYLOAD.search);
+const DESC={}; Object.values(nodes).forEach(n=>n.specs.forEach(r=>{ if(r.desc) DESC[r.id]=r.desc; }));
+const SX = ArchSearch.create(PAYLOAD.search,id=>DESC[id]);
 const q=$("q"), res=$("results"), qstat=$("qstatus"); let hits=[], cur=-1, activeQ="";
 function setCur(i){ const bs=[...res.querySelectorAll(".res")]; cur=i; bs.forEach((b,k)=>b.setAttribute("aria-selected",String(k===i)));
   if(i>=0&&bs[i]){ q.setAttribute("aria-activedescendant",bs[i].id); bs[i].scrollIntoView({block:"nearest"}); } else q.removeAttribute("aria-activedescendant"); }
