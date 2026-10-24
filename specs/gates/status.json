@@ -1007,7 +1007,7 @@
       "title": "Home paths are case-sensitive path segments",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "f20f3fe5ff3d"
+        "2cf66b98c13a"
       ],
       "verified_by": [
         "tests/hooks/test_privacy.py:32",
