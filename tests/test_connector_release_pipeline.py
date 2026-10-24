@@ -105,3 +105,64 @@ def test_connector_pr_workflow_forwards_skip_hooks_and_the_webarchiver_patch_ski
         encoding="utf-8"
     )
     assert "+      skip-hooks: docker-compose-check,scanner-versions" in patch
+
+
+# spec: PIPE-RELEASE-R017
+@pytest.mark.spec("PIPE-RELEASE-R017")
+def test_connector_pr_builds_the_image_only_when_a_container_input_changes(tmp_path: Path) -> None:
+    document = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
+    assert document["jobs"]["container-build"]["needs"] == "container-inputs"
+    assert document["jobs"]["container-build"]["if"] == "needs.container-inputs.outputs.build == 'true'"
+    assert document["jobs"]["container-build"]["uses"].endswith("/container_build_check.yml@main")
+    steps = document["jobs"]["container-inputs"]["steps"]
+    script = next(step for step in steps if step.get("id") == "changed")["run"]
+    for pattern in (
+        "docker/*",
+        "Dockerfile*",
+        ".dockerignore",
+        "pyproject.toml",
+        "uv.lock",
+        "package.json",
+        "pnpm-lock.yaml",
+        "patches/*",
+    ):
+        assert pattern in script
+
+    def git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
+
+    def run_detect(base: str = "main") -> str:
+        output = tmp_path / "out"
+        output.unlink(missing_ok=True)
+        env = {"PATH": "/usr/bin:/bin", "BASE_REF": base, "GITHUB_OUTPUT": str(output)}
+        subprocess.run(["bash", "-c", script], cwd=tmp_path, env=env, check=True, capture_output=True)
+        return output.read_text().strip()
+
+    git("init", "-b", "main")
+    git("config", "user.email", "t@example.invalid")
+    git("config", "user.name", "t")
+    (tmp_path / "README.md").write_text("x")
+    git("add", "README.md")
+    git("commit", "-m", "base")
+    git("update-ref", "refs/remotes/origin/main", "HEAD")
+    git("checkout", "-b", "change")
+    (tmp_path / "README.md").write_text("y")
+    git("commit", "-am", "docs")
+    assert run_detect() == "build=false"  # no Dockerfile: skips cleanly
+
+    (tmp_path / "docker").mkdir()
+    (tmp_path / "docker/Dockerfile").write_text("FROM scratch\n")
+    git("add", "docker/Dockerfile")
+    git("commit", "-m", "dockerfile")
+    assert run_detect() == "build=true"
+
+    git("update-ref", "refs/remotes/origin/main", "HEAD")
+    (tmp_path / "README.md").write_text("z")
+    git("commit", "-am", "docs only")
+    assert run_detect() == "build=false"  # Dockerfile present, no container input changed
+
+    (tmp_path / "patches").mkdir()
+    (tmp_path / "patches/a.patch").write_text("p")
+    git("add", "patches/a.patch")
+    git("commit", "-m", "patch")
+    assert run_detect() == "build=true"

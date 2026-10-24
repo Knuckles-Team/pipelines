@@ -1,0 +1,55 @@
+name: Container Build Check
+
+# Builds the image on a pull request so a broken Dockerfile or a file missing from the build
+# context fails before release (PIPE-RELEASE-R017). It never pushes and never logs in.
+#
+# Caller contract:
+#
+#   jobs:
+#     container-build:
+#       uses: Knuckles-Team/pipelines/.github/workflows/container_build_check.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      dockerfile:
+        required: false
+        type: string
+        default: 'docker/Dockerfile'
+      context:
+        required: false
+        type: string
+        default: '.'
+      target:
+        description: Named build stage; empty builds the final stage.
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  build-check:
+    runs-on: self-hosted
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the image without pushing
+        env:
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          BUILD_CONTEXT: ${{ inputs.context }}
+          BUILD_TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          if [[ ! -f "$DOCKERFILE" ]]; then
+            echo "No $DOCKERFILE in this repository; nothing to build."
+            exit 0
+          fi
+          args=(--file "$DOCKERFILE" --progress plain)
+          if [[ -n "$BUILD_TARGET" ]]; then args+=(--target "$BUILD_TARGET"); fi
+          docker buildx build "${args[@]}" "$BUILD_CONTEXT"
