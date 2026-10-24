@@ -44,8 +44,7 @@
         "PIPE-VALIDATION-R001.10",
         "PIPE-VALIDATION-R001.11",
         "PIPE-VALIDATION-R001.12"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-VALIDATION-R001.1",
@@ -180,8 +179,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_security_scaffold.py:162"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-VALIDATION-R001.12",
@@ -193,8 +191,7 @@
         "tests/hooks/test_connector_security_scaffold.py:214",
         "tests/hooks/test_connector_security_scaffold.py:228",
         "tests/hooks/test_connector_security_scaffold.py:241"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-VALIDATION-R002",
@@ -211,13 +208,5 @@
         "tests/hooks/test_privacy_provenance.py:82"
       ]
     }
-  ],
-  "frontier": [
-    "PIPE-VALIDATION-R001.11",
-    "PIPE-VALIDATION-R001.12"
-  ],
-  "unserved": [
-    "PIPE-VALIDATION-R001.11",
-    "PIPE-VALIDATION-R001.12"
   ]
 }
