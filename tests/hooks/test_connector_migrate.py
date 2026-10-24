@@ -432,7 +432,11 @@ def test_scaffolded_parent_import_assertion_is_dropped_because_r1_removes_the_im
 def test_driver_runs_tests_without_pytest_plugin_flags_and_merges_by_repo_slug() -> None:
     text = (Path(__file__).resolve().parents[2] / "scripts" / "connector_migrate_batch.py").read_text(encoding="utf-8")
     assert '"-p", "no:cacheprovider"' not in text
-    assert '"-R", slug, "--squash"' in text
+    assert (
+        '"-R", slug, "--rebase"' in text
+        and "--squash" not in text.split("def check_status_on_main")[0].split("# Rebase-merge")[1]
+    )
+    assert "def check_status_on_main" in text
 
 
 DOC = """# Demo

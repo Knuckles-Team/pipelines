@@ -1,0 +1,33 @@
+{
+  "api_version": "arbora.io/v1",
+  "artifacts": {
+    "bellwether_mcp/ontology/fixtures/records.json": "cd05f7e94f956bf7525e3d5ce355217b7e5bf3ae9d6abfdfc496bf83f7ac6eb9",
+    "bellwether_mcp/ontology/mappings/source.yaml": "aea58ea761454a493c9059b108edc69e7fdaf3993faa54cfb7f09b20d501beb2",
+    "bellwether_mcp/ontology/market_data.ttl": "697a135ab84b68689f4595c64256e14889a6ae65aa6241883187ca9c59420163",
+    "bellwether_mcp/ontology/migrations/manifest.json": "8abb958d738f0818101022145d2bc28b1c936998f0e1f72ed7060edf370d5911",
+    "bellwether_mcp/ontology/shapes/connector.shacl.ttl": "3f0bd85ef514358dc25f1f6a80615b17b1b196d5f82824e31ad4bc254a425eef"
+  },
+  "checks": {
+    "declared_tool_schema": "passed",
+    "manifest_integrity": "passed",
+    "privacy_contract": "passed",
+    "shacl_parse": "passed",
+    "synthetic_fixture_contract": "passed"
+  },
+  "compatibility": {
+    "agent_utilities": ">=2.5.0,<3",
+    "bundle_schema": "2",
+    "epistemic_graph": ">=2.27.0,<3"
+  },
+  "connector": "bellwether-mcp",
+  "kind": "ConnectorSourceAttestation",
+  "live_certified": false,
+  "mode": "offline-source",
+  "schema_version": "2",
+  "signature": null,
+  "signature_algorithm": "none",
+  "signer": "UNSIGNED-PREVIEW",
+  "signing_public_key": "",
+  "status": "source-validated",
+  "validated_at": "2026-09-28T00:00:00Z"
+}

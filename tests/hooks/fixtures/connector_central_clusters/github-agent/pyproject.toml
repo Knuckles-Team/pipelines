@@ -1,0 +1,75 @@
+[build-system]
+requires = [ "setuptools>=84.0.0", "wheel",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "github-agent"
+version = "2.4.9"
+readme = "README.md"
+description = "GitHub Agent for MCP"
+requires-python = ">=3.12"
+classifiers = [ "Development Status :: 5 - Production/Stable", "License :: Public Domain", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
+dependencies = [ "requests>=2.34.2", "agent-connector-sdk[mcp,graphql]>=0.4.1,<1.0.0",]
+[[project.authors]]
+name = "Project Maintainers"
+email = "maintainers@users.noreply.github.com"
+
+[project.license]
+text = "MIT"
+
+[project.scripts]
+github-mcp = "github_agent.mcp_server:mcp_server"
+
+[project.optional-dependencies]
+mcp = [ ]
+all = [ ]
+test = [
+    "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0",]
+
+[project.entry-points."agent_connector_sdk.skill_providers"]
+github-agent = "github_agent.skills"
+
+[project.entry-points."agent_connector_sdk.ontology_providers"]
+github-agent = "github_agent.ontology"
+
+# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+[project.entry-points."agent_connector_sdk.connector"]
+github-mcp = "github_agent"
+
+[tool.uv.workspace]
+members = ["."]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.uv]
+override-dependencies = [
+    "fastmcp-slim[client,server]>=4.1.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[dependency-groups]
+dev = [
+    "pytest-timeout>=2.4.0",
+]
+
+[tool.setuptools.package-data]
+github_agent = [ "mcp_config.json", "agent_data/**", "prompts/**", "skills/**", "ontology/**", "connectors/**",]
+
+[tool.ruff.lint]
+select = [ "E", "F", "I", "UP", "B",]
+ignore = [ "E402", "E501", "B008",]
+
+[tool.setuptools.packages.find]
+where = [ ".",]
+
+[tool.pipelines_hooks.ste]
+exempt = ["specs/*", "specs/**/*"]

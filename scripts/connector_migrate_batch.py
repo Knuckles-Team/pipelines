@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Batch driver for the connector manifest-cut migration (PIPE-GATES-R016.16).
 
-Per connector: worktree -> sync -> migrate -> commit -> verify -> push -> PR -> wait for ``gates`` -> squash-merge.
+Per connector: worktree -> sync -> migrate -> commit -> verify -> push -> PR -> wait for ``gates`` -> rebase-merge.
 At most ``--jobs`` (default 4) repos are in flight. Outcomes go to a JSON ledger the driver resumes from; a failure stops
 that repo only and lands in ``review.json`` with the step and an output tail. No retries, except one infra re-run of a
 cancelled/infra-failed ``gates`` run (stated in the ledger as ``infra_rerun``) and one re-stage after a formatter hook.
@@ -359,8 +359,12 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         step = "merge"
         slug = url.split("github.com/", 1)[1].split("/pull/")[0]
         # -R keeps gh from checking main out in the shared checkout, where main is already in use.
-        sh(step, ["gh", "pr", "merge", url, "-R", slug, "--squash", "--delete-branch"], wt)
+        # Rebase-merge, never squash: a squash rewrites the landing SHA that the generated status.json records, so
+        # the status commit (last on the branch) would be stale on main (PIPE-GATES-R016.16).
+        sh(step, ["gh", "pr", "merge", url, "-R", slug, "--rebase", "--delete-branch"], wt)
         led.record(repo, status="merged", merged_at=time.strftime("%FT%TZ", time.gmtime()))
+        step = "status-on-main"
+        check_status_on_main(wt, env, a, led, repo)
     except StepFailed as exc:
         led.record(repo, status="failed", failed_step=exc.step, output_tail=exc.output)
     except Exception as exc:  # noqa: BLE001 - recorded, then this repo stops
@@ -395,6 +399,24 @@ def regenerate_status(wt: Path, env: dict[str, str], a: argparse.Namespace, led:
         env,
     )
     led.record(repo, status_commit=True)
+
+
+def check_status_on_main(wt: Path, env: dict[str, str], a: argparse.Namespace, led: Ledger, repo: str) -> None:
+    """After the merge, ``spec-status`` on the merged main must change nothing; the result goes to the ledger."""
+    if not (wt / "specs").is_dir():
+        return
+    sh("status-on-main", ["git", "fetch", "origin", "main"], wt, env)
+    sh("status-on-main", ["git", "checkout", "-q", "--detach", "origin/main"], wt, env)
+    try:
+        sh(
+            "status-on-main",
+            hook("spec-status", "--root", str(wt)),
+            wt,
+            {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)},
+        )
+        led.record(repo, status_on_main="fresh (0 changes)")
+    except StepFailed as exc:
+        led.record(repo, status_on_main="STALE: " + exc.output[-400:])
 
 
 def central_verify(wt: Path, py: str, env: dict[str, str], led: Ledger, repo: str, a: argparse.Namespace) -> None:

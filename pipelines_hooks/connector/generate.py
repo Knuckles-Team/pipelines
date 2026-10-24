@@ -9,7 +9,8 @@ them and the repository does not.
 * ``<pkg>/ontology/shapes/connector.shacl.ttl``: one ``<Class>GovernanceShape`` per class the
   connector's ``<pkg>/ontology/<ontology_source>.ttl`` declares as ``:<Class> a owl:Class``
   (``ontology_source`` is read from ``ontology/mappings/source.yaml``), sorted by class name.
-  ``[tool.pipelines.ontology] shape_classes`` replaces the derived list.
+  ``[tool.pipelines.ontology] shape_classes`` replaces the derived list; ``ttl`` names the ontology file (stem) when
+  it is not called ``<ontology_source>.ttl`` (the shapes keep the ``ontology_source`` domain).
 * ``<pkg>/ontology/certification.json``: SHA-256 digests of the committed artifacts that exist
   (manifest, presets, fingerprints, fixtures, mappings, migrations, ontology), the generated
   shapes, fixed compatibility ranges, and ``validated_at`` from ``SOURCE_DATE_EPOCH`` or the
@@ -84,8 +85,8 @@ def _validated_at(root: Path) -> str:
     return datetime.fromtimestamp(int(epoch), UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def certification(root: Path, package: Path, dist: str, domain: str) -> dict[str, Any]:
-    names = [a.format(pkg=package.name, source=domain) for a in ARTIFACTS]
+def certification(root: Path, package: Path, dist: str, domain: str, ttl_stem: str = "") -> dict[str, Any]:
+    names = [a.format(pkg=package.name, source=ttl_stem or domain) for a in ARTIFACTS]
     digests = {n: hashlib.sha256((root / n).read_bytes()).hexdigest() for n in names if (root / n).is_file()}
     return {
         "api_version": "graphos.io/v1",
@@ -111,15 +112,17 @@ def generate(root: Path) -> dict[Path, str]:
     pyproject = project.load(root)
     package = project.package_dir(root, pyproject)
     domain = _domain(package)
-    ttl = package / "ontology" / f"{domain}.ttl"
+    table = pyproject.get("tool", {}).get("pipelines", {}).get("ontology", {})
+    stem = str(table.get("ttl", domain))
+    ttl = package / "ontology" / f"{stem}.ttl"
     if not ttl.is_file():
         raise CannotRun(f"{ttl} is missing")
-    override = pyproject.get("tool", {}).get("pipelines", {}).get("ontology", {}).get("shape_classes")
+    override = table.get("shape_classes")
     classes = [str(c) for c in override] if override else CLASS_RE.findall(ttl.read_text(encoding="utf-8"))
     shapes_path = package / "ontology" / "shapes" / "connector.shacl.ttl"
     shapes_path.parent.mkdir(parents=True, exist_ok=True)
     shapes_path.write_text(shacl(domain, classes), encoding="utf-8")  # digested below
-    record = certification(root, package, str(pyproject["project"]["name"]), domain)
+    record = certification(root, package, str(pyproject["project"]["name"]), domain, stem)
     cert_path = package / "ontology" / "certification.json"
     return {shapes_path: shacl(domain, classes), cert_path: json.dumps(record, indent=2, sort_keys=True) + "\n"}
 

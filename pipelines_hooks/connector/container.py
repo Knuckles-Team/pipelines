@@ -10,6 +10,7 @@ image kinds; a repo that runs differently sets ``limits`` per kind, each key opt
     [tool.pipelines.container]
     limits = {agent = {memory_limit_env = "AGENT_CONTAINER_MEMORY_LIMIT", memory_limit = "4g",
                        cpu_limit_env = "AGENT_CONTAINER_CPU_LIMIT", cpu_limit = "2.0"}}
+``env_file_optional = true`` keeps ``../.env`` optional (compose starts without it) instead of required.
 Nothing is read from a committed Dockerfile; a connector commits none of these files.
 ``--check`` renders into memory and fails when a tracked copy exists under ``docker/``
 (a committed rendering is a second source of truth), printing nothing else.
@@ -38,6 +39,8 @@ DEFAULT_LIMITS = {
     "cpu_limit_env": "MCP_CONTAINER_CPU_LIMIT",
     "cpu_limit": "1.0",
 }
+ENV_FILE_REQUIRED = "      - ../.env\n"
+ENV_FILE_OPTIONAL = "      - path: ../.env\n        required: false\n"
 DEFAULT_DEBUG_APT = (
     "ripgrep tree fd-find curl nano build-essential cmake libssl-dev libcurl4-openssl-dev pkg-config cargo rustc"
 )
@@ -91,6 +94,9 @@ def _dockerfile(dist: str, version: str, extras: set[str], table: dict[str, Any]
     builders, runtimes = [], []
     for target in targets:
         extra = target if target in extras else ("all" if "all" in extras else None)
+        if target in table.get("install_extras", {}):
+            # an explicit list is exactly what the image installs (an empty list: the bare wheel, no extras)
+            extra = ",".join(table["install_extras"][target]) or None
         builders.append(builder_block(dist, version, target, extra, sdists))
         copies = "".join(f"{c}\n" for c in table.get("stage_copies", []))
         label = "MCP server only" if target == "mcp" else "full agent runtime; can also run the MCP server"
@@ -152,6 +158,7 @@ def render(root: Path) -> dict[str, str]:
         },
     )
     env = "".join(f"      - {line}\n" for line in table.get("compose_env", []))
+    env_file = ENV_FILE_OPTIONAL if table.get("env_file_optional") else ENV_FILE_REQUIRED
     for target in entries:
         service = f"{dist}-{target}"
         limits = {**DEFAULT_LIMITS, **dict(table.get("limits", {}).get(target, {}))}
@@ -163,6 +170,7 @@ def render(root: Path) -> dict[str, str]:
                 "@@UID@@": uid,
                 "@@PORT@@": port,
                 "@@COMPOSE_ENV@@": env,
+                "@@ENV_FILE@@": env_file,
                 "@@MEMORY_ENV@@": str(limits["memory_limit_env"]),
                 "@@MEMORY@@": str(limits["memory_limit"]),
                 "@@CPU_ENV@@": str(limits["cpu_limit_env"]),

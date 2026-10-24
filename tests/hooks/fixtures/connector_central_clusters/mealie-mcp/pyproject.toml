@@ -1,0 +1,81 @@
+[build-system]
+requires = [ "setuptools>=84.0.0", "wheel",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mealie-mcp"
+version = "2.3.3"
+description = "Mealie MCP Server for Agentic AI!"
+readme = "README.md"
+classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
+requires-python = ">=3.12"
+dependencies = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0", "requests>=2.34.2",]
+[[project.authors]]
+name = "Genius"
+email = "genius@example.com"
+
+[project.license]
+text = "MIT"
+
+[project.optional-dependencies]
+mcp = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+all = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+test = [
+    "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
+
+[project.scripts]
+mealie-mcp = "mealie_mcp.mcp_server:mcp_server"
+
+[project.entry-points."agent_connector_sdk.skill_providers"]
+mealie-mcp = "mealie_mcp.skills"
+
+[project.entry-points."agent_connector_sdk.ontology_providers"]
+mealie-mcp = "mealie_mcp.ontology"
+
+[project.entry-points."agent_connector_sdk.prompt_providers"]
+mealie-mcp = "mealie_mcp.prompts"
+
+# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+[project.entry-points."agent_connector_sdk.connector"]
+mealie-mcp = "mealie_mcp"
+
+[tool.uv.workspace]
+members = ["."]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.uv]
+override-dependencies = [
+    "fastmcp-slim[client,server]>=4.1.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[dependency-groups]
+dev = [
+    "pytest-timeout>=2.4.0",
+]
+
+[tool.setuptools.package-data]
+mealie_mcp = [ "mcp_config.json", "agent_data/**", "prompts/**", "skills/**", "ontology/**", "connectors/**",]
+
+[tool.ruff.lint]
+select = [ "E", "F", "I", "UP", "B",]
+ignore = [ "E402", "E501", "B008",]
+
+[tool.setuptools.packages.find]
+where = [ ".",]
+
+[tool.vulture]
+ignore_names = ["request", "config", "accept_language"]
+
+[tool.pipelines_hooks.ste]
+exempt = ["specs/*", "specs/**/*"]

@@ -1,0 +1,40 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix : <http://knuckles.team/kg#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# bellwether-mcp ontology — this connector's OWN admin/lifecycle record.
+# It does NOT redeclare finance-v1 domain classes (Instrument, Listing, Venue,
+# BarSeries, IndicatorSpec, SignalState, TrendFlip, MacroEvent) — those are
+# proposed for EG branch feat/finance-core, which as of this package's build
+# has not yet published any class/property names (see
+# ontology/mappings/source.yaml's provenance note). This connector maps each
+# of its four declared streams onto that class list through
+# `connectors/bellwether_mcp.connector_sources`'s `ontology_class` hint, resolved at
+# runtime by `bellwether_mcp.connectors.adapters.build_schema_mappings` —
+# never by duplicating the class here. See AGENTS.md "Ontology mapping".
+
+# --- classes (owl:Class) ---
+
+:MarketDataSyncRun a owl:Class ;
+    rdfs:label "Market Data Sync Run" ;
+    rdfs:comment "One bounded sweep of one bellwether-mcp stream (CoinMarketCap listings/quotes/global-metrics, a FRED macro series, or the FOMC calendar): a durable record of the ask and its checkpoint, not the ingested data itself." .
+
+# --- links (owl:ObjectProperty) ---
+
+:syncsStream a owl:ObjectProperty ;
+    rdfs:label "syncs stream" ;
+    rdfs:comment "Links a MarketDataSyncRun to the source_ingestion stream name it swept (e.g. crypto_listings_cmc, macro_series_fed_balance_sheet, fomc_calendar)." ;
+    rdfs:domain :MarketDataSyncRun ;
+    rdfs:range xsd:string .
+
+<http://knuckles.team/kg/bellwether-mcp> a owl:Ontology ;
+    rdfs:label "Market Data Connector Ontology" ;
+    rdfs:comment """bellwether-mcp's own sync-lifecycle bookkeeping,
+    federated into the agent-utilities knowledge-graph hub. The finance-v1
+    domain classes each stream lands on are epistemic-graph-owned (once
+    feat/finance-core publishes them); this ontology models only this
+    connector's own admin state, not a second copy of that domain.""" .

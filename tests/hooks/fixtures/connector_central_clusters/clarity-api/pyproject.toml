@@ -1,0 +1,81 @@
+[build-system]
+requires = [ "setuptools>=84.0.0", "wheel",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clarity-api"
+version = "3.3.3"
+description = "Microsoft Clarity API + MCP Server + A2A Server"
+readme = "README.md"
+classifiers = [ "Development Status :: 5 - Production/Stable", "License :: Public Domain", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
+requires-python = ">=3.12, <3.15"
+dependencies = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0", "requests>=2.34.2", "python-dotenv>=1.2.4", "pydantic[email]>=2.14.1", "urllib3>=2.8.0",]
+[[project.authors]]
+name = "Project Maintainers"
+email = "maintainers@users.noreply.github.com"
+
+[project.license]
+text = "MIT"
+
+[project.optional-dependencies]
+mcp = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+all = [ "clarity-api[mcp]>=2.0.1",]
+test = [
+    "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
+
+[project.scripts]
+clarity-mcp = "clarity_api.mcp_server:mcp_server"
+
+[project.entry-points."agent_connector_sdk.skill_providers"]
+clarity-api = "clarity_api.skills"
+
+[project.entry-points."agent_connector_sdk.ontology_providers"]
+clarity-api = "clarity_api.ontology"
+
+[project.entry-points."agent_connector_sdk.prompt_providers"]
+clarity-api = "clarity_api.prompts"
+
+# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+[project.entry-points."agent_connector_sdk.connector"]
+clarity-mcp = "clarity_api"
+
+[tool.uv.workspace]
+members = ["."]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.uv]
+override-dependencies = [
+    "fastmcp-slim[client,server]>=4.1.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[dependency-groups]
+dev = [
+    "pytest-timeout>=2.4.0",
+]
+
+[tool.setuptools.package-data]
+clarity_api = [ "mcp_config.json", "prompts/**", "skills/**", "ontology/**", "connectors/**",]
+
+[tool.ruff.lint]
+select = [ "E", "F", "I", "UP", "B",]
+ignore = [ "E402", "E501", "B008",]
+
+[tool.setuptools.packages.find]
+where = [ ".",]
+
+[tool.vulture]
+ignore_names = ["request", "config", "cls", "__context", "model_post_init", "configured_env", "connector", "stream"]
+
+[tool.pipelines_hooks.ste]
+exempt = ["specs/*", "specs/**/*"]
