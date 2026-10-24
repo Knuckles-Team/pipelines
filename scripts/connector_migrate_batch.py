@@ -201,7 +201,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             env_file.write_text("", encoding="utf-8")  # empty: .env.example values would leak into the tests
         step = "migrate"
         pre_paths = apply_repo_patch(
-            a.patches / f"{repo}.pre.patch", wt, [], led, repo
+            a.patches / f"{repo}.{'central-pre' if a.central else 'pre'}.patch", wt, [], led, repo
         )  # also central: a reviewed fix the pass needs first
         served_path = tmp / "served-tools.json"
         served_path.unlink(missing_ok=True)

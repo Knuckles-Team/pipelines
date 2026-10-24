@@ -65,7 +65,8 @@ HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
 MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[0-9]{3,}(?![a-z0-9])")
 
 
-_API_ENDPOINT_BEFORE = re.compile(r"""\bendpoint\w*\s*[:=]\s*[rf]?["']$""")
+#: A value that is a route (`endpoint = "/Users/Me"`) or the container user's home (`home = "/home/app"` in pyproject).
+_API_ENDPOINT_BEFORE = re.compile(r"""(?:\bendpoint\w*|^\s*home)\s*[:=]\s*[rf]?["']$""")
 
 
 def has_real_home_path(line: str) -> bool:
@@ -79,10 +80,14 @@ def has_real_home_path(line: str) -> bool:
     return False
 
 
+#: A secret that is a variable reference (`${GITHUB_TOKEN}`, `$TOKEN`) resolved at run time holds no credential.
+_INTERPOLATED = re.compile(r"^\$(?:\{[A-Za-z_][A-Za-z0-9_]*\}|\{\{[^}]*\}\}|[A-Za-z_][A-Za-z0-9_]*)$")
+
+
 def credential_uri_leak(line: str) -> bool:
     """A credential-bearing URI whose secret is real and whose host is not reserved."""
     match = CREDENTIAL_URI_RE.search(line)
-    if match is None or is_placeholder_secret(match.group("secret")):
+    if match is None or is_placeholder_secret(match.group("secret")) or _INTERPOLATED.match(match.group("secret")):
         return False
     host = match.group("cred_host")
     return not (host and is_reserved_hostname(host))
