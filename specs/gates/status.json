@@ -133,7 +133,9 @@
     "PIPE-GATES-R016.106",
     "PIPE-GATES-R016.107",
     "PIPE-GATES-R016.108",
-    "PIPE-GATES-R016.109"
+    "PIPE-GATES-R016.109",
+    "PIPE-GATES-R016.110",
+    "PIPE-GATES-R016.111"
   ],
   "requirements": [
     {
@@ -508,7 +510,9 @@
         "PIPE-GATES-R016.106",
         "PIPE-GATES-R016.107",
         "PIPE-GATES-R016.108",
-        "PIPE-GATES-R016.109"
+        "PIPE-GATES-R016.109",
+        "PIPE-GATES-R016.110",
+        "PIPE-GATES-R016.111"
       ]
     },
     {
@@ -1239,8 +1243,8 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.l4`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "968f8f81559f",
-        "a879bf2fe9bb"
+        "a879bf2fe9bb",
+        "f4b1cc173371"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:110",
@@ -1627,9 +1631,9 @@
       "verified_by": [
         "tests/hooks/test_connector_central_pipelines.py:709",
         "tests/hooks/test_connector_central_pipelines.py:717",
-        "tests/hooks/test_connector_central_pipelines.py:726",
-        "tests/hooks/test_connector_central_pipelines.py:739",
-        "tests/hooks/test_connector_central_pipelines.py:750"
+        "tests/hooks/test_connector_central_pipelines.py:734",
+        "tests/hooks/test_connector_central_pipelines.py:747",
+        "tests/hooks/test_connector_central_pipelines.py:758"
       ]
     },
     {
@@ -1698,6 +1702,30 @@
     },
     {
       "id": "PIPE-GATES-R016.109",
+      "title": "Pipelines-owned boilerplate rule `pl.ae`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_identity.py:201"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.110",
+      "title": "Pipelines-owned boilerplate rule `pl.af`",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "64d2ed95d394"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central_spelling.py:103",
+        "tests/hooks/test_connector_central_spelling.py:112",
+        "tests/hooks/test_connector_central_spelling.py:123",
+        "tests/hooks/test_connector_central_spelling.py:47",
+        "tests/hooks/test_connector_central_spelling.py:56"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.111",
       "title": "Central driver and verify",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
