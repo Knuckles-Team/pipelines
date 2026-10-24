@@ -1040,3 +1040,9 @@ def test_repo_local_check_bumpversion_hook_is_removed_and_the_rest_stays(tmp_pat
     assert ".pre-commit-config.yaml" in report["changed"]
     run(root)
     assert (root / ".pre-commit-config.yaml").read_text(encoding="utf-8") == text
+
+
+@pytest.mark.spec("PIPE-GATES-R016.16")
+def test_driver_gates_wait_treats_skipped_checks_as_done() -> None:
+    text = (Path(__file__).resolve().parents[2] / "scripts" / "connector_migrate_batch.py").read_text(encoding="utf-8")
+    assert 'buckets <= {"pass", "skipping"}' in text

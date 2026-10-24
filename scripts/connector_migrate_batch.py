@@ -458,7 +458,8 @@ def wait_gates(repo: str, url: str, wt: Path, led: Ledger) -> None:
         out = sh("gates", ["gh", "pr", "checks", url], wt, ok=(0, 1, 8))
         checks = parse_checks(out)
         buckets = set(checks.values())
-        if checks and buckets == {"pass"}:
+        # A skipped job (the container build on a PR) is not a failure: every other `gates` check has to pass.
+        if checks and "pass" in buckets and buckets <= {"pass", "skipping"}:
             return
         if "cancel" in buckets and not reran:
             sh("gates", ["gh", "run", "rerun", "--failed"], wt, ok=(0, 1))
