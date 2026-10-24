@@ -427,6 +427,7 @@
     "PIPE-PAGES-R042.8",
     "PIPE-PAGES-R042.9",
     "PIPE-PAGES-R042.10",
+    "PIPE-PAGES-R042.11",
     "PIPE-PAGES-R043",
     "PIPE-PAGES-R043.1",
     "PIPE-PAGES-R043.2",
@@ -3997,18 +3998,18 @@
       "title": "One generated architecture explorer, always current",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0328769ac5b3",
         "07e22bc44394",
         "0a82ba72ff9d",
         "1127e9047bfa",
-        "22a4c85e6a09",
-        "26f5095aaa92"
+        "22a4c85e6a09"
       ],
       "verified_by": [
+        "tests/test_architecture_explorer.py:1011",
         "tests/test_architecture_explorer.py:105",
         "tests/test_architecture_explorer.py:116",
         "tests/test_architecture_explorer.py:126",
-        "tests/test_architecture_explorer.py:144",
-        "tests/test_architecture_explorer.py:161"
+        "tests/test_architecture_explorer.py:144"
       ],
       "rollup_of": [
         "PIPE-PAGES-R042.1",
@@ -4020,7 +4021,8 @@
         "PIPE-PAGES-R042.7",
         "PIPE-PAGES-R042.8",
         "PIPE-PAGES-R042.9",
-        "PIPE-PAGES-R042.10"
+        "PIPE-PAGES-R042.10",
+        "PIPE-PAGES-R042.11"
       ]
     },
     {
@@ -4144,6 +4146,18 @@
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:936"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.11",
+      "title": "The explorer states the contribution path in a form a person or an agent finds without guessing",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0328769ac5b3"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:1011",
+        "tests/test_architecture_explorer.py:990"
       ]
     },
     {

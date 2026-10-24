@@ -1001,8 +1001,8 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.g1`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0032e938cf18",
-        "16bb950f6cf8"
+        "16bb950f6cf8",
+        "8e8272f805dd"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:276",
@@ -1456,7 +1456,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.o`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0032e938cf18"
+        "8e8272f805dd"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_pipelines.py:185",
@@ -1601,8 +1601,8 @@
       "title": "Pipelines-owned boilerplate rule `pl.aa`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0032e938cf18",
-        "03512169cad3"
+        "03512169cad3",
+        "8e8272f805dd"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:108",
@@ -1614,7 +1614,7 @@
       "title": "Central driver and verify",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0032e938cf18"
+        "8e8272f805dd"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_driver.py:102",
