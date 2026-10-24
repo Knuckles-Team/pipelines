@@ -988,7 +988,7 @@
       "title": "The connector PR gate installs the identity catalog from the caller's variable",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "8a8087f4d3c4"
+        "89e96300d187"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:267"
