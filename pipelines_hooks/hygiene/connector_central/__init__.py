@@ -18,6 +18,7 @@ import ast
 import datetime
 import importlib
 import re
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -90,6 +91,27 @@ def add_changelog(ctx: Ctx, version: str, today: str | None = None) -> None:
     ctx.write("CHANGELOG.md", text[: first.start()] + entry + text[first.start() :])
 
 
+def tidy(ctx: Ctx) -> None:
+    """Import order and unused imports in the files the rules rewrote, then format, so the commit hooks find nothing to fix.
+
+    Both use the repo's own ruff table (``extend-exclude`` is honoured). A file ruff still rejects is a review item.
+    """
+    files = [f for f in sorted(ctx.changed) if f.endswith(".py") and (ctx.root / f).is_file()]
+    if not files:
+        return
+    ruff = shutil.which("ruff")
+    if ruff is None:
+        ctx.note("tidy", "ruff is not installed; imports and formatting left to the commit hooks", "", blocking=True)
+        return
+    base = [ruff, "--config", str(ctx.root / "pyproject.toml")]
+    subprocess.run(
+        [*base, "check", "--select", "I,F401", "--fix", "--force-exclude", "--quiet", *files],
+        cwd=ctx.root,
+        capture_output=True,
+    )
+    subprocess.run([*base, "format", "--force-exclude", "--quiet", *files], cwd=ctx.root, capture_output=True)
+
+
 def refresh_lock(ctx: Ctx) -> None:
     """``uv lock`` against PyPI; with ``sdk_path`` (dry run, 0.5.2 unpublished) the lock cannot resolve and is skipped."""
     if ctx.options.get("no_lock") or ctx.options.get("sdk_path"):
@@ -122,6 +144,7 @@ def migrate_central(root: Path, options: dict[str, Any] | None = None) -> dict[s
             ctx.review.add(rid, f"rule crashed: {type(exc).__name__}: {exc}", "", True)
         for item in ctx.review.items[before:]:
             item.setdefault("rule", rid)
+    tidy(ctx)
     for rel in sorted(ctx.changed):
         if rel.endswith(".py"):
             try:

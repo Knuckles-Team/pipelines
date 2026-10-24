@@ -811,6 +811,26 @@ KNOWN_LOCAL = frozenset(
 OPTION_TOOLS = frozenset({"ruff", "ruff-check", "ruff-format", "mypy", "vulture", "codespell", "bandit"})
 
 
+_RUFF_EXCLUDE = re.compile(r"^\^\(((?:[\w.-]+/\|?)+)\)$")
+
+
+def _port_ruff_exclude(ctx: Ctx, excludes: set[str]) -> None:
+    """``exclude: ^(tests/|scripts/)`` on the ruff hooks becomes ``[tool.ruff] extend-exclude`` (one agreed pattern only)."""
+    if len(excludes) != 1:
+        return
+    m = _RUFF_EXCLUDE.match(next(iter(excludes)))
+    if m is None:
+        return
+    dirs = [d for d in dict.fromkeys(x.rstrip("/") for x in m.group(1).split("|")) if d and ctx.exists(d)]
+    text = ctx.read("pyproject.toml")
+    if not dirs or "extend-exclude" in text:
+        return
+    line = "extend-exclude = [" + ", ".join(f'"{d}"' for d in dirs) + "]\n"
+    table = re.search(r"(?m)^\[tool\.ruff\]\n", text)
+    new = text[: table.end()] + line + text[table.end() :] if table else text.rstrip("\n") + "\n\n[tool.ruff]\n" + line
+    ctx.write("pyproject.toml", new, "pl.q")
+
+
 @rule("pl.q")
 def rule_q(ctx: Ctx) -> None:
     template = (pipelines_root(ctx) / "templates" / "connector" / "pre-commit-config.yaml").read_text(encoding="utf-8")
@@ -825,6 +845,7 @@ def rule_q(ctx: Ctx) -> None:
         repos = config.get("repos", [])
         unknown: list[str] = []
         options: list[str] = []
+        ruff_excludes: set[str] = set()
         for repo in repos:
             url = str(repo.get("repo", ""))
             for hook in repo.get("hooks", []):
@@ -835,8 +856,11 @@ def rule_q(ctx: Ctx) -> None:
                     ok = any(u in url for u in UPSTREAM_REPOS)
                 if not ok:
                     unknown.append(f"{hid} ({url})")
+                if hid in ("ruff", "ruff-check", "ruff-format") and hook.get("exclude"):
+                    ruff_excludes.add(str(hook["exclude"]))
                 if hid in OPTION_TOOLS and (hook.get("args") or hook.get("exclude")):
                     options.append(f"{hid}: args={hook.get('args')} exclude={hook.get('exclude')}")
+        _port_ruff_exclude(ctx, ruff_excludes)
     except (yaml.YAMLError, AttributeError, TypeError) as exc:
         ctx.note(
             "pl.q",
