@@ -78,3 +78,54 @@ jobs:
       timeout-minutes: 10
       runner: ${{ inputs.runner }}
       test-scope: ${{ inputs.test-scope }}
+
+  # PIPE-RELEASE-R017: a broken Dockerfile is caught on the pull request, not at release. The
+  # image builds only when the change touches a container input, because runner capacity is the
+  # bottleneck, and a repository without docker/Dockerfile skips cleanly.
+  container-inputs:
+    name: container-inputs
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    permissions:
+      contents: read
+    outputs:
+      build: ${{ steps.changed.outputs.build }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Detect container input changes
+        id: changed
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [[ ! -f docker/Dockerfile ]]; then
+            echo "No docker/Dockerfile; skipping the container build check."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ -z "$BASE_REF" ]]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          build=false
+          while IFS= read -r path; do
+            case "$path" in
+              docker/*|Dockerfile*|*/Dockerfile*|.dockerignore|pyproject.toml|uv.lock|package.json|pnpm-lock.yaml|patches/*)
+                build=true
+                break
+                ;;
+            esac
+          done < <(git diff --name-only "origin/${BASE_REF}...HEAD")
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+
+  container-build:
+    name: container-build
+    needs: container-inputs
+    if: needs.container-inputs.outputs.build == 'true'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/container_build_check.yml@main

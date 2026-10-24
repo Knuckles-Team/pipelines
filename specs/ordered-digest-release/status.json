@@ -72,7 +72,8 @@
     "PIPE-RELEASE-R013",
     "PIPE-RELEASE-R014",
     "PIPE-RELEASE-R015",
-    "PIPE-RELEASE-R016"
+    "PIPE-RELEASE-R016",
+    "PIPE-RELEASE-R017"
   ],
   "requirements": [
     {
@@ -738,6 +739,16 @@
       ],
       "verified_by": [
         "tests/test_python_pipeline_contract.py:56"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R017",
+      "title": "A pull request builds the image when a container input changes",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_connector_release_pipeline.py:110",
+        "tests/test_connector_release_pipeline.py:111"
       ]
     }
   ]
