@@ -24,3 +24,22 @@ def test_an_endpoint_route_literal_is_not_a_home_path() -> None:
     assert not has_real_home_path("    endpoint='/Users/Me'")
     assert has_real_home_path('path = "/Users/jdoe/Documents"')
     assert has_real_home_path('cd "/Users/jdoe"')
+
+
+@pytest.mark.spec("PIPE-GATES-R016.113")
+def test_the_container_home_setting_is_not_a_home_path() -> None:
+    from pipelines_hooks.privacy.patterns import has_real_home_path
+
+    assert not has_real_home_path('home = "/home/gramps"')
+    assert has_real_home_path('shell = "/home/gramps"')
+
+
+@pytest.mark.spec("PIPE-GATES-R016.114")
+def test_a_variable_reference_as_the_uri_secret_is_not_a_credential() -> None:
+    from pipelines_hooks.privacy.patterns import credential_uri_leak
+
+    ref = "$" + "{GITHUB_TOKEN}"
+    url = "https://x-access-token:" + ref + "@github.com/"
+    assert not credential_uri_leak("git config url." + url + ".insteadOf x")
+    assert not credential_uri_leak("url = https://user:" + "$TOKEN" + "@host.internal/x")
+    assert credential_uri_leak("url = https://user:" + "hunter2real" + "@host.internal/x")
