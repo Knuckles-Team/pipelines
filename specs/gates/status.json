@@ -178,8 +178,7 @@
       "title": "Gates run against the engine tree",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R004",
@@ -190,24 +189,21 @@
       "rollup_of": [
         "PIPE-GATES-R004.1",
         "PIPE-GATES-R004.2"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R004.1",
       "title": "Wiring",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R004.2",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006",
@@ -223,64 +219,56 @@
         "PIPE-GATES-R006.5",
         "PIPE-GATES-R006.6",
         "PIPE-GATES-R006.7"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R006.1",
       "title": "Wave 1: webarchiver",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.2",
       "title": "Wave 2: small connectors",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.3",
       "title": "Wave 3: the remaining connectors",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.4",
       "title": "Wave 4: skills, pipelines and the user interfaces",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.5",
       "title": "Wave 5: the SDK and the harness",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.6",
       "title": "Wave 6: arbora",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.7",
       "title": "Wave 7: epistemic-graph, last",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": [],
-      "priority": 0
+      "verified_by": []
     },
     {
       "id": "PIPE-GATES-R005",
@@ -363,8 +351,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_jscpd_snapshot.py:13"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R012",
@@ -407,8 +394,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_ontology_orphan_map.py:12"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016",
@@ -535,8 +521,7 @@
         "PIPE-GATES-R016.113",
         "PIPE-GATES-R016.114",
         "PIPE-GATES-R016.115"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.1",
@@ -668,8 +653,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:162"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.12",
@@ -678,8 +662,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:174"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.13",
@@ -798,8 +781,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:624"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.22",
@@ -808,8 +790,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:639"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.23",
@@ -818,8 +799,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:673"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.24",
@@ -839,8 +819,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:721"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.26",
@@ -1134,8 +1113,7 @@
         "tests/hooks/test_connector_central_wave1.py:627",
         "tests/hooks/test_connector_central_wave1.py:638",
         "tests/hooks/test_connector_central_wave1.py:648"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.55",
@@ -1145,8 +1123,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:570",
         "tests/hooks/test_connector_central_wave1.py:578"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.56",
@@ -1174,8 +1151,7 @@
         "tests/hooks/test_connector_central_wave1.py:1317",
         "tests/hooks/test_connector_central_wave1.py:1329",
         "tests/hooks/test_connector_central_wave1.py:1348"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.58",
@@ -1200,8 +1176,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:980",
         "tests/hooks/test_connector_central_wave1.py:991"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.60",
@@ -1211,8 +1186,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:1001",
         "tests/hooks/test_connector_central_wave1.py:1012"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.61",
@@ -1225,8 +1199,7 @@
         "tests/hooks/test_connector_central_fixes7b.py:170",
         "tests/hooks/test_connector_central_i1_clusters.py:314",
         "tests/hooks/test_connector_central_i1_clusters.py:346"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.62",
@@ -1239,8 +1212,7 @@
         "tests/hooks/test_connector_central_i1_clusters.py:143",
         "tests/hooks/test_connector_central_i1_clusters.py:155",
         "tests/hooks/test_connector_central_i1_clusters.py:361"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.63",
@@ -1251,8 +1223,7 @@
         "tests/hooks/test_connector_central_i1_clusters.py:178",
         "tests/hooks/test_connector_central_wave1.py:1099",
         "tests/hooks/test_connector_central_wave1.py:1121"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.64",
@@ -1262,8 +1233,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:1138",
         "tests/hooks/test_connector_central_wave1.py:1149"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.65",
@@ -1274,8 +1244,7 @@
         "tests/hooks/test_connector_central_wave1.py:1162",
         "tests/hooks/test_connector_central_wave1.py:1170",
         "tests/hooks/test_connector_central_wave1.py:1182"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.66",
@@ -1288,8 +1257,7 @@
         "tests/hooks/test_connector_central_wave1.py:1223",
         "tests/hooks/test_connector_central_wave1.py:1233",
         "tests/hooks/test_connector_central_wave1.py:1242"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.67",
@@ -1319,8 +1287,7 @@
         "tests/hooks/test_connector_central_auth.py:132",
         "tests/hooks/test_connector_central_auth.py:443",
         "tests/hooks/test_connector_central_auth.py:460"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.69",
@@ -1330,8 +1297,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:145",
         "tests/hooks/test_connector_central_auth.py:153"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.70",
@@ -1341,8 +1307,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:169",
         "tests/hooks/test_connector_central_auth.py:177"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.71",
@@ -1352,8 +1317,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:195",
         "tests/hooks/test_connector_central_auth.py:203"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.72",
@@ -1363,8 +1327,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:223",
         "tests/hooks/test_connector_central_auth.py:236"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.73",
@@ -1374,8 +1337,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:254",
         "tests/hooks/test_connector_central_auth.py:267"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.74",
@@ -1384,8 +1346,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:293"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.75",
@@ -1394,8 +1355,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:302"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.76",
@@ -1405,8 +1365,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:312",
         "tests/hooks/test_connector_central_auth.py:320"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.77",
@@ -1415,8 +1374,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:329"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.78",
@@ -1426,8 +1384,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:349",
         "tests/hooks/test_connector_central_auth.py:360"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.79",
@@ -1437,8 +1394,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:370",
         "tests/hooks/test_connector_central_auth.py:380"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.80",
@@ -1450,8 +1406,7 @@
         "tests/hooks/test_connector_central_auth.py:397",
         "tests/hooks/test_connector_central_auth.py:409",
         "tests/hooks/test_connector_central_auth.py:453"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.81",
@@ -1461,8 +1416,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:418",
         "tests/hooks/test_connector_central_auth.py:431"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.82",
@@ -1475,8 +1429,7 @@
         "tests/hooks/test_connector_central_ingest.py:215",
         "tests/hooks/test_connector_central_ingest.py:224",
         "tests/hooks/test_connector_central_ingest.py:452"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.83",
@@ -1487,8 +1440,7 @@
         "tests/hooks/test_connector_central_ingest.py:241",
         "tests/hooks/test_connector_central_ingest.py:252",
         "tests/hooks/test_connector_central_ingest.py:262"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.84",
@@ -1500,8 +1452,7 @@
         "tests/hooks/test_connector_central_ingest.py:297",
         "tests/hooks/test_connector_central_ingest.py:310",
         "tests/hooks/test_connector_central_ingest.py:460"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.85",
@@ -1510,8 +1461,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:328"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.86",
@@ -1520,8 +1470,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:338"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.87",
@@ -1531,8 +1480,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:365",
         "tests/hooks/test_connector_central_ingest.py:377"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.88",
@@ -1541,8 +1489,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:397"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.89",
@@ -1551,8 +1498,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:418"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.90",
@@ -1561,8 +1507,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:438"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.91",
@@ -1573,8 +1518,7 @@
         "tests/hooks/test_connector_central_pipelines.py:142",
         "tests/hooks/test_connector_central_pipelines.py:161",
         "tests/hooks/test_connector_central_pipelines.py:175"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.92",
@@ -1649,8 +1593,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_pipelines.py:668",
         "tests/hooks/test_connector_central_pipelines.py:682"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.97",
@@ -1660,8 +1603,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_pipelines.py:579",
         "tests/hooks/test_connector_central_pipelines.py:590"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.98",
@@ -1671,8 +1613,7 @@
       "verified_by": [
         "tests/hooks/test_connector_central_pipelines.py:603",
         "tests/hooks/test_connector_central_pipelines.py:614"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.99",
@@ -1685,8 +1626,7 @@
         "tests/hooks/test_connector_central_pipelines.py:650",
         "tests/hooks/test_connector_central_pipelines.py:659",
         "tests/hooks/test_connector_central_pl_clusters.py:456"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.100",
@@ -1712,8 +1652,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:58"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.102",
@@ -1737,8 +1676,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:74"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.104",
@@ -1802,8 +1740,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:219"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.109",
@@ -1812,8 +1749,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:239"
-      ],
-      "priority": 0
+      ]
     },
     {
       "id": "PIPE-GATES-R016.110",
@@ -1902,69 +1838,5 @@
         "tests/hooks/test_connector_skills.py:78"
       ]
     }
-  ],
-  "frontier": [
-    "PIPE-GATES-R003",
-    "PIPE-GATES-R004.1",
-    "PIPE-GATES-R004.2",
-    "PIPE-GATES-R006.1",
-    "PIPE-GATES-R006.2",
-    "PIPE-GATES-R006.3",
-    "PIPE-GATES-R006.4",
-    "PIPE-GATES-R006.5",
-    "PIPE-GATES-R006.6",
-    "PIPE-GATES-R006.7",
-    "PIPE-GATES-R011",
-    "PIPE-GATES-R015",
-    "PIPE-GATES-R016.11",
-    "PIPE-GATES-R016.12",
-    "PIPE-GATES-R016.21",
-    "PIPE-GATES-R016.22",
-    "PIPE-GATES-R016.23",
-    "PIPE-GATES-R016.25",
-    "PIPE-GATES-R016.54",
-    "PIPE-GATES-R016.55",
-    "PIPE-GATES-R016.57",
-    "PIPE-GATES-R016.59",
-    "PIPE-GATES-R016.60",
-    "PIPE-GATES-R016.61",
-    "PIPE-GATES-R016.62",
-    "PIPE-GATES-R016.63",
-    "PIPE-GATES-R016.64",
-    "PIPE-GATES-R016.65",
-    "PIPE-GATES-R016.66",
-    "PIPE-GATES-R016.68",
-    "PIPE-GATES-R016.69",
-    "PIPE-GATES-R016.70",
-    "PIPE-GATES-R016.71",
-    "PIPE-GATES-R016.72",
-    "PIPE-GATES-R016.73",
-    "PIPE-GATES-R016.74",
-    "PIPE-GATES-R016.75",
-    "PIPE-GATES-R016.76",
-    "PIPE-GATES-R016.77",
-    "PIPE-GATES-R016.78",
-    "PIPE-GATES-R016.79",
-    "PIPE-GATES-R016.80",
-    "PIPE-GATES-R016.81",
-    "PIPE-GATES-R016.82",
-    "PIPE-GATES-R016.83",
-    "PIPE-GATES-R016.84",
-    "PIPE-GATES-R016.85",
-    "PIPE-GATES-R016.86",
-    "PIPE-GATES-R016.87",
-    "PIPE-GATES-R016.88",
-    "PIPE-GATES-R016.89",
-    "PIPE-GATES-R016.90",
-    "PIPE-GATES-R016.91",
-    "PIPE-GATES-R016.96",
-    "PIPE-GATES-R016.97",
-    "PIPE-GATES-R016.98",
-    "PIPE-GATES-R016.99",
-    "PIPE-GATES-R016.101",
-    "PIPE-GATES-R016.103",
-    "PIPE-GATES-R016.108",
-    "PIPE-GATES-R016.109"
-  ],
-  "unserved": []
+  ]
 }
