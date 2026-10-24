@@ -1989,6 +1989,15 @@
    "layer": "delivery",
    "children": [
     {
+     "id": "skills.catalog",
+     "label": "Skill catalog",
+     "role": "content-only connector",
+     "desc": "The skill catalog is served as a content-only connector. Every skill is one flat folder, and the server lists one resource for each.",
+     "fam": [
+      "catalog-content"
+     ]
+    },
+    {
      "id": "skills.pages",
      "label": "Published documentation",
      "role": "shared hierarchy",
