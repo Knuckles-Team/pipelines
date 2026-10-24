@@ -734,6 +734,13 @@ def drop_script_hooks(text: str, scripts: list[str]) -> str:
     return "".join(kept)
 
 
+def drop_bumpversion_hook(text: str) -> str:
+    """R016.41: remove the repo-local ``check-bumpversion`` hook; ``pipelines-connector version`` owns the version."""
+    parts = re.split(r"(?m)^(?=[ \t]*- (?:id|repo): )", text)
+    kept = [p for p in parts if not re.match(r"\s*- id: check-bumpversion\b", p)]
+    return "".join(kept)
+
+
 _TTL_COMMENT = re.compile(r"^#.*$", re.M)
 
 
@@ -907,7 +914,12 @@ def migrate_sources_text(root: Path, pkg: Path, scripts: tuple[str, ...], change
     edit(root / "pyproject.toml", strip_pyproject_cut_refs)
     pc = root / ".pre-commit-config.yaml"
     if pc.is_file():
-        edit(pc, lambda t: drop_script_hooks(strip_regex_alternatives(t), [x for x in scripts if x.endswith(".py")]))
+        edit(
+            pc,
+            lambda t: drop_bumpversion_hook(
+                drop_script_hooks(strip_regex_alternatives(t), [x for x in scripts if x.endswith(".py")])
+            ),
+        )
     init = pkg / "connectors" / "__init__.py"
     if init.is_file():
         edit(init, lambda t: rewrite_connectors_init(t, pkg.name) if any(w in t for w in _CUT_WORDS) else None)

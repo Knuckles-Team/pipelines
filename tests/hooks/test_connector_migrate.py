@@ -1014,3 +1014,24 @@ def test_an_illegal_instruction_abort_is_found_in_the_full_output_not_the_cut_ta
     out = "Fatal Python error: Illegal instruction\n" + "x" * 5000
     exc = batch.StepFailed("verify", out)
     assert "Illegal instruction" not in exc.output and "Fatal Python error: Illegal instruction" in exc.full
+
+
+@pytest.mark.spec("PIPE-GATES-R016.41")
+def test_repo_local_check_bumpversion_hook_is_removed_and_the_rest_stays(tmp_path: Path) -> None:
+    yml = (
+        "repos:\n- repo: local\n  hooks:\n  - id: keep\n    entry: python a.py\n"
+        "  - id: check-bumpversion\n    name: check bumpversion\n    entry: bump2version --dry-run patch\n"
+        "    language: system\n    files: ^\\.bumpversion\\.cfg$\n"
+        "  - id: last\n    entry: pytest\n"
+    )
+    out = cm.drop_bumpversion_hook(yml)
+    assert "bump" not in out and "id: keep" in out and "id: last" in out
+    assert cm.drop_bumpversion_hook(out) == out
+    root = make(tmp_path)
+    (root / ".pre-commit-config.yaml").write_text(yml, encoding="utf-8")
+    report = run(root)
+    text = (root / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+    assert "check-bumpversion" not in text and "id: keep" in text
+    assert ".pre-commit-config.yaml" in report["changed"]
+    run(root)
+    assert (root / ".pre-commit-config.yaml").read_text(encoding="utf-8") == text
