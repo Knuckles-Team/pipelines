@@ -280,20 +280,6 @@ def test_literal_tool_registry_with_derived_tags_is_expressed_as_discovery(tmp_p
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
-def test_tool_registry_with_a_hyphenated_tag_names_the_missing_sdk_capability(tmp_path: Path) -> None:
-    """fan-manager, github-agent, ciso-assistant-api: ("fan-control", "FAN_CONTROLTOOL", register_fan_control_tools)."""
-    top = (
-        "\ndef register_fan_control_tools(mcp):\n    return None\n\n\n"
-        'TOOL_REGISTRY = [("fan-control", "FAN_CONTROLTOOL", register_fan_control_tools)]\n'
-    )
-    server = _server(top=top, surface=CLIENT + "        tool_registry=TOOL_REGISTRY,\n")
-    ctx = _repo(tmp_path, server)
-    _migrate(ctx)
-    detail = _refused_untouched(ctx, server)
-    assert "SDK gap: Connector cannot carry a tool_registry" in detail and "fan-control" in detail
-
-
-@pytest.mark.spec("PIPE-GATES-R016.52")
 def test_imported_tool_registry_with_derived_tags_names_that_module(tmp_path: Path) -> None:
     """gramps-mcp / onetrust-api shape: `from <pkg>.mcp import TOOL_REGISTRY` with the registrars bound there."""
     registry = 'from demo_mcp.mcp.a import register_a_tools\n\nTOOL_REGISTRY = [("a", "ATOOL", register_a_tools)]\n'
@@ -400,41 +386,14 @@ def test_constant_health_payload_with_headers_is_deleted(tmp_path: Path) -> None
     assert not _blocking(ctx) and "custom_route" not in (ctx.pkg / "mcp_server.py").read_text()
 
 
-@pytest.mark.spec("PIPE-GATES-R016.52")
-def test_health_route_that_probes_the_backend_names_the_missing_sdk_probe(tmp_path: Path) -> None:
-    """documentdb-mcp, kafka-mcp: ping the backend; the SDK /health is liveness-only."""
-    before = """
-    @mcp.custom_route("/health", methods=["GET"])
-    async def health_check(request: Request) -> JSONResponse:
-        try:
-            get_client().ping()
-        except Exception:
-            return JSONResponse({"status": "degraded"}, status_code=503)
-        return JSONResponse({"status": "OK"})
-"""
-    server = _server(before=before)
-    ctx = _repo(tmp_path, server)
-    _migrate(ctx)
-    assert "SDK gap: the SDK /health is liveness-only" in _refused_untouched(ctx, server)
-
-
-@pytest.mark.spec("PIPE-GATES-R016.52")
-def test_other_custom_route_names_the_missing_sdk_capability(tmp_path: Path) -> None:
-    """sql-mcp: a `/ready` route."""
-    server = _server(before=HEALTH.replace('"/health"', '"/ready"'))
-    ctx = _repo(tmp_path, server)
-    _migrate(ctx)
-    assert "Connector declares no custom routes" in _refused_untouched(ctx, server)
-
-
 # --- (8) mcp_server() without get_mcp_instance ----------------------------------------------------------------------------------
 @pytest.mark.spec("PIPE-GATES-R016.52")
-def test_hand_built_server_names_the_missing_sdk_capability(tmp_path: Path) -> None:
+def test_hand_built_server_names_the_registration_context_adapter_to_write(tmp_path: Path) -> None:
     """bellwether-mcp, world-reference-mcp: `mcp, args, _m, clients = build_server()`."""
     server = "def mcp_server():\n    mcp, args, _m, clients = build_server()\n    mcp.run(transport='stdio')\n"
     ctx = _repo(tmp_path, server)
     _migrate(ctx)
-    assert "SDK gap: Connector.extra_registrations are called with the server only" in _refused_untouched(ctx, server)
+    assert "register_tools(context: RegistrationContext)" in _refused_untouched(ctx, server)
 
 
 # --- other shapes ----------------------------------------------------------------------------------------------------------------
@@ -457,11 +416,17 @@ def test_code_using_get_mcp_instance_in_another_module_still_blocks(tmp_path: Pa
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
-def test_imported_function_called_with_the_server_becomes_an_extra_registration(tmp_path: Path) -> None:
+def test_imported_function_called_with_the_server_gets_a_registration_context_adapter(tmp_path: Path) -> None:
+    """SDK 0.5.3 hands every extra registration a RegistrationContext, so an imported `f(mcp)` needs an adapter."""
     server = _server(top="from demo_mcp.kg import register_kg_tools\n", after="    register_kg_tools(mcp)\n")
     ctx = _repo(tmp_path, server, {"demo_mcp/kg.py": "def register_kg_tools(mcp):\n    return None\n"})
     init = _migrate(ctx)
-    assert "from demo_mcp.kg import register_kg_tools" in init and "extra_registrations=(register_kg_tools,)," in init
+    assert "from demo_mcp.kg import register_kg_tools" in init and "extra_registrations=(_register_kg_tools,)," in init
+    assert (
+        "def _register_kg_tools(context: RegistrationContext) -> None:\n    register_kg_tools(context.server)" in init
+    )
+    assert "from agent_connector_sdk.connector_hooks import RegistrationContext" in init
+    ast.parse(init)
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
@@ -634,19 +599,7 @@ def test_g4_does_not_repeat_the_g3_reason_when_there_is_nothing_to_extract(tmp_p
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
-def test_g3_names_the_extra_create_mcp_server_keywords(tmp_path: Path) -> None:
-    """archivebox-api: `content=`; the reason says which keyword, not a generic 'beyond name, version'."""
-    server = _server().replace(
-        'instructions="Demo server.",', 'instructions="Demo server.",\n        content=object(),'
-    )
-    ctx = _repo(tmp_path, server)
-    base.RULES["w1.g3"](ctx)
-    (detail,) = _blocking(ctx)
-    assert "['content'] to create_mcp_server" in detail
-
-
-@pytest.mark.spec("PIPE-GATES-R016.52")
-def test_g3_accepts_forwarded_command_args_but_refuses_a_wrapper_that_calls_the_bootstrap(tmp_path: Path) -> None:
+def test_g3_accepts_forwarded_command_args_and_delegates_the_build_server_wrapper(tmp_path: Path) -> None:
     """craft-suite-api, immich-api, vector-mcp: `command_args=command_args` is the SDK's own argv handling."""
     server = _server().replace("def get_mcp_instance() ->", "def get_mcp_instance(*, command_args=None) ->")
     server = server.replace(
@@ -661,6 +614,27 @@ def test_g3_accepts_forwarded_command_args_but_refuses_a_wrapper_that_calls_the_
         "def mcp_server() -> None:",
     )
     ctx = _repo(tmp_path / "b", wrapper)
+    base.RULES["w1.g3"](ctx)
+    assert not _blocking(ctx)
+    text = (ctx.pkg / "mcp_server.py").read_text()
+    assert 'return _sdk_build_server("demo_mcp", command_args=command_args)[1]' in text
+    assert "from agent_connector_sdk.connector import build_server as _sdk_build_server" in text
+    assert "get_mcp_instance" not in text
+    ast.parse(text)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_g3_refuses_a_wrapper_that_does_more_than_return_the_server(tmp_path: Path) -> None:
+    server = _server().replace("def get_mcp_instance() ->", "def get_mcp_instance(*, command_args=None) ->")
+    server = server.replace(
+        'instructions="Demo server.",', 'instructions="Demo server.",\n        command_args=command_args,'
+    )
+    wrapper = server.replace(
+        "def mcp_server() -> None:",
+        "def build_server(*, command_args=None):\n    return get_mcp_instance(command_args=command_args)\n\n\n"
+        "def mcp_server() -> None:",
+    )
+    ctx = _repo(tmp_path, wrapper)
     before = (ctx.pkg / "mcp_server.py").read_text()
     base.RULES["w1.g3"](ctx)
     (detail,) = _blocking(ctx)
@@ -669,25 +643,72 @@ def test_g3_accepts_forwarded_command_args_but_refuses_a_wrapper_that_calls_the_
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
-def test_g3_names_the_sdk_gap_for_a_local_tool_registry_and_for_action_routed_tools(tmp_path: Path) -> None:
-    """data-science-mcp, ciso-assistant-api, fan-manager, github-agent / tunnel-manager, vector-mcp, data-science-mcp."""
-    registry = _server(
-        before=HEALTH + '    tool_registry = [("fan-control", "FAN_CONTROLTOOL", register_things_tools)]\n',
-        surface=CLIENT + "        tool_registry=tool_registry,\n",
+def test_options_dispatch_is_the_sdk_run_loop(tmp_path: Path) -> None:
+    """craft-suite-api, immich-api: `options = {} if stdio else {host, port}` then `mcp.run(transport=..., **options)`."""
+    dispatch = (
+        '    options = {} if args.transport == "stdio" else {"host": args.host, "port": args.port}\n'
+        "    mcp.run(transport=args.transport, **options)\n"
     )
-    ctx = _repo(tmp_path / "a", registry)
-    base.RULES["w1.g3"](ctx)
-    (detail,) = _blocking(ctx)
-    assert "SDK gap: Connector cannot carry a tool_registry" in detail
-    routed = _server(
-        after='    registered_tags += register_split_action_tools(mcp, [("a", "ATOOL", register_things_tools)])\n',
-        tags="registered_tags = ",
-        ret="mcp, args, middlewares, registered_tags",
+    ctx = _repo(tmp_path, _server(dispatch=dispatch))
+    init = _migrate(ctx)
+    assert not _blocking(ctx) and "transports=" not in init
+    other = dispatch.replace('"stdio"', '"sse"')
+    ctx2 = _repo(tmp_path / "x", _server(dispatch=other))
+    _migrate(ctx2)
+    assert any("banner/dispatch shape" in d or "dispatch" in d for d in _blocking(ctx2))
+
+
+EGERIA_ISOLATION = """    saved_argv = sys.argv
+    if command_args is not None:
+        sys.argv = [saved_argv[0] if saved_argv else "demo-mcp", *command_args]
+    try:
+        args, mcp, middlewares = create_mcp_server(
+            name="demo MCP",
+            version=__version__,
+            instructions=instructions,
+        )
+    finally:
+        sys.argv = saved_argv
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_instructions_variable_and_argv_isolation_are_the_sdk_defaults(tmp_path: Path) -> None:
+    """egeria-mcp: `instructions = (...)` then the sys.argv save/restore around create_mcp_server."""
+    server = _server().replace("def get_mcp_instance() ->", "def get_mcp_instance(command_args=None) ->")
+    server = server.replace(
+        "    load_config()\n    args, mcp, middlewares = create_mcp_server(\n"
+        '        name="demo MCP",\n        version=__version__,\n        instructions="Demo server.",\n    )\n',
+        '    load_config()\n    instructions = ("Demo "\n    "server.")\n' + EGERIA_ISOLATION,
     )
-    ctx2 = _repo(tmp_path / "b", routed)
-    base.RULES["w1.g3"](ctx2)
-    (detail2,) = _blocking(ctx2)
-    assert "SDK gap: Connector has no action-routed registration" in detail2
+    assert "saved_argv" in server
+    ctx = _repo(tmp_path, server)
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert 'instructions="Demo server.",' in init
+    assert "saved_argv" not in (ctx.pkg / "mcp_server.py").read_text()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_bootstrap_in_a_second_module_is_extracted_and_the_wrapper_loses_the_reexport(tmp_path: Path) -> None:
+    """ansible-tower-mcp, wger-agent: mcp_server.py re-exports the bootstrap of `<pkg>.mcp.mcp_server`."""
+    wrapper = (
+        '"""Wrapper."""\n\nfrom demo_mcp.mcp.mcp_server import (\n    get_mcp_instance,\n    mcp_server,\n'
+        "    register_things_tools,\n)\n\n"
+        '__all__ = [\n    "get_mcp_instance",\n    "mcp_server",\n    "register_things_tools",\n]\n'
+    )
+    real = _server(top="__all__ = []\n").replace("from demo_mcp.api_client", "from demo_mcp.api_client")
+    reexport = 'from demo_mcp.mcp.mcp_server import get_mcp_instance, mcp_server\n\n__all__ = ["get_mcp_instance", "mcp_server"]\n'
+    ctx = _repo(tmp_path, wrapper, {"demo_mcp/mcp/__init__.py": reexport, "demo_mcp/mcp/mcp_server.py": real})
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert "connector = Connector(" in init and 'tools="demo_mcp.mcp.mcp_server"' in init
+    new_wrapper = (ctx.pkg / "mcp_server.py").read_text()
+    assert "get_mcp_instance" not in new_wrapper and "mcp_server," not in new_wrapper
+    assert "register_things_tools" in new_wrapper
+    assert "get_mcp_instance" not in (ctx.pkg / "mcp" / "mcp_server.py").read_text()
+    assert "get_mcp_instance" not in (ctx.pkg / "mcp" / "__init__.py").read_text()
+    ast.parse(new_wrapper)
 
 
 @pytest.mark.spec("PIPE-GATES-R016.52")
@@ -701,3 +722,479 @@ def test_g3_deletes_a_main_guard_that_skips_under_pytest(tmp_path: Path) -> None
     base.RULES["w1.g3"](ctx)
     assert not _blocking(ctx)
     assert "mcp_server" not in (ctx.pkg / "mcp_server.py").read_text()
+
+
+# --- SDK 0.5.3 hooks (PIPE-GATES-R016.52): registry, action tools, inline tools, routes, readiness, context ---------------
+def _texts(ctx: base.Ctx) -> tuple[str, str]:
+    """The migrated mcp_server.py and package __init__.py; both must still parse."""
+    server = (ctx.pkg / "mcp_server.py").read_text(encoding="utf-8")
+    init = (ctx.pkg / "__init__.py").read_text(encoding="utf-8")
+    ast.parse(server)
+    ast.parse(init)
+    return server, init
+
+
+FAN_REGISTRY = (
+    "\ndef register_fan_control_tools(mcp):\n    return None\n\n\n"
+    'TOOL_REGISTRY = [("fan-control", "FAN_CONTROLTOOL", register_fan_control_tools)]\n'
+)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_tool_registry_with_a_hyphenated_tag_becomes_connector_tool_registry(tmp_path: Path) -> None:
+    """fan-manager: a module-level TOOL_REGISTRY whose tag and toggle the SDK cannot derive from the function name."""
+    server = _server(top=FAN_REGISTRY, surface=CLIENT + "        tool_registry=TOOL_REGISTRY,\n")
+    ctx = _repo(tmp_path, server)
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert "tool_registry=tuple(TOOL_REGISTRY)," in init and "tools=" not in init
+    assert "from demo_mcp.mcp_server import TOOL_REGISTRY" in init
+    assert "TOOL_REGISTRY" in _texts(ctx)[0]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_literal_registry_written_in_the_bootstrap_is_inlined(tmp_path: Path) -> None:
+    """data-science-mcp: `tool_registry = [...]` inside get_mcp_instance with a lazily imported registrar."""
+    before = (
+        HEALTH
+        + "    from demo_mcp.mcp.zones import register_zones_tools\n\n"
+        + '    tool_registry = [\n        ("zones-a", "ZONESTOOL", register_zones_tools),\n'
+        + '        ("things", "THINGSTOOL", register_things_tools),\n    ]\n'
+    )
+    ctx = _repo(
+        tmp_path,
+        _server(before=before, surface=CLIENT + "        tool_registry=tool_registry,\n"),
+        {"demo_mcp/mcp/zones.py": "def register_zones_tools(mcp):\n    return None\n"},
+    )
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert (
+        'tool_registry=(("zones-a", "ZONESTOOL", register_zones_tools), ("things", "THINGSTOOL", register_things_tools),),'
+        in init
+    )
+    assert "from demo_mcp.mcp.zones import register_zones_tools" in init
+    assert "from demo_mcp.mcp_server import register_things_tools" in init
+    _texts(ctx)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_imported_registry_with_underived_tags_becomes_a_tuple_of_the_import(tmp_path: Path) -> None:
+    """ciso-assistant-api, github-agent: `from <pkg>.mcp import TOOL_REGISTRY` with hyphenated tags."""
+    registry = (
+        "from demo_mcp.mcp.a import register_a_tools\n\n"
+        'TOOL_REGISTRY = [("analytics-metrology", "ANALYTICS_METROLOGYTOOL", register_a_tools)]\n'
+    )
+    top = "from demo_mcp.mcp import TOOL_REGISTRY\n"
+    server = _server(top=top, surface=CLIENT + "        tool_registry=TOOL_REGISTRY,\n")
+    ctx = _repo(tmp_path, server, {"demo_mcp/mcp/__init__.py": registry, "demo_mcp/mcp/a.py": ""})
+    init = _migrate(ctx)
+    assert "tool_registry=tuple(TOOL_REGISTRY)," in init and "from demo_mcp.mcp import TOOL_REGISTRY" in init
+    assert "tools=" not in init
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_registry_that_is_not_a_literal_stays_refused(tmp_path: Path) -> None:
+    server = _server(top="TOOL_REGISTRY = build()\n", surface=CLIENT + "        tool_registry=TOOL_REGISTRY,\n")
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert "not a literal list" in _refused_untouched(ctx, server)
+
+
+ACTION_IMPORT = "from demo_mcp.action_split import register_split_action_tools\n"
+ACTION_MODULE = "def register_split_action_tools(mcp, entries, prefixes=None):\n    return []\n"
+ACTION_CALL = """    registered_tags += register_split_action_tools(
+        mcp,
+        [
+            ("remote", "REMOTETOOL", register_things_tools),
+            ("files", "FILETOOL", register_files_tools),
+        ],
+        prefixes={"tm_remote": "tm_remote", "tm_files": "tm_file"},
+    )
+"""
+
+
+def _action_server(after: str = ACTION_CALL, top: str = "") -> str:
+    return _server(
+        top=ACTION_IMPORT + top + "\n\ndef register_files_tools(mcp):\n    return None\n",
+        after=after,
+        tags="registered_tags = ",
+        ret="mcp, args, middlewares, registered_tags",
+    )
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_register_split_action_tools_becomes_action_tools_and_prefixes(tmp_path: Path) -> None:
+    """tunnel-manager: the package's own action_split module is replaced by Connector(action_tools=...)."""
+    ctx = _repo(tmp_path, _action_server(), {"demo_mcp/action_split.py": ACTION_MODULE})
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert (
+        'action_tools=(("remote", "REMOTETOOL", register_things_tools), ("files", "FILETOOL", register_files_tools),),'
+        in init
+    )
+    assert 'action_prefixes={"tm_remote": "tm_remote", "tm_files": "tm_file"},' in init
+    assert "register_split_action_tools" not in _texts(ctx)[0]
+    assert not (ctx.pkg / "action_split.py").exists() and "demo_mcp/action_split.py" in ctx.deleted
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_action_split_module_stays_when_a_test_still_imports_it(tmp_path: Path) -> None:
+    files = {
+        "demo_mcp/action_split.py": ACTION_MODULE,
+        "tests/test_split.py": "from demo_mcp.action_split import register_split_action_tools\n",
+    }
+    ctx = _repo(tmp_path, _action_server(), files)
+    _migrate(ctx)
+    assert (ctx.pkg / "action_split.py").exists()
+    assert any("stays" in i["detail"] for i in ctx.review.items if not i["blocking"])
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_serve_action_tools_in_a_tags_guard_and_a_surface_free_bootstrap(tmp_path: Path) -> None:
+    """data-science-mcp: `if serve_action_tools(mcp, [...]): registered_tags.append("quant")` after a local import."""
+    after = (
+        "    from demo_mcp.action_tools import serve_action_tools\n\n"
+        '    if serve_action_tools(mcp, [("quant", "QUANTTOOL", register_files_tools)]):\n'
+        '        registered_tags.append("quant")\n'
+    )
+    server = _action_server(after=after).replace(ACTION_IMPORT, "")
+    ctx = _repo(tmp_path, server, {"demo_mcp/action_tools.py": "def serve_action_tools(mcp, entries):\n    return 1\n"})
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert 'action_tools=(("quant", "QUANTTOOL", register_files_tools),),' in init and "action_prefixes" not in init
+    assert not (ctx.pkg / "action_tools.py").exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_action_registration_without_a_tool_surface_declares_no_client(tmp_path: Path) -> None:
+    """vector-mcp: no register_tool_surface at all, only `register_split_action_tools(mcp, [...], prefixes={...})`."""
+    server = (
+        HEAD % ACTION_IMPORT
+        + """
+
+def register_files_tools(mcp):
+    return None
+
+
+def get_mcp_instance() -> tuple[Any, ...]:
+    load_config()
+    args, mcp, middlewares = create_mcp_server(name="demo MCP", version=__version__, instructions="Demo.")
+
+    register_split_action_tools(
+        mcp,
+        [("files", "FILETOOL", register_files_tools)],
+        prefixes={"demo_files": "demo"},
+    )
+
+    for mw in middlewares:
+        mcp.add_middleware(mw)
+    return mcp, args, middlewares
+"""
+    )
+    ctx = _repo(tmp_path, server, {"demo_mcp/action_split.py": ACTION_MODULE})
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert "api=" not in init and 'action_prefixes={"demo_files": "demo"},' in init
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_action_registration_from_outside_the_package_is_refused(tmp_path: Path) -> None:
+    server = _action_server().replace(ACTION_IMPORT, "from elsewhere import register_split_action_tools\n")
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert "not imported from a module of this package" in _refused_untouched(ctx, server)
+
+
+INLINE_TOOLS = '''
+    @mcp.tool(name="download_media")
+    async def download_media(video_url: str = Field(description="URL")) -> dict:
+        """Download."""
+        return {"url": video_url, "log": logger is not None}
+
+    @mcp.tool
+    def watch_media(video_url: str) -> str:
+        return video_url
+'''
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_inline_tools_are_hoisted_and_declared(tmp_path: Path) -> None:
+    """media-downloader: `@mcp.tool(name=...)` functions written inside get_mcp_instance."""
+    server = _server(top="from pydantic import Field\n", before=HEALTH + INLINE_TOOLS)
+    ctx = _repo(tmp_path, server)
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert "inline_tools=(download_media, watch_media)," in init
+    assert "from demo_mcp.mcp_server import download_media" in init
+    text, _ = _texts(ctx)
+    assert '@tool(name="download_media")\nasync def download_media(' in text and "\n@tool\ndef watch_media" in text
+    assert "from fastmcp.tools import tool" in text and "from pydantic import Field" in text
+    assert "get_mcp_instance" not in text
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_inline_tool_that_reads_the_server_is_refused(tmp_path: Path) -> None:
+    tool = "\n    @mcp.tool\n    def peek() -> int:\n        return len(args.transport) + len(middlewares)\n"
+    server = _server(before=HEALTH + tool)
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert "reads `args` from the bootstrap" in _refused_untouched(ctx, server)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_inline_tool_calling_another_inline_tool_is_refused(tmp_path: Path) -> None:
+    tool = "\n    @mcp.tool\n    def one() -> int:\n        return 1\n\n    @mcp.tool\n    def two() -> int:\n        return one()\n"
+    server = _server(before=HEALTH + tool)
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert "reads `one` from the bootstrap" in _refused_untouched(ctx, server)
+
+
+PROBE = """
+    @mcp.custom_route("/health", methods=["GET"])
+    async def health_check(request: Request) -> JSONResponse:
+        \"\"\"Probe the broker.\"\"\"
+        try:
+            import confluent_kafka.admin  # noqa: F401
+        except ImportError as exc:
+            return JSONResponse({"status": "OK", "backend": "unverified", "reason": f"missing: {exc}"})
+        try:
+            result = get_client().list_topics(timeout=2.0)
+        except Exception as exc:  # noqa: BLE001
+            return JSONResponse({"status": "degraded", "backend": "unreachable", "error": str(exc)}, status_code=503)
+        return JSONResponse({"status": "OK", "backend": "reachable", "topics": len(result)})
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_health_route_that_probes_the_backend_becomes_readiness(tmp_path: Path) -> None:
+    """kafka-mcp, documentdb-mcp: a 503 response is not ready, any other is; no exception text is served."""
+    ctx = _repo(tmp_path, _server(before=PROBE))
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert "readiness=readiness," in init and "from demo_mcp.mcp_server import readiness" in init
+    text, _ = _texts(ctx)
+    assert "async def readiness() -> Readiness:" in text and "custom_route" not in text
+    assert 'return Readiness(True, {"backend": "unverified"})' in text
+    assert 'return Readiness(False, {"backend": "unreachable"})' in text
+    assert 'return Readiness(True, {"backend": "reachable", "topics": len(result)})' in text
+    assert "str(exc)" not in text and "from agent_connector_sdk.connector_hooks import Readiness" in text
+    assert any("/ready" in i["detail"] for i in ctx.review.items if not i["blocking"])
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_ready_route_becomes_readiness_beside_the_plain_health_route(tmp_path: Path) -> None:
+    """sql-mcp: a `/ready` route that calls the client."""
+    ready = """
+    @mcp.custom_route("/ready", methods=["GET"])
+    async def readiness_check(request: Request) -> JSONResponse:
+        try:
+            get_client()
+        except Exception:
+            return JSONResponse({"status": "unavailable"}, status_code=503)
+        return JSONResponse({"status": "ready"})
+"""
+    ctx = _repo(tmp_path, _server(before=HEALTH + ready))
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    text, _ = _texts(ctx)
+    assert "return Readiness(False)" in text and "return Readiness(True)" in text and "readiness=readiness," in init
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+@pytest.mark.parametrize(
+    ("probe", "reason"),
+    [
+        (PROBE.replace("status_code=503", "status_code=500"), "status other than 200 or 503"),
+        (PROBE.replace('"topics": len(result)', '"topics": request.url'), "reads its request"),
+        (
+            PROBE.replace("async def", "def").replace("return JSONResponse(", "return Response("),
+            "not an async function",
+        ),
+        (PROBE.replace("JSONResponse({", "make({"), "returns something other than"),
+    ],
+    ids=["status-500", "reads-request", "sync-handler", "not-a-json-response"],
+)
+def test_probe_that_cannot_be_expressed_as_readiness_is_refused(tmp_path: Path, probe: str, reason: str) -> None:
+    server = _server(before=probe)
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert reason in _refused_untouched(ctx, server)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_two_backend_probes_are_refused(tmp_path: Path) -> None:
+    ready = PROBE.replace('"/health"', '"/ready"').replace("health_check", "ready_check")
+    server = _server(before=PROBE + ready)
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert "second backend probe" in _refused_untouched(ctx, server)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_other_custom_route_becomes_a_declared_route(tmp_path: Path) -> None:
+    metrics = """
+    @mcp.custom_route("/metrics", methods=["GET", "HEAD"], name="metrics")
+    async def metrics_route(request: Request) -> JSONResponse:
+        return JSONResponse({"up": 1})
+"""
+    ctx = _repo(tmp_path, _server(before=HEALTH + metrics))
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert 'routes=(Route("/metrics", metrics_route, methods=("GET", "HEAD"), name="metrics"),),' in init
+    assert "from agent_connector_sdk.connector_hooks import Route" in init
+    text, _ = _texts(ctx)
+    assert "\nasync def metrics_route(request: Request) -> JSONResponse:\n" in text and "custom_route" not in text
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_route_with_other_custom_route_keywords_is_refused(tmp_path: Path) -> None:
+    route = HEALTH.replace('"/health", methods=["GET"]', '"/metrics", methods=["GET"], include_in_schema=False')
+    server = _server(before=route)
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert "keywords other than methods and name" in _refused_untouched(ctx, server)
+
+
+PROMPTS = '''
+
+def register_prompts(mcp: FastMCP):
+    """Prompts."""
+
+    @mcp.prompt
+    def hello() -> str:
+        return "hello"
+'''
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_local_one_parameter_registration_takes_the_registration_context(tmp_path: Path) -> None:
+    """audio-transcriber, media-downloader, servicenow-api: `register_prompts(mcp: FastMCP)` is rewritten in place."""
+    server = _server(top="from fastmcp import FastMCP\n" + PROMPTS, after="    register_prompts(mcp)\n")
+    ctx = _repo(tmp_path, server)
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    text, _ = _texts(ctx)
+    assert 'def register_prompts(context: RegistrationContext):\n    """Prompts."""\n    mcp = context.server\n' in text
+    assert "from agent_connector_sdk.connector_hooks import RegistrationContext" in text and "FastMCP" not in text
+    assert "extra_registrations=(register_prompts,)," in init and "_register_prompts" not in init
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_local_registration_function_used_elsewhere_gets_an_adapter_instead(tmp_path: Path) -> None:
+    server = _server(top=PROMPTS, after="    register_prompts(mcp)\n")
+    files = {"tests/test_prompts.py": "from demo_mcp.mcp_server import register_prompts\n"}
+    ctx = _repo(tmp_path, server, files)
+    init = _migrate(ctx)
+    text, _ = _texts(ctx)
+    assert "def register_prompts(mcp: FastMCP)" in text or "def register_prompts(mcp)" in text
+    assert "extra_registrations=(_register_prompts,)," in init
+    assert "    register_prompts(context.server)" in init
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_calls_with_other_arguments_become_one_register_extras(tmp_path: Path) -> None:
+    """webarchiver, container-manager-mcp: `f(mcp, lambda: ...)` and `g(registered_tools(mcp))`."""
+    top = "from demo_mcp.web import Source, register_web_tools\nfrom demo_mcp.introspect import registered_tools\n"
+    after = "    register_web_tools(mcp, lambda: Source(get_client().fetcher))\n    registered_tools(mcp)\n"
+    files = {
+        "demo_mcp/web.py": "class Source:\n    pass\n\n\ndef register_web_tools(mcp, factory):\n    return None\n",
+        "demo_mcp/introspect.py": "def registered_tools(mcp):\n    return {}\n",
+    }
+    ctx = _repo(tmp_path, _server(top=top, after=after), files)
+    init = _migrate(ctx)
+    assert not _blocking(ctx)
+    assert "extra_registrations=(_register_extras,)," in init
+    assert (
+        "def _register_extras(context: RegistrationContext) -> None:\n"
+        "    register_web_tools(context.server, lambda: Source(get_client().fetcher))\n"
+        "    registered_tools(context.server)\n"
+    ) in init
+    assert "from demo_mcp.web import Source, register_web_tools" in init or "import Source" in init
+    ast.parse(init)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_extra_call_reading_a_bootstrap_local_is_refused(tmp_path: Path) -> None:
+    top = "from demo_mcp.web import register_web_tools\n"
+    server = _server(top=top, after="    register_web_tools(mcp, args)\n")
+    ctx = _repo(tmp_path, server, {"demo_mcp/web.py": "def register_web_tools(mcp, args):\n    return None\n"})
+    _migrate(ctx)
+    assert "reads the bootstrap local `args`" in _refused_untouched(ctx, server)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_registration_before_the_tool_surface_is_refused(tmp_path: Path) -> None:
+    """owncast-agent: `register_kg_tools(mcp)` runs before register_tool_surface; the SDK runs it after."""
+    top = "from demo_mcp.kg import register_kg_tools\n"
+    server = _server(top=top, before=HEALTH + "    register_kg_tools(mcp)\n", tags="registered_tags = ")
+    ctx = _repo(tmp_path, server, {"demo_mcp/kg.py": "def register_kg_tools(mcp):\n    return None\n"})
+    _migrate(ctx)
+    assert "registers the tool surface after other registrations" in _refused_untouched(ctx, server)
+
+
+CONTENT_HEAD = """    from pathlib import Path
+
+    from agent_connector_sdk.mcp.content import ConnectorContent
+
+    package_root = Path(__file__).resolve().parent
+"""
+
+
+def _content_server(root: str = "", name: str = "demo-mcp") -> str:
+    server = _server().replace(
+        "    args, mcp, middlewares = create_mcp_server(",
+        CONTENT_HEAD.replace("parent\n", f"parent{root}\n") + "    args, mcp, middlewares = create_mcp_server(",
+    )
+    return server.replace(
+        'instructions="Demo server.",',
+        'instructions="Demo server.",\n        content=ConnectorContent(\n'
+        f'            connector="{name}", package_root=package_root, package_version=__version__\n        ),',
+    )
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_content_that_restates_the_convention_is_dropped(tmp_path: Path) -> None:
+    """archivebox-api: ConnectorContent of the package directory under the fleet name is the SDK default."""
+    ctx = _repo(tmp_path, _content_server())
+    init = _migrate(ctx)
+    assert not _blocking(ctx) and "content_root" not in init
+    assert not [i for i in ctx.review.items if "content was filed" in i["detail"]]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_content_under_a_subdirectory_becomes_content_root(tmp_path: Path) -> None:
+    ctx = _repo(tmp_path, _content_server(root=' / "content"'))
+    init = _migrate(ctx)
+    assert not _blocking(ctx) and 'content_root="content",' in init
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_content_under_another_connector_name_is_noted_for_review(tmp_path: Path) -> None:
+    ctx = _repo(tmp_path, _content_server(name="demo-other"))
+    _migrate(ctx)
+    assert not _blocking(ctx)
+    assert any("'demo-other'" in i["detail"] for i in ctx.review.items if not i["blocking"])
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_content_that_is_not_the_package_directory_is_refused(tmp_path: Path) -> None:
+    server = _content_server(root=' / ".." / "x"')
+    ctx = _repo(tmp_path, server)
+    _migrate(ctx)
+    assert "package_root" in _refused_untouched(ctx, server)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.52")
+def test_discovered_registrars_stay_listed_so_the_unused_import_tidy_keeps_them(tmp_path: Path) -> None:
+    """sql-mcp: `registrars=[register_sql_tools]` is imported only for the bootstrap; discovery reads the namespace."""
+    top = "from demo_mcp.mcp.zones import register_zones_tools\n"
+    server = _server(top=top, surface=CLIENT + "        registrars=[register_zones_tools],\n").replace(
+        "\ndef register_things_tools(mcp):\n    return None\n", ""
+    )
+    ctx = _repo(tmp_path, server, {"demo_mcp/mcp/zones.py": "def register_zones_tools(mcp):\n    return None\n"})
+    init = _migrate(ctx)
+    text, _ = _texts(ctx)
+    assert 'tools="demo_mcp.mcp_server"' in init
+    assert "from demo_mcp.mcp.zones import register_zones_tools" in text
+    assert '__all__ = ["register_zones_tools"]' in text

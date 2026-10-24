@@ -1,0 +1,29 @@
+services:
+  gramps-mcp-mcp:
+    image: ${GRAMPS_MCP_IMAGE:?set-GRAMPS_MCP_IMAGE-to-image@sha256-digest}
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: "1"
+      HOST: 0.0.0.0
+      PORT: "8000"
+      TRANSPORT: streamable-http
+      GRAMPS_URL: ${GRAMPS_URL:?supply GRAMPS_URL at runtime}
+      GRAMPS_TOKEN: ${GRAMPS_TOKEN:-}
+      GRAMPS_USERNAME: ${GRAMPS_USERNAME:-}
+      GRAMPS_PASSWORD: ${GRAMPS_PASSWORD:-}
+      TLS_PROFILE: ${TLS_PROFILE:-}
+      TLS_PROFILES_REF: ${TLS_PROFILES_REF:-}
+      LANGFUSE_CAPTURE_CONTENT: ${LANGFUSE_CAPTURE_CONTENT:-false}
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

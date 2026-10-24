@@ -27,6 +27,7 @@ CONTAINER_KEYS = frozenset(
         "install_extras",
         "compose_env",
         "env_file_optional",
+        "config_mounts",
         "limits",
     }
 )

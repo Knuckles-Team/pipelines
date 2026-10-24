@@ -333,6 +333,62 @@
       ],
       "reason": "the earlier compose file left the container and host name to the engine; the render names both",
       "repos": 3
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-image-shared-variable-quoted",
+      "new": [
+        "    image: ${<DISTVAR>_MCP_IMAGE:?set-<DISTVAR>_MCP_IMAGE-to-image@sha256-digest}"
+      ],
+      "old": [
+        "    image: \"${MCP_IMAGE:?set-MCP_IMAGE-to-image@sha256-digest}\""
+      ],
+      "reason": "the earlier compose file took the image from one shared MCP_IMAGE variable; the render names the variable after the connector and image kind",
+      "repos": 3
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-env-file",
+      "new": [
+        "    restart: always",
+        "    env_file:",
+        "      - ../.env",
+        "    environment:"
+      ],
+      "old": [
+        "    restart: always",
+        "    environment:"
+      ],
+      "reason": "the earlier compose file read no environment file; the render reads ../.env",
+      "repos": 5
+    },
+    {
+      "file": "mcp.compose.yml",
+      "id": "compose-env-file-after-volumes",
+      "new": [
+        "        read_only: true",
+        "    env_file:",
+        "      - ../.env",
+        "    environment:"
+      ],
+      "old": [
+        "        read_only: true",
+        "    environment:"
+      ],
+      "reason": "the earlier compose file read no environment file; the render reads ../.env after the mounted volumes",
+      "repos": 3
+    },
+    {
+      "file": "debug.Dockerfile",
+      "id": "debug-host-default",
+      "new": [
+        "ARG HOST=<HOST>"
+      ],
+      "old": [
+        "ARG HOST=0.0.0.0"
+      ],
+      "reason": "the earlier debug image bound all interfaces by default; the render binds the host the runtime image binds",
+      "repos": 3
     }
   ],
   "stubs": {

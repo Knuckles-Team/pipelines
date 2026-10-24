@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import argparse
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from pipelines_hooks.connector import project
@@ -41,6 +41,9 @@ DEFAULT_LIMITS = {
 }
 ENV_FILE_REQUIRED = "      - ../.env\n"
 ENV_FILE_OPTIONAL = "      - path: ../.env\n        required: false\n"
+CONFIG_ROOT = PurePosixPath("/etc")
+_INTERPOLATION = re.compile(r"\$\{[A-Z_][A-Z0-9_]*(?:(?::?[-?])[^}\s]*)?\}")
+_PLAIN_PATH = re.compile(r"/[^\s#'\"]*")
 DEFAULT_DEBUG_APT = (
     "ripgrep tree fd-find curl nano build-essential cmake libssl-dev libcurl4-openssl-dev pkg-config cargo rustc"
 )
@@ -125,6 +128,50 @@ def _dockerfile(dist: str, version: str, extras: set[str], table: dict[str, Any]
     return _fill(TEMPLATES / "Dockerfile.tmpl", values)
 
 
+def config_mounts_block(raw: Any) -> str:
+    """The compose ``volumes:`` block of the declared ``config_mounts``: one read-only bind mount per entry.
+
+    Same checks as the SDK's ``CONFIG_MOUNTS_SCHEMA`` (pipelines keeps its own copy, it does not depend on the SDK): a list
+    of tables of exactly ``source`` and ``target``; ``source`` is an absolute host path or one ``${VAR...}`` interpolation;
+    ``target`` is a normalized absolute directory under ``/etc``; no target twice. Whitespace, ``#`` and quotes are refused
+    in both, so the unquoted YAML scalar written below is always the value declared.
+    """
+    if raw in (None, []):
+        return ""
+    if not isinstance(raw, list):
+        raise CannotRun("[tool.pipelines.container] config_mounts is a list of tables")
+    lines, seen = ["    volumes:\n"], set()
+    for entry in raw:
+        if not isinstance(entry, dict) or set(entry) != {"source", "target"}:
+            raise CannotRun("each config mount is a table of exactly source and target")
+        source, target = entry["source"], entry["target"]
+        if not isinstance(source, str) or not isinstance(target, str):
+            raise CannotRun("config mount source and target are strings")
+        path = PurePosixPath(source)
+        if not (_INTERPOLATION.fullmatch(source) or (path.is_absolute() and _PLAIN_PATH.fullmatch(source))) or (
+            ".." in path.parts
+        ):
+            raise CannotRun(
+                f"config mount source {source!r} must be an absolute host path or one ${{VAR}} interpolation"
+            )
+        under = PurePosixPath(target)
+        if (
+            not under.is_absolute()
+            or ".." in under.parts
+            or str(under) != target
+            or CONFIG_ROOT not in under.parents
+            or not _PLAIN_PATH.fullmatch(target)
+        ):
+            raise CannotRun(f"config mount target {target!r} must be a normalized absolute directory under /etc")
+        if target in seen:
+            raise CannotRun(f"two config mounts share the target {target!r}")
+        seen.add(target)
+        lines.append(
+            f"      - type: bind\n        source: {source}\n        target: {target}\n        read_only: true\n"
+        )
+    return "".join(lines)
+
+
 def _fill(template: Path, values: dict[str, str]) -> str:
     out = template.read_text(encoding="utf-8")
     for key, value in values.items():
@@ -158,6 +205,7 @@ def render(root: Path) -> dict[str, str]:
         },
     )
     env = "".join(f"      - {line}\n" for line in table.get("compose_env", []))
+    volumes = config_mounts_block(table.get("config_mounts"))
     env_file = ENV_FILE_OPTIONAL if table.get("env_file_optional") else ENV_FILE_REQUIRED
     for target in entries:
         service = f"{dist}-{target}"
@@ -170,6 +218,7 @@ def render(root: Path) -> dict[str, str]:
                 "@@UID@@": uid,
                 "@@PORT@@": port,
                 "@@COMPOSE_ENV@@": env,
+                "@@VOLUMES@@": volumes,
                 "@@ENV_FILE@@": env_file,
                 "@@MEMORY_ENV@@": str(limits["memory_limit_env"]),
                 "@@MEMORY@@": str(limits["memory_limit"]),

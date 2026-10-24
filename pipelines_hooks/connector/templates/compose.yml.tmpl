@@ -18,7 +18,7 @@ services:
     container_name: @@SERVICE@@
     hostname: @@SERVICE@@
     restart: always
-    env_file:
+@@VOLUMES@@    env_file:
 @@ENV_FILE@@    environment:
       - PYTHONUNBUFFERED=1
       - HOST=0.0.0.0
