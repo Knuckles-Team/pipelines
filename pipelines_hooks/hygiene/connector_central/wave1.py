@@ -3800,6 +3800,16 @@ def _drop_dangling_self_extras(ctx: Ctx) -> None:
 
 
 # --- g.7 tests importing the deleted functions ------------------------------------------------------------
+def _runs_bootstrap_module(n: ast.AST, mod: str) -> bool:
+    """``runpy.run_module("<pkg>.mcp_server", run_name="__main__")``: the deleted ``__main__`` bootstrap."""
+    if not (isinstance(n, ast.Call) and n.args):
+        return False
+    fn = n.func
+    name = fn.attr if isinstance(fn, ast.Attribute) else fn.id if isinstance(fn, ast.Name) else ""
+    first = n.args[0]
+    return name == "run_module" and isinstance(first, ast.Constant) and first.value == mod
+
+
 def _deleted_symbol_users_in(ctx: Ctx, text: str) -> list[str]:
     """The deleted names the code uses; a name only mentioned in a docstring or comment is not a use."""
     tree = _parse(text)
@@ -3824,6 +3834,8 @@ def _deleted_symbol_users_in(ctx: Ctx, text: str) -> list[str]:
             )
         ):
             hits.append("get_mcp_instance")
+        elif _runs_bootstrap_module(n, mod):
+            hits.append("run_module(mcp_server)")
     return sorted(set(hits))
 
 

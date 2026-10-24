@@ -317,6 +317,10 @@ def docs_credential_examples(ctx: Ctx) -> None:
     _reserve_test_hostnames(ctx)
 
 
+#: ``"http://{host}.lan:9180"``: the template side of an expected value the bare-name rewrite changes.
+_TEMPLATE_TLD = re.compile(r"(?<=\})\.(?:arpa|internal|corp|lan)(?![A-Za-z0-9_-])")
+
+
 def _reserve_test_hostname(m: re.Match[str]) -> str:
     """``aris.internal`` becomes ``aris.example``; ``db.svc.cluster.local`` becomes ``db.svc.cluster.example``."""
     from pipelines_hooks.privacy.hosts import is_reserved_hostname
@@ -362,6 +366,7 @@ def _reserve_test_hostnames(ctx: Ctx) -> None:
         for a, b in reversed(spans):
             seg = out[a:b].decode("utf-8")
             fixed = BARE_INTERNAL_HOSTNAME_RE.sub(_reserve_test_hostname, seg)
+            fixed = _TEMPLATE_TLD.sub(".example", fixed)
             if fixed != seg:
                 out = out[:a] + fixed.encode("utf-8") + out[b:]
         new = out.decode("utf-8")

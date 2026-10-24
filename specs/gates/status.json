@@ -1117,9 +1117,9 @@
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:653",
         "tests/hooks/test_connector_central_wave1.py:665",
-        "tests/hooks/test_connector_central_wave1.py:678",
+        "tests/hooks/test_connector_central_wave1.py:677",
         "tests/hooks/test_connector_central_wave1.py:690",
-        "tests/hooks/test_connector_central_wave1.py:699"
+        "tests/hooks/test_connector_central_wave1.py:702"
       ]
     },
     {
@@ -1128,10 +1128,10 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1265",
         "tests/hooks/test_connector_central_wave1.py:1277",
         "tests/hooks/test_connector_central_wave1.py:1289",
-        "tests/hooks/test_connector_central_wave1.py:1308"
+        "tests/hooks/test_connector_central_wave1.py:1301",
+        "tests/hooks/test_connector_central_wave1.py:1320"
       ]
     },
     {
@@ -1153,8 +1153,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:940",
-        "tests/hooks/test_connector_central_wave1.py:951"
+        "tests/hooks/test_connector_central_wave1.py:952",
+        "tests/hooks/test_connector_central_wave1.py:963"
       ]
     },
     {
@@ -1163,8 +1163,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:961",
-        "tests/hooks/test_connector_central_wave1.py:972"
+        "tests/hooks/test_connector_central_wave1.py:973",
+        "tests/hooks/test_connector_central_wave1.py:984"
       ]
     },
     {
@@ -1200,8 +1200,8 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_i1_clusters.py:178",
-        "tests/hooks/test_connector_central_wave1.py:1059",
-        "tests/hooks/test_connector_central_wave1.py:1081"
+        "tests/hooks/test_connector_central_wave1.py:1071",
+        "tests/hooks/test_connector_central_wave1.py:1093"
       ]
     },
     {
@@ -1210,8 +1210,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1098",
-        "tests/hooks/test_connector_central_wave1.py:1109"
+        "tests/hooks/test_connector_central_wave1.py:1110",
+        "tests/hooks/test_connector_central_wave1.py:1121"
       ]
     },
     {
@@ -1220,9 +1220,9 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1122",
-        "tests/hooks/test_connector_central_wave1.py:1130",
-        "tests/hooks/test_connector_central_wave1.py:1142"
+        "tests/hooks/test_connector_central_wave1.py:1134",
+        "tests/hooks/test_connector_central_wave1.py:1142",
+        "tests/hooks/test_connector_central_wave1.py:1154"
       ]
     },
     {
@@ -1231,11 +1231,11 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1152",
-        "tests/hooks/test_connector_central_wave1.py:1171",
+        "tests/hooks/test_connector_central_wave1.py:1164",
         "tests/hooks/test_connector_central_wave1.py:1183",
-        "tests/hooks/test_connector_central_wave1.py:1193",
-        "tests/hooks/test_connector_central_wave1.py:1202"
+        "tests/hooks/test_connector_central_wave1.py:1195",
+        "tests/hooks/test_connector_central_wave1.py:1205",
+        "tests/hooks/test_connector_central_wave1.py:1214"
       ]
     },
     {
@@ -1249,10 +1249,10 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:110",
-        "tests/hooks/test_connector_central_wave1.py:1214",
-        "tests/hooks/test_connector_central_wave1.py:1225",
-        "tests/hooks/test_connector_central_wave1.py:1235",
-        "tests/hooks/test_connector_central_wave1.py:1374"
+        "tests/hooks/test_connector_central_wave1.py:1226",
+        "tests/hooks/test_connector_central_wave1.py:1237",
+        "tests/hooks/test_connector_central_wave1.py:1247",
+        "tests/hooks/test_connector_central_wave1.py:1386"
       ]
     },
     {
@@ -1539,7 +1539,7 @@
         "tests/hooks/test_connector_central_fixes7.py:111",
         "tests/hooks/test_connector_central_fixes7.py:118",
         "tests/hooks/test_connector_central_fixes7.py:134",
-        "tests/hooks/test_connector_central_fixes7.py:81"
+        "tests/hooks/test_connector_central_fixes7.py:287"
       ]
     },
     {
@@ -1702,7 +1702,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:201"
+        "tests/hooks/test_connector_central_identity.py:202"
       ]
     },
     {
@@ -1711,7 +1711,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:221"
+        "tests/hooks/test_connector_central_identity.py:222"
       ]
     },
     {

@@ -94,6 +94,22 @@ def add_changelog(ctx: Ctx, version: str, today: str | None = None) -> None:
     ctx.write("CHANGELOG.md", text[: first.start()] + entry + text[first.start() :])
 
 
+def _hook_ruff(ctx: Ctx) -> str | None:
+    """``uvx ruff@<version>`` for the version the shared pre-commit template pins: the commit hook then finds nothing more.
+
+    A different ruff has different default rules (0.16 enables import sorting by default), so a fixer older or newer than
+    the hook leaves findings the hook reports at commit time.
+    """
+    from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
+
+    uvx = shutil.which("uvx")
+    template = pipelines_root(ctx) / "templates" / "connector" / "pre-commit-config.yaml"
+    if uvx is None or not template.is_file():
+        return None
+    m = re.search(r"ruff-pre-commit\s+rev:\s*\S+\s*#\s*v(\d+\.\d+\.\d+)", template.read_text(encoding="utf-8"))
+    return f"{uvx} ruff@{m.group(1)}" if m else None
+
+
 def tidy(ctx: Ctx) -> None:
     """Fix and format the files the rules rewrote with the repo's own ruff table, so the commit hooks find nothing.
 
@@ -103,7 +119,7 @@ def tidy(ctx: Ctx) -> None:
     files = [f for f in sorted(ctx.changed) if f.endswith(".py") and (ctx.root / f).is_file()]
     if not files:
         return
-    ruff = shutil.which("ruff") or (f"{shutil.which('uvx')} ruff" if shutil.which("uvx") else None)
+    ruff = _hook_ruff(ctx) or shutil.which("ruff") or (f"{shutil.which('uvx')} ruff" if shutil.which("uvx") else None)
     if ruff is None:
         ctx.note("tidy", "ruff is not installed; imports and formatting left to the commit hooks", "", blocking=True)
         return

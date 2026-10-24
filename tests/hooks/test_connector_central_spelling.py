@@ -142,3 +142,21 @@ def test_second_run_changes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     spelling.rule_af(ctx)
     assert ctx.changed == set()
     assert snapshot == {p: (ctx.root / p).read_text(encoding="utf-8") for p in snapshot}
+
+
+@pytest.mark.spec("PIPE-GATES-R016.110")
+def test_findings_in_tool_working_directories_are_excluded_not_edited(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    report = "# Report\n\nThis teh report is generated.\n"
+    ctx = _run(tmp_path, monkeypatch, {".specify/reports/r.md": report, "docs/a.md": "A teh doc.\n"})
+    assert (ctx.root / ".specify/reports/r.md").read_text(encoding="utf-8") == report
+    table = tomllib.loads((ctx.root / "pyproject.toml").read_text(encoding="utf-8"))["tool"]["pipelines"]["codespell"]
+    assert table["exclude"] == [".specify"]
+    assert "teh" not in (ctx.root / "docs/a.md").read_text(encoding="utf-8")
+    assert not _left(ctx)
+    ctx.applied.append("again")
+    spelling.rule_af(ctx)
+    assert tomllib.loads((ctx.root / "pyproject.toml").read_text(encoding="utf-8"))["tool"]["pipelines"]["codespell"][
+        "exclude"
+    ] == [".specify"]
