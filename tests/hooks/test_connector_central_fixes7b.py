@@ -120,7 +120,7 @@ def test_l4_extras_of_a_dropped_one_element_extra_move_to_the_pin(tmp_path: Path
     import tomllib
 
     data = tomllib.loads((ctx.root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-    assert data["dependencies"][0].startswith("agent-connector-sdk[mcp,stream]>=0.5.3")
+    assert data["dependencies"][0].startswith("agent-connector-sdk[mcp,stream]>=0.5.4")
     assert "mcp" not in data["optional-dependencies"]
 
 

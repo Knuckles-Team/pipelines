@@ -1217,9 +1217,9 @@ def test_l4_sdk_floor_merged_extras_and_dropped_one_element_extras(tmp_path: Pat
     ctx = _ctx(root)
     _run(ctx, ("w1.l4",))
     data = tomllib.loads(_text(root, "pyproject.toml"))["project"]
-    assert data["dependencies"] == ["agent-connector-sdk[graphql,mcp]>=0.5.3,<0.6.0", "requests>=2.0"]
+    assert data["dependencies"] == ["agent-connector-sdk[graphql,mcp]>=0.5.4,<0.6.0", "requests>=2.0"]
     assert data["optional-dependencies"] == {"test": ["pytest>=9"]}
-    assert ctx.pkg_name and base.SDK_PIN.startswith("agent-connector-sdk[mcp]>=0.5.3")
+    assert ctx.pkg_name and base.SDK_PIN.startswith("agent-connector-sdk[mcp]>=0.5.4")
 
 
 @pytest.mark.spec("PIPE-GATES-R016.67")

@@ -415,7 +415,7 @@ PV_SERVER = "from demo_mcp.api_client import DemoApi\n\nclient = DemoApi()\n\n\n
 PV_PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.2.3"
-dependencies = ["agent-connector-sdk[mcp]>=0.5.3,<0.6.0"]
+dependencies = ["agent-connector-sdk[mcp]>=0.5.4,<0.6.0"]
 
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:main"
