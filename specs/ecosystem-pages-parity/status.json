@@ -426,6 +426,7 @@
     "PIPE-PAGES-R042.7",
     "PIPE-PAGES-R042.8",
     "PIPE-PAGES-R042.9",
+    "PIPE-PAGES-R042.10",
     "PIPE-PAGES-R043",
     "PIPE-PAGES-R043.1",
     "PIPE-PAGES-R043.2",
@@ -4018,7 +4019,8 @@
         "PIPE-PAGES-R042.6",
         "PIPE-PAGES-R042.7",
         "PIPE-PAGES-R042.8",
-        "PIPE-PAGES-R042.9"
+        "PIPE-PAGES-R042.9",
+        "PIPE-PAGES-R042.10"
       ]
     },
     {
@@ -4127,10 +4129,21 @@
       "title": "Every scanned repository has a part",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "93ec936d45a7"
+        "9dd3e4967209"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:912"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.10",
+      "title": "The explorer links back to the contribution front door",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "e13caa309b0b"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:936"
       ]
     },
     {
