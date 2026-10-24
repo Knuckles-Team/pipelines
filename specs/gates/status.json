@@ -1498,8 +1498,8 @@
         "f74978beb345"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_fixes7.py:252",
-        "tests/hooks/test_connector_central_fixes7.py:264",
+        "tests/hooks/test_connector_central_fixes7.py:256",
+        "tests/hooks/test_connector_central_fixes7.py:268",
         "tests/hooks/test_connector_central_pipelines.py:185",
         "tests/hooks/test_connector_central_pipelines.py:203",
         "tests/hooks/test_connector_central_pipelines.py:225"
@@ -1538,13 +1538,14 @@
       "title": "Pipelines-owned boilerplate rule `pl.r`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "2840d306edb5",
         "fc29a01c48c4"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7.py:162",
         "tests/hooks/test_connector_central_fixes7.py:175",
         "tests/hooks/test_connector_central_fixes7.py:196",
-        "tests/hooks/test_connector_central_fixes7.py:213",
+        "tests/hooks/test_connector_central_fixes7.py:217",
         "tests/hooks/test_connector_central_pipelines.py:522"
       ]
     },
