@@ -1114,7 +1114,7 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.g7`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "b24ee9c328e2"
+        "74ad5d0baab0"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:653",
@@ -1534,7 +1534,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.q`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "b24ee9c328e2",
+        "74ad5d0baab0",
         "dce5c83d89db"
       ],
       "verified_by": [
@@ -1691,7 +1691,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.ac`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "b24ee9c328e2",
+        "74ad5d0baab0",
         "bc1c1dffa20b",
         "fb079953f3db"
       ],
@@ -1724,8 +1724,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "295d80aff385",
+        "74ad5d0baab0",
         "9d2259faab12",
-        "b24ee9c328e2",
         "fb3e2489a321"
       ],
       "verified_by": [
