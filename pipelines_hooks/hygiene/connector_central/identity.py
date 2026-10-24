@@ -34,10 +34,10 @@ def _binding_names(tree: ast.Module) -> set[str]:
     return out
 
 
-def _source_literals(text: str) -> list[ast.Assign]:
-    """Module-level ``<name> = "<literal>"`` where ``<name>`` is ``_SOURCE`` or the name a binding takes as ``connector=``."""
+def _source_literals(text: str, kg: bool = True) -> list[ast.Assign]:
+    """Module-level ``<name> = "<literal>"`` where ``<name>`` is ``_SOURCE`` (kg modules) or the name a binding takes as ``connector=``."""
     tree = ast.parse(text)
-    names = {"_SOURCE"} | _binding_names(tree)
+    names = ({"_SOURCE"} if kg else set()) | _binding_names(tree)
     return [
         n
         for n in tree.body
@@ -107,11 +107,13 @@ def _retarget_tests(ctx: Ctx, old_names: set[str]) -> None:
 @rule("id.name")
 def connector_names(ctx: Ctx) -> None:
     renamed: set[str] = set()
-    for path in sorted(ctx.pkg.glob("kg_*.py")):
+    for path in sorted(ctx.pkg.glob("*.py")):
         rel = ctx.rel(path)
         text = path.read_text(encoding="utf-8")
+        if not path.name.startswith("kg_") and "connector=" not in text:
+            continue
         try:
-            hits = [n for n in _source_literals(text) if n.value.value != ctx.fleet]  # type: ignore[attr-defined]
+            hits = [n for n in _source_literals(text, path.name.startswith("kg_")) if n.value.value != ctx.fleet]  # type: ignore[attr-defined]
         except SyntaxError:
             ctx.note("id.name", "file does not parse", rel, blocking=True)
             continue

@@ -291,3 +291,20 @@ def test_internal_hostnames_in_docs_and_skills_become_the_reserved_example_form(
     ctx.applied.clear()
     identity.docs_credential_examples(ctx)
     assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.100")
+def test_a_binding_constant_outside_the_kg_modules_derives_from_the_sdk_identity(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    sync = ctx.pkg / "instance_sync.py"
+    sync.write_text(
+        'from agent_connector_sdk.ingest import IngestBinding\n\nCONNECTOR_ID = "demo-agent"\nOTHER = "demo-agent"\n\n\n'
+        "def b():\n    return IngestBinding(connector=CONNECTOR_ID, stream='s')\n",
+        encoding="utf-8",
+    )
+    other = ctx.pkg / "helpers.py"
+    other.write_text('_SOURCE = "demo-agent"\n', encoding="utf-8")
+    identity.connector_names(ctx)
+    assert 'CONNECTOR_ID = connector_name("demo_agent")' in sync.read_text(encoding="utf-8")
+    assert 'OTHER = "demo-agent"' in sync.read_text(encoding="utf-8")
+    assert other.read_text(encoding="utf-8") == '_SOURCE = "demo-agent"\n'
