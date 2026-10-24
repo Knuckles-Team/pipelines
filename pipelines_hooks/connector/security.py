@@ -37,10 +37,15 @@ NEGATIVE_CASES = (
     "on:\n  pull_request_target:\npermissions: {}\n",
     "on: push\npermissions: write-all\n",
     "on: push\npermissions: {}\njobs:\n  x:\n    steps:\n      - uses: owner/action@main\n",
+    "on: push\npermissions: {}\njobs:\n  x:\n    uses: Knuckles-Team/pipelines-evil/.github/workflows/x.yml@main\n",
     "on: push\npermissions: {}\njobs:\n  x:\n    steps:\n      - run: echo '${{ secrets.RUNTIME_TOKEN }}'\n",
 )
 ACTION_REF = re.compile(r"^\s*-?\s*uses:\s*([^\s#]+)", re.MULTILINE)
 PINNED_ACTION = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_./-]+)?@[0-9a-f]{40}")
+#: The organization's own shared workflow repository: the only place a ``@main`` reference is allowed (org plus repo,
+#: exact). Every repository references these workflows at ``main`` and never pins them; third-party actions stay
+#: pinned to a commit SHA.
+OWN_WORKFLOW_REF = re.compile(r"Knuckles-Team/pipelines/\.github/workflows/[A-Za-z0-9_.-]+\.ya?ml@main")
 PINNED_IMAGE = re.compile(r"docker://[^\s]+@sha256:[0-9a-f]{64}")
 
 
@@ -138,7 +143,7 @@ def violations(text: str) -> list[str]:
         if reference.startswith("docker://"):
             if PINNED_IMAGE.fullmatch(reference) is None:
                 found.append("mutable container action")
-        elif PINNED_ACTION.fullmatch(reference) is None:
+        elif OWN_WORKFLOW_REF.fullmatch(reference) is None and PINNED_ACTION.fullmatch(reference) is None:
             found.append("mutable action")
     return found
 
