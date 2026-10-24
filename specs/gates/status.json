@@ -1703,13 +1703,15 @@
       "title": "Pipelines-owned boilerplate rule `pl.ac`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "4c6053a5455b",
         "74ad5d0baab0",
         "bc1c1dffa20b",
         "fb079953f3db"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:164",
-        "tests/hooks/test_connector_central_identity.py:198"
+        "tests/hooks/test_connector_central_identity.py:198",
+        "tests/hooks/test_connector_central_identity.py:275"
       ]
     },
     {
