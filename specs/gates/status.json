@@ -1061,7 +1061,7 @@
       "title": "Wave 1 (sdk 0.5) rule `w1.g2`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "888b3eea05b7"
+        "39e835a22c93"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:1500",
@@ -1770,8 +1770,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "27bde72e9d5c",
+        "39e835a22c93",
         "8408c527fc35",
-        "888b3eea05b7",
         "d2ee1f62b996"
       ],
       "verified_by": [
