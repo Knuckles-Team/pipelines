@@ -455,6 +455,21 @@ def test_p_subset_of_shapes_writes_shape_classes_and_reviews(repo: Path) -> None
 
 
 @pytest.mark.spec("PIPE-GATES-R016.93")
+def test_p_committed_shapes_appended_out_of_order_still_match(repo: Path) -> None:
+    ontology(repo, ["Alpha"])
+    pkg = repo / "demo_mcp" / "ontology"
+    (pkg / "demo.ttl").write_text(TTL + ":Gamma a owl:Class .\n", encoding="utf-8")
+    head, *blocks = re.split(
+        r"(?m)^(?=shape:\w+GovernanceShape a sh:NodeShape)", generate.shacl("demo", ["Alpha", "Beta"])
+    )
+    (pkg / "shapes" / "connector.shacl.ttl").write_text(head + "".join(reversed(blocks)), encoding="utf-8")
+    ctx = run(repo, "pl.p")
+    assert not blocking(ctx, "pl.p")
+    assert toml(repo)["tool"]["pipelines"]["ontology"]["shape_classes"] == ["Alpha", "Beta"]
+    assert not (pkg / "shapes" / "connector.shacl.ttl").exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.93")
 def test_p_other_test_reading_artifacts_is_blocking_and_files_stay(repo: Path) -> None:
     ontology(repo)
     (repo / "tests").mkdir()
