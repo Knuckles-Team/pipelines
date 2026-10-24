@@ -1431,3 +1431,27 @@ def test_l4_sync_args_in_a_caller_workflow_lose_the_deleted_extras(tmp_path: Pat
     ctx.applied.clear()
     _run(ctx, ("w1.l4",))
     assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.67")
+def test_l4_a_test_asserting_the_old_sdk_requirement_follows_the_new_pin(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    pp = root / "pyproject.toml"
+    old = [
+        d
+        for d in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["dependencies"]
+        if d.startswith("agent-connector-sdk")
+    ][0]
+    t = root / "tests" / "test_floor.py"
+    t.write_text(f'def test_floor(project):\n    assert "{old}" in project["dependencies"]\n', encoding="utf-8")
+    ctx = _ctx(root)
+    _run(ctx, ("w1.l4",))
+    new = [
+        d
+        for d in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["dependencies"]
+        if d.startswith("agent-connector-sdk")
+    ][0]
+    assert new != old and f'"{new}" in project' in t.read_text(encoding="utf-8")
+    ctx.applied.clear()
+    _run(ctx, ("w1.l4",))
+    assert not ctx.applied
