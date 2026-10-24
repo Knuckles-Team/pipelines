@@ -71,6 +71,12 @@ RULE_TABLE: tuple[tuple[str, str, str], ...] = (
     ("pl.t", "pipelines", "`.security/*` is provided"),
     ("pl.u", "pipelines", "`scripts/bootstrap.sh` is deleted"),
     ("pl.v", "pipelines", "`verify_api_integration.py` becomes `connector-api-parity`"),
+    (
+        "id.name",
+        "identity",
+        "hard-coded connector names in `kg_*.py` and `mappings/*.yaml` derive from or match the SDK identity",
+    ),
+    ("pl.w", "pipelines", "own pipelines workflow refs are `@main`"),
 )
 FIRST_ROW = 50
 RULE_ROWS: dict[str, str] = {rid: f"PIPE-GATES-R016.{FIRST_ROW + i}" for i, (rid, _s, _t) in enumerate(RULE_TABLE)}
