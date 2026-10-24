@@ -337,6 +337,30 @@ def docs_credential_examples(ctx: Ctx) -> None:
         if new != text:
             ctx.write(ctx.rel(path), new, "pl.ac")
     _reserve_test_hostnames(ctx)
+    _reserve_doc_hostnames(ctx)
+
+
+def _reserve_doc_hostnames(ctx: Ctx) -> None:
+    """An internal hostname literal in the docs and the skill content (the tracked-privacy gate flags it) becomes ``.example``.
+
+    ``README.md``, ``docs/**/*.md`` and the package's ``skills/**`` markdown and shell files; ``gitlab.arpa`` reads
+    ``gitlab.example``. These are illustrations, so the reserved name loses nothing.
+    """
+    from pipelines_hooks.privacy.hosts import BARE_INTERNAL_HOSTNAME_RE
+
+    files = [
+        ctx.root / "README.md",
+        *sorted((ctx.root / "docs").glob("**/*.md")),
+        *sorted((ctx.pkg / "skills").glob("**/*.md")),
+        *sorted((ctx.pkg / "skills").glob("**/*.sh")),
+    ]
+    for path in files:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        new = BARE_INTERNAL_HOSTNAME_RE.sub(_reserve_test_hostname, text)
+        if new != text:
+            ctx.write(ctx.rel(path), new, "pl.ac")
 
 
 #: ``"http://{host}.lan:9180"``: the template side of an expected value the bare-name rewrite changes.
