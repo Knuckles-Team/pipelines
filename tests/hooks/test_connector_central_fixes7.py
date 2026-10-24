@@ -25,7 +25,7 @@ PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.2.3"
 description = "demo"
-dependencies = ["agent-connector-sdk[mcp]>=0.5.3,<0.6.0"]
+dependencies = ["agent-connector-sdk[mcp]>=0.5.4,<0.6.0"]
 
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:main"
