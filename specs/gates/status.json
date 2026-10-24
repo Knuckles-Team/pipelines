@@ -1789,7 +1789,7 @@
       "title": "An endpoint route literal is not a home path",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "0729977ae03c"
+        "7888b25e7587"
       ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:19"
