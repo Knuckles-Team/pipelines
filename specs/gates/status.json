@@ -1059,9 +1059,12 @@
     {
       "id": "PIPE-GATES-R016.51",
       "title": "Wave 1 (sdk 0.5) rule `w1.g2`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "888b3eea05b7"
+      ],
       "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:1500",
         "tests/hooks/test_connector_central_wave1.py:326",
         "tests/hooks/test_connector_central_wave1.py:336"
       ]
@@ -1768,14 +1771,15 @@
       "landed_in": [
         "27bde72e9d5c",
         "8408c527fc35",
+        "888b3eea05b7",
         "d2ee1f62b996"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_driver.py:102",
         "tests/hooks/test_connector_central_driver.py:117",
         "tests/hooks/test_connector_central_driver.py:128",
-        "tests/hooks/test_connector_central_driver.py:83",
-        "tests/hooks/test_connector_central_driver.py:95"
+        "tests/hooks/test_connector_central_driver.py:153",
+        "tests/hooks/test_connector_central_driver.py:83"
       ]
     },
     {
