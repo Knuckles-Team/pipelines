@@ -161,7 +161,7 @@
       "title": "The security scaffold is provided",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "347203177a82"
+        "0a8cf7ab17e8"
       ],
       "verified_by": [
         "tests/hooks/test_connector_security_scaffold.py:111",

@@ -103,13 +103,21 @@
     {
       "id": "PIPE-RELEASE-R002",
       "title": "Release tags point to the exact qualified commit",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "0f9f73b150d7",
+        "217b856f46b9",
         "d6a43376acc9",
-        "df7212f102bb"
+        "df7212f102bb",
+        "e9f2aba5afbb"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_release_version_guard.py:110",
+        "tests/test_release_version_guard.py:118",
+        "tests/test_release_version_guard.py:39",
+        "tests/test_release_version_guard.py:44",
+        "tests/test_release_version_guard.py:50"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R003",
