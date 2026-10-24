@@ -6,7 +6,8 @@ Applies four rule sets in a fixed order, deterministic and idempotent, per conne
 2. auth: ``client_factory`` declarations (exact shapes only; otherwise a review item carrying the proposed declaration);
 3. ingest (SDK 0.5.2): ``kg_ingest`` plumbing becomes ``SourceStream`` and mappers;
 4. wave 1 tests (scaffold tests by fingerprint), then the pipelines-owned rules (version, rendered containers,
-   generated ontology artifacts, shared pre-commit config, security scaffold, bootstrap, API parity).
+   generated ontology artifacts, shared pre-commit config, security scaffold, bootstrap, API parity), and last the
+   spelling rule (safe typo fixes, identifier words to ``ignore_words``) before the final codespell scan.
 
 A rule rewrites exactly or records a review item and leaves the files alone. The patch version is bumped once, only when
 some rule changed something, so a second run changes nothing.
@@ -33,7 +34,7 @@ from pipelines_hooks.hygiene.connector_central.base import (
     make_ctx,
 )
 
-MODULES = ("wave1", "auth", "ingest", "identity", "pipelines", "scaffold")
+MODULES = ("wave1", "auth", "ingest", "identity", "pipelines", "scaffold", "spelling")
 FINAL_STEP = "central"
 
 
@@ -54,6 +55,7 @@ def rule_order() -> list[str]:
     ]
     order += mods["pipelines"].ORDER
     order += mods["scaffold"].ORDER
+    order += mods["spelling"].ORDER
     missing = sorted(set(RULE_ROWS) - set(order))
     if missing:
         raise RuntimeError(f"rules registered but not ordered: {missing}")
@@ -142,9 +144,13 @@ def spell_check(ctx: Ctx) -> None:
     except Exception as exc:  # noqa: BLE001 - an unavailable codespell is reported, the migration continues
         ctx.note("codespell", f"codespell could not run: {exc}", "", blocking=False)
         return
+    reasons = ctx.options.get("spelling_reasons", {})
     for line in lines:
         rel, _, rest = line.partition(":")
-        ctx.note("codespell", f"central codespell would fail: {rest.strip()}", rel, blocking=True)
+        num, _, finding = rest.strip().partition(": ")
+        why = reasons.get(f"{rel}:{num}:{finding.partition(' ==> ')[0]}")
+        note = f" [{why}: review by hand]" if why else ""
+        ctx.note("codespell", f"central codespell would fail: {rest.strip()}{note}", rel, blocking=True)
 
 
 def refresh_lock(ctx: Ctx) -> None:

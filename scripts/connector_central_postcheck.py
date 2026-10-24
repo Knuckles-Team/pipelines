@@ -1,0 +1,97 @@
+"""Post-merge checks of one or more migrated connectors: release run, PyPI version, fresh-install stdio startup.
+
+Usage: connector_central_postcheck.py <repo>...  (reads the repo's `central` worktree under the repository-worktrees directory).
+"""
+
+"""Post-merge checks for one merged repo: release run success, PyPI version, stdio startup under the installed SDK."""
+import json
+import subprocess
+import sys
+import time
+import tomllib
+import shutil
+from pathlib import Path
+
+WT = Path.home() / ".local/state/repository-worktrees"
+VERIFY = WT / "pipelines/central-migrate2/scripts/connector_verify.py"
+
+
+def sh(cmd, **kw):
+    return subprocess.run(cmd, capture_output=True, text=True, **kw)
+
+
+def check(repo):
+    wt = WT / repo / "central"
+    out = {"repo": repo}
+    sh(["git", "fetch", "-q", "origin", "main"], cwd=wt)
+    sha = sh(["git", "rev-parse", "origin/main"], cwd=wt).stdout.strip()
+    data = tomllib.loads(sh(["git", "show", "origin/main:pyproject.toml"], cwd=wt).stdout)
+    dist, ver = data["project"]["name"], data["project"]["version"]
+    out.update(dist=dist, version=ver, sha=sha[:7])
+    sh(["git", "checkout", "-q", "--detach", "origin/main"], cwd=wt)
+    # release run for this sha
+    run_id = None
+    for _ in range(40):
+        r = sh(
+            [
+                "gh",
+                "run",
+                "list",
+                "-R",
+                f"Knuckles-Team/{repo}",
+                "--commit",
+                sha,
+                "--json",
+                "name,status,conclusion,databaseId",
+            ]
+        )
+        runs = [x for x in json.loads(r.stdout or "[]") if "Release" in x["name"] or "Upload" in x["name"]]
+        if runs:
+            run_id = runs[0]["databaseId"]
+            break
+        time.sleep(15)
+    if run_id is None:
+        out["release"] = "no release run found"
+        return out
+    for _ in range(120):
+        v = json.loads(
+            sh(
+                ["gh", "run", "view", str(run_id), "-R", f"Knuckles-Team/{repo}", "--json", "status,conclusion,jobs"]
+            ).stdout
+        )
+        if v["status"] == "completed":
+            break
+        time.sleep(15)
+    out["release"] = v.get("conclusion")
+    out["jobs"] = {j["name"]: j["conclusion"] for j in v.get("jobs", [])}
+    if v.get("conclusion") != "success":
+        return out
+    venv = Path(f"/var/tmp/connector-central/pc-venv/{repo}")
+    shutil.rmtree(venv, ignore_errors=True)
+    sh(["uv", "venv", "-q", str(venv), "--python", "3.14"])
+    ok = False
+    for _ in range(20):
+        p = sh(["uv", "pip", "install", "-q", "--python", str(venv / "bin/python"), f"{dist}=={ver}"])
+        if p.returncode == 0:
+            ok = True
+            break
+        time.sleep(30)
+    out["pypi"] = ver if ok else "not installable"
+    if not ok:
+        return out
+    sdk = sh(
+        [str(venv / "bin/python"), "-c", "import importlib.metadata as m;print(m.version('agent-connector-sdk'))"]
+    ).stdout.strip()
+    out["sdk"] = sdk
+    p = sh([str(venv / "bin/python"), str(VERIFY), str(wt)])
+    try:
+        out["startup"] = json.loads([ln for ln in p.stdout.splitlines() if ln.startswith("{")][-1])
+    except Exception:
+        out["startup"] = {"ok": False, "error": (p.stdout + p.stderr)[-300:]}
+    shutil.rmtree(venv, ignore_errors=True)
+    return out
+
+
+if __name__ == "__main__":
+    for r in sys.argv[1:]:
+        print(json.dumps(check(r)), flush=True)

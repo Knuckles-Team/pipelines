@@ -88,6 +88,12 @@ RULE_TABLE: tuple[tuple[str, str, str], ...] = (
     ("pl.ab", "pipelines", "the `[[project.authors]]` block is the neutral organisation author"),
     ("pl.ac", "pipelines", "example credential URIs in docs code are the placeholder form the privacy gate accepts"),
     ("pl.ad", "pipelines", "the fleet's SHA-pinned `actions/checkout` and `actions/setup-python` replace mutable tags"),
+    (
+        "pl.ae",
+        "pipelines",
+        "the publication-workflow test expects the shared hook revision `main`, not the old SHA pin",
+    ),
+    ("pl.af", "pipelines", "codespell findings are fixed or classified"),
 )
 FIRST_ROW = 50
 RULE_ROWS: dict[str, str] = {rid: f"PIPE-GATES-R016.{FIRST_ROW + i}" for i, (rid, _s, _t) in enumerate(RULE_TABLE)}

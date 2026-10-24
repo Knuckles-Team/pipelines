@@ -196,3 +196,19 @@ def test_mutable_checkout_and_setup_python_tags_become_the_fleet_pins(tmp_path: 
     ctx.applied.clear()
     identity.pin_actions(ctx)
     assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.109")
+def test_publication_workflow_test_expects_the_shared_main_revision(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    (ctx.root / "tests").mkdir()
+    test = ctx.root / "tests/test_publication_workflow.py"
+    test.write_text(
+        'CONTRACT = "0123456789abcdef"\n\n\ndef test_x(repo):\n    assert repo["repo"] == "u"\n    assert repo["rev"] == CONTRACT\n',
+        encoding="utf-8",
+    )
+    identity.publication_test_rev(ctx)
+    assert 'assert repo["rev"] == "main"' in test.read_text(encoding="utf-8")
+    ctx.applied.clear()
+    identity.publication_test_rev(ctx)
+    assert not ctx.applied

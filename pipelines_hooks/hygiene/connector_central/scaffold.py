@@ -27,6 +27,7 @@ SCAFFOLD_EXTRAS = (
     ".env.example",
     "mcp_config.json",
     "opencode.json",
+    ".security-audit-allow.txt",
 )
 #: Files whose mentions are history or resolved pins, never a use of the candidate.
 IGNORED_REFERRERS = frozenset({"uv.lock", "CHANGELOG.md"})
