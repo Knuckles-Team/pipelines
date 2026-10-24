@@ -28,7 +28,7 @@ def run(repo):
     if p.returncode:
         return repo, {"error": "archive failed"}
     subprocess.run(["git", "init", "-q"], cwd=d, env=env)
-    subprocess.run(["git", "add", "-A"], cwd=d, env=env, capture_output=True)
+    subprocess.run(["git", "add", "-f", "-A"], cwd=d, env=env, capture_output=True)
     subprocess.run(
         ["git", "-c", "user.name=c", "-c", "user.email=c@c", "commit", "-qm", "x"], cwd=d, env=env, capture_output=True
     )

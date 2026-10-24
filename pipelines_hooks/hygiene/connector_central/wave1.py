@@ -3850,6 +3850,12 @@ def _deleted_symbol_users_in(ctx: Ctx, text: str) -> list[str]:
             hits.append("get_mcp_instance")
         elif _runs_bootstrap_module(n, mod):
             hits.append("run_module(mcp_server)")
+        elif (
+            isinstance(n, ast.Attribute)
+            and n.attr == "mcp_server"
+            and not (isinstance(n.value, ast.Name) and n.value.id == ctx.pkg_name)
+        ):
+            hits.append("mcp_server")  # `module.mcp_server` on an imported bootstrap module
     return sorted(set(hits))
 
 

@@ -265,8 +265,22 @@ def neutral_author(ctx: Ctx) -> None:
         return "[[project.authors]]\n" + new
 
     new_text = _AUTHORS.sub(fix, text)
+    new_text = _INLINE_AUTHORS.sub(_fix_inline_authors, new_text)
     if new_text != text:
         ctx.write("pyproject.toml", new_text, "pl.ab")
+
+
+_INLINE_AUTHORS = re.compile(r"(?m)^authors\s*=\s*\[(?P<body>\s*\{[^\[\]]*\}\s*(?:,\s*\{[^\[\]]*\}\s*)*,?\s*)\][ \t]*$")
+_INLINE_ITEM = re.compile(r"\{\s*name\s*=\s*\"[^\"\n]*\"\s*,\s*email\s*=\s*\"[^\"\n]*\"\s*\}")
+
+
+def _fix_inline_authors(m: re.Match[str]) -> str:
+    """``authors = [{ name = "...", email = "..." }]`` (the inline form) becomes the one neutral author."""
+    items = re.findall(r"\{[^{}]*\}", m.group("body"))
+    if not items or not all(_INLINE_ITEM.fullmatch(i) for i in items):
+        return m.group(0)
+    neutral = f'{{ name = "{NEUTRAL_AUTHOR_NAME}", email = "{NEUTRAL_AUTHOR_EMAIL}" }}'
+    return f"authors = [{neutral}]"
 
 
 _CRED_URI = re.compile(r"(?i)(\b[a-z][a-z0-9+.-]*://)([^\s/@:`'\"]+):([^\s/@`'\"]+)(@)")
