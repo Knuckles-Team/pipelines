@@ -195,6 +195,10 @@ def _git_repo(root: Path) -> None:
 
 @pytest.mark.spec("PIPE-GATES-R016.95")
 def test_codespell_hook_honours_the_repo_words_and_excludes(repo: Path) -> None:
+    from tests.hooks.conftest import REQUIRE_SCANNERS
+
+    if shutil.which("codespell") is None and not REQUIRE_SCANNERS:
+        pytest.skip("codespell is not installed in this environment (a scanner-provisioned run requires it)")
     (repo / "demo_mcp" / "m.py").write_text("nd = 1\n# teh\n", encoding="utf-8")
     (repo / ".specify").mkdir()
     (repo / ".specify" / "r.md").write_text("updat the thing\n", encoding="utf-8")
