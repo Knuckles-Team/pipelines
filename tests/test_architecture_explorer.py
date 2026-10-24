@@ -907,3 +907,23 @@ def test_expanding_a_row_fetches_its_family_once_and_renders_it_safely(monkeypat
     assert 'aria-expanded="true"' in li[:1200] and 'class="xbody"' in li
     assert "Zq-FULLTEXT-MARKER" in li and "landed_in" in li and "Plan (plan.md)" in li and "<h3>Plan</h3>" in li
     assert li.count('class="xbody"') >= 1 and "Expand all shown" in out and "Collapse all" in out
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.9")
+def test_every_registered_repository_has_a_part_and_its_rows_place_without_the_allowlist() -> None:
+    """A registry repository with specs needs a part that owns it, and its rows land there, not in Unmapped."""
+    model = json.loads((PKG / "model.json").read_text())
+    registry = json.loads((PKG / "registry.json").read_text())
+    tree = Tree(model)
+    owned = {n["repo"] for n in tree.nodes.values() if n["repo"] and not n.get("external")}
+    assert {e["name"] for e in registry["repositories"]} <= owned
+    rows = [
+        _row("SG-CONTENT-R001", "Catalog content", family="catalog-content", repo="skill-graphs"),
+        _row("SG-CONTENT-R001.3", "Served through the convention", family="catalog-content", repo="skill-graphs"),
+    ]
+    direct = Placer(tree).run(rows)
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert set(where.values()) == {"skills.graphs"}
+    assert tree.nodes["skills.graphs"]["label"] == "Skill graphs" and tree.nodes["skills.graphs"]["level"] > 0
+    assert unmapped_violations(tree, direct, model.get("unmapped_allow", [])) == []
+    assert registry["pages_node"]["skill-graphs"] == "skills"

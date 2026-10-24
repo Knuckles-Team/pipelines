@@ -2029,6 +2029,20 @@
      "links": [
       "sdk.control"
      ]
+    },
+    {
+     "id": "skills.graphs",
+     "label": "Skill graphs",
+     "role": "packaged skill graphs",
+     "repo": "skill-graphs",
+     "fam": [
+      "catalog-content"
+     ],
+     "desc": "The skill-graphs repository packages skill graphs as content. Each graph is served through the SDK convention, so Arbora lists and loads it like any other skill, and the graph makes no direct effects.",
+     "code": [],
+     "links": [
+      "sdk.control"
+     ]
     }
    ],
    "band": 3
