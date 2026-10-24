@@ -7,6 +7,11 @@ content. These are rendered, generated or provided centrally and are findings wh
 * ``<pkg>/ontology/shapes/connector.shacl.ttl`` and ``<pkg>/ontology/certification.json`` (``connector-generate``);
 * ``scripts/security_sanitizer.py`` (the shared ``security-sanitizer`` gate inside ``secrets``);
 * ``.codespellignore`` (the shared default list plus ``[tool.pipelines.codespell] ignore_words``);
+* ``.security/{repository_fuzz.py,authenticated_negative.py}`` (``pipelines-connector security``), and
+  ``.security/security-contract.json`` (the shared contract plus ``[tool.pipelines.security]``) unless the repository
+  still tracks ``scripts/security_contract.py``, whose validator reads that file;
+* ``scripts/bootstrap.sh`` (dead: ``uv sync --locked`` installs Python and the environment, ``pre-commit install`` the hooks);
+* ``scripts/verify_api_integration.py`` (the ``connector-api-parity`` member with ``[tool.pipelines.api_integration]``);
 * ``.bumpversion.cfg`` (the version is ``pyproject.toml`` alone; ``connector-version`` bumps it);
 * a ``__version__ = "<project version>"`` literal in a tracked Python file (read package metadata).
 """
@@ -27,6 +32,11 @@ CENTRAL = {
     "docker/agent.compose.yml": "rendered at build time by connector-render",
     "scripts/security_sanitizer.py": "provided by the shared security-sanitizer gate (the secrets hook)",
     ".codespellignore": "provided as the shared default; extra words go in [tool.pipelines.codespell] ignore_words",
+    ".security/repository_fuzz.py": "provided by pipelines-connector security fuzz",
+    ".security/authenticated_negative.py": "provided by pipelines-connector security authenticated-negative",
+    "scripts/bootstrap.sh": "dead: uv sync --locked sets up Python and the environment; pre-commit install sets up the hooks",
+    "scripts/verify_api_integration.py": "provided by connector-api-parity; the baseline is [tool.pipelines.api_integration] baseline",
+    "tests/test_verify_api_integration.py": "tests the removed script; pipelines owns the check and its fixtures",
     ".bumpversion.cfg": "not needed: pyproject.toml holds the only version (pipelines-connector version bump)",
 }
 
@@ -44,6 +54,8 @@ def findings(root: Path) -> list[str]:
     central = dict(CENTRAL)
     central[f"{package}/ontology/shapes/connector.shacl.ttl"] = "generated at release by connector-generate"
     central[f"{package}/ontology/certification.json"] = "generated at release by connector-generate"
+    if "scripts/security_contract.py" not in files:
+        central[".security/security-contract.json"] = "provided by pipelines-connector security contract"
     out = [f"{name} is committed: {why}" for name, why in central.items() if name in files]
     version = str(pyproject.get("project", {}).get("version", ""))
     literal = re.compile(r"""^\s*__version__\s*=\s*['"]""" + re.escape(version) + r"""['"]""", re.M)

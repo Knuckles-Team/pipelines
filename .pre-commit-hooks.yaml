@@ -34,7 +34,7 @@
   always_run: true
   stages: [pre-push]
 - id: connector-standard
-  name: Connector standard - no committed central files, shared codespell defaults
+  name: Connector standard - no committed central files, shared codespell, security checks, API parity
   entry: pipelines-hook connector-standard
   language: python
   additional_dependencies: [codespell==2.4.2]
