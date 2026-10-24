@@ -104,6 +104,36 @@ tag change after preflight can still block the later release check; upload and
 GitHub release creation are separate operations. A tag mutation after the final
 read can still race release creation; this check is not an atomic tag lock.
 
+## Release version guard
+
+`python_pipeline.yml` and `maturin_pipeline.yml` run the `verify-release-version`
+action before any build. It fails with a message naming the fix when:
+
+- the pushed tag `vX.Y.Z` differs from the version the build will stamp: the
+  static `[project].version`, or, for a dynamic version, the `[package].version`
+  of the `[tool.maturin] manifest-path` manifest (default `Cargo.toml`);
+- `.bumpversion.cfg` or `.config/bumpversion.cfg` exists and its
+  `current_version` differs from that version;
+- that version already exists on PyPI. A failed PyPI lookup also blocks.
+
+Run it locally before pushing a tag:
+`python3 -I .github/actions/verify-release-version/verify_release_version.py --root . --ref refs/tags/vX.Y.Z`.
+
+### Release procedure
+
+1. Bump the version first with the repository's own method (`bumpversion`, the
+   pipelines version command, or editing `pyproject.toml` and the
+   `.bumpversion.cfg` `current_version` together). Refresh the lock and every
+   recorded fixture that embeds the version.
+2. Merge the bump.
+3. On the merged commit, verify that the package version equals the intended tag
+   and that the version is not on PyPI (the command above).
+4. Only then push the tag.
+5. Confirm the wheel and the sdist are on PyPI.
+6. A tag pushed on the wrong commit with nothing published: delete it and
+   re-tag. Anything published: cut the next patch; PyPI never accepts a version
+   twice.
+
 ## Evidence and isolation
 
 `release-readiness.json` records source and pipeline commits, wheel SHA-256,

@@ -1,0 +1,18 @@
+name: Verify release version
+description: >-
+  Fail before any build when the pushed release tag vX.Y.Z differs from the package version the
+  build will stamp, when .bumpversion.cfg disagrees, or when that version is already on PyPI.
+inputs:
+  root:
+    description: Directory holding the package pyproject.toml.
+    required: false
+    default: '.'
+runs:
+  using: composite
+  steps:
+    - name: Verify tag, package version and PyPI
+      shell: bash
+      env:
+        RELEASE_REF: ${{ github.ref }}
+        RELEASE_ROOT: ${{ inputs.root }}
+      run: python3 -I "${{ github.action_path }}/verify_release_version.py" --root "$RELEASE_ROOT" --ref "$RELEASE_REF"
