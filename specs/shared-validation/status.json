@@ -23,7 +23,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f9f73b150d7",
-        "99f1989eb7f3",
+        "5ff231c270b1",
         "af9b1ddcb25f",
         "b76625874902"
       ],
@@ -127,7 +127,7 @@
       "title": "Standard repo files are provided, not copied",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:202",
@@ -139,7 +139,7 @@
       "title": "Ignore-file defaults are shared",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:229"
@@ -150,7 +150,7 @@
       "title": "One reference connector configuration",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:240"

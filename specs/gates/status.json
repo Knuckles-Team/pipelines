@@ -69,7 +69,8 @@
     "PIPE-GATES-R016.37",
     "PIPE-GATES-R016.38",
     "PIPE-GATES-R016.39",
-    "PIPE-GATES-R016.40"
+    "PIPE-GATES-R016.40",
+    "PIPE-GATES-R016.41"
   ],
   "requirements": [
     {
@@ -231,7 +232,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "180d570777d4",
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:190",
@@ -246,7 +247,7 @@
       "title": "No version mirror outside `pyproject.toml`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:190"
@@ -380,7 +381,8 @@
         "PIPE-GATES-R016.37",
         "PIPE-GATES-R016.38",
         "PIPE-GATES-R016.39",
-        "PIPE-GATES-R016.40"
+        "PIPE-GATES-R016.40",
+        "PIPE-GATES-R016.41"
       ]
     },
     {
@@ -836,7 +838,7 @@
       "title": "Ontology artifacts are generated at release, not committed",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:150",
@@ -849,11 +851,22 @@
       "title": "The connector PR gate runs dupehound",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:253",
         "tests/hooks/test_connector_central.py:267"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.41",
+      "title": "The repo-local version hook leaves the connector (migrate e)",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a10001ef97d1"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_migrate.py:1019"
       ]
     }
   ]
