@@ -13,6 +13,8 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from pipelines_hooks.specs.requirements_doc import parse_rows
+
 from .details import describe, family_docs, row_parts
 
 ROW_RE = re.compile(r"^\|\s*`([A-Za-z0-9][A-Za-z0-9.\-]*)`\s*\|(.*)$")
@@ -129,7 +131,10 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
             status = json.loads(reader.read(f"specs/{family}/status.json") or "{}")
         except json.JSONDecodeError:
             continue
-        text = requirement_text(reader.read(f"specs/{family}/requirements.md"))
+        markdown = reader.read(f"specs/{family}/requirements.md")
+        text = requirement_text(markdown)
+        # Read from the row text, not status.json: a repository's status.json carries depends_on only after it regenerates.
+        depends = {row.id: list(row.depends_on) for row in parse_rows(markdown)}
         for req in status.get("requirements", []):
             body = text.get(req["id"], "")
             title = (req.get("title") or "").strip()
@@ -147,7 +152,7 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
                     "text": body,
                     "req": body.split("|")[0],
                     "spec_id": status.get("spec_id", ""),
-                    "depends_on": req.get("depends_on", []),
+                    "depends_on": depends.get(req["id"], []),
                     "rollup": "rollup_of" in req,
                 }
             )

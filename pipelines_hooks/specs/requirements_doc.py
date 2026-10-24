@@ -9,7 +9,11 @@ from pipelines_hooks.specs.ids import ID, ROW_RE
 
 _TITLE_RE = re.compile(r"\*\*(.+?)\*\*")
 _RETIRED_RE = re.compile(r"RETIRED:?\s*(.*)")
-_DEPENDS_RE = re.compile(rf"\bDepends-on:\s*({ID}(?:\s*,\s*{ID})*)")
+_RELATIVE = r"R\d{2,3}(?:\.\d+)*|\.\d+(?:\.\d+)*"
+#: "Depends on" and "Depends-on:" take backticked or bare full IDs. "Requires" and "After" take backticked IDs only.
+_DEPENDS_RE = re.compile(r"\b(?:[Dd]epends[ -]on:?)\s*(?P<run>[^|]*?)(?:\.(?=\s|\||$)|\||$)")
+_NEEDS_RE = re.compile(r"\b(?:Requires|After)\s+(?P<run>`[^|]*?)(?:\.(?=\s|\||$)|\||$)")
+_TICKED_RE = re.compile(r"`([^`]+)`")
 
 
 class Row(NamedTuple):
@@ -34,16 +38,30 @@ def _retired_reason(title: str) -> str | None:
     return match.group(1).strip() or "retired"
 
 
-def _ordered_unique(found: list[str]) -> tuple[str, ...]:
-    return tuple(dict.fromkeys(found))
+def _resolve(token: str, row_id: str) -> str | None:
+    """A full ID stays; ``R001.1`` takes the row's spec prefix; ``.1`` is a child of the row's parent."""
+    token = token.strip()
+    if re.fullmatch(ID, token):
+        return token
+    if re.fullmatch(_RELATIVE, token):
+        if token.startswith("."):
+            base = row_id.rsplit(".", 1)[0] if re.search(r"R\d{2,3}\.\d+(?:\.\d+)*$", row_id) else row_id
+            return base + token
+        return row_id.rsplit("-R", 1)[0] + "-" + token
+    return None
 
 
-def _declared(pattern: re.Pattern[str], body: str, item: str) -> tuple[str, ...]:
-    """The comma-separated IDs of every ``Depends-on:`` declaration in a row."""
+def _declared_ids(body: str, row_id: str) -> tuple[str, ...]:
+    """Prerequisite IDs named by ``Depends on``, ``Depends-on:``, ``Requires`` or ``After`` in one row."""
     found: list[str] = []
-    for match in pattern.finditer(body):
-        found += re.findall(item, match.group(1))
-    return _ordered_unique(found)
+    for pattern, bare in ((_DEPENDS_RE, True), (_NEEDS_RE, False)):
+        for match in pattern.finditer(body):
+            run = match.group("run")
+            tokens = _TICKED_RE.findall(run)
+            if bare:
+                tokens += re.findall(rf"(?<![`\w-])({ID})(?![\w`])", _TICKED_RE.sub(" ", run))
+            found += [t for t in (_resolve(t, row_id) for t in tokens) if t]
+    return tuple(dict.fromkeys(i for i in found if i != row_id))
 
 
 def parse_rows(text: str) -> list[Row]:
@@ -62,7 +80,7 @@ def parse_rows(text: str) -> list[Row]:
                 match.group(1),
                 title,
                 _retired_reason(title),
-                _declared(_DEPENDS_RE, body, ID),
+                _declared_ids(body, match.group(1)),
             )
         )
     return rows

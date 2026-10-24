@@ -17,6 +17,29 @@ def test_row_depends_on_parses() -> None:
     assert parse_rows("| `A-R002` | **T.** no declaration | v |\n")[0].depends_on == ()
 
 
+# spec: PIPE-CONNSPEC-R012
+def test_prose_dependency_forms_resolve_relative_and_full_ids() -> None:
+    text = (
+        "| `EG-SUPPLY-VOCAB-R001.4` | **T.** Depends on `R001.1`, `.2` and `EG-OTHER-R005`. Requires `R002`. "
+        "After a while. After `ARB-X-R010.3`. | v |\n"
+        "| `EG-SUPPLY-VOCAB-R002` | **T.** Depends on EG-FOO-R004 and ARB-BAR-R009.2. Requires linking a to b. | v |\n"
+        "| `EG-SUPPLY-VOCAB-R003` | **T.** Depends on `.1`. | v |\n"
+    )
+    rows = {r.id: r.depends_on for r in parse_rows(text)}
+    assert rows["EG-SUPPLY-VOCAB-R001.4"] == (
+        "EG-SUPPLY-VOCAB-R001.1",  # relative to the spec prefix
+        "EG-SUPPLY-VOCAB-R001.2",  # `.2` is a sibling of a child row
+        "EG-OTHER-R005",  # full, cross-spec
+        "EG-SUPPLY-VOCAB-R002",
+        "ARB-X-R010.3",  # "After" with a backticked ID; "After a while" adds nothing
+    )
+    assert rows["EG-SUPPLY-VOCAB-R002"] == (
+        "EG-FOO-R004",
+        "ARB-BAR-R009.2",
+    )  # bare full IDs; "Requires linking" adds nothing
+    assert rows["EG-SUPPLY-VOCAB-R003"] == ("EG-SUPPLY-VOCAB-R003.1",)  # `.1` is a child of a top-level row
+
+
 def _graph() -> dict[str, Node]:
     cq1, cq2 = "EG-CQ-ORCH-R001", "EG-CQ-ORCH-R002"
     return {
