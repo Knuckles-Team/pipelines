@@ -1767,8 +1767,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "27bde72e9d5c",
-        "51b03b485c5d",
-        "8408c527fc35"
+        "8408c527fc35",
+        "d2ee1f62b996"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_driver.py:102",
@@ -1794,8 +1794,8 @@
       "title": "An endpoint route literal is not a home path",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "51b03b485c5d",
-        "7888b25e7587"
+        "7888b25e7587",
+        "d2ee1f62b996"
       ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:19",
@@ -1807,7 +1807,7 @@
       "title": "A variable reference is not a URI credential",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "51b03b485c5d"
+        "d2ee1f62b996"
       ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:37"
