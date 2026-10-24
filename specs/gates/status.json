@@ -1498,8 +1498,8 @@
         "f74978beb345"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_fixes7.py:256",
-        "tests/hooks/test_connector_central_fixes7.py:268",
+        "tests/hooks/test_connector_central_fixes7.py:261",
+        "tests/hooks/test_connector_central_fixes7.py:273",
         "tests/hooks/test_connector_central_pipelines.py:185",
         "tests/hooks/test_connector_central_pipelines.py:203",
         "tests/hooks/test_connector_central_pipelines.py:225"
@@ -1539,13 +1539,14 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "2840d306edb5",
+        "68a1619f3551",
         "fc29a01c48c4"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7.py:162",
         "tests/hooks/test_connector_central_fixes7.py:175",
         "tests/hooks/test_connector_central_fixes7.py:196",
-        "tests/hooks/test_connector_central_fixes7.py:217",
+        "tests/hooks/test_connector_central_fixes7.py:222",
         "tests/hooks/test_connector_central_pipelines.py:522"
       ]
     },
