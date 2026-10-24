@@ -1063,11 +1063,11 @@
         "56a34a613573"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_g3_clusters.py:1004",
-        "tests/hooks/test_connector_central_g3_clusters.py:1025",
-        "tests/hooks/test_connector_central_g3_clusters.py:1034",
-        "tests/hooks/test_connector_central_g3_clusters.py:1050",
-        "tests/hooks/test_connector_central_g3_clusters.py:1070"
+        "tests/hooks/test_connector_central_g3_clusters.py:1003",
+        "tests/hooks/test_connector_central_g3_clusters.py:1019",
+        "tests/hooks/test_connector_central_g3_clusters.py:1038",
+        "tests/hooks/test_connector_central_g3_clusters.py:1059",
+        "tests/hooks/test_connector_central_g3_clusters.py:1068"
       ]
     },
     {
@@ -1076,11 +1076,11 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_g3_clusters.py:503",
-        "tests/hooks/test_connector_central_g3_clusters.py:522",
-        "tests/hooks/test_connector_central_g3_clusters.py:538",
-        "tests/hooks/test_connector_central_g3_clusters.py:559",
-        "tests/hooks/test_connector_central_g3_clusters.py:577"
+        "tests/hooks/test_connector_central_g3_clusters.py:537",
+        "tests/hooks/test_connector_central_g3_clusters.py:556",
+        "tests/hooks/test_connector_central_g3_clusters.py:572",
+        "tests/hooks/test_connector_central_g3_clusters.py:593",
+        "tests/hooks/test_connector_central_g3_clusters.py:611"
       ]
     },
     {
@@ -1089,7 +1089,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_g3_clusters.py:458",
+        "tests/hooks/test_connector_central_g3_clusters.py:492",
         "tests/hooks/test_connector_central_wave1.py:611",
         "tests/hooks/test_connector_central_wave1.py:622",
         "tests/hooks/test_connector_central_wave1.py:632"
@@ -1136,11 +1136,11 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
+        "tests/hooks/test_connector_central_fixes7b.py:34",
+        "tests/hooks/test_connector_central_fixes7b.py:63",
         "tests/hooks/test_connector_central_i1_clusters.py:207",
         "tests/hooks/test_connector_central_i1_clusters.py:219",
-        "tests/hooks/test_connector_central_i1_clusters.py:228",
-        "tests/hooks/test_connector_central_i1_clusters.py:244",
-        "tests/hooks/test_connector_central_i1_clusters.py:270"
+        "tests/hooks/test_connector_central_i1_clusters.py:228"
       ]
     },
     {
@@ -1169,11 +1169,11 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
+        "tests/hooks/test_connector_central_fixes7b.py:147",
+        "tests/hooks/test_connector_central_fixes7b.py:156",
+        "tests/hooks/test_connector_central_fixes7b.py:170",
         "tests/hooks/test_connector_central_i1_clusters.py:299",
-        "tests/hooks/test_connector_central_i1_clusters.py:331",
-        "tests/hooks/test_connector_central_wave1.py:1360",
-        "tests/hooks/test_connector_central_wave1.py:981",
-        "tests/hooks/test_connector_central_wave1.py:996"
+        "tests/hooks/test_connector_central_i1_clusters.py:331"
       ]
     },
     {
@@ -1240,6 +1240,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
+        "tests/hooks/test_connector_central_fixes7b.py:110",
         "tests/hooks/test_connector_central_wave1.py:1214",
         "tests/hooks/test_connector_central_wave1.py:1225",
         "tests/hooks/test_connector_central_wave1.py:1235"
@@ -1493,15 +1494,15 @@
       "title": "Pipelines-owned boilerplate rule `pl.o`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2238eb390902",
-        "8e8272f805dd"
+        "8e8272f805dd",
+        "f74978beb345"
       ],
       "verified_by": [
+        "tests/hooks/test_connector_central_fixes7.py:238",
+        "tests/hooks/test_connector_central_fixes7.py:250",
         "tests/hooks/test_connector_central_pipelines.py:185",
         "tests/hooks/test_connector_central_pipelines.py:203",
-        "tests/hooks/test_connector_central_pipelines.py:225",
-        "tests/hooks/test_connector_central_pipelines.py:236",
-        "tests/hooks/test_connector_central_pipelines.py:252"
+        "tests/hooks/test_connector_central_pipelines.py:225"
       ]
     },
     {
@@ -1520,12 +1521,16 @@
     {
       "id": "PIPE-GATES-R016.94",
       "title": "Pipelines-owned boilerplate rule `pl.q`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "87942fc6e45b"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_central_pipelines.py:502",
-        "tests/hooks/test_connector_central_pipelines.py:513",
-        "tests/hooks/test_connector_central_pipelines.py:796"
+        "tests/hooks/test_connector_central_fixes7.py:105",
+        "tests/hooks/test_connector_central_fixes7.py:112",
+        "tests/hooks/test_connector_central_fixes7.py:128",
+        "tests/hooks/test_connector_central_fixes7.py:75",
+        "tests/hooks/test_connector_central_fixes7.py:87"
       ]
     },
     {
@@ -1534,8 +1539,11 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_pipelines.py:522",
-        "tests/hooks/test_connector_central_pipelines.py:537"
+        "tests/hooks/test_connector_central_fixes7.py:156",
+        "tests/hooks/test_connector_central_fixes7.py:169",
+        "tests/hooks/test_connector_central_fixes7.py:182",
+        "tests/hooks/test_connector_central_fixes7.py:199",
+        "tests/hooks/test_connector_central_pipelines.py:522"
       ]
     },
     {
@@ -1587,6 +1595,8 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
+        "tests/hooks/test_connector_central_fixes7b.py:103",
+        "tests/hooks/test_connector_central_fixes7b.py:86",
         "tests/hooks/test_connector_central_identity.py:23"
       ]
     },
