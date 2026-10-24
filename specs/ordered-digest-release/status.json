@@ -478,7 +478,7 @@
       "title": "Versions and container files are derived",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
@@ -493,7 +493,7 @@
       "title": "A new SDK release rebuilds connector images",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99f1989eb7f3"
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:126",
