@@ -4054,7 +4054,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "22a4c85e6a09",
-        "5c5e5970ed2d"
+        "69f37dd461a6"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:126",
