@@ -21,7 +21,7 @@ One repository owns each kind of requirement. Ask these questions in order. The 
 |---|---|---|
 | Is it a fact, a vocabulary term, a query, or a choice among options? | epistemic-graph | Model facts, the decision that selects tools, run-trace vocabulary |
 | Is it a mechanism inside a run, or the application of a decision? | agent-utilities | The run loop, context management, the signed dispatch envelope |
-| Is it a check when work enters the system, or a served operation? | graph-os | Admission, the operation registry, the gateway |
+| Is it a check when work enters the system, or a served operation? | arbora | Admission, the operation registry, the gateway |
 | Is it a property of a tool, a source, or a connector contract? | agent-connector-sdk | Read-only flags, argument schemas, certification |
 | Is it the behavior of one external system? | That connector repository | One vendor's operations and mappings |
 | Is it something a person sees or does? | agent-webui, agent-terminal-ui, geniusbot | Views, controls, honest states |
