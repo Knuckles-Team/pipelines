@@ -70,7 +70,60 @@
     "PIPE-GATES-R016.38",
     "PIPE-GATES-R016.39",
     "PIPE-GATES-R016.40",
-    "PIPE-GATES-R016.41"
+    "PIPE-GATES-R016.41",
+    "PIPE-GATES-R016.50",
+    "PIPE-GATES-R016.51",
+    "PIPE-GATES-R016.52",
+    "PIPE-GATES-R016.53",
+    "PIPE-GATES-R016.54",
+    "PIPE-GATES-R016.55",
+    "PIPE-GATES-R016.56",
+    "PIPE-GATES-R016.57",
+    "PIPE-GATES-R016.58",
+    "PIPE-GATES-R016.59",
+    "PIPE-GATES-R016.60",
+    "PIPE-GATES-R016.61",
+    "PIPE-GATES-R016.62",
+    "PIPE-GATES-R016.63",
+    "PIPE-GATES-R016.64",
+    "PIPE-GATES-R016.65",
+    "PIPE-GATES-R016.66",
+    "PIPE-GATES-R016.67",
+    "PIPE-GATES-R016.68",
+    "PIPE-GATES-R016.69",
+    "PIPE-GATES-R016.70",
+    "PIPE-GATES-R016.71",
+    "PIPE-GATES-R016.72",
+    "PIPE-GATES-R016.73",
+    "PIPE-GATES-R016.74",
+    "PIPE-GATES-R016.75",
+    "PIPE-GATES-R016.76",
+    "PIPE-GATES-R016.77",
+    "PIPE-GATES-R016.78",
+    "PIPE-GATES-R016.79",
+    "PIPE-GATES-R016.80",
+    "PIPE-GATES-R016.81",
+    "PIPE-GATES-R016.82",
+    "PIPE-GATES-R016.83",
+    "PIPE-GATES-R016.84",
+    "PIPE-GATES-R016.85",
+    "PIPE-GATES-R016.86",
+    "PIPE-GATES-R016.87",
+    "PIPE-GATES-R016.88",
+    "PIPE-GATES-R016.89",
+    "PIPE-GATES-R016.90",
+    "PIPE-GATES-R016.91",
+    "PIPE-GATES-R016.92",
+    "PIPE-GATES-R016.93",
+    "PIPE-GATES-R016.94",
+    "PIPE-GATES-R016.95",
+    "PIPE-GATES-R016.96",
+    "PIPE-GATES-R016.97",
+    "PIPE-GATES-R016.98",
+    "PIPE-GATES-R016.99",
+    "PIPE-GATES-R016.100",
+    "PIPE-GATES-R016.101",
+    "PIPE-GATES-R016.102"
   ],
   "requirements": [
     {
@@ -382,7 +435,60 @@
         "PIPE-GATES-R016.38",
         "PIPE-GATES-R016.39",
         "PIPE-GATES-R016.40",
-        "PIPE-GATES-R016.41"
+        "PIPE-GATES-R016.41",
+        "PIPE-GATES-R016.50",
+        "PIPE-GATES-R016.51",
+        "PIPE-GATES-R016.52",
+        "PIPE-GATES-R016.53",
+        "PIPE-GATES-R016.54",
+        "PIPE-GATES-R016.55",
+        "PIPE-GATES-R016.56",
+        "PIPE-GATES-R016.57",
+        "PIPE-GATES-R016.58",
+        "PIPE-GATES-R016.59",
+        "PIPE-GATES-R016.60",
+        "PIPE-GATES-R016.61",
+        "PIPE-GATES-R016.62",
+        "PIPE-GATES-R016.63",
+        "PIPE-GATES-R016.64",
+        "PIPE-GATES-R016.65",
+        "PIPE-GATES-R016.66",
+        "PIPE-GATES-R016.67",
+        "PIPE-GATES-R016.68",
+        "PIPE-GATES-R016.69",
+        "PIPE-GATES-R016.70",
+        "PIPE-GATES-R016.71",
+        "PIPE-GATES-R016.72",
+        "PIPE-GATES-R016.73",
+        "PIPE-GATES-R016.74",
+        "PIPE-GATES-R016.75",
+        "PIPE-GATES-R016.76",
+        "PIPE-GATES-R016.77",
+        "PIPE-GATES-R016.78",
+        "PIPE-GATES-R016.79",
+        "PIPE-GATES-R016.80",
+        "PIPE-GATES-R016.81",
+        "PIPE-GATES-R016.82",
+        "PIPE-GATES-R016.83",
+        "PIPE-GATES-R016.84",
+        "PIPE-GATES-R016.85",
+        "PIPE-GATES-R016.86",
+        "PIPE-GATES-R016.87",
+        "PIPE-GATES-R016.88",
+        "PIPE-GATES-R016.89",
+        "PIPE-GATES-R016.90",
+        "PIPE-GATES-R016.91",
+        "PIPE-GATES-R016.92",
+        "PIPE-GATES-R016.93",
+        "PIPE-GATES-R016.94",
+        "PIPE-GATES-R016.95",
+        "PIPE-GATES-R016.96",
+        "PIPE-GATES-R016.97",
+        "PIPE-GATES-R016.98",
+        "PIPE-GATES-R016.99",
+        "PIPE-GATES-R016.100",
+        "PIPE-GATES-R016.101",
+        "PIPE-GATES-R016.102"
       ]
     },
     {
@@ -867,6 +973,559 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:1019"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.50",
+      "title": "Wave 1 (sdk 0.5) rule `w1.g1`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:276",
+        "tests/hooks/test_connector_central_wave1.py:284",
+        "tests/hooks/test_connector_central_wave1.py:294"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.51",
+      "title": "Wave 1 (sdk 0.5) rule `w1.g2`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:309",
+        "tests/hooks/test_connector_central_wave1.py:319"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.52",
+      "title": "Wave 1 (sdk 0.5) rule `w1.g3`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:330",
+        "tests/hooks/test_connector_central_wave1.py:354",
+        "tests/hooks/test_connector_central_wave1.py:369",
+        "tests/hooks/test_connector_central_wave1.py:380",
+        "tests/hooks/test_connector_central_wave1.py:397"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.53",
+      "title": "Wave 1 (sdk 0.5) rule `w1.g4`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:426",
+        "tests/hooks/test_connector_central_wave1.py:438"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.54",
+      "title": "Wave 1 (sdk 0.5) rule `w1.g5`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:447",
+        "tests/hooks/test_connector_central_wave1.py:458"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.55",
+      "title": "Wave 1 (sdk 0.5) rule `w1.g6`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:406",
+        "tests/hooks/test_connector_central_wave1.py:414"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.56",
+      "title": "Wave 1 (sdk 0.5) rule `w1.g7`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:468",
+        "tests/hooks/test_connector_central_wave1.py:480"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.57",
+      "title": "Wave 1 (sdk 0.5) rule `w1.h`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:845",
+        "tests/hooks/test_connector_central_wave1.py:857",
+        "tests/hooks/test_connector_central_wave1.py:869",
+        "tests/hooks/test_connector_central_wave1.py:888"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.58",
+      "title": "Wave 1 (sdk 0.5) rule `w1.k1`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:493",
+        "tests/hooks/test_connector_central_wave1.py:502",
+        "tests/hooks/test_connector_central_wave1.py:513",
+        "tests/hooks/test_connector_central_wave1.py:527"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.59",
+      "title": "Wave 1 (sdk 0.5) rule `w1.k2`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:539",
+        "tests/hooks/test_connector_central_wave1.py:550"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.60",
+      "title": "Wave 1 (sdk 0.5) rule `w1.k3`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:560",
+        "tests/hooks/test_connector_central_wave1.py:571"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.61",
+      "title": "Wave 1 (sdk 0.5) rule `w1.k4`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:580",
+        "tests/hooks/test_connector_central_wave1.py:595"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.62",
+      "title": "Wave 1 (sdk 0.5) rule `w1.i1`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:605",
+        "tests/hooks/test_connector_central_wave1.py:619",
+        "tests/hooks/test_connector_central_wave1.py:633",
+        "tests/hooks/test_connector_central_wave1.py:646"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.63",
+      "title": "Wave 1 (sdk 0.5) rule `w1.i2`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:658",
+        "tests/hooks/test_connector_central_wave1.py:680"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.64",
+      "title": "Wave 1 (sdk 0.5) rule `w1.l1`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:697",
+        "tests/hooks/test_connector_central_wave1.py:708"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.65",
+      "title": "Wave 1 (sdk 0.5) rule `w1.l2`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:721",
+        "tests/hooks/test_connector_central_wave1.py:729",
+        "tests/hooks/test_connector_central_wave1.py:741"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.66",
+      "title": "Wave 1 (sdk 0.5) rule `w1.l3`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:751",
+        "tests/hooks/test_connector_central_wave1.py:763",
+        "tests/hooks/test_connector_central_wave1.py:773",
+        "tests/hooks/test_connector_central_wave1.py:782"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.67",
+      "title": "Wave 1 (sdk 0.5) rule `w1.l4`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_wave1.py:794",
+        "tests/hooks/test_connector_central_wave1.py:805",
+        "tests/hooks/test_connector_central_wave1.py:815"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.68",
+      "title": "Auth standardization rule `auth.r1`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:123",
+        "tests/hooks/test_connector_central_auth.py:132",
+        "tests/hooks/test_connector_central_auth.py:443",
+        "tests/hooks/test_connector_central_auth.py:460"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.69",
+      "title": "Auth standardization rule `auth.r2`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:145",
+        "tests/hooks/test_connector_central_auth.py:153"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.70",
+      "title": "Auth standardization rule `auth.r3`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:169",
+        "tests/hooks/test_connector_central_auth.py:177"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.71",
+      "title": "Auth standardization rule `auth.r4`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:195",
+        "tests/hooks/test_connector_central_auth.py:203"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.72",
+      "title": "Auth standardization rule `auth.r5`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:223",
+        "tests/hooks/test_connector_central_auth.py:236"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.73",
+      "title": "Auth standardization rule `auth.r6`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:254",
+        "tests/hooks/test_connector_central_auth.py:267"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.74",
+      "title": "Auth standardization rule `auth.r7`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:293"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.75",
+      "title": "Auth standardization rule `auth.r8`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:302"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.76",
+      "title": "Auth standardization rule `auth.r9`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:312",
+        "tests/hooks/test_connector_central_auth.py:320"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.77",
+      "title": "Auth standardization rule `auth.r10`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:329"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.78",
+      "title": "Auth standardization rule `auth.r11`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:349",
+        "tests/hooks/test_connector_central_auth.py:360"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.79",
+      "title": "Auth standardization rule `auth.r12`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:370",
+        "tests/hooks/test_connector_central_auth.py:380"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.80",
+      "title": "Auth standardization rule `auth.r13`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:388",
+        "tests/hooks/test_connector_central_auth.py:397",
+        "tests/hooks/test_connector_central_auth.py:409",
+        "tests/hooks/test_connector_central_auth.py:453"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.81",
+      "title": "Auth standardization rule `auth.r14`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_auth.py:418",
+        "tests/hooks/test_connector_central_auth.py:431"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.82",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i1`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:187",
+        "tests/hooks/test_connector_central_ingest.py:204",
+        "tests/hooks/test_connector_central_ingest.py:215",
+        "tests/hooks/test_connector_central_ingest.py:224",
+        "tests/hooks/test_connector_central_ingest.py:452"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.83",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i2`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:241",
+        "tests/hooks/test_connector_central_ingest.py:252",
+        "tests/hooks/test_connector_central_ingest.py:262"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.84",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i3`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:279",
+        "tests/hooks/test_connector_central_ingest.py:297",
+        "tests/hooks/test_connector_central_ingest.py:310",
+        "tests/hooks/test_connector_central_ingest.py:460"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.85",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i4`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:328"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.86",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i5`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:338"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.87",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i6`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:365",
+        "tests/hooks/test_connector_central_ingest.py:377"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.88",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i7`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:397"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.89",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i8`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:418"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.90",
+      "title": "Ingest (sdk 0.5.2) rule `ingest.i9`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_ingest.py:438"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.91",
+      "title": "Pipelines-owned boilerplate rule `pl.n`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:142",
+        "tests/hooks/test_connector_central_pipelines.py:161",
+        "tests/hooks/test_connector_central_pipelines.py:175"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.92",
+      "title": "Pipelines-owned boilerplate rule `pl.o`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:185",
+        "tests/hooks/test_connector_central_pipelines.py:203",
+        "tests/hooks/test_connector_central_pipelines.py:225",
+        "tests/hooks/test_connector_central_pipelines.py:236",
+        "tests/hooks/test_connector_central_pipelines.py:494"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.93",
+      "title": "Pipelines-owned boilerplate rule `pl.p`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:250",
+        "tests/hooks/test_connector_central_pipelines.py:260",
+        "tests/hooks/test_connector_central_pipelines.py:269",
+        "tests/hooks/test_connector_central_pipelines.py:281"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.94",
+      "title": "Pipelines-owned boilerplate rule `pl.q`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:314",
+        "tests/hooks/test_connector_central_pipelines.py:325"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.95",
+      "title": "Pipelines-owned boilerplate rule `pl.r`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:334",
+        "tests/hooks/test_connector_central_pipelines.py:349"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.96",
+      "title": "Pipelines-owned boilerplate rule `pl.s`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:465",
+        "tests/hooks/test_connector_central_pipelines.py:479"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.97",
+      "title": "Pipelines-owned boilerplate rule `pl.t`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:376",
+        "tests/hooks/test_connector_central_pipelines.py:387"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.98",
+      "title": "Pipelines-owned boilerplate rule `pl.u`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:400",
+        "tests/hooks/test_connector_central_pipelines.py:411"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.99",
+      "title": "Pipelines-owned boilerplate rule `pl.v`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_pipelines.py:427",
+        "tests/hooks/test_connector_central_pipelines.py:439",
+        "tests/hooks/test_connector_central_pipelines.py:447",
+        "tests/hooks/test_connector_central_pipelines.py:456"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.100",
+      "title": "Connector identity rule `id.name`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_identity.py:23"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.101",
+      "title": "Pipelines-owned boilerplate rule `pl.w`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_identity.py:41"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.102",
+      "title": "Central driver and verify",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_driver.py:102",
+        "tests/hooks/test_connector_central_driver.py:83",
+        "tests/hooks/test_connector_central_driver.py:95"
       ]
     }
   ]
