@@ -1,0 +1,21 @@
+diff --git a/immich_api/ontology/immich.ttl b/immich_api/ontology/immich.ttl
+index 3b7cd35..4d823c6 100644
+--- a/immich_api/ontology/immich.ttl
++++ b/immich_api/ontology/immich.ttl
+@@ -11,4 +11 @@
+-<http://knuckles.team/kg/immich> a owl:Ontology ;
+-    rdfs:comment "Selected structural DTO model. No live ingestion or identity equivalence is asserted." ;
+-    prov:wasDerivedFrom <urn:sha256:7db8383741eeb5c5c8c87a6221cd1cdd1206c8b1190b83363c64223a00bb020b> .
+-
++<http://knuckles.team/kg/immich> a owl:Ontology ; prov:wasDerivedFrom <urn:sha256:7db8383741eeb5c5c8c87a6221cd1cdd1206c8b1190b83363c64223a00bb020b> ; rdfs:comment "Selected structural DTO model. No live ingestion or identity equivalence is asserted." .
+@@ -122 +119 @@
+-:immichAssetStackPrimaryAssetId a owl:DatatypeProperty ; rdfs:domain :ImmichAssetStack ; rdfs:range xsd:string ; prov:wasDerivedFrom <urn:sha256:7db8383741eeb5c5c8c87a6221cd1cdd1206c8b1190b83363c64223a00bb020b#/components/schemas/AssetStackResponseDto/properties/primaryAssetId> .
+\ No newline at end of file
++:immichAssetStackPrimaryAssetId a owl:DatatypeProperty ; rdfs:domain :ImmichAssetStack ; rdfs:range xsd:string ; prov:wasDerivedFrom <urn:sha256:7db8383741eeb5c5c8c87a6221cd1cdd1206c8b1190b83363c64223a00bb020b#/components/schemas/AssetStackResponseDto/properties/primaryAssetId> .
+diff --git a/scripts/generate_immich_content.py b/scripts/generate_immich_content.py
+index bcf1389..da53d1a 100644
+--- a/scripts/generate_immich_content.py
++++ b/scripts/generate_immich_content.py
+@@ -84 +84 @@ def artifacts():
+-        f'<http://knuckles.team/kg/immich> a owl:Ontology ; owl:imports <http://knuckles.team/kg> ; prov:wasDerivedFrom <{source}> ; rdfs:comment "Selected structural DTO model. No live ingestion or identity equivalence is asserted." .\n'
++        f'<http://knuckles.team/kg/immich> a owl:Ontology ; prov:wasDerivedFrom <{source}> ; rdfs:comment "Selected structural DTO model. No live ingestion or identity equivalence is asserted." .\n'
