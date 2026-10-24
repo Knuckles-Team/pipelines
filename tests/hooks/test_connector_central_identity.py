@@ -39,6 +39,22 @@ def test_name_mismatch_derives_from_the_sdk_identity_and_mapping_yaml_follows(tm
     assert kg.read_text(encoding="utf-8") == again
 
 
+@pytest.mark.spec("PIPE-GATES-R016.100")
+def test_tests_comparing_a_record_source_follow_the_derived_name(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    (ctx.pkg / "kg_media.py").write_text('_SOURCE = "demo-agent"\n', encoding="utf-8")
+    (ctx.root / "tests").mkdir()
+    t = ctx.root / "tests/test_kg.py"
+    t.write_text(
+        'def test_a(record, out):\n    assert record.payload["source"] == "demo-agent"\n'
+        '    assert out["service"] == "demo-agent"\n',
+        encoding="utf-8",
+    )
+    identity.connector_names(ctx)
+    text = t.read_text(encoding="utf-8")
+    assert 'payload["source"] == "demo-mcp"' in text and 'out["service"] == "demo-agent"' in text
+
+
 @pytest.mark.spec("PIPE-GATES-R016.101")
 def test_own_workflow_refs_are_main(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
