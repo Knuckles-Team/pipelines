@@ -425,6 +425,7 @@
     "PIPE-PAGES-R042.6",
     "PIPE-PAGES-R042.7",
     "PIPE-PAGES-R042.8",
+    "PIPE-PAGES-R042.9",
     "PIPE-PAGES-R043",
     "PIPE-PAGES-R043.1",
     "PIPE-PAGES-R043.2",
@@ -4016,7 +4017,8 @@
         "PIPE-PAGES-R042.5",
         "PIPE-PAGES-R042.6",
         "PIPE-PAGES-R042.7",
-        "PIPE-PAGES-R042.8"
+        "PIPE-PAGES-R042.8",
+        "PIPE-PAGES-R042.9"
       ]
     },
     {
@@ -4084,8 +4086,8 @@
       "title": "Row description",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2b733b10911b",
-        "4b49c42e0271"
+        "72f7362888b8",
+        "9ad2ff194f2a"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:686",
@@ -4099,8 +4101,8 @@
       "title": "Expandable full spec",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2b733b10911b",
-        "4b49c42e0271"
+        "72f7362888b8",
+        "9ad2ff194f2a"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:727",
@@ -4113,11 +4115,22 @@
       "title": "Safe rendering",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2b733b10911b"
+        "72f7362888b8"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:775",
         "tests/test_architecture_explorer.py:810"
+      ]
+    },
+    {
+      "id": "PIPE-PAGES-R042.9",
+      "title": "Every scanned repository has a part",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "93ec936d45a7"
+      ],
+      "verified_by": [
+        "tests/test_architecture_explorer.py:912"
       ]
     },
     {
