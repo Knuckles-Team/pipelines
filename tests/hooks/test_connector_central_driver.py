@@ -123,3 +123,29 @@ def test_tidy_sorts_imports_and_drops_unused_ones_in_rewritten_files(tmp_path: P
     ctx.changed.add("demo_agent/mod.py")
     cc.tidy(ctx)
     assert (root / "demo_agent/mod.py").read_text(encoding="utf-8") == "import os\n\nprint(os.name)\n"
+
+
+@pytest.mark.spec("PIPE-GATES-R016.111")
+def test_a_reviewed_pre_patch_applies_in_the_central_pass(tmp_path: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "batch2", Path(cm.__file__).parents[2] / "scripts/connector_migrate_batch.py"
+    )
+    assert spec and spec.loader
+    batch = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(batch)
+    wt = tmp_path / "wt"
+    wt.mkdir()
+    (wt / "mod.py").write_text("a = 1\nb = 2\n", encoding="utf-8")
+    patch = tmp_path / "demo.pre.patch"
+    patch.write_text("--- a/mod.py\n+++ b/mod.py\n@@ -2 +2 @@\n-b = 2\n+b = 3\n", encoding="utf-8")
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path)}
+    subprocess.run(["git", "init", "-q"], cwd=wt, env=env, check=True)
+
+    class _Led:
+        def record(self, *args: object, **kw: object) -> None:
+            self.kw = kw
+
+    led = _Led()
+    touched = batch.apply_repo_patch(patch, wt, [], led, "demo")  # type: ignore[arg-type]
+    assert touched == ["mod.py"] and (wt / "mod.py").read_text(encoding="utf-8") == "a = 1\nb = 3\n"
+    assert "pre_patch" in Path(batch.__file__).read_text(encoding="utf-8").replace("pre.patch", "pre_patch")

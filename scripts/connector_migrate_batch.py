@@ -200,7 +200,9 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         if not env_file.exists() and sh(step, ["git", "check-ignore", ".env"], wt, ok=(0, 1)).strip():
             env_file.write_text("", encoding="utf-8")  # empty: .env.example values would leak into the tests
         step = "migrate"
-        pre_paths = [] if a.central else apply_repo_patch(a.patches / f"{repo}.pre.patch", wt, [], led, repo)
+        pre_paths = apply_repo_patch(
+            a.patches / f"{repo}.pre.patch", wt, [], led, repo
+        )  # also central: a reviewed fix the pass needs first
         served_path = tmp / "served-tools.json"
         served_path.unlink(missing_ok=True)
         try:  # R016.27: the served tool names (the central pass does not read them)

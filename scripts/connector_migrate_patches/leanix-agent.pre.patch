@@ -1,0 +1,18 @@
+--- a/leanix_agent/instance_sync.py
++++ b/leanix_agent/instance_sync.py
+@@ -466,13 +466,14 @@
+             connection = self._fetch_connection(query, minimal_query, variables)
+             self._checked_total_count(fact_sheet_type, connection)
+             edges = self._page_edges(connection)
+-            for node, seen_records in self._iter_page_nodes(
++            for node, running_total in self._iter_page_nodes(
+                 fact_sheet_type,
+                 edges,
+                 wanted_ids=wanted_ids,
+                 since=since,
+                 seen_records=seen_records,
+             ):
++                seen_records = running_total
+                 yield node
+             cursor = self._checked_page_cursor(connection, seen_cursors)
+             if cursor is None:
