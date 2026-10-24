@@ -244,7 +244,7 @@ def test_reference_connector_config_names_only_published_hooks() -> None:
     assert ours["rev"] == "main"
     published = {h["id"] for h in yaml.safe_load((ROOT / ".pre-commit-hooks.yaml").read_text(encoding="utf-8"))}
     ids = {h["id"] for h in ours["hooks"]}
-    assert ids <= published and {"connector-standard", "secrets"} <= ids
+    assert ids <= published and {"connector-standard", "secrets", "dependency-readiness"} <= ids
     assert not any(h["id"] in {"security-sanitizer", "check-bumpversion"} for r in config["repos"] for h in r["hooks"])
     assert len(yaml.safe_dump(config).splitlines()) < 60
 

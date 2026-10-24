@@ -17,7 +17,7 @@ import sys
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
-ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab", "pl.ac", "pl.ad")
+ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab", "pl.ac", "pl.ad", "pl.ae")
 _IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
@@ -337,3 +337,22 @@ def pin_actions(ctx: Ctx) -> None:
         new = _MUTABLE_ACTION.sub(lambda m: m.group(1) + PINNED_ACTIONS[m.group(2)], text)
         if new != text:
             ctx.write(ctx.rel(path), new, "pl.ad")
+
+
+_REV_ASSERT = re.compile(r'(?m)^(\s*assert repo\["rev"\] == )CONTRACT(\s*)$')
+
+
+@rule("pl.ae")
+def publication_test_rev(ctx: Ctx) -> None:
+    """``tests/test_publication_workflow.py`` asserts the shared hook repo is pinned to a contract SHA.
+
+    The central pre-commit config references pipelines at ``main`` (policy), so that one assertion expects ``main``;
+    the dependency-readiness presence and bare-hook assertions stay as they are.
+    """
+    rel = "tests/test_publication_workflow.py"
+    if not ctx.exists(rel):
+        return
+    text = ctx.read(rel)
+    new = _REV_ASSERT.sub(lambda m: f'{m.group(1)}"main"{m.group(2)}', text)
+    if new != text:
+        ctx.write(rel, new, "pl.ae")

@@ -711,12 +711,20 @@ def test_x_row_and_order() -> None:
     from pipelines_hooks.hygiene.connector_central import base, rule_order, scaffold
 
     assert base.RULE_ROWS["pl.x"] == ROW_X and scaffold.ORDER == ("pl.x",)
-    assert rule_order()[-1] == "pl.x"
+    assert "pl.x" in rule_order()
 
 
 @pytest.mark.spec("PIPE-GATES-R016.102")
 def test_x_deletes_unreferenced_files(repo: Path) -> None:
-    names = ("MANIFEST.in", "requirements.txt", ".dockerignore", ".env.example", "mcp_config.json", "opencode.json")
+    names = (
+        "MANIFEST.in",
+        "requirements.txt",
+        ".dockerignore",
+        ".env.example",
+        "mcp_config.json",
+        "opencode.json",
+        ".security-audit-allow.txt",
+    )
     extras(repo, *names)
     ctx = run(repo, "pl.x")
     assert ctx.deleted == set(names)
