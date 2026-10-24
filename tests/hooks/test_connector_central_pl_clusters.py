@@ -180,6 +180,125 @@ def test_o_accepts_the_mcp_service_with_the_agent_image_variable(tmp_path: Path)
     assert migrated(root)
 
 
+# --- pl.o: read-only config mounts and the shared MCP_IMAGE variable (craft-suite-api, immich-api, vaultwarden-mcp) ----
+@pytest.mark.spec("PIPE-GATES-R016.92")
+@pytest.mark.parametrize("name", ["craft-suite-api", "immich-api"])
+def test_o_ports_the_config_mount_and_accepts_the_shared_image_variable(tmp_path: Path, name: str) -> None:
+    root = stage(tmp_path, name)
+    committed = (root / "docker" / "mcp.compose.yml").read_text()
+    assert 'image: "${MCP_IMAGE:?' in committed and "read_only: true\n    environment:" in committed
+    ctx = run(root, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert migrated(root)
+    assert "[[tool.pipelines.container.config_mounts]]" in (root / "pyproject.toml").read_text()
+    assert container_table(root)["container"]["config_mounts"] == [
+        {
+            "source": "${CONNECTOR_CONFIG_DIR:?set-CONNECTOR_CONFIG_DIR-to-a-reference-only-config-directory}",
+            "target": "/etc/connector",
+        }
+    ]
+    from pipelines_hooks.connector import container
+
+    rendered = container.render(root)["mcp.compose.yml"]
+    assert "        target: /etc/connector\n        read_only: true\n    env_file:\n" in rendered
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_accepts_a_config_mount_with_a_default_host_path(tmp_path: Path) -> None:
+    root = stage(tmp_path, "vaultwarden-mcp")
+    path = root / "docker" / "mcp.compose.yml"
+    text = path.read_text()
+    default_image = next(ln for ln in text.splitlines() if ln.startswith("    image:"))
+    path.write_text(
+        text.replace(
+            default_image, "    image: ${VAULTWARDEN_MCP_IMAGE:?set-VAULTWARDEN_MCP_IMAGE-to-image@sha256-digest}"
+        )
+    )
+    ctx = run(root, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert container_table(root)["container"]["config_mounts"] == [
+        {"source": "${AGENT_CONFIG_DIR:-/etc/agent-connector-sdk}", "target": "/etc/agent-connector-sdk"}
+    ]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_an_image_default_recorded_in_fewer_than_three_repositories_stays_blocking(tmp_path: Path) -> None:
+    root = stage(tmp_path, "vaultwarden-mcp")
+    ctx = run(root, "pl.o")
+    (item,) = blocking(ctx, "pl.o")
+    assert "knucklessg1/vaultwarden-mcp@sha256" in item["detail"] and "volumes" not in item["detail"]
+    assert (root / "docker" / "mcp.compose.yml").exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_a_mount_outside_etc_stays_blocking_with_the_reason(tmp_path: Path) -> None:
+    root = stage(tmp_path, "craft-suite-api")
+    path = root / "docker" / "mcp.compose.yml"
+    path.write_text(path.read_text().replace("/etc/connector", "/opt/connector"))
+    ctx = run(root, "pl.o")
+    (item,) = blocking(ctx, "pl.o")
+    assert "cannot be a config mount" in item["detail"] and "under /etc" in item["detail"] and path.exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_a_read_write_volume_stays_blocking_with_the_reason(tmp_path: Path) -> None:
+    root = stage(tmp_path, "immich-api")
+    path = root / "docker" / "mcp.compose.yml"
+    path.write_text(path.read_text().replace("        read_only: true\n", ""))
+    ctx = run(root, "pl.o")
+    (item,) = blocking(ctx, "pl.o")
+    assert "not a read-only bind mount of exactly source and target" in item["detail"] and path.exists()
+
+
+# --- pl.o: environment written as a mapping (gramps-mcp: the mapping and the list mean the same to compose) ----------
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_reads_a_compose_environment_mapping_as_the_list_the_render_writes(tmp_path: Path) -> None:
+    root = stage(tmp_path, "gramps-mcp", ("Dockerfile", "mcp.compose.yml"))
+    assert '      PORT: "8000"\n' in (root / "docker" / "mcp.compose.yml").read_text()
+    ctx = run(root, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert container_table(root)["container"]["compose_env"] == [
+        "GRAMPS_URL=${GRAMPS_URL:?supply GRAMPS_URL at runtime}",
+        "GRAMPS_TOKEN=${GRAMPS_TOKEN:-}",
+        "GRAMPS_USERNAME=${GRAMPS_USERNAME:-}",
+        "GRAMPS_PASSWORD=${GRAMPS_PASSWORD:-}",
+        "TLS_PROFILE=${TLS_PROFILE:-}",
+        "TLS_PROFILES_REF=${TLS_PROFILES_REF:-}",
+        "LANGFUSE_CAPTURE_CONTENT=${LANGFUSE_CAPTURE_CONTENT:-false}",
+    ]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_an_environment_mapping_with_a_changed_value_stays_blocking(tmp_path: Path) -> None:
+    root = stage(tmp_path, "gramps-mcp", ("Dockerfile", "mcp.compose.yml"))
+    path = root / "docker" / "mcp.compose.yml"
+    path.write_text(path.read_text().replace("TRANSPORT: streamable-http", "TRANSPORT: sse"))
+    ctx = run(root, "pl.o")
+    assert blocking(ctx, "pl.o") and path.exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+@pytest.mark.parametrize(
+    "block",
+    [
+        "    environment:\n      A: {b: 1}\n",
+        "    environment:\n      A: &x 1\n",
+        '    environment:\n      A: "q\\"uote"\n',
+        "    environment:\n      - A=1\n      B: 2\n",
+    ],
+)
+def test_an_environment_block_that_is_not_plain_scalars_is_left_as_written(block: str) -> None:
+    assert P._list_environment(block) == block
+
+
+# --- pl.o: debug image default host (adguard-home-agent, hdhomerun-mcp, microsoft-agent) -----------------------------
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_the_debug_host_rewrite_follows_the_host_the_runtime_image_binds() -> None:
+    text = "FROM x\nARG HOST=0.0.0.0\nARG PORT=8000\n"
+    assert gen.apply_rewrites("debug.Dockerfile", text, "demo", "8000") == text.replace("0.0.0.0", "127.0.0.1")
+    assert gen.apply_rewrites("debug.Dockerfile", text, "demo", "8000", "0.0.0.0") == text
+
+
 # --- pl.o: older debug image (owncast-agent: uv --upgrade --verbose; servicenow-api: python 3.11 base) --------------
 @pytest.mark.spec("PIPE-GATES-R016.92")
 @pytest.mark.parametrize(
@@ -296,7 +415,7 @@ PV_SERVER = "from demo_mcp.api_client import DemoApi\n\nclient = DemoApi()\n\n\n
 PV_PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.2.3"
-dependencies = ["agent-connector-sdk[mcp]>=0.5.2,<0.6.0"]
+dependencies = ["agent-connector-sdk[mcp]>=0.5.3,<0.6.0"]
 
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:main"

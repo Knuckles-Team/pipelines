@@ -620,12 +620,25 @@ def test_g5_main_calls_run(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.54")
-def test_g5_other_main_is_reviewed(tmp_path: Path) -> None:
+def test_g5_main_that_runs_the_mcp_server_in_another_way_is_reviewed(tmp_path: Path) -> None:
     root = _make(tmp_path)
-    (root / "demo_mcp" / "__main__.py").write_text("import sys\nprint('x')\n", encoding="utf-8")
+    body = "import sys\nfrom demo_mcp.mcp_server import mcp_server\nmcp_server()\nsys.exit(0)\n"
+    (root / "demo_mcp" / "__main__.py").write_text(body, encoding="utf-8")
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4", "w1.g5"))
-    assert _notes(ctx, "w1.g5")[0]["blocking"] and _text(root, "demo_mcp/__main__.py") == "import sys\nprint('x')\n"
+    assert _notes(ctx, "w1.g5")[0]["blocking"] and _text(root, "demo_mcp/__main__.py") == body
+
+
+@pytest.mark.spec("PIPE-GATES-R016.54")
+def test_g5_main_that_runs_the_package_cli_is_left_alone(tmp_path: Path) -> None:
+    """fan-manager, tunnel-manager: `from <pkg>.<cli> import main` runs the command line, not the server."""
+    root = _make(tmp_path)
+    body = "from demo_mcp.cli import main\n\nif __name__ == '__main__':\n    main()\n"
+    (root / "demo_mcp" / "__main__.py").write_text(body, encoding="utf-8")
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4", "w1.g5"))
+    (note,) = _notes(ctx, "w1.g5")
+    assert not note["blocking"] and _text(root, "demo_mcp/__main__.py") == body
 
 
 # --- g.7 ------------------------------------------------------------------------------------------------------
@@ -1204,9 +1217,9 @@ def test_l4_sdk_floor_merged_extras_and_dropped_one_element_extras(tmp_path: Pat
     ctx = _ctx(root)
     _run(ctx, ("w1.l4",))
     data = tomllib.loads(_text(root, "pyproject.toml"))["project"]
-    assert data["dependencies"] == ["agent-connector-sdk[graphql,mcp]>=0.5.2,<0.6.0", "requests>=2.0"]
+    assert data["dependencies"] == ["agent-connector-sdk[graphql,mcp]>=0.5.3,<0.6.0", "requests>=2.0"]
     assert data["optional-dependencies"] == {"test": ["pytest>=9"]}
-    assert ctx.pkg_name and base.SDK_PIN.startswith("agent-connector-sdk[mcp]>=0.5.2")
+    assert ctx.pkg_name and base.SDK_PIN.startswith("agent-connector-sdk[mcp]>=0.5.3")
 
 
 @pytest.mark.spec("PIPE-GATES-R016.67")

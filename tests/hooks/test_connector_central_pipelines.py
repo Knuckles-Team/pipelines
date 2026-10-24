@@ -19,7 +19,7 @@ PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.2.3"
 description = "demo"
-dependencies = ["agent-connector-sdk[mcp]>=0.5.2,<0.6.0"]
+dependencies = ["agent-connector-sdk[mcp]>=0.5.3,<0.6.0"]
 
 [project.optional-dependencies]
 mcp = []
@@ -323,6 +323,102 @@ def test_container_limits_table_rejects_unknown_keys(repo: Path) -> None:
     bad = {"tool": {"pipelines": {"container": {"limits": {"mcp": {"memory": "1g"}}}}}}
     with pytest.raises(CannotRun):
         project.container_table(bad)
+
+
+MOUNT = {"source": "${CONNECTOR_CONFIG_DIR:?set-CONNECTOR_CONFIG_DIR}", "target": "/etc/connector"}
+
+
+def with_mounts(repo: Path, mounts: object) -> None:
+    body = f"config_mounts = {P._toml_scalar(mounts)}\n"
+    (repo / "pyproject.toml").write_text(PYPROJECT + f"\n[tool.pipelines.container]\n{body}", encoding="utf-8")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_render_without_config_mounts_has_no_volumes_block(repo: Path) -> None:
+    out = container.render(repo)["mcp.compose.yml"]
+    assert "volumes:" not in out
+    assert "    restart: always\n    env_file:\n      - ../.env\n    environment:\n" in out
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_render_writes_each_config_mount_as_a_read_only_bind_between_restart_and_env_file(repo: Path) -> None:
+    second = {"source": "/srv/ref", "target": "/etc/ref/data"}
+    with_mounts(repo, [MOUNT, second])
+    out = container.render(repo)["mcp.compose.yml"]
+    assert (
+        "    restart: always\n"
+        "    volumes:\n"
+        "      - type: bind\n"
+        "        source: ${CONNECTOR_CONFIG_DIR:?set-CONNECTOR_CONFIG_DIR}\n"
+        "        target: /etc/connector\n"
+        "        read_only: true\n"
+        "      - type: bind\n"
+        "        source: /srv/ref\n"
+        "        target: /etc/ref/data\n"
+        "        read_only: true\n"
+        "    env_file:\n"
+    ) in out
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+@pytest.mark.parametrize(
+    ("mounts", "needle"),
+    [
+        ({"source": "/a", "target": "/etc/a"}, "list of tables"),
+        ([{"source": "/a", "target": "/etc/a", "read_only": False}], "exactly source and target"),
+        ([{"source": "/a"}], "exactly source and target"),
+        ([{"source": "relative/dir", "target": "/etc/a"}], "absolute host path"),
+        ([{"source": "/a/../b", "target": "/etc/a"}], "absolute host path"),
+        ([{"source": "${A}${B}", "target": "/etc/a"}], "absolute host path"),
+        ([{"source": "/a", "target": "/opt/a"}], "under /etc"),
+        ([{"source": "/a", "target": "/etc"}], "under /etc"),
+        ([{"source": "/a", "target": "/etc/a/"}], "normalized"),
+        ([{"source": "/a", "target": "/etc/../opt"}], "under /etc"),
+        ([{"source": "/a", "target": "/etc/a"}, {"source": "/b", "target": "/etc/a"}], "share the target"),
+    ],
+)
+def test_render_refuses_a_config_mount_the_sdk_schema_refuses(repo: Path, mounts: object, needle: str) -> None:
+    from pipelines_hooks.core.errors import CannotRun
+
+    with_mounts(repo, mounts)
+    with pytest.raises(CannotRun, match=needle if needle != "normalized" else "under /etc"):
+        container.render(repo)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_ports_committed_read_only_binds_into_the_container_table(repo: Path) -> None:
+    with_mounts(repo, [MOUNT])
+    old_docker(repo)
+    (repo / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
+    ctx = run(repo, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    text = (repo / "pyproject.toml").read_text()
+    assert "[[tool.pipelines.container.config_mounts]]" in text
+    assert toml(repo)["tool"]["pipelines"]["container"]["config_mounts"] == [MOUNT]
+    assert "target: /etc/connector\n        read_only: true\n" in container.render(repo)["mcp.compose.yml"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+@pytest.mark.parametrize(
+    ("edit", "needle"),
+    [
+        (lambda t: t.replace("        read_only: true\n", ""), "not a read-only bind mount"),
+        (lambda t: t.replace("/etc/connector", "/opt/connector"), "under /etc"),
+        (
+            lambda t: t.replace("        read_only: true\n", "        read_only: true\n        consistency: cached\n"),
+            "not a read-only bind",
+        ),
+    ],
+)
+def test_o_a_volume_the_sdk_schema_cannot_express_stays_blocking(repo: Path, edit: object, needle: str) -> None:
+    with_mounts(repo, [MOUNT])
+    old_docker(repo)
+    (repo / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
+    compose = repo / "docker" / "mcp.compose.yml"
+    compose.write_text(edit(compose.read_text()), encoding="utf-8")  # type: ignore[operator]
+    ctx = run(repo, "pl.o")
+    (item,) = blocking(ctx, "pl.o")
+    assert needle in item["detail"] and compose.exists()
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")

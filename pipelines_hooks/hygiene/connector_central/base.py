@@ -16,8 +16,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-SDK_FLOOR = "0.5.2"
-SDK_PIN = "agent-connector-sdk[mcp]>=0.5.2,<0.6.0"
+SDK_FLOOR = "0.5.3"
+SDK_PIN = "agent-connector-sdk[mcp]>=0.5.3,<0.6.0"
 
 # (rule id, source document, one-line summary). The row number is R016.<50 + index>.
 RULE_TABLE: tuple[tuple[str, str, str], ...] = (

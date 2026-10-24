@@ -8,7 +8,8 @@ accepted only when the difference is a *recorded older generator form*, never fo
   connector's name, pinned version, entry point, base-image digest, host, port, uid and home placeholdered, so a hand
   edit changes the hash and the file keeps blocking.
 * ``stubs``: whole-file fingerprints of stub ``debug.Dockerfile`` / ``*.compose.yml`` files of that scaffold.
-* ``rewrites``: exact line blocks the earlier generator wrote where the render now writes a different block. A rewrite
+* ``rewrites``: exact line blocks the earlier generator wrote where the render now writes a different block
+  (``<DIST>``, ``<DISTVAR>``, ``<PORT>`` and ``<HOST>`` stand for the connector's own values). A rewrite
   turns the old block into the new block; the file is accepted only when, after every recorded rewrite, it equals the
   render byte for byte.
 
@@ -86,8 +87,8 @@ def is_stub(name: str, text: str) -> bool:
     return digest("\n".join(loose_lines(text)) + "\n") in load()["stubs"].get(name, {})
 
 
-def placeholders(dist: str, port: str) -> dict[str, str]:
-    return {"<DIST>": dist, "<DISTVAR>": re.sub(r"[^A-Z0-9]", "_", dist.upper()), "<PORT>": port}
+def placeholders(dist: str, port: str, host: str = "127.0.0.1") -> dict[str, str]:
+    return {"<DIST>": dist, "<DISTVAR>": re.sub(r"[^A-Z0-9]", "_", dist.upper()), "<PORT>": port, "<HOST>": host}
 
 
 def _expand(lines: list[str], values: dict[str, str]) -> list[str]:
@@ -133,7 +134,13 @@ def _fill(block: list[str], found: dict[str, str]) -> list[str]:
 
 
 def rewrite_entries(
-    entries: list[dict[str, Any]], name: str, text: str, dist: str, port: str, counts: dict[int, int] | None = None
+    entries: list[dict[str, Any]],
+    name: str,
+    text: str,
+    dist: str,
+    port: str,
+    counts: dict[int, int] | None = None,
+    host: str = "127.0.0.1",
 ) -> str:
     """Apply ``entries`` (for file ``name``) to the normalised ``text``, in order.
 
@@ -142,7 +149,7 @@ def rewrite_entries(
     followed by more lines is an insertion and is skipped where those lines already follow, so a rewrite never applies
     twice. ``counts`` collects, per entry index, how often the entry changed the text.
     """
-    values = placeholders(dist, port)
+    values = placeholders(dist, port, host)
     lines = text.splitlines()
     for index, entry in enumerate(entries):
         if entry["file"] != name:
@@ -172,6 +179,9 @@ def rewrite_entries(
     return "\n".join(lines) + "\n"
 
 
-def apply_rewrites(name: str, text: str, dist: str, port: str) -> str:
-    """Apply every recorded older-generation block rewrite for file ``name`` to the normalised ``text``."""
-    return rewrite_entries(load()["rewrites"], name, text, dist, port)
+def apply_rewrites(name: str, text: str, dist: str, port: str, host: str = "127.0.0.1") -> str:
+    """Apply every recorded older-generation block rewrite for file ``name`` to the normalised ``text``.
+
+    ``<HOST>`` in a recorded block is the host the connector's image binds (the table's ``host``, default 127.0.0.1).
+    """
+    return rewrite_entries(load()["rewrites"], name, text, dist, port, host=host)

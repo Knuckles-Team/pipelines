@@ -9,14 +9,16 @@ from __future__ import annotations
 
 import ast
 import builtins
+import copy
 import difflib
 import hashlib
+import inspect
 import json
 import re
 import tomllib
-from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
-from pathlib import Path
+from collections.abc import Callable, Iterable, Sequence
+from dataclasses import dataclass, field
+from pathlib import Path, PurePosixPath
 from typing import Any, TypeGuard
 
 from pipelines_hooks.hygiene.connector_central.base import SDK_PIN, Ctx, rule
@@ -82,6 +84,15 @@ def declaration() -> IngestSourceDeclaration:
         }
     )
 '''
+_HOOK_KWARGS = (
+    "action_tools",
+    "action_prefixes",
+    "inline_tools",
+    "routes",
+    "readiness",
+    "content_root",
+    "extra_registrations",
+)
 _G3_KEY = "_w1_g3"
 _G4_NOTES = "_w1_g4_notes"
 _G4_FILES = "_w1_g4_files"
@@ -273,6 +284,8 @@ class _Env:
     ctx: Ctx
     tree: ast.Module
     imports: dict[str, tuple[str, str] | None]
+    module: str = ""
+    local_assigns: dict[str, ast.expr] = field(default_factory=dict)
 
 
 def _bad(stmt: ast.stmt, why: str = "is outside the allowed bootstrap statements") -> _Reject:
@@ -313,12 +326,11 @@ def _package_module(ctx: Ctx, imports: dict[str, tuple[str, str] | None], name: 
     return dotted if _module_file(ctx, dotted) else None
 
 
-def _literal_registry(entries: ast.expr, ns: set[str]) -> set[str]:
-    """Registrar names of a literal ``[(tag, toggle, fn)]`` that SDK discovery reproduces exactly, else _Reject."""
+def _registry_rows(entries: ast.expr) -> list[tuple[str, str, str]]:
+    """The ``(tag, toggle, function name)`` rows of a literal registry, else _Reject."""
     if not isinstance(entries, ast.List | ast.Tuple):
         raise _Reject("the tool registry is not a literal list")
-    fns: set[str] = set()
-    off: list[str] = []
+    rows: list[tuple[str, str, str]] = []
     for e in entries.elts:
         parts = e.elts if isinstance(e, ast.Tuple) else []
         if not (
@@ -330,19 +342,17 @@ def _literal_registry(entries: ast.expr, ns: set[str]) -> set[str]:
             and isinstance(parts[2], ast.Name)
         ):
             raise _Reject("a tool registry entry is not a literal (tag, toggle, function name)")
-        tag, toggle, fn = parts[0].value, parts[1].value, parts[2].id
+        rows.append((parts[0].value, parts[1].value, parts[2].id))
+    return rows
+
+
+def _derived(rows: list[tuple[str, str, str]]) -> bool:
+    """Whether SDK discovery derives every tag and toggle from the ``register_<tag>_tools`` name."""
+    for tag, toggle, fn in rows:
         found = _REGISTRAR.fullmatch(fn)
         if not found or found.group(1) != tag or toggle != tag.upper() + "TOOL":
-            off.append(f"({tag!r}, {toggle!r}, {fn})")
-        fns.add(fn)
-    if off:
-        raise _Reject(
-            "SDK gap: Connector cannot carry a tool_registry (the SDK only derives tag and toggle from the "
-            f"`register_<tag>_tools` name); entries that differ: {', '.join(off[:3])}"
-            + (" ..." if len(off) > 3 else "")
-        )
-    _check_discovery(fns, ns)
-    return fns
+            return False
+    return True
 
 
 def _check_discovery(fns: set[str], ns: set[str]) -> None:
@@ -359,7 +369,7 @@ def _tools_target(
     stmt: ast.stmt, kw: dict[str, ast.expr], env: _Env, imports: dict[str, tuple[str, str] | None]
 ) -> dict[str, Any]:
     """Resolve how register_tool_surface finds its registrar tools: the module to name in ``Connector(tools=...)``."""
-    own = f"{env.ctx.pkg_name}.mcp_server"
+    own = env.module
     sources = [k for k in ("tools_module", "tool_registry", "registrars") if k in kw]
     if len(sources) > 1:
         raise _bad(stmt, f"passes {' and '.join(sources)}; the SDK honours exactly one")
@@ -398,16 +408,22 @@ def _tools_target(
 def _registry_target(
     stmt: ast.stmt, node: ast.expr, env: _Env, imports: dict[str, tuple[str, str] | None], ns: set[str]
 ) -> dict[str, Any]:
+    """A registry the SDK derives by name becomes discovery; any other becomes ``Connector(tool_registry=...)``."""
     if not isinstance(node, ast.Name):
         raise _bad(stmt, "passes a tool_registry that is not a plain name")
-    own = f"{env.ctx.pkg_name}.mcp_server"
+    own = env.module
     assigns = {
         t.id: n.value for n in env.tree.body if isinstance(n, ast.Assign) for t in n.targets if isinstance(t, ast.Name)
     }
     try:
+        if node.id in env.local_assigns:  # a literal written inside the bootstrap
+            return {"tools": None, "keep": set(), "registry": {"rows": _registry_rows(env.local_assigns[node.id])}}
         if node.id in assigns:
-            fns = _literal_registry(assigns[node.id], ns)
-            return {"tools": own, "keep": fns, "ordered": True}
+            rows = _registry_rows(assigns[node.id])
+            if not _derived(rows):
+                return {"tools": None, "keep": set(), "registry": {"name": node.id}}
+            _check_discovery({fn for _t, _g, fn in rows}, ns)
+            return {"tools": own, "keep": {fn for _t, _g, fn in rows}, "ordered": True}
         hit = imports.get(node.id)
         file = _module_file(env.ctx, hit[0]) if hit and hit[1] else None
         if hit is None or file is None:
@@ -421,7 +437,10 @@ def _registry_target(
         if hit[1] not in defs:
             raise _Reject(f"{hit[0]} does not define {hit[1]} as a literal list")
         assert mod is not None
-        _literal_registry(defs[hit[1]], _bound_names(mod))
+        rows = _registry_rows(defs[hit[1]])
+        if not _derived(rows):
+            return {"tools": None, "keep": set(), "registry": {"name": node.id}}
+        _check_discovery({fn for _t, _g, fn in rows}, _bound_names(mod))
         return {"tools": hit[0], "keep": set(), "ordered": True}
     except _Reject as err:
         raise _bad(stmt, str(err)) from None
@@ -511,11 +530,311 @@ def _forwards_command_args(fn: ast.FunctionDef, value: ast.expr) -> bool:
     return plain or guarded
 
 
+def _custom_route(dec: ast.expr, mcp_n: str) -> ast.Call | None:
+    """``@mcp.custom_route(...)`` decorator call, else None."""
+    if (
+        isinstance(dec, ast.Call)
+        and isinstance(dec.func, ast.Attribute)
+        and dec.func.attr == "custom_route"
+        and isinstance(dec.func.value, ast.Name)
+        and dec.func.value.id == mcp_n
+    ):
+        return dec
+    return None
+
+
+def _tool_decorator(dec: ast.expr, mcp_n: str) -> ast.Attribute | None:
+    """The ``mcp.tool`` attribute of ``@mcp.tool`` / ``@mcp.tool(...)``, else None."""
+    target = dec.func if isinstance(dec, ast.Call) else dec
+    if (
+        isinstance(target, ast.Attribute)
+        and target.attr == "tool"
+        and isinstance(target.value, ast.Name)
+        and target.value.id == mcp_n
+    ):
+        return target
+    return None
+
+
+def _route_spec(s: ast.FunctionDef | ast.AsyncFunctionDef, route: ast.Call) -> dict[str, Any]:
+    """``{path, methods, name}`` of a ``custom_route`` decorator that only passes literals, else _Reject."""
+    if len(route.args) != 1 or not (isinstance(route.args[0], ast.Constant) and isinstance(route.args[0].value, str)):
+        raise _bad(s, "is a custom route whose path is not a single string literal")
+    kws = {k.arg: k.value for k in route.keywords}
+    if None in kws or set(kws) - {"methods", "name"}:
+        raise _bad(s, "is a custom route with keywords other than methods and name")
+    methods = kws.get("methods")
+    if not (
+        isinstance(methods, ast.List | ast.Tuple)
+        and methods.elts
+        and all(isinstance(m, ast.Constant) and isinstance(m.value, str) for m in methods.elts)
+    ):
+        raise _bad(s, "is a custom route whose methods are not a literal list of strings")
+    name = kws.get("name")
+    if name is not None and not (isinstance(name, ast.Constant) and isinstance(name.value, str)):
+        raise _bad(s, "is a custom route whose name is not a string literal")
+    return {
+        "path": route.args[0].value,
+        "methods": tuple(str(m.value) for m in methods.elts if isinstance(m, ast.Constant)),
+        "name": name.value if isinstance(name, ast.Constant) else None,
+        "node": s,
+    }
+
+
+def _pre_function(s: ast.FunctionDef | ast.AsyncFunctionDef, info: dict[str, Any], mcp_n: str) -> None:
+    """Classify a decorated function written inside the bootstrap: /health, readiness, a route or an inline tool."""
+    if len(s.decorator_list) != 1:
+        raise _bad(s, "has several decorators")
+    dec = s.decorator_list[0]
+    route = _custom_route(dec, mcp_n)
+    if route is not None:
+        spec = _route_spec(s, route)
+        rbody = [x for x in s.body if not _doc(x)]
+        if spec["path"] == "/health" and len(rbody) == 1 and isinstance(rbody[0], ast.Return):
+            if info["health"]:
+                raise _bad(s, "is a second /health route")
+            info["health"] = True
+        elif spec["path"] in ("/health", "/ready"):
+            if info["ready"] is not None:
+                raise _bad(s, "is a second backend probe; the SDK serves one /ready")
+            info["ready"] = s
+            info["ready_path"] = spec["path"]
+        else:
+            info["routes"].append(spec)
+        return
+    if _tool_decorator(dec, mcp_n) is not None:
+        info["inline"].append(s)
+        return
+    raise _bad(s, "is decorated by something other than mcp.custom_route or mcp.tool")
+
+
+def _package_function(ctx: Ctx, imports: dict[str, tuple[str, str] | None], name: str) -> str | None:
+    """The dotted module of this package that ``name`` is imported from, else None."""
+    hit = imports.get(name)
+    if not hit or not hit[1]:
+        return None
+    return hit[0] if _module_file(ctx, hit[0]) else None
+
+
+def _action_stmt(
+    s: ast.stmt, mcp_n: str, tags: str | None, imports: dict[str, tuple[str, str] | None], ctx: Ctx
+) -> dict[str, Any] | None:
+    """A ``register_split_action_tools`` / ``serve_action_tools`` statement, else None (_Reject when malformed)."""
+    call: ast.expr | None = None
+    target: str | None = None
+    if isinstance(s, ast.Expr):
+        call = s.value
+    elif isinstance(s, ast.Assign) and len(s.targets) == 1 and isinstance(s.targets[0], ast.Name):
+        call, target = s.value, s.targets[0].id
+    elif isinstance(s, ast.AugAssign) and isinstance(s.op, ast.Add) and isinstance(s.target, ast.Name):
+        call, target = s.value, s.target.id
+    elif isinstance(s, ast.If) and not s.orelse and len(s.body) == 1:
+        call, target = s.test, tags
+        only = s.body[0]
+        if not (
+            tags is not None
+            and isinstance(only, ast.Expr)
+            and isinstance(only.value, ast.Call)
+            and ast.unparse(only.value.func) == f"{tags}.append"
+            and len(only.value.args) == 1
+            and isinstance(only.value.args[0], ast.Constant)
+        ):
+            return None
+    if not (
+        isinstance(call, ast.Call)
+        and isinstance(call.func, ast.Name)
+        and call.func.id in ("register_split_action_tools", "serve_action_tools")
+    ):
+        return None
+    fn = call.func.id
+    module = _package_function(ctx, imports, fn)
+    if module is None:
+        raise _bad(s, f"calls `{fn}`, which is not imported from a module of this package")
+    if len(call.args) != 2 or not (isinstance(call.args[0], ast.Name) and call.args[0].id == mcp_n):
+        raise _bad(s, f"does not pass the server and one literal list of registrars to {fn}")
+    kws = {k.arg: k.value for k in call.keywords}
+    if None in kws or set(kws) - ({"prefixes"} if fn == "register_split_action_tools" else set()):
+        raise _bad(s, f"passes keywords to {fn} that Connector.action_prefixes does not express")
+    try:
+        rows = _registry_rows(call.args[1])
+    except _Reject as err:
+        raise _bad(s, str(err)) from None
+    prefixes: dict[str, str] = {}
+    given = kws.get("prefixes")
+    if given is not None:
+        if not (
+            isinstance(given, ast.Dict)
+            and all(
+                isinstance(k, ast.Constant)
+                and isinstance(k.value, str)
+                and isinstance(v, ast.Constant)
+                and isinstance(v.value, str)
+                for k, v in zip(given.keys, given.values, strict=True)
+            )
+        ):
+            raise _bad(s, f"passes prefixes to {fn} that are not a literal mapping of strings")
+        for k, v in zip(given.keys, given.values, strict=True):
+            assert isinstance(k, ast.Constant) and isinstance(v, ast.Constant)  # checked above
+            prefixes[str(k.value)] = str(v.value)
+    return {"rows": rows, "prefixes": prefixes, "module": module, "target": target, "call": call}
+
+
+def _prelude(body: list[ast.stmt], i: int, info: dict[str, Any]) -> int:
+    """Statements before create_mcp_server that only feed ``content=ConnectorContent(...)``; returns the next index."""
+    path_names = ("Path", "ConnectorContent")
+    while i < len(body):
+        s = body[i]
+        if (
+            isinstance(s, ast.ImportFrom)
+            and s.level == 0
+            and s.module in ("pathlib", "agent_connector_sdk.mcp.content")
+            and all(a.name in path_names and not a.asname for a in s.names)
+        ):
+            info["prelude_imports"].append(s)
+        elif (
+            isinstance(s, ast.Assign)
+            and len(s.targets) == 1
+            and isinstance(s.targets[0], ast.Name)
+            and isinstance(s.value, ast.Constant)
+            and isinstance(s.value.value, str)
+        ):
+            info["local_consts"][s.targets[0].id] = s.value
+        elif (
+            isinstance(s, ast.Assign)
+            and len(s.targets) == 1
+            and isinstance(s.targets[0], ast.Name)
+            and info.get("package_root") is None
+        ):
+            rel = _package_root_rel(s.value)
+            if rel is None:
+                break
+            info["package_root"] = (s.targets[0].id, rel[0])
+        else:
+            break
+        i += 1
+    return i
+
+
+def _argv_isolation(body: list[ast.stmt], i: int) -> ast.Assign | None:
+    """The 3 statements that isolate ``sys.argv`` around create_mcp_server; the create assignment they wrap, else None.
+
+    ``saved = sys.argv`` / ``if command_args is not None: sys.argv = [saved[0] if saved else "x", *command_args]`` /
+    ``try: <create_mcp_server> finally: sys.argv = saved`` is what ``create_mcp_server(command_args=...)`` does.
+    """
+    if i + 2 >= len(body):
+        return None
+    save, guard, wrap = body[i : i + 3]
+    if not (
+        isinstance(save, ast.Assign)
+        and len(save.targets) == 1
+        and isinstance(save.targets[0], ast.Name)
+        and ast.dump(save.value) == ast.dump(_expr_of("sys.argv"))
+    ):
+        return None
+    saved = save.targets[0].id
+    argv = ast.parse(f'sys.argv = [{saved}[0] if {saved} else "x", *command_args]').body[0]
+    if not (
+        isinstance(guard, ast.If)
+        and not guard.orelse
+        and ast.dump(guard.test) == ast.dump(_expr_of("command_args is not None"))
+        and len(guard.body) == 1
+        and isinstance(guard.body[0], ast.Assign)
+        and isinstance(argv, ast.Assign)
+        and ast.dump(guard.body[0].targets[0]) == ast.dump(argv.targets[0])
+        and isinstance(guard.body[0].value, ast.List)
+        and len(guard.body[0].value.elts) == 2
+        and ast.dump(guard.body[0].value.elts[1]) == ast.dump(argv.value.elts[1])  # type: ignore[attr-defined]
+        and ast.dump(guard.body[0].value.elts[0].test) == ast.dump(argv.value.elts[0].test)  # type: ignore[attr-defined]
+    ):
+        return None
+    restore = ast.parse(f"sys.argv = {saved}").body[0]
+    if not (
+        isinstance(wrap, ast.Try)
+        and not wrap.handlers
+        and not wrap.orelse
+        and len(wrap.body) == 1
+        and isinstance(wrap.body[0], ast.Assign)
+        and len(wrap.finalbody) == 1
+        and ast.dump(wrap.finalbody[0]) == ast.dump(restore)
+    ):
+        return None
+    return wrap.body[0]
+
+
+def _package_root_rel(value: ast.expr) -> tuple[str | None] | None:
+    """``Path(__file__).resolve().parent`` -> (None,); ``... / "rel"`` -> ("rel",); anything else None."""
+    base = _expr_of("Path(__file__).resolve().parent")
+    if ast.dump(value) == ast.dump(base):
+        return (None,)
+    if (
+        isinstance(value, ast.BinOp)
+        and isinstance(value.op, ast.Div)
+        and ast.dump(value.left) == ast.dump(base)
+        and isinstance(value.right, ast.Constant)
+        and isinstance(value.right.value, str)
+    ):
+        rel = value.right.value
+        pure = PurePosixPath(rel)
+        if rel.strip() and not pure.is_absolute() and ".." not in pure.parts:
+            return (rel,)
+    return None
+
+
+def _content_kw(stmt: ast.stmt, value: ast.expr, info: dict[str, Any], fleet: str, consts: dict[str, str]) -> None:
+    """``content=ConnectorContent(connector=..., package_root=<package dir>, package_version=__version__)``."""
+    root = info.get("package_root")
+    ok = (
+        root is not None
+        and isinstance(value, ast.Call)
+        and _is_call(value, "ConnectorContent")
+        and not value.args
+        and {k.arg for k in value.keywords} == {"connector", "package_root", "package_version"}
+    )
+    if not (ok and isinstance(value, ast.Call) and root is not None):
+        raise _bad(stmt, "passes content= that is not ConnectorContent of the package directory")
+    kw = {k.arg: k.value for k in value.keywords}
+    name, pkg_root, version = kw["connector"], kw["package_root"], kw["package_version"]
+    connector = (
+        name.value
+        if isinstance(name, ast.Constant) and isinstance(name.value, str)
+        else consts.get(name.id)
+        if isinstance(name, ast.Name)
+        else None
+    )
+    if not (
+        connector is not None
+        and isinstance(pkg_root, ast.Name)
+        and pkg_root.id == root[0]
+        and isinstance(version, ast.Name)
+        and version.id == "__version__"
+    ):
+        raise _bad(stmt, "passes content= that is not ConnectorContent(<string>, <package dir>, __version__)")
+    info["content_root"] = root[1]
+    if connector != fleet:
+        info["content_name"] = connector
+
+
 def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDef], env: _Env) -> dict[str, Any]:
     body = list(fn.body)
     if body and _doc(body[0]):
         body = body[1:]
-    info: dict[str, Any] = {"health": False, "env": [], "tags": None, "extra": [], "inert": False}
+    info: dict[str, Any] = {
+        "health": False,
+        "env": [],
+        "tags": None,
+        "extras": [],
+        "inert": False,
+        "inline": [],
+        "helpers": [],
+        "routes": [],
+        "ready": None,
+        "actions": [],
+        "prelude_imports": [],
+        "local_consts": {},
+        "package_root": None,
+        "content_root": None,
+        "content_name": None,
+    }
     envs = [(s, _env_key(s)) for s in body]
     info["env"] = [k for _s, k in envs if k]
     body = [s for s, k in envs if not k]
@@ -530,6 +849,10 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
         if head.value.args or head.value.keywords:
             raise bad(head)
         i += 1
+    i = _prelude(body, i, info)
+    isolated = _argv_isolation(body, i)
+    if isolated is not None:
+        body[i : i + 3] = [isolated]
     if i >= len(body):
         raise _Reject("no create_mcp_server call")
     stmt = body[i]
@@ -549,41 +872,47 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
     ckw = {k.arg: k.value for k in call.keywords}
     if call.args or None in ckw:
         raise bad(stmt, "passes positional or ** arguments to create_mcp_server")
-    extra_kw = set(ckw) - {"name", "version", "instructions"}
+    extra_kw = set(ckw) - {"name", "version", "instructions", "content"}
     if "command_args" in extra_kw and _forwards_command_args(fn, ckw["command_args"]):
         extra_kw.discard("command_args")  # the SDK's own serve() passes the process arguments
+    if isolated is not None:
+        if "command_args" not in {a.arg for a in [*fn.args.args, *fn.args.kwonlyargs]}:
+            raise bad(stmt, "isolates sys.argv for a command_args parameter the function does not have")
     if extra_kw:
         raise bad(
             stmt,
             f"passes {sorted(str(k) for k in extra_kw)} to create_mcp_server (beyond name, version and instructions)",
         )
+    if "content" in ckw:
+        consts = {
+            t.id: n.value.value
+            for n in env.tree.body
+            if isinstance(n, ast.Assign) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str)
+            for t in n.targets
+            if isinstance(t, ast.Name)
+        }
+        _content_kw(stmt, ckw["content"], info, env.ctx.fleet, consts)
+    elif info["package_root"] is not None or info["prelude_imports"]:
+        raise bad(stmt, "is preceded by content statements that create_mcp_server does not use")
     version = ckw.get("version")
     if not (isinstance(version, ast.Name) and version.id == "__version__"):
         raise bad(stmt, "does not pass version=__version__")
     if "instructions" not in ckw:
         raise bad(stmt, "has no instructions=")
     info["instructions"] = ckw["instructions"]
-    info["mcp"], info["args"] = mcp_n, args_n
+    given_ins = ckw["instructions"]
+    if isinstance(given_ins, ast.Name) and given_ins.id in info["local_consts"]:
+        info["instructions"] = info["local_consts"][given_ins.id]
+    info["mcp"], info["args"], info["mw"] = mcp_n, args_n, mw_n
     i += 1
     dead: set[str] = set()
     local_imports: list[ast.ImportFrom] = []
     while i < len(body):  # statements between the server and the surface registration
         s = body[i]
         if isinstance(s, ast.AsyncFunctionDef | ast.FunctionDef) and s.decorator_list:
-            rbody = [x for x in s.body if not _doc(x)]
-            if not info["health"] and _is_health_route(s, mcp_n):
-                pass
-            elif isinstance(s.decorator_list[0], ast.Call) and "custom_route" in ast.unparse(s.decorator_list[0].func):
-                raise bad(s, "is not the plain /health route (SDK gap: Connector declares no custom routes)")
-            else:
-                raise bad(s, "registers a tool inline in the bootstrap (SDK gap: Connector has no inline-tool hook)")
-            if not (len(rbody) == 1 and isinstance(rbody[0], ast.Return)):
-                raise bad(
-                    s,
-                    "is not the plain /health route: it probes the backend (SDK gap: the SDK /health is "
-                    "liveness-only and Connector has no readiness probe)",
-                )
-            info["health"] = True
+            _pre_function(s, info, mcp_n)
+        elif isinstance(s, ast.AsyncFunctionDef | ast.FunctionDef):
+            info["helpers"].append(s)  # a plain helper the hoisted tools share
         elif (name := _empty_list_name(s)) is not None:
             dead.add(name)
         elif _inert_openapi(s, args_n):
@@ -592,78 +921,92 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
             for a in s.names:
                 imports[a.asname or a.name] = (s.module or "", a.name)
             local_imports.append(s)
+        elif (
+            isinstance(s, ast.Assign)
+            and len(s.targets) == 1
+            and isinstance(s.targets[0], ast.Name)
+            and s.targets[0].id == "tool_registry"
+            and isinstance(s.value, ast.List | ast.Tuple)
+        ):
+            env.local_assigns["tool_registry"] = s.value
+            info["registry_stmt"] = s
         else:
             break
         i += 1
     if i >= len(body):
         raise _Reject("no register_tool_surface call")
     stmt = body[i]
-    if (
-        isinstance(stmt, ast.Assign)
-        and len(stmt.targets) == 1
-        and isinstance(stmt.targets[0], ast.Name)
-        and _is_call(stmt.value, "register_tool_surface")
-    ):
-        info["tags"] = stmt.targets[0].id
-        call = stmt.value
+    surface = None
+    if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1 and isinstance(stmt.targets[0], ast.Name):
+        if _is_call(stmt.value, "register_tool_surface"):
+            info["tags"] = stmt.targets[0].id
+            surface = stmt.value
     elif isinstance(stmt, ast.Expr) and _is_call(stmt.value, "register_tool_surface"):
-        call = stmt.value
+        surface = stmt.value
+    used = _name_loads([info["registry_stmt"]]) if "registry_stmt" in info else set()
+    if surface is not None:
+        if len(surface.args) != 1 or not (isinstance(surface.args[0], ast.Name) and surface.args[0].id == mcp_n):
+            raise bad(stmt, "does not pass the server as the only positional argument")
+        kw = {k.arg: k.value for k in surface.keywords if k.arg}
+        if len(kw) != len(surface.keywords):
+            raise bad(stmt, "passes **kwargs to register_tool_surface")
+        allowed = {"client_cls", "get_client", "service", "tools_module", "tool_registry", "registrars", "manifest"}
+        allowed |= set(_SURFACE_KWARGS)
+        if set(kw) - allowed:
+            raise bad(stmt, f"passes unsupported keywords {sorted(k for k in kw if k not in allowed)}")
+        if ("client_cls" in kw) != ("get_client" in kw):
+            raise bad(stmt, "passes only one of client_cls and get_client")
+        for need in ("client_cls", "get_client"):
+            if need in kw and not isinstance(kw[need], ast.Name):
+                raise bad(stmt, f"does not pass {need} as a plain name")
+        if "manifest" in kw and "client_cls" not in kw:
+            raise bad(stmt, "passes a manifest without a client")
+        used |= _name_loads([surface])
+        info.update(_tools_target(stmt, kw, env, imports))
+        info["surface"] = kw
+        i += 1
     else:
-        if isinstance(stmt, ast.Assign) and any(
-            isinstance(t, ast.Name) and t.id == "tool_registry" for t in stmt.targets
-        ):
-            try:
-                _literal_registry(stmt.value, _bound_names(env.tree))
-            except _Reject as err:
-                raise bad(stmt, str(err)) from None
-        raise bad(stmt)
-    if len(call.args) != 1 or not (isinstance(call.args[0], ast.Name) and call.args[0].id == mcp_n):
-        raise bad(stmt, "does not pass the server as the only positional argument")
-    kw = {k.arg: k.value for k in call.keywords if k.arg}
-    if len(kw) != len(call.keywords):
-        raise bad(stmt, "passes **kwargs to register_tool_surface")
-    allowed = {"client_cls", "get_client", "service", "tools_module", "tool_registry", "registrars", "manifest"}
-    allowed |= set(_SURFACE_KWARGS)
-    if set(kw) - allowed:
-        raise bad(stmt, f"passes unsupported keywords {sorted(k for k in kw if k not in allowed)}")
-    if ("client_cls" in kw) != ("get_client" in kw):
-        raise bad(stmt, "passes only one of client_cls and get_client")
-    for need in ("client_cls", "get_client"):
-        if need in kw and not isinstance(kw[need], ast.Name):
-            raise bad(stmt, f"does not pass {need} as a plain name")
-    if "manifest" in kw and "client_cls" not in kw:
-        raise bad(stmt, "passes a manifest without a client")
-    used = _name_loads([call])
-    for imp in local_imports:
-        if any((a.asname or a.name) not in used for a in imp.names):
-            raise bad(imp, "imports a name the surface registration does not use")
-    info.update(_tools_target(stmt, kw, env, imports))
-    info["surface"] = kw
-    i += 1
+        info.update({"tools": None, "keep": set(), "surface": {}})
     while i < len(body):
         s = body[i]
         if _dead_log(s, info["tags"]) or _dead_loop(s, dead, mcp_n):
             i += 1
             continue
+        if isinstance(s, ast.ImportFrom) and s.level == 0 and not any(a.name == "*" for a in s.names):
+            for a in s.names:
+                imports[a.asname or a.name] = (s.module or "", a.name)
+            local_imports.append(s)
+            i += 1
+            continue
+        action = _action_stmt(s, mcp_n, info["tags"], imports, env.ctx)
+        if action is not None:
+            if action["target"] and info["tags"] is None:
+                info["tags"] = action["target"]
+            elif action["target"] and action["target"] != info["tags"]:
+                raise bad(s, "assigns the action registrations to a second name")
+            info["actions"].append(action)
+            used |= _name_loads([action["call"]])
+            i += 1
+            continue
         extra = _bare_call(s)
-        if extra is None or not isinstance(extra.func, ast.Name) or _is_call(extra, "register_tool_surface"):
+        wrapped = s.value if isinstance(s, ast.Assign | ast.Expr) else None
+        if wrapped is not None and _is_call(wrapped, "register_tool_surface"):
+            raise bad(s, "registers the tool surface after other registrations; the SDK registers the surface first")
+        if extra is None or not isinstance(extra.func, ast.Name) or mcp_n not in _name_loads(extra.args):
             break
         name = extra.func.id
-        if not (
-            len(extra.args) == 1
-            and not extra.keywords
-            and isinstance(extra.args[0], ast.Name)
-            and extra.args[0].id == mcp_n
-        ):
-            break
+        simple = len(extra.args) == 1 and not extra.keywords and _name_loads(extra.args) == {mcp_n}
         target = local_funcs.get(name)
-        if target is None and name in imports:
-            pass  # an imported callable is run with the server exactly as `extra_registrations` does
-        elif target is None or not _one_param(target):
-            raise bad(
-                s, f"calls `{name}`, which is not a top-level function of mcp_server.py taking exactly one parameter"
-            )
-        info["extra"].append(name)
+        if simple:
+            if target is None and name in imports:
+                pass  # an imported callable is run with the server exactly as `extra_registrations` does
+            elif target is None or not _one_param(target):
+                raise bad(
+                    s,
+                    f"calls `{name}`, which is not a top-level function of mcp_server.py taking exactly one parameter",
+                )
+        info["extras"].append(extra)
+        used |= _name_loads([extra])
         i += 1
     if i >= len(body):
         raise _Reject("no middleware loop")
@@ -679,25 +1022,38 @@ def _analyse_instance(fn: ast.FunctionDef, local_funcs: dict[str, ast.FunctionDe
         and ast.dump(stmt.body[0].value) == ast.dump(_expr_of(f"{mcp_n}.add_middleware({stmt.target.id})"))
     )
     if not loop_ok:
-        text = ast.unparse(stmt)
-        if "register_split_action_tools" in text or "serve_action_tools" in text:
-            raise bad(
-                stmt,
-                "registers action-routed tools (SDK gap: Connector has no action-routed registration such as "
-                "register_split_action_tools / serve_action_tools with prefixes)",
-            )
         raise bad(stmt)
     i += 1
     final = body[i] if i < len(body) else None
     if not isinstance(final, ast.Return) or i != len(body) - 1:
         raise bad(body[min(i, len(body) - 1)], "is not the final return")
+    for imp in local_imports:
+        if any((a.asname or a.name) not in used for a in imp.names):
+            raise bad(imp, "imports a name the registrations do not use")
     info["ret"] = []
     if final.value is not None:
         if not (isinstance(final.value, ast.Tuple) and all(isinstance(e, ast.Name) for e in final.value.elts)):
             raise bad(final)
         info["ret"] = [e.id for e in final.value.elts if isinstance(e, ast.Name)]
     info["imports"] = imports
+    info["boot_locals"] = _boot_locals(fn, (args_n, mcp_n, mw_n))
     return info
+
+
+def _boot_locals(fn: ast.FunctionDef, given: tuple[str, ...]) -> set[str]:
+    """Names that exist only inside the bootstrap, so a function hoisted out of it must not read them."""
+    names = set(given)
+    for s in fn.body:
+        if isinstance(s, ast.Assign):
+            names |= {n.id for t in s.targets for n in ast.walk(t) if isinstance(n, ast.Name)}
+        elif isinstance(s, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            names.add(s.name)
+        elif isinstance(s, ast.Import | ast.ImportFrom):
+            names |= {_bound(a, s) for a in s.names}
+        elif isinstance(s, ast.AnnAssign | ast.AugAssign) and isinstance(s.target, ast.Name):
+            names.add(s.target.id)
+    names |= {a.arg for a in [*fn.args.args, *fn.args.kwonlyargs]}
+    return names
 
 
 def _is_stderr_print(stmt: ast.stmt) -> bool:
@@ -785,18 +1141,42 @@ def _analyse_entry(fn: ast.FunctionDef) -> dict[str, Any]:
         isinstance(first, ast.Assign)
         and isinstance(first.targets[0], ast.Tuple)
         and _is_call(first.value, "get_mcp_instance")
-        and not first.value.args
+        and (not first.value.args or ast.dump(first.value.args[0]) == ast.dump(_expr_of("sys.argv[1:]")))
+        and len(first.value.args) <= 1
+        and not first.value.keywords
     ):
         raise _Reject(f"line {first.lineno}: mcp_server() does not start with get_mcp_instance()")
     names = first.targets[0].elts
     if not (len(names) >= 2 and isinstance(names[0], ast.Name) and isinstance(names[1], ast.Name)):
         raise _Reject(f"line {first.lineno}: mcp_server() does not unpack the server and its arguments")
+    mcp_n, args_n = names[0].id, names[1].id
+    if _options_dispatch(body, mcp_n, args_n):
+        for stmt in body[1:-2]:
+            if not _is_stderr_print(stmt):
+                raise _Reject(f"line {stmt.lineno}: `{ast.unparse(stmt)[:70]}` is outside the banner/dispatch shape")
+        return {"transports": None, "mcp": mcp_n, "args": args_n}
     for stmt in body[1:-1]:
         if not _is_stderr_print(stmt):
             raise _Reject(f"line {stmt.lineno}: `{ast.unparse(stmt)[:70]}` is outside the banner/dispatch shape")
     if len(body) < 2:
         raise _Reject(f"line {first.lineno}: mcp_server() does not end with the standard transport dispatch")
-    return {"transports": _dispatch(body[-1], names[0].id, names[1].id), "mcp": names[0].id, "args": names[1].id}
+    return {"transports": _dispatch(body[-1], mcp_n, args_n), "mcp": mcp_n, "args": args_n}
+
+
+def _options_dispatch(body: list[ast.stmt], mcp_n: str, args_n: str) -> bool:
+    """``options = {} if stdio else {host, port}`` then ``mcp.run(transport=args.transport, **options)``."""
+    if len(body) < 3:
+        return False
+    assign, run = body[-2], body[-1]
+    if not (isinstance(assign, ast.Assign) and len(assign.targets) == 1 and isinstance(assign.targets[0], ast.Name)):
+        return False
+    opts = assign.targets[0].id
+    want = f'{{}} if {args_n}.transport == "stdio" else {{"host": {args_n}.host, "port": {args_n}.port}}'
+    return (
+        ast.dump(assign.value) == ast.dump(_expr_of(want))
+        and isinstance(run, ast.Expr)
+        and (ast.dump(run.value) == ast.dump(_expr_of(f"{mcp_n}.run(transport={args_n}.transport, **{opts})")))
+    )
 
 
 def _uses_name(text: str, name: str) -> bool:
@@ -858,12 +1238,512 @@ def _runs_mcp_server(body: list[ast.stmt]) -> bool:
     return isinstance(only, ast.Expr) and _is_call(only.value, "mcp_server")
 
 
+def _rows_expr(rows: list[tuple[str, str, str]], registrar: Callable[[str, str], None], what: str) -> str:
+    """``((tag, toggle, fn), ...)`` source for registry rows; every function is imported through ``registrar``."""
+    elts = []
+    for tag, toggle, fn in rows:
+        registrar(fn, what)
+        elts.append(f"({json.dumps(tag)}, {json.dumps(toggle)}, {fn})")
+    return "(" + ", ".join(elts) + ",)" if elts else "()"
+
+
+def _tuple_src(names: list[str]) -> str:
+    return "(" + ", ".join(names) + ("," if len(names) == 1 else "") + ")"
+
+
+_CONTEXT_IMPORT = "from agent_connector_sdk.connector_hooks import RegistrationContext"
+
+
+def _rewritable(ctx: Ctx, node: ast.FunctionDef, path: Path, kept: list[ast.stmt]) -> bool:
+    """A local registration function that nothing else calls may take the RegistrationContext itself."""
+    if node.decorator_list or isinstance(node, ast.AsyncFunctionDef):
+        return False
+    inside = {n.id for n in ast.walk(node) if isinstance(n, ast.Name)} | {
+        a.arg for a in ast.walk(node.args) if isinstance(a, ast.arg)
+    }
+    if "context" in inside:
+        return False
+    if any(node.name in _name_loads([n]) for n in kept if n is not node):
+        return False
+    return not any(_uses_name(f.read_text(encoding="utf-8"), node.name) for f in _py_files(ctx.root) if f != path)
+
+
+def _extras(
+    ctx: Ctx,
+    info: dict[str, Any],
+    exprs: dict[str, str],
+    defs: list[str],
+    sig_edits: list[str],
+    import_lines: list[str],
+    mcp_imports: list[str],
+    kept: list[ast.stmt],
+    funcs: dict[str, ast.FunctionDef],
+    path: Path,
+    local: set[str],
+    own: str,
+) -> None:
+    """Express the extra registration calls as ``extra_registrations`` entries that take a RegistrationContext."""
+    imports, mcp_n, calls = info["imports"], info["mcp"], info["extras"]
+
+    def simple(c: ast.Call) -> bool:
+        return len(c.args) == 1 and not c.keywords and isinstance(c.args[0], ast.Name) and c.args[0].id == mcp_n
+
+    def bring(name: str) -> None:
+        line = _import_for(name, imports, local, own)
+        if line is None:
+            raise _Reject(f"extra registration `{name}` is neither defined nor imported by mcp_server.py")
+        import_lines.append(line)
+
+    entries: list[str] = []
+    if all(simple(c) for c in calls):
+        for c in calls:
+            assert isinstance(c.func, ast.Name)
+            name = c.func.id
+            bring(name)
+            target = funcs.get(name)
+            if target is not None and _rewritable(ctx, target, path, kept):
+                sig_edits.append(name)
+                entries.append(name)
+                mcp_imports.append(_CONTEXT_IMPORT)
+            else:
+                adapter = "_register_" + name.removeprefix("register_")
+                if adapter in local or adapter in imports:
+                    adapter = f"_register_{name}"
+                defs.append(f"def {adapter}(context: RegistrationContext) -> None:\n    {name}(context.server)\n")
+                import_lines.append(_CONTEXT_IMPORT)
+                entries.append(adapter)
+    else:
+        forbidden = {info["args"], info["mw"], *([info["tags"]] if info["tags"] else [])}
+        statements: list[str] = []
+        for c in calls:
+            params = {a.arg for a in ast.walk(c) if isinstance(a, ast.arg)}
+            for name in sorted(_name_loads([c]) - {mcp_n} - params):
+                if name in forbidden or name == "context":
+                    raise _Reject(f"extra registration `{ast.unparse(c)[:60]}` reads the bootstrap local `{name}`")
+                if hasattr(builtins, name) and name not in imports and name not in local:
+                    continue
+                bring(name)
+            statements.append(ast.unparse(_ServerSubst(mcp_n).visit(ast.parse(ast.unparse(c)).body[0])))
+        defs.append(
+            "def _register_extras(context: RegistrationContext) -> None:\n    " + "\n    ".join(statements) + "\n"
+        )
+        import_lines.append(_CONTEXT_IMPORT)
+        entries.append("_register_extras")
+    exprs["extra_registrations"] = _tuple_src(entries)
+
+
+class _ServerSubst(ast.NodeTransformer):
+    """``mcp`` -> ``context.server`` in a registration call moved into an adapter."""
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def visit_Name(self, node: ast.Name) -> ast.AST:
+        if node.id == self.name and isinstance(node.ctx, ast.Load):
+            return ast.Attribute(value=ast.Name(id="context", ctx=ast.Load()), attr="server", ctx=ast.Load())
+        return node
+
+
+def _context_signature(text: str, name: str) -> tuple[str, set[str]]:
+    """Make the one-parameter registration function ``name`` take a RegistrationContext (``mcp = context.server``)."""
+    tree = _parse(text)
+    fn = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == name), None) if tree else None
+    if tree is None or fn is None:
+        return text, set()
+    param = fn.args.args[0]
+    lines = text.split("\n")
+    body = fn.body
+    first = body[0]
+    after_doc = _doc(first)
+    if after_doc and len(body) > 1:
+        at, indent = (first.end_lineno or first.lineno), body[1].col_offset
+    elif after_doc:
+        at, indent = (first.end_lineno or first.lineno), first.col_offset
+    else:
+        at, indent = _span(first)[0] - 1, first.col_offset
+    lines.insert(at, " " * indent + f"{param.arg} = context.server")
+    row = lines[param.lineno - 1].encode("utf-8")
+    assert param.end_col_offset is not None and param.lineno == param.end_lineno
+    lines[param.lineno - 1] = (
+        row[: param.col_offset] + b"context: RegistrationContext" + row[param.end_col_offset :]
+    ).decode("utf-8")
+    gone = _name_loads([param.annotation]) if param.annotation else set()
+    return "\n".join(lines), gone
+
+
+def _add_sorted_import(text: str, line: str) -> str:
+    """Add a top-level ``from m import x`` line next to the imports of the same top-level package, in module order."""
+    tree = _parse(text)
+    if tree is None or line in text.split("\n"):
+        return text
+    mod = line.split()[1]
+    imps = [n for n in tree.body if isinstance(n, ast.ImportFrom | ast.Import) and getattr(n, "level", 0) == 0]
+    if not imps:
+        return _add_lines(text, [line])
+
+    def key(n: ast.stmt) -> str:
+        return (n.module or "") if isinstance(n, ast.ImportFrom) else n.names[0].name  # type: ignore[attr-defined]
+
+    same = [n for n in imps if key(n).split(".")[0] == mod.split(".")[0]]
+    pool = same or imps
+    before = [n for n in pool if key(n) <= mod]
+    anchor = (before[-1] if before else None) or pool[0]
+    if before:
+        return _add_lines(text, [line], after=anchor.end_lineno)
+    return _add_lines(text, [line], after=anchor.lineno - 1)
+
+
+def _free_names(f: ast.FunctionDef | ast.AsyncFunctionDef, mcp_n: str) -> set[str]:
+    """Names a hoisted function reads that it does not bind itself (its ``mcp.tool`` decorator is not a read)."""
+    dec = f.decorator_list[0] if f.decorator_list else None
+    parts: list[ast.AST] = [f.args, *f.body]
+    if f.returns is not None:
+        parts.append(f.returns)
+    if isinstance(dec, ast.Call):
+        parts += [*dec.args, *[k.value for k in dec.keywords]]
+    loads: set[str] = set()
+    bound = {f.name}
+    for part in parts:
+        for n in ast.walk(part):
+            if isinstance(n, ast.Name):
+                (loads if isinstance(n.ctx, ast.Load) else bound).add(n.id)
+            elif isinstance(n, ast.arg):
+                bound.add(n.arg)
+            elif isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+                bound.add(n.name)
+            elif isinstance(n, ast.Import | ast.ImportFrom):
+                bound |= {_bound(a, n) for a in n.names}
+            elif isinstance(n, ast.ExceptHandler) and n.name:
+                bound.add(n.name)
+    return loads - bound
+
+
+def _hoist(
+    text: str, node: ast.FunctionDef | ast.AsyncFunctionDef
+) -> tuple[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """The function's source dedented out of the bootstrap, proven to parse to the identical function."""
+    start, end = _span(node)
+    block = (
+        "\n".join(line[4:] if line.startswith("    ") else line for line in text.split("\n")[start - 1 : end]) + "\n"
+    )
+    mod = _parse(block)
+    if mod is None or len(mod.body) != 1 or not isinstance(mod.body[0], ast.FunctionDef | ast.AsyncFunctionDef):
+        raise _Reject(f"`{node.name}` cannot be moved out of the bootstrap")
+    if _plain_dump(mod.body[0]) != _plain_dump(node):
+        raise _Reject(f"`{node.name}` has a multi-line string that moving it out of the bootstrap would change")
+    return block, mod.body[0]
+
+
+def _plain_dump(node: ast.AST) -> str:
+    """``ast.dump`` with every docstring reduced to its dedented text (moving a function re-indents docstrings)."""
+    tree = copy.deepcopy(node)
+    for n in ast.walk(tree):
+        if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef) and n.body and _doc(n.body[0]):
+            doc = n.body[0]
+            assert isinstance(doc, ast.Expr) and isinstance(doc.value, ast.Constant)
+            doc.value.value = inspect.cleandoc(str(doc.value.value))
+    return ast.dump(tree)
+
+
+def _hoisted_function(
+    text: str, node: ast.FunctionDef | ast.AsyncFunctionDef, info: dict[str, Any], taken: set[str]
+) -> tuple[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    block, f = _hoist(text, node)
+    shared = {h.name for h in info["helpers"]}
+    clash = _free_names(f, info["mcp"]) & (info["boot_locals"] - shared)
+    if clash:
+        raise _Reject(f"`{f.name}` reads `{sorted(clash)[0]}` from the bootstrap, which a module-level function cannot")
+    if f.name in taken:
+        raise _Reject(f"`{f.name}` would replace a module-level name of the same name")
+    return block, f
+
+
+def _hoist_hooks(
+    text: str,
+    info: dict[str, Any],
+    exprs: dict[str, str],
+    hoisted: list[str],
+    import_lines: list[str],
+    mcp_imports: list[str],
+    notes: list[str],
+    taken: set[str],
+    own: str,
+) -> None:
+    """Inline tools, extra routes and the readiness probe move out of the bootstrap to module level."""
+    mcp_n = info["mcp"]
+    names: list[str] = []
+    if info["helpers"] and not (info["inline"] or info["routes"] or info["ready"] is not None):
+        raise _Reject(f"`{info['helpers'][0].name}` is a bootstrap helper that no moved function uses")
+    for node in info["helpers"]:
+        block, f = _hoisted_function(text, node, info, taken)
+        taken.add(f.name)
+        hoisted.append(block)
+    for node in info["inline"]:
+        block, f = _hoisted_function(text, node, info, taken)
+        attr = _tool_decorator(f.decorator_list[0], mcp_n)
+        replaced = _replace_nodes(block, [attr], "tool") if attr is not None else None
+        if replaced is None:
+            raise _Reject(f"`{f.name}` has a multi-line @{mcp_n}.tool decorator head")
+        if "tool" in taken and info["imports"].get("tool") != ("fastmcp.tools", "tool"):
+            raise _Reject("a module-level `tool` already exists, so the hoisted functions cannot use @tool")
+        taken.add(f.name)
+        mcp_imports.append("from fastmcp.tools import tool")
+        hoisted.append(replaced)
+        import_lines.append(f"from {own} import {f.name}")
+        names.append(f.name)
+    if names:
+        exprs["inline_tools"] = _tuple_src(names)
+    routes: list[str] = []
+    for spec in info["routes"]:
+        block, f = _hoisted_function(text, spec["node"], info, taken)
+        if len(f.args.args) != 1 or f.args.vararg or f.args.kwonlyargs or f.args.kwarg:
+            raise _Reject(f"route handler `{f.name}` does not take exactly the request")
+        taken.add(f.name)
+        hoisted.append("\n".join(block.split("\n")[f.lineno - 1 :]))
+        import_lines += [f"from {own} import {f.name}", "from agent_connector_sdk.connector_hooks import Route"]
+        methods = (
+            "(" + ", ".join(json.dumps(m) for m in spec["methods"]) + ("," if len(spec["methods"]) == 1 else "") + ")"
+        )
+        routes.append(
+            f"Route({json.dumps(spec['path'])}, {f.name}, methods={methods}"
+            + (f", name={json.dumps(spec['name'])}" if spec["name"] else "")
+            + ")"
+        )
+    if routes:
+        exprs["routes"] = _tuple_src(routes)
+    if info["ready"] is not None:
+        block, name = _readiness_block(text, info, taken)
+        hoisted.append(block)
+        mcp_imports.append("from agent_connector_sdk.connector_hooks import Readiness")
+        import_lines.append(f"from {own} import {name}")
+        exprs["readiness"] = name
+        notes.append(
+            f"the backend probe served at {info['ready_path']} is now Connector(readiness=...) at /ready and "
+            "/health is liveness-only; move the deployment readiness probe to /ready"
+        )
+
+
+def _readiness_block(text: str, info: dict[str, Any], taken: set[str]) -> tuple[str, str]:
+    """``async def readiness() -> Readiness`` from a probing handler: a 503 response is not ready, any other is."""
+    node = info["ready"]
+    block, f = _hoist(text, node)
+    if not isinstance(f, ast.AsyncFunctionDef):
+        raise _Reject(f"the backend probe `{f.name}` is not an async function")
+    clash = _free_names(f, info["mcp"]) & (info["boot_locals"] - {h.name for h in info["helpers"]})
+    if clash:
+        raise _Reject(f"`{f.name}` reads `{sorted(clash)[0]}` from the bootstrap, which a module-level function cannot")
+    a = f.args
+    if len(a.args) != 1 or a.vararg or a.kwonlyargs or a.kwarg or a.posonlyargs:
+        raise _Reject(f"the backend probe `{f.name}` does not take exactly the request")
+    request = a.args[0].arg
+    if request in {n.id for stmt in f.body for n in ast.walk(stmt) if isinstance(n, ast.Name)}:
+        raise _Reject(f"the backend probe `{f.name}` reads its request")
+    name = "readiness"
+    if name in taken:
+        raise _Reject("a module-level `readiness` already exists")
+    taken.add(name)
+    caught = {n.name for stmt in f.body for n in ast.walk(stmt) if isinstance(n, ast.ExceptHandler) and n.name}
+    edits: list[tuple[int, int, str]] = []
+    for stmt in f.body:
+        for r in ast.walk(stmt):
+            if isinstance(r, ast.Return):
+                edits.append((r.lineno, r.end_lineno or r.lineno, _readiness_return(f.name, r, caught)))
+    if not edits:
+        raise _Reject(f"the backend probe `{f.name}` never returns a response")
+    lines = block.split("\n")
+    for start, end, new in sorted(edits, reverse=True):
+        indent = " " * (lines[start - 1].index(lines[start - 1].lstrip()))
+        lines[start - 1 : end] = [indent + part for part in new.split("\n")]
+    head_end = (f.returns or a.args[-1]).end_lineno or f.lineno
+    first = min([f.lineno, *[d.lineno for d in f.decorator_list]])
+    lines[first - 1 : head_end] = [f"async def {name}() -> Readiness:"]
+    return "\n".join(lines).rstrip("\n") + "\n", name
+
+
+def _readiness_return(fn: str, r: ast.Return, caught: set[str]) -> str:
+    """``return JSONResponse({...}, status_code=503)`` -> ``return Readiness(False, {...})`` without exception text."""
+    call = r.value
+    if not (
+        isinstance(call, ast.Call)
+        and _is_call(call, "JSONResponse")
+        and len(call.args) == 1
+        and isinstance(call.args[0], ast.Dict)
+        and all(k.arg == "status_code" for k in call.keywords)
+        and len(call.keywords) <= 1
+    ):
+        raise _Reject(f"the backend probe `{fn}` returns something other than JSONResponse({{...}}[, status_code=...])")
+    status = 200
+    if call.keywords:
+        code = call.keywords[0].value
+        if not (isinstance(code, ast.Constant) and code.value in (200, 503)):
+            raise _Reject(f"the backend probe `{fn}` returns a status other than 200 or 503")
+        status = 200 if code.value == 200 else 503
+    payload = call.args[0]
+    detail: dict[str, ast.expr] = {}
+    for k, v in zip(payload.keys, payload.values, strict=True):
+        if not (isinstance(k, ast.Constant) and isinstance(k.value, str)):
+            raise _Reject(f"the backend probe `{fn}` returns a payload with a computed key")
+        if k.value == "status" or _name_loads([v]) & caught:
+            continue  # the SDK sets the status; an exception's text is never served
+        detail[k.value] = v
+    items = ", ".join(f"{json.dumps(k)}: {_src(v)}" for k, v in detail.items())
+    return f"return Readiness({status != 503}{', {' + items + '}' if detail else ''})"
+
+
+def _drop_action_module(ctx: Ctx, module: str, rel: str) -> None:
+    """The package's own action-split module goes when nothing imports it any more."""
+    f = _module_file(ctx, module)
+    if f is None or f.name == "__init__.py":
+        return
+    users = [
+        ctx.rel(o) for o in _py_files(ctx.root) if o != f and re.search(rf"\b{f.stem}\b", o.read_text(encoding="utf-8"))
+    ]
+    if users:
+        ctx.note("w1.g3", f"{ctx.rel(f)} stays: {users[0]} still names {f.stem}, the SDK serves action tools now", rel)
+        return
+    ctx.delete(ctx.rel(f), "w1.g3")
+    ctx.note("w1.g3", f"deleted {ctx.rel(f)}: the SDK's Connector(action_tools=...) serves one tool per action", rel)
+
+
 @rule("w1.g3")
 def g3(ctx: Ctx) -> None:
     path = ctx.pkg / "mcp_server.py"
-    rel = ctx.rel(path)
-    if not path.is_file():
+    if path.is_file():
+        _g3_run(ctx, path, f"{ctx.pkg_name}.mcp_server", None)
+
+
+def _export_registrars(text: str) -> str:
+    """List imported ``register_<tag>_tools`` names that nothing else references in ``__all__``."""
+    tree = _parse(text)
+    if tree is None:
+        return text
+    imported = [
+        _bound(a, n)
+        for n in tree.body
+        if isinstance(n, ast.Import | ast.ImportFrom) and getattr(n, "module", "") != "__future__"
+        for a in n.names
+    ]
+    used = _referenced(tree)
+    missing = sorted({n for n in imported if _REGISTRAR.fullmatch(n) and n not in used})
+    if not missing:
+        return text
+    listed = ", ".join(json.dumps(n) for n in missing)
+    for n in tree.body:
+        if (
+            isinstance(n, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "__all__" for t in n.targets)
+            and isinstance(n.value, ast.List | ast.Tuple)
+        ):
+            value = n.value
+            if value.elts:
+                last = value.elts[-1]
+                assert last.end_lineno is not None and last.end_col_offset is not None
+                rows = text.split("\n")
+                row = rows[last.end_lineno - 1].encode("utf-8")
+                rows[last.end_lineno - 1] = (
+                    row[: last.end_col_offset] + f", {listed}".encode() + row[last.end_col_offset :]
+                ).decode("utf-8")
+                return "\n".join(rows)
+            replaced = _replace_nodes(text, [value], f"[{listed}]")
+            return replaced if replaced is not None else text
+    note = "# SDK discovery registers the register_<tag>_tools functions bound in this module."
+    return _add_lines(text, ["", note, f"__all__ = [{listed}]"])
+
+
+def _is_build_wrapper(n: ast.stmt) -> bool:
+    """``def build_server(*, command_args=None): return get_mcp_instance(command_args=command_args)[0]``."""
+    if not (isinstance(n, ast.FunctionDef) and n.name == "build_server"):
+        return False
+    a = n.args
+    if a.args or a.posonlyargs or a.vararg or a.kwarg or [k.arg for k in a.kwonlyargs] != ["command_args"]:
+        return False
+    body = [x for x in n.body if not _doc(x)]
+    want = ast.dump(_expr_of("get_mcp_instance(command_args=command_args)[0]"))
+    return len(body) == 1 and isinstance(body[0], ast.Return) and ast.dump(body[0].value) == want  # type: ignore[arg-type]
+
+
+def _delegate_build_server(text: str, pkg: str) -> str:
+    """The wrapper answers with the SDK's ``build_server``: its ``(args, mcp)`` result, mcp second."""
+    tree = _parse(text)
+    fn = (
+        next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "build_server"), None)
+        if tree
+        else None
+    )
+    if fn is None:
+        return text
+    ret = next(x for x in fn.body if isinstance(x, ast.Return))
+    indent = " " * ret.col_offset
+    call = f'return _sdk_build_server("{pkg}", command_args=command_args)[1]'
+    return _replace_span(text, ret.lineno, ret.end_lineno or ret.lineno, indent + call)
+
+
+def _in_all(text: str) -> bool:
+    """Whether a literal ``__all__`` lists ``get_mcp_instance``: the module re-exports it rather than using it."""
+    tree = _parse(text)
+    return tree is not None and any(
+        isinstance(n, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "__all__" for t in n.targets)
+        and any(isinstance(e, ast.Constant) and e.value == "get_mcp_instance" for e in ast.walk(n.value))
+        for n in tree.body
+    )
+
+
+def _strip_reexport(text: str) -> str | None:
+    """The thin wrapper without ``get_mcp_instance`` / ``mcp_server`` (import and ``__all__``), else None."""
+    tree = _parse(text)
+    if tree is None:
+        return None
+    gone = {"get_mcp_instance", "mcp_server"}
+    spans: list[tuple[int, int]] = []
+    edits: list[tuple[int, int, str]] = []
+    for n in tree.body:
+        if isinstance(n, ast.ImportFrom) and any(a.name in gone for a in n.names):
+            keep = [a for a in n.names if a.name not in gone]
+            if keep:
+                edits.append((n.lineno, n.end_lineno or n.lineno, _import_text(n, keep)))
+            else:
+                spans.append((n.lineno, n.end_lineno or n.lineno))
+        elif (
+            isinstance(n, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "__all__" for t in n.targets)
+            and isinstance(n.value, ast.List | ast.Tuple)
+        ):
+            lines = text.split("\n")
+            if all(isinstance(e, ast.Constant) and e.value in gone for e in n.value.elts):
+                spans.append((n.lineno, n.end_lineno or n.lineno))
+                continue
+            for e in n.value.elts:
+                if isinstance(e, ast.Constant) and e.value in gone:
+                    if e.lineno != e.end_lineno or lines[e.lineno - 1].strip() not in (
+                        f'"{e.value}",',
+                        f"'{e.value}',",
+                    ):
+                        return None
+                    spans.append((e.lineno, e.lineno))
+    if not spans and not edits:
+        return None
+    for start, end, new in sorted([*edits, *[(a, b, "") for a, b in spans]], reverse=True):
+        text = _replace_span(text, start, end, new) if new else _delete_spans(text, [(start, end)])
+    return text
+
+
+def _g3_second_module(ctx: Ctx, dotted: str, wrapper: Path) -> None:
+    """``mcp_server.py`` only re-exports the bootstrap of another module of the package: extract from that module."""
+    real = _module_file(ctx, dotted)
+    if real is None or real == wrapper or ctx.pkg not in real.parents:
+        ctx.note(
+            "w1.g3",
+            f"mcp_server.py only re-exports get_mcp_instance from {dotted}, which is not a module of this package",
+            ctx.rel(wrapper),
+            blocking=True,
+        )
         return
+    _g3_run(ctx, real, dotted, wrapper)
+
+
+def _g3_run(ctx: Ctx, path: Path, modname: str, wrapper: Path | None) -> None:
+    rel = ctx.rel(path)
     text = path.read_text(encoding="utf-8")
     tree = _parse(text)
     if tree is None:
@@ -874,9 +1754,10 @@ def g3(ctx: Ctx) -> None:
         if "mcp_server" in funcs:
             ctx.note(
                 "w1.g3",
-                "mcp_server() exists without get_mcp_instance(); the server is built by hand, not the bootstrap shape "
-                "(SDK gap: Connector.extra_registrations are called with the server only, so registrars that take "
-                "shared state such as a clients holder cannot be declared)",
+                "mcp_server() exists without get_mcp_instance(); the server is composed by a separate build_server() "
+                "that shares state such as a clients holder between registrars. SDK 0.5.3 expresses that as a "
+                "`register_tools(context: RegistrationContext)` extra registration, which the codemod does not "
+                "write yet: hand-write it",
                 rel,
                 blocking=True,
             )
@@ -889,16 +1770,12 @@ def g3(ctx: Ctx) -> None:
                 and n.module
                 and any(a.name == "get_mcp_instance" for a in n.names)
             ]
-            if moved:
-                ctx.note(
-                    "w1.g3",
-                    f"mcp_server.py only re-exports get_mcp_instance from {moved[0]}; the bootstrap lives there and "
-                    "is not extracted from a second module, hand-write Connector",
-                    rel,
-                    blocking=True,
-                )
+            if moved and wrapper is None:
+                _g3_second_module(ctx, moved[0], path)
+            elif moved:
+                ctx.note("w1.g3", f"{rel} re-exports get_mcp_instance again from {moved[0]}", rel, blocking=True)
         return
-    env = _Env(ctx, tree, _import_map(tree, ctx.pkg_name, f"{ctx.pkg_name}.mcp_server"))
+    env = _Env(ctx, tree, _import_map(tree, ctx.pkg_name, modname), modname)
     entry: dict[str, Any] = {"transports": None}
     try:
         info = _analyse_instance(funcs["get_mcp_instance"], funcs, env)
@@ -975,8 +1852,9 @@ def g3(ctx: Ctx) -> None:
         return
     # the rest of mcp_server.py must not call the deleted functions
     gone = {"get_mcp_instance", "mcp_server"}
+    wrappers = [n for n in kept if _is_build_wrapper(n)]
     for n in kept:
-        if n not in dele and (gone & _name_loads([n])):
+        if n not in dele and n not in wrappers and (gone & _name_loads([n])):
             ctx.note(
                 "w1.g3",
                 f"line {n.lineno}: mcp_server.py itself still uses {sorted(gone & _name_loads([n]))[0]} outside the "
@@ -986,18 +1864,29 @@ def g3(ctx: Ctx) -> None:
             )
             return
     # other modules must not import the deleted functions
+    reexports: dict[Path, str] = {}
     for other in _py_files(ctx.pkg):
-        if other == path or other.name == "__main__.py" and other.parent == ctx.pkg:
+        if other in (path, wrapper) or other.name == "__main__.py" and other.parent == ctx.pkg:
             continue
-        if _uses_name(other.read_text(encoding="utf-8"), "get_mcp_instance"):
-            ctx.note("w1.g3", "another module uses get_mcp_instance; hand-migrate", ctx.rel(other), True)
-            return
+        other_text = other.read_text(encoding="utf-8")
+        if _uses_name(other_text, "get_mcp_instance"):
+            stripped = _strip_reexport(other_text)
+            if stripped is None or _uses_name(stripped, "get_mcp_instance") or not _in_all(other_text):
+                ctx.note("w1.g3", "another module uses get_mcp_instance; hand-migrate", ctx.rel(other), True)
+                return
+            reexports[other] = stripped
     # extraction
     imports = info["imports"]
     local = _top_defs(ast.Module(body=kept, type_ignores=[]))
-    own = f"{ctx.pkg_name}.mcp_server"
+    own = modname
     import_lines: list[str] = []
     exprs: dict[str, str] = {}
+    defs: list[str] = []
+    notes: list[str] = []
+    hoisted: list[str] = []
+    sig_edits: list[str] = []
+    mcp_imports: list[str] = []
+    prune_extra: set[str] = set()
 
     def need(node: ast.expr, what: str) -> None:
         for name in sorted(_name_loads([node])):
@@ -1007,6 +1896,12 @@ def g3(ctx: Ctx) -> None:
             if line is None:
                 raise _Reject(f"{what} uses `{name}` which mcp_server.py does not define or import")
             import_lines.append(line)
+
+    def registrar(fn_name: str, what: str) -> None:
+        line = _import_for(fn_name, imports, local, own)
+        if line is None:
+            raise _Reject(f"{what} `{fn_name}` is neither defined nor imported by mcp_server.py")
+        import_lines.append(line)
 
     try:
         ins = info["instructions"]
@@ -1052,17 +1947,46 @@ def g3(ctx: Ctx) -> None:
             else:
                 exprs[key] = _src(node)
                 need(node, key)
-        for name in info["extra"]:
-            line = _import_for(name, imports, local, own)
-            if line is None:
-                raise _Reject(f"extra registration `{name}` is neither defined nor imported by mcp_server.py")
-            import_lines.append(line)
-        if info["tools"] is None and _module_file(ctx, f"{ctx.pkg_name}.tools"):
+        reg = info.get("registry")
+        if reg and "rows" in reg:
+            exprs["tool_registry"] = _rows_expr(reg["rows"], registrar, "registrar")
+        elif reg:
+            registrar(reg["name"], "tool registry")
+            exprs["tool_registry"] = f"tuple({reg['name']})"
+        if info["actions"]:
+            rows = [r for a in info["actions"] for r in a["rows"]]
+            prefixes: dict[str, str] = {}
+            for a in info["actions"]:
+                if set(prefixes) & set(a["prefixes"]):
+                    raise _Reject("two action registrations name the same tool prefix")
+                prefixes.update(a["prefixes"])
+            exprs["action_tools"] = _rows_expr(rows, registrar, "action registrar")
+            if prefixes:
+                exprs["action_prefixes"] = (
+                    "{" + ", ".join(f"{json.dumps(k)}: {json.dumps(v)}" for k, v in prefixes.items()) + "}"
+                )
+        if info["extras"]:
+            _extras(ctx, info, exprs, defs, sig_edits, import_lines, mcp_imports, kept, funcs, path, local, own)
+        if info["inline"] or info["routes"] or info["ready"] is not None or info["helpers"]:
+            _hoist_hooks(
+                text,
+                info,
+                exprs,
+                hoisted,
+                import_lines,
+                mcp_imports,
+                notes,
+                set(local) | set(imports),
+                own,
+            )
+        if info["tools"] is None and "tool_registry" not in exprs and _module_file(ctx, f"{ctx.pkg_name}.tools"):
             raise _Reject(f"no tools_module is passed, but {ctx.pkg_name}.tools exists and the SDK loads it by default")
         if info["tools"]:
             exprs["tools"] = info["tools"]
         if entry["transports"]:
             exprs["transports"] = "(" + ", ".join(json.dumps(t) for t in entry["transports"]) + ",)"
+        if info["content_root"]:
+            exprs["content_root"] = json.dumps(info["content_root"])
     except _Reject as err:
         ctx.note("w1.g3", f"cannot extract Connector values: {err}", rel, True)
         return
@@ -1073,14 +1997,46 @@ def g3(ctx: Ctx) -> None:
         return
     candidates = _name_loads(dele) - set(info["keep"])
     new = _delete_spans(text, [_span(n) for n in dele])
-    new = _prune_imports(new, candidates)
+    for block in hoisted:
+        new = new.rstrip("\n") + "\n\n\n" + block
+    for name in sig_edits:
+        new, gone = _context_signature(new, name)
+        prune_extra |= gone
+    if wrappers:
+        new = _delegate_build_server(new, ctx.pkg_name)
+        mcp_imports.append("from agent_connector_sdk.connector import build_server as _sdk_build_server")
+    for line in dict.fromkeys(mcp_imports):
+        new = _add_sorted_import(new, line)
+    new = _prune_imports(new, candidates | prune_extra)
+    if info["tools"] == modname:
+        new = _export_registrars(new)  # SDK discovery reads this namespace; the unused-import tidy must keep it
+    if wrapper is not None:
+        stripped = _strip_reexport(wrapper.read_text(encoding="utf-8"))
+        if stripped is None:
+            ctx.note("w1.g3", f"cannot remove the re-export of the bootstrap from {ctx.rel(wrapper)}", rel, True)
+            return
+        reexports[wrapper] = stripped
+    for other, other_text in reexports.items():
+        ctx.write(ctx.rel(other), other_text, "w1.g3")
     ctx.write(rel, new, "w1.g3")
     ctx.options[_G3_KEY] = {
         "exprs": exprs,
         "imports": sorted(set(import_lines), key=lambda s: (s.startswith("from agent"), s)),
         "health": info["health"],
-        "extra": list(info["extra"]),
+        "module": modname,
+        "defs": defs,
     }
+    for module in sorted({a["module"] for a in info["actions"]}):
+        _drop_action_module(ctx, module, rel)
+    for note in notes:
+        ctx.note("w1.g3", note, rel)
+    if info["content_name"]:
+        ctx.note(
+            "w1.g3",
+            f"content was filed under the connector name {info['content_name']!r}; the SDK files it under the fleet "
+            f"name {ctx.fleet!r}, review the content pack name",
+            rel,
+        )
     if entry["transports"]:
         ctx.note(
             "w1.g3",
@@ -1436,12 +2392,16 @@ def g4(ctx: Ctx) -> None:
         kw += [f"    api={exprs['api']},", f"    get_client={exprs['get_client']},"]
     if "tools" in exprs:
         kw.append(f'    tools="{exprs["tools"]}",')
+    if "tool_registry" in exprs:
+        kw.append(f"    tool_registry={exprs['tool_registry']},")
     kw.append(f"    instructions={exprs['instructions']},")
-    kw += [f"    {k}={exprs[k]}," for k in ("transports", *_SURFACE_KWARGS) if k in exprs]
-    extra = stash.get("extra") or []
-    if extra:
-        kw.append(f"    extra_registrations=({', '.join(extra)}{',' if len(extra) == 1 else ''}),")
-    block = "\n".join([*lines, "", "connector = Connector(", *kw, ")"]) + "\n"
+    kw += [f"    {k}={exprs[k]}," for k in ("transports", *_SURFACE_KWARGS, *_HOOK_KWARGS) if k in exprs]
+    defs = stash.get("defs") or []
+    if defs:
+        head_block = "\n".join([*lines, ""]) + "\n\n" + "\n\n".join(d.rstrip("\n") + "\n" for d in defs)
+        block = head_block + "\n\nconnector = Connector(\n" + "\n".join(kw) + "\n)\n"
+    else:
+        block = "\n".join([*lines, "", "connector = Connector(", *kw, ")"]) + "\n"
     out = (base.rstrip() + "\n\n" if base.strip() else "") + block
     ctx.write(rel, out, "w1.g4")
 
@@ -1455,6 +2415,7 @@ def g5(ctx: Ctx) -> None:
     path = ctx.pkg / "__main__.py"
     if not path.is_file() or path.read_text(encoding="utf-8") == _MAIN:
         return
+    moved = (ctx.options.get(_G3_KEY) or {}).get("module", "")
     mcp = ctx.pkg / "mcp_server.py"
     if mcp.is_file() and "def get_mcp_instance" in mcp.read_text(encoding="utf-8"):
         return  # bootstrap kept, __main__ still valid
@@ -1469,7 +2430,10 @@ def g5(ctx: Ctx) -> None:
         imp, main = body
         ok = (
             isinstance(imp, ast.ImportFrom)
-            and imp.module == f"{ctx.pkg_name}.mcp_server"
+            and (
+                (imp.level == 0 and imp.module in (f"{ctx.pkg_name}.mcp_server", moved))
+                or (imp.level == 1 and imp.module == "mcp_server")
+            )
             and [a.name for a in imp.names] == ["mcp_server"]
             and isinstance(main, ast.If)
             and ast.dump(main.test) == ast.dump(_expr_of('__name__ == "__main__"'))
@@ -1479,6 +2443,14 @@ def g5(ctx: Ctx) -> None:
             and not main.body[0].value.args
             and not main.orelse
         )
+    if not ok and "mcp_server" not in path.read_text(encoding="utf-8"):
+        ctx.note(
+            "w1.g5",
+            "__main__.py runs the package's own command line, not the MCP server; left as is (the console script "
+            "serves the connector)",
+            ctx.rel(path),
+        )
+        return
     if not ok:
         ctx.note(
             "w1.g5",
@@ -1587,7 +2559,12 @@ def g2(ctx: Ctx) -> None:
         value = m.group(2)
         if value == "agent_connector_sdk.cli:serve":
             return
-        if value not in (f"{ctx.pkg_name}.mcp_server:mcp_server", f"{ctx.pkg_name}.__main__:main"):
+        moved = (ctx.options.get(_G3_KEY) or {}).get("module", "")
+        if value not in (
+            f"{ctx.pkg_name}.mcp_server:mcp_server",
+            f"{ctx.pkg_name}.__main__:main",
+            f"{moved}:mcp_server",
+        ):
             ctx.note("w1.g2", f"console script {value!r} is not the bootstrap function", "pyproject.toml", True)
             return
         if not _declared(ctx):
@@ -1659,8 +2636,8 @@ def _clean_version_asserts(text: str) -> str:
     candidates: set[str] = set()
     parents: list[ast.AST] = [tree]
     for parent in ast.walk(tree):
-        for field in ("body", "orelse", "finalbody"):
-            stmts = getattr(parent, field, None)
+        for attr in ("body", "orelse", "finalbody"):
+            stmts = getattr(parent, attr, None)
             if not isinstance(stmts, list) or not stmts or not isinstance(stmts[0], ast.stmt):
                 continue
             hits = [s for s in stmts if _is_version_assert(s)]
@@ -1669,7 +2646,7 @@ def _clean_version_asserts(text: str) -> str:
             rest = [
                 s for s in stmts if s not in hits and not _doc(s) and not isinstance(s, ast.Import | ast.ImportFrom)
             ]
-            if not rest and isinstance(parent, ast.FunctionDef | ast.AsyncFunctionDef) and field == "body":
+            if not rest and isinstance(parent, ast.FunctionDef | ast.AsyncFunctionDef) and attr == "body":
                 spans.append(_span(parent))
                 candidates |= _name_loads([parent])
             elif not rest and not isinstance(parent, ast.Module):

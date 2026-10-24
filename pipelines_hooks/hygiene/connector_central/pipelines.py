@@ -76,6 +76,18 @@ def _toml_scalar(value: Any) -> str:
     return json.dumps(str(value), ensure_ascii=False)
 
 
+def _table_text(keys: tuple[str, ...], values: dict[str, Any]) -> str:
+    """``[keys]`` with ``values``; the container ``config_mounts`` list is written as ``[[keys.config_mounts]]`` tables."""
+    arrays = {k: v for k, v in values.items() if k == "config_mounts" and v}
+    body = "".join(f"{k} = {_toml_scalar(v)}\n" for k, v in values.items() if k not in arrays)
+    tables = "".join(
+        f"\n[[{'.'.join(keys)}.{k}]]\n" + "".join(f"{kk} = {_toml_scalar(vv)}\n" for kk, vv in entry.items())
+        for k, entries in arrays.items()
+        for entry in entries
+    )
+    return f"[{'.'.join(keys)}]\n{body}{tables}"
+
+
 def _lookup(data: dict[str, Any], keys: tuple[str, ...]) -> Any:
     for key in keys:
         if not isinstance(data, dict) or key not in data:
@@ -93,8 +105,7 @@ def _append_table(ctx: Ctx, rule_id: str, keys: tuple[str, ...], values: dict[st
             return True
         ctx.note(rule_id, f"[{'.'.join(keys)}] already exists with other values: {current!r}", "pyproject.toml", True)
         return None
-    body = "".join(f"{k} = {_toml_scalar(v)}\n" for k, v in values.items())
-    new = text.rstrip("\n") + f"\n\n[{'.'.join(keys)}]\n{body}"
+    new = text.rstrip("\n") + "\n\n" + _table_text(keys, values)
     try:
         if _lookup(tomllib.loads(new), keys) != values:
             raise ValueError("table differs after write")
@@ -447,7 +458,7 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
     for target in container.RUNTIME_TARGETS:
         name = f"docker/{target}.compose.yml"
         if ctx.exists(name) and target in by_name:
-            block = re.search(r"^    environment:\n((?:      - .*\n)+)", ctx.read(name), re.M)
+            block = re.search(r"^    environment:\n((?:      - .*\n)+)", _list_environment(ctx.read(name)), re.M)
             items = [ln[8:].rstrip() for ln in (block.group(1).splitlines() if block else [])]
             fixed = [*STANDARD_COMPOSE_ENV[:2], f"PORT={port}", STANDARD_COMPOSE_ENV[2]]
             if items[:4] == fixed:
@@ -465,10 +476,59 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
     ]
     if optional:
         table["env_file_optional"] = True
+    mounts = _committed_config_mounts(ctx, set(by_name))
+    if mounts:
+        table["config_mounts"] = mounts
     return table
 
 
 #: Extras rule l4 may have dropped from the wheel; a committed install line naming one is an expected difference.
+_MOUNT_ENTRY = re.compile(
+    r"      - type: bind\n        source: (?P<source>\S+)\n        target: (?P<target>\S+)\n        read_only: true\n"
+)
+
+
+def _service_volumes(text: str) -> str | None:
+    """The raw ``volumes:`` block lines (after the key) of the one service of a compose file; None when it has none."""
+    match = re.search(r"^    volumes:\n((?:      .*\n|\n)*)", text, re.M)
+    return None if match is None else match.group(1)
+
+
+def _committed_config_mounts(ctx: Ctx, targets: set[str]) -> list[dict[str, str]]:
+    """The read-only bind ``volumes:`` of the committed compose files, as the SDK ``config_mounts`` entries.
+
+    The render writes the same mounts into every compose file, so the committed files must agree. A volume that is not a
+    read-only bind of the long form with exactly source and target, or whose target the SDK schema refuses, blocks with
+    the precise reason.
+    """
+    found: dict[str, list[dict[str, str]]] = {}
+    for target in container.RUNTIME_TARGETS:
+        name = f"docker/{target}.compose.yml"
+        if target not in targets or not ctx.exists(name):
+            continue
+        block = _service_volumes(ctx.read(name))
+        mounts: list[dict[str, str]] = []
+        rest = block or ""
+        while rest:
+            entry = _MOUNT_ENTRY.match(rest)
+            if entry is None:
+                first = rest.splitlines()[0] if rest.strip() else "<blank>"
+                raise _Unmatched(
+                    f"{name} volumes: `{first.strip()}` is not a read-only bind mount of exactly source and target"
+                )
+            mounts.append({"source": entry["source"], "target": entry["target"]})
+            rest = rest[entry.end() :]
+        if mounts:
+            try:
+                container.config_mounts_block(mounts)
+            except CannotRun as exc:
+                raise _Unmatched(f"{name} volumes cannot be a config mount: {exc}") from exc
+        found[target] = mounts
+    if len({json.dumps(m) for m in found.values()}) > 1:
+        raise _Unmatched("the committed compose files mount different volumes; the render mounts the same in each")
+    return next(iter(found.values()), [])
+
+
 DROPPABLE_EXTRAS = frozenset({"mcp", "agent", "all"})
 _LIMIT_LINES = (
     ("memory_limit", "mem_limit", "memory_limit_env"),
@@ -547,6 +607,42 @@ def _normalise_dockerfile(text: str, new: bool) -> str:
     return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip("\n") + "\n"
 
 
+_ENV_MAP_LINE = re.compile(r"^      ([A-Za-z_][A-Za-z0-9_]*):(?: (.*))?$")
+
+
+def _env_scalar(raw: str) -> str | None:
+    """The string a compose ``environment:`` mapping value stands for; None when the quoting is not plain."""
+    if raw[:1] == '"' and raw[-1:] == '"' and len(raw) >= 2:
+        body = raw[1:-1]
+        return None if re.search(r'["\\]', body) else body
+    if raw[:1] == "'" and raw[-1:] == "'" and len(raw) >= 2:
+        body = raw[1:-1]
+        return None if "'" in body else body
+    return raw if raw and not raw.startswith(("{", "[", "&", "*", "|", ">", "!", "#")) and " #" not in raw else None
+
+
+def _list_environment(text: str) -> str:
+    """Compose treats ``environment:`` as a mapping or as a list of ``KEY=value`` alike; write a mapping as the list.
+
+    Only a block made wholly of ``KEY: value`` lines with plain scalars is rewritten (an empty value is the list entry
+    ``KEY``, which compose reads from the host environment); anything else is returned unchanged, so it keeps blocking.
+    """
+    match = re.search(r"^    environment:\n((?:      .*\n)+)", text, re.M)
+    if match is None:
+        return text
+    items: list[str] = []
+    for line in match.group(1).splitlines():
+        entry = _ENV_MAP_LINE.match(line)
+        if entry is None:
+            return text
+        raw = (entry.group(2) or "").strip()
+        value = _env_scalar(raw) if raw else ""
+        if value is None:
+            return text
+        items.append(f"      - {entry.group(1)}={value}" if raw else f"      - {entry.group(1)}")
+    return text[: match.start(1)] + "\n".join(items) + "\n" + text[match.end(1) :]
+
+
 def _normalise_loose(text: str) -> str:
     return "\n".join(generations.loose_lines(text)) + "\n"
 
@@ -563,7 +659,9 @@ def _compose_old_to_new(ctx: Ctx, name: str, text: str, dist: str) -> str:
     return text.replace(old_var, new_var).replace(old, new)
 
 
-def container_pair(ctx: Ctx, name: str, new: str, dist: str, port: str, rewrite: bool = True) -> tuple[str, str] | None:
+def container_pair(
+    ctx: Ctx, name: str, new: str, dist: str, port: str, rewrite: bool = True, host: str = "127.0.0.1"
+) -> tuple[str, str] | None:
     """``(committed, rendered)`` normalised for comparison; None when the committed file is a recorded older form.
 
     ``rewrite=False`` leaves the recorded block rewrites out (the script that records them needs the raw difference).
@@ -575,7 +673,7 @@ def container_pair(ctx: Ctx, name: str, new: str, dist: str, port: str, rewrite:
     if name != "Dockerfile" and generations.is_stub(name, old):
         return None  # a recorded stub of the earlier scaffold; the render is the complete file
     if name.endswith("compose.yml"):
-        old = _compose_old_to_new(ctx, rel, old, dist)
+        old = _compose_old_to_new(ctx, rel, _list_environment(old), dist)
     if name in ("Dockerfile", "debug.Dockerfile"):
         old = _align_dist_version(old, new, dist)
     if name == "Dockerfile":
@@ -585,20 +683,22 @@ def container_pair(ctx: Ctx, name: str, new: str, dist: str, port: str, rewrite:
     if rewrite:
         # Recorded rewrites name the install line as the older generator wrote it (``.[mcp]``), so they run before rule l4's
         # dropped extras are removed from it; running them after would never match once l4 had changed ``pyproject.toml``.
-        a = generations.apply_rewrites(name, a, dist, port)
+        a = generations.apply_rewrites(name, a, dist, port, host)
     if name == "debug.Dockerfile":
         a = _drop_debug_extras(a, set(ctx.pyproject()["project"].get("optional-dependencies", {})))
     return a, b
 
 
-def _container_diff(ctx: Ctx, rendered: dict[str, str], dist: str, port: str = "8000") -> list[str]:
+def _container_diff(
+    ctx: Ctx, rendered: dict[str, str], dist: str, port: str = "8000", host: str = "127.0.0.1"
+) -> list[str]:
     problems: list[str] = []
     for name, new in rendered.items():
         rel = f"docker/{name}"
         if not ctx.exists(rel):
             continue
         try:
-            pair = container_pair(ctx, name, new, dist, port)
+            pair = container_pair(ctx, name, new, dist, port, host=host)
         except _Unmatched as exc:
             problems.append(str(exc))
             continue
@@ -679,7 +779,6 @@ def rule_o(ctx: Ctx) -> None:
         table = committed_table(ctx, pyproject)
         with tempfile.TemporaryDirectory() as scratch:
             tmp = Path(scratch)
-            body = "".join(f"{k} = {_toml_scalar(v)}\n" for k, v in table.items())
             ptext = ctx.read("pyproject.toml")
             if "container" in pyproject.get("tool", {}).get("pipelines", {}):
                 ctx.note(
@@ -689,7 +788,9 @@ def rule_o(ctx: Ctx) -> None:
                     True,
                 )
                 return
-            ptext = ptext.rstrip("\n") + (f"\n\n[tool.pipelines.container]\n{body}" if table else "\n")
+            ptext = ptext.rstrip("\n") + (
+                "\n\n" + _table_text(("tool", "pipelines", "container"), table) if table else "\n"
+            )
             (tmp / "pyproject.toml").write_text(ptext, encoding="utf-8")
             if table and project.container_table(tomllib.loads(ptext)) != table:
                 raise _Unmatched("derived table does not round-trip through TOML")
@@ -700,7 +801,7 @@ def rule_o(ctx: Ctx) -> None:
     except (_Unmatched, CannotRun, KeyError, tomllib.TOMLDecodeError) as exc:
         ctx.note("pl.o", f"container files cannot be reproduced from pyproject.toml: {exc}", "docker/Dockerfile", True)
         return
-    problems = _container_diff(ctx, rendered, dist, str(table.get("port", 8000)))
+    problems = _container_diff(ctx, rendered, dist, str(table.get("port", 8000)), str(table.get("host", "127.0.0.1")))
     if problems:
         ctx.note("pl.o", "committed container files stay:\n" + "\n".join(problems), "docker/Dockerfile", True)
         return

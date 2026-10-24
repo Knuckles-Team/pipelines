@@ -1,0 +1,101 @@
+[build-system]
+requires = [ "setuptools>=80.9.0", "wheel",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "immich-api"
+version = "0.2.3"
+description = "Immich Api API + MCP Server"
+readme = "README.md"
+classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
+requires-python = ">=3.12, <3.15"
+dependencies = [
+    "rfc3986-validator>=0.1.1,<0.2",
+    "rfc3339-validator>=0.1.4,<0.2",
+    "jsonschema>=4.23,<5",
+    "regex>=2026.9.29",
+    "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",
+]
+[[project.authors]]
+name = "Repository Maintainers"
+
+[project.license]
+text = "MIT"
+
+[project.optional-dependencies]
+mcp = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+all = [
+    "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",
+]
+test = [
+    "pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov",]
+
+[project.scripts]
+immich-mcp = "immich_api.mcp_server:mcp_server"
+
+
+# Fleet contribution (CONCEPT:OS-5.52 / AU-KG.ontology.federation-provider-leg): advertise this
+# package's skills, prompts, OWL/RDF ontology, and source-connector presets so
+# agent-utilities discovers + federates them without importing this package's agent code.
+[project.entry-points."agent_utilities.skill_providers"]
+immich-api = "immich_api.skills"
+
+[project.entry-points."agent_utilities.prompt_providers"]
+immich-api = "immich_api.prompts"
+
+[project.entry-points."agent_utilities.ontology_providers"]
+immich-api = "immich_api.ontology"
+
+# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+[project.entry-points."agent_connector_sdk.connector"]
+immich = "immich_api"
+
+[tool.uv.workspace]
+members = ["."]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+# Shared public documentation contract.  The hook is pinned below in
+# .pre-commit-config.yaml; these values identify this generated repository and
+# keep its README/AGENTS surface deterministic without network access.
+[tool.pipelines_hooks]
+packages = ["immich_api"]
+
+[tool.pipelines_hooks.public_surface]
+repository = "Knuckles-Team/immich-api"
+distribution = "immich-api"
+pages_url = "https://knuckles-team.github.io/immich-api/"
+mcp_server = true
+
+[dependency-groups]
+dev = [
+    "epistemic-graph>=2.27.3,<3",
+    "pytest-timeout>=2.4.0",
+]
+
+[tool.setuptools.package-data]
+immich_api = [ "openapi_inventory.json", "parity/unicode_properties.json", "openapi_contract.json", "mcp_config.json", "prompts/**", "skills/**", "ontology/**", "connectors/**", ]
+
+[tool.ruff.lint]
+select = [ "E", "F", "I", "UP", "B",]
+ignore = [ "E402", "E501", "B008",]
+
+[tool.setuptools.packages.find]
+where = [ ".",]
+include = ["immich_api*"]
+
+[tool.vulture]
+ignore_names = ["request", "config"]
+
+[tool.pipelines_hooks.stdout_writes]
+served_paths = ["immich_api"]

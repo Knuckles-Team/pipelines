@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  vaultwarden-mcp-mcp:
+    # MCP serving image (built with `--target mcp`).
+    image: "${VAULTWARDEN_MCP_IMAGE:-knucklessg1/vaultwarden-mcp@sha256:0000000000000000000000000000000000000000000000000000000000000000}"
+    container_name: vaultwarden-mcp-mcp
+    hostname: vaultwarden-mcp-mcp
+    restart: always
+    volumes:
+      - type: bind
+        source: ${AGENT_CONFIG_DIR:-/etc/agent-connector-sdk}
+        target: /etc/agent-connector-sdk
+        read_only: true
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HOST=0.0.0.0
+      - PORT=8000
+      - TRANSPORT=streamable-http
+      - AUTH_TYPE=${AUTH_TYPE:-jwt}
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
