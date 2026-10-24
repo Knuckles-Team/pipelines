@@ -175,6 +175,11 @@ jobs:
             scripts/spec_graph_parse.py
             scripts/readiness
             scripts/architecture_explorer
+            pipelines_hooks/__init__.py
+            pipelines_hooks/specs/__init__.py
+            pipelines_hooks/specs/ids.py
+            pipelines_hooks/specs/priority.py
+            pipelines_hooks/specs/requirements_doc.py
 
       - name: Validate declared content source
         if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
