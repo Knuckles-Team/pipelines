@@ -148,4 +148,27 @@ def test_a_reviewed_pre_patch_applies_in_the_central_pass(tmp_path: Path) -> Non
     led = _Led()
     touched = batch.apply_repo_patch(patch, wt, [], led, "demo")  # type: ignore[arg-type]
     assert touched == ["mod.py"] and (wt / "mod.py").read_text(encoding="utf-8") == "a = 1\nb = 3\n"
-    assert "pre_patch" in Path(batch.__file__).read_text(encoding="utf-8").replace("pre.patch", "pre_patch")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.111")
+def test_a_pre_patch_that_deletes_a_file_reports_it_as_touched(tmp_path: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "batch3", Path(cm.__file__).parents[2] / "scripts/connector_migrate_batch.py"
+    )
+    assert spec and spec.loader
+    batch = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(batch)
+    wt = tmp_path / "wt"
+    wt.mkdir()
+    (wt / "old.txt").write_text("x\n", encoding="utf-8")
+    patch = tmp_path / "demo.central-pre.patch"
+    patch.write_text("--- a/old.txt\n+++ /dev/null\n@@ -1 +0,0 @@\n-x\n", encoding="utf-8")
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path)}
+    subprocess.run(["git", "init", "-q"], cwd=wt, env=env, check=True)
+
+    class _Led:
+        def record(self, *args: object, **kw: object) -> None:
+            pass
+
+    assert batch.apply_repo_patch(patch, wt, [], _Led(), "demo") == ["old.txt"]  # type: ignore[arg-type]
+    assert not (wt / "old.txt").exists()

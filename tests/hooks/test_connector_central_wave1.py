@@ -1495,3 +1495,18 @@ def test_g3_drops_the_deleted_bootstrap_names_from_all(tmp_path: Path) -> None:
     assert "__all__" in text and "register_things_tools'" in text
     assert "get_mcp_instance'" not in text and "'mcp_server'" not in text
     ast.parse(text)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.51")
+def test_g2_a_script_not_named_for_the_fleet_is_rewritten_when_it_is_the_bootstrap(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    pp = root / "pyproject.toml"
+    text = pp.read_text(encoding="utf-8")
+    assert 'demo-mcp = "demo_mcp.mcp_server:mcp_server"' in text
+    pp.write_text(
+        text.replace('demo-mcp = "demo_mcp.mcp_server:mcp_server"', 'demo-server = "demo_mcp.mcp_server:mcp_server"'),
+        encoding="utf-8",
+    )
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4", "w1.g2"))
+    assert 'demo-server = "agent_connector_sdk.cli:serve"' in pp.read_text(encoding="utf-8")
