@@ -358,6 +358,13 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
     home = _first(r"^\s*(?:ENV\s+)?HOME=(\S+?)\s*\\?$", current, "/tmp")
     host = _first(r"^ARG HOST=(\S+)", current, "127.0.0.1")
     port = _first(r"^ARG PORT=(\S+)", current, "8000")
+    if port == "8000":  # a compose file publishing another port is the deployed value; the image ARG is only a default
+        for target in container.RUNTIME_TARGETS:
+            if ctx.exists(f"docker/{target}.compose.yml"):
+                found = _first(r'^      - "?PORT=(\d+)"?\s*$', ctx.read(f"docker/{target}.compose.yml"), "")
+                if found and found != "8000":
+                    port = found
+                    break
     if host != "127.0.0.1":
         table["host"] = host
     if port != "8000":
@@ -672,13 +679,20 @@ def container_pair(
         return None  # a recorded single-stage older generator form; the render is its modern equivalent
     if name != "Dockerfile" and generations.is_stub(name, old):
         return None  # a recorded stub of the earlier scaffold; the render is the complete file
+    if (
+        name.endswith("compose.yml")
+        and len(re.findall(r"^  [A-Za-z0-9_.-]+:\s*$", old.split("services:", 1)[-1], re.M)) > 1
+    ):
+        return None  # one file for the mcp and the agent service: the render writes one file per image kind
     if name.endswith("compose.yml"):
-        old = _compose_old_to_new(ctx, rel, _list_environment(old), dist)
+        old = _compose_nonfunctional(_compose_old_to_new(ctx, rel, _list_environment(old), dist))
     if name in ("Dockerfile", "debug.Dockerfile"):
         old = _align_dist_version(old, new, dist)
     if name == "Dockerfile":
         old = _drop_dist_extras(old, new, dist)
-        return _normalise_dockerfile(old, False), _normalise_dockerfile(new, True)
+        return _dockerfile_nonfunctional(_normalise_dockerfile(old, False)), _dockerfile_nonfunctional(
+            _normalise_dockerfile(new, True)
+        )
     a, b = _normalise_loose(old), _normalise_loose(new)
     if rewrite:
         # Recorded rewrites name the install line as the older generator wrote it (``.[mcp]``), so they run before rule l4's
@@ -689,6 +703,28 @@ def container_pair(
     return a, b
 
 
+_ENV_EXAMPLE_FILE = re.compile(r"      - path: \.\./\.env\.example\n        required: true\n")
+_IMAGE_DEFAULT = re.compile(r'(?m)^(    image: )"?\$\{([A-Z0-9_]+):-[^}]*\}"?[ \t]*$')
+_HEALTH_TIMEOUT = re.compile(r"urlopen\(('http://localhost:\d+/health'), timeout=\d+\)\.close\(\)")
+
+
+def _compose_nonfunctional(text: str) -> str:
+    """Differences from the template that change nothing a deployment depends on, written the template's way.
+
+    The ``../.env.example`` env file (a template of values, not configuration), an image variable with a default instead of
+    the required digest form, and a health probe that only adds a timeout and closes the response.
+    """
+    text = _ENV_EXAMPLE_FILE.sub("", text)
+    text = _IMAGE_DEFAULT.sub(lambda m: f"{m.group(1)}${{{m.group(2)}:?set-{m.group(2)}-to-image@sha256-digest}}", text)
+    return _HEALTH_TIMEOUT.sub(lambda m: f"urlopen({m.group(1)})", text)
+
+
+def _dockerfile_nonfunctional(text: str) -> str:
+    """``ENTRYPOINT`` for ``CMD`` of a runtime stage and the default of ``ARG PORT`` (compose sets ``PORT``)."""
+    text = re.sub(r"(?m)^ENTRYPOINT (\[.*\])$", r"CMD \1", text)
+    return re.sub(r"(?m)^ARG PORT=\S+$", "ARG PORT=<PORT>", text)
+
+
 def _container_diff(
     ctx: Ctx, rendered: dict[str, str], dist: str, port: str = "8000", host: str = "127.0.0.1"
 ) -> list[str]:
@@ -697,6 +733,8 @@ def _container_diff(
         rel = f"docker/{name}"
         if not ctx.exists(rel):
             continue
+        if name == "debug.Dockerfile":
+            continue  # a developer image that is never deployed: the render replaces it whatever it held
         try:
             pair = container_pair(ctx, name, new, dist, port, host=host)
         except _Unmatched as exc:
