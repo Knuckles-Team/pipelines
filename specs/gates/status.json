@@ -1618,12 +1618,14 @@
       "title": "Connector identity rule `id.name`",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "4030554aaf9f",
         "efa9b98ace15"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:103",
         "tests/hooks/test_connector_central_fixes7b.py:86",
         "tests/hooks/test_connector_central_identity.py:24",
+        "tests/hooks/test_connector_central_identity.py:296",
         "tests/hooks/test_connector_central_identity.py:42"
       ]
     },
