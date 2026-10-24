@@ -1066,7 +1066,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "56a34a613573",
-        "c7b19f157a8c"
+        "cc72dc4172bc"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_g3_clusters.py:1003",
