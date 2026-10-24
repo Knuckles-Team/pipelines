@@ -1400,3 +1400,22 @@ def test_l4_repairs_an_already_migrated_repo_whose_all_extra_dangles(tmp_path: P
     pp.write_text(broken, encoding="utf-8")
     _run(ctx, ("w1.l4",))
     assert "all" not in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["optional-dependencies"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.67")
+def test_l4_sync_args_in_a_caller_workflow_lose_the_deleted_extras(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    wf = root / ".github" / "workflows" / "connector-pr.yml"
+    wf.parent.mkdir(parents=True)
+    wf.write_text(
+        "jobs:\n  gates:\n    with:\n      sync-args: --extra local --extra mcp --extra all --extra test --all-groups\n",
+        encoding="utf-8",
+    )
+    ctx = _ctx(root)
+    _run(ctx, ("w1.l4",))
+    line = [ln for ln in wf.read_text(encoding="utf-8").splitlines() if "sync-args" in ln][0]
+    assert "--extra mcp" not in line and "--extra all" not in line
+    assert "--extra test" in line and "--all-groups" in line
+    ctx.applied.clear()
+    _run(ctx, ("w1.l4",))
+    assert not ctx.applied

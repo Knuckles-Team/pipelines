@@ -3716,6 +3716,33 @@ def l4(ctx: Ctx) -> None:
     if new != text and _check_toml(ctx, "w1.l4", new):
         ctx.write("pyproject.toml", new, "w1.l4")
     _drop_dangling_self_extras(ctx)
+    _drop_undefined_sync_extras(ctx)
+
+
+_SYNC_ARGS = re.compile(r"(?m)^(\s*sync-args:\s*)(.+?)\s*$")
+_SYNC_EXTRA = re.compile(r"\s*--extra[ =]([A-Za-z0-9_.-]+)")
+
+
+def _drop_undefined_sync_extras(ctx: Ctx) -> None:
+    """A caller workflow's ``sync-args`` naming an extra l4 deleted makes ``uv sync`` fail ("Extra `mcp` is not defined").
+
+    The repo's own PR gate passes ``--extra mcp`` to ``uv sync``; once the one-element ``mcp`` extra is gone the flag goes too.
+    """
+    defined = set(ctx.pyproject().get("project", {}).get("optional-dependencies", {}))
+    wf_dir = ctx.root / ".github" / "workflows"
+    if not wf_dir.is_dir():
+        return
+    for path in sorted(wf_dir.glob("*.yml")):
+        rel = ctx.rel(path)
+        text = path.read_text(encoding="utf-8")
+
+        def fix(m: re.Match[str]) -> str:
+            args = _SYNC_EXTRA.sub(lambda e: e.group(0) if e.group(1) in defined else "", m.group(2)).strip()
+            return m.group(1) + args if args else m.group(0)
+
+        new = _SYNC_ARGS.sub(fix, text)
+        if new != text:
+            ctx.write(rel, new, "w1.l4")
 
 
 _SELF_EXTRA = re.compile(r"^(\s*)([A-Za-z0-9_.-]+)\s*\[([^\]]+)\](.*)$")
