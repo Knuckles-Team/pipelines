@@ -287,6 +287,7 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R042.8 | PIPE-PAGES-R042.8 | `tests/test_architecture_explorer.py::test_markdown_escapes_raw_html_and_drops_unsafe_links` and `tests/test_architecture_explorer.py::test_page_never_assigns_markup_and_exposes_the_expand_controls`. A script in a spec file comes out escaped, unsafe links are dropped and the page assigns no markup. |
 | T-PIPE-PAGES-R042.9 | PIPE-PAGES-R042.9 | `tests/test_architecture_explorer.py::test_every_registered_repository_has_a_part_and_its_rows_place_without_the_allowlist`. Every registry repository is owned by a part, and skill-graphs rows place on Skill graphs with an empty allowlist. |
 | T-PIPE-PAGES-R042.10 | PIPE-PAGES-R042.10 | `tests/test_architecture_explorer.py::test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide`. The footer links the guide and front door, the header does not, and only the `SPECIFIED` row detail points to the guide. |
+| T-PIPE-PAGES-R042.11 | PIPE-PAGES-R042.11 | `tests/test_architecture_explorer.py::test_contribution_path_is_in_the_page_head_details_and_llms_txt` and `tests/test_architecture_explorer.py::test_a_build_writes_llms_txt_beside_the_page`. The collapsed block, both head links, the description, the written `llms.txt` and every URL against the build constants. |
 
 ## Agent-readiness and static delivery
 

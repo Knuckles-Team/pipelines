@@ -155,6 +155,9 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .muted{color:var(--muted)}
 .note{margin:0;font:12px var(--font-body);color:var(--muted)}
 .note a{color:var(--accent)}
+details.contribute{font:12.5px var(--font-body, system-ui);color:var(--muted);margin:6px 0 10px}
+details.contribute summary{cursor:pointer;color:var(--accent)}
+details.contribute ol{margin:6px 0 0;padding-left:22px;line-height:1.55;overflow-wrap:anywhere}
 footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wrap:wrap;gap:4px 14px}
 @media (max-width: 520px){ .stat{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .stat span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
@@ -207,6 +210,16 @@ footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wr
   <div class="legend" id="legend" aria-label="Layer colors"></div>
   <p class="note" id="note">Want to build one of these? Read the <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">contribution guide</a> &middot; <a href="https://knuckles-team.github.io/.github/">Front door</a>. Rebuilt on every merge to main, and at least every 30 minutes.</p>
   <footer class="foot" id="foot"></footer>
+  <details class="contribute" id="contribute">
+    <summary>How to contribute (for people and agents)</summary>
+    <ol>
+      <li>Start at the front door, <a href="https://knuckles-team.github.io/.github/">https://knuckles-team.github.io/.github/</a>.</li>
+      <li>Read the contribution guide, <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md">https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md</a>.</li>
+      <li>Pick an open (SPECIFIED) row here. Expand it to read its requirement and design, and open its <code>specs/&lt;family&gt;/</code> folder.</li>
+      <li>Set up with the <code>arbora-development</code> skill from universal-skills, <a href="https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development">https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development</a>.</li>
+      <li>Build it, run the repo's gates, and open a PR whose commit carries a <code>Spec:</code> trailer with the row ID.</li>
+    </ol>
+  </details>
 </div>
 
 <script>

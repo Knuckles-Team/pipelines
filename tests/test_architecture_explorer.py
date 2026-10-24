@@ -985,3 +985,32 @@ def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_
     verified = verified[: verified.find("</ul>")]
     assert "Open work. To pick it up" in specified and _GUIDE in specified and "/tree/HEAD/specs/fam" in specified
     assert "Open work" not in verified and _GUIDE not in verified
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.11")
+def test_contribution_path_is_in_the_page_head_details_and_llms_txt() -> None:
+    head = explorer.DOC_HEAD
+    assert f'<link rel="help" href="{_GUIDE}">' in head and f'<link rel="start" href="{_FRONT_DOOR}">' in head
+    assert '<meta name="description"' in head and _FRONT_DOOR in head[head.index('<meta name="description"') :]
+    html = (explorer.HERE / "template.html").read_text()
+    block = html[html.index('<details class="contribute"') : html.index("</details>", html.index('class="contribute"'))]
+    assert " open" not in block.split(">", 1)[0]
+    assert "How to contribute (for people and agents)" in block and block.count("<li>") == 5
+    assert html.index('id="foot"') < html.index('class="contribute"')
+    for url in (explorer.FRONT_DOOR, explorer.CONTRIBUTING, explorer.ARBORA_DEVELOPMENT):
+        assert url in block
+    assert (explorer.FRONT_DOOR, explorer.CONTRIBUTING) == (_FRONT_DOOR, _GUIDE)
+    assert explorer.EXPLORER == explorer.CANONICAL
+    shape = details.detail_path("REPO", "FAM").replace("REPO", "<repo>").replace("FAM", "<family>")
+    assert explorer.DETAILS_PATTERN == explorer.CANONICAL + shape
+    llms = explorer.llms_txt()
+    assert _FRONT_DOOR in llms and _GUIDE in llms and explorer.SKILLS in llms and explorer.DETAILS_PATTERN in llms
+    assert all(f"{i}. " in llms for i in range(1, 6))
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.11")
+@_NEEDS_LAYOUT
+def test_a_build_writes_llms_txt_beside_the_page(monkeypatch, tmp_path: Path) -> None:
+    page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
+    assert (page.parent / "llms.txt").read_text() == explorer.llms_txt()
+    assert _FRONT_DOOR in (page.parent / "llms.txt").read_text() and 'rel="start"' in page.read_text()

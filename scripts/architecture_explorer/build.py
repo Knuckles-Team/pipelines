@@ -32,9 +32,25 @@ from .sources import load_all, scan_set  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 STATUSES = ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED")
+FRONT_DOOR = "https://knuckles-team.github.io/.github/"
+CONTRIBUTING = "https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md"
+SKILLS = "https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills"
+ARBORA_DEVELOPMENT = SKILLS + "/arbora-development"
+EXPLORER = FRONT_DOOR + "architecture/"
+DETAILS_PATTERN = EXPLORER + "spec-details/<repo>/<family>.json"
+CONTRIBUTE_STEPS = (
+    f"Start at the front door, {FRONT_DOOR}.",
+    f"Read the contribution guide, {CONTRIBUTING}.",
+    "Pick an open (SPECIFIED) row here. Expand it to read its requirement and design, and open its specs/<family>/ folder.",
+    f"Set up with the arbora-development skill from universal-skills, {ARBORA_DEVELOPMENT}.",
+    "Build it, run the repo's gates, and open a PR whose commit carries a Spec: trailer with the row ID.",
+)
+DESCRIPTION = f"Arbora architecture explorer: every part and spec row of the ecosystem. Front door and contribution path: {FRONT_DOOR}"
 DOC_HEAD = (
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+    f'<meta name="description" content="{DESCRIPTION}">\n'
+    f'<link rel="help" href="{CONTRIBUTING}">\n<link rel="start" href="{FRONT_DOOR}">\n'
     "<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>\n"
     "</head>\n<body>\n"
 )
@@ -294,6 +310,21 @@ REDIRECT = """<!doctype html>
 """
 
 
+def llms_txt() -> str:
+    """Return the plain-text pointer for agents that land on the explorer."""
+    lines = [
+        "# Arbora Architecture Explorer: a map of every part and spec row of the ecosystem, with status.",
+        f"Front door: {FRONT_DOOR}",
+        f"Contribution guide: {CONTRIBUTING}",
+        f"Skills: {SKILLS}",
+        f"Spec details JSON: {DETAILS_PATTERN}",
+        "",
+        "How to contribute:",
+    ]
+    lines += [f"{i}. {step}" for i, step in enumerate(CONTRIBUTE_STEPS, 1)]
+    return "\n".join(lines) + "\n"
+
+
 def redirect_page(url: str = CANONICAL) -> str:
     """Return a page that sends a repository's /architecture/ to the canonical explorer, keeping #<node>."""
     return REDIRECT.format(url=url)
@@ -325,6 +356,8 @@ def main(argv: list[str] | None = None) -> int:
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
+    if args.page:
+        (args.page.parent / "llms.txt").write_text(llms_txt())
     if args.tree:
         args.tree.write_text(json.dumps({"tree": data, "meta": meta}, indent=1))
     print(json.dumps({k: v for k, v in meta.items() if k not in ("heads", "slugs", "pages_node", "aliases")}, indent=1))
