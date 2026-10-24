@@ -73,6 +73,7 @@
     "PIPE-GATES-R016.41",
     "PIPE-GATES-R016.42",
     "PIPE-GATES-R016.43",
+    "PIPE-GATES-R016.44",
     "PIPE-GATES-R016.50",
     "PIPE-GATES-R016.51",
     "PIPE-GATES-R016.52",
@@ -131,7 +132,8 @@
     "PIPE-GATES-R016.105",
     "PIPE-GATES-R016.106",
     "PIPE-GATES-R016.107",
-    "PIPE-GATES-R016.108"
+    "PIPE-GATES-R016.108",
+    "PIPE-GATES-R016.109"
   ],
   "requirements": [
     {
@@ -446,6 +448,7 @@
         "PIPE-GATES-R016.41",
         "PIPE-GATES-R016.42",
         "PIPE-GATES-R016.43",
+        "PIPE-GATES-R016.44",
         "PIPE-GATES-R016.50",
         "PIPE-GATES-R016.51",
         "PIPE-GATES-R016.52",
@@ -504,7 +507,8 @@
         "PIPE-GATES-R016.105",
         "PIPE-GATES-R016.106",
         "PIPE-GATES-R016.107",
-        "PIPE-GATES-R016.108"
+        "PIPE-GATES-R016.108",
+        "PIPE-GATES-R016.109"
       ]
     },
     {
@@ -1007,11 +1011,23 @@
       "title": "Home paths are case-sensitive path segments",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2cf66b98c13a"
+        "a40c555e675c"
       ],
       "verified_by": [
         "tests/hooks/test_privacy.py:32",
         "tests/hooks/test_privacy.py:38"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.44",
+      "title": "The connector repository set is the workspace manifest's `agents` group intersected with the non-archived GitHub repositories",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1812c6e2c8e4"
+      ],
+      "verified_by": [
+        "tests/hooks/test_connector_central_fleet.py:32",
+        "tests/hooks/test_connector_central_fleet.py:37"
       ]
     },
     {
@@ -1651,6 +1667,15 @@
     },
     {
       "id": "PIPE-GATES-R016.108",
+      "title": "Pipelines-owned boilerplate rule `pl.ad`",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/hooks/test_connector_central_identity.py:181"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.109",
       "title": "Central driver and verify",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
