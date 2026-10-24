@@ -26,6 +26,7 @@ import ast
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from .base import Ctx, rule
 
@@ -241,7 +242,7 @@ def _is_guard(st: ast.stmt) -> bool:
     return isinstance(st, ast.If) and not st.orelse and len(st.body) == 1 and isinstance(st.body[0], ast.Raise)
 
 
-def _wire_evidence(ctx: Ctx, auth_tree: ast.Module) -> dict[str, object]:
+def _wire_evidence(ctx: Ctx, auth_tree: ast.Module) -> dict[str, Any]:
     """What the connector's HTTP code does with a secret, from string constants only."""
     trees = [auth_tree] + [t for p in _api_sources(ctx) if (t := _parse(p)) is not None]
     consts: list[str] = []
@@ -252,7 +253,7 @@ def _wire_evidence(ctx: Ctx, auth_tree: ast.Module) -> dict[str, object]:
         plain += _plain_consts(t)
         names |= _names(t)
     text = "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in _api_sources(ctx))
-    ev: dict[str, object] = {}
+    ev: dict[str, Any] = {}
     ev["bearer"] = any(c.startswith("Bearer") for c in consts)
     ev["token_prefix"] = any(c.startswith("Token ") for c in consts)
     ev["headers"] = sorted({c for c in consts if c.lower() in _HEADER_NAMES})
@@ -263,7 +264,7 @@ def _wire_evidence(ctx: Ctx, auth_tree: ast.Module) -> dict[str, object]:
     ev["login_paths"] = sorted({c for c in plain if re.fullmatch(r"/[\w/.-]*login[\w/.-]*", c)})
     ev["login_fragments"] = sorted(
         {c for c in consts if re.fullmatch(r"/[\w/.-]*login[\w/.-]*", c)} - set(ev["login_paths"])
-    )  # type: ignore[arg-type]
+    )
     ev["cc"] = "client_credentials" in consts
     ev["refresh"] = "refresh_token" in consts
     ev["token_urls"] = sorted({c for c in consts if c.startswith("http") and re.search(r"/(oauth2?/)?token\b", c)})
@@ -428,7 +429,7 @@ def _analyse_into(ctx: Ctx, an: Analysis, tree: ast.Module, path: Path, src: str
             matches.append("auth.r1")
             cands.append(f'Bearer(env="{env}")')
             decl = decl or cands[-1]
-        headers = [_HEADER_CANON.get(str(h).lower(), h) for h in ev["headers"]]  # type: ignore[attr-defined]
+        headers = [_HEADER_CANON.get(str(h).lower(), h) for h in ev["headers"]]
         if headers or ev["token_prefix"]:
             hs = headers + (["Authorization"] if ev["token_prefix"] else [])
             if len(hs) == 1:
@@ -440,7 +441,7 @@ def _analyse_into(ctx: Ctx, an: Analysis, tree: ast.Module, path: Path, src: str
                 decl = decl or cands[-1]
             matches.append("auth.r2")
         if ev["query"]:
-            cands.append(f'ApiKey(env="{env}", query="{ev["query"][0]}")')  # type: ignore[index]
+            cands.append(f'ApiKey(env="{env}", query="{ev["query"][0]}")')
             decl = decl or cands[-1]
             matches.append("auth.r3")
     elif kinds == {"user", "password"}:
@@ -453,9 +454,9 @@ def _analyse_into(ctx: Ctx, an: Analysis, tree: ast.Module, path: Path, src: str
         frags = ev["login_fragments"]
         if paths or frags:
             matches.append("auth.r11")
-            lp = paths[0] if len(paths) == 1 else "<login path>"  # type: ignore[index]
+            lp = paths[0] if len(paths) == 1 else "<login path>"
             if not paths:
-                lp = f"<api root>{frags[0]}"  # type: ignore[index]
+                lp = f"<api root>{frags[0]}"
                 blockers.append(
                     ("auth.r11", "login path only appears inside an f-string, so its API root prefix is unknown")
                 )
@@ -464,14 +465,14 @@ def _analyse_into(ctx: Ctx, an: Analysis, tree: ast.Module, path: Path, src: str
     elif kinds == {"client_id", "client_secret"} and ev["cc"]:
         matches.append("auth.r5")
         urls = ev["token_urls"]
-        tu = urls[0] if len(urls) == 1 else "<token url>"  # type: ignore[index]
+        tu = urls[0] if len(urls) == 1 else "<token url>"
         decl = f'ClientCredentials(client_id_env="{roles["client_id"]}", secret_env="{roles["client_secret"]}", token_url="{tu}")'
         if len(urls) != 1:
             blockers.append(("auth.r5", "token URL is not one literal absolute URL in the connector"))
     elif ({"refresh"} <= kinds <= {"refresh", "client_id", "client_secret"}) and ev["refresh"]:
         matches.append("auth.r6")
         urls = ev["token_urls"]
-        tu = urls[0] if len(urls) == 1 else "<token url>"  # type: ignore[index]
+        tu = urls[0] if len(urls) == 1 else "<token url>"
         parts = [f'refresh_env="{roles["refresh"]}"']
         if "client_id" in roles:
             parts.append(f'client_id_env="{roles["client_id"]}"')
@@ -563,12 +564,12 @@ def _strict_shape(tree: ast.Module, path: Path) -> str:
                         return "Api(...) arguments are not plain settings"
                     continue
         if isinstance(st, ast.Return):
-            value = st.value
-            if isinstance(value, ast.Name) and value.id == "_client":
+            ret = st.value
+            if isinstance(ret, ast.Name) and ret.id == "_client":
                 continue
-            if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id[:1].isupper():
+            if isinstance(ret, ast.Call) and isinstance(ret.func, ast.Name) and ret.func.id[:1].isupper():
                 api_calls += 1
-                if not _plain_kwargs(value):
+                if not _plain_kwargs(ret):
                     return "Api(...) arguments are not plain settings"
                 continue
         return f"line {st.lineno}: {ast.unparse(st)[:40]}"

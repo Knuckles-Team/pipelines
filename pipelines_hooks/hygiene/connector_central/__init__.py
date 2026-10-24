@@ -14,6 +14,7 @@ some rule changed something, so a second run changes nothing.
 
 from __future__ import annotations
 
+import ast
 import datetime
 import importlib
 import re
@@ -121,6 +122,12 @@ def migrate_central(root: Path, options: dict[str, Any] | None = None) -> dict[s
         for item in ctx.review.items[before:]:
             item.setdefault("rule", rid)
     scaffold_delta(ctx)
+    for rel in sorted(ctx.changed):
+        if rel.endswith(".py"):
+            try:
+                ast.parse(ctx.read(rel))
+            except SyntaxError as exc:
+                ctx.review.add(FINAL_STEP, f"a rule left {rel} unparseable: {exc.msg} (line {exc.lineno})", rel, True)
     if ctx.applied:
         version = bump_patch(ctx)
         if version:
