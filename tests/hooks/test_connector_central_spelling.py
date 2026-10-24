@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 
+from pipelines_hooks.connector import codespell  # noqa: E402
 from pipelines_hooks.hygiene.connector_central import spelling  # noqa: E402
 from pipelines_hooks.hygiene.connector_central.base import Ctx, Review  # noqa: E402
 
@@ -42,6 +43,21 @@ def _left(ctx: Ctx) -> list[str]:
     from pipelines_hooks.connector import codespell
 
     return codespell.findings(ctx.root, extra=sorted(ctx.changed))
+
+
+@pytest.fixture(autouse=True)
+def _needs_codespell(tmp_path: Path) -> None:
+    """The rule drives the central codespell member; without the tool the run is skipped unless scanners are required."""
+    from pipelines_hooks.core.errors import Unavailable
+    from tests.hooks.conftest import REQUIRE_SCANNERS
+
+    (tmp_path / "probe").mkdir()
+    try:
+        codespell.findings(tmp_path / "probe")
+    except Unavailable:
+        if REQUIRE_SCANNERS:
+            raise
+        pytest.skip("codespell is not installed in this environment (a scanner-provisioned run requires it)")
 
 
 @pytest.mark.spec("PIPE-GATES-R016.110")

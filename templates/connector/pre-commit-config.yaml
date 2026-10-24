@@ -30,3 +30,4 @@ repos:
     stages: [pre-push]
   - id: tests-fast
     stages: [pre-push]
+  - id: dependency-readiness
