@@ -1498,8 +1498,8 @@
         "f74978beb345"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_fixes7.py:238",
-        "tests/hooks/test_connector_central_fixes7.py:250",
+        "tests/hooks/test_connector_central_fixes7.py:252",
+        "tests/hooks/test_connector_central_fixes7.py:264",
         "tests/hooks/test_connector_central_pipelines.py:185",
         "tests/hooks/test_connector_central_pipelines.py:203",
         "tests/hooks/test_connector_central_pipelines.py:225"
@@ -1526,23 +1526,25 @@
         "87942fc6e45b"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_fixes7.py:105",
-        "tests/hooks/test_connector_central_fixes7.py:112",
-        "tests/hooks/test_connector_central_fixes7.py:128",
-        "tests/hooks/test_connector_central_fixes7.py:75",
-        "tests/hooks/test_connector_central_fixes7.py:87"
+        "tests/hooks/test_connector_central_fixes7.py:103",
+        "tests/hooks/test_connector_central_fixes7.py:111",
+        "tests/hooks/test_connector_central_fixes7.py:118",
+        "tests/hooks/test_connector_central_fixes7.py:134",
+        "tests/hooks/test_connector_central_fixes7.py:81"
       ]
     },
     {
       "id": "PIPE-GATES-R016.95",
       "title": "Pipelines-owned boilerplate rule `pl.r`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fc29a01c48c4"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_central_fixes7.py:156",
-        "tests/hooks/test_connector_central_fixes7.py:169",
-        "tests/hooks/test_connector_central_fixes7.py:182",
-        "tests/hooks/test_connector_central_fixes7.py:199",
+        "tests/hooks/test_connector_central_fixes7.py:162",
+        "tests/hooks/test_connector_central_fixes7.py:175",
+        "tests/hooks/test_connector_central_fixes7.py:196",
+        "tests/hooks/test_connector_central_fixes7.py:213",
         "tests/hooks/test_connector_central_pipelines.py:522"
       ]
     },
