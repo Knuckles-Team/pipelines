@@ -39,6 +39,8 @@ async def check(root: Path) -> dict:
             tools = [t.name for t in (await s.list_tools()).tools]
             prompts = [p.name for p in (await s.list_prompts()).prompts]
             out["tools"], out["prompts"] = len(tools), len(prompts)
+            if "--names" in sys.argv:
+                out["tool_names"] = sorted(tools)
             if not tools:
                 out["error"] = "no tools listed"
                 return out
