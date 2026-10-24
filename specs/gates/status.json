@@ -1067,10 +1067,10 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1179",
-        "tests/hooks/test_connector_central_wave1.py:1191",
-        "tests/hooks/test_connector_central_wave1.py:1203",
-        "tests/hooks/test_connector_central_wave1.py:1222"
+        "tests/hooks/test_connector_central_wave1.py:1197",
+        "tests/hooks/test_connector_central_wave1.py:1209",
+        "tests/hooks/test_connector_central_wave1.py:1221",
+        "tests/hooks/test_connector_central_wave1.py:1240"
       ]
     },
     {
@@ -1111,7 +1111,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1274",
+        "tests/hooks/test_connector_central_wave1.py:1292",
         "tests/hooks/test_connector_central_wave1.py:914",
         "tests/hooks/test_connector_central_wave1.py:929"
       ]
@@ -1166,9 +1166,10 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:1085",
-        "tests/hooks/test_connector_central_wave1.py:1097",
-        "tests/hooks/test_connector_central_wave1.py:1107",
-        "tests/hooks/test_connector_central_wave1.py:1116"
+        "tests/hooks/test_connector_central_wave1.py:1103",
+        "tests/hooks/test_connector_central_wave1.py:1115",
+        "tests/hooks/test_connector_central_wave1.py:1125",
+        "tests/hooks/test_connector_central_wave1.py:1134"
       ]
     },
     {
@@ -1177,9 +1178,9 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1128",
-        "tests/hooks/test_connector_central_wave1.py:1139",
-        "tests/hooks/test_connector_central_wave1.py:1149"
+        "tests/hooks/test_connector_central_wave1.py:1146",
+        "tests/hooks/test_connector_central_wave1.py:1157",
+        "tests/hooks/test_connector_central_wave1.py:1167"
       ]
     },
     {
