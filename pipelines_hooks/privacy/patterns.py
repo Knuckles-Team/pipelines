@@ -65,9 +65,14 @@ HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
 MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[0-9]{3,}(?![a-z0-9])")
 
 
+_API_ENDPOINT_BEFORE = re.compile(r"""\bendpoint\w*\s*[:=]\s*[rf]?["']$""")
+
+
 def has_real_home_path(line: str) -> bool:
     """Whether any home-path match on the line is NOT a documented stand-in."""
     for match in HOME_PATH_RE.finditer(line):
+        if _API_ENDPOINT_BEFORE.search(line[: match.start()]):
+            continue  # `endpoint = "/Users/Me"`: an HTTP route a client calls, not a filesystem path
         user = next((value for value in match.groupdict().values() if value), None)
         if user is not None and user.strip("\\/").casefold() not in RESERVED_HOME_USERS:
             return True
