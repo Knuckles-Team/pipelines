@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -200,4 +202,37 @@ def test_architecture_explorer_defaults_to_core_repositories_and_builds_before_u
     assert "npm ci --prefix .pipeline-contract/scripts/architecture_explorer" in text
     assert "ARCHITECTURE_EXPLORER_ENABLED: ${{ steps.explorer.outputs.enabled }}" in text
     assert "build.py --redirect" in text and "on) enabled=true; build=true ;;" in text
-    assert "secrets.org_site_dispatch_token" in text and "/repos/Knuckles-Team/.github/dispatches" in text
+    assert "org_site_dispatch_token" not in text, "the dispatch lives only in notify_org_site.yml"
+
+
+NOTIFY = Path(__file__).parents[1] / ".github/workflows/notify_org_site.yml"
+
+
+def _run(script: str, env: dict) -> "subprocess.CompletedProcess[str]":
+    return subprocess.run(["bash", "-c", script], env=env, capture_output=True, text=True)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_notify_org_site_is_the_single_app_dispatch_and_exits_zero_without_the_app(tmp_path) -> None:
+    """One dispatch, authenticated as a pinned GitHub App; every missing or failing part only warns."""
+    contract = yaml.safe_load(NOTIFY.read_text(encoding="utf-8"))
+    secrets = contract[True]["workflow_call"]["secrets"]
+    assert set(secrets) == {"org_site_app_id", "org_site_app_private_key"}
+    assert all(v["required"] is False for v in secrets.values())
+    job = contract["jobs"]["notify"]
+    assert job["runs-on"] == "ubuntu-latest"
+    skip, mint, send = job["steps"]
+    assert skip["if"] == mint["if"].replace("==", "!=") == send["if"].replace("==", "!=")
+    assert re.fullmatch(r"actions/create-github-app-token@[0-9a-f]{40}", mint["uses"])
+    assert mint["with"]["owner"] == "Knuckles-Team" and mint["with"]["repositories"] == ".github"
+    assert "/repos/Knuckles-Team/.github/dispatches" in send["run"] and "specs-changed" in send["run"]
+    base = {"PATH": os.environ["PATH"], "SOURCE_REPOSITORY": "o/r", "SOURCE_SHA": "abc"}
+    notice = _run(skip["run"], base)
+    assert notice.returncode == 0 and "::notice::" in notice.stdout
+    nomint = _run(send["run"], {**base, "DISPATCH_TOKEN": ""})
+    assert nomint.returncode == 0 and "::warning::" in nomint.stdout
+    fake = tmp_path / "curl"
+    fake.write_text("#!/bin/sh\nexit 22\n")
+    fake.chmod(0o755)
+    failed = _run(send["run"], {**base, "DISPATCH_TOKEN": "x", "PATH": f"{tmp_path}:{base['PATH']}"})
+    assert failed.returncode == 0 and "::warning::" in failed.stdout

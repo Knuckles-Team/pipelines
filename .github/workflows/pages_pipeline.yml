@@ -82,14 +82,6 @@ on:
         required: false
         type: string
         default: markdown-mirror-manifest.json
-    secrets:
-      org_site_dispatch_token:
-        description: >-
-          Optional fine-grained token with Contents read and write on
-          Knuckles-Team/.github only. When set, a deploy from the default
-          branch asks the organization site to rebuild the explorer at once;
-          without it the 30-minute schedule there keeps the explorer current.
-        required: false
 
 permissions:
   contents: read
@@ -300,25 +292,6 @@ jobs:
           npm ci --prefix .pipeline-contract/scripts/architecture_explorer --no-audit --no-fund
           python .pipeline-contract/scripts/architecture_explorer/build.py --mode github \
             --page site/architecture/index.html
-
-      - name: Ask the organization site to rebuild the explorer
-        if: github.ref_name == github.event.repository.default_branch
-        env:
-          DISPATCH_TOKEN: ${{ secrets.org_site_dispatch_token }}
-          SOURCE_REPOSITORY: ${{ github.repository }}
-          SOURCE_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          if [ -z "${DISPATCH_TOKEN:-}" ]; then
-            echo "No dispatch token; the organization site's 30-minute schedule rebuilds the explorer."
-            exit 0
-          fi
-          body=$(printf '{"event_type":"specs-changed","client_payload":{"repository":"%s","sha":"%s"}}' \
-            "$SOURCE_REPOSITORY" "$SOURCE_SHA")
-          curl -fsS -X POST -H "Authorization: Bearer $DISPATCH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/Knuckles-Team/.github/dispatches -d "$body" \
-            || echo "::warning::organization site dispatch failed; the schedule will rebuild it"
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

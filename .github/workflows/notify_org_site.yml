@@ -1,0 +1,57 @@
+name: Notify organization site
+
+# Reusable. Asks Knuckles-Team/.github to rebuild the architecture explorer now,
+# authenticating as a GitHub App. A no-op until both optional app secrets exist;
+# the 30-minute schedule there keeps the explorer current either way.
+on:
+  workflow_call:
+    secrets:
+      org_site_app_id:
+        description: GitHub App ID, installed on Knuckles-Team/.github with Contents write.
+        required: false
+      org_site_app_private_key:
+        description: The GitHub App private key.
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    env:
+      HAS_APP: ${{ secrets.org_site_app_id != '' && secrets.org_site_app_private_key != '' }}
+    steps:
+      - name: Skip without the app
+        if: env.HAS_APP != 'true'
+        run: echo "::notice::No org-site app configured; the organization site's 30-minute schedule rebuilds the explorer."
+
+      - name: Mint an app token
+        id: token
+        if: env.HAS_APP == 'true'
+        continue-on-error: true
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
+        with:
+          app-id: ${{ secrets.org_site_app_id }}
+          private-key: ${{ secrets.org_site_app_private_key }}
+          owner: Knuckles-Team
+          repositories: .github
+
+      - name: Dispatch specs-changed
+        if: env.HAS_APP == 'true'
+        env:
+          DISPATCH_TOKEN: ${{ steps.token.outputs.token }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DISPATCH_TOKEN:-}" ]; then
+            echo "::warning::could not mint an app token; the schedule will rebuild the explorer"
+            exit 0
+          fi
+          body=$(printf '{"event_type":"specs-changed","client_payload":{"repository":"%s","sha":"%s"}}' \
+            "$SOURCE_REPOSITORY" "$SOURCE_SHA")
+          curl -fsS -X POST -H "Authorization: Bearer $DISPATCH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/Knuckles-Team/.github/dispatches -d "$body" \
+            || echo "::warning::organization site dispatch failed; the schedule will rebuild it"

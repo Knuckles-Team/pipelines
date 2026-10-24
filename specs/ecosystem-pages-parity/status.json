@@ -3993,10 +3993,10 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "07e22bc44394",
+        "0a82ba72ff9d",
         "1127e9047bfa",
         "22a4c85e6a09",
-        "26f5095aaa92",
-        "40010846fc5f"
+        "2540d25e67e0"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:105",
@@ -4079,7 +4079,7 @@
         "afcf5e9611e3"
       ],
       "verified_by": [
-        "tests/test_pages_pipeline_contract.py:87",
+        "tests/test_pages_pipeline_contract.py:89",
         "tests/test_pages_readiness.py:195",
         "tests/test_pages_readiness.py:247",
         "tests/test_pages_readiness.py:367",
@@ -4124,7 +4124,7 @@
         "afcf5e9611e3"
       ],
       "verified_by": [
-        "tests/test_pages_pipeline_contract.py:87"
+        "tests/test_pages_pipeline_contract.py:89"
       ]
     },
     {
