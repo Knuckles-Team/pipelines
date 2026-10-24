@@ -176,3 +176,23 @@ def test_example_credential_uris_in_docs_code_become_the_gate_placeholder_form(t
     ctx.applied.clear()
     identity.docs_credential_examples(ctx)
     assert not ctx.applied
+
+
+@pytest.mark.spec("PIPE-GATES-R016.108")
+def test_mutable_checkout_and_setup_python_tags_become_the_fleet_pins(tmp_path: Path) -> None:
+    ctx = _ctx(tmp_path)
+    wf = ctx.root / ".github/workflows/docs.yml"
+    wf.write_text(
+        "jobs:\n  d:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n"
+        "      - uses: actions/setup-python@v5\n      - uses: other/action@v1\n",
+        encoding="utf-8",
+    )
+    identity.pin_actions(ctx)
+    text = wf.read_text(encoding="utf-8")
+    assert "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1" in text
+    assert (
+        "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0" in text and "other/action@v1" in text
+    )
+    ctx.applied.clear()
+    identity.pin_actions(ctx)
+    assert not ctx.applied
