@@ -705,6 +705,7 @@ def test_description_is_the_first_plain_sentence_capped_at_160() -> None:
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.6")
+@_NEEDS_LAYOUT
 def test_page_rows_carry_desc_and_never_the_full_text(monkeypatch, tmp_path: Path) -> None:
     page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
     html = page.read_text()
@@ -724,6 +725,7 @@ def test_page_rows_carry_desc_and_never_the_full_text(monkeypatch, tmp_path: Pat
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.7")
+@_NEEDS_LAYOUT
 def test_one_family_json_is_written_per_family_with_full_row_detail(monkeypatch, tmp_path: Path) -> None:
     page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
     files = sorted(p.relative_to(page.parent).as_posix() for p in (page.parent / "spec-details").rglob("*.json"))
@@ -757,6 +759,7 @@ def test_one_family_json_is_written_per_family_with_full_row_detail(monkeypatch,
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.7")
+@_NEEDS_LAYOUT
 def test_a_row_whose_family_has_no_plan_still_gets_detail(monkeypatch, tmp_path: Path) -> None:
     page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots(with_plan=False))
     doc = json.loads((page.parent / "spec-details/pipelines/fam.json").read_text())
@@ -823,6 +826,7 @@ def test_page_never_assigns_markup_and_exposes_the_expand_controls() -> None:
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.6")
+@_NEEDS_LAYOUT
 def test_page_size_grows_by_a_bounded_amount_per_row(monkeypatch, tmp_path: Path) -> None:
     """Measure the page with and without descriptions: the growth per row stays within the description cap."""
     snaps = _detail_snapshots()
