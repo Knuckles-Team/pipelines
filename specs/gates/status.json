@@ -1688,7 +1688,7 @@
       "title": "Pipelines-owned boilerplate rule `pl.ac`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "b91e7e3830db"
+        "bc1c1dffa20b"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:147",
