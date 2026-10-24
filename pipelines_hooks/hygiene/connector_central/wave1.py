@@ -2455,7 +2455,17 @@ def g4(ctx: Ctx) -> None:
     else:
         block = "\n".join([*lines, "", "connector = Connector(", *kw, ")"]) + "\n"
     out = (base.rstrip() + "\n\n" if base.strip() else "") + block
+    if _tests_read_all(ctx):
+        out += '\n__all__ = ["connector"]\n'  # `assert hasattr(module, "__all__")` of the scaffolded init test
     ctx.write(rel, out, "w1.g4")
+
+
+def _tests_read_all(ctx: Ctx) -> bool:
+    """Whether a test reads ``__all__`` (the package ``__init__`` test of the old lazy-import scaffold)."""
+    return any(
+        "__all__" in p.read_text(encoding="utf-8", errors="ignore")
+        for p in sorted((ctx.root / "tests").glob("**/*.py"))
+    )
 
 
 # --- g.5 / g.6 / g.1 / g.2 ------------------------------------------------------------------------------
