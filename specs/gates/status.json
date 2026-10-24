@@ -128,7 +128,8 @@
     "PIPE-GATES-R016.103",
     "PIPE-GATES-R016.104",
     "PIPE-GATES-R016.105",
-    "PIPE-GATES-R016.106"
+    "PIPE-GATES-R016.106",
+    "PIPE-GATES-R016.107"
   ],
   "requirements": [
     {
@@ -498,7 +499,8 @@
         "PIPE-GATES-R016.103",
         "PIPE-GATES-R016.104",
         "PIPE-GATES-R016.105",
-        "PIPE-GATES-R016.106"
+        "PIPE-GATES-R016.106",
+        "PIPE-GATES-R016.107"
       ]
     },
     {
@@ -1611,11 +1613,22 @@
     },
     {
       "id": "PIPE-GATES-R016.106",
-      "title": "Central driver and verify",
+      "title": "Pipelines-owned boilerplate rule `pl.ab`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "8e8272f805dd"
+        "8e8272f805dd",
+        "c5d88f1699d3"
       ],
+      "verified_by": [
+        "tests/hooks/test_connector_central_identity.py:115",
+        "tests/hooks/test_connector_central_identity.py:137"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.107",
+      "title": "Central driver and verify",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": [
         "tests/hooks/test_connector_central_driver.py:102",
         "tests/hooks/test_connector_central_driver.py:117",
