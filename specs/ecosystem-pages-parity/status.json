@@ -4140,7 +4140,7 @@
       "title": "The explorer links back to the contribution front door",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "e13caa309b0b"
+        "655e8f6f31e6"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:936"
