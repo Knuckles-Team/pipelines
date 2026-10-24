@@ -1083,6 +1083,24 @@ def test_l2_non_empty_marker_is_kept(tmp_path: Path) -> None:
 
 # --- l.3 ------------------------------------------------------------------------------------------------------
 @pytest.mark.spec("PIPE-GATES-R016.66")
+def test_l3_tests_asserting_the_deleted_scaffold_are_deleted(tmp_path: Path) -> None:
+    root = _make(tmp_path, init=SCAFFOLD_INIT)
+    test = root / "tests" / "test_init_scaffold.py"
+    test.write_text(
+        "import demo_mcp\n\n\ndef test_keep():\n    assert 1\n\n\ndef test_flags():\n    assert demo_mcp._MCP_AVAILABLE is True\n",
+        encoding="utf-8",
+    )
+    ctx = _ctx(root)
+    _run(ctx, ("w1.g3", "w1.g4", "w1.l3"))
+    text = test.read_text(encoding="utf-8")
+    assert "test_keep" in text and "_MCP_AVAILABLE" not in text
+    assert any("lazy-import scaffold" in i["detail"] and not i["blocking"] for i in _notes(ctx, "w1.l3"))
+    before = text
+    _run(ctx, ("w1.l3",))
+    assert test.read_text(encoding="utf-8") == before
+
+
+@pytest.mark.spec("PIPE-GATES-R016.66")
 def test_l3_scaffold_is_deleted_with_the_connector_and_test_imports_follow(tmp_path: Path) -> None:
     root = _make(tmp_path, init=SCAFFOLD_INIT)
     (root / "tests" / "test_api.py").write_text("from demo_mcp import Api\n", encoding="utf-8")

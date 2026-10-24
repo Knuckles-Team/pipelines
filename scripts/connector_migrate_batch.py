@@ -26,7 +26,7 @@ PIPELINES = HERE.parent
 FIXED_MESSAGE = "chore: cut the connector manifest files; declare data sources in code (SDK 0.4.1)"
 REBUMP_MESSAGE = "chore: require agent-connector-sdk>=0.4.1"
 CENTRAL_MESSAGE = "chore: move the connector onto the central SDK and pipelines components (SDK 0.5.2)"
-CENTRAL_TRAILER = "Spec: none (mechanical central migration, PIPE-GATES-R016.50)\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+CENTRAL_TRAILER = "Spec: none (mechanical central migration, PIPE-GATES-R016.50)\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 TRAILER = "Spec: SDK-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 STEPS = ("worktree", "sync", "migrate", "commit", "verify", "push", "pr", "gates", "merge")
 lock = threading.Lock()
@@ -387,7 +387,7 @@ def regenerate_status(wt: Path, env: dict[str, str], a: argparse.Namespace, led:
             "-m",
             "chore(spec): regenerate status",
             "-m",
-            "Spec: none (generated status)\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>",
+            "Spec: none (generated status)\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>",
         ],
         wt,
         env,
