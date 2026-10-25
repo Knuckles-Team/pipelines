@@ -36,7 +36,7 @@ Reused: `TARGETS` (`targets.py:7`), `wheel_set` (`readiness.py:233`), `aggregate
 
 Decision: check the archive contents rather than the filename tag, because a pure-Python wheel can carry a platform tag. Rejected: trusting the platform tag alone. Search terms used: kernel, manylinux, abi3, wheel, `.so`.
 
-Cross-repository: the epistemic-graph kernel wheels consume this gate, owner prefix `EG`; contract name `kernel_cells`.
+Cross-repository: the Medulla kernel wheels consume this gate, owner prefix `EG`; contract name `kernel_cells`.
 
 ## Dependency loop gate (PIPE-RELEASE-R005)
 
@@ -91,7 +91,7 @@ this regression.
 These child contracts preserve the existing publication, dependency-cycle and version-consistency obligations.
 The public dispatcher remains `pipelines_hooks/cli.py:79` through `run_gate` at line 59.
 New CLI registrations and modules below are proposed attachment points, not existing delivery receipts.
-Repository-manager retains release admission and fleet ordering; SDK retains package compatibility semantics.
+Repository-manager retains release admission and fleet ordering; Scion SDK retains package compatibility semantics.
 Existing release source-binding and artifact qualification rules remain independent prerequisites.
 
 ### Role extra closure
@@ -112,7 +112,7 @@ Extend proposed project_version.main through pipelines_hooks/cli.py:13 and run_g
 ### Major upgrade pre pin
 
 `PIPE-RELEASE-R001.7` through `PIPE-RELEASE-R001.12` extend `PIPE-RELEASE-R001`.
-Extend the proposed release-phases entry at pipelines_hooks/cli.py:13 through run_gate at line 59. Place the SDK compatibility adapter before version-bump argv execution and pin writes. Repository-manager retains fleet rollout admission; SDK retains compatibility semantics. Pipelines must consume those producer receipts without duplicating certification rules.
+Extend the proposed release-phases entry at pipelines_hooks/cli.py:13 through run_gate at line 59. Place the Scion SDK compatibility adapter before version-bump argv execution and pin writes. Repository-manager retains fleet rollout admission; Scion SDK retains compatibility semantics. Pipelines must consume those producer receipts without duplicating certification rules.
 
 The package owner must publish the authoritative supported-role export before role completeness can be evaluated.
 The concrete code-enhancer owner and production call site remain unresolved prerequisites for consumer integration.

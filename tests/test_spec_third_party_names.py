@@ -96,6 +96,12 @@ def test_allowance_is_per_repository():
     assert "Qdrant" not in load_terms("vector-mcp")
 
 
+def test_first_party_names_are_not_third_party_findings(root):
+    _write(root, "plan.md", "Arbora, Medulla, Meristem, Overstory, Scion, Tuig and Axil share this contract.\n")
+    assert check_repository(root, "any") == []
+    assert "Scion" not in load_terms("any")
+
+
 def test_config_ships_with_the_package():
     assert CONFIG.is_file()
     pyproject = (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()

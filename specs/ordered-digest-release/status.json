@@ -491,22 +491,22 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
-        "tests/hooks/test_connector_central.py:113",
-        "tests/hooks/test_connector_central.py:303",
-        "tests/hooks/test_connector_central.py:64",
-        "tests/hooks/test_connector_central.py:78"
+        "tests/hooks/test_connector_central.py:114",
+        "tests/hooks/test_connector_central.py:123",
+        "tests/hooks/test_connector_central.py:322",
+        "tests/hooks/test_connector_central.py:64"
       ]
     },
     {
       "id": "PIPE-RELEASE-R001.14",
-      "title": "A new SDK release rebuilds connector images",
+      "title": "A new Scion SDK release rebuilds connector images",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:126",
-        "tests/hooks/test_connector_central.py:138"
+        "tests/hooks/test_connector_central.py:136",
+        "tests/hooks/test_connector_central.py:150"
       ]
     },
     {
@@ -684,9 +684,11 @@
       "title": "A connector release publishes PyPI and Docker, and verifies both",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "3d0455152b96"
+        "3d0455152b96",
+        "db468196e870"
       ],
       "verified_by": [
+        "tests/hooks/test_distribution_aliases.py:22",
         "tests/test_connector_release_pipeline.py:82",
         "tests/test_connector_release_pipeline.py:83",
         "tests/test_connector_release_pipeline.py:88",
@@ -727,7 +729,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:475"
+        "tests/test_container_pipeline_contract.py:507"
       ]
     },
     {

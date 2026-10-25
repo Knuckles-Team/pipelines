@@ -117,7 +117,7 @@ Reachable today: no. The public-surface gate runs, but `pipelines_hooks/docs/cla
 Attach point: `validate` at `pipelines_hooks/docs/public_surface.py:31`, dispatched by `run_gate` at `pipelines_hooks/cli.py:59`.
 Decision: extend R020 with code and documentation finding provenance. Reuse containment and typed error helpers; require tree-bound measurements before exporting findings. Reject unlocated prose reports rather than guessing their evidence.
 Cross-repository rows: `EG-ORCH-VOCAB` owns trace storage; this producer owns gate evidence. A receipt does not confer host admission.
-Source credit: the source document “SDD enhanced”, AU queue candidate 64. No research citation was supplied.
+Source credit: the source document “SDD enhanced”, Meristem queue candidate 64. No research citation was supplied.
 Acceptance: implement `tests/hooks/test_public_surface_claims.py`, then run `uv run --frozen python -m pytest tests/hooks/test_public_surface_claims.py -q`. The subprocess tests enter the published CLI and assert exact exit codes and structured findings.
 
 ## Component handoff evidence (PIPE-PAGES-R021)
@@ -131,10 +131,10 @@ Dependency kinds: eager-runtime and deferred-runtime edges both establish possib
 Dynamic uncertainty: computed imports that cannot be resolved statically require declared dynamic entry modules and a located uncertainty record. If that uncertainty prevents a reachability verdict, return exit 2 without a clean claim or a definite orphan.
 Rejected: using the eager graph for all dependencies, or deriving architectural intent from imports alone. The eager graph misses lazy imports; declarations establish which runtime and type-only edges are permitted.
 Cross-repository rows: none added; repositories supply declarations and executable handoff tests. Existing R021 placeholder, suppression and coverage behavior remains required.
-Source credit: the source document “PyTests Enhancement Agent utilities”, AU queue candidate 67. No research citation was supplied.
+Source credit: the source document “PyTests Enhancement Meristem”, Meristem queue candidate 67. No research citation was supplied.
 Acceptance: implement `tests/hooks/test_test_quality_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_test_quality_hook.py -q`. Tests run real fixture components and then the CLI against their generated receipts. `test_component_lazy_import_cli` invokes the production gate with allowed and forbidden imports inside both synchronous and asynchronous entry functions. Assert that an allowed lazy-only dependency is reachable and a forbidden lazy edge exits 1 at its line. A type-only reference remains separately classified and cannot rescue an otherwise orphaned module. A computed import with unresolved reachability exits 2 and records uncertainty. Preserve the existing real-handoff, property-proof and skipped-receipt cases.
 
-R021.85-.90: Graph-loaded workflow with durable hydration; AU consumer and independent readback acceptance.
+R021.85-.90: Graph-loaded workflow with durable hydration; Meristem consumer and independent readback acceptance.
 
 ## Skill grading (PIPE-PAGES-R023)
 
@@ -146,7 +146,7 @@ Decision: grade declared inputs with a versioned policy, never a model-generated
 Link resolution: derive the base from the source document directory within the repository. Decode and normalize local destinations, resolve symlinks, then enforce repository containment. Parent-relative links may reach another repository directory. Never substitute the skill directory for the containment root or resolve all skill links from the repository root. Preserve root README/AGENTS behavior.
 Rejected: treating directory presence or catalogue extraction as quality evidence. Grade receipts bind inputs and policy, while installation and admission remain with the host.
 Cross-repository rows: `EG-TYPED-PACKS` owns skill contracts; `ARBORA-FLEET-R034` owns admission. This gate emits evidence and does not approve a skill.
-Source credit: the source document “Code enhancement skill rule”, AU queue candidate 63. No research citation was supplied.
+Source credit: the source document “Code enhancement skill rule”, Meristem queue candidate 63. No research citation was supplied.
 Acceptance: implement `tests/hooks/test_skill_grade_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_skill_grade_hook.py -q`. Invoke the published CLI on valid and adversarial skill fixtures and assert every criterion and exit code. `test_nested_skill_links_cli` uses `skills/demo/SKILL.md` with a sibling `guide.md` and an in-repository parent link; both pass. Missing targets, decoded traversal outside the repository and symlink escape fail with located evidence. A root README fixture retains the existing resolution behavior.
 
 ## Similarity guidance (PIPE-PAGES-R024)
@@ -158,7 +158,7 @@ Attach point: extend the existing command, report and verdict chain, reached thr
 Decision: preserve the reviewed 0.85 blocking threshold while flagging 0.80-and-above pairs as requested. Below 0.85, guidance is diagnostic. Defaults live in the shared contract and can only change by reviewed producer policy. Tests cover 0.799, 0.80, 0.849 and 0.85 using deterministic report fixtures, then exercise real Rust and Python scanner fixtures through the CLI. Threshold invariants require finite values with 0 <= diagnostic <= enforcement <= 1.
 Rejected: replacing the scanner or lowering every consumer's enforcement threshold from source inspiration alone. Keep existing Rust/Python support, token minima, scope rules and digest-bound distinct-pair review. Extraction advice is a review proposal with both locations, not an automatic code rewrite.
 Cross-repository rows: none added; consumers retain the same hook ID and published policy.
-Source credit: `open-source-libraries/kiss/README.md`, AU queue candidate 66, informs the user need for similarity and extraction guidance. No arXiv citation was supplied. The design reuses this repository's existing scanner contract.
+Source credit: `open-source-libraries/kiss/README.md`, Meristem queue candidate 66, informs the user need for similarity and extraction guidance. No arXiv citation was supplied. The design reuses this repository's existing scanner contract.
 Acceptance: implement `tests/hooks/test_similarity_guidance_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_similarity_guidance_hook.py -q`. The integration test invokes the pinned scanner through the CLI; scanner absence cannot satisfy it. No native scanner build is required for this specification change.
 
 ## Meaningful outcome assertions (PIPE-PAGES-R021)
@@ -271,7 +271,7 @@ Acceptance: implement `tests/hooks/test_doc_inventory.py`; run `uv run --frozen 
 
 ### PIPE:20: readme header (R020.61–66; extends R003/R011)
 
-The current REPOS already contains seven owners: epistemic-graph, agent-utilities, agent-connector-sdk, arbora, agent-webui, agent-terminal-ui and geniusbot. Correct only the stale five-owner wording in R011; keep its landed receipts and the registry as authority. This audit scope does not imply pipelines or an unrelated repository is a missing eighth consumer. The exact shared header contains title, mark, description, visible badges and the four named links; owner-specific descriptions and marks remain distinct. Status badges need safe provenance and a declared freshness bound; unavailable data is explicitly unknown. The checker verifies declared telemetry, not external monitoring truth.
+The current REPOS already contains seven owners: Medulla, Meristem, Scion SDK, arbora, Overstory, Tuig and Axil. Correct only the stale five-owner wording in R011; keep its landed receipts and the registry as authority. This audit scope does not imply pipelines or an unrelated repository is a missing eighth consumer. The exact shared header contains title, mark, description, visible badges and the four named links; owner-specific descriptions and marks remain distinct. Status badges need safe provenance and a declared freshness bound; unavailable data is explicitly unknown. The checker verifies declared telemetry, not external monitoring truth.
 
 Provider self-run has an explicit scope result: only the versioned gate policy identity `github.com/Knuckles-Team/pipelines` is non-applicable, with structured `skip`, reason `provider-not-consumer`, exit 0 and zero consumer checks. Resolve canonical full host/namespace/repository from origin, or the sole remote when origin is absent; never use checkout basename or a caller provider flag. The existing `repository_identity.remote_owner` returns only a slug and cannot alone establish this exception. Unknown repositories and missing/ambiguous identities are CannotRun exit 2. Known consumers always validate their header. Record identity source, snapshot and policy/registry digests for the skip; no header grade or consumer coverage receipt may be emitted. This declared scope is non-applicable under R020.34, not a skipped required consumer check. Acceptance runs the actual CLI and self-run hook against provider, unknown and same-basename different-namespace Git fixtures, plus a broken known-consumer fixture attempting a provider override. CI still runs consumer renderer/browser acceptance.
 Acceptance: implement `tests/hooks/test_readme_header.py`; run `uv run --frozen python -m pytest tests/hooks/test_readme_header.py -q`. Exercise the published CLI and configured hook on a real Git fixture, plus the actual producer/renderer/served browser path named by the hot-path row. Parser-only success does not close this acceptance.
@@ -379,12 +379,12 @@ Extend the planned test-quality entry at pipelines_hooks/cli.py:13 through run_g
 ### Solution size evidence
 
 `PIPE-PAGES-R021.67` through `PIPE-PAGES-R021.72` extend `PIPE-PAGES-R021`.
-Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under EG-DECISION-ENGINE-R136.4. AU run receipts must preserve the same source and evidence identities.
+Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under EG-DECISION-ENGINE-R136.4. Meristem run receipts must preserve the same source and evidence identities.
 
 ### Graph workflow receipt
 
 `PIPE-PAGES-R021.73` through `PIPE-PAGES-R021.78` extend `PIPE-PAGES-R021`.
-Extend the planned test-quality handoff verifier at pipelines_hooks/cli.py:13 through run_gate at line 59. Consume the owner acceptance receipt joining AU graph_orchestrate, execute_workflow and EG SourceIngest. The shared gate verifies provenance and outcomes; it must not become a runtime workflow orchestrator.
+Extend the planned test-quality handoff verifier at pipelines_hooks/cli.py:13 through run_gate at line 59. Consume the owner acceptance receipt joining Meristem graph_orchestrate, execute_workflow and Medulla SourceIngest. The shared gate verifies provenance and outcomes; it must not become a runtime workflow orchestrator.
 
 Historical validation comparison remains blocked until its former command revision and complete behavior inventory are recovered.
 Solution-size evidence does not resolve the reserved shortcut-comment policy. The coordinator retains that decision.
@@ -416,7 +416,7 @@ R037.1-.6: Define unit-test profile with enforced external determinism and mocke
 
 ## PIPE-PAGES-R038
 
-R038.1-.6: Python-only pre-commit hook consuming EG-owned ontology validation with fail-closed authority.
+R038.1-.6: Python-only pre-commit hook consuming Medulla-owned ontology validation with fail-closed authority.
 
 ## PIPE-PAGES-R039
 
@@ -424,7 +424,7 @@ R039.1-.6: Complete project test-layout inventory with fixture isolation and ord
 
 ## PIPE-PAGES-R040
 
-R040.1-.6: Extend AU approval criteria to reject coverage-decreasing proposals.
+R040.1-.6: Extend Meristem approval criteria to reject coverage-decreasing proposals.
 
 ## PIPE-PAGES-R041
 

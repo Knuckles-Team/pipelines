@@ -14,7 +14,7 @@ Search: `git grep -n "gate\|landing\|revert" -- specs` on pipelines main. The ex
 
 ## Scope and interfaces
 
-Pipelines owns the gate-set policy and the published gate behavior behind it. The changeset store, the tree reads, and the decision records live in epistemic-graph; the served landing operations live in arbora. This spec names the partition, the policy, and the tree-based gate contract. It builds no engine storage and no client transport. Advisory checks enter neither set. No merge queue exists by design.
+Pipelines owns the gate-set policy and the published gate behavior behind it. The changeset store, the tree reads, and the decision records live in Medulla; the served landing operations live in arbora. This spec names the partition, the policy, and the tree-based gate contract. It builds no engine storage and no client transport. Advisory checks enter neither set. No merge queue exists by design.
 
 ## Traceability
 

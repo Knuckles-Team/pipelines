@@ -112,7 +112,7 @@
     },
     {
       "id": "PIPE-VALIDATION-R001.6",
-      "title": "Retain AU ignore acceptance",
+      "title": "Retain Meristem ignore acceptance",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "b76625874902"
@@ -130,8 +130,8 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:202",
-        "tests/hooks/test_connector_central.py:221"
+        "tests/hooks/test_connector_central.py:221",
+        "tests/hooks/test_connector_central.py:240"
       ]
     },
     {
@@ -142,7 +142,7 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:229"
+        "tests/hooks/test_connector_central.py:248"
       ]
     },
     {
@@ -154,7 +154,7 @@
         "d9ae8754cd03"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:240"
+        "tests/hooks/test_connector_central.py:259"
       ]
     },
     {
