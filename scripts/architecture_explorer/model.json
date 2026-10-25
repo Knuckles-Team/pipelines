@@ -2,7 +2,7 @@
  "id": "root",
  "label": "Arbora ecosystem",
  "role": "runtime architecture",
- "desc": "People and agents enter through Arbora. Arbora admits each request. Meristem runs the harness. Epistemic Graph stores and reasons. Source systems connect through the SDK.",
+ "desc": "People and agents enter through Arbora. Arbora admits each request. Meristem runs the harness. Medulla stores and reasons. Source systems connect through the SDK.",
  "unmapped_allow": [],
  "edges": [
   [
@@ -4063,9 +4063,9 @@
   },
   {
    "id": "eg",
-   "label": "Epistemic Graph",
+   "label": "Medulla",
    "role": "durable multimodal knowledge, evidence, provenance, and reasoning engine",
-   "desc": "Epistemic Graph is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed.",
+   "desc": "Medulla is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed.",
    "repo": "epistemic-graph",
    "layer": "core",
    "edges": [
@@ -6075,7 +6075,7 @@
   },
   {
    "id": "egserver",
-   "label": "Epistemic Graph Server",
+   "label": "Medulla Stem",
    "role": "package epistemic-graph-server: the one native server executable",
    "desc": "The server package runs the engine as one native executable. It receives network calls over standard wire protocols and passes them to the engine. Its version always matches the client package.",
    "repo": "epistemic-graph",

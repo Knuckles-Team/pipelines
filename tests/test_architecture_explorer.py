@@ -1066,7 +1066,8 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
     for node_id, (label, repo) in brands.items():
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
     assert payload["tree"]["label"] == "Arbora ecosystem"
-    assert nodes["eg"]["label"] == "Epistemic Graph"
+    assert nodes["eg"]["label"] == "Medulla"
+    assert nodes["egserver"]["label"] == "Medulla Stem"
     assert nodes["arbora"]["label"] == "Arbora"
     assert nodes["geniusbot"]["role"] == "desktop GUI"
     assert nodes["au"]["role"] == "in-run agent harness"
