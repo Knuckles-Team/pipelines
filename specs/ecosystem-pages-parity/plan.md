@@ -490,3 +490,14 @@ Existing runtime and release qualification caveats remain in force.
 The normal explorer generator consumes these labels; no generated organization
 site output is hand-edited. The display-brand regression test exercises that
 generator and checks brand labels alongside their unchanged repository IDs.
+
+### 2026-10-25 — desktop visual parts (PIPE-PAGES-R042)
+
+The Axil Desk node retains `geniusbot` and the `desktop-client` family home.
+Ten child parts group the existing R001–R020 requirement roots and all their
+descendants by explicit ID rules. The groups cover backend integration,
+lifecycle, approvals, terminal, panels, packaging, tokens, documentation,
+run inspection and source quality. They add no requirement, transport edge,
+source path or delivery claim. Unknown roots stay visible as Unmapped.
+Placement and normal-generation tests protect unique placement, repository
+identity and unchanged row/status totals. Generated Pages output is not edited.

@@ -1067,3 +1067,60 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
     assert nodes["arbora"]["label"] == "Arbora"
     assert nodes["geniusbot"]["role"] == "desktop GUI"
     assert nodes["au"]["role"] == "in-run agent harness"
+
+
+_AXIL_PARTS = {
+    "backend": (1, 2, 3, 5),
+    "lifecycle": (4, 8, 10),
+    "approvals": (6,),
+    "terminal": (7,),
+    "panels": (9, 11, 14),
+    "packaging": (12,),
+    "tokens": (13,),
+    "docs": (15, 16, 17, 18),
+    "runs": (19,),
+    "quality": (20,),
+}
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    tree = Tree(model)
+    desktop = tree.nodes["geniusbot"]
+    assert (desktop["repo"], desktop["fam"]) == ("geniusbot", ["desktop-client"])
+    expected = {
+        f"GENIUSBOT-CLIENT-R{number:03d}{suffix}": f"geniusbot.{part}"
+        for part, numbers in _AXIL_PARTS.items()
+        for number in numbers
+        for suffix in ("", ".1", ".1.1")
+    }
+    rows = [_row(rid, "Requirement", "desktop-client", "geniusbot") for rid in expected]
+    unknown = [
+        _row(rid, "Requirement", "desktop-client", "geniusbot")
+        for rid in ("GENIUSBOT-CLIENT-R021", "GENIUSBOT-CLIENT-R0010")
+    ]
+    direct = Placer(tree).run(rows + unknown)
+    placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
+    assert len(placed) == len(rows + unknown)
+    assert dict(placed) == {**expected, **{row["id"]: "geniusbot.unmapped" for row in unknown}}
+    assert all(tree.nodes[nid]["repo"] == "geniusbot" for nid in expected.values())
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+def test_axil_parts_survive_generation_without_changing_rows_or_statuses(monkeypatch, tmp_path: Path) -> None:
+    rows = [
+        {**_row(f"GENIUSBOT-CLIENT-R{number:03d}", "Requirement", "desktop-client", "geniusbot"), "status": status}
+        for number, status in zip(range(1, 21), ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED") * 5)
+    ]
+    payload = _payload(_build_page(monkeypatch, tmp_path, {"geniusbot": rows}))
+    desktop = next(node for node in payload["tree"]["children"] if node["id"] == "geniusbot")
+    assert {node["id"] for node in desktop["children"]} == {f"geniusbot.{part}" for part in _AXIL_PARTS}
+    assert desktop["specs"] == []
+    assert "layout" in desktop
+    emitted = [row for node in desktop["children"] for row in node["specs"]]
+    assert len(emitted) == len(rows)
+    assert {(row["id"], row["status"], row["repo"], row["family"]) for row in emitted} == {
+        (row["id"], row["status"], row["repo"], row["family"]) for row in rows
+    }

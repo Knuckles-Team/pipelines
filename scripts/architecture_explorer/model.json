@@ -491,7 +491,109 @@
    "fam": [
     "desktop-client"
    ],
-   "band": 1
+   "band": 1,
+   "children": [
+    {
+     "id": "geniusbot.backend",
+     "label": "Backend integration",
+     "role": "adapter, registry, transport and errors",
+     "desc": "Existing desktop-client requirements for adapter, registry, transport and errors. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R001(\\.|$)",
+      "GENIUSBOT-CLIENT-R002(\\.|$)",
+      "GENIUSBOT-CLIENT-R003(\\.|$)",
+      "GENIUSBOT-CLIENT-R005(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.lifecycle",
+     "label": "Desktop lifecycle",
+     "role": "workers, lazy panels, tray and streams",
+     "desc": "Existing desktop-client requirements for workers, lazy panels, tray and streams. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R004(\\.|$)",
+      "GENIUSBOT-CLIENT-R008(\\.|$)",
+      "GENIUSBOT-CLIENT-R010(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.approvals",
+     "label": "Governed approvals",
+     "role": "backend approval authority",
+     "desc": "Existing desktop-client requirements for backend approval authority. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R006(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.terminal",
+     "label": "Embedded terminal",
+     "role": "terminal sandbox",
+     "desc": "Existing desktop-client requirements for terminal sandbox. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R007(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.panels",
+     "label": "Operator panels",
+     "role": "voice, specialists and finance",
+     "desc": "Existing desktop-client requirements for voice, specialists and finance. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R009(\\.|$)",
+      "GENIUSBOT-CLIENT-R011(\\.|$)",
+      "GENIUSBOT-CLIENT-R014(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.packaging",
+     "label": "Packaging",
+     "role": "manifest and distribution",
+     "desc": "Existing desktop-client requirements for manifest and distribution. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R012(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.tokens",
+     "label": "Design tokens",
+     "role": "generated colors",
+     "desc": "Existing desktop-client requirements for generated colors. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R013(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.docs",
+     "label": "Documentation and guardrails",
+     "role": "skills, docs and shared hooks",
+     "desc": "Existing desktop-client requirements for skills, docs and shared hooks. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R015(\\.|$)",
+      "GENIUSBOT-CLIENT-R016(\\.|$)",
+      "GENIUSBOT-CLIENT-R017(\\.|$)",
+      "GENIUSBOT-CLIENT-R018(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.runs",
+     "label": "Run inspection",
+     "role": "read-only harness surface",
+     "desc": "Existing desktop-client requirements for read-only harness surface. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R019(\\.|$)"
+     ]
+    },
+    {
+     "id": "geniusbot.quality",
+     "label": "Source quality",
+     "role": "source-quality obligations",
+     "desc": "Existing desktop-client requirements for source-quality obligations. Delivery state comes from the owning spec rows.",
+     "ids": [
+      "GENIUSBOT-CLIENT-R020(\\.|$)"
+     ]
+    }
+   ]
   },
   {
    "id": "messaging",
