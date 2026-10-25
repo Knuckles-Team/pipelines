@@ -21,6 +21,8 @@ from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any, TypeGuard
 
+from pipelines_hooks.core.distributions import SDK as SDK_ROLE
+from pipelines_hooks.core.distributions import is_distribution, requirement_name
 from pipelines_hooks.hygiene.connector_central.base import SDK_PIN, Ctx, rule
 
 ORDER: tuple[str, ...] = (
@@ -3735,7 +3737,8 @@ def _is_connector(n: ast.stmt) -> bool:
     return isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "connector" for t in n.targets)
 
 
-_DEP = re.compile(r'"(agent-connector-sdk)(\[[^\]]*\])?([^"]*)"')
+_SDK_NAMES = r"(?:agent-connector-sdk|scion-sdk)"
+_DEP = re.compile(rf'"({_SDK_NAMES})(\[[^\]]*\])?([^"]*)"')
 
 
 @rule("w1.l4")
@@ -3744,27 +3747,27 @@ def l4(ctx: Ctx) -> None:
     lines = text.split("\n")
     data = ctx.pyproject()
     deps = data.get("project", {}).get("dependencies", [])
-    hit = [d for d in deps if d.replace(" ", "").startswith("agent-connector-sdk")]
+    hit = [d for d in deps if is_distribution(requirement_name(str(d)), SDK_ROLE)]
     if len(hit) != 1:
-        ctx.note("w1.l4", f"expected one agent-connector-sdk dependency, found {len(hit)}", "pyproject.toml", True)
+        ctx.note("w1.l4", f"expected one SDK dependency, found {len(hit)}", "pyproject.toml", True)
         return
-    m = re.match(r"^agent-connector-sdk\s*(\[([^\]]*)\])?\s*([<>=!~][^;]*)?$", hit[0].strip())
+    m = re.match(rf"^{_SDK_NAMES}\s*(\[([^\]]*)\])?\s*([<>=!~][^;]*)?$", str(hit[0]).strip())
     if not m:
-        ctx.note("w1.l4", f"agent-connector-sdk requirement {hit[0]!r} has an unsupported form", "pyproject.toml", True)
+        ctx.note("w1.l4", f"SDK requirement {hit[0]!r} has an unsupported form", "pyproject.toml", True)
         return
     opt = data.get("project", {}).get("optional-dependencies", {})
     drop = [
         k
         for k in ("mcp", "all")
-        if k in opt and len(opt[k]) == 1 and opt[k][0].replace(" ", "").startswith("agent-connector-sdk")
+        if k in opt and len(opt[k]) == 1 and is_distribution(requirement_name(str(opt[k][0])), SDK_ROLE)
     ]
     # the SDK extras of a dropped one-element extra (`mcp = ["agent-connector-sdk[mcp,stream]>=..."]`) move to the pin
     dropped_extras: set[str] = set()
     for key in drop:
-        dm = re.match(r"^agent-connector-sdk\s*\[([^\]]*)\]", opt[key][0].strip())
+        dm = re.match(rf"^{_SDK_NAMES}\s*\[([^\]]*)\]", str(opt[key][0]).strip())
         dropped_extras |= {e.strip() for e in (dm.group(1) if dm else "").split(",") if e.strip()}
     extras = sorted({e.strip() for e in (m.group(2) or "").split(",") if e.strip()} | dropped_extras | {"mcp"})
-    pin = f"agent-connector-sdk[{','.join(extras)}]" + SDK_PIN.split("]", 1)[1]
+    pin = f"{ctx.sdk_distribution}[{','.join(extras)}]" + SDK_PIN.split("]", 1)[1]
     sec = _toml_section(lines, "[project]")
     assert sec is not None  # `dependencies` was read from [project] above
     dep_idx = [i for i in range(sec[0], sec[1]) if re.match(r"^\s*dependencies\s*=", lines[i])]

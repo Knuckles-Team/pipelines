@@ -21,9 +21,14 @@ on:
         default: false
       sdk_version:
         description: >-
-          agent-connector-sdk version this build re-resolves inside the wheel's supported range
+          SDK version this build re-resolves inside the wheel's supported range
           (PIPE-RELEASE-R001.14). Passed as build-arg SDK_VERSION and added to the image tags as
           <version>-sdk<sdk_version>. Empty resolves nothing and adds no tag.
+        required: false
+        type: string
+        default: ''
+      sdk_distribution:
+        description: SDK distribution to refresh in a rendered connector image; empty preserves the legacy SDK tag and renderer detection.
         required: false
         type: string
         default: ''
@@ -111,10 +116,19 @@ jobs:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
           SDK_VERSION: ${{ inputs.sdk_version }}
+          SDK_DISTRIBUTION: ${{ inputs.sdk_distribution }}
         run: |
           set -euo pipefail
           python3 -m pip install --quiet uv
-          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector render --root . --out docker
+          render=(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector render --root . --out docker)
+          if [[ -n "$SDK_DISTRIBUTION" ]]; then
+            case "$SDK_DISTRIBUTION" in
+              agent-connector-sdk|scion-sdk) ;;
+              *) echo "::error::Unsupported SDK distribution: $SDK_DISTRIBUTION"; exit 1 ;;
+            esac
+            render+=(--sdk-distribution "$SDK_DISTRIBUTION")
+          fi
+          "${render[@]}"
           if [[ -n "$SDK_VERSION" ]]; then
             printf 'build-args<<EOF\nSDK_VERSION=%s\nEOF\n' "$SDK_VERSION" >> "$GITHUB_OUTPUT"
           fi
@@ -324,7 +338,8 @@ jobs:
             type=sha,suffix=${{ matrix.suffix }}
             type=raw,value=${{ matrix.main_tag }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
             type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.version.outputs.version != '' }}
-            type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' }}
+            type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}
+            type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution == 'scion-sdk' }}
 
       # Build + push with up to 3 attempts. Docker Hub intermittently 400s a layer
       # blob PUT ("400 Bad request" HTML from the CDN edge) on an otherwise-healthy

@@ -26,7 +26,10 @@ import tomllib
 from collections.abc import Iterator
 from pathlib import Path
 
-SDK = "agent-connector-sdk"
+from pipelines_hooks.core.distributions import SDK as SDK_ROLE
+from pipelines_hooks.core.distributions import is_distribution, project_distribution, requirement_name
+
+SDK = "agent-connector-sdk"  # legacy display/default spelling during the transition
 MODULES = frozenset({"gql", "graphql"})
 DIRECT = frozenset({"gql", "graphql-core"})
 _SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "build", "dist", ".pipeline-theme", "tests", "test"}
@@ -42,7 +45,7 @@ def _parse(requirement: str) -> tuple[str, frozenset[str]]:
     if not match:
         return "", frozenset()
     extras = frozenset(_normalize(extra.strip()) for extra in (match.group(2) or "").split(",") if extra.strip())
-    return _normalize(match.group(1)), extras
+    return requirement_name(match.group(1)), extras
 
 
 def _python_files(root: Path) -> Iterator[Path]:
@@ -80,15 +83,16 @@ def findings(root: Path) -> list[str]:
     if not pyproject.is_file():
         return []
     project = tomllib.loads(pyproject.read_text(encoding="utf-8")).get("project", {})
-    if _normalize(str(project.get("name", ""))) == SDK:
+    if is_distribution(str(project.get("name", "")), SDK_ROLE):
         return []
     using = importers(root)
     if not using:
         return []
     problems: list[str] = []
+    sdk = project_distribution(project, SDK_ROLE)
     core = [_parse(str(item)) for item in project.get("dependencies", [])]
-    if not any(name == SDK and "graphql" in extras for name, extras in core):
-        problems.append(f"{using[0]} imports GraphQL, but [project].dependencies has no {SDK}[graphql] requirement")
+    if not any(is_distribution(name, SDK_ROLE) and "graphql" in extras for name, extras in core):
+        problems.append(f"{using[0]} imports GraphQL, but [project].dependencies has no {sdk}[graphql] requirement")
     sections = {"dependencies": project.get("dependencies", [])}
     sections.update(
         {f"optional-dependencies.{key}": value for key, value in project.get("optional-dependencies", {}).items()}
@@ -97,7 +101,7 @@ def findings(root: Path) -> list[str]:
         for item in items:
             name, _ = _parse(str(item))
             if name in DIRECT:
-                problems.append(f"[project.{section}] declares {item!r} directly; declare GraphQL via {SDK}[graphql]")
+                problems.append(f"[project.{section}] declares {item!r} directly; declare GraphQL via {sdk}[graphql]")
     return problems
 
 
