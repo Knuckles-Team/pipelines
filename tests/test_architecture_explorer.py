@@ -1060,13 +1060,14 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
         "webui": ("Overstory", "agent-webui"),
         "tui": ("Tuig", "agent-terminal-ui"),
         "sdk": ("Scion SDK", "agent-connector-sdk"),
-        "au": ("Trellis", "agent-utilities"),
-        "geniusbot": ("Axil Desk", "geniusbot"),
+        "au": ("Meristem", "agent-utilities"),
+        "geniusbot": ("Axil", "geniusbot"),
     }
     for node_id, (label, repo) in brands.items():
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
     assert payload["tree"]["label"] == "Arbora ecosystem"
-    assert nodes["eg"]["label"] == "Epistemic Graph"
+    assert nodes["eg"]["label"] == "Medulla"
+    assert nodes["egserver"]["label"] == "Medulla Stem"
     assert nodes["arbora"]["label"] == "Arbora"
     assert nodes["geniusbot"]["role"] == "desktop GUI"
     assert nodes["au"]["role"] == "in-run agent harness"
@@ -1196,3 +1197,23 @@ setTimeout(async()=>{
         check=True,
     ).stdout
     assert '<output id="interaction-result">PASS</output>' in out, out[-1500:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identity() -> None:
+    tree = Tree(json.loads((PKG / "model.json").read_text()))
+    studio = tree.nodes["webui.dash"]
+    assert studio["label"] == "Overstory Studio"
+    assert studio["fam"] == ["agent-dashboards"]
+    assert studio["code"] == ["src/components/dashboards", "src/lib/dashboards"]
+    knowledge = tree.nodes["webui.apps.graph"]
+    assert "Understory" in knowledge["desc"]
+    assert "Graph edits go through the engine." in knowledge["desc"]
+    assert "src/components/atlas" in knowledge["code"]
+    assert tree.nodes["au"]["label"] == "Meristem"
+    assert tree.nodes["au"]["repo"] == "agent-utilities"
+    terminal = tree.nodes["tui"]["desc"]
+    assert "bounded local ACP text sessions" in terminal
+    assert "Installed backend and release qualification" in terminal
+    assert "durable resume and central continuation remain separate gates" in terminal
+    assert "Approval attachment and durable resume are not delivered" in tree.nodes["tui.coding"]["desc"]

@@ -503,3 +503,12 @@ run inspection and source quality. They add no requirement, transport edge,
 source path or delivery claim. Unknown roots stay visible as Unmapped.
 Placement and normal-generation tests protect unique placement, repository
 identity and unchanged row/status totals. Generated Pages output is not edited.
+
+### 2026-10-25 — Understory, Studio and Meristem display alignment (PIPE-PAGES-R042)
+
+Name the existing dashboard authoring node Overstory Studio, describe Understory
+as the knowledge exploration surface, and correct the in-run harness display
+name to Meristem. Preserve node and repository IDs, family placement, code paths,
+authority text, evidence and outstanding qualification caveats. The ocean-theme
+preview retains its original payload provenance; normal generation consumes the
+new labels separately. No renderer or capability is added.
