@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -149,6 +151,8 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/readiness",
         "scripts/architecture_explorer",
         "pipelines_hooks/__init__.py",
+        "pipelines_hooks/core/__init__.py",
+        "pipelines_hooks/core/repositories.py",
         "pipelines_hooks/specs/__init__.py",
         "pipelines_hooks/specs/ids.py",
         "pipelines_hooks/specs/priority.py",
@@ -238,3 +242,38 @@ def test_notify_org_site_is_the_single_app_dispatch_and_exits_zero_without_the_a
     fake.chmod(0o755)
     failed = _run(send["run"], {**base, "DISPATCH_TOKEN": "x", "PATH": f"{tmp_path}:{base['PATH']}"})
     assert failed.returncode == 0 and "::warning::" in failed.stdout
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@pytest.mark.parametrize("omit_repository_identity", [False, True])
+def test_explorer_imports_from_only_declared_sparse_python_files(
+    tmp_path: Path, omit_repository_identity: bool
+) -> None:
+    """No installed pipelines package or full checkout can mask a missing import."""
+    steps = _workflow()["document"]["jobs"]["deploy"]["steps"]
+    checkout = next(step for step in steps if step.get("name") == "Checkout pipeline-owned scripts")
+    root = WORKFLOW.parents[2]
+    for declared in checkout["with"]["sparse-checkout"].splitlines():
+        source = root / declared
+        files = source.rglob("*.py") if source.is_dir() else [source]
+        for path in files:
+            relative = path.relative_to(root)
+            if omit_repository_identity and relative.as_posix() == "pipelines_hooks/core/repositories.py":
+                continue
+            target = tmp_path / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, target)
+    result = subprocess.run(
+        [sys.executable, "-I", "-S", "-B", str(tmp_path / "scripts/architecture_explorer/build.py"), "--help"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    if omit_repository_identity:
+        assert result.returncode != 0
+        assert "ModuleNotFoundError: No module named 'pipelines_hooks.core.repositories'" in result.stderr
+    else:
+        assert result.returncode == 0, result.stderr
+        assert "--mode" in result.stdout
