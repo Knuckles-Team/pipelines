@@ -1,7 +1,7 @@
 {
  "id": "root",
- "label": "Arbora ecosystem",
- "role": "runtime architecture",
+ "label": "Arbora Ecosystem",
+ "role": "Runtime Architecture",
  "desc": "People and agents enter through Arbora. Arbora admits each request. Meristem runs the harness. Medulla stores and reasons. Source systems connect through the SDK.",
  "unmapped_allow": [],
  "edges": [
@@ -108,8 +108,8 @@
   },
   {
    "id": "clients",
-   "label": "MCP / REST / A2A clients",
-   "role": "external agents and applications",
+   "label": "MCP / REST / A2A Clients",
+   "role": "External Agents and Applications",
    "desc": "External agents and applications call the system by protocol. They send MCP, REST or A2A calls to Arbora and receive typed results. Arbora admits each call before any effect occurs.",
    "links": [
     "ar.mcp",
@@ -123,7 +123,7 @@
   {
    "id": "webui",
    "label": "Overstory",
-   "role": "browser experience",
+   "role": "Browser Experience",
    "desc": "Overstory shows the graph, the runs and the decisions in a browser. It sends typed operations to Arbora and receives projections back. It holds no data of its own.",
    "repo": "agent-webui",
    "layer": "entry",
@@ -484,7 +484,7 @@
   {
    "id": "geniusbot",
    "label": "Axil",
-   "role": "desktop GUI",
+   "role": "Desktop GUI",
    "desc": "Axil gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
    "layer": "entry",
    "repo": "geniusbot",
@@ -598,7 +598,7 @@
   {
    "id": "messaging",
    "label": "Messaging",
-   "role": "chat + voice channels, hosted by Arbora",
+   "role": "Chat + Voice Channels, Hosted by Arbora",
    "desc": "Messaging connects chat and voice channels to the system. Inbound messages go to the Arbora door, and replies go back to the channel. A supervisor starts, checks and drains each channel.",
    "code": [
     "arbora/messaging"
@@ -698,7 +698,7 @@
   {
    "id": "arbora",
    "label": "Arbora",
-   "role": "governed runtime gateway and composition host",
+   "role": "Governed Runtime Gateway and Composition Host",
    "desc": "Arbora is the one door to the system. It authenticates each caller, admits each request and serves operations over MCP, REST and A2A. No request reaches the engine or a connector without admission and audit.",
    "repo": "arbora",
    "layer": "gateway",
@@ -1818,7 +1818,7 @@
   {
    "id": "au",
    "label": "Meristem",
-   "role": "in-run agent harness",
+   "role": "Agent Harness",
    "desc": "Meristem runs the in-run harness for each agent run. It receives a run plan from Arbora and sends facts, trace events and decision requests to the engine. It holds no store and serves no API.",
    "repo": "agent-utilities",
    "layer": "control",
@@ -2077,8 +2077,8 @@
   },
   {
    "id": "skills",
-   "label": "Universal skills",
-   "role": "skill content",
+   "label": "Universal Skills",
+   "role": "Agent Skills",
    "desc": "Universal skills hold the skill content that agents load. Arbora serves each skill on the find and load path. A skill calls served operations and makes no direct effects.",
    "repo": "universal-skills",
    "layer": "delivery",
@@ -2144,8 +2144,8 @@
   },
   {
    "id": "sources",
-   "label": "Source systems",
-   "role": "governed external data",
+   "label": "Source Systems",
+   "role": "Governed External Data",
    "desc": "Source systems are the external applications that hold business data. Connectors read their records and send approved changes back. No source changes without a governed write-back.",
    "links": [
     "sdk"
@@ -2156,8 +2156,8 @@
   },
   {
    "id": "connectors",
-   "label": "Connector fleet",
-   "role": "79 connectors in 8 domains",
+   "label": "Connector Fleet",
+   "role": "79 Connectors in 8 Domains",
    "layer": "source",
    "desc": "The connector fleet holds one connector per external system. Each connector serves one tool per API operation through the Arbora multiplexer and ingests records through the SDK. Each connector depends on the SDK only.",
    "links": [
@@ -3587,8 +3587,8 @@
   },
   {
    "id": "sdk",
-   "label": "Scion SDK",
-   "role": "typed source integration",
+   "label": "Scion",
+   "role": "Connector SDK",
    "desc": "Scion SDK gives every connector one contract, one transport set and one engine adapter. It receives records from connectors and sends typed SourceIngest batches to the engine. Write-back goes only through governed approval.",
    "repo": "agent-connector-sdk",
    "layer": "source",
@@ -4064,7 +4064,7 @@
   {
    "id": "eg",
    "label": "Medulla",
-   "role": "durable multimodal knowledge, evidence, provenance, and reasoning engine",
+   "role": "Durable Multimodal Knowledge, Evidence, Provenance, and Reasoning Engine",
    "desc": "Medulla is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed.",
    "repo": "epistemic-graph",
    "layer": "core",
@@ -6076,7 +6076,7 @@
   {
    "id": "egserver",
    "label": "Medulla Stem",
-   "role": "package epistemic-graph-server: the one native server executable",
+   "role": "Package epistemic-graph-server: The One Native Server Executable",
    "desc": "The server package runs the engine as one native executable. It receives network calls over standard wire protocols and passes them to the engine. Its version always matches the client package.",
    "repo": "epistemic-graph",
    "layer": "server",
@@ -6194,8 +6194,8 @@
   },
   {
    "id": "pipelines",
-   "label": "Delivery pipelines",
-   "role": "gates, pages, release",
+   "label": "Delivery Pipelines",
+   "role": "Gates, Pages, Release",
    "desc": "Pipelines holds the shared gates, Pages and release rules for every repository. It receives commits and pull requests, and it returns gate verdicts and published sites. A change lands only after its gates pass.",
    "repo": "pipelines",
    "layer": "delivery",

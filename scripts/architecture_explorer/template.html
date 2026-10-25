@@ -3,8 +3,8 @@
 @font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(data:font/woff2;base64,/*__INTER__*/) format("woff2")}
 /* Layout: one zoomable drawing sheet (semantic zoom over strata) beside a spec ledger panel; stacks on phones. */
 :root{
-  --bg:#e8e9e9; --sheet:#f7f7f6; --surface:#fcfcfb; --fg:#252a2d; --muted:#363c3f; --faint:#3d4346;
-  --line:#a5bfcc; --grid:#d8e7ee; --edge:#496e83; --accent:#1b4d48; --focus:#075c86;
+  --bg:#e8e9e9; --sheet:#f7f7f6; --surface:#fcfcfb; --fg:#252a2d; --muted:#2b3032; --faint:#313638;
+  --line:#a5bfcc; --grid:#d8e7ee; --edge:#42494e; --edge-halo:rgba(255,255,255,.70); --accent:#163e3a; --focus:#075c86;
   --band-a:#e5e7e7; --band-b:#f0f1f0;
   --glass-reading:rgb(255 255 255 / .76); --glass-control:rgb(255 255 255 / .68);
   --glass-chrome:rgb(255 255 255 / .60); --ocean-dim:rgb(18 65 91 / .02);
@@ -13,16 +13,16 @@
   --button-neutral:rgb(255 255 255 / .68); --button-hover:rgb(255 255 255 / .86); --button-active:rgb(225 225 221 / .92); --selection:rgb(202 203 200 / .92); --motion-on:rgb(210 229 213 / .90);
   --atmosphere:#9ac4d7; --glass-edge:rgb(255 255 255 / .8);
   --glass-shadow:0 16px 40px rgb(0 0 0 / .13);
-  --l-person:#4f3d59; --l-entry:#3b4b36; --l-gateway:#5f452c; --l-control:#3d455a; --l-core:#4c405b;
-  --l-server:#324b4a; --l-source:#404b29; --l-delivery:#5e4036; --l-unmapped:#692e2c;
-  --s-verified:#245235; --s-landed:#374c60; --s-specified:#644600; --s-retired:#48424e;
+  --l-person:#3f3147; --l-entry:#2f3c2b; --l-gateway:#493420; --l-control:#313748; --l-core:#3d3349;
+  --l-server:#283c3b; --l-source:#333c21; --l-delivery:#4b332b; --l-unmapped:#542523;
+  --s-verified:#1d422a; --s-landed:#293a4a; --s-specified:#4d3500; --s-retired:#3a353e;
   --font-display:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-body:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#202123; --sheet:#292a2c; --surface:#303133; --fg:#f5f5f3; --muted:#e0e1dd; --faint:#d0d2ce;
-  --line:#53788b; --grid:#203c4b; --edge:#a6c9db; --accent:#9edcf4; --focus:#b2e7ff;
+  --line:#53788b; --grid:#203c4b; --edge:#e2e4e2; --edge-halo:rgba(0,0,0,.65); --accent:#9edcf4; --focus:#b2e7ff;
   --band-a:#2e3032; --band-b:#252729;
   --glass-reading:rgb(28 29 31 / .80); --glass-control:rgb(75 76 78 / .65);
   --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / .56);
@@ -36,7 +36,7 @@
   --s-verified:#bfe6d3; --s-landed:#c2e4f8; --s-specified:#ecd99f; --s-retired:#d0dde5; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#202123; --sheet:#292a2c; --surface:#303133; --fg:#f5f5f3; --muted:#e0e1dd; --faint:#d0d2ce;
-  --line:#53788b; --grid:#203c4b; --edge:#a6c9db; --accent:#9edcf4; --focus:#b2e7ff;
+  --line:#53788b; --grid:#203c4b; --edge:#e2e4e2; --edge-halo:rgba(0,0,0,.65); --accent:#9edcf4; --focus:#b2e7ff;
   --band-a:#2e3032; --band-b:#252729;
   --glass-reading:rgb(28 29 31 / .80); --glass-control:rgb(75 76 78 / .65);
   --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / .56);
@@ -204,11 +204,11 @@ select.sel{font:500 12px var(--font-body);color:var(--fg);background:var(--surfa
 }
 /* Full Overstory glass: one shared ocean scene, bounded shell blur, and inexpensive
    translucent vector cards. No per-node filters, cached photo downloads or paint animation. */
-body{background-image:linear-gradient(var(--ocean-dim),var(--ocean-dim)),radial-gradient(ellipse at 22% 0%,#e0f2e9 0%,transparent 65%),linear-gradient(145deg,#8bcbd4,#448aa8 55%,#24577c);background-attachment:fixed}
+body{background-image:linear-gradient(var(--ocean-dim),var(--ocean-dim)),url("data:image/webp;base64,/*__OCEAN__*/");background-size:cover;background-position:center;background-attachment:fixed}
 .ocean-scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;contain:strict}
-.ocean-wave{position:absolute;inset:-5% -10%;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201000%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23174f78%22%20d%3D%22M-100%20480C180%20440%20380%20520%20650%20480S1100%20440%201350%20480S1600%20520%201700%20480V1100H-100Z%22%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;opacity:.24;animation:ocean-drift 42s ease-in-out infinite alternate;animation-play-state:paused}
-.ocean-wave:nth-child(2){opacity:.16;inset:3% -14% -8%;animation-duration:58s;animation-direction:alternate-reverse}
-.ocean-wave:nth-child(3){opacity:.20;inset:10% -12% -12%;animation-duration:73s}
+.ocean-wave{position:absolute;inset:0 -4%;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201000%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M1%20616q25%20-3%2076%20-1%22%2F%3E%3Cpath%20d%3D%22M347%20624q22%20-1%2068%20-2%22%2F%3E%3Cpath%20d%3D%22M744%20620q28%20-1%2086%201%22%2F%3E%3Cpath%20d%3D%22M1101%20601q27%20-3%2082%201%22%2F%3E%3Cpath%20d%3D%22M1391%20613q18%20-2%2055%202%22%2F%3E%3Cpath%20d%3D%22M32%20677q25%20-4%2077%200%22%2F%3E%3Cpath%20d%3D%22M416%20683q16%20-4%2049%20-2%22%2F%3E%3Cpath%20d%3D%22M671%20683q30%20-2%2092%201%22%2F%3E%3Cpath%20d%3D%22M1047%20686q29%20-3%2087%200%22%2F%3E%3Cpath%20d%3D%22M1462%20680q32%20-1%2098%202%22%2F%3E%3Cpath%20d%3D%22M-34%20791q31%20-2%2093%201%22%2F%3E%3Cpath%20d%3D%22M338%20778q32%20-1%2097%20-1%22%2F%3E%3Cpath%20d%3D%22M748%20804q25%20-2%2075%201%22%2F%3E%3Cpath%20d%3D%22M1080%20783q28%20-2%2084%201%22%2F%3E%3Cpath%20d%3D%22M1387%20796q21%20-4%2063%200%22%2F%3E%3Cpath%20d%3D%22M-52%20907q31%20-4%2094%202%22%2F%3E%3Cpath%20d%3D%22M376%20920q32%20-1%2098%201%22%2F%3E%3Cpath%20d%3D%22M735%20898q37%20-3%20113%20-2%22%2F%3E%3Cpath%20d%3D%22M1042%20897q41%20-2%20123%20-1%22%2F%3E%3Cpath%20d%3D%22M1383%20915q36%20-3%20108%200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;opacity:.10;animation:ocean-drift 42s ease-in-out infinite alternate;animation-play-state:paused}
+.ocean-wave:nth-child(2){opacity:.07;inset:2% -5% -2%;animation-duration:58s;animation-direction:alternate-reverse}
+.ocean-wave:nth-child(3){opacity:.05;inset:5% -3% -5%;animation-duration:73s}
 :root[data-ocean-motion="running"] .ocean-wave{animation-play-state:running}
 @keyframes ocean-drift{from{transform:translate3d(-3%,-.6%,0)}to{transform:translate3d(3%,.6%,0)}}
 .app{position:relative;z-index:1}
@@ -369,7 +369,7 @@ let W=0,H=0,DPR=1, cam={x:0,y:0,k:1}, anim=null, dirty=true, C={};
 function readColors(){ const cs=getComputedStyle(document.documentElement); const g=v=>cs.getPropertyValue(v).trim();
   C={bg:g("--sheet"),surface:g("--surface"),fg:g("--fg"),muted:g("--muted"),faint:g("--faint"),line:g("--line"),edge:g("--edge"),accent:g("--accent"),bandA:g("--band-a"),bandB:g("--band-b"),
      display:g("--font-display"),body:g("--font-body"),mono:g("--font-mono"),
-     nodeTop:g("--node-top"),nodeBottom:g("--node-bottom"),nodeEdge:g("--node-edge"),nodeShadow:g("--node-shadow"),
+     edgeHalo:g("--edge-halo"),nodeTop:g("--node-top"),nodeBottom:g("--node-bottom"),nodeEdge:g("--node-edge"),nodeShadow:g("--node-shadow"),
      opaque:window.matchMedia("(prefers-reduced-transparency: reduce)").matches||window.matchMedia("(forced-colors: active)").matches,layer:{},st:{}};
   Object.keys(LAYERS).forEach(k=>C.layer[k]=g("--l-"+k)); ST.forEach(s=>C.st[s]=g("--s-"+s.toLowerCase())); dirty=true; }
 function resize(){ const r=cv.getBoundingClientRect(); DPR=Math.min(2,window.devicePixelRatio||1); W=r.width; H=r.height; cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR); dirty=true; }
@@ -432,7 +432,9 @@ function drawZones(n, alpha){ const L=n.layout, t=LT[n.id]; (L.zones||[]).forEac
 function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.8, Math.min(2.2, 2*t.s*cam.k)); const fs=Math.min(12.5, 11.5*t.s*cam.k);
   ctx.globalAlpha=alpha; ctx.strokeStyle=C.edge; ctx.fillStyle=C.edge; ctx.lineWidth=lw;
   L.edges.forEach(e=>{ if(!e.pts||e.pts.length<2) return; const p=e.pts.map(q=>toS(t.ox+q[0]*t.s, t.oy+q[1]*t.s));
-    ctx.beginPath(); ctx.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i++) ctx.lineTo(p[i][0],p[i][1]); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i++) ctx.lineTo(p[i][0],p[i][1]);
+    if(!C.opaque){ctx.strokeStyle=C.edgeHalo;ctx.lineWidth=lw+2;ctx.stroke();}
+    ctx.strokeStyle=C.edge;ctx.lineWidth=lw;ctx.stroke();
     const a=p[p.length-2], b=p[p.length-1]; arrow(a[0],a[1],b[0],b[1],Math.max(5,lw*4)); });
   if(fs>=6.5){ ctx.font="500 "+fs+"px "+C.body; ctx.textAlign="center"; ctx.textBaseline="middle";
     L.edges.forEach(e=>{ if(!e.label||!e.lp) return; const [x,y]=toS(t.ox+e.lp[0]*t.s, t.oy+e.lp[1]*t.s); if(x<-200||x>W+200||y<-50||y>H+50) return;
@@ -458,12 +460,21 @@ function drawNode(n, alpha){
   const closed=1-op;
   if(closed>0.02 && sw>=26){ // closed content
     ctx.globalAlpha=alpha*closed; ctx.textAlign="center"; ctx.textBaseline="alphabetic";
-    const fs=Math.max(Math.min(19, sw/10, sh/4.2), sw>=48&&sh>=26?7:0); const cx=sx+sw/2;
-    if(fs>=5.5){ ctx.font="600 "+fs+"px "+C.display; ctx.fillStyle=C.fg;
-      const lines=wrapText(n.label, sw-fs*1.2, sh>fs*6?2:1); let y=sy+sh*0.12+fs+(n.children.length?Math.min(fs*0.66,13)*1.3:0); lines.forEach((ln,i)=>ctx.fillText(ln,cx,y+i*fs*1.1)); y+= (lines.length-1)*fs*1.1;
-      const fr=fs*0.68; if(fr>=6 && sh>fs*4.6 && n.role){ ctx.font="400 "+fr+"px "+C.body; ctx.fillStyle=C.muted; wrapText(n.role, sw-fr*2, sh>fs*7.5?2:1).forEach((ln,i)=>ctx.fillText(ln,cx,y+fr*1.6+i*fr*1.25)); }
-      const fc=Math.min(fs*0.66,13); if(fc>=5.5 && sh>fs*3.2){ ctx.font="500 "+fc+"px "+C.body; drawRich(countsLine(n), cx, sy+sh-sh*0.14, sw-fc); }
-      if(n.children.length && fc>=6){ ctx.font="500 "+fc+"px "+C.body; ctx.fillStyle=col; ctx.textAlign="right"; ctx.fillText(n.children.length+" parts ›", sx+sw-fc*0.8, sy+fc*1.5); } }
+    const hasRole=!!n.role&&sw>=64&&sh>=32;
+    const fs=Math.max(Math.min(19,sw/10,sh/(hasRole?5.8:4.2)),sw>=48&&sh>=26?7:0), cx=sx+sw/2;
+    if(fs>=5.5){
+      const fc=Math.max(Math.min(fs*0.66,13),hasRole?(n.children.length?6:5.5):0), fr=Math.max(6,Math.min(fs*0.68,11)), pad=Math.max(3,Math.min(8,sh*0.08));
+      const showParts=n.children.length&&fc>=6, showCounts=fc>=5.5&&sh>fs*3.2;
+      const contentTop=sy+pad+(showParts?fc*1.3:0), contentBottom=sy+sh-pad-(showCounts?fc*1.4:0);
+      ctx.font="600 "+fs+"px "+C.display;
+      const lines=wrapText(n.label,sw-fs*1.2,sh>fs*7.5?2:1);
+      const titleHeight=lines.length*fs*1.1, showRole=hasRole&&contentBottom-contentTop>=titleHeight+fr*1.4;
+      const blockHeight=titleHeight+(showRole?fr*1.4:0), first=contentTop+Math.max(0,(contentBottom-contentTop-blockHeight)/2)+fs;
+      ctx.fillStyle=C.fg; lines.forEach((ln,i)=>ctx.fillText(ln,cx,first+i*fs*1.1));
+      if(showRole){ctx.font="400 "+fr+"px "+C.body;ctx.fillStyle=C.muted;ctx.fillText(fitText(n.role,sw-fr*2),cx,first+(lines.length-1)*fs*1.1+fr*1.4);}
+      if(showCounts){ctx.font="500 "+fc+"px "+C.body;drawRich(countsLine(n),cx,sy+sh-pad-3,sw-fc);}
+      if(showParts){ctx.font="500 "+fc+"px "+C.body;ctx.fillStyle=col;ctx.textAlign="right";ctx.fillText(n.children.length+" parts ›",sx+sw-fc*0.8,sy+pad+fc);}
+    }
     if(sh>14 && !n.external){ const bx=sx+sw*0.06, bw=sw*0.88, by=sy+sh-Math.max(3,sh*0.06), bh=Math.max(1.5,Math.min(3,sh*0.02)); let off=0; const c=n.count;
       ctx.fillStyle=C.line; ctx.fillRect(bx,by,bw,bh); if(c.total) ST.forEach(s=>{ const w=bw*(c[s]||0)/c.total; if(w>0){ ctx.fillStyle=C.st[s]; ctx.fillRect(bx+off,by,w,bh); off+=w; } }); }
   }

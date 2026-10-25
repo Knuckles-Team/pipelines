@@ -62,6 +62,7 @@ def test_real_browser_receipt_fails_closed_for_skipped_missing_or_failed_cases(t
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[1440,1000]",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[390,844]",
         "test_ocean_browser_motion_controls_and_composited_wave_phases",
+        "test_ocean_browser_candidate_model_subtitles_paint_without_overlap",
     ]
     cases = [f'<testcase name="{name}"/>' for name in names]
     if bad == "missing":
@@ -87,6 +88,8 @@ def test_capture_compresses_dom_and_rejects_wrong_theme(monkeypatch, tmp_path: P
     from scripts.architecture_explorer.visual_preview import capture
 
     dom = f'<output id="visual-evidence" data-selected="root" data-theme="{theme}" data-overflow="false" data-fonts="true" data-inter="loaded"></output>'
+    dom = '<script>const PAYLOAD = {"tree":{},"meta":{},"search":{}};\n</script>' + dom
+    (tmp_path / "index.html").write_text(dom)
     (tmp_path / "light-390x844-root.png").write_bytes(b"pixel-fixture")
     monkeypatch.setattr("subprocess.run", lambda *a, **kw: SimpleNamespace(returncode=0, stdout=dom, stderr=""))
     if theme == "dark":
@@ -95,7 +98,9 @@ def test_capture_compresses_dom_and_rejects_wrong_theme(monkeypatch, tmp_path: P
     else:
         capture("chrome", tmp_path, "light", "390,844", "root")
     with gzip.open(tmp_path / "light-390x844-root.html.gz", "rt") as compressed:
-        assert compressed.read() == dom
+        diagnostic = compressed.read()
+        assert "ELIDED PAYLOAD sha256=" in diagnostic
+        assert dom.split("</script>", 1)[1] in diagnostic
     assert not (tmp_path / "light-390x844-root.html").exists()
 
 
@@ -106,8 +111,32 @@ def test_candidate_requires_real_inter_face_but_baseline_records_fallback(monkey
     from scripts.architecture_explorer.visual_preview import capture
 
     dom = '<output id="visual-evidence" data-selected="root" data-theme="light" data-overflow="false" data-fonts="true" data-inter="absent"></output>'
+    dom = '<script>const PAYLOAD = {"tree":{},"meta":{},"search":{}};\n</script>' + dom
+    (tmp_path / "index.html").write_text(dom)
     (tmp_path / "light-390x844-root.png").write_bytes(b"pixel-fixture")
     monkeypatch.setattr("subprocess.run", lambda *a, **kw: SimpleNamespace(returncode=0, stdout=dom, stderr=""))
     with pytest.raises(RuntimeError, match="font"):
         capture("chrome", tmp_path, "light", "390,844", "root")
     capture("chrome", tmp_path, "light", "390,844", "root", require_inter=False)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_diagnostic_compaction_retains_ui_and_records_exact_original_hashes() -> None:
+    import hashlib
+    from scripts.architecture_explorer.visual_preview import compact_diagnostic_dom
+
+    raw = '{"tree":{},"meta":{},"search":{}}'
+    dom = (
+        "<style>@font-face{src:url(data:font/woff2;base64,YWJj)}</style><script>const PAYLOAD = "
+        + raw
+        + ';\n</script><output id="visual-evidence" data-theme="light">PASS</output>'
+    )
+    compact, manifest = compact_diagnostic_dom(dom, hashlib.sha256(raw.encode()).hexdigest())
+    assert raw not in compact and "YWJj" not in compact
+    assert '<output id="visual-evidence" data-theme="light">PASS</output>' in compact
+    assert manifest["original_dom_sha256"] == hashlib.sha256(dom.encode()).hexdigest()
+    assert manifest["diagnostic_dom_sha256"] == hashlib.sha256(compact.encode()).hexdigest()
+    assert len(manifest["elisions"]) == 2
+    assert manifest["payload_matches_interactive_index"] is True
+    with pytest.raises(RuntimeError, match="does not match"):
+        compact_diagnostic_dom(dom, "wrong")

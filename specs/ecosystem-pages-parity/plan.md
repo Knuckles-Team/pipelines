@@ -534,3 +534,26 @@ white and raise fog opacity by roughly 10–16 percentage points; use neutral
 smoke in dark mode. Reserve color for semantic statuses, restrained category
 text/markers and selected controls. Recheck actual alpha-composited node and
 header text surfaces; preserve data, camera, navigation and motion controls.
+
+
+### 2026-10-25 — Natural ocean wallpaper fidelity (PIPE-PAGES-R042)
+
+Replace abstract wave ribbons with one optimized, locally embedded generated
+seascape (sky, soft clouds, horizon, irregular wavelets and restrained foam).
+Keep its perspective fixed; three sparse low-opacity glint layers retain gentle
+compositor-only motion and all existing accessibility preferences. Record artwork
+provenance honestly: static generated art with CSS glints, not video or fluid
+simulation. Thin graph connectors gain a cheap neutral contrast understroke,
+not blur. Verify text against conservative black/white backdrop bounds and
+inspect actual desktop/mobile light/dark pixels before merging.
+
+
+### 2026-10-25 — Top-level title case and visible role subtitles (PIPE-PAGES-R042)
+
+Apply the finite reviewed top-level display-label/role corrections, including
+Scion / Connector SDK, Meristem / Agent Harness and Universal Skills / Agent
+Skills, without changing technical IDs. Adjust closed-card text row spacing so
+those roles paint beneath names at ordinary desktop root zoom without colliding
+with counts or parts. Keep graph geometry and camera/navigation unchanged.
+A candidate-model fixture screenshot and canvas paint evidence are explicitly
+separate from the unchanged live-payload before/after visual snapshot.

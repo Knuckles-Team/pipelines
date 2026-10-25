@@ -1059,18 +1059,22 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
     brands = {
         "webui": ("Overstory", "agent-webui"),
         "tui": ("Tuig", "agent-terminal-ui"),
-        "sdk": ("Scion SDK", "agent-connector-sdk"),
+        "sdk": ("Scion", "agent-connector-sdk"),
         "au": ("Meristem", "agent-utilities"),
         "geniusbot": ("Axil", "geniusbot"),
     }
     for node_id, (label, repo) in brands.items():
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
-    assert payload["tree"]["label"] == "Arbora ecosystem"
+    assert payload["tree"]["label"] == "Arbora Ecosystem"
     assert nodes["eg"]["label"] == "Medulla"
     assert nodes["egserver"]["label"] == "Medulla Stem"
     assert nodes["arbora"]["label"] == "Arbora"
-    assert nodes["geniusbot"]["role"] == "desktop GUI"
-    assert nodes["au"]["role"] == "in-run agent harness"
+    assert nodes["geniusbot"]["role"] == "Desktop GUI"
+    assert nodes["au"]["role"] == "Agent Harness"
+    assert nodes["sdk"]["role"] == "Connector SDK"
+    assert nodes["skills"]["label"] == "Universal Skills"
+    assert nodes["skills"]["role"] == "Agent Skills"
+    assert nodes["sources"]["label"] == "Source Systems"
 
 
 _AXIL_PARTS = {
@@ -1284,3 +1288,75 @@ setTimeout(()=>{
         check=True,
     ).stdout
     assert '<output id="motion-result">PASS</output>' in out, out[-1500:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+def test_ocean_browser_candidate_model_subtitles_paint_without_overlap(monkeypatch, tmp_path: Path) -> None:
+    """Actual candidate-model fixture, explicitly not the live-payload visual snapshot."""
+    import os
+    import subprocess
+
+    page = tmp_path / "candidate-model-fixture.html"
+    spy = """<script>
+window.__paint=[];
+const originalFillText=CanvasRenderingContext2D.prototype.fillText;
+const originalClear=CanvasRenderingContext2D.prototype.clearRect;
+CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__paint=[];return originalClear.apply(this,args);};
+CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){
+ const m=this.measureText(text);window.__paint.push({text,x,y,font:this.font,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});
+ return originalFillText.call(this,text,x,y,...rest);
+};
+</script>"""
+    probe = """<script>
+setTimeout(async()=>{
+ await document.fonts.ready;
+ const result=document.createElement('output');result.id='subtitle-result';
+ try{
+  const check=(ok,name)=>{if(!ok)throw Error(name);}, a=window.__arch;
+  check(a.selected==='root','normal root camera');
+  const evidence=[];
+  for(const [id,label,role] of [['sdk','Scion','Connector SDK'],['au','Meristem','Agent Harness'],['skills','Universal Skills','Agent Skills']]){
+   const r=a.rect(id), x=(r[0]-a.cam.x)*a.cam.k, y=(r[1]-a.cam.y)*a.cam.k, w=r[2]*a.cam.k,h=r[3]*a.cam.k;
+   const title=window.__paint.find(p=>p.text===label&&p.x>=x&&p.x<=x+w&&p.y>=y&&p.y<=y+h);
+   const subtitle=window.__paint.find(p=>p.text===role&&p.x>=x&&p.x<=x+w&&p.y>=y&&p.y<=y+h);
+   check(title&&subtitle,id+' name and subtitle actually painted');
+   check(subtitle.top>title.bottom,id+' subtitle below title without overlap');
+   check(subtitle.bottom<y+h-3,id+' subtitle inside card');
+   const counts=window.__paint.filter(p=>/^(V |L |S |[\\d,]+ specs)/.test(p.text)&&p.x>=x&&p.x<=x+w&&p.y>subtitle.y&&p.y<=y+h);
+   check(counts.every(p=>p.top>subtitle.bottom),id+' counts clear subtitle');
+   evidence.push({id,label,role,title,subtitle,counts,card:[x,y,w,h]});
+  }
+  result.dataset.evidence=JSON.stringify(evidence);result.textContent='PASS';
+ }catch(error){result.textContent='FAIL: '+error.message;}
+ document.body.append(result);
+},1400);
+</script>"""
+    page.write_text(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS).replace("<script>", spy + "<script>", 1) + probe)
+    destination = Path(os.environ.get("ARCHITECTURE_EVIDENCE_DIR", str(tmp_path))).resolve()
+    destination.mkdir(exist_ok=True, parents=True)
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--window-size=1440,1000",
+            "--virtual-time-budget=5000",
+            f"--screenshot={destination / 'candidate-model-fixture-root.png'}",
+            "--dump-dom",
+            page.as_uri(),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    match = re.search(r'<output[^>]*id="subtitle-result"[^>]*>.*?</output>', out)
+    (destination / "candidate-model-fixture-subtitles.txt").write_text(
+        "Candidate model with test rows, NOT the real live-payload preview.\n"
+        + (match[0] if match else out[-2000:])
+        + "\n"
+    )
+    assert match and ">PASS</output>" in match[0], out[-3000:]

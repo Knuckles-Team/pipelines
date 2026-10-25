@@ -331,17 +331,20 @@ def build_with_sources(mode: str, workspace: Path | None) -> tuple[dict, dict, l
 
 
 def template_source() -> str:
-    """Inline the existing licensed Inter face: no font CDN or runtime dependency."""
+    """Inline licensed font and generated wallpaper: no CDN or runtime dependency."""
     font = base64.b64encode((HERE / "assets/InterVariable.woff2").read_bytes()).decode("ascii")
+    ocean = base64.b64encode((HERE / "assets/ocean-daylight-foam.webp").read_bytes()).decode("ascii")
     notice = html.escape((HERE / "assets/Inter-LICENSE.txt").read_text()).replace("--", "-&#45;")
     return (
         "<!-- Bundled Inter font copyright and OFL license\n"
         + notice
-        + "\n-->\n"
+        + "\n-->\n<!-- Ocean wallpaper: AI-generated static project artwork with CSS glint motion, not fluid video.\n"
+        + "Source: assets/ocean-PROVENANCE.md; SHA256 3ba157cac194de69bc519794a2c17188e47f616a88f759a6bb777b64ecf8111e\n-->\n"
         + (
             (HERE / "template.html")
             .read_text()
             .replace("/*__INTER__*/", font)
+            .replace("/*__OCEAN__*/", ocean)
             .replace("/*__SEARCH__*/", (HERE / "search.cjs").read_text())
         )
     )

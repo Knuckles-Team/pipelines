@@ -121,7 +121,7 @@ def test_light_reading_text_contrasts_over_deepest_wave_composite() -> None:
     block = TEMPLATE.read_text().split(":root{", 1)[1].split("}", 1)[0]
     tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
     # Conservative fully overlapping wave color under the 76% reading plate.
-    composite = "#" + "".join(f"{round(0.76 * a + 0.24 * b):02x}" for a, b in zip((255, 255, 255), (23, 79, 120)))
+    composite = "#" + "".join(f"{round(0.76 * a + 0.24 * b):02x}" for a, b in zip((255, 255, 255), (0, 0, 0)))
     for token in ("--fg", "--muted", "--faint", "--accent"):
         assert _contrast(tokens[token], composite) >= 4.5, (token, composite)
 
@@ -134,8 +134,8 @@ def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> 
         return tuple(round(a * alpha + b * (1 - alpha)) for a, b in zip(front, back))
 
     for selector, ocean in (
-        (":root{", (23, 79, 120)),
-        (':root[data-theme="dark"]{', blend((3, 22, 40), (224, 242, 233), 0.56)),
+        (":root{", (0, 0, 0)),
+        (':root[data-theme="dark"]{', blend((3, 22, 40), (255, 255, 255), 0.56)),
     ):
         block = html.split(selector, 1)[1].split("}", 1)[0]
         tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
@@ -154,7 +154,7 @@ def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> 
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_header_status_badges_contrast_on_stacked_translucent_surfaces() -> None:
     html = TEMPLATE.read_text()
-    for selector, ocean in ((":root{", (23, 79, 120)), (':root[data-theme="dark"]{', (255, 255, 255))):
+    for selector, ocean in ((":root{", (0, 0, 0)), (':root[data-theme="dark"]{', (255, 255, 255))):
         block = html.split(selector, 1)[1].split("}", 1)[0]
         tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
         for surface in ("--ocean-dim", "--glass-chrome", "--glass-control"):
@@ -183,3 +183,31 @@ def test_glass_and_ordinary_buttons_use_neutral_white_or_smoke_not_blue_fill() -
             assert match
             channels = [int(match[i]) for i in (1, 2, 3)]
             assert max(channels) - min(channels) <= 3, (selector, name)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_natural_wallpaper_is_embedded_bounded_and_honestly_described() -> None:
+    from scripts.architecture_explorer.build import template_source
+
+    asset = TEMPLATE.parent / "assets/ocean-daylight-foam.webp"
+    assert asset.stat().st_size <= 500_000
+    assert (TEMPLATE.parent / "assets/ocean-PROVENANCE.md").is_file()
+    source = template_source()
+    assert "/*__OCEAN__*/" not in source
+    assert "data:image/webp;base64," in source
+    assert "AI-generated static project artwork" in source and "not fluid video" in source
+    assert "ctx.strokeStyle=C.edgeHalo;ctx.lineWidth=lw+2;ctx.stroke()" in source
+    assert "ctx.shadowBlur" not in source and "ctx.filter" not in source
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_connectors_have_neutral_contrast_halo_against_any_photo_pixel() -> None:
+    html = TEMPLATE.read_text()
+    for selector, backdrop in ((":root{", 0), (':root[data-theme="dark"]{', 255)):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        edge = re.search(r"--edge:(#[\da-f]{6})", block)
+        halo = re.search(r"--edge-halo:rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+        assert edge and halo
+        alpha = float(halo[4])
+        composite = "#" + "".join(f"{round(int(halo[i]) * alpha + backdrop * (1 - alpha)):02x}" for i in (1, 2, 3))
+        assert _contrast(edge[1], composite) >= 3

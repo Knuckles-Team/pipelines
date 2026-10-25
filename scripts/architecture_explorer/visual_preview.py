@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import zipfile
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
@@ -62,7 +63,11 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
     (output / "README.txt").write_text(
         "Visual/navigation preview only. Spec detail shards are not included; expand-detail offline is unavailable.\n"
         "The canonical deployed generator and its full detail behavior are unchanged.\n"
-        "Open index.html to test theme/navigation. DOM evidence is gzip-compressed.\n"
+        "Open the exact, complete index.html to test theme/navigation.\n"
+        "Gzipped DOM diagnostics are COMPACTED, not raw or replayable HTML. Duplicate PAYLOAD/font/art\n"
+        "are replaced only at known inline locations by SHA256/UTF-8-byte-count markers; per-capture\n"
+        "manifests record original DOM hashes and payload equality with the full interactive index.\n"
+        "Visible UI, probe attributes, console logs, verdicts and actual PNG pixels are unchanged.\n"
         "Sampled-phase screenshots are real browser CSS-animation phases at 0/12 seconds, not a video.\n"
     )
     for theme in ("light", "dark"):
@@ -85,6 +90,50 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
     }
     (output / "provenance.json").write_text(json.dumps(evidence, indent=2) + "\n")
     return evidence
+
+
+def compact_diagnostic_dom(dom: str, expected_payload_sha256: str) -> tuple[str, dict]:
+    """Elide only duplicated inline data; these diagnostics are not replayable HTML."""
+    elisions = []
+
+    def record(kind: str, value: str) -> str:
+        encoded = value.encode("utf-8")
+        digest = hashlib.sha256(encoded).hexdigest()
+        elisions.append({"kind": kind, "sha256": digest, "utf8_bytes": len(encoded)})
+        return f"ELIDED {kind} sha256={digest} utf8_bytes={len(encoded)}"
+
+    payload = re.search(r"const PAYLOAD = (.*?);\n", dom)
+    if not payload or hashlib.sha256(payload[1].encode()).hexdigest() != expected_payload_sha256:
+        raise RuntimeError("Captured DOM payload does not match the exact interactive index")
+    compact = dom[: payload.start(1)] + "null/*" + record("PAYLOAD", payload[1]) + "*/" + dom[payload.end(1) :]
+    compact = re.sub(
+        r"data:(?:font/woff2|image/webp);base64,[A-Za-z0-9+/=]+",
+        lambda match: record("inline-data-url", match[0]),
+        compact,
+    )
+    manifest = {
+        "kind": "compacted diagnostic DOM, not raw or replayable HTML",
+        "original_dom_sha256": hashlib.sha256(dom.encode()).hexdigest(),
+        "diagnostic_dom_sha256": hashlib.sha256(compact.encode()).hexdigest(),
+        "payload_matches_interactive_index": True,
+        "elisions": elisions,
+    }
+    return compact, manifest
+
+
+def measure_artifact_size(output: Path) -> None:
+    """Fail before publishing oversized proof; never discard pixels or verdicts."""
+    with tempfile.TemporaryFile() as compressed:
+        with zipfile.ZipFile(compressed, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
+            for path in sorted(output.rglob("*")):
+                if path.is_file():
+                    archive.write(path, path.relative_to(output))
+        size = compressed.tell()
+    (output / "artifact-size.json").write_text(
+        json.dumps({"estimated_zip_bytes": size, "limit_bytes": 31 * 1024 * 1024}) + "\n"
+    )
+    if size > 31 * 1024 * 1024:
+        raise RuntimeError("Preview exceeds 31 MiB: split artifacts; do not discard or recompress pixel evidence")
 
 
 def capture(
@@ -125,9 +174,21 @@ def capture(
             page.as_uri() + f"#node={node}",
         ]
         result = subprocess.run(command, capture_output=True, text=True, timeout=60, check=False)
-    with gzip.open(output / f"{name}.html.gz", "wt", encoding="utf-8") as compressed:
-        compressed.write(result.stdout)
     (output / f"{name}.log").write_text(result.stderr)
+    index = output / "index.html"
+    if not index.is_file():
+        index = output.parent / "index.html"
+    raw, _ = extract_payload(index.read_text())
+    try:
+        compact, manifest = compact_diagnostic_dom(result.stdout, hashlib.sha256(raw.encode()).hexdigest())
+    except RuntimeError:
+        # Keep failure evidence intact rather than hide unexpected payload/browser output.
+        with gzip.open(output / f"{name}.failed-raw.html.gz", "wt", encoding="utf-8") as failed:
+            failed.write(result.stdout)
+        raise
+    (output / f"{name}.manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    with gzip.open(output / f"{name}.html.gz", "wt", encoding="utf-8") as compressed:
+        compressed.write(compact)
     if result.returncode or not (output / f"{name}.png").is_file():
         raise RuntimeError(f"Chrome capture failed for {name}; inspect its log")
     probe = re.search(r'<output[^>]+id="visual-evidence"[^>]*>', result.stdout)
@@ -151,6 +212,7 @@ def verify_browser_results(report: Path) -> None:
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[1440,1000]",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[390,844]",
         "test_ocean_browser_motion_controls_and_composited_wave_phases",
+        "test_ocean_browser_candidate_model_subtitles_paint_without_overlap",
     }
     cases = {case.attrib.get("name"): case for case in ElementTree.parse(report).iter("testcase")}
     for name in sorted(expected):
@@ -199,6 +261,7 @@ def main() -> None:
         for viewport, node in (("1440,1000", "root"), ("1440,1000", "webui"), ("390,844", "root")):
             capture(chrome, output / "before", theme, viewport, node, require_inter=False)
         (output / "before" / f"{theme}.html").unlink()
+    measure_artifact_size(output)
 
 
 if __name__ == "__main__":
