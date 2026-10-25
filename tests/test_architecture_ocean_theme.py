@@ -106,8 +106,8 @@ def test_ocean_motion_is_shared_bounded_and_accessible() -> None:
     assert html.count('<span class="ocean-wave">') == 3
     assert 'class="ocean-scene" aria-hidden="true"' in html
     assert "pointer-events:none;contain:strict" in html
-    assert "animation:ocean-drift 42s" in html
-    assert "animation-duration:58s" in html and "animation-duration:73s" in html
+    assert "animation:ocean-drift 12s" in html
+    assert "animation-duration:16s" in html and "animation-duration:20s" in html
     assert 'store.get("arbora-arch-ocean-motion")!=="off"' in html
     assert 'enabled&&!document.hidden?"running":"paused"' in html
     assert 'document.addEventListener("visibilitychange",oceanMotionState)' in html
@@ -126,46 +126,79 @@ def test_light_reading_text_contrasts_over_deepest_wave_composite() -> None:
         assert _contrast(tokens[token], composite) >= 4.5, (token, composite)
 
 
+def _blend(front, back, alpha):
+    return tuple(round(a * alpha + b * (1 - alpha)) for a, b in zip(front, back))
+
+
+def _hex(channels):
+    return "#" + "".join(f"{c:02x}" for c in channels)
+
+
+def _ocean_bounds(block):
+    colors = [
+        tuple(int(value[i : i + 2], 16) for i in (0, 2, 4))
+        for value in re.findall(r"--ocean-(?:top|bottom):#([\da-f]{6})", block)
+    ]
+    opacity = float(re.search(r"--wave-opacity:([.\d]+)", block)[1])
+    # Actual two opaque SVG fill colors; max three overlapping layers over the body gradient.
+    from urllib.parse import unquote
+
+    svg = unquote(TEMPLATE.read_text().split("data:image/svg+xml,", 1)[1].split('")', 1)[0])
+    fills = [tuple(int(value[i : i + 2], 16) for i in (0, 2, 4)) for value in re.findall(r'fill="#([\da-f]{6})"', svg)]
+    assert len(fills) == 2 and len(colors) == 2
+    candidates = colors[:]
+    for _ in range(3):
+        candidates += [_blend(fill, back, opacity) for fill in fills for back in candidates[:]]
+    return [tuple(fn(c[i] for c in candidates) for i in range(3)) for fn in (min, max)]
+
+
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> None:
     html = TEMPLATE.read_text()
-
-    def blend(front: tuple[int, ...], back: tuple[int, ...], alpha: float) -> tuple[int, ...]:
-        return tuple(round(a * alpha + b * (1 - alpha)) for a, b in zip(front, back))
-
-    for selector, ocean in (
-        (":root{", (0, 0, 0)),
-        (':root[data-theme="dark"]{', blend((3, 22, 40), (255, 255, 255), 0.56)),
-    ):
+    for selector in (":root{", ':root[data-theme="dark"]{'):
         block = html.split(selector, 1)[1].split("}", 1)[0]
         tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+        tints = re.findall(
+            r"--t-[\w-]+:rgba\((\d+),(\d+),(\d+),([.\d]+)\)", html.split(":root{", 1)[1].split("}", 1)[0]
+        )
+        assert len(tints) == 9
         assert ".canvas{background:rgb(255 255 255 / .10)}" in html
-        ocean = blend((255, 255, 255), ocean, 0.10)
-        for endpoint in ("top", "bottom"):
-            match = re.search(r"--node-" + endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
-            assert match
-            channels = tuple(int(match[i]) for i in (1, 2, 3))
-            composite = "#" + "".join(f"{c:02x}" for c in blend(channels, ocean, float(match[4])))
-            for name, color in tokens.items():
-                if name in ("--fg", "--muted", "--faint", "--accent") or name.startswith(("--s-", "--l-")):
-                    assert _contrast(color, composite) >= 4.5, (selector, endpoint, name, composite)
+        for ocean in _ocean_bounds(block):
+            ocean = _blend((255, 255, 255), ocean, 0.10)
+            for endpoint in ("top", "bottom"):
+                match = re.search(r"--node-" + endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+                assert match
+                material = _blend(tuple(int(match[i]) for i in (1, 2, 3)), ocean, float(match[4]))
+                surfaces = [material] + [_blend(tuple(map(int, tint[:3])), material, float(tint[3])) for tint in tints]
+                for surface in surfaces:
+                    for name, color in tokens.items():
+                        if name in ("--fg", "--muted", "--faint", "--accent") or name.startswith(("--s-", "--l-")):
+                            assert _contrast(color, _hex(surface)) >= 4.5, (selector, endpoint, name, _hex(surface))
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_header_status_badges_contrast_on_stacked_translucent_surfaces() -> None:
     html = TEMPLATE.read_text()
-    for selector, ocean in ((":root{", (0, 0, 0)), (':root[data-theme="dark"]{', (255, 255, 255))):
+    for selector in (":root{", ':root[data-theme="dark"]{'):
         block = html.split(selector, 1)[1].split("}", 1)[0]
         tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
-        for surface in ("--ocean-dim", "--glass-chrome", "--glass-control"):
-            match = re.search(re.escape(surface) + r":rgb\((\d+) (\d+) (\d+) / ([.\d]+)\)", block)
-            assert match
-            alpha = float(match[4])
-            ocean = tuple(round(int(match[i + 1]) * alpha + channel * (1 - alpha)) for i, channel in enumerate(ocean))
-        composite = "#" + "".join(f"{c:02x}" for c in ocean)
-        for name, color in tokens.items():
-            if name == "--fg" or name.startswith("--s-"):
-                assert _contrast(color, composite) >= 4.5, (selector, name, composite)
+        for ocean in _ocean_bounds(block):
+            for surface in ("--glass-chrome", "--glass-control"):
+                match = re.search(re.escape(surface) + r":rgb\((\d+) (\d+) (\d+) / ([.\d]+)\)", block)
+                ocean = _blend(tuple(int(match[i]) for i in (1, 2, 3)), ocean, float(match[4]))
+            for name, color in tokens.items():
+                if name == "--fg" or name.startswith("--s-"):
+                    assert _contrast(color, _hex(ocean)) >= 4.5, (selector, name, _hex(ocean))
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_canvas_labels_have_neutral_reading_plates_not_faded_unprotected_text() -> None:
+    source = TEMPLATE.read_text()
+    for label in ("b[0]", "z[0]", "lp.label"):
+        assert "mapLabel(" + label + ".toUpperCase()" in source
+    assert "ctx.globalAlpha=alpha; mapLabel(" in source
+    assert "ctx.fillStyle=C.opaque?C.surface:C.nodeTop;rr(" in source
+    assert "ctx.globalAlpha=alpha*0.8; rr(x-w/2" not in source
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -186,18 +219,17 @@ def test_glass_and_ordinary_buttons_use_neutral_white_or_smoke_not_blue_fill() -
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_natural_wallpaper_is_embedded_bounded_and_honestly_described() -> None:
+def test_abstract_wallpaper_is_native_bounded_and_no_photo_is_active() -> None:
     from scripts.architecture_explorer.build import template_source
 
-    asset = TEMPLATE.parent / "assets/ocean-daylight-foam.webp"
-    assert asset.stat().st_size <= 500_000
-    assert (TEMPLATE.parent / "assets/ocean-PROVENANCE.md").is_file()
     source = template_source()
     assert "/*__OCEAN__*/" not in source
-    assert "data:image/webp;base64," in source
-    assert "AI-generated static project artwork" in source and "not fluid video" in source
+    assert "data:image/webp" not in source
+    assert "Abstract ocean: native vector layers" in source
     assert "ctx.strokeStyle=C.edgeHalo;ctx.lineWidth=lw+2;ctx.stroke()" in source
     assert "ctx.shadowBlur" not in source and "ctx.filter" not in source
+    assert "if(!C.opaque && C.tint[n.layer])" in source
+    assert "ctx.strokeStyle=col" not in source
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")

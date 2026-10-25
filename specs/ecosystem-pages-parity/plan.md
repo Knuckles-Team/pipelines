@@ -567,3 +567,16 @@ reclassify these core/client repositories as new connectors. The regression
 `test_renamed_repositories_keep_ownership_placement_and_canonical_details` covers
 canonical discovery, placement and generated spec-detail links (PIPE-PAGES-R042.9
 and PIPE-PAGES-R042.7). Package and specification aliases remain separate.
+
+### Abstract ocean motion and category-glass refinement (2026-10-25)
+
+Follow-up to the accepted neutral-glass renderer: replace the active photographic
+wallpaper with three broad native vector ocean forms, with clearly observable
+compositor-only flow. Preserve neutral shell controls, graph geometry, identifiers,
+canonical repository ownership, status classification and all navigation behavior.
+Restore restrained category hue on graph-card materials (not heavy borders), and
+protect canvas band/zone/loop labels with neutral reading plates. Validate text
+against the actual wave and tinted-glass composites in both themes. Retain motion
+opt-out, reduced-motion/forced-colors handling and hidden-page pause. Hosted visual
+proof must include unforced real elapsed-time Chrome frames, not animation seeking
+or a virtual-time-only claim; no runtime CDN, video or new dependency is added.
