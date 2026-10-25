@@ -157,7 +157,7 @@
    "children": [
     {
      "id": "webui.api",
-     "label": "Arbora API consumer",
+     "label": "Arbora API Consumer",
      "role": "generated client",
      "desc": "A generated client calls typed Arbora operations. Effects keep the preview, confirm and step-up flow.",
      "code": [
@@ -200,7 +200,7 @@
     },
     {
      "id": "webui.apps",
-     "label": "Application surface",
+     "label": "Application Surface",
      "role": "apps + views",
      "desc": "The app surface declares each app route, capability and layout. Views follow the signed-in role.",
      "code": [
@@ -297,7 +297,7 @@
     },
     {
      "id": "webui.design",
-     "label": "Browser design system",
+     "label": "Browser Design System",
      "role": "tokens + accessibility",
      "desc": "The design system documents tokens, focus states and responsive layouts.",
      "code": [
@@ -310,7 +310,7 @@
     },
     {
      "id": "webui.decide",
-     "label": "Decision evidence",
+     "label": "Decision Evidence",
      "role": "explorer + dashboard",
      "desc": "The decision explorer cites premises, derivations and certificates. Why-not runs on demand.",
      "code": [
@@ -325,7 +325,7 @@
     },
     {
      "id": "webui.fin",
-     "label": "Markets app",
+     "label": "Markets App",
      "role": "finance asset manager",
      "desc": "The markets app shows assets, charts and strategies. It never submits orders.",
      "code": [
@@ -337,7 +337,7 @@
     },
     {
      "id": "webui.id",
-     "label": "Identity screens",
+     "label": "Identity Screens",
      "role": "sign-in, MFA, admin",
      "desc": "Identity screens cover sign-in, MFA enrollment, elevation and admin tabs.",
      "code": [
@@ -407,14 +407,14 @@
    "children": [
     {
      "id": "tui.quality",
-     "label": "Source quality and repo standards",
+     "label": "Source Quality and Repo Standards",
      "role": "checks + docs",
      "desc": "The repository meets shared quality checks, docs layout and release rules.",
      "kw": "\\bmust\\b|readme|pyproject|agents\\.md|docs layout|release workflow|development skill|shared spec|source-quality"
     },
     {
      "id": "tui.client",
-     "label": "Operation client",
+     "label": "Operation Client",
      "role": "A2A / REST client",
      "desc": "The native client submits prompts and reads task snapshots through Arbora A2A. Run inspection and logs use served REST operations. Approval attachment and ACP are planned, not delivered.",
      "code": [
@@ -425,7 +425,7 @@
     },
     {
      "id": "tui.chat",
-     "label": "Chat transport",
+     "label": "Chat Transport",
      "role": "unary task snapshots",
      "desc": "Submitted turns render validated unary task snapshots. Interactive prompt composition, streaming and context continuation remain planned.",
      "code": [
@@ -446,7 +446,7 @@
     },
     {
      "id": "tui.coding",
-     "label": "Coding session",
+     "label": "Coding Session",
      "role": "planned local runtime",
      "desc": "Local coding runtime integration is planned in Arbora and Meristem. Approval attachment and durable resume are not delivered by the native client.",
      "code": [
@@ -456,7 +456,7 @@
     },
     {
      "id": "tui.tasks",
-     "label": "Tasks and runs",
+     "label": "Tasks and Runs",
      "role": "snapshots + inspector",
      "desc": "The native client observes task snapshots, run details and host logs. Headless mode polls active tasks and fails closed when input or approval is required; it does not approve or cancel work.",
      "code": [
@@ -468,7 +468,7 @@
     },
     {
      "id": "tui.screens",
-     "label": "Terminal views",
+     "label": "Terminal Views",
      "role": "Ratatui presentation",
      "desc": "Native views render task state, public output details, themes and scrolling. There is no parallel Python/Textual frontend in the native-only cutover.",
      "code": [
@@ -495,7 +495,7 @@
    "children": [
     {
      "id": "geniusbot.backend",
-     "label": "Backend integration",
+     "label": "Backend Integration",
      "role": "adapter, registry, transport and errors",
      "desc": "Existing desktop-client requirements for adapter, registry, transport and errors. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -507,7 +507,7 @@
     },
     {
      "id": "geniusbot.lifecycle",
-     "label": "Desktop lifecycle",
+     "label": "Desktop Lifecycle",
      "role": "workers, lazy panels, tray and streams",
      "desc": "Existing desktop-client requirements for workers, lazy panels, tray and streams. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -518,7 +518,7 @@
     },
     {
      "id": "geniusbot.approvals",
-     "label": "Governed approvals",
+     "label": "Governed Approvals",
      "role": "backend approval authority",
      "desc": "Existing desktop-client requirements for backend approval authority. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -527,7 +527,7 @@
     },
     {
      "id": "geniusbot.terminal",
-     "label": "Embedded terminal",
+     "label": "Embedded Terminal",
      "role": "terminal sandbox",
      "desc": "Existing desktop-client requirements for terminal sandbox. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -536,7 +536,7 @@
     },
     {
      "id": "geniusbot.panels",
-     "label": "Operator panels",
+     "label": "Operator Panels",
      "role": "voice, specialists and finance",
      "desc": "Existing desktop-client requirements for voice, specialists and finance. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -556,7 +556,7 @@
     },
     {
      "id": "geniusbot.tokens",
-     "label": "Design tokens",
+     "label": "Design Tokens",
      "role": "generated colors",
      "desc": "Existing desktop-client requirements for generated colors. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -565,7 +565,7 @@
     },
     {
      "id": "geniusbot.docs",
-     "label": "Documentation and guardrails",
+     "label": "Documentation and Guardrails",
      "role": "skills, docs and shared hooks",
      "desc": "Existing desktop-client requirements for skills, docs and shared hooks. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -577,7 +577,7 @@
     },
     {
      "id": "geniusbot.runs",
-     "label": "Run inspection",
+     "label": "Run Inspection",
      "role": "read-only harness surface",
      "desc": "Existing desktop-client requirements for read-only harness surface. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -586,7 +586,7 @@
     },
     {
      "id": "geniusbot.quality",
-     "label": "Source quality",
+     "label": "Source Quality",
      "role": "source-quality obligations",
      "desc": "Existing desktop-client requirements for source-quality obligations. Delivery state comes from the owning spec rows.",
      "ids": [
@@ -762,7 +762,7 @@
    "children": [
     {
      "id": "ar.door",
-     "label": "Door: identity and admission",
+     "label": "Door: Identity and Admission",
      "role": "sign-in, scopes, admission",
      "desc": "The door authenticates each caller. It narrows scopes and admits or refuses each request. No request reaches the engine without passing the door.",
      "code": [
@@ -902,7 +902,7 @@
     },
     {
      "id": "ar.ops",
-     "label": "Served operations API",
+     "label": "Served Operations API",
      "role": "registry, HTTP, invoke",
      "desc": "Arbora serves every operation from one registry. One invoke pipeline applies authority, effect checks and audit. Generated HTTP and client artifacts follow the registry.",
      "code": [
@@ -1134,7 +1134,7 @@
     },
     {
      "id": "ar.mcp",
-     "label": "MCP server and multiplexer",
+     "label": "MCP Server and Multiplexer",
      "role": "intent tools + fleet",
      "desc": "Arbora serves a small set of intent tools over MCP. The multiplexer finds, loads and calls fleet tools on demand. A receipt gate guards resource publication.",
      "code": [
@@ -1227,7 +1227,7 @@
     },
     {
      "id": "ar.a2a",
-     "label": "A2A serving",
+     "label": "A2A Serving",
      "role": "agent cards, tasks, routing",
      "desc": "Arbora serves the agent-to-agent protocol. It admits each caller. It routes tasks and keeps conversations.",
      "code": [
@@ -1323,7 +1323,7 @@
     },
     {
      "id": "ar.acp",
-     "label": "ACP gateway",
+     "label": "ACP Gateway",
      "role": "conversational sessions",
      "desc": "The gateway admits conversational sessions under a typed session policy. It fails closed.",
      "code": [
@@ -1335,7 +1335,7 @@
     },
     {
      "id": "ar.fleet",
-     "label": "Fleet catalog and tools",
+     "label": "Fleet Catalog and Tools",
      "role": "packs, onboarding, skills",
      "desc": "The fleet catalog admits connector servers and their packs. It onboards and renews each server. It narrows authority at discover, load and call.",
      "code": [
@@ -1497,7 +1497,7 @@
     },
     {
      "id": "ar.host",
-     "label": "Host composition",
+     "label": "Host Composition",
      "role": "agent host, web UI host",
      "desc": "Arbora composes the hosted processes. It hosts the agent server and the web UI. It imports the agent runtime only through its public interface.",
      "code": [
@@ -1584,7 +1584,7 @@
     },
     {
      "id": "ar.control",
-     "label": "Control plane",
+     "label": "Control Plane",
      "role": "runs, projections, sources",
      "desc": "The control plane tracks runs, projections, sources and economics for hosted agents.",
      "code": [
@@ -1712,7 +1712,7 @@
     },
     {
      "id": "ar.gateway",
-     "label": "Gateway and widgets",
+     "label": "Gateway and Widgets",
      "role": "dashboard API",
      "desc": "The gateway serves dashboard widgets and graph views. Widget fetches run under a bound service actor.",
      "code": [
@@ -1722,7 +1722,7 @@
     },
     {
      "id": "ar.ingest",
-     "label": "Connector ingest",
+     "label": "Connector Ingest",
      "role": "SDK sync runner",
      "desc": "Arbora serves connector sources through the composed connector sync runner.",
      "code": [
@@ -1732,7 +1732,7 @@
     },
     {
      "id": "ar.finance",
-     "label": "Finance and market projections",
+     "label": "Finance and Market Projections",
      "role": "alerts, jobs, orders",
      "desc": "Arbora serves finance reads, scheduled jobs and paper orders. Alerts deliver once.",
      "code": [
@@ -1744,7 +1744,7 @@
     },
     {
      "id": "ar.deploy",
-     "label": "Deployment and release",
+     "label": "Deployment and Release",
      "role": "profiles, policy, release",
      "desc": "Arbora deploys itself from declared profiles. It plans, applies and checks drift. It promotes releases in dependency order.",
      "code": [
@@ -1847,7 +1847,7 @@
    "children": [
     {
      "id": "au.loop",
-     "label": "Run loop and harness",
+     "label": "Run Loop and Harness",
      "role": "harness/",
      "desc": "The harness applies the received run plan. It runs quality gates and constraint checks on each edit.",
      "code": [
@@ -1979,7 +1979,7 @@
     },
     {
      "id": "au.graph",
-     "label": "Graph executor",
+     "label": "Graph Executor",
      "role": "graph/",
      "desc": "The graph executor builds and runs the agent step graph.",
      "code": [
@@ -1988,7 +1988,7 @@
     },
     {
      "id": "au.runtime",
-     "label": "Workspace runtime",
+     "label": "Workspace Runtime",
      "role": "runtime/",
      "desc": "The runtime gives local, container, browser and computer-use workspaces. It emits events and provenance.",
      "code": [
@@ -1998,7 +1998,7 @@
     },
     {
      "id": "au.rlm",
-     "label": "Recursive model runner",
+     "label": "Recursive Model Runner",
      "role": "rlm/",
      "desc": "The recursive runner splits large inputs into recursive model calls.",
      "code": [
@@ -2008,7 +2008,7 @@
     },
     {
      "id": "au.scm",
-     "label": "Changeset development loop",
+     "label": "Changeset Development Loop",
      "role": "AU-SCM",
      "desc": "The development loop works on engine changesets, not on local trees.",
      "fam": [
@@ -2020,7 +2020,7 @@
     },
     {
      "id": "au.boundary",
-     "label": "Boundary deconstruction",
+     "label": "Boundary Deconstruction",
      "role": "what left AU, and where",
      "desc": "This program moves code out of Meristem. Each package has one recorded owner.",
      "fam": [
@@ -3627,7 +3627,7 @@
    "children": [
     {
      "id": "sdk.control",
-     "label": "Connector control",
+     "label": "Connector Control",
      "role": "contracts + certification",
      "desc": "Connector control defines the contracts that every connector follows. It certifies tools and packs.",
      "code": [
@@ -3792,7 +3792,7 @@
     },
     {
      "id": "sdk.ingest",
-     "label": "Source ingest",
+     "label": "Source Ingest",
      "role": "runner, extractors, sources",
      "desc": "Source ingest runs connector syncs under an engine-accepted contract. It submits SourceIngest batches.",
      "code": [
@@ -3927,7 +3927,7 @@
     },
     {
      "id": "sdk.wb",
-     "label": "Governed write-back",
+     "label": "Governed Write-Back",
      "role": "approval, idempotency, audit",
      "desc": "Write-back routes every source change through governed authorization. It needs approval, idempotency and an audit reservation.",
      "code": [
@@ -3969,7 +3969,7 @@
     },
     {
      "id": "sdk.repo",
-     "label": "Repository transport",
+     "label": "Repository Transport",
      "role": "code + spec hydration",
      "desc": "The repository transport hydrates code and specifications from version control. It submits bounded index batches.",
      "code": [
@@ -3984,7 +3984,7 @@
     },
     {
      "id": "sdk.scm",
-     "label": "Source client and workspace",
+     "label": "Source Client and Workspace",
      "role": "SDK-SCM",
      "desc": "A source client reads engine changesets. A virtual workspace mount exposes them as files.",
      "fam": [
@@ -4017,7 +4017,7 @@
     },
     {
      "id": "sdk.fin",
-     "label": "Finance sources",
+     "label": "Finance Sources",
      "role": "market + account adapters",
      "desc": "Finance adapters read market data, accounts and macro panels.",
      "code": [
@@ -4032,7 +4032,7 @@
     },
     {
      "id": "sdk.feeds",
-     "label": "Observability feeds",
+     "label": "Observability Feeds",
      "role": "monitoring events",
      "desc": "Monitoring, security-audit and delivery events join the durable source pipeline.",
      "fam": [
@@ -4044,7 +4044,7 @@
     },
     {
      "id": "sdk.release",
-     "label": "Quality and release",
+     "label": "Quality and Release",
      "role": "wheels + docs",
      "desc": "The SDK builds against published engine wheels. Scanners check public documentation.",
      "fam": [
@@ -4138,7 +4138,7 @@
    "children": [
     {
      "id": "eg.decide",
-     "label": "Decision engine",
+     "label": "Decision Engine",
      "role": "typed decide and assemble",
      "desc": "The decision engine answers typed questions. It applies policy and hard constraints first. It then uses entailment, exact solving and fitted statistics. It abstains when it cannot prove an answer. Every answer records an evidence class.",
      "code": [
@@ -4300,7 +4300,7 @@
     },
     {
      "id": "eg.evo",
-     "label": "Self-evolution",
+     "label": "Self-Evolution",
      "role": "versioned harness + optimizer",
      "desc": "This part improves the agent harness from evidence. It versions harness components and programs. It evaluates candidates against held-out tasks. It promotes a candidate only through a gated commit. Rollback re-promotes the parent revision.",
      "links": [
@@ -4512,7 +4512,7 @@
     },
     {
      "id": "eg.ingest",
-     "label": "Ingest and repository index",
+     "label": "Ingest and Repository Index",
      "role": "SourceIngest, packs, enrichment",
      "desc": "Ingest admits source batches into the graph. It indexes repositories into a code graph. Workers enrich documents, media and claims after admission.",
      "fam": [
@@ -4704,7 +4704,7 @@
     },
     {
      "id": "eg.scm",
-     "label": "Source authority and changesets",
+     "label": "Source Authority and Changesets",
      "role": "authority, EG-SCM, branches",
      "desc": "This part decides which source is the authority for each concept. It stores source code as changesets inside the graph. It also branches and merges graph state.",
      "links": [
@@ -4875,7 +4875,7 @@
     },
     {
      "id": "eg.query",
-     "label": "Query and reasoning",
+     "label": "Query and Reasoning",
      "role": "UQL, NL, federation, reasoning",
      "desc": "The query layer plans and runs graph, relational, vector and text queries. It federates foreign sources. It reasons over the ontology with bounded steps.",
      "code": [
@@ -5064,7 +5064,7 @@
     },
     {
      "id": "eg.compute",
-     "label": "Graph compute",
+     "label": "Graph Compute",
      "role": "algorithms + kernels",
      "desc": "Graph compute runs algorithms and numeric kernels inside the engine. Results return as typed compute results.",
      "code": [
@@ -5186,7 +5186,7 @@
     },
     {
      "id": "eg.packs",
-     "label": "Ontology and packs",
+     "label": "Ontology and Packs",
      "role": "typed packs, vocabularies, CQs",
      "desc": "Typed packs carry ontology terms, mappings and tool contracts into the engine. The catalog projects them for readers. Competency questions prove that the ontology answers real tasks.",
      "code": [
@@ -5395,7 +5395,7 @@
     },
     {
      "id": "eg.durable",
-     "label": "Durable kernel",
+     "label": "Durable Kernel",
      "role": "transactions, outbox, jobs",
      "desc": "The durable kernel commits graph changes atomically. It delivers changes through an outbox. It runs jobs and statecharts that survive restarts.",
      "code": [
@@ -5606,7 +5606,7 @@
     },
     {
      "id": "eg.storage",
-     "label": "Storage layers",
+     "label": "Storage Layers",
      "role": "hot store + lake + indexes",
      "desc": "Storage keeps graph state in a transactional hot store. An analytic lake holds columnar history. Index stores serve vectors, time series and keys.",
      "links": [
@@ -5747,7 +5747,7 @@
     },
     {
      "id": "eg.udp",
-     "label": "Unified data plane",
+     "label": "Unified Data Plane",
      "role": "attached sources + CDC",
      "desc": "The data plane attaches external databases as governed sources. It captures their changes. It proves conformance against each native system.",
      "fam": [
@@ -5876,7 +5876,7 @@
     },
     {
      "id": "eg.identity",
-     "label": "Identity and scope",
+     "label": "Identity and Scope",
      "role": "issuers, scopes, segments",
      "desc": "The engine checks the identity and scope of each caller. It enforces tenant sharing and secured reads.",
      "code": [
@@ -5926,7 +5926,7 @@
     },
     {
      "id": "eg.place",
-     "label": "Placement and workers",
+     "label": "Placement and Workers",
      "role": "decide where work runs",
      "desc": "The engine decides where deployments and workers run. Workers ask the engine and obey its grant.",
      "code": [
@@ -5969,7 +5969,7 @@
     },
     {
      "id": "eg.fin",
-     "label": "Finance primitives",
+     "label": "Finance Primitives",
      "role": "kernels, records, backtests",
      "desc": "Finance primitives give shared numeric kernels, typed finance records and backtest provenance.",
      "code": [
@@ -6019,7 +6019,7 @@
     },
     {
      "id": "eg.contract",
-     "label": "Client and contract",
+     "label": "Client and Contract",
      "role": "epistemic_graph package",
      "desc": "The public package holds the typed client and the method contract. Quality gates protect the contract. The wheel holds no server executable.",
      "code": [
@@ -6105,7 +6105,7 @@
    "children": [
     {
      "id": "egserver.bin",
-     "label": "Executable and subcommands",
+     "label": "Executable and Subcommands",
      "role": "src/bin + startup",
      "desc": "The executable starts the server and its offline subcommands.",
      "code": [
@@ -6120,7 +6120,7 @@
     },
     {
      "id": "egserver.dispatch",
-     "label": "Request dispatch",
+     "label": "Request Dispatch",
      "role": "method routing",
      "desc": "Dispatch routes each method call to its handler. It applies request scope and cancellation.",
      "code": [
@@ -6135,7 +6135,7 @@
     },
     {
      "id": "egserver.wire",
-     "label": "Wire protocol adapters",
+     "label": "Wire Protocol Adapters",
      "role": "SQL, graph, messaging wires",
      "desc": "Wire adapters speak standard database and messaging protocols. Each adapter maps calls into engine methods.",
      "code": [
@@ -6166,7 +6166,7 @@
     },
     {
      "id": "egserver.obs",
-     "label": "Telemetry and audit",
+     "label": "Telemetry and Audit",
      "role": "metrics, traces, audit",
      "desc": "The server exports metrics and traces. It writes an audit trail.",
      "code": [
@@ -6182,7 +6182,7 @@
     },
     {
      "id": "egserver.image",
-     "label": "Container image",
+     "label": "Container Image",
      "role": "docker/",
      "desc": "The image build packages the executable for cluster deployment.",
      "code": [

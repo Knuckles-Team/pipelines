@@ -14,7 +14,7 @@ PIPE-GATES-R002 fixes the post-land decision. Auto-revert is the default: the fa
 
 ## Tree-based execution
 
-PIPE-GATES-R003 binds every blocking gate to the epistemic-graph tree. A gate reads file content by path and blob digest. It needs no working copy. The contract is equality: the verdict and evidence digest on the tree agree with the same gate on a materialized checkout of the same revision. The engine supplies the tree reads; the served landing operations run the gates. No gate in either set may demand a checkout. A gate that still reads a local path is a defect against this row.
+PIPE-GATES-R003 binds every blocking gate to the Medulla tree. A gate reads file content by path and blob digest. It needs no working copy. The contract is equality: the verdict and evidence digest on the tree agree with the same gate on a materialized checkout of the same revision. The engine supplies the tree reads; the served landing operations run the gates. No gate in either set may demand a checkout. A gate that still reads a local path is a defect against this row.
 
 ## Quality and release gates
 
@@ -22,7 +22,7 @@ The implementation runs this repository's own gates: format, hygiene, secrets, t
 
 ## Amendments
 
-- 2026-10-20: The engine tree reads arrive with the epistemic-graph
+- 2026-10-20: The engine tree reads arrive with the Medulla
   changeset tree (EG-SCM-R004). Until then the source provider interface
   and the disk provider serve the tree. The verdict-equality contract
   test runs on the disk provider. The T-004 engine-tree fixture needs the
@@ -40,13 +40,13 @@ release workflow records each release (EG-SDLC-R002). A failed post never change
 a status file or a published release.
 ## Migration waves (R006)
 
-Repositories move to engine changesets one wave at a time. The order runs from the lowest risk to the highest: webarchiver, small connectors, the other connectors, skills with pipelines and the user interfaces, the SDK with the harness, arbora, and epistemic-graph last. RM-SCM-R001 and RM-SCM-R002 import history and keep the GitHub mirror in sync. A wave exits only when the mirror matches every landed changeset for 7 days. Wave 7 also needs two restores of the engine source from the mirror.
+Repositories move to engine changesets one wave at a time. The order runs from the lowest risk to the highest: webarchiver, small connectors, the other connectors, skills with pipelines and the user interfaces, the Scion SDK with the harness, arbora, and Medulla last. RM-SCM-R001 and RM-SCM-R002 import history and keep the GitHub mirror in sync. A wave exits only when the mirror matches every landed changeset for 7 days. Wave 7 also needs two restores of the engine source from the mirror.
 
 ## Product names in spec text (R005)
 
 The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines_hooks/specs/third_party_names.toml`. A connector may name its own target system through the `[allow]` table. The check masks inline code, fenced code, URLs, link targets and spec IDs. A lowercase identifier, such as a connector ID, is not a product name.
 
-- 2026-10-22: PIPE-GATES-R007 migrates the removed AU legacy-marker checker to the shared owner. Reuse tracked discovery and sanitized Git execution, explicitly selecting the target repository index rather than an ambient hook index. Keep the original pattern and historical exclusions, without a consumer-owned copy or a ninth blocking gate.
+- 2026-10-22: PIPE-GATES-R007 migrates the removed Meristem legacy-marker checker to the shared owner. Reuse tracked discovery and sanitized Git execution, explicitly selecting the target repository index rather than an ambient hook index. Keep the original pattern and historical exclusions, without a consumer-owned copy or a ninth blocking gate.
 
 - 2026-10-22: PIPE-GATES-R008 and R009 rehome the removed lock-mirror and
   static import-boundary checks in the shared package. The metadata check

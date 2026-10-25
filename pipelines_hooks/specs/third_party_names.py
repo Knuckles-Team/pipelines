@@ -1,8 +1,9 @@
 """Third-party product and project names in spec text (spec-standard check).
 
-Spec text names our own capability by intent (PIPE-GATES-R005). The denylist and
-the per-repository tables live in ``third_party_names.toml`` beside this module. A
-connector may name its own target system through the ``[allow]`` table.
+Spec text names our own capability by intent (PIPE-GATES-R005). The denylist,
+first-party product vocabulary and per-repository tables live in
+``third_party_names.toml`` beside this module. A connector may name its own
+target system through the ``[allow]`` table.
 """
 
 from __future__ import annotations
@@ -45,10 +46,11 @@ def _config(config: Path) -> dict:
 
 
 def load_terms(repo: str | None, config: Path = CONFIG) -> list[str]:
-    """The denylist minus this repository's allowed target-system names."""
+    """The third-party denylist after first-party and connector allowances."""
     data = _config(config)
+    own = {t.casefold() for t in data.get("own", {}).get("terms", [])}
     allowed = {t.lower() for t in data.get("allow", {}).get(repo or "", [])}
-    return [t for t in data["names"]["terms"] if t.lower() not in allowed]
+    return [t for t in data["names"]["terms"] if t.casefold() not in own and t.casefold() not in allowed]
 
 
 def compile_terms(terms: Iterable[str]) -> re.Pattern[str] | None:
