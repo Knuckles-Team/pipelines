@@ -1,20 +1,21 @@
 {
  "owner": "Knuckles-Team",
  "pages_node": {
-  "epistemic-graph": "eg",
+  "medulla": "eg",
   "arbora": "arbora",
-  "agent-connector-sdk": "sdk",
-  "agent-utilities": "au",
-  "agent-terminal-ui": "tui",
-  "agent-webui": "webui",
+  "scion-sdk": "sdk",
+  "meristem": "au",
+  "tuig": "tui",
+  "overstory": "webui",
   "pipelines": "pipelines",
   "universal-skills": "skills",
-  "skill-graphs": "skills"
+  "skill-graphs": "skills",
+  "axil": "geniusbot"
  },
  "repositories": [
   {
-   "name": "epistemic-graph",
-   "slug": "epistemic-graph",
+   "name": "medulla",
+   "slug": "medulla",
    "local": "agent-packages/epistemic-graph",
    "kind": "core"
   },
@@ -25,26 +26,26 @@
    "kind": "core"
   },
   {
-   "name": "agent-connector-sdk",
-   "slug": "agent-connector-sdk",
+   "name": "scion-sdk",
+   "slug": "scion-sdk",
    "local": "agent-packages/agent-connector-sdk",
    "kind": "core"
   },
   {
-   "name": "agent-utilities",
-   "slug": "agent-utilities",
+   "name": "meristem",
+   "slug": "meristem",
    "local": "agent-packages/agent-utilities",
    "kind": "core"
   },
   {
-   "name": "agent-terminal-ui",
-   "slug": "agent-terminal-ui",
+   "name": "tuig",
+   "slug": "tuig",
    "local": "agent-packages/agent-terminal-ui",
    "kind": "core"
   },
   {
-   "name": "agent-webui",
-   "slug": "agent-webui",
+   "name": "overstory",
+   "slug": "overstory",
    "local": "agent-packages/agent-webui",
    "kind": "core"
   },
@@ -67,8 +68,8 @@
    "kind": "core"
   },
   {
-   "name": "geniusbot",
-   "slug": "geniusbot",
+   "name": "axil",
+   "slug": "axil",
    "local": "agent-packages/geniusbot",
    "kind": "client"
   },

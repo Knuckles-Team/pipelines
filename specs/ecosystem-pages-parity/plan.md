@@ -436,7 +436,7 @@ R042: `scripts/architecture_explorer/` discovers the organization repositories t
 
 R042.1 to R042.4: `build.search_index` turns the placed tree into the compact index that `render` embeds next to the tree; `search.cjs` holds the ranking and hash parsing and is inlined into `template.html` and loaded by node in the tests. The search box reuses `go`, `fitCam` and `openness` through `openCam`, so a result opens its ancestors the way a manual zoom does. `sources.read_aliases` reads each repository's alias file. R042.6 to R042.8: `details.py` cuts each row's description at source read time, renders the safe markdown subset and writes `spec-details/<repo>/<family>.json` next to the page; `template.html` fetches a family on its first expand and copies the parsed HTML through an allowlist.
 
-R042 visual theme: adapt Overstory's system sans typography, rounded neutral controls and bounded translucent reading surfaces to an ocean-blue palette in `template.html`. Keep opaque, inexpensive canvas nodes and distinguishable semantic layer/status colors; no new font/CDN/runtime dependency, node blur, animated paint or layout engine. Reduced-motion, reduced-transparency and forced-colors preferences have explicit fallbacks. This is a presentation-only change: text, model, row status/CQ classification, IDs, links, placement geometry, search, history, pan and infinite zoom remain unchanged. Understory/Studio graph conversion and repository renaming are outside this patch. The read-only PR visual job uses runner Chrome to retain desktop/mobile light/dark root and deep-link screenshots, DOM, the interactive HTML and raw-payload/candidate provenance; it runs existing detail/deep-link tests plus keyboard, zoom, pan, camera-history and search controls without a new browser dependency or deployment.
+R042 visual theme: adapt Overstory's system sans typography, rounded neutral controls and bounded translucent reading surfaces to an ocean-blue palette in `template.html`. Use a shared repo-native ocean scene behind translucent gradient glass nodes and shell surfaces, with quiet ocean layer accents and distinct restrained semantic status accents. Bundle the existing OFL-licensed Overstory Inter font, including its license, without a font CDN or runtime dependency. Use only bounded shell blur and inexpensive vector node gradients/shadows: no node blur, animated paint or new layout engine. Reduced-motion, reduced-transparency and forced-colors preferences have explicit fallbacks. This is a presentation-only change: text, model, row status/CQ classification, IDs, links, placement geometry, search, history, pan and infinite zoom remain unchanged. Understory/Studio graph conversion and repository renaming are outside this patch. The read-only PR visual job uses runner Chrome to retain desktop/mobile light/dark root and deep-link screenshots, DOM, the interactive HTML and raw-payload/candidate provenance; it runs existing detail/deep-link tests plus keyboard, zoom, pan, camera-history and search controls without a new browser dependency or deployment.
 
 ## Agent-readiness and static delivery (PIPE-PAGES-R043)
 
@@ -512,3 +512,58 @@ name to Meristem. Preserve node and repository IDs, family placement, code paths
 authority text, evidence and outstanding qualification caveats. The ocean-theme
 preview retains its original payload provenance; normal generation consumes the
 new labels separately. No renderer or capability is added.
+
+
+### 2026-10-25 — Ambient ocean motion behind glass (PIPE-PAGES-R042)
+
+Adapt the user's three-wave ocean wallpaper reference as three shared SVG bands
+with slow compositor-only transforms, not a per-pixel canvas animation. Wallpaper
+stays beneath the diagram and its stable reading surfaces and cannot intercept
+input. Motion defaults on with a persistent, accessible opt-out; reduced motion
+or reduced transparency disables it, and hidden pages pause it. Forced colors
+hide the decoration. Verify actual browser animation phases, control persistence
+and pause behavior alongside existing zoom/navigation tests. Phase screenshots
+are sampled real CSS animation frames, not a video or elapsed-time benchmark.
+
+
+### 2026-10-25 — Neutral fog glass over ocean wallpaper (PIPE-PAGES-R042)
+
+Retain the approved ambient ocean wallpaper, but remove added blue pigments from
+shells, node materials and ordinary controls. Lift light glass toward neutral
+white and raise fog opacity by roughly 10–16 percentage points; use neutral
+smoke in dark mode. Reserve color for semantic statuses, restrained category
+text/markers and selected controls. Recheck actual alpha-composited node and
+header text surfaces; preserve data, camera, navigation and motion controls.
+
+
+### 2026-10-25 — Natural ocean wallpaper fidelity (PIPE-PAGES-R042)
+
+Replace abstract wave ribbons with one optimized, locally embedded generated
+seascape (sky, soft clouds, horizon, irregular wavelets and restrained foam).
+Keep its perspective fixed; three sparse low-opacity glint layers retain gentle
+compositor-only motion and all existing accessibility preferences. Record artwork
+provenance honestly: static generated art with CSS glints, not video or fluid
+simulation. Thin graph connectors gain a cheap neutral contrast understroke,
+not blur. Verify text against conservative black/white backdrop bounds and
+inspect actual desktop/mobile light/dark pixels before merging.
+
+
+### 2026-10-25 — Top-level title case and visible role subtitles (PIPE-PAGES-R042)
+
+Apply the finite reviewed top-level display-label/role corrections, including
+Scion / Connector SDK, Meristem / Agent Harness and Universal Skills / Agent
+Skills, without changing technical IDs. Adjust closed-card text row spacing so
+those roles paint beneath names at ordinary desktop root zoom without colliding
+with counts or parts. Keep graph geometry and camera/navigation unchanged.
+A candidate-model fixture screenshot and canvas paint evidence are explicitly
+separate from the unchanged live-payload before/after visual snapshot.
+
+### 2026-10-25 canonical repository references
+
+Following the six upstream repository renames, the explorer registry and model
+use canonical repository slugs while keeping node IDs, ownership kinds, local
+checkout paths, source paths and requirement IDs unchanged. Discovery must not
+reclassify these core/client repositories as new connectors. The regression
+`test_renamed_repositories_keep_ownership_placement_and_canonical_details` covers
+canonical discovery, placement and generated spec-detail links (PIPE-PAGES-R042.9
+and PIPE-PAGES-R042.7). Package and specification aliases remain separate.
