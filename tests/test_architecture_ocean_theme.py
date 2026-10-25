@@ -82,6 +82,9 @@ def test_glass_uses_bundled_overstory_inter_and_sans_canvas_labels() -> None:
     assert "/*__INTER__*/" not in source
     assert "src:url(data:font/woff2;base64," in source
     assert (TEMPLATE.parent / "assets/Inter-LICENSE.txt").is_file()
+    assert "Copyright (c) 2016 The Inter Project Authors" in source
+    assert "SIL OPEN FONT LICENSE Version 1.1" in source
+    assert "PREAMBLE" in source and "DISCLAIMER" in source
     drawing = source.split("function drawNode(", 1)[1].split("function drawInner(", 1)[0]
     assert "C.mono" not in drawing
     assert "C.body" in drawing and "C.display" in drawing

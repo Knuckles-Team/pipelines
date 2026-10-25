@@ -18,10 +18,16 @@ from .build import DOC_HEAD, DOC_TAIL, HERE, template_source
 
 SOURCE = "https://knuckles-team.github.io/.github/architecture/"
 PROBE = """<script>
-setTimeout(()=>{
+setTimeout(async()=>{
+  await document.fonts.ready;
+  const bundled=[...document.querySelectorAll('style')].some(style=>style.textContent.includes('@font-face'));
+  const faces=bundled?await document.fonts.load('500 14px Inter'):[];
+  const interLoaded=faces.some(face=>face.family.replaceAll('\"','').replaceAll("'",'')==='Inter'&&face.status==='loaded');
   const e=document.createElement('output'); e.hidden=true; e.id='visual-evidence';
   e.dataset.selected=window.__arch.selected;
   e.dataset.theme=document.documentElement.dataset.theme;
+  e.dataset.fonts=String(document.fonts.status==='loaded');
+  e.dataset.inter=interLoaded?'loaded':'absent';
   e.dataset.overflow=String(document.documentElement.scrollWidth>innerWidth);
   e.textContent=JSON.stringify({selected:window.__arch.selected,cam:window.__arch.cam,
     visible:window.__arch.visible(),viewport:[innerWidth,innerHeight],
@@ -80,7 +86,7 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
     return evidence
 
 
-def capture(chrome: str, output: Path, theme: str, viewport: str, node: str) -> None:
+def capture(chrome: str, output: Path, theme: str, viewport: str, node: str, *, require_inter: bool = True) -> None:
     name = f"{theme}-{viewport.replace(',', 'x')}-{node}"
     with tempfile.TemporaryDirectory(prefix="architecture-chrome-") as profile:
         command = [
@@ -108,8 +114,10 @@ def capture(chrome: str, output: Path, theme: str, viewport: str, node: str) -> 
         f'data-selected="{node}"' not in evidence
         or f'data-theme="{theme}"' not in evidence
         or 'data-overflow="false"' not in evidence
+        or 'data-fonts="true"' not in evidence
+        or (require_inter and 'data-inter="loaded"' not in evidence)
     ):
-        raise RuntimeError(f"Wrong deep-link selection, theme or horizontal overflow for {name}; inspect DOM")
+        raise RuntimeError(f"Wrong deep-link selection, theme, font or horizontal overflow for {name}; inspect DOM")
 
 
 def verify_browser_results(report: Path) -> None:
@@ -163,7 +171,7 @@ def main() -> None:
         (output / f"{theme}.html").unlink()
     for theme in ("light", "dark"):
         for viewport, node in (("1440,1000", "root"), ("1440,1000", "webui"), ("390,844", "root")):
-            capture(chrome, output / "before", theme, viewport, node)
+            capture(chrome, output / "before", theme, viewport, node, require_inter=False)
         (output / "before" / f"{theme}.html").unlink()
 
 

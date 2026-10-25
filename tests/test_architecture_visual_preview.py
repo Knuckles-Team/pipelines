@@ -85,7 +85,7 @@ def test_capture_compresses_dom_and_rejects_wrong_theme(monkeypatch, tmp_path: P
 
     from scripts.architecture_explorer.visual_preview import capture
 
-    dom = f'<output id="visual-evidence" data-selected="root" data-theme="{theme}" data-overflow="false"></output>'
+    dom = f'<output id="visual-evidence" data-selected="root" data-theme="{theme}" data-overflow="false" data-fonts="true" data-inter="loaded"></output>'
     (tmp_path / "light-390x844-root.png").write_bytes(b"pixel-fixture")
     monkeypatch.setattr("subprocess.run", lambda *a, **kw: SimpleNamespace(returncode=0, stdout=dom, stderr=""))
     if theme == "dark":
@@ -96,3 +96,17 @@ def test_capture_compresses_dom_and_rejects_wrong_theme(monkeypatch, tmp_path: P
     with gzip.open(tmp_path / "light-390x844-root.html.gz", "rt") as compressed:
         assert compressed.read() == dom
     assert not (tmp_path / "light-390x844-root.html").exists()
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_candidate_requires_real_inter_face_but_baseline_records_fallback(monkeypatch, tmp_path: Path) -> None:
+    from types import SimpleNamespace
+
+    from scripts.architecture_explorer.visual_preview import capture
+
+    dom = '<output id="visual-evidence" data-selected="root" data-theme="light" data-overflow="false" data-fonts="true" data-inter="absent"></output>'
+    (tmp_path / "light-390x844-root.png").write_bytes(b"pixel-fixture")
+    monkeypatch.setattr("subprocess.run", lambda *a, **kw: SimpleNamespace(returncode=0, stdout=dom, stderr=""))
+    with pytest.raises(RuntimeError, match="font"):
+        capture("chrome", tmp_path, "light", "390,844", "root")
+    capture("chrome", tmp_path, "light", "390,844", "root", require_inter=False)

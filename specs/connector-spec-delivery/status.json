@@ -3637,7 +3637,8 @@
       "title": "Architecture page delivery views",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "a7d9241136c9"
+        "a7d9241136c9",
+        "b99e7e0b5d7b"
       ],
       "verified_by": [
         "tests/test_architecture_delivery.py:41",

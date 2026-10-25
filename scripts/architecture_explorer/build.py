@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import html
 import json
 import os
 import subprocess
@@ -332,11 +333,17 @@ def build_with_sources(mode: str, workspace: Path | None) -> tuple[dict, dict, l
 def template_source() -> str:
     """Inline the existing licensed Inter face: no font CDN or runtime dependency."""
     font = base64.b64encode((HERE / "assets/InterVariable.woff2").read_bytes()).decode("ascii")
+    notice = html.escape((HERE / "assets/Inter-LICENSE.txt").read_text()).replace("--", "-&#45;")
     return (
-        (HERE / "template.html")
-        .read_text()
-        .replace("/*__INTER__*/", font)
-        .replace("/*__SEARCH__*/", (HERE / "search.cjs").read_text())
+        "<!-- Bundled Inter font copyright and OFL license\n"
+        + notice
+        + "\n-->\n"
+        + (
+            (HERE / "template.html")
+            .read_text()
+            .replace("/*__INTER__*/", font)
+            .replace("/*__SEARCH__*/", (HERE / "search.cjs").read_text())
+        )
     )
 
 
