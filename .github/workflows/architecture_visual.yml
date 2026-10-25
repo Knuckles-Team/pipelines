@@ -1,0 +1,49 @@
+name: Architecture visual validation
+
+on:
+  pull_request:
+    paths:
+      - scripts/architecture_explorer/**
+      - tests/test_architecture*.py
+      - .github/workflows/architecture_visual.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: architecture-visual-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: '3.14'
+      - name: Use runner browser and existing locked test dependencies
+        run: |
+          command -v google-chrome || command -v chromium
+          uv sync --frozen
+          npm ci --prefix scripts/architecture_explorer --ignore-scripts
+      - name: Capture actual public data with candidate template
+        run: uv run --frozen python -m scripts.architecture_explorer.visual_preview --output architecture-preview
+      - name: Run explorer contracts including real-browser interaction tests
+        if: ${{ !cancelled() }}
+        run: |
+          uv run --frozen python -m pytest -q tests/test_architecture_explorer.py tests/test_architecture_ocean_theme.py tests/test_architecture_visual_preview.py --junitxml=architecture-preview/tests.xml
+      - name: Require all five real-browser cases to pass without skips
+        if: ${{ !cancelled() }}
+        run: uv run --frozen python -m scripts.architecture_explorer.visual_preview --verify-browser-results architecture-preview/tests.xml
+      - name: Retain reviewable HTML, pixels, DOM and provenance (no deployment)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: architecture-preview-${{ github.sha }}
+          path: architecture-preview/
+          if-no-files-found: error
+          retention-days: 7
