@@ -483,9 +483,9 @@
   },
   {
    "id": "geniusbot",
-   "label": "Axil Desk",
+   "label": "Axil",
    "role": "desktop GUI",
-   "desc": "Axil Desk gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
+   "desc": "Axil gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
    "layer": "entry",
    "repo": "geniusbot",
    "fam": [

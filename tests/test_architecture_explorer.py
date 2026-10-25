@@ -1061,7 +1061,7 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
         "tui": ("Tuig", "agent-terminal-ui"),
         "sdk": ("Scion SDK", "agent-connector-sdk"),
         "au": ("Meristem", "agent-utilities"),
-        "geniusbot": ("Axil Desk", "geniusbot"),
+        "geniusbot": ("Axil", "geniusbot"),
     }
     for node_id, (label, repo) in brands.items():
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
