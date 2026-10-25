@@ -165,6 +165,14 @@ def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> 
         assert ".canvas{background:rgb(255 255 255 / .10)}" in html
         for ocean in _ocean_bounds(block):
             ocean = _blend((255, 255, 255), ocean, 0.10)
+            # The brightest lane endpoint is the conservative dark-text bound;
+            # light theme also tests its lowest-opacity endpoint below.
+            lane_surfaces = []
+            for lane_endpoint in ("top", "bottom"):
+                lane = re.search(r"--lane-" + lane_endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+                assert lane
+                lane_surfaces.append(_blend(tuple(int(lane[i]) for i in (1, 2, 3)), ocean, float(lane[4])))
+            ocean = tuple((max if selector != ":root{" else min)(p[i] for p in lane_surfaces) for i in range(3))
             for endpoint in ("top", "bottom"):
                 match = re.search(r"--node-" + endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
                 assert match
@@ -251,3 +259,15 @@ def test_root_band_heading_fits_existing_gutter_without_truncation() -> None:
     assert "L.kids[L.loop.around]" in source
     assert "available/Math.max(1,ctx.measureText(text).width)" in source
     assert "mapLabel(text, right, sy+fs*0.6,fs)" in source
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_swimlanes_are_bounded_shared_glass_panes_not_new_layout_or_blur() -> None:
+    source = TEMPLATE.read_text()
+    bands = source.split("function drawBands(", 1)[1].split("function drawZones(", 1)[0]
+    assert "laneY=sy+2" in bands and "laneH=Math.max(1,sh-4)" in bands
+    assert "C.laneTop" in bands and "C.laneBottom" in bands and "C.laneEdge" in bands
+    assert "ctx.filter" not in bands and "shadowBlur" not in bands
+    assert "mapLabel(text, right, sy+fs*0.6,fs)" in bands
+    assert 'laneW=Math.max(1,n.id==="root"?W-16:sw-8)' in bands
+    assert 'const key=n.id==="root"?["person","entry","gateway","control","core","server"][i]:n.layer;' in bands

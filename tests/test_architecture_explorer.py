@@ -687,7 +687,7 @@ def test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle() -> None:
     assert "calc(100vh - 150px)" not in html
     assert 'id="zfull"' in html and "requestFullscreen" in html and ".canvas:fullscreen" in html
     assert 'id="zpanel"' in html and "main.work.nopanel" in html
-    assert 'if(n.id==="root") ctx.fillRect(0,sy,W,sh)' in html
+    assert 'laneX=n.id==="root"?8:sx+4, laneW=Math.max(1,n.id==="root"?W-16:sw-8)' in html
     fixed = json.loads((ROOT / "scripts/architecture_explorer/model.json").read_text())["fixed_layout"]
     assert fixed["w"] / fixed["h"] >= 1.6
 

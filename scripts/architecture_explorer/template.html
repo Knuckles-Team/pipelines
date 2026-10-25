@@ -10,6 +10,7 @@
   --glass-chrome:rgb(255 255 255 / .60); --ocean-dim:rgb(18 65 91 / 0);
   --ocean-top:#bddce3; --ocean-bottom:#83b5c6; --wave-opacity:.38;
   --node-top:rgba(255,255,255,.86); --node-bottom:rgba(245,245,245,.63);
+  --lane-top:rgba(255,255,255,.22); --lane-bottom:rgba(255,255,255,.10); --lane-edge:rgba(255,255,255,.62);
   --node-edge:rgba(255,255,255,.90); --node-shadow:rgba(0,0,0,.12);
   --button-neutral:rgb(255 255 255 / .68); --button-hover:rgb(255 255 255 / .86); --button-active:rgb(225 225 221 / .92); --selection:rgb(202 203 200 / .92); --motion-on:rgb(210 229 213 / .90);
   --atmosphere:#9ac4d7; --glass-edge:rgb(255 255 255 / .8);
@@ -30,6 +31,7 @@
   --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / 0);
   --ocean-top:#102c3b; --ocean-bottom:#183d4c; --wave-opacity:.12;
   --node-top:rgba(55,56,58,.76); --node-bottom:rgba(25,26,28,.70);
+  --lane-top:rgba(105,113,115,.12); --lane-bottom:rgba(105,113,115,.06); --lane-edge:rgba(255,255,255,.24);
   --node-edge:rgba(255,255,255,.60); --node-shadow:rgba(0,0,0,.25);
   --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
   --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
@@ -45,6 +47,7 @@
   --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / 0);
   --ocean-top:#102c3b; --ocean-bottom:#183d4c; --wave-opacity:.12;
   --node-top:rgba(55,56,58,.76); --node-bottom:rgba(25,26,28,.70);
+  --lane-top:rgba(105,113,115,.12); --lane-bottom:rgba(105,113,115,.06); --lane-edge:rgba(255,255,255,.24);
   --node-edge:rgba(255,255,255,.60); --node-shadow:rgba(0,0,0,.25);
   --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
   --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
@@ -373,7 +376,7 @@ let W=0,H=0,DPR=1, cam={x:0,y:0,k:1}, anim=null, dirty=true, C={};
 function readColors(){ const cs=getComputedStyle(document.documentElement); const g=v=>cs.getPropertyValue(v).trim();
   C={bg:g("--sheet"),surface:g("--surface"),fg:g("--fg"),muted:g("--muted"),faint:g("--faint"),line:g("--line"),edge:g("--edge"),accent:g("--accent"),bandA:g("--band-a"),bandB:g("--band-b"),
      display:g("--font-display"),body:g("--font-body"),mono:g("--font-mono"),
-     edgeHalo:g("--edge-halo"),nodeTop:g("--node-top"),nodeBottom:g("--node-bottom"),nodeEdge:g("--node-edge"),nodeShadow:g("--node-shadow"),
+     laneTop:g("--lane-top"),laneBottom:g("--lane-bottom"),laneEdge:g("--lane-edge"),edgeHalo:g("--edge-halo"),nodeTop:g("--node-top"),nodeBottom:g("--node-bottom"),nodeEdge:g("--node-edge"),nodeShadow:g("--node-shadow"),
      opaque:window.matchMedia("(prefers-reduced-transparency: reduce)").matches||window.matchMedia("(forced-colors: active)").matches,layer:{},tint:{},st:{}};
   Object.keys(LAYERS).forEach(k=>{C.layer[k]=g("--l-"+k);C.tint[k]=g("--t-"+k);}); ST.forEach(s=>C.st[s]=g("--s-"+s.toLowerCase())); dirty=true; }
 function resize(){ const r=cv.getBoundingClientRect(); DPR=Math.min(2,window.devicePixelRatio||1); W=r.width; H=r.height; cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR); dirty=true; }
@@ -428,14 +431,22 @@ function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.band
   const r=R[n.id]; const x0=n.id==="root"?r[0]:t.ox, w=n.id==="root"?r[2]:L.w*t.s;
   L.bands.forEach((b,i)=>{ const [sx,sy]=toS(x0, t.oy+b[1]*t.s), sh=(b[2]-b[1])*t.s*cam.k, sw=w*cam.k;
     if(sy>H||sy+sh<0) return;
-    ctx.globalAlpha=alpha*(C.opaque?1:0.08); ctx.fillStyle=i%2?C.bandB:C.bandA; if(n.id==="root") ctx.fillRect(0,sy,W,sh); else ctx.fillRect(sx,sy,sw,sh);
+    // Existing stratum bounds become shared glass panes; no geometry or per-pane blur.
+    const laneX=n.id==="root"?8:sx+4, laneW=Math.max(1,n.id==="root"?W-16:sw-8), laneY=sy+2, laneH=Math.max(1,sh-4);
+    ctx.globalAlpha=alpha;
+    const lane=ctx.createLinearGradient(0,laneY,0,laneY+laneH);
+    lane.addColorStop(0,C.opaque?(i%2?C.bandB:C.bandA):C.laneTop);lane.addColorStop(1,C.opaque?(i%2?C.bandB:C.bandA):C.laneBottom);
+    ctx.fillStyle=lane;rr(laneX,laneY,laneW,laneH,Math.min(16,laneH*.16));ctx.fill();
+    ctx.strokeStyle=C.opaque?C.edge:C.laneEdge;ctx.lineWidth=1;ctx.stroke();
     let fs=Math.min(15, sh*0.11, sw*0.02); if(fs>=6.5){
       // Fit the full band heading inside the existing right gutter, never under a glass card.
       const anchor=L.loop&&L.kids[L.loop.around], gutter=anchor?toS(t.ox+(anchor[0]+anchor[2]+24)*t.s,0)[0]:sx+sw*0.72;
-      const right=sx+sw-fs*0.8, available=Math.max(1,right-gutter-8), text=b[0].toUpperCase();
+      const right=sx+sw-fs*0.8, available=Math.max(1,right-gutter-15), text=b[0].toUpperCase();
       ctx.font="600 "+fs+"px "+C.display; fs*=Math.min(1,available/Math.max(1,ctx.measureText(text).width));
       ctx.fillStyle=C.muted; ctx.font="600 "+fs+"px "+C.display; ctx.textAlign="right"; ctx.textBaseline="top";
       ctx.globalAlpha=alpha; mapLabel(text, right, sy+fs*0.6,fs);
+      const key=n.id==="root"?["person","entry","gateway","control","core","server"][i]:n.layer;
+      ctx.fillStyle=C.layer[key]||C.faint;rr(right-ctx.measureText(text).width-9,sy+fs*.6,2,fs,1);ctx.fill();
       if(i<L.bands.length-1){ ctx.globalAlpha=alpha*0.35; ctx.fillStyle=C.faint; const cx=sx+sw-fs*1.6, cy=sy+sh-fs*0.2; ctx.beginPath(); ctx.moveTo(cx-fs*0.6,cy-fs*0.6); ctx.lineTo(cx,cy); ctx.lineTo(cx+fs*0.6,cy-fs*0.6); ctx.lineWidth=Math.max(1,fs/7); ctx.strokeStyle=C.faint; ctx.stroke(); } } });
   ctx.globalAlpha=1; }
 function drawZones(n, alpha){ const L=n.layout, t=LT[n.id]; (L.zones||[]).forEach(z=>{ const [sx,sy]=toS(t.ox+z[1]*t.s, t.oy+z[2]*t.s), sw=z[3]*t.s*cam.k, sh=z[4]*t.s*cam.k;
