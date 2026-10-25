@@ -12,7 +12,7 @@ ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 from scripts.sync_mkdocs_theme import sync_theme
-from skill_graph.model import REPOS
+from pipelines_hooks.core.repositories import repository_slug
 
 THEME = ROOT / "templates/mkdocs-theme"
 MAIN = (THEME / "overrides/main.html").read_text(encoding="utf-8")
@@ -47,8 +47,8 @@ def test_site_urls_match_repos() -> None:
     Loader.add_constructor("!ENV", lambda loader, node: None)
     base = yaml.load((THEME / "base.mkdocs.yml").read_text(encoding="utf-8"), Loader)
     for site in base["extra"]["ecosystem"]["sites"]:
-        if site["slug"] in REPOS:
-            assert site["url"] == REPOS[site["slug"]][1]
+        # Selector keys stay stable; destination URLs use the canonical repository.
+        assert site["url"] == f"https://knuckles-team.github.io/{repository_slug(site['slug'])}/"
 
 
 @pytest.mark.spec("PIPE-PAGES-R018.5")
