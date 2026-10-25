@@ -1022,6 +1022,7 @@
         "2f6747267768",
         "64ce2e92a6da",
         "7eca7920c666",
+        "8f6b2234e190",
         "ffddb8aba2bc"
       ],
       "verified_by": [
@@ -1080,7 +1081,8 @@
       "title": "Keep every `extra.ecosystem.sites` URL in `templates/mkdocs-theme/base.mkdocs.yml` equal to its `REPOS` entry in `scripts/skill_graph/model.py`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "2f6747267768"
+        "2f6747267768",
+        "8f6b2234e190"
       ],
       "verified_by": [
         "tests/test_spec_delivery_nav.py:42"

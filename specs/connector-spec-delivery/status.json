@@ -413,7 +413,7 @@
         "tests/hooks/test_spec_landing_attribution.py:46",
         "tests/hooks/test_spec_landing_attribution.py:56",
         "tests/hooks/test_spec_repository_identity.py:23",
-        "tests/hooks/test_spec_repository_identity.py:32"
+        "tests/hooks/test_spec_repository_identity.py:31"
       ]
     },
     {
@@ -3626,6 +3626,7 @@
       "title": "Derived release bundles",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "8f6b2234e190",
         "a7d9241136c9"
       ],
       "verified_by": [

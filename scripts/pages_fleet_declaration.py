@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 
 from pipelines_hooks.core.gitenv import git_text, repo_root
+from pipelines_hooks.core.repositories import canonical_repository
 from scripts.readiness.filesystem import _path_parts, _safe_existing_path
 from scripts.readiness.urls import _public_url
 
@@ -68,7 +69,7 @@ def validate(value: object) -> dict:
     seen = set()
     for item in consumers:
         consumer(item)
-        name = item["repository"].lower()
+        name = canonical_repository(item["repository"]).casefold()
         if name in seen:
             raise ParityError("duplicate-consumer")
         seen.add(name)

@@ -18,6 +18,33 @@ class NoRedirect(HTTPRedirectHandler):
         raise ValueError("GitHub API redirect refused")
 
 
+# This action runs from a caller checkout, so it cannot depend on the
+# pipelines package. Repository slugs are allowed to move while package,
+# import, ontology, and spec identities remain stable.
+_REPOSITORY_ALIASES = {
+    "epistemic-graph": "medulla",
+    "epistemic-graph-server": "medulla-stem",
+    "agent-connector-sdk": "scion-sdk",
+    "agent-utilities": "meristem",
+    "agent-webui": "overstory",
+    "agent-terminal-ui": "tuig",
+    "geniusbot": "axil",
+}
+
+
+def _canonical_repository(value: str) -> str:
+    """Canonicalize a GitHub ``owner/slug`` without changing its owner."""
+    parts = value.strip().rstrip("/").split("/")
+    owner, slug = parts[-2:] if len(parts) >= 2 else ("", parts[-1] if parts else "")
+    slug = _REPOSITORY_ALIASES.get(slug.casefold(), slug)
+    return f"{owner}/{slug}" if owner else slug
+
+
+def _repository_matches(left: object, right: object) -> bool:
+    """Compare metadata and requested refs using old/new slug equivalence."""
+    return _canonical_repository(str(left)).casefold() == _canonical_repository(str(right)).casefold()
+
+
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise ValueError(message)
@@ -101,10 +128,11 @@ def verify(environment: dict) -> str:
     source = frozen_source(environment)
     repository = environment.get("RELEASE_REPOSITORY", "")
     require(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository) is not None, "invalid release repository")
-    prefix = "/repos/" + repository
+    canonical_repository = _canonical_repository(repository)
+    prefix = "/repos/" + canonical_repository
     # Prove repository access first: its 404 must never count as an absent tag.
     metadata = api_get(prefix, environment)
-    require(metadata.get("full_name", "").casefold() == repository.casefold(), "GitHub repository identity mismatch")
+    require(_repository_matches(metadata.get("full_name", ""), repository), "GitHub repository identity mismatch")
     tag = release_tag(environment)
     document = api_get(prefix + "/git/ref/" + tag.removeprefix("refs/"), environment, missing=True)
     if document is not None:

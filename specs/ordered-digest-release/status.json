@@ -109,8 +109,8 @@
         "0f9f73b150d7",
         "455654369f2f",
         "8b68968bb542",
-        "d6a43376acc9",
-        "df7212f102bb"
+        "8f6b2234e190",
+        "d6a43376acc9"
       ],
       "verified_by": [
         "tests/test_release_version_guard.py:110",
@@ -729,7 +729,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:507"
+        "tests/test_container_pipeline_contract.py:517"
       ]
     },
     {

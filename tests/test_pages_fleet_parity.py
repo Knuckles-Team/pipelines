@@ -9,6 +9,7 @@ from scripts.check_five_repo_parity import main
 from scripts.pages_fleet_declaration import canonical, digest, validate
 from scripts.pages_fleet_parity import verify
 from scripts.pages_fleet_receipt import receipt, render_receipt
+from scripts.pages_fleet_workflow import is_pages_call
 from scripts.sync_mkdocs_theme import THEME_FILES
 from pages_fleet_fixtures import consumer_root, declaration_file, fleet_fixture, git, revise
 
@@ -45,6 +46,34 @@ def test_variable_fleet_without_code_change(fleet):
     root, declaration = fleet
     declaration["consumers"] = declaration["consumers"][:2]
     assert len(verify(declaration, root)["consumers"]) == 2
+
+
+def test_pages_call_accepts_renamed_pipeline_repository_slug():
+    uses = "Knuckles-Team/agent-utilities/.github/workflows/pages_pipeline.yml@" + "a" * 40
+    assert is_pages_call(uses, "Knuckles-Team/meristem")
+
+
+def test_fleet_rejects_old_and_new_aliases_as_duplicate_consumers():
+    declaration = {
+        "schema_version": 1,
+        "pipeline": {"repository": "example/pipelines", "revision": "a" * 40},
+        "consumers": [
+            {
+                "repository": "Knuckles-Team/agent-utilities",
+                "revision": "b" * 40,
+                "content_source": "docs",
+                "shared_theme_enabled": True,
+            },
+            {
+                "repository": "Knuckles-Team/meristem",
+                "revision": "c" * 40,
+                "content_source": "pages",
+                "shared_theme_enabled": True,
+            },
+        ],
+    }
+    with pytest.raises(ValueError, match="duplicate-consumer"):
+        validate(declaration)
 
 
 def test_changed_byte_nonzero_and_historical_receipt(fleet, tmp_path, capsys):
