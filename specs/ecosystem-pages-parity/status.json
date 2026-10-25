@@ -4106,7 +4106,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "72f7362888b8",
-        "9ad2ff194f2a"
+        "9ad2ff194f2a",
+        "bf0cc60fbd80"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:327",
@@ -4132,7 +4133,8 @@
       "title": "Every scanned repository has a part",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "9dd3e4967209"
+        "9dd3e4967209",
+        "bf0cc60fbd80"
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:327",
