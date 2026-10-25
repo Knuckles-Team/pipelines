@@ -477,3 +477,16 @@ renaming the architecture node. The executable remains lowercase `tuig`;
 stable IDs, repository mapping, transport and release/runtime qualification
 are unchanged. The existing identity test checks both display labels and the
 lowercase executable description.
+
+### 2026-10-25 — ecosystem display brands (PIPE-PAGES-R042)
+
+This amendment supersedes the earlier terminal title/subtitle choices: the
+canonical model uses the five approved product display names documented in
+`reference/ecosystem-boundaries.md`.
+Axil Desk is the desktop GUI; Epistemic Graph and Arbora retain their names.
+The Tuig executable remains `tuig`. Stable node IDs, repository slugs, code
+paths, imports, dependency identifiers and protocol contracts do not change.
+Existing runtime and release qualification caveats remain in force.
+The normal explorer generator consumes these labels; no generated organization
+site output is hand-edited. The display-brand regression test exercises that
+generator and checks brand labels alongside their unchanged repository IDs.
