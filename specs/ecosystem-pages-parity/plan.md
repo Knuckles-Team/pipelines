@@ -580,3 +580,13 @@ against the actual wave and tinted-glass composites in both themes. Retain motio
 opt-out, reduced-motion/forced-colors handling and hidden-page pause. Hosted visual
 proof must include unforced real elapsed-time Chrome frames, not animation seeking
 or a virtual-time-only claim; no runtime CDN, video or new dependency is added.
+
+### Swimlane glass prototype (2026-10-25)
+
+Use the existing overview band bounds as shared low-opacity frosted panes with
+quiet neutral edges, a small category marker and complete gutter headings.
+Retain node geometry, camera behavior, card category hues, connector visibility,
+canonical ownership and requirement identities. This is a separate visual
+follow-up; it must not delay deployment of the approved abstract ocean version.
+No new blur layer, animated object or runtime dependency is introduced. Validate
+text contrast including the lane material beneath both card-gradient endpoints.
