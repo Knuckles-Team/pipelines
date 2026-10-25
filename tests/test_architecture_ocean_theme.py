@@ -114,3 +114,72 @@ def test_ocean_motion_is_shared_bounded_and_accessible() -> None:
     assert "motionPreference.matches||transparencyPreference.matches||forcedColorsPreference.matches" in html
     assert ".ocean-wave{animation:none!important}" in html
     assert 'button.setAttribute("aria-pressed",String(enabled))' in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_light_reading_text_contrasts_over_deepest_wave_composite() -> None:
+    block = TEMPLATE.read_text().split(":root{", 1)[1].split("}", 1)[0]
+    tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+    # Conservative fully overlapping wave color under the 76% reading plate.
+    composite = "#" + "".join(f"{round(0.76 * a + 0.24 * b):02x}" for a, b in zip((255, 255, 255), (23, 79, 120)))
+    for token in ("--fg", "--muted", "--faint", "--accent"):
+        assert _contrast(tokens[token], composite) >= 4.5, (token, composite)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> None:
+    html = TEMPLATE.read_text()
+
+    def blend(front: tuple[int, ...], back: tuple[int, ...], alpha: float) -> tuple[int, ...]:
+        return tuple(round(a * alpha + b * (1 - alpha)) for a, b in zip(front, back))
+
+    for selector, ocean in (
+        (":root{", (23, 79, 120)),
+        (':root[data-theme="dark"]{', blend((3, 22, 40), (224, 242, 233), 0.56)),
+    ):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+        assert ".canvas{background:rgb(255 255 255 / .10)}" in html
+        ocean = blend((255, 255, 255), ocean, 0.10)
+        for endpoint in ("top", "bottom"):
+            match = re.search(r"--node-" + endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+            assert match
+            channels = tuple(int(match[i]) for i in (1, 2, 3))
+            composite = "#" + "".join(f"{c:02x}" for c in blend(channels, ocean, float(match[4])))
+            for name, color in tokens.items():
+                if name in ("--fg", "--muted", "--faint", "--accent") or name.startswith(("--s-", "--l-")):
+                    assert _contrast(color, composite) >= 4.5, (selector, endpoint, name, composite)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_header_status_badges_contrast_on_stacked_translucent_surfaces() -> None:
+    html = TEMPLATE.read_text()
+    for selector, ocean in ((":root{", (23, 79, 120)), (':root[data-theme="dark"]{', (255, 255, 255))):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+        for surface in ("--ocean-dim", "--glass-chrome", "--glass-control"):
+            match = re.search(re.escape(surface) + r":rgb\((\d+) (\d+) (\d+) / ([.\d]+)\)", block)
+            assert match
+            alpha = float(match[4])
+            ocean = tuple(round(int(match[i + 1]) * alpha + channel * (1 - alpha)) for i, channel in enumerate(ocean))
+        composite = "#" + "".join(f"{c:02x}" for c in ocean)
+        for name, color in tokens.items():
+            if name == "--fg" or name.startswith("--s-"):
+                assert _contrast(color, composite) >= 4.5, (selector, name, composite)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_glass_and_ordinary_buttons_use_neutral_white_or_smoke_not_blue_fill() -> None:
+    html = TEMPLATE.read_text()
+    for selector in (":root{", ':root[data-theme="dark"]{'):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        for name in ("glass-reading", "glass-control", "glass-chrome", "button-neutral", "button-hover"):
+            match = re.search(r"--" + name + r":rgb\((\d+) (\d+) (\d+) /", block)
+            assert match
+            channels = [int(match[i]) for i in (1, 2, 3)]
+            assert max(channels) - min(channels) <= 3, (selector, name)
+        for name in ("node-top", "node-bottom"):
+            match = re.search(r"--" + name + r":rgba\((\d+),(\d+),(\d+),", block)
+            assert match
+            channels = [int(match[i]) for i in (1, 2, 3)]
+            assert max(channels) - min(channels) <= 3, (selector, name)

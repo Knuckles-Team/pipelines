@@ -524,3 +524,13 @@ or reduced transparency disables it, and hidden pages pause it. Forced colors
 hide the decoration. Verify actual browser animation phases, control persistence
 and pause behavior alongside existing zoom/navigation tests. Phase screenshots
 are sampled real CSS animation frames, not a video or elapsed-time benchmark.
+
+
+### 2026-10-25 — Neutral fog glass over ocean wallpaper (PIPE-PAGES-R042)
+
+Retain the approved ambient ocean wallpaper, but remove added blue pigments from
+shells, node materials and ordinary controls. Lift light glass toward neutral
+white and raise fog opacity by roughly 10–16 percentage points; use neutral
+smoke in dark mode. Reserve color for semantic statuses, restrained category
+text/markers and selected controls. Recheck actual alpha-composited node and
+header text surfaces; preserve data, camera, navigation and motion controls.
