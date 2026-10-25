@@ -61,6 +61,7 @@ def test_real_browser_receipt_fails_closed_for_skipped_missing_or_failed_cases(t
         "test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[1440,1000]",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[390,844]",
+        "test_ocean_browser_motion_controls_and_composited_wave_phases",
     ]
     cases = [f'<testcase name="{name}"/>' for name in names]
     if bad == "missing":

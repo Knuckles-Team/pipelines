@@ -98,3 +98,19 @@ def test_glass_reading_surfaces_protect_footer_and_search_contrast() -> None:
     assert ".map-notes{padding:8px 12px;" in html
     assert ".search input::placeholder{color:var(--muted);opacity:1}" in html
     assert ".map-notes,.panel .ph{background:Canvas" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_ocean_motion_is_shared_bounded_and_accessible() -> None:
+    html = TEMPLATE.read_text()
+    assert html.count('<span class="ocean-wave">') == 3
+    assert 'class="ocean-scene" aria-hidden="true"' in html
+    assert "pointer-events:none;contain:strict" in html
+    assert "animation:ocean-drift 42s" in html
+    assert "animation-duration:58s" in html and "animation-duration:73s" in html
+    assert 'store.get("arbora-arch-ocean-motion")!=="off"' in html
+    assert 'enabled&&!document.hidden?"running":"paused"' in html
+    assert 'document.addEventListener("visibilitychange",oceanMotionState)' in html
+    assert "motionPreference.matches||transparencyPreference.matches||forcedColorsPreference.matches" in html
+    assert ".ocean-wave{animation:none!important}" in html
+    assert 'button.setAttribute("aria-pressed",String(enabled))' in html

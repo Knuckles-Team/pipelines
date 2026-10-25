@@ -1172,6 +1172,7 @@ setTimeout(async()=>{
     const theme=document.documentElement.getAttribute('data-theme'); get('theme').click();
     check(document.documentElement.getAttribute('data-theme')!==theme,'theme switch');
     check(getComputedStyle(cv).transitionDuration==='0s','reduced motion');
+    check(get('ocean-motion').disabled && document.documentElement.dataset.oceanMotion==='paused','reduced-motion wallpaper off');
     check(document.documentElement.scrollWidth<=innerWidth,'no horizontal page overflow');
     result.textContent='PASS';
   }catch(error){result.textContent='FAIL: '+error.message;}
@@ -1217,3 +1218,69 @@ def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identi
     assert "Installed backend and release qualification" in terminal
     assert "durable resume and central continuation remain separate gates" in terminal
     assert "Approval attachment and durable resume are not delivered" in tree.nodes["tui.coding"]["desc"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+def test_ocean_browser_motion_controls_and_composited_wave_phases(monkeypatch, tmp_path: Path) -> None:
+    """Validate real CSS animation phases and accessibility without a video simulation."""
+    import subprocess
+
+    page = tmp_path / "motion.html"
+    probe = """<script>
+setTimeout(()=>{
+  const result=document.createElement('output'); result.id='motion-result';
+  const check=(ok,name)=>{if(!ok)throw Error(name);};
+  try{
+    const root=document.documentElement, button=document.getElementById('ocean-motion');
+    if(sessionStorage.getItem('ocean-reload-proof')==='pending'){
+      check(root.dataset.oceanMotion==='paused' && button.getAttribute('aria-pressed')==='false','opt out restored after real reload');
+      check(localStorage.getItem('arbora-arch-ocean-motion')==='off','persisted opt out survives reload');
+      button.click(); sessionStorage.removeItem('ocean-reload-proof');
+      result.textContent='PASS'; document.body.append(result); return;
+    }
+    const waves=[...document.querySelectorAll('.ocean-wave')];
+    check(root.dataset.oceanMotion==='running','default motion on');
+    check(waves.length===3,'three shared waves');
+    const animations=waves.map(w=>w.getAnimations()[0]);
+    check(animations.every(a=>a&&a.playState==='running'),'CSS animations running');
+    animations.forEach(a=>{a.currentTime=0;});
+    const before=waves.map(w=>getComputedStyle(w).transform);
+    animations.forEach(a=>{a.currentTime=12000;});
+    check(waves.every((w,i)=>getComputedStyle(w).transform!==before[i]),'distinct real rendered phases');
+    button.click(); check(root.dataset.oceanMotion==='paused','opt out pauses');
+    check(waves.every(w=>getComputedStyle(w).animationPlayState==='paused'),'CSS animations paused');
+    check(localStorage.getItem('arbora-arch-ocean-motion')==='off','opt out persisted');
+    check(button.getAttribute('aria-pressed')==='false','accessible state');
+    button.click(); check(root.dataset.oceanMotion==='running','resume');
+    Object.defineProperty(document,'hidden',{configurable:true,value:true});
+    document.dispatchEvent(new Event('visibilitychange'));
+    check(root.dataset.oceanMotion==='paused','hidden page pauses');
+    Object.defineProperty(document,'hidden',{configurable:true,value:false});
+    document.dispatchEvent(new Event('visibilitychange'));
+    check(root.dataset.oceanMotion==='running','visible page resumes');
+    check(getComputedStyle(document.querySelector('.ocean-scene')).pointerEvents==='none','wallpaper never intercepts input');
+    button.click(); sessionStorage.setItem('ocean-reload-proof','pending');
+    location.reload(); return;
+  }catch(error){result.textContent='FAIL: '+error.message;}
+  document.body.append(result);
+},500);
+</script>"""
+    page.write_text(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS) + probe)
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--virtual-time-budget=6000",
+            "--dump-dom",
+            page.as_uri(),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    assert '<output id="motion-result">PASS</output>' in out, out[-1500:]

@@ -63,6 +63,7 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
         "Visual/navigation preview only. Spec detail shards are not included; expand-detail offline is unavailable.\n"
         "The canonical deployed generator and its full detail behavior are unchanged.\n"
         "Open index.html to test theme/navigation. DOM evidence is gzip-compressed.\n"
+        "Sampled-phase screenshots are real browser CSS-animation phases at 0/12 seconds, not a video.\n"
     )
     for theme in ("light", "dark"):
         head = DOC_HEAD.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
@@ -86,9 +87,30 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
     return evidence
 
 
-def capture(chrome: str, output: Path, theme: str, viewport: str, node: str, *, require_inter: bool = True) -> None:
+def capture(
+    chrome: str,
+    output: Path,
+    theme: str,
+    viewport: str,
+    node: str,
+    *,
+    require_inter: bool = True,
+    phase: int | None = None,
+) -> None:
     name = f"{theme}-{viewport.replace(',', 'x')}-{node}"
+    if phase is not None:
+        name += f"-sampled-phase-{phase}s"
     with tempfile.TemporaryDirectory(prefix="architecture-chrome-") as profile:
+        page = output / f"{theme}.html"
+        if phase is not None:
+            sampled = Path(profile) / "sampled.html"
+            hook = (
+                "<script>setTimeout(()=>{document.querySelectorAll('.ocean-wave').forEach(w=>w.getAnimations().forEach(a=>{a.pause();a.currentTime="
+                + str(phase * 1000)
+                + ";}));},800);</script>"
+            )
+            sampled.write_text(page.read_text().replace("</body>", hook + "</body>"))
+            page = sampled
         command = [
             chrome,
             "--headless=new",
@@ -100,7 +122,7 @@ def capture(chrome: str, output: Path, theme: str, viewport: str, node: str, *, 
             "--run-all-compositor-stages-before-draw",
             f"--screenshot={output / (name + '.png')}",
             "--dump-dom",
-            (output / f"{theme}.html").as_uri() + f"#node={node}",
+            page.as_uri() + f"#node={node}",
         ]
         result = subprocess.run(command, capture_output=True, text=True, timeout=60, check=False)
     with gzip.open(output / f"{name}.html.gz", "wt", encoding="utf-8") as compressed:
@@ -128,6 +150,7 @@ def verify_browser_results(report: Path) -> None:
         "test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[1440,1000]",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[390,844]",
+        "test_ocean_browser_motion_controls_and_composited_wave_phases",
     }
     cases = {case.attrib.get("name"): case for case in ElementTree.parse(report).iter("testcase")}
     for name in sorted(expected):
@@ -168,6 +191,9 @@ def main() -> None:
         for viewport in ("1440,1000", "390,844"):
             for node in ("root", "webui", "tui"):
                 capture(chrome, output, theme, viewport, node)
+        if theme == "light":
+            for phase in (0, 12):
+                capture(chrome, output, theme, "1440,1000", "webui", phase=phase)
         (output / f"{theme}.html").unlink()
     for theme in ("light", "dark"):
         for viewport, node in (("1440,1000", "root"), ("1440,1000", "webui"), ("390,844", "root")):

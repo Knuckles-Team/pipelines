@@ -204,7 +204,14 @@ select.sel{font:500 12px var(--font-body);color:var(--fg);background:var(--surfa
 }
 /* Full Overstory glass: one shared ocean scene, bounded shell blur, and inexpensive
    translucent vector cards. No per-node filters, cached photo downloads or paint animation. */
-body{background-image:linear-gradient(var(--ocean-dim),var(--ocean-dim)),url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201100%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22sea%22%20x2%3D%22.8%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23c0e5e8%22%2F%3E%3Cstop%20offset%3D%22.40%22%20stop-color%3D%22%235eafc4%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2324577c%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22foam%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23edfbef%22%20stop-opacity%3D%22.78%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23c3eee7%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22light%22%3E%3Cstop%20stop-color%3D%22%23f4ffed%22%20stop-opacity%3D%22.92%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23d7fff6%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22url%28%23sea%29%22%20d%3D%22M0%200h1600v1100H0z%22%2F%3E%3Cellipse%20cx%3D%22390%22%20cy%3D%2280%22%20rx%3D%22900%22%20ry%3D%22570%22%20fill%3D%22url%28%23light%29%22%2F%3E%3Cpath%20fill%3D%22%23267e9c%22%20opacity%3D%22.36%22%20d%3D%22M780-100C240%20130%20800%20390%20380%20650S130%201060-160%201250H1700V-100z%22%2F%3E%3Cpath%20fill%3D%22url%28%23foam%29%22%20d%3D%22M-50%2090C360%20190%20400-80%20820%20110S1190%20380%201670%20180V-100H-50z%22%2F%3E%3Cpath%20fill%3D%22%23154f79%22%20opacity%3D%22.24%22%20d%3D%22M-70%20620C210%20300%20500%20590%20890%20480S1320%20770%201690%20450V1200H-70z%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23e6fff8%22%20stroke-width%3D%223%22%20opacity%3D%22.35%22%3E%3Cpath%20d%3D%22M-70%20190C280%2070%20450%20340%20760%20190S1290%20180%201670%20360%22%2F%3E%3Cpath%20d%3D%22M-60%20218C290%20100%20450%20365%20770%20215S1290%20205%201680%20385%22%2F%3E%3Cpath%20d%3D%22M-60%20650C310%20410%20400%20780%20840%20610S1370%20580%201670%20800%22%2F%3E%3Cpath%20d%3D%22M-50%20675C320%20435%20410%20805%20850%20635S1380%20605%201680%20825%22%2F%3E%3Cpath%20d%3D%22M120-80C-30%20260%20340%20280%20160%20560S290%20910%2080%201180%22%2F%3E%3Cpath%20d%3D%22M1300-80C1080%20220%201450%20330%201210%20620S1400%20920%201190%201180%22%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%221320%22%20cy%3D%22470%22%20rx%3D%22620%22%20ry%3D%22480%22%20fill%3D%22url%28%23light%29%22%20opacity%3D%22.45%22%2F%3E%3C%2Fsvg%3E");background-size:cover;background-position:center;background-attachment:fixed}
+body{background-image:linear-gradient(var(--ocean-dim),var(--ocean-dim)),radial-gradient(ellipse at 22% 0%,#e0f2e9 0%,transparent 65%),linear-gradient(145deg,#8bcbd4,#448aa8 55%,#24577c);background-attachment:fixed}
+.ocean-scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;contain:strict}
+.ocean-wave{position:absolute;inset:-5% -10%;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201000%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23174f78%22%20d%3D%22M-100%20480C180%20440%20380%20520%20650%20480S1100%20440%201350%20480S1600%20520%201700%20480V1100H-100Z%22%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;opacity:.24;animation:ocean-drift 42s ease-in-out infinite alternate;animation-play-state:paused}
+.ocean-wave:nth-child(2){opacity:.16;inset:3% -14% -8%;animation-duration:58s;animation-direction:alternate-reverse}
+.ocean-wave:nth-child(3){opacity:.20;inset:10% -12% -12%;animation-duration:73s}
+:root[data-ocean-motion="running"] .ocean-wave{animation-play-state:running}
+@keyframes ocean-drift{from{transform:translate3d(-3%,-.6%,0)}to{transform:translate3d(3%,.6%,0)}}
+.app{position:relative;z-index:1}
 .app{padding:12px;gap:10px}
 header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var(--glass-edge);border-radius:20px;box-shadow:var(--glass-shadow)}
 .brand h1{font-weight:600;font-size:21px;letter-spacing:-.035em}
@@ -238,10 +245,12 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
 @media (max-width:980px){.app{padding:8px}.brand h1{font-size:20px}.canvas{border-radius:18px}}
 @media (prefers-reduced-transparency: reduce){
   body{background:var(--bg)}
+  .ocean-scene{display:none}
   header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph,.search input,select.sel{background:var(--surface);backdrop-filter:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint,.search input,select.sel{box-shadow:none}
 }
 @media (prefers-reduced-motion: reduce){
+  .ocean-wave{animation:none!important}
   *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
 }
 @media (forced-colors: active){
@@ -254,6 +263,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
     --l-source:CanvasText; --l-delivery:CanvasText; --l-unmapped:CanvasText;
     --s-verified:CanvasText; --s-landed:CanvasText; --s-specified:CanvasText; --s-retired:CanvasText;
   }
+  .ocean-scene{display:none}
   body,header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph{background:Canvas;backdrop-filter:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint{box-shadow:none}
   .btn,.chip,.kids button,.links button{border-color:ButtonText}
@@ -261,6 +271,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
 
 </style>
 
+<div class="ocean-scene" aria-hidden="true"><span class="ocean-wave"></span><span class="ocean-wave"></span><span class="ocean-wave"></span></div>
 <div class="app">
   <header class="top">
     <div class="brand">
@@ -280,6 +291,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
     </div>
     <button class="btn" id="vnext" type="button" aria-pressed="false" title="Open rows whose prerequisites are done, best first">Next up</button>
     <button class="btn" id="vpath" type="button" aria-pressed="false" title="Cross-repository release bundles in train order">Delivery path</button>
+    <button class="btn" id="ocean-motion" type="button" aria-pressed="true" title="Pause or resume background ocean motion">Ocean motion: on</button>
     <button class="btn" id="theme" type="button" title="Switch light or dark">Theme</button>
   </div>
   <main class="work">
@@ -714,6 +726,26 @@ document.addEventListener("keydown",e=>{ if(e.key==="/"&&!e.ctrlKey&&!e.metaKey&
   f.append(el("span",{text:"mapped "+fmt(META.mapped)+" / unmapped "+fmt(META.unmapped)}));
   const lg=$("legend"); Object.keys(LAYERS).forEach(k=>lg.append(el("span",{style:"color:var(--l-"+k+")"},[el("i"),el("span",{style:"color:var(--muted)",text:LAYERS[k]})]))); })();
 const rootEl=document.documentElement; const saved=store.get("arbora-arch-theme"); if(saved==="dark"||saved==="light") rootEl.setAttribute("data-theme",saved);
+// Wallpaper motion is independent of canvas navigation and never repaints graph nodes.
+const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
+const transparencyPreference=window.matchMedia("(prefers-reduced-transparency: reduce)");
+const forcedColorsPreference=window.matchMedia("(forced-colors: active)");
+let oceanEnabled=store.get("arbora-arch-ocean-motion")!=="off";
+function oceanMotionState(){
+  const constrained=motionPreference.matches||transparencyPreference.matches||forcedColorsPreference.matches;
+  const enabled=oceanEnabled&&!constrained;
+  rootEl.dataset.oceanMotion=enabled&&!document.hidden?"running":"paused";
+  const button=$("ocean-motion"); button.setAttribute("aria-pressed",String(enabled));
+  button.textContent=enabled?"Ocean motion: on":"Ocean motion: off";
+  button.disabled=constrained;
+  button.title=constrained?"Ocean motion is off to respect your system preference":"Pause or resume background ocean motion";
+}
+$("ocean-motion").onclick=()=>{oceanEnabled=!oceanEnabled;store.set("arbora-arch-ocean-motion",oceanEnabled?"on":"off");oceanMotionState();};
+motionPreference.addEventListener("change",oceanMotionState);
+transparencyPreference.addEventListener("change",oceanMotionState);
+forcedColorsPreference.addEventListener("change",oceanMotionState);
+document.addEventListener("visibilitychange",oceanMotionState);
+oceanMotionState();
 function curDark(){ const t=rootEl.getAttribute("data-theme"); if(t) return t==="dark"; return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches; }
 function themeLabel(){ $("theme").textContent=curDark()?"Light theme":"Dark theme"; }
 $("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path");

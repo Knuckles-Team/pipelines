@@ -512,3 +512,15 @@ name to Meristem. Preserve node and repository IDs, family placement, code paths
 authority text, evidence and outstanding qualification caveats. The ocean-theme
 preview retains its original payload provenance; normal generation consumes the
 new labels separately. No renderer or capability is added.
+
+
+### 2026-10-25 — Ambient ocean motion behind glass (PIPE-PAGES-R042)
+
+Adapt the user's three-wave ocean wallpaper reference as three shared SVG bands
+with slow compositor-only transforms, not a per-pixel canvas animation. Wallpaper
+stays beneath the diagram and its stable reading surfaces and cannot intercept
+input. Motion defaults on with a persistent, accessible opt-out; reduced motion
+or reduced transparency disables it, and hidden pages pause it. Forced colors
+hide the decoration. Verify actual browser animation phases, control persistence
+and pause behavior alongside existing zoom/navigation tests. Phase screenshots
+are sampled real CSS animation frames, not a video or elapsed-time benchmark.
