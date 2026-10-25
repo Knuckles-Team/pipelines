@@ -176,6 +176,8 @@ jobs:
             scripts/readiness
             scripts/architecture_explorer
             pipelines_hooks/__init__.py
+            pipelines_hooks/core/__init__.py
+            pipelines_hooks/core/repositories.py
             pipelines_hooks/specs/__init__.py
             pipelines_hooks/specs/ids.py
             pipelines_hooks/specs/priority.py
