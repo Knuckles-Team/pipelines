@@ -1020,9 +1020,10 @@ def test_a_build_writes_llms_txt_beside_the_page(monkeypatch, tmp_path: Path) ->
 def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
     model = json.loads((PKG / "model.json").read_text())
     terminal = next(node for node in model["children"] if node["id"] == "tui")
-    assert terminal["label"] == "tuig"
+    assert terminal["label"] == "agent-terminal-ui"
     assert terminal["repo"] == "agent-terminal-ui"
-    assert terminal["role"] == "CLI / terminal client"
+    assert terminal["role"] == "Tuig TUI / CLI"
+    assert terminal["desc"].startswith("tuig is the single Rust/Ratatui CLI")
     assert ["tui", "arbora", "A2A / REST"] in model["edges"]
     edge = next(edge for edge in model["fixed_layout"]["edges"] if edge["from"] == "tui")
     assert (edge["to"], edge["label"]) == ("arbora", "A2A / REST")

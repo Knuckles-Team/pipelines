@@ -3613,8 +3613,8 @@
       "title": "Priority, frontier, and unserved from the organization aggregate",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "a7d9241136c9",
-        "dea979c8f29a"
+        "1da5fcbd5c7f",
+        "a7d9241136c9"
       ],
       "verified_by": [
         "tests/hooks/test_goal_priority.py:81",
