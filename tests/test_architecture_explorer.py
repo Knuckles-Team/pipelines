@@ -1060,7 +1060,7 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
         "webui": ("Overstory", "agent-webui"),
         "tui": ("Tuig", "agent-terminal-ui"),
         "sdk": ("Scion SDK", "agent-connector-sdk"),
-        "au": ("Trellis", "agent-utilities"),
+        "au": ("Meristem", "agent-utilities"),
         "geniusbot": ("Axil Desk", "geniusbot"),
     }
     for node_id, (label, repo) in brands.items():
@@ -1196,3 +1196,23 @@ setTimeout(async()=>{
         check=True,
     ).stdout
     assert '<output id="interaction-result">PASS</output>' in out, out[-1500:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identity() -> None:
+    tree = Tree(json.loads((PKG / "model.json").read_text()))
+    studio = tree.nodes["webui.dash"]
+    assert studio["label"] == "Overstory Studio"
+    assert studio["fam"] == ["agent-dashboards"]
+    assert studio["code"] == ["src/components/dashboards", "src/lib/dashboards"]
+    knowledge = tree.nodes["webui.apps.graph"]
+    assert "Understory" in knowledge["desc"]
+    assert "Graph edits go through the engine." in knowledge["desc"]
+    assert "src/components/atlas" in knowledge["code"]
+    assert tree.nodes["au"]["label"] == "Meristem"
+    assert tree.nodes["au"]["repo"] == "agent-utilities"
+    terminal = tree.nodes["tui"]["desc"]
+    assert "bounded local ACP text sessions" in terminal
+    assert "Installed backend and release qualification" in terminal
+    assert "durable resume and central continuation remain separate gates" in terminal
+    assert "Approval attachment and durable resume are not delivered" in tree.nodes["tui.coding"]["desc"]
