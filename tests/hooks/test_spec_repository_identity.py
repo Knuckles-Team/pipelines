@@ -27,6 +27,14 @@ def test_new_owner_comes_from_remote(repo: Repo, remote: str) -> None:
     assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "arbora"
 
 
+def test_renamed_first_party_remote_uses_canonical_owner(repo: Repo) -> None:
+    # spec: PIPE-CONNSPEC-R001
+    repo.git("remote", "add", "origin", "https://github.com/Knuckles-Team/agent-utilities.git")
+    repo.commit({"specs/demo/requirements.md": _ROWS}, "add spec")
+    assert repo.run("spec-status", "--write") == 0
+    assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "meristem"
+
+
 @pytest.mark.parametrize("version", [1, 2])
 def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: int) -> None:
     # spec: PIPE-CONNSPEC-R001

@@ -10,6 +10,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from pipelines_hooks.core.repositories import REPOSITORY_ALIASES, repository_slug
+
 #: Every requirement-ID prefix observed across the five repos is a run of
 #: hyphen-separated upper-case/digit segments ending in an optional ``R`` plus
 #: digits, with an optional ``.<n>`` split suffix: ``EG-DECISION-ENGINE-R048``,
@@ -22,11 +24,9 @@ REQ_ID = re.compile(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-R?\d+(?:\.\d+)*\b")
 CODE_ROOT = re.compile(r"`([\w.-]+(?:/[\w.-]+)+)`")
 
 KNOWN_REPOS = (
-    "epistemic-graph",
-    "agent-connector-sdk",
-    "agent-utilities",
+    *REPOSITORY_ALIASES,
+    *REPOSITORY_ALIASES.values(),
     "arbora",
-    "agent-webui",
     "pipelines",
 )
 LANDED_STATES = frozenset({"LANDED", "CLOSED"})
@@ -59,7 +59,7 @@ def apply_signals(req: Requirement, text: str) -> None:
     """Fold the code roots and other-repository mentions in ``text`` into ``req``."""
     req.code_roots |= set(CODE_ROOT.findall(text))
     for name in KNOWN_REPOS:
-        if name != req.repo and re.search(rf"\b{re.escape(name)}\b", text):
+        if repository_slug(name) != repository_slug(req.repo) and re.search(rf"\b{re.escape(name)}\b", text):
             req.other_repos.add(name)
 
 

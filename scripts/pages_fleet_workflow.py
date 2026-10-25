@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import yaml
 
+from pipelines_hooks.core.repositories import repository_matches
 from scripts.pages_fleet_declaration import ParityError, object_git
 from scripts.pages_fleet_trees import ExactTree
 from scripts.readiness.filesystem import _safe_existing_path
@@ -81,10 +82,10 @@ def validate_workflow(tree: ExactTree, consumer: dict, pipeline: dict) -> None:
 
 
 def is_pages_call(uses: str, repository: str) -> bool:
-    """GitHub repository identity ignores case; the Git workflow path does not."""
+    """Match a Pages workflow through canonical old/new repository slugs."""
     parts = uses.split("/", 2)
     return (
         len(parts) == 3
-        and "/".join(parts[:2]).lower() == repository.lower()
+        and repository_matches("/".join(parts[:2]), repository)
         and parts[2].startswith(".github/workflows/pages_pipeline.yml@")
     )

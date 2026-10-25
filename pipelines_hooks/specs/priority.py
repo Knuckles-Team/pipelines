@@ -16,6 +16,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, NamedTuple
 
+from pipelines_hooks.core.repositories import repository_slug
+
 DONE_STATES = frozenset({"LANDED", "VERIFIED", "RETIRED"})
 CQ_WEIGHT = 10
 CQ_PREFIX = "EG-CQ-"
@@ -24,14 +26,19 @@ NON_FUNCTIONAL_WORDS = frozenset({"GATES", "PAGES", "DOCS", "HYGIENE", "STANDARD
 UNBLOCK_WEIGHT = 2
 NON_FUNCTIONAL_FACTOR = 0.5
 
-#: Release train: a bundle's steps run in this order. Repositories outside it (connectors) go last.
-TRAIN = (
-    ("epistemic-graph",),
-    ("agent-connector-sdk",),
-    ("agent-utilities",),
+#: First-party release tiers: a bundle's steps run in this order. Repositories
+#: outside it (connectors) go last. The canonical slugs are GitHub identities;
+#: :func:`train_rank` accepts their retired aliases as well.
+FIRST_PARTY_TIERS = (
+    ("medulla",),
+    ("scion-sdk",),
+    ("meristem",),
     ("arbora", "graph-os"),
-    ("agent-webui", "agent-terminal-ui", "geniusbot"),
+    ("overstory", "tuig", "axil"),
 )
+# Compatibility name for callers that still import the original release-train
+# constant. It intentionally points at the canonical first-party tiers.
+TRAIN = FIRST_PARTY_TIERS
 
 
 class Node(NamedTuple):
@@ -137,10 +144,11 @@ def unserved(nodes: dict[str, Node], scores: dict[str, dict[str, Any]]) -> list[
 
 
 def train_rank(repo: str) -> int:
-    for rank, group in enumerate(TRAIN):
-        if repo in group:
+    canonical = repository_slug(repo)
+    for rank, group in enumerate(FIRST_PARTY_TIERS):
+        if canonical in group:
             return rank
-    return len(TRAIN)
+    return len(FIRST_PARTY_TIERS)
 
 
 def bundles(nodes: dict[str, Node], priorities: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:

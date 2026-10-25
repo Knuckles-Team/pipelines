@@ -235,6 +235,16 @@ def test_verified_context_accepts_branded_meristem_and_medulla_wheels(tmp_path: 
     assert result.returncode == 0, result.stderr
 
 
+def test_verified_context_accepts_old_repository_receipt_for_renamed_caller(tmp_path: Path) -> None:
+    case = runtime_case(tmp_path, ROOT, profile="arbora")
+    case["environment"]["CALLER_REPOSITORY"] = "Example/meristem"
+    case["manifest"]["artifacts"][0]["source"]["repository"] = "Example/agent-utilities"
+    case["manifest"]["profile"]["first_party"][0]["repository"] = "Example/agent-utilities"
+    freeze_runtime(case)
+    result = run_runtime_helper(case)
+    assert result.returncode == 0, result.stderr
+
+
 @pytest.mark.parametrize("profile", ["arbora", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
 @pytest.mark.parametrize(
     ("key", "value"),

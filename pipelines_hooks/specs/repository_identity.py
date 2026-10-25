@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from pipelines_hooks.core.gitenv import git_text
+from pipelines_hooks.core.repositories import repository_slug
 
 
 def _remote_name(url: str) -> str | None:
@@ -25,4 +26,5 @@ def remote_owner(repo: Path) -> str | None:
     remote = "origin" if "origin" in remotes else remotes[0] if len(remotes) == 1 else None
     if remote is None:
         return None
-    return _remote_name(git_text(repo, ("remote", "get-url", remote)).strip())
+    name = _remote_name(git_text(repo, ("remote", "get-url", remote)).strip())
+    return repository_slug(name) if name else None

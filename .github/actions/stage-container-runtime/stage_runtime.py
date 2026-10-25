@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 def require(condition: object, message: str) -> None:
@@ -35,6 +36,40 @@ _DISTRIBUTION_ALIASES = {
     "tuig": frozenset({"agent-terminal-ui", "tuig"}),
     "axil": frozenset({"geniusbot", "axil"}),
 }
+
+# The action is copied into caller repositories and therefore cannot import the
+# pipelines package. Keep this small compatibility table beside the standalone
+# action. It applies only to repository provenance; distribution aliases remain
+# governed by ``_DISTRIBUTION_ALIASES`` above.
+_REPOSITORY_ALIASES = {
+    "epistemic-graph": "medulla",
+    "epistemic-graph-server": "medulla-stem",
+    "agent-connector-sdk": "scion-sdk",
+    "agent-utilities": "meristem",
+    "agent-webui": "overstory",
+    "agent-terminal-ui": "tuig",
+    "geniusbot": "axil",
+}
+
+
+def _repository_keys(value: object) -> frozenset[str]:
+    """Return comparable old/new repository keys for a source receipt."""
+    text = str(value).strip()
+    if "://" in text:
+        text = urlsplit(text).path
+    elif text.startswith("git@") and ":" in text:
+        text = text.split(":", 1)[1]
+    text = text.rstrip("/")
+    if text.endswith(".git"):
+        text = text[:-4]
+    parts = [part for part in text.split("/") if part]
+    if not parts:
+        return frozenset()
+    slug = _REPOSITORY_ALIASES.get(parts[-1].casefold(), parts[-1]).casefold()
+    keys = {slug}
+    if len(parts) >= 2:
+        keys.add(f"{parts[-2].casefold()}/{slug}")
+    return frozenset(keys)
 
 
 def is_distribution(value: str, role: str) -> bool:
@@ -132,13 +167,8 @@ class Runtime:
 
     def bind_sources(self, first_party: dict) -> None:
         caller = self.env["CALLER_REPOSITORY"]
-        repositories = {
-            caller,
-            caller.split("/")[-1],
-            f"https://github.com/{caller}",
-            f"https://github.com/{caller}.git",
-        }
-        matches = [item for item in first_party.values() if item["repository"] in repositories]
+        caller_keys = _repository_keys(caller)
+        matches = [item for item in first_party.values() if caller_keys & _repository_keys(item["repository"])]
         require(
             len(matches) == 1 and matches[0]["source_sha"] == self.inputs["source-revision"],
             "Caller source absent or mismatched in freeze",

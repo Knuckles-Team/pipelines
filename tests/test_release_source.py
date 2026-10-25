@@ -146,6 +146,20 @@ def test_existing_tag_is_compared_to_frozen_source(guard, case, monkeypatch, ann
         assert guard.verify(case) == expected
 
 
+def test_renamed_repository_reference_uses_canonical_metadata_endpoint(guard, case, monkeypatch):
+    case["RELEASE_REPOSITORY"] = "Knuckles-Team/agent-utilities"
+    responses = {
+        "/repos/Knuckles-Team/meristem": {"full_name": "Knuckles-Team/meristem"},
+        "/repos/Knuckles-Team/meristem/git/ref/tags/v1.2.3": 404,
+    }
+    calls = serve(monkeypatch, guard, responses)
+    assert guard.verify(case) == case["SOURCE_COMMIT"]
+    assert [request.full_url for request in calls] == [
+        "https://api.github.com/repos/Knuckles-Team/meristem",
+        "https://api.github.com/repos/Knuckles-Team/meristem/git/ref/tags/v1.2.3",
+    ]
+
+
 @pytest.mark.parametrize("field", ["SOURCE_COMMIT", "LATEST_COMMIT", "EXPECTED_COMMIT"])
 def test_source_drift_blocks_before_network(guard, case, monkeypatch, field):
     case[field] = "c" * 40
