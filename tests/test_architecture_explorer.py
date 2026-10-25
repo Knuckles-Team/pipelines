@@ -191,18 +191,18 @@ def test_shipped_unmapped_allowlist_is_reviewed_and_empty() -> None:
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_build_fails_on_an_unmapped_row(monkeypatch) -> None:
-    rows = [_row("EG-SCM-R999", "Nothing names this row", family="source-changesets", repo="epistemic-graph")]
+    rows = [_row("EG-SCM-R999", "Nothing names this row", family="source-changesets", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
-            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "epistemic-graph" else [])
+            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "medulla" else [])
             for e in registry
         ]
 
     monkeypatch.setattr(explorer, "load_all", fake_load)
     monkeypatch.setattr(explorer, "run_layout", lambda levels: {})
     _, meta = explorer.build("github", None)
-    assert meta["unmapped_violations"] == ["epistemic-graph:EG-SCM-R999"]
+    assert meta["unmapped_violations"] == ["medulla:EG-SCM-R999"]
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -247,11 +247,11 @@ def test_shipped_model_covers_every_registered_connector() -> None:
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 def test_page_builds_offline_with_both_variants(monkeypatch, tmp_path: Path) -> None:
-    rows = [_row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="epistemic-graph")]
+    rows = [_row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
-            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "epistemic-graph" else [])
+            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "medulla" else [])
             for e in registry
         ]
 
@@ -297,16 +297,16 @@ def _ids(node: dict) -> set[str]:
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 def test_a_deleted_row_disappears_from_the_generated_tree(monkeypatch) -> None:
-    keep = _row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="epistemic-graph")
-    gone = _row("EG-SCM-R002", "Changeset replay", family="source-changesets", repo="epistemic-graph")
+    keep = _row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")
+    gone = _row("EG-SCM-R002", "Changeset replay", family="source-changesets", repo="medulla")
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-    monkeypatch.setattr(explorer, "load_all", _fake_loader({"epistemic-graph": [keep, gone]}))
+    monkeypatch.setattr(explorer, "load_all", _fake_loader({"medulla": [keep, gone]}))
     before, meta = explorer.build("github", None)
     assert {"EG-SCM-R001", "EG-SCM-R002"} <= _ids(before)
-    monkeypatch.setattr(explorer, "load_all", _fake_loader({"epistemic-graph": [keep]}))
+    monkeypatch.setattr(explorer, "load_all", _fake_loader({"medulla": [keep]}))
     after, meta = explorer.build("github", None)
     assert "EG-SCM-R001" in _ids(after) and "EG-SCM-R002" not in _ids(after)
-    assert meta["rows"] == 1 and meta["heads"]["epistemic-graph"] == "h-epis"
+    assert meta["rows"] == 1 and meta["heads"]["medulla"] == "h-medu"
     assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", meta["built_at"])
 
 
@@ -322,6 +322,72 @@ def test_discovery_drops_removed_repositories_and_adds_new_ones() -> None:
     assert scanned[0]["sha"] == "a" * 40 and scanned[1]["discovered"] is True
     assert sources.scan_set(registry, "local", "token") == registry
     assert sources.scan_set(registry, "github", None) == registry
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.9", "PIPE-PAGES-R042.7")
+def test_renamed_repositories_keep_ownership_placement_and_canonical_details(tmp_path: Path) -> None:
+    registry = json.loads((PKG / "registry.json").read_text())
+    expected = {
+        "medulla": ("eg", "epistemic-graph", "core"),
+        "meristem": ("au", "agent-utilities", "core"),
+        "scion-sdk": ("sdk", "agent-connector-sdk", "core"),
+        "overstory": ("webui", "agent-webui", "core"),
+        "tuig": ("tui", "agent-terminal-ui", "core"),
+        "axil": ("geniusbot", "geniusbot", "client"),
+    }
+    found = {e["slug"]: "a" * 40 for e in registry["repositories"]}
+    found["new-mcp"] = "b" * 40
+    scanned = sources.reconcile(registry["repositories"], found)
+    entries = {e["name"]: e for e in scanned}
+    model = json.loads((PKG / "model.json").read_text())
+    explorer.fit_fleet(model, scanned)
+    tree = Tree(model)
+    rows, snaps = [], []
+    for slug, (node_id, old_slug, kind) in expected.items():
+        entry = entries[slug]
+        assert entry["slug"] == slug and entry["kind"] == kind
+        assert not entry.get("discovered") and old_slug not in entries
+        assert entry["local"] == f"agent-packages/{old_slug}"
+        assert registry["pages_node"][slug] == node_id
+        assert tree.nodes[node_id]["repo"] == slug
+        if slug == "axil":
+            family, source = "desktop-client", "geniusbot/backend.py"
+            row = _row("GENIUSBOT-CLIENT-R001", "Backend integration", family, slug)
+        elif slug == "meristem":
+            family, source = "harness-cycle", "agent_utilities/harness/plan.py"
+            row = _row("AU-HARNESS-CYCLE-R001.2", "Propose", family, slug)
+        else:
+            home = next(
+                n
+                for n in tree.nodes.values()
+                if n["repo"] == slug
+                and n.get("fam")
+                and any(c.get("code") and not c["children"] for c in explorer._walk(n))
+            )
+            descendants = list(explorer._walk(home))
+            leaf = next(n for n in descendants if n.get("code") and not n["children"])
+            family = home["fam"][0]
+            source = leaf["code"][0]
+            row = _row(f"RENAME-{node_id.upper()}-R001", "Source placement", family, slug, f"Uses `{source}`.")
+        rows.append(row)
+        snaps.append(Snapshot(repo=slug, slug=slug, rows=[row], files={source}))
+        assert details.safe_url("requirements.md", details.Ctx(slug, family)) == (
+            f"https://github.com/Knuckles-Team/{slug}/blob/HEAD/specs/{family}/requirements.md"
+        )
+    direct = Placer(tree).run(rows)
+    placed = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert len(placed) == 6
+    assert all(tree.nodes[placed[r["id"]]]["repo"] == r["repo"] for r in rows)
+    assert all(not tree.nodes[placed[r["id"]]].get("unmapped") for r in rows)
+    assert not any(nid.startswith("conn.discovered." + slug) for nid in tree.nodes for slug in expected)
+    assert entries["new-mcp"]["kind"] == "connector" and entries["new-mcp"]["discovered"]
+    written = details.write_details(tmp_path, snaps)
+    assert len(written) == 6
+    for snap in snaps:
+        path = tmp_path / details.detail_path(snap.repo, snap.rows[0]["family"])
+        doc = json.loads(path.read_text())
+        assert doc["repo"] == snap.repo and set(doc["rows"]) == {snap.rows[0]["id"]}
+        assert all(f"/Knuckles-Team/{snap.slug}/" in f["url"] for f in doc["files"])
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -389,24 +455,24 @@ _NEEDS_LAYOUT = pytest.mark.skipif(
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 _SEARCH_ROWS = {
-    "agent-connector-sdk": [
+    "scion-sdk": [
         _row(
             "SDK-CONNECTOR-CONTROL-R030",
             "SDK provides GraphQL introspection context helpers for connector tools",
             "SDK-CONNECTOR-CONTROL",
-            "agent-connector-sdk",
+            "scion-sdk",
         ),
         _row(
             "SDK-CONNECTOR-CONTROL-R030.1",
             "SDK owns the one GraphQL client for connectors",
             "SDK-CONNECTOR-CONTROL",
-            "agent-connector-sdk",
+            "scion-sdk",
         ),
         _row(
             "SDK-CONNECTOR-CONTROL-R043",
             "SDK declares a source access contract for the engine client",
             "SDK-CONNECTOR-CONTROL",
-            "agent-connector-sdk",
+            "scion-sdk",
         ),
     ],
     "adguard-home-agent": [
@@ -426,7 +492,7 @@ def _build_page(monkeypatch, tmp_path: Path, rows_by_repo: dict, aliases: dict |
                 slug=e["slug"],
                 head="h",
                 rows=rows_by_repo.get(e["name"], []),
-                aliases=aliases or {} if e["name"] == "agent-connector-sdk" else {},
+                aliases=aliases or {} if e["name"] == "scion-sdk" else {},
             )
             for e in registry
         ]
@@ -502,7 +568,7 @@ def test_a_capability_search_ranks_the_owning_row_first(monkeypatch, tmp_path: P
     ids = [h["id"] for h in hits]
     assert ids[0] == "SDK-CONNECTOR-CONTROL-R030.1"
     assert {"CONN-ADGUARD-HOME-AGENT-R002", "SDK-CONNECTOR-CONTROL-R030"} <= set(ids[:4])
-    assert hits[0]["repo"] == "agent-connector-sdk" and hits[0]["kind"] == "row"
+    assert hits[0]["repo"] == "scion-sdk" and hits[0]["kind"] == "row"
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.2")
@@ -634,7 +700,7 @@ def test_webui_composed_acceptance_row_places_on_its_part_not_the_allowlist() ->
         "WEBUI-APPS-R050",
         "Composed deployment and shared-backend acceptance.",
         "arbora-app-surface",
-        "agent-webui",
+        "overstory",
         "Qualify the installed WebUI with real Arbora served operations.",
     )
     tree = Tree(model)
@@ -1042,7 +1108,7 @@ def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
     model = json.loads((PKG / "model.json").read_text())
     terminal = next(node for node in model["children"] if node["id"] == "tui")
     assert terminal["label"] == "Tuig"
-    assert terminal["repo"] == "agent-terminal-ui"
+    assert terminal["repo"] == "tuig"
     assert terminal["role"] == "TUI / CLI"
     assert terminal["desc"].startswith("tuig is the single Rust/Ratatui CLI")
     assert ["tui", "arbora", "A2A / REST"] in model["edges"]
@@ -1075,11 +1141,11 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
     payload = _payload(_build_page(monkeypatch, tmp_path, {}))
     nodes = {node["id"]: node for node in payload["tree"]["children"]}
     brands = {
-        "webui": ("Overstory", "agent-webui"),
-        "tui": ("Tuig", "agent-terminal-ui"),
-        "sdk": ("Scion", "agent-connector-sdk"),
-        "au": ("Meristem", "agent-utilities"),
-        "geniusbot": ("Axil", "geniusbot"),
+        "webui": ("Overstory", "overstory"),
+        "tui": ("Tuig", "tuig"),
+        "sdk": ("Scion", "scion-sdk"),
+        "au": ("Meristem", "meristem"),
+        "geniusbot": ("Axil", "axil"),
     }
     for node_id, (label, repo) in brands.items():
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
@@ -1114,33 +1180,33 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
     model = json.loads((PKG / "model.json").read_text())
     tree = Tree(model)
     desktop = tree.nodes["geniusbot"]
-    assert (desktop["repo"], desktop["fam"]) == ("geniusbot", ["desktop-client"])
+    assert (desktop["repo"], desktop["fam"]) == ("axil", ["desktop-client"])
     expected = {
         f"GENIUSBOT-CLIENT-R{number:03d}{suffix}": f"geniusbot.{part}"
         for part, numbers in _AXIL_PARTS.items()
         for number in numbers
         for suffix in ("", ".1", ".1.1")
     }
-    rows = [_row(rid, "Requirement", "desktop-client", "geniusbot") for rid in expected]
+    rows = [_row(rid, "Requirement", "desktop-client", "axil") for rid in expected]
     unknown = [
-        _row(rid, "Requirement", "desktop-client", "geniusbot")
+        _row(rid, "Requirement", "desktop-client", "axil")
         for rid in ("GENIUSBOT-CLIENT-R021", "GENIUSBOT-CLIENT-R0010")
     ]
     direct = Placer(tree).run(rows + unknown)
     placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
     assert len(placed) == len(rows + unknown)
     assert dict(placed) == {**expected, **{row["id"]: "geniusbot.unmapped" for row in unknown}}
-    assert all(tree.nodes[nid]["repo"] == "geniusbot" for nid in expected.values())
+    assert all(tree.nodes[nid]["repo"] == "axil" for nid in expected.values())
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
 def test_axil_parts_survive_generation_without_changing_rows_or_statuses(monkeypatch, tmp_path: Path) -> None:
     rows = [
-        {**_row(f"GENIUSBOT-CLIENT-R{number:03d}", "Requirement", "desktop-client", "geniusbot"), "status": status}
+        {**_row(f"GENIUSBOT-CLIENT-R{number:03d}", "Requirement", "desktop-client", "axil"), "status": status}
         for number, status in zip(range(1, 21), ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED") * 5)
     ]
-    payload = _payload(_build_page(monkeypatch, tmp_path, {"geniusbot": rows}))
+    payload = _payload(_build_page(monkeypatch, tmp_path, {"axil": rows}))
     desktop = next(node for node in payload["tree"]["children"] if node["id"] == "geniusbot")
     assert {node["id"] for node in desktop["children"]} == {f"geniusbot.{part}" for part in _AXIL_PARTS}
     assert desktop["specs"] == []
@@ -1239,7 +1305,7 @@ def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identi
     assert "Graph edits go through the engine." in knowledge["desc"]
     assert "src/components/atlas" in knowledge["code"]
     assert tree.nodes["au"]["label"] == "Meristem"
-    assert tree.nodes["au"]["repo"] == "agent-utilities"
+    assert tree.nodes["au"]["repo"] == "meristem"
     terminal = tree.nodes["tui"]["desc"]
     assert "bounded local ACP text sessions" in terminal
     assert "Installed backend and release qualification" in terminal

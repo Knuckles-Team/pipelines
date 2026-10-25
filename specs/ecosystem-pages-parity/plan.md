@@ -557,3 +557,13 @@ those roles paint beneath names at ordinary desktop root zoom without colliding
 with counts or parts. Keep graph geometry and camera/navigation unchanged.
 A candidate-model fixture screenshot and canvas paint evidence are explicitly
 separate from the unchanged live-payload before/after visual snapshot.
+
+### 2026-10-25 canonical repository references
+
+Following the six upstream repository renames, the explorer registry and model
+use canonical repository slugs while keeping node IDs, ownership kinds, local
+checkout paths, source paths and requirement IDs unchanged. Discovery must not
+reclassify these core/client repositories as new connectors. The regression
+`test_renamed_repositories_keep_ownership_placement_and_canonical_details` covers
+canonical discovery, placement and generated spec-detail links (PIPE-PAGES-R042.9
+and PIPE-PAGES-R042.7). Package and specification aliases remain separate.

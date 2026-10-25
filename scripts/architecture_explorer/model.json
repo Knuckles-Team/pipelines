@@ -125,7 +125,7 @@
    "label": "Overstory",
    "role": "Browser Experience",
    "desc": "Overstory shows the graph, the runs and the decisions in a browser. It sends typed operations to Arbora and receives projections back. It holds no data of its own.",
-   "repo": "agent-webui",
+   "repo": "overstory",
    "layer": "entry",
    "edges": [
     [
@@ -380,7 +380,7 @@
    "fam": [
     "terminal-runtime"
    ],
-   "repo": "agent-terminal-ui",
+   "repo": "tuig",
    "layer": "entry",
    "edges": [
     [
@@ -487,7 +487,7 @@
    "role": "Desktop GUI",
    "desc": "Axil gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
    "layer": "entry",
-   "repo": "geniusbot",
+   "repo": "axil",
    "fam": [
     "desktop-client"
    ],
@@ -1820,7 +1820,7 @@
    "label": "Meristem",
    "role": "Agent Harness",
    "desc": "Meristem runs the in-run harness for each agent run. It receives a run plan from Arbora and sends facts, trace events and decision requests to the engine. It holds no store and serves no API.",
-   "repo": "agent-utilities",
+   "repo": "meristem",
    "layer": "control",
    "edges": [
     [
@@ -3590,7 +3590,7 @@
    "label": "Scion",
    "role": "Connector SDK",
    "desc": "Scion SDK gives every connector one contract, one transport set and one engine adapter. It receives records from connectors and sends typed SourceIngest batches to the engine. Write-back goes only through governed approval.",
-   "repo": "agent-connector-sdk",
+   "repo": "scion-sdk",
    "layer": "source",
    "edges": [
     [
@@ -4066,7 +4066,7 @@
    "label": "Medulla",
    "role": "Durable Multimodal Knowledge, Evidence, Provenance, and Reasoning Engine",
    "desc": "Medulla is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed.",
-   "repo": "epistemic-graph",
+   "repo": "medulla",
    "layer": "core",
    "edges": [
     [
@@ -6078,7 +6078,7 @@
    "label": "Medulla Stem",
    "role": "Package epistemic-graph-server: The One Native Server Executable",
    "desc": "The server package runs the engine as one native executable. It receives network calls over standard wire protocols and passes them to the engine. Its version always matches the client package.",
-   "repo": "epistemic-graph",
+   "repo": "medulla",
    "layer": "server",
    "edges": [
     [
