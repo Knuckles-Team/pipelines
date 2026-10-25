@@ -221,6 +221,7 @@ def verify_browser_results(report: Path) -> None:
     report.with_name("browser-tests-verified.json").write_text(
         json.dumps({"passed": sorted(expected)}, indent=2) + "\n"
     )
+    measure_artifact_size(report.parent)
 
 
 def main() -> None:
