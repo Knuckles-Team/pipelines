@@ -28,6 +28,8 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from pipelines_hooks.connector import project
+from pipelines_hooks.core.distributions import SDK as SDK_ROLE
+from pipelines_hooks.core.distributions import is_distribution, project_distribution
 from pipelines_hooks.core.errors import CannotRun
 
 TEMPLATES = Path(__file__).resolve().parent / "templates"
@@ -49,7 +51,14 @@ DEFAULT_DEBUG_APT = (
 )
 
 
-def builder_block(dist: str, version: str, stage: str, extra: str | None, sdists: list[str]) -> str:
+def builder_block(
+    dist: str,
+    version: str,
+    stage: str,
+    extra: str | None,
+    sdists: list[str],
+    sdk_distribution: str = "agent-connector-sdk",
+) -> str:
     req = f"{dist}[{extra}]=={version}" if extra else f"{dist}=={version}"
     exempt = "".join(f" --no-binary {name}" for name in sdists)
     return (
@@ -58,7 +67,7 @@ def builder_block(dist: str, version: str, stage: str, extra: str | None, sdists
         "RUN --mount=type=cache,target=/root/.cache/uv \\\n"
         "    for attempt in 1 2 3 4 5 6 7 8 9 10; do \\\n"
         f"        uv pip install --system --break-system-packages --only-binary :all:{exempt} \\\n"
-        f'            --refresh-package {dist} --upgrade-package agent-connector-sdk "{req}" && exit 0; \\\n'
+        f'            --refresh-package {dist} --upgrade-package {sdk_distribution} "{req}" && exit 0; \\\n'
         '        echo "wheel not installable yet (attempt ${attempt}); retrying in 30s"; \\\n'
         "        sleep 30; \\\n"
         "    done; \\\n"
@@ -90,7 +99,14 @@ def _apt(packages: list[str]) -> str:
     )
 
 
-def _dockerfile(dist: str, version: str, extras: set[str], table: dict[str, Any], entries: dict[str, str]) -> str:
+def _dockerfile(
+    dist: str,
+    version: str,
+    extras: set[str],
+    table: dict[str, Any],
+    entries: dict[str, str],
+    sdk_distribution: str = "agent-connector-sdk",
+) -> str:
     uid, home = str(table.get("uid", 10001)), str(table.get("home", "/tmp"))
     sdists = list(table.get("sdist_deps", []))
     targets = list(entries)
@@ -100,7 +116,7 @@ def _dockerfile(dist: str, version: str, extras: set[str], table: dict[str, Any]
         if target in table.get("install_extras", {}):
             # an explicit list is exactly what the image installs (an empty list: the bare wheel, no extras)
             extra = ",".join(table["install_extras"][target]) or None
-        builders.append(builder_block(dist, version, target, extra, sdists))
+        builders.append(builder_block(dist, version, target, extra, sdists, sdk_distribution))
         copies = "".join(f"{c}\n" for c in table.get("stage_copies", []))
         label = "MCP server only" if target == "mcp" else "full agent runtime; can also run the MCP server"
         runtimes.append(
@@ -179,19 +195,22 @@ def _fill(template: Path, values: dict[str, str]) -> str:
     return re.sub(r"\n{3,}", "\n\n", out).rstrip("\n") + "\n"
 
 
-def render(root: Path) -> dict[str, str]:
+def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
     """``{file name: text}`` for every container file of the connector at ``root``."""
     pyproject = project.load(root)
     meta = pyproject.get("project", {})
     dist, version = meta.get("name"), meta.get("version")
     if not dist or not version:
         raise CannotRun("pyproject.toml needs a static [project] name and version")
+    sdk = sdk_distribution or project_distribution(meta, SDK_ROLE)
+    if not is_distribution(sdk, SDK_ROLE):
+        raise CannotRun(f"unsupported SDK distribution: {sdk}")
     table = project.container_table(pyproject)
     extras = set(meta.get("optional-dependencies", {}))
     entries = _entrypoints(table, set(meta.get("scripts", {})), dist)
     debug_extras = list(table.get("debug_extras", sorted(extras & set(RUNTIME_TARGETS))))
     port, uid = str(table.get("port", 8000)), str(table.get("uid", 10001))
-    files = {"Dockerfile": _dockerfile(dist, version, extras, table, entries)}
+    files = {"Dockerfile": _dockerfile(dist, version, extras, table, entries, sdk)}
     files["debug.Dockerfile"] = _fill(
         TEMPLATES / "debug.Dockerfile.tmpl",
         {
@@ -234,8 +253,14 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--out", type=Path, default=None, help="output directory (default: <root>/docker)")
     parser.add_argument("--check", action="store_true", help="render in memory; fail on a committed rendering")
+    parser.add_argument(
+        "--sdk-distribution",
+        choices=("agent-connector-sdk", "scion-sdk"),
+        default=None,
+        help="SDK distribution to refresh in the image; omitted detects the project's dependency",
+    )
     args = parser.parse_args(argv)
-    files = render(args.root)
+    files = render(args.root, args.sdk_distribution)
     if args.check:
         committed = [
             name for name in OUTPUT_FILES if (args.root / "docker" / name).exists() and _tracked(args.root, name)

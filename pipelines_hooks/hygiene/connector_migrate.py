@@ -32,6 +32,9 @@ from typing import Any
 
 import yaml
 
+from pipelines_hooks.core.distributions import SDK as SDK_ROLE
+from pipelines_hooks.core.distributions import is_distribution, project_distribution, requirement_name
+
 SDK_FLOOR = "0.4.1"
 CUT_NAMES = (
     "connector_manifest.yml",
@@ -397,18 +400,43 @@ def _vt(v: str) -> tuple[int, ...]:
     return tuple(int(x) for x in re.findall(r"\d+", v)[:3])
 
 
-_SDK_SPEC = re.compile(r"(agent-connector-sdk(?:\[[^\]]*\])?\s*>=\s*)(\d+(?:\.\d+)*)")
+_SDK_NAMES = r"(?:agent-connector-sdk|scion-sdk)"
+_SDK_SPEC = re.compile(
+    rf"(?P<name>{_SDK_NAMES})(?P<extras>\[[^\]]*\])?(?P<operator>\s*>=\s*)(?P<version>\d+(?:\.\d+)*)"
+)
 
 
-def bump_sdk_floor(root: Path, changed: list[str]) -> bool:
-    """Raise every SDK floor below the codemod floor; True when something changed."""
+def _sdk_distribution(root: Path, requested: str | None = None) -> str:
+    """Select an SDK spelling, preserving the project spelling unless explicitly migrating."""
+    if requested is not None:
+        if not is_distribution(requested, SDK_ROLE):
+            raise ValueError(f"unsupported SDK distribution: {requested}")
+        return requirement_name(requested)
+    try:
+        project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8")).get("project", {})
+    except (OSError, tomllib.TOMLDecodeError):
+        project = {}
+    return project_distribution(project, SDK_ROLE)
+
+
+def _raise_sdk_spec(match: re.Match[str], target: str | None) -> str:
+    version = match.group("version")
+    name = target or match.group("name")
+    return f"{name}{match.group('extras') or ''}{match.group('operator')}" + (
+        SDK_FLOOR if _vt(version) < _vt(SDK_FLOOR) else version
+    )
+
+
+def bump_sdk_floor(root: Path, changed: list[str], sdk_distribution: str | None = None) -> bool:
+    """Raise SDK floors, preserving aliases unless an explicit migration target is supplied."""
     hit = False
+    target = _sdk_distribution(root, sdk_distribution)
     for name in ("pyproject.toml", "requirements.txt"):
         p = root / name
         if not p.is_file():
             continue
         text = p.read_text(encoding="utf-8")
-        new = _SDK_SPEC.sub(lambda m: m.group(1) + SDK_FLOOR if _vt(m.group(2)) < _vt(SDK_FLOOR) else m.group(0), text)
+        new = _SDK_SPEC.sub(lambda m: _raise_sdk_spec(m, target if sdk_distribution else None), text)
         if new != text:
             p.write_text(new, encoding="utf-8")
             changed.append(name)
@@ -444,7 +472,9 @@ def bump_patch(root: Path, changed: list[str], review: Review) -> str | None:
     return new
 
 
-def add_changelog(root: Path, version: str | None, changed: list[str], today: str | None = None) -> None:
+def add_changelog(
+    root: Path, version: str | None, changed: list[str], today: str | None = None, sdk_distribution: str | None = None
+) -> None:
     """R016.28: a Keep-a-Changelog file gets one fixed entry for the bumped version (release tests pin it)."""
     path = root / "CHANGELOG.md"
     if version is None or not path.is_file():
@@ -454,18 +484,18 @@ def add_changelog(root: Path, version: str | None, changed: list[str], today: st
     if first is None or re.search(rf"(?m)^## \[{re.escape(version)}\]", text):
         return
     day = today or datetime.date.today().isoformat()
+    sdk = _sdk_distribution(root, sdk_distribution)
     entry = (
         f"## [{version}] - {day}\n\n### Changed\n"
-        f"- Requires `agent-connector-sdk>={SDK_FLOOR}`; data sources are declared in code (`connector_sources`).\n\n"
+        f"- Requires `{sdk}>={SDK_FLOOR}`; data sources are declared in code (`connector_sources`).\n\n"
     )
     path.write_text(text[: first.start()] + entry + text[first.start() :], encoding="utf-8")
     changed.append("CHANGELOG.md")
 
 
-def refresh_lock(root: Path, review: Review, changed: list[str]) -> None:
-    r = subprocess.run(
-        ["uv", "lock", "--upgrade-package", "agent-connector-sdk"], cwd=root, capture_output=True, text=True
-    )
+def refresh_lock(root: Path, review: Review, changed: list[str], sdk_distribution: str | None = None) -> None:
+    sdk = _sdk_distribution(root, sdk_distribution)
+    r = subprocess.run(["uv", "lock", "--upgrade-package", sdk], cwd=root, capture_output=True, text=True)
     if r.returncode:
         review.add("lock", "uv lock failed: " + (r.stderr or r.stdout)[-400:], "uv.lock")
     else:
@@ -570,7 +600,7 @@ _REF_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r'manifest:([^#"\s]+)#resources/([^/"\s]+)/relations/'), r"connector:\1#relations/\2/"),
     (re.compile(r'rsplit\("/relations/", 1\)\[-1\]'), 'rsplit("/", 1)[-1]'),
 )
-_SDK_LITERAL = re.compile(r"(agent-connector-sdk(?:\[[^\]]*\])?>=)(\d+\.\d+\.\d+)")
+_SDK_LITERAL = re.compile(rf"(?P<name>{_SDK_NAMES})(?P<extras>\[[^\]]*\])?(?P<operator>>=)(?P<version>\d+\.\d+\.\d+)")
 
 
 _FLOOR_LITERAL = re.compile(r"(>=\s*)(\d+\.\d+\.\d+)")
@@ -585,12 +615,21 @@ def _raise_line_floor(line: str) -> str:
     )
 
 
-def rewrite_references(text: str) -> str:
+def rewrite_references(text: str, sdk_distribution: str | None = None) -> str:
     """Point reference-string assertions at the live layout and raise stale SDK floor literals."""
     for rx, repl in _REF_RULES:
         text = rx.sub(repl, text)
     text = "".join(_raise_line_floor(ln) for ln in text.splitlines(keepends=True))
-    return _SDK_LITERAL.sub(lambda m: m.group(1) + SDK_FLOOR if _vt(m.group(2)) < _vt(SDK_FLOOR) else m.group(0), text)
+    target = requirement_name(sdk_distribution) if sdk_distribution else None
+    if target is not None and not is_distribution(target, SDK_ROLE):
+        raise ValueError(f"unsupported SDK distribution: {sdk_distribution}")
+    return _SDK_LITERAL.sub(
+        lambda m: (
+            f"{target or m.group('name')}{m.group('extras') or ''}{m.group('operator')}"
+            + (SDK_FLOOR if _vt(m.group("version")) < _vt(SDK_FLOOR) else m.group("version"))
+        ),
+        text,
+    )
 
 
 # R016.20: a bare string-literal list item naming a cut file is an assertion about a cut file
@@ -998,19 +1037,19 @@ def migrate_docs(root: Path, changed: list[str]) -> None:
 
 
 # ---------------------------------------------------------------- driver
-def rebump(root: Path, lock: bool = True) -> dict[str, Any]:
+def rebump(root: Path, lock: bool = True, *, sdk_distribution: str | None = None) -> dict[str, Any]:
     """Already-migrated repo: raise the SDK floor, bump the patch version, refresh the lock. Nothing else."""
     root = Path(root)
     review = Review()
     changed: list[str] = []
-    if bump_sdk_floor(root, changed):
-        add_changelog(root, bump_patch(root, changed, review), changed)
+    if bump_sdk_floor(root, changed, sdk_distribution):
+        add_changelog(root, bump_patch(root, changed, review), changed, sdk_distribution=sdk_distribution)
         if lock and (root / "uv.lock").is_file():
-            refresh_lock(root, review, changed)
+            refresh_lock(root, review, changed, sdk_distribution)
         for p in walk(root / "tests") if (root / "tests").is_dir() else []:
             if p.suffix == ".py":
                 text = p.read_text(encoding="utf-8")
-                new = rewrite_references(text)
+                new = rewrite_references(text, sdk_distribution)
                 if new != text:
                     p.write_text(new, encoding="utf-8")
                     changed.append(str(p.relative_to(root)))
@@ -1023,6 +1062,8 @@ def migrate(
     ref: str = "origin/main",
     lock: bool = True,
     served: set[str] | None = None,
+    *,
+    sdk_distribution: str | None = None,
 ) -> dict[str, Any]:
     """Run every transform on one connector checkout and return the report."""
     root = Path(root)
@@ -1068,10 +1109,10 @@ def migrate(
         elif new != text:
             p.write_text(new, encoding="utf-8")
             changed.append(str(p.relative_to(root)))
-    if bump_sdk_floor(root, changed):
-        add_changelog(root, bump_patch(root, changed, review), changed)
+    if bump_sdk_floor(root, changed, sdk_distribution):
+        add_changelog(root, bump_patch(root, changed, review), changed, sdk_distribution=sdk_distribution)
         if lock and (root / "uv.lock").is_file():
-            refresh_lock(root, review, changed)
+            refresh_lock(root, review, changed, sdk_distribution)
     migrate_tests(root, pkg.name, changed, deleted, review, dropped)
     migrate_docs(root, changed)
     leftover_references(root, review)
@@ -1091,6 +1132,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("--ref", default="origin/main")
     ap.add_argument("--no-lock", action="store_true", help="skip the uv.lock refresh")
+    ap.add_argument(
+        "--sdk-distribution",
+        choices=("agent-connector-sdk", "scion-sdk"),
+        default=None,
+        help="explicit SDK distribution migration target; omitted preserves the project's detected spelling",
+    )
     ap.add_argument("--rebump", action="store_true", help="already-migrated repo: SDK floor, patch bump and lock only")
     ap.add_argument("--out", type=Path, default=None, help="write the JSON report here")
     ap.add_argument("--served-tools", type=Path, default=None, help="JSON list of the tool names the server serves")
@@ -1107,7 +1154,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.central:
         from pipelines_hooks.hygiene.connector_central import migrate_central
 
-        options = {"sdk_path": args.sdk_path, "pipelines_root": args.pipelines_root, "no_lock": args.no_lock}
+        options = {
+            "sdk_path": args.sdk_path,
+            "pipelines_root": args.pipelines_root,
+            "no_lock": args.no_lock,
+            "sdk_distribution": args.sdk_distribution,
+        }
         report = migrate_central(args.root, {k: v for k, v in options.items() if v})
         text = json.dumps(report, indent=1, sort_keys=True)
         if args.out:
@@ -1116,9 +1168,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2 if any(i["blocking"] for i in report["review"]) else 0
     served = set(json.loads(args.served_tools.read_text())) if args.served_tools else None
     report = (
-        rebump(args.root, not args.no_lock)
+        rebump(args.root, not args.no_lock, sdk_distribution=args.sdk_distribution)
         if args.rebump
-        else migrate(args.root, args.eg_repo, args.ref, not args.no_lock, served)
+        else migrate(
+            args.root, args.eg_repo, args.ref, not args.no_lock, served, sdk_distribution=args.sdk_distribution
+        )
     )
     text = json.dumps(report, indent=1, sort_keys=True)
     if args.out:

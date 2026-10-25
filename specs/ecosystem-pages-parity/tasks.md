@@ -44,7 +44,7 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R014.6: Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_sources.py`.
 - [ ] PIPE-PAGES-R015: One generator for connectors and client repositories. Producer first; children below.
 - [ ] PIPE-PAGES-R015.1: The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller.
-- [ ] PIPE-PAGES-R015.2: agent-webui, agent-terminal-ui, and geniusbot adopt it through the caller pattern in PIPE-CONNSPEC-R004.
+- [ ] PIPE-PAGES-R015.2: Overstory, Tuig, and Axil adopt it through the caller pattern in PIPE-CONNSPEC-R004.
 - [ ] PIPE-PAGES-R015.3: Connectors must inherit code references and relationship views through the shared Pages generator when enabled.
 
 - [ ] Recheck historical R001/R003/R009 acceptance notes against current exact source and served-site evidence.
@@ -339,10 +339,10 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R037.5: Evidence. Record external categories and test scope.
 - [ ] PIPE-PAGES-R037.6: Hot-path proof. Gate blocks unmocked network access.
 - [ ] PIPE-PAGES-R038.1: Model. Define Python-only execution boundary and rules.
-- [ ] PIPE-PAGES-R038.2: Behavior. Hook consumes EG verdicts without local authority.
-- [ ] PIPE-PAGES-R038.3: Wiring. Pre-commit integrates with EG service.
-- [ ] PIPE-PAGES-R038.4: Refusal. Unavailable EG service fails closed.
-- [ ] PIPE-PAGES-R038.5: Evidence. Record EG verdict identity and version.
+- [ ] PIPE-PAGES-R038.2: Behavior. Hook consumes Medulla verdicts without local authority.
+- [ ] PIPE-PAGES-R038.3: Wiring. Pre-commit integrates with Medulla service.
+- [ ] PIPE-PAGES-R038.4: Refusal. Unavailable Medulla service fails closed.
+- [ ] PIPE-PAGES-R038.5: Evidence. Record Medulla verdict identity and version.
 - [ ] PIPE-PAGES-R038.6: Hot-path proof. Planted violation blocks commit.
 - [ ] PIPE-PAGES-R039.1: Model. Define project layout inventory with fixtures.
 - [ ] PIPE-PAGES-R039.2: Behavior. Enforce test independence via isolation gate.
@@ -352,7 +352,7 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] PIPE-PAGES-R039.6: Hot-path proof. Gate blocks fixture dependency.
 - [ ] PIPE-PAGES-R040.1: Model. Extend approval criteria with coverage evidence.
 - [ ] PIPE-PAGES-R040.2: Behavior. Reject proposals where coverage decreases.
-- [ ] PIPE-PAGES-R040.3: Wiring. Wire coverage check into AU admission.
+- [ ] PIPE-PAGES-R040.3: Wiring. Wire coverage check into Meristem admission.
 - [ ] PIPE-PAGES-R040.4: Refusal. Missing coverage evidence causes rejection.
 - [ ] PIPE-PAGES-R040.5: Evidence. Record baseline and candidate coverage.
 - [ ] PIPE-PAGES-R040.6: Hot-path proof. Gate rejects coverage decrease.

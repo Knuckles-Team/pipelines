@@ -84,7 +84,6 @@ terms = [
   "Pinecone",
   "Qdrant",
   "RDFLib",
-  "Scion",
   "smolagents",
   "Spec Kit",
   "SQLancer",
@@ -96,6 +95,21 @@ terms = [
   "Weaviate",
   "Windsurf",
   "Zep",
+]
+
+# First-party product names are platform vocabulary, even when a name also
+# appears in a third-party corpus. They are kept separate from the denylist so
+# the checker models ownership explicitly rather than carrying a one-off
+# repository allowance.
+[own]
+terms = [
+  "Arbora",
+  "Axil",
+  "Medulla",
+  "Meristem",
+  "Overstory",
+  "Scion",
+  "Tuig",
 ]
 
 # A connector exists to talk to its own target system, so its specs may name it.

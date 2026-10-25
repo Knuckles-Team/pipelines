@@ -871,7 +871,7 @@
     },
     {
       "id": "PIPE-PAGES-R015.2",
-      "title": "agent-webui, agent-terminal-ui, and geniusbot adopt it through the caller pattern in PIPE-CONNSPEC-R004. Each caller change belongs to the repository's own spec",
+      "title": "Overstory, Tuig, and Axil adopt it through the caller pattern in PIPE-CONNSPEC-R004. Each caller change belongs to the repository's own spec",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
@@ -3881,7 +3881,7 @@
     },
     {
       "id": "PIPE-PAGES-R040",
-      "title": "Coverage-decrease refusal in AU proposal and admission",
+      "title": "Coverage-decrease refusal in Meristem proposal and admission",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [],

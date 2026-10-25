@@ -26,6 +26,31 @@ def normalized(value: str) -> str:
     return re.sub(r"[-_.]+", "-", value).lower()
 
 
+_DISTRIBUTION_ALIASES = {
+    "sdk": frozenset({"agent-connector-sdk", "scion-sdk"}),
+    "meristem": frozenset({"agent-utilities", "meristem"}),
+    "medulla": frozenset({"epistemic-graph", "medulla"}),
+    "medulla-stem": frozenset({"epistemic-graph-server", "medulla-stem"}),
+    "overstory": frozenset({"agent-webui", "overstory"}),
+    "tuig": frozenset({"agent-terminal-ui", "tuig"}),
+    "axil": frozenset({"geniusbot", "axil"}),
+}
+
+
+def is_distribution(value: str, role: str) -> bool:
+    """Accept old and branded distribution names in standalone action code."""
+    return normalized(value) in _DISTRIBUTION_ALIASES[role]
+
+
+def matches_distribution(value: str, expected: str) -> bool:
+    """Compare a profile name, using aliases only for a known ecosystem package."""
+    expected = normalized(expected)
+    for role, accepted in _DISTRIBUTION_ALIASES.items():
+        if expected in accepted:
+            return normalized(value) in accepted
+    return normalized(value) == expected
+
+
 def selection(value: str) -> tuple[str, str]:
     if value == "arbora":
         return "arbora", "default"
@@ -123,7 +148,10 @@ class Runtime:
         profile = self.inputs["profile"]
         require(profile != "arbora" or graph, "Arbora profile requires arbora")
         caller_distribution = "agent-utilities" if profile == "arbora" else selection(profile)[0]
-        require(caller_distribution == normalized(matches[0]["distribution"]), "Profile must match caller distribution")
+        require(
+            matches_distribution(matches[0]["distribution"], caller_distribution),
+            "Profile must match caller distribution",
+        )
 
     def bind_root(self, profile: dict, *, first_party: dict) -> None:
         name, stage = selection(profile["name"])
@@ -163,7 +191,7 @@ class Runtime:
                 require(hex_value(source["receipt_sha256"]), "Missing source receipt")
             else:
                 require(item["source"] is None, "Undeclared first-party source")
-            require((name == "epistemic-graph") == relative.startswith("eg-wheel/"), "Invalid EG wheel placement")
+            require(is_distribution(name, "medulla") == relative.startswith("eg-wheel/"), "Invalid EG wheel placement")
             paths.add(relative)
             artifacts[name] = item
         require(set(first_party) <= artifacts.keys(), "Missing first-party wheel")

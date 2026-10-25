@@ -19,9 +19,9 @@ No Git hooks are installed by this command. The published hook has explicit
 commit, push, and manual stages; consumers keep their reviewed stage policy.
 No post-merge, post-checkout, or post-rewrite validation is registered.
 
-AU's initial adoption removes its copied gitignore checker. The shared gate
+Meristem's initial adoption removes its copied gitignore checker. The shared gate
 retains its required patterns and tracked build-output checks, and additionally
-checks nested caches. AU moves its existing hand-authored KISS configuration to
+checks nested caches. Meristem moves its existing hand-authored KISS configuration to
 the canonical `.config/kiss.toml` without changing its thresholds. The consumer
 records the replaced hook ID and retained acceptance in its policy and spec.
 

@@ -88,7 +88,7 @@ def add_changelog(ctx: Ctx, version: str, today: str | None = None) -> None:
     day = today or datetime.date.today().isoformat()
     entry = (
         f"## [{version}] - {day}\n\n### Changed\n"
-        f"- Central connector migration: requires `agent-connector-sdk>={SDK_FLOOR}`; server bootstrap, version, "
+        f"- Central connector migration: requires `{ctx.sdk_distribution}>={SDK_FLOOR}`; server bootstrap, version, "
         "containers, ontology artifacts, security scaffold and pre-commit config are provided centrally.\n\n"
     )
     ctx.write("CHANGELOG.md", text[: first.start()] + entry + text[first.start() :])
@@ -174,7 +174,7 @@ def refresh_lock(ctx: Ctx) -> None:
     if ctx.options.get("no_lock") or ctx.options.get("sdk_path"):
         return
     r = subprocess.run(
-        ["uv", "lock", "--upgrade-package", "agent-connector-sdk"], cwd=ctx.root, capture_output=True, text=True
+        ["uv", "lock", "--upgrade-package", ctx.sdk_distribution], cwd=ctx.root, capture_output=True, text=True
     )
     if r.returncode:
         ctx.note("lock", "uv lock failed: " + (r.stderr or r.stdout)[-400:], "uv.lock", blocking=True)

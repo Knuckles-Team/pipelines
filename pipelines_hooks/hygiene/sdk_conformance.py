@@ -37,7 +37,10 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-SDK = "agent-connector-sdk"
+from pipelines_hooks.core.distributions import SDK as SDK_ROLE
+from pipelines_hooks.core.distributions import is_distribution, project_distribution, requirement_name
+
+SDK = "agent-connector-sdk"  # legacy display/default spelling during the transition
 ROW = "SDK-CENTRALIZED-CAPABILITIES-"
 _SKIP_DIRS = {
     ".git",
@@ -161,7 +164,7 @@ def _parse(requirement: str) -> tuple[str, frozenset[str]]:
     if not match:
         return "", frozenset()
     extras = frozenset(_normalize(extra.strip()) for extra in (match.group(2) or "").split(",") if extra.strip())
-    return _normalize(match.group(1)), extras
+    return requirement_name(match.group(1)), extras
 
 
 def _python_files(root: Path) -> Iterator[Path]:
@@ -184,10 +187,10 @@ def _project(root: Path) -> dict | None:
 
 def applies(project: dict) -> bool:
     """A repository that depends on the SDK, other than the SDK itself."""
-    if _normalize(str(project.get("name", ""))) == SDK:
+    if is_distribution(str(project.get("name", "")), SDK_ROLE):
         return False
     sections = [project.get("dependencies", []), *project.get("optional-dependencies", {}).values()]
-    return any(_parse(str(item))[0] == SDK for items in sections for item in items)
+    return any(is_distribution(_parse(str(item))[0], SDK_ROLE) for items in sections for item in items)
 
 
 def source_findings(root: Path) -> list[Finding]:
@@ -205,6 +208,7 @@ def source_findings(root: Path) -> list[Finding]:
 
 def dependency_findings(project: dict, extras: dict[str, str]) -> list[Finding]:
     """One finding per package that a section declares and an SDK extra carries."""
+    sdk = project_distribution(project, SDK_ROLE)
     sections = {"dependencies": project.get("dependencies", [])}
     sections.update(
         {f"optional-dependencies.{key}": value for key, value in project.get("optional-dependencies", {}).items()}
@@ -219,7 +223,7 @@ def dependency_findings(project: dict, extras: dict[str, str]) -> list[Finding]:
         Finding(
             "R040",
             "pyproject.toml " + ", ".join(f"[project.{section}]" for section in where),
-            f"declares {item!r} directly; depend on {SDK}[{extras[name]}]",
+            f"declares {item!r} directly; depend on {sdk}[{extras[name]}]",
         )
         for name, (item, where) in declared.items()
     ]

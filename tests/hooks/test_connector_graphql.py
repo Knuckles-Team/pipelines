@@ -28,6 +28,11 @@ def test_sdk_graphql_extra_passes(tmp_path: Path) -> None:
     assert connector_graphql.main(["--root", str(root), "--strict"]) == 0
 
 
+def test_branded_sdk_graphql_extra_passes(tmp_path: Path) -> None:
+    root = _repo(tmp_path, dependencies='"scion-sdk[mcp,graphql]>=0.3.12,<1"')
+    assert connector_graphql.findings(root) == []
+
+
 def test_missing_extra_warns_by_default_and_fails_strict(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     root = _repo(tmp_path, dependencies='"agent-connector-sdk[mcp]>=0.3.8"', source="from graphql import parse\n")
     assert connector_graphql.main(["--root", str(root)]) == 0

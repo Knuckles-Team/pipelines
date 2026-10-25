@@ -251,7 +251,7 @@
     },
     {
       "id": "PIPE-GATES-R006.5",
-      "title": "Wave 5: the SDK and the harness",
+      "title": "Wave 5: the Scion SDK and the harness",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
@@ -265,7 +265,7 @@
     },
     {
       "id": "PIPE-GATES-R006.7",
-      "title": "Wave 7: epistemic-graph, last",
+      "title": "Wave 7: Medulla, last",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": []
@@ -304,7 +304,7 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:190",
+        "tests/hooks/test_connector_central.py:209",
         "tests/hooks/test_lockfile_version_mirrors.py:14"
       ],
       "rollup_of": [
@@ -319,7 +319,7 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:190"
+        "tests/hooks/test_connector_central.py:209"
       ]
     },
     {
@@ -355,7 +355,7 @@
     },
     {
       "id": "PIPE-GATES-R012",
-      "title": "A connector that imports GraphQL declares it via the SDK extra",
+      "title": "A connector that imports GraphQL declares it via the Scion SDK extra",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "c16b8de6ac2d"
@@ -366,10 +366,11 @@
     },
     {
       "id": "PIPE-GATES-R013",
-      "title": "A connector uses the SDK capability instead of its own copy",
+      "title": "A connector uses the Scion SDK capability instead of its own copy",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "635e34079332"
+        "635e34079332",
+        "db468196e870"
       ],
       "verified_by": [
         "tests/hooks/test_sdk_conformance.py:11"
@@ -558,7 +559,7 @@
     },
     {
       "id": "PIPE-GATES-R016.4",
-      "title": "A pack import of EG is a finding, never a bridge",
+      "title": "A pack import of Medulla is a finding, never a bridge",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "1e870800c5cb"
@@ -569,7 +570,7 @@
     },
     {
       "id": "PIPE-GATES-R016.5",
-      "title": "Every pack class rolls up to EG core",
+      "title": "Every pack class rolls up to Medulla core",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "1e870800c5cb"
@@ -666,7 +667,7 @@
     },
     {
       "id": "PIPE-GATES-R016.13",
-      "title": "SDK floor and version (migrate e)",
+      "title": "Scion SDK floor and version (migrate e)",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "e51a658f9189"
@@ -718,7 +719,7 @@
         "7a345cc4295e"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:1045",
+        "tests/hooks/test_connector_migrate.py:1062",
         "tests/hooks/test_connector_migrate.py:369",
         "tests/hooks/test_connector_migrate.py:384",
         "tests/hooks/test_connector_migrate.py:398",
@@ -746,7 +747,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:483",
-        "tests/hooks/test_connector_migrate.py:710"
+        "tests/hooks/test_connector_migrate.py:727"
       ]
     },
     {
@@ -770,8 +771,8 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:534",
-        "tests/hooks/test_connector_migrate.py:602",
-        "tests/hooks/test_connector_migrate.py:613"
+        "tests/hooks/test_connector_migrate.py:619",
+        "tests/hooks/test_connector_migrate.py:630"
       ]
     },
     {
@@ -780,7 +781,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:624"
+        "tests/hooks/test_connector_migrate.py:641"
       ]
     },
     {
@@ -789,7 +790,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:639"
+        "tests/hooks/test_connector_migrate.py:656"
       ]
     },
     {
@@ -798,7 +799,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:673"
+        "tests/hooks/test_connector_migrate.py:690"
       ]
     },
     {
@@ -809,7 +810,7 @@
         "ac8d6790d275"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:690"
+        "tests/hooks/test_connector_migrate.py:707"
       ]
     },
     {
@@ -818,7 +819,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:721"
+        "tests/hooks/test_connector_migrate.py:738"
       ]
     },
     {
@@ -830,8 +831,8 @@
         "9667f5c5649c"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:750",
-        "tests/hooks/test_connector_migrate.py:771"
+        "tests/hooks/test_connector_migrate.py:767",
+        "tests/hooks/test_connector_migrate.py:788"
       ]
     },
     {
@@ -843,8 +844,8 @@
         "aaf473b4312d"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:783",
-        "tests/hooks/test_connector_migrate.py:871"
+        "tests/hooks/test_connector_migrate.py:800",
+        "tests/hooks/test_connector_migrate.py:888"
       ]
     },
     {
@@ -855,7 +856,8 @@
         "16df550a8c49"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:810"
+        "tests/hooks/test_connector_migrate.py:571",
+        "tests/hooks/test_connector_migrate.py:827"
       ]
     },
     {
@@ -868,7 +870,7 @@
         "aaf473b4312d"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:834"
+        "tests/hooks/test_connector_migrate.py:851"
       ]
     },
     {
@@ -879,7 +881,7 @@
         "aaf473b4312d"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:883"
+        "tests/hooks/test_connector_migrate.py:900"
       ]
     },
     {
@@ -890,7 +892,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:895"
+        "tests/hooks/test_connector_migrate.py:912"
       ]
     },
     {
@@ -901,7 +903,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:919"
+        "tests/hooks/test_connector_migrate.py:936"
       ]
     },
     {
@@ -912,7 +914,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:931"
+        "tests/hooks/test_connector_migrate.py:948"
       ]
     },
     {
@@ -923,7 +925,7 @@
         "12a4ba5cbca4"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:957"
+        "tests/hooks/test_connector_migrate.py:974"
       ]
     },
     {
@@ -946,7 +948,7 @@
         "9a1fb34a84ee"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:978"
+        "tests/hooks/test_connector_migrate.py:995"
       ]
     },
     {
@@ -957,7 +959,7 @@
         "9a1fb34a84ee"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:1004"
+        "tests/hooks/test_connector_migrate.py:1021"
       ]
     },
     {
@@ -968,7 +970,7 @@
         "9a1fb34a84ee"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:1015"
+        "tests/hooks/test_connector_migrate.py:1032"
       ]
     },
     {
@@ -979,9 +981,9 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:150",
-        "tests/hooks/test_connector_central.py:170",
-        "tests/hooks/test_connector_central.py:181"
+        "tests/hooks/test_connector_central.py:169",
+        "tests/hooks/test_connector_central.py:189",
+        "tests/hooks/test_connector_central.py:200"
       ]
     },
     {
@@ -992,8 +994,8 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:253",
-        "tests/hooks/test_connector_central.py:282"
+        "tests/hooks/test_connector_central.py:272",
+        "tests/hooks/test_connector_central.py:301"
       ]
     },
     {
@@ -1004,7 +1006,7 @@
         "8ac2fce8e6c1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_migrate.py:1024"
+        "tests/hooks/test_connector_migrate.py:1041"
       ]
     },
     {
@@ -1015,7 +1017,7 @@
         "89e96300d187"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:267"
+        "tests/hooks/test_connector_central.py:286"
       ]
     },
     {
@@ -1045,7 +1047,7 @@
     },
     {
       "id": "PIPE-GATES-R016.50",
-      "title": "Wave 1 (sdk 0.5) rule `w1.g1`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.g1`",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "16bb950f6cf8",
@@ -1060,21 +1062,21 @@
     },
     {
       "id": "PIPE-GATES-R016.51",
-      "title": "Wave 1 (sdk 0.5) rule `w1.g2`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.g2`",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "30ef5ecba1fc",
         "39e835a22c93"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1500",
+        "tests/hooks/test_connector_central_wave1.py:1515",
         "tests/hooks/test_connector_central_wave1.py:326",
         "tests/hooks/test_connector_central_wave1.py:336"
       ]
     },
     {
       "id": "PIPE-GATES-R016.52",
-      "title": "Wave 1 (sdk 0.5) rule `w1.g3`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.g3`",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "56a34a613573",
@@ -1090,7 +1092,7 @@
     },
     {
       "id": "PIPE-GATES-R016.53",
-      "title": "Wave 1 (sdk 0.5) rule `w1.g4`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.g4`",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "12874ccce7f9"
@@ -1105,7 +1107,7 @@
     },
     {
       "id": "PIPE-GATES-R016.54",
-      "title": "Wave 1 (sdk 0.5) rule `w1.g5`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.g5`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1117,7 +1119,7 @@
     },
     {
       "id": "PIPE-GATES-R016.55",
-      "title": "Wave 1 (sdk 0.5) rule `w1.g6`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.g6`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1127,7 +1129,7 @@
     },
     {
       "id": "PIPE-GATES-R016.56",
-      "title": "Wave 1 (sdk 0.5) rule `w1.g7`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.g7`",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "313d63c9dbce",
@@ -1143,19 +1145,19 @@
     },
     {
       "id": "PIPE-GATES-R016.57",
-      "title": "Wave 1 (sdk 0.5) rule `w1.h`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.h`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_connector_central_wave1.py:1305",
-        "tests/hooks/test_connector_central_wave1.py:1317",
-        "tests/hooks/test_connector_central_wave1.py:1329",
-        "tests/hooks/test_connector_central_wave1.py:1348"
+        "tests/hooks/test_connector_central_wave1.py:1320",
+        "tests/hooks/test_connector_central_wave1.py:1332",
+        "tests/hooks/test_connector_central_wave1.py:1344",
+        "tests/hooks/test_connector_central_wave1.py:1363"
       ]
     },
     {
       "id": "PIPE-GATES-R016.58",
-      "title": "Wave 1 (sdk 0.5) rule `w1.k1`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.k1`",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "efa9b98ace15"
@@ -1170,7 +1172,7 @@
     },
     {
       "id": "PIPE-GATES-R016.59",
-      "title": "Wave 1 (sdk 0.5) rule `w1.k2`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.k2`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1180,7 +1182,7 @@
     },
     {
       "id": "PIPE-GATES-R016.60",
-      "title": "Wave 1 (sdk 0.5) rule `w1.k3`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.k3`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1190,7 +1192,7 @@
     },
     {
       "id": "PIPE-GATES-R016.61",
-      "title": "Wave 1 (sdk 0.5) rule `w1.k4`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.k4`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1203,7 +1205,7 @@
     },
     {
       "id": "PIPE-GATES-R016.62",
-      "title": "Wave 1 (sdk 0.5) rule `w1.i1`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.i1`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1216,7 +1218,7 @@
     },
     {
       "id": "PIPE-GATES-R016.63",
-      "title": "Wave 1 (sdk 0.5) rule `w1.i2`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.i2`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1227,7 +1229,7 @@
     },
     {
       "id": "PIPE-GATES-R016.64",
-      "title": "Wave 1 (sdk 0.5) rule `w1.l1`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.l1`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1237,7 +1239,7 @@
     },
     {
       "id": "PIPE-GATES-R016.65",
-      "title": "Wave 1 (sdk 0.5) rule `w1.l2`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.l2`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1248,7 +1250,7 @@
     },
     {
       "id": "PIPE-GATES-R016.66",
-      "title": "Wave 1 (sdk 0.5) rule `w1.l3`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.l3`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1261,12 +1263,13 @@
     },
     {
       "id": "PIPE-GATES-R016.67",
-      "title": "Wave 1 (sdk 0.5) rule `w1.l4`",
+      "title": "Wave 1 (Scion SDK 0.5) rule `w1.l4`",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "a879bf2fe9bb",
         "ac8367c08c89",
         "cd9696207d4c",
+        "db468196e870",
         "f4b1cc173371"
       ],
       "verified_by": [
@@ -1274,7 +1277,7 @@
         "tests/hooks/test_connector_central_wave1.py:1254",
         "tests/hooks/test_connector_central_wave1.py:1265",
         "tests/hooks/test_connector_central_wave1.py:1275",
-        "tests/hooks/test_connector_central_wave1.py:1414"
+        "tests/hooks/test_connector_central_wave1.py:1290"
       ]
     },
     {
@@ -1420,7 +1423,7 @@
     },
     {
       "id": "PIPE-GATES-R016.82",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i1`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i1`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1433,7 +1436,7 @@
     },
     {
       "id": "PIPE-GATES-R016.83",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i2`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i2`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1444,7 +1447,7 @@
     },
     {
       "id": "PIPE-GATES-R016.84",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i3`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i3`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1456,7 +1459,7 @@
     },
     {
       "id": "PIPE-GATES-R016.85",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i4`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i4`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1465,7 +1468,7 @@
     },
     {
       "id": "PIPE-GATES-R016.86",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i5`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i5`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1474,7 +1477,7 @@
     },
     {
       "id": "PIPE-GATES-R016.87",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i6`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i6`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1484,7 +1487,7 @@
     },
     {
       "id": "PIPE-GATES-R016.88",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i7`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i7`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1493,7 +1496,7 @@
     },
     {
       "id": "PIPE-GATES-R016.89",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i8`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i8`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
@@ -1502,7 +1505,7 @@
     },
     {
       "id": "PIPE-GATES-R016.90",
-      "title": "Ingest (sdk 0.5.2) rule `ingest.i9`",
+      "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i9`",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [

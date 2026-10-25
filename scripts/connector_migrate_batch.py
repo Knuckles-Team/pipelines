@@ -201,6 +201,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         if not env_file.exists() and sh(step, ["git", "check-ignore", ".env"], wt, ok=(0, 1)).strip():
             env_file.write_text("", encoding="utf-8")  # empty: .env.example values would leak into the tests
         step = "migrate"
+        # Reviewed per-repo patches use the ``<repo>.pre.patch`` and ``<repo>.central-pre.patch`` names.
         pre_paths = apply_repo_patch(
             a.patches / f"{repo}.{'central-pre' if a.central else 'pre'}.patch", wt, [], led, repo
         )  # also central: a reviewed fix the pass needs first
@@ -239,6 +240,9 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
             cmd = [c for c in cmd if c not in ("--eg-repo", str(a.eg_repo))] + ["--rebump"]
         elif served_path.exists():
             cmd += ["--served-tools", str(served_path)]
+        sdk_distribution = getattr(a, "sdk_distribution", None)
+        if sdk_distribution:
+            cmd += ["--sdk-distribution", sdk_distribution]
         if a.sdk_path and not a.central:
             cmd.append("--no-lock")
         sh(step, cmd, wt, {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)}, ok=(0, 2))
@@ -509,6 +513,12 @@ def main() -> int:
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--dry-run", action="store_true", help="migrate and verify only; no push")
     ap.add_argument("--sdk-path", type=Path, default=None, help="install this SDK checkout instead of PyPI (dry-run)")
+    ap.add_argument(
+        "--sdk-distribution",
+        choices=("agent-connector-sdk", "scion-sdk"),
+        default=None,
+        help="explicit SDK distribution migration target; omitted preserves each project's detected spelling",
+    )
     a = ap.parse_args()
     a.jobs = min(a.jobs, 4)
     sys.path.insert(0, str(PIPELINES))

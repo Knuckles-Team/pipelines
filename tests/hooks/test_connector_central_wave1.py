@@ -1273,6 +1273,21 @@ def test_l4_pin_uses_base_sdk_pin_for_the_plain_mcp_extra(tmp_path: Path) -> Non
 
 
 @pytest.mark.spec("PIPE-GATES-R016.67")
+def test_l4_preserves_or_emits_the_selected_branded_sdk_distribution(tmp_path: Path) -> None:
+    root = _make(tmp_path)
+    text = _text(root, "pyproject.toml").replace("agent-connector-sdk", "scion-sdk")
+    (root / "pyproject.toml").write_text(text, encoding="utf-8")
+    ctx = _ctx(root)
+    _run(ctx, ("w1.l4",))
+    assert '"scion-sdk[graphql,mcp]>=0.5.4,<0.6.0"' in _text(root, "pyproject.toml")
+
+    root2 = _make(tmp_path / "explicit")
+    ctx2 = _ctx(root2, sdk_distribution="scion-sdk")
+    _run(ctx2, ("w1.l4",))
+    assert '"scion-sdk[graphql,mcp]>=0.5.4,<0.6.0"' in _text(root2, "pyproject.toml")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.67")
 def test_l4_multi_element_extra_stays_and_missing_dependency_is_reviewed(tmp_path: Path) -> None:
     root = _make(tmp_path)
     text = _text(root, "pyproject.toml").replace(

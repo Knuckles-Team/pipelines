@@ -66,6 +66,18 @@ def test_sdk_usage_is_clean(tmp_path: Path) -> None:
     assert sdk_conformance.findings(_connector(tmp_path, source, pyproject=pyproject)) == []
 
 
+def test_branded_sdk_distribution_is_checked_and_exempt_when_it_is_the_sdk(tmp_path: Path) -> None:
+    pyproject = '[project]\nname = "demo-api"\ndependencies = ["scion-sdk[db]>=0.3.11"]\n'
+    found = [
+        finding for finding in sdk_conformance.findings(_connector(tmp_path, "import requests\n", pyproject=pyproject))
+    ]
+    assert any(finding.row == "R001" for finding in found)
+    sdk = tmp_path / "branded-sdk"
+    sdk.mkdir()
+    _connector(sdk, "import requests\n", pyproject='[project]\nname = "scion-sdk"\ndependencies = []\n')
+    assert sdk_conformance.findings(sdk) == []
+
+
 def test_extra_pins_are_one_finding_per_package_and_skip_graphql(tmp_path: Path) -> None:
     found = [finding for finding in sdk_conformance.findings(_connector(tmp_path, "")) if finding.row == "R040"]
     assert len(found) == 1

@@ -49,7 +49,7 @@ def runtime_checkout(root: Path) -> str:
 
 def runtime_artifact(download: Path, name: str, *, source: str = "") -> dict:
     """Synthetic wheel bytes exercise transport checks, not producer qualification."""
-    directory = "eg-wheel" if name == "epistemic-graph" else "wheels"
+    directory = "eg-wheel" if name in {"epistemic-graph", "medulla"} else "wheels"
     relative = f"{directory}/{name.replace('-', '_')}-1.0-py3-none-any.whl"
     path = download / relative
     path.parent.mkdir(parents=True, exist_ok=True)

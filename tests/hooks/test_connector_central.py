@@ -102,6 +102,16 @@ def test_render_is_deterministic_and_driven_by_the_table(tmp_path: Path) -> None
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_refreshes_the_detected_branded_sdk_distribution(tmp_path: Path) -> None:
+    pyproject = PYPROJECT.replace(
+        "[project.optional-dependencies]", 'dependencies = ["scion-sdk[mcp]>=1.0"]\n[project.optional-dependencies]'
+    )
+    docker = container.render(_repo(tmp_path, pyproject))["Dockerfile"]
+    assert "--upgrade-package scion-sdk" in docker
+    assert "--upgrade-package agent-connector-sdk" not in docker
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
 def test_render_refuses_an_unknown_table_key_and_a_missing_entrypoint(tmp_path: Path) -> None:
     with pytest.raises(CannotRun, match="unknown keys"):
         container.render(_repo(tmp_path, PYPROJECT + "bogus = 1\n"))
@@ -133,6 +143,8 @@ def test_container_workflow_renders_and_tags_by_sdk_version() -> None:
     assert "pipelines-connector render" in render["run"] and render["if"] == "inputs.render_connector"
     meta = next(s for s in steps if s.get("id") == "meta")
     assert "-sdk${{ inputs.sdk_version }}" in meta["with"]["tags"]
+    assert "-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}" in meta["with"]["tags"]
+    assert "inputs.sdk_distribution == 'scion-sdk'" in meta["with"]["tags"]
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.14")
@@ -140,10 +152,17 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
     document = yaml.safe_load((WORKFLOWS / "connector_sdk_rebuild_pipeline.yml").read_text(encoding="utf-8"))
     resolve, rebuild = document["jobs"]["resolve"], document["jobs"]["rebuild"]
     script = next(s for s in resolve["steps"] if s.get("id") == "sdk")["run"]
-    assert "imagetools inspect" in script and "-sdk${sdk}" in script and "pypi.org/pypi/agent-connector-sdk" in script
+    assert "imagetools inspect" in script and "-sdk${sdk}" in script and "pypi.org/pypi/" in script
+    assert "sdk_distribution" in script and "scion-sdk" in script
+    assert "PAYLOAD_SDK_DISTRIBUTION" in script and "INPUT_SDK_DISTRIBUTION:-${PAYLOAD_SDK_DISTRIBUTION:-}" in script
+    assert 'sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"' in script
     assert rebuild["needs"] == "resolve" and rebuild["if"] == "needs.resolve.outputs.stale == 'true'"
     assert rebuild["uses"].endswith("/container_pipeline.yml@main")
-    assert rebuild["with"] == {"render_connector": True, "sdk_version": "${{ needs.resolve.outputs.sdk_version }}"}
+    assert rebuild["with"] == {
+        "render_connector": True,
+        "sdk_version": "${{ needs.resolve.outputs.sdk_version }}",
+        "sdk_distribution": "${{ needs.resolve.outputs.sdk_distribution }}",
+    }
 
 
 # --- generated ontology artifacts ------------------------------------------------------------------------------

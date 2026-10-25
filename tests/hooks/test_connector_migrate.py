@@ -568,6 +568,23 @@ def test_reference_strings_follow_the_live_layout_and_sdk_literals_follow_the_fl
     assert cm.rewrite_references(new) == new
 
 
+@pytest.mark.spec("PIPE-GATES-R016.28")
+def test_sdk_codmod_preserves_detected_alias_until_an_explicit_migration(tmp_path: Path) -> None:
+    branded = make(tmp_path / "branded")
+    branded_pyproject = (
+        (branded / "pyproject.toml").read_text(encoding="utf-8").replace("agent-connector-sdk", "scion-sdk")
+    )
+    (branded / "pyproject.toml").write_text(branded_pyproject, encoding="utf-8")
+    changed: list[str] = []
+    assert cm.bump_sdk_floor(branded, changed)
+    assert "scion-sdk[mcp]>=0.4.1" in (branded / "pyproject.toml").read_text(encoding="utf-8")
+
+    explicit = make(tmp_path / "explicit")
+    changed = []
+    assert cm.bump_sdk_floor(explicit, changed, "scion-sdk")
+    assert "scion-sdk[mcp]>=0.4.1" in (explicit / "pyproject.toml").read_text(encoding="utf-8")
+
+
 CUT_READS = """import json
 from pathlib import Path
 

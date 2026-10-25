@@ -15,6 +15,7 @@ from pathlib import Path
 WT = Path.home() / ".local/state/repository-worktrees"
 VERIFY = Path(__file__).resolve().parent / "connector_verify.py"
 VERIFY_PREV = Path(__file__).resolve().parent / "connector_prev_tools.py"
+SDK_DISTRIBUTIONS = ("scion-sdk", "agent-connector-sdk")
 
 
 def sh(cmd, **kw):
@@ -80,9 +81,16 @@ def check(repo):
     out["pypi"] = ver if ok else "not installable"
     if not ok:
         return out
-    sdk = sh(
-        [str(venv / "bin/python"), "-c", "import importlib.metadata as m;print(m.version('agent-connector-sdk'))"]
-    ).stdout.strip()
+    sdk_code = (
+        "import importlib.metadata as m\n"
+        f"for name in {SDK_DISTRIBUTIONS!r}:\n"
+        "    try:\n"
+        "        print(name + '=' + m.version(name))\n"
+        "        break\n"
+        "    except m.PackageNotFoundError:\n"
+        "        pass\n"
+    )
+    sdk = sh([str(venv / "bin/python"), "-c", sdk_code]).stdout.strip()
     out["sdk"] = sdk
     p = sh([str(venv / "bin/python"), str(VERIFY), str(wt), "--names"])
     try:
