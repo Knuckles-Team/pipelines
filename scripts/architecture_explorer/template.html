@@ -221,6 +221,8 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
 .btn:active:not(:disabled),.chip:active,.kids button:active,.links button:active{background:var(--button-active)}
 .toolbar .btn[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--accent);color:var(--sheet);border-color:transparent}
 .search input,select.sel{min-height:44px;background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
+.search input::placeholder{color:var(--muted);opacity:1}
+.map-notes{padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:var(--glass-reading);border:1px solid var(--glass-edge);border-radius:16px}
 .results{background:var(--surface);box-shadow:var(--glass-shadow);border-radius:16px}
 .fresh,.hint{background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
 .stat div,.step,.xbody{border-radius:12px;background:var(--glass-control);border-color:var(--glass-edge)}
@@ -236,7 +238,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
 @media (max-width:980px){.app{padding:8px}.brand h1{font-size:20px}.canvas{border-radius:18px}}
 @media (prefers-reduced-transparency: reduce){
   body{background:var(--bg)}
-  header.top,.toolbar,.canvas,.panel,.panel .ph,.search input,select.sel{background:var(--surface);backdrop-filter:none}
+  header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph,.search input,select.sel{background:var(--surface);backdrop-filter:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint,.search input,select.sel{box-shadow:none}
 }
 @media (prefers-reduced-motion: reduce){
@@ -252,7 +254,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
     --l-source:CanvasText; --l-delivery:CanvasText; --l-unmapped:CanvasText;
     --s-verified:CanvasText; --s-landed:CanvasText; --s-specified:CanvasText; --s-retired:CanvasText;
   }
-  body,header.top,.toolbar,.canvas,.panel,.panel .ph{background:Canvas;backdrop-filter:none}
+  body,header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph{background:Canvas;backdrop-filter:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint{box-shadow:none}
   .btn,.chip,.kids button,.links button{border-color:ButtonText}
 }
@@ -295,6 +297,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
   </main>
+  <div class="map-notes">
   <div class="legend" id="legend" aria-label="Layer colors"></div>
   <p class="note" id="note">Want to build one of these? Read the <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">contribution guide</a> &middot; <a href="https://knuckles-team.github.io/.github/">Front door</a>. Rebuilt on every merge to main, and at least every 30 minutes.</p>
   <footer class="foot" id="foot"></footer>
@@ -308,6 +311,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
       <li>Build it, run the repo's gates, and open a PR whose commit carries a <code>Spec:</code> trailer with the row ID.</li>
     </ol>
   </details>
+  </div>
 </div>
 
 <script>

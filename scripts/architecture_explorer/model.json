@@ -2,7 +2,7 @@
  "id": "root",
  "label": "Arbora ecosystem",
  "role": "runtime architecture",
- "desc": "People and agents enter through Arbora. Arbora admits each request. Trellis runs the harness. Epistemic Graph stores and reasons. Source systems connect through the SDK.",
+ "desc": "People and agents enter through Arbora. Arbora admits each request. Meristem runs the harness. Medulla stores and reasons. Source systems connect through the SDK.",
  "unmapped_allow": [],
  "edges": [
   [
@@ -252,7 +252,7 @@
        "id": "webui.apps.graph",
        "label": "Graph and memory views",
        "role": "edits via engine",
-       "desc": "Graph edits go through the engine. Refusals show in the view. Memory shows as synced files.",
+       "desc": "Understory brings together knowledge exploration. Graph edits go through the engine. Refusals show in the view. Memory shows as synced files.",
        "code": [
         "src/components/knowledge-graph",
         "src/components/knowledge-graph-3d",
@@ -355,9 +355,9 @@
     },
     {
      "id": "webui.dash",
-     "label": "Agent dashboards",
+     "label": "Overstory Studio",
      "role": "panels + WebMCP tools",
-     "desc": "People and agents build dashboards of query panels. Agents edit them through WebMCP tools, and every edit is visible and undoable.",
+     "desc": "In Overstory Studio, people and agents build dashboards of query panels. Agents edit them through WebMCP tools, and every edit is visible and undoable.",
      "code": [
       "src/components/dashboards",
       "src/lib/dashboards"
@@ -373,7 +373,7 @@
    "id": "tui",
    "label": "Tuig",
    "role": "TUI / CLI",
-   "desc": "tuig is the single Rust/Ratatui CLI and terminal client in agent-terminal-ui. The native-only cutover replaces Python/Textual; PyPI binary-wheel delivery remains subject to release qualification. Today it uses Arbora A2A/REST. ACP and a local runtime are planned upstream in Arbora and Trellis, not delivered here.",
+   "desc": "tuig is the single Rust/Ratatui CLI and terminal client in agent-terminal-ui. The native-only cutover replaces Python/Textual; PyPI binary-wheel delivery remains subject to release qualification. The native client supports central A2A/REST and bounded local ACP text sessions. Installed backend and release qualification, durable resume and central continuation remain separate gates.",
    "code": [
     "native/agent-terminal-ui"
    ],
@@ -448,7 +448,7 @@
      "id": "tui.coding",
      "label": "Coding session",
      "role": "planned local runtime",
-     "desc": "Local coding runtime integration is planned in Arbora and Trellis. Approval attachment and durable resume are not delivered by the native client.",
+     "desc": "Local coding runtime integration is planned in Arbora and Meristem. Approval attachment and durable resume are not delivered by the native client.",
      "code": [
       "native/agent-terminal-ui/src/coding_approval.rs"
      ],
@@ -483,9 +483,9 @@
   },
   {
    "id": "geniusbot",
-   "label": "Axil Desk",
+   "label": "Axil",
    "role": "desktop GUI",
-   "desc": "Axil Desk gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
+   "desc": "Axil gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
    "layer": "entry",
    "repo": "geniusbot",
    "fam": [
@@ -1817,9 +1817,9 @@
   },
   {
    "id": "au",
-   "label": "Trellis",
+   "label": "Meristem",
    "role": "in-run agent harness",
-   "desc": "Trellis runs the in-run harness for each agent run. It receives a run plan from Arbora and sends facts, trace events and decision requests to the engine. It holds no store and serves no API.",
+   "desc": "Meristem runs the in-run harness for each agent run. It receives a run plan from Arbora and sends facts, trace events and decision requests to the engine. It holds no store and serves no API.",
    "repo": "agent-utilities",
    "layer": "control",
    "edges": [
@@ -2022,7 +2022,7 @@
      "id": "au.boundary",
      "label": "Boundary deconstruction",
      "role": "what left AU, and where",
-     "desc": "This program moves code out of Trellis. Each package has one recorded owner.",
+     "desc": "This program moves code out of Meristem. Each package has one recorded owner.",
      "fam": [
       "au-boundary-deconstruction"
      ],
@@ -2031,7 +2031,7 @@
        "id": "au.boundary.stay",
        "label": "Run loop stays",
        "role": "kept in AU",
-       "desc": "The run loop stays in Trellis.",
+       "desc": "The run loop stays in Meristem.",
        "kw": "run loop stays|stays in agent utilities|one run|render receipt"
       },
       {
@@ -4063,9 +4063,9 @@
   },
   {
    "id": "eg",
-   "label": "Epistemic Graph",
+   "label": "Medulla",
    "role": "durable multimodal knowledge, evidence, provenance, and reasoning engine",
-   "desc": "Epistemic Graph is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed.",
+   "desc": "Medulla is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed.",
    "repo": "epistemic-graph",
    "layer": "core",
    "edges": [
@@ -6075,7 +6075,7 @@
   },
   {
    "id": "egserver",
-   "label": "Epistemic Graph Server",
+   "label": "Medulla Stem",
    "role": "package epistemic-graph-server: the one native server executable",
    "desc": "The server package runs the engine as one native executable. It receives network calls over standard wire protocols and passes them to the engine. Its version always matches the client package.",
    "repo": "epistemic-graph",

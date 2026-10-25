@@ -89,3 +89,12 @@ def test_glass_uses_bundled_overstory_inter_and_sans_canvas_labels() -> None:
     assert "C.mono" not in drawing
     assert "C.body" in drawing and "C.display" in drawing
     assert "C.nodeTop" in drawing and "C.nodeBottom" in drawing
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_glass_reading_surfaces_protect_footer_and_search_contrast() -> None:
+    html = TEMPLATE.read_text()
+    assert '<div class="map-notes">' in html
+    assert ".map-notes{padding:8px 12px;" in html
+    assert ".search input::placeholder{color:var(--muted);opacity:1}" in html
+    assert ".map-notes,.panel .ph{background:Canvas" in html
