@@ -68,7 +68,7 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
         "are replaced only at known inline locations by SHA256/UTF-8-byte-count markers; per-capture\n"
         "manifests record original DOM hashes and payload equality with the full interactive index.\n"
         "Visible UI, probe attributes, console logs, verdicts and actual PNG pixels are unchanged.\n"
-        "Sampled-phase screenshots are real browser CSS-animation phases at 0/12 seconds, not a video.\n"
+        "Continuous-motion frames are sampled in a real browser at wall-clock intervals without animation seeking; see their JSON evidence, not a synthetic video.\n"
     )
     for theme in ("light", "dark"):
         head = DOC_HEAD.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
@@ -144,22 +144,10 @@ def capture(
     node: str,
     *,
     require_inter: bool = True,
-    phase: int | None = None,
 ) -> None:
     name = f"{theme}-{viewport.replace(',', 'x')}-{node}"
-    if phase is not None:
-        name += f"-sampled-phase-{phase}s"
     with tempfile.TemporaryDirectory(prefix="architecture-chrome-") as profile:
         page = output / f"{theme}.html"
-        if phase is not None:
-            sampled = Path(profile) / "sampled.html"
-            hook = (
-                "<script>setTimeout(()=>{document.querySelectorAll('.ocean-wave').forEach(w=>w.getAnimations().forEach(a=>{a.pause();a.currentTime="
-                + str(phase * 1000)
-                + ";}));},800);</script>"
-            )
-            sampled.write_text(page.read_text().replace("</body>", hook + "</body>"))
-            page = sampled
         command = [
             chrome,
             "--headless=new",
@@ -254,9 +242,11 @@ def main() -> None:
         for viewport in ("1440,1000", "390,844"):
             for node in ("root", "webui", "tui"):
                 capture(chrome, output, theme, viewport, node)
-        if theme == "light":
-            for phase in (0, 12):
-                capture(chrome, output, theme, "1440,1000", "webui", phase=phase)
+        subprocess.run(
+            ["node", str(Path(__file__).with_name("motion_capture.cjs")), chrome, str(output), theme],
+            check=True,
+            timeout=90,
+        )
         (output / f"{theme}.html").unlink()
     for theme in ("light", "dark"):
         for viewport, node in (("1440,1000", "root"), ("1440,1000", "webui"), ("390,844", "root")):

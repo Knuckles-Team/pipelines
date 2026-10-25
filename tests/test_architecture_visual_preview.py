@@ -140,3 +140,49 @@ def test_diagnostic_compaction_retains_ui_and_records_exact_original_hashes() ->
     assert manifest["payload_matches_interactive_index"] is True
     with pytest.raises(RuntimeError, match="does not match"):
         compact_diagnostic_dom(dom, "wrong")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_motion_capture_uses_real_elapsed_browser_time_without_seeking() -> None:
+    helper = (ROOT / "scripts/architecture_explorer/motion_capture.cjs").read_text()
+    assert "--remote-debugging-pipe" in helper
+    assert "await delay(2000)" in helper
+    assert "Page.captureScreenshot" in helper
+    assert "currentTime=" not in helper and "--virtual-time-budget" not in helper
+    assert "Math.abs(w.x-frames[i-1].waves[j].x)>8" in helper
+    assert "sha256===frames[i-1].sha256" in helper
+    runner = (ROOT / "scripts/architecture_explorer/visual_preview.py").read_text()
+    assert 'with_name("motion_capture.cjs")' in runner and "check=True" in runner and "timeout=90" in runner
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_motion_capture_rejects_pending_calls_and_cleans_profile_after_exit() -> None:
+    helper = (ROOT / "scripts/architecture_explorer/motion_capture.cjs").read_text()
+    assert "browser.on('error'" in helper and "browser.once('close'" in helper
+    assert "rejectPending(error)" in helper
+    assert helper.index("await exited;") < helper.index("rmSync(profile,")
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_motion_capture_browser_early_exit_is_bounded_and_cleans_profile(tmp_path: Path) -> None:
+    import os
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node unavailable")
+    browser = tmp_path / "exits-immediately"
+    browser.write_text("#!/bin/sh\nexit 1\n")
+    browser.chmod(0o755)
+    result = subprocess.run(
+        [node, str(ROOT / "scripts/architecture_explorer/motion_capture.cjs"), str(browser), str(tmp_path), "light"],
+        env={**os.environ, "TMPDIR": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert (tmp_path / "light-continuous-motion.log").is_file()
+    assert not list(tmp_path.glob("architecture-motion-*"))

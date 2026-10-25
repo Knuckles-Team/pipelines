@@ -1317,7 +1317,7 @@ def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identi
 @_NEEDS_LAYOUT
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 def test_ocean_browser_motion_controls_and_composited_wave_phases(monkeypatch, tmp_path: Path) -> None:
-    """Validate real CSS animation phases and accessibility without a video simulation."""
+    """Validate motion controls; unforced elapsed-time rendering is captured separately via CDP."""
     import subprocess
 
     page = tmp_path / "motion.html"
@@ -1338,10 +1338,7 @@ setTimeout(()=>{
     check(waves.length===3,'three shared waves');
     const animations=waves.map(w=>w.getAnimations()[0]);
     check(animations.every(a=>a&&a.playState==='running'),'CSS animations running');
-    animations.forEach(a=>{a.currentTime=0;});
-    const before=waves.map(w=>getComputedStyle(w).transform);
-    animations.forEach(a=>{a.currentTime=12000;});
-    check(waves.every((w,i)=>getComputedStyle(w).transform!==before[i]),'distinct real rendered phases');
+    check(animations.every(a=>a.effect.getTiming().duration<=20000),'bounded visible flow cycles');
     button.click(); check(root.dataset.oceanMotion==='paused','opt out pauses');
     check(waves.every(w=>getComputedStyle(w).animationPlayState==='paused'),'CSS animations paused');
     check(localStorage.getItem('arbora-arch-ocean-motion')==='off','opt out persisted');
@@ -1395,7 +1392,7 @@ const originalFillText=CanvasRenderingContext2D.prototype.fillText;
 const originalClear=CanvasRenderingContext2D.prototype.clearRect;
 CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__paint=[];return originalClear.apply(this,args);};
 CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){
- const m=this.measureText(text);window.__paint.push({text,x,y,font:this.font,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});
+ const m=this.measureText(text);window.__paint.push({text,x,y,font:this.font,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});
  return originalFillText.call(this,text,x,y,...rest);
 };
 </script>"""
@@ -1418,6 +1415,13 @@ setTimeout(async()=>{
    check(counts.every(p=>p.top>subtitle.bottom),id+' counts clear subtitle');
    evidence.push({id,label,role,title,subtitle,counts,card:[x,y,w,h]});
   }
+  const band=window.__paint.find(p=>p.text==='ENGINE CORE, CONNECTORS AND SOURCES');
+  check(band,'complete engine band heading actually painted');
+  for(const id of ['eg','pipelines']){
+   const r=a.rect(id), x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
+   check(band.right+4<=x||band.left-4>=x+w||band.bottom+3<=y||band.top-3>=y+h,'band reading plate does not overlap '+id);
+  }
+  evidence.push({band});
   result.dataset.evidence=JSON.stringify(evidence);result.textContent='PASS';
  }catch(error){result.textContent='FAIL: '+error.message;}
  document.body.append(result);
