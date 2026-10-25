@@ -1014,3 +1014,34 @@ def test_a_build_writes_llms_txt_beside_the_page(monkeypatch, tmp_path: Path) ->
     page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
     assert (page.parent / "llms.txt").read_text() == explorer.llms_txt()
     assert _FRONT_DOOR in (page.parent / "llms.txt").read_text() and 'rel="start"' in page.read_text()
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    terminal = next(node for node in model["children"] if node["id"] == "tui")
+    assert terminal["label"] == "tuig"
+    assert terminal["repo"] == "agent-terminal-ui"
+    assert terminal["role"] == "CLI / terminal client"
+    assert ["tui", "arbora", "A2A / REST"] in model["edges"]
+    edge = next(edge for edge in model["fixed_layout"]["edges"] if edge["from"] == "tui")
+    assert (edge["to"], edge["label"]) == ("arbora", "A2A / REST")
+    children = {node["id"]: node for node in terminal["children"]}
+    assert set(children) == {
+        "tui.quality",
+        "tui.client",
+        "tui.chat",
+        "tui.native",
+        "tui.coding",
+        "tui.tasks",
+        "tui.screens",
+    }
+    assert "planned" in children["tui.coding"]["role"]
+    assert "planned" in children["tui.chat"]["desc"]
+    assert "not delivered" in children["tui.client"]["desc"]
+    assert ["tui.coding", "tui.client", "planned operations"] in terminal["edges"]
+    assert all(
+        not path.startswith("agent_terminal_ui")
+        for node in [terminal, *children.values()]
+        for path in node.get("code", [])
+    )
