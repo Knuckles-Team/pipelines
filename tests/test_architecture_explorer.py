@@ -1020,9 +1020,9 @@ def test_a_build_writes_llms_txt_beside_the_page(monkeypatch, tmp_path: Path) ->
 def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
     model = json.loads((PKG / "model.json").read_text())
     terminal = next(node for node in model["children"] if node["id"] == "tui")
-    assert terminal["label"] == "agent-terminal-ui"
+    assert terminal["label"] == "Tuig"
     assert terminal["repo"] == "agent-terminal-ui"
-    assert terminal["role"] == "Tuig TUI / CLI"
+    assert terminal["role"] == "TUI / CLI"
     assert terminal["desc"].startswith("tuig is the single Rust/Ratatui CLI")
     assert ["tui", "arbora", "A2A / REST"] in model["edges"]
     edge = next(edge for edge in model["fixed_layout"]["edges"] if edge["from"] == "tui")
@@ -1046,3 +1046,24 @@ def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
         for node in [terminal, *children.values()]
         for path in node.get("code", [])
     )
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+def test_display_brands_survive_generation_without_renaming_repositories(monkeypatch, tmp_path: Path) -> None:
+    payload = _payload(_build_page(monkeypatch, tmp_path, {}))
+    nodes = {node["id"]: node for node in payload["tree"]["children"]}
+    brands = {
+        "webui": ("Overstory", "agent-webui"),
+        "tui": ("Tuig", "agent-terminal-ui"),
+        "sdk": ("Scion SDK", "agent-connector-sdk"),
+        "au": ("Trellis", "agent-utilities"),
+        "geniusbot": ("Axil Desk", "geniusbot"),
+    }
+    for node_id, (label, repo) in brands.items():
+        assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
+    assert payload["tree"]["label"] == "Arbora ecosystem"
+    assert nodes["eg"]["label"] == "Epistemic Graph"
+    assert nodes["arbora"]["label"] == "Arbora"
+    assert nodes["geniusbot"]["role"] == "desktop GUI"
+    assert nodes["au"]["role"] == "in-run agent harness"

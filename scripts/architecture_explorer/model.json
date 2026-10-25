@@ -2,7 +2,7 @@
  "id": "root",
  "label": "Arbora ecosystem",
  "role": "runtime architecture",
- "desc": "People and agents enter through Arbora. Arbora admits each request. Agent Utilities runs the harness. Epistemic Graph stores and reasons. Source systems connect through the SDK.",
+ "desc": "People and agents enter through Arbora. Arbora admits each request. Trellis runs the harness. Epistemic Graph stores and reasons. Source systems connect through the SDK.",
  "unmapped_allow": [],
  "edges": [
   [
@@ -122,9 +122,9 @@
   },
   {
    "id": "webui",
-   "label": "Arbora web UI",
+   "label": "Overstory",
    "role": "browser experience",
-   "desc": "The web UI shows the graph, the runs and the decisions in a browser. It sends typed operations to Arbora and receives projections back. It holds no data of its own.",
+   "desc": "Overstory shows the graph, the runs and the decisions in a browser. It sends typed operations to Arbora and receives projections back. It holds no data of its own.",
    "repo": "agent-webui",
    "layer": "entry",
    "edges": [
@@ -371,9 +371,9 @@
   },
   {
    "id": "tui",
-   "label": "agent-terminal-ui",
-   "role": "Tuig TUI / CLI",
-   "desc": "tuig is the single Rust/Ratatui CLI and terminal client in agent-terminal-ui. The native-only cutover replaces Python/Textual; PyPI binary-wheel delivery remains subject to release qualification. Today it uses Arbora A2A/REST. ACP and a local runtime are planned upstream in Arbora and Agent Utilities, not delivered here.",
+   "label": "Tuig",
+   "role": "TUI / CLI",
+   "desc": "tuig is the single Rust/Ratatui CLI and terminal client in agent-terminal-ui. The native-only cutover replaces Python/Textual; PyPI binary-wheel delivery remains subject to release qualification. Today it uses Arbora A2A/REST. ACP and a local runtime are planned upstream in Arbora and Trellis, not delivered here.",
    "code": [
     "native/agent-terminal-ui"
    ],
@@ -448,7 +448,7 @@
      "id": "tui.coding",
      "label": "Coding session",
      "role": "planned local runtime",
-     "desc": "Local coding runtime integration is planned in Arbora and Agent Utilities. Approval attachment and durable resume are not delivered by the native client.",
+     "desc": "Local coding runtime integration is planned in Arbora and Trellis. Approval attachment and durable resume are not delivered by the native client.",
      "code": [
       "native/agent-terminal-ui/src/coding_approval.rs"
      ],
@@ -483,9 +483,9 @@
   },
   {
    "id": "geniusbot",
-   "label": "Geniusbot",
-   "role": "desktop cockpit",
-   "desc": "The desktop cockpit gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
+   "label": "Axil Desk",
+   "role": "desktop GUI",
+   "desc": "Axil Desk gives a local window onto the ecosystem. It sends operations to Arbora and shows the results. It reaches data only through Arbora.",
    "layer": "entry",
    "repo": "geniusbot",
    "fam": [
@@ -1715,9 +1715,9 @@
   },
   {
    "id": "au",
-   "label": "Agent Utilities",
-   "role": "agent control plane",
-   "desc": "Agent Utilities runs the in-run harness for each agent run. It receives a run plan from Arbora and sends facts, trace events and decision requests to the engine. It holds no store and serves no API.",
+   "label": "Trellis",
+   "role": "in-run agent harness",
+   "desc": "Trellis runs the in-run harness for each agent run. It receives a run plan from Arbora and sends facts, trace events and decision requests to the engine. It holds no store and serves no API.",
    "repo": "agent-utilities",
    "layer": "control",
    "edges": [
@@ -1920,7 +1920,7 @@
      "id": "au.boundary",
      "label": "Boundary deconstruction",
      "role": "what left AU, and where",
-     "desc": "This program moves code out of Agent Utilities. Each package has one recorded owner.",
+     "desc": "This program moves code out of Trellis. Each package has one recorded owner.",
      "fam": [
       "au-boundary-deconstruction"
      ],
@@ -1929,7 +1929,7 @@
        "id": "au.boundary.stay",
        "label": "Run loop stays",
        "role": "kept in AU",
-       "desc": "The run loop stays in Agent Utilities.",
+       "desc": "The run loop stays in Trellis.",
        "kw": "run loop stays|stays in agent utilities|one run|render receipt"
       },
       {
@@ -3485,9 +3485,9 @@
   },
   {
    "id": "sdk",
-   "label": "Agent Connector SDK",
+   "label": "Scion SDK",
    "role": "typed source integration",
-   "desc": "The connector SDK gives every connector one contract, one transport set and one engine adapter. It receives records from connectors and sends typed SourceIngest batches to the engine. Write-back goes only through governed approval.",
+   "desc": "Scion SDK gives every connector one contract, one transport set and one engine adapter. It receives records from connectors and sends typed SourceIngest batches to the engine. Write-back goes only through governed approval.",
    "repo": "agent-connector-sdk",
    "layer": "source",
    "edges": [

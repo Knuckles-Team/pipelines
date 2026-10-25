@@ -6,6 +6,12 @@ Every package installs from the public package index. A source checkout, a git d
 
 ## Repository table
 
+Display names are Overstory (`agent-webui`), Tuig (`agent-terminal-ui`),
+Scion SDK (`agent-connector-sdk`), Trellis (`agent-utilities`) and Axil Desk
+(`geniusbot`, the desktop GUI). Epistemic Graph and Arbora retain their names.
+Repository slugs, packages, imports, dependency names and spec prefixes below
+remain unchanged. The Tuig executable is `tuig`.
+
 | Repository | Owns | Never owns (route it to) | ID prefix | Allowed dependencies |
 |---|---|---|---|---|
 | epistemic-graph (EG) | Facts, records, vocabulary and durable state. Storage, query (UQL and natural language), retrieval and ingest. Reasoning, decisions and choices. Code is native Rust. Each row sets latency and memory budgets and names a benchmark. | Served operations, admission and auth (arbora); connector contracts and transports (SDK); run mechanics (AU); views (UIs). | `EG-` | Rust crates; its own Python client and bindings. No ecosystem Python package. |
@@ -33,7 +39,7 @@ Route a feature before any code or spec text.
    | Is it a contract, a schema, or a transport of a tool, source or connector? | SDK |
    | Is it the behavior of one external system? | That connector |
    | Does it apply a received decision inside one run? | AU |
-   | Is it what a person sees or does? | webui, TUI or geniusbot |
+   | Is it what a person sees or does? | Overstory, Tuig or Axil Desk |
    | Is it a gate, a page or a release rule? | pipelines |
 
 2. Search the owner's specs first: `git grep -n "<term>" -- specs`. Extend an existing row before a new one.
