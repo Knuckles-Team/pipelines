@@ -194,7 +194,7 @@ def test_header_status_badges_contrast_on_stacked_translucent_surfaces() -> None
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_canvas_labels_have_neutral_reading_plates_not_faded_unprotected_text() -> None:
     source = TEMPLATE.read_text()
-    for label in ("b[0]", "z[0]", "lp.label"):
+    for label in ("z[0]", "lp.label"):
         assert "mapLabel(" + label + ".toUpperCase()" in source
     assert "ctx.globalAlpha=alpha; mapLabel(" in source
     assert "ctx.fillStyle=C.opaque?C.surface:C.nodeTop;rr(" in source
@@ -243,3 +243,11 @@ def test_connectors_have_neutral_contrast_halo_against_any_photo_pixel() -> None
         alpha = float(halo[4])
         composite = "#" + "".join(f"{round(int(halo[i]) * alpha + backdrop * (1 - alpha)):02x}" for i in (1, 2, 3))
         assert _contrast(edge[1], composite) >= 3
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_root_band_heading_fits_existing_gutter_without_truncation() -> None:
+    source = TEMPLATE.read_text()
+    assert "L.kids[L.loop.around]" in source
+    assert "available/Math.max(1,ctx.measureText(text).width)" in source
+    assert "mapLabel(text, right, sy+fs*0.6,fs)" in source
