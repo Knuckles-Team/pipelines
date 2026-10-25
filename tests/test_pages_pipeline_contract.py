@@ -148,6 +148,11 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/spec_graph_parse.py",
         "scripts/readiness",
         "scripts/architecture_explorer",
+        "pipelines_hooks/__init__.py",
+        "pipelines_hooks/specs/__init__.py",
+        "pipelines_hooks/specs/ids.py",
+        "pipelines_hooks/specs/priority.py",
+        "pipelines_hooks/specs/requirements_doc.py",
     ]
 
 
@@ -193,10 +198,7 @@ def test_architecture_explorer_defaults_to_core_repositories_and_builds_before_u
     inputs = contract["on"]["workflow_call"]["inputs"]
     assert inputs["architecture_explorer"]["default"] == "auto"
     text = WORKFLOW.read_text(encoding="utf-8")
-    assert (
-        "epistemic-graph|arbora|agent-connector-sdk|agent-utilities|agent-terminal-ui|agent-webui|pipelines|universal-skills"
-        in text
-    )
+    assert "medulla|arbora|scion-sdk|meristem|tuig|overstory|pipelines|universal-skills" in text
     assert text.index("Build architecture explorer") < text.index("Upload artifact")
     assert "--page site/architecture/index.html" in text
     assert "npm ci --prefix .pipeline-contract/scripts/architecture_explorer" in text

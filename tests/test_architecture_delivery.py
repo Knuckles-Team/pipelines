@@ -57,7 +57,7 @@ def test_page_embeds_delivery_views() -> None:
         'id="vpath"',
         "Sort by priority",
         "Filter by competency question",
-        "Not linked to a competency question",
+        "No CQ dependency path",
         "goalBadges",
     ):
         assert marker in template
@@ -69,3 +69,18 @@ def test_page_embeds_delivery_views() -> None:
     assert explorer.spec_entry(rows[3], delivery)["unserved"] is True
     block = explorer.page_delivery(delivery, rows)
     assert block["next"][0]["id"] == "EG-A-R001" and block["counts"]["unserved"] == 2
+
+
+# spec: PIPE-CONNSPEC-R016
+def test_cq_path_explanation_does_not_claim_missing_architecture_links() -> None:
+    template = (PKG / "template.html").read_text()
+    assert "CQ → Depends-on → requirement" in template
+    assert "does not indicate missing architecture placement or implementation links" in template
+    assert "not linked to a CQ" not in template
+    assert "Not linked to a competency question" not in template
+    rows = _fixture()
+    rows.append(_row("TUI-RUNTIME-R099", "agent-terminal-ui", depends_on=[CQ]))
+    delivery = aggregate(rows)
+    assert "TUI-RUNTIME-R099" in delivery["unserved"]
+    assert delivery["scores"]["TUI-RUNTIME-R099"]["cqs"] == []
+    assert delivery["scores"]["AR-A-R001"]["cqs"] == [CQ]

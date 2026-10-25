@@ -197,7 +197,7 @@ priority = (10 x competency-question rows that transitively depend on the row
 - An open row is `SPECIFIED`. A `LANDED`, `VERIFIED`, or `RETIRED` row is done and has no `priority`.
 - A row in a spec whose ID holds `GATES`, `PAGES`, `DOCS`, `HYGIENE`, or `STANDARD` is non-functional.
 - The page also lists `frontier` (open leaf rows whose prerequisites are all done) and `unserved` (open functional leaf rows that no competency question reaches).
-- Only the page sees every repository, so cross-repository `Depends-on` edges count. It labels the unserved rows "Not linked to any competency question".
+- Only the page sees every repository, so cross-repository `Depends-on` edges count. It labels the unserved rows "No CQ dependency path". This means no CQ reaches the row through CQ → Depends-on → requirement edges, not that architecture placement or implementation links are missing.
 - A release bundle is a group of open rows joined by cross-repository `Depends-on` edges. The page derives it and nobody declares it. Its steps follow the release train: epistemic-graph, agent-connector-sdk, agent-utilities, arbora, the front ends, then connectors. Its priority is the maximum row priority.
 
 ## Withdrawing invalid verification evidence

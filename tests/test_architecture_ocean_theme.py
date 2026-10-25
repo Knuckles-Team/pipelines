@@ -38,11 +38,17 @@ def test_ocean_materials_have_no_network_fonts_or_expensive_node_effects() -> No
     html = TEMPLATE.read_text()
     assert "fonts.googleapis.com" not in html
     assert "fonts.gstatic.com" not in html
-    assert "backdrop-filter:" not in html
+    assert "header.top,.toolbar,.panel{backdrop-filter:blur(16px) saturate(115%)}" in html
+    assert "ctx.filter" not in html
     assert "ctx.shadowBlur" not in html
     assert "--font-body:Inter,ui-sans-serif,system-ui" in html
-    assert "ctx.fillStyle=C.surface; rr(sx,sy,sw,sh,radius); ctx.fill();" in html
-    assert ".panel{background:var(--surface);background:var(--glass-reading)}" in html
+    assert "material.addColorStop(0,C.opaque?C.surface:C.nodeTop)" in html
+    assert "ctx.clearRect(0,0,W,H)" in html
+    assert "ctx.globalAlpha=alpha*(0.10-0.05*op)" not in html
+    assert "ctx.strokeStyle=col" not in html
+    assert ".panel{background:var(--glass-reading)}" in html
+    assert "data:image/svg+xml," in html
+    assert "/*__INTER__*/" in html
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -53,7 +59,8 @@ def test_ocean_preferences_have_opaque_reduced_motion_and_forced_color_fallbacks
     assert "transition:none!important;animation:none!important" in html
     assert "@media (forced-colors: active)" in html
     assert "--fg:CanvasText" in html and "--focus:Highlight" in html
-    assert 'matchMedia("(forced-colors: active)").addEventListener("change",readColors)' in html
+    assert 'window.matchMedia(query).addEventListener("change",readColors)' in html
+    assert 'opaque:window.matchMedia("(prefers-reduced-transparency: reduce)")' in html
     assert "select:focus-visible,summary:focus-visible,canvas:focus-visible" in html
 
 
@@ -61,7 +68,146 @@ def test_ocean_preferences_have_opaque_reduced_motion_and_forced_color_fallbacks
 def test_ocean_primary_controls_are_translucent_unoutlined_and_touch_sized() -> None:
     html = TEMPLATE.read_text()
     assert "--button-neutral:rgb(" in html
-    assert "border-color:transparent;box-shadow:none;border-radius:8px;min-height:44px" in html
-    assert ".zoom .btn{width:44px}" in html
+    assert "border-color:transparent;box-shadow:none;border-radius:12px;min-height:44px" in html
+    assert ".zoom .btn{width:44px;" in html
     assert ".btn,.chip,.kids button,.links button{border-color:ButtonText}" in html
     assert "outline:3px solid var(--focus)" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_glass_uses_bundled_overstory_inter_and_sans_canvas_labels() -> None:
+    from scripts.architecture_explorer.build import template_source
+
+    source = template_source()
+    assert "/*__INTER__*/" not in source
+    assert "src:url(data:font/woff2;base64," in source
+    assert (TEMPLATE.parent / "assets/Inter-LICENSE.txt").is_file()
+    assert "Copyright (c) 2016 The Inter Project Authors" in source
+    assert "SIL OPEN FONT LICENSE Version 1.1" in source
+    assert "PREAMBLE" in source and "DISCLAIMER" in source
+    drawing = source.split("function drawNode(", 1)[1].split("function drawInner(", 1)[0]
+    assert "C.mono" not in drawing
+    assert "C.body" in drawing and "C.display" in drawing
+    assert "C.nodeTop" in drawing and "C.nodeBottom" in drawing
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_glass_reading_surfaces_protect_footer_and_search_contrast() -> None:
+    html = TEMPLATE.read_text()
+    assert '<div class="map-notes">' in html
+    assert ".map-notes{padding:8px 12px;" in html
+    assert ".search input::placeholder{color:var(--muted);opacity:1}" in html
+    assert ".map-notes,.panel .ph{background:Canvas" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_ocean_motion_is_shared_bounded_and_accessible() -> None:
+    html = TEMPLATE.read_text()
+    assert html.count('<span class="ocean-wave">') == 3
+    assert 'class="ocean-scene" aria-hidden="true"' in html
+    assert "pointer-events:none;contain:strict" in html
+    assert "animation:ocean-drift 42s" in html
+    assert "animation-duration:58s" in html and "animation-duration:73s" in html
+    assert 'store.get("arbora-arch-ocean-motion")!=="off"' in html
+    assert 'enabled&&!document.hidden?"running":"paused"' in html
+    assert 'document.addEventListener("visibilitychange",oceanMotionState)' in html
+    assert "motionPreference.matches||transparencyPreference.matches||forcedColorsPreference.matches" in html
+    assert ".ocean-wave{animation:none!important}" in html
+    assert 'button.setAttribute("aria-pressed",String(enabled))' in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_light_reading_text_contrasts_over_deepest_wave_composite() -> None:
+    block = TEMPLATE.read_text().split(":root{", 1)[1].split("}", 1)[0]
+    tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+    # Conservative fully overlapping wave color under the 76% reading plate.
+    composite = "#" + "".join(f"{round(0.76 * a + 0.24 * b):02x}" for a, b in zip((255, 255, 255), (0, 0, 0)))
+    for token in ("--fg", "--muted", "--faint", "--accent"):
+        assert _contrast(tokens[token], composite) >= 4.5, (token, composite)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> None:
+    html = TEMPLATE.read_text()
+
+    def blend(front: tuple[int, ...], back: tuple[int, ...], alpha: float) -> tuple[int, ...]:
+        return tuple(round(a * alpha + b * (1 - alpha)) for a, b in zip(front, back))
+
+    for selector, ocean in (
+        (":root{", (0, 0, 0)),
+        (':root[data-theme="dark"]{', blend((3, 22, 40), (255, 255, 255), 0.56)),
+    ):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+        assert ".canvas{background:rgb(255 255 255 / .10)}" in html
+        ocean = blend((255, 255, 255), ocean, 0.10)
+        for endpoint in ("top", "bottom"):
+            match = re.search(r"--node-" + endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+            assert match
+            channels = tuple(int(match[i]) for i in (1, 2, 3))
+            composite = "#" + "".join(f"{c:02x}" for c in blend(channels, ocean, float(match[4])))
+            for name, color in tokens.items():
+                if name in ("--fg", "--muted", "--faint", "--accent") or name.startswith(("--s-", "--l-")):
+                    assert _contrast(color, composite) >= 4.5, (selector, endpoint, name, composite)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_header_status_badges_contrast_on_stacked_translucent_surfaces() -> None:
+    html = TEMPLATE.read_text()
+    for selector, ocean in ((":root{", (0, 0, 0)), (':root[data-theme="dark"]{', (255, 255, 255))):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+        for surface in ("--ocean-dim", "--glass-chrome", "--glass-control"):
+            match = re.search(re.escape(surface) + r":rgb\((\d+) (\d+) (\d+) / ([.\d]+)\)", block)
+            assert match
+            alpha = float(match[4])
+            ocean = tuple(round(int(match[i + 1]) * alpha + channel * (1 - alpha)) for i, channel in enumerate(ocean))
+        composite = "#" + "".join(f"{c:02x}" for c in ocean)
+        for name, color in tokens.items():
+            if name == "--fg" or name.startswith("--s-"):
+                assert _contrast(color, composite) >= 4.5, (selector, name, composite)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_glass_and_ordinary_buttons_use_neutral_white_or_smoke_not_blue_fill() -> None:
+    html = TEMPLATE.read_text()
+    for selector in (":root{", ':root[data-theme="dark"]{'):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        for name in ("glass-reading", "glass-control", "glass-chrome", "button-neutral", "button-hover"):
+            match = re.search(r"--" + name + r":rgb\((\d+) (\d+) (\d+) /", block)
+            assert match
+            channels = [int(match[i]) for i in (1, 2, 3)]
+            assert max(channels) - min(channels) <= 3, (selector, name)
+        for name in ("node-top", "node-bottom"):
+            match = re.search(r"--" + name + r":rgba\((\d+),(\d+),(\d+),", block)
+            assert match
+            channels = [int(match[i]) for i in (1, 2, 3)]
+            assert max(channels) - min(channels) <= 3, (selector, name)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_natural_wallpaper_is_embedded_bounded_and_honestly_described() -> None:
+    from scripts.architecture_explorer.build import template_source
+
+    asset = TEMPLATE.parent / "assets/ocean-daylight-foam.webp"
+    assert asset.stat().st_size <= 500_000
+    assert (TEMPLATE.parent / "assets/ocean-PROVENANCE.md").is_file()
+    source = template_source()
+    assert "/*__OCEAN__*/" not in source
+    assert "data:image/webp;base64," in source
+    assert "AI-generated static project artwork" in source and "not fluid video" in source
+    assert "ctx.strokeStyle=C.edgeHalo;ctx.lineWidth=lw+2;ctx.stroke()" in source
+    assert "ctx.shadowBlur" not in source and "ctx.filter" not in source
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_connectors_have_neutral_contrast_halo_against_any_photo_pixel() -> None:
+    html = TEMPLATE.read_text()
+    for selector, backdrop in ((":root{", 0), (':root[data-theme="dark"]{', 255)):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        edge = re.search(r"--edge:(#[\da-f]{6})", block)
+        halo = re.search(r"--edge-halo:rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+        assert edge and halo
+        alpha = float(halo[4])
+        composite = "#" + "".join(f"{round(int(halo[i]) * alpha + backdrop * (1 - alpha)):02x}" for i in (1, 2, 3))
+        assert _contrast(edge[1], composite) >= 3

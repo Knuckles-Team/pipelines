@@ -133,7 +133,7 @@ jobs:
             off) enabled=false ;;
             auto)
               case "$REPOSITORY_NAME" in
-                epistemic-graph|arbora|agent-connector-sdk|agent-utilities|agent-terminal-ui|agent-webui|pipelines|universal-skills) enabled=true ;;
+                medulla|arbora|scion-sdk|meristem|tuig|overstory|pipelines|universal-skills) enabled=true ;;
               esac ;;
             *) echo "architecture_explorer must be auto, redirect, on or off" >&2; exit 1 ;;
           esac

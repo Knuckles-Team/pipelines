@@ -143,3 +143,19 @@ def test_check_requires_the_diagram_to_link_the_explorer(tmp_path: Path) -> None
     assert sync_theme(source_root=ROOT, repository_root=root, content_source="docs", mode="check") == [
         f"runtime diagram must link the explorer at {ARCHITECTURE_EXPLORER_URL}: docs/index.md"
     ]
+
+
+def test_shared_ecosystem_links_use_canonical_repository_urls() -> None:
+    base = (Path(__file__).parents[1] / "templates/mkdocs-theme/base.mkdocs.yml").read_text()
+    for old, new, name in (
+        ("epistemic-graph", "medulla", "Medulla"),
+        ("agent-utilities", "meristem", "Meristem"),
+        ("agent-webui", "overstory", "Overstory"),
+        ("agent-connector-sdk", "scion-sdk", "Scion SDK"),
+    ):
+        assert f"https://knuckles-team.github.io/{new}/" in base
+        assert f"https://github.com/Knuckles-Team/{new}" in base
+        assert f"https://knuckles-team.github.io/{old}/" not in base
+        assert f"https://github.com/Knuckles-Team/{old}" not in base
+        # Selector keys remain compatible with existing pinned consumers.
+        assert f"slug: {old}\n        name: {name}" in base

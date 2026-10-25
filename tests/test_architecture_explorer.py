@@ -191,18 +191,18 @@ def test_shipped_unmapped_allowlist_is_reviewed_and_empty() -> None:
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_build_fails_on_an_unmapped_row(monkeypatch) -> None:
-    rows = [_row("EG-SCM-R999", "Nothing names this row", family="source-changesets", repo="epistemic-graph")]
+    rows = [_row("EG-SCM-R999", "Nothing names this row", family="source-changesets", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
-            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "epistemic-graph" else [])
+            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "medulla" else [])
             for e in registry
         ]
 
     monkeypatch.setattr(explorer, "load_all", fake_load)
     monkeypatch.setattr(explorer, "run_layout", lambda levels: {})
     _, meta = explorer.build("github", None)
-    assert meta["unmapped_violations"] == ["epistemic-graph:EG-SCM-R999"]
+    assert meta["unmapped_violations"] == ["medulla:EG-SCM-R999"]
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -247,11 +247,11 @@ def test_shipped_model_covers_every_registered_connector() -> None:
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 def test_page_builds_offline_with_both_variants(monkeypatch, tmp_path: Path) -> None:
-    rows = [_row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="epistemic-graph")]
+    rows = [_row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
-            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "epistemic-graph" else [])
+            Snapshot(repo=e["name"], slug=e["slug"], head="abc", rows=rows if e["name"] == "medulla" else [])
             for e in registry
         ]
 
@@ -297,16 +297,16 @@ def _ids(node: dict) -> set[str]:
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 def test_a_deleted_row_disappears_from_the_generated_tree(monkeypatch) -> None:
-    keep = _row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="epistemic-graph")
-    gone = _row("EG-SCM-R002", "Changeset replay", family="source-changesets", repo="epistemic-graph")
+    keep = _row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")
+    gone = _row("EG-SCM-R002", "Changeset replay", family="source-changesets", repo="medulla")
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-    monkeypatch.setattr(explorer, "load_all", _fake_loader({"epistemic-graph": [keep, gone]}))
+    monkeypatch.setattr(explorer, "load_all", _fake_loader({"medulla": [keep, gone]}))
     before, meta = explorer.build("github", None)
     assert {"EG-SCM-R001", "EG-SCM-R002"} <= _ids(before)
-    monkeypatch.setattr(explorer, "load_all", _fake_loader({"epistemic-graph": [keep]}))
+    monkeypatch.setattr(explorer, "load_all", _fake_loader({"medulla": [keep]}))
     after, meta = explorer.build("github", None)
     assert "EG-SCM-R001" in _ids(after) and "EG-SCM-R002" not in _ids(after)
-    assert meta["rows"] == 1 and meta["heads"]["epistemic-graph"] == "h-epis"
+    assert meta["rows"] == 1 and meta["heads"]["medulla"] == "h-medu"
     assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", meta["built_at"])
 
 
@@ -322,6 +322,72 @@ def test_discovery_drops_removed_repositories_and_adds_new_ones() -> None:
     assert scanned[0]["sha"] == "a" * 40 and scanned[1]["discovered"] is True
     assert sources.scan_set(registry, "local", "token") == registry
     assert sources.scan_set(registry, "github", None) == registry
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.9", "PIPE-PAGES-R042.7")
+def test_renamed_repositories_keep_ownership_placement_and_canonical_details(tmp_path: Path) -> None:
+    registry = json.loads((PKG / "registry.json").read_text())
+    expected = {
+        "medulla": ("eg", "epistemic-graph", "core"),
+        "meristem": ("au", "agent-utilities", "core"),
+        "scion-sdk": ("sdk", "agent-connector-sdk", "core"),
+        "overstory": ("webui", "agent-webui", "core"),
+        "tuig": ("tui", "agent-terminal-ui", "core"),
+        "axil": ("geniusbot", "geniusbot", "client"),
+    }
+    found = {e["slug"]: "a" * 40 for e in registry["repositories"]}
+    found["new-mcp"] = "b" * 40
+    scanned = sources.reconcile(registry["repositories"], found)
+    entries = {e["name"]: e for e in scanned}
+    model = json.loads((PKG / "model.json").read_text())
+    explorer.fit_fleet(model, scanned)
+    tree = Tree(model)
+    rows, snaps = [], []
+    for slug, (node_id, old_slug, kind) in expected.items():
+        entry = entries[slug]
+        assert entry["slug"] == slug and entry["kind"] == kind
+        assert not entry.get("discovered") and old_slug not in entries
+        assert entry["local"] == f"agent-packages/{old_slug}"
+        assert registry["pages_node"][slug] == node_id
+        assert tree.nodes[node_id]["repo"] == slug
+        if slug == "axil":
+            family, source = "desktop-client", "geniusbot/backend.py"
+            row = _row("GENIUSBOT-CLIENT-R001", "Backend integration", family, slug)
+        elif slug == "meristem":
+            family, source = "harness-cycle", "agent_utilities/harness/plan.py"
+            row = _row("AU-HARNESS-CYCLE-R001.2", "Propose", family, slug)
+        else:
+            home = next(
+                n
+                for n in tree.nodes.values()
+                if n["repo"] == slug
+                and n.get("fam")
+                and any(c.get("code") and not c["children"] for c in explorer._walk(n))
+            )
+            descendants = list(explorer._walk(home))
+            leaf = next(n for n in descendants if n.get("code") and not n["children"])
+            family = home["fam"][0]
+            source = leaf["code"][0]
+            row = _row(f"RENAME-{node_id.upper()}-R001", "Source placement", family, slug, f"Uses `{source}`.")
+        rows.append(row)
+        snaps.append(Snapshot(repo=slug, slug=slug, rows=[row], files={source}))
+        assert details.safe_url("requirements.md", details.Ctx(slug, family)) == (
+            f"https://github.com/Knuckles-Team/{slug}/blob/HEAD/specs/{family}/requirements.md"
+        )
+    direct = Placer(tree).run(rows)
+    placed = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert len(placed) == 6
+    assert all(tree.nodes[placed[r["id"]]]["repo"] == r["repo"] for r in rows)
+    assert all(not tree.nodes[placed[r["id"]]].get("unmapped") for r in rows)
+    assert not any(nid.startswith("conn.discovered." + slug) for nid in tree.nodes for slug in expected)
+    assert entries["new-mcp"]["kind"] == "connector" and entries["new-mcp"]["discovered"]
+    written = details.write_details(tmp_path, snaps)
+    assert len(written) == 6
+    for snap in snaps:
+        path = tmp_path / details.detail_path(snap.repo, snap.rows[0]["family"])
+        doc = json.loads(path.read_text())
+        assert doc["repo"] == snap.repo and set(doc["rows"]) == {snap.rows[0]["id"]}
+        assert all(f"/Knuckles-Team/{snap.slug}/" in f["url"] for f in doc["files"])
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -389,24 +455,24 @@ _NEEDS_LAYOUT = pytest.mark.skipif(
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 _SEARCH_ROWS = {
-    "agent-connector-sdk": [
+    "scion-sdk": [
         _row(
             "SDK-CONNECTOR-CONTROL-R030",
             "SDK provides GraphQL introspection context helpers for connector tools",
             "SDK-CONNECTOR-CONTROL",
-            "agent-connector-sdk",
+            "scion-sdk",
         ),
         _row(
             "SDK-CONNECTOR-CONTROL-R030.1",
             "SDK owns the one GraphQL client for connectors",
             "SDK-CONNECTOR-CONTROL",
-            "agent-connector-sdk",
+            "scion-sdk",
         ),
         _row(
             "SDK-CONNECTOR-CONTROL-R043",
             "SDK declares a source access contract for the engine client",
             "SDK-CONNECTOR-CONTROL",
-            "agent-connector-sdk",
+            "scion-sdk",
         ),
     ],
     "adguard-home-agent": [
@@ -426,7 +492,7 @@ def _build_page(monkeypatch, tmp_path: Path, rows_by_repo: dict, aliases: dict |
                 slug=e["slug"],
                 head="h",
                 rows=rows_by_repo.get(e["name"], []),
-                aliases=aliases or {} if e["name"] == "agent-connector-sdk" else {},
+                aliases=aliases or {} if e["name"] == "scion-sdk" else {},
             )
             for e in registry
         ]
@@ -434,8 +500,8 @@ def _build_page(monkeypatch, tmp_path: Path, rows_by_repo: dict, aliases: dict |
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     monkeypatch.setattr(explorer, "load_all", fake_load)
     page = tmp_path / "index.html"
-    assert explorer.main(["--mode", "github", "--artifact", str(page)]) == 0
-    return page.read_text()
+    assert explorer.main(["--mode", "github", "--page", str(page)]) == 0
+    return _with_document_mode_probe(page.read_text())
 
 
 def _payload(html: str) -> dict:
@@ -502,7 +568,7 @@ def test_a_capability_search_ranks_the_owning_row_first(monkeypatch, tmp_path: P
     ids = [h["id"] for h in hits]
     assert ids[0] == "SDK-CONNECTOR-CONTROL-R030.1"
     assert {"CONN-ADGUARD-HOME-AGENT-R002", "SDK-CONNECTOR-CONTROL-R030"} <= set(ids[:4])
-    assert hits[0]["repo"] == "agent-connector-sdk" and hits[0]["kind"] == "row"
+    assert hits[0]["repo"] == "scion-sdk" and hits[0]["kind"] == "row"
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.2")
@@ -551,6 +617,20 @@ def test_deep_links_parse() -> None:
     assert lines[1] == "#node=sdk.control.transport&q=GraphQL%20client "
 
 
+def _with_document_mode_probe(page: str) -> str:
+    assert page.startswith("<!doctype html>") and '<meta charset="utf-8">' in page
+    probe = """<script>
+document.documentElement.dataset.documentMode=document.compatMode;
+document.documentElement.dataset.documentCharset=document.characterSet;
+</script>"""
+    return page.replace("</body>", probe + "</body>")
+
+
+def _assert_browser_document(output: str) -> None:
+    assert 'data-document-mode="CSS1Compat"' in output
+    assert 'data-document-charset="UTF-8"' in output
+
+
 def _chrome() -> str | None:
     import glob
 
@@ -592,6 +672,7 @@ def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_pa
         timeout=120,
         check=True,
     ).stdout
+    _assert_browser_document(out)
     assert re.search(r'<li data-spec="SDK-CONNECTOR-CONTROL-R030.1" class="flash"', out)
     assert 'role="combobox"' in out and 'aria-label="Search results"' in out
     assert re.search(r'<input id="q"[^>]*>', out) and "GraphQL client" in out
@@ -619,7 +700,7 @@ def test_webui_composed_acceptance_row_places_on_its_part_not_the_allowlist() ->
         "WEBUI-APPS-R050",
         "Composed deployment and shared-backend acceptance.",
         "arbora-app-surface",
-        "agent-webui",
+        "overstory",
         "Qualify the installed WebUI with real Arbora served operations.",
     )
     tree = Tree(model)
@@ -681,6 +762,7 @@ def _build_with_details(monkeypatch, tmp_path: Path, snaps: list[Snapshot]) -> P
     monkeypatch.setattr(explorer, "load_all", lambda registry, mode, workspace=None, workers=12: snaps)
     page = tmp_path / "architecture" / "index.html"
     assert explorer.main(["--mode", "github", "--page", str(page)]) in (0, 1)
+    page.write_text(_with_document_mode_probe(page.read_text()))
     return page
 
 
@@ -903,6 +985,7 @@ def test_expanding_a_row_fetches_its_family_once_and_renders_it_safely(monkeypat
             timeout=120,
             check=True,
         ).stdout
+        _assert_browser_document(out)
     finally:
         server.shutdown()
     li = out[out.index('data-spec="FAM-R001"') :]
@@ -981,6 +1064,7 @@ def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_
             timeout=120,
             check=True,
         ).stdout
+        _assert_browser_document(out)
     finally:
         server.shutdown()
     specified = out[out.index('data-spec="FAM-R001"') : out.index('data-spec="FAM-R002"')]
@@ -1024,7 +1108,7 @@ def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
     model = json.loads((PKG / "model.json").read_text())
     terminal = next(node for node in model["children"] if node["id"] == "tui")
     assert terminal["label"] == "Tuig"
-    assert terminal["repo"] == "agent-terminal-ui"
+    assert terminal["repo"] == "tuig"
     assert terminal["role"] == "TUI / CLI"
     assert terminal["desc"].startswith("tuig is the single Rust/Ratatui CLI")
     assert ["tui", "arbora", "A2A / REST"] in model["edges"]
@@ -1057,20 +1141,24 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
     payload = _payload(_build_page(monkeypatch, tmp_path, {}))
     nodes = {node["id"]: node for node in payload["tree"]["children"]}
     brands = {
-        "webui": ("Overstory", "agent-webui"),
-        "tui": ("Tuig", "agent-terminal-ui"),
-        "sdk": ("Scion SDK", "agent-connector-sdk"),
-        "au": ("Meristem", "agent-utilities"),
-        "geniusbot": ("Axil", "geniusbot"),
+        "webui": ("Overstory", "overstory"),
+        "tui": ("Tuig", "tuig"),
+        "sdk": ("Scion", "scion-sdk"),
+        "au": ("Meristem", "meristem"),
+        "geniusbot": ("Axil", "axil"),
     }
     for node_id, (label, repo) in brands.items():
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
-    assert payload["tree"]["label"] == "Arbora ecosystem"
+    assert payload["tree"]["label"] == "Arbora Ecosystem"
     assert nodes["eg"]["label"] == "Medulla"
     assert nodes["egserver"]["label"] == "Medulla Stem"
     assert nodes["arbora"]["label"] == "Arbora"
-    assert nodes["geniusbot"]["role"] == "desktop GUI"
-    assert nodes["au"]["role"] == "in-run agent harness"
+    assert nodes["geniusbot"]["role"] == "Desktop GUI"
+    assert nodes["au"]["role"] == "Agent Harness"
+    assert nodes["sdk"]["role"] == "Connector SDK"
+    assert nodes["skills"]["label"] == "Universal Skills"
+    assert nodes["skills"]["role"] == "Agent Skills"
+    assert nodes["sources"]["label"] == "Source Systems"
 
 
 _AXIL_PARTS = {
@@ -1092,33 +1180,33 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
     model = json.loads((PKG / "model.json").read_text())
     tree = Tree(model)
     desktop = tree.nodes["geniusbot"]
-    assert (desktop["repo"], desktop["fam"]) == ("geniusbot", ["desktop-client"])
+    assert (desktop["repo"], desktop["fam"]) == ("axil", ["desktop-client"])
     expected = {
         f"GENIUSBOT-CLIENT-R{number:03d}{suffix}": f"geniusbot.{part}"
         for part, numbers in _AXIL_PARTS.items()
         for number in numbers
         for suffix in ("", ".1", ".1.1")
     }
-    rows = [_row(rid, "Requirement", "desktop-client", "geniusbot") for rid in expected]
+    rows = [_row(rid, "Requirement", "desktop-client", "axil") for rid in expected]
     unknown = [
-        _row(rid, "Requirement", "desktop-client", "geniusbot")
+        _row(rid, "Requirement", "desktop-client", "axil")
         for rid in ("GENIUSBOT-CLIENT-R021", "GENIUSBOT-CLIENT-R0010")
     ]
     direct = Placer(tree).run(rows + unknown)
     placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
     assert len(placed) == len(rows + unknown)
     assert dict(placed) == {**expected, **{row["id"]: "geniusbot.unmapped" for row in unknown}}
-    assert all(tree.nodes[nid]["repo"] == "geniusbot" for nid in expected.values())
+    assert all(tree.nodes[nid]["repo"] == "axil" for nid in expected.values())
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
 def test_axil_parts_survive_generation_without_changing_rows_or_statuses(monkeypatch, tmp_path: Path) -> None:
     rows = [
-        {**_row(f"GENIUSBOT-CLIENT-R{number:03d}", "Requirement", "desktop-client", "geniusbot"), "status": status}
+        {**_row(f"GENIUSBOT-CLIENT-R{number:03d}", "Requirement", "desktop-client", "axil"), "status": status}
         for number, status in zip(range(1, 21), ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED") * 5)
     ]
-    payload = _payload(_build_page(monkeypatch, tmp_path, {"geniusbot": rows}))
+    payload = _payload(_build_page(monkeypatch, tmp_path, {"axil": rows}))
     desktop = next(node for node in payload["tree"]["children"] if node["id"] == "geniusbot")
     assert {node["id"] for node in desktop["children"]} == {f"geniusbot.{part}" for part in _AXIL_PARTS}
     assert desktop["specs"] == []
@@ -1172,13 +1260,18 @@ setTimeout(async()=>{
     const theme=document.documentElement.getAttribute('data-theme'); get('theme').click();
     check(document.documentElement.getAttribute('data-theme')!==theme,'theme switch');
     check(getComputedStyle(cv).transitionDuration==='0s','reduced motion');
+    check(get('ocean-motion').disabled && document.documentElement.dataset.oceanMotion==='paused','reduced-motion wallpaper off');
     check(document.documentElement.scrollWidth<=innerWidth,'no horizontal page overflow');
     result.textContent='PASS';
   }catch(error){result.textContent='FAIL: '+error.message;}
   document.body.append(result);
 },500);
 </script>"""
-    page.write_text(preferences + _build_page(monkeypatch, tmp_path, _SEARCH_ROWS) + probe)
+    page.write_text(
+        _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+        .replace("</head>", preferences + "</head>")
+        .replace("</body>", probe + "</body>")
+    )
     out = subprocess.run(
         [
             _chrome(),
@@ -1196,6 +1289,7 @@ setTimeout(async()=>{
         timeout=120,
         check=True,
     ).stdout
+    _assert_browser_document(out)
     assert '<output id="interaction-result">PASS</output>' in out, out[-1500:]
 
 
@@ -1211,9 +1305,228 @@ def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identi
     assert "Graph edits go through the engine." in knowledge["desc"]
     assert "src/components/atlas" in knowledge["code"]
     assert tree.nodes["au"]["label"] == "Meristem"
-    assert tree.nodes["au"]["repo"] == "agent-utilities"
+    assert tree.nodes["au"]["repo"] == "meristem"
     terminal = tree.nodes["tui"]["desc"]
     assert "bounded local ACP text sessions" in terminal
     assert "Installed backend and release qualification" in terminal
     assert "durable resume and central continuation remain separate gates" in terminal
     assert "Approval attachment and durable resume are not delivered" in tree.nodes["tui.coding"]["desc"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+def test_ocean_browser_motion_controls_and_composited_wave_phases(monkeypatch, tmp_path: Path) -> None:
+    """Validate real CSS animation phases and accessibility without a video simulation."""
+    import subprocess
+
+    page = tmp_path / "motion.html"
+    probe = """<script>
+setTimeout(()=>{
+  const result=document.createElement('output'); result.id='motion-result';
+  const check=(ok,name)=>{if(!ok)throw Error(name);};
+  try{
+    const root=document.documentElement, button=document.getElementById('ocean-motion');
+    if(sessionStorage.getItem('ocean-reload-proof')==='pending'){
+      check(root.dataset.oceanMotion==='paused' && button.getAttribute('aria-pressed')==='false','opt out restored after real reload');
+      check(localStorage.getItem('arbora-arch-ocean-motion')==='off','persisted opt out survives reload');
+      button.click(); sessionStorage.removeItem('ocean-reload-proof');
+      result.textContent='PASS'; document.body.append(result); return;
+    }
+    const waves=[...document.querySelectorAll('.ocean-wave')];
+    check(root.dataset.oceanMotion==='running','default motion on');
+    check(waves.length===3,'three shared waves');
+    const animations=waves.map(w=>w.getAnimations()[0]);
+    check(animations.every(a=>a&&a.playState==='running'),'CSS animations running');
+    animations.forEach(a=>{a.currentTime=0;});
+    const before=waves.map(w=>getComputedStyle(w).transform);
+    animations.forEach(a=>{a.currentTime=12000;});
+    check(waves.every((w,i)=>getComputedStyle(w).transform!==before[i]),'distinct real rendered phases');
+    button.click(); check(root.dataset.oceanMotion==='paused','opt out pauses');
+    check(waves.every(w=>getComputedStyle(w).animationPlayState==='paused'),'CSS animations paused');
+    check(localStorage.getItem('arbora-arch-ocean-motion')==='off','opt out persisted');
+    check(button.getAttribute('aria-pressed')==='false','accessible state');
+    button.click(); check(root.dataset.oceanMotion==='running','resume');
+    Object.defineProperty(document,'hidden',{configurable:true,value:true});
+    document.dispatchEvent(new Event('visibilitychange'));
+    check(root.dataset.oceanMotion==='paused','hidden page pauses');
+    Object.defineProperty(document,'hidden',{configurable:true,value:false});
+    document.dispatchEvent(new Event('visibilitychange'));
+    check(root.dataset.oceanMotion==='running','visible page resumes');
+    check(getComputedStyle(document.querySelector('.ocean-scene')).pointerEvents==='none','wallpaper never intercepts input');
+    button.click(); sessionStorage.setItem('ocean-reload-proof','pending');
+    location.reload(); return;
+  }catch(error){result.textContent='FAIL: '+error.message;}
+  document.body.append(result);
+},500);
+</script>"""
+    page.write_text(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS).replace("</body>", probe + "</body>"))
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--virtual-time-budget=6000",
+            "--dump-dom",
+            page.as_uri(),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    _assert_browser_document(out)
+    assert '<output id="motion-result">PASS</output>' in out, out[-1500:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+def test_ocean_browser_candidate_model_subtitles_paint_without_overlap(monkeypatch, tmp_path: Path) -> None:
+    """Actual candidate-model fixture, explicitly not the live-payload visual snapshot."""
+    import os
+    import subprocess
+
+    page = tmp_path / "candidate-model-fixture.html"
+    spy = """<script>
+window.__paint=[];
+const originalFillText=CanvasRenderingContext2D.prototype.fillText;
+const originalClear=CanvasRenderingContext2D.prototype.clearRect;
+CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__paint=[];return originalClear.apply(this,args);};
+CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){
+ const m=this.measureText(text);window.__paint.push({text,x,y,font:this.font,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});
+ return originalFillText.call(this,text,x,y,...rest);
+};
+</script>"""
+    probe = """<script>
+setTimeout(async()=>{
+ await document.fonts.ready;
+ const result=document.createElement('output');result.id='subtitle-result';
+ try{
+  const check=(ok,name)=>{if(!ok)throw Error(name);}, a=window.__arch;
+  check(a.selected==='root','normal root camera');
+  const evidence=[];
+  for(const [id,label,role] of [['sdk','Scion','Connector SDK'],['au','Meristem','Agent Harness'],['skills','Universal Skills','Agent Skills']]){
+   const r=a.rect(id), x=(r[0]-a.cam.x)*a.cam.k, y=(r[1]-a.cam.y)*a.cam.k, w=r[2]*a.cam.k,h=r[3]*a.cam.k;
+   const title=window.__paint.find(p=>p.text===label&&p.x>=x&&p.x<=x+w&&p.y>=y&&p.y<=y+h);
+   const subtitle=window.__paint.find(p=>p.text===role&&p.x>=x&&p.x<=x+w&&p.y>=y&&p.y<=y+h);
+   check(title&&subtitle,id+' name and subtitle actually painted');
+   check(subtitle.top>title.bottom,id+' subtitle below title without overlap');
+   check(subtitle.bottom<y+h-3,id+' subtitle inside card');
+   const counts=window.__paint.filter(p=>/^(V |L |S |[\\d,]+ specs)/.test(p.text)&&p.x>=x&&p.x<=x+w&&p.y>subtitle.y&&p.y<=y+h);
+   check(counts.every(p=>p.top>subtitle.bottom),id+' counts clear subtitle');
+   evidence.push({id,label,role,title,subtitle,counts,card:[x,y,w,h]});
+  }
+  result.dataset.evidence=JSON.stringify(evidence);result.textContent='PASS';
+ }catch(error){result.textContent='FAIL: '+error.message;}
+ document.body.append(result);
+},1400);
+</script>"""
+    page.write_text(
+        _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+        .replace("<script>", spy + "<script>", 1)
+        .replace("</body>", probe + "</body>")
+    )
+    destination = Path(os.environ.get("ARCHITECTURE_EVIDENCE_DIR", str(tmp_path))).resolve()
+    destination.mkdir(exist_ok=True, parents=True)
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--window-size=1440,1000",
+            "--virtual-time-budget=5000",
+            f"--screenshot={destination / 'candidate-model-fixture-root.png'}",
+            "--dump-dom",
+            page.as_uri(),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    _assert_browser_document(out)
+    match = re.search(r'<output[^>]*id="subtitle-result"[^>]*>.*?</output>', out)
+    (destination / "candidate-model-fixture-subtitles.txt").write_text(
+        "Candidate model with test rows, NOT the real live-payload preview.\n"
+        + (match[0] if match else out[-2000:])
+        + "\n"
+    )
+    assert match and ">PASS</output>" in match[0], out[-3000:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_primary_part_display_labels_use_reviewed_title_case() -> None:
+    tree = Tree(json.loads((PKG / "model.json").read_text()))
+    expected = {
+        "webui.api": "Arbora API Consumer",
+        "webui.apps": "Application Surface",
+        "webui.design": "Browser Design System",
+        "webui.decide": "Decision Evidence",
+        "webui.fin": "Markets App",
+        "webui.id": "Identity Screens",
+        "tui.quality": "Source Quality and Repo Standards",
+        "tui.client": "Operation Client",
+        "tui.chat": "Chat Transport",
+        "tui.coding": "Coding Session",
+        "tui.tasks": "Tasks and Runs",
+        "tui.screens": "Terminal Views",
+        "geniusbot.backend": "Backend Integration",
+        "geniusbot.lifecycle": "Desktop Lifecycle",
+        "geniusbot.approvals": "Governed Approvals",
+        "geniusbot.terminal": "Embedded Terminal",
+        "geniusbot.panels": "Operator Panels",
+        "geniusbot.tokens": "Design Tokens",
+        "geniusbot.docs": "Documentation and Guardrails",
+        "geniusbot.runs": "Run Inspection",
+        "geniusbot.quality": "Source Quality",
+        "ar.door": "Door: Identity and Admission",
+        "ar.ops": "Served Operations API",
+        "ar.mcp": "MCP Server and Multiplexer",
+        "ar.a2a": "A2A Serving",
+        "ar.acp": "ACP Gateway",
+        "ar.fleet": "Fleet Catalog and Tools",
+        "ar.host": "Host Composition",
+        "ar.control": "Control Plane",
+        "ar.gateway": "Gateway and Widgets",
+        "ar.ingest": "Connector Ingest",
+        "ar.finance": "Finance and Market Projections",
+        "ar.deploy": "Deployment and Release",
+        "au.loop": "Run Loop and Harness",
+        "au.graph": "Graph Executor",
+        "au.runtime": "Workspace Runtime",
+        "au.rlm": "Recursive Model Runner",
+        "au.scm": "Changeset Development Loop",
+        "au.boundary": "Boundary Deconstruction",
+        "sdk.control": "Connector Control",
+        "sdk.ingest": "Source Ingest",
+        "sdk.wb": "Governed Write-Back",
+        "sdk.repo": "Repository Transport",
+        "sdk.scm": "Source Client and Workspace",
+        "sdk.fin": "Finance Sources",
+        "sdk.feeds": "Observability Feeds",
+        "sdk.release": "Quality and Release",
+        "eg.decide": "Decision Engine",
+        "eg.evo": "Self-Evolution",
+        "eg.ingest": "Ingest and Repository Index",
+        "eg.scm": "Source Authority and Changesets",
+        "eg.query": "Query and Reasoning",
+        "eg.compute": "Graph Compute",
+        "eg.packs": "Ontology and Packs",
+        "eg.durable": "Durable Kernel",
+        "eg.storage": "Storage Layers",
+        "eg.udp": "Unified Data Plane",
+        "eg.identity": "Identity and Scope",
+        "eg.place": "Placement and Workers",
+        "eg.fin": "Finance Primitives",
+        "eg.contract": "Client and Contract",
+        "egserver.bin": "Executable and Subcommands",
+        "egserver.dispatch": "Request Dispatch",
+        "egserver.wire": "Wire Protocol Adapters",
+        "egserver.obs": "Telemetry and Audit",
+        "egserver.image": "Container Image",
+    }
+    for node_id, label in expected.items():
+        assert tree.nodes[node_id]["label"] == label
