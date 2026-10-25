@@ -578,6 +578,7 @@ def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_pa
     out = subprocess.run(
         [
             _chrome(),
+            "--headless=new",
             "--no-sandbox",
             "--disable-gpu",
             "--host-resolver-rules=MAP * ~NOTFOUND",
@@ -889,6 +890,7 @@ def test_expanding_a_row_fetches_its_family_once_and_renders_it_safely(monkeypat
         out = subprocess.run(
             [
                 _chrome(),
+                "--headless=new",
                 "--no-sandbox",
                 "--disable-gpu",
                 "--window-size=1500,950",
@@ -966,6 +968,7 @@ def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_
         out = subprocess.run(
             [
                 _chrome(),
+                "--headless=new",
                 "--no-sandbox",
                 "--disable-gpu",
                 "--window-size=1500,950",
@@ -1014,3 +1017,203 @@ def test_a_build_writes_llms_txt_beside_the_page(monkeypatch, tmp_path: Path) ->
     page = _build_with_details(monkeypatch, tmp_path, _detail_snapshots())
     assert (page.parent / "llms.txt").read_text() == explorer.llms_txt()
     assert _FRONT_DOOR in (page.parent / "llms.txt").read_text() and 'rel="start"' in page.read_text()
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    terminal = next(node for node in model["children"] if node["id"] == "tui")
+    assert terminal["label"] == "Tuig"
+    assert terminal["repo"] == "agent-terminal-ui"
+    assert terminal["role"] == "TUI / CLI"
+    assert terminal["desc"].startswith("tuig is the single Rust/Ratatui CLI")
+    assert ["tui", "arbora", "A2A / REST"] in model["edges"]
+    edge = next(edge for edge in model["fixed_layout"]["edges"] if edge["from"] == "tui")
+    assert (edge["to"], edge["label"]) == ("arbora", "A2A / REST")
+    children = {node["id"]: node for node in terminal["children"]}
+    assert set(children) == {
+        "tui.quality",
+        "tui.client",
+        "tui.chat",
+        "tui.native",
+        "tui.coding",
+        "tui.tasks",
+        "tui.screens",
+    }
+    assert "planned" in children["tui.coding"]["role"]
+    assert "planned" in children["tui.chat"]["desc"]
+    assert "not delivered" in children["tui.client"]["desc"]
+    assert ["tui.coding", "tui.client", "planned operations"] in terminal["edges"]
+    assert all(
+        not path.startswith("agent_terminal_ui")
+        for node in [terminal, *children.values()]
+        for path in node.get("code", [])
+    )
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+def test_display_brands_survive_generation_without_renaming_repositories(monkeypatch, tmp_path: Path) -> None:
+    payload = _payload(_build_page(monkeypatch, tmp_path, {}))
+    nodes = {node["id"]: node for node in payload["tree"]["children"]}
+    brands = {
+        "webui": ("Overstory", "agent-webui"),
+        "tui": ("Tuig", "agent-terminal-ui"),
+        "sdk": ("Scion SDK", "agent-connector-sdk"),
+        "au": ("Meristem", "agent-utilities"),
+        "geniusbot": ("Axil", "geniusbot"),
+    }
+    for node_id, (label, repo) in brands.items():
+        assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
+    assert payload["tree"]["label"] == "Arbora ecosystem"
+    assert nodes["eg"]["label"] == "Medulla"
+    assert nodes["egserver"]["label"] == "Medulla Stem"
+    assert nodes["arbora"]["label"] == "Arbora"
+    assert nodes["geniusbot"]["role"] == "desktop GUI"
+    assert nodes["au"]["role"] == "in-run agent harness"
+
+
+_AXIL_PARTS = {
+    "backend": (1, 2, 3, 5),
+    "lifecycle": (4, 8, 10),
+    "approvals": (6,),
+    "terminal": (7,),
+    "panels": (9, 11, 14),
+    "packaging": (12,),
+    "tokens": (13,),
+    "docs": (15, 16, 17, 18),
+    "runs": (19,),
+    "quality": (20,),
+}
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    tree = Tree(model)
+    desktop = tree.nodes["geniusbot"]
+    assert (desktop["repo"], desktop["fam"]) == ("geniusbot", ["desktop-client"])
+    expected = {
+        f"GENIUSBOT-CLIENT-R{number:03d}{suffix}": f"geniusbot.{part}"
+        for part, numbers in _AXIL_PARTS.items()
+        for number in numbers
+        for suffix in ("", ".1", ".1.1")
+    }
+    rows = [_row(rid, "Requirement", "desktop-client", "geniusbot") for rid in expected]
+    unknown = [
+        _row(rid, "Requirement", "desktop-client", "geniusbot")
+        for rid in ("GENIUSBOT-CLIENT-R021", "GENIUSBOT-CLIENT-R0010")
+    ]
+    direct = Placer(tree).run(rows + unknown)
+    placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
+    assert len(placed) == len(rows + unknown)
+    assert dict(placed) == {**expected, **{row["id"]: "geniusbot.unmapped" for row in unknown}}
+    assert all(tree.nodes[nid]["repo"] == "geniusbot" for nid in expected.values())
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+def test_axil_parts_survive_generation_without_changing_rows_or_statuses(monkeypatch, tmp_path: Path) -> None:
+    rows = [
+        {**_row(f"GENIUSBOT-CLIENT-R{number:03d}", "Requirement", "desktop-client", "geniusbot"), "status": status}
+        for number, status in zip(range(1, 21), ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED") * 5)
+    ]
+    payload = _payload(_build_page(monkeypatch, tmp_path, {"geniusbot": rows}))
+    desktop = next(node for node in payload["tree"]["children"] if node["id"] == "geniusbot")
+    assert {node["id"] for node in desktop["children"]} == {f"geniusbot.{part}" for part in _AXIL_PARTS}
+    assert desktop["specs"] == []
+    assert "layout" in desktop
+    emitted = [row for node in desktop["children"] for row in node["specs"]]
+    assert len(emitted) == len(rows)
+    assert {(row["id"], row["status"], row["repo"], row["family"]) for row in emitted} == {
+        (row["id"], row["status"], row["repo"], row["family"]) for row in rows
+    }
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+@pytest.mark.parametrize("viewport", ["1440,1000", "390,844"])
+def test_ocean_browser_keyboard_zoom_pan_search_and_camera_history(monkeypatch, tmp_path: Path, viewport: str) -> None:
+    """Exercise real DOM/canvas controls without introducing a browser framework."""
+    import subprocess
+
+    page = tmp_path / "index.html"
+    # Use the actual reduced-motion code path, avoiding animation timing in CLI Chrome.
+    preferences = """<script>
+const nativeMatchMedia=window.matchMedia.bind(window);
+window.matchMedia=q=>q==='(prefers-reduced-motion: reduce)'
+  ? {matches:true,addEventListener(){},removeEventListener(){}} : nativeMatchMedia(q);
+</script>"""
+    probe = """<script>
+setTimeout(async()=>{
+  const result=document.createElement('output'); result.id='interaction-result';
+  const check=(ok,name)=>{if(!ok)throw Error(name);};
+  const key=(target,value)=>target.dispatchEvent(new KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
+  try{
+    const a=window.__arch, cv=document.getElementById('cv'), get=id=>document.getElementById(id);
+    const initial={...a.cam}; get('zin').click(); get('zin').click();
+    check(a.cam.k>initial.k,'repeated zoom in'); get('zout').click();
+    check(a.cam.k>initial.k,'zoom out preserves intermediate scale');
+    cv.focus(); check(document.activeElement===cv,'canvas keyboard focus');
+    const beforePan=a.cam.x; key(cv,'ArrowRight'); check(a.cam.x>beforePan,'keyboard pan');
+    const beforeWheel=a.cam.k; cv.dispatchEvent(new WheelEvent('wheel',{deltaY:-100,cancelable:true}));
+    check(a.cam.k>beforeWheel,'wheel zoom');
+    const beforeGo={...a.cam}; a.go('webui',{instant:true}); get('back').click();
+    check(Math.abs(a.cam.k-beforeGo.k)<0.000001 && a.cam.x===beforeGo.x,'camera back history');
+    get('zpanel').click(); check(get('zpanel').getAttribute('aria-pressed')==='true','panel hide');
+    get('zpanel').click(); check(get('zpanel').getAttribute('aria-pressed')==='false','panel restore');
+    key(document.body,'/'); const q=get('q'); check(document.activeElement===q,'search shortcut');
+    q.value='GraphQL client'; q.dispatchEvent(new Event('input',{bubbles:true}));
+    check(q.getAttribute('aria-expanded')==='true' && a.hits.length>0,'search results');
+    key(q,'ArrowDown'); key(q,'ArrowUp'); key(q,'Enter');
+    check(get('results').hidden && location.hash.includes('q=GraphQL'),'search selection deep link');
+    q.focus(); key(q,'Escape'); check(get('results').hidden,'search Escape');
+    const theme=document.documentElement.getAttribute('data-theme'); get('theme').click();
+    check(document.documentElement.getAttribute('data-theme')!==theme,'theme switch');
+    check(getComputedStyle(cv).transitionDuration==='0s','reduced motion');
+    check(document.documentElement.scrollWidth<=innerWidth,'no horizontal page overflow');
+    result.textContent='PASS';
+  }catch(error){result.textContent='FAIL: '+error.message;}
+  document.body.append(result);
+},500);
+</script>"""
+    page.write_text(preferences + _build_page(monkeypatch, tmp_path, _SEARCH_ROWS) + probe)
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--host-resolver-rules=MAP * ~NOTFOUND",
+            f"--window-size={viewport}",
+            "--virtual-time-budget=6000",
+            "--dump-dom",
+            page.as_uri(),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    assert '<output id="interaction-result">PASS</output>' in out, out[-1500:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identity() -> None:
+    tree = Tree(json.loads((PKG / "model.json").read_text()))
+    studio = tree.nodes["webui.dash"]
+    assert studio["label"] == "Overstory Studio"
+    assert studio["fam"] == ["agent-dashboards"]
+    assert studio["code"] == ["src/components/dashboards", "src/lib/dashboards"]
+    knowledge = tree.nodes["webui.apps.graph"]
+    assert "Understory" in knowledge["desc"]
+    assert "Graph edits go through the engine." in knowledge["desc"]
+    assert "src/components/atlas" in knowledge["code"]
+    assert tree.nodes["au"]["label"] == "Meristem"
+    assert tree.nodes["au"]["repo"] == "agent-utilities"
+    terminal = tree.nodes["tui"]["desc"]
+    assert "bounded local ACP text sessions" in terminal
+    assert "Installed backend and release qualification" in terminal
+    assert "durable resume and central continuation remain separate gates" in terminal
+    assert "Approval attachment and durable resume are not delivered" in tree.nodes["tui.coding"]["desc"]

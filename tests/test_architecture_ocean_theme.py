@@ -1,0 +1,67 @@
+"""Presentation-only ocean materials retain inexpensive, accessible map rendering."""
+
+from pathlib import Path
+import re
+
+import pytest
+
+TEMPLATE = Path(__file__).parents[1] / "scripts/architecture_explorer/template.html"
+
+
+def _contrast(a: str, b: str) -> float:
+    def luminance(value: str) -> float:
+        channels = [int(value[i : i + 2], 16) / 255 for i in (1, 3, 5)]
+        linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+        return sum(c * weight for c, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+
+    low, high = sorted((luminance(a), luminance(b)))
+    return (high + 0.05) / (low + 0.05)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_ocean_text_and_status_palette_has_readable_contrast() -> None:
+    html = TEMPLATE.read_text()
+    for selector in (":root{", ':root[data-theme="dark"]{'):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+        for background in ("--sheet", "--surface", "--band-a", "--band-b"):
+            for foreground in ("--fg", "--muted", "--faint", "--accent"):
+                assert _contrast(tokens[foreground], tokens[background]) >= 4.5, (selector, foreground, background)
+        statuses = [tokens[f"--s-{status}"] for status in ("verified", "landed", "specified", "retired")]
+        assert len(set(statuses)) == 4
+        for color in statuses:
+            assert _contrast(color, tokens["--surface"]) >= 4.5
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_ocean_materials_have_no_network_fonts_or_expensive_node_effects() -> None:
+    html = TEMPLATE.read_text()
+    assert "fonts.googleapis.com" not in html
+    assert "fonts.gstatic.com" not in html
+    assert "backdrop-filter:" not in html
+    assert "ctx.shadowBlur" not in html
+    assert "--font-body:Inter,ui-sans-serif,system-ui" in html
+    assert "ctx.fillStyle=C.surface; rr(sx,sy,sw,sh,radius); ctx.fill();" in html
+    assert ".panel{background:var(--surface);background:var(--glass-reading)}" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_ocean_preferences_have_opaque_reduced_motion_and_forced_color_fallbacks() -> None:
+    html = TEMPLATE.read_text()
+    assert "@media (prefers-reduced-transparency: reduce)" in html
+    assert "@media (prefers-reduced-motion: reduce)" in html
+    assert "transition:none!important;animation:none!important" in html
+    assert "@media (forced-colors: active)" in html
+    assert "--fg:CanvasText" in html and "--focus:Highlight" in html
+    assert 'matchMedia("(forced-colors: active)").addEventListener("change",readColors)' in html
+    assert "select:focus-visible,summary:focus-visible,canvas:focus-visible" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_ocean_primary_controls_are_translucent_unoutlined_and_touch_sized() -> None:
+    html = TEMPLATE.read_text()
+    assert "--button-neutral:rgb(" in html
+    assert "border-color:transparent;box-shadow:none;border-radius:8px;min-height:44px" in html
+    assert ".zoom .btn{width:44px}" in html
+    assert ".btn,.chip,.kids button,.links button{border-color:ButtonText}" in html
+    assert "outline:3px solid var(--focus)" in html

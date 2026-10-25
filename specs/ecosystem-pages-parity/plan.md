@@ -436,6 +436,8 @@ R042: `scripts/architecture_explorer/` discovers the organization repositories t
 
 R042.1 to R042.4: `build.search_index` turns the placed tree into the compact index that `render` embeds next to the tree; `search.cjs` holds the ranking and hash parsing and is inlined into `template.html` and loaded by node in the tests. The search box reuses `go`, `fitCam` and `openness` through `openCam`, so a result opens its ancestors the way a manual zoom does. `sources.read_aliases` reads each repository's alias file. R042.6 to R042.8: `details.py` cuts each row's description at source read time, renders the safe markdown subset and writes `spec-details/<repo>/<family>.json` next to the page; `template.html` fetches a family on its first expand and copies the parsed HTML through an allowlist.
 
+R042 visual theme: adapt Overstory's system sans typography, rounded neutral controls and bounded translucent reading surfaces to an ocean-blue palette in `template.html`. Keep opaque, inexpensive canvas nodes and distinguishable semantic layer/status colors; no new font/CDN/runtime dependency, node blur, animated paint or layout engine. Reduced-motion, reduced-transparency and forced-colors preferences have explicit fallbacks. This is a presentation-only change: text, model, row status/CQ classification, IDs, links, placement geometry, search, history, pan and infinite zoom remain unchanged. Understory/Studio graph conversion and repository renaming are outside this patch. The read-only PR visual job uses runner Chrome to retain desktop/mobile light/dark root and deep-link screenshots, DOM, the interactive HTML and raw-payload/candidate provenance; it runs existing detail/deep-link tests plus keyboard, zoom, pan, camera-history and search controls without a new browser dependency or deployment.
+
 ## Agent-readiness and static delivery (PIPE-PAGES-R043)
 
 This requirement explicitly assigns the existing readiness and static delivery contract to this spec.
@@ -453,3 +455,60 @@ The existing validator consumes canonical manifests; this requirement adds no ge
 `tests/test_pages_readiness.py` owns validation, static delivery, refusal, and direct-entry evidence.
 `tests/test_pages_pipeline_contract.py` owns opt-in workflow and strict-build wiring evidence.
 Public-site acceptance and the supported interpreter remain separate qualification obligations.
+
+## Amendments
+
+### 2026-10-25 — tuig explorer naming (PIPE-PAGES-R042)
+
+The source model displays the native CLI as `tuig` while retaining repository
+`agent-terminal-ui`, node `tui`, and all child IDs for existing deep links.
+Its current transport edge is A2A/REST. Native-only migration descriptions
+separate implemented snapshot/inspection views from planned ACP, local runtime,
+streaming, approval attachment and durable resume. PyPI wheel delivery requires
+release qualification. Source paths refer to the Rust frontend, not the retired
+Python/Textual frontend. The canonical organization Pages workflow consumes this
+model through `scripts/architecture_explorer/build.py`; generated HTML is not
+edited. `test_tuig_preserves_identity_and_distinguishes_planned_runtime` checks
+the stable identity, source paths and qualified edges.
+
+### 2026-10-25 — repository title and Tuig subtitle (PIPE-PAGES-R042)
+
+The main node title remains `agent-terminal-ui`. Its lower role label reads
+`Tuig TUI / CLI`, identifying Tuig as part of that repository rather than
+renaming the architecture node. The executable remains lowercase `tuig`;
+stable IDs, repository mapping, transport and release/runtime qualification
+are unchanged. The existing identity test checks both display labels and the
+lowercase executable description.
+
+### 2026-10-25 — ecosystem display brands (PIPE-PAGES-R042)
+
+This amendment supersedes the earlier terminal title/subtitle choices: the
+canonical model uses the five approved product display names documented in
+`reference/ecosystem-boundaries.md`.
+Axil Desk is the desktop GUI; Epistemic Graph and Arbora retain their names.
+The Tuig executable remains `tuig`. Stable node IDs, repository slugs, code
+paths, imports, dependency identifiers and protocol contracts do not change.
+Existing runtime and release qualification caveats remain in force.
+The normal explorer generator consumes these labels; no generated organization
+site output is hand-edited. The display-brand regression test exercises that
+generator and checks brand labels alongside their unchanged repository IDs.
+
+### 2026-10-25 — desktop visual parts (PIPE-PAGES-R042)
+
+The Axil Desk node retains `geniusbot` and the `desktop-client` family home.
+Ten child parts group the existing R001–R020 requirement roots and all their
+descendants by explicit ID rules. The groups cover backend integration,
+lifecycle, approvals, terminal, panels, packaging, tokens, documentation,
+run inspection and source quality. They add no requirement, transport edge,
+source path or delivery claim. Unknown roots stay visible as Unmapped.
+Placement and normal-generation tests protect unique placement, repository
+identity and unchanged row/status totals. Generated Pages output is not edited.
+
+### 2026-10-25 — Understory, Studio and Meristem display alignment (PIPE-PAGES-R042)
+
+Name the existing dashboard authoring node Overstory Studio, describe Understory
+as the knowledge exploration surface, and correct the in-run harness display
+name to Meristem. Preserve node and repository IDs, family placement, code paths,
+authority text, evidence and outstanding qualification caveats. The ocean-theme
+preview retains its original payload provenance; normal generation consumes the
+new labels separately. No renderer or capability is added.
