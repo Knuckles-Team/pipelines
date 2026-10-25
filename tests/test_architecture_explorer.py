@@ -578,6 +578,7 @@ def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_pa
     out = subprocess.run(
         [
             _chrome(),
+            "--headless=new",
             "--no-sandbox",
             "--disable-gpu",
             "--host-resolver-rules=MAP * ~NOTFOUND",
@@ -889,6 +890,7 @@ def test_expanding_a_row_fetches_its_family_once_and_renders_it_safely(monkeypat
         out = subprocess.run(
             [
                 _chrome(),
+                "--headless=new",
                 "--no-sandbox",
                 "--disable-gpu",
                 "--window-size=1500,950",
@@ -966,6 +968,7 @@ def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_
         out = subprocess.run(
             [
                 _chrome(),
+                "--headless=new",
                 "--no-sandbox",
                 "--disable-gpu",
                 "--window-size=1500,950",
@@ -1124,3 +1127,72 @@ def test_axil_parts_survive_generation_without_changing_rows_or_statuses(monkeyp
     assert {(row["id"], row["status"], row["repo"], row["family"]) for row in emitted} == {
         (row["id"], row["status"], row["repo"], row["family"]) for row in rows
     }
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+@pytest.mark.parametrize("viewport", ["1440,1000", "390,844"])
+def test_ocean_browser_keyboard_zoom_pan_search_and_camera_history(monkeypatch, tmp_path: Path, viewport: str) -> None:
+    """Exercise real DOM/canvas controls without introducing a browser framework."""
+    import subprocess
+
+    page = tmp_path / "index.html"
+    # Use the actual reduced-motion code path, avoiding animation timing in CLI Chrome.
+    preferences = """<script>
+const nativeMatchMedia=window.matchMedia.bind(window);
+window.matchMedia=q=>q==='(prefers-reduced-motion: reduce)'
+  ? {matches:true,addEventListener(){},removeEventListener(){}} : nativeMatchMedia(q);
+</script>"""
+    probe = """<script>
+setTimeout(async()=>{
+  const result=document.createElement('output'); result.id='interaction-result';
+  const check=(ok,name)=>{if(!ok)throw Error(name);};
+  const key=(target,value)=>target.dispatchEvent(new KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
+  try{
+    const a=window.__arch, cv=document.getElementById('cv'), get=id=>document.getElementById(id);
+    const initial={...a.cam}; get('zin').click(); get('zin').click();
+    check(a.cam.k>initial.k,'repeated zoom in'); get('zout').click();
+    check(a.cam.k>initial.k,'zoom out preserves intermediate scale');
+    cv.focus(); check(document.activeElement===cv,'canvas keyboard focus');
+    const beforePan=a.cam.x; key(cv,'ArrowRight'); check(a.cam.x>beforePan,'keyboard pan');
+    const beforeWheel=a.cam.k; cv.dispatchEvent(new WheelEvent('wheel',{deltaY:-100,cancelable:true}));
+    check(a.cam.k>beforeWheel,'wheel zoom');
+    const beforeGo={...a.cam}; a.go('webui',{instant:true}); get('back').click();
+    check(Math.abs(a.cam.k-beforeGo.k)<0.000001 && a.cam.x===beforeGo.x,'camera back history');
+    get('zpanel').click(); check(get('zpanel').getAttribute('aria-pressed')==='true','panel hide');
+    get('zpanel').click(); check(get('zpanel').getAttribute('aria-pressed')==='false','panel restore');
+    key(document.body,'/'); const q=get('q'); check(document.activeElement===q,'search shortcut');
+    q.value='GraphQL client'; q.dispatchEvent(new Event('input',{bubbles:true}));
+    check(q.getAttribute('aria-expanded')==='true' && a.hits.length>0,'search results');
+    key(q,'ArrowDown'); key(q,'ArrowUp'); key(q,'Enter');
+    check(get('results').hidden && location.hash.includes('q=GraphQL'),'search selection deep link');
+    q.focus(); key(q,'Escape'); check(get('results').hidden,'search Escape');
+    const theme=document.documentElement.getAttribute('data-theme'); get('theme').click();
+    check(document.documentElement.getAttribute('data-theme')!==theme,'theme switch');
+    check(getComputedStyle(cv).transitionDuration==='0s','reduced motion');
+    check(document.documentElement.scrollWidth<=innerWidth,'no horizontal page overflow');
+    result.textContent='PASS';
+  }catch(error){result.textContent='FAIL: '+error.message;}
+  document.body.append(result);
+},500);
+</script>"""
+    page.write_text(preferences + _build_page(monkeypatch, tmp_path, _SEARCH_ROWS) + probe)
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--host-resolver-rules=MAP * ~NOTFOUND",
+            f"--window-size={viewport}",
+            "--virtual-time-budget=6000",
+            "--dump-dom",
+            page.as_uri(),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    assert '<output id="interaction-result">PASS</output>' in out, out[-1500:]
