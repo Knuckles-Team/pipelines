@@ -38,7 +38,7 @@
   [
    "tui",
    "arbora",
-   "REST operations"
+   "A2A / REST"
   ],
   [
    "geniusbot",
@@ -371,11 +371,11 @@
   },
   {
    "id": "tui",
-   "label": "Agent Terminal UI",
-   "role": "REST operations",
-   "desc": "The terminal UI runs chat and coding sessions for developers. It sends typed commands to Arbora and streams run events back. Each effect waits for the approval of the user.",
+   "label": "tuig",
+   "role": "CLI / terminal client",
+   "desc": "tuig is the single Rust/Ratatui CLI and terminal client in agent-terminal-ui. The native-only cutover replaces Python/Textual; PyPI binary-wheel delivery remains subject to release qualification. Today it uses Arbora A2A/REST. ACP and a local runtime are planned upstream in Arbora and Agent Utilities, not delivered here.",
    "code": [
-    "agent_terminal_ui"
+    "native/agent-terminal-ui"
    ],
    "fam": [
     "terminal-runtime"
@@ -396,7 +396,7 @@
     [
      "tui.coding",
      "tui.client",
-     "operations"
+     "planned operations"
     ],
     [
      "tui.tasks",
@@ -415,73 +415,66 @@
     {
      "id": "tui.client",
      "label": "Operation client",
-     "role": "typed commands",
-     "desc": "The client issues typed commands. It holds pending approvals until the user decides.",
+     "role": "A2A / REST client",
+     "desc": "The native client submits prompts and reads task snapshots through Arbora A2A. Run inspection and logs use served REST operations. Approval attachment and ACP are planned, not delivered.",
      "code": [
-      "agent_terminal_ui/client.py",
-      "agent_terminal_ui/commands.py",
-      "agent_terminal_ui/capability_provider.py"
+      "native/agent-terminal-ui/src/main.rs",
+      "native/agent-terminal-ui/src/run_inspector_client.rs"
      ],
      "kw": "operation client|typed command|pending approval|client|failure semantics|served read|current-plan"
     },
     {
      "id": "tui.chat",
      "label": "Chat transport",
-     "role": "served chat",
-     "desc": "Chat runs over the served Arbora transport. Turns render live.",
+     "role": "unary task snapshots",
+     "desc": "Submitted turns render validated unary task snapshots. Interactive prompt composition, streaming and context continuation remain planned.",
      "code": [
-      "agent_terminal_ui/session_manager.py",
-      "agent_terminal_ui/compaction.py",
-      "agent_terminal_ui/reasoning.py"
+      "native/agent-terminal-ui/src/task_output.rs",
+      "native/agent-terminal-ui/src/public_run_events.rs"
      ],
      "kw": "chat|turn|stream decoder|transport"
     },
     {
      "id": "tui.native",
-     "label": "Native presentation",
-     "role": "native/",
-     "desc": "A native front end gives full presentation parity. It reads task snapshots.",
+     "label": "Native CLI",
+     "role": "Rust / Ratatui",
+     "desc": "tuig provides interactive terminal and headless modes in one native executable. PyPI binary wheels package that executable; platform release qualification remains open.",
      "code": [
-      "native"
+      "native/agent-terminal-ui"
      ],
-     "kw": "native|palette|presentation|discovery slice|task snapshot|correlation"
+     "kw": "native|palette|presentation|discovery slice|task snapshot|correlation|tuig|ratatui|binary wheel"
     },
     {
      "id": "tui.coding",
      "label": "Coding session",
-     "role": "local workspace",
-     "desc": "A coding session works in the local workspace under a workspace policy.",
+     "role": "planned local runtime",
+     "desc": "Local coding runtime integration is planned in Arbora and Agent Utilities. Approval attachment and durable resume are not delivered by the native client.",
      "code": [
-      "agent_terminal_ui/coding_session.py",
-      "agent_terminal_ui/workspace_policy.py",
-      "agent_terminal_ui/workspace_snapshots.py",
-      "agent_terminal_ui/shell.py"
+      "native/agent-terminal-ui/src/coding_approval.rs"
      ],
      "kw": "coding|local workspace|daily|parity"
     },
     {
      "id": "tui.tasks",
      "label": "Tasks and runs",
-     "role": "one-shot + inspector",
-     "desc": "One-shot tasks and background runs report into a run inspector. The harness view is read-only.",
+     "role": "snapshots + inspector",
+     "desc": "The native client observes task snapshots, run details and host logs. Headless mode polls active tasks and fails closed when input or approval is required; it does not approve or cancel work.",
      "code": [
-      "agent_terminal_ui/task_manager.py",
-      "agent_terminal_ui/background_runner.py",
-      "agent_terminal_ui/headless.py",
-      "agent_terminal_ui/goal.py"
+      "native/agent-terminal-ui/src/headless.rs",
+      "native/agent-terminal-ui/src/run_inspector.rs",
+      "native/agent-terminal-ui/src/host_logs.rs"
      ],
      "kw": "task|one-shot|run inspector|harness surface|migration acceptance"
     },
     {
      "id": "tui.screens",
-     "label": "Screens and widgets",
-     "role": "tui/, widgets/",
-     "desc": "Screens and widgets render the terminal views. Theme tokens set colors and contrast.",
+     "label": "Terminal views",
+     "role": "Ratatui presentation",
+     "desc": "Native views render task state, public output details, themes and scrolling. There is no parallel Python/Textual frontend in the native-only cutover.",
      "code": [
-      "agent_terminal_ui/screens",
-      "agent_terminal_ui/widgets",
-      "agent_terminal_ui/tui",
-      "agent_terminal_ui/app.py"
+      "native/agent-terminal-ui/src/presentation.rs",
+      "native/agent-terminal-ui/src/inspector_view.rs",
+      "native/agent-terminal-ui/src/host_log_view.rs"
      ],
      "kw": "theme|accessib|screen|widget|render"
     }
@@ -6457,7 +6450,7 @@
    {
     "from": "tui",
     "to": "arbora",
-    "label": "REST operations",
+    "label": "A2A / REST",
     "pts": [
      [
       1533,

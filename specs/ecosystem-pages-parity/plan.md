@@ -453,3 +453,18 @@ The existing validator consumes canonical manifests; this requirement adds no ge
 `tests/test_pages_readiness.py` owns validation, static delivery, refusal, and direct-entry evidence.
 `tests/test_pages_pipeline_contract.py` owns opt-in workflow and strict-build wiring evidence.
 Public-site acceptance and the supported interpreter remain separate qualification obligations.
+
+## Amendments
+
+### 2026-10-25 — tuig explorer naming (PIPE-PAGES-R042)
+
+The source model displays the native CLI as `tuig` while retaining repository
+`agent-terminal-ui`, node `tui`, and all child IDs for existing deep links.
+Its current transport edge is A2A/REST. Native-only migration descriptions
+separate implemented snapshot/inspection views from planned ACP, local runtime,
+streaming, approval attachment and durable resume. PyPI wheel delivery requires
+release qualification. Source paths refer to the Rust frontend, not the retired
+Python/Textual frontend. The canonical organization Pages workflow consumes this
+model through `scripts/architecture_explorer/build.py`; generated HTML is not
+edited. `test_tuig_preserves_identity_and_distinguishes_planned_runtime` checks
+the stable identity, source paths and qualified edges.

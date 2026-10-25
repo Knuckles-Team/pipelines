@@ -4006,10 +4006,10 @@
       ],
       "verified_by": [
         "tests/test_architecture_explorer.py:1011",
+        "tests/test_architecture_explorer.py:1019",
         "tests/test_architecture_explorer.py:105",
         "tests/test_architecture_explorer.py:116",
-        "tests/test_architecture_explorer.py:126",
-        "tests/test_architecture_explorer.py:144"
+        "tests/test_architecture_explorer.py:126"
       ],
       "rollup_of": [
         "PIPE-PAGES-R042.1",
