@@ -43,3 +43,11 @@ Other IDs still require ordinary acceptance bindings. Status remains generated f
 PIPE-CONNSPEC-R011 extends the existing alias loader, not trailer acceptance rules. Parse current requirement rows with the shared parser before accepting an exact standard-ID alias. The source must have no current requirement row, including a retired tombstone; the target must be an active row, not a prose mention or another alias. Reject source or target collisions with retired prefixes. Existing prefix aliases and pre-standard exact aliases retain their one-hop behavior. The ordinary trailer gate still requires a bound target test and refuses unrelated unknown IDs. A renumbering fixture checks the historical range and the current PR range independently, and preserves the original landing receipt under the new ID.
 
 PIPE-CONNSPEC-R012 to R016 add competency-question priority. A competency question is an ordinary `EG-CQ-` row, so the Depends-on graph already carries the signal. The scorer in `priority.py` is shared by the status generator and the architecture page.
+
+## Amendment: distinguish CQ paths from architecture links (2026-10-25)
+
+PIPE-CONNSPEC-R016 labels the existing unserved filter “No CQ dependency path”.
+Its explanation states the direction: CQ → Depends-on → requirement. The label
+does not report missing architecture placement or implementation links. Keep
+the existing filter, scores, classification, requirement states and evidence.
+This wording change adds no dependencies and changes no competency questions.

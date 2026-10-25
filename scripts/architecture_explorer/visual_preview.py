@@ -14,7 +14,7 @@ import tempfile
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
-from .build import DOC_HEAD, DOC_TAIL, HERE
+from .build import DOC_HEAD, DOC_TAIL, HERE, template_source
 
 SOURCE = "https://knuckles-team.github.io/.github/architecture/"
 PROBE = """<script>
@@ -50,7 +50,7 @@ def extract_payload(source: str) -> tuple[str, dict]:
 def prepare_preview(source: str, output: Path, candidate: str) -> dict:
     raw, payload = extract_payload(source)
     template = (HERE / "template.html").read_text()
-    page = template.replace("/*__DATA__*/null", raw).replace("/*__SEARCH__*/", (HERE / "search.cjs").read_text())
+    page = template_source().replace("/*__DATA__*/null", raw)
     output.mkdir(parents=True, exist_ok=True)
     (output / "index.html").write_text(DOC_HEAD + page + DOC_TAIL)
     (output / "README.txt").write_text(
@@ -61,6 +61,11 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
     for theme in ("light", "dark"):
         head = DOC_HEAD.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
         (output / f"{theme}.html").write_text(head + page + PROBE + DOC_TAIL)
+    before = output / "before"
+    before.mkdir(exist_ok=True)
+    for theme in ("light", "dark"):
+        original = source.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
+        (before / f"{theme}.html").write_text(original.replace("</body>", PROBE + "</body>"))
     evidence = {
         "source_url": SOURCE,
         "source_built_at": payload["meta"].get("built_at"),
@@ -156,6 +161,10 @@ def main() -> None:
             for node in ("root", "webui", "tui"):
                 capture(chrome, output, theme, viewport, node)
         (output / f"{theme}.html").unlink()
+    for theme in ("light", "dark"):
+        for viewport, node in (("1440,1000", "root"), ("1440,1000", "webui"), ("390,844", "root")):
+            capture(chrome, output / "before", theme, viewport, node)
+        (output / "before" / f"{theme}.html").unlink()
 
 
 if __name__ == "__main__":

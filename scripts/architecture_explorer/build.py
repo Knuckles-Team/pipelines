@@ -13,6 +13,7 @@ layered layout engine (layout.mjs) and inlined as data.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import subprocess
@@ -328,12 +329,23 @@ def build_with_sources(mode: str, workspace: Path | None) -> tuple[dict, dict, l
     return data, meta, snaps
 
 
+def template_source() -> str:
+    """Inline the existing licensed Inter face: no font CDN or runtime dependency."""
+    font = base64.b64encode((HERE / "assets/InterVariable.woff2").read_bytes()).decode("ascii")
+    return (
+        (HERE / "template.html")
+        .read_text()
+        .replace("/*__INTER__*/", font)
+        .replace("/*__SEARCH__*/", (HERE / "search.cjs").read_text())
+    )
+
+
 def render(data: dict, meta: dict) -> str:
     aliases = meta.get("aliases", {})
     meta = {k: v for k, v in meta.items() if k != "aliases"}
     index = search_index(data, aliases)
     payload = json.dumps({"tree": data, "meta": meta, "search": index}, separators=(",", ":")).replace("</", "<\\/")
-    page = (HERE / "template.html").read_text().replace("/*__SEARCH__*/", (HERE / "search.cjs").read_text())
+    page = template_source()
     return page.replace("/*__DATA__*/null", payload)
 
 

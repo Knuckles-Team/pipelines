@@ -3641,7 +3641,8 @@
       ],
       "verified_by": [
         "tests/test_architecture_delivery.py:41",
-        "tests/test_architecture_delivery.py:52"
+        "tests/test_architecture_delivery.py:52",
+        "tests/test_architecture_delivery.py:74"
       ]
     }
   ]

@@ -38,11 +38,17 @@ def test_ocean_materials_have_no_network_fonts_or_expensive_node_effects() -> No
     html = TEMPLATE.read_text()
     assert "fonts.googleapis.com" not in html
     assert "fonts.gstatic.com" not in html
-    assert "backdrop-filter:" not in html
+    assert "header.top,.toolbar,.panel{backdrop-filter:blur(16px) saturate(115%)}" in html
+    assert "ctx.filter" not in html
     assert "ctx.shadowBlur" not in html
     assert "--font-body:Inter,ui-sans-serif,system-ui" in html
-    assert "ctx.fillStyle=C.surface; rr(sx,sy,sw,sh,radius); ctx.fill();" in html
-    assert ".panel{background:var(--surface);background:var(--glass-reading)}" in html
+    assert "material.addColorStop(0,C.opaque?C.surface:C.nodeTop)" in html
+    assert "ctx.clearRect(0,0,W,H)" in html
+    assert "ctx.globalAlpha=alpha*(0.10-0.05*op)" not in html
+    assert "ctx.strokeStyle=col" not in html
+    assert ".panel{background:var(--glass-reading)}" in html
+    assert "data:image/svg+xml," in html
+    assert "/*__INTER__*/" in html
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -53,7 +59,8 @@ def test_ocean_preferences_have_opaque_reduced_motion_and_forced_color_fallbacks
     assert "transition:none!important;animation:none!important" in html
     assert "@media (forced-colors: active)" in html
     assert "--fg:CanvasText" in html and "--focus:Highlight" in html
-    assert 'matchMedia("(forced-colors: active)").addEventListener("change",readColors)' in html
+    assert 'window.matchMedia(query).addEventListener("change",readColors)' in html
+    assert 'opaque:window.matchMedia("(prefers-reduced-transparency: reduce)")' in html
     assert "select:focus-visible,summary:focus-visible,canvas:focus-visible" in html
 
 
@@ -61,7 +68,21 @@ def test_ocean_preferences_have_opaque_reduced_motion_and_forced_color_fallbacks
 def test_ocean_primary_controls_are_translucent_unoutlined_and_touch_sized() -> None:
     html = TEMPLATE.read_text()
     assert "--button-neutral:rgb(" in html
-    assert "border-color:transparent;box-shadow:none;border-radius:8px;min-height:44px" in html
-    assert ".zoom .btn{width:44px}" in html
+    assert "border-color:transparent;box-shadow:none;border-radius:12px;min-height:44px" in html
+    assert ".zoom .btn{width:44px;" in html
     assert ".btn,.chip,.kids button,.links button{border-color:ButtonText}" in html
     assert "outline:3px solid var(--focus)" in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_glass_uses_bundled_overstory_inter_and_sans_canvas_labels() -> None:
+    from scripts.architecture_explorer.build import template_source
+
+    source = template_source()
+    assert "/*__INTER__*/" not in source
+    assert "src:url(data:font/woff2;base64," in source
+    assert (TEMPLATE.parent / "assets/Inter-LICENSE.txt").is_file()
+    drawing = source.split("function drawNode(", 1)[1].split("function drawInner(", 1)[0]
+    assert "C.mono" not in drawing
+    assert "C.body" in drawing and "C.display" in drawing
+    assert "C.nodeTop" in drawing and "C.nodeBottom" in drawing

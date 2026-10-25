@@ -1,17 +1,21 @@
 <title>Arbora Architecture Explorer</title>
 <style>
+@font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(data:font/woff2;base64,/*__INTER__*/) format("woff2")}
 /* Layout: one zoomable drawing sheet (semantic zoom over strata) beside a spec ledger panel; stacks on phones. */
 :root{
   --bg:#dceaf0; --sheet:#eff6f9; --surface:#f8fcfe; --fg:#102d3b; --muted:#365666; --faint:#4e6977;
   --line:#a5bfcc; --grid:#d8e7ee; --edge:#496e83; --accent:#145f83; --focus:#075c86;
   --band-a:#dfedf4; --band-b:#edf5f9;
-  --glass-reading:rgb(245 251 255 / .88); --glass-control:rgb(255 255 255 / .86);
+  --glass-reading:rgb(236 249 252 / .64); --glass-control:rgb(255 255 255 / .56);
+  --glass-chrome:rgb(233 248 252 / .44); --ocean-dim:rgb(18 65 91 / .02);
+  --node-top:rgba(255,255,255,.76); --node-bottom:rgba(228,246,250,.48);
+  --node-edge:rgba(255,255,255,.90); --node-shadow:rgba(15,55,76,.12);
   --button-neutral:rgb(185 216 230 / .76); --button-hover:rgb(175 210 227 / .88); --button-active:rgb(156 197 219 / .94);
   --atmosphere:#9ac4d7; --glass-edge:rgb(255 255 255 / .8);
-  --glass-shadow:0 12px 32px rgb(22 60 80 / .10),inset 0 1px 0 var(--glass-edge);
-  --l-person:#5b6b80; --l-entry:#2f6fb0; --l-gateway:#087f6d; --l-control:#a03a80; --l-core:#5546c0;
-  --l-server:#3a5a86; --l-source:#9a6200; --l-delivery:#4d6b35; --l-unmapped:#b42318;
-  --s-verified:#1d7a4a; --s-landed:#2560a6; --s-specified:#76580b; --s-retired:#586571;
+  --glass-shadow:0 16px 40px rgb(12 49 71 / .13);
+  --l-person:#46697b; --l-entry:#215d7d; --l-gateway:#27667e; --l-control:#416b84; --l-core:#185c80;
+  --l-server:#446e89; --l-source:#326f7e; --l-delivery:#35738a; --l-unmapped:#963f37;
+  --s-verified:#205d48; --s-landed:#245779; --s-specified:#70520d; --s-retired:#4e5e69;
   --font-display:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-body:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
@@ -20,24 +24,30 @@
   --bg:#0c202c; --sheet:#102936; --surface:#183745; --fg:#eef8fc; --muted:#c3dce7; --faint:#a3c2d2;
   --line:#53788b; --grid:#203c4b; --edge:#a6c9db; --accent:#9edcf4; --focus:#b2e7ff;
   --band-a:#173442; --band-b:#102b39;
-  --glass-reading:rgb(22 49 64 / .94); --glass-control:rgb(28 61 78 / .96);
+  --glass-reading:rgb(13 43 60 / .70); --glass-control:rgb(54 105 130 / .52);
+  --glass-chrome:rgb(15 50 71 / .46); --ocean-dim:rgb(3 22 40 / .56);
+  --node-top:rgba(76,131,151,.64); --node-bottom:rgba(18,57,78,.58);
+  --node-edge:rgba(211,243,255,.60); --node-shadow:rgba(0,18,35,.25);
   --button-neutral:rgb(40 81 104 / .82); --button-hover:rgb(52 99 123 / .92); --button-active:rgb(59 108 134 / .96);
   --atmosphere:#234e65; --glass-edge:rgb(191 228 247 / .25);
-  --glass-shadow:0 12px 32px rgb(0 12 24 / .24),inset 0 1px 0 var(--glass-edge);
-  --l-person:#9aa9bd; --l-entry:#6fa8e6; --l-gateway:#4fd1ae; --l-control:#e07ac4; --l-core:#a99bff;
-  --l-server:#86a7d6; --l-source:#e0a640; --l-delivery:#9cc077; --l-unmapped:#ff7a6b;
-  --s-verified:#4cc98a; --s-landed:#6aa6ef; --s-specified:#d8b552; --s-retired:#9aa1b0; color-scheme:dark}}
+  --glass-shadow:0 16px 40px rgb(0 12 24 / .24);
+  --l-person:#bddae6; --l-entry:#a6d4ec; --l-gateway:#b0deeb; --l-control:#a9cada; --l-core:#b4dff5;
+  --l-server:#bedce9; --l-source:#a8d8e0; --l-delivery:#b1dde9; --l-unmapped:#f0b0a6;
+  --s-verified:#b5dbc9; --s-landed:#b4d9ef; --s-specified:#ecd99f; --s-retired:#c1cdd5; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0c202c; --sheet:#102936; --surface:#183745; --fg:#eef8fc; --muted:#c3dce7; --faint:#a3c2d2;
   --line:#53788b; --grid:#203c4b; --edge:#a6c9db; --accent:#9edcf4; --focus:#b2e7ff;
   --band-a:#173442; --band-b:#102b39;
-  --glass-reading:rgb(22 49 64 / .94); --glass-control:rgb(28 61 78 / .96);
+  --glass-reading:rgb(13 43 60 / .70); --glass-control:rgb(54 105 130 / .52);
+  --glass-chrome:rgb(15 50 71 / .46); --ocean-dim:rgb(3 22 40 / .56);
+  --node-top:rgba(76,131,151,.64); --node-bottom:rgba(18,57,78,.58);
+  --node-edge:rgba(211,243,255,.60); --node-shadow:rgba(0,18,35,.25);
   --button-neutral:rgb(40 81 104 / .82); --button-hover:rgb(52 99 123 / .92); --button-active:rgb(59 108 134 / .96);
   --atmosphere:#234e65; --glass-edge:rgb(191 228 247 / .25);
-  --glass-shadow:0 12px 32px rgb(0 12 24 / .24),inset 0 1px 0 var(--glass-edge);
-  --l-person:#9aa9bd; --l-entry:#6fa8e6; --l-gateway:#4fd1ae; --l-control:#e07ac4; --l-core:#a99bff;
-  --l-server:#86a7d6; --l-source:#e0a640; --l-delivery:#9cc077; --l-unmapped:#ff7a6b;
-  --s-verified:#4cc98a; --s-landed:#6aa6ef; --s-specified:#d8b552; --s-retired:#9aa1b0; color-scheme:dark}
+  --glass-shadow:0 16px 40px rgb(0 12 24 / .24);
+  --l-person:#bddae6; --l-entry:#a6d4ec; --l-gateway:#b0deeb; --l-control:#a9cada; --l-core:#b4dff5;
+  --l-server:#bedce9; --l-source:#a8d8e0; --l-delivery:#b1dde9; --l-unmapped:#f0b0a6;
+  --s-verified:#b5dbc9; --s-landed:#b4d9ef; --s-specified:#ecd99f; --s-retired:#c1cdd5; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 var(--font-body)}
@@ -192,28 +202,41 @@ select.sel{font:500 12px var(--font-body);color:var(--fg);background:var(--surfa
   .pb{overflow:visible}
   .search{max-width:none;flex-basis:100%}
 }
-/* Ocean adaptation of Overstory's neutral controls, reading glass and quiet materials.
-   Shared CSS surfaces only: no backdrop filter, per-node shadow or animated paint.
-   Canvas geometry, opaque node fills, layer colors and navigation are unchanged. */
-body{background:radial-gradient(ellipse at 12% 0%,var(--atmosphere),transparent 62%),var(--bg)}
-.brand h1,.panel h2{letter-spacing:-.025em}
-.canvas,.panel{border-radius:12px;box-shadow:var(--glass-shadow)}
-.panel{background:var(--surface);background:var(--glass-reading)}
-.panel .ph{background:linear-gradient(120deg,var(--glass-edge),transparent 85%)}
-.btn,.chip,.kids button,.links button{background:var(--button-neutral);border-color:transparent;box-shadow:none;border-radius:8px;min-height:44px;transition:background-color 110ms ease}
-.zoom .btn{width:44px}
-.search input,select.sel{min-height:44px}
+/* Full Overstory glass: one shared ocean scene, bounded shell blur, and inexpensive
+   translucent vector cards. No per-node filters, cached photo downloads or paint animation. */
+body{background-image:linear-gradient(var(--ocean-dim),var(--ocean-dim)),url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201100%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22sea%22%20x2%3D%22.8%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23c0e5e8%22%2F%3E%3Cstop%20offset%3D%22.40%22%20stop-color%3D%22%235eafc4%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2324577c%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22foam%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23edfbef%22%20stop-opacity%3D%22.78%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23c3eee7%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22light%22%3E%3Cstop%20stop-color%3D%22%23f4ffed%22%20stop-opacity%3D%22.92%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23d7fff6%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22url%28%23sea%29%22%20d%3D%22M0%200h1600v1100H0z%22%2F%3E%3Cellipse%20cx%3D%22390%22%20cy%3D%2280%22%20rx%3D%22900%22%20ry%3D%22570%22%20fill%3D%22url%28%23light%29%22%2F%3E%3Cpath%20fill%3D%22%23267e9c%22%20opacity%3D%22.36%22%20d%3D%22M780-100C240%20130%20800%20390%20380%20650S130%201060-160%201250H1700V-100z%22%2F%3E%3Cpath%20fill%3D%22url%28%23foam%29%22%20d%3D%22M-50%2090C360%20190%20400-80%20820%20110S1190%20380%201670%20180V-100H-50z%22%2F%3E%3Cpath%20fill%3D%22%23154f79%22%20opacity%3D%22.24%22%20d%3D%22M-70%20620C210%20300%20500%20590%20890%20480S1320%20770%201690%20450V1200H-70z%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23e6fff8%22%20stroke-width%3D%223%22%20opacity%3D%22.35%22%3E%3Cpath%20d%3D%22M-70%20190C280%2070%20450%20340%20760%20190S1290%20180%201670%20360%22%2F%3E%3Cpath%20d%3D%22M-60%20218C290%20100%20450%20365%20770%20215S1290%20205%201680%20385%22%2F%3E%3Cpath%20d%3D%22M-60%20650C310%20410%20400%20780%20840%20610S1370%20580%201670%20800%22%2F%3E%3Cpath%20d%3D%22M-50%20675C320%20435%20410%20805%20850%20635S1380%20605%201680%20825%22%2F%3E%3Cpath%20d%3D%22M120-80C-30%20260%20340%20280%20160%20560S290%20910%2080%201180%22%2F%3E%3Cpath%20d%3D%22M1300-80C1080%20220%201450%20330%201210%20620S1400%20920%201190%201180%22%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%221320%22%20cy%3D%22470%22%20rx%3D%22620%22%20ry%3D%22480%22%20fill%3D%22url%28%23light%29%22%20opacity%3D%22.45%22%2F%3E%3C%2Fsvg%3E");background-size:cover;background-position:center;background-attachment:fixed}
+.app{padding:12px;gap:10px}
+header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var(--glass-edge);border-radius:20px;box-shadow:var(--glass-shadow)}
+.brand h1{font-weight:600;font-size:21px;letter-spacing:-.035em}
+.brand p{font-size:12px}
+.toolbar{padding:6px;background:var(--glass-chrome);border:1px solid var(--glass-edge);border-radius:18px;box-shadow:var(--glass-shadow)}
+.canvas,.panel{border:1px solid var(--glass-edge);border-radius:22px;box-shadow:var(--glass-shadow)}
+.canvas{background:rgb(230 249 255 / .10)}
+.panel{background:var(--glass-reading)}
+.panel .ph{background:transparent;border-bottom:1px solid var(--glass-edge);padding:16px}
+.panel h2{font-weight:600;letter-spacing:-.025em}
+.btn,.chip,.kids button,.links button{background:var(--button-neutral);border-color:transparent;box-shadow:none;border-radius:12px;min-height:44px;transition:background-color 110ms ease}
+.zoom .btn{width:44px;border-radius:14px;background:var(--glass-control)}
 .btn:hover:not(:disabled),.chip:hover,.kids button:hover,.links button:hover{background:var(--button-hover);border-color:transparent}
 .btn:active:not(:disabled),.chip:active,.kids button:active,.links button:active{background:var(--button-active)}
-.toolbar .btn[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--accent);color:var(--sheet);border-color:var(--accent)}
-.search input,select.sel{background:var(--surface);background:var(--glass-control);border-color:var(--edge);border-radius:8px;box-shadow:inset 0 1px 0 var(--glass-edge)}
-.results{background:var(--surface);box-shadow:var(--glass-shadow);border-radius:12px}
-.fresh,.hint{background:var(--surface);border-radius:8px;box-shadow:inset 0 1px 0 var(--glass-edge)}
-.stat div,.step,.xbody{border-radius:8px}
+.toolbar .btn[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--accent);color:var(--sheet);border-color:transparent}
+.search input,select.sel{min-height:44px;background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
+.results{background:var(--surface);box-shadow:var(--glass-shadow);border-radius:16px}
+.fresh,.hint{background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
+.stat div,.step,.xbody{border-radius:12px;background:var(--glass-control);border-color:var(--glass-edge)}
+.stat b{font:600 17px var(--font-body)}
+.stat span,.totals,.eyebrow,.pb h3,.kids .n,.links .n,.fresh,.badge,footer.foot,.goal,.prio,.tools{font-family:var(--font-body);letter-spacing:0}
+.eyebrow,.pb h3{text-transform:none;font-size:12px;font-weight:500;color:var(--muted)}
+.badge{font-weight:500;border-color:transparent;background:var(--glass-control);border-radius:7px}
+.legend i{width:6px;height:6px;border-radius:50%;border:0;background:currentColor}
 .btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,canvas:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@supports (backdrop-filter:blur(12px)){
+  header.top,.toolbar,.panel{backdrop-filter:blur(16px) saturate(115%)}
+}
+@media (max-width:980px){.app{padding:8px}.brand h1{font-size:20px}.canvas{border-radius:18px}}
 @media (prefers-reduced-transparency: reduce){
   body{background:var(--bg)}
-  .panel,.panel .ph,.search input,select.sel{background:var(--surface)}
+  header.top,.toolbar,.canvas,.panel,.panel .ph,.search input,select.sel{background:var(--surface);backdrop-filter:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint,.search input,select.sel{box-shadow:none}
 }
 @media (prefers-reduced-motion: reduce){
@@ -229,7 +252,7 @@ body{background:radial-gradient(ellipse at 12% 0%,var(--atmosphere),transparent 
     --l-source:CanvasText; --l-delivery:CanvasText; --l-unmapped:CanvasText;
     --s-verified:CanvasText; --s-landed:CanvasText; --s-specified:CanvasText; --s-retired:CanvasText;
   }
-  body,.panel,.panel .ph{background:Canvas}
+  body,header.top,.toolbar,.canvas,.panel,.panel .ph{background:Canvas;backdrop-filter:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint{box-shadow:none}
   .btn,.chip,.kids button,.links button{border-color:ButtonText}
 }
@@ -328,7 +351,9 @@ const cv=$("cv"), ctx=cv.getContext("2d");
 let W=0,H=0,DPR=1, cam={x:0,y:0,k:1}, anim=null, dirty=true, C={};
 function readColors(){ const cs=getComputedStyle(document.documentElement); const g=v=>cs.getPropertyValue(v).trim();
   C={bg:g("--sheet"),surface:g("--surface"),fg:g("--fg"),muted:g("--muted"),faint:g("--faint"),line:g("--line"),edge:g("--edge"),accent:g("--accent"),bandA:g("--band-a"),bandB:g("--band-b"),
-     display:g("--font-display"),body:g("--font-body"),mono:g("--font-mono"),layer:{},st:{}};
+     display:g("--font-display"),body:g("--font-body"),mono:g("--font-mono"),
+     nodeTop:g("--node-top"),nodeBottom:g("--node-bottom"),nodeEdge:g("--node-edge"),nodeShadow:g("--node-shadow"),
+     opaque:window.matchMedia("(prefers-reduced-transparency: reduce)").matches||window.matchMedia("(forced-colors: active)").matches,layer:{},st:{}};
   Object.keys(LAYERS).forEach(k=>C.layer[k]=g("--l-"+k)); ST.forEach(s=>C.st[s]=g("--s-"+s.toLowerCase())); dirty=true; }
 function resize(){ const r=cv.getBoundingClientRect(); DPR=Math.min(2,window.devicePixelRatio||1); W=r.width; H=r.height; cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR); dirty=true; }
 const fitCam = (rect, margin) => { const m=margin||1.03; const k=Math.min(W/(rect[2]*m), H/(rect[3]*m)); return {x:rect[0]+rect[2]/2-W/(2*k), y:rect[1]+rect[3]/2-H/(2*k), k}; };
@@ -374,17 +399,17 @@ function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.band
   const r=R[n.id]; const x0=n.id==="root"?r[0]:t.ox, w=n.id==="root"?r[2]:L.w*t.s;
   L.bands.forEach((b,i)=>{ const [sx,sy]=toS(x0, t.oy+b[1]*t.s), sh=(b[2]-b[1])*t.s*cam.k, sw=w*cam.k;
     if(sy>H||sy+sh<0) return;
-    ctx.globalAlpha=alpha; ctx.fillStyle=i%2?C.bandB:C.bandA; if(n.id==="root") ctx.fillRect(0,sy,W,sh); else ctx.fillRect(sx,sy,sw,sh);
+    ctx.globalAlpha=alpha*(C.opaque?1:0.08); ctx.fillStyle=i%2?C.bandB:C.bandA; if(n.id==="root") ctx.fillRect(0,sy,W,sh); else ctx.fillRect(sx,sy,sw,sh);
     const fs=Math.min(15, sh*0.11, sw*0.02); if(fs>=6.5){ ctx.fillStyle=C.muted; ctx.font="600 "+fs+"px "+C.display; ctx.textAlign="right"; ctx.textBaseline="top";
       ctx.globalAlpha=alpha*0.9; ctx.fillText(b[0].toUpperCase(), sx+sw-fs*0.8, sy+fs*0.6);
       if(i<L.bands.length-1){ ctx.globalAlpha=alpha*0.35; ctx.fillStyle=C.faint; const cx=sx+sw-fs*1.6, cy=sy+sh-fs*0.2; ctx.beginPath(); ctx.moveTo(cx-fs*0.6,cy-fs*0.6); ctx.lineTo(cx,cy); ctx.lineTo(cx+fs*0.6,cy-fs*0.6); ctx.lineWidth=Math.max(1,fs/7); ctx.strokeStyle=C.faint; ctx.stroke(); } } });
   ctx.globalAlpha=1; }
 function drawZones(n, alpha){ const L=n.layout, t=LT[n.id]; (L.zones||[]).forEach(z=>{ const [sx,sy]=toS(t.ox+z[1]*t.s, t.oy+z[2]*t.s), sw=z[3]*t.s*cam.k, sh=z[4]*t.s*cam.k;
-    ctx.globalAlpha=alpha*0.8; ctx.setLineDash([6,5]); ctx.strokeStyle=C.faint; ctx.lineWidth=1.2; rr(sx,sy,sw,sh,14*cam.k*t.s); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalAlpha=alpha*0.35; ctx.setLineDash([6,5]); ctx.strokeStyle=C.faint; ctx.lineWidth=1.2; rr(sx,sy,sw,sh,14*cam.k*t.s); ctx.stroke(); ctx.setLineDash([]);
     const fs=Math.min(13, sw*0.03); if(fs>=6){ ctx.font="600 "+fs+"px "+C.display; ctx.fillStyle=C.muted; ctx.textAlign="left"; ctx.textBaseline="top"; ctx.fillText(z[0].toUpperCase(), sx+fs*0.8, sy+fs*0.6); } });
   const lp=L.loop; if(lp&&L.kids[lp.around]){ const k=L.kids[lp.around], pad=16; const [sx,sy]=toS(t.ox+(k[0]-pad)*t.s, t.oy+(k[1]-pad)*t.s), sw=(k[2]+2*pad)*t.s*cam.k, sh=(k[3]+2*pad)*t.s*cam.k;
-    ctx.globalAlpha=alpha*0.85; ctx.strokeStyle=C.layer.core; ctx.lineWidth=Math.max(1.2, 2.2*Math.min(1,cam.k*t.s)); ctx.setLineDash([10,7]); rr(sx,sy,sw,sh,28*cam.k*t.s); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle=C.layer.core; const a=Math.max(6, 10*cam.k*t.s); [[sx+sw*0.3,sy,1,0],[sx+sw,sy+sh*0.5,0,1],[sx+sw*0.7,sy+sh,-1,0],[sx,sy+sh*0.5,0,-1]].forEach(([x,y,dx,dy])=>arrow(x-dx*a,y-dy*a,x,y,a));
+    ctx.globalAlpha=alpha*0.55; ctx.strokeStyle=C.edge; ctx.lineWidth=Math.max(1.2, 2.2*Math.min(1,cam.k*t.s)); ctx.setLineDash([10,7]); rr(sx,sy,sw,sh,28*cam.k*t.s); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=C.edge; const a=Math.max(6, 10*cam.k*t.s); [[sx+sw*0.3,sy,1,0],[sx+sw,sy+sh*0.5,0,1],[sx+sw*0.7,sy+sh,-1,0],[sx,sy+sh*0.5,0,-1]].forEach(([x,y,dx,dy])=>arrow(x-dx*a,y-dy*a,x,y,a));
     const fs=Math.min(14, sw*0.022); if(fs>=6){ ctx.font="600 "+fs+"px "+C.display; ctx.textAlign="right"; ctx.textBaseline="bottom"; ctx.fillText(lp.label.toUpperCase(), sx+sw-6, sy-4); } }
   ctx.globalAlpha=1; }
 function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.8, Math.min(2.2, 2*t.s*cam.k)); const fs=Math.min(12.5, 11.5*t.s*cam.k);
@@ -394,7 +419,7 @@ function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.
     const a=p[p.length-2], b=p[p.length-1]; arrow(a[0],a[1],b[0],b[1],Math.max(5,lw*4)); });
   if(fs>=6.5){ ctx.font="500 "+fs+"px "+C.body; ctx.textAlign="center"; ctx.textBaseline="middle";
     L.edges.forEach(e=>{ if(!e.label||!e.lp) return; const [x,y]=toS(t.ox+e.lp[0]*t.s, t.oy+e.lp[1]*t.s); if(x<-200||x>W+200||y<-50||y>H+50) return;
-      const w=ctx.measureText(e.label).width+8; ctx.fillStyle=C.bg; ctx.globalAlpha=alpha*0.92; ctx.fillRect(x-w/2,y-fs*0.75,w,fs*1.5); ctx.globalAlpha=alpha; ctx.fillStyle=C.muted; ctx.fillText(e.label,x,y); }); }
+      const w=ctx.measureText(e.label).width+8; ctx.fillStyle=C.opaque?C.bg:C.nodeTop; ctx.globalAlpha=alpha*0.8; rr(x-w/2,y-fs*0.85,w,fs*1.7,5); ctx.fill(); ctx.globalAlpha=alpha; ctx.fillStyle=C.muted; ctx.fillText(e.label,x,y); }); }
   ctx.globalAlpha=1; }
 function countsLine(n){ if(n.external) return [["external system",C.muted]]; const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
 function drawRich(parts, x, y, maxW){ let total=0; parts.forEach(p=>total+=ctx.measureText(p[0]).width); if(total>maxW) parts=[parts[0]]; let cx=x-Math.min(total,maxW)/2; ctx.textAlign="left";
@@ -403,29 +428,33 @@ let hitList=[];
 function drawNode(n, alpha){
   const r=R[n.id]; if(!r) return; const [sx,sy]=toS(r[0],r[1]), sw=r[2]*cam.k, sh=r[3]*cam.k;
   if(sx>W||sy>H||sx+sw<0||sy+sh<0||sw<1.5) return;
-  const col=C.layer[n.layer]||C.layer.core, op=openness(n,sw), radius=Math.min(16, sw*0.04);
-  ctx.globalAlpha=alpha; ctx.fillStyle=C.surface; rr(sx,sy,sw,sh,radius); ctx.fill();
-  ctx.globalAlpha=alpha*(0.10-0.05*op); ctx.fillStyle=col; ctx.fill();
-  ctx.globalAlpha=alpha; ctx.strokeStyle=col; ctx.lineWidth=(n.id===selected?3.2:1.8)*(sw<40?0.6:1); if(n.unmapped) ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
-  if(n.id===hitId){ ctx.strokeStyle=C.accent; ctx.lineWidth=4; rr(sx-3,sy-3,sw+6,sh+6,radius+3); ctx.stroke(); }
+  const col=C.layer[n.layer]||C.accent, op=openness(n,sw), radius=Math.min(22, sw*0.11,sh*0.24);
+  ctx.globalAlpha=alpha;
+  if(!C.opaque && sw>24){ ctx.fillStyle=C.nodeShadow; rr(sx,sy+3,sw,sh,radius); ctx.fill(); }
+  const material=ctx.createLinearGradient(sx,sy,sx+sw*0.3,sy+sh);
+  material.addColorStop(0,C.opaque?C.surface:C.nodeTop); material.addColorStop(1,C.opaque?C.surface:C.nodeBottom);
+  ctx.fillStyle=material; rr(sx,sy,sw,sh,radius); ctx.fill();
+  ctx.strokeStyle=C.opaque?C.edge:C.nodeEdge; ctx.lineWidth=sw<40?0.8:1.2;
+  if(n.unmapped) ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
+  if(n.id===selected||n.id===hitId){ ctx.strokeStyle=C.accent; ctx.globalAlpha=alpha*0.6; ctx.lineWidth=1.8; rr(sx-2,sy-2,sw+4,sh+4,radius+2); ctx.stroke(); }
   hitList.push([n.id,sx,sy,sw,sh,op]);
   const closed=1-op;
   if(closed>0.02 && sw>=26){ // closed content
     ctx.globalAlpha=alpha*closed; ctx.textAlign="center"; ctx.textBaseline="alphabetic";
     const fs=Math.max(Math.min(19, sw/10, sh/4.2), sw>=48&&sh>=26?7:0); const cx=sx+sw/2;
-    if(fs>=5.5){ ctx.font="700 "+fs+"px "+C.display; ctx.fillStyle=C.fg;
+    if(fs>=5.5){ ctx.font="600 "+fs+"px "+C.display; ctx.fillStyle=C.fg;
       const lines=wrapText(n.label, sw-fs*1.2, sh>fs*6?2:1); let y=sy+sh*0.12+fs+(n.children.length?Math.min(fs*0.66,13)*1.3:0); lines.forEach((ln,i)=>ctx.fillText(ln,cx,y+i*fs*1.1)); y+= (lines.length-1)*fs*1.1;
       const fr=fs*0.68; if(fr>=6 && sh>fs*4.6 && n.role){ ctx.font="400 "+fr+"px "+C.body; ctx.fillStyle=C.muted; wrapText(n.role, sw-fr*2, sh>fs*7.5?2:1).forEach((ln,i)=>ctx.fillText(ln,cx,y+fr*1.6+i*fr*1.25)); }
-      const fc=Math.min(fs*0.66,13); if(fc>=5.5 && sh>fs*3.2){ ctx.font="600 "+fc+"px "+C.mono; drawRich(countsLine(n), cx, sy+sh-sh*0.14, sw-fc); }
-      if(n.children.length && fc>=6){ ctx.font="600 "+fc+"px "+C.mono; ctx.fillStyle=col; ctx.textAlign="right"; ctx.fillText(n.children.length+" parts ›", sx+sw-fc*0.8, sy+fc*1.5); } }
-    if(sh>14 && !n.external){ const bx=sx+sw*0.06, bw=sw*0.88, by=sy+sh-Math.max(3,sh*0.06), bh=Math.max(2,Math.min(5,sh*0.03)); let off=0; const c=n.count;
+      const fc=Math.min(fs*0.66,13); if(fc>=5.5 && sh>fs*3.2){ ctx.font="500 "+fc+"px "+C.body; drawRich(countsLine(n), cx, sy+sh-sh*0.14, sw-fc); }
+      if(n.children.length && fc>=6){ ctx.font="500 "+fc+"px "+C.body; ctx.fillStyle=col; ctx.textAlign="right"; ctx.fillText(n.children.length+" parts ›", sx+sw-fc*0.8, sy+fc*1.5); } }
+    if(sh>14 && !n.external){ const bx=sx+sw*0.06, bw=sw*0.88, by=sy+sh-Math.max(3,sh*0.06), bh=Math.max(1.5,Math.min(3,sh*0.02)); let off=0; const c=n.count;
       ctx.fillStyle=C.line; ctx.fillRect(bx,by,bw,bh); if(c.total) ST.forEach(s=>{ const w=bw*(c[s]||0)/c.total; if(w>0){ ctx.fillStyle=C.st[s]; ctx.fillRect(bx+off,by,w,bh); off+=w; } }); }
   }
   if(op>0.01){ // open: title strip + inner map
     const head=sh*0.09; const fs=Math.min(26, head*0.62, sw/28);
-    ctx.globalAlpha=alpha*op; if(fs>=6){ ctx.font="700 "+fs+"px "+C.display; ctx.fillStyle=C.fg; ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.globalAlpha=alpha*op; if(fs>=6){ ctx.font="600 "+fs+"px "+C.display; ctx.fillStyle=C.fg; ctx.textAlign="left"; ctx.textBaseline="middle";
       ctx.fillText(fitText(n.label, sw*0.5), sx+sw*0.01, sy+head*0.45);
-      ctx.font="600 "+(fs*0.55)+"px "+C.mono; drawRich(countsLine(n), sx+sw*0.75, sy+head*0.42, sw*0.45); }
+      ctx.font="500 "+(fs*0.55)+"px "+C.body; drawRich(countsLine(n), sx+sw*0.75, sy+head*0.42, sw*0.45); }
     drawInner(n, alpha*op);
   }
   ctx.globalAlpha=1;
@@ -433,7 +462,7 @@ function drawNode(n, alpha){
 function drawInner(n, alpha){ if(alpha<0.02) return; drawBands(n, alpha); drawZones(n, alpha); drawEdges(n, alpha); n.children.forEach(c=>drawNode(c, alpha)); }
 function frame(now){
   if(anim) anim(now);
-  if(dirty){ dirty=false; hitList=[]; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H); drawInner(T,1); }
+  if(dirty){ dirty=false; hitList=[]; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H); if(C.opaque){ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);} drawInner(T,1); }
   requestAnimationFrame(frame);
 }
 
@@ -539,7 +568,7 @@ function rowLink(r){ return el("a",{class:"id",href:gh(r.repo)+"/blob/HEAD/specs
 function goalBadges(serves){ const w=el("span",{class:"gb"}); (serves||[]).forEach(g=>w.append(el("span",{class:"goal",title:(GOALW[g]?GOALW[g].title:"Competency question"),text:g}))); return w; }
 function renderDelivery(){
   const p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-delivery)");
-  const ph=el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Delivery"}),el("span",{text:fmt(DEL.counts.open)+" open"}),el("span",{text:fmt(DEL.counts.frontier)+" ready"}),el("span",{text:fmt(DEL.counts.unserved)+" not linked to a CQ"})]),el("h2",{text:view==="next"?"Next up":"Delivery path"})]);
+  const ph=el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Delivery"}),el("span",{text:fmt(DEL.counts.open)+" open"}),el("span",{text:fmt(DEL.counts.frontier)+" ready"}),el("span",{text:fmt(DEL.counts.unserved)+" without a CQ dependency path"})]),el("h2",{text:view==="next"?"Next up":"Delivery path"})]);
   p.append(ph); const pb=el("div",{class:"pb"}); p.append(pb);
   if(view==="next"){
     pb.append(el("p",{class:"note",text:"Open rows whose prerequisites are all done, by priority: 10 for each competency question that depends on them plus 2 for each open row they unblock, halved for non-functional rows."}));
@@ -589,7 +618,7 @@ function renderPanel(){
   sec.append(sc,fc);
   const gc=el("div",{class:"chips",role:"group","aria-label":"Delivery filters"});
   const sortB=el("button",{class:"chip",type:"button","aria-pressed":String(sortBy==="priority"),text:"Sort by priority"}); sortB.onclick=()=>{sortBy=sortBy==="priority"?"default":"priority";renderPanel();};
-  const unB=el("button",{class:"chip",type:"button","aria-pressed":String(onlyUnserved),text:"Not linked to a competency question "+fmt(all.filter(s=>s.unserved).length)}); unB.onclick=()=>{onlyUnserved=!onlyUnserved;limit=150;renderPanel();};
+  const unB=el("button",{class:"chip",type:"button","aria-pressed":String(onlyUnserved),title:"No competency question reaches this open functional requirement through CQ → Depends-on → requirement edges. This does not indicate missing architecture placement or implementation links.",text:"No CQ dependency path "+fmt(all.filter(s=>s.unserved).length)}); unB.onclick=()=>{onlyUnserved=!onlyUnserved;limit=150;renderPanel();};
   const sel=el("select",{class:"sel","aria-label":"Filter by competency question"},[el("option",{value:"",text:"All competency questions"})]);
   DEL.questions.forEach(g=>sel.append(el("option",{value:g.id,text:g.id+" · "+(g.title||"").slice(0,48)}))); sel.value=goalF; sel.onchange=()=>{goalF=sel.value;limit=150;renderPanel();};
   gc.append(sortB,unB); if(DEL.questions.length) gc.append(sel); sec.append(gc);
@@ -616,7 +645,7 @@ function renderPanel(){
     li.append(el("span",{class:"badge "+s.status,text:s.status}), el("a",{class:"id",href:gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md",target:"_blank",rel:"noopener",text:s.id}), tg);
     if(s.desc) li.append(el("span",{class:"de",text:s.desc}));
     li.append(el("span",{class:"fa",text:s.repo+" · "+s.family+(s.priority!==undefined?" · priority "+s.priority:"")}));
-    if((s.cqs||[]).length) li.append(goalBadges(s.cqs)); else if(s.unserved) li.append(el("span",{class:"gb"},[el("span",{class:"goal none",title:"No competency question reaches this row through Depends-on",text:"not linked to a CQ"})]));
+    if((s.cqs||[]).length) li.append(goalBadges(s.cqs)); else if(s.unserved) li.append(el("span",{class:"gb"},[el("span",{class:"goal none",title:"No competency question reaches this open functional requirement through CQ → Depends-on → requirement edges. This does not indicate missing architecture placement or implementation links.",text:"without a CQ dependency path"})]));
     const it={li,s,tg}; items.push(it); const flip=()=>{ setOpen(it,!openRows.has(s.id)); sync(); };
     tg.onclick=e=>{ e.stopPropagation(); flip(); };
     li.addEventListener("click",e=>{ if(e.target.closest("a,button,summary,details,.xbody")) return; const sel=window.getSelection&&window.getSelection(); if(sel&&String(sel)) return; flip(); });
@@ -686,7 +715,7 @@ function themeLabel(){ $("theme").textContent=curDark()?"Light theme":"Dark them
 $("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path");
 $("theme").onclick=()=>{ const t=curDark()?"light":"dark"; rootEl.setAttribute("data-theme",t); store.set("arbora-arch-theme",t); themeLabel(); readColors(); };
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
-if(window.matchMedia) window.matchMedia("(forced-colors: active)").addEventListener("change",readColors);
+if(window.matchMedia) ["(forced-colors: active)","(prefers-reduced-transparency: reduce)"].forEach(query=>window.matchMedia(query).addEventListener("change",readColors));
 themeLabel(); readColors(); resize();
 new ResizeObserver(()=>{ const c=[cam.x+W/(2*cam.k), cam.y+H/(2*cam.k)]; resize(); cam={x:c[0]-W/(2*cam.k), y:c[1]-H/(2*cam.k), k:cam.k}; dirty=true; }).observe(cv);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{dirty=true;});
