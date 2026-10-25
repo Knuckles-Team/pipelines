@@ -371,8 +371,8 @@
   },
   {
    "id": "tui",
-   "label": "tuig",
-   "role": "CLI / terminal client",
+   "label": "agent-terminal-ui",
+   "role": "Tuig TUI / CLI",
    "desc": "tuig is the single Rust/Ratatui CLI and terminal client in agent-terminal-ui. The native-only cutover replaces Python/Textual; PyPI binary-wheel delivery remains subject to release qualification. Today it uses Arbora A2A/REST. ACP and a local runtime are planned upstream in Arbora and Agent Utilities, not delivered here.",
    "code": [
     "native/agent-terminal-ui"

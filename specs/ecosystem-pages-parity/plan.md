@@ -468,3 +468,12 @@ Python/Textual frontend. The canonical organization Pages workflow consumes this
 model through `scripts/architecture_explorer/build.py`; generated HTML is not
 edited. `test_tuig_preserves_identity_and_distinguishes_planned_runtime` checks
 the stable identity, source paths and qualified edges.
+
+### 2026-10-25 — repository title and Tuig subtitle (PIPE-PAGES-R042)
+
+The main node title remains `agent-terminal-ui`. Its lower role label reads
+`Tuig TUI / CLI`, identifying Tuig as part of that repository rather than
+renaming the architecture node. The executable remains lowercase `tuig`;
+stable IDs, repository mapping, transport and release/runtime qualification
+are unchanged. The existing identity test checks both display labels and the
+lowercase executable description.
