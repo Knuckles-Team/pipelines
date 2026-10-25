@@ -434,8 +434,8 @@ def _build_page(monkeypatch, tmp_path: Path, rows_by_repo: dict, aliases: dict |
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     monkeypatch.setattr(explorer, "load_all", fake_load)
     page = tmp_path / "index.html"
-    assert explorer.main(["--mode", "github", "--artifact", str(page)]) == 0
-    return page.read_text()
+    assert explorer.main(["--mode", "github", "--page", str(page)]) == 0
+    return _with_document_mode_probe(page.read_text())
 
 
 def _payload(html: str) -> dict:
@@ -551,6 +551,20 @@ def test_deep_links_parse() -> None:
     assert lines[1] == "#node=sdk.control.transport&q=GraphQL%20client "
 
 
+def _with_document_mode_probe(page: str) -> str:
+    assert page.startswith("<!doctype html>") and '<meta charset="utf-8">' in page
+    probe = """<script>
+document.documentElement.dataset.documentMode=document.compatMode;
+document.documentElement.dataset.documentCharset=document.characterSet;
+</script>"""
+    return page.replace("</body>", probe + "</body>")
+
+
+def _assert_browser_document(output: str) -> None:
+    assert 'data-document-mode="CSS1Compat"' in output
+    assert 'data-document-charset="UTF-8"' in output
+
+
 def _chrome() -> str | None:
     import glob
 
@@ -592,6 +606,7 @@ def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_pa
         timeout=120,
         check=True,
     ).stdout
+    _assert_browser_document(out)
     assert re.search(r'<li data-spec="SDK-CONNECTOR-CONTROL-R030.1" class="flash"', out)
     assert 'role="combobox"' in out and 'aria-label="Search results"' in out
     assert re.search(r'<input id="q"[^>]*>', out) and "GraphQL client" in out
@@ -681,6 +696,7 @@ def _build_with_details(monkeypatch, tmp_path: Path, snaps: list[Snapshot]) -> P
     monkeypatch.setattr(explorer, "load_all", lambda registry, mode, workspace=None, workers=12: snaps)
     page = tmp_path / "architecture" / "index.html"
     assert explorer.main(["--mode", "github", "--page", str(page)]) in (0, 1)
+    page.write_text(_with_document_mode_probe(page.read_text()))
     return page
 
 
@@ -903,6 +919,7 @@ def test_expanding_a_row_fetches_its_family_once_and_renders_it_safely(monkeypat
             timeout=120,
             check=True,
         ).stdout
+        _assert_browser_document(out)
     finally:
         server.shutdown()
     li = out[out.index('data-spec="FAM-R001"') :]
@@ -981,6 +998,7 @@ def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_
             timeout=120,
             check=True,
         ).stdout
+        _assert_browser_document(out)
     finally:
         server.shutdown()
     specified = out[out.index('data-spec="FAM-R001"') : out.index('data-spec="FAM-R002"')]
@@ -1183,7 +1201,11 @@ setTimeout(async()=>{
   document.body.append(result);
 },500);
 </script>"""
-    page.write_text(preferences + _build_page(monkeypatch, tmp_path, _SEARCH_ROWS) + probe)
+    page.write_text(
+        _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+        .replace("</head>", preferences + "</head>")
+        .replace("</body>", probe + "</body>")
+    )
     out = subprocess.run(
         [
             _chrome(),
@@ -1201,6 +1223,7 @@ setTimeout(async()=>{
         timeout=120,
         check=True,
     ).stdout
+    _assert_browser_document(out)
     assert '<output id="interaction-result">PASS</output>' in out, out[-1500:]
 
 
@@ -1271,7 +1294,7 @@ setTimeout(()=>{
   document.body.append(result);
 },500);
 </script>"""
-    page.write_text(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS) + probe)
+    page.write_text(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS).replace("</body>", probe + "</body>"))
     out = subprocess.run(
         [
             _chrome(),
@@ -1287,6 +1310,7 @@ setTimeout(()=>{
         timeout=120,
         check=True,
     ).stdout
+    _assert_browser_document(out)
     assert '<output id="motion-result">PASS</output>' in out, out[-1500:]
 
 
@@ -1333,7 +1357,11 @@ setTimeout(async()=>{
  document.body.append(result);
 },1400);
 </script>"""
-    page.write_text(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS).replace("<script>", spy + "<script>", 1) + probe)
+    page.write_text(
+        _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+        .replace("<script>", spy + "<script>", 1)
+        .replace("</body>", probe + "</body>")
+    )
     destination = Path(os.environ.get("ARCHITECTURE_EVIDENCE_DIR", str(tmp_path))).resolve()
     destination.mkdir(exist_ok=True, parents=True)
     out = subprocess.run(
@@ -1353,6 +1381,7 @@ setTimeout(async()=>{
         timeout=120,
         check=True,
     ).stdout
+    _assert_browser_document(out)
     match = re.search(r'<output[^>]*id="subtitle-result"[^>]*>.*?</output>', out)
     (destination / "candidate-model-fixture-subtitles.txt").write_text(
         "Candidate model with test rows, NOT the real live-payload preview.\n"
