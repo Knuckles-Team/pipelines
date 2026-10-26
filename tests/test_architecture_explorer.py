@@ -696,7 +696,7 @@ def test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle() -> None:
     assert "calc(100vh - 150px)" not in html
     assert 'id="zfull"' in html and "requestFullscreen" in html and ".canvas:fullscreen" in html
     assert 'id="zpanel"' in html and "main.work.nopanel" in html
-    assert 'laneX=n.id==="root"?8:sx+4, laneW=Math.max(1,n.id==="root"?W-16:sw-8)' in html
+    assert "const left=gutter+12, right=sx+sw-8" in html
     fixed = json.loads((ROOT / "scripts/architecture_explorer/model.json").read_text())["fixed_layout"]
     assert fixed["w"] / fixed["h"] >= 1.6
 
@@ -1424,7 +1424,7 @@ setTimeout(async()=>{
    check(counts.every(p=>p.top>subtitle.bottom),id+' counts clear subtitle');
    evidence.push({id,label,role,title,subtitle,counts,card:[x,y,w,h]});
   }
-  const band=window.__paint.find(p=>p.text==='ENGINE CORE, CONNECTORS AND SOURCES');
+  const band=window.__paint.find(p=>p.text==='Engine core, connectors and sources');
   check(band,'complete engine band heading actually painted');
   for(const id of ['eg','pipelines']){
    const r=a.rect(id), x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
@@ -1543,3 +1543,131 @@ def test_primary_part_display_labels_use_reviewed_title_case() -> None:
     }
     for node_id, label in expected.items():
         assert tree.nodes[node_id]["label"] == label
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+@pytest.mark.parametrize(
+    "node,viewport",
+    [("root", "1440,1000"), ("root", "390,844"), ("webui", "1440,1000"), ("webui", "390,844"), ("eg", "1440,1000")],
+)
+def test_ocean_browser_count_text_and_completion_tracks_never_overlap(
+    monkeypatch, tmp_path: Path, node: str, viewport: str
+) -> None:
+    """Actual fillText/fillRect bounds at default and nested cameras; not an inferred DOM test."""
+    import os
+    import subprocess
+
+    ids = []
+
+    def visit(n):
+        ids.append(n["id"])
+        for child in n.get("children", []):
+            visit(child)
+
+    visit(json.loads((PKG / "model.json").read_text()))
+    spy = """<script>
+window.__countPaint=[];window.__barPaint=[];
+const originalText=CanvasRenderingContext2D.prototype.fillText, originalRect=CanvasRenderingContext2D.prototype.fillRect, originalClear=CanvasRenderingContext2D.prototype.clearRect;
+CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__countPaint=[];window.__barPaint=[];return originalClear.apply(this,args);};
+CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
+CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w>20)window.__barPaint.push({x,y,w,h});return originalRect.call(this,x,y,w,h);};
+</script>"""
+    probe = """<script>
+setTimeout(async()=>{
+ await document.fonts.ready;
+ const result=document.createElement('output');result.id='count-track-result';
+ try{
+  const a=window.__arch,evidence=[];
+  for(const id of IDS){
+   const r=a.rect(id);if(!r)continue;
+   const x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
+   const bar=window.__barPaint.find(b=>Math.abs(b.x-(x+w*.06))<.05&&Math.abs(b.w-w*.88)<.05&&b.y>y+h*.5&&b.y<y+h);
+   if(!bar)continue;
+   const counts=window.__countPaint.filter(p=>p.left>=x-.1&&p.right<=x+w+.1&&p.top>y+h*.5&&p.bottom<=y+h);
+   if(!counts.length)continue;
+   for(const p of counts)if(p.bottom>bar.y-2)throw Error(id+' count/bar overlap: '+JSON.stringify({p,bar}));
+   evidence.push({id,bar,counts});
+  }
+  if(evidence.length<2)throw Error('Insufficient actual closed-card paint coverage');
+  result.dataset.evidence=JSON.stringify(evidence);result.textContent='PASS';
+ }catch(error){result.textContent='FAIL: '+error.message;}
+ document.body.append(result);
+},1600);
+</script>""".replace("IDS", json.dumps(ids))
+    destination = Path(os.environ.get("ARCHITECTURE_EVIDENCE_DIR", str(tmp_path))).resolve()
+    destination.mkdir(exist_ok=True, parents=True)
+    # Hosted capture already retained the original public payload with this exact renderer.
+    # Exercise its real default-card sizes, not only the smaller unit-test data fixture.
+    captured_page = destination / "index.html"
+    source = captured_page.read_text() if captured_page.is_file() else _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+    source_kind = (
+        "Original captured public payload with candidate renderer"
+        if captured_page.is_file()
+        else "Candidate model fixture"
+    )
+    page = tmp_path / "count-track.html"
+    page.write_text(source.replace("<script>", spy + "<script>", 1).replace("</body>", probe + "</body>"))
+    name = f"count-track-{node}-{viewport.replace(',', 'x')}"
+    out = subprocess.run(
+        [
+            _chrome(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            f"--window-size={viewport}",
+            "--virtual-time-budget=5000",
+            f"--screenshot={destination / (name + '.png')}",
+            "--dump-dom",
+            page.as_uri() + (f"#node={node}" if node != "root" else ""),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=True,
+    ).stdout
+    _assert_browser_document(out)
+    match = re.search(r'<output[^>]*id="count-track-result"[^>]*>.*?</output>', out)
+    (destination / (name + ".txt")).write_text(
+        source_kind + "; real canvas paint bounds.\n" + (match[0] if match else out[-3000:]) + "\n"
+    )
+    assert match and ">PASS</output>" in match[0], out[-3000:]
+    if node == "root" and viewport == "1440,1000":
+        # Counterfactual is narrowly the two deployed pre-fix formulas, not a fabricated screenshot.
+        # The same real browser probe must catch the tall Medulla card before accepting the fix.
+        baseline = tmp_path / "previous-count-track.html"
+        baseline.write_text(
+            page.read_text()
+            .replace("barY=sy+sh-Math.max(3,Math.min(5,sh*0.04))", "barY=sy+sh-Math.max(3,sh*0.06)")
+            .replace(
+                "countBaseline=barY-Math.max(1,countMetrics.actualBoundingBoxDescent||0)-3", "countBaseline=sy+sh-pad-3"
+            )
+            .replace("for(const id of " + json.dumps(ids) + ")", 'for(const id of ["eg"])')
+        )
+        old = subprocess.run(
+            [
+                _chrome(),
+                "--headless=new",
+                "--no-sandbox",
+                "--disable-gpu",
+                "--window-size=1440,1000",
+                "--virtual-time-budget=5000",
+                f"--screenshot={destination / 'previous-count-track-root.png'}",
+                "--dump-dom",
+                baseline.as_uri(),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        ).stdout
+        _assert_browser_document(old)
+        old_match = re.search(r'<output[^>]*id="count-track-result"[^>]*>.*?</output>', old)
+        (destination / "previous-count-track-root.txt").write_text(
+            source_kind
+            + " with ONLY the deployed previous bar/count formulas restored. Expected regression failure, not a full previous-theme rendering.\n"
+            + (old_match[0] if old_match else old[-3000:])
+            + "\n"
+        )
+        assert old_match and "FAIL: eg count/bar overlap" in old_match[0], old[-3000:]

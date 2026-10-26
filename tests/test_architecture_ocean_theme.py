@@ -165,14 +165,6 @@ def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> 
         assert ".canvas{background:rgb(255 255 255 / .10)}" in html
         for ocean in _ocean_bounds(block):
             ocean = _blend((255, 255, 255), ocean, 0.10)
-            # The brightest lane endpoint is the conservative dark-text bound;
-            # light theme also tests its lowest-opacity endpoint below.
-            lane_surfaces = []
-            for lane_endpoint in ("top", "bottom"):
-                lane = re.search(r"--lane-" + lane_endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
-                assert lane
-                lane_surfaces.append(_blend(tuple(int(lane[i]) for i in (1, 2, 3)), ocean, float(lane[4])))
-            ocean = tuple((max if selector != ":root{" else min)(p[i] for p in lane_surfaces) for i in range(3))
             for endpoint in ("top", "bottom"):
                 match = re.search(r"--node-" + endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
                 assert match
@@ -258,16 +250,41 @@ def test_root_band_heading_fits_existing_gutter_without_truncation() -> None:
     source = TEMPLATE.read_text()
     assert "L.kids[L.loop.around]" in source
     assert "available/Math.max(1,ctx.measureText(text).width)" in source
-    assert "mapLabel(text, right, sy+fs*0.6,fs)" in source
+    assert "ctx.fillText(text,left,sy+5)" in source
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_swimlanes_are_bounded_shared_glass_panes_not_new_layout_or_blur() -> None:
+def test_swimlanes_use_only_quiet_gutter_typography_and_short_markers() -> None:
     source = TEMPLATE.read_text()
     bands = source.split("function drawBands(", 1)[1].split("function drawZones(", 1)[0]
-    assert "laneY=sy+2" in bands and "laneH=Math.max(1,sh-4)" in bands
-    assert "C.laneTop" in bands and "C.laneBottom" in bands and "C.laneEdge" in bands
-    assert "ctx.filter" not in bands and "shadowBlur" not in bands
-    assert "mapLabel(text, right, sy+fs*0.6,fs)" in bands
-    assert 'laneW=Math.max(1,n.id==="root"?W-16:sw-8)' in bands
+    assert "C.laneTop" not in source and "--lane-top" not in source
+    assert "createLinearGradient" not in bands and "mapLabel(" not in bands and "rr(" not in bands
+    assert "ctx.fillText(text,left,sy+5)" in bands and "text=b[0]" in bands
+    assert 'ctx.font="500 "+fs+"px "+C.display' in bands
+    assert "ctx.strokeText(text,left,sy+5)" in bands
+    assert "ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo" in bands
+    assert "ctx.fillRect(gutter,sy+5+fs*.5,7,1.5)" in bands
     assert 'const key=n.id==="root"?["person","entry","gateway","control","core","server"][i]:n.layer;' in bands
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_gutter_heading_contrast_through_neutral_glyph_halo() -> None:
+    html = TEMPLATE.read_text()
+    for selector in (":root{", ':root[data-theme="dark"]{'):
+        block = html.split(selector, 1)[1].split("}", 1)[0]
+        fg = re.search(r"--fg:(#[\da-f]{6})", block)[1]
+        halo = re.search(r"--edge-halo:rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+        for ocean in _ocean_bounds(block):
+            canvas = _blend((255, 255, 255), ocean, 0.10)
+            background = _blend(tuple(int(halo[i]) for i in (1, 2, 3)), canvas, float(halo[4]))
+            assert _contrast(fg, _hex(background)) >= 4.5
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_count_track_is_metric_based_and_bar_inset_is_capped() -> None:
+    source = TEMPLATE.read_text()
+    assert "barY=sy+sh-Math.max(3,Math.min(5,sh*0.04))" in source
+    assert "countBaseline=barY-Math.max(1,countMetrics.actualBoundingBoxDescent||0)-3" in source
+    assert "drawRich(countsLine(n),cx,countBaseline,sw-fc)" in source
+    assert "by=barY, bh=barHeight" in source
+    assert "by=sy+sh-Math.max(3,sh*0.06)" not in source
