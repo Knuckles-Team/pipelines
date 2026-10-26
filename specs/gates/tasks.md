@@ -21,6 +21,7 @@
 - [ ] **PIPE-GATES-R006.5:** Wave 5: the Scion SDK and the harness.
 - [ ] **PIPE-GATES-R006.6:** Wave 6: arbora.
 - [ ] **PIPE-GATES-R006.7:** Wave 7: Medulla, last.
+- [ ] Bind the R006.1-.4 evaluator to the authoritative `source.land` receipt stream and verified-prerequisite roster; fixture-only parser tests do not qualify a historical migration. Closes PIPE-GATES-R006.1, PIPE-GATES-R006.2, PIPE-GATES-R006.3 and PIPE-GATES-R006.4.
 - [x] **PIPE-GATES-R005:** Spec text names no third-party product.
 - [x] Publish the canonical no-legacy-concepts migration gate and retain original detection, scope, historical exclusions, diagnostics and failure semantics. Closes PIPE-GATES-R007.
 - [x] Bind PIPE-GATES-R007 to real Git fixtures covering tracked/ignored source, foreign worktrees, ambient Git selectors and nonzero CLI exits.
