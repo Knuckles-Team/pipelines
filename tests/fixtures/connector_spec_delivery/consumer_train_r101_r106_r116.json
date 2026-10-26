@@ -1,0 +1,621 @@
+{
+  "schema_version": 1,
+  "observed_utc": "2026-10-26",
+  "purpose": "Immutable source-bound proof for the strict R101/R106/R116 leaf train after pipelines PR #296.",
+  "provider": {
+    "baseline_commit_subject": "Merge pull request #296 from Knuckles-Team/delivery/consumer-validation-r101-r115-20261026",
+    "canonical_aggregate_hooks": [
+      "connector-standard",
+      "dependency-readiness",
+      "secrets",
+      "spec",
+      "tests-fast"
+    ],
+    "canonical_template": {
+      "hooks": [
+        "connector-standard",
+        "dependency-readiness",
+        "secrets",
+        "spec",
+        "tests-fast"
+      ],
+      "rev": "main"
+    },
+    "canonical_template_sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed",
+    "repo": "pipelines",
+    "requirements_path": "specs/connector-spec-delivery/requirements.md",
+    "requirements_sha256": "2cb6e004ecfbbc7594e276e20266204074b6de68187985fe9e152f756004cca8",
+    "sha": "2a048eaad63c8f977ce46312d5228abad8c794f5",
+    "spec_group": [
+      "spec-standard",
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "spec_group_source": "pipelines_hooks/cli.py:71-74",
+    "spec_group_source_sha256": "34ffc10ed1fdad94c90b95c2c6fee2f2de76746af976a35dad0783e979ecf619",
+    "status_path": "specs/connector-spec-delivery/status.json",
+    "status_sha256": "389e682ee0b1647aa5e724e59fff8735ee1bd2156fc75397f2df515ff99d87f1",
+    "evidence_artifact_sha256": "8a87595c22b2fa07b6b99a1a2638b697a56affb9f30da99811e3fe791a9d6e3c"
+  },
+  "qualification": {
+    "aggregate_hook_mapping_open": false,
+    "already_qualified_dot_one_recounted": false,
+    "public_count_claim": false,
+    "rollups_promoted": false,
+    "source_release_success_claimed": false,
+    "target_parent_rows": [
+      "PIPE-CONNSPEC-R101",
+      "PIPE-CONNSPEC-R106",
+      "PIPE-CONNSPEC-R116"
+    ],
+    "strict_leaf_rows": [
+      "PIPE-CONNSPEC-R101.2",
+      "PIPE-CONNSPEC-R101.3",
+      "PIPE-CONNSPEC-R101.4",
+      "PIPE-CONNSPEC-R106.2",
+      "PIPE-CONNSPEC-R106.3",
+      "PIPE-CONNSPEC-R106.4",
+      "PIPE-CONNSPEC-R116.2",
+      "PIPE-CONNSPEC-R116.3"
+    ]
+  },
+  "strict_leaf_counts": {
+    ".1": 0,
+    ".2": 3,
+    ".3": 3,
+    ".4": 2
+  },
+  "central_requirements": {
+    "R101": {
+      "PIPE-CONNSPEC-R101": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`ansible-tower-mcp` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R101.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "title": "`ansible-tower-mcp` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:72",
+          "tests/test_connector_consumer_r101_r115.py:97"
+        ]
+      },
+      "PIPE-CONNSPEC-R101.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`ansible-tower-mcp` has the three spec hooks in its pre-commit config",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R101.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/ansible-tower-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`ansible-tower-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R101.4": {
+        "acceptance": "Check that its `ansible-tower-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`ansible-tower-mcp` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "R106": {
+      "PIPE-CONNSPEC-R106": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`atlassian-agent` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R106.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "title": "`atlassian-agent` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:74"
+        ]
+      },
+      "PIPE-CONNSPEC-R106.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`atlassian-agent` has the three spec hooks in its pre-commit config",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R106.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/atlassian-agent/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`atlassian-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R106.4": {
+        "acceptance": "Check that its `atlassian-agent-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`atlassian-agent` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "R116": {
+      "PIPE-CONNSPEC-R116": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`documentdb-mcp` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R116.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "a75eb4ea62fd"
+        ],
+        "title": "`documentdb-mcp` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_rollout.py:55"
+        ]
+      },
+      "PIPE-CONNSPEC-R116.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`documentdb-mcp` has the three spec hooks in its pre-commit config",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R116.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/documentdb-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`documentdb-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R116.4": {
+        "acceptance": "Check that its `documentdb-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`documentdb-mcp` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    }
+  },
+  "requirements": {
+    ".1": "Already-verified consumer status snapshots are retained and not recounted in this train.",
+    ".2": "Consumer pre-commit configs contain the provider canonical aggregate hooks and validate-config succeeds.",
+    ".3": "Consumer Pages caller/config, exact-source successful Pages publisher, and live HTTP 200 evidence agree.",
+    ".4": "The development skill contains substantive rapid-delivery guidance, including the required section.",
+    "aggregate_source_contract": [
+      "connector-standard",
+      "dependency-readiness",
+      "secrets",
+      "spec",
+      "tests-fast"
+    ],
+    "literal_source_contract": [
+      "spec-standard",
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "mapping_note": "This train binds each row to exact consumer source SHA and current provider #296 mapping; no status/fixture self-binding is used."
+  },
+  "repos": {
+    "ansible-tower-mcp": {
+      "row": "PIPE-CONNSPEC-R101",
+      "sha": "2df4b183d7219074c1dbd95ddbbc9d7bdc18bf7e",
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R101.1": false,
+        "PIPE-CONNSPEC-R101.2": true,
+        "PIPE-CONNSPEC-R101.3": true,
+        "PIPE-CONNSPEC-R101.4": true
+      },
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R101.1"
+      ],
+      "consumer_status_sha256": {
+        "specs/connector-content/status.json": "7f4583477ab6513f44f62921b50cb45887b74e624f6dcb946c7f6dd051b9ae17",
+        "specs/sdk-centralization/status.json": "ed8830f781d13157e5f3c9a3ee536d3835a2c30f3590e4799b0685f240429d85"
+      },
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 570,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "ansible_tower_mcp/skills/ansible-tower-mcp-development/SKILL.md": {
+          "bytes": 3121,
+          "content": "---\nname: ansible-tower-mcp-development\nskill_type: skill\ndomain: development\ndescription: >-\n  Develop, test, gate, and release the ansible-tower-mcp connector. Use this\n  skill when changing the connector's API mappings, MCP tools, packaging,\n  documentation, or repository gates.\nlicense: MIT\ntags: [ansible-tower-mcp, development, connector, test, gates]\ntier: repository\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# ansible-tower-mcp development\n\nThis repository owns the Ansible Tower/AWX transport, mappings, MCP tools, and\nagent entry points. Shared connector contracts and transports belong to\n`agent-connector-sdk`; admission, serving, and durable graph state belong to\ntheir owning repositories. Read `AGENTS.md` before changing code and keep\nprovider credentials and endpoints out of source, logs, and skill content.\n\n## Rapid delivery: the 5-minute contract\n\nSpecs are already designed. Deliver small, reviewable slices and cite the\nowning spec row in the commit trailer.\n\n- Find the owning row first with `git grep -n \"<term>\" -- specs` and extend\n  that spec before adding new requirement text.\n- Reuse existing SDK clients, transport policies, and tool factories. Do not\n  create a second implementation of a connector capability.\n- Keep changes scoped to this connector. A change owned by the SDK, Arbora,\n  or the knowledge graph belongs in that repository instead.\n- Every delivered requirement needs a bound test. Generated `status.json`\n  files are produced by `pipelines-hook spec-status`; never hand-edit them.\n- One logical change per commit, with `Spec: <ID>` and the assisting agent\n  trailer adjacent in the final paragraph.\n\n## Setup and gates\n\nUse the pinned environment from `uv sync --locked`. Run the repository\ngate from the checkout root:\n\n```bash\nuvx pre-commit run --all-files\n```\n\nFor focused feedback, run the relevant tests with the repository's pinned\nenvironment, for example:\n\n```bash\nuv run --all-extras pytest tests/test_basic.py -q\nuv run --all-extras pytest tests/test_connector_tool_parity.py -q\n```\n\nThe canonical `.pre-commit-config.yaml` delegates connector-standard,\nsecrets, spec, tests-fast, and dependency-readiness checks to\n`Knuckles-Team/pipelines` at `rev: main`. Do not replace those shared hooks\nwith local copies or bypass a failing check.\n\n## Connector-specific checks\n\n- Keep the MCP and agent surfaces aligned with `agent-connector-sdk`.\n- Validate environment and TLS settings before making provider calls.\n- Mock external Tower/AWX calls in tests; never use live credentials in a\n  local gate.\n- Keep `ansible_tower_mcp/skills/` package data intact when adding skills.\n- Documentation lives under `docs/` and is published by the shared Pages\n  workflow; source status records live under `specs/`.\n\n## Delivery discipline\n\nWork in a real Git worktree based on `origin/main`. Inspect the complete diff,\nstage only reviewed paths, and verify `git status --short` after every gate.\nDo not use `git stash`, `git add -A`, or `git add .`; do not claim Pages\npublication until a successful exact-source workflow run and the public page\nare both observed.\n",
+          "sha256": "160428935bcc8da38d03fafe3ac03f54376a24f73ddd555f58e4aeb24ef68350"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "validate_config": {
+          "returncode": 0
+        }
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "version": 1,
+          "spec_dashboard_enabled": true,
+          "source": ".github/spec-dashboard.json"
+        },
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T15:11:26Z",
+          "databaseId": 40346866322,
+          "headSha": "2df4b183d7219074c1dbd95ddbbc9d7bdc18bf7e",
+          "status": "completed",
+          "updatedAt": "2026-10-26T15:12:17Z",
+          "url": "https://github.com/Knuckles-Team/ansible-tower-mcp/actions/runs/40346866322",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": true,
+        "live_http": {
+          "bytes": 28623,
+          "has_spec_id": true,
+          "sha256": "bf88c7b52896dec4340b56bb579a21c1d6b4855633612fae34c32aa6cfcdbdef",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/ansible-tower-mcp/spec-delivery/"
+        },
+        "path_triggers": [
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml",
+          "README.md",
+          "docs/**",
+          "mkdocs.yml",
+          "specs/**"
+        ],
+        "required_paths": true,
+        "shape_ready": true,
+        "strict_ready": true,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "skills": {
+        "rapid_delivery_matches": [
+          "ansible_tower_mcp/skills/ansible-tower-mcp-development/SKILL.md"
+        ],
+        "required_phrase": "Rapid delivery: the 5-minute contract",
+        "ready": true
+      },
+      "release": {
+        "evidence_claimed": false,
+        "excluded": [
+          {
+            "reason": "version guard failed because package 3.3.4 already exists on PyPI",
+            "repo": "ansible-tower-mcp",
+            "run": 40346866581
+          },
+          {
+            "reason": "public-wheel verifier reads committed docker/Dockerfile; canonical migration renders it at release time",
+            "repo": "ansible-tower-mcp",
+            "run": 40346866654
+          }
+        ]
+      }
+    },
+    "atlassian-agent": {
+      "row": "PIPE-CONNSPEC-R106",
+      "sha": "55a2e5692fe7da9b2947d96f88112039bd93cf55",
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R106.1": false,
+        "PIPE-CONNSPEC-R106.2": true,
+        "PIPE-CONNSPEC-R106.3": true,
+        "PIPE-CONNSPEC-R106.4": true
+      },
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R106.1"
+      ],
+      "consumer_status_sha256": {
+        "specs/connector-content/status.json": "158d5794c4d89e933374d8b6905cc0a45e2aba52eee174e4355792dc07f476e6"
+      },
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 570,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "atlassian_agent/skills/atlassian-agent-development/SKILL.md": {
+          "bytes": 3209,
+          "content": "---\nname: atlassian-agent-development\nskill_type: skill\ndomain: development\ndescription: >-\n  Develop, test, gate, and release the atlassian-agent connector. Use this\n  skill when changing Jira or Confluence mappings, MCP tools, packaging,\n  documentation, or repository gates.\nlicense: MIT\ntags: [atlassian-agent, development, connector, jira, confluence, gates]\ntier: repository\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# atlassian-agent development\n\nThis repository owns Jira and Confluence calls, mappings, MCP tools, and agent\nentry points. Shared connector contracts and transports belong to\n`agent-connector-sdk`; admission, serving, and durable graph state belong to\ntheir owning repositories. Read `AGENTS.md` before changing code and keep\nAtlassian credentials and raw customer data out of source, logs, and skill\ncontent.\n\n## Rapid delivery: the 5-minute contract\n\nSpecs are already designed. Deliver small, reviewable slices and cite the\nowning spec row in the commit trailer.\n\n- Find the owning row first with `git grep -n \"<term>\" -- specs` and extend\n  that spec before adding new requirement text.\n- Reuse existing SDK clients, auth policy, pagination helpers, and tool\n  factories. Do not create a second implementation of a connector capability.\n- Keep changes scoped to this connector. A change owned by the SDK, Arbora,\n  or the knowledge graph belongs in that repository instead.\n- Every delivered requirement needs a bound test. Generated `status.json`\n  files are produced by `pipelines-hook spec-status`; never hand-edit them.\n- One logical change per commit, with `Spec: <ID>` and the assisting agent\n  trailer adjacent in the final paragraph.\n\n## Setup and gates\n\nUse the pinned environment from `uv sync --locked`. Run the repository\ngate from the checkout root:\n\n```bash\nuvx pre-commit run --all-files\n```\n\nFor focused feedback, run the repository's bounded tests with the pinned\nenvironment, for example:\n\n```bash\nuv run --all-extras pytest tests/test_models.py -q\nuv run --all-extras pytest tests/test_connector_tool_parity.py -q\n```\n\nThe canonical `.pre-commit-config.yaml` delegates connector-standard,\nsecrets, spec, tests-fast, and dependency-readiness checks to\n`Knuckles-Team/pipelines` at `rev: main`. Do not replace those shared hooks\nwith local copies or bypass a failing check.\n\n## Connector-specific checks\n\n- Preserve Jira and Confluence tool parity and the existing auth boundaries.\n- Validate environment variables and credential presence before provider\n  calls; handle missing credentials without leaking secrets.\n- Mock external Atlassian calls in tests; never use live credentials in a\n  local gate.\n- Keep `atlassian_agent/skills/` package data intact when adding skills.\n- Documentation lives under `docs/` and is published by the shared Pages\n  workflow; source status records live under `specs/`.\n\n## Delivery discipline\n\nWork in a real Git worktree based on `origin/main`. Inspect the complete diff,\nstage only reviewed paths, and verify `git status --short` after every gate.\nDo not use `git stash`, `git add -A`, or `git add .`; do not claim Pages\npublication until a successful exact-source workflow run and the public page\nare both observed.\n",
+          "sha256": "556d3d31080e8017d3ce20289aa789e88c46de309bb91fa6156c675fb4f326d6"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "validate_config": {
+          "returncode": 0
+        }
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "version": 1,
+          "spec_dashboard_enabled": true,
+          "source": ".github/spec-dashboard.json"
+        },
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T15:11:32Z",
+          "databaseId": 40346882550,
+          "headSha": "55a2e5692fe7da9b2947d96f88112039bd93cf55",
+          "status": "completed",
+          "updatedAt": "2026-10-26T15:12:18Z",
+          "url": "https://github.com/Knuckles-Team/atlassian-agent/actions/runs/40346882550",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": true,
+        "live_http": {
+          "bytes": 20467,
+          "has_spec_id": true,
+          "sha256": "03c4804b713e615ed8c1fc10867be2bfb379b79d4bf87eeeb99a7a08c3cf2db1",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/atlassian-agent/spec-delivery/"
+        },
+        "path_triggers": [
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml",
+          "README.md",
+          "docs/**",
+          "mkdocs.yml",
+          "specs/**"
+        ],
+        "required_paths": true,
+        "shape_ready": true,
+        "strict_ready": true,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "skills": {
+        "rapid_delivery_matches": [
+          "atlassian_agent/skills/atlassian-agent-development/SKILL.md"
+        ],
+        "required_phrase": "Rapid delivery: the 5-minute contract",
+        "ready": true
+      },
+      "release": {
+        "evidence_claimed": false,
+        "excluded": [
+          {
+            "reason": "version guard failed because package 2.4.3 already exists on PyPI",
+            "repo": "atlassian-agent",
+            "run": 40346882675
+          },
+          {
+            "reason": "public-wheel verifier reads committed docker/Dockerfile; canonical migration renders it at release time",
+            "repo": "atlassian-agent",
+            "run": 40346882493
+          }
+        ]
+      }
+    },
+    "documentdb-mcp": {
+      "row": "PIPE-CONNSPEC-R116",
+      "sha": "73385f9c3346722a67940f3393ca02c74bef3a86",
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R116.1": false,
+        "PIPE-CONNSPEC-R116.2": true,
+        "PIPE-CONNSPEC-R116.3": true,
+        "PIPE-CONNSPEC-R116.4": false
+      },
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R116.1"
+      ],
+      "consumer_status_sha256": {},
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 594,
+          "content": "name: Deploy GitHub Pages\n\non:\n  workflow_dispatch: {}\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "6ef8e2f90cf14c54e825742393581736ccbd622f8a800a7336ad8a48ffcfb9e4"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "secrets",
+            "spec",
+            "tests-fast",
+            "dependency-readiness"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "secrets",
+          "spec",
+          "tests-fast",
+          "dependency-readiness"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "validate_config": {
+          "returncode": 0
+        }
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "version": 1,
+          "spec_dashboard_enabled": true,
+          "source": ".github/spec-dashboard.json"
+        },
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "databaseId": 40343912706,
+          "headSha": "73385f9c3346722a67940f3393ca02c74bef3a86",
+          "url": "https://github.com/Knuckles-Team/documentdb-mcp/actions/runs/40343912706"
+        },
+        "http_200_ready": true,
+        "live_http": {
+          "bytes": 8090,
+          "has_spec_id": true,
+          "sha256": "fef73744b11c82bc568a3ac3467dd7f27ba189ea4c5ff5ab981e34c8c40d9e9c",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/documentdb-mcp/spec-delivery/snapshot.json"
+        },
+        "path_triggers": [
+          "specs/**",
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml"
+        ],
+        "required_paths": true,
+        "shape_ready": true,
+        "strict_ready": true,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true
+        },
+        "pages_snapshot_records": 6
+      },
+      "skills": {
+        "rapid_delivery_matches": [],
+        "required_phrase": null,
+        "ready": false
+      },
+      "release": {
+        "evidence_claimed": false,
+        "excluded": [
+          {
+            "reason": "version guard failed because package 2.3.3 already exists on PyPI",
+            "repo": "documentdb-mcp",
+            "run": 40343912389
+          }
+        ]
+      }
+    }
+  },
+  "excluded_release_failures": [
+    {
+      "reason": "version guard failed because package 3.3.4 already exists on PyPI",
+      "repo": "ansible-tower-mcp",
+      "run": 40346866581
+    },
+    {
+      "reason": "public-wheel verifier reads committed docker/Dockerfile; canonical migration renders it at release time",
+      "repo": "ansible-tower-mcp",
+      "run": 40346866654
+    },
+    {
+      "reason": "version guard failed because package 2.4.3 already exists on PyPI",
+      "repo": "atlassian-agent",
+      "run": 40346882675
+    },
+    {
+      "reason": "public-wheel verifier reads committed docker/Dockerfile; canonical migration renders it at release time",
+      "repo": "atlassian-agent",
+      "run": 40346882493
+    },
+    {
+      "reason": "version guard failed because package 2.3.3 already exists on PyPI",
+      "repo": "documentdb-mcp",
+      "run": 40343912389
+    }
+  ]
+}

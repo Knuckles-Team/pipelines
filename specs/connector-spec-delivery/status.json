@@ -499,9 +499,18 @@
     {
       "id": "PIPE-CONNSPEC-R101",
       "title": "`ansible-tower-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:65",
+        "tests/test_connector_consumer_r101_r106_r116.py:66",
+        "tests/test_connector_consumer_r101_r106_r116.py:67",
+        "tests/test_connector_consumer_r101_r115.py:72",
+        "tests/test_connector_consumer_r101_r115.py:97"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R101.1",
         "PIPE-CONNSPEC-R101.2",
@@ -524,23 +533,35 @@
     {
       "id": "PIPE-CONNSPEC-R101.2",
       "title": "`ansible-tower-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:65"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R101.3",
       "title": "`ansible-tower-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:66"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R101.4",
       "title": "`ansible-tower-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:67"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R102",
@@ -745,9 +766,17 @@
     {
       "id": "PIPE-CONNSPEC-R106",
       "title": "`atlassian-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:68",
+        "tests/test_connector_consumer_r101_r106_r116.py:69",
+        "tests/test_connector_consumer_r101_r106_r116.py:70",
+        "tests/test_connector_consumer_r101_r115.py:74"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R106.1",
         "PIPE-CONNSPEC-R106.2",
@@ -769,23 +798,35 @@
     {
       "id": "PIPE-CONNSPEC-R106.2",
       "title": "`atlassian-agent` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:68"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R106.3",
       "title": "`atlassian-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:69"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R106.4",
       "title": "`atlassian-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:70"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R107",
@@ -1255,16 +1296,24 @@
     {
       "id": "PIPE-CONNSPEC-R116.2",
       "title": "`documentdb-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:71"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R116.3",
       "title": "`documentdb-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "939290c617c5"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r106_r116.py:72"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R116.4",
