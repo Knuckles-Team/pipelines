@@ -147,6 +147,7 @@ def test_consumer_skill_and_status_snapshots_match_declared_hashes() -> None:
             assert parsed["requirements"]
 
 
+@pytest.mark.spec("PIPE-CONNSPEC-R102.4")
 def test_skill_contract_is_substantive_and_path_bound() -> None:
     skill = _bytes(_evidence()["repos"]["archimate-mcp"]["source_files"][EXPECTED_SKILL]).decode()
     assert "Rapid delivery: the 5-minute contract" in skill
