@@ -1280,9 +1280,9 @@
       "title": "Model",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "69ec236595d9",
-        "9847837cebbd",
-        "df2be07ea025"
+        "65928c5c8223",
+        "e50c603b621e",
+        "faf488ed3698"
       ],
       "verified_by": [
         "tests/hooks/test_doc_claims.py:36"
@@ -1293,9 +1293,9 @@
       "title": "Behavior",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "69ec236595d9",
-        "9847837cebbd",
-        "df2be07ea025"
+        "65928c5c8223",
+        "e50c603b621e",
+        "faf488ed3698"
       ],
       "verified_by": [
         "tests/hooks/test_doc_claims.py:42"
@@ -1306,9 +1306,9 @@
       "title": "Wiring",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "69ec236595d9",
-        "9847837cebbd",
-        "df2be07ea025"
+        "65928c5c8223",
+        "e50c603b621e",
+        "faf488ed3698"
       ],
       "verified_by": [
         "tests/hooks/test_doc_claims.py:66",
@@ -1321,9 +1321,9 @@
       "title": "Refusal",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "69ec236595d9",
-        "9847837cebbd",
-        "df2be07ea025"
+        "65928c5c8223",
+        "e50c603b621e",
+        "faf488ed3698"
       ],
       "verified_by": [
         "tests/hooks/test_doc_claims.py:86",
@@ -1335,9 +1335,9 @@
       "title": "Evidence",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "69ec236595d9",
-        "9847837cebbd",
-        "df2be07ea025"
+        "65928c5c8223",
+        "e50c603b621e",
+        "faf488ed3698"
       ],
       "verified_by": [
         "tests/hooks/test_doc_claims.py:94"
@@ -1348,9 +1348,9 @@
       "title": "Hot-path proof",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "69ec236595d9",
-        "9847837cebbd",
-        "df2be07ea025"
+        "65928c5c8223",
+        "e50c603b621e",
+        "faf488ed3698"
       ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:27"
@@ -1361,7 +1361,7 @@
       "title": "Model",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "52361755abc9"
+        "0acc8ec13b85"
       ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:130"
@@ -1372,8 +1372,8 @@
       "title": "Behavior",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "52361755abc9",
-        "68f2a63bf62b"
+        "0acc8ec13b85",
+        "cbe3171bc838"
       ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:143"
@@ -1384,7 +1384,7 @@
       "title": "Wiring",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "52361755abc9"
+        "0acc8ec13b85"
       ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:167"
@@ -1395,7 +1395,7 @@
       "title": "Refusal",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "52361755abc9"
+        "0acc8ec13b85"
       ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:196"
@@ -1406,7 +1406,7 @@
       "title": "Evidence",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "52361755abc9"
+        "0acc8ec13b85"
       ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:253"
@@ -1417,8 +1417,8 @@
       "title": "Hot-path proof",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "52361755abc9",
-        "68f2a63bf62b"
+        "0acc8ec13b85",
+        "cbe3171bc838"
       ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:282",
@@ -2248,44 +2248,82 @@
     {
       "id": "PIPE-PAGES-R023.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "68a712a91899",
+        "ebef404d2f75"
+      ],
+      "verified_by": [
+        "tests/hooks/test_skill_grade_hook.py:209",
+        "tests/hooks/test_skill_grade_hook.py:54"
+      ]
     },
     {
       "id": "PIPE-PAGES-R023.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "68a712a91899",
+        "ebef404d2f75"
+      ],
+      "verified_by": [
+        "tests/hooks/test_skill_grade_hook.py:294",
+        "tests/hooks/test_skill_grade_hook.py:79"
+      ]
     },
     {
       "id": "PIPE-PAGES-R023.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4061148a6359",
+        "68a712a91899",
+        "ebef404d2f75"
+      ],
+      "verified_by": [
+        "tests/hooks/test_skill_grade_hook.py:112"
+      ]
     },
     {
       "id": "PIPE-PAGES-R023.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "68a712a91899",
+        "ebef404d2f75"
+      ],
+      "verified_by": [
+        "tests/hooks/test_skill_grade_hook.py:118",
+        "tests/hooks/test_skill_grade_hook.py:249"
+      ]
     },
     {
       "id": "PIPE-PAGES-R023.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "68a712a91899",
+        "ebef404d2f75"
+      ],
+      "verified_by": [
+        "tests/hooks/test_skill_grade_hook.py:158",
+        "tests/hooks/test_skill_grade_hook.py:250",
+        "tests/hooks/test_skill_grade_hook.py:295"
+      ]
     },
     {
       "id": "PIPE-PAGES-R023.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "68a712a91899",
+        "ebef404d2f75"
+      ],
+      "verified_by": [
+        "tests/hooks/test_skill_grade_hook.py:177",
+        "tests/hooks/test_skill_grade_hook.py:195",
+        "tests/hooks/test_skill_grade_hook.py:210"
+      ]
     },
     {
       "id": "PIPE-PAGES-R023.7",
@@ -3453,7 +3491,9 @@
       "id": "PIPE-PAGES-R031",
       "title": "Package source-path portability and cross-platform legality",
       "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "landed_in": [
+        "742c49315101"
+      ],
       "verified_by": [],
       "rollup_of": [
         "PIPE-PAGES-R031.1",
@@ -3485,8 +3525,10 @@
     {
       "id": "PIPE-PAGES-R031.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4061148a6359"
+      ],
       "verified_by": [
         "tests/hooks/test_source_path_portability.py:66",
         "tests/hooks/test_source_path_portability.py:76"
@@ -3696,8 +3738,12 @@
       "id": "PIPE-PAGES-R035",
       "title": "Stable prompt JSON/Pydantic disk formatting with difference oracle",
       "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "landed_in": [
+        "7228a30b5eb2"
+      ],
+      "verified_by": [
+        "tests/hooks/test_prompt_format.py:32"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R035.1",
         "PIPE-PAGES-R035.2",
@@ -3712,42 +3758,59 @@
       "title": "Model",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_prompt_format.py:33"
+      ]
     },
     {
       "id": "PIPE-PAGES-R035.2",
       "title": "Behavior",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_prompt_format.py:44"
+      ]
     },
     {
       "id": "PIPE-PAGES-R035.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4061148a6359"
+      ],
+      "verified_by": [
+        "tests/hooks/test_prompt_format.py:65"
+      ]
     },
     {
       "id": "PIPE-PAGES-R035.4",
       "title": "Refusal",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_prompt_format.py:142",
+        "tests/hooks/test_prompt_format.py:86"
+      ]
     },
     {
       "id": "PIPE-PAGES-R035.5",
       "title": "Evidence",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_prompt_format.py:108"
+      ]
     },
     {
       "id": "PIPE-PAGES-R035.6",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_prompt_format.py:121",
+        "tests/hooks/test_prompt_format.py:170",
+        "tests/hooks/test_prompt_format.py:197"
+      ]
     },
     {
       "id": "PIPE-PAGES-R021.91",
@@ -3925,42 +3988,64 @@
       "title": "Model",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_test_layout_independence.py:56",
+        "tests/hooks/test_test_layout_independence.py:75"
+      ]
     },
     {
       "id": "PIPE-PAGES-R039.2",
       "title": "Behavior",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_test_layout_independence.py:102",
+        "tests/hooks/test_test_layout_independence.py:121",
+        "tests/hooks/test_test_layout_independence.py:152",
+        "tests/hooks/test_test_layout_independence.py:165",
+        "tests/hooks/test_test_layout_independence.py:83"
+      ]
     },
     {
       "id": "PIPE-PAGES-R039.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4061148a6359"
+      ],
+      "verified_by": [
+        "tests/hooks/test_test_layout_independence.py:68"
+      ]
     },
     {
       "id": "PIPE-PAGES-R039.4",
       "title": "Refusal",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_test_layout_independence.py:138",
+        "tests/hooks/test_test_layout_independence.py:178",
+        "tests/hooks/test_test_layout_independence.py:251",
+        "tests/hooks/test_test_layout_independence.py:269"
+      ]
     },
     {
       "id": "PIPE-PAGES-R039.5",
       "title": "Evidence",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_test_layout_independence.py:190"
+      ]
     },
     {
       "id": "PIPE-PAGES-R039.6",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_test_layout_independence.py:215"
+      ]
     },
     {
       "id": "PIPE-PAGES-R040",
