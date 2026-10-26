@@ -3112,9 +3112,19 @@
     {
       "id": "PIPE-CONNSPEC-R149",
       "title": "`opensearch-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8b12b7066e0b",
+        "d0b62fe19086",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:131",
+        "tests/test_connector_consumer_r138_157.py:74",
+        "tests/test_connector_consumer_r149.py:127",
+        "tests/test_connector_consumer_r149.py:166",
+        "tests/test_connector_consumer_r149.py:198"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R149.1",
         "PIPE-CONNSPEC-R149.2",
@@ -3147,16 +3157,29 @@
     {
       "id": "PIPE-CONNSPEC-R149.3",
       "title": "`opensearch-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8b12b7066e0b",
+        "d0b62fe19086"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r149.py:127",
+        "tests/test_connector_consumer_r149.py:198",
+        "tests/test_connector_consumer_r149.py:44"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R149.4",
       "title": "`opensearch-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8b12b7066e0b",
+        "d0b62fe19086"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r149.py:166",
+        "tests/test_connector_consumer_r149.py:45"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R150",
