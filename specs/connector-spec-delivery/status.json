@@ -2866,9 +2866,18 @@
     {
       "id": "PIPE-CONNSPEC-R146",
       "title": "`okta-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a9c07ce2625e",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:129",
+        "tests/test_connector_consumer_r138_157.py:71",
+        "tests/test_connector_consumer_r146.py:148",
+        "tests/test_connector_consumer_r146.py:186",
+        "tests/test_connector_consumer_r146.py:67"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R146.1",
         "PIPE-CONNSPEC-R146.2",
@@ -2901,16 +2910,26 @@
     {
       "id": "PIPE-CONNSPEC-R146.3",
       "title": "`okta-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a9c07ce2625e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r146.py:148",
+        "tests/test_connector_consumer_r146.py:67"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R146.4",
       "title": "`okta-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a9c07ce2625e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r146.py:186",
+        "tests/test_connector_consumer_r146.py:68"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R147",
