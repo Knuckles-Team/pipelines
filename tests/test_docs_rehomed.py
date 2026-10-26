@@ -10,20 +10,25 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATED = ("pages-readiness.md", "publication-identity.md", "python-release-readiness.md")
 
 
+@pytest.mark.spec("PIPE-PAGES-R006")
 def test_the_legacy_docs_directory_no_longer_exists() -> None:
     assert not (ROOT / "docs").exists()
 
 
+@pytest.mark.spec("PIPE-PAGES-R006")
 def test_every_migrated_artifact_exists_at_its_new_tracked_location() -> None:
     for name in MIGRATED:
         destination = ROOT / "reference" / name
         assert destination.is_file(), destination
 
 
+@pytest.mark.spec("PIPE-PAGES-R006")
 def test_reference_directory_is_declared_in_the_root_hygiene_allowlist() -> None:
     import tomllib
 
@@ -32,6 +37,7 @@ def test_reference_directory_is_declared_in_the_root_hygiene_allowlist() -> None
     assert "docs" not in layout["dirs"]
 
 
+@pytest.mark.spec("PIPE-PAGES-R006")
 def test_no_tracked_source_reads_from_the_removed_docs_directory() -> None:
     import subprocess
 
@@ -47,6 +53,7 @@ def test_no_tracked_source_reads_from_the_removed_docs_directory() -> None:
             assert needle not in text, f"{relative} still references the removed {needle}"
 
 
+@pytest.mark.spec("PIPE-PAGES-R006")
 def test_readme_links_point_at_the_new_reference_location() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     for name in MIGRATED:
