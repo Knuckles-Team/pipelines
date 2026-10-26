@@ -1,0 +1,1227 @@
+{
+  "central_requirements": {
+    "R101": {
+      "PIPE-CONNSPEC-R101": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`ansible-tower-mcp` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R101.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "ansible-tower-mcp` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R101.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "ansible-tower-mcp` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R101.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/ansible-tower-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "ansible-tower-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R101.4": {
+        "acceptance": "Check that its `ansible-tower-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "ansible-tower-mcp` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R102": {
+      "PIPE-CONNSPEC-R102": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`archimate-mcp` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R102.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "archimate-mcp` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R102.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "archimate-mcp` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R102.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/archimate-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "archimate-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R102.4": {
+        "acceptance": "Check that its `archimate-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "archimate-mcp` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R106": {
+      "PIPE-CONNSPEC-R106": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`atlassian-agent` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R106.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "atlassian-agent` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R106.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "atlassian-agent` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R106.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/atlassian-agent/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "atlassian-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R106.4": {
+        "acceptance": "Check that its `atlassian-agent-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "atlassian-agent` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R108": {
+      "PIPE-CONNSPEC-R108": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`audiobookshelf-mcp` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R108.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "audiobookshelf-mcp` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R108.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "audiobookshelf-mcp` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R108.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/audiobookshelf-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "audiobookshelf-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R108.4": {
+        "acceptance": "Check that its `audiobookshelf-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "audiobookshelf-mcp` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    }
+  },
+  "collection_finished_utc": "2026-10-26T14:37:45Z",
+  "collection_started_utc": "2026-10-26T14:37:34Z",
+  "provider": {
+    "baseline_commit_subject": "Merge pull request #295 from Knuckles-Team/fix/spec-status-json-data",
+    "canonical_aggregate_hooks": [
+      "connector-standard",
+      "dependency-readiness",
+      "secrets",
+      "spec",
+      "tests-fast"
+    ],
+    "canonical_template": {
+      "hooks": [
+        "connector-standard",
+        "dependency-readiness",
+        "secrets",
+        "spec",
+        "tests-fast"
+      ],
+      "rev": "main"
+    },
+    "canonical_template_sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed",
+    "repo": "pipelines",
+    "requirements_path": "specs/connector-spec-delivery/requirements.md",
+    "requirements_sha256": "2cb6e004ecfbbc7594e276e20266204074b6de68187985fe9e152f756004cca8",
+    "sha": "a4f0f46cd7c21b5dfce13194d42f4a06b67f2a73",
+    "spec_group": [
+      "spec-standard",
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "spec_group_source": "pipelines_hooks/cli.py:71-74",
+    "spec_group_source_sha256": "34ffc10ed1fdad94c90b95c2c6fee2f2de76746af976a35dad0783e979ecf619",
+    "status_path": "specs/connector-spec-delivery/status.json",
+    "status_sha256": "24080189c4311d83ac4d775b39bc6cb82f8e172c3036511bb1e00d855765eecc"
+  },
+  "purpose": "Test-only immutable consumer contract evidence for PIPE-CONNSPEC R101, R102, R106, and R108; next shared pipelines batch.",
+  "qualification": {
+    "aggregate_hook_mapping_open": false,
+    "excluded_parent_rows": [
+      "PIPE-CONNSPEC-R103",
+      "PIPE-CONNSPEC-R104",
+      "PIPE-CONNSPEC-R105",
+      "PIPE-CONNSPEC-R107",
+      "PIPE-CONNSPEC-R109",
+      "PIPE-CONNSPEC-R110",
+      "PIPE-CONNSPEC-R111",
+      "PIPE-CONNSPEC-R112",
+      "PIPE-CONNSPEC-R113",
+      "PIPE-CONNSPEC-R114",
+      "PIPE-CONNSPEC-R115",
+      "PIPE-CONNSPEC-R116",
+      "PIPE-CONNSPEC-R117",
+      "PIPE-CONNSPEC-R118",
+      "PIPE-CONNSPEC-R119",
+      "PIPE-CONNSPEC-R120",
+      "PIPE-CONNSPEC-R121",
+      "PIPE-CONNSPEC-R122",
+      "PIPE-CONNSPEC-R123",
+      "PIPE-CONNSPEC-R124",
+      "PIPE-CONNSPEC-R125",
+      "PIPE-CONNSPEC-R126",
+      "PIPE-CONNSPEC-R127",
+      "PIPE-CONNSPEC-R128",
+      "PIPE-CONNSPEC-R129",
+      "PIPE-CONNSPEC-R130",
+      "PIPE-CONNSPEC-R131",
+      "PIPE-CONNSPEC-R132",
+      "PIPE-CONNSPEC-R133",
+      "PIPE-CONNSPEC-R134",
+      "PIPE-CONNSPEC-R135",
+      "PIPE-CONNSPEC-R136",
+      "PIPE-CONNSPEC-R137",
+      "PIPE-CONNSPEC-R138",
+      "PIPE-CONNSPEC-R139",
+      "PIPE-CONNSPEC-R140",
+      "PIPE-CONNSPEC-R141",
+      "PIPE-CONNSPEC-R142",
+      "PIPE-CONNSPEC-R143",
+      "PIPE-CONNSPEC-R144",
+      "PIPE-CONNSPEC-R145",
+      "PIPE-CONNSPEC-R146",
+      "PIPE-CONNSPEC-R147",
+      "PIPE-CONNSPEC-R148",
+      "PIPE-CONNSPEC-R149",
+      "PIPE-CONNSPEC-R150",
+      "PIPE-CONNSPEC-R151",
+      "PIPE-CONNSPEC-R152",
+      "PIPE-CONNSPEC-R153",
+      "PIPE-CONNSPEC-R154",
+      "PIPE-CONNSPEC-R155",
+      "PIPE-CONNSPEC-R156",
+      "PIPE-CONNSPEC-R157"
+    ],
+    "public_count_claim": false,
+    "rollups_promoted": false,
+    "target_parent_rows": [
+      "PIPE-CONNSPEC-R101",
+      "PIPE-CONNSPEC-R102",
+      "PIPE-CONNSPEC-R106",
+      "PIPE-CONNSPEC-R108"
+    ]
+  },
+  "repos": {
+    "ansible-tower-mcp": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "aggregate hook/revision/config proof incomplete",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T06:10:08Z",
+          "databaseId": 40278241987,
+          "headSha": "d3f515adda6fc6877029f634e876d8db1e220f9a",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/ansible-tower-mcp/actions/runs/40278241987",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/ansible-tower-mcp/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/ansible-tower-mcp/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": false,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [],
+        "literal_hooks_present": [],
+        "missing": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider": false,
+        "revs": [],
+        "stages": {},
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R101",
+      "sha": "d3f515adda6fc6877029f634e876d8db1e220f9a",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 712,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "d0885173d3c382502e4fd5d80a51055c5f4ab8aec31844cfc5a5a80eeebec938"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 6184,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet|node_modules'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: check-added-large-files\n    args: [\"--maxkb=2000\"]\n  - id: check-ast\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: check-yaml\n    args: [\"--unsafe\"]\n  - id: check-toml\n  - id: check-json\n  - id: fix-byte-order-marker\n    exclude: .gitignore\n  - id: check-merge-conflict\n  - id: detect-private-key\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: 38bfb07c0c64c304f47eb52090f8288150c77730  # frozen: v0.17.1\n  hooks:\n  - id: ruff-check\n    args: [\"--fix\", \"--ignore=E402,B008,E501\"]\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: ruff-format\n    exclude: ^(tests/|test/|scripts/|script/)\n- repo: https://github.com/pre-commit/mirrors-mypy\n  rev: 2834ec6639549dd6796205c8f011dedcd587288b  # frozen: v2.4.0\n  hooks:\n  - id: mypy\n    additional_dependencies: [pydantic==2.13.4, types-PyYAML==6.0.12.20260518, types-requests==2.33.0.20260518,\n        types-setuptools==83.0.0.20260706]\n    args: [\"--ignore-missing-imports\"]\n- repo: https://github.com/jendrikseipp/vulture\n  rev: 258fe6a1974e89a2add9a45519a9e9dd9f46154e  # frozen: v2.16\n  hooks:\n  - id: vulture\n    pass_filenames: false\n    args: [\".\", \"--min-confidence\", \"95\", \"--exclude\", \"node_modules,dotnet,.venv,venv,node_modules,.git,build,dist\"]\n    require_serial: true\n- repo: https://github.com/codespell-project/codespell\n  rev: 57b21406f092110c18776e39b0bda50d37c945c8  # frozen: v2.4.3\n  hooks:\n  - id: codespell\n    args: [\"-L\", \"ans,linar,nam,tread,ot,\", \"--ignore-words=.codespellignore\"]\n    exclude: ^(tests/|test/|scripts/|script/|.*lock.*)\n- repo: https://github.com/PyCQA/bandit\n  rev: 92ae8b82fb422a639f0ed8d99e96cea769594e08 # 1.9.4\n  hooks:\n  - id: bandit\n    args: [\"--skip\", \"B101,B404,B603\"]\n    exclude: ^(tests/|test/|scripts/|script/|__tests__/)\n- repo: https://github.com/nbQA-dev/nbQA\n  rev: f96ec7f3b26a32619435686eb5813235f7e3327e  # frozen: 1.9.1\n  hooks:\n  - id: nbqa-ruff\n    args: [\"--fix\"]\n- repo: local\n  hooks:\n  - id: dependency-readiness\n    name: Dependency readiness \u2014 every declared intra-fleet constraint is installable\n    entry: bash -c 'P=\"\"; d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do [ -d \"$d/agent-packages/agents/repository-manager\" ] && { P=\"$d/agent-packages/agents/repository-manager\"; break; }; d=$(dirname \"$d\"); done; [ -n \"$P\" ] || P=repository-manager; uv run --no-project --python 3.12 --prerelease=allow --with \"$P\" python -m repository_manager.dependency_readiness .'\n    language: system\n    pass_filenames: false\n    always_run: true\n    stages: [manual, pre-push]\n- repo: local\n  hooks:\n  - id: mermaid-validate\n    name: mermaid-validate\n    entry: mermaid-validate\n    language: node\n    additional_dependencies: ['@zabaca/mermaid-validate@1.0.1']\n    types: [markdown]\n    pass_filenames: true\n  - id: check-agent-standards\n    name: check agent standards\n    entry: |-\n      bash -c 'for f in $(find . -type f -name \"agent_server.py\" -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do grep -q \"warnings.filterwarnings\" \"$f\" && grep -q \"file=sys.stderr\" \"$f\" || { echo \"Missing warnings.filterwarnings or file=sys.stderr in $f\"; exit 1; }; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: check-cli-help\n    name: check cli help\n    entry: |-\n      bash -c 'for f in $(find . -type f \\( -name \"mcp_server.py\" -o -name \"agent_server.py\" \\) -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do mod=$(echo \"$f\" | sed -e \"s/^\\.\\///\" -e \"s/\\.py$//\" -e \"s/\\//./g\"); uv run python -m \"$mod\" --help >/dev/null || exit 1; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: env-var-drift\n    name: check env-var/config drift\n    entry: bash -c 'if [ -f uv.lock ]; then uv run python -m agent_connector_sdk.mcp.env_drift --check; else python -m agent_connector_sdk.mcp.env_drift --check; fi'\n    language: system\n    pass_filenames: false\n    files: ^(README\\.md|\\.env\\.example|mcp_config.*\\.json|.*/mcp_config.*\\.json|docker/.*compose.*\\.ya?ml|.*/auth\\.py|.*/mcp_server\\.py)$\n  - id: check-bumpversion\n    name: validate bumpversion config\n    entry: |-\n      bash -c 'if [ -f \".bumpversion.cfg\" ]; then bump2version patch --dry-run --allow-dirty; fi'\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: local\n  hooks:\n  - id: pytest\n    name: pytest\n    entry: bash -c 'if [ -f uv.lock ]; then uv run --all-extras pytest tests -q --tb=short -m \"not slow\" --timeout=60; else pytest tests -q --tb=short -m \"not slow\" --timeout=60; fi'\n    language: system\n    types: [python]\n    pass_filenames: false\n    always_run: true\n    stages: [pre-push, manual]\n- repo: https://github.com/AleksaC/hadolint-py\n  rev: 6e7504451511eaeb62a3e7f14d63b0296cbf86eb  # frozen: v2.15.1\n  hooks:\n  - id: hadolint\n    args:\n    - --ignore=DL3008\n    - --ignore=DL3015\n    - --ignore=DL3009\n    - --ignore=DL4006\n    - --ignore=SC2102\n- repo: https://github.com/IamTheFij/docker-pre-commit\n  rev: f626253b23de45412865c07fd076ff95d4cd77a7 # v3.0.1\n  hooks:\n  - id: docker-compose-check\n\n- repo: local\n  hooks:\n  - id: verify-api-integration\n    name: Verify API-to-MCP Integration Coverage\n    entry: python scripts/verify_api_integration.py --local\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: local\n  hooks:\n  - id: security-sanitizer\n    name: Security and Garbage Sanitizer\n    entry: python scripts/security_sanitizer.py\n    language: python\n    pass_filenames: false\n    always_run: true\n",
+          "sha256": "676030e4d01834cd0e57ff4a508559f5cc82f80d3a2b84fb9331aec9d82d8814"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "ansible-tower-mcp",
+            "requirement_ids": [
+              "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "2242ab3f6869",
+                  "cd7b5c14d117",
+                  "e19f9a19843d"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_connector_tool_parity.py:12",
+                  "tests/test_default_content_surfaces.py:17"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT"
+          },
+          "specs/sdk-centralization/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "ansible-tower-mcp",
+            "requirement_ids": [
+              "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R001",
+              "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R002"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R001",
+                "landed_in": [
+                  "821085ad8dc6"
+                ],
+                "title": "Governed HTTP",
+                "verified_by": [
+                  "tests/test_sdk_centralization.py:15"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R002",
+                "landed_in": [
+                  "821085ad8dc6",
+                  "e1739fd28b9e"
+                ],
+                "title": "Shared pagination",
+                "verified_by": [
+                  "tests/test_sdk_centralization.py:25",
+                  "tests/test_sdk_centralization.py:48",
+                  "tests/test_sdk_centralization.py:66",
+                  "tests/test_sdk_centralization.py:85"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "7f4583477ab6513f44f62921b50cb45887b74e624f6dcb946c7f6dd051b9ae17",
+          "specs/sdk-centralization/status.json": "ed8830f781d13157e5f3c9a3ee536d3835a2c30f3590e4799b0685f240429d85"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/sdk-centralization/status.json"
+        ],
+        "status_record_count": 5,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/sdk-centralization/status.json"
+        ],
+        "status_record_states": [
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "2242ab3f6869",
+              "cd7b5c14d117",
+              "e19f9a19843d"
+            ],
+            "parent": "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT",
+            "parent_title": "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "Default content",
+            "verified_by": [
+              "tests/test_connector_tool_parity.py:12",
+              "tests/test_default_content_surfaces.py:17"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/sdk-centralization/status.json",
+            "state": "verified",
+            "title": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "821085ad8dc6"
+            ],
+            "parent": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION",
+            "parent_title": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION",
+            "source": "specs/sdk-centralization/status.json",
+            "state": "verified",
+            "title": "Governed HTTP",
+            "verified_by": [
+              "tests/test_sdk_centralization.py:15"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R002",
+            "kind": "requirement",
+            "landed_in": [
+              "821085ad8dc6",
+              "e1739fd28b9e"
+            ],
+            "parent": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION",
+            "parent_title": "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION",
+            "source": "specs/sdk-centralization/status.json",
+            "state": "verified",
+            "title": "Shared pagination",
+            "verified_by": [
+              "tests/test_sdk_centralization.py:25",
+              "tests/test_sdk_centralization.py:48",
+              "tests/test_sdk_centralization.py:66",
+              "tests/test_sdk_centralization.py:85"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"ansible-tower-mcp\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"2242ab3f6869\",\n        \"cd7b5c14d117\",\n        \"e19f9a19843d\"\n      ],\n      \"verified_by\": [\n        \"tests/test_connector_tool_parity.py:12\",\n        \"tests/test_default_content_surfaces.py:17\"\n      ]\n    }\n  ]\n}\n",
+          "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"ansible-tower-mcp\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R001\",\n    \"CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R002\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Governed HTTP\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"821085ad8dc6\"\n      ],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:15\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R002\",\n      \"title\": \"Shared pagination\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"821085ad8dc6\",\n        \"e1739fd28b9e\"\n      ],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:25\",\n        \"tests/test_sdk_centralization.py:48\",\n        \"tests/test_sdk_centralization.py:66\",\n        \"tests/test_sdk_centralization.py:85\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT",
+          "CONN-ANSIBLE-TOWER-MCP-CONNECTOR-CONTENT-R001",
+          "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION",
+          "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R001",
+          "CONN-ANSIBLE-TOWER-MCP-SDK-CENTRALIZATION-R002"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R101.1": true,
+        "PIPE-CONNSPEC-R101.2": false,
+        "PIPE-CONNSPEC-R101.3": false,
+        "PIPE-CONNSPEC-R101.4": false
+      },
+      "tree_file_count": 134
+    },
+    "archimate-mcp": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T09:41:08Z",
+          "databaseId": 40082930354,
+          "headSha": "c29c7e3ac0dbb59c1764a05be4296185e80cca99",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/archimate-mcp/actions/runs/40082930354",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": true,
+        "live_http": {
+          "bytes": 19365,
+          "has_spec_id": true,
+          "status": 200,
+          "url": "https://knuckles-team.github.io/archimate-mcp/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/archimate-mcp/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md",
+          "specs/**",
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml"
+        ],
+        "required_paths": true,
+        "shape_ready": true,
+        "strict_ready": true,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R102",
+      "sha": "c29c7e3ac0dbb59c1764a05be4296185e80cca99",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 570,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "archimate-mcp",
+            "requirement_ids": [
+              "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "01470e963dd5"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "3355a82d8360a5021ca7d5141ccb2f9c844887a4685807f69bdac2e4ab5d58ad"
+        },
+        "status_files": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_count": 2,
+        "status_record_sources": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_states": [
+          "LANDED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "01470e963dd5"
+            ],
+            "parent": "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT",
+            "parent_title": "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"archimate-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"01470e963dd5\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT",
+          "CONN-ARCHIMATE-MCP-CONNECTOR-CONTENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R102.1": true,
+        "PIPE-CONNSPEC-R102.2": true,
+        "PIPE-CONNSPEC-R102.3": true,
+        "PIPE-CONNSPEC-R102.4": false
+      },
+      "tree_file_count": 100
+    },
+    "atlassian-agent": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "aggregate hook/revision/config proof incomplete",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T06:35:05Z",
+          "databaseId": 40280680160,
+          "headSha": "1f81b8899cb70ac6cf7ab53019b0afdf3d6c3eea",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/atlassian-agent/actions/runs/40280680160",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/atlassian-agent/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/atlassian-agent/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": false,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [],
+        "literal_hooks_present": [],
+        "missing": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider": false,
+        "revs": [],
+        "stages": {},
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R106",
+      "sha": "1f81b8899cb70ac6cf7ab53019b0afdf3d6c3eea",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 712,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "d0885173d3c382502e4fd5d80a51055c5f4ab8aec31844cfc5a5a80eeebec938"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 6152,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet|node_modules'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: check-added-large-files\n    args: [\"--maxkb=2000\"]\n    exclude: ^uv\\.lock$\n  - id: check-ast\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: check-yaml\n    args: [\"--unsafe\"]\n  - id: check-toml\n  - id: check-json\n  - id: fix-byte-order-marker\n    exclude: .gitignore\n  - id: check-merge-conflict\n  - id: detect-private-key\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: no-commit-to-branch\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: 38bfb07c0c64c304f47eb52090f8288150c77730  # frozen: v0.17.1\n  hooks:\n  - id: ruff-check\n    args: [\"--fix\", \"--ignore=E402,B008,E501\"]\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: ruff-format\n    exclude: ^(tests/|test/|scripts/|script/)\n- repo: https://github.com/pre-commit/mirrors-mypy\n  rev: 2834ec6639549dd6796205c8f011dedcd587288b  # frozen: v2.4.0\n  hooks:\n  - id: mypy\n    additional_dependencies: [pydantic==2.13.4, types-PyYAML==6.0.12.20260518, types-requests==2.33.0.20260518,\n        types-setuptools==83.0.0.20260706]\n    args: [\"--ignore-missing-imports\"]\n    exclude: ^atlassian_agent/mcp/\n- repo: https://github.com/jendrikseipp/vulture\n  rev: 258fe6a1974e89a2add9a45519a9e9dd9f46154e  # frozen: v2.16\n  hooks:\n  - id: vulture\n    pass_filenames: false\n    args: [\".\", \"--min-confidence\", \"95\", \"--exclude\", \"node_modules,dotnet,.venv,build,tests\"]\n    require_serial: true\n- repo: https://github.com/codespell-project/codespell\n  rev: 57b21406f092110c18776e39b0bda50d37c945c8  # frozen: v2.4.3\n  hooks:\n  - id: codespell\n    args: [\"-L\", \"ans,linar,nam,tread,ot,\", \"--ignore-words=.codespellignore\"]\n    exclude: ^(tests/|test/|scripts/|script/|.*lock.*)\n- repo: https://github.com/nbQA-dev/nbQA\n  rev: f96ec7f3b26a32619435686eb5813235f7e3327e  # frozen: 1.9.1\n  hooks:\n  - id: nbqa-ruff\n    args: [\"--fix\"]\n- repo: local\n  hooks:\n  - id: dependency-readiness\n    name: Dependency readiness \u2014 every declared intra-fleet constraint is installable\n    entry: bash -c 'P=\"\"; d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do [ -d \"$d/agent-packages/agents/repository-manager\" ] && { P=\"$d/agent-packages/agents/repository-manager\"; break; }; d=$(dirname \"$d\"); done; [ -n \"$P\" ] || P=repository-manager; uv run --no-project --python 3.12 --prerelease=allow --with \"$P\" python -m repository_manager.dependency_readiness .'\n    language: system\n    pass_filenames: false\n    always_run: true\n    stages: [manual, pre-push]\n  - id: uv-lock\n    name: uv-lock (verify, never mutate)\n    entry: uv lock --check\n    language: system\n    files: ^(uv\\.lock|pyproject\\.toml|uv\\.toml)$\n    pass_filenames: false\n    stages: [pre-push, manual]\n- repo: local\n  hooks:\n  - id: mermaid-validate\n    name: mermaid-validate\n    entry: mermaid-validate\n    language: node\n    additional_dependencies: ['@zabaca/mermaid-validate@1.0.1']\n    types: [markdown]\n    pass_filenames: true\n  - id: check-agent-standards\n    name: check agent standards\n    entry: |-\n      bash -c 'for f in $(find . -type f -name \"agent_server.py\" -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do grep -q \"warnings.filterwarnings\" \"$f\" && grep -q \"file=sys.stderr\" \"$f\" || { echo \"Missing warnings.filterwarnings or file=sys.stderr in $f\"; exit 1; }; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: check-cli-help\n    name: check cli help\n    entry: |-\n      bash -c 'for f in $(find . -type f \\( -name \"mcp_server.py\" -o -name \"agent_server.py\" \\) -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do mod=$(echo \"$f\" | sed -e \"s/^\\.\\///\" -e \"s/\\.py$//\" -e \"s/\\//./g\"); uv run python -m \"$mod\" --help >/dev/null || exit 1; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: env-var-drift\n    name: check env-var/config drift\n    entry: bash -c 'if [ -f uv.lock ]; then uv run python -m agent_connector_sdk.mcp.env_drift --check; else python -m agent_connector_sdk.mcp.env_drift --check; fi'\n    language: system\n    pass_filenames: false\n    files: ^(README\\.md|\\.env\\.example|mcp_config.*\\.json|.*/mcp_config.*\\.json|docker/.*compose.*\\.ya?ml|.*/auth\\.py|.*/mcp_server\\.py)$\n  - id: check-bumpversion\n    name: validate bumpversion config\n    entry: |-\n      bash -c 'if [ -f \".bumpversion.cfg\" ]; then bump2version patch --dry-run --allow-dirty; fi'\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: local\n  hooks:\n  - id: pytest\n    name: pytest\n    entry: bash -c 'test_target=\"tests\"; for d in tests/unit test/unit tests test; do if [ -d \"$d\" ]; then test_target=\"$d\"; break; fi; done; if [ -f uv.lock ]; then uv run --all-extras pytest \"$test_target\" -q --tb=short -m \"not slow\" --timeout=60; else pytest \"$test_target\" -q --tb=short -m \"not slow\" --timeout=60; fi'\n    language: system\n    types: [python]\n    pass_filenames: false\n    always_run: true\n    stages: [pre-push, manual]\n- repo: https://github.com/AleksaC/hadolint-py\n  rev: 6e7504451511eaeb62a3e7f14d63b0296cbf86eb  # frozen: v2.15.1\n  hooks:\n  - id: hadolint\n    args:\n    - --ignore=DL3008\n    - --ignore=DL3015\n    - --ignore=DL3009\n    - --ignore=DL4006\n    - --ignore=SC2102\n- repo: https://github.com/IamTheFij/docker-pre-commit\n  rev: f626253b23de45412865c07fd076ff95d4cd77a7 # v3.0.1\n  hooks:\n  - id: docker-compose-check\n- repo: local\n  hooks:\n  - id: security-sanitizer\n    name: Security and Garbage Sanitizer\n    entry: python scripts/security_sanitizer.py\n    language: python\n    pass_filenames: false\n    always_run: true\n",
+          "sha256": "bc6b4ad5ee9cc5c4a594ea18c886b8b37e313448d44fa83ffd4b13b41770fbdc"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "atlassian-agent",
+            "requirement_ids": [
+              "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "4067eedd29d7",
+                  "a1a03c689679",
+                  "d6c8fd1c0a56"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_connector_tool_parity.py:12",
+                  "tests/test_default_content_surfaces.py:17",
+                  "tests/test_kg_ingest.py:179"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "158d5794c4d89e933374d8b6905cc0a45e2aba52eee174e4355792dc07f476e6"
+        },
+        "status_files": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_count": 2,
+        "status_record_sources": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_states": [
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "4067eedd29d7",
+              "a1a03c689679",
+              "d6c8fd1c0a56"
+            ],
+            "parent": "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT",
+            "parent_title": "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "Default content",
+            "verified_by": [
+              "tests/test_connector_tool_parity.py:12",
+              "tests/test_default_content_surfaces.py:17",
+              "tests/test_kg_ingest.py:179"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"atlassian-agent\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"4067eedd29d7\",\n        \"a1a03c689679\",\n        \"d6c8fd1c0a56\"\n      ],\n      \"verified_by\": [\n        \"tests/test_connector_tool_parity.py:12\",\n        \"tests/test_default_content_surfaces.py:17\",\n        \"tests/test_kg_ingest.py:179\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT",
+          "CONN-ATLASSIAN-AGENT-CONNECTOR-CONTENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R106.1": true,
+        "PIPE-CONNSPEC-R106.2": false,
+        "PIPE-CONNSPEC-R106.3": false,
+        "PIPE-CONNSPEC-R106.4": false
+      },
+      "tree_file_count": 145
+    },
+    "audiobookshelf-mcp": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T12:59:10Z",
+          "databaseId": 40096196369,
+          "headSha": "24d1cf121fbf29cecd519084f1d25ce0dd0e75b3",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/audiobookshelf-mcp/actions/runs/40096196369",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/audiobookshelf-mcp/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/audiobookshelf-mcp/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R108",
+      "sha": "24d1cf121fbf29cecd519084f1d25ce0dd0e75b3",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "audiobookshelf-mcp",
+            "requirement_ids": [
+              "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "0bfcccca44b8",
+                  "444ef757810e"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "c96470716ce6b1818c7a72675efeecae442a468970cf93ba9fd667759d699ec9"
+        },
+        "status_files": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_count": 2,
+        "status_record_sources": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_states": [
+          "LANDED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "0bfcccca44b8",
+              "444ef757810e"
+            ],
+            "parent": "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT",
+            "parent_title": "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"audiobookshelf-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"0bfcccca44b8\",\n        \"444ef757810e\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT",
+          "CONN-AUDIOBOOKSHELF-MCP-CONNECTOR-CONTENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R108.1": true,
+        "PIPE-CONNSPEC-R108.2": true,
+        "PIPE-CONNSPEC-R108.3": false,
+        "PIPE-CONNSPEC-R108.4": false
+      },
+      "tree_file_count": 101
+    }
+  },
+  "requirements": {
+    ".1": "Consumer specs/*/status.json are readable through existing scripts.spec_dashboard_sources.read_records.",
+    ".2": "Consumer pre-commit configs contain the provider canonical aggregate hooks and validate-config succeeds.",
+    ".3": "Consumer Pages caller/config, exact-source successful Pages publisher, and live /spec-delivery/ HTTP 200 all agree.",
+    ".4": "No development-skill evidence was found; no .4 rows are bound.",
+    "aggregate_source_contract": [
+      "connector-standard",
+      "dependency-readiness",
+      "secrets",
+      "spec",
+      "tests-fast"
+    ],
+    "literal_source_contract": [
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "mapping_note": "Accepted #292 aggregate mapping: the provider template's canonical connector hook set is authoritative for this test-only fixture."
+  },
+  "schema_version": 1,
+  "strict_leaf_counts": {
+    ".1": 4,
+    ".2": 2,
+    ".3": 1,
+    ".4": 0
+  }
+}
