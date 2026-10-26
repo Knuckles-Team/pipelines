@@ -112,10 +112,7 @@ def _dockerfile(
     targets = list(entries)
     builders, runtimes = [], []
     for target in targets:
-        extra = target if target in extras else ("all" if "all" in extras else None)
-        if target in table.get("install_extras", {}):
-            # an explicit list is exactly what the image installs (an empty list: the bare wheel, no extras)
-            extra = ",".join(table["install_extras"][target]) or None
+        extra = target_extra(extras, table, target)
         builders.append(builder_block(dist, version, target, extra, sdists, sdk_distribution))
         copies = "".join(f"{c}\n" for c in table.get("stage_copies", []))
         label = "MCP server only" if target == "mcp" else "full agent runtime; can also run the MCP server"
@@ -142,6 +139,20 @@ def _dockerfile(
         "@@UID@@": uid,
     }
     return _fill(TEMPLATES / "Dockerfile.tmpl", values)
+
+
+def target_extra(extras: set[str], table: dict[str, Any], target: str) -> str | None:
+    """Return the package extra installed by a rendered runtime target.
+
+    Keep this selector shared with the release guard.  A connector may provide MCP
+    through a base dependency and omit an ``mcp`` optional dependency; the rendered
+    target then deliberately installs the bare package.  ``install_extras`` remains
+    an explicit per-target override, including an empty list for the bare package.
+    """
+    extra = target if target in extras else ("all" if "all" in extras else None)
+    if target in table.get("install_extras", {}):
+        extra = ",".join(table["install_extras"][target]) or None
+    return extra
 
 
 def config_mounts_block(raw: Any) -> str:

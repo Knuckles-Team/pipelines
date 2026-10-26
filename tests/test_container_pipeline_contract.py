@@ -64,7 +64,7 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
     inputs = workflow[True]["workflow_call"]["inputs"]
     assert inputs["published_wheel_distribution"]["default"] == ""
     assert inputs["published_wheel_module"]["default"] == ""
-    assert inputs["published_wheel_extras"]["default"] == "mcp"
+    assert inputs["published_wheel_extras"]["default"] == ""
     steps = workflow["jobs"]["publish-docker"]["steps"]
     identity = next(step for step in steps if step.get("id") == "published-wheel")
     guard = next(
@@ -84,12 +84,14 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
         "distribution": "${{ steps.published-wheel.outputs.distribution }}",
         "module": "${{ steps.published-wheel.outputs.module }}",
         "dockerfile": "${{ inputs.dockerfile }}",
-        "extras": "${{ inputs.published_wheel_extras }}",
+        "extras": "${{ steps.published-wheel.outputs.extras }}",
         "root": "${{ inputs.build_context }}",
     }
     assert steps.index(identity) < steps.index(guard) < steps.index(builder) < steps.index(login)
     assert steps.index(guard) < steps.index(builds[0])
     assert "--resolve-identity" in identity["run"]
+    assert "--resolve-extras" in identity["run"]
+    assert "MATRIX_TARGET" in identity["env"]
     assert "connector" in identity["run"]
 
 
@@ -139,12 +141,15 @@ def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp
             "BUILD_CONTEXT": ".",
             "PUBLISHED_WHEEL_DISTRIBUTION": "",
             "PUBLISHED_WHEEL_MODULE": "",
+            "PUBLISHED_WHEEL_EXTRAS": "",
+            "DOCKERFILE": "docker/Dockerfile",
+            "MATRIX_TARGET": "mcp",
             "PUBLIC_WHEEL_GUARD": str(ROOT / ".github/actions/verify-release-version/public_wheel.py"),
             "GITHUB_OUTPUT": str(output),
         }
         result = subprocess.run(["bash", "-c", step["run"]], cwd=root, env=environment, capture_output=True, text=True)
         assert result.returncode == 0, result.stderr
-        assert dict(line.split("=", 1) for line in output.read_text().splitlines()) == expected
+        assert dict(line.split("=", 1) for line in output.read_text().splitlines()) == expected | {"extras": ""}
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")

@@ -34,10 +34,10 @@ on:
         type: string
         default: ''
       published_wheel_extras:
-        description: Exact extras in the public-wheel Docker pin.
+        description: Optional assertion for the reviewed target extra; empty derives it from connector metadata.
         required: false
         type: string
-        default: mcp
+        default: ''
       sdk_version:
         description: >-
           SDK version this build re-resolves inside the wheel's supported range
@@ -307,14 +307,22 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true'
         env:
           BUILD_CONTEXT: ${{ inputs.build_context }}
+          MATRIX_TARGET: ${{ matrix.target }}
           PUBLISHED_WHEEL_DISTRIBUTION: ${{ inputs.published_wheel_distribution }}
           PUBLISHED_WHEEL_MODULE: ${{ inputs.published_wheel_module }}
+          PUBLISHED_WHEEL_EXTRAS: ${{ inputs.published_wheel_extras }}
           PUBLIC_WHEEL_GUARD: ${{ github.workspace }}/.pipeline-contract/.github/actions/verify-release-version/public_wheel.py
         run: |
           set -euo pipefail
           identity="$(python3 -I "$PUBLIC_WHEEL_GUARD" --root "$BUILD_CONTEXT" --resolve-identity \
             --distribution "$PUBLISHED_WHEEL_DISTRIBUTION" --module "$PUBLISHED_WHEEL_MODULE")"
-          python3 - "$identity" "$GITHUB_OUTPUT" <<'PY'
+          extras="$(python3 -I "$PUBLIC_WHEEL_GUARD" --root "$BUILD_CONTEXT" --resolve-extras \
+            --target "$MATRIX_TARGET")"
+          if [[ -n "$PUBLISHED_WHEEL_EXTRAS" && "$PUBLISHED_WHEEL_EXTRAS" != "$extras" ]]; then
+            echo "::error::Requested published wheel extras do not match the reviewed container target."
+            exit 1
+          fi
+          python3 - "$identity" "$GITHUB_OUTPUT" "$extras" <<'PY'
           import json
           import sys
 
@@ -325,6 +333,7 @@ jobs:
                   if isinstance(value, bool):
                       value = str(value).lower()
                   output.write(f"{key}={value}\n")
+              output.write(f"extras={sys.argv[3]}\n")
           PY
 
       - name: Verify published connector wheel before container build
@@ -335,7 +344,7 @@ jobs:
           distribution: ${{ steps.published-wheel.outputs.distribution }}
           module: ${{ steps.published-wheel.outputs.module }}
           dockerfile: ${{ inputs.dockerfile }}
-          extras: ${{ inputs.published_wheel_extras }}
+          extras: ${{ steps.published-wheel.outputs.extras }}
           root: ${{ inputs.build_context }}
 
       # PIPE-RELEASE-R015: reuse ONE named BuildKit builder per runner pod instead of

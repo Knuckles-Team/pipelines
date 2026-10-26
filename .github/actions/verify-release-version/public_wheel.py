@@ -80,6 +80,38 @@ def reviewed_identity(root: Path, distribution: str = "", module: str = "") -> d
     return {"connector": True, "distribution": resolved_distribution, "module": resolved_module}
 
 
+def reviewed_target_extra(root: Path, target: str = "mcp") -> str:
+    """Resolve the package extra selected by the reviewed renderer target.
+
+    This intentionally shares the provider renderer's metadata selector so a connector
+    whose MCP support is supplied by a base dependency can select the bare package.
+    ``install_extras`` remains authoritative for an explicit per-target selection.
+    """
+    if not MODULE_RE.fullmatch(target):
+        raise ValueError("Container target must be an explicit stage name")
+    document, _ = _reviewed_connector_metadata(root)
+    project = document.get("project", {})
+    optional = project.get("optional-dependencies", {})
+    extras = set(optional) if isinstance(optional, dict) else set()
+    table = document.get("tool", {}).get("pipelines", {}).get("container", {})
+    if not isinstance(table, dict):
+        raise ValueError("Reviewed container metadata is not a table")
+    try:
+        provider_root = Path(__file__).resolve().parents[3]
+        if not (provider_root / "pipelines_hooks" / "connector" / "container.py").is_file():
+            raise ValueError("Generated Dockerfile verification requires the provider renderer checkout")
+        sys.path.insert(0, str(provider_root))
+        from pipelines_hooks.connector.container import target_extra
+
+        extra = target_extra(extras, table, target)
+    except (ImportError, KeyError, TypeError) as error:
+        raise ValueError("Reviewed container metadata cannot select a target extra") from error
+    finally:
+        if sys.path and sys.path[0] == str(provider_root):
+            sys.path.pop(0)
+    return extra or ""
+
+
 def _generated_payload(root: Path, module: str) -> dict[str, bytes]:
     """Recreate release-only ontology files from the reviewed source tree.
 
@@ -255,10 +287,15 @@ def main() -> None:
     parser.add_argument("--module", default="")
     parser.add_argument("--dockerfile", default="docker/Dockerfile")
     parser.add_argument("--extras", default="mcp")
+    parser.add_argument("--target", default="mcp")
     parser.add_argument("--resolve-identity", action="store_true")
+    parser.add_argument("--resolve-extras", action="store_true")
     args = parser.parse_args()
     if args.resolve_identity:
         print(json.dumps(reviewed_identity(args.root, args.distribution, args.module), sort_keys=True))
+        return
+    if args.resolve_extras:
+        print(reviewed_target_extra(args.root, args.target))
         return
     if not args.distribution or not args.module:
         parser.error("--distribution and --module are required unless --resolve-identity is used")
