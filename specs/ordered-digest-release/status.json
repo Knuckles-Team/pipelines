@@ -901,7 +901,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:1141"
+        "tests/test_container_pipeline_contract.py:1170"
       ]
     },
     {

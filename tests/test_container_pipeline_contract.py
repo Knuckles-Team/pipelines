@@ -642,6 +642,35 @@ def test_legacy_profile_keeps_a_missing_canonical_dockerfile_unrendered(tmp_path
     assert output.read_text() == "render=false\n"
 
 
+def test_legacy_profile_missing_canonical_dockerfile_fails_before_target_scan(tmp_path: Path) -> None:
+    step = next(
+        step
+        for step in yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+        if step.get("id") == "target"
+    )
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "BUILD_CONTEXT": ".",
+            "DOCKERFILE": "docker/Dockerfile",
+            "LEGACY_PROFILE": "true",
+            "GITHUB_OUTPUT": str(output),
+            "REQUESTED_TARGET": "",
+            "MATRIX_TARGET": "agent",
+            "RUNTIME_REQUEST": "",
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    output_text = result.stdout + result.stderr
+    assert "Legacy profile requires a tracked canonical Dockerfile" in output_text
+    assert "awk:" not in output_text
+
+
 @pytest.mark.parametrize(
     ("requested", "leg", "dockerfile", "expected"),
     [

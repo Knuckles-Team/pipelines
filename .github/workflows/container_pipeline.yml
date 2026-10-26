@@ -393,6 +393,7 @@ jobs:
           DOCKERFILE: ${{ inputs.dockerfile }}
           REQUESTED_TARGET: ${{ inputs.build_target }}
           MATRIX_TARGET: ${{ matrix.target }}
+          LEGACY_PROFILE: ${{ inputs.legacy_profile }}
           RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.arbora_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
         run: |
           set -euo pipefail
@@ -419,9 +420,14 @@ jobs:
           fi
           target="${REQUESTED_TARGET:-$MATRIX_TARGET}"
           echo "cache-key=$target" >> "$GITHUB_OUTPUT"
+          legacy_profile="${LEGACY_PROFILE:-false}"
           dockerfile="$DOCKERFILE"
           if [[ "$dockerfile" != /* ]]; then
             dockerfile="$BUILD_CONTEXT/$dockerfile"
+          fi
+          if [[ "${legacy_profile,,}" == true && "$DOCKERFILE" == docker/Dockerfile && ! -f "$dockerfile" ]]; then
+            echo '::error::Legacy profile requires a tracked canonical Dockerfile; refusing to skip the container build.'
+            exit 1
           fi
           if [[ "$DOCKERFILE" != docker/Dockerfile && ! -f "$dockerfile" ]]; then
             echo '::error::Selected custom Dockerfile is absent; refusing to skip the container build.'

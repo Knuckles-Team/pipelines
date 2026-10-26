@@ -42,6 +42,7 @@ name: Connector SDK rebuild
 #       uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
 #       with:
 #         release_repair: ${{ inputs.release_repair || false }}
+#         legacy_profile: ${{ inputs.legacy_profile || false }}
 #         release_source_sha: ${{ inputs.release_source_sha || '' }}
 #         release_source_epoch: ${{ inputs.release_source_epoch || '' }}
 #       secrets: inherit
