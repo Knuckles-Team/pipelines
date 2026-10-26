@@ -291,6 +291,47 @@ def test_public_wheel_target_extra_matches_generated_and_tracked_targets(
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
+@pytest.mark.parametrize("has_mcp_extra", [False, True])
+@pytest.mark.parametrize("tracked", [False, True])
+def test_public_wheel_rejects_target_pin_mismatches_before_public_fetch(
+    guard, tmp_path, monkeypatch, has_mcp_extra, tracked
+):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    optional = "[project.optional-dependencies]\nmcp = []\n\n" if has_mcp_extra else ""
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\n"
+        'name = "demo-dist"\n'
+        'version = "1.2.3"\n'
+        'dependencies = ["agent-connector-sdk[mcp]>=1"]\n\n'
+        "[project.scripts]\n"
+        'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."agent_connector_sdk.connector"]\n'
+        'demo = "demo:connector"\n',
+        encoding="utf-8",
+    )
+    actual_extra = "mcp" if has_mcp_extra else ""
+    pin = f"demo-dist[{actual_extra}]==1.2.3" if actual_extra else "demo-dist==1.2.3"
+    paths = ["pyproject.toml"]
+    if tracked:
+        docker = tmp_path / "docker/Dockerfile"
+        docker.parent.mkdir()
+        docker.write_text(f"FROM builder-base AS builder-mcp\nRUN pip install {pin}\n")
+        paths.append("docker/Dockerfile")
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", *paths], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    wrong_extra = "mcp" if not actual_extra else ""
+    monkeypatch.setattr(guard, "read_public", lambda url: pytest.fail("pin mismatch must refuse before network"))
+    with pytest.raises(ValueError, match="Dockerfile must pin"):
+        guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", wrong_extra)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
 def test_public_wheel_refuses_to_render_a_nonconnector_dockerfile(guard, tmp_path, monkeypatch):
     for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
         monkeypatch.delenv(name, raising=False)
