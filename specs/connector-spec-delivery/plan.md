@@ -51,3 +51,15 @@ Its explanation states the direction: CQ → Depends-on → requirement. The lab
 does not report missing architecture placement or implementation links. Keep
 the existing filter, scores, classification, requirement states and evidence.
 This wording change adds no dependencies and changes no competency questions.
+
+## Amendment: canonical aggregate-hook mapping (2026-10-26)
+
+The child `.2` verification rows use the phrase "the three spec hooks" for the
+canonical spec gate contract. The current connector template publishes the
+single `spec` aggregate hook alongside the other aggregate gates. At the
+provider source, `pipelines_hooks/cli.py:73` defines that aggregate as
+`spec-standard`, `spec-decomposition`, `spec-status`, and `spec-trailers`.
+Therefore `spec` is the accepted canonical replacement for the three literal
+spec hooks in the connector adoption rows; the validation test must assert this
+source mapping before binding a `.2` row. This mapping changes no consumer
+configuration or runtime behavior.
