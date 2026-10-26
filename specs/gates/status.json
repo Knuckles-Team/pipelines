@@ -395,7 +395,8 @@
       "title": "Orphan connector classes get a reviewed parent class",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "147049d18114"
+        "147049d18114",
+        "f58ea0355db7"
       ],
       "verified_by": [
         "tests/hooks/test_ontology_orphan_map.py:12"
