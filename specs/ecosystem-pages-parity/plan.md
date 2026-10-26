@@ -616,3 +616,16 @@ link text changes. Do not alter world geometry, data, statuses,
 node IDs, navigation, card hues or ocean motion. Hosted evidence must measure actual
 text paint against obstacles at default, deep-link, nested and mobile cameras,
 including the external-systems caption and self-evolution loop, without skips.
+
+### Strict architecture story producer (2026-10-26; PIPE-PAGES-R042)
+
+Introduce an opt-in, build-time story contract before connecting it to the public
+renderer. Require canonical repository/row identities, full-commit provenance,
+reviewed spec and relationship applicability, exact deduplicated summaries, and
+explicit scored versus completed-NA priority. Reject invalid or absent evidence
+before writing artifacts. Collect separate repository PR/issue totals with the
+existing authorized token only; failed refreshes may retain verified original
+observations within an explicit maximum age, never invent zero. The existing
+19 zero-row leaves and relationship attestations need independent review; this
+producer must not manufacture exemptions or change their delivery state. Current
+production adapters remain unchanged until that review and staged build integration.
