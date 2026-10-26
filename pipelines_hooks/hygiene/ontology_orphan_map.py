@@ -554,8 +554,9 @@ def decide(record: dict[str, Any], overrides: dict[str, str | None], parent: Par
     """Decisions for one repository record.
 
     ``overrides`` maps a class local name to a parent class local name, or ``None`` to reject.
-    An exact proposal is accepted unreviewed; any other is accepted at ``ACCEPT_AT`` or more
-    unless overridden. An override names a parent class that must exist in the parent ontology.
+    A non-generic exact proposal is accepted unreviewed; every other proposal
+    requires an explicit override. An override names a parent class that must
+    exist in the parent ontology.
     """
     links: dict[str, dict[str, str]] = {}
     candidates: list[dict[str, Any]] = []
@@ -577,9 +578,9 @@ def decide(record: dict[str, Any], overrides: dict[str, str | None], parent: Par
                     parent_iri, how = parent.pick(hit)[0], "review: chosen"
             elif prop["auto"]:
                 how = "auto: exact"
-            elif parent_iri and prop["confidence"] >= ACCEPT_AT:
-                how = "review: accepted proposal"
             else:
+                # Head-noun, synonym, domain, comment, generic and BFO signals
+                # are proposals for a reviewer; confidence alone is not review.
                 parent_iri = None
             if parent_iri:
                 links.setdefault(path, {})[prop["class"]] = parent_iri

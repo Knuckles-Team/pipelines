@@ -89,9 +89,53 @@ def test_decide_accepts_overrides_and_rejects_an_invented_parent(parent: omap.Pa
     links = decided["links"]["demo/ontology/d.ttl"]
     assert links["http://knuckles.team/kg#Gadget"] == "http://knuckles.team/kg#Server"
     assert "http://knuckles.team/kg#Wrapper" not in links
-    assert [c["class"] for c in decided["new_parent_candidates"]] == ["http://knuckles.team/kg#Wrapper"]
+    assert [c["class"] for c in decided["new_parent_candidates"]] == [
+        "http://knuckles.team/kg#GitLabDocument",
+        "http://knuckles.team/kg#Issue",
+        "http://knuckles.team/kg#Wrapper",
+    ]
     with pytest.raises(ValueError, match="not in the parent ontology"):
         omap.decide(record, {"Gadget": "Widget"}, parent)
+
+
+def test_non_exact_and_generic_proposals_need_explicit_review(parent: omap.Parent) -> None:
+    record = {"repository": "demo", "files": {"demo/ontology/d.ttl": omap.propose_file(CONNECTOR, parent)}}
+    rejected = omap.decide(record, {}, parent)
+    assert rejected["links"] == {
+        "demo/ontology/d.ttl": {
+            "http://knuckles.team/kg#Paper": "http://knuckles.team/kg#Document",
+        }
+    }
+
+    reviewed = omap.decide(
+        record,
+        {"GitLabDocument": "Document", "Issue": "WorkItem", "Wrapper": "Document"},
+        parent,
+    )
+    links = reviewed["links"]["demo/ontology/d.ttl"]
+    assert links["http://knuckles.team/kg#GitLabDocument"].endswith("#Document")
+    assert links["http://knuckles.team/kg#Issue"].endswith("#WorkItem")
+    assert links["http://knuckles.team/kg#Wrapper"].endswith("#Document")
+
+    generic_text = HEAD + "@prefix d: <http://example.org/d#> .\nd:Resource a owl:Class .\n"
+    generic_record = {"repository": "demo", "files": {"demo/ontology/d.ttl": omap.propose_file(generic_text, parent)}}
+    generic = omap.decide(generic_record, {}, parent)
+    assert generic["links"] == {}
+    explicit_generic = omap.decide(generic_record, {"Resource": "Resource"}, parent)
+    assert explicit_generic["links"]["demo/ontology/d.ttl"]
+
+
+def test_bfo_exact_proposal_needs_explicit_review(parent: omap.Parent) -> None:
+    bfo = "http://purl.obolibrary.org/obo/BFO_0000040"
+    parent.classes[bfo] = {"names": {"BFO_0000040"}, "supers": set()}
+    parent.by_key.setdefault(omap.key("BFO_0000040"), []).append(bfo)
+    parent.by_local.setdefault("BFO_0000040", []).append(bfo)
+    text = HEAD + "@prefix d: <http://example.org/d#> .\nd:BFO_0000040 a owl:Class .\n"
+    record = {"repository": "demo", "files": {"demo/ontology/d.ttl": omap.propose_file(text, parent)}}
+    proposal = record["files"]["demo/ontology/d.ttl"]["proposals"][0]
+    assert proposal["confidence"] >= omap.ACCEPT_AT and not proposal["auto"]
+    assert omap.decide(record, {}, parent)["links"] == {}
+    assert omap.decide(record, {"BFO_0000040": "BFO_0000040"}, parent)["links"]
 
 
 def test_apply_writes_links_and_the_import_and_nothing_else() -> None:
