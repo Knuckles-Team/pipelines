@@ -463,31 +463,42 @@
     {
       "id": "PIPE-PAGES-R004",
       "title": "One progressively disclosed skill-graph corpus",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "fe4d11323d0b"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_skill_graph_registry_comparison.py:243"
+      ]
     },
     {
       "id": "PIPE-PAGES-R005",
       "title": "Generate architecture and reference pages from registries",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "38133654c6e9",
         "6048c059727f"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_skill_graph_registry_comparison.py:107",
+        "tests/test_skill_graph_registry_comparison.py:83"
+      ]
     },
     {
       "id": "PIPE-PAGES-R006",
       "title": "Rehome generated docs out of the legacy docs directory",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "38133654c6e9",
         "fabe92a1aa4c"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_docs_rehomed.py:19",
+        "tests/test_docs_rehomed.py:24",
+        "tests/test_docs_rehomed.py:31",
+        "tests/test_docs_rehomed.py:40",
+        "tests/test_docs_rehomed.py:56"
+      ]
     },
     {
       "id": "PIPE-PAGES-R007",
@@ -509,21 +520,26 @@
     {
       "id": "PIPE-PAGES-R009",
       "title": "The shared generator must show accessible component package diagrams and export Mermaid source. It must include every spec",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "5b454e4b7eb4"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_spec_dashboard_metadata.py:95"
+      ]
     },
     {
       "id": "PIPE-PAGES-R010",
       "title": "Generate API contract docs from the contract registry",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "38133654c6e9",
         "6048c059727f"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_skill_graph_registry_comparison.py:161",
+        "tests/test_skill_graph_registry_comparison.py:192"
+      ]
     },
     {
       "id": "PIPE-PAGES-R011",
@@ -581,18 +597,20 @@
         "303d05f2ffc1"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:200"
+        "tests/test_spec_dashboard_metadata.py:201"
       ]
     },
     {
       "id": "PIPE-PAGES-R012.2",
       "title": "Source declarations must survive status regeneration without adding hand-edited status fields",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "13e5f2f6b948",
         "303d05f2ffc1"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_spec_status.py:242"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.3",
@@ -615,7 +633,7 @@
         "303d05f2ffc1"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:136"
+        "tests/test_spec_dashboard_metadata.py:137"
       ]
     },
     {
@@ -640,7 +658,7 @@
         "13e5f2f6b948"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:137"
+        "tests/test_spec_dashboard_metadata.py:138"
       ]
     },
     {
@@ -652,7 +670,7 @@
         "13e5f2f6b948"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:112"
+        "tests/test_spec_dashboard_metadata.py:113"
       ]
     },
     {
@@ -667,8 +685,8 @@
         "6cd8906edd00"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:214",
-        "tests/test_spec_dashboard_metadata.py:225",
+        "tests/test_spec_dashboard_metadata.py:215",
+        "tests/test_spec_dashboard_metadata.py:226",
         "tests/test_spec_dashboard_metadata.py:28",
         "tests/test_spec_dashboard_metadata.py:29",
         "tests/test_spec_dashboard_metadata.py:30"
@@ -706,7 +724,7 @@
         "911c63f923e5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:214",
+        "tests/test_spec_dashboard_metadata.py:215",
         "tests/test_spec_dashboard_reference_prose.py:10"
       ]
     },
@@ -732,7 +750,7 @@
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:95"
+        "tests/test_spec_dashboard_metadata.py:96"
       ]
     },
     {
@@ -768,7 +786,7 @@
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:225"
+        "tests/test_spec_dashboard_metadata.py:226"
       ]
     },
     {
@@ -862,7 +880,7 @@
       "verified_by": [
         "tests/test_pages_pipeline_contract.py:257",
         "tests/test_pages_pipeline_contract.py:303",
-        "tests/test_spec_dashboard_metadata.py:156"
+        "tests/test_spec_dashboard_metadata.py:157"
       ],
       "rollup_of": [
         "PIPE-PAGES-R015.1",
@@ -900,7 +918,7 @@
         "5b454e4b7eb4"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:156"
+        "tests/test_spec_dashboard_metadata.py:157"
       ]
     },
     {

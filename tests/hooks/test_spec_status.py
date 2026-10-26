@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts.spec_dashboard_metadata import enrich_records
+from scripts.spec_dashboard_sources import read_records
 from tests.hooks.conftest import Repo
 
 _LANDED_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R001` | **Landed only.** |\n"
@@ -234,6 +236,61 @@ def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> Non
 
     assert repo.run("spec-status", "--write") == 0
     assert (repo.root / "specs/demo/status.json").read_text(encoding="utf-8") == first
+    assert repo.run("spec-status") == 0
+
+
+@pytest.mark.spec("PIPE-PAGES-R012.2")
+def test_source_declarations_survive_status_regeneration(repo: Repo) -> None:
+    """Status regeneration keeps source metadata in the dashboard's source documents."""
+    requirements = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R051` | **Source-backed delivery.** |\n"
+    repo.commit(
+        {
+            "specs/demo/spec.md": "# DEMO — Source-backed delivery\n\nCode: pkg/feature.py\n",
+            "specs/demo/plan.md": "# Plan\n\nCode: tests/test_feature.py\n",
+            "specs/demo/requirements.md": requirements,
+            "pkg/feature.py": "def feature():\n    return True\n",
+            "tests/test_feature.py": "def test_feature():\n    assert True\n",
+        },
+        "declare source-backed delivery",
+    )
+    assert repo.run("spec-status", "--write") == 0
+    status_path = repo.root / "specs/demo/status.json"
+    first_status = json.loads(status_path.read_text(encoding="utf-8"))
+    assert set(first_status) == {
+        "schema_version",
+        "spec_id",
+        "owner_repo",
+        "delivery_state",
+        "requirement_ids",
+        "requirements",
+    }
+    first_row = first_status["requirements"][0]
+    assert set(first_row) == {"id", "title", "delivery_state", "landed_in", "verified_by"}
+
+    def dashboard_refs() -> list[dict]:
+        snapshot = {
+            "repository": "Knuckles-Team/demo",
+            "revision": repo.git("rev-parse", "HEAD").strip(),
+            "records": read_records(repo.root, {"sources": [{"glob": "specs/*/status.json"}]}),
+        }
+        enrich_records(repo.root, snapshot)
+        return snapshot["records"][0]["code_refs"]
+
+    first_refs = dashboard_refs()
+    assert {row["role"] for row in first_refs} == {"implementation", "test"}
+    assert {row["declared_in"] for row in first_refs} == {"specs/demo/spec.md", "specs/demo/plan.md"}
+
+    repo.commit({"pkg/landing.py": "# implementation\n"}, "Spec: TEST-R051")
+    assert repo.run("spec-status", "--write") == 0
+    second_status = json.loads(status_path.read_text(encoding="utf-8"))
+    assert second_status["requirements"][0]["delivery_state"] == "LANDED"
+    assert set(second_status["requirements"][0]) == set(first_row)
+    second_refs = dashboard_refs()
+    assert [{key: value for key, value in row.items() if key != "url"} for row in second_refs] == [
+        {key: value for key, value in row.items() if key != "url"} for row in first_refs
+    ]
+    current_revision = repo.git("rev-parse", "HEAD").strip()
+    assert all(f"/blob/{current_revision}/" in row["url"] for row in second_refs)
     assert repo.run("spec-status") == 0
 
 
