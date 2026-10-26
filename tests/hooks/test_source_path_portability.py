@@ -63,6 +63,7 @@ def test_source_path_portability_behavior() -> None:
     assert all(set(item.related_paths) == {"pkg/é.py", "pkg/e\u0301.py"} for item in collisions)
 
 
+@pytest.mark.spec("PIPE-PAGES-R031")
 @pytest.mark.spec("PIPE-PAGES-R031.3")
 def test_source_path_portability_wiring(repo: Repo) -> None:
     policy = path_portability.load_policy(repo.root)
