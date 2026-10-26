@@ -14,7 +14,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
-from pipelines_hooks.docs.claims import claim_findings, parse_claims
+from pipelines_hooks.docs.claims import claim_findings, collect_claims, parse_claims
 from pipelines_hooks.docs.public_surface_links import local_link_findings
 from pipelines_hooks.docs.public_surface_quickstart import findings as quick_start_findings
 
@@ -32,9 +32,10 @@ def _read(root: Path, name: str) -> str | None:
 def validate(root: Path, *, report: dict[str, int] | None = None) -> list[str]:
     """Return all public-surface findings for ``root``.
 
-    Explicit claims are collected only from the root README and optional
-    ``AGENTS.md``.  ``report`` is an internal summary seam for the CLI; the
-    ordinary return value remains the existing list of strings used by callers.
+    Explicit claims are collected from the root README, optional ``AGENTS.md``
+    and the policy-scoped documentation inventory.  ``report`` is an internal
+    summary seam for the CLI; the ordinary return value remains the existing
+    list of strings used by callers.
     """
     readme = _read(root, "README.md")
     if readme is None:
@@ -47,6 +48,7 @@ def validate(root: Path, *, report: dict[str, int] | None = None) -> list[str]:
     if agents is not None:
         findings += local_link_findings(root, agents, name="AGENTS.md")
         claims.extend(parse_claims(agents, file="AGENTS.md"))
+    claims = collect_claims(root, claims)
     claim_results = claim_findings(root, claims)
     claim_stats = {"checked": len(claims), "unresolved": len(claim_results)}
     findings += claim_results

@@ -7,8 +7,16 @@ from pathlib import Path
 
 import pytest
 
+from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.docs import claims
-from pipelines_hooks.docs.claims import DocClaim, claim_findings, parse_claims
+from pipelines_hooks.docs.claims import (
+    DocClaim,
+    claim_findings,
+    parse_claims,
+    resolve_command,
+    resolve_count,
+    resolve_diagram_node,
+)
 from pipelines_hooks.docs.public_surface import validate
 from tests.hooks.conftest import Repo
 
@@ -105,3 +113,39 @@ def test_claims_summary_line(repo: Repo, capsys: pytest.CaptureFixture[str]) -> 
 def test_parser_preserves_source_lines() -> None:
     claims_found = parse_claims("# title\n\n<!-- claim:gate public-surface -->\n", file="README.md")
     assert claims_found == [DocClaim("README.md", 3, "gate", "public-surface")]
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "<!-- claim:path -->",
+        "<!-- claim:unknown docs/guide.md -->",
+        "<!-- claim:path docs/guide.md",
+    ],
+)
+def test_malformed_claim_comments_refuse_with_a_location(source: str) -> None:
+    with pytest.raises(CannotRun, match=r"README\.md:1 claims-unchecked"):
+        parse_claims(source, file="README.md")
+
+
+def test_command_claims_use_static_module_grammar_and_containment(tmp_path: Path) -> None:
+    (tmp_path / "valid.py").write_text("", encoding="utf-8")
+    assert resolve_command(tmp_path, "python -m valid") is True
+    assert resolve_command(tmp_path, "python -m invalid-name") is None
+    assert resolve_command(tmp_path, "python -m /absolute/outside") is None
+    assert resolve_command(tmp_path, "/usr/bin/python -m valid") is None
+
+
+def test_command_claims_reject_module_symlinks_outside_the_tree(tmp_path: Path) -> None:
+    outside = tmp_path.parent / "outside-module.py"
+    outside.write_text("", encoding="utf-8")
+    (tmp_path / "linked.py").symlink_to(outside)
+    assert resolve_command(tmp_path, "python -m linked") is None
+
+
+def test_missing_count_selector_and_registry_symlink_are_unchecked(tmp_path: Path) -> None:
+    assert resolve_count(tmp_path, "path:missing=0") is None
+    outside = tmp_path.parent / "outside-registry.json"
+    outside.write_text('{"nodes": [{"name": "outside"}]}', encoding="utf-8")
+    (tmp_path / "registry.json").symlink_to(outside)
+    assert resolve_diagram_node(tmp_path, "outside") is None
