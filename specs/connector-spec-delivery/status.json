@@ -2505,9 +2505,18 @@
     {
       "id": "PIPE-CONNSPEC-R138",
       "title": "`listmonk-api` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2dadce373942",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:125",
+        "tests/test_connector_consumer_r138_157.py:63",
+        "tests/test_connector_consumer_r138_r145.py:114",
+        "tests/test_connector_consumer_r138_r145.py:115",
+        "tests/test_connector_consumer_r138_r145.py:203"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R138.1",
         "PIPE-CONNSPEC-R138.2",
@@ -2540,16 +2549,26 @@
     {
       "id": "PIPE-CONNSPEC-R138.3",
       "title": "`listmonk-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2dadce373942"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_r145.py:114",
+        "tests/test_connector_consumer_r138_r145.py:203"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R138.4",
       "title": "`listmonk-api` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2dadce373942"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_r145.py:115",
+        "tests/test_connector_consumer_r138_r145.py:243"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R139",
@@ -2855,9 +2874,18 @@
     {
       "id": "PIPE-CONNSPEC-R145",
       "title": "`objectstore-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2dadce373942",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:128",
+        "tests/test_connector_consumer_r138_157.py:70",
+        "tests/test_connector_consumer_r138_r145.py:116",
+        "tests/test_connector_consumer_r138_r145.py:117",
+        "tests/test_connector_consumer_r138_r145.py:204"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R145.1",
         "PIPE-CONNSPEC-R145.2",
@@ -2890,16 +2918,26 @@
     {
       "id": "PIPE-CONNSPEC-R145.3",
       "title": "`objectstore-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2dadce373942"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_r145.py:116",
+        "tests/test_connector_consumer_r138_r145.py:204"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R145.4",
       "title": "`objectstore-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2dadce373942"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_r145.py:117",
+        "tests/test_connector_consumer_r138_r145.py:244"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R146",
