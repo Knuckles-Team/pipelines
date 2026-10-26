@@ -1,37 +1,60 @@
 # Architecture story study
 
-This draft is a preview-only composition study, not the live explorer.
-The central capability matrix stands in for the current map. Integration would
-keep that map, its arrows, stable IDs and zoom. No live renderer, model or Pages
-workflow changes are included.
+This draft is a preview-only in-box study, not the live explorer. Each selected
+node contains its recorded child rectangles and routed edge polylines, followed
+by purpose, interface and requirement-family evidence in reserved in-box space.
+The matrix surrogate is removed. The study does not change the canonical
+renderer, model, Pages or source metadata, and must not be merged as production.
 
-The study uses the current architecture's ocean scene, neutral glass tokens and
-Inter font. The font and its license are copied from the existing renderer assets
-at preview build time; no duplicate font is committed. Theme source and font
-hashes are in `theme-provenance.json`.
+The study reuses current architecture ocean/neutral-glass tokens and Inter. The
+font and license are copied from existing renderer assets at build time. Theme,
+font and snapshot hashes are in `theme-provenance.json`. The timestamped snapshot
+has 598 nodes, 8,366 unique root rows and 63 recorded decompositions. Its XZ archive
+hash, row uniqueness and font identity are checked before preparing the preview.
 
-The compressed source snapshot covers 598 nodes and 8,366 mapped spec rows, built
-at 2026-10-26 02:31:30 UTC. The build verifies its archive hash, unique row mapping
-and font hash. The standalone HTML embeds the study data for review only.
-Production must reuse existing data and lazy detail shards, not this payload.
+## Interaction and rendering
 
-## Review
+Primary story sections stay within an explicit selected-node boundary. Family
+area is proportional to unique mapped requirements; state texture is recorded
+spec status, never health, effort or guaranteed completion. At most 12 family
+regions are drawn, with small families grouped as Other when needed. The native
+family selector reaches all families. Secondary inspection pages at most 64 row
+tiles and 64 disclosed row links; no multi-thousand-link wall is mounted.
 
-The PR-only workflow builds a downloadable artifact and captures Arbora,
-Overstory, Decision Engine and Generated Client at desktop, mobile, dark/reduced
-motion and CSS 200% layout stress. It uses the runner's browser and only Python
-and Node standard libraries. It uploads HTML, screenshots and receipts; it does
-not deploy or require write permissions.
+Text caps use Unicode graphemes (codepoint fallback): purpose 96, role 42, child
+label 22 and interface verb 18. Full text remains in accessible names, SVG titles
+and the full inspection route. Labels are measured at 12 CSS px and hide only
+when their projected rectangles cannot fit readable text. Bounded SVG diagram
+zoom (1x-4x) reveals them again. Native scrolling and child selection remain.
+This is **not the live continuous/infinite canvas**; hash navigation is not camera
+zoom. Semantic detail disclosure separately shows Overview/Structure/Focused.
 
-Each selected story shows at most 12 family summaries and 64 requirement tiles.
-One tile is one unique requirement. Recorded spec state does not mean runtime
-health, effort or guaranteed completion. Family/row paging reaches all rows.
-Directed interface fans only use recorded architecture edges.
+Every focusable SVG node handles Enter and Space explicitly. Activation opens the
+exact child; browser Back restores the parent and originating SVG-node focus.
 
-The capture harness checks geometry, fonts, budgets, source links, trusted-key
-native disclosure, example navigation, focus and Back. CSS 200% stress is not
-native browser zoom proof. Screenshots still require visual/contrast review.
-The local sandbox blocked Chromium before launch; no local browser pass is
-claimed. See actual workflow receipts before drawing conclusions.
+## Preview validation
 
-No merge or live deployment is part of this draft's authorization.
+The PR-only read-only workflow captures Arbora, Overstory, Decision Engine and
+Generated Client at desktop, mobile, dark/reduced motion and CSS 200% layout
+stress. It uses runner Chrome and Python/Node built-ins, with no dependencies or
+lockfile changes. HTML, viewport/full-page PNGs and receipts are retained as
+artifacts; nothing is deployed.
+
+Checks cover selected-box containment, child-label geometry/readability, overlap,
+fonts, bounded row/family counts, source links, trusted-key SVG Enter/Space exact
+child activation and Back/focus, bounded zoom, and native inspection disclosure.
+CSS 200% stress is not native browser zoom proof. Actual pixels and contrast still
+require review; no final visual acceptance is inferred from a passing test.
+
+## Strict production-data gate remains separate
+
+This timestamped legacy fixture is not an accepted `architecture-story/1` input.
+Exact prerequisite edges, normalized priority inputs, verified repository PR/issue
+snapshots and reviewed coverage/applicability are not fully available. No fake
+priority, dependency or activity chart fills those gaps. They remain production
+build blockers, not zero/unknown placeholder metrics. Future production integration
+must refresh/validate required sources on every rebuild and atomically promote
+only a complete validated bundle. It must reuse existing data/lazy detail shards,
+not ship this standalone review payload.
+
+No merge or live deployment is authorized by this preview draft.
