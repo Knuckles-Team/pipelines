@@ -17,9 +17,15 @@ inputs:
   dockerfile:
     description: Reviewed Dockerfile path for published-wheel.
     default: docker/Dockerfile
+  docker-root:
+    description: Optional checkout holding the Dockerfile when package source and build source are intentionally frozen separately.
+    default: ''
   extras:
     description: Exact extras in the Dockerfile package pin.
     default: mcp
+  legacy-profile:
+    description: Preserve a reviewed tracked wheel-only package tree without running the current ontology renderer.
+    default: false
   root:
     description: Directory holding the package pyproject.toml.
     required: false
@@ -42,11 +48,18 @@ runs:
         RELEASE_DISTRIBUTION: ${{ inputs.distribution }}
         RELEASE_MODULE: ${{ inputs.module }}
         RELEASE_DOCKERFILE: ${{ inputs.dockerfile }}
+        RELEASE_DOCKER_ROOT: ${{ inputs.docker-root }}
         RELEASE_EXTRAS: ${{ inputs.extras }}
-      run: >-
-        python3 -I "${{ github.action_path }}/public_wheel.py"
-        --root "$RELEASE_ROOT" --distribution "$RELEASE_DISTRIBUTION"
-        --module "$RELEASE_MODULE" --dockerfile "$RELEASE_DOCKERFILE" --extras "$RELEASE_EXTRAS"
+        RELEASE_LEGACY_PROFILE: ${{ inputs.legacy-profile }}
+      run: |
+        docker_root=()
+        legacy_profile=()
+        if [[ -n "$RELEASE_DOCKER_ROOT" ]]; then docker_root=(--docker-root "$RELEASE_DOCKER_ROOT"); fi
+        if [[ "${RELEASE_LEGACY_PROFILE,,}" == true ]]; then legacy_profile=(--legacy-profile); fi
+        python3 -I "${{ github.action_path }}/public_wheel.py" \
+          --root "$RELEASE_ROOT" --distribution "$RELEASE_DISTRIBUTION" \
+          --module "$RELEASE_MODULE" --dockerfile "$RELEASE_DOCKERFILE" --extras "$RELEASE_EXTRAS" \
+          "${docker_root[@]}" "${legacy_profile[@]}"
     - name: Validate guard mode
       shell: bash
       env:
