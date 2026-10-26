@@ -3235,14 +3235,18 @@
       "title": "Model",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_packaging_roles.py:113"
+      ]
     },
     {
       "id": "PIPE-PAGES-R025.2",
       "title": "Behavior",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_packaging_roles.py:121"
+      ]
     },
     {
       "id": "PIPE-PAGES-R025.3",
@@ -3256,21 +3260,28 @@
       "title": "Refusal",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_packaging_roles.py:136",
+        "tests/hooks/test_packaging_roles.py:151"
+      ]
     },
     {
       "id": "PIPE-PAGES-R025.5",
       "title": "Evidence",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_packaging_roles.py:161"
+      ]
     },
     {
       "id": "PIPE-PAGES-R025.6",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_packaging_roles.py:171"
+      ]
     },
     {
       "id": "PIPE-PAGES-R026",
