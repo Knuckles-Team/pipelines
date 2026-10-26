@@ -54,3 +54,13 @@ The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines
   The import check reads consumer-owned package and module-prefix policy,
   uses sanitized tracked discovery, and has no obsolete adapter exemptions.
   Neither gate claims dynamic runtime coverage or changes the gate partition.
+
+- 2026-10-26: PIPE-GATES-R016.92 extends the canonical
+  `[tool.pipelines.container]` metadata with `state_volumes`, an exact list of
+  `{name, target}` named-volume entries. The renderer emits each as a
+  writable Compose `type: volume` mount and a matching top-level declaration;
+  `config_mounts` remains the separate read-only bind contract under `/etc`.
+  State entries reject host paths, path escapes, duplicate names or targets,
+  read-only modes and unknown fields. Central migration accepts the existing
+  short named-volume form and the canonical long form only when the
+  top-level declaration matches the service mount.
