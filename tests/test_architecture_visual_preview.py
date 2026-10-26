@@ -68,6 +68,16 @@ def test_real_browser_receipt_fails_closed_for_skipped_missing_or_failed_cases(t
         "test_ocean_browser_count_text_and_completion_tracks_never_overlap[webui-1440,1000]",
         "test_ocean_browser_count_text_and_completion_tracks_never_overlap[webui-390,844]",
         "test_ocean_browser_count_text_and_completion_tracks_never_overlap[eg-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[default-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[default-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[root-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[root-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[webui-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[webui-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[eg-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[eg-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-390,844]",
     ]
     cases = [f'<testcase name="{name}"/>' for name in names]
     if bad == "missing":
@@ -191,3 +201,18 @@ def test_motion_capture_browser_early_exit_is_bounded_and_cleans_profile(tmp_pat
     assert result.returncode == 1
     assert (tmp_path / "light-continuous-motion.log").is_file()
     assert not list(tmp_path.glob("architecture-motion-*"))
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_annotation_navigation_uses_trusted_keyboard_and_real_fullscreen_after_motion() -> None:
+    helper = (ROOT / "scripts/architecture_explorer/motion_capture.cjs").read_text()
+    assert helper.index("const navigation=") > helper.index("`${theme}-continuous-motion.json`")
+    assert "Input.dispatchKeyEvent" in helper and "type:'keyDown',key:'Enter'" in helper
+    assert "requestFullscreen().then(()=>true)" in helper and "userGesture:true" in helper
+    assert "event.isTrusted" in helper and "after.active!=='annotations'" in helper
+    assert "after.selected!==before.selected||after.hash!==before.hash" in helper
+    assert "fullBefore.fullscreen!=='wrap'" in helper
+    assert "!document.fullscreenElement&&document.activeElement.id==='annotations'" in helper
+    assert "`${theme}-annotation-navigation.json`" in helper
+    assert "navigation.passed=false" in helper and "throw error;" in helper
+    assert "document.fullscreenElement=" not in helper

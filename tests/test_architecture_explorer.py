@@ -1684,3 +1684,162 @@ setTimeout(async()=>{
             + "\n"
         )
         assert old_match and "FAIL: eg count/bar overlap" in old_match[0], old[-3000:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+@pytest.mark.parametrize(
+    "camera,viewport",
+    [
+        (camera, viewport)
+        for camera in ("default", "root", "webui", "eg", "connectors")
+        for viewport in ("1440,1000", "390,844")
+    ],
+)
+def test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels(
+    monkeypatch, tmp_path: Path, camera: str, viewport: str
+) -> None:
+    """Independent actual glyph bounds and segment intersection checks, including rail fallback."""
+    import gzip
+    import hashlib
+    import os
+    import subprocess
+
+    from scripts.architecture_explorer.visual_preview import compact_diagnostic_dom, extract_payload
+
+    destination = Path(os.environ.get("ARCHITECTURE_EVIDENCE_DIR", str(tmp_path))).resolve()
+    destination.mkdir(exist_ok=True, parents=True)
+    captured_page = destination / "index.html"
+    source = (
+        _with_document_mode_probe(captured_page.read_text())
+        if captured_page.is_file()
+        else _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+    )
+    theme = "dark" if viewport == "390,844" else "light"
+    source = source.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
+    raw, _ = extract_payload(source)
+    source_kind = "Original captured public payload" if captured_page.is_file() else "Candidate model fixture"
+    spy = """<script>
+window.__annotationPaint=[];
+const textPaint=CanvasRenderingContext2D.prototype.fillText,clearPaint=CanvasRenderingContext2D.prototype.clearRect;
+CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__annotationPaint=[];return clearPaint.apply(this,args);};
+CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){
+ const m=this.measureText(text);
+ window.__annotationPaint.push({text:String(text),x,y,font:this.font,alpha:this.globalAlpha,
+  rect:[x-m.actualBoundingBoxLeft,y-m.actualBoundingBoxAscent,m.actualBoundingBoxLeft+m.actualBoundingBoxRight,m.actualBoundingBoxAscent+m.actualBoundingBoxDescent]});
+ return textPaint.call(this,text,x,y,...rest);
+};
+</script>"""
+    probe = (
+        """<script>
+setTimeout(async()=>{
+ await document.fonts.ready;
+ const result=document.createElement('output');result.id='annotation-result';result.hidden=true;
+ try{
+  const faces=await document.fonts.load('500 11px Inter');
+  if(!faces.some(face=>face.family.replaceAll('"','').replaceAll("'",'')==='Inter'&&face.status==='loaded'))throw Error('Actual Inter face not loaded');
+  if(document.documentElement.dataset.theme!==THEME)throw Error('Wrong capture theme');
+  if(window.__arch.selected!==(CAMERA==='default'?'root':CAMERA))throw Error('Wrong actual camera target');
+  const evidence=window.__arch.annotations(),canvas=document.getElementById('cv').getBoundingClientRect();
+  const overlap=(a,b)=>a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3];
+  const inside=(p,r)=>p[0]>=r[0]&&p[0]<=r[0]+r[2]&&p[1]>=r[1]&&p[1]<=r[1]+r[3];
+  const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+  const on=(a,b,c)=>Math.abs(cross(a,b,c))<1e-7&&c[0]>=Math.min(a[0],b[0])-1e-7&&c[0]<=Math.max(a[0],b[0])+1e-7&&c[1]>=Math.min(a[1],b[1])-1e-7&&c[1]<=Math.max(a[1],b[1])+1e-7;
+  const meets=(a,b,c,d)=>{
+   const p=cross(a,b,c),q=cross(a,b,d),r=cross(c,d,a),s=cross(c,d,b);
+   return (p*q<0&&r*s<0)||on(a,b,c)||on(a,b,d)||on(c,d,a)||on(c,d,b);
+  };
+  const segmentRect=(a,b,r)=>{
+   if(inside(a,r)||inside(b,r))return true;
+   const corners=[[r[0],r[1]],[r[0]+r[2],r[1]],[r[0]+r[2],r[1]+r[3]],[r[0],r[1]+r[3]]];
+   return corners.some((p,i)=>meets(a,b,p,corners[(i+1)%4]));
+  };
+  if(!evidence.labels.length)throw Error('No annotation coverage');
+  const painted=[],railItems=[...document.querySelectorAll('#annotation-list li')];
+  for(const label of evidence.labels){
+   if(label.placement==='rail'){
+    if(!railItems.some(li=>[...li.children].some(span=>span.textContent===label.text)))throw Error('Missing complete rail caption: '+label.text);
+    continue;
+   }
+   if(label.placement!=='canvas')throw Error('Unknown annotation placement');
+   const glyph=window.__annotationPaint.find(p=>p.text===label.text&&Math.abs(p.x-(label.rect[0]+(label.marker?12:0)))<.01&&Math.abs(p.y-label.rect[1])<.01);
+   if(!glyph)throw Error('Caption not actually painted: '+label.text);
+   if(!glyph.font.includes('Inter'))throw Error('Inconsistent caption typography');
+   const r=[glyph.rect[0]-3,glyph.rect[1]-3,glyph.rect[2]+6,glyph.rect[3]+6];
+   if(r[0]<0||r[1]<0||r[0]+r[2]>canvas.width||r[1]+r[3]>canvas.height)throw Error('Caption clipped: '+label.text);
+   if(evidence.rects.some(b=>overlap(r,b)))throw Error('Caption/card or chrome overlap: '+label.text);
+   if(evidence.segments.some(([a,b])=>segmentRect(a,b,r)))throw Error('Caption/connector overlap: '+label.text);
+   if(painted.some(p=>overlap(r,p.rect)))throw Error('Caption/caption overlap: '+label.text);
+   painted.push({text:label.text,rect:r,font:glyph.font});
+  }
+  if(['default','root'].includes(CAMERA)){
+   for(const text of ['External systems and connectors','Self-evolution loop: evaluate, promote, roll back']){
+    if(!evidence.labels.some(label=>label.text===text))throw Error('Missing reported regression caption: '+text);
+   }
+  }
+  if(railItems.length){
+   const rail=document.getElementById('annotations'),r=rail.getBoundingClientRect();
+   if(rail.hidden||r.top<canvas.bottom-1)throw Error('Annotation rail must remain outside drawing');
+   if(rail.closest('#panel'))throw Error('Annotation rail depends on ledger visibility');
+  }
+  result.dataset.evidence=JSON.stringify({source:SOURCE,camera:CAMERA,labels:evidence.labels,painted,obstacleRects:evidence.rects.length,connectorSegments:evidence.segments.length,railItems:railItems.length});
+  result.textContent='PASS';
+ }catch(error){result.textContent='FAIL: '+error.message;}
+ document.body.append(result);
+},1800);
+</script>""".replace("CAMERA", json.dumps(camera))
+        .replace("SOURCE", json.dumps(source_kind))
+        .replace("THEME", json.dumps(theme))
+    )
+    page = tmp_path / "annotations.html"
+    page.write_text(source.replace("<script>", spy + "<script>", 1).replace("</body>", probe + "</body>"))
+    name = f"annotations-{camera}-{viewport.replace(',', 'x')}"
+    url = page.as_uri() + (f"#node={camera}" if camera != "default" else "")
+
+    def capture_annotation(page_url: str, capture_name: str) -> str:
+        result = subprocess.run(
+            [
+                _chrome(),
+                "--headless=new",
+                "--no-sandbox",
+                "--disable-gpu",
+                f"--window-size={viewport}",
+                "--virtual-time-budget=5000",
+                f"--screenshot={destination / (capture_name + '.png')}",
+                "--dump-dom",
+                page_url,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        )
+        out = result.stdout
+        _assert_browser_document(out)
+        compact, manifest = compact_diagnostic_dom(out, hashlib.sha256(raw.encode()).hexdigest())
+        with gzip.open(destination / (capture_name + ".html.gz"), "wt", encoding="utf-8") as compressed:
+            compressed.write(compact)
+        (destination / (capture_name + ".manifest.json")).write_text(json.dumps(manifest, indent=2))
+        (destination / (capture_name + ".stderr.txt")).write_text(result.stderr)
+        match = re.search(r'<output[^>]*id="annotation-result"[^>]*>.*?</output>', out)
+        (destination / (capture_name + ".txt")).write_text(
+            source_kind
+            + "; actual glyph paint bounds and independent segment intersections.\n"
+            + (match[0] if match else out[-3000:])
+            + "\n"
+        )
+        assert match and ">PASS</output>" in match[0], out[-3000:]
+        return out
+
+    capture_annotation(url, name)
+    if camera == "default" and viewport == "1440,1000":
+        # Separate real capture of the normal-flow rail, never a fabricated composition.
+        rail_page = tmp_path / "annotation-rail.html"
+        rail_page.write_text(
+            page.read_text().replace(
+                "</body>",
+                "<script>setTimeout(()=>document.getElementById('annotations').scrollIntoView({block:'start'}),2300);</script></body>",
+            )
+        )
+        capture_annotation(rail_page.as_uri(), name + "-rail")

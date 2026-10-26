@@ -602,3 +602,17 @@ letting a percentage-height bar rise through the numbers. Hosted acceptance adds
 actual canvas text/bar bounds at desktop/mobile overview and nested Overstory and
 Medulla cameras; all required cases must execute without browser skips. Preserve
 canonical repository ownership, requirement/status data and deep-link semantics.
+
+### Collision-aware diagram annotations (2026-10-26)
+
+Replace the remaining zone, self-evolution loop and connector caption plates with
+one measured Inter annotation pass, shared with lane headings. Place captions only
+in free space after collecting visible card/title-strip bounds, connector segments,
+arrowheads, grouping outlines and control bounds. Preserve complete label text;
+crowded captions use a quiet normal-flow contextual rail outside the canvas, also
+available when the ledger is hidden. An accessible hint link focuses the rail and
+explicitly exits fullscreen when necessary; recalculate hint collision bounds after
+link text changes. Do not alter world geometry, data, statuses,
+node IDs, navigation, card hues or ocean motion. Hosted evidence must measure actual
+text paint against obstacles at default, deep-link, nested and mobile cameras,
+including the external-systems caption and self-evolution loop, without skips.
