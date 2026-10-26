@@ -256,6 +256,7 @@ def test_cli_writes_the_report_and_exit_code_follows_blocking_items(tmp_path: Pa
     assert omap.main(["migrate", "--root", str(root), "--no-lock"]) == 2
 
 
+@pytest.mark.spec("PIPE-GATES-R016.11")
 @pytest.mark.spec("PIPE-GATES-R016.14")
 def test_manifest_schema_mapping_reads_are_redirected_and_certification_digests_dropped(tmp_path: Path) -> None:
     root = make(tmp_path)

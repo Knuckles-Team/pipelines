@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import os
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,35 @@ import pytest
 from pipelines_hooks.hygiene.connector_central import ingest
 from pipelines_hooks.hygiene.connector_central.base import RULES, Ctx, make_ctx
 
-SDK = Path("/home/genius/.local/state/repository-worktrees/agent-connector-sdk/wave2-dryrun")
+
+def _sdk_checkout() -> Path:
+    """Find the real SDK checkout used by a central migration dry run.
+
+    The migration driver accepts an explicit checkout path.  Tests may provide
+    the same path through ``PIPELINES_SDK_PATH``; locally, prefer the current
+    Scion rename worktree and then the workspace checkout.  The test remains
+    skipped when neither checkout is available, rather than comparing against
+    a fabricated helper implementation.
+    """
+    state = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state"))
+    worktrees = state / "repository-worktrees" / "agent-connector-sdk"
+    configured = os.environ.get("PIPELINES_SDK_PATH")
+    candidates = tuple(
+        path
+        for path in (
+            *((Path(configured),) if configured else ()),
+            *sorted(worktrees.glob("codex/pypi-rename-scion-sdk-*"), reverse=True),
+            Path("/home/apps/workspace/agent-packages/agent-connector-sdk"),
+            worktrees / "wave2-dryrun",
+        )
+    )
+    for candidate in candidates:
+        if (candidate / "agent_connector_sdk/ingest/mapping.py").is_file():
+            return candidate
+    return candidates[0]
+
+
+SDK = _sdk_checkout()
 
 PYPROJECT = """[project]
 name = "demo-mcp"
