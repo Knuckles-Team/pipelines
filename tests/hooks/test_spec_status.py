@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -52,6 +53,42 @@ def test_bound_test_promotes_landed_to_verified(repo: Repo) -> None:
     row = _by_id(repo)["TEST-R001"]
     assert row["delivery_state"] == "VERIFIED"
     assert row["verified_by"] == ["tests/test_feature.py:1"]
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R002")
+def test_json_embedded_test_source_does_not_bind_a_requirement(repo: Repo) -> None:
+    """Historical provider source in JSON is data, even when decoded text is a marker."""
+    repo.commit({"specs/demo/requirements.md": _LANDED_ROW}, "add spec")
+    repo.commit({"pkg/feature.py": "# implements TEST-R001\n"}, "Spec: TEST-R001")
+
+    marker = "@pytest.mark." + 'spec("TEST-R001")'
+    historical_source = marker + "\ndef test_historical(): pass\n"
+    expected_hash = hashlib.sha256(historical_source.encode("utf-8")).hexdigest()
+    repo.commit(
+        {"tests/fixtures/provider.json": json.dumps({"source": historical_source})},
+        "record historical provider source",
+    )
+
+    decoded = json.loads((repo.root / "tests/fixtures/provider.json").read_text(encoding="utf-8"))["source"]
+    assert decoded.encode("utf-8") == historical_source.encode("utf-8")
+    assert hashlib.sha256(decoded.encode("utf-8")).hexdigest() == expected_hash
+
+    assert repo.run("spec-status", "--write") == 0
+    row = _by_id(repo)["TEST-R001"]
+    assert row["delivery_state"] == "LANDED"
+    assert row["verified_by"] == []
+
+    repo.commit(
+        {
+            "tests/test_python.py": marker + "\ndef test_real_python_marker(): pass\n",
+            "tests/test_rust.rs": "// spec: " + "TEST-R001\n#[test] fn test_real_rust_marker() {}\n",
+        },
+        "add executable marker sources",
+    )
+    assert repo.run("spec-status", "--write") == 0
+    row = _by_id(repo)["TEST-R001"]
+    assert row["delivery_state"] == "VERIFIED"
+    assert row["verified_by"] == ["tests/test_python.py:1", "tests/test_rust.rs:1"]
 
 
 def test_retired_row_is_excluded_from_rollup_and_tally(repo: Repo) -> None:
