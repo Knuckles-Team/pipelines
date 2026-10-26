@@ -11,6 +11,7 @@ import pytest
 from pipelines_hooks.ci_replica import test_layout
 from pipelines_hooks.ci_replica.test_layout import ProjectLayout, TestLayoutPolicy
 from pipelines_hooks.ci_replica.test_layout_inventory import MAX_OUTPUT_BYTES, MAX_TIMEOUT_SECONDS
+from pipelines_hooks.cli import GATES
 from pipelines_hooks.core.errors import CannotRun
 from tests.hooks.conftest import Repo
 
@@ -62,6 +63,12 @@ def test_test_layout_independence_model() -> None:
     assert policy.shuffle_seeds == (11, 29)
     assert policy.timeout_seconds == 3.0
     assert test_layout.policy_digest(policy).startswith("sha256:")
+
+
+@pytest.mark.spec("PIPE-PAGES-R039.3")
+def test_test_layout_registration() -> None:
+    assert GATES["test-layout"] == "pipelines_hooks.ci_replica.test_layout"
+    assert callable(test_layout.main)
 
 
 def test_test_layout_independence_rejects_duplicate_seeds() -> None:
