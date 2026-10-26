@@ -135,9 +135,20 @@
     {
       "id": "PIPE-RELEASE-R004",
       "title": "Release gate fails when a compiled kernel wheel is missing",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "46c29c66d460",
+        "928faad60ad2",
+        "935d6b72d3b8",
+        "9e3899b6ad99"
+      ],
+      "verified_by": [
+        "tests/test_wheel_kernel_completeness.py:212",
+        "tests/test_wheel_kernel_completeness.py:229",
+        "tests/test_wheel_kernel_completeness.py:242",
+        "tests/test_wheel_kernel_completeness.py:324",
+        "tests/test_wheel_kernel_completeness.py:333"
+      ],
       "rollup_of": [
         "PIPE-RELEASE-R004.1",
         "PIPE-RELEASE-R004.2",
@@ -150,44 +161,87 @@
     {
       "id": "PIPE-RELEASE-R004.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "46c29c66d460",
+        "928faad60ad2",
+        "935d6b72d3b8",
+        "9e3899b6ad99"
+      ],
+      "verified_by": [
+        "tests/test_wheel_kernel_completeness.py:212"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R004.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "46c29c66d460",
+        "928faad60ad2",
+        "935d6b72d3b8",
+        "9e3899b6ad99"
+      ],
+      "verified_by": [
+        "tests/test_wheel_kernel_completeness.py:229"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R004.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "46c29c66d460",
+        "928faad60ad2",
+        "935d6b72d3b8",
+        "9e3899b6ad99"
+      ],
+      "verified_by": [
+        "tests/test_wheel_kernel_completeness.py:324"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R004.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "46c29c66d460",
+        "928faad60ad2",
+        "935d6b72d3b8",
+        "9e3899b6ad99"
+      ],
+      "verified_by": [
+        "tests/test_wheel_kernel_completeness.py:242",
+        "tests/test_wheel_kernel_completeness.py:333"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R004.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "46c29c66d460",
+        "928faad60ad2",
+        "935d6b72d3b8",
+        "9e3899b6ad99"
+      ],
+      "verified_by": [
+        "tests/test_wheel_kernel_completeness.py:345"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R004.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "46c29c66d460",
+        "928faad60ad2",
+        "935d6b72d3b8",
+        "9e3899b6ad99"
+      ],
+      "verified_by": [
+        "tests/test_wheel_kernel_completeness.py:359"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R005",
