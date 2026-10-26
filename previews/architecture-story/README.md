@@ -22,6 +22,8 @@ The workflow only uploads a seven-day artifact with `contents: read`; it never d
 
 ### Current bounded correction
 
-The first rich run (`fe5a56e`, run 40336852813) preserved exact geometry/pixels through 48 paired states and captured readiness and priority, but failed on unequal native initial fit cameras when opening DecisionEngine. Both final canvases were identical; the native hash landing can precede Inter font layout. The harness now uses the same trusted search selection after `document.fonts.ready` on both pages—never a camera assignment or tolerance change. Failure receipts remain preserved.
+The first rich run (`fe5a56e`, run 40336852813) preserved exact geometry/pixels through 48 paired states and captured readiness and priority, but failed on unequal native initial fit cameras when opening DecisionEngine. Both final canvases were identical; the native hash landing can precede Inter font layout. The harness now uses the same trusted parent-breadcrumb and original-canvas-card selection after `document.fonts.ready` on both pages—never a camera assignment or tolerance change. Failure receipts remain preserved.
 
 Compact priority shows **2 of 4 positive-score rows**; a wider optional view retains all four. Compact prerequisite ego uses two columns, preserving 3/7 rows and 2/6 edges. Context now requires a fully visible closed child card with native title at least 11px, or a visible open-child title at least 11px; a cropped box edge does not qualify. These corrections still require actual hosted captures and pixel review.
+
+The first search-based font warmup (`e738891`, run40339076368) rejected a missing exact Arbora part result rather than choosing a wrong search hit. The correction uses original breadcrumb/card navigation; no search ranking assumptions or camera assignment.

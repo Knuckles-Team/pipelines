@@ -50,24 +50,16 @@ const results=[];
     await command('Page.navigate',{url:pathToFileURL(join(output,variant+'.html')).href+'#node='+node});
     for(let i=0;i<100;i++){if(await evaluate('!!window.__arch && document.readyState==="complete"'))break;await delay(50);}
     await evaluate('document.fonts.ready.then(()=>true)');await delay(700);
-    // Native hash landing runs before font settlement. Re-select through the real search UI
-    // after fonts load so both pages use the same final native fit dimensions.
+    // Native hash landing runs before font settlement. Re-enter via the real
+    // parent breadcrumb and original canvas card after fonts load; no camera assignment.
     await command('Page.bringToFront');
-    const target=await evaluate(`(()=>{let found;const walk=n=>{if(n.id===${JSON.stringify(node)})found=n;n.children.forEach(walk)};walk(PAYLOAD.tree);const r=document.querySelector('#q').getBoundingClientRect();return {label:found.label,x:r.x+r.width/2,y:r.y+r.height/2}})()`);
-    await command('Input.dispatchMouseEvent',{type:'mousePressed',x:target.x,y:target.y,button:'left',clickCount:1});
-    await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:target.x,y:target.y,button:'left',clickCount:1});
-    await command('Input.insertText',{text:target.label});await delay(150);
-    const result=await evaluate(`(()=>{const i=__arch.hits.findIndex(h=>h.kind==='part'&&h.node===${JSON.stringify(node)});if(i<0)throw Error('Exact native part result missing');const r=document.querySelector('#res-'+i+' button').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);
-    await command('Input.dispatchMouseEvent',{type:'mousePressed',...result,button:'left',clickCount:1});
-    await command('Input.dispatchMouseEvent',{type:'mouseReleased',...result,button:'left',clickCount:1});
-    await delay(500);
-    if(await evaluate('__arch.selected')!==node)throw Error('Native search selected wrong target');
-    // Clear the search text with trusted keys without changing the native camera.
-    await command('Input.dispatchMouseEvent',{type:'mousePressed',x:target.x,y:target.y,button:'left',clickCount:1});
-    await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:target.x,y:target.y,button:'left',clickCount:1});
-    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'a',code:'KeyA',modifiers:2});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'a',code:'KeyA',modifiers:2});
-    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Backspace',code:'Backspace'});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Backspace',code:'Backspace'});
-    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape'});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape'});await delay(200);
+    const parentButton=await evaluate(`(()=>{let parent;const walk=n=>{if(n.children.some(c=>c.id===${JSON.stringify(node)}))parent=n;n.children.forEach(walk)};walk(PAYLOAD.tree);const b=[...document.querySelectorAll('#crumbs button')].find(b=>b.textContent===parent.label);if(!b)throw Error('Native parent breadcrumb absent');const r=b.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2,id:parent.id}})()`);
+    await command('Input.dispatchMouseEvent',{type:'mousePressed',x:parentButton.x,y:parentButton.y,button:'left',clickCount:1});
+    await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:parentButton.x,y:parentButton.y,button:'left',clickCount:1});await delay(500);
+    const target=await evaluate(`(()=>{const r=__arch.rect(${JSON.stringify(node)}),c=__arch.cam,b=document.querySelector('#cv').getBoundingClientRect(),x=(r[0]+r[2]*.5-c.x)*c.k,y=(r[1]+r[3]*.04-c.y)*c.k;if(x<0||x>b.width||y<0||y>b.height||__arch.hitAt(x,y)!==${JSON.stringify(node)})throw Error('Original target card not natively hittable');return {x:b.x+x,y:b.y+y}})()`);
+    await command('Input.dispatchMouseEvent',{type:'mousePressed',...target,button:'left',clickCount:1});
+    await command('Input.dispatchMouseEvent',{type:'mouseReleased',...target,button:'left',clickCount:1});await delay(500);
+    if(await evaluate('__arch.selected')!==node)throw Error('Native canvas selected wrong target');
     pages.push({targetId,variant,command,evaluate});
    }
    for(let step=0;step<12;step++){
