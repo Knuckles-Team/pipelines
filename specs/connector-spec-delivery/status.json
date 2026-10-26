@@ -424,7 +424,7 @@
         "e01884644a83"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_status.py:58"
+        "tests/hooks/test_spec_status.py:60"
       ]
     },
     {
@@ -4544,7 +4544,7 @@
         "0f9f73b150d7"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_status.py:314"
+        "tests/hooks/test_spec_status.py:371"
       ]
     },
     {
