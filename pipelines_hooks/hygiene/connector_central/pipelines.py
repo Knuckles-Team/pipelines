@@ -79,8 +79,8 @@ def _toml_scalar(value: Any) -> str:
 
 
 def _table_text(keys: tuple[str, ...], values: dict[str, Any]) -> str:
-    """``[keys]`` with ``values``; the container ``config_mounts`` list is written as ``[[keys.config_mounts]]`` tables."""
-    arrays = {k: v for k, v in values.items() if k == "config_mounts" and v}
+    """``[keys]`` with values; container mount lists are written as array-of-table entries."""
+    arrays = {k: v for k, v in values.items() if k in {"config_mounts", "state_volumes"} and v}
     body = "".join(f"{k} = {_toml_scalar(v)}\n" for k, v in values.items() if k not in arrays)
     tables = "".join(
         f"\n[[{'.'.join(keys)}.{k}]]\n" + "".join(f"{kk} = {_toml_scalar(vv)}\n" for kk, vv in entry.items())
@@ -485,15 +485,23 @@ def committed_table(ctx: Ctx, pyproject: dict[str, Any]) -> dict[str, Any]:
     ]
     if optional:
         table["env_file_optional"] = True
-    mounts = _committed_config_mounts(ctx, set(by_name))
+    mounts, state_volumes = _committed_volumes(ctx, set(by_name))
     if mounts:
         table["config_mounts"] = mounts
+    if state_volumes:
+        table["state_volumes"] = state_volumes
     return table
 
 
 #: Extras rule l4 may have dropped from the wheel; a committed install line naming one is an expected difference.
 _MOUNT_ENTRY = re.compile(
     r"      - type: bind\n        source: (?P<source>\S+)\n        target: (?P<target>\S+)\n        read_only: true\n"
+)
+_STATE_LONG_ENTRY = re.compile(
+    r"      - type: volume\n        source: (?P<name>[A-Za-z0-9][A-Za-z0-9_.-]*)\n        target: (?P<target>\S+)\n"
+)
+_STATE_SHORT_ENTRY = re.compile(
+    r"      - (?P<name>[A-Za-z0-9][A-Za-z0-9_.-]*):(?P<target>/[^\s:#'\"]+)(?::(?P<mode>[^\s#'\"]+))?\n"
 )
 
 
@@ -503,39 +511,104 @@ def _service_volumes(text: str) -> str | None:
     return None if match is None else match.group(1)
 
 
-def _committed_config_mounts(ctx: Ctx, targets: set[str]) -> list[dict[str, str]]:
-    """The read-only bind ``volumes:`` of the committed compose files, as the SDK ``config_mounts`` entries.
+def _top_level_volumes(text: str) -> list[str]:
+    """The exact named-volume declarations from the top-level Compose ``volumes`` table."""
+    lines = text.splitlines()
+    try:
+        start = lines.index("volumes:") + 1
+    except ValueError:
+        return []
+    names: list[str] = []
+    for line in lines[start:]:
+        if not line.strip():
+            continue
+        if not line.startswith("  ") or line.startswith("    "):
+            break
+        match = re.fullmatch(r"  (?P<name>[A-Za-z0-9][A-Za-z0-9_.-]*): \{\}", line)
+        if match is None:
+            raise _Unmatched(f"top-level volumes entry `{line.strip()}` is not an empty named-volume declaration")
+        names.append(match["name"])
+    return names
 
-    The render writes the same mounts into every compose file, so the committed files must agree. A volume that is not a
-    read-only bind of the long form with exactly source and target, or whose target the SDK schema refuses, blocks with
-    the precise reason.
-    """
-    found: dict[str, list[dict[str, str]]] = {}
+
+def _committed_volumes(ctx: Ctx, targets: set[str]) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """Read committed read-only config binds and writable named state volumes from every runtime compose file."""
+    found: dict[str, tuple[list[dict[str, str]], list[dict[str, str]], list[str]]] = {}
     for target in container.RUNTIME_TARGETS:
         name = f"docker/{target}.compose.yml"
         if target not in targets or not ctx.exists(name):
             continue
-        block = _service_volumes(ctx.read(name))
-        mounts: list[dict[str, str]] = []
+        compose = ctx.read(name)
+        block = _service_volumes(compose)
+        config_mounts: list[dict[str, str]] = []
+        state_volumes: list[dict[str, str]] = []
         rest = block or ""
         while rest:
             entry = _MOUNT_ENTRY.match(rest)
-            if entry is None:
-                first = rest.splitlines()[0] if rest.strip() else "<blank>"
-                raise _Unmatched(
-                    f"{name} volumes: `{first.strip()}` is not a read-only bind mount of exactly source and target"
-                )
-            mounts.append({"source": entry["source"], "target": entry["target"]})
-            rest = rest[entry.end() :]
-        if mounts:
+            if entry is not None:
+                config_mounts.append({"source": entry["source"], "target": entry["target"]})
+                rest = rest[entry.end() :]
+                continue
+            entry = _STATE_LONG_ENTRY.match(rest)
+            if entry is not None:
+                suffix = rest[entry.end() :]
+                if suffix.startswith("        read_only:"):
+                    raise _Unmatched(f"{name} volumes: named state volumes must remain writable")
+                state_volumes.append({"name": entry["name"], "target": entry["target"]})
+                rest = suffix
+                continue
+            entry = _STATE_SHORT_ENTRY.match(rest)
+            if entry is not None:
+                if entry["mode"] not in (None, "rw"):
+                    raise _Unmatched(f"{name} volumes: named state volumes must remain writable")
+                state_volumes.append({"name": entry["name"], "target": entry["target"]})
+                rest = rest[entry.end() :]
+                continue
+            first = rest.splitlines()[0] if rest.strip() else "<blank>"
+            raise _Unmatched(
+                f"{name} volumes: `{first.strip()}` is not a read-only bind mount of exactly source and target "
+                "or a writable named state volume"
+            )
+        declared = _top_level_volumes(compose)
+        expected = [entry["name"] for entry in state_volumes]
+        if declared != expected:
+            if state_volumes:
+                raise _Unmatched(f"{name} top-level volumes must match its named state-volume entries")
+            raise _Unmatched(f"{name} declares top-level named volumes without service state-volume entries")
+        if config_mounts:
             try:
-                container.config_mounts_block(mounts)
+                container.config_mounts_block(config_mounts)
             except CannotRun as exc:
                 raise _Unmatched(f"{name} volumes cannot be a config mount: {exc}") from exc
-        found[target] = mounts
-    if len({json.dumps(m) for m in found.values()}) > 1:
-        raise _Unmatched("the committed compose files mount different volumes; the render mounts the same in each")
-    return next(iter(found.values()), [])
+        if state_volumes:
+            try:
+                container.state_volumes_block(state_volumes)
+            except CannotRun as exc:
+                raise _Unmatched(f"{name} volumes cannot be a state volume: {exc}") from exc
+        if {entry["target"] for entry in config_mounts} & {entry["target"] for entry in state_volumes}:
+            raise _Unmatched(f"{name} volumes reuse a target between config and state mounts")
+        found[target] = (config_mounts, state_volumes, declared)
+    if len({json.dumps(value[0], sort_keys=True) for value in found.values()}) > 1:
+        raise _Unmatched(
+            "the committed compose files mount different config volumes; the render mounts the same in each"
+        )
+    if len({json.dumps(value[1], sort_keys=True) for value in found.values()}) > 1:
+        raise _Unmatched(
+            "the committed compose files mount different state volumes; the render mounts the same in each"
+        )
+    if len({json.dumps(value[2]) for value in found.values()}) > 1:
+        raise _Unmatched(
+            "the committed compose files declare different named volumes; the render declares the same in each"
+        )
+    if not found:
+        return [], []
+    config_mounts, state_volumes, _ = next(iter(found.values()))
+    return config_mounts, state_volumes
+
+
+def _committed_config_mounts(ctx: Ctx, targets: set[str]) -> list[dict[str, str]]:
+    """Compatibility wrapper for callers that need only the read-only config binds."""
+    return _committed_volumes(ctx, targets)[0]
 
 
 DROPPABLE_EXTRAS = frozenset({"mcp", "agent", "all"})
@@ -691,6 +764,7 @@ def container_pair(
         return None  # one file for the mcp and the agent service: the render writes one file per image kind
     if name.endswith("compose.yml"):
         old = _compose_nonfunctional(_compose_old_to_new(ctx, rel, _list_environment(old), dist))
+        old = _normalise_state_volume_syntax(old)
     if name in ("Dockerfile", "debug.Dockerfile"):
         old = _align_dist_version(old, new, dist)
     if name == "Dockerfile":
@@ -722,6 +796,17 @@ def _compose_nonfunctional(text: str) -> str:
     text = _ENV_EXAMPLE_FILE.sub("", text)
     text = _IMAGE_DEFAULT.sub(lambda m: f"{m.group(1)}${{{m.group(2)}:?set-{m.group(2)}-to-image@sha256-digest}}", text)
     return _HEALTH_TIMEOUT.sub(lambda m: f"urlopen({m.group(1)})", text)
+
+
+def _normalise_state_volume_syntax(text: str) -> str:
+    """Compare existing short named-volume syntax with the canonical long form."""
+
+    def replace(match: re.Match[str]) -> str:
+        if match["mode"] not in (None, "rw"):
+            return match.group(0)
+        return f"      - type: volume\n        source: {match['name']}\n        target: {match['target']}\n"
+
+    return _STATE_SHORT_ENTRY.sub(replace, text)
 
 
 def _dockerfile_nonfunctional(text: str) -> str:
