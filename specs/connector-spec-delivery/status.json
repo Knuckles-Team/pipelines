@@ -4288,9 +4288,17 @@
     {
       "id": "PIPE-CONNSPEC-R172",
       "title": "`vector-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830",
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:50",
+        "tests/test_connector_consumer_r172_r174.py:74",
+        "tests/test_connector_consumer_r172_r174.py:75",
+        "tests/test_connector_consumer_r172_r174.py:76"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R172.1",
         "PIPE-CONNSPEC-R172.2",
@@ -4312,23 +4320,35 @@
     {
       "id": "PIPE-CONNSPEC-R172.2",
       "title": "`vector-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r172_r174.py:74"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R172.3",
       "title": "`vector-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r172_r174.py:75"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R172.4",
       "title": "`vector-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r172_r174.py:76"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R173",
@@ -4402,9 +4422,17 @@
     {
       "id": "PIPE-CONNSPEC-R174",
       "title": "`world-reference-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830",
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:52",
+        "tests/test_connector_consumer_r172_r174.py:77",
+        "tests/test_connector_consumer_r172_r174.py:78",
+        "tests/test_connector_consumer_r172_r174.py:79"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R174.1",
         "PIPE-CONNSPEC-R174.2",
@@ -4426,23 +4454,35 @@
     {
       "id": "PIPE-CONNSPEC-R174.2",
       "title": "`world-reference-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r172_r174.py:77"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R174.3",
       "title": "`world-reference-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r172_r174.py:78"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R174.4",
       "title": "`world-reference-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "83ced38ba830"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r172_r174.py:79"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R008",
