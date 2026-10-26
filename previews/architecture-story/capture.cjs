@@ -80,11 +80,19 @@ const results=[];
      hashes.push(await page.evaluate(`(()=>{const c=document.querySelector('#cv'),a=c.getContext('2d').getImageData(0,0,c.width,c.height).data,r=${JSON.stringify(mask)},ratio=c.width/c.getBoundingClientRect().width;let h=2166136261;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){if(r&&x>=(r[0]-2)*ratio&&x<=(r[0]+r[2]+2)*ratio&&y>=(r[1]-2)*ratio&&y<=(r[1]+r[3]+2)*ratio)continue;const i=(y*c.width+x)*4;for(let k=0;k<4;k++)h=Math.imul(h^a[i+k],16777619)}return h>>>0})()`));
      const shot=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}.png`),Buffer.from(shot.data,'base64'));
      if(device.name==='mobile'&&mask&&!fullPageCaptured){
-      const metrics=await page.command('Page.getLayoutMetrics');const size=metrics.cssContentSize;
-      const full=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:size.width,height:size.height,scale:1}});
-      writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}-fullpage.png`),Buffer.from(full.data,'base64'));
-      const unchanged=await page.evaluate('JSON.stringify({cam:{...__arch.cam},rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
-      if(unchanged!==JSON.stringify({cam:states[0].cam,rect:states[0].canvas}))throw Error('Fullpage capture changed native geometry');
+      const beforeScroll=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
+      await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',x:20,y:20,deltaX:0,deltaY:350});await delay(600);
+      const scrolled=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
+      const sameCam=JSON.stringify(scrolled.cam)===JSON.stringify(beforeScroll.cam),sameSize=JSON.stringify(scrolled.rect.slice(2))===JSON.stringify(beforeScroll.rect.slice(2));
+      const wholePlot=scrolled.rect[1]+mask[1]>=0&&scrolled.rect[1]+mask[1]+mask[3]<=device.height;
+      writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}-scroll.json`),JSON.stringify({beforeScroll,scrolled,sameCam,sameSize,wholePlot},null,2));
+      if(!sameCam||!sameSize||!wholePlot)throw Error('Native document scroll changed map geometry or did not expose complete chart');
+      const full=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+      writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}-footer.png`),Buffer.from(full.data,'base64'));
+      await page.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Home',code:'Home',windowsVirtualKeyCode:36});
+      await page.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Home',code:'Home',windowsVirtualKeyCode:36});await delay(600);
+      const restored=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
+      if(JSON.stringify(restored)!==JSON.stringify(beforeScroll)){writeFileSync(join(output,'scroll-restore-failure.json'),JSON.stringify({beforeScroll,restored}));throw Error('Native Home did not restore exact map bounds');}
      }
     }
     if(device.name==='mobile'&&mask)fullPageCaptured=true;
