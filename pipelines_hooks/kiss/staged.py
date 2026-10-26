@@ -12,7 +12,7 @@ import argparse
 import tempfile
 from pathlib import Path
 
-from pipelines_hooks.core.gitenv import repo_root, staged_paths
+from pipelines_hooks.core.gitenv import blob_text, repo_root, staged_paths
 from pipelines_hooks.core.tools import verified
 from pipelines_hooks.kiss import runner
 from pipelines_hooks.kiss.report import (
@@ -21,6 +21,7 @@ from pipelines_hooks.kiss.report import (
     format_violation,
     parse_report,
 )
+from pipelines_hooks.kiss import structural
 from pipelines_hooks.kiss.scope import in_scope, kiss_paths
 from pipelines_hooks.kiss.spans import spans_for
 
@@ -52,17 +53,53 @@ def staged_findings(root: Path, scope: tuple[str, ...], paths: list[str]) -> lis
         return [f for path in paths for f in _file_findings(kiss, (staged_tree, head_tree), path)]
 
 
+def staged_structural_report(
+    root: Path, scope: tuple[str, ...], paths: list[str]
+) -> structural.StructuralReport | None:
+    """Measure adopted structural limits against the staged source tree."""
+    structural_paths = [path for path in paths if in_scope(path, scope)]
+    with tempfile.TemporaryDirectory(prefix="kiss-structural-staged-") as raw:
+        staged_tree = runner.materialize_index(root, Path(raw) / "index")
+        policy = structural.adopted_policy(staged_tree)
+        if policy is None:
+            return None
+        staged_sources = structural.load_sources(
+            staged_tree,
+            [path for path in structural_paths if (staged_tree / path).is_file()],
+        )
+        head_sources: dict[str, str] = {}
+        for path in structural_paths:
+            head = structural_source_from_head(root, path)
+            if head is not None:
+                head_sources[path] = head
+        return structural.staged_report(
+            staged_sources,
+            head_sources,
+            policy,
+            source_snapshot=structural.source_snapshot(root, staged=True),
+        )
+
+
+def structural_source_from_head(root: Path, path: str) -> str | None:
+    """Read a HEAD source blob for staged structural attribution."""
+    return blob_text(root, f"HEAD:{path}")
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="kiss-staged", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     root = repo_root(parser.parse_args(argv).root)
     scope = kiss_paths(root)
     paths = [path for path in staged_paths(root) if in_scope(path, scope)]
-    if not paths:
-        print(f"kiss(staged): OK: no staged Python or Rust source under {', '.join(scope)}")
-        return 0
-    findings = staged_findings(root, scope, paths)
+    findings = staged_findings(root, scope, paths) if paths else []
     for violation in findings:
         print(format_violation(violation))
-    print(f"kiss(staged): {len(findings)} attributable violation(s) across {len(paths)} changed file(s)")
-    return 1 if findings else 0
+    structural_report = staged_structural_report(root, scope, paths)
+    if structural_report is not None:
+        for line in structural.render(structural_report):
+            print(line)
+    if not paths:
+        print(f"kiss(staged): OK: no staged Python or Rust source under {', '.join(scope)}")
+    else:
+        print(f"kiss(staged): {len(findings)} attributable violation(s) across {len(paths)} changed file(s)")
+    return 1 if findings or (structural_report is not None and not structural_report.clean) else 0
