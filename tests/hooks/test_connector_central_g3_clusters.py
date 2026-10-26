@@ -489,6 +489,7 @@ def test_omitted_tools_module_with_a_package_tools_module_is_refused(tmp_path: P
 
 
 # --- g.5 ------------------------------------------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.54 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.54")
 def test_g5_main_with_a_docstring_and_future_import_is_the_plain_entry(tmp_path: Path) -> None:
     """bellwether-mcp, home-assistant-agent, world-reference-mcp: docstring, `from __future__`, shebang."""

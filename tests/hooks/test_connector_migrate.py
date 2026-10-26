@@ -171,6 +171,7 @@ def test_cut_files_and_packaging_entries_are_removed(tmp_path: Path) -> None:
     assert "demo_agent/connector_manifest.yml" in report["deleted"]
 
 
+# spec: PIPE-GATES-R016.12 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.12")
 def test_prompt_extends_and_compose_are_stripped_keeping_format() -> None:
     new = cm.strip_prompt(PROMPT)
@@ -639,6 +640,7 @@ def test_migrate_deletes_cut_tests_and_files_left_without_tests(tmp_path: Path) 
     assert not [i for i in report["review"] if i["blocking"] and i["step"] in ("tests", "leftover")]
 
 
+# spec: PIPE-GATES-R016.21 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.21")
 def test_prose_mentions_the_connectors_init_and_manifest_path_follow_the_generated_module() -> None:
     doc = '"""Presets.\n\n``mcp_source_presets.json`` is read here.\n"""\n\nX = 1  # see connector_manifest.yml\nY = "connector_manifest.yml"\n'
@@ -654,6 +656,7 @@ def test_prose_mentions_the_connectors_init_and_manifest_path_follow_the_generat
     assert "demo_agent.connector_sources" in cm.rewrite_ttl_prose(ttl, "demo_agent")
 
 
+# spec: PIPE-GATES-R016.22 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.22")
 def test_provider_entry_point_hook_alternatives_scripts_and_adapters_go(tmp_path: Path) -> None:
     pp = (
@@ -688,6 +691,7 @@ def test_provider_entry_point_hook_alternatives_scripts_and_adapters_go(tmp_path
     assert "tests/test_adapters.py" in report["deleted"]
 
 
+# spec: PIPE-GATES-R016.23 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.23")
 def test_certification_is_canonicalized_then_stripped_and_missing_bump_targets_are_skipped(tmp_path: Path) -> None:
     root = make(tmp_path)

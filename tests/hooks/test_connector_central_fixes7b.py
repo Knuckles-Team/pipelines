@@ -144,6 +144,7 @@ def test_every_module_reports_the_same_version():
 """
 
 
+# spec: PIPE-GATES-R016.61 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.61")
 def test_k4_version_tests_left_with_only_dead_setup_are_deleted_and_noted(tmp_path: Path) -> None:
     """caddy-mcp, camunda-mcp, erpnext-agent tests/test_version.py: no F841 local, no dead test, no leftover imports."""

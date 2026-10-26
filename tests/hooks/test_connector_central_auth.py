@@ -120,6 +120,7 @@ def test_order_covers_every_rule() -> None:
     assert len(auth.ORDER) == 14
 
 
+# spec: PIPE-GATES-R016.68 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.68")
 def test_r1_bearer_rewrite(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(_bearer_body()), _api('H = {"Authorization": f"Bearer {token}"}'))
@@ -142,6 +143,7 @@ def test_r1_unmatched_shape_goes_to_review_untouched(tmp_path: Path) -> None:
     assert not item["blocking"]
 
 
+# spec: PIPE-GATES-R016.69 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.69")
 def test_r2_api_key_header_rewrite(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(_bearer_body()), _api('H = {"X-API-Key": token}'))
@@ -166,6 +168,7 @@ def test_r2_authorization_token_prefix_and_extra_setting_review(tmp_path: Path) 
     assert 'ApiKey(env="DEMO_TOKEN", header="X-API-Key")' in item["detail"]
 
 
+# spec: PIPE-GATES-R016.70 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.70")
 def test_r3_api_key_query_rewrite(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(_bearer_body()), _api('P = dict(params={"token": token})'))
@@ -192,6 +195,7 @@ BASIC_BODY = """def get_client():
 API_BASIC = API_OK.replace("token=None", "username=None, password=None")
 
 
+# spec: PIPE-GATES-R016.71 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.71")
 def test_r4_basic_rewrite(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(BASIC_BODY), _api("import requests\nA = requests.auth.HTTPBasicAuth(1, 2)", API_BASIC))
@@ -220,6 +224,7 @@ CC_BODY = """def get_client():
 API_CC = API_OK.replace("token=None", "client_id=None, client_secret=None")
 
 
+# spec: PIPE-GATES-R016.72 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.72")
 def test_r5_client_credentials_rewrite(tmp_path: Path) -> None:
     wire = 'B = {"grant_type": "client_credentials"}\nU = "https://idp.example/oauth2/token"'
@@ -251,6 +256,7 @@ RT_BODY = """def get_client():
 API_RT = API_OK.replace("token=None", "refresh_token=None, client_id=None")
 
 
+# spec: PIPE-GATES-R016.73 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.73")
 def test_r6_refresh_token_rewrite(tmp_path: Path) -> None:
     wire = 'B = {"grant_type": "refresh_token"}\nU = "https://login.example/services/oauth2/token"'
@@ -309,6 +315,7 @@ def test_r8_delegation_wrappers_are_review(tmp_path: Path) -> None:
     assert not any(i["step"] == "auth.r7" for i in ctx.review.items)
 
 
+# spec: PIPE-GATES-R016.76 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.76")
 def test_r9_tls_profile_becomes_tls_name(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(_bearer_body()), _api('H = {"Authorization": f"Bearer {token}"}'))
@@ -367,6 +374,7 @@ def test_r11_two_login_paths_still_matches_r11_but_proposes_placeholder(tmp_path
         assert any(i["step"] == "auth.r11" for i in ctx.review.items)
 
 
+# spec: PIPE-GATES-R016.79 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.79")
 def test_r12_singleton_becomes_factory_with_close_alias(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(_bearer_body(singleton=True)), _api('H = {"Authorization": f"Bearer {token}"}'))
@@ -385,6 +393,7 @@ def test_r12_non_singleton_has_no_close_alias(tmp_path: Path) -> None:
     assert "auth.r12" not in ctx.applied
 
 
+# spec: PIPE-GATES-R016.80 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.80")
 def test_r13_local_tool_without_url_deletes_unused_auth(tmp_path: Path) -> None:
     body = "def get_client():\n    return Api()\n"
@@ -415,6 +424,7 @@ def test_r13_imported_auth_is_not_deleted(tmp_path: Path) -> None:
     assert any(i["step"] == "auth.r13" and "imported by" in i["detail"] for i in ctx.review.items)
 
 
+# spec: PIPE-GATES-R016.81 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.81")
 def test_r14_allow_plaintext_setting_becomes_env_name(tmp_path: Path) -> None:
     body = _bearer_body(", allow_plaintext=plain").replace(
