@@ -690,7 +690,7 @@
         "154f96235334",
         "23b1e1111638",
         "2e89db0000e5",
-        "336e2c7c4265"
+        "3d0455152b96"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -712,7 +712,7 @@
         "154f96235334",
         "23b1e1111638",
         "2e89db0000e5",
-        "336e2c7c4265"
+        "4ddfe8ed473a"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:101",
