@@ -101,8 +101,6 @@ main.work.nopanel .panel{display:none}
 .fresh{position:absolute;left:10px;top:10px;z-index:2;font:500 11px var(--font-mono);color:var(--muted);background:color-mix(in srgb,var(--sheet) 85%,transparent);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:calc(100% - 70px)}
 .fresh summary{cursor:pointer}
 .fresh ul{margin:6px 0 0;padding:0;list-style:none;max-height:40vh;overflow:auto;columns:2;column-gap:14px}
-.annotation-jump[hidden]{display:none}
-.annotation-jump{display:inline-block;min-width:22ch;pointer-events:auto;color:var(--fg);text-decoration:underline;white-space:nowrap;margin-left:6px}
 .hint{position:absolute;left:10px;bottom:10px;font:500 11px var(--font-body);color:var(--muted);background:color-mix(in srgb,var(--sheet) 85%,transparent);border:1px solid var(--line);border-radius:6px;padding:4px 8px;pointer-events:none;max-width:calc(100% - 70px)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-body);color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
@@ -236,11 +234,6 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
 .search input,select.sel{min-height:44px;background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
 .toolbar #ocean-motion[aria-pressed="true"]{background:var(--motion-on);color:var(--fg)}
 .search input::placeholder{color:var(--muted);opacity:1}
-.annotation-rail{position:relative;margin:12px;padding:12px 16px;color:var(--fg);font:13px/1.5 var(--font-body);text-shadow:0 0 3px var(--edge-halo)}
-.annotation-rail h2{font:600 14px var(--font-display);margin:0 0 8px}
-.annotation-rail ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:8px 20px}
-.annotation-rail li{display:flex;flex-direction:column;overflow-wrap:anywhere}
-.annotation-context{color:var(--muted);font-size:11px}
 .map-notes{padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:var(--glass-reading);border:1px solid var(--glass-edge);border-radius:16px}
 .results{background:var(--surface);box-shadow:var(--glass-shadow);border-radius:16px}
 .fresh,.hint{background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
@@ -317,7 +310,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
         <button class="btn" id="zpanel" type="button" aria-label="Hide the side panel" aria-pressed="false" title="Hide or show the side panel">&#x25E7;</button>
       </div>
       <details class="fresh" id="fresh"><summary id="freshsum">Built</summary><ul id="freshlist"></ul></details>
-      <div class="hint" id="hint">Click a part to zoom in. Scroll or pinch to zoom. Drag to pan. Esc zooms out.<a id="annotation-jump" class="annotation-jump" href="#annotations" hidden>Map annotations</a></div>
+      <div class="hint" id="hint">Click a part to zoom in. Scroll or pinch to zoom. Drag to pan. Esc zooms out.</div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
   </main>
@@ -337,10 +330,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
   </details>
   </div>
 </div>
-<section id="annotations" tabindex="-1" class="annotation-rail" aria-labelledby="annotation-heading" hidden>
-  <h2 id="annotation-heading">Map annotations</h2>
-  <ul id="annotation-list"></ul>
-</section>
+
 
 <script>
 const PAYLOAD = /*__DATA__*/null;
@@ -445,51 +435,40 @@ function annotationClear(r,used){
     !annotationRects.some(b=>intersects(padded,b))&&!used.some(b=>intersects(padded,[b[0]-4,b[1]-4,b[2]+8,b[3]+8]))&&
     !annotationSegments.some(([a,b])=>segmentHitsRect(a,b,padded));
 }
-function caption(n,kind,text,x,y,fs,alpha,extra={}){
-  annotations.push({owner:n.id,kind,text,x,y,fs:kind==="band"?fs:Math.max(10,Math.min(11,fs)),alpha,...extra});
+// Finite authored display copy; full source text stays in existing selected-part details.
+const captionCopy={
+  "External systems and connectors":"External Integrations",
+  "Self-evolution loop: evaluate, promote, roll back":"Self-Evolution"
+};
+function caption(n,kind,fullText,x,y,fs,alpha,extra={}){
+  const text=captionCopy[fullText]||fullText;
+  annotations.push({owner:n.id,kind,text,fullText,x,y,fs:Math.min(11,fs),alpha,...extra});
 }
 $("fresh").addEventListener("toggle",()=>{dirty=true;});
-$("annotation-jump").addEventListener("click",async event=>{
-  event.preventDefault();
-  if(document.fullscreenElement){try{await document.exitFullscreen();}catch{return;}}
-  requestAnimationFrame(()=>{$("annotations").focus({preventScroll:true});$("annotations").scrollIntoView({block:"start"});});
-});
-function paintAnnotations(pass=0){
-  const used=[],overflow=[];annotationEvidence=[];
+function paintAnnotations(){
+  ctx.save();try{
+  const used=[];annotationEvidence=[];
   for(const a of annotations){
+    // Semantic zoom reveals readable captions in real free space. Never force tiny text or a fallback UI.
+    if(a.fs<9||a.alpha<.85||a.text.length>36){
+      annotationEvidence.push({...a,placement:"deferred",reason:"scale"});continue;
+    }
     ctx.font="500 "+a.fs+"px "+C.display;ctx.textAlign="left";ctx.textBaseline="top";
     const m=ctx.measureText(a.text),w=m.width,h=Math.max(a.fs,m.actualBoundingBoxDescent,m.actualBoundingBoxAscent+m.actualBoundingBoxDescent)+2;
     const candidates=[[a.x,a.y],...(a.candidates||[])];
-    // Short local displacements preserve association; distant captions use an explicit contextual rail.
-    if(a.kind!=="band")for(const dy of [-h-10,h+10,-2*h-20,2*h+20])candidates.push([a.x,a.y+dy]);
+    // Only bounded local alternatives: never turn the free gutter into a detached list.
+    if(a.kind==="flow")for(const dy of [-h-10,h+10])candidates.push([a.x,a.y+dy]);
     let placed=null;
-    for(const [x,y] of candidates){const r=[x-(a.marker?12:0),y,w+(a.marker?12:0),h];if(annotationClear(r,used)){placed=r;break;}}
-    if(!placed){overflow.push(a);annotationEvidence.push({...a,placement:"rail"});continue;}
+    for(const [anchor,y,align] of candidates){const x=align==="right"?anchor-w:align==="center"?anchor-w/2:anchor;
+      const r=[x-(a.marker?12:0),y,w+(a.marker?12:0),h];if(annotationClear(r,used)){placed=r;break;}}
+    if(!placed){annotationEvidence.push({...a,placement:"deferred",reason:"space"});continue;}
     used.push(placed);annotationEvidence.push({...a,placement:"canvas",rect:placed});
-  }
-  const jump=$("annotation-jump"),hint=$("hint"),before=hint.getBoundingClientRect();
-  jump.hidden=!overflow.length;jump.textContent="Map annotations ("+overflow.length+")";
-  const after=hint.getBoundingClientRect();
-  // The hint can wrap after its accessible link changes. Reserve its new bounds before any text paint.
-  if(pass<2&&(before.width!==after.width||before.height!==after.height)){
-    const origin=cv.getBoundingClientRect();annotationRects.push([after.left-origin.left,after.top-origin.top,after.width,after.height]);
-    return paintAnnotations(pass+1);
-  }
-  for(const a of annotationEvidence){if(a.placement!=="canvas")continue;
-    const x=a.rect[0]+(a.marker?12:0),y=a.rect[1];
-    ctx.font="500 "+a.fs+"px "+C.display;ctx.textAlign="left";ctx.textBaseline="top";
+    const x=placed[0]+(a.marker?12:0),y=placed[1];
     ctx.globalAlpha=a.alpha;ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo;ctx.lineWidth=3;ctx.lineJoin="round";
     ctx.strokeText(a.text,x,y);ctx.fillStyle=C.fg;ctx.fillText(a.text,x,y);
     if(a.marker){ctx.fillStyle=a.marker;ctx.fillRect(x-12,y+a.fs*.5,7,1.5);}
   }
-  ctx.globalAlpha=1;
-  const rail=$("annotation-list"),signature=JSON.stringify(overflow.map(a=>[a.owner,a.kind,a.text,a.context]));
-  if(rail.dataset.signature!==signature){
-    rail.dataset.signature=signature;rail.replaceChildren(...overflow.map(a=>el("li",{},[
-      el("span",{class:"annotation-context",text:a.context||nodes[a.owner].label+" · "+a.kind}),
-      el("span",{text:a.text})])));
-    $("annotations").hidden=!overflow.length;
-  }
+  }finally{ctx.restore();}
 }
 // Overview bands span the whole canvas width; their labels stay at the layout's right edge.
 function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.bands.length) return;
@@ -508,20 +487,22 @@ function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.band
       ctx.font="500 "+fs+"px "+C.display;ctx.textAlign="left";ctx.textBaseline="top";ctx.globalAlpha=alpha;
       const key=n.id==="root"?["person","entry","gateway","control","core","server"][i]:n.layer;
       caption(n,"band",text,left,sy+5,fs,alpha,{marker:C.layer[key]||C.faint,candidates:[[left,sy-fs-5],[left,sy+sh-fs-5]]});
-    }else caption(n,"band",text,-1,-1,11,alpha); });
+    }else caption(n,"band",text,left,sy+5,fs,alpha); });
   ctx.globalAlpha=1; }
 function drawZones(n, alpha){ const L=n.layout, t=LT[n.id]; (L.zones||[]).forEach(z=>{ const [sx,sy]=toS(t.ox+z[1]*t.s, t.oy+z[2]*t.s), sw=z[3]*t.s*cam.k, sh=z[4]*t.s*cam.k;
     ctx.globalAlpha=alpha*0.35; ctx.setLineDash([6,5]); ctx.strokeStyle=C.faint; ctx.lineWidth=1.2; rr(sx,sy,sw,sh,14*cam.k*t.s); ctx.stroke(); ctx.setLineDash([]);
     if(sx<W&&sx+sw>0&&sy<H&&sy+sh>0){
       annotationSegments.push([[sx,sy],[sx+sw,sy]],[[sx+sw,sy],[sx+sw,sy+sh]],[[sx+sw,sy+sh],[sx,sy+sh]],[[sx,sy+sh],[sx,sy]]);
-      caption(n,"zone",z[0],sx,sy-20,11,alpha,{candidates:[[sx,sy+sh+8],[sx+sw+12,sy+8]]});
+      caption(n,"zone",z[0],sx,sy-20,Math.min(11,sw*.05),alpha,{candidates:[[sx,sy+sh+8],[sx+sw+12,sy+8]]});
     } });
   const lp=L.loop; if(lp&&L.kids[lp.around]){ const k=L.kids[lp.around], pad=16; const [sx,sy]=toS(t.ox+(k[0]-pad)*t.s, t.oy+(k[1]-pad)*t.s), sw=(k[2]+2*pad)*t.s*cam.k, sh=(k[3]+2*pad)*t.s*cam.k;
     ctx.globalAlpha=alpha*0.55; ctx.strokeStyle=C.edge; ctx.lineWidth=Math.max(1.2, 2.2*Math.min(1,cam.k*t.s)); ctx.setLineDash([10,7]); rr(sx,sy,sw,sh,28*cam.k*t.s); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle=C.edge; const a=Math.max(6, 10*cam.k*t.s); [[sx+sw*0.3,sy,1,0],[sx+sw,sy+sh*0.5,0,1],[sx+sw*0.7,sy+sh,-1,0],[sx,sy+sh*0.5,0,-1]].forEach(([x,y,dx,dy])=>arrow(x-dx*a,y-dy*a,x,y,a));
     if(sx<W&&sx+sw>0&&sy<H&&sy+sh>0){
       annotationSegments.push([[sx,sy],[sx+sw,sy]],[[sx+sw,sy],[sx+sw,sy+sh]],[[sx+sw,sy+sh],[sx,sy+sh]],[[sx,sy+sh],[sx,sy]]);
-      caption(n,"loop",lp.label,sx+sw+12,sy+20,11,alpha,{candidates:[[sx,sy-20],[sx,sy+sh+12]],context:nodes[lp.around]?.label||n.label});
+      caption(n,"loop",lp.label,sx+sw+12,sy+sh*.72,Math.min(11,sw*.03),alpha,{
+        candidates:[[sx+sw+12,sy+sh*.5],[sx+sw+12,sy+sh*.25],[sx-12,sy+sh*.72,"right"],[sx+sw*.5,sy-22,"center"],[sx+sw*.5,sy+sh+12,"center"]],
+        context:nodes[lp.around]?.label||n.label});
     } }
   ctx.globalAlpha=1; }
 function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.8, Math.min(2.2, 2*t.s*cam.k)); const fs=Math.min(12.5, 11.5*t.s*cam.k);
@@ -537,7 +518,15 @@ function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.
     const anchor=e.lp||e.pts[Math.floor(e.pts.length/2)];
     const [x,y]=toS(t.ox+anchor[0]*t.s,t.oy+anchor[1]*t.s);
     if(x<0||x>W||y<0||y>H)return;
-    caption(n,"flow",e.label,x+8,y-18,fs,alpha,{context:(nodes[e.from]?.label||e.from)+" → "+(nodes[e.to]?.label||e.to)});
+    const candidates=[];
+    for(let i=1;i<e.pts.length;i++){
+      const a=toS(t.ox+e.pts[i-1][0]*t.s,t.oy+e.pts[i-1][1]*t.s),b=toS(t.ox+e.pts[i][0]*t.s,t.oy+e.pts[i][1]*t.s);
+      if(Math.hypot(b[0]-a[0],b[1]-a[1])<40)continue;
+      const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+      if(Math.abs(a[1]-b[1])<1)candidates.push([mx,my-20,"center"],[mx,my+9,"center"]);
+      else candidates.push([mx+10,my-5],[mx-10,my-5,"right"]);
+    }
+    caption(n,"flow",e.label,x+8,y-18,fs,alpha,{candidates,context:(nodes[e.from]?.label||e.from)+" → "+(nodes[e.to]?.label||e.to)});
   });
   ctx.globalAlpha=1; }
 function countsLine(n){ if(n.external) return [["external system",C.muted]]; const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
@@ -728,6 +717,14 @@ function renderDelivery(){
       pb.append(box); });
   }
 }
+function diagramContext(n){
+  const text=[],host=nodes[parentOf[n.id]],L=host?.layout,k=L?.kids[n.id];
+  if(L?.loop?.around===n.id)text.push(L.loop.label);
+  if(k)for(const z of L.zones||[]){const x=k[0]+k[2]/2,y=k[1]+k[3]/2;
+    if(x>=z[1]&&x<=z[1]+z[3]&&y>=z[2]&&y<=z[2]+z[4])text.push(z[0]);}
+  if(n.layout){for(const z of n.layout.zones||[])text.push(z[0]);if(n.layout.loop)text.push(n.layout.loop.label);}
+  return [...new Set(text)];
+}
 function renderPanel(){
   if(view!=="map") return renderDelivery();
   const n=nodes[selected], p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-"+(n.layer||"core")+")");
@@ -735,7 +732,7 @@ function renderPanel(){
   ph.append(el("div",{class:"eyebrow"},[el("span",{text:n.id==="root"?"Overview":(LAYERS[n.layer]||"")}),el("span",{text:"Level "+n.level}),n.repo?el("span",{text:n.repo}):null]));
   ph.append(el("h2",{text:n.label})); ph.append(el("div",{class:"path",text:pathTo(n.id).map(i=>nodes[i].label).join(" › ")})); p.append(ph);
   const pb=el("div",{class:"pb"}); p.append(pb);
-  pb.append(el("section",{},[el("h3",{text:"Description"}),el("p",{class:"desc",text:n.description}), n.tools?el("p",{class:"tools",text:n.tools+" served operation tools"}):null]));
+  pb.append(el("section",{},[el("h3",{text:"Description"}),el("p",{class:"desc",text:n.description+(diagramContext(n).length?" Diagram context: "+diagramContext(n).join("; ")+".":"")}), n.tools?el("p",{class:"tools",text:n.tools+" served operation tools"}):null]));
   if(n.external){ pb.append(el("section",{},[el("h3",{text:"Outside the ecosystem"}),el("p",{class:"muted",text:"No spec rows are written for this box. The parts connected to it own the rows."})])); }
   else pb.append(el("section",{},[el("h3",{text:"Spec rows in this part and below"}),...statBlock(n.count)]));
   if(n.children.length){ const ul=el("ul",{class:"plain kids"});

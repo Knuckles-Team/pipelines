@@ -1570,7 +1570,12 @@ def test_ocean_browser_count_text_and_completion_tracks_never_overlap(
     spy = """<script>
 window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];
 const originalText=CanvasRenderingContext2D.prototype.fillText, originalRect=CanvasRenderingContext2D.prototype.fillRect, originalClear=CanvasRenderingContext2D.prototype.clearRect;
-CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];return originalClear.apply(this,args);};
+CanvasRenderingContext2D.prototype.clearRect=function(...args){
+ window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];
+ const box=this.canvas.getBoundingClientRect();
+ window.__countFrame={cam:{...window.__arch.cam},width:box.width,height:box.height,fonts:document.fonts.status};
+ return originalClear.apply(this,args);
+};
 CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);window.__allPaint.push({text,x,y,font:this.font,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
 CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w>20)window.__barPaint.push({x,y,w,h});return originalRect.call(this,x,y,w,h);};
 </script>"""
@@ -1578,7 +1583,18 @@ CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w
 setTimeout(async()=>{
  await document.fonts.ready;
  const result=document.createElement('output');result.id='count-track-result';
+ const current=()=>{const box=document.getElementById('cv').getBoundingClientRect();return {cam:{...window.__arch.cam},width:box.width,height:box.height,fonts:document.fonts.status};};
  try{
+  const faces=await document.fonts.load('500 6px Inter');
+  if(!faces.some(face=>face.family.replaceAll('"','').replaceAll("'",'')==='Inter'&&face.status==='loaded'))throw Error('Count probe Inter face not loaded');
+  let previous='',stable=0;
+  for(let attempt=0;attempt<60;attempt++){
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   const now=JSON.stringify(current()),paint=JSON.stringify(window.__countFrame);
+   stable=now===paint&&now===previous&&window.__barPaint.length?stable+1:0;previous=now;
+   if(stable>=2)break;
+  }
+  if(stable<2)throw Error('Count probe did not reach a matching stable painted camera');
   const a=window.__arch,evidence=[];
   for(const id of IDS){
    const r=a.rect(id);if(!r)continue;
@@ -1602,6 +1618,7 @@ setTimeout(async()=>{
   if(evidence.length<2)throw Error('Insufficient actual closed-card paint coverage');
   result.dataset.evidence=JSON.stringify(evidence);result.textContent='PASS';
  }catch(error){result.textContent='FAIL: '+error.message;}
+ result.dataset.diagnostics=JSON.stringify({frame:window.__countFrame,current:current(),counts:window.__countPaint,bars:window.__barPaint,allPaint:window.__allPaint});
  document.body.append(result);
 },1600);
 </script>""".replace("IDS", json.dumps(ids))
@@ -1623,23 +1640,29 @@ setTimeout(async()=>{
     page = tmp_path / "count-track.html"
     page.write_text(source.replace("<script>", spy + "<script>", 1).replace("</body>", probe + "</body>"))
     name = f"count-track-{node}-{viewport.replace(',', 'x')}"
-    out = subprocess.run(
-        [
-            _chrome(),
-            "--headless=new",
-            "--no-sandbox",
-            "--disable-gpu",
-            f"--window-size={viewport}",
-            "--virtual-time-budget=5000",
-            f"--screenshot={destination / (name + '.png')}",
-            "--dump-dom",
-            page.as_uri() + (f"#node={node}" if node != "root" else ""),
-        ],
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=True,
-    ).stdout
+
+    def capture_count(page_url: str, capture_name: str) -> str:
+        result = subprocess.run(
+            [
+                shutil.which("node"),
+                str(ROOT / "tests/architecture_count_capture.cjs"),
+                _chrome(),
+                page_url,
+                viewport,
+                str(destination / (capture_name + ".png")),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        (destination / (capture_name + ".stderr.txt")).write_text(result.stderr)
+        if result.returncode:
+            (destination / (capture_name + ".failed.txt")).write_text(result.stdout[-12000:])
+        assert result.returncode == 0, result.stderr[-5000:]
+        return result.stdout
+
+    out = capture_count(page.as_uri() + (f"#node={node}" if node != "root" else ""), name)
     _assert_browser_document(out)
     match = re.search(r'<output[^>]*id="count-track-result"[^>]*>.*?</output>', out)
     (destination / (name + ".txt")).write_text(
@@ -1658,23 +1681,7 @@ setTimeout(async()=>{
             )
             .replace("for(const id of " + json.dumps(ids) + ")", 'for(const id of ["eg"])')
         )
-        old = subprocess.run(
-            [
-                _chrome(),
-                "--headless=new",
-                "--no-sandbox",
-                "--disable-gpu",
-                "--window-size=1440,1000",
-                "--virtual-time-budget=5000",
-                f"--screenshot={destination / 'previous-count-track-root.png'}",
-                "--dump-dom",
-                baseline.as_uri(),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=120,
-            check=True,
-        ).stdout
+        old = capture_count(baseline.as_uri(), "previous-count-track-root")
         _assert_browser_document(old)
         old_match = re.search(r'<output[^>]*id="count-track-result"[^>]*>.*?</output>', old)
         (destination / "previous-count-track-root.txt").write_text(
@@ -1700,7 +1707,7 @@ setTimeout(async()=>{
 def test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels(
     monkeypatch, tmp_path: Path, camera: str, viewport: str
 ) -> None:
-    """Independent actual glyph bounds and segment intersection checks, including rail fallback."""
+    """Independent actual glyph bounds and segment intersection checks, including native-zoom deferral."""
     import gzip
     import hashlib
     import os
@@ -1756,10 +1763,13 @@ setTimeout(async()=>{
    return corners.some((p,i)=>meets(a,b,p,corners[(i+1)%4]));
   };
   if(!evidence.labels.length)throw Error('No annotation coverage');
-  const painted=[],railItems=[...document.querySelectorAll('#annotation-list li')];
+  if(document.querySelector('#annotations,#annotation-list,#annotation-jump,dialog,[role=dialog]'))throw Error('Unexpected annotation rail/link/popup');
+  const painted=[];
   for(const label of evidence.labels){
-   if(label.placement==='rail'){
-    if(!railItems.some(li=>[...li.children].some(span=>span.textContent===label.text)))throw Error('Missing complete rail caption: '+label.text);
+   if(!label.fullText||label.text.length>36||label.text.includes('…'))throw Error('Missing original or non-authored short caption');
+   if(label.placement==='deferred'){
+    if(!['scale','space'].includes(label.reason))throw Error('Unexplained native-zoom deferral');
+    if(!evidence.labels.some(other=>other.text===label.text&&other.placement==='canvas')&&window.__annotationPaint.some(p=>p.text===label.text&&p.font.startsWith('500 ')&&Math.abs(parseFloat(p.font.slice(4))-label.fs)<.01))throw Error('Deferred caption still painted: '+label.text);
     continue;
    }
    if(label.placement!=='canvas')throw Error('Unknown annotation placement');
@@ -1775,15 +1785,16 @@ setTimeout(async()=>{
   }
   if(['default','root'].includes(CAMERA)){
    for(const text of ['External systems and connectors','Self-evolution loop: evaluate, promote, roll back']){
-    if(!evidence.labels.some(label=>label.text===text))throw Error('Missing reported regression caption: '+text);
+    if(!evidence.labels.some(label=>label.fullText===text))throw Error('Missing reported regression caption: '+text);
    }
   }
-  if(railItems.length){
-   const rail=document.getElementById('annotations'),r=rail.getBoundingClientRect();
-   if(rail.hidden||r.top<canvas.bottom-1)throw Error('Annotation rail must remain outside drawing');
-   if(rail.closest('#panel'))throw Error('Annotation rail depends on ledger visibility');
+  if(['default','root'].includes(CAMERA)){
+   for(const text of ['External Integrations','Self-Evolution'])if(!evidence.labels.some(label=>label.text===text))throw Error('Missing authored short caption: '+text);
   }
-  result.dataset.evidence=JSON.stringify({source:SOURCE,camera:CAMERA,labels:evidence.labels,painted,obstacleRects:evidence.rects.length,connectorSegments:evidence.segments.length,railItems:railItems.length});
+  const description=document.querySelector('#panel .desc')?.textContent||'';
+  const originalGroups={default:['External systems and connectors','Self-evolution loop: evaluate, promote, roll back'],root:['External systems and connectors','Self-evolution loop: evaluate, promote, roll back'],eg:['Self-evolution loop: evaluate, promote, roll back'],connectors:['External systems and connectors']};
+  for(const original of originalGroups[CAMERA]||[])if(!description.includes(original))throw Error('Original group meaning missing from existing Description: '+original);
+  result.dataset.evidence=JSON.stringify({source:SOURCE,camera:CAMERA,labels:evidence.labels,painted,obstacleRects:evidence.rects.length,connectorSegments:evidence.segments.length,deferred:evidence.labels.filter(label=>label.placement==='deferred').length});
   result.textContent='PASS';
  }catch(error){result.textContent='FAIL: '+error.message;}
  document.body.append(result);
@@ -1833,5 +1844,44 @@ setTimeout(async()=>{
         return out
 
     capture_annotation(url, name)
-    # Normal/fullscreen rail pixels use the settled real-CDP keyboard captures in
-    # motion_capture.cjs; CLI virtual-time scrolling can retain a stale compositor frame.
+    # Native zoom appearance and existing fullscreen controls use real CDP input
+    # after the separate unforced-motion sequence in motion_capture.cjs.
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_count_capture_uses_real_frame_scheduling_and_handles_browser_exit(tmp_path: Path) -> None:
+    import os
+    import subprocess
+
+    helper = ROOT / "tests/architecture_count_capture.cjs"
+    source = helper.read_text()
+    assert "--remote-debugging-pipe" in source and "--virtual-time-budget" not in source
+    assert "Target.activateTarget" in source and "Page.bringToFront" in source
+    assert "document.getElementById('count-track-result')" in source
+    assert source.index("await exited;") < source.index("rmSync(profile,")
+    # The repair must retain the page's stable actual-paint synchronization and all
+    # count assertions, rather than replacing requestAnimationFrame with a timer.
+    tests = (
+        Path(__file__)
+        .read_text()
+        .split("def test_ocean_browser_count_text_and_completion_tracks_never_overlap", 1)[1]
+        .split("\n\n@pytest.mark.spec", 1)[0]
+    )
+    assert "requestAnimationFrame(()=>requestAnimationFrame(resolve))" in tests
+    assert "now===paint&&now===previous&&window.__barPaint.length" in tests
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node unavailable")
+    browser = tmp_path / "exits-immediately"
+    browser.write_text("#!/bin/sh\nexit 1\n")
+    browser.chmod(0o755)
+    result = subprocess.run(
+        [node, str(helper), str(browser), "about:blank", "1440,1000", str(tmp_path / "capture.png")],
+        env={**os.environ, "TMPDIR": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert not list(tmp_path.glob("architecture-count-*"))

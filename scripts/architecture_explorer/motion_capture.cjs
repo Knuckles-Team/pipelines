@@ -36,7 +36,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const {sessionId}=await call('Target.attachToTarget',{targetId,flatten:true});
   const command=(method,params)=>call(method,params,sessionId);
   const evaluate=async expression=>{const r=await command('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
-  await command('Page.enable');await command('Runtime.enable');
+  await command('Page.enable');await command('Runtime.enable');await command('Page.bringToFront');
   await command('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
   await command('Page.navigate',{url:pathToFileURL(join(output,`${theme}.html`)).href+'#node=webui'});
   // Wait for real page load, fonts and camera settling, without modifying animation clocks.
@@ -56,52 +56,87 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     if(!frames[i].waves.every((w,j)=>w.playState==='running'&&w.time>frames[i-1].waves[j].time+1500&&Math.abs(w.x-frames[i-1].waves[j].x)>8))throw Error('Ocean motion not visibly progressing');
   }
   writeFileSync(join(output,`${theme}-continuous-motion.json`),JSON.stringify({kind:'Unforced real wall-clock browser frames; no animation seeking or virtual time',frames},null,2)+'\n');
-  // Annotation access is exercised only after the untouched wall-clock motion sequence.
-  // Input.dispatchKeyEvent sends trusted browser keyboard events; fullscreen is a real
-  // user-gesture request, not a replacement for document.fullscreenElement.
-  const navigation={kind:'Real CDP keyboard/focus/fullscreen proof after unforced motion capture',theme,steps:[]};
-  const state=()=>evaluate(`(()=>{const link=document.getElementById('annotation-jump'),rail=document.getElementById('annotations'),r=link.getBoundingClientRect();return {selected:window.__arch.selected,hash:location.hash,active:document.activeElement.id,fullscreen:document.fullscreenElement?.id||null,linkHidden:link.hidden,linkText:link.textContent,linkVisible:r.width>0&&r.height>0&&r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth,railHidden:rail.hidden,railFocusVisible:rail.matches(':focus-visible'),railOutlineWidth:getComputedStyle(rail).outlineWidth,railItems:document.querySelectorAll('#annotation-list li').length,trustedEvents:window.__annotationTrusted||[]};})()`);
-  const waitFor=async(expression,message)=>{for(let i=0;i<50;i++){if(await evaluate(expression))return;await delay(100);}throw Error(message);};
-  const navigationScreenshot=async(name)=>{
-    const result=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
-    const bytes=Buffer.from(result.data,'base64'),file=`${theme}-annotation-${name}.png`;
+  // Semantic caption proof uses only the existing controls after the untouched motion frames.
+  const navigation={kind:'Real native zoom input, unchanged world geometry, and actual caption paint',theme,steps:[]};
+  const key=async(key,code,virtual)=>{
+    const text=key==='Enter'?'\r':key.length===1?key:undefined;
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key,code,text,unmodifiedText:text,windowsVirtualKeyCode:virtual,nativeVirtualKeyCode:virtual});
+    await command('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode:virtual,nativeVirtualKeyCode:virtual});
+  };
+  const screenshot=async(name)=>{
+    const shot=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+    const bytes=Buffer.from(shot.data,'base64'),file=`${theme}-native-caption-${name}.png`;
     writeFileSync(join(output,file),bytes);return {file,sha256:createHash('sha256').update(bytes).digest('hex')};
   };
-  const pressEnter=async()=>{
-    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
-    await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
-  };
-  const assertAccess=(before,after)=>{
-    if(after.active!=='annotations'||after.fullscreen||after.railHidden||!after.railItems)throw Error('Annotation destination not focused/available: '+JSON.stringify(after));
-    if(!after.railFocusVisible||parseFloat(after.railOutlineWidth)<2)throw Error('Annotation destination lacks visible keyboard focus');
-    if(after.selected!==before.selected||after.hash!==before.hash)throw Error('Annotation navigation changed the graph selection/hash');
-    if(!after.trustedEvents.some(event=>event.type==='click'&&event.trusted)||!after.trustedEvents.some(event=>event.type==='keydown'&&event.key==='Enter'&&event.trusted))throw Error('Trusted keyboard activation missing');
+  const state=()=>evaluate(`(()=>{const a=window.__arch,c=document.getElementById('cv'),r=c.getBoundingClientRect();return {cam:{...a.cam},selected:a.selected,hash:location.hash,canvas:{x:r.x,y:r.y,w:r.width,h:r.height},labels:a.annotations().labels,paint:window.__nativeCaptionPaint,geometryUnchanged:JSON.stringify(window.__nativeIds.map(id=>[id,a.rect(id)]))===window.__nativeGeometry,active:document.activeElement.id,focusVisible:document.activeElement.matches(':focus-visible'),fullscreen:document.fullscreenElement?.id||null,events:window.__nativeEvents};})()`);
+  const identity=a=>[a.owner,a.kind,a.fullText].join('|');
+  const actualCaption=(label,paint)=>label.placement==='canvas'&&paint.some(p=>p.text===label.text&&Math.abs(p.x-(label.rect[0]+(label.marker?12:0)))<.01&&Math.abs(p.y-label.rect[1])<.01);
+  const assertGeometry=s=>{if(!s.geometryUnchanged)throw Error('Native zoom changed original node positions/sizes');};
+  const assertZoom=(before,after,factor,sx,sy)=>{
+    const k=Math.max(.02,Math.min(before.cam.k*factor,4e6));
+    const expected={k,x:before.cam.x+sx/before.cam.k-sx/k,y:before.cam.y+sy/before.cam.k-sy/k};
+    for(const p of ['x','y','k'])if(Math.abs(after.cam[p]-expected[p])>1e-6*Math.max(1,Math.abs(expected[p])))throw Error('Existing zoomAt camera formula changed: '+JSON.stringify({before:before.cam,after:after.cam,expected}));
+    assertGeometry(after);return expected;
   };
   try{
-    await evaluate("window.__arch.go('root',{instant:true});window.scrollTo(0,0);true");await delay(1000);
-    await evaluate(`(()=>{window.__annotationTrusted=[];const link=document.getElementById('annotation-jump');for(const type of ['keydown','click'])link.addEventListener(type,event=>window.__annotationTrusted.push({type:event.type,key:event.key||null,trusted:event.isTrusted}));link.focus();return true;})()`);
-    const before=await state();
-    if(before.active!=='annotation-jump'||before.linkHidden||!before.linkVisible||before.railHidden||!before.railItems)throw Error('Normal-view annotation link coverage unavailable: '+JSON.stringify(before));
-    await pressEnter();
-    await waitFor("document.activeElement.id==='annotations'",'Keyboard annotation link did not focus rail');
-    const after=await state();assertAccess(before,after);
-    navigation.steps.push({mode:'normal',before,after,screenshot:await navigationScreenshot('keyboard-rail')});
-    await evaluate("window.scrollTo(0,0);window.__annotationTrusted=[];true");
-    const request=await command('Runtime.evaluate',{expression:"document.getElementById('wrap').requestFullscreen().then(()=>true)",awaitPromise:true,returnByValue:true,userGesture:true});
-    if(request.exceptionDetails||request.result.value!==true)throw Error('Real fullscreen request failed: '+JSON.stringify(request));
-    await waitFor("document.fullscreenElement?.id==='wrap'",'Browser did not enter fullscreen');await delay(1000);
-    await evaluate("document.getElementById('annotation-jump').focus();true");
-    const fullBefore=await state();
-    if(fullBefore.fullscreen!=='wrap'||fullBefore.active!=='annotation-jump'||fullBefore.linkHidden||!fullBefore.linkVisible)throw Error('Fullscreen annotation link coverage unavailable: '+JSON.stringify(fullBefore));
-    const fullScreenshot=await navigationScreenshot('fullscreen-link');
-    await pressEnter();
-    await waitFor("!document.fullscreenElement&&document.activeElement.id==='annotations'",'Annotation activation did not exit real fullscreen and focus rail');
-    await delay(300);
-    const fullAfter=await state();assertAccess(fullBefore,fullAfter);
-    navigation.steps.push({mode:'fullscreen',before:fullBefore,after:fullAfter,fullscreenScreenshot:fullScreenshot,screenshot:await navigationScreenshot('fullscreen-exit-rail')});
-    navigation.passed=true;
+    navigation.geometry=await evaluate(`(()=>{
+      if(document.querySelector('#annotations,#annotation-list,#annotation-jump,dialog,[role=dialog]'))throw Error('Unexpected caption controls/rail/popup');
+      window.__nativeIds=[];(function visit(n){window.__nativeIds.push(n.id);n.children.forEach(visit);})(PAYLOAD.tree);
+      window.__nativeGeometry=JSON.stringify(window.__nativeIds.map(id=>[id,window.__arch.rect(id)]));window.__nativeEvents=[];window.__nativeCaptionPaint=[];
+      const prototype=CanvasRenderingContext2D.prototype,fill=prototype.fillText,clear=prototype.clearRect;
+      prototype.clearRect=function(...args){window.__nativeCaptionPaint=[];return clear.apply(this,args);};
+      prototype.fillText=function(text,x,y,...args){const m=this.measureText(text);window.__nativeCaptionPaint.push({text:String(text),x,y,font:this.font,ink:[x-m.actualBoundingBoxLeft,y-m.actualBoundingBoxAscent,m.actualBoundingBoxLeft+m.actualBoundingBoxRight,m.actualBoundingBoxAscent+m.actualBoundingBoxDescent]});return fill.call(this,text,x,y,...args);};
+      for(const type of ['keydown','wheel','click'])document.addEventListener(type,e=>window.__nativeEvents.push({type:e.type,key:e.key||null,trusted:e.isTrusted,target:e.target.id,offsetX:e.offsetX,offsetY:e.offsetY,deltaY:e.deltaY,ctrlKey:e.ctrlKey}),true);
+      return JSON.parse(window.__nativeGeometry);
+    })()`);
+    await evaluate("window.__arch.go('root',{instant:true});window.scrollTo(0,0);true");await delay(700);
+    const low=await state();assertGeometry(low);
+    const deferred=low.labels.filter(a=>['flow','zone','loop'].includes(a.kind)&&a.placement==='deferred'&&a.reason==='scale');
+    if(!deferred.length)throw Error('No low-scale deferred caption coverage');
+    navigation.low={...low,screenshot:await screenshot('low')};
+    await evaluate("document.getElementById('zin').focus();true");
+    await key('Enter','Enter',13);await delay(350);
+    let current=await state();
+    const buttonStep={input:'existing zoom-in button via trusted Enter',after:current};navigation.steps.push(buttonStep);
+    buttonStep.expected=assertZoom(low,current,1.6,low.canvas.w/2,low.canvas.h/2);
+    await evaluate("document.getElementById('cv').focus();true");
+    const keyboardBefore=await state();
+    await key('+','Equal',187);await delay(350);
+    current=await state();
+    navigation.steps.push({input:'existing focused-canvas keyboard +',expected:assertZoom(keyboardBefore,current,1.4,keyboardBefore.canvas.w/2,keyboardBefore.canvas.h/2),after:current});
+    if(current.active!=='cv'||!current.focusVisible)throw Error('Canvas keyboard focus not retained/visible');
+    let appeared=current.labels.find(a=>deferred.some(d=>identity(d)===identity(a))&&actualCaption(a,current.paint));
+    // If a center zoom moved the relevant caption out of view, try at most six
+    // visible low-scale anchors using ordinary wheel input, never rewriting the camera.
+    const anchors=deferred.filter(a=>Number.isFinite(a.x)&&Number.isFinite(a.y)&&a.x>=0&&a.x<=low.canvas.w&&a.y>=0&&a.y<=low.canvas.h).slice(0,6);
+    for(const anchor of anchors){
+      if(appeared)break;
+      await evaluate("window.__arch.go('root',{instant:true});true");await delay(350);
+      for(let step=0;step<3&&!appeared;step++){
+        const before=await state(),sx=Math.max(10,Math.min(before.canvas.w-10,anchor.x)),sy=Math.max(10,Math.min(before.canvas.h-10,anchor.y));
+        const deltaY=-Math.log(1.8)/.0016;
+        await command('Input.dispatchMouseEvent',{type:'mouseWheel',x:before.canvas.x+sx,y:before.canvas.y+sy,deltaX:0,deltaY});await delay(350);
+        current=await state();
+        const wheel=current.events.slice(before.events.length).find(e=>e.type==='wheel'&&e.trusted&&e.target==='cv');
+        if(!wheel)throw Error('Trusted wheel did not reach the canvas');
+        navigation.steps.push({input:'trusted native wheel',anchor:identity(anchor),wheel,expected:assertZoom(before,current,Math.exp(-wheel.deltaY*(wheel.ctrlKey?.01:.0016)),wheel.offsetX,wheel.offsetY),after:current});
+        appeared=current.labels.find(a=>deferred.some(d=>identity(d)===identity(a))&&actualCaption(a,current.paint));
+      }
+    }
+    if(!appeared)throw Error('No initially deferred caption became genuinely painted through bounded native zoom');
+    if(appeared.fs<9||appeared.fs<=deferred.find(d=>identity(d)===identity(appeared)).fs)throw Error('Caption appearance did not follow native scale increase');
+    navigation.appearance={caption:appeared,before:deferred.find(d=>identity(d)===identity(appeared)),paint:current.paint.filter(p=>p.text===appeared.text),screenshot:await screenshot('revealed')};
+    if(!current.events.some(e=>e.type==='keydown'&&e.key==='Enter'&&e.trusted)||!current.events.some(e=>e.type==='keydown'&&e.key==='+'&&e.trusted))throw Error('Trusted native zoom input evidence missing');
+    // Existing F control still enters/exits real browser fullscreen, with no caption UI.
+    await evaluate("document.getElementById('cv').focus();true");await key('f','KeyF',70);await delay(700);
+    const fullscreen=await state();assertGeometry(fullscreen);
+    if(fullscreen.fullscreen!=='wrap')throw Error('Existing F control did not enter real fullscreen');
+    await key('f','KeyF',70);await delay(700);
+    const normal=await state();assertGeometry(normal);
+    if(normal.fullscreen)throw Error('Existing F control did not exit fullscreen');
+    navigation.fullscreen={entered:fullscreen.fullscreen,exited:normal.fullscreen,geometryUnchanged:normal.geometryUnchanged};navigation.passed=true;
   }catch(error){navigation.passed=false;navigation.error=String(error);throw error;}
-  finally{writeFileSync(join(output,`${theme}-annotation-navigation.json`),JSON.stringify(navigation,null,2)+'\n');}
+  finally{writeFileSync(join(output,`${theme}-native-caption-zoom.json`),JSON.stringify(navigation,null,2)+'\n');}
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
   writeFileSync(join(output,`${theme}-continuous-motion.log`),logs);
   try{await call('Browser.close');}catch{}

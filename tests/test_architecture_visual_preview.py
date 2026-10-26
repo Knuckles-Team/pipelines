@@ -204,15 +204,18 @@ def test_motion_capture_browser_early_exit_is_bounded_and_cleans_profile(tmp_pat
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_annotation_navigation_uses_trusted_keyboard_and_real_fullscreen_after_motion() -> None:
+def test_native_caption_zoom_uses_trusted_input_and_unchanged_world_geometry_after_motion() -> None:
     helper = (ROOT / "scripts/architecture_explorer/motion_capture.cjs").read_text()
     assert helper.index("const navigation=") > helper.index("`${theme}-continuous-motion.json`")
-    assert "Input.dispatchKeyEvent" in helper and "type:'keyDown',key:'Enter'" in helper
-    assert "requestFullscreen().then(()=>true)" in helper and "userGesture:true" in helper
-    assert "event.isTrusted" in helper and "after.active!=='annotations'" in helper
-    assert "after.selected!==before.selected||after.hash!==before.hash" in helper
-    assert "fullBefore.fullscreen!=='wrap'" in helper
-    assert "!document.fullscreenElement&&document.activeElement.id==='annotations'" in helper
-    assert "`${theme}-annotation-navigation.json`" in helper
+    assert "Input.dispatchKeyEvent" in helper and "key('Enter','Enter',13)" in helper
+    assert "unmodifiedText:text" in helper and "Page.bringToFront" in helper
+    assert helper.index("navigation.steps.push(buttonStep)") < helper.index("buttonStep.expected=assertZoom")
+    assert "Input.dispatchMouseEvent" in helper and "type:'mouseWheel'" in helper
+    assert "e.isTrusted" in helper and "current.focusVisible" in helper
+    assert "assertZoom(" in helper and "assertGeometry(" in helper
+    assert "window.__arch.rect(id)" in helper and "window.__nativeGeometry" in helper
+    assert "actualCaption(a,current.paint)" in helper and "a.reason==='scale'" in helper
+    assert "key('f','KeyF',70)" in helper and "fullscreen.fullscreen!=='wrap'" in helper
+    assert "`${theme}-native-caption-zoom.json`" in helper
     assert "navigation.passed=false" in helper and "throw error;" in helper
     assert "document.fullscreenElement=" not in helper
