@@ -405,16 +405,20 @@
     {
       "id": "PIPE-GATES-R016",
       "title": "The composed ontology graph is reachable and bridged",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
-        "197c2b37817f",
-        "296583a3f006",
-        "9389c84a38bf",
-        "9c5228d41640",
-        "cf912c89cd2f"
+        "03512169cad3",
+        "072841d0fc31",
+        "0e879efdfea4",
+        "10797d760f22",
+        "12874ccce7f9"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:15"
+        "tests/hooks/test_connector_central.py:348",
+        "tests/hooks/test_connector_central.py:368",
+        "tests/hooks/test_connector_central.py:379",
+        "tests/hooks/test_connector_central.py:451",
+        "tests/hooks/test_connector_central.py:465"
       ],
       "rollup_of": [
         "PIPE-GATES-R016.1",
@@ -1552,25 +1556,31 @@
         "tests/hooks/test_connector_central_ingest.py:311",
         "tests/hooks/test_connector_central_ingest.py:329",
         "tests/hooks/test_connector_central_ingest.py:342",
-        "tests/hooks/test_connector_central_ingest.py:493"
+        "tests/hooks/test_connector_central_ingest.py:534"
       ]
     },
     {
       "id": "PIPE-GATES-R016.85",
       "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i4`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1bd2f8fcfb6c"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:360"
+        "tests/hooks/test_connector_central_ingest.py:360",
+        "tests/hooks/test_connector_central_ingest.py:370"
       ]
     },
     {
       "id": "PIPE-GATES-R016.86",
       "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i5`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1bd2f8fcfb6c"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:370"
+        "tests/hooks/test_connector_central_ingest.py:377",
+        "tests/hooks/test_connector_central_ingest.py:386"
       ]
     },
     {
@@ -1581,8 +1591,8 @@
         "072841d0fc31"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:397",
-        "tests/hooks/test_connector_central_ingest.py:409"
+        "tests/hooks/test_connector_central_ingest.py:411",
+        "tests/hooks/test_connector_central_ingest.py:423"
       ]
     },
     {
@@ -1593,26 +1603,33 @@
         "d0a48752cbf3"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:429",
-        "tests/hooks/test_connector_central_ingest.py:430"
+        "tests/hooks/test_connector_central_ingest.py:443",
+        "tests/hooks/test_connector_central_ingest.py:444"
       ]
     },
     {
       "id": "PIPE-GATES-R016.89",
       "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i8`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1bd2f8fcfb6c",
+        "8d8cc8f2e3ba"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:451"
+        "tests/hooks/test_connector_central_ingest.py:465",
+        "tests/hooks/test_connector_central_ingest.py:476"
       ]
     },
     {
       "id": "PIPE-GATES-R016.90",
       "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i9`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1bd2f8fcfb6c"
+      ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:471"
+        "tests/hooks/test_connector_central_ingest.py:500",
+        "tests/hooks/test_connector_central_ingest.py:515"
       ]
     },
     {

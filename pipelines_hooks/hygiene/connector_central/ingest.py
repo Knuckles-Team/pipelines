@@ -408,10 +408,17 @@ def _best_effort_reasons(tree: ast.Module) -> list[str]:
     calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and _call_name(n) == "IngestBinding"]
     if len(calls) > 1:
         found.add(f"{len(calls)} IngestBinding values (document_binding)")
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ExceptHandler) and node.type is not None:
-            for sub in ast.walk(node.type):
-                if isinstance(sub, ast.Name) and sub.id in ("IngestError", "IngestUnavailableError"):
+    exception_names = {"IngestError", "IngestUnavailableError"}
+    for node in tree.body:
+        if not isinstance(node, ast.ImportFrom) or node.module != "agent_connector_sdk.ingest":
+            continue
+        for alias in node.names:
+            if alias.name in exception_names:
+                exception_names.add(alias.asname or alias.name)
+    for candidate in ast.walk(tree):
+        if isinstance(candidate, ast.ExceptHandler) and candidate.type is not None:
+            for sub in ast.walk(candidate.type):
+                if isinstance(sub, ast.Name) and sub.id in exception_names:
                     found.add(f"except {sub.id} wrapper (best_effort)")
     return sorted(found)
 
@@ -420,6 +427,10 @@ def _change_set_reasons(tree: ast.Module) -> list[str]:
     found: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and _call_name(node) == "ChangeSet":
+            if node.args:
+                found.add("ChangeSet positional arguments")
+            if any(keyword.arg is None for keyword in node.keywords):
+                found.add("ChangeSet dynamic keyword arguments")
             kws = {k.arg for k in node.keywords}
             if "media" in kws:
                 found.add("ChangeSet(media=...)")
@@ -439,6 +450,15 @@ def _call_name(node: ast.Call) -> str:
 
 def _unsupported(tree: ast.Module) -> list[str]:
     return _paging_reasons(tree) + _best_effort_reasons(tree) + _change_set_reasons(tree)
+
+
+def _assigned_names(node: ast.stmt) -> set[str]:
+    """Return names assigned by a simple or annotated module assignment."""
+    if isinstance(node, ast.Assign):
+        return {target.id for target in node.targets if isinstance(target, ast.Name)}
+    if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+        return {node.target.id}
+    return set()
 
 
 @rule("ingest.i7")
@@ -935,9 +955,7 @@ def dispatch_tables(ctx: Ctx) -> None:
     if kg is None:
         return
     rel, _text, tree = kg
-    has_table = any(
-        isinstance(n, ast.Assign) and any(getattr(t, "id", "") == "_MAPPERS" for t in n.targets) for n in tree.body
-    )
+    has_table = any("_MAPPERS" in _assigned_names(n) for n in tree.body)
     has_fn = any(
         isinstance(n, ast.AsyncFunctionDef | ast.FunctionDef) and n.name == "ingest_records" for n in tree.body
     )
@@ -952,7 +970,9 @@ def record_maps(ctx: Ctx) -> None:
     if kg is None:
         return
     rel, _text, tree = kg
-    maps = [n.name for n in tree.body if isinstance(n, ast.FunctionDef) and n.name.startswith("map_")]
+    maps = [
+        n.name for n in tree.body if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef) and n.name.startswith("map_")
+    ]
     if maps:
         ctx.note("ingest.i5", "RecordMap conversion not automated; mappers stay functions: " + ", ".join(maps), rel)
 
