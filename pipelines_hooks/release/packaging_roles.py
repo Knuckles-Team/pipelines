@@ -176,6 +176,7 @@ def verify(
     expected_digest: str,
     receipt: Mapping[str, Any],
     readiness_path: Path,
+    runtime_profiles: str | None = None,
 ) -> dict[str, Any]:
     """Verify one exact wheel through the existing readiness implementation."""
     if not _SHA256.fullmatch(expected_digest) or set(expected_digest) == {"0"}:
@@ -216,6 +217,16 @@ def verify(
     profiles = item.get("profiles")
     if not isinstance(profiles, list) or profiles != expected_profiles:
         raise _invalid(f"role/profile inventory mismatch (expected={expected_profiles}, observed={profiles})")
+    if runtime_profiles is not None:
+        try:
+            actual_profiles = readiness.profiles(runtime_profiles, actual_metadata["provides_extra"])
+        except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise _invalid(f"runtime profiles cannot be verified: {exc}") from exc
+        if actual_profiles != expected_profiles:
+            raise _invalid(
+                f"role/profile inventory does not match runtime profiles "
+                f"(expected={actual_profiles}, observed={expected_profiles})"
+            )
     try:
         readiness.verify_item(wheel, item, json.dumps(expected_profiles), context, source_builds)
     except (KeyError, OSError, TypeError, ValueError) as exc:
@@ -265,6 +276,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--wheel-sha256", required=True)
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--readiness-checker", type=Path, default=Path(".github/actions/wheel-readiness/readiness.py"))
+    parser.add_argument("--runtime-profiles")
     args = parser.parse_args(argv)
     try:
         result = verify(
@@ -273,6 +285,7 @@ def main(argv: list[str] | None = None) -> int:
             args.wheel_sha256,
             _read(args.receipt),
             args.readiness_checker,
+            args.runtime_profiles,
         )
     except CannotRun as exc:
         print(str(exc), file=sys.stderr)
