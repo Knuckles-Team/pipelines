@@ -1280,8 +1280,10 @@
     {
       "id": "PIPE-GATES-R016.65",
       "title": "Wave 1 (Scion SDK 0.5) rule `w1.l2`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_wave1.py:1166",
         "tests/hooks/test_connector_central_wave1.py:1174",
@@ -1405,8 +1407,10 @@
     {
       "id": "PIPE-GATES-R016.74",
       "title": "Auth standardization rule `auth.r7`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:299"
       ]
@@ -1414,8 +1418,10 @@
     {
       "id": "PIPE-GATES-R016.75",
       "title": "Auth standardization rule `auth.r8`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:308"
       ]
@@ -1436,8 +1442,10 @@
     {
       "id": "PIPE-GATES-R016.77",
       "title": "Auth standardization rule `auth.r10`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_auth.py:336"
       ]
@@ -1750,8 +1758,10 @@
     {
       "id": "PIPE-GATES-R016.101",
       "title": "Pipelines-owned boilerplate rule `pl.w`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:58"
       ]
@@ -1774,8 +1784,10 @@
     {
       "id": "PIPE-GATES-R016.103",
       "title": "Pipelines-owned boilerplate rule `pl.y`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:74"
       ]
@@ -1838,8 +1850,10 @@
     {
       "id": "PIPE-GATES-R016.108",
       "title": "Pipelines-owned boilerplate rule `pl.ad`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:219"
       ]
@@ -1847,8 +1861,10 @@
     {
       "id": "PIPE-GATES-R016.109",
       "title": "Pipelines-owned boilerplate rule `pl.ae`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c2b8fce00aac"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_identity.py:239"
       ]
