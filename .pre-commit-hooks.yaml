@@ -85,6 +85,7 @@
   name: Test layout independence - isolated order and fixture inventory
   entry: pipelines-hook test-layout
   language: python
+  additional_dependencies: [pytest==9.1.1]
   pass_filenames: false
   always_run: true
   require_serial: true
