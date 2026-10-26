@@ -582,9 +582,17 @@
     {
       "id": "PIPE-CONNSPEC-R102",
       "title": "`archimate-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "449c1193701b",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:111",
+        "tests/test_connector_consumer_r101_r115.py:136",
+        "tests/test_connector_consumer_r101_r115.py:73",
+        "tests/test_connector_consumer_r102.py:62"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R102.1",
         "PIPE-CONNSPEC-R102.2",
@@ -628,9 +636,13 @@
     {
       "id": "PIPE-CONNSPEC-R102.4",
       "title": "`archimate-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "449c1193701b"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r102.py:62"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R103",
