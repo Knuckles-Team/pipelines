@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 from scripts.architecture_explorer import build as explorer  # noqa: E402
 from scripts.architecture_explorer import details, sources  # noqa: E402
 from scripts.architecture_explorer.geometry import count_crossings, crossings_in  # noqa: E402
-from scripts.architecture_explorer.place import Placer, Tree, unmapped_violations, validate_code  # noqa: E402
+from scripts.architecture_explorer.place import Placer, Tree, _group_key, unmapped_violations, validate_code  # noqa: E402
 from scripts.architecture_explorer.sources import Snapshot, requirement_text, spec_dirs  # noqa: E402
 
 PKG = ROOT / "scripts/architecture_explorer"
@@ -187,6 +187,15 @@ def test_shipped_unmapped_allowlist_is_reviewed_and_empty() -> None:
     """Every unmapped row fails the build unless the model's reviewed allowlist names it; keep it empty."""
     model = json.loads((PKG / "model.json").read_text())
     assert model["unmapped_allow"] == []
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_vocabulary_additions_mapping_accepts_canonical_reuse_rollup() -> None:
+    assert _group_key("cqconn", "infrastructure-v1.ttl additions rollup") == "Vocabulary additions"
+    assert _group_key("cqconn", "sdlc_lifecycle-v1.ttl additions plus software-v1 canonical reuse rollup") == (
+        "Vocabulary additions"
+    )
+    assert _group_key("cqconn", "lifecycle contract rollup") is None
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
