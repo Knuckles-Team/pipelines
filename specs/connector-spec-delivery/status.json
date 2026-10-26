@@ -3918,9 +3918,17 @@
     {
       "id": "PIPE-CONNSPEC-R166",
       "title": "`systems-manager` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "90a9705f15b2",
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:57",
+        "tests/test_connector_consumer_r166.py:65",
+        "tests/test_connector_consumer_r166.py:66",
+        "tests/test_connector_consumer_r166.py:67"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R166.1",
         "PIPE-CONNSPEC-R166.2",
@@ -3942,23 +3950,35 @@
     {
       "id": "PIPE-CONNSPEC-R166.2",
       "title": "`systems-manager` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "90a9705f15b2"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r166.py:65"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R166.3",
       "title": "`systems-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "90a9705f15b2"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r166.py:66"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R166.4",
       "title": "`systems-manager` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "90a9705f15b2"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r166.py:67"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R167",
