@@ -353,7 +353,7 @@ def test_r10_hand_configured_session_is_review(tmp_path: Path) -> None:
 LOGIN_BODY = BASIC_BODY
 
 
-@pytest.mark.spec("PIPE-GATES-R016.78")
+@pytest.mark.spec("PIPE-GATES-R016.78")  # reviewed existing assertion binding
 def test_r11_session_login_rewrite(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(LOGIN_BODY), _api('L = "/api/v2/auth/login"', API_BASIC))
     ctx = _run(root)
