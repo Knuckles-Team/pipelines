@@ -2,7 +2,24 @@ name: Verify release version
 description: >-
   Fail before any build when the pushed release tag vX.Y.Z differs from the package version the
   build will stamp, when .bumpversion.cfg disagrees, or when that version is already on PyPI.
+  Explicit published-wheel mode instead verifies an existing public pure-Python wheel against
+  the reviewed package payload and Dockerfile pin before container publication.
 inputs:
+  mode:
+    description: unpublished checks the release tag; published-wheel binds an existing public pure-Python wheel to reviewed container source.
+    default: unpublished
+  distribution:
+    description: Exact project distribution name, required for published-wheel.
+    default: ""
+  module:
+    description: Exact Python package module whose complete payload must match reviewed HEAD.
+    default: ""
+  dockerfile:
+    description: Reviewed Dockerfile path for published-wheel.
+    default: docker/Dockerfile
+  extras:
+    description: Exact extras in the Dockerfile package pin.
+    default: mcp
   root:
     description: Directory holding the package pyproject.toml.
     required: false
@@ -11,8 +28,28 @@ runs:
   using: composite
   steps:
     - name: Verify tag, package version and PyPI
+      if: inputs.mode == 'unpublished'
       shell: bash
       env:
         RELEASE_REF: ${{ github.ref }}
         RELEASE_ROOT: ${{ inputs.root }}
       run: python3 -I "${{ github.action_path }}/verify_release_version.py" --root "$RELEASE_ROOT" --ref "$RELEASE_REF"
+    - name: Verify published wheel payload and container pin
+      if: inputs.mode == 'published-wheel'
+      shell: bash
+      env:
+        RELEASE_ROOT: ${{ inputs.root }}
+        RELEASE_DISTRIBUTION: ${{ inputs.distribution }}
+        RELEASE_MODULE: ${{ inputs.module }}
+        RELEASE_DOCKERFILE: ${{ inputs.dockerfile }}
+        RELEASE_EXTRAS: ${{ inputs.extras }}
+      run: >-
+        python3 -I "${{ github.action_path }}/public_wheel.py"
+        --root "$RELEASE_ROOT" --distribution "$RELEASE_DISTRIBUTION"
+        --module "$RELEASE_MODULE" --dockerfile "$RELEASE_DOCKERFILE" --extras "$RELEASE_EXTRAS"
+    - name: Validate guard mode
+      shell: bash
+      env:
+        GUARD_MODE: ${{ inputs.mode }}
+      run: |
+        case "$GUARD_MODE" in unpublished|published-wheel) ;; *) echo "Unknown release guard mode" >&2; exit 1 ;; esac
