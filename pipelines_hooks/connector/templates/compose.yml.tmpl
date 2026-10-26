@@ -10,26 +10,23 @@ services:
     security_opt:
       - no-new-privileges:true
     pids_limit: 256
-    mem_limit: ${@@MEMORY_ENV@@:-@@MEMORY@@}
-    cpus: ${@@CPU_ENV@@:-@@CPU@@}
+    mem_limit: @@MEMORY@@
+    cpus: @@CPU@@
     tmpfs:
-      - /tmp:rw,noexec,nosuid,nodev,size=64m
+      - /tmp:rw,noexec,nosuid,nodev,size=@@TMPFS_SIZE@@
     image: ${@@IMAGE_VAR@@:?set-@@IMAGE_VAR@@-to-image@sha256-digest}
-    container_name: @@SERVICE@@
-    hostname: @@SERVICE@@
-    restart: always
-@@VOLUMES@@    env_file:
-@@ENV_FILE@@    environment:
+@@CONTAINER_NAME@@@@HOSTNAME@@    restart: @@RESTART@@
+@@VOLUMES@@@@ENV_FILE@@    environment:
       - PYTHONUNBUFFERED=1
       - HOST=0.0.0.0
       - PORT=@@PORT@@
       - TRANSPORT=streamable-http
 @@COMPOSE_ENV@@    ports:
-      - "127.0.0.1:@@PORT@@:@@PORT@@"
+      - "@@PUBLISH_HOST@@:@@PUBLISH_PORT@@:@@PORT@@"
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:@@PORT@@/health')"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:@@PORT@@/health'@@HEALTH_COMMAND_TIMEOUT@@)"]
       interval: 30s
-      timeout: 10s
+      timeout: @@HEALTH_TIMEOUT@@
       retries: 3
       start_period: 10s
     logging:

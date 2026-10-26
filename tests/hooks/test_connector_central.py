@@ -102,6 +102,66 @@ def test_render_is_deterministic_and_driven_by_the_table(tmp_path: Path) -> None
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_preserves_explicit_runtime_contract(tmp_path: Path) -> None:
+    pyproject = (
+        PYPROJECT
+        + """
+image_var = "SYSTEMS_MANAGER_MCP_IMAGE_DIGEST"
+restart = "unless-stopped"
+tmpfs_size = "128m"
+env_file_mode = "none"
+publish_host = "${SYSTEMS_MANAGER_MCP_BIND_ADDRESS:-127.0.0.1}"
+publish_port = "${SYSTEMS_MANAGER_MCP_PORT:-8000}"
+container_name = false
+hostname = false
+health_timeout = "5s"
+health_command_timeout = 3
+compose_env = ["AUTH_TYPE=${AUTH_TYPE:?authenticated MCP transport required}"]
+limits = {mcp = {memory_limit_env = "", memory_limit = "1g", cpu_limit_env = "", cpu_limit = "1.0"}}
+"""
+    )
+    root = _repo(tmp_path, pyproject)
+    compose = container.render(root)["mcp.compose.yml"]
+    assert (
+        "image: ${SYSTEMS_MANAGER_MCP_IMAGE_DIGEST:?set-SYSTEMS_MANAGER_MCP_IMAGE_DIGEST-to-image@sha256-digest}"
+        in compose
+    )
+    assert "restart: unless-stopped\n" in compose and "size=128m\n" in compose
+    assert "mem_limit: 1g\n    cpus: 1.0\n" in compose
+    assert "    env_file:" not in compose
+    assert "- AUTH_TYPE=${AUTH_TYPE:?authenticated MCP transport required}\n" in compose
+    assert '"${SYSTEMS_MANAGER_MCP_BIND_ADDRESS:-127.0.0.1}:${SYSTEMS_MANAGER_MCP_PORT:-8000}:9000"' in compose
+    assert "container_name:" not in compose and "hostname:" not in compose
+    assert '    init: true\n    user: "10001:10001"\n    read_only: true\n' in compose
+    assert (
+        "    cap_drop:\n      - ALL\n    security_opt:\n      - no-new-privileges:true\n    pids_limit: 256\n"
+        in compose
+    )
+    assert "urlopen('http://localhost:9000/health', timeout=3)" in compose
+    assert "      timeout: 5s\n" in compose
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("image_var", "not-an-env-name"),
+        ("restart", "sometimes"),
+        ("tmpfs_size", "0m"),
+        ("publish_host", "bad host"),
+        ("health_timeout", "0s"),
+        ("health_command_timeout", 0),
+        ("env_file_mode", "secret"),
+    ],
+)
+def test_render_refuses_invalid_runtime_contract(tmp_path: Path, key: str, value: object) -> None:
+    rendered = json.dumps(value) if isinstance(value, str) else str(value).lower()
+    root = _repo(tmp_path, PYPROJECT + f"{key} = {rendered}\n")
+    with pytest.raises(CannotRun):
+        container.render(root)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
 def test_render_refreshes_the_detected_branded_sdk_distribution(tmp_path: Path) -> None:
     pyproject = PYPROJECT.replace(
         "[project.optional-dependencies]", 'dependencies = ["scion-sdk[mcp]>=1.0"]\n[project.optional-dependencies]'

@@ -10,7 +10,9 @@ image kinds; a repo that runs differently sets ``limits`` per kind, each key opt
     [tool.pipelines.container]
     limits = {agent = {memory_limit_env = "AGENT_CONTAINER_MEMORY_LIMIT", memory_limit = "4g",
                        cpu_limit_env = "AGENT_CONTAINER_CPU_LIMIT", cpu_limit = "2.0"}}
-``env_file_optional = true`` keeps ``../.env`` optional (compose starts without it) instead of required.
+``env_file_optional = true`` keeps ``../.env`` optional (compose starts without it) instead of required. A connector
+that must preserve an existing runtime may use ``env_file_mode = "none"`` and the explicit compose selectors below;
+their defaults remain the canonical secure form.
 Nothing is read from a committed Dockerfile; a connector commits none of these files.
 ``--check`` renders into memory and fails when a tracked copy exists under ``docker/``
 (a committed rendering is a second source of truth), printing nothing else.
@@ -45,8 +47,14 @@ ENV_FILE_REQUIRED = "      - ../.env\n"
 ENV_FILE_OPTIONAL = "      - path: ../.env\n        required: false\n"
 CONFIG_ROOT = PurePosixPath("/etc")
 _INTERPOLATION = re.compile(r"\$\{[A-Z_][A-Z0-9_]*(?:(?::?[-?])[^}\s]*)?\}")
+_ENV_NAME = re.compile(r"[A-Z_][A-Z0-9_]*")
+_COMPOSE_TOKEN = re.compile(r"(?:[A-Za-z0-9_.:-]+|\$\{[A-Z_][A-Z0-9_]*(?:(?::?[-?])[^}\s]*)?\})")
 _PLAIN_PATH = re.compile(r"/[^\s#'\"]*")
 _VOLUME_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
+_RESTART_POLICIES = frozenset({"no", "always", "unless-stopped"})
+_RESTART_FAILURE = re.compile(r"on-failure(?::[1-9][0-9]*)?")
+_SIZE = re.compile(r"[1-9][0-9]*(?:[bkmgte]i?|[bkmgte])?", re.IGNORECASE)
+_DURATION = re.compile(r"[1-9][0-9]*[smh]", re.IGNORECASE)
 STATE_VOLUME_KEYS = frozenset({"name", "target"})
 DEFAULT_DEBUG_APT = (
     "ripgrep tree fd-find curl nano build-essential cmake libssl-dev libcurl4-openssl-dev pkg-config cargo rustc"
@@ -91,6 +99,77 @@ def _entrypoints(table: dict[str, Any], scripts: set[str], dist: str) -> dict[st
     if not found:
         raise CannotRun("no mcp or agent entrypoint: add [project.scripts] or [tool.pipelines.container.entrypoints]")
     return found
+
+
+def _compose_token(raw: Any, key: str, default: str) -> str:
+    value = default if raw is None else raw
+    if isinstance(value, int) and not isinstance(value, bool):
+        value = str(value)
+    if not isinstance(value, str) or not _COMPOSE_TOKEN.fullmatch(value):
+        raise CannotRun(f"[tool.pipelines.container] {key} must be a literal or one Compose interpolation")
+    return value
+
+
+def _env_name(raw: Any, key: str, default: str) -> str:
+    value = default if raw is None else raw
+    if not isinstance(value, str) or not _ENV_NAME.fullmatch(value):
+        raise CannotRun(f"[tool.pipelines.container] {key} must be an uppercase environment variable name")
+    return value
+
+
+def _limit(raw: dict[str, Any], env_key: str, value_key: str) -> str:
+    environment = raw.get(env_key, DEFAULT_LIMITS[env_key])
+    value = raw.get(value_key, DEFAULT_LIMITS[value_key])
+    if not isinstance(environment, str) or (environment and not _ENV_NAME.fullmatch(environment)):
+        raise CannotRun(f"[tool.pipelines.container] limits.{env_key} must be empty or an uppercase environment name")
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        value = str(value)
+    if not isinstance(value, str) or not _COMPOSE_TOKEN.fullmatch(value):
+        raise CannotRun(f"[tool.pipelines.container] limits.{value_key} must be a Compose scalar")
+    return value if not environment else f"${{{environment}:-{value}}}"
+
+
+def _restart(raw: Any) -> str:
+    value = "always" if raw is None else raw
+    if not isinstance(value, str) or (value not in _RESTART_POLICIES and not _RESTART_FAILURE.fullmatch(value)):
+        raise CannotRun("[tool.pipelines.container] restart must be no, always, unless-stopped or on-failure")
+    return value
+
+
+def _size(raw: Any) -> str:
+    value = "64m" if raw is None else raw
+    if not isinstance(value, str) or not _SIZE.fullmatch(value):
+        raise CannotRun("[tool.pipelines.container] tmpfs_size must be a positive Compose size")
+    return value
+
+
+def _duration(raw: Any, key: str, default: str) -> str:
+    value = default if raw is None else raw
+    if not isinstance(value, str) or not _DURATION.fullmatch(value):
+        raise CannotRun(f"[tool.pipelines.container] {key} must be a positive Compose duration")
+    return value
+
+
+def _identity_line(table: dict[str, Any], key: str, service: str) -> str:
+    value = table.get(key, service)
+    if value is False:
+        return ""
+    if not isinstance(value, str) or not _VOLUME_NAME.fullmatch(value):
+        raise CannotRun(f"[tool.pipelines.container] {key} must be a Docker name or false")
+    return f"    {key}: {value}\n"
+
+
+def _env_file(table: dict[str, Any]) -> str:
+    mode = table.get("env_file_mode")
+    if mode is None:
+        mode = "optional" if table.get("env_file_optional") else "required"
+    if mode == "none":
+        return ""
+    if mode == "required":
+        return "    env_file:\n" + ENV_FILE_REQUIRED
+    if mode == "optional":
+        return "    env_file:\n" + ENV_FILE_OPTIONAL
+    raise CannotRun("[tool.pipelines.container] env_file_mode must be required, optional or none")
 
 
 def _apt(packages: list[str]) -> str:
@@ -310,25 +389,47 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
     )
     env = "".join(f"      - {line}\n" for line in table.get("compose_env", []))
     volumes, top_level_volumes = compose_volume_blocks(table.get("config_mounts"), table.get("state_volumes"))
-    env_file = ENV_FILE_OPTIONAL if table.get("env_file_optional") else ENV_FILE_REQUIRED
+    publish_host = _compose_token(table.get("publish_host"), "publish_host", "127.0.0.1")
+    publish_port = _compose_token(table.get("publish_port"), "publish_port", port)
+    restart = _restart(table.get("restart"))
+    tmpfs_size = _size(table.get("tmpfs_size"))
+    health_timeout = _duration(table.get("health_timeout"), "health_timeout", "10s")
+    health_command_timeout = table.get("health_command_timeout")
+    if health_command_timeout is not None and (
+        isinstance(health_command_timeout, bool)
+        or not isinstance(health_command_timeout, int)
+        or health_command_timeout <= 0
+    ):
+        raise CannotRun("[tool.pipelines.container] health_command_timeout must be a positive integer")
+    command_timeout = "" if health_command_timeout is None else f", timeout={health_command_timeout}"
+    env_file = _env_file(table)
     for target in entries:
         service = f"{dist}-{target}"
+        image_var = _env_name(
+            table.get("image_var"), "image_var", re.sub(r"[^A-Z0-9]", "_", service.upper()) + "_IMAGE"
+        )
         limits = {**DEFAULT_LIMITS, **dict(table.get("limits", {}).get(target, {}))}
         files[f"{target}.compose.yml"] = _fill(
             TEMPLATES / "compose.yml.tmpl",
             {
                 "@@SERVICE@@": service,
-                "@@IMAGE_VAR@@": re.sub(r"[^A-Z0-9]", "_", service.upper()) + "_IMAGE",
+                "@@IMAGE_VAR@@": image_var,
                 "@@UID@@": uid,
                 "@@PORT@@": port,
                 "@@COMPOSE_ENV@@": env,
                 "@@VOLUMES@@": volumes,
                 "@@TOP_LEVEL_VOLUMES@@": top_level_volumes,
                 "@@ENV_FILE@@": env_file,
-                "@@MEMORY_ENV@@": str(limits["memory_limit_env"]),
-                "@@MEMORY@@": str(limits["memory_limit"]),
-                "@@CPU_ENV@@": str(limits["cpu_limit_env"]),
-                "@@CPU@@": str(limits["cpu_limit"]),
+                "@@MEMORY@@": _limit(limits, "memory_limit_env", "memory_limit"),
+                "@@CPU@@": _limit(limits, "cpu_limit_env", "cpu_limit"),
+                "@@TMPFS_SIZE@@": tmpfs_size,
+                "@@RESTART@@": restart,
+                "@@PUBLISH_HOST@@": publish_host,
+                "@@PUBLISH_PORT@@": publish_port,
+                "@@HEALTH_TIMEOUT@@": health_timeout,
+                "@@HEALTH_COMMAND_TIMEOUT@@": command_timeout,
+                "@@CONTAINER_NAME@@": _identity_line(table, "container_name", service),
+                "@@HOSTNAME@@": _identity_line(table, "hostname", service),
             },
         )
     return files
