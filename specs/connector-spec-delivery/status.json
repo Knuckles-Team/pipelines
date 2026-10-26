@@ -3213,9 +3213,13 @@
     {
       "id": "PIPE-CONNSPEC-R158.1",
       "title": "`rom-manager` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:49"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R158.2",
@@ -3254,16 +3258,24 @@
     {
       "id": "PIPE-CONNSPEC-R159.1",
       "title": "`salesforce-agent` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:50"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R159.2",
       "title": "`salesforce-agent` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:85"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R159.3",
@@ -3295,9 +3307,13 @@
     {
       "id": "PIPE-CONNSPEC-R160.1",
       "title": "`scholarx` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:51"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R160.2",
@@ -3336,9 +3352,13 @@
     {
       "id": "PIPE-CONNSPEC-R161.1",
       "title": "`searxng-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:52"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R161.2",
@@ -3377,16 +3397,24 @@
     {
       "id": "PIPE-CONNSPEC-R162.1",
       "title": "`servicenow-api` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:53"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R162.2",
       "title": "`servicenow-api` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:86"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R162.3",
@@ -3418,16 +3446,24 @@
     {
       "id": "PIPE-CONNSPEC-R163.1",
       "title": "`spark-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:54"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R163.2",
       "title": "`spark-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:87"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R163.3",
@@ -3459,16 +3495,24 @@
     {
       "id": "PIPE-CONNSPEC-R164.1",
       "title": "`sql-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:55"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R164.2",
       "title": "`sql-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:88"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R164.3",
@@ -3500,16 +3544,24 @@
     {
       "id": "PIPE-CONNSPEC-R165.1",
       "title": "`stirlingpdf-agent` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:56"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R165.2",
       "title": "`stirlingpdf-agent` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:89"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R165.3",
@@ -3541,9 +3593,13 @@
     {
       "id": "PIPE-CONNSPEC-R166.1",
       "title": "`systems-manager` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:57"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R166.2",
@@ -3582,16 +3638,24 @@
     {
       "id": "PIPE-CONNSPEC-R167.1",
       "title": "`technitium-dns-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:58"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R167.2",
       "title": "`technitium-dns-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r158_167.py:90"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R167.3",
@@ -3623,16 +3687,24 @@
     {
       "id": "PIPE-CONNSPEC-R168.1",
       "title": "`tunnel-manager` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:46"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R168.2",
       "title": "`tunnel-manager` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:93"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R168.3",
@@ -3664,16 +3736,24 @@
     {
       "id": "PIPE-CONNSPEC-R169.1",
       "title": "`twenty-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:47"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R169.2",
       "title": "`twenty-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:94"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R169.3",
@@ -3705,9 +3785,13 @@
     {
       "id": "PIPE-CONNSPEC-R170.1",
       "title": "`uptime-kuma-agent` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:48"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R170.2",
@@ -3746,16 +3830,24 @@
     {
       "id": "PIPE-CONNSPEC-R171.1",
       "title": "`vaultwarden-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:49"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R171.2",
       "title": "`vaultwarden-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:95"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R171.3",
@@ -3787,9 +3879,13 @@
     {
       "id": "PIPE-CONNSPEC-R172.1",
       "title": "`vector-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:50"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R172.2",
@@ -3828,9 +3924,13 @@
     {
       "id": "PIPE-CONNSPEC-R173.1",
       "title": "`wger-agent` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:51"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R173.2",
@@ -3869,9 +3969,13 @@
     {
       "id": "PIPE-CONNSPEC-R174.1",
       "title": "`world-reference-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:52"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R174.2",

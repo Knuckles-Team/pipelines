@@ -1,0 +1,3382 @@
+{
+  "central_requirements": {
+    "R158": {
+      "PIPE-CONNSPEC-R158": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`rom-manager` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R158.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "rom-manager` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R158.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "rom-manager` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R158.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/rom-manager/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "rom-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R158.4": {
+        "acceptance": "Check that its `rom-manager-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "rom-manager` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R159": {
+      "PIPE-CONNSPEC-R159": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`salesforce-agent` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R159.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "salesforce-agent` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R159.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "salesforce-agent` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R159.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/salesforce-agent/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "salesforce-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R159.4": {
+        "acceptance": "Check that its `salesforce-agent-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "salesforce-agent` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R160": {
+      "PIPE-CONNSPEC-R160": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`scholarx` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R160.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "scholarx` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R160.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "scholarx` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R160.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/scholarx/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "scholarx` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R160.4": {
+        "acceptance": "Check that its `scholarx-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "scholarx` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R161": {
+      "PIPE-CONNSPEC-R161": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`searxng-mcp` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R161.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "searxng-mcp` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R161.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "searxng-mcp` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R161.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/searxng-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "searxng-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R161.4": {
+        "acceptance": "Check that its `searxng-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "searxng-mcp` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R162": {
+      "PIPE-CONNSPEC-R162": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`servicenow-api` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R162.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "servicenow-api` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R162.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "servicenow-api` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R162.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/servicenow-api/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "servicenow-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R162.4": {
+        "acceptance": "Check that its `servicenow-api-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "servicenow-api` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R163": {
+      "PIPE-CONNSPEC-R163": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`spark-mcp` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R163.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "spark-mcp` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R163.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "spark-mcp` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R163.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/spark-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "spark-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R163.4": {
+        "acceptance": "Check that its `spark-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "spark-mcp` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R164": {
+      "PIPE-CONNSPEC-R164": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`sql-mcp` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R164.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "sql-mcp` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R164.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "sql-mcp` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R164.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/sql-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "sql-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R164.4": {
+        "acceptance": "Check that its `sql-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "sql-mcp` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R165": {
+      "PIPE-CONNSPEC-R165": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`stirlingpdf-agent` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R165.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "stirlingpdf-agent` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R165.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "stirlingpdf-agent` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R165.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/stirlingpdf-agent/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "stirlingpdf-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R165.4": {
+        "acceptance": "Check that its `stirlingpdf-agent-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "stirlingpdf-agent` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R166": {
+      "PIPE-CONNSPEC-R166": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`systems-manager` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R166.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "systems-manager` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R166.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "systems-manager` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R166.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/systems-manager/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "systems-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R166.4": {
+        "acceptance": "Check that its `systems-manager-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "systems-manager` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    },
+    "R167": {
+      "PIPE-CONNSPEC-R167": {
+        "acceptance": "The rollup is the minimum state of its four children.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "**`technitium-dns-mcp` adopts the standard spec-delivery method and page.** Rollup of the four children below, following the reference implementation (PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005).",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R167.1": {
+        "acceptance": "Check that `specs/` exists and contains a `status.json` written by `pipelines-hook spec-status --write`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "technitium-dns-mcp` has a `specs/` tree with a generated `status.json`.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R167.2": {
+        "acceptance": "Check that the pre-commit config lists `spec-status`, `spec-decomposition`, and `spec-trailers` from `Knuckles-Team/pipelines`.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "technitium-dns-mcp` has the three spec hooks in its pre-commit config.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R167.3": {
+        "acceptance": "Check that a workflow calls `pages_pipeline.yml@main` with `spec_dashboard_enabled: true`, and `gh api repos/Knuckles-Team/technitium-dns-mcp/pages` returns a site.",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "technitium-dns-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R167.4": {
+        "acceptance": "Check that its `technitium-dns-mcp-development` skill has the section \"Rapid delivery: the 5-minute contract\".",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "technitium-dns-mcp` has the rapid-delivery section in its development skill.",
+        "verified_by": []
+      }
+    }
+  },
+  "collection_finished_utc": "2026-10-26T14:09:00Z",
+  "collection_started_utc": "2026-10-26T14:08:29Z",
+  "provider": {
+    "baseline_commit_subject": "test(specs): bind R118-R157 consumer contract evidence",
+    "canonical_aggregate_hooks": [
+      "connector-standard",
+      "dependency-readiness",
+      "secrets",
+      "spec",
+      "tests-fast"
+    ],
+    "canonical_template": {
+      "hooks": [
+        "connector-standard",
+        "dependency-readiness",
+        "secrets",
+        "spec",
+        "tests-fast"
+      ],
+      "rev": "main"
+    },
+    "canonical_template_sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed",
+    "repo": "pipelines",
+    "requirements_path": "specs/connector-spec-delivery/requirements.md",
+    "requirements_sha256": "2cb6e004ecfbbc7594e276e20266204074b6de68187985fe9e152f756004cca8",
+    "sha": "753086e0fd9783732ecd53eef0e08be8f6dd27c9",
+    "spec_group": [
+      "spec-standard",
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "spec_group_source": "pipelines_hooks/cli.py:71-74",
+    "spec_group_source_sha256": "34ffc10ed1fdad94c90b95c2c6fee2f2de76746af976a35dad0783e979ecf619",
+    "status_path": "specs/connector-spec-delivery/status.json",
+    "status_sha256": "8cfc0dac89d7172b85d2825bfc8607c78f03a7acf96587c4280e1e46a382f54b"
+  },
+  "purpose": "Test-only immutable consumer contract evidence for PIPE-CONNSPEC R158-R167; next shared pipelines batch after the 73-leaf train.",
+  "qualification": {
+    "aggregate_hook_mapping_open": false,
+    "excluded_parent_rows": [
+      "PIPE-CONNSPEC-R103",
+      "PIPE-CONNSPEC-R104",
+      "PIPE-CONNSPEC-R105",
+      "PIPE-CONNSPEC-R106",
+      "PIPE-CONNSPEC-R107",
+      "PIPE-CONNSPEC-R108",
+      "PIPE-CONNSPEC-R109",
+      "PIPE-CONNSPEC-R110",
+      "PIPE-CONNSPEC-R111",
+      "PIPE-CONNSPEC-R112",
+      "PIPE-CONNSPEC-R113",
+      "PIPE-CONNSPEC-R114",
+      "PIPE-CONNSPEC-R115",
+      "PIPE-CONNSPEC-R116",
+      "PIPE-CONNSPEC-R117",
+      "PIPE-CONNSPEC-R118",
+      "PIPE-CONNSPEC-R119",
+      "PIPE-CONNSPEC-R120",
+      "PIPE-CONNSPEC-R121",
+      "PIPE-CONNSPEC-R122",
+      "PIPE-CONNSPEC-R123",
+      "PIPE-CONNSPEC-R124",
+      "PIPE-CONNSPEC-R125",
+      "PIPE-CONNSPEC-R126",
+      "PIPE-CONNSPEC-R127",
+      "PIPE-CONNSPEC-R128",
+      "PIPE-CONNSPEC-R129",
+      "PIPE-CONNSPEC-R130",
+      "PIPE-CONNSPEC-R131",
+      "PIPE-CONNSPEC-R132",
+      "PIPE-CONNSPEC-R133",
+      "PIPE-CONNSPEC-R134",
+      "PIPE-CONNSPEC-R135",
+      "PIPE-CONNSPEC-R136",
+      "PIPE-CONNSPEC-R137",
+      "PIPE-CONNSPEC-R138",
+      "PIPE-CONNSPEC-R139",
+      "PIPE-CONNSPEC-R140",
+      "PIPE-CONNSPEC-R141",
+      "PIPE-CONNSPEC-R142",
+      "PIPE-CONNSPEC-R143",
+      "PIPE-CONNSPEC-R144",
+      "PIPE-CONNSPEC-R145",
+      "PIPE-CONNSPEC-R146",
+      "PIPE-CONNSPEC-R147",
+      "PIPE-CONNSPEC-R148",
+      "PIPE-CONNSPEC-R149",
+      "PIPE-CONNSPEC-R150",
+      "PIPE-CONNSPEC-R151",
+      "PIPE-CONNSPEC-R152",
+      "PIPE-CONNSPEC-R153",
+      "PIPE-CONNSPEC-R154",
+      "PIPE-CONNSPEC-R155",
+      "PIPE-CONNSPEC-R156",
+      "PIPE-CONNSPEC-R157"
+    ],
+    "public_count_claim": false,
+    "rollups_promoted": false,
+    "target_parent_rows": [
+      "PIPE-CONNSPEC-R158",
+      "PIPE-CONNSPEC-R159",
+      "PIPE-CONNSPEC-R160",
+      "PIPE-CONNSPEC-R161",
+      "PIPE-CONNSPEC-R162",
+      "PIPE-CONNSPEC-R163",
+      "PIPE-CONNSPEC-R164",
+      "PIPE-CONNSPEC-R165",
+      "PIPE-CONNSPEC-R166",
+      "PIPE-CONNSPEC-R167"
+    ]
+  },
+  "repos": {
+    "rom-manager": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "aggregate hook/revision/config proof incomplete",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-23T21:36:20Z",
+          "databaseId": 40027984917,
+          "headSha": "619297b4471343372a2da29c1d771142ea71acb7",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/rom-manager/actions/runs/40027984917",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/rom-manager/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/rom-manager/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": false,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [],
+        "literal_hooks_present": [],
+        "missing": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider": false,
+        "revs": [],
+        "stages": {},
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R158",
+      "sha": "619297b4471343372a2da29c1d771142ea71acb7",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 712,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "d0885173d3c382502e4fd5d80a51055c5f4ab8aec31844cfc5a5a80eeebec938"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 4884,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet|node_modules'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: v6.0.0 # v6.0.0\n  hooks:\n  - id: check-added-large-files\n    args: [\"--maxkb=2000\"]\n  - id: check-ast\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: check-yaml\n    args: [\"--unsafe\"]\n  - id: check-toml\n  - id: check-json\n  - id: fix-byte-order-marker\n    exclude: .gitignore\n  - id: check-merge-conflict\n  - id: detect-private-key\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: no-commit-to-branch\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: v0.17.1 # v0.15.12\n  hooks:\n  - id: ruff-check\n    args: [\"--fix\", \"--ignore=E402,B008,E501\"]\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: ruff-format\n    exclude: ^(tests/|test/|scripts/|script/)\n- repo: https://github.com/pre-commit/mirrors-mypy\n  rev: v2.4.0 # v1.20.2\n  hooks:\n  - id: mypy\n    additional_dependencies: [pydantic==2.13.4, types-PyYAML==6.0.12.20260518, types-requests==2.33.0.20260518,\n        types-setuptools==83.0.0.20260706]\n    args: [\"--ignore-missing-imports\"]\n- repo: https://github.com/jendrikseipp/vulture\n  rev: v2.16 # v2.16\n  hooks:\n  - id: vulture\n    pass_filenames: false\n    args: [\".\", \"--min-confidence\", \"95\", \"--exclude\", \"node_modules,dotnet,.venv\"]\n    require_serial: true\n- repo: https://github.com/codespell-project/codespell\n  rev: v2.4.3 # v2.4.2\n  hooks:\n  - id: codespell\n    args: [\"-L\", \"ans,linar,nam,tread,ot,\", \"--ignore-words=.codespellignore\"]\n    # game_codes.py is a verbatim registry of official PSX ROM titles (proper\n    # nouns / as-shipped spellings); romm/openapi.json is a vendored third-party\n    # API spec \u2014 both are data, not prose, and must not be \"corrected\".\n    exclude: ^(tests/|test/|scripts/|script/|.*lock.*|.*game_codes.*|.*openapi.*)\n- repo: https://github.com/PyCQA/bandit\n  rev: 1.9.4 # 1.9.4\n  hooks:\n  - id: bandit\n    args: [\"--skip\", \"B101,B404,B603,B607,B311\"]\n    exclude: ^(tests/|test/|scripts/|script/|__tests__/)\n- repo: https://github.com/nbQA-dev/nbQA\n  rev: 1.9.1 # 1.9.1\n  hooks:\n  - id: nbqa-ruff\n    args: [\"--fix\"]\n- repo: local\n  hooks:\n  - id: dependency-readiness\n    name: Dependency readiness \u2014 every declared intra-fleet constraint is installable\n    entry: bash -c 'P=\"\"; d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do [ -d \"$d/agent-packages/agents/repository-manager\" ] && { P=\"$d/agent-packages/agents/repository-manager\"; break; }; d=$(dirname \"$d\"); done; [ -n \"$P\" ] || P=repository-manager; uv run --no-project --python 3.12 --prerelease=allow --with \"$P\" python -m repository_manager.dependency_readiness .'\n    language: system\n    pass_filenames: false\n    always_run: true\n    stages: [manual, pre-push]\n- repo: local\n  hooks:\n  - id: mermaid-validate\n    name: mermaid-validate\n    entry: mermaid-validate\n    language: node\n    additional_dependencies: ['@zabaca/mermaid-validate@1.0.1']\n    types: [markdown]\n    pass_filenames: true\n  - id: check-cli-help\n    name: check cli help\n    entry: |-\n      bash -c 'for f in $(find . -type f -name \"mcp_server.py\" -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do mod=$(echo \"$f\" | sed -e \"s/^\\.\\///\" -e \"s/\\.py$//\" -e \"s/\\//./g\"); uv run --frozen --all-extras python -m \"$mod\" --help >/dev/null || exit 1; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: check-bumpversion\n    name: validate bumpversion config\n    entry: |-\n      bash -c 'if [ -f \".bumpversion.cfg\" ]; then bump2version patch --dry-run --allow-dirty; fi'\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: https://github.com/AleksaC/hadolint-py\n  rev: v2.15.1 # v2.14.0\n  hooks:\n  - id: hadolint\n    args:\n    - --ignore=DL3008\n    - --ignore=DL3015\n    - --ignore=DL3009\n    - --ignore=DL4006\n    - --ignore=SC2102\n- repo: https://github.com/IamTheFij/docker-pre-commit\n  rev: v3.0.1 # v3.0.1\n  hooks:\n  - id: docker-compose-check\n\n- repo: local\n  hooks:\n  - id: verify-api-integration\n    name: Verify API-to-MCP Integration Coverage\n    entry: python scripts/verify_api_integration.py --local\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: local\n  hooks:\n  - id: security-sanitizer\n    name: Security and Garbage Sanitizer\n    entry: python scripts/security_sanitizer.py\n    language: python\n    pass_filenames: false\n    always_run: true\n",
+          "sha256": "2d2934673040dda6fdc76405057a43ca7280e37baf42ef31f6de8474944d1591"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "rom-manager",
+            "requirement_ids": [
+              "CONN-ROM-MANAGER-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-ROM-MANAGER-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "27131c28494c"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_default_content_surfaces.py:15"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ROM-MANAGER-CONNECTOR-CONTENT"
+          },
+          "specs/connector-identity/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "rom-manager",
+            "requirement_ids": [
+              "CONN-ROM-MANAGER-CONNECTOR-IDENTITY-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-ROM-MANAGER-CONNECTOR-IDENTITY-R001",
+                "landed_in": [
+                  "20c772473a53",
+                  "e941df778984"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:35"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ROM-MANAGER-CONNECTOR-IDENTITY"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "9704908056ac669c6e7c77dff236d201b93a06e97f8e753857888bc338801a9c",
+          "specs/connector-identity/status.json": "9ed3dddd0d9d9f23fa0c03f6d1687cb11ee5b1890e716034e84ec1be2cc72ac9"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_count": 4,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_states": [
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ROM-MANAGER-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "CONN-ROM-MANAGER-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ROM-MANAGER-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "27131c28494c"
+            ],
+            "parent": "CONN-ROM-MANAGER-CONNECTOR-CONTENT",
+            "parent_title": "CONN-ROM-MANAGER-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "Default content",
+            "verified_by": [
+              "tests/test_default_content_surfaces.py:15"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ROM-MANAGER-CONNECTOR-IDENTITY",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "CONN-ROM-MANAGER-CONNECTOR-IDENTITY",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-ROM-MANAGER-CONNECTOR-IDENTITY-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "20c772473a53",
+              "e941df778984"
+            ],
+            "parent": "CONN-ROM-MANAGER-CONNECTOR-IDENTITY",
+            "parent_title": "CONN-ROM-MANAGER-CONNECTOR-IDENTITY",
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "Fleet name",
+            "verified_by": [
+              "tests/test_fleet_name.py:35"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ROM-MANAGER-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"rom-manager\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ROM-MANAGER-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ROM-MANAGER-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"27131c28494c\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n",
+          "specs/connector-identity/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ROM-MANAGER-CONNECTOR-IDENTITY\",\n  \"owner_repo\": \"rom-manager\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ROM-MANAGER-CONNECTOR-IDENTITY-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ROM-MANAGER-CONNECTOR-IDENTITY-R001\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"20c772473a53\",\n        \"e941df778984\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:35\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-ROM-MANAGER-CONNECTOR-CONTENT",
+          "CONN-ROM-MANAGER-CONNECTOR-CONTENT-R001",
+          "CONN-ROM-MANAGER-CONNECTOR-IDENTITY",
+          "CONN-ROM-MANAGER-CONNECTOR-IDENTITY-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R158.1": true,
+        "PIPE-CONNSPEC-R158.2": false,
+        "PIPE-CONNSPEC-R158.3": false,
+        "PIPE-CONNSPEC-R158.4": false
+      },
+      "tree_file_count": 149
+    },
+    "salesforce-agent": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T12:23:35Z",
+          "databaseId": 40093734157,
+          "headSha": "61777c7a0493d1337184c9755f773bbdc8cfd51a",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/salesforce-agent/actions/runs/40093734157",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/salesforce-agent/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/salesforce-agent/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R159",
+      "sha": "61777c7a0493d1337184c9755f773bbdc8cfd51a",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "salesforce-agent",
+            "requirement_ids": [
+              "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "9cd46b2b13c5"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT"
+          },
+          "specs/connector-identity/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "salesforce-agent",
+            "requirement_ids": [
+              "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY-R001",
+                "landed_in": [
+                  "650c05690885"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:34"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "9051ffc8e70364d7efb80fe9d14563d3c4ef146de20614649108327ad5cca9c0",
+          "specs/connector-identity/status.json": "453608ccb077e517e6ef648fe697f8dbe8a920d518ed3ffdfebae8ea961aafab"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_count": 4,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_states": [
+          "LANDED",
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "9cd46b2b13c5"
+            ],
+            "parent": "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "650c05690885"
+            ],
+            "parent": "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY",
+            "parent_title": "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY",
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "Fleet name",
+            "verified_by": [
+              "tests/test_fleet_name.py:34"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"salesforce-agent\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"9cd46b2b13c5\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/connector-identity/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY\",\n  \"owner_repo\": \"salesforce-agent\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY-R001\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"650c05690885\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT",
+          "CONN-SALESFORCE-AGENT-CONNECTOR-CONTENT-R001",
+          "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY",
+          "CONN-SALESFORCE-AGENT-CONNECTOR-IDENTITY-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R159.1": true,
+        "PIPE-CONNSPEC-R159.2": true,
+        "PIPE-CONNSPEC-R159.3": false,
+        "PIPE-CONNSPEC-R159.4": false
+      },
+      "tree_file_count": 108
+    },
+    "scholarx": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "aggregate hook/revision/config proof incomplete",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-23T21:41:44Z",
+          "databaseId": 40028628405,
+          "headSha": "8ebad86d4c9d2f9365f7e58998baf00f6a944eba",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/scholarx/actions/runs/40028628405",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/scholarx/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/scholarx/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": false,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [],
+        "literal_hooks_present": [],
+        "missing": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider": false,
+        "revs": [],
+        "stages": {},
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R160",
+      "sha": "8ebad86d4c9d2f9365f7e58998baf00f6a944eba",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 712,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "d0885173d3c382502e4fd5d80a51055c5f4ab8aec31844cfc5a5a80eeebec938"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 6203,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet|node_modules'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: check-added-large-files\n    args: [\"--maxkb=2000\"]\n    exclude: ^uv\\.lock$\n  - id: check-ast\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: check-yaml\n    args: [\"--unsafe\"]\n  - id: check-toml\n  - id: check-json\n  - id: fix-byte-order-marker\n    exclude: .gitignore\n  - id: check-merge-conflict\n  - id: detect-private-key\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: no-commit-to-branch\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: 38bfb07c0c64c304f47eb52090f8288150c77730  # frozen: v0.17.1\n  hooks:\n  - id: ruff-check\n    args: [\"--fix\", \"--ignore=E402,B008,E501\"]\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: ruff-format\n    exclude: ^(tests/|test/|scripts/|script/)\n- repo: https://github.com/pre-commit/mirrors-mypy\n  rev: 2834ec6639549dd6796205c8f011dedcd587288b  # frozen: v2.4.0\n  hooks:\n  - id: mypy\n    additional_dependencies: [pydantic==2.13.4, types-PyYAML==6.0.12.20260518, types-requests==2.33.0.20260518,\n        types-setuptools==83.0.0.20260706]\n    args: [\"--ignore-missing-imports\"]\n- repo: https://github.com/jendrikseipp/vulture\n  rev: 258fe6a1974e89a2add9a45519a9e9dd9f46154e  # frozen: v2.16\n  hooks:\n  - id: vulture\n    pass_filenames: false\n    args: [\".\", \"--min-confidence\", \"95\", \"--exclude\", \".venv,venv,node_modules,.git,build,dist\"]\n    require_serial: true\n- repo: https://github.com/codespell-project/codespell\n  rev: 57b21406f092110c18776e39b0bda50d37c945c8  # frozen: v2.4.3\n  hooks:\n  - id: codespell\n    args: [\"-L\", \"ans,linar,nam,tread,ot,\"]\n    exclude: ^(tests/|test/|scripts/|script/|.*lock.*)\n- repo: https://github.com/PyCQA/bandit\n  rev: 92ae8b82fb422a639f0ed8d99e96cea769594e08 # 1.9.4\n  hooks:\n  - id: bandit\n    args: [\"--skip\", \"B101,B404,B603\"]\n    exclude: ^(tests/|test/|scripts/|script/|__tests__/)\n- repo: https://github.com/nbQA-dev/nbQA\n  rev: f96ec7f3b26a32619435686eb5813235f7e3327e  # frozen: 1.9.1\n  hooks:\n  - id: nbqa-ruff\n    args: [\"--fix\"]\n- repo: local\n  hooks:\n  - id: dependency-readiness\n    name: Dependency readiness \u2014 every declared intra-fleet constraint is installable\n    entry: bash -c 'P=\"\"; d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do [ -d \"$d/agent-packages/agents/repository-manager\" ] && { P=\"$d/agent-packages/agents/repository-manager\"; break; }; d=$(dirname \"$d\"); done; [ -n \"$P\" ] || P=repository-manager; uv run --no-project --python 3.12 --prerelease=allow --with \"$P\" python -m repository_manager.dependency_readiness .'\n    language: system\n    pass_filenames: false\n    always_run: true\n    stages: [manual, pre-push]\n- repo: local\n  hooks:\n  - id: mermaid-validate\n    name: mermaid-validate\n    entry: mermaid-validate\n    language: node\n    additional_dependencies: ['@zabaca/mermaid-validate@1.0.1']\n    types: [markdown]\n    pass_filenames: true\n  - id: check-agent-standards\n    name: check agent standards\n    entry: |-\n      bash -c 'for f in $(find . -type f -name \"agent_server.py\" -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do grep -q \"warnings.filterwarnings\" \"$f\" && grep -q \"file=sys.stderr\" \"$f\" || { echo \"Missing warnings.filterwarnings or file=sys.stderr in $f\"; exit 1; }; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: check-cli-help\n    name: check cli help\n    entry: |-\n      bash -c 'for f in $(find . -type f \\( -name \"mcp_server.py\" -o -name \"agent_server.py\" \\) -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do mod=$(echo \"$f\" | sed -e \"s/^\\.\\///\" -e \"s/\\.py$//\" -e \"s/\\//./g\"); uv run --frozen --all-extras python -m \"$mod\" --help >/dev/null || exit 1; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: env-var-drift\n    name: check env-var/config drift\n    entry: bash -c 'if [ -f uv.lock ]; then uv run python -m agent_connector_sdk.mcp.env_drift --check; else python -m agent_connector_sdk.mcp.env_drift --check; fi'\n    language: system\n    pass_filenames: false\n    files: ^(README\\.md|\\.env\\.example|mcp_config.*\\.json|.*/mcp_config.*\\.json|docker/.*compose.*\\.ya?ml|.*/auth\\.py|.*/mcp_server\\.py)$\n  - id: check-bumpversion\n    name: validate bumpversion config\n    entry: |-\n      bash -c 'if [ -f \".bumpversion.cfg\" ]; then bump2version patch --dry-run --allow-dirty; fi'\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: local\n  hooks:\n  - id: pytest\n    name: pytest\n    entry: bash -c 'if [ -f uv.lock ]; then uv run --all-extras pytest tests -q --tb=short -m \"not slow\" --timeout=60; else pytest tests -q --tb=short -m \"not slow\" --timeout=60; fi'\n    language: system\n    types: [python]\n    pass_filenames: false\n    always_run: true\n    stages: [pre-push, manual]\n- repo: https://github.com/AleksaC/hadolint-py\n  rev: 6e7504451511eaeb62a3e7f14d63b0296cbf86eb  # frozen: v2.15.1\n  hooks:\n  - id: hadolint\n    args:\n    - --ignore=DL3008\n    - --ignore=DL3015\n    - --ignore=DL3009\n    - --ignore=DL4006\n    - --ignore=SC2102\n- repo: https://github.com/IamTheFij/docker-pre-commit\n  rev: f626253b23de45412865c07fd076ff95d4cd77a7 # v3.0.1\n  hooks:\n  - id: docker-compose-check\n\n- repo: local\n  hooks:\n  - id: verify-api-integration\n    name: Verify API-to-MCP Integration Coverage\n    entry: python scripts/verify_api_integration.py --local\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: local\n  hooks:\n  - id: security-sanitizer\n    name: Security and Garbage Sanitizer\n    entry: python scripts/security_sanitizer.py\n    language: python\n    pass_filenames: false\n    always_run: true\n",
+          "sha256": "360fe328b2f51da6546ef452a349e681dbd31c335c49be1098689205511ad130"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/api-coverage/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "scholarx",
+            "requirement_ids": [
+              "CONN-SCHOLARX-API-COVERAGE-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SCHOLARX-API-COVERAGE-R001",
+                "landed_in": [
+                  "85f82f3e7c54",
+                  "c98cfa5180a9"
+                ],
+                "title": "One tool per operation",
+                "verified_by": [
+                  "tests/test_operation_tools.py:13"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SCHOLARX-API-COVERAGE"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "scholarx",
+            "requirement_ids": [
+              "CONN-SCHOLARX-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SCHOLARX-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "c98cfa5180a9"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_default_content_surfaces.py:15"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SCHOLARX-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/api-coverage/status.json": "bfea7269867b354ccbe1779972127fc671c529592c918dd5886905d3fe793804",
+          "specs/connector-content/status.json": "8d0b45478be999133987d881c8928dd4761547686bc2944078eb1e7d71bb1211"
+        },
+        "status_files": [
+          "specs/api-coverage/status.json",
+          "specs/connector-content/status.json"
+        ],
+        "status_record_count": 4,
+        "status_record_sources": [
+          "specs/api-coverage/status.json",
+          "specs/connector-content/status.json"
+        ],
+        "status_record_states": [
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SCHOLARX-API-COVERAGE",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/api-coverage/status.json",
+            "state": "verified",
+            "title": "CONN-SCHOLARX-API-COVERAGE",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SCHOLARX-API-COVERAGE-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "85f82f3e7c54",
+              "c98cfa5180a9"
+            ],
+            "parent": "CONN-SCHOLARX-API-COVERAGE",
+            "parent_title": "CONN-SCHOLARX-API-COVERAGE",
+            "source": "specs/api-coverage/status.json",
+            "state": "verified",
+            "title": "One tool per operation",
+            "verified_by": [
+              "tests/test_operation_tools.py:13"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SCHOLARX-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "CONN-SCHOLARX-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SCHOLARX-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "c98cfa5180a9"
+            ],
+            "parent": "CONN-SCHOLARX-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SCHOLARX-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "Default content",
+            "verified_by": [
+              "tests/test_default_content_surfaces.py:15"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/api-coverage/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SCHOLARX-API-COVERAGE\",\n  \"owner_repo\": \"scholarx\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SCHOLARX-API-COVERAGE-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SCHOLARX-API-COVERAGE-R001\",\n      \"title\": \"One tool per operation\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"85f82f3e7c54\",\n        \"c98cfa5180a9\"\n      ],\n      \"verified_by\": [\n        \"tests/test_operation_tools.py:13\"\n      ]\n    }\n  ]\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SCHOLARX-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"scholarx\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SCHOLARX-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SCHOLARX-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"c98cfa5180a9\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-SCHOLARX-API-COVERAGE",
+          "CONN-SCHOLARX-API-COVERAGE-R001",
+          "CONN-SCHOLARX-CONNECTOR-CONTENT",
+          "CONN-SCHOLARX-CONNECTOR-CONTENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R160.1": true,
+        "PIPE-CONNSPEC-R160.2": false,
+        "PIPE-CONNSPEC-R160.3": false,
+        "PIPE-CONNSPEC-R160.4": false
+      },
+      "tree_file_count": 129
+    },
+    "searxng-mcp": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "aggregate hook/revision/config proof incomplete",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-23T21:40:21Z",
+          "databaseId": 40028460645,
+          "headSha": "8edff0184d4d34e099b8a93152df58390c74767f",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/searxng-mcp/actions/runs/40028460645",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/searxng-mcp/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/searxng-mcp/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": false,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [],
+        "literal_hooks_present": [],
+        "missing": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider": false,
+        "revs": [],
+        "stages": {},
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R161",
+      "sha": "8edff0184d4d34e099b8a93152df58390c74767f",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 712,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "d0885173d3c382502e4fd5d80a51055c5f4ab8aec31844cfc5a5a80eeebec938"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 4394,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet|node_modules'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: v6.0.0 # v6.0.0\n  hooks:\n  - id: check-added-large-files\n    args: [\"--maxkb=2000\"]\n  - id: check-ast\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: check-yaml\n    args: [\"--unsafe\"]\n  - id: check-toml\n  - id: check-json\n  - id: fix-byte-order-marker\n    exclude: .gitignore\n  - id: check-merge-conflict\n  - id: detect-private-key\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: no-commit-to-branch\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: v0.17.1 # v0.15.12\n  hooks:\n  - id: ruff-check\n    args: [\"--fix\", \"--ignore=E402,B008,E501\"]\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: ruff-format\n    exclude: ^(tests/|test/|scripts/|script/)\n- repo: https://github.com/pre-commit/mirrors-mypy\n  rev: v2.4.0 # v1.20.2\n  hooks:\n  - id: mypy\n    additional_dependencies: [pydantic==2.13.4, types-PyYAML==6.0.12.20260518, types-requests==2.33.0.20260518,\n        types-setuptools==83.0.0.20260706]\n    args: [\"--ignore-missing-imports\"]\n- repo: https://github.com/jendrikseipp/vulture\n  rev: v2.16 # v2.16\n  hooks:\n  - id: vulture\n    pass_filenames: false\n    args: [\".\", \"--min-confidence\", \"95\", \"--exclude\", \"node_modules,dotnet,.venv,venv,node_modules,.git,build,dist\"]\n    require_serial: true\n- repo: https://github.com/codespell-project/codespell\n  rev: v2.4.3 # v2.4.2\n  hooks:\n  - id: codespell\n    args: [\"-L\", \"ans,linar,nam,tread,ot,\", \"--ignore-words=.codespellignore\"]\n    exclude: ^(tests/|test/|scripts/|script/|.*lock.*)\n- repo: https://github.com/PyCQA/bandit\n  rev: 1.9.4 # 1.9.4\n  hooks:\n  - id: bandit\n    args: [\"--skip\", \"B101,B404,B603\"]\n    exclude: ^(tests/|test/|scripts/|script/|__tests__/)\n- repo: https://github.com/nbQA-dev/nbQA\n  rev: 1.9.1 # 1.9.1\n  hooks:\n  - id: nbqa-ruff\n    args: [\"--fix\"]\n- repo: local\n  hooks:\n  - id: dependency-readiness\n    name: Dependency readiness \u2014 every declared intra-fleet constraint is installable\n    entry: bash -c 'P=\"\"; d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do [ -d \"$d/agent-packages/agents/repository-manager\" ] && { P=\"$d/agent-packages/agents/repository-manager\"; break; }; d=$(dirname \"$d\"); done; [ -n \"$P\" ] || P=repository-manager; uv run --no-project --python 3.12 --prerelease=allow --with \"$P\" python -m repository_manager.dependency_readiness .'\n    language: system\n    pass_filenames: false\n    always_run: true\n    stages: [manual, pre-push]\n- repo: local\n  hooks:\n  - id: mermaid-validate\n    name: mermaid-validate\n    entry: mermaid-validate\n    language: node\n    additional_dependencies: ['@zabaca/mermaid-validate@1.0.1']\n    types: [markdown]\n    pass_filenames: true\n  - id: check-cli-help\n    name: check cli help\n    entry: |-\n      bash -c 'for f in $(find . -type f -name \"mcp_server.py\" -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do mod=$(echo \"$f\" | sed -e \"s/^\\.\\///\" -e \"s/\\.py$//\" -e \"s/\\//./g\"); uv run python -m \"$mod\" --help >/dev/null || exit 1; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: check-bumpversion\n    name: validate bumpversion config\n    entry: |-\n      bash -c 'if [ -f \".bumpversion.cfg\" ]; then bump2version patch --dry-run --allow-dirty; fi'\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: https://github.com/AleksaC/hadolint-py\n  rev: v2.15.1 # v2.14.0\n  hooks:\n  - id: hadolint\n    args:\n    - --ignore=DL3008\n    - --ignore=DL3015\n    - --ignore=DL3009\n    - --ignore=DL4006\n    - --ignore=SC2102\n- repo: https://github.com/IamTheFij/docker-pre-commit\n  rev: v3.0.1 # v3.0.1\n  hooks:\n  - id: docker-compose-check\n- repo: local\n  hooks:\n  - id: security-sanitizer\n    name: Security and Garbage Sanitizer\n    entry: python scripts/security_sanitizer.py\n    language: python\n    pass_filenames: false\n    always_run: true\n",
+          "sha256": "68e7d48fe33b74b8e2902bab9979f0bf6aec73294c96d9617ba43c51018bf8a2"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "searxng-mcp",
+            "requirement_ids": [
+              "CONN-SEARXNG-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SEARXNG-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "aeffdad40b48"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_default_content_surfaces.py:15"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SEARXNG-MCP-CONNECTOR-CONTENT"
+          },
+          "specs/search/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "searxng-mcp",
+            "requirement_ids": [
+              "CONN-SEARXNG-MCP-SEARCH-R001",
+              "CONN-SEARXNG-MCP-SEARCH-R001.1"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SEARXNG-MCP-SEARCH-R001",
+                "landed_in": [
+                  "41008ea6cb43",
+                  "b9aa6224d9d8"
+                ],
+                "rollup_of": [
+                  "CONN-SEARXNG-MCP-SEARCH-R001.1"
+                ],
+                "title": "Search results stay virtual (rollup)",
+                "verified_by": [
+                  "tests/test_search_virtual.py:17"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SEARXNG-MCP-SEARCH-R001.1",
+                "landed_in": [
+                  "41008ea6cb43",
+                  "b9aa6224d9d8"
+                ],
+                "title": "No ingest side effect",
+                "verified_by": [
+                  "tests/test_search_virtual.py:17"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SEARXNG-MCP-SEARCH"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "c2134eaba20562e3be26ccbff894423e53cdb435617d8141c26463b60243b923",
+          "specs/search/status.json": "6fbc6384ac6c7a65ad3dab0fccad7092a88f37b3247350f9713b1128af01b769"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/search/status.json"
+        ],
+        "status_record_count": 5,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/search/status.json"
+        ],
+        "status_record_states": [
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SEARXNG-MCP-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "CONN-SEARXNG-MCP-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SEARXNG-MCP-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "aeffdad40b48"
+            ],
+            "parent": "CONN-SEARXNG-MCP-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SEARXNG-MCP-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "Default content",
+            "verified_by": [
+              "tests/test_default_content_surfaces.py:15"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SEARXNG-MCP-SEARCH",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/search/status.json",
+            "state": "verified",
+            "title": "CONN-SEARXNG-MCP-SEARCH",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SEARXNG-MCP-SEARCH-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "41008ea6cb43",
+              "b9aa6224d9d8"
+            ],
+            "parent": "CONN-SEARXNG-MCP-SEARCH",
+            "parent_title": "CONN-SEARXNG-MCP-SEARCH",
+            "source": "specs/search/status.json",
+            "state": "verified",
+            "title": "Search results stay virtual (rollup)",
+            "verified_by": [
+              "tests/test_search_virtual.py:17"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SEARXNG-MCP-SEARCH-R001.1",
+            "kind": "requirement",
+            "landed_in": [
+              "41008ea6cb43",
+              "b9aa6224d9d8"
+            ],
+            "parent": "CONN-SEARXNG-MCP-SEARCH",
+            "parent_title": "CONN-SEARXNG-MCP-SEARCH",
+            "source": "specs/search/status.json",
+            "state": "verified",
+            "title": "No ingest side effect",
+            "verified_by": [
+              "tests/test_search_virtual.py:17"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SEARXNG-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"searxng-mcp\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SEARXNG-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SEARXNG-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"aeffdad40b48\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n",
+          "specs/search/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SEARXNG-MCP-SEARCH\",\n  \"owner_repo\": \"searxng-mcp\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SEARXNG-MCP-SEARCH-R001\",\n    \"CONN-SEARXNG-MCP-SEARCH-R001.1\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SEARXNG-MCP-SEARCH-R001\",\n      \"title\": \"Search results stay virtual (rollup)\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"41008ea6cb43\",\n        \"b9aa6224d9d8\"\n      ],\n      \"verified_by\": [\n        \"tests/test_search_virtual.py:17\"\n      ],\n      \"rollup_of\": [\n        \"CONN-SEARXNG-MCP-SEARCH-R001.1\"\n      ]\n    },\n    {\n      \"id\": \"CONN-SEARXNG-MCP-SEARCH-R001.1\",\n      \"title\": \"No ingest side effect\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"41008ea6cb43\",\n        \"b9aa6224d9d8\"\n      ],\n      \"verified_by\": [\n        \"tests/test_search_virtual.py:17\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-SEARXNG-MCP-CONNECTOR-CONTENT",
+          "CONN-SEARXNG-MCP-CONNECTOR-CONTENT-R001",
+          "CONN-SEARXNG-MCP-SEARCH",
+          "CONN-SEARXNG-MCP-SEARCH-R001",
+          "CONN-SEARXNG-MCP-SEARCH-R001.1"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R161.1": true,
+        "PIPE-CONNSPEC-R161.2": false,
+        "PIPE-CONNSPEC-R161.3": false,
+        "PIPE-CONNSPEC-R161.4": false
+      },
+      "tree_file_count": 121
+    },
+    "servicenow-api": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": false,
+        "hosted_run": null,
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/servicenow-api/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/servicenow-api/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R162",
+      "sha": "157eafed298b5a39b0c691cf95a9463a1b5787af",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "servicenow-api",
+            "requirement_ids": [
+              "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R001",
+              "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R002",
+              "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R003",
+              "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R004",
+              "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R005",
+              "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R006",
+              "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R007"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "2990b6e278f7"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R002",
+                "landed_in": [],
+                "title": "Ontology joins the parent graph",
+                "verified_by": [
+                  "tests/test_ontology_parent_link.py:10"
+                ]
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R003",
+                "landed_in": [],
+                "title": "Declared ingest sources",
+                "verified_by": [
+                  "tests/test_ingest_sources.py:16"
+                ]
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R004",
+                "landed_in": [],
+                "title": "CMDB and TRM ontology",
+                "verified_by": [
+                  "tests/test_cmdb_trm_ontology.py:108",
+                  "tests/test_cmdb_trm_ontology.py:80",
+                  "tests/test_cmdb_trm_ontology.py:96"
+                ]
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R005",
+                "landed_in": [],
+                "title": "CMDB and TRM ingest sources",
+                "verified_by": [
+                  "tests/test_cmdb_trm_ontology.py:131"
+                ]
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R006",
+                "landed_in": [],
+                "title": "Competency-question paths",
+                "verified_by": [
+                  "tests/test_cq_paths.py:13"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R007",
+                "landed_in": [
+                  "8ce2c41964af"
+                ],
+                "title": "Owner, steward and CMDB edges",
+                "verified_by": [
+                  "tests/test_catalog_edges.py:31",
+                  "tests/test_catalog_edges.py:55",
+                  "tests/test_catalog_edges.py:78"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT"
+          },
+          "specs/connector-identity/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "servicenow-api",
+            "requirement_ids": [
+              "CONN-SERVICENOW-API-CONNECTOR-IDENTITY-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SERVICENOW-API-CONNECTOR-IDENTITY-R001",
+                "landed_in": [
+                  "597bc0453555"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:34"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SERVICENOW-API-CONNECTOR-IDENTITY"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "850c4f739e60959bafb9bcbcee8380f7b356af4d7bea79da388e2c48f0881ed9",
+          "specs/connector-identity/status.json": "45597df5d49847d155eccf725b3b78d6bf1528799e0a3f929b214206db08586a"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_count": 10,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_states": [
+          "LANDED",
+          "SPECIFIED",
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "specified",
+            "title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "2990b6e278f7"
+            ],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R002",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "specified",
+            "title": "Ontology joins the parent graph",
+            "verified_by": [
+              "tests/test_ontology_parent_link.py:10"
+            ]
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R003",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "specified",
+            "title": "Declared ingest sources",
+            "verified_by": [
+              "tests/test_ingest_sources.py:16"
+            ]
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R004",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "specified",
+            "title": "CMDB and TRM ontology",
+            "verified_by": [
+              "tests/test_cmdb_trm_ontology.py:108",
+              "tests/test_cmdb_trm_ontology.py:80",
+              "tests/test_cmdb_trm_ontology.py:96"
+            ]
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R005",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "specified",
+            "title": "CMDB and TRM ingest sources",
+            "verified_by": [
+              "tests/test_cmdb_trm_ontology.py:131"
+            ]
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R006",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "specified",
+            "title": "Competency-question paths",
+            "verified_by": [
+              "tests/test_cq_paths.py:13"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R007",
+            "kind": "requirement",
+            "landed_in": [
+              "8ce2c41964af"
+            ],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "Owner, steward and CMDB edges",
+            "verified_by": [
+              "tests/test_catalog_edges.py:31",
+              "tests/test_catalog_edges.py:55",
+              "tests/test_catalog_edges.py:78"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-IDENTITY",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "CONN-SERVICENOW-API-CONNECTOR-IDENTITY",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SERVICENOW-API-CONNECTOR-IDENTITY-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "597bc0453555"
+            ],
+            "parent": "CONN-SERVICENOW-API-CONNECTOR-IDENTITY",
+            "parent_title": "CONN-SERVICENOW-API-CONNECTOR-IDENTITY",
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "Fleet name",
+            "verified_by": [
+              "tests/test_fleet_name.py:34"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"servicenow-api\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R001\",\n    \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R002\",\n    \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R003\",\n    \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R004\",\n    \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R005\",\n    \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R006\",\n    \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R007\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"2990b6e278f7\"\n      ],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R002\",\n      \"title\": \"Ontology joins the parent graph\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_ontology_parent_link.py:10\"\n      ]\n    },\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R003\",\n      \"title\": \"Declared ingest sources\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_ingest_sources.py:16\"\n      ]\n    },\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R004\",\n      \"title\": \"CMDB and TRM ontology\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_cmdb_trm_ontology.py:108\",\n        \"tests/test_cmdb_trm_ontology.py:80\",\n        \"tests/test_cmdb_trm_ontology.py:96\"\n      ]\n    },\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R005\",\n      \"title\": \"CMDB and TRM ingest sources\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_cmdb_trm_ontology.py:131\"\n      ]\n    },\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R006\",\n      \"title\": \"Competency-question paths\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_cq_paths.py:13\"\n      ]\n    },\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-CONTENT-R007\",\n      \"title\": \"Owner, steward and CMDB edges\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"8ce2c41964af\"\n      ],\n      \"verified_by\": [\n        \"tests/test_catalog_edges.py:31\",\n        \"tests/test_catalog_edges.py:55\",\n        \"tests/test_catalog_edges.py:78\"\n      ]\n    }\n  ]\n}\n",
+          "specs/connector-identity/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SERVICENOW-API-CONNECTOR-IDENTITY\",\n  \"owner_repo\": \"servicenow-api\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SERVICENOW-API-CONNECTOR-IDENTITY-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SERVICENOW-API-CONNECTOR-IDENTITY-R001\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"597bc0453555\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT",
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R001",
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R002",
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R003",
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R004",
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R005",
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R006",
+          "CONN-SERVICENOW-API-CONNECTOR-CONTENT-R007",
+          "CONN-SERVICENOW-API-CONNECTOR-IDENTITY",
+          "CONN-SERVICENOW-API-CONNECTOR-IDENTITY-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R162.1": true,
+        "PIPE-CONNSPEC-R162.2": true,
+        "PIPE-CONNSPEC-R162.3": false,
+        "PIPE-CONNSPEC-R162.4": false
+      },
+      "tree_file_count": 359
+    },
+    "spark-mcp": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": false,
+        "hosted_run": {
+          "conclusion": "failure",
+          "createdAt": "2026-10-24T13:18:50Z",
+          "databaseId": 40097594372,
+          "headSha": "06f64f02eb8a3bca1c52935b86a08262c09274cc",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/spark-mcp/actions/runs/40097594372",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/spark-mcp/spec-delivery/"
+        },
+        "pages_api": {
+          "error": "gh: Not Found (HTTP 404)",
+          "returncode": 1,
+          "status": "unavailable"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R163",
+      "sha": "06f64f02eb8a3bca1c52935b86a08262c09274cc",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "spark-mcp",
+            "requirement_ids": [
+              "CONN-SPARK-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-SPARK-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "7d3dc7a77e28"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SPARK-MCP-CONNECTOR-CONTENT"
+          },
+          "specs/spark4/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "spark-mcp",
+            "requirement_ids": [
+              "CONN-SPARK-MCP-SPARK4-R001",
+              "CONN-SPARK-MCP-SPARK4-R002",
+              "CONN-SPARK-MCP-SPARK4-R003",
+              "CONN-SPARK-MCP-SPARK4-R004",
+              "CONN-SPARK-MCP-SPARK4-R005"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SPARK-MCP-SPARK4-R001",
+                "landed_in": [],
+                "title": "Spark Connect read queries",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SPARK-MCP-SPARK4-R002",
+                "landed_in": [],
+                "title": "Catalog reads",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SPARK-MCP-SPARK4-R003",
+                "landed_in": [],
+                "title": "Monitoring REST reads",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SPARK-MCP-SPARK4-R004",
+                "landed_in": [],
+                "title": "Governed transform submit",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-SPARK-MCP-SPARK4-R005",
+                "landed_in": [],
+                "title": "Source-build dependency",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SPARK-MCP-SPARK4"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "46064cbe7d6d752ded6a537d62779970d3fcde702d6940c8c234aaa4ce62aeae",
+          "specs/spark4/status.json": "6f85aa53f26c130563e95839b5a36f45e3aa396de82f4a82b95649bea3149c7d"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/spark4/status.json"
+        ],
+        "status_record_count": 8,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/spark4/status.json"
+        ],
+        "status_record_states": [
+          "LANDED",
+          "SPECIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "CONN-SPARK-MCP-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "7d3dc7a77e28"
+            ],
+            "parent": "CONN-SPARK-MCP-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SPARK-MCP-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-SPARK4",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/spark4/status.json",
+            "state": "specified",
+            "title": "CONN-SPARK-MCP-SPARK4",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-SPARK4-R001",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SPARK-MCP-SPARK4",
+            "parent_title": "CONN-SPARK-MCP-SPARK4",
+            "source": "specs/spark4/status.json",
+            "state": "specified",
+            "title": "Spark Connect read queries",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-SPARK4-R002",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SPARK-MCP-SPARK4",
+            "parent_title": "CONN-SPARK-MCP-SPARK4",
+            "source": "specs/spark4/status.json",
+            "state": "specified",
+            "title": "Catalog reads",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-SPARK4-R003",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SPARK-MCP-SPARK4",
+            "parent_title": "CONN-SPARK-MCP-SPARK4",
+            "source": "specs/spark4/status.json",
+            "state": "specified",
+            "title": "Monitoring REST reads",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-SPARK4-R004",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SPARK-MCP-SPARK4",
+            "parent_title": "CONN-SPARK-MCP-SPARK4",
+            "source": "specs/spark4/status.json",
+            "state": "specified",
+            "title": "Governed transform submit",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "SPECIFIED",
+            "done": false,
+            "id": "CONN-SPARK-MCP-SPARK4-R005",
+            "kind": "requirement",
+            "landed_in": [],
+            "parent": "CONN-SPARK-MCP-SPARK4",
+            "parent_title": "CONN-SPARK-MCP-SPARK4",
+            "source": "specs/spark4/status.json",
+            "state": "specified",
+            "title": "Source-build dependency",
+            "verified_by": []
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SPARK-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"spark-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-SPARK-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SPARK-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"7d3dc7a77e28\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/spark4/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SPARK-MCP-SPARK4\",\n  \"owner_repo\": \"spark-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SPARK-MCP-SPARK4-R001\",\n    \"CONN-SPARK-MCP-SPARK4-R002\",\n    \"CONN-SPARK-MCP-SPARK4-R003\",\n    \"CONN-SPARK-MCP-SPARK4-R004\",\n    \"CONN-SPARK-MCP-SPARK4-R005\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SPARK-MCP-SPARK4-R001\",\n      \"title\": \"Spark Connect read queries\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-SPARK-MCP-SPARK4-R002\",\n      \"title\": \"Catalog reads\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-SPARK-MCP-SPARK4-R003\",\n      \"title\": \"Monitoring REST reads\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-SPARK-MCP-SPARK4-R004\",\n      \"title\": \"Governed transform submit\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-SPARK-MCP-SPARK4-R005\",\n      \"title\": \"Source-build dependency\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-SPARK-MCP-CONNECTOR-CONTENT",
+          "CONN-SPARK-MCP-CONNECTOR-CONTENT-R001",
+          "CONN-SPARK-MCP-SPARK4",
+          "CONN-SPARK-MCP-SPARK4-R001",
+          "CONN-SPARK-MCP-SPARK4-R002",
+          "CONN-SPARK-MCP-SPARK4-R003",
+          "CONN-SPARK-MCP-SPARK4-R004",
+          "CONN-SPARK-MCP-SPARK4-R005"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R163.1": true,
+        "PIPE-CONNSPEC-R163.2": true,
+        "PIPE-CONNSPEC-R163.3": false,
+        "PIPE-CONNSPEC-R163.4": false
+      },
+      "tree_file_count": 86
+    },
+    "sql-mcp": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T12:18:48Z",
+          "databaseId": 40093408075,
+          "headSha": "b2ce76056ba3f92e2f5446e40eb951150f620d96",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/sql-mcp/actions/runs/40093408075",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/sql-mcp/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/sql-mcp/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R164",
+      "sha": "b2ce76056ba3f92e2f5446e40eb951150f620d96",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "sql-mcp",
+            "requirement_ids": [
+              "CONN-SQL-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-SQL-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "533a9ca906fd"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SQL-MCP-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "34ea0f5fc7e42ef2e6fccc961d7eb56bdeea755fe521d84a6262b23d0280c1d3"
+        },
+        "status_files": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_count": 2,
+        "status_record_sources": [
+          "specs/connector-content/status.json"
+        ],
+        "status_record_states": [
+          "LANDED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-SQL-MCP-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "CONN-SQL-MCP-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-SQL-MCP-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "533a9ca906fd"
+            ],
+            "parent": "CONN-SQL-MCP-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SQL-MCP-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SQL-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"sql-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-SQL-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SQL-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"533a9ca906fd\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-SQL-MCP-CONNECTOR-CONTENT",
+          "CONN-SQL-MCP-CONNECTOR-CONTENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R164.1": true,
+        "PIPE-CONNSPEC-R164.2": true,
+        "PIPE-CONNSPEC-R164.3": false,
+        "PIPE-CONNSPEC-R164.4": false
+      },
+      "tree_file_count": 101
+    },
+    "stirlingpdf-agent": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T12:23:13Z",
+          "databaseId": 40093708738,
+          "headSha": "ae91e187b7891c43e2f8082e73c404730901d3b9",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/stirlingpdf-agent/actions/runs/40093708738",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/stirlingpdf-agent/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/stirlingpdf-agent/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R165",
+      "sha": "ae91e187b7891c43e2f8082e73c404730901d3b9",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "stirlingpdf-agent",
+            "requirement_ids": [
+              "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "2bd411d6de7c"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT"
+          },
+          "specs/connector/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "stirlingpdf-agent",
+            "requirement_ids": [
+              "CONN-STIRLINGPDF-AGENT-R001",
+              "CONN-STIRLINGPDF-AGENT-R002"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-STIRLINGPDF-AGENT-R001",
+                "landed_in": [
+                  "4796df8c587f",
+                  "d7c5e337ff9c"
+                ],
+                "title": "Read-only status operation",
+                "verified_by": [
+                  "tests/test_read_only_status.py:12"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-STIRLINGPDF-AGENT-R002",
+                "landed_in": [
+                  "276a96097bc3"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:34"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-STIRLINGPDF-AGENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "fc82a3075bbac7b442dc48f6f40a49ae570385650791d5b71a60f02b04e263a9",
+          "specs/connector/status.json": "07075cdf26e04e1f443e09de7c19362d34f08c57186f33cebed832a27b2b671d"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/connector/status.json"
+        ],
+        "status_record_count": 5,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/connector/status.json"
+        ],
+        "status_record_states": [
+          "LANDED",
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-STIRLINGPDF-AGENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector/status.json",
+            "state": "verified",
+            "title": "CONN-STIRLINGPDF-AGENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-STIRLINGPDF-AGENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "4796df8c587f",
+              "d7c5e337ff9c"
+            ],
+            "parent": "CONN-STIRLINGPDF-AGENT",
+            "parent_title": "CONN-STIRLINGPDF-AGENT",
+            "source": "specs/connector/status.json",
+            "state": "verified",
+            "title": "Read-only status operation",
+            "verified_by": [
+              "tests/test_read_only_status.py:12"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-STIRLINGPDF-AGENT-R002",
+            "kind": "requirement",
+            "landed_in": [
+              "276a96097bc3"
+            ],
+            "parent": "CONN-STIRLINGPDF-AGENT",
+            "parent_title": "CONN-STIRLINGPDF-AGENT",
+            "source": "specs/connector/status.json",
+            "state": "verified",
+            "title": "Fleet name",
+            "verified_by": [
+              "tests/test_fleet_name.py:34"
+            ]
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "2bd411d6de7c"
+            ],
+            "parent": "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT",
+            "parent_title": "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"stirlingpdf-agent\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"2bd411d6de7c\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/connector/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-STIRLINGPDF-AGENT\",\n  \"owner_repo\": \"stirlingpdf-agent\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-STIRLINGPDF-AGENT-R001\",\n    \"CONN-STIRLINGPDF-AGENT-R002\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-STIRLINGPDF-AGENT-R001\",\n      \"title\": \"Read-only status operation\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"4796df8c587f\",\n        \"d7c5e337ff9c\"\n      ],\n      \"verified_by\": [\n        \"tests/test_read_only_status.py:12\"\n      ]\n    },\n    {\n      \"id\": \"CONN-STIRLINGPDF-AGENT-R002\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"276a96097bc3\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-STIRLINGPDF-AGENT",
+          "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT",
+          "CONN-STIRLINGPDF-AGENT-CONNECTOR-CONTENT-R001",
+          "CONN-STIRLINGPDF-AGENT-R001",
+          "CONN-STIRLINGPDF-AGENT-R002"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R165.1": true,
+        "PIPE-CONNSPEC-R165.2": true,
+        "PIPE-CONNSPEC-R165.3": false,
+        "PIPE-CONNSPEC-R165.4": false
+      },
+      "tree_file_count": 112
+    },
+    "systems-manager": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "aggregate hook/revision/config proof incomplete",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-23T21:44:48Z",
+          "databaseId": 40028990026,
+          "headSha": "51b30767c6b574381e8eb1490dfe2acb67dae1af",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/systems-manager/actions/runs/40028990026",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/systems-manager/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/systems-manager/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": false,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [],
+        "literal_hooks_present": [],
+        "missing": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider": false,
+        "revs": [],
+        "stages": {},
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R166",
+      "sha": "51b30767c6b574381e8eb1490dfe2acb67dae1af",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 1075,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  security-gate:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          persist-credentials: false\n      - name: Reject tracked runtime and secret artifacts\n        run: python scripts/check_release_artifacts.py\n  publish-pypi:\n    needs: security-gate\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "568b41b55469ff833b08fd63b0601356d7cebd3f990bc24146aa6f63559df56e"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 5378,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: check-added-large-files\n    args: [\"--maxkb=2000\"]\n  - id: check-ast\n  - id: check-yaml\n    args: [\"--unsafe\"]\n  - id: check-toml\n  - id: check-json\n  - id: fix-byte-order-marker\n    exclude: .gitignore\n  - id: check-merge-conflict\n  - id: detect-private-key\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: no-commit-to-branch\n- repo: https://github.com/psf/black\n  rev: 258e7dbf348bc23cb70b8cdf693481c04634ebcc  # frozen: 26.10.1\n  hooks:\n  - id: black\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: 38bfb07c0c64c304f47eb52090f8288150c77730  # frozen: v0.17.1\n  hooks:\n  - id: ruff\n    types_or: [python, pyi, jupyter]\n    args: [\"--fix\", \"--ignore=E402\"]\n- repo: https://github.com/jendrikseipp/vulture\n  rev: 258fe6a1974e89a2add9a45519a9e9dd9f46154e  # frozen: v2.16\n  hooks:\n  - id: vulture\n    pass_filenames: false\n    args: [\".\", \"--min-confidence\", \"95\", \"--exclude\", \".venv,venv,node_modules,.git,build,dist\",\n      \"--ignore-names\", \"request\"]                                                                                                 # or 100 if you want very high confidence only\n    require_serial: true\n- repo: https://github.com/codespell-project/codespell\n  rev: 57b21406f092110c18776e39b0bda50d37c945c8  # frozen: v2.4.3\n  hooks:\n  - id: codespell\n    args: [\"-L\", \"ans,linar,nam,tread,ot,callin,\"]\n    exclude: (?x)^(systems_manager/skills/git-cli-docs/reference/.*)$\n- repo: https://github.com/PyCQA/bandit\n  rev: 92ae8b82fb422a639f0ed8d99e96cea769594e08  # frozen: 1.9.4\n  hooks:\n  - id: bandit\n    args: [\"--skip\", \"B101,B404,B603\"]\n    exclude: ^(tests/|test/|scripts/|script/|__tests__/)\n- repo: https://github.com/nbQA-dev/nbQA\n  rev: f96ec7f3b26a32619435686eb5813235f7e3327e  # frozen: 1.9.1\n  hooks:\n  - id: nbqa-ruff\n- repo: local\n  hooks:\n  - id: dependency-readiness\n    name: Dependency readiness \u2014 every declared intra-fleet constraint is installable\n    entry: bash -c 'P=\"\"; d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do [ -d \"$d/agent-packages/agents/repository-manager\" ] && { P=\"$d/agent-packages/agents/repository-manager\"; break; }; d=$(dirname \"$d\"); done; [ -n \"$P\" ] || P=repository-manager; uv run --no-project --python 3.12 --prerelease=allow --with \"$P\" python -m repository_manager.dependency_readiness .'\n    language: system\n    pass_filenames: false\n    always_run: true\n    stages: [manual, pre-push]\n  - id: mermaid-validate\n    name: mermaid-validate\n    entry: mermaid-validate\n    language: node\n    additional_dependencies: ['@zabaca/mermaid-validate@1.0.1']\n    types: [markdown]\n    pass_filenames: true\n  - id: check-agent-standards\n    name: check agent standards\n    entry: |-\n      bash -c 'for f in $(find . -type f -name \"agent_server.py\" -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do grep -q \"warnings.filterwarnings\" \"$f\" && grep -q \"file=sys.stderr\" \"$f\" || { echo \"Missing warnings.filterwarnings or file=sys.stderr in $f\"; exit 1; }; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: env-var-drift\n    name: check env-var/config drift\n    entry: bash -c 'if [ -f uv.lock ]; then uv run python -m agent_connector_sdk.mcp.env_drift --check; else python -m agent_connector_sdk.mcp.env_drift --check; fi'\n    language: system\n    pass_filenames: false\n    files: ^(README\\.md|\\.env\\.example|mcp_config.*\\.json|.*/mcp_config.*\\.json|docker/.*compose.*\\.ya?ml|.*/auth\\.py|.*/mcp_server\\.py)$\n  - id: check-cli-help\n    name: check cli help\n    entry: |-\n      bash -c 'for f in $(find . -type f \\( -name \"mcp_server.py\" -o -name \"agent_server.py\" \\) -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do mod=$(echo \"$f\" | sed -e \"s/^\\.\\///\" -e \"s/\\.py$//\" -e \"s/\\//./g\"); uv run python -m \"$mod\" --help >/dev/null || exit 1; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: check-bumpversion\n    name: validate bumpversion config\n    entry: |-\n      bash -c 'if [ -f \".bumpversion.cfg\" ]; then bump2version patch --dry-run --allow-dirty; fi'\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: https://github.com/AleksaC/hadolint-py\n  rev: 6e7504451511eaeb62a3e7f14d63b0296cbf86eb  # frozen: v2.15.1\n  hooks:\n  - id: hadolint\n    args:\n    - --ignore=DL3008\n    - --ignore=DL3015\n    - --ignore=DL3009\n    - --ignore=DL4006\n    - --ignore=SC2102\n- repo: https://github.com/IamTheFij/docker-pre-commit\n  rev: f626253b23de45412865c07fd076ff95d4cd77a7 # v3.0.1\n  hooks:\n  - id: docker-compose-check\n- repo: local\n  hooks:\n  - id: security-sanitizer\n    name: Security and Garbage Sanitizer\n    entry: python scripts/security_sanitizer.py\n    language: python\n    pass_filenames: false\n    always_run: true\n",
+          "sha256": "33df8b9bc5b266473670fcb4363ec5a29af02dd1deacf97bba4f3dbbbea99a4c"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "systems-manager",
+            "requirement_ids": [
+              "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "b64ff59b840d"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_default_content_surfaces.py:15"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT"
+          },
+          "specs/connector-identity/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "systems-manager",
+            "requirement_ids": [
+              "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY-R001",
+                "landed_in": [
+                  "0fc259d2ad48"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:35"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "c459ca563ccb27a9b779a0caf4614f50243179fa2e5c3e941e86d578a4d875a6",
+          "specs/connector-identity/status.json": "94e30be8b3babf2aba3d222bc182722a33bb8aa6a32335a6a568289d70ebc5aa"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_count": 4,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/connector-identity/status.json"
+        ],
+        "status_record_states": [
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "b64ff59b840d"
+            ],
+            "parent": "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT",
+            "parent_title": "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "verified",
+            "title": "Default content",
+            "verified_by": [
+              "tests/test_default_content_surfaces.py:15"
+            ]
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "0fc259d2ad48"
+            ],
+            "parent": "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY",
+            "parent_title": "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY",
+            "source": "specs/connector-identity/status.json",
+            "state": "verified",
+            "title": "Fleet name",
+            "verified_by": [
+              "tests/test_fleet_name.py:35"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"systems-manager\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b64ff59b840d\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n",
+          "specs/connector-identity/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY\",\n  \"owner_repo\": \"systems-manager\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY-R001\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"0fc259d2ad48\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:35\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT",
+          "CONN-SYSTEMS-MANAGER-CONNECTOR-CONTENT-R001",
+          "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY",
+          "CONN-SYSTEMS-MANAGER-CONNECTOR-IDENTITY-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R166.1": true,
+        "PIPE-CONNSPEC-R166.2": false,
+        "PIPE-CONNSPEC-R166.3": false,
+        "PIPE-CONNSPEC-R166.4": false
+      },
+      "tree_file_count": 146
+    },
+    "technitium-dns-mcp": {
+      "leaf_reasons": {
+        ".1": "records read from immutable status snapshots",
+        ".2": "canonical aggregate hooks and validate-config passed",
+        ".3": "requires exact-source successful Pages run, Pages API, and HTTP 200",
+        ".4": "no tracked rapid-delivery skill evidence"
+      },
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T11:30:34Z",
+          "databaseId": 40090183886,
+          "headSha": "b3b4c6deca0e8850eec72c3b098a705c7b8fd3f2",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/technitium-dns-mcp/actions/runs/40090183886",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http_200_ready": false,
+        "live_http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/technitium-dns-mcp/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "html_url": "https://knuckles-team.github.io/technitium-dns-mcp/",
+          "returncode": 0,
+          "status": "configured"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md"
+        ],
+        "required_paths": false,
+        "shape_ready": false,
+        "strict_ready": false,
+        "uses": [
+          "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
+        ],
+        "with": {}
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "canonical_hooks": {
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ],
+          "rev": "main"
+        },
+        "file": true,
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "provider": true,
+        "revs": [
+          "main"
+        ],
+        "stages": {
+          "connector-standard": null,
+          "dependency-readiness": null,
+          "secrets": null,
+          "spec": [
+            "pre-push"
+          ],
+          "tests-fast": [
+            "pre-push"
+          ]
+        },
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+        }
+      },
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R167",
+      "sha": "b3b4c6deca0e8850eec72c3b098a705c7b8fd3f2",
+      "skills": {
+        "rapid_delivery_matches": [],
+        "ready": false
+      },
+      "source_files": {
+        ".github/workflows/connector-pr.yml": {
+          "bytes": 283,
+          "content": "name: Connector PR\n\non: pull_request\n\nconcurrency:\n  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  gates:\n    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main\n",
+          "sha256": "5a95d7bf21bb75257f69c74ac0e6ea5a284671f8e471616561826a2d6ae9b61d"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "technitium-dns-mcp",
+            "requirement_ids": [
+              "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "ce4e20f8c147"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT"
+          },
+          "specs/technitium-dns-mcp/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "technitium-dns-mcp",
+            "requirement_ids": [
+              "CONN-TECHNITIUM-DNS-MCP-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-TECHNITIUM-DNS-MCP-R001",
+                "landed_in": [
+                  "425958bd488a"
+                ],
+                "title": "Declare the `zones` source",
+                "verified_by": [
+                  "tests/test_ingest_sources.py:14"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-TECHNITIUM-DNS-MCP"
+          }
+        },
+        "status_file_sha256": {
+          "specs/connector-content/status.json": "9ec990ab5e4cb03af2daf653925d9931620d7f1674623b32d341c4134c441e70",
+          "specs/technitium-dns-mcp/status.json": "ca2964327b1db540bd63426a34c368836743c5befbd20927fd77295d9555bb8d"
+        },
+        "status_files": [
+          "specs/connector-content/status.json",
+          "specs/technitium-dns-mcp/status.json"
+        ],
+        "status_record_count": 4,
+        "status_record_sources": [
+          "specs/connector-content/status.json",
+          "specs/technitium-dns-mcp/status.json"
+        ],
+        "status_record_states": [
+          "LANDED",
+          "VERIFIED"
+        ],
+        "status_records": [
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "LANDED",
+            "done": false,
+            "id": "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "ce4e20f8c147"
+            ],
+            "parent": "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT",
+            "parent_title": "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT",
+            "source": "specs/connector-content/status.json",
+            "state": "landed",
+            "title": "Default content",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-TECHNITIUM-DNS-MCP",
+            "kind": "spec",
+            "landed_in": [],
+            "parent": null,
+            "source": "specs/technitium-dns-mcp/status.json",
+            "state": "verified",
+            "title": "CONN-TECHNITIUM-DNS-MCP",
+            "verified_by": []
+          },
+          {
+            "delivery_state": "VERIFIED",
+            "done": true,
+            "id": "CONN-TECHNITIUM-DNS-MCP-R001",
+            "kind": "requirement",
+            "landed_in": [
+              "425958bd488a"
+            ],
+            "parent": "CONN-TECHNITIUM-DNS-MCP",
+            "parent_title": "CONN-TECHNITIUM-DNS-MCP",
+            "source": "specs/technitium-dns-mcp/status.json",
+            "state": "verified",
+            "title": "Declare the `zones` source",
+            "verified_by": [
+              "tests/test_ingest_sources.py:14"
+            ]
+          }
+        ],
+        "status_source": {
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"technitium-dns-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"ce4e20f8c147\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/technitium-dns-mcp/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-TECHNITIUM-DNS-MCP\",\n  \"owner_repo\": \"technitium-dns-mcp\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-TECHNITIUM-DNS-MCP-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-TECHNITIUM-DNS-MCP-R001\",\n      \"title\": \"Declare the `zones` source\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"425958bd488a\"\n      ],\n      \"verified_by\": [\n        \"tests/test_ingest_sources.py:14\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-TECHNITIUM-DNS-MCP",
+          "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT",
+          "CONN-TECHNITIUM-DNS-MCP-CONNECTOR-CONTENT-R001",
+          "CONN-TECHNITIUM-DNS-MCP-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R167.1": true,
+        "PIPE-CONNSPEC-R167.2": true,
+        "PIPE-CONNSPEC-R167.3": false,
+        "PIPE-CONNSPEC-R167.4": false
+      },
+      "tree_file_count": 101
+    }
+  },
+  "requirements": {
+    ".1": "Consumer specs/*/status.json are readable through existing scripts.spec_dashboard_sources.read_records.",
+    ".2": "Consumer pre-commit configs contain the provider canonical aggregate hooks and validate-config succeeds.",
+    ".3": "Consumer Pages caller/config, exact-source successful Pages publisher, and live /spec-delivery/ HTTP 200 all agree.",
+    ".4": "No development-skill evidence was found; no .4 rows are bound.",
+    "aggregate_source_contract": [
+      "connector-standard",
+      "dependency-readiness",
+      "secrets",
+      "spec",
+      "tests-fast"
+    ],
+    "literal_source_contract": [
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "mapping_note": "Accepted #292 aggregate mapping: the provider template's canonical connector hook set is authoritative for this test-only fixture."
+  },
+  "schema_version": 1,
+  "strict_leaf_counts": {
+    ".1": 10,
+    ".2": 6,
+    ".3": 0,
+    ".4": 0
+  }
+}
