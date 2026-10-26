@@ -238,10 +238,12 @@
       "title": "Wiring",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "6bf8524c1644"
+        "6bf8524c1644",
+        "86d2275e8f65",
+        "a52f3f5f244f"
       ],
       "verified_by": [
-        "tests/hooks/test_dependency_cycles.py:146"
+        "tests/hooks/test_dependency_cycles.py:147"
       ]
     },
     {
@@ -249,10 +251,12 @@
       "title": "Refusal",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "6bf8524c1644"
+        "6bf8524c1644",
+        "86d2275e8f65",
+        "a52f3f5f244f"
       ],
       "verified_by": [
-        "tests/hooks/test_dependency_cycles.py:173",
+        "tests/hooks/test_dependency_cycles.py:174",
         "tests/hooks/test_dependency_cycles.py:85"
       ]
     },
@@ -264,7 +268,7 @@
         "6bf8524c1644"
       ],
       "verified_by": [
-        "tests/hooks/test_dependency_cycles.py:189"
+        "tests/hooks/test_dependency_cycles.py:190"
       ]
     },
     {
@@ -272,11 +276,13 @@
       "title": "Hot-path proof",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "6bf8524c1644"
+        "6bf8524c1644",
+        "86d2275e8f65",
+        "a52f3f5f244f"
       ],
       "verified_by": [
         "tests/hooks/test_dependency_cycles.py:109",
-        "tests/hooks/test_dependency_cycles.py:212"
+        "tests/hooks/test_dependency_cycles.py:213"
       ]
     },
     {
