@@ -590,3 +590,15 @@ canonical ownership and requirement identities. This is a separate visual
 follow-up; it must not delay deployment of the approved abstract ocean version.
 No new blur layer, animated object or runtime dependency is introduced. Validate
 text contrast including the lane material beneath both card-gradient endpoints.
+
+### Quiet lane hierarchy and count-track separation (2026-10-26)
+
+Supersede the glass lane panes with restrained, aligned gutter typography and
+short semantic markers. Remove lane fills, frames and decorative chevrons while
+preserving the existing band bounds, complete human labels, card hues, ocean
+motion and camera geometry. Reserve one stable card-bottom completion track;
+derive the count baseline from real text descent plus a clear gap, rather than
+letting a percentage-height bar rise through the numbers. Hosted acceptance adds
+actual canvas text/bar bounds at desktop/mobile overview and nested Overstory and
+Medulla cameras; all required cases must execute without browser skips. Preserve
+canonical repository ownership, requirement/status data and deep-link semantics.

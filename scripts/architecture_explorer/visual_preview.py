@@ -201,6 +201,11 @@ def verify_browser_results(report: Path) -> None:
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[390,844]",
         "test_ocean_browser_motion_controls_and_composited_wave_phases",
         "test_ocean_browser_candidate_model_subtitles_paint_without_overlap",
+        "test_ocean_browser_count_text_and_completion_tracks_never_overlap[root-1440,1000]",
+        "test_ocean_browser_count_text_and_completion_tracks_never_overlap[root-390,844]",
+        "test_ocean_browser_count_text_and_completion_tracks_never_overlap[webui-1440,1000]",
+        "test_ocean_browser_count_text_and_completion_tracks_never_overlap[webui-390,844]",
+        "test_ocean_browser_count_text_and_completion_tracks_never_overlap[eg-1440,1000]",
     }
     cases = {case.attrib.get("name"): case for case in ElementTree.parse(report).iter("testcase")}
     for name in sorted(expected):

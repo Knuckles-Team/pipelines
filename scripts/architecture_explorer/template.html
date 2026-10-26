@@ -10,7 +10,6 @@
   --glass-chrome:rgb(255 255 255 / .60); --ocean-dim:rgb(18 65 91 / 0);
   --ocean-top:#bddce3; --ocean-bottom:#83b5c6; --wave-opacity:.38;
   --node-top:rgba(255,255,255,.86); --node-bottom:rgba(245,245,245,.63);
-  --lane-top:rgba(255,255,255,.22); --lane-bottom:rgba(255,255,255,.10); --lane-edge:rgba(255,255,255,.62);
   --node-edge:rgba(255,255,255,.90); --node-shadow:rgba(0,0,0,.12);
   --button-neutral:rgb(255 255 255 / .68); --button-hover:rgb(255 255 255 / .86); --button-active:rgb(225 225 221 / .92); --selection:rgb(202 203 200 / .92); --motion-on:rgb(210 229 213 / .90);
   --atmosphere:#9ac4d7; --glass-edge:rgb(255 255 255 / .8);
@@ -31,7 +30,6 @@
   --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / 0);
   --ocean-top:#102c3b; --ocean-bottom:#183d4c; --wave-opacity:.12;
   --node-top:rgba(55,56,58,.76); --node-bottom:rgba(25,26,28,.70);
-  --lane-top:rgba(105,113,115,.12); --lane-bottom:rgba(105,113,115,.06); --lane-edge:rgba(255,255,255,.24);
   --node-edge:rgba(255,255,255,.60); --node-shadow:rgba(0,0,0,.25);
   --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
   --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
@@ -47,7 +45,6 @@
   --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / 0);
   --ocean-top:#102c3b; --ocean-bottom:#183d4c; --wave-opacity:.12;
   --node-top:rgba(55,56,58,.76); --node-bottom:rgba(25,26,28,.70);
-  --lane-top:rgba(105,113,115,.12); --lane-bottom:rgba(105,113,115,.06); --lane-edge:rgba(255,255,255,.24);
   --node-edge:rgba(255,255,255,.60); --node-shadow:rgba(0,0,0,.25);
   --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
   --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
@@ -376,7 +373,7 @@ let W=0,H=0,DPR=1, cam={x:0,y:0,k:1}, anim=null, dirty=true, C={};
 function readColors(){ const cs=getComputedStyle(document.documentElement); const g=v=>cs.getPropertyValue(v).trim();
   C={bg:g("--sheet"),surface:g("--surface"),fg:g("--fg"),muted:g("--muted"),faint:g("--faint"),line:g("--line"),edge:g("--edge"),accent:g("--accent"),bandA:g("--band-a"),bandB:g("--band-b"),
      display:g("--font-display"),body:g("--font-body"),mono:g("--font-mono"),
-     laneTop:g("--lane-top"),laneBottom:g("--lane-bottom"),laneEdge:g("--lane-edge"),edgeHalo:g("--edge-halo"),nodeTop:g("--node-top"),nodeBottom:g("--node-bottom"),nodeEdge:g("--node-edge"),nodeShadow:g("--node-shadow"),
+     edgeHalo:g("--edge-halo"),nodeTop:g("--node-top"),nodeBottom:g("--node-bottom"),nodeEdge:g("--node-edge"),nodeShadow:g("--node-shadow"),
      opaque:window.matchMedia("(prefers-reduced-transparency: reduce)").matches||window.matchMedia("(forced-colors: active)").matches,layer:{},tint:{},st:{}};
   Object.keys(LAYERS).forEach(k=>{C.layer[k]=g("--l-"+k);C.tint[k]=g("--t-"+k);}); ST.forEach(s=>C.st[s]=g("--s-"+s.toLowerCase())); dirty=true; }
 function resize(){ const r=cv.getBoundingClientRect(); DPR=Math.min(2,window.devicePixelRatio||1); W=r.width; H=r.height; cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR); dirty=true; }
@@ -429,25 +426,24 @@ function mapLabel(text,x,y,fs){
 // Overview bands span the whole canvas width; their labels stay at the layout's right edge.
 function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.bands.length) return;
   const r=R[n.id]; const x0=n.id==="root"?r[0]:t.ox, w=n.id==="root"?r[2]:L.w*t.s;
+  const anchor=L.loop&&L.kids[L.loop.around], sx0=toS(x0,0)[0], sw0=w*cam.k;
+  const gutter=anchor?toS(t.ox+(anchor[0]+anchor[2]+24)*t.s,0)[0]:sx0+sw0*0.72;
+  const left=gutter+12, right=sx0+sw0-8, available=Math.max(1,right-left);
+  const overviewTitles={"People and clients":"People and Clients","Front ends":"Front Ends","Arbora door":"Arbora Door","Agent control plane and skills":"Agent Control Plane and Skills","Engine core, connectors and sources":"Engine Core, Connectors and Sources","Serving and delivery":"Serving and Delivery"};
+  const labels=L.bands.map(b=>n.id==="root"?(overviewTitles[b[0]]||b[0]):b[0]);
+  let headingSize=Math.min(11,sw0*0.024);ctx.font="500 "+headingSize+"px "+C.display;
+  headingSize*=Math.min(1,available/Math.max(1,...labels.map(text=>ctx.measureText(text).width)));
   L.bands.forEach((b,i)=>{ const [sx,sy]=toS(x0, t.oy+b[1]*t.s), sh=(b[2]-b[1])*t.s*cam.k, sw=w*cam.k;
     if(sy>H||sy+sh<0) return;
-    // Existing stratum bounds become shared glass panes; no geometry or per-pane blur.
-    const laneX=n.id==="root"?8:sx+4, laneW=Math.max(1,n.id==="root"?W-16:sw-8), laneY=sy+2, laneH=Math.max(1,sh-4);
-    ctx.globalAlpha=alpha;
-    const lane=ctx.createLinearGradient(0,laneY,0,laneY+laneH);
-    lane.addColorStop(0,C.opaque?(i%2?C.bandB:C.bandA):C.laneTop);lane.addColorStop(1,C.opaque?(i%2?C.bandB:C.bandA):C.laneBottom);
-    ctx.fillStyle=lane;rr(laneX,laneY,laneW,laneH,Math.min(16,laneH*.16));ctx.fill();
-    ctx.strokeStyle=C.opaque?C.edge:C.laneEdge;ctx.lineWidth=1;ctx.stroke();
-    let fs=Math.min(15, sh*0.11, sw*0.02); if(fs>=6.5){
-      // Fit the full band heading inside the existing right gutter, never under a glass card.
-      const anchor=L.loop&&L.kids[L.loop.around], gutter=anchor?toS(t.ox+(anchor[0]+anchor[2]+24)*t.s,0)[0]:sx+sw*0.72;
-      const right=sx+sw-fs*0.8, available=Math.max(1,right-gutter-15), text=b[0].toUpperCase();
-      ctx.font="600 "+fs+"px "+C.display; fs*=Math.min(1,available/Math.max(1,ctx.measureText(text).width));
-      ctx.fillStyle=C.muted; ctx.font="600 "+fs+"px "+C.display; ctx.textAlign="right"; ctx.textBaseline="top";
-      ctx.globalAlpha=alpha; mapLabel(text, right, sy+fs*0.6,fs);
+    // Quiet lane hierarchy lives only in the existing right gutter, not over the graph.
+    const fs=headingSize, text=labels[i];if(fs>=6.5){
+      ctx.font="500 "+fs+"px "+C.display;ctx.textAlign="left";ctx.textBaseline="top";ctx.globalAlpha=alpha;
+      // A neutral glyph halo, not a box or blur, protects text through every ocean phase.
+      ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo;ctx.lineWidth=3;ctx.lineJoin="round";ctx.strokeText(text,left,sy+5);
+      ctx.fillStyle=C.fg;ctx.fillText(text,left,sy+5);
       const key=n.id==="root"?["person","entry","gateway","control","core","server"][i]:n.layer;
-      ctx.fillStyle=C.layer[key]||C.faint;rr(right-ctx.measureText(text).width-9,sy+fs*.6,2,fs,1);ctx.fill();
-      if(i<L.bands.length-1){ ctx.globalAlpha=alpha*0.35; ctx.fillStyle=C.faint; const cx=sx+sw-fs*1.6, cy=sy+sh-fs*0.2; ctx.beginPath(); ctx.moveTo(cx-fs*0.6,cy-fs*0.6); ctx.lineTo(cx,cy); ctx.lineTo(cx+fs*0.6,cy-fs*0.6); ctx.lineWidth=Math.max(1,fs/7); ctx.strokeStyle=C.faint; ctx.stroke(); } } });
+      ctx.fillStyle=C.layer[key]||C.faint;ctx.fillRect(gutter,sy+5+fs*.5,7,1.5);
+    } });
   ctx.globalAlpha=1; }
 function drawZones(n, alpha){ const L=n.layout, t=LT[n.id]; (L.zones||[]).forEach(z=>{ const [sx,sy]=toS(t.ox+z[1]*t.s, t.oy+z[2]*t.s), sw=z[3]*t.s*cam.k, sh=z[4]*t.s*cam.k;
     ctx.globalAlpha=alpha*0.35; ctx.setLineDash([6,5]); ctx.strokeStyle=C.faint; ctx.lineWidth=1.2; rr(sx,sy,sw,sh,14*cam.k*t.s); ctx.stroke(); ctx.setLineDash([]);
@@ -487,6 +483,7 @@ function drawNode(n, alpha){
   if(n.id===selected||n.id===hitId){ ctx.strokeStyle=C.accent; ctx.globalAlpha=alpha*0.6; ctx.lineWidth=1.8; rr(sx-2,sy-2,sw+4,sh+4,radius+2); ctx.stroke(); }
   hitList.push([n.id,sx,sy,sw,sh,op]);
   const closed=1-op;
+  const barHeight=Math.max(1.5,Math.min(3,sh*0.02)), barY=sy+sh-Math.max(3,Math.min(5,sh*0.04));
   if(closed>0.02 && sw>=26){ // closed content
     ctx.globalAlpha=alpha*closed; ctx.textAlign="center"; ctx.textBaseline="alphabetic";
     const hasRole=!!n.role&&sw>=64&&sh>=32;
@@ -494,17 +491,23 @@ function drawNode(n, alpha){
     if(fs>=5.5){
       const fc=Math.max(Math.min(fs*0.66,13),hasRole?(n.children.length?6:5.5):0), fr=Math.max(6,Math.min(fs*0.68,11)), pad=Math.max(3,Math.min(8,sh*0.08));
       const showParts=n.children.length&&fc>=6, showCounts=fc>=5.5&&sh>fs*3.2;
-      const contentTop=sy+pad+(showParts?fc*1.3:0), contentBottom=sy+sh-pad-(showCounts?fc*1.4:0);
+      ctx.font="500 "+fc+"px "+C.body;
+      const countMetrics=ctx.measureText(countsLine(n).map(p=>p[0]).join(""));
+      const countBaseline=barY-Math.max(1,countMetrics.actualBoundingBoxDescent||0)-3;
+      const contentTop=sy+pad+(showParts?fc*1.3:0), contentBottom=showCounts?countBaseline-Math.max(fc*.75,countMetrics.actualBoundingBoxAscent||0)-2:sy+sh-pad;
       ctx.font="600 "+fs+"px "+C.display;
       const lines=wrapText(n.label,sw-fs*1.2,sh>fs*7.5?2:1);
-      const titleHeight=lines.length*fs*1.1, showRole=hasRole&&contentBottom-contentTop>=titleHeight+fr*1.4;
-      const blockHeight=titleHeight+(showRole?fr*1.4:0), first=contentTop+Math.max(0,(contentBottom-contentTop-blockHeight)/2)+fs;
-      ctx.fillStyle=C.fg; lines.forEach((ln,i)=>ctx.fillText(ln,cx,first+i*fs*1.1));
-      if(showRole){ctx.font="400 "+fr+"px "+C.body;ctx.fillStyle=C.muted;ctx.fillText(fitText(n.role,sw-fr*2),cx,first+(lines.length-1)*fs*1.1+fr*1.4);}
-      if(showCounts){ctx.font="500 "+fc+"px "+C.body;drawRich(countsLine(n),cx,sy+sh-pad-3,sw-fc);}
+      const titleMetrics=lines.map(ln=>ctx.measureText(ln)), titleAscent=Math.max(fs*.7,...titleMetrics.map(m=>m.actualBoundingBoxAscent||0)), titleDescent=Math.max(0,...titleMetrics.map(m=>m.actualBoundingBoxDescent||0));
+      ctx.font="400 "+fr+"px "+C.body;const role=fitText(n.role||"",sw-fr*2), roleMetrics=ctx.measureText(role), roleAscent=Math.max(fr*.65,roleMetrics.actualBoundingBoxAscent||0), roleDescent=Math.max(0,roleMetrics.actualBoundingBoxDescent||0), rowGap=Math.max(1,Math.min(3,fs*.15));
+      const titleHeight=(lines.length-1)*fs*1.1+titleAscent+titleDescent, roleHeight=roleAscent+roleDescent;
+      const showRole=hasRole&&contentBottom-contentTop>=titleHeight+rowGap+roleHeight;
+      const blockHeight=titleHeight+(showRole?rowGap+roleHeight:0), first=contentTop+Math.max(0,(contentBottom-contentTop-blockHeight)/2)+titleAscent;
+      ctx.font="600 "+fs+"px "+C.display;ctx.fillStyle=C.fg;lines.forEach((ln,i)=>ctx.fillText(ln,cx,first+i*fs*1.1));
+      if(showRole){ctx.font="400 "+fr+"px "+C.body;ctx.fillStyle=C.muted;ctx.fillText(role,cx,first+(lines.length-1)*fs*1.1+titleDescent+rowGap+roleAscent);}
+      if(showCounts){ctx.font="500 "+fc+"px "+C.body;drawRich(countsLine(n),cx,countBaseline,sw-fc);}
       if(showParts){ctx.font="500 "+fc+"px "+C.body;ctx.fillStyle=col;ctx.textAlign="right";ctx.fillText(n.children.length+" parts ›",sx+sw-fc*0.8,sy+pad+fc);}
     }
-    if(sh>14 && !n.external){ const bx=sx+sw*0.06, bw=sw*0.88, by=sy+sh-Math.max(3,sh*0.06), bh=Math.max(1.5,Math.min(3,sh*0.02)); let off=0; const c=n.count;
+    if(sh>14 && !n.external){ const bx=sx+sw*0.06, bw=sw*0.88, by=barY, bh=barHeight; let off=0; const c=n.count;
       ctx.fillStyle=C.line; ctx.fillRect(bx,by,bw,bh); if(c.total) ST.forEach(s=>{ const w=bw*(c[s]||0)/c.total; if(w>0){ ctx.fillStyle=C.st[s]; ctx.fillRect(bx+off,by,w,bh); off+=w; } }); }
   }
   if(op>0.01){ // open: title strip + inner map
