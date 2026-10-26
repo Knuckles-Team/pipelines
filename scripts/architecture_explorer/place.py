@@ -80,7 +80,9 @@ def _group_key(kind: str, title: str) -> str | None:
         match = re.match(r"^([a-z0-9][a-z0-9\-]*) competency rollup", title)
         if match:
             return match.group(1)
-        return "Vocabulary additions" if re.search(r"additions rollup|vocabulary", title, re.I) else None
+        return (
+            "Vocabulary additions" if re.search(r"additions(?:\s+plus\b.*)?\s+rollup|vocabulary", title, re.I) else None
+        )
     match = re.search(r"`([a-z0-9][a-z0-9\-]+)`", title)
     return match.group(1) if match else None
 
