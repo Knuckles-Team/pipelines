@@ -553,6 +553,7 @@ function caption(n,kind,fullText,x,y,fs,alpha,extra={}){
 }
 $("fresh").addEventListener("toggle",()=>{dirty=true;});
 function paintAnnotations(){
+  ctx.save();try{
   const used=[];annotationEvidence=[];
   for(const a of annotations){
     // Semantic zoom reveals readable captions in real free space. Never force tiny text or a fallback UI.
@@ -574,7 +575,7 @@ function paintAnnotations(){
     ctx.strokeText(a.text,x,y);ctx.fillStyle=C.fg;ctx.fillText(a.text,x,y);
     if(a.marker){ctx.fillStyle=a.marker;ctx.fillRect(x-12,y+a.fs*.5,7,1.5);}
   }
-  ctx.globalAlpha=1;
+  }finally{ctx.restore();}
 }
 // Overview bands span the whole canvas width; their labels stay at the layout's right edge.
 function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.bands.length) return;

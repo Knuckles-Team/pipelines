@@ -29,3 +29,5 @@ Current published draft 282 is unchanged and unmerged. Authorized preview-only c
 
 ### Responsive proof status
 `check-slots.cjs` verifies that the 280px encoding fits a 350px unobstructed native canvas and conserves all four state counts for all 598 nodes. This is a geometric feasibility test, NOT evidence that each actual mobile node has enough empty space. The prepared browser gate must establish actual native zoom reveal without moving any original geometry. No mobile screenshot or browser pass is claimed.
+
+Native caption state fix: annotation styles are wrapped in save/restore (including exceptional paths). This fixes first-versus-repeated-frame corner ink without changing geometry. The capture harness additionally uses identical tiny trusted mouse-wheel input after fonts and activates each target for input and screenshots. No corner tolerance or extra pixel masks are used.
