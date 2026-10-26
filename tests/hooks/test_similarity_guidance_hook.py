@@ -111,6 +111,8 @@ def test_similarity_report_model(tmp_path: Path) -> None:
     assert report.disposition == "diagnostic"
     assert report.source_digest.startswith("sha256:")
     assert report.original_source_digest.startswith("sha256:")
+    assert report.finding["file"] == report.file
+    assert report.finding["original_file"] == report.original_file
     assert report.as_dict()["scanner"] == "dupehound 0.1.2"
 
 
