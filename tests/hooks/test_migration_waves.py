@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from pipelines_hooks.migration_waves import evaluate_wave
 
 
@@ -51,16 +50,12 @@ def _with_connector(ledger: dict[str, object], wave: int, seed: int, **extra: ob
     connectors.append(row)
 
 
-@pytest.mark.spec("PIPE-GATES-R006.1")
-def test_wave_one_requires_every_receipt_and_accepts_a_complete_scope() -> None:
-    # spec: PIPE-GATES-R006.1
+def test_wave_1_entry_and_exit() -> None:
     result = evaluate_wave("1", _ledger())
     assert result.passed, result.findings
 
 
-@pytest.mark.spec("PIPE-GATES-R006.1")
 def test_wave_one_refuses_a_mirror_hash_mismatch_and_wrong_land_operation() -> None:
-    # spec: PIPE-GATES-R006.1
     ledger = _ledger()
     changesets = ledger["waves"]["1"]["changesets"]  # type: ignore[index]
     changesets[0]["mirror_tree_hash"] = "f" * 40
@@ -73,9 +68,7 @@ def test_wave_one_refuses_a_mirror_hash_mismatch_and_wrong_land_operation() -> N
     assert any("landed_via" in finding for finding in result.findings)
 
 
-@pytest.mark.spec("PIPE-GATES-R006.2")
-def test_wave_two_reuses_wave_one_exit_for_small_connectors() -> None:
-    # spec: PIPE-GATES-R006.2
+def test_wave_2_entry_and_exit() -> None:
     ledger = _ledger()
     ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007"]  # type: ignore[index]
     _with_connector(ledger, 2, 100, source_lines=9_999)
@@ -85,9 +78,7 @@ def test_wave_two_reuses_wave_one_exit_for_small_connectors() -> None:
     assert result.passed, result.findings
 
 
-@pytest.mark.spec("PIPE-GATES-R006.2")
 def test_wave_two_refuses_the_ten_thousand_line_boundary() -> None:
-    # spec: PIPE-GATES-R006.2
     ledger = _ledger()
     ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007"]  # type: ignore[index]
     _with_connector(ledger, 2, 200, source_lines=10_000)
@@ -98,9 +89,7 @@ def test_wave_two_refuses_the_ten_thousand_line_boundary() -> None:
     assert any("below 10000" in finding for finding in result.findings)
 
 
-@pytest.mark.spec("PIPE-GATES-R006.3")
-def test_wave_three_requires_an_unchanged_mirror_release_for_each_connector() -> None:
-    # spec: PIPE-GATES-R006.3
+def test_wave_3_entry_and_exit() -> None:
     ledger = _ledger()
     ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011"]  # type: ignore[index]
     _with_connector(ledger, 2, 300, source_lines=4_000)
@@ -113,9 +102,7 @@ def test_wave_three_requires_an_unchanged_mirror_release_for_each_connector() ->
     assert result.passed, result.findings
 
 
-@pytest.mark.spec("PIPE-GATES-R006.3")
 def test_wave_three_refuses_a_release_that_changes_the_mirror_tree() -> None:
-    # spec: PIPE-GATES-R006.3
     ledger = _ledger()
     ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011"]  # type: ignore[index]
     _with_connector(ledger, 2, 500, source_lines=4_000)
@@ -129,9 +116,7 @@ def test_wave_three_refuses_a_release_that_changes_the_mirror_tree() -> None:
     assert any("release tree differs" in finding for finding in result.findings)
 
 
-@pytest.mark.spec("PIPE-GATES-R006.4")
-def test_wave_four_requires_all_five_named_repositories() -> None:
-    # spec: PIPE-GATES-R006.4
+def test_wave_4_entry_and_exit() -> None:
     ledger = _ledger()
     ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
     _with_connector(ledger, 2, 700, source_lines=4_000)
@@ -150,9 +135,7 @@ def test_wave_four_requires_all_five_named_repositories() -> None:
     assert result.passed, result.findings
 
 
-@pytest.mark.spec("PIPE-GATES-R006.4")
 def test_wave_four_refuses_a_missing_named_repository() -> None:
-    # spec: PIPE-GATES-R006.4
     ledger = _ledger()
     ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
     _with_connector(ledger, 2, 1_000, source_lines=4_000)
@@ -172,9 +155,7 @@ def test_wave_four_refuses_a_missing_named_repository() -> None:
     assert any("Axil" in finding for finding in result.findings)
 
 
-@pytest.mark.spec("PIPE-GATES-R006.4")
 def test_wave_four_does_not_accept_a_similar_repository_name() -> None:
-    # spec: PIPE-GATES-R006.4
     ledger = _ledger()
     ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
     _with_connector(ledger, 2, 1_300, source_lines=4_000)
