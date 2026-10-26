@@ -12,5 +12,13 @@
   "snapshotCompression": "XZ (LZMA2), lossless JSON snapshot",
   "studyRevision": "in-box-source-geometry-grapheme-keyboard",
   "geometrySource": "Exact layout.kids and layout.edges from the recorded 2026-10-26T02:31:30Z architecture payload",
-  "study": "Native canvas baseline/extension; prior resized SVG study superseded"
+  "study": "Native canvas baseline/extension; prior resized SVG study superseded",
+  "richStudy": {
+    "rendererCommit": "43b755d8fc035da642cd9e8bb3d7cbb3fff51de3",
+    "templateBlob": "f960aa4b3555a234270e9c89ffcd06f591f84c05",
+    "sourceChartSha256": "02f290f9756ea4387cadc1aefcfe9d709f124e877b37f1af3a2fb107a5712029",
+    "sourceScope": "244 selected Overstory family rows +4 prerequisites; 248 scoring rows;2 unscored rollup evidence rows;6 edges",
+    "dataFreeze": "2026-10-26T02:31:30Z",
+    "coverage": "First source-qualified family integration only, not all nodes"
+  }
 }

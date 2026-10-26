@@ -1,57 +1,21 @@
-# Next composition — Preview candidate; proved e246/d460 receipts retained
+# Preview-only native architecture stories
 
-## What the actual captures show
+First qualified source-rich integration, **Overstory family scope only**. This is not rich visual coverage delivered for all 598 boxes, a live replacement, or production data refresh. Draft #282 remains unmerged.
 
-The existing chart is a placement/invariance proof, not the desired finished story. Four aligned state columns spend most of their area on zeros; Decision Engine's 565-row cell makes three-row circles practically disappear. Large row gaps amplify the sparseness. Family slugs are legible but not curated display names. The plot relocates between candidate screen slots while zooming. Arbora and Overstory reveal no chart in the centre-directed zoom sweep: the current rectangular footprint cannot use their fragmented gaps.
+Both variants use the identical frozen 2026-10-26 02:31:30 UTC payload (598 nodes / 8,366 unique rows). Current canonical native template source: pipelines `43b755d8fc035da642cd9e8bb3d7cbb3fff51de3`, template blob `f960aa4b3555a234270e9c89ffcd06f591f84c05` / SHA256 `11805cca1fc8d1b7c46ee1a16769070b8bb2d4776556617465f9eb16beca3e3b`. Original Inter font/license retained. Native geometry, camera, controls and input handlers are untouched.
 
-## One composition, two independently useful levels of detail
+## New source-scoped views
 
-**First readable gap: concentration annotation (280 × 76 CSS px).** A short factual sentence and a proportional *specified-row concentration* mark, e.g. “186 of 219 specified rows — arbora app surface”. The denominator is explicit; this is NOT completion, priority or runtime health. Full family identity remains accessible. This reveals a real source-backed fact in a smaller gap without creating a toolbar or panel.
+The two selected Overstory families contain 244 requirements plus four real prerequisite rows. Exact frozen full-SHA source captures qualify this 248-row scoring scope and six prerequisite edges; all 248 titles/status/families match the old payload. Four unrelated dependency gaps remain outside scope, full-repository scoring is blocked, and architecture node mapping is not generally qualified. No activity feed or fake activity zeros are included.
 
-**Larger readable gap: compact family evidence comparison (280 × ~230 px).** Up to three rows, each:
-- Family name + absolute contribution (`732 / 740 requirements`).
-- A readable, equal-width **within-family** state-composition band.
-- Only nonzero exact state counts, e.g. `166 Verified · 565 Specified · 1 Retired` (wrapped when needed). No zero cells, no tiny area marks.
+Native scale can reveal ready/blocked family comparisons, scoped non-rollup priority scores, and true dependent-to-prerequisite paths, only in measured unoccupied space. Wide paths show 7/7 connected rows and 6/6 edges; narrow paths show the highest-scored blocked row plus its direct prerequisites (3/7 rows, 2/6 edges). Readiness excludes rollups/non-open rows. Referenced rollup children stay separate as unscored evidence-only detail. File URLs are immutable; requirement IDs identify table rows, not fabricated GitHub anchors.
 
-The common **within-family** denominator is explicitly labelled: band lengths compare proportions, not family size. Family contribution is the printed absolute count/total, never encoded through misleading equal bar length. Other families are explicitly aggregated with exact family count and all counts conserved. A shared text legend uses full state names; color is redundant with numbers/text. A short concentration sentence replaces the former three-line scale explanation. If both modules would repeat the same fact, show the comparison only, not two copies.
+Other nodes retain evidence composition and small semantic family counts. Tiny mobile gaps cannot fit a legible rich graph. The local candidate permits an 80×40 count with 11px label while retaining visible original child context; deeper plots defer rather than move/shrink the map. At most one module paints, using stable precomputed world anchors and the same 8px obstacle halo. No new filters, panels or zoom controls.
 
-This does not add a new child-card matrix: it compares requirement-family evidence within the existing native map. No panel background, divider dashboard, filter, selector or new zoom control. No missing dependency/activity/priority feed is fabricated.
+## Qualification, not deployment
 
-## Anchor contract (no roaming)
+`prepare.py` validates source hash, old-payload parity, family conservation and exact removal of the three extension-only seams. CI uses only Node/Python standard libraries and runner Chrome. Browser checks require original 598 rectangles, camera, controls/canvas and exact outside-module pixels; actual Inter glyph bounds and graph-edge clearances; actual native mouse-wheel priority AND prerequisite reveals; mobile Arbora central reveal with original child rectangles retained; stable tiers and complete supplemental footer capture. A context count cannot satisfy the priority/dependency gates.
 
-Compute a small ordered list of node-local anchor points from unchanged source layout geometry once. Candidate identity is stable in world coordinates, not a fresh top-left screen-grid search each frame. Entry requires readable size + an 8px obstacle halo plus 12px spare space; keep the same anchor while safe. Any actual collision causes immediate deferral, never overlap-preserving hysteresis. Leaving the viewport defers rather than sliding to a new corner. Reappearance uses the same node-local anchor; another anchor is selected only at a documented native semantic-zoom tier transition. Caption/card/route obstacles remain authoritative.
+Paired pixels use the same reduced-motion/static preference, not an ocean-animation proof. The pointer-centered wheel sweep is retained; additional left/right pointer-directed native wheel routes are explicitly identified in receipts. Supplemental document-scroll footer captures are separate from identical-position pixel proof. Passing gates still requires actual pixel review; previous evidence-only captures are not claims for this revision.
 
-## Titles and source truth
-
-Frozen PAYLOAD has family IDs, not curated family display titles. Existing requirement headings sampled locally are machine prefixes, and those local files are not verified at the frozen snapshot SHA. Do NOT present them as verified source titles. Prefer explicit source family display metadata when available at a verified SHA; otherwise retain the humanized recorded family identifier with full ID accessible. Authored replacements need a reviewed title map with provenance, not an inferred claim that one child node names the whole family.
-
-## Acceptance before any design publication
-
-1. Keep all canonical rectangles, routes, camera, controls and gestures byte-identical.
-2. Run existing exact pixel/geometry gates; no new masks beyond actual supplementary paint bounds.
-3. Positive native mouse-wheel reveal for Arbora, Overstory and Decision Engine on both desktop and mobile; ordinary pan may explore an actual gap, but no injected camera or fabricated free area.
-4. Check all text bounds/full labels and nonzero state counts at 11–12px minimum; inspect the full mobile canvas and footer.
-5. Verify no anchor jump within a semantic tier, and safe deferral on path/caption/card intersection.
-6. Review actual pixels before calling this richer or ready. This file is a proposal, not a screenshot or completed renderer implementation.
-
-## Local implementation available for source review
-
-`composition.js` and `preview.html` implement the two alternate encodings at the existing after-caption story seam. `preview.html` uses the exact e246 proven baseline/payload and unchanged surrounding renderer. One module is shown, not both. Runtime anchor sets are calculated once per focused node from original world rectangles; choices remain pinned within a documented native-width zoom tier. A collision immediately defers instead of choosing another gap. This candidate enters the approved isolated preview-only browser qualification lane; no live deployment or merge.
-
-`check.cjs` passes all 598 count-conservation cases and pure stable-anchor/route-collision tests. Actual native reveal, legibility, route/caption safety and anchor behavior still require the unchanged strict browser/pixel gates after source review. There are no verified curated titles in the frozen model, so full recorded family IDs remain the provenance-safe fallback.
-
-### Source-review corrections
-- Accessible description now follows the visible module: concentration announces its SPECIFIED-row denominator only; comparison announces each family denominator and its absolute contribution.
-- Text layout measures the right-aligned contribution first and reserves a 12px gap before fitting the family label. Unicode family-label caps/fitting preserve grapheme clusters.
-- State legend and nonzero numeric labels wrap as complete items; none are ellipsized. Unrepresentable large text safely defers instead of clipping. Actual measured height is used in obstacle placement.
-- Expanded pure tests cover uniform-family/zero-SPECIFIED data, very large numbers (complete or deferred), long Unicode labels, all text rectangles, kind-specific aria, tier entry/return, stable world anchors and immediate collision deferral. These use deterministic mock text metrics, not an Inter browser-render acceptance claim.
-
-Because measured wrapping can increase height, the original ~230px comparison estimate is not a guarantee. The candidate uses the measured footprint, and smaller concentration annotations remain available where a full comparison cannot fit. Actual mobile/Arbora/Overstory reveal and typography are still unproven until the unchanged hosted tests and pixel review are authorized for this new LOCAL design.
-
-### Native navigation qualification routes
-
-Every nominated node/device first receives the unchanged center-directed mouse-wheel sweep. Only if it has no positive reveal, a second fresh baseline/candidate pair receives trusted mouse-wheel input at 20% of the original canvas width, aimed toward existing left-side whitespace. No camera injection, node movement, renderer resizing or collision tolerance is used. Receipts and screenshot filenames distinguish `center` from `left-gap`. Requiring that navigation is a discoverability limitation, not evidence that richness is automatic everywhere; all-node production fulfillment is not claimed by three examples.
-
-The node-local anchor list retains a finite deduplicated interior set as well as child-boundary anchors (maximum96); selection remains pinned within its native zoom tier and immediately defers on collision.
-
-Stable anchor alignment may be left or right, chosen once with its module kind and node-local anchor inside a native zoom tier. This lets narrow viewports use a real gap without moving original geometry; a later collision defers rather than switching alignment. At most384 entry candidates are checked (96 anchors ×2 alignments ×2 module kinds), then one pinned placement per frame. The right-alignment correction was motivated by replay of actual mobile-Arbora obstacle receipts, not by relaxing collision margins.
+The workflow only uploads a seven-day artifact with `contents: read`; it never deploys Pages, changes the canonical renderer/model, or merges this draft.

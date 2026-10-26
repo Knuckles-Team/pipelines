@@ -4,7 +4,7 @@ const collision=base.slice(base.indexOf('function intersects('),base.indexOf('fu
 const source=fs.readFileSync(__dirname+'/story.js','utf8');
 const states=['VERIFIED','LANDED','SPECIFIED','RETIRED'];
 const fontStack=[];const ctx={font:'400 11px Inter',save(){fontStack.push(this.font);},restore(){this.font=fontStack.pop();},measureText(text){const size=Number(this.font.match(/(\d+)px/)[1]);return {width:Array.from(text).length*size*.52};}};
-const context={ctx,C:{body:'Inter'},fmt:n=>n.toLocaleString('en-US'),W:1000,H:800,Intl,ST:states,R:{test:[0,0,1000,800]},nodes:{test:{children:[]}},shift:0};
+const context={ctx,C:{body:'Inter'},fmt:n=>n.toLocaleString('en-US'),W:1000,H:800,Intl,ST:states,R:{test:[0,0,1000,800]},nodes:{test:{children:[]}},shift:0,cam:{x:0,y:0,k:1}};
 vm.createContext(context);vm.runInContext(collision+'\n'+source+'\nthis.choose=chooseStory;this.compact=compactStoryGroups;this.layout=storyLayout;this.describe=storyDescription;this.seedAnchors=(id,points)=>storyAnchorSets.set(id,points);this.toS=(x,y)=>[x+shift,y];',context);
 const models=JSON.parse(fs.readFileSync(__dirname+'/chart-model.json','utf8'));
 for(const m of Object.values(models)){
@@ -39,7 +39,20 @@ const description=context.describe({placement:'canvas',kind:'concentration',take
 context.shift=0;const otherTier=context.choose('test',data,[0,0,2200,800],[],[]);assert(otherTier);const returnTier=context.choose('test',data,bounds,[],[]);assert.equal(returnTier.index,first.index);
 console.log('PASS: kind-specific aria; measured no-overlap text; uniform/zero specified; large complete numbers or deferral; long Unicode; tier return');
 
-context.W=357;context.H=600;context.seedAnchors('rightOnly',[{x:304,y:100,score:1}]);
+context.W=357;context.H=600;context.nodes.rightOnly={children:[]};context.seedAnchors('rightOnly',[{x:304,y:100,score:1}]);
 const right=context.choose('rightOnly',data,[0,0,1000,800],[],[]);assert(right);assert.equal(right.align,'right');assert.equal(right.rect[0],24);
 assert.equal(context.choose('rightOnly',data,[0,0,1000,800],[right.rect],[]),null,'pinned right edge must defer on collision');
 console.log('PASS: stable right-edge anchor reveals in narrow viewport; collision still defers');
+
+vm.runInContext('this.rich=richLayout;this.segmentHit=segmentHitsRect;',context);
+const sourceView=JSON.parse(fs.readFileSync(__dirname+'/source-view.json','utf8'));
+assert.equal(sourceView.scope.scoreRows,248);assert.equal(sourceView.graph.nodes.length,7);assert.equal(sourceView.graph.edges.length,6);
+assert.equal(Object.keys(sourceView.evidenceOnly).length,2);
+for(const width of [280,460])for(const kind of ['frontier','priority','dependencies']){
+ const result=context.rich(kind,sourceView,width,(t,size)=>Array.from(t).length*size*.52);assert(result);assertLayout(result);
+ const text=result.ops.filter(o=>o.type==='text');
+ for(const edge of result.ops.filter(o=>o.type==='edge'))for(let i=1;i<edge.points.length;i++)for(const t of text)assert(!context.segmentHit(edge.points[i-1],edge.points[i],[t.x-1,t.y-1,t.width+2,t.height+2]));
+ assert(result.accessibility.includes('https://github.com/'));
+}
+const cyclic=structuredClone(sourceView);cyclic.graph.edges.push({source:cyclic.graph.edges[0].target,target:cyclic.graph.edges[0].source});assert.equal(context.rich('dependencies',cyclic,460,(t,size)=>t.length*size*.52),null);
+console.log('PASS: six scoped rich layouts; complete counts; true directed edges; unscored evidence retained; immutable source details; cyclic view defers');

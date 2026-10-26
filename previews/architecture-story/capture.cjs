@@ -33,8 +33,10 @@ function call(method,params={},sessionId){return new Promise((resolve,reject)=>{
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const results=[];
 (async()=>{
- for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide'])for(const route of ['center','left-gap']){
-  if(route==='left-gap'&&results.some(r=>r.device===device.name&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas'))continue;
+ for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide'])for(const route of ['center','left-gap','right-gap']){
+  const revealed=results.filter(r=>r.device===device.name&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas');
+  if(route!=='center'&&(node==='webui'&&device.name==='desktop'?['priority','dependencies'].every(k=>revealed.some(r=>r.story.kind===k)):revealed.length>0))continue;
+  if(route==='right-gap'&&node!=='webui')continue;
   const pages=[];let fullPageCaptured=false;
   try{
    for(const variant of ['baseline','preview']){
@@ -57,7 +59,7 @@ const results=[];
      await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))))');
      await delay(150);
      {
-      const fraction=route==='center'?.5:.2;
+      const fraction=route==='center'?.5:route==='left-gap'?.2:.8;
       const p=await page.evaluate(`(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return {x:r.x+r.width*${fraction},y:r.y+r.height/2}})()`);
       const before=await page.evaluate('({...__arch.cam})'),delta=step?-160:-1;
       await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',...p,deltaX:0,deltaY:delta});
@@ -79,6 +81,19 @@ const results=[];
      for(let i=0;i<text.length;i++)for(let j=i+1;j<text.length;j++){const a=text[i],b=text[j];if(a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y)throw Error('Story labels overlap');}
     }
     if(mask){
+     const ink=await pages[1].evaluate(`(()=>{
+       const s=__storyQA(),c=document.querySelector('#cv').getContext('2d'),font=getComputedStyle(document.documentElement).getPropertyValue('--font-body').trim(),rects=[];
+       c.save();try{c.textAlign='left';c.textBaseline='top';for(const op of s.layout.ops.filter(o=>o.type==='text')){c.font=op.weight+' '+op.size+'px '+font;const m=c.measureText(op.text);const r=[op.x-m.actualBoundingBoxLeft,op.y-m.actualBoundingBoxAscent,m.actualBoundingBoxLeft+m.actualBoundingBoxRight,m.actualBoundingBoxAscent+m.actualBoundingBoxDescent];if(r[0]<-.01||r[1]<-.01||r[0]+r[2]>s.rect[2]+.01||r[1]+r[3]>s.rect[3]+.01)return {ok:false,reason:'actual glyph outside module',text:op.text,rect:r};rects.push({text:op.text,rect:r});}}finally{c.restore();}
+       const intersects=(a,b)=>a[0]<b[0]+b[2]&&a[0]+a[2]>b[0]&&a[1]<b[1]+b[3]&&a[1]+a[3]>b[1];
+       for(let i=0;i<rects.length;i++)for(let j=i+1;j<rects.length;j++)if(intersects(rects[i].rect,rects[j].rect))return {ok:false,reason:'actual glyph overlap',a:rects[i],b:rects[j]};
+       const hit=(a,b,r)=>{let lo=0,hi=1;for(let d=0;d<2;d++){const delta=b[d]-a[d],mn=r[d],mx=r[d]+r[d+2];if(Math.abs(delta)<1e-9){if(a[d]<mn||a[d]>mx)return false;}else{let t0=(mn-a[d])/delta,t1=(mx-a[d])/delta;if(t0>t1)[t0,t1]=[t1,t0];lo=Math.max(lo,t0);hi=Math.min(hi,t1);if(lo>hi)return false;}}return true;};
+       for(const op of s.layout.ops.filter(o=>o.type==='edge'))for(let i=1;i<op.points.length;i++)for(const t of rects){const r=t.rect;if(hit(op.points[i-1],op.points[i],[r[0]-3,r[1]-3,r[2]+6,r[3]+6]))return {ok:false,reason:'graph line or arrowhead near glyph',text:t.text};}
+       if(s.context.applicable&&!s.context.retained)return {ok:false,reason:'original child context lost'};
+       if(['priority','dependencies','frontier'].includes(s.kind)&&!document.querySelector('#cv').getAttribute('aria-description').includes('https://github.com/'))return {ok:false,reason:'accessible immutable provenance absent'};
+       return {ok:true,actualInk:rects,context:s.context};
+     })()`);
+     if(!ink.ok){writeFileSync(join(output,'actual-ink-failure.json'),JSON.stringify({device,node,route,step,ink},null,2));throw Error('Actual font/graph/context check failed: '+ink.reason);}
+     story.actualFontProof=ink;
      const clear=await pages[1].evaluate(`(()=>{const s=__storyQA(),r=s.rect,p=[r[0]-8,r[1]-8,r[2]+16,r[3]+16];const hit=(a,b)=>a[0]<b[0]+b[2]&&a[0]+a[2]>b[0]&&a[1]<b[1]+b[3]&&a[1]+a[3]>b[1];return !s.obstacles.some(b=>hit(p,b))})()`);
      if(!clear)throw Error('Story overlaps reserved geometry');
     }
@@ -111,6 +126,8 @@ const results=[];
    }
   }finally{for(const page of pages)await call('Target.closeTarget',{targetId:page.targetId});}
  }
+ for(const kind of ['priority','dependencies'])if(!results.some(r=>r.device==='desktop'&&r.node==='webui'&&r.story?.owner==='webui'&&r.story?.placement==='canvas'&&r.story.kind===kind))throw Error('No actual native '+kind+' reveal; context count is not rich proof');
+ if(!results.some(r=>r.device==='mobile'&&r.node==='arbora'&&r.route==='center'&&r.story?.placement==='canvas'&&r.story.context?.visibleChildren.length>0))throw Error('Mobile Arbora central context-preserving reveal absent');
  for(const device of ['desktop','mobile'])for(const node of ['arbora','webui','eg.decide'])if(!results.some(r=>r.device===device&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas'))throw Error('No trusted mouse-wheel chart reveal on '+device+' / '+node+'; not visual proof');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
   writeFileSync(join(output,'browser.log'),logs);
