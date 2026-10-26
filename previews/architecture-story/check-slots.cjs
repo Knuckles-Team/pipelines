@@ -1,24 +1,40 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const template=fs.readFileSync(__dirname+'/baseline-template.html','utf8');
-const collision=template.slice(template.indexOf('function intersects('),template.indexOf('function annotationClear('));
-const extension=fs.readFileSync(__dirname+'/story.js','utf8').split('function drawStory(){')[0].replace('/*__STORY__*/null','null');
-const context={W:1440,H:1000,Intl,ST:["VERIFIED","LANDED","SPECIFIED","RETIRED"]};vm.createContext(context);
-vm.runInContext(collision+'\n'+extension+'\nthis.slot=storySlot;this.cap=storyCap;this.compact=compactStoryGroups;',context);
-assert(context.slot([0,0,1440,1000],[],[],402,280));
-assert.equal(context.slot([0,0,390,844],[],[],402,280),null);
-assert.equal(context.slot([0,0,1440,1000],[[0,0,1440,1000]],[],402,280),null);
-const r=context.slot([0,0,1440,1000],[[0,0,800,1000]],[],402,280);
-assert(r&&r[0]>=808);
-const lineResult=context.slot([0,0,450,400],[],[[[0,180],[450,180]]],402,280);
-assert.equal(lineResult,null);
-assert.equal(context.cap('👩‍💻👩‍💻👩‍💻',2),'👩‍💻…');
-console.log('PASS: free/occupied/narrow slots, padding, routed obstruction, grapheme cap');
-
+const base=fs.readFileSync(__dirname+'/baseline-template.html','utf8');
+const collision=base.slice(base.indexOf('function intersects('),base.indexOf('function annotationClear('));
+const source=fs.readFileSync(__dirname+'/story.js','utf8');
+const states=['VERIFIED','LANDED','SPECIFIED','RETIRED'];
+const fontStack=[];const ctx={font:'400 11px Inter',save(){fontStack.push(this.font);},restore(){this.font=fontStack.pop();},measureText(text){const size=Number(this.font.match(/(\d+)px/)[1]);return {width:Array.from(text).length*size*.52};}};
+const context={ctx,C:{body:'Inter'},fmt:n=>n.toLocaleString('en-US'),W:1000,H:800,Intl,ST:states,R:{test:[0,0,1000,800]},nodes:{test:{children:[]}},shift:0};
+vm.createContext(context);vm.runInContext(collision+'\n'+source+'\nthis.choose=chooseStory;this.compact=compactStoryGroups;this.layout=storyLayout;this.describe=storyDescription;this.toS=(x,y)=>[x+shift,y];',context);
 const models=JSON.parse(fs.readFileSync(__dirname+'/chart-model.json','utf8'));
-for(const model of Object.values(models)){
- const groups=context.compact(model);assert(groups.length<=3);
- assert.equal(groups.reduce((n,g)=>n+g.total,0),model.total);
- for(const state of context.ST)assert.equal(groups.reduce((n,g)=>n+g.counts[state],0),model.groups.reduce((n,g)=>n+g.counts[state],0));
+for(const m of Object.values(models)){
+ const groups=context.compact(m);assert(groups.length<=3);
+ assert.equal(groups.reduce((sum,g)=>sum+g.total,0),m.total);
+ for(const st of states)assert.equal(groups.reduce((sum,g)=>sum+g.counts[st],0),m.groups.reduce((sum,g)=>sum+g.counts[st],0));
+ for(const g of groups)assert.equal(Object.values(g.counts).reduce((sum,n)=>sum+n,0),g.total);
 }
-assert(context.slot([0,0,350,600],[],[],280,366));
-console.log('PASS: compact aggregation conserves every state on 598 nodes; 280px slot fits 350px canvas');
+const data=models.webui,bounds=[0,0,1000,800];
+const first=context.choose('test',data,bounds,[],[]);assert(first&&first.kind==='comparison');
+const blocked=context.choose('test',data,bounds,[first.rect],[]);assert.equal(blocked,null,'must defer instead of jumping to another available gap');
+context.shift=30;const moved=context.choose('test',data,bounds,[],[]);assert.equal(moved.index,first.index);assert.equal(moved.rect[0]-first.rect[0],30,'must move with original world anchor');
+const segment=[[[moved.rect[0],moved.rect[1]],[moved.rect[0]+moved.rect[2],moved.rect[1]+moved.rect[3]]]];
+assert.equal(context.choose('test',data,bounds,[],segment),null);
+console.log('PASS: 598-node counts; compact denominators; stable anchor under native transform; collision defers without roaming');
+
+function assertLayout(layout){
+ assert(layout);const text=layout.ops.filter(op=>op.type==='text');
+ for(const op of text){assert(op.x>=0&&op.x+op.width<=layout.width+.01);assert(op.y>=0&&op.y+op.height<=layout.height);assert(op.size>=11);}
+ for(let i=0;i<text.length;i++)for(let j=i+1;j<text.length;j++){
+  const a=text[i],b=text[j];assert(!(a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y),'text rectangles overlap: '+a.text+' / '+b.text);
+ }
+}
+for(const id of ['webui','arbora','eg.decide']){
+ const m=models[id];assertLayout(context.layout('comparison',m,context.compact(m)));assertLayout(context.layout('concentration',m,context.compact(m)));
+}
+const single={total:9000,familyCount:1,takeaway:null,groups:[{key:'repo:uniform',label:'Uniform family',total:9000,counts:{VERIFIED:9000,LANDED:0,SPECIFIED:0,RETIRED:0}}]};
+assert.equal(context.layout('concentration',single,single.groups),null);assertLayout(context.layout('comparison',single,single.groups));
+const huge={total:8e12,familyCount:1,takeaway:{family:'repo:large',count:2e12,total:2e12},groups:[{key:'repo:large',label:'👩‍💻'.repeat(50),total:8e12,counts:{VERIFIED:2e12,LANDED:2e12,SPECIFIED:2e12,RETIRED:2e12}}]};
+const hugeLayout=context.layout('comparison',huge,huge.groups);if(hugeLayout){assertLayout(hugeLayout);const labels=hugeLayout.ops.filter(o=>o.type==='text').map(o=>o.text).join(' ');for(const abbreviation of ['V','L','S','R'])assert(labels.includes('2,000,000,000,000 '+abbreviation));} // Otherwise safe deferral, never truncated numeric/legend text.
+const description=context.describe({placement:'canvas',kind:'concentration',takeaway:{family:'repo:one',count:3,total:5},groups:[],total:10});assert(description.includes('3 of 5'));assert(!description.includes('Equal bands'));assert(!description.includes('10 unique'));
+context.shift=0;const otherTier=context.choose('test',data,[0,0,2200,800],[],[]);assert(otherTier);const returnTier=context.choose('test',data,bounds,[],[]);assert.equal(returnTier.index,first.index);
+console.log('PASS: kind-specific aria; measured no-overlap text; uniform/zero specified; large complete numbers or deferral; long Unicode; tier return');

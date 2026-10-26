@@ -70,6 +70,13 @@ const results=[];
     for(const field of ['cam','rects','canvas','controls'])if(JSON.stringify(states[0][field])!==JSON.stringify(states[1][field])){writeFileSync(join(output,'invariant-failure.json'),JSON.stringify({device,node,step,field,states},null,2));throw Error('Native invariant changed: '+field);}
     const story=states[1].story,mask=story?.placement==='canvas'?story.rect:null,hashes=[];
     if(mask){
+     const prior=results.filter(r=>r.device===device.name&&r.node===node&&r.story?.placement==='canvas'&&r.story.owner===story.owner&&r.story.tier===story.tier).at(-1);
+     if(prior&&(prior.story.index!==story.index||prior.story.kind!==story.kind))throw Error('Story anchor jumped inside native zoom tier');
+     const text=story.layout.ops.filter(op=>op.type==='text');
+     for(const op of text)if(op.x<0||op.x+op.width>story.rect[2]+.01||op.y<0||op.y+op.height>story.rect[3]||op.size<11)throw Error('Unreadable or out-of-bounds story text');
+     for(let i=0;i<text.length;i++)for(let j=i+1;j<text.length;j++){const a=text[i],b=text[j];if(a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y)throw Error('Story labels overlap');}
+    }
+    if(mask){
      const clear=await pages[1].evaluate(`(()=>{const s=__storyQA(),r=s.rect,p=[r[0]-8,r[1]-8,r[2]+16,r[3]+16];const hit=(a,b)=>a[0]<b[0]+b[2]&&a[0]+a[2]>b[0]&&a[1]<b[1]+b[3]&&a[1]+a[3]>b[1];return !s.obstacles.some(b=>hit(p,b))})()`);
      if(!clear)throw Error('Story overlaps reserved geometry');
     }
@@ -102,7 +109,7 @@ const results=[];
    }
   }finally{for(const page of pages)await call('Target.closeTarget',{targetId:page.targetId});}
  }
- for(const device of ['desktop','mobile'])if(!results.some(r=>r.device===device&&r.story?.placement==='canvas'))throw Error('No trusted mouse-wheel chart reveal on '+device+'; not visual proof');
+ for(const device of ['desktop','mobile'])for(const node of ['arbora','webui','eg.decide'])if(!results.some(r=>r.device===device&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas'))throw Error('No trusted mouse-wheel chart reveal on '+device+' / '+node+'; not visual proof');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
   writeFileSync(join(output,'browser.log'),logs);
   try{await call('Browser.close');}catch{}

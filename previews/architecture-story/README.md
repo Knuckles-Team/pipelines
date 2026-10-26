@@ -1,33 +1,49 @@
-# Geometry-preserving native canvas reset — PREVIEW ONLY
+# Next composition — Preview candidate; proved e246/d460 receipts retained
 
-The resized SVG study is superseded. Isolated draft artifact; not deployed to the canonical architecture.
+## What the actual captures show
 
-## Exact scope
+The existing chart is a placement/invariance proof, not the desired finished story. Four aligned state columns spend most of their area on zeros; Decision Engine's 565-row cell makes three-row circles practically disappear. Large row gaps amplify the sparseness. Family slugs are legible but not curated display names. The plot relocates between candidate screen slots while zooming. Arbora and Overstory reveal no chart in the centre-directed zoom sweep: the current rectangular footprint cannot use their fragmented gaps.
 
-- `baseline.html`: original payload and canonical canvas, with the annotation owner's current LOCAL native-caption fix (not a deployed baseline claim).
-- `preview.html`: that exact baseline, plus one after-caption paint hook and precomputed data. No new controls, panels, DOM layout, SVG, inset, child-map scaling, camera behavior or gesture handlers.
-- Original `place`, world rectangles, layout routes, `fitCam`, `openCam`, animation and wheel behavior remain byte-identical. The world-geometry/camera section also matches the original supplied canonical snapshot exactly.
-- The extension yields to native cards, title strips, chrome, routes, arrowheads, grouping outlines and accepted captions with their halos. It never makes room by changing geometry. If no readable empty rectangle exists, nothing is painted.
+## One composition, two independently useful levels of detail
 
-## One supplementary chart, only when space permits
+**First readable gap: concentration annotation (280 × 76 CSS px).** A short factual sentence and a proportional *specified-row concentration* mark, e.g. “186 of 219 specified rows — arbora app surface”. The denominator is explicit; this is NOT completion, priority or runtime health. Full family identity remains accessible. This reveals a real source-backed fact in a smaller gap without creating a toolbar or panel.
 
-A family × requirement-state comparison uses circle **area proportional to unique requirement count**, with exact numbers, full state headings, an explicit shared area-scale reference, and a factual largest-family concentration annotation for SPECIFIED rows (not a completion rate). Families are deduplicated by repository + row identity. Up to four rows: largest three families plus an explicitly labelled aggregate when needed. All counts conserve the focused node's total; no fabricated effort, completion or runtime health. No separate legend controls or filtering. The existing source/spec inspection stays unchanged.
+**Larger readable gap: compact family evidence comparison (280 × ~230 px).** Up to three rows, each:
+- Family name + absolute contribution (`732 / 740 requirements`).
+- A readable, equal-width **within-family** state-composition band.
+- Only nonzero exact state counts, e.g. `166 Verified · 565 Specified · 1 Retired` (wrapped when needed). No zero cells, no tiny area marks.
 
-This is a first local chart candidate, NOT an assertion that it is rich/readable enough or that available gaps are adequate. Labels are capped at 28 graphemes and measured to fit; full family keys and aggregation remain in the render model. The canvas receives a matching full-key/count aria-description only while the chart is visible; existing selected-part inspection remains the source-detail route. Leaves whose card content occupies their entire box deliberately receive no overlay. Missing required production feeds/mappings remain build blockers, not fallback metrics.
+The common **within-family** denominator is explicitly labelled: band lengths compare proportions, not family size. Family contribution is the printed absolute count/total, never encoded through misleading equal bar length. Other families are explicitly aggregated with exact family count and all counts conserved. A shared text legend uses full state names; color is redundant with numbers/text. A short concentration sentence replaces the former three-line scale explanation. If both modules would repeat the same fact, show the comparison only, not two copies.
 
-## Budgets and priority
+This does not add a new child-card matrix: it compares requirement-family evidence within the existing native map. No panel background, divider dashboard, filter, selector or new zoom control. No missing dependency/activity/priority feed is fabricated.
 
-One chart for the native focused open node, maximum four family rows / sixteen marks (compact: three rows / twelve marks), 462px wide comparison or 280px compact comparison, with unchanged readable font sizes. Compact uses up to two named families plus explicit remaining-family aggregation; every state count is conserved. Counts precomputed once during artifact assembly, no runtime full-row scans. At most 160 candidate rectangles per layout (320 total) per dirty paint; existing native caption placement has priority. Offscreen chart regions are not mounted. No motion beyond existing native camera/ocean.
+## Anchor contract (no roaming)
 
-## Proof status
+Compute a small ordered list of node-local anchor points from unchanged source layout geometry once. Candidate identity is stable in world coordinates, not a fresh top-left screen-grid search each frame. Entry requires readable size + an 8px obstacle halo plus 12px spare space; keep the same anchor while safe. Any actual collision causes immediate deferral, never overlap-preserving hysteresis. Leaving the viewport defers rather than sliding to a new corner. Reappearance uses the same node-local anchor; another anchor is selected only at a documented native semantic-zoom tier transition. Caption/card/route obstacles remain authoritative.
 
-`static-checks.json`: 598 nodes, 8366 unique root rows, conserved group totals; exact reconstruction of baseline after removing the three extension seams; no new controls. JavaScript syntax checks pass.
+## Titles and source truth
 
-`capture.cjs`: **prepared, NOT RUN**. Uses only the existing native wheel handler through trusted browser mouse-wheel input via CDP (not package-qualification evidence). Captures paired baseline/preview screenshots at each native zoom step; compares all 598 world rectangles, camera, canvas bounds and controls; hashes every canvas pixel outside the chart region and fails on differences. It also fails unless trusted mouse-wheel reveal is demonstrated separately on BOTH desktop and mobile. Requires authorized hosted browser execution; local browser launch is known unavailable and has not been retried. Pixel quality, sufficient free space, collision acceptance and native reveal are therefore UNPROVEN. Browser review must also include mobile/dark and assistive-technology behavior before any final-design claim.
+Frozen PAYLOAD has family IDs, not curated family display titles. Existing requirement headings sampled locally are machine prefixes, and those local files are not verified at the frozen snapshot SHA. Do NOT present them as verified source titles. Prefer explicit source family display metadata when available at a verified SHA; otherwise retain the humanized recorded family identifier with full ID accessible. Authored replacements need a reviewed title map with provenance, not an inferred claim that one child node names the whole family.
 
-Current published draft 282 is unchanged and unmerged. Authorized preview-only capture lane; no canonical deployment or merge.
+## Acceptance before any design publication
 
-### Responsive proof status
-`check-slots.cjs` verifies that the 280px encoding fits a 350px unobstructed native canvas and conserves all four state counts for all 598 nodes. This is a geometric feasibility test, NOT evidence that each actual mobile node has enough empty space. The prepared browser gate must establish actual native zoom reveal without moving any original geometry. No mobile screenshot or browser pass is claimed.
+1. Keep all canonical rectangles, routes, camera, controls and gestures byte-identical.
+2. Run existing exact pixel/geometry gates; no new masks beyond actual supplementary paint bounds.
+3. Positive native mouse-wheel reveal for Arbora, Overstory and Decision Engine on both desktop and mobile; ordinary pan may explore an actual gap, but no injected camera or fabricated free area.
+4. Check all text bounds/full labels and nonzero state counts at 11–12px minimum; inspect the full mobile canvas and footer.
+5. Verify no anchor jump within a semantic tier, and safe deferral on path/caption/card intersection.
+6. Review actual pixels before calling this richer or ready. This file is a proposal, not a screenshot or completed renderer implementation.
 
-Native caption state fix: annotation styles are wrapped in save/restore (including exceptional paths). This fixes first-versus-repeated-frame corner ink without changing geometry. The capture harness additionally uses identical tiny trusted mouse-wheel input after fonts and activates each target for input and screenshots. No corner tolerance or extra pixel masks are used.
+## Local implementation available for source review
+
+`composition.js` and `preview.html` implement the two alternate encodings at the existing after-caption story seam. `preview.html` uses the exact e246 proven baseline/payload and unchanged surrounding renderer. One module is shown, not both. Runtime anchor sets are calculated once per focused node from original world rectangles; choices remain pinned within a documented native-width zoom tier. A collision immediately defers instead of choosing another gap. This candidate enters the approved isolated preview-only browser qualification lane; no live deployment or merge.
+
+`check.cjs` passes all 598 count-conservation cases and pure stable-anchor/route-collision tests. Actual native reveal, legibility, route/caption safety and anchor behavior still require the unchanged strict browser/pixel gates after source review. There are no verified curated titles in the frozen model, so full recorded family IDs remain the provenance-safe fallback.
+
+### Source-review corrections
+- Accessible description now follows the visible module: concentration announces its SPECIFIED-row denominator only; comparison announces each family denominator and its absolute contribution.
+- Text layout measures the right-aligned contribution first and reserves a 12px gap before fitting the family label. Unicode family-label caps/fitting preserve grapheme clusters.
+- State legend and nonzero numeric labels wrap as complete items; none are ellipsized. Unrepresentable large text safely defers instead of clipping. Actual measured height is used in obstacle placement.
+- Expanded pure tests cover uniform-family/zero-SPECIFIED data, very large numbers (complete or deferred), long Unicode labels, all text rectangles, kind-specific aria, tier entry/return, stable world anchors and immediate collision deferral. These use deterministic mock text metrics, not an Inter browser-render acceptance claim.
+
+Because measured wrapping can increase height, the original ~230px comparison estimate is not a guarantee. The candidate uses the measured footprint, and smaller concentration annotations remain available where a full comparison cannot fit. Actual mobile/Arbora/Overstory reveal and typography are still unproven until the unchanged hosted tests and pixel review are authorized for this new LOCAL design.
