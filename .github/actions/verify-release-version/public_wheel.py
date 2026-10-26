@@ -9,6 +9,7 @@ import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -112,72 +113,119 @@ def reviewed_target_extra(root: Path, target: str = "mcp") -> str:
     return extra or ""
 
 
-def _generated_payload(root: Path, module: str) -> dict[str, bytes]:
-    """Recreate release-only ontology files from the reviewed source tree.
+def _source_epoch(root: Path) -> str:
+    """Resolve the epoch used by the immutable source publisher."""
+    value = os.environ.get("SOURCE_DATE_EPOCH", "")
+    if value:
+        if not value.isdigit():
+            raise ValueError("SOURCE_DATE_EPOCH must be an integer")
+        return value
+    value = subprocess.check_output(["git", "show", "-s", "--format=%ct", "HEAD"], cwd=root, text=True).strip()
+    if not value.isdigit():
+        raise ValueError("Reviewed source commit has no usable publication epoch")
+    return value
 
-    Connector release generation intentionally writes these files into the build tree and
-    leaves them untracked.  The public wheel therefore carries bytes that are not present
-    in ``git ls-tree``; generating from an isolated HEAD archive keeps the guard's source
-    binding exact while accounting for that supported packaging format.
+
+def _wheel_payload(wheel: Path, module: str) -> dict[str, bytes]:
+    """Read the package boundary emitted by the real publisher."""
+    prefix = module.replace(".", "/") + "/"
+    with ZipFile(wheel) as archive:
+        entries = [name for name in archive.namelist() if name.startswith(prefix) and not name.endswith("/")]
+        if len(entries) != len(set(entries)):
+            raise ValueError("Reviewed source wheel contains duplicate package entries")
+        if not entries:
+            raise ValueError("Reviewed source wheel package is empty")
+        return {name: archive.read(name) for name in entries}
+
+
+def _published_payload(root: Path, module: str) -> dict[str, bytes]:
+    """Build the immutable reviewed source through the public package boundary.
+
+    The release workflow runs ``uv build`` after connector generation.  Repeating that
+    command against a ``git archive HEAD`` checkout makes setuptools/package-data (or any
+    other reviewed backend) decide which files are public.  A generated artifact already
+    tracked by the source tree is restored after generation so a new caller epoch cannot
+    replace historical published bytes.
     """
     document, sources = _reviewed_connector_metadata(root)
     points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
-    if not ((isinstance(points, dict) and bool(points)) or sources):
-        return {}
+    connector = (isinstance(points, dict) and bool(points)) or bool(sources)
 
     provider_root = Path(__file__).resolve().parents[3]
-    if not (provider_root / "pipelines_hooks" / "connector" / "generate.py").is_file():
+    generator = provider_root / "pipelines_hooks" / "connector" / "generate.py"
+    if connector and not generator.is_file():
         raise ValueError("Generated wheel verification requires the provider generator checkout")
+    uv = shutil.which("uv")
+    if uv is None:
+        raise ValueError("Published wheel verification requires the uv publisher")
+    prefix = module.replace(".", "/") + "/"
+    tracked_files = subprocess.check_output(
+        ["git", "ls-tree", "-r", "--name-only", "HEAD", "--", prefix], cwd=root, text=True
+    ).splitlines()
+    if not tracked_files:
+        raise ValueError("Reviewed package payload is empty")
+    tracked = {name: subprocess.check_output(["git", "show", f"HEAD:{name}"], cwd=root) for name in tracked_files}
+    epoch = _source_epoch(root)
     with tempfile.TemporaryDirectory(prefix="public-wheel-source-") as directory:
         source = Path(directory)
         archive = subprocess.check_output(["git", "archive", "HEAD"], cwd=root)
         with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
             tar.extractall(source, filter="data")
         package = source / module.replace(".", "/")
-        # Minimal connector fixtures can exercise the Docker renderer without declaring
-        # ontology generation.  Such a package has no generated payload to bind here.
-        if not (package / "ontology" / "mappings" / "source.yaml").is_file():
-            return {}
         old_epoch = os.environ.get("SOURCE_DATE_EPOCH")
-        if old_epoch is None:
-            os.environ["SOURCE_DATE_EPOCH"] = subprocess.check_output(
-                ["git", "show", "-s", "--format=%ct", "HEAD"], cwd=root, text=True
-            ).strip()
-        sys.path.insert(0, str(provider_root))
+        os.environ["SOURCE_DATE_EPOCH"] = epoch
         try:
-            from pipelines_hooks.connector import generate
+            if connector and (package / "ontology" / "mappings" / "source.yaml").is_file():
+                sys.path.insert(0, str(provider_root))
+                try:
+                    from pipelines_hooks.connector import generate
 
-            generated = generate.generate(source)
-        except Exception as error:
-            raise ValueError("Reviewed connector ontology generation failed") from error
+                    generated = generate.generate(source)
+                except Exception as error:
+                    raise ValueError("Reviewed connector ontology generation failed") from error
+                finally:
+                    sys.path.pop(0)
+                for path, text in generated.items():
+                    try:
+                        name = path.relative_to(source).as_posix()
+                    except ValueError as error:
+                        raise ValueError("Generated connector artifact is outside the reviewed source") from error
+                    if not name.startswith(prefix):
+                        raise ValueError("Generated connector artifact is outside the reviewed package")
+                    if name in tracked:
+                        path.write_bytes(tracked[name])
+                    else:
+                        path.write_text(text, encoding="utf-8")
+
+            dist = source / "dist"
+            if dist.exists():
+                shutil.rmtree(dist)
+            result = subprocess.run(
+                [uv, "build", "--wheel", "--no-create-gitignore"],
+                cwd=source,
+                env=os.environ.copy(),
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            if result.returncode:
+                detail = (result.stderr or result.stdout).strip()
+                raise ValueError(f"Reviewed source wheel build failed: {detail[-1000:]}")
+            wheels = sorted(dist.glob("*.whl"))
+            if len(wheels) != 1:
+                raise ValueError("Reviewed source wheel build must produce exactly one wheel")
+            return _wheel_payload(wheels[0], module)
         finally:
-            sys.path.pop(0)
             if old_epoch is None:
                 os.environ.pop("SOURCE_DATE_EPOCH", None)
             else:
                 os.environ["SOURCE_DATE_EPOCH"] = old_epoch
-        prefix = module.replace(".", "/") + "/"
-        payload: dict[str, bytes] = {}
-        for path, text in generated.items():
-            name = path.relative_to(source).as_posix()
-            if not name.startswith(prefix):
-                raise ValueError("Generated connector artifact is outside the reviewed package")
-            payload[name] = text.encode("utf-8")
-        return payload
 
 
 def reviewed_payload(root: Path, module: str) -> dict[str, bytes]:
     if not MODULE_RE.fullmatch(module):
         raise ValueError("Package module must be an explicit dotted Python package")
-    prefix = module.replace(".", "/") + "/"
-    files = subprocess.check_output(
-        ["git", "ls-tree", "-r", "--name-only", "HEAD", "--", prefix], cwd=root, text=True
-    ).splitlines()
-    if not files:
-        raise ValueError("Reviewed package payload is empty")
-    payload = {name: subprocess.check_output(["git", "show", f"HEAD:{name}"], cwd=root) for name in files}
-    payload.update(_generated_payload(root, module))
-    return payload
+    return _published_payload(root, module)
 
 
 def verify_payload(data: bytes, digest: str, expected: dict[str, bytes], module: str) -> None:
