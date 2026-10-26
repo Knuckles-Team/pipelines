@@ -68,8 +68,18 @@ jobs:
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
+          # wheel-readiness imports the canonical source-build policy validator
+          # from the package below. Keep the checkout sparse, but include that
+          # exact import closure; readiness.py adds this contract root to
+          # sys.path while retaining isolated (-I) execution.
+          sparse-checkout-cone-mode: false
           sparse-checkout: |
-            .github/actions
+            /.github/actions/
+            /pipelines_hooks/__init__.py
+            /pipelines_hooks/connector/__init__.py
+            /pipelines_hooks/connector/project.py
+            /pipelines_hooks/core/__init__.py
+            /pipelines_hooks/core/errors.py
           path: .pipeline-contract
           persist-credentials: false
 
