@@ -109,9 +109,48 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
 
+      - name: Determine whether to render connector container files
+        id: render-needed
+        env:
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          RENDER_CONNECTOR: ${{ inputs.render_connector }}
+        run: |
+          set -euo pipefail
+          render=false
+          if [[ "${RENDER_CONNECTOR,,}" == true ]]; then
+            render=true
+          elif [[ "$DOCKERFILE" == docker/Dockerfile && ! -e "$DOCKERFILE" && ! -L "$DOCKERFILE" && -f pyproject.toml ]]; then
+            if python3 - <<'PY'
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          import tomllib
+
+          try:
+              pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          except (OSError, tomllib.TOMLDecodeError):
+              sys.exit(1)
+          points = pyproject.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+          sources = subprocess.run(
+              ["git", "ls-files", "--", "*connector_sources.py"], capture_output=True, text=True, check=False
+          ).stdout.splitlines()
+          sys.exit(
+              0
+              if (isinstance(points, dict) and bool(points))
+              or any(Path(path).name == "connector_sources.py" for path in sources)
+              else 1
+          )
+          PY
+            then
+              render=true
+            fi
+          fi
+          printf 'render=%s\n' "$render" >> "$GITHUB_OUTPUT"
+
       - name: Render the connector container files
         id: render
-        if: inputs.render_connector
+        if: steps.render-needed.outputs.render == 'true'
         env:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}

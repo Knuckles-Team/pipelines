@@ -139,8 +139,11 @@ def test_container_workflow_renders_and_tags_by_sdk_version() -> None:
     inputs = document[True]["workflow_call"]["inputs"]
     assert inputs["render_connector"]["default"] is False and inputs["sdk_version"]["default"] == ""
     steps = document["jobs"]["publish-docker"]["steps"]
+    render_needed = next(s for s in steps if s.get("id") == "render-needed")
+    assert "agent_connector_sdk.connector" in render_needed["run"]
     render = next(s for s in steps if s.get("id") == "render")
-    assert "pipelines-connector render" in render["run"] and render["if"] == "inputs.render_connector"
+    assert "pipelines-connector render" in render["run"]
+    assert render["if"] == "steps.render-needed.outputs.render == 'true'"
     meta = next(s for s in steps if s.get("id") == "meta")
     assert "-sdk${{ inputs.sdk_version }}" in meta["with"]["tags"]
     assert "-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}" in meta["with"]["tags"]

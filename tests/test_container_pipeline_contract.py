@@ -18,6 +18,14 @@ WORKFLOW = ROOT / ".github/workflows/container_pipeline.yml"
 ACTION = ROOT / ".github/actions/stage-container-runtime/action.yml"
 
 
+def _render_needed_step() -> dict:
+    return next(
+        step
+        for step in yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+        if step.get("id") == "render-needed"
+    )
+
+
 def test_workflow_contract_and_legacy_publication_controls() -> None:
     workflow = yaml.safe_load(WORKFLOW.read_text())
     job = workflow["jobs"]["publish-docker"]
@@ -44,6 +52,97 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
     assert builds[0]["with"]["target"] == "${{ steps.target.outputs.target }}"
     assert builds[0]["with"]["push"] == "${{ github.event_name == 'push' }}"
     assert steps.index(next(step for step in steps if step.get("id") == "runtime")) < steps.index(builds[0])
+    assert steps.index(_render_needed_step()) < steps.index(next(step for step in steps if step.get("id") == "render"))
+    assert steps.index(next(step for step in steps if step.get("id") == "render")) < steps.index(
+        next(step for step in steps if step.get("id") == "target")
+    )
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+@pytest.mark.parametrize(
+    ("pyproject", "dockerfile", "render_connector", "tracked", "expected"),
+    [
+        (
+            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            "docker/Dockerfile",
+            "false",
+            False,
+            True,
+        ),
+        (
+            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            "docker/Dockerfile",
+            "false",
+            True,
+            False,
+        ),
+        (
+            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            "custom/Dockerfile",
+            "false",
+            False,
+            False,
+        ),
+        ('[project]\nname = "demo"\n', "docker/Dockerfile", "false", False, False),
+        ('[project]\nname = "demo"\n', "custom/Dockerfile", "true", False, True),
+    ],
+)
+def test_connector_render_is_selected_only_for_missing_canonical_dockerfile(
+    tmp_path: Path,
+    *,
+    pyproject: str,
+    dockerfile: str,
+    render_connector: str,
+    tracked: bool,
+    expected: bool,
+) -> None:
+    step = _render_needed_step()
+    (tmp_path / "pyproject.toml").write_text(pyproject)
+    if tracked:
+        recipe = tmp_path / dockerfile
+        recipe.parent.mkdir(parents=True)
+        recipe.write_text("FROM scratch\n")
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "DOCKERFILE": dockerfile,
+            "RENDER_CONNECTOR": render_connector,
+            "GITHUB_OUTPUT": str(output),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert output.read_text() == f"render={str(expected).lower()}\n"
+
+
+def test_connector_sources_identity_enables_canonical_render(tmp_path: Path) -> None:
+    step = _render_needed_step()
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "demo"\n')
+    (tmp_path / "connector_sources.py").write_text('CONNECTOR = "demo"\n')
+    git_env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, env=git_env, check=True)
+    subprocess.run(
+        ["git", "add", "--", "pyproject.toml", "connector_sources.py"], cwd=tmp_path, env=git_env, check=True
+    )
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **git_env,
+            "DOCKERFILE": "docker/Dockerfile",
+            "RENDER_CONNECTOR": "false",
+            "GITHUB_OUTPUT": str(output),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert output.read_text() == "render=true\n"
 
 
 @pytest.mark.parametrize(

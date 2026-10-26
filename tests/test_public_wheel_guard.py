@@ -79,6 +79,95 @@ def test_public_wheel_uses_committed_source_and_refuses_stale_pin(guard, tmp_pat
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
+@pytest.mark.parametrize("identity", ["entry-point", "connector-sources"])
+def test_public_wheel_renders_generated_dockerfile_from_reviewed_head(guard, tmp_path, monkeypatch, identity):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "demo").mkdir()
+    (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
+    pyproject = """\
+[project]
+name = "demo-dist"
+version = "1.2.3"
+dependencies = ["agent-connector-sdk>=1"]
+
+[project.optional-dependencies]
+mcp = []
+
+[project.scripts]
+demo-mcp = "demo:main"
+"""
+    if identity == "entry-point":
+        pyproject += '\n[project.entry-points."agent_connector_sdk.connector"]\ndemo-mcp = "demo"\n'
+    (tmp_path / "pyproject.toml").write_text(pyproject, encoding="utf-8")
+    paths = ["demo/__init__.py", "pyproject.toml"]
+    if identity == "connector-sources":
+        (tmp_path / "connector_sources.py").write_text('CONNECTOR = "demo"\n', encoding="utf-8")
+        paths.append("connector_sources.py")
+    subprocess.run(["git", "add", "--", *paths], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    # The guard must render from HEAD, just as the payload reader does, even if the checkout is dirty.
+    (tmp_path / "pyproject.toml").write_text(
+        pyproject.replace('version = "1.2.3"', 'version = "9.9.9"'), encoding="utf-8"
+    )
+    expected = {"demo/__init__.py": b"reviewed"}
+    payload = archive(expected)
+    digest = hashlib.sha256(payload).hexdigest()
+    metadata = {
+        "urls": [
+            {
+                "filename": "demo_dist-1.2.3-py3-none-any.whl",
+                "url": "https://files.pythonhosted.org/demo.whl",
+                "digests": {"sha256": digest},
+            }
+        ]
+    }
+    calls = []
+
+    def download(url):
+        calls.append(url)
+        return payload if url.endswith(".whl") else json.dumps(metadata).encode()
+
+    monkeypatch.setattr(guard, "read_public", download)
+    receipt = guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", "mcp")
+    assert (
+        receipt["source_revision"]
+        == subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=tmp_path, text=True).strip()
+    )
+    assert receipt["wheel_sha256"] == digest
+    assert calls == ["https://pypi.org/pypi/demo-dist/1.2.3/json", "https://files.pythonhosted.org/demo.whl"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_refuses_to_render_a_nonconnector_dockerfile(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "demo-dist"\nversion = "1.2.3"\n', encoding="utf-8")
+    subprocess.run(["git", "add", "--", "pyproject.toml"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+    with pytest.raises(ValueError, match="connector identity"):
+        guard._reviewed_dockerfile(tmp_path, "docker/Dockerfile")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_requires_the_provider_renderer_checkout(guard, tmp_path, monkeypatch):
+    monkeypatch.setattr(guard, "__file__", str(tmp_path / "public_wheel.py"))
+    with pytest.raises(ValueError, match="provider renderer checkout"):
+        guard._rendered_dockerfile(tmp_path)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
 def test_public_wheel_action_is_explicit_and_preserves_release_default():
     action = yaml.safe_load((ACTION / "action.yml").read_text())
     assert action["inputs"]["mode"]["default"] == "unpublished"

@@ -9,6 +9,8 @@ import json
 import re
 import shlex
 import subprocess
+import sys
+import tempfile
 import tomllib
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -49,6 +51,50 @@ def read_public(url: str) -> bytes:
         return response.read()
 
 
+def _rendered_dockerfile(root: Path) -> str:
+    """Render the canonical Dockerfile from the reviewed ``HEAD`` metadata."""
+    provider_root = Path(__file__).resolve().parents[3]
+    if not (provider_root / "pipelines_hooks" / "connector" / "container.py").is_file():
+        raise ValueError("Generated Dockerfile verification requires the provider renderer checkout")
+    sys.path.insert(0, str(provider_root))
+    try:
+        from pipelines_hooks.connector.container import render
+    finally:
+        sys.path.pop(0)
+
+    with tempfile.TemporaryDirectory(prefix="public-wheel-source-") as directory:
+        source = Path(directory)
+        pyproject = subprocess.check_output(
+            ["git", "show", "HEAD:pyproject.toml"], cwd=root, text=False, stderr=subprocess.DEVNULL
+        )
+        try:
+            document = tomllib.loads(pyproject.decode("utf-8"))
+        except (UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+            raise ValueError("Generated Dockerfile verification requires readable reviewed pyproject.toml") from error
+        points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+        tracked_sources = subprocess.check_output(
+            ["git", "ls-files", "--", "*connector_sources.py"], cwd=root, text=True
+        ).splitlines()
+        if (not isinstance(points, dict) or not points) and not any(
+            Path(path).name == "connector_sources.py" for path in tracked_sources
+        ):
+            raise ValueError("Generated Dockerfile verification requires a connector identity")
+        (source / "pyproject.toml").write_bytes(pyproject)
+        return render(source)["Dockerfile"]
+
+
+def _reviewed_dockerfile(root: Path, dockerfile: str) -> str:
+    """Read a tracked Dockerfile or the provider-rendered canonical one."""
+    try:
+        return subprocess.check_output(
+            ["git", "show", f"HEAD:{dockerfile}"], cwd=root, text=True, stderr=subprocess.DEVNULL
+        )
+    except subprocess.CalledProcessError as error:
+        if dockerfile != "docker/Dockerfile":
+            raise ValueError(f"Reviewed Dockerfile is not tracked: {dockerfile}") from error
+        return _rendered_dockerfile(root)
+
+
 def verify_release(root: Path, distribution: str, module: str, dockerfile: str, extras: str) -> dict[str, object]:
     project = tomllib.loads(subprocess.check_output(["git", "show", "HEAD:pyproject.toml"], cwd=root, text=True))[
         "project"
@@ -58,7 +104,7 @@ def verify_release(root: Path, distribution: str, module: str, dockerfile: str, 
     version = project["version"]
     suffix = f"[{extras}]" if extras else ""
     pin = f"{distribution}{suffix}=={version}"
-    docker = subprocess.check_output(["git", "show", f"HEAD:{dockerfile}"], cwd=root, text=True)
+    docker = _reviewed_dockerfile(root, dockerfile)
     if pin not in shlex.split(docker, comments=True):
         raise ValueError("Dockerfile must pin the reviewed package version")
     expected = reviewed_payload(root, module)
