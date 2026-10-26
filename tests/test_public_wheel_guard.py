@@ -79,6 +79,87 @@ def test_public_wheel_uses_committed_source_and_refuses_stale_pin(guard, tmp_pat
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_binds_release_generated_connector_artifacts(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    package = tmp_path / "demo"
+    (package / "ontology" / "mappings").mkdir(parents=True)
+    package.joinpath("__init__.py").write_bytes(b"reviewed")
+    (package / "ontology" / "mappings" / "source.yaml").write_text("ontology_source: demo\n")
+    (package / "ontology" / "demo.ttl").write_text(":Book a owl:Class .\n")
+    (tmp_path / "pyproject.toml").write_text(
+        """[project]
+name = "demo-dist"
+version = "1.2.3"
+[project.entry-points."agent_connector_sdk.connector"]
+demo = "demo:connector"
+""",
+        encoding="utf-8",
+    )
+    paths = [
+        "demo/__init__.py",
+        "demo/ontology/mappings/source.yaml",
+        "demo/ontology/demo.ttl",
+        "pyproject.toml",
+    ]
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", *paths], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    expected = guard.reviewed_payload(tmp_path, "demo")
+    assert guard.reviewed_identity(tmp_path) == {
+        "connector": True,
+        "distribution": "demo-dist",
+        "module": "demo",
+    }
+    from pipelines_hooks.connector import generate
+
+    generated = generate.generate(tmp_path)
+    for path, text in generated.items():
+        name = path.relative_to(tmp_path).as_posix()
+        assert name in expected and expected[name] == text.encode("utf-8")
+    payload = archive(expected)
+    guard.verify_payload(payload, hashlib.sha256(payload).hexdigest(), expected, "demo")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_identity_skips_non_connectors_and_refuses_ambiguity(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "demo-dist"\nversion = "1.2.3"\n')
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", "pyproject.toml"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+    assert guard.reviewed_identity(tmp_path) == {"connector": False}
+    (tmp_path / "pyproject.toml").write_text(
+        """[project]
+name = "demo-dist"
+version = "1.2.3"
+[project.entry-points."agent_connector_sdk.connector"]
+first = "demo.first"
+second = "demo.second"
+""",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "--", "pyproject.toml"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "ambiguous"],
+        cwd=tmp_path,
+        check=True,
+    )
+    with pytest.raises(ValueError, match="ambiguous"):
+        guard.reviewed_identity(tmp_path)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
 @pytest.mark.parametrize("identity", ["entry-point", "connector-sources"])
 def test_public_wheel_renders_generated_dockerfile_from_reviewed_head(guard, tmp_path, monkeypatch, identity):
     for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
@@ -158,6 +239,26 @@ def test_public_wheel_refuses_to_render_a_nonconnector_dockerfile(guard, tmp_pat
     )
     with pytest.raises(ValueError, match="connector identity"):
         guard._reviewed_dockerfile(tmp_path, "docker/Dockerfile")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_refuses_a_missing_custom_dockerfile(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo-dist"\nversion = "1.2.3"\n'
+        '[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", "pyproject.toml"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+    with pytest.raises(ValueError, match="not tracked"):
+        guard._reviewed_dockerfile(tmp_path, "docker/custom.Dockerfile")
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")

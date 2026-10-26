@@ -80,4 +80,4 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R015 | PIPE-RELEASE-R015 | Run `test_release_builds_use_one_persistent_builder`. Assert no per-job builder create or remove, every build attempt names the builder, and the cache arguments are unchanged. |
 | T-PIPE-RELEASE-R016 | PIPE-RELEASE-R016 | Run `test_publish_action_persists_uv_cache_in_tool_cache`. Assert the step precedes every uv use and writes both variables under the tool cache. |
 
-| T-PIPE-RELEASE-R012.1 | PIPE-RELEASE-R012.1 | Run `tests/test_public_wheel_guard.py`; require exact committed package inventory, bytes and public digest, stale pin refusal before network, and opt-in action wiring preserving the default release guard. |
+| T-PIPE-RELEASE-R012.1 | PIPE-RELEASE-R012.1 | Run `tests/test_public_wheel_guard.py` and `tests/test_container_pipeline_contract.py`; require exact committed and deterministic release-generated package inventory, bytes and public digest, stale pin refusal before network, nonconnector/custom-path refusal, and a main-release preflight before the builder/login/build while preserving the default release guard. |

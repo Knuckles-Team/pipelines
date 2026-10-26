@@ -713,11 +713,11 @@
         "9e87a415065f"
       ],
       "verified_by": [
-        "tests/test_public_wheel_guard.py:147",
-        "tests/test_public_wheel_guard.py:163",
-        "tests/test_public_wheel_guard.py:170",
-        "tests/test_public_wheel_guard.py:183",
-        "tests/test_public_wheel_guard.py:35"
+        "tests/test_container_pipeline_contract.py:61",
+        "tests/test_public_wheel_guard.py:129",
+        "tests/test_public_wheel_guard.py:162",
+        "tests/test_public_wheel_guard.py:228",
+        "tests/test_public_wheel_guard.py:244"
       ]
     },
     {
@@ -756,7 +756,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:616"
+        "tests/test_container_pipeline_contract.py:730"
       ]
     },
     {
