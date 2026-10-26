@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from tests.hooks.conftest import Repo
@@ -27,6 +29,34 @@ def _commit(repo: Repo, files: dict[str, str], message: str, *, trailer: str | N
     return repo.git("rev-parse", "HEAD").strip()
 
 
+def _synthetic_merge(repo: Repo, *, base: str, head: str, message: str = "GitHub synthetic merge") -> str:
+    """Create a merge-shaped commit with a product-only first-parent diff."""
+    repo.git("checkout", "-q", base)
+    repo.write("pkg/synthetic.py", "synthetic = True\n")
+    repo.git("add", "--", "pkg/synthetic.py")
+    tree = repo.git("write-tree").strip()
+    merge = repo.git("commit-tree", tree, "-p", base, "-p", head, "-m", message).strip()
+    repo.git("reset", "--hard", "-q", merge)
+    return merge
+
+
+def _pull_request_event(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch, *, number: int, base: str, head: str, merge: str
+) -> None:
+    payload = {
+        "number": number,
+        "pull_request": {
+            "base": {"sha": base},
+            "head": {"sha": head},
+            "merge_commit_sha": merge,
+        },
+    }
+    event = repo.write("event.json", json.dumps(payload))
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
+    monkeypatch.setenv("GITHUB_REF", f"refs/pull/{number}/merge")
+
+
 def test_pass_known_id_with_a_python_mark_spec_binding(repo: Repo) -> None:
     base = repo.git("rev-parse", "HEAD").strip()
     _commit(
@@ -42,6 +72,27 @@ def test_pass_known_id_with_a_python_mark_spec_binding(repo: Repo) -> None:
         trailer="DEMO-R001",
     )
     assert repo.run("spec-trailers", "--base-ref", base) == 0
+
+
+def test_pr_synthetic_merge_without_a_trailer_is_ignored_when_parents_are_verified(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.git("checkout", "-qb", "topic")
+    head = repo.commit({"docs/topic.md": "topic\n"}, "topic docs")
+    repo.git("checkout", "-q", "main")
+    merge = _synthetic_merge(repo, base=base, head=head)
+    _pull_request_event(repo, monkeypatch, number=42, base=base, head=head, merge=merge)
+    assert repo.run("spec-trailers", "--base-ref", base) == 0
+
+
+def test_real_untrailed_merge_commit_with_a_product_diff_is_rejected(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.git("checkout", "-qb", "topic")
+    head = repo.commit({"docs/topic.md": "topic\n"}, "topic docs")
+    merge = _synthetic_merge(repo, base=base, head=head, message="real branch merge")
+    assert merge != head
+    assert repo.run("spec-trailers", "--base-ref", base) == 1
 
 
 def test_pass_none_exemption_covers_a_product_only_change(repo: Repo) -> None:

@@ -2,7 +2,7 @@
 
 Given ``--base-ref`` (default the remote revision pre-commit is pushing over,
 else ``origin/main``; see :func:`pipelines_hooks.core.baseref.upstream_base`)
-and ``HEAD``, this walks the non-merge commits in ``base..HEAD`` and fails
+and ``HEAD``, this walks the commits in ``base..HEAD`` and fails
 when:
 
 3. a commit touches a product path (anything outside ``specs/``, ``docs/``,
@@ -33,9 +33,11 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from pipelines_hooks.core.baseref import upstream_base
+from pipelines_hooks.core.baseref import commit, upstream_base
+from pipelines_hooks.core.bounded_json import read_bounded_json
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git
+from pipelines_hooks.core.settings import setting
 from pipelines_hooks.specs.aliases import (
     Aliases,
     canonical_id,
@@ -54,6 +56,8 @@ _FIELD = "\x02"
 _LOG_FORMAT = f"{_RECORD}%H{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
 
 _EXEMPT_PREFIXES = ("specs/", "docs/", ".github/")
+_PULL_MERGE_REF = re.compile(r"^refs/pull/(?P<number>[1-9][0-9]*)/merge$")
+MAX_EVENT_BYTES = 2 * 1024 * 1024
 
 _ID = r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-R?\d{2,3}(?:\.\d+)*"
 _ID_IN_BACKTICKS = re.compile(rf"`({_ID})`")
@@ -65,7 +69,7 @@ _BOUND_TEST_PATTERN = r"mark\.spec\(|//[[:space:]]*spec:|#[[:space:]]*spec:"
 
 @dataclass(frozen=True)
 class _Commit:
-    """One non-merge commit's sha, raw ``Spec:`` trailer text, and changed paths."""
+    """One commit's sha, raw ``Spec:`` trailer text, and changed paths."""
 
     sha: str
     trailer_raw: str
@@ -91,13 +95,63 @@ def _parse_log(raw: str) -> list[_Commit]:
     return commits
 
 
+def _github_synthetic_merge(root: Path, base: str | None) -> str | None:
+    """Return a verified GitHub PR merge ref SHA, never an arbitrary merge SHA.
+
+    GitHub checks out ``refs/pull/<number>/merge`` for pull-request workflows.
+    That generated commit has no author-supplied trailer, so it is excluded only
+    when the event payload and its two Git parents identify the same base/head
+    pair. Missing or malformed metadata leaves the merge in the range.
+    """
+    if setting("GITHUB_EVENT_NAME") != "pull_request" or base is None:
+        return None
+    ref_match = _PULL_MERGE_REF.fullmatch(setting("GITHUB_REF"))
+    event_path = setting("GITHUB_EVENT_PATH")
+    if ref_match is None or not event_path:
+        return None
+    try:
+        payload = read_bounded_json(Path(event_path), MAX_EVENT_BYTES, what="GitHub event payload", error=ValueError)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    pull_request = payload.get("pull_request")
+    if not isinstance(pull_request, dict):
+        return None
+    number = payload.get("number")
+    if isinstance(number, bool) or not isinstance(number, int) or str(number) != ref_match.group("number"):
+        return None
+
+    def event_sha(container: object, key: str) -> str | None:
+        if not isinstance(container, dict):
+            return None
+        value = container.get(key)
+        if not isinstance(value, str):
+            return None
+        return commit(root, value)
+
+    event_base = event_sha(pull_request.get("base"), "sha")
+    event_head = event_sha(pull_request.get("head"), "sha")
+    event_merge = event_sha(pull_request, "merge_commit_sha")
+    if event_base is None or event_head is None or event_merge is None or event_base != base:
+        return None
+    head = git_text(root, ("rev-parse", "HEAD")).strip()
+    if head != event_merge:
+        return None
+    parents = git_text(root, ("rev-list", "--parents", "-n", "1", "HEAD")).split()
+    if len(parents) != 3 or set(parents[1:]) != {event_base, event_head}:
+        return None
+    return head
+
+
 def _load_commits(root: Path, base: str | None) -> list[_Commit]:
     rev_range = f"{base}..HEAD" if base else "HEAD"
-    raw = git_text(
-        root,
-        ("log", "--no-merges", f"--format={_LOG_FORMAT}", "--name-only", rev_range),
-    )
-    return _parse_log(raw)
+    raw = git_text(root, ("log", "--diff-merges=first-parent", f"--format={_LOG_FORMAT}", "--name-only", rev_range))
+    commits = _parse_log(raw)
+    synthetic_merge = _github_synthetic_merge(root, base)
+    if synthetic_merge is not None:
+        commits = [commit for commit in commits if commit.sha != synthetic_merge]
+    return commits
 
 
 def _is_product_path(path: str) -> bool:
