@@ -6,7 +6,8 @@ const {spawn}=require('node:child_process');
 const {mkdtempSync,writeFileSync,rmSync}=require('node:fs');
 const {tmpdir}=require('node:os');
 const {join}=require('node:path');
-const [chrome,url,viewport,screenshot]=process.argv.slice(2);
+const [chrome,url,viewport,screenshot,mode]=process.argv.slice(2);
+if(mode&&mode!=='exact-viewport')throw Error('Unknown capture mode');
 const [width,height]=viewport.split(',').map(Number);
 if(!chrome||!url||!screenshot||![width,height].every(n=>Number.isFinite(n)&&n>0))throw Error('Expected browser, URL, width,height, screenshot path');
 const profile=mkdtempSync(join(tmpdir(),'architecture-count-'));
@@ -41,6 +42,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await command('Page.enable');await command('Runtime.enable');
   // Preserve the previous CLI window sizing; do not replace the camera's viewport
   // with an emulated device while repairing only the frame scheduling mechanism.
+  if(mode==='exact-viewport')await command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
   await call('Target.activateTarget',{targetId});await command('Page.bringToFront');
   await command('Page.navigate',{url});
   const start=Date.now();let completed=false;
@@ -48,13 +50,14 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     if(await evaluate("!!document.getElementById('count-track-result')")){completed=true;break;}
     await delay(100);
   }
-  const state=await evaluate("({hidden:document.hidden,mode:document.compatMode,charset:document.characterSet,result:document.getElementById('count-track-result')?.textContent||null})");
+  const state=await evaluate("({hidden:document.hidden,viewport:[innerWidth,innerHeight],mode:document.compatMode,charset:document.characterSet,result:document.getElementById('count-track-result')?.textContent||null})");
   const shot=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   writeFileSync(screenshot,Buffer.from(shot.data,'base64'));
   process.stdout.write(await evaluate("'<!doctype html>\\n'+document.documentElement.outerHTML"));
   process.stderr.write('\nCOUNT_CAPTURE '+JSON.stringify({kind:'real wall-clock CDP; original double-RAF probe unchanged',elapsed_ms:Date.now()-start,...state})+'\n');
   if(!completed)throw Error('Count result missing after 20 seconds of real frame scheduling');
   if(state.hidden||state.mode!=='CSS1Compat'||state.charset!=='UTF-8')throw Error('Count capture was not visible UTF-8 standards mode');
+  if(mode==='exact-viewport'&&(state.viewport[0]!==width||state.viewport[1]!==height))throw Error('Requested viewport differs from actual: '+JSON.stringify({requested:[width,height],actual:state.viewport}));
   // PASS versus the expected old-formula FAIL is asserted by the owning Python test.
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
   try{await call('Browser.close');}catch{}

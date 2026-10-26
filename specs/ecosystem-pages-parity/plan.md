@@ -629,3 +629,68 @@ geometry, node sizes, routing, counts, category hues and camera behavior. Hosted
 proof must show deferred captions actually painted after native zoom, with no rail
 or link, unchanged world rectangles and independent collision bounds. Keep every
 existing count-track check; synchronization diagnostics are a separate test fix.
+
+### 2026-10-26 — Local frozen source chart integration proposal
+
+Prepare a source-only chart view for PIPE-PAGES-R042 using exact full-SHA raw
+Git captures, shared requirement alias validation and existing priority/frontier
+semantics. No canvas mappings, activity counts or current-production claims are
+inferred. Complete-repository scope fails on unresolved prerequisites; an
+explicit selected-family plus prerequisite-closure scope records excluded gaps
+and labels its scoring denominator. The 02:31 preview Overstory/Arbora snapshot
+qualifies a 248-row scoped graph with six declared edges, not full fleet or all
+component coverage. Existing zero-row mapping reviews and whole-bundle promotion
+remain required. No live consumer wiring or publication is part of this local
+proposal.
+
+The bounded follow-on now prepares an opt-in real rebuild source-family seam:
+configured repositories are captured once from the existing frozen scan and
+used for both public rows/details and scoped graph/priority. A same-build receipt
+binds full commits, row parity and build time. Source validation fails before
+writes without stale chart or anonymous fallback. Production activation awaits
+review, existing-token current source proof and source-rich visual checks;
+all-box mapping completeness and whole-bundle atomic promotion are not claimed.
+
+### Legible progress tracks and status summary (2026-10-26)
+
+Within the combined native graph/story delivery, increase only top-level closed
+node progress-track thickness by 65 percent. Preserve each track's bottom edge,
+reserve the same measured count-text gap above its raised top, and retain every
+world rectangle and camera operation. Use shared, distinguishable progress-fill
+tokens for diagram segments, evidence graphics and the visible status-color key;
+keep status text colors independently contrast-qualified. Replace the cramped
+five-column sidebar summary with full-name, responsive status/count rows and a
+full-width total, without widening the sidebar or adding filters. Require actual
+light/dark browser bounds at 390, 1440, 1920 and 2560 pixels, existing count-track
+and previous-formula negative proof, and contrast against tinted glass and ocean
+bounds before publication. Preserve status values and classification.
+
+Reduce backdrop-only blue concentration with three cached sea-glass/blue, soft
+lavender/blue and warm peach-orange vector wave layers. Slowly cross-fade their opacity over
+48–64 seconds while retaining the existing gentle spatial drift; never animate
+status/text/glass hues. Keep the same three shared layers and motion preference,
+reduced-motion and hidden-page controls. Validate actual ocean/canvas/glass/tint
+composites at opacity extrema and midpoint, plus unforced fade evidence.
+
+The first same-build hosted proof captured 8371 rows at 2026-10-26T14:57:20Z
+and passed all 22 original browser cases, but correctly rejected a 0.104px
+actual Inter glyph overhang after 49 paired states. The combined follow-on must
+use actual glyph bounds without loosening the comparator, retain all dependency
+counts/provenance, and pass the new 30-case core plus rich native proof. Retain
+core, current-source and rich-pair artifacts separately; keep the core 31 MiB
+limit and all original pixels rather than hiding the recorded failure.
+
+The second current-source run passed 124 core tests and all 30 named cases,
+with 108 invariant paired rich states including actual priority and dependency
+reveals. It still deferred all mobile DecisionEngine charts under center/side
+wheel sweeps. Add a supplementary trusted wheel route anchored at a fully visible
+native child, preserving the original routes, readable-child context, geometry,
+pixel and final reveal gates. Do not change renderer placement to satisfy a test.
+Review also found the named 390px summary capture was actually 500px due to the
+browser CLI minimum. Opt only the eight summary captures into exact CDP viewport
+metrics and require requested dimensions to equal actual dimensions. Original
+count-track cases remain unchanged. Retain the unforced four-second motion proof;
+separate, explicitly paused native timeline diagnostics sample all three palette
+extrema across the 128-second longest alternating cycle. These diagnostics are
+actual browser pixels, not a claim of elapsed full-cycle video. Require the new
+exact-head hosted receipts and pixel review before production promotion.

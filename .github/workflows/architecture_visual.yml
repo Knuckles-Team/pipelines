@@ -30,15 +30,29 @@ jobs:
           command -v google-chrome || command -v chromium
           uv sync --frozen
           npm ci --prefix scripts/architecture_explorer --ignore-scripts
-      - name: Capture actual public data with candidate template
-        run: uv run --frozen python -m scripts.architecture_explorer.visual_preview --output architecture-preview
+      - name: Build current frozen source data with existing token
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p architecture-source-proof
+          uv run --frozen python -m scripts.architecture_explorer.build --mode github \
+            --source-families scripts/architecture_explorer/source-families.json \
+            --page architecture-build/index.html --tree architecture-source-proof/current-build-tree.json
+      - name: Capture same-build data with candidate template
+        run: |
+          uv run --frozen python -m scripts.architecture_explorer.visual_preview \
+            --source-file architecture-build/index.html --output architecture-preview
+      - name: Prove rich charts against extension-free same-build native baseline
+        run: |
+          uv run --frozen python -m scripts.architecture_explorer.story_browser \
+            --source architecture-build/index.html --output architecture-rich-proof
       - name: Run explorer contracts including real-browser interaction tests
         env:
           ARCHITECTURE_EVIDENCE_DIR: architecture-preview
         if: ${{ !cancelled() }}
         run: |
           uv run --frozen python -m pytest -q tests/test_architecture_explorer.py tests/test_architecture_ocean_theme.py tests/test_architecture_visual_preview.py --junitxml=architecture-preview/tests.xml
-      - name: Require all twenty-two real-browser cases to pass without skips
+      - name: Require all thirty real-browser cases to pass without skips
         if: ${{ !cancelled() }}
         run: uv run --frozen python -m scripts.architecture_explorer.visual_preview --verify-browser-results architecture-preview/tests.xml
       - name: Retain reviewable HTML, pixels, DOM and provenance (no deployment)
@@ -47,5 +61,22 @@ jobs:
         with:
           name: architecture-preview-${{ github.sha }}
           path: architecture-preview/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Retain current source tree receipt separately from bounded core preview
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: architecture-source-${{ github.sha }}
+          path: architecture-source-proof/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Retain all rich paired browser pixels separately
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: architecture-rich-${{ github.sha }}
+          path: architecture-rich-proof/
           if-no-files-found: error
           retention-days: 7

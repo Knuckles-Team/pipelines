@@ -1577,7 +1577,7 @@ CanvasRenderingContext2D.prototype.clearRect=function(...args){
  return originalClear.apply(this,args);
 };
 CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);window.__allPaint.push({text,x,y,font:this.font,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
-CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w>20)window.__barPaint.push({x,y,w,h});return originalRect.call(this,x,y,w,h);};
+CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=4.950001&&w>20)window.__barPaint.push({x,y,w,h});return originalRect.call(this,x,y,w,h);};
 </script>"""
     probe = """<script>
 setTimeout(async()=>{
@@ -1595,7 +1595,7 @@ setTimeout(async()=>{
    if(stable>=2)break;
   }
   if(stable<2)throw Error('Count probe did not reach a matching stable painted camera');
-  const a=window.__arch,evidence=[];
+  const a=window.__arch,evidence=[],topLevel=new Set(PAYLOAD.tree.children.map(n=>n.id));
   for(const id of IDS){
    const r=a.rect(id);if(!r)continue;
    const x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
@@ -1604,7 +1604,11 @@ setTimeout(async()=>{
    const counts=window.__countPaint.filter(p=>p.left>=x-.1&&p.right<=x+w+.1&&p.top>y+h*.5&&p.bottom<=y+h);
    if(!counts.length)continue;
    for(const p of counts)if(p.bottom>bar.y-2)throw Error(id+' count/bar overlap: '+JSON.stringify({p,bar}));
-   evidence.push({id,bar,counts});
+   const baseHeight=Math.max(1.5,Math.min(3,h*.02)),expectedHeight=baseHeight*(topLevel.has(id)?1.65:1);
+   const originalBottom=y+h-Math.max(3,Math.min(5,h*.04))+baseHeight;
+   if(Math.abs(bar.h-expectedHeight)>.001)throw Error(id+' wrong top-level/nested bar height');
+   if(Math.abs(bar.y+bar.h-originalBottom)>.001)throw Error(id+' progress bottom edge moved');
+   evidence.push({id,bar,counts,topLevel:topLevel.has(id),baseHeight,expectedHeight,originalBottom});
   }
   if(a.selected==='root'&&window.innerWidth>1000){
    const headings=['People and Clients','Front Ends','Arbora Door','Agent Control Plane and Skills','Engine Core, Connectors and Sources','Serving and Delivery'].map(text=>window.__allPaint.find(p=>p.text===text));
@@ -1675,7 +1679,10 @@ setTimeout(async()=>{
         baseline = tmp_path / "previous-count-track.html"
         baseline.write_text(
             page.read_text()
-            .replace("barY=sy+sh-Math.max(3,Math.min(5,sh*0.04))", "barY=sy+sh-Math.max(3,sh*0.06)")
+            .replace(
+                "barY=sy+sh-Math.max(3,Math.min(5,sh*0.04))-(barHeight-baseBarHeight)",
+                "barY=sy+sh-Math.max(3,sh*0.06)",
+            )
             .replace(
                 "countBaseline=barY-Math.max(1,countMetrics.actualBoundingBoxDescent||0)-3", "countBaseline=sy+sh-pad-3"
             )
@@ -1857,6 +1864,8 @@ def test_count_capture_uses_real_frame_scheduling_and_handles_browser_exit(tmp_p
     source = helper.read_text()
     assert "--remote-debugging-pipe" in source and "--virtual-time-budget" not in source
     assert "Target.activateTarget" in source and "Page.bringToFront" in source
+    assert "mode==='exact-viewport'" in source and "Emulation.setDeviceMetricsOverride" in source
+    assert "state.viewport[0]!==width||state.viewport[1]!==height" in source
     assert "document.getElementById('count-track-result')" in source
     assert source.index("await exited;") < source.index("rmSync(profile,")
     # The repair must retain the page's stable actual-paint synchronization and all
@@ -1885,3 +1894,115 @@ def test_count_capture_uses_real_frame_scheduling_and_handles_browser_exit(tmp_p
     )
     assert result.returncode == 1
     assert not list(tmp_path.glob("architecture-count-*"))
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+@pytest.mark.parametrize(
+    "viewport,theme",
+    [
+        (viewport, theme)
+        for viewport in ("1440,1000", "1920,1080", "2560,1440", "390,844")
+        for theme in ("light", "dark")
+    ],
+)
+def test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit(
+    monkeypatch, tmp_path: Path, viewport: str, theme: str
+) -> None:
+    """Real DOM/range bounds at the visible summary, using the existing wall-clock capture helper."""
+    import os
+    import subprocess
+
+    destination = Path(os.environ.get("ARCHITECTURE_EVIDENCE_DIR", str(tmp_path))).resolve()
+    destination.mkdir(exist_ok=True, parents=True)
+    captured_page = destination / "index.html"
+    source = (
+        _with_document_mode_probe(captured_page.read_text())
+        if captured_page.is_file()
+        else _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+    )
+    source = source.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
+    source_kind = "Original captured public payload" if captured_page.is_file() else "Candidate model fixture"
+    # Keep the existing helper's terminal sentinel ID, not a second browser dependency.
+    # The output explicitly identifies this independent summary probe and its metrics.
+    probe = (
+        """<script>
+setTimeout(async()=>{
+ await document.fonts.ready;
+ const result=document.createElement('output');result.id='count-track-result';result.hidden=true;
+ try{
+  if(innerWidth!==REQUESTED_WIDTH||innerHeight!==REQUESTED_HEIGHT)throw Error('Requested summary viewport differs from actual '+innerWidth+'x'+innerHeight);
+  if(document.documentElement.dataset.theme!==THEME)throw Error('Wrong summary theme');
+  const faces=await document.fonts.load('500 12px Inter');
+  if(!faces.some(face=>face.family.replaceAll('"','').replaceAll("'",'')==='Inter'&&face.status==='loaded'))throw Error('Summary Inter face not loaded');
+  const stat=document.querySelector('#panel .stat');if(!stat)throw Error('Missing existing sidebar summary');
+  stat.scrollIntoView({block:'center',inline:'nearest'});
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  const box=r=>({left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height});
+  const contains=(a,b)=>b.left>=a.left-.5&&b.top>=a.top-.5&&b.right<=a.right+.5&&b.bottom<=a.bottom+.5;
+  const overlaps=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
+  const ink=e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect();};
+  const root=PAYLOAD.tree.count,expected=[['Specs','total'],['Verified','VERIFIED'],['Landed','LANDED'],['Specified','SPECIFIED'],['Retired','RETIRED']];
+  const rows=[...stat.children],evidence=[],colors=[];
+  if(rows.length!==5)throw Error('Summary must show all five full labels');
+  for(let i=0;i<expected.length;i++){
+   const [label,key]=expected[i],row=rows[i],name=row.querySelector('.status-label span'),value=row.querySelector('b');
+   if(!name||name.textContent!==label)throw Error('Missing full status label '+label);
+   if(!value||Number(value.textContent.replaceAll(',',''))!==(root[key]||0))throw Error('Incorrect summary count '+label);
+   const bounds=row.getBoundingClientRect(),text=ink(name),number=ink(value),summary=stat.getBoundingClientRect();
+   if(!contains(summary,bounds)||!contains(bounds,text)||!contains(bounds,number)||overlaps(text,number))throw Error('Clipped/overlapping summary text '+label);
+   if(bounds.left<0||bounds.right>innerWidth||bounds.top<0||bounds.bottom>innerHeight)throw Error('Summary row not fully visible '+label);
+   for(const previous of evidence)if(overlaps(bounds,previous.bounds))throw Error('Summary cells overlap');
+   let swatch=null;
+   if(key!=='total'){
+    const marker=row.querySelector('.status-swatch');if(!marker||marker.getAttribute('aria-hidden')!=='true')throw Error('Missing decorative status swatch '+label);
+    const r=marker.getBoundingClientRect();if(r.width<6||r.height<6||!contains(bounds,r)||overlaps(r,text))throw Error('Clipped/overlapping status swatch '+label);
+    const color=getComputedStyle(marker).backgroundColor;
+    const reference=document.createElement('i');reference.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--p-'+key.toLowerCase());document.body.append(reference);
+    const expectedColor=getComputedStyle(reference).backgroundColor;reference.remove();
+    if(color!==expectedColor||color==='rgba(0, 0, 0, 0)')throw Error('Swatch is not bound to progress color '+label);
+    colors.push(color);swatch={bounds:box(r),color};
+   }
+   evidence.push({label,count:value.textContent,bounds:box(bounds),labelInk:box(text),countInk:box(number),swatch});
+  }
+  if(new Set(colors).size!==4)throw Error('Progress statuses need distinguishable color swatches');
+  if(document.documentElement.scrollWidth>innerWidth)throw Error('Horizontal overflow');
+  result.dataset.evidence=JSON.stringify({kind:'Full-name progress summary DOM and glyph bounds',theme:THEME,source:SOURCE,viewport:[innerWidth,innerHeight],rows:evidence});result.textContent='PASS';
+ }catch(error){result.textContent='FAIL: '+error.message;}
+ document.body.append(result);
+},1000);
+</script>""".replace("THEME", json.dumps(theme))
+        .replace("SOURCE", json.dumps(source_kind))
+        .replace("REQUESTED_WIDTH", viewport.split(",")[0])
+        .replace("REQUESTED_HEIGHT", viewport.split(",")[1])
+    )
+    page = tmp_path / "progress-summary.html"
+    page.write_text(source.replace("</body>", probe + "</body>"))
+    name = f"progress-summary-{viewport.replace(',', 'x')}-{theme}"
+    result = subprocess.run(
+        [
+            shutil.which("node"),
+            str(ROOT / "tests/architecture_count_capture.cjs"),
+            _chrome(),
+            page.as_uri(),
+            viewport,
+            str(destination / (name + ".png")),
+            "exact-viewport",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    (destination / (name + ".stderr.txt")).write_text(result.stderr)
+    assert result.returncode == 0, result.stderr[-5000:]
+    _assert_browser_document(result.stdout)
+    match = re.search(r'<output[^>]*id="count-track-result"[^>]*>.*?</output>', result.stdout)
+    (destination / (name + ".txt")).write_text(
+        source_kind
+        + "; actual progress summary text and swatch bounds.\n"
+        + (match[0] if match else result.stdout[-3000:])
+        + "\n"
+    )
+    assert match and ">PASS</output>" in match[0], result.stdout[-3000:]

@@ -9,7 +9,7 @@ import pytest
 from scripts.architecture_explorer.visual_preview import extract_payload, prepare_preview
 
 ROOT = Path(__file__).parents[1]
-RAW = r'{"tree":{"label":"A \/ B \\ path"},"meta":{"built_at":"2026-01-01","rows":1},"search":{}}'
+RAW = r'{"tree":{"id":"root","label":"A \/ B \\ path","specs":[{"repo":"pipelines","id":"PIPE-DEMO-R001","title":"Fixture","family":"demo","status":"SPECIFIED"}],"children":[]},"meta":{"built_at":"2026-01-01","rows":1,"nodes":1},"search":{}}'
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -26,6 +26,9 @@ def test_visual_preview_preserves_raw_json_escaping_and_records_provenance(tmp_p
         html = (tmp_path / name).read_text()
         assert f"const PAYLOAD = {RAW};\n" in html
         assert "/*__SEARCH__*/" not in html
+        assert "/*__STORY_SCRIPT__*/" not in html
+        assert "function paintStories" in html
+        assert "const STORY=" in html
     assert 'data-theme="dark"' in (tmp_path / "dark.html").read_text()
     assert "id='visual-evidence'" in (tmp_path / "light.html").read_text()
 
@@ -78,6 +81,14 @@ def test_real_browser_receipt_fails_closed_for_skipped_missing_or_failed_cases(t
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[eg-390,844]",
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-1440,1000]",
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-390,844]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1440,1000-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1440,1000-dark]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1920,1080-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1920,1080-dark]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[2560,1440-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[2560,1440-dark]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[390,844-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[390,844-dark]",
     ]
     cases = [f'<testcase name="{name}"/>' for name in names]
     if bad == "missing":
@@ -163,7 +174,8 @@ def test_motion_capture_uses_real_elapsed_browser_time_without_seeking() -> None
     assert "--remote-debugging-pipe" in helper
     assert "await delay(2000)" in helper
     assert "Page.captureScreenshot" in helper
-    assert "currentTime=" not in helper and "--virtual-time-budget" not in helper
+    unforced = helper.split("const palette=", 1)[0]
+    assert "currentTime=" not in unforced and "--virtual-time-budget" not in helper
     assert "Math.abs(w.x-frames[i-1].waves[j].x)>8" in helper
     assert "sha256===frames[i-1].sha256" in helper
     runner = (ROOT / "scripts/architecture_explorer/visual_preview.py").read_text()
@@ -219,3 +231,16 @@ def test_native_caption_zoom_uses_trusted_input_and_unchanged_world_geometry_aft
     assert "`${theme}-native-caption-zoom.json`" in helper
     assert "navigation.passed=false" in helper and "throw error;" in helper
     assert "document.fullscreenElement=" not in helper
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_palette_cycle_diagnostics_are_separate_from_unforced_motion_and_restore_timeline() -> None:
+    helper = (ROOT / "scripts/architecture_explorer/motion_capture.cjs").read_text()
+    assert helper.index("const palette=") > helper.index("`${theme}-continuous-motion.json`")
+    assert "Paused native palette timeline diagnostics; canvas-only browser captures, not real-time video" in helper
+    assert "clip:paletteClip" in helper
+    assert "[0,.5,1,1.5,2]" in helper and "timing.delay+timing.duration*phase" in helper
+    assert "[0,64000,128000]" in helper
+    assert "Full palette opacity extrema not sampled" in helper
+    assert "s.a.currentTime=s.time;if(s.state==='running')s.a.play()" in helper
+    assert "`${theme}-palette-timeline.json`" in helper

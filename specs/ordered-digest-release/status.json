@@ -213,44 +213,80 @@
     {
       "id": "PIPE-RELEASE-R005.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6bf8524c1644"
+      ],
+      "verified_by": [
+        "tests/hooks/test_dependency_cycles.py:43"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R005.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6bf8524c1644"
+      ],
+      "verified_by": [
+        "tests/hooks/test_dependency_cycles.py:59",
+        "tests/hooks/test_dependency_cycles.py:71"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R005.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6bf8524c1644",
+        "86d2275e8f65",
+        "916078bcf41f",
+        "a52f3f5f244f"
+      ],
+      "verified_by": [
+        "tests/hooks/test_dependency_cycles.py:147"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R005.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6bf8524c1644",
+        "86d2275e8f65",
+        "916078bcf41f",
+        "a52f3f5f244f"
+      ],
+      "verified_by": [
+        "tests/hooks/test_dependency_cycles.py:174",
+        "tests/hooks/test_dependency_cycles.py:85"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R005.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6bf8524c1644"
+      ],
+      "verified_by": [
+        "tests/hooks/test_dependency_cycles.py:190"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R005.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6bf8524c1644",
+        "86d2275e8f65",
+        "916078bcf41f",
+        "a52f3f5f244f"
+      ],
+      "verified_by": [
+        "tests/hooks/test_dependency_cycles.py:109",
+        "tests/hooks/test_dependency_cycles.py:213"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006",
@@ -276,44 +312,81 @@
     {
       "id": "PIPE-RELEASE-R006.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "01378f786cba",
+        "336628614998",
+        "fa4ad80cd25b"
+      ],
+      "verified_by": [
+        "tests/hooks/test_project_version_sync.py:65"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "01378f786cba",
+        "336628614998",
+        "fa4ad80cd25b"
+      ],
+      "verified_by": [
+        "tests/hooks/test_project_version_sync.py:89"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "01378f786cba",
+        "336628614998",
+        "fa4ad80cd25b"
+      ],
+      "verified_by": [
+        "tests/hooks/test_project_version_sync.py:176"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "01378f786cba",
+        "336628614998",
+        "fa4ad80cd25b"
+      ],
+      "verified_by": [
+        "tests/hooks/test_project_version_sync.py:127"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "01378f786cba",
+        "336628614998",
+        "fa4ad80cd25b"
+      ],
+      "verified_by": [
+        "tests/hooks/test_project_version_sync.py:158"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "01378f786cba",
+        "336628614998",
+        "975ea62b6b54",
+        "fa4ad80cd25b"
+      ],
+      "verified_by": [
+        "tests/hooks/test_project_version_sync.py:189"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R005.7",
