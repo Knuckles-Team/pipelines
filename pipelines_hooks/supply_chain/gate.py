@@ -105,8 +105,8 @@ def _repositories(arguments: argparse.Namespace) -> tuple[Path, tuple[Path, ...]
         return root, repositories, SnapshotBudget()
     if arguments.fleet_root:
         _require_sibling(Path(arguments.fleet_root), "fleet root")
-    root = arguments.root_option or arguments.root_positional or "."
-    fleet_root = Path(arguments.fleet_root or root).resolve()
+    selected_root: str = arguments.root_option or arguments.root_positional or "."
+    fleet_root = Path(arguments.fleet_root or selected_root).resolve()
     repositories = discover_repositories(fleet_root)
     if not repositories and arguments.fleet_root:
         raise Unavailable(f"no Git repositories are checked out under the fleet root {fleet_root}")
