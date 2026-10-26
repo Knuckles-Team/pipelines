@@ -8,6 +8,7 @@ import sys
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
+from tests.git_fixture_environment import fixture_git_environment
 from scripts.architecture_explorer.story_chart_sources import capture_git, source_chart
 from scripts.architecture_explorer.story_contract import ContractError
 from scripts.architecture_explorer.story_sources import SourceGap
@@ -149,9 +150,11 @@ def test_incomplete_evidence_refused(mutation):
 
 
 def test_git_capture_pinned_commit_not_worktree(tmp_path):
+    git_env = fixture_git_environment()
+
     def git(*args):
         return subprocess.run(
-            ["git", "-C", str(tmp_path), *args], check=True, capture_output=True, text=True
+            ["git", "-C", str(tmp_path), *args], env=git_env, check=True, capture_output=True, text=True
         ).stdout.strip()
 
     git("init")

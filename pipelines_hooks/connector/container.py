@@ -46,6 +46,8 @@ ENV_FILE_OPTIONAL = "      - path: ../.env\n        required: false\n"
 CONFIG_ROOT = PurePosixPath("/etc")
 _INTERPOLATION = re.compile(r"\$\{[A-Z_][A-Z0-9_]*(?:(?::?[-?])[^}\s]*)?\}")
 _PLAIN_PATH = re.compile(r"/[^\s#'\"]*")
+_VOLUME_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
+STATE_VOLUME_KEYS = frozenset({"name", "target"})
 DEFAULT_DEBUG_APT = (
     "ripgrep tree fd-find curl nano build-essential cmake libssl-dev libcurl4-openssl-dev pkg-config cargo rustc"
 )
@@ -155,19 +157,13 @@ def target_extra(extras: set[str], table: dict[str, Any], target: str) -> str | 
     return extra
 
 
-def config_mounts_block(raw: Any) -> str:
-    """The compose ``volumes:`` block of the declared ``config_mounts``: one read-only bind mount per entry.
-
-    Same checks as the SDK's ``CONFIG_MOUNTS_SCHEMA`` (pipelines keeps its own copy, it does not depend on the SDK): a list
-    of tables of exactly ``source`` and ``target``; ``source`` is an absolute host path or one ``${VAR...}`` interpolation;
-    ``target`` is a normalized absolute directory under ``/etc``; no target twice. Whitespace, ``#`` and quotes are refused
-    in both, so the unquoted YAML scalar written below is always the value declared.
-    """
+def _config_mount_entries(raw: Any) -> list[dict[str, str]]:
+    """Validate and normalize the read-only bind entries declared by ``config_mounts``."""
     if raw in (None, []):
-        return ""
+        return []
     if not isinstance(raw, list):
         raise CannotRun("[tool.pipelines.container] config_mounts is a list of tables")
-    lines, seen = ["    volumes:\n"], set()
+    entries, seen = [], set()
     for entry in raw:
         if not isinstance(entry, dict) or set(entry) != {"source", "target"}:
             raise CannotRun("each config mount is a table of exactly source and target")
@@ -193,10 +189,88 @@ def config_mounts_block(raw: Any) -> str:
         if target in seen:
             raise CannotRun(f"two config mounts share the target {target!r}")
         seen.add(target)
-        lines.append(
-            f"      - type: bind\n        source: {source}\n        target: {target}\n        read_only: true\n"
-        )
-    return "".join(lines)
+        entries.append({"source": source, "target": target})
+    return entries
+
+
+def config_mounts_block(raw: Any) -> str:
+    """The compose ``volumes:`` block of ``config_mounts`` as read-only bind mounts."""
+    entries = _config_mount_entries(raw)
+    if not entries:
+        return ""
+    return "    volumes:\n" + "".join(
+        f"      - type: bind\n        source: {entry['source']}\n        target: {entry['target']}\n        read_only: true\n"
+        for entry in entries
+    )
+
+
+def _state_volume_entries(raw: Any) -> list[dict[str, str]]:
+    """Validate the typed named writable volumes declared by ``state_volumes``."""
+    if raw in (None, []):
+        return []
+    if not isinstance(raw, list):
+        raise CannotRun("[tool.pipelines.container] state_volumes is a list of tables")
+    entries, names, targets = [], set(), set()
+    for entry in raw:
+        if not isinstance(entry, dict) or set(entry) != STATE_VOLUME_KEYS:
+            raise CannotRun("each state volume is a table of exactly name and target")
+        name, target = entry["name"], entry["target"]
+        if not isinstance(name, str) or not _VOLUME_NAME.fullmatch(name):
+            raise CannotRun("state volume name must be a Docker named-volume name")
+        if not isinstance(target, str):
+            raise CannotRun("state volume target is a string")
+        path = PurePosixPath(target)
+        if (
+            "$" in target
+            or not path.is_absolute()
+            or target == "/"
+            or ":" in target
+            or ".." in path.parts
+            or str(path) != target
+            or not _PLAIN_PATH.fullmatch(target)
+        ):
+            raise CannotRun(f"state volume target {target!r} must be a literal normalized absolute path other than /")
+        if CONFIG_ROOT == path or CONFIG_ROOT in path.parents:
+            raise CannotRun(f"state volume target {target!r} must not be under /etc")
+        if name in names:
+            raise CannotRun(f"two state volumes share the name {name!r}")
+        if target in targets:
+            raise CannotRun(f"two state volumes share the target {target!r}")
+        names.add(name)
+        targets.add(target)
+        entries.append({"name": name, "target": target})
+    return entries
+
+
+def state_volumes_block(raw: Any) -> str:
+    """The service ``volumes:`` block for typed named writable state volumes."""
+    service, _ = compose_volume_blocks(None, raw)
+    return service
+
+
+def compose_volume_blocks(config_raw: Any, state_raw: Any) -> tuple[str, str]:
+    """Return the service and top-level Compose blocks for config and state volumes."""
+    config_entries = _config_mount_entries(config_raw)
+    state_entries = _state_volume_entries(state_raw)
+    targets = [entry["target"] for entry in config_entries]
+    for entry in state_entries:
+        if entry["target"] in targets:
+            raise CannotRun(f"config and state volumes share the target {entry['target']!r}")
+    if not config_entries and not state_entries:
+        return "", ""
+    service_lines = ["    volumes:\n"]
+    service_lines.extend(
+        f"      - type: bind\n        source: {entry['source']}\n        target: {entry['target']}\n        read_only: true\n"
+        for entry in config_entries
+    )
+    service_lines.extend(
+        f"      - type: volume\n        source: {entry['name']}\n        target: {entry['target']}\n"
+        for entry in state_entries
+    )
+    top_level = ""
+    if state_entries:
+        top_level = "volumes:\n" + "".join(f"  {entry['name']}: {{}}\n" for entry in state_entries)
+    return "".join(service_lines), top_level
 
 
 def _fill(template: Path, values: dict[str, str]) -> str:
@@ -235,7 +309,7 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
         },
     )
     env = "".join(f"      - {line}\n" for line in table.get("compose_env", []))
-    volumes = config_mounts_block(table.get("config_mounts"))
+    volumes, top_level_volumes = compose_volume_blocks(table.get("config_mounts"), table.get("state_volumes"))
     env_file = ENV_FILE_OPTIONAL if table.get("env_file_optional") else ENV_FILE_REQUIRED
     for target in entries:
         service = f"{dist}-{target}"
@@ -249,6 +323,7 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
                 "@@PORT@@": port,
                 "@@COMPOSE_ENV@@": env,
                 "@@VOLUMES@@": volumes,
+                "@@TOP_LEVEL_VOLUMES@@": top_level_volumes,
                 "@@ENV_FILE@@": env_file,
                 "@@MEMORY_ENV@@": str(limits["memory_limit_env"]),
                 "@@MEMORY@@": str(limits["memory_limit"]),

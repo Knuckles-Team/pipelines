@@ -9,6 +9,7 @@ from collections import Counter
 from copy import deepcopy
 from pathlib import Path
 
+from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.specs.aliases import canonical_id, retired_prefix, validate_alias_document
 from pipelines_hooks.specs.priority import Node, frontier, score
 from pipelines_hooks.specs.requirements_doc import parse_rows
@@ -20,9 +21,10 @@ from .story_sources import normalize_family, source_ref
 def capture_git(root: Path, commit: str, repository: dict) -> dict:
     """Read exactly one existing full Git commit; no fetch, ref fallback, or API."""
     require(bool(re.fullmatch(r"[0-9a-f]{40}", commit)), "full frozen commit required")
+    git_env = sanitized_env()
 
     def git(*args):
-        return subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True).stdout
+        return subprocess.run(["git", "-C", str(root), *args], env=git_env, check=True, capture_output=True).stdout
 
     require(git("rev-parse", commit + "^{commit}").decode().strip() == commit, "commit resolution mismatch")
     entries = git("ls-tree", "-r", "-z", commit).split(b"\0")
