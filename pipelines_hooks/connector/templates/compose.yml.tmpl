@@ -25,7 +25,7 @@ services:
       - PORT=@@PORT@@
       - TRANSPORT=streamable-http
 @@COMPOSE_ENV@@    ports:
-      - "127.0.0.1:@@PORT@@:@@PORT@@"
+      - "@@COMPOSE_HOST@@:@@PORT@@:@@PORT@@"
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:@@PORT@@/health')"]
       interval: 30s

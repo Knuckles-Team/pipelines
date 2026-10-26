@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,7 @@ from pipelines_hooks.core.errors import CannotRun
 CONTAINER_KEYS = frozenset(
     {
         "host",
+        "compose_host",
         "port",
         "uid",
         "home",
@@ -33,6 +35,7 @@ CONTAINER_KEYS = frozenset(
     }
 )
 LIMIT_KEYS = frozenset({"memory_limit_env", "memory_limit", "cpu_limit_env", "cpu_limit"})
+DEFAULT_COMPOSE_HOST = "127.0.0.1"
 
 
 def load(root: Path) -> dict[str, Any]:
@@ -56,7 +59,23 @@ def container_table(pyproject: dict[str, Any]) -> dict[str, Any]:
             raise CannotRun(
                 f"[tool.pipelines.container] limits.{kind} is not an mcp/agent table of {sorted(LIMIT_KEYS)}"
             )
+    compose_host(table)
     return dict(table)
+
+
+def compose_host(table: dict[str, Any]) -> str:
+    """Return the validated IP address used for published Compose ports."""
+    raw = table.get("compose_host", DEFAULT_COMPOSE_HOST)
+    if not isinstance(raw, str) or raw != raw.strip() or not raw:
+        raise CannotRun("[tool.pipelines.container] compose_host must be a non-empty IP address")
+    host = raw.strip()
+    if "%" in host:
+        raise CannotRun(f"[tool.pipelines.container] compose_host {host!r} must be an IP address")
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        raise CannotRun(f"[tool.pipelines.container] compose_host {host!r} must be an IP address") from None
+    return host
 
 
 def package_dir(root: Path, pyproject: dict[str, Any]) -> Path:
