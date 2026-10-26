@@ -14,6 +14,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.docs.claims import claim_findings, parse_claims
 from pipelines_hooks.docs.public_surface_links import local_link_findings
 from pipelines_hooks.docs.public_surface_quickstart import findings as quick_start_findings
 
@@ -28,22 +29,38 @@ def _read(root: Path, name: str) -> str | None:
         raise CannotRun(f"cannot read {name}: {exc}") from exc
 
 
-def validate(root: Path) -> list[str]:
-    """Return all public-surface findings for ``root``."""
+def validate(root: Path, *, report: dict[str, int] | None = None) -> list[str]:
+    """Return all public-surface findings for ``root``.
+
+    Explicit claims are collected only from the root README and optional
+    ``AGENTS.md``.  ``report`` is an internal summary seam for the CLI; the
+    ordinary return value remains the existing list of strings used by callers.
+    """
     readme = _read(root, "README.md")
     if readme is None:
+        if report is not None:
+            report.update(checked=0, unresolved=0)
         return ["README.md is required"]
     findings = quick_start_findings(readme) + local_link_findings(root, readme, name="README.md")
+    claims = parse_claims(readme, file="README.md")
     agents = _read(root, "AGENTS.md")
     if agents is not None:
         findings += local_link_findings(root, agents, name="AGENTS.md")
+        claims.extend(parse_claims(agents, file="AGENTS.md"))
+    claim_results = claim_findings(root, claims)
+    claim_stats = {"checked": len(claims), "unresolved": len(claim_results)}
+    findings += claim_results
+    if report is not None:
+        report.update(claim_stats)
     return findings
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="public-surface", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    findings = validate(repo_root(parser.parse_args(argv).root))
+    report: dict[str, int] = {}
+    findings = validate(repo_root(parser.parse_args(argv).root), report=report)
+    print(f"claims: checked {report.get('checked', 0)}, unresolved {report.get('unresolved', 0)}")
     if not findings:
         print("public surface: clean")
         return 0

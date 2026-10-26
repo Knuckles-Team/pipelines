@@ -80,6 +80,7 @@ Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:79
 - Failure. An unresolvable claim yields `claims-unchecked`. The gate never passes silently.
 - Reused. `local_link_findings` and `quick_start_findings` stay as they are. New: `claims.py` and the resolvers.
 - Decision. The gate must resolve claims against the tree and the gate registry. DECIDED.
+- Syntax. Documents opt in with an HTML comment such as `<!-- claim:path docs/guide.md -->` (the whitespace form and the `pipelines-claim` prefix are accepted). Counts use an explicit selector such as `files=3`, `gates=42` or `path:docs=2`; each finding retains the source document and line.
 - Rejected: a hand-kept list of allowed claims. It repeats the drift the gate prevents.
 - Cross-repository. Each consumer repository runs the same hook. No row restates a consumer's own docs.
 
