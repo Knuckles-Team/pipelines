@@ -334,6 +334,14 @@ def with_mounts(repo: Path, mounts: object) -> None:
     (repo / "pyproject.toml").write_text(PYPROJECT + f"\n[tool.pipelines.container]\n{body}", encoding="utf-8")
 
 
+STATE_VOLUME = {"name": "demo-mcp-state", "target": "/workspace"}
+
+
+def with_state_volumes(repo: Path, volumes: object) -> None:
+    body = f"state_volumes = {P._toml_scalar(volumes)}\n"
+    (repo / "pyproject.toml").write_text(PYPROJECT + f"\n[tool.pipelines.container]\n{body}", encoding="utf-8")
+
+
 @pytest.mark.spec("PIPE-GATES-R016.92")
 def test_render_without_config_mounts_has_no_volumes_block(repo: Path) -> None:
     out = container.render(repo)["mcp.compose.yml"]
@@ -362,6 +370,22 @@ def test_render_writes_each_config_mount_as_a_read_only_bind_between_restart_and
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")
+def test_render_writes_a_persistent_named_state_volume_and_top_level_declaration(repo: Path) -> None:
+    with_state_volumes(repo, [STATE_VOLUME])
+    out = container.render(repo)["mcp.compose.yml"]
+    assert "    read_only: true\n    cap_drop:\n      - ALL\n" in out
+    assert (
+        "    restart: always\n"
+        "    volumes:\n"
+        "      - type: volume\n"
+        "        source: demo-mcp-state\n"
+        "        target: /workspace\n"
+        "    env_file:\n"
+    ) in out
+    assert out.endswith("\nvolumes:\n  demo-mcp-state: {}\n")
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
 @pytest.mark.parametrize(
     ("mounts", "needle"),
     [
@@ -387,6 +411,34 @@ def test_render_refuses_a_config_mount_the_sdk_schema_refuses(repo: Path, mounts
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")
+@pytest.mark.parametrize(
+    ("volumes", "needle"),
+    [
+        ({"name": "demo-mcp-state", "target": "/workspace"}, "list of tables"),
+        ([{"name": "demo-mcp-state", "target": "/workspace", "source": "/srv/state"}], "exactly name and target"),
+        ([{"name": "/srv/state", "target": "/workspace"}], "Docker named-volume name"),
+        ([{"name": "demo-mcp-state", "target": "workspace"}], "normalized absolute"),
+        ([{"name": "demo-mcp-state", "target": "/workspace/../etc"}], "normalized absolute"),
+        ([{"name": "demo-mcp-state", "target": "/etc/connector"}], "must not be under /etc"),
+        (
+            [{"name": "demo-mcp-state", "target": "/workspace"}, {"name": "demo-mcp-state", "target": "/data"}],
+            "share the name",
+        ),
+        (
+            [{"name": "demo-mcp-state", "target": "/workspace"}, {"name": "other-state", "target": "/workspace"}],
+            "share the target",
+        ),
+    ],
+)
+def test_render_refuses_unsafe_or_ambiguous_state_volumes(repo: Path, volumes: object, needle: str) -> None:
+    from pipelines_hooks.core.errors import CannotRun
+
+    with_state_volumes(repo, volumes)
+    with pytest.raises(CannotRun, match=needle):
+        container.render(repo)
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
 def test_o_ports_committed_read_only_binds_into_the_container_table(repo: Path) -> None:
     with_mounts(repo, [MOUNT])
     old_docker(repo)
@@ -397,6 +449,35 @@ def test_o_ports_committed_read_only_binds_into_the_container_table(repo: Path) 
     assert "[[tool.pipelines.container.config_mounts]]" in text
     assert toml(repo)["tool"]["pipelines"]["container"]["config_mounts"] == [MOUNT]
     assert "target: /etc/connector\n        read_only: true\n" in container.render(repo)["mcp.compose.yml"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_ports_a_persistent_named_state_volume_into_the_container_table(repo: Path) -> None:
+    with_state_volumes(repo, [STATE_VOLUME])
+    old_docker(repo)
+    (repo / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
+    ctx = run(repo, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert toml(repo)["tool"]["pipelines"]["container"]["state_volumes"] == [STATE_VOLUME]
+    assert "source: demo-mcp-state\n        target: /workspace\n" in container.render(repo)["mcp.compose.yml"]
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+def test_o_ports_the_existing_short_named_state_volume_into_the_container_table(repo: Path) -> None:
+    with_state_volumes(repo, [STATE_VOLUME])
+    old_docker(repo)
+    compose = repo / "docker" / "mcp.compose.yml"
+    compose.write_text(
+        compose.read_text().replace(
+            "      - type: volume\n        source: demo-mcp-state\n        target: /workspace\n",
+            "      - demo-mcp-state:/workspace\n",
+        ),
+        encoding="utf-8",
+    )
+    (repo / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
+    ctx = run(repo, "pl.o")
+    assert not blocking(ctx, "pl.o"), ctx.review.items
+    assert toml(repo)["tool"]["pipelines"]["container"]["state_volumes"] == [STATE_VOLUME]
 
 
 @pytest.mark.spec("PIPE-GATES-R016.92")
@@ -413,6 +494,33 @@ def test_o_ports_committed_read_only_binds_into_the_container_table(repo: Path) 
 )
 def test_o_a_volume_the_sdk_schema_cannot_express_stays_blocking(repo: Path, edit: object, needle: str) -> None:
     with_mounts(repo, [MOUNT])
+    old_docker(repo)
+    (repo / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
+    compose = repo / "docker" / "mcp.compose.yml"
+    compose.write_text(edit(compose.read_text()), encoding="utf-8")  # type: ignore[operator]
+    ctx = run(repo, "pl.o")
+    (item,) = blocking(ctx, "pl.o")
+    assert needle in item["detail"] and compose.exists()
+
+
+@pytest.mark.spec("PIPE-GATES-R016.92")
+@pytest.mark.parametrize(
+    ("edit", "needle"),
+    [
+        (
+            lambda t: t.replace(
+                "        target: /workspace\n", "        target: /workspace\n        read_only: true\n"
+            ),
+            "must remain writable",
+        ),
+        (
+            lambda t: t.replace("      - type: volume\n", "      - type: bind\n"),
+            "not a read-only bind mount",
+        ),
+    ],
+)
+def test_o_unsafe_named_state_volume_stays_blocking(repo: Path, edit: object, needle: str) -> None:
+    with_state_volumes(repo, [STATE_VOLUME])
     old_docker(repo)
     (repo / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
     compose = repo / "docker" / "mcp.compose.yml"
