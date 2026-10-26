@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import struct
 import sys
 import zipfile
 
@@ -31,12 +32,43 @@ _BINARY_NAMES = {
 }
 
 
+def _elf_payload(machine: int) -> bytes:
+    payload = bytearray(64)
+    payload[:7] = b"\x7fELF\x02\x01\x01"
+    struct.pack_into("<H", payload, 18, machine)
+    return bytes(payload) + b"kernel-fixture"
+
+
+def _macho_payload() -> bytes:
+    payload = bytearray(32)
+    payload[:4] = b"\xcf\xfa\xed\xfe"
+    struct.pack_into("<I", payload, 4, 0x0100000C)
+    return bytes(payload) + b"kernel-fixture"
+
+
+def _pe_payload() -> bytes:
+    payload = bytearray(0x46)
+    payload[:2] = b"MZ"
+    struct.pack_into("<I", payload, 0x3C, 0x40)
+    payload[0x40:0x44] = b"PE\x00\x00"
+    struct.pack_into("<H", payload, 0x44, 0x8664)
+    return bytes(payload) + b"kernel-fixture"
+
+
+_BINARY_PAYLOADS = {
+    "linux-x86_64": _elf_payload(0x3E),
+    "linux-aarch64": _elf_payload(0xB7),
+    "macos-aarch64": _macho_payload(),
+    "windows-x86_64": _pe_payload(),
+}
+
+
 def _wheel_with_optional_kernel(directory: Path, target: str, compiled: bool) -> Path:
     _, _, platform_tag = TARGETS[target]
     path = wheel(directory, name=f"fixture-1.0-cp314-cp314-{platform_tag}.whl")
     if compiled:
         with zipfile.ZipFile(path, "a") as archive:
-            archive.writestr(_BINARY_NAMES[target], b"synthetic compiled extension")
+            archive.writestr(_BINARY_NAMES[target], _BINARY_PAYLOADS[target])
     return path
 
 
@@ -129,11 +161,68 @@ def test_kernel_matrix_model_is_closed():
 def test_wheel_without_binary_is_missing(tmp_path):
     path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
     assert kernels.inspect_wheel(path, "linux-x86_64", "cp314") is None
-    with zipfile.ZipFile(path, "a") as archive:
-        archive.writestr(_BINARY_NAMES["linux-x86_64"], b"compiled")
+
+
+def test_real_binary_header_counts_as_kernel(tmp_path):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", True)
     found, binaries = kernels.inspect_wheel(path, "linux-x86_64", "cp314")
     assert found.wheel == path
     assert binaries == (_BINARY_NAMES["linux-x86_64"],)
+
+
+def test_plain_binary_payload_is_missing(tmp_path):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr(_BINARY_NAMES["linux-x86_64"], b"plain text")
+    assert kernels.inspect_wheel(path, "linux-x86_64", "cp314") is None
+
+
+def test_corrupt_binary_crc_is_refused(tmp_path):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", True)
+    raw = path.read_bytes()
+    assert raw.count(b"kernel-fixture") == 1
+    path.write_bytes(raw.replace(b"kernel-fixture", b"kernel-corrupt", 1))
+    with pytest.raises(ValueError, match="CRC"):
+        kernels.inspect_wheel(path, "linux-x86_64", "cp314")
+
+
+def test_traversal_member_is_refused_before_payload_read(tmp_path):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr("../outside.so", _BINARY_PAYLOADS["linux-x86_64"])
+    with pytest.raises(ValueError, match="escapes its root"):
+        kernels.inspect_wheel(path, "linux-x86_64", "cp314")
+
+
+def test_member_count_cap_is_refused_before_payload_read(tmp_path, monkeypatch):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
+    monkeypatch.setattr(kernels, "MAX_MEMBERS", 3)
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr("fixture/extra.txt", b"extra")
+    with pytest.raises(ValueError, match="too many members"):
+        kernels.inspect_wheel(path, "linux-x86_64", "cp314")
+
+
+def test_member_size_cap_is_refused_before_payload_read(tmp_path, monkeypatch):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
+    with zipfile.ZipFile(path) as archive:
+        baseline = max(info.file_size for info in archive.infolist())
+    monkeypatch.setattr(kernels, "MAX_MEMBER_BYTES", baseline)
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr("fixture/oversize.bin", b"x" * (baseline + 1))
+    with pytest.raises(ValueError, match="size limit"):
+        kernels.inspect_wheel(path, "linux-x86_64", "cp314")
+
+
+def test_compression_ratio_cap_is_refused_before_payload_read(tmp_path, monkeypatch):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
+    monkeypatch.setattr(kernels, "MAX_COMPRESSION_RATIO", 10)
+    info = zipfile.ZipInfo(_BINARY_NAMES["linux-x86_64"])
+    info.compress_type = zipfile.ZIP_DEFLATED
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr(info, _BINARY_PAYLOADS["linux-x86_64"] + b"A" * 20_000)
+    with pytest.raises(ValueError, match="compression ratio"):
+        kernels.inspect_wheel(path, "linux-x86_64", "cp314")
 
 
 def test_aggregate_calls_kernel_gate(make_bundle, tmp_path):

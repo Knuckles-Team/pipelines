@@ -11,6 +11,9 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 import re
+import stat
+import struct
+from pathlib import PurePosixPath, PureWindowsPath
 import zipfile
 
 try:
@@ -31,6 +34,13 @@ _PLATFORM_PATTERNS = {
     "windows-x86_64": re.compile(r"^win_amd64$"),
 }
 _BINARY_SUFFIXES = (".so", ".pyd", ".dylib")
+MAX_WHEEL_BYTES = 512 * 1024 * 1024
+MAX_MEMBERS = 100_000
+MAX_MEMBER_BYTES = 64 * 1024 * 1024
+MAX_TOTAL_UNCOMPRESSED_BYTES = 256 * 1024 * 1024
+MAX_BINARY_BYTES = 64 * 1024 * 1024
+MAX_COMPRESSION_RATIO = 1_000
+_READ_CHUNK_BYTES = 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -128,21 +138,131 @@ def _matching_platform(target: str, platform: str) -> bool:
     return platform != "any" and bool(pattern.fullmatch(platform))
 
 
-def _binary_names(path: Path, target: str) -> tuple[str, ...]:
+def _safe_member_name(name: str) -> None:
+    normalized = name[:-1] if name.endswith("/") else name
+    path = PurePosixPath(normalized)
+    windows = PureWindowsPath(normalized)
+    if (
+        not normalized
+        or "\x00" in name
+        or "\\" in name
+        or path.is_absolute()
+        or not path.parts
+        or ".." in path.parts
+        or str(path) != normalized
+        or windows.drive
+        or windows.root
+    ):
+        raise ValueError(f"wheel archive path escapes its root: {name!r}")
+
+
+def _safe_infos(archive: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
+    infos = archive.infolist()
+    if len(infos) > MAX_MEMBERS:
+        raise ValueError("wheel archive has too many members")
+    seen: set[str] = set()
+    total = 0
+    for info in infos:
+        _safe_member_name(info.filename)
+        if info.filename in seen:
+            raise ValueError(f"wheel archive has duplicate member: {info.filename!r}")
+        seen.add(info.filename)
+        if info.flag_bits & 0x1:
+            raise ValueError("encrypted wheel archive member is unsupported")
+        mode = (info.external_attr >> 16) & 0o170000
+        if mode and mode not in {stat.S_IFREG, stat.S_IFDIR}:
+            raise ValueError(f"wheel archive has linked or special member: {info.filename!r}")
+        if info.file_size > MAX_MEMBER_BYTES:
+            raise ValueError(f"wheel archive member exceeds the size limit: {info.filename!r}")
+        total += info.file_size
+        if total > MAX_TOTAL_UNCOMPRESSED_BYTES:
+            raise ValueError("wheel archive exceeds the uncompressed size limit")
+        if info.file_size and info.file_size / max(info.compress_size, 1) > MAX_COMPRESSION_RATIO:
+            raise ValueError(f"wheel archive member compression ratio is excessive: {info.filename!r}")
+    return infos
+
+
+def _read_bounded(archive: zipfile.ZipFile, info: zipfile.ZipInfo) -> bytes:
+    if info.file_size > MAX_BINARY_BYTES:
+        raise ValueError(f"compiled binary exceeds the payload limit: {info.filename!r}")
+    parts: list[bytes] = []
+    size = 0
+    try:
+        with archive.open(info, "r") as stream:
+            while True:
+                chunk = stream.read(min(_READ_CHUNK_BYTES, MAX_BINARY_BYTES + 1 - size))
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > MAX_BINARY_BYTES:
+                    raise ValueError(f"compiled binary exceeds the payload limit: {info.filename!r}")
+                parts.append(chunk)
+    except zipfile.BadZipFile as error:
+        raise ValueError(f"compiled binary CRC is invalid: {info.filename!r}") from error
+    if size != info.file_size:
+        raise ValueError(f"compiled binary size is inconsistent: {info.filename!r}")
+    return b"".join(parts)
+
+
+def _valid_elf(data: bytes, target: str) -> bool:
+    machines = {"linux-x86_64": 0x3E, "linux-aarch64": 0xB7}
+    if len(data) < 64 or data[:4] != b"\x7fELF" or data[4] != 2 or data[5] != 1 or data[6] != 1:
+        return False
+    return struct.unpack_from("<H", data, 18)[0] == machines.get(target)
+
+
+def _valid_macho(data: bytes) -> bool:
+    if len(data) < 8:
+        return False
+    magic = data[:4]
+    if magic == b"\xcf\xfa\xed\xfe":  # 64-bit little-endian Mach-O
+        return struct.unpack_from("<I", data, 4)[0] == 0x0100000C
+    if magic == b"\xfe\xed\xfa\xcf":  # 64-bit big-endian Mach-O
+        return struct.unpack_from(">I", data, 4)[0] == 0x0100000C
+    if magic not in {b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca"} or len(data) < 8:
+        return False
+    endian = ">" if magic == b"\xca\xfe\xba\xbe" else "<"
+    count = struct.unpack_from(endian + "I", data, 4)[0]
+    if count > 64 or len(data) < 8 + count * 20:
+        return False
+    return any(struct.unpack_from(endian + "I", data, 8 + index * 20)[0] == 0x0100000C for index in range(count))
+
+
+def _valid_pe(data: bytes) -> bool:
+    if len(data) < 0x40 or data[:2] != b"MZ":
+        return False
+    offset = struct.unpack_from("<I", data, 0x3C)[0]
+    return (
+        offset + 6 <= len(data)
+        and data[offset : offset + 4] == b"PE\x00\x00"
+        and struct.unpack_from("<H", data, offset + 4)[0] == 0x8664
+    )
+
+
+def _valid_binary(data: bytes, target: str, name: str) -> bool:
+    suffix = Path(name).suffix.lower()
+    if target.startswith("linux"):
+        return suffix == ".so" and _valid_elf(data, target)
+    if target == "macos-aarch64":
+        return suffix in {".so", ".dylib"} and _valid_macho(data)
+    if target == "windows-x86_64":
+        return suffix == ".pyd" and _valid_pe(data)
+    return False
+
+
+def _binary_names(archive: zipfile.ZipFile, infos: Sequence[zipfile.ZipInfo], target: str) -> tuple[str, ...]:
     if target not in _PLATFORM_PATTERNS:
         raise ValueError(f"unknown kernel target: {target}")
-    suffixes = _BINARY_SUFFIXES
-    with zipfile.ZipFile(path) as archive:
-        return tuple(
-            sorted(
-                name
-                for name in archive.namelist()
-                if not name.endswith("/")
-                and ".dist-info/" not in name
-                and ".data/" not in name
-                and name.lower().endswith(suffixes)
-            )
-        )
+    names = []
+    for info in infos:
+        name = info.filename
+        if name.endswith("/") or ".dist-info/" in name or ".data/" in name:
+            continue
+        if not name.lower().endswith(_BINARY_SUFFIXES):
+            continue
+        if _valid_binary(_read_bounded(archive, info), target, name):
+            names.append(name)
+    return tuple(sorted(names))
 
 
 def inspect_wheel(path: Path, target: str, python_tag: str) -> tuple[KernelCell, tuple[str, ...]] | None:
@@ -150,15 +270,18 @@ def inspect_wheel(path: Path, target: str, python_tag: str) -> tuple[KernelCell,
 
     if not path.is_file() or path.is_symlink() or path.suffix != ".whl":
         raise ValueError("kernel wheel must be a regular .whl file")
+    if path.stat().st_size > MAX_WHEEL_BYTES:
+        raise ValueError("wheel archive exceeds the compressed size limit")
     _, _, _, tags = parse_wheel_filename(path.name)
-    binaries = _binary_names(path, target)
+    with zipfile.ZipFile(path) as archive:
+        infos = _safe_infos(archive)
+        matching = any(tag.interpreter == python_tag and _matching_platform(target, tag.platform) for tag in tags)
+        if not matching:
+            return None
+        binaries = _binary_names(archive, infos, target)
     if not binaries:
         return None
-    for tag in sorted(tags, key=str):
-        if tag.interpreter != python_tag or not _matching_platform(target, tag.platform):
-            continue
-        return KernelCell(target, python_tag, path), binaries
-    return None
+    return KernelCell(target, python_tag, path), binaries
 
 
 def scan_bundle(
