@@ -60,7 +60,7 @@ def transport(token: str):
     return request
 
 
-def probe(full_name: str, request, *, now: str) -> dict:
+def probe(full_name: str, request, *, now: str, reserve: int = 100) -> dict:
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", full_name):
         raise ProbeError("invalid current repository identity")
     metadata = request(API + "/repos/" + full_name)
@@ -74,7 +74,7 @@ def probe(full_name: str, request, *, now: str) -> dict:
     repo = {"id": metadata["node_id"], "fullName": full_name}
     try:
         records = collect(
-            [repo], request=lambda query: request(API + "/graphql", query), now=now, max_age_seconds=60, reserve=100
+            [repo], request=lambda query: request(API + "/graphql", query), now=now, max_age_seconds=60, reserve=reserve
         )
     except ActivityError:
         raise ProbeError("GraphQL activity verification failed; no cache, retry or fallback") from None

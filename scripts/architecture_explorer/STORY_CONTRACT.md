@@ -79,8 +79,12 @@ validation. Raw transport errors/credentials are never serialized.
 3. Normalize canonical rows/dependencies; call the producer as a pre-render gate.
 4. Refresh activity on **every rebuild**, independently of source SHA cache keys.
    Verify exact GraphQL authorization at the build runtime before enabling it.
-   This executor has no `GITHUB_TOKEN`; only repository read access via the
-   connector was verified. No live activity collection is claimed.
+   The separate `activity_probe` uses the existing Actions token to verify
+   the current repository only; that observation is recorded in the draft PR
+   receipt. It does not establish fleet or production refresh authorization.
+   `frozen_activity_probe.qualify` is an opt-in integration function accepting the
+   exact already-frozen `sources.scan_set` result and its registry provenance. It
+   does not discover arbitrary repositories or wire itself into production.
 5. Render HTML/details plus JSON/manifest into a private staging directory; run
    layout/browser validation, then atomically promote the complete directory.
    Failure must never upload partially generated public output.
@@ -92,3 +96,19 @@ The audited 598-node/8366-row snapshot is not an accepted producer input: full S
 source evidence, relationship attestations, normalized mappings and live activity
 are missing. The 19 zero-row leaves remain blocked pending reviewed evidence.
 No exemption or delivery-state change was invented to make that fixture pass.
+
+### Frozen-scan qualification boundary
+
+`frozen_activity_probe.qualify` accepts the same `scanned` list passed by
+`build.py` to `load_all`, with full frozen heads and registry source provenance.
+It must not receive a separately rediscovered or hand-expanded repository list.
+Request count is hard-bounded locally; before repository access it reserves a
+conservative 10-point admission estimate for the exact scalar-only GraphQL query.
+Unexpected query shape/cost fails qualification. The estimate is not a universal
+GitHub cost guarantee: [GitHub's cost formula can change](https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api),
+and concurrent token consumers can reduce remaining points. One bootstrap
+rate-limit query is required before repository access. The elapsed setting is an
+admission/receipt deadline, not cancellation of an already-running 30-second HTTP
+call. REST requests are count-bounded but their separate core-rate budget is not
+measured by this qualifier. Any denial, malformed response, or insufficient
+headroom stops the run without a partial successful receipt or alternate route.
