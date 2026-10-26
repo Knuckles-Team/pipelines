@@ -28,12 +28,41 @@ def test_missing_bootstrap_and_section_warn_without_failing(repo: Repo, capsys) 
     assert "lacks the" in capsys.readouterr().out
 
 
-@pytest.mark.spec("PIPE-CONNSPEC-R175")
+@pytest.mark.spec("PIPE-CONNSPEC-R176")
 def test_a_conformant_repository_passes_strict(repo: Repo) -> None:
     repo.commit({"AGENTS.md": "# a\n\n" + SECTION, "scripts/bootstrap.sh": "#!/bin/sh\n"})
     assert repo.run("agent-contract", "--strict") == 0
     repo.commit({"AGENTS.md": "# a\n\n" + SECTION.replace("**Gates:**", "gates")})
     assert repo.run("agent-contract", "--strict") == 1
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R176")
+def test_missing_org_link_is_blocking_in_strict_mode(repo: Repo, capsys) -> None:
+    without_org_link = SECTION.replace(f"- [org]({ORG_AGENTS})\n", "")
+    repo.commit({"AGENTS.md": "# a\n\n" + without_org_link, "scripts/bootstrap.sh": "#!/bin/sh\n"})
+    assert repo.run("agent-contract", "--strict") == 1
+    assert f"does not link {ORG_AGENTS}" in capsys.readouterr().out
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R177")
+def test_nonconforming_contract_warns_by_default_and_fails_strict(repo: Repo, capsys) -> None:
+    repo.commit({"AGENTS.md": "# a\n", "scripts/bootstrap.sh": "#!/bin/sh\n"})
+    assert repo.run("agent-contract") == 0
+    warning = capsys.readouterr().out
+    assert "WARN: agent-contract" in warning
+    assert "AGENTS.md lacks the" in warning
+    assert repo.run("agent-contract", "--strict") == 1
+    assert "FAIL: agent-contract" in capsys.readouterr().out
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R177")
+def test_untracked_contract_files_do_not_satisfy_the_check(repo: Repo, capsys) -> None:
+    repo.write("AGENTS.md", "# a\n\n" + SECTION)
+    repo.write("scripts/bootstrap.sh", "#!/bin/sh\n")
+    assert repo.run("agent-contract") == 0
+    warning = capsys.readouterr().out
+    assert "scripts/bootstrap.sh is not tracked" in warning
+    assert "AGENTS.md is not tracked" in warning
 
 
 @pytest.mark.spec("PIPE-CONNSPEC-R175")
