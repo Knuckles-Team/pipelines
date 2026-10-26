@@ -209,6 +209,7 @@ def make_bundle(tmp_path, monkeypatch):
     return build
 
 
+# spec: PIPE-RELEASE-R004.1
 def test_kernel_matrix_model_is_closed():
     required = kernels.required_cells({"linux-x86_64": object(), "windows-x86_64": object()}, ("cp313", "cp314"))
     assert [(cell.target, cell.python_tag) for cell in required] == [
@@ -225,6 +226,7 @@ def test_kernel_matrix_model_is_closed():
     }
 
 
+# spec: PIPE-RELEASE-R004.2
 def test_wheel_without_binary_is_missing(tmp_path):
     path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
     assert kernels.inspect_wheel(path, "linux-x86_64", "cp314") is None
@@ -237,6 +239,7 @@ def test_real_binary_header_counts_as_kernel(tmp_path):
     assert binaries == (_BINARY_NAMES["linux-x86_64"],)
 
 
+# spec: PIPE-RELEASE-R004.4
 def test_plain_binary_payload_is_missing(tmp_path):
     path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
     with zipfile.ZipFile(path, "a") as archive:
@@ -318,6 +321,7 @@ def test_compression_ratio_cap_is_refused_before_payload_read(tmp_path, monkeypa
         kernels.inspect_wheel(path, "linux-x86_64", "cp314")
 
 
+# spec: PIPE-RELEASE-R004.3
 def test_aggregate_calls_kernel_gate(make_bundle, tmp_path):
     directory, receipts, evidence = make_bundle(set(TARGETS) - {"windows-x86_64"})
     output = tmp_path / "release-readiness.json"
@@ -326,6 +330,7 @@ def test_aggregate_calls_kernel_gate(make_bundle, tmp_path):
     assert not output.exists()
 
 
+# spec: PIPE-RELEASE-R004.4
 def test_missing_cell_refusal_lists_all_pairs(make_bundle, tmp_path):
     directory, receipts, evidence = make_bundle(set())
     output = tmp_path / "release-readiness.json"
@@ -337,6 +342,7 @@ def test_missing_cell_refusal_lists_all_pairs(make_bundle, tmp_path):
     assert not output.exists()
 
 
+# spec: PIPE-RELEASE-R004.5
 def test_receipt_records_kernel_cells(make_bundle, tmp_path):
     directory, receipts, evidence = make_bundle(set(TARGETS))
     output = tmp_path / "release-readiness.json"
@@ -350,6 +356,7 @@ def test_receipt_records_kernel_cells(make_bundle, tmp_path):
     bundle.verify_snapshot(directory, payload, '["base"]', evidence)
 
 
+# spec: PIPE-RELEASE-R004.6
 def test_release_bundle_blocks_missing_kernel_wheel(make_bundle, monkeypatch, tmp_path):
     directory, receipts, evidence = make_bundle(set(TARGETS) - {"macos-aarch64"})
     output = tmp_path / "release-readiness.json"
