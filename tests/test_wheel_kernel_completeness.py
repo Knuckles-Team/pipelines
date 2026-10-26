@@ -33,26 +33,87 @@ _BINARY_NAMES = {
 
 
 def _elf_payload(machine: int) -> bytes:
-    payload = bytearray(64)
+    code = b"\x90\xc3kernel-fixture"
+    payload = bytearray(0x100 + len(code))
     payload[:7] = b"\x7fELF\x02\x01\x01"
-    struct.pack_into("<H", payload, 18, machine)
-    return bytes(payload) + b"kernel-fixture"
+    struct.pack_into(
+        "<HHIQQQIHHHHHH",
+        payload,
+        16,
+        3,
+        machine,
+        1,
+        0,
+        64,
+        0,
+        0,
+        64,
+        56,
+        1,
+        64,
+        0,
+        0,
+    )
+    struct.pack_into("<IIQQQQQQ", payload, 64, 1, 5, 0, 0, 0, len(payload), len(payload), 0x1000)
+    payload[0x100:] = code
+    return bytes(payload)
 
 
 def _macho_payload() -> bytes:
-    payload = bytearray(32)
-    payload[:4] = b"\xcf\xfa\xed\xfe"
-    struct.pack_into("<I", payload, 4, 0x0100000C)
-    return bytes(payload) + b"kernel-fixture"
+    code = b"\x90\xc3kernel-fixture"
+    payload = bytearray(0x100 + len(code))
+    struct.pack_into("<IIIIIIII", payload, 0, 0xFEEDFACF, 0x0100000C, 0, 8, 1, 72, 0, 0)
+    struct.pack_into("<II16sQQQQiiII", payload, 32, 0x19, 72, b"__TEXT", 0, len(payload), 0, len(payload), 7, 5, 0, 0)
+    payload[0x100:] = code
+    return bytes(payload)
 
 
 def _pe_payload() -> bytes:
+    payload = bytearray(0x400)
+    payload[:2] = b"MZ"
+    struct.pack_into("<I", payload, 0x3C, 0x40)
+    payload[0x40:0x44] = b"PE\x00\x00"
+    struct.pack_into("<HHIIIHH", payload, 0x44, 0x8664, 1, 0, 0, 0, 0xF0, 0x2000)
+    optional = 0x58
+    struct.pack_into("<H", payload, optional, 0x20B)
+    struct.pack_into("<I", payload, optional + 4, 0x200)
+    struct.pack_into("<I", payload, optional + 16, 0x1000)
+    struct.pack_into("<I", payload, optional + 20, 0x1000)
+    struct.pack_into("<Q", payload, optional + 24, 0x140000000)
+    struct.pack_into("<II", payload, optional + 32, 0x1000, 0x200)
+    struct.pack_into("<II", payload, optional + 56, 0x2000, 0x200)
+    struct.pack_into("<H", payload, optional + 68, 3)
+    struct.pack_into("<H", payload, optional + 70, 0x160)
+    struct.pack_into("<I", payload, optional + 108, 16)
+    section = optional + 0xF0
+    payload[section : section + 8] = b".text\x00\x00\x00"
+    struct.pack_into(
+        "<IIIIIIHHI", payload, section + 8, len(payload) - 0x200, 0x1000, 0x200, 0x200, 0, 0, 0, 0, 0x60000020
+    )
+    payload[0x200 : 0x200 + len(b"\x90\xc3kernel-fixture")] = b"\x90\xc3kernel-fixture"
+    return bytes(payload)
+
+
+def _truncated_elf(machine: int) -> bytes:
+    payload = bytearray(64)
+    payload[:7] = b"\x7fELF\x02\x01\x01"
+    struct.pack_into("<HHIQQQIHHHHHH", payload, 16, 3, machine, 1, 0, 64, 0, 0, 64, 56, 1, 64, 0, 0)
+    return bytes(payload)
+
+
+def _truncated_macho() -> bytes:
+    payload = bytearray(32)
+    struct.pack_into("<IIIIIIII", payload, 0, 0xFEEDFACF, 0x0100000C, 0, 8, 1, 72, 0, 0)
+    return bytes(payload)
+
+
+def _truncated_pe() -> bytes:
     payload = bytearray(0x46)
     payload[:2] = b"MZ"
     struct.pack_into("<I", payload, 0x3C, 0x40)
     payload[0x40:0x44] = b"PE\x00\x00"
     struct.pack_into("<H", payload, 0x44, 0x8664)
-    return bytes(payload) + b"kernel-fixture"
+    return bytes(payload)
 
 
 _BINARY_PAYLOADS = {
@@ -60,6 +121,12 @@ _BINARY_PAYLOADS = {
     "linux-aarch64": _elf_payload(0xB7),
     "macos-aarch64": _macho_payload(),
     "windows-x86_64": _pe_payload(),
+}
+
+_TRUNCATED_PAYLOADS = {
+    "linux-x86_64": _truncated_elf(0x3E),
+    "macos-aarch64": _truncated_macho(),
+    "windows-x86_64": _truncated_pe(),
 }
 
 
@@ -177,6 +244,23 @@ def test_plain_binary_payload_is_missing(tmp_path):
     assert kernels.inspect_wheel(path, "linux-x86_64", "cp314") is None
 
 
+@pytest.mark.parametrize("target", _TRUNCATED_PAYLOADS)
+def test_truncated_binary_tables_are_missing(tmp_path, target):
+    path = _wheel_with_optional_kernel(tmp_path, target, False)
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr(_BINARY_NAMES[target], _TRUNCATED_PAYLOADS[target])
+    assert kernels.inspect_wheel(path, target, "cp314") is None
+
+
+def test_binary_table_offset_out_of_bounds_is_missing(tmp_path):
+    payload = bytearray(_BINARY_PAYLOADS["linux-x86_64"])
+    struct.pack_into("<Q", payload, 32, len(payload) + 1)
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr(_BINARY_NAMES["linux-x86_64"], payload)
+    assert kernels.inspect_wheel(path, "linux-x86_64", "cp314") is None
+
+
 def test_corrupt_binary_crc_is_refused(tmp_path):
     path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", True)
     raw = path.read_bytes()
@@ -190,6 +274,15 @@ def test_traversal_member_is_refused_before_payload_read(tmp_path):
     path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
     with zipfile.ZipFile(path, "a") as archive:
         archive.writestr("../outside.so", _BINARY_PAYLOADS["linux-x86_64"])
+    with pytest.raises(ValueError, match="escapes its root"):
+        kernels.inspect_wheel(path, "linux-x86_64", "cp314")
+
+
+def test_noncanonical_duplicate_member_is_refused(tmp_path):
+    path = _wheel_with_optional_kernel(tmp_path, "linux-x86_64", False)
+    with zipfile.ZipFile(path, "a") as archive:
+        archive.writestr(_BINARY_NAMES["linux-x86_64"], _BINARY_PAYLOADS["linux-x86_64"])
+        archive.writestr("./" + _BINARY_NAMES["linux-x86_64"], _BINARY_PAYLOADS["linux-x86_64"])
     with pytest.raises(ValueError, match="escapes its root"):
         kernels.inspect_wheel(path, "linux-x86_64", "cp314")
 

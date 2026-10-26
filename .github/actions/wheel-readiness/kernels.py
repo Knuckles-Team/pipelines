@@ -22,9 +22,9 @@ except ImportError:  # pragma: no cover - used by the project test environment
     from packaging.utils import parse_wheel_filename
 
 
-# The target readiness proof is currently pinned to CPython 3.14.  Publishers
-# may pass another explicit tuple to ``required_cells``/``scan_bundle`` when a
-# product's reviewed matrix supports a different Python range.
+# ``targets.py`` and the Maturin publisher both require CPython 3.14.  Keep
+# that existing publication axis as the named default; publishers may pass
+# another explicit tuple only when their reviewed matrix supports it.
 DEFAULT_PYTHON_TAGS = ("cp314",)
 
 _PLATFORM_PATTERNS = {
@@ -41,6 +41,22 @@ MAX_TOTAL_UNCOMPRESSED_BYTES = 256 * 1024 * 1024
 MAX_BINARY_BYTES = 64 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 1_000
 _READ_CHUNK_BYTES = 1024 * 1024
+_MAX_TABLE_ENTRIES = 4_096
+_MAX_TABLE_BYTES = 4 * 1024 * 1024
+
+_ELF_ET_DYN = 3
+_ELF_PT_LOAD = 1
+_ELF_PF_X = 4
+_MACHO_ARM64 = 0x0100000C
+_MACHO_MH_DYLIB = 6
+_MACHO_MH_BUNDLE = 8
+_MACHO_LC_SEGMENT_64 = 0x19
+_MACHO_VM_PROT_EXECUTE = 4
+_MACHO_SECTION_PURE_INSTRUCTIONS = 0x80000000
+_MACHO_SECTION_SOME_INSTRUCTIONS = 0x00000400
+_PE_IMAGE_FILE_DLL = 0x2000
+_PE_IMAGE_SCN_CNT_CODE = 0x00000020
+_PE_IMAGE_SCN_MEM_EXECUTE = 0x20000000
 
 
 @dataclass(frozen=True, slots=True)
@@ -204,39 +220,191 @@ def _read_bounded(archive: zipfile.ZipFile, info: zipfile.ZipInfo) -> bytes:
     return b"".join(parts)
 
 
+def _bounded_end(length: int, offset: int, size: int, cap: int) -> int | None:
+    if offset < 0 or size < 0 or size > cap or offset > length:
+        return None
+    end = offset + size
+    return end if end <= length else None
+
+
+def _bounded_table(length: int, offset: int, count: int, entry_size: int) -> int | None:
+    if count <= 0 or count > _MAX_TABLE_ENTRIES:
+        return None
+    return _bounded_end(length, offset, count * entry_size, _MAX_TABLE_BYTES)
+
+
+def _has_code_bytes(data: bytes, start: int, end: int, after: int) -> bool:
+    start = max(start, after)
+    return start < end and any(memoryview(data)[start:end])
+
+
 def _valid_elf(data: bytes, target: str) -> bool:
     machines = {"linux-x86_64": 0x3E, "linux-aarch64": 0xB7}
-    if len(data) < 64 or data[:4] != b"\x7fELF" or data[4] != 2 or data[5] != 1 or data[6] != 1:
+    if len(data) < 64 or data[:4] != b"\x7fELF" or data[4:7] != b"\x02\x01\x01":
         return False
-    return struct.unpack_from("<H", data, 18)[0] == machines.get(target)
+    header = struct.unpack_from("<HHIQQQIHHHHHH", data, 16)
+    elf_type, machine, version, _, phoff, shoff, _, ehsize, phentsize, phnum, shentsize, shnum, shstrndx = header
+    if (
+        elf_type != _ELF_ET_DYN
+        or machine != machines.get(target)
+        or version != 1
+        or ehsize != 64
+        or phentsize != 56
+        or shstrndx > shnum
+    ):
+        return False
+    ph_end = _bounded_table(len(data), phoff, phnum, phentsize)
+    if ph_end is None:
+        return False
+    if shnum:
+        if shoff == 0 or shentsize != 64 or _bounded_table(len(data), shoff, shnum, shentsize) is None:
+            return False
+    elif shoff or shstrndx:
+        return False
+    for index in range(phnum):
+        offset = phoff + index * phentsize
+        p_type, p_flags, _, _, file_offset, file_size, memory_size, _ = struct.unpack_from("<IIQQQQQQ", data, offset)
+        if p_type != _ELF_PT_LOAD or not p_flags & _ELF_PF_X or memory_size < file_size or not file_size:
+            continue
+        segment_end = _bounded_end(len(data), file_offset, file_size, MAX_BINARY_BYTES)
+        if segment_end is not None and _has_code_bytes(data, file_offset, segment_end, ph_end):
+            return True
+    return False
+
+
+def _valid_macho_section(data: bytes, offset: int, endian: str, segment_end: int) -> bool:
+    _, _, _, size, file_offset, _, _, _, flags, _, _, _ = struct.unpack_from(endian + "16s16sQQIIIIIIII", data, offset)
+    section_end = _bounded_end(len(data), file_offset, size, MAX_BINARY_BYTES)
+    if section_end is None or section_end > segment_end:
+        return False
+    return (
+        bool(flags & (_MACHO_SECTION_PURE_INSTRUCTIONS | _MACHO_SECTION_SOME_INSTRUCTIONS))
+        and bool(size)
+        and any(memoryview(data)[file_offset:section_end])
+    )
+
+
+def _valid_macho_thin(data: bytes, endian: str) -> bool:
+    if len(data) < 32:
+        return False
+    _, cpu_type, _, file_type, command_count, command_size, _, _ = struct.unpack_from(endian + "IIIIIIII", data, 0)
+    if (
+        cpu_type != _MACHO_ARM64
+        or file_type not in {_MACHO_MH_DYLIB, _MACHO_MH_BUNDLE}
+        or command_count <= 0
+        or command_count > _MAX_TABLE_ENTRIES
+        or command_size > _MAX_TABLE_BYTES
+    ):
+        return False
+    commands_end = _bounded_end(len(data), 32, command_size, _MAX_TABLE_BYTES)
+    if commands_end is None:
+        return False
+    cursor = 32
+    executable = False
+    for _ in range(command_count):
+        if cursor + 8 > commands_end:
+            return False
+        command, size = struct.unpack_from(endian + "II", data, cursor)
+        if size < 8 or size > commands_end - cursor:
+            return False
+        if command == _MACHO_LC_SEGMENT_64:
+            if size < 72:
+                return False
+            fields = struct.unpack_from(endian + "II16sQQQQiiII", data, cursor)
+            file_offset, file_size = fields[5:7]
+            init_protection, section_count = fields[8:10]
+            segment_end = _bounded_end(len(data), file_offset, file_size, MAX_BINARY_BYTES)
+            if section_count > _MAX_TABLE_ENTRIES:
+                return False
+            section_table_end = cursor + 72 + section_count * 80
+            if section_table_end > cursor + size:
+                return False
+            if segment_end is not None and init_protection & _MACHO_VM_PROT_EXECUTE:
+                executable = executable or _has_code_bytes(data, file_offset, segment_end, commands_end)
+            for index in range(section_count):
+                section_offset = cursor + 72 + index * 80
+                if _valid_macho_section(data, section_offset, endian, segment_end or 0):
+                    executable = True
+        cursor += size
+    return cursor == commands_end and executable
 
 
 def _valid_macho(data: bytes) -> bool:
-    if len(data) < 8:
+    if len(data) < 4:
         return False
     magic = data[:4]
-    if magic == b"\xcf\xfa\xed\xfe":  # 64-bit little-endian Mach-O
-        return struct.unpack_from("<I", data, 4)[0] == 0x0100000C
-    if magic == b"\xfe\xed\xfa\xcf":  # 64-bit big-endian Mach-O
-        return struct.unpack_from(">I", data, 4)[0] == 0x0100000C
+    if magic in {b"\xcf\xfa\xed\xfe", b"\xfe\xed\xfa\xcf"}:
+        return _valid_macho_thin(data, "<" if magic == b"\xcf\xfa\xed\xfe" else ">")
     if magic not in {b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca"} or len(data) < 8:
         return False
     endian = ">" if magic == b"\xca\xfe\xba\xbe" else "<"
     count = struct.unpack_from(endian + "I", data, 4)[0]
-    if count > 64 or len(data) < 8 + count * 20:
+    table_end = _bounded_table(len(data), 8, count, 20)
+    if table_end is None:
         return False
-    return any(struct.unpack_from(endian + "I", data, 8 + index * 20)[0] == 0x0100000C for index in range(count))
+    for index in range(count):
+        offset = 8 + index * 20
+        cpu_type, _, file_offset, file_size, _ = struct.unpack_from(endian + "IIIII", data, offset)
+        slice_end = _bounded_end(len(data), file_offset, file_size, MAX_BINARY_BYTES)
+        if cpu_type != _MACHO_ARM64 or slice_end is None:
+            continue
+        payload = data[file_offset:slice_end]
+        slice_magic = payload[:4]
+        if slice_magic not in {b"\xcf\xfa\xed\xfe", b"\xfe\xed\xfa\xcf"}:
+            continue
+        if _valid_macho_thin(payload, "<" if slice_magic == b"\xcf\xfa\xed\xfe" else ">"):
+            return True
+    return False
 
 
 def _valid_pe(data: bytes) -> bool:
     if len(data) < 0x40 or data[:2] != b"MZ":
         return False
-    offset = struct.unpack_from("<I", data, 0x3C)[0]
-    return (
-        offset + 6 <= len(data)
-        and data[offset : offset + 4] == b"PE\x00\x00"
-        and struct.unpack_from("<H", data, offset + 4)[0] == 0x8664
+    pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+    pe_end = _bounded_end(len(data), pe_offset, 24, _MAX_TABLE_BYTES)
+    if pe_end is None or data[pe_offset : pe_offset + 4] != b"PE\x00\x00":
+        return False
+    machine, section_count, _, _, _, optional_size, characteristics = struct.unpack_from(
+        "<HHIIIHH", data, pe_offset + 4
     )
+    if machine != 0x8664 or section_count <= 0 or section_count > _MAX_TABLE_ENTRIES:
+        return False
+    optional_offset = pe_offset + 24
+    optional_end = _bounded_end(len(data), optional_offset, optional_size, _MAX_TABLE_BYTES)
+    if optional_end is None or optional_size < 112 or struct.unpack_from("<H", data, optional_offset)[0] != 0x20B:
+        return False
+    directory_count = struct.unpack_from("<I", data, optional_offset + 108)[0]
+    directory_end = _bounded_end(len(data), optional_offset + 112, directory_count * 8, _MAX_TABLE_BYTES)
+    if not characteristics & _PE_IMAGE_FILE_DLL or directory_count > 16 or directory_end is None:
+        return False
+    if directory_end > optional_end:
+        return False
+    image_size = struct.unpack_from("<I", data, optional_offset + 56)[0]
+    header_size = struct.unpack_from("<I", data, optional_offset + 60)[0]
+    section_end = _bounded_table(len(data), optional_end, section_count, 40)
+    if section_end is None or header_size < section_end or header_size > len(data) or not image_size:
+        return False
+    executable = False
+    for index in range(section_count):
+        offset = optional_end + index * 40
+        _, virtual_size, virtual_address, raw_size, raw_offset, _, _, _, _, section_flags = struct.unpack_from(
+            "<8sIIIIIIHHI", data, offset
+        )
+        raw_end = _bounded_end(len(data), raw_offset, raw_size, MAX_BINARY_BYTES)
+        if raw_size and raw_end is None:
+            return False
+        if virtual_address + max(virtual_size, raw_size) > image_size:
+            return False
+        if (
+            raw_end is not None
+            and raw_size
+            and raw_offset >= section_end
+            and section_flags & _PE_IMAGE_SCN_CNT_CODE
+            and section_flags & _PE_IMAGE_SCN_MEM_EXECUTE
+            and _has_code_bytes(data, raw_offset, raw_end, section_end)
+        ):
+            executable = True
+    return executable
 
 
 def _valid_binary(data: bytes, target: str, name: str) -> bool:
