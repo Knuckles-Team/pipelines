@@ -14,7 +14,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
-from pipelines_hooks.docs.claims import claim_findings, collect_claims, parse_claims
+from pipelines_hooks.docs.claims import claim_findings, collect_claims, document_sources, parse_claims
 from pipelines_hooks.docs.public_surface_links import local_link_findings
 from pipelines_hooks.docs.public_surface_quickstart import findings as quick_start_findings
 
@@ -48,7 +48,12 @@ def validate(root: Path, *, report: dict[str, int] | None = None) -> list[str]:
     if agents is not None:
         findings += local_link_findings(root, agents, name="AGENTS.md")
         claims.extend(parse_claims(agents, file="AGENTS.md"))
-    claims = collect_claims(root, claims)
+    sources = document_sources(root)
+    claims = collect_claims(root, claims, sources=sources)
+    for path, text in sources:
+        relative = path.relative_to(root).as_posix()
+        if relative not in {"README.md", "AGENTS.md"}:
+            findings += local_link_findings(root, text, name=relative, base=path.parent)
     claim_results = claim_findings(root, claims)
     claim_stats = {"checked": len(claims), "unresolved": len(claim_results)}
     findings += claim_results

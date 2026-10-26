@@ -156,17 +156,28 @@ def _document_paths(root: Path) -> list[Path]:
     return sorted(documents)
 
 
-def collect_claims(root: Path, claims: Iterable[DocClaim]) -> list[DocClaim]:
-    """Combine caller claims with declarations in the policy-scoped documents."""
+def document_sources(root: Path) -> list[tuple[Path, str]]:
+    """Read the Markdown files selected by the repository documentation policy."""
 
-    result = list(claims)
-    seen = {(claim.file, claim.line, claim.kind, claim.text) for claim in result}
+    sources: list[tuple[Path, str]] = []
     for path in _document_paths(root):
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeError) as exc:
             relative = path.relative_to(root).as_posix()
             raise CannotRun(f"{relative} cannot be read: {exc}") from exc
+        sources.append((path, text))
+    return sources
+
+
+def collect_claims(
+    root: Path, claims: Iterable[DocClaim], *, sources: Iterable[tuple[Path, str]] | None = None
+) -> list[DocClaim]:
+    """Combine caller claims with declarations in the policy-scoped documents."""
+
+    result = list(claims)
+    seen = {(claim.file, claim.line, claim.kind, claim.text) for claim in result}
+    for path, text in sources if sources is not None else document_sources(root):
         relative = path.relative_to(root).as_posix()
         for claim in parse_claims(text, file=relative):
             key = (claim.file, claim.line, claim.kind, claim.text)

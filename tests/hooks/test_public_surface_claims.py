@@ -55,6 +55,30 @@ def test_installed_cli_checks_an_ordinary_document_claim(repo: Repo) -> None:
     assert "claims: checked 2, unresolved 0" in result.stdout
 
 
+# spec: PIPE-PAGES-R020.3
+def test_installed_cli_rejects_a_stale_unannotated_document_link(repo: Repo) -> None:
+    repo.commit(
+        {
+            "README.md": "# fixture\n\n## Installation\n\n```bash\nuv sync\n```\n",
+            "mkdocs.yml": "site_name: fixture\ndocs_dir: docs\n",
+            "docs/guide.md": "# Guide\n\n[Missing guide](missing.md)\n",
+        },
+        "docs",
+    )
+    executable = shutil.which("pipelines-hook")
+    assert executable is not None
+    result = subprocess.run(
+        [executable, "public-surface", "--root", str(repo.root)],
+        cwd=repo.root,
+        env=sanitized_env(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert "docs/guide.md local link does not exist" in result.stdout
+
+
 # spec: PIPE-PAGES-R020.4
 @pytest.mark.parametrize(
     "comment",

@@ -80,9 +80,23 @@ Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:79
 - Failure. An unresolvable claim yields `claims-unchecked`. The gate never passes silently.
 - Reused. `local_link_findings` and `quick_start_findings` stay as they are. New: `claims.py` and the resolvers.
 - Decision. The gate must resolve claims against the tree and the gate registry. DECIDED.
-- Scope. The caller uses the existing documentation inventory (`mkdocs.yml`'s declared `docs_dir`, with the established `docs/` fallback) and keeps each finding repository-relative. Explicit HTML comments such as `<!-- claim:path docs/guide.md -->` are parsed in every policy-scoped document; ordinary local links and declared command examples are resolved through the existing public-surface/document policy seams. Empty, unknown or unterminated claim comments are refusals, and an absent count selector is never measured as zero.
+- Syntax. Documents opt in with an HTML comment such as `<!-- claim:path docs/guide.md -->` (the whitespace form and the `pipelines-claim` prefix are accepted). Counts use an explicit selector such as `files=3`, `gates=42` or `path:docs=2`; each finding retains the source document and line.
 - Rejected: a hand-kept list of allowed claims. It repeats the drift the gate prevents.
 - Cross-repository. Each consumer repository runs the same hook. No row restates a consumer's own docs.
+
+### Amendment: R020.1–R020.6 typed claims and policy-scoped links (2026-10-26)
+
+The R020.1–R020.6 implementation keeps the claim syntax typed and explicit:
+`path`, `command`, `gate`, `count` and `diagram-node` are the complete kinds;
+each uses the comment form above and is resolved by its named offline resolver.
+Ordinary prose is not automatically treated as a semantic command or count
+claim, and this amendment does not claim completion of the later R020 rollup.
+The existing Markdown link/path validator also runs over every Markdown file
+in the repository's existing documentation inventory (`mkdocs.yml`'s declared
+`docs_dir`, or the established `docs/`/`pages/` fallback), resolving links
+relative to their source document while enforcing repository containment.
+Malformed claim comments refuse with their source location; ordinary links
+remain ordinary link findings rather than becoming typed claims.
 
 ## Test quality gate (PIPE-PAGES-R021)
 

@@ -26,10 +26,19 @@ def _destinations(text: str) -> list[str]:
     return [link_destination(m.group(1)) for pattern in (LINK_RE, IMAGE_RE) for m in pattern.finditer(prose)]
 
 
-def local_link_findings(root: Path, text: str, *, name: str = "README.md") -> list[str]:
-    """Reject local links and images that escape the repository or point nowhere."""
+def local_link_findings(root: Path, text: str, *, name: str = "README.md", base: Path | None = None) -> list[str]:
+    """Reject local links and images that escape the repository or point nowhere.
+
+    ``base`` is the source document's directory for policy-scoped Markdown;
+    the default keeps the existing repository-root behavior for README and
+    AGENTS callers.
+    """
+
     findings: list[str] = []
     root = root.resolve()
+    document_root = root if base is None else base.resolve()
+    if not document_root.is_relative_to(root):
+        return [f"{name} document base escapes the repository: {document_root}"]
     for destination in _destinations(text):
         parsed = urlsplit(destination)
         if parsed.scheme or parsed.netloc:
@@ -43,7 +52,7 @@ def local_link_findings(root: Path, text: str, *, name: str = "README.md") -> li
         if portable_path.startswith("/") or WINDOWS_ABSOLUTE_RE.match(portable_path):
             findings.append(f"{name} local link is absolute: {destination!r}")
             continue
-        target = (root / portable_path).resolve()
+        target = (document_root / portable_path).resolve()
         if not target.is_relative_to(root):
             findings.append(f"{name} local link escapes the repository: {destination!r}")
         elif not target.exists():
