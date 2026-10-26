@@ -19,6 +19,14 @@ on:
         required: false
         type: boolean
         default: false
+      release_repair:
+        description: >-
+          Explicit reviewed release repair. Only a workflow_dispatch on the current main HEAD
+          may enable it; the published-wheel guard must pass before registry login/build and the
+          existing public PyPI release is only verified, never republished.
+        required: false
+        type: boolean
+        default: false
       published_wheel_distribution:
         description: >-
           Optional connector distribution name for the public-wheel release preflight. Empty
@@ -127,6 +135,54 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
+
+      - name: Validate reviewed release repair request
+        if: inputs.release_repair == true
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          REVIEWED_SHA: ${{ github.sha }}
+          BUILD_CONTEXT: ${{ inputs.build_context }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          BUILD_TARGET: ${{ inputs.build_target }}
+          RENDER_CONNECTOR: ${{ inputs.render_connector }}
+          RUNTIME_INPUTS: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.arbora_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
+        run: |
+          set -euo pipefail
+          [[ "$EVENT_NAME" == workflow_dispatch ]] || {
+            echo '::error::Reviewed release repair requires workflow_dispatch.'
+            exit 1
+          }
+          [[ "$REF" == refs/heads/main ]] || {
+            echo "::error::Reviewed release repair requires refs/heads/main, got $REF."
+            exit 1
+          }
+          [[ "$REVIEWED_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo '::error::Reviewed release repair requires a full immutable source SHA.'
+            exit 1
+          }
+          actual_sha="$(git rev-parse --verify HEAD)"
+          [[ "$actual_sha" == "$REVIEWED_SHA" ]] || {
+            echo "::error::Checked out HEAD $actual_sha does not equal github.sha $REVIEWED_SHA."
+            exit 1
+          }
+          main_sha="$(git ls-remote origin refs/heads/main | awk 'NR == 1 {print $1}')"
+          [[ "$main_sha" == "$REVIEWED_SHA" ]] || {
+            echo "::error::Reviewed release repair requires the current main HEAD ($main_sha), got $REVIEWED_SHA."
+            exit 1
+          }
+          [[ "$BUILD_CONTEXT" == . && "$DOCKERFILE" == docker/Dockerfile ]] || {
+            echo '::error::Reviewed release repair only permits the canonical repository Docker context.'
+            exit 1
+          }
+          [[ -z "$BUILD_TARGET" && -z "$RUNTIME_INPUTS" ]] || {
+            echo '::error::Reviewed release repair does not accept a runtime artifact or alternate build target.'
+            exit 1
+          }
+          [[ "${RENDER_CONNECTOR,,}" == true ]] || {
+            echo '::error::Reviewed release repair requires the canonical connector renderer.'
+            exit 1
+          }
 
       - name: Determine whether to render connector container files
         id: render-needed
@@ -283,7 +339,7 @@ jobs:
       # canonical renderer writes it only for this job.  Fetch the contract before
       # the public-wheel check when runtime staging did not already fetch it.
       - name: Validate release guard checkout destination
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true' && steps.target.outputs.runtime != 'true'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.release_repair == true) && steps.target.outputs.exists == 'true' && steps.target.outputs.runtime != 'true'
         env:
           CONTRACT_PATH: ${{ github.workspace }}/.pipeline-contract
         run: |
@@ -294,7 +350,7 @@ jobs:
           fi
 
       - name: Checkout release guard contract
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true' && steps.target.outputs.runtime != 'true'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.release_repair == true) && steps.target.outputs.exists == 'true' && steps.target.outputs.runtime != 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
@@ -304,13 +360,14 @@ jobs:
 
       - name: Determine published connector wheel
         id: published-wheel
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.release_repair == true) && steps.target.outputs.exists == 'true'
         env:
           BUILD_CONTEXT: ${{ inputs.build_context }}
           MATRIX_TARGET: ${{ matrix.target }}
           PUBLISHED_WHEEL_DISTRIBUTION: ${{ inputs.published_wheel_distribution }}
           PUBLISHED_WHEEL_MODULE: ${{ inputs.published_wheel_module }}
           PUBLISHED_WHEEL_EXTRAS: ${{ inputs.published_wheel_extras }}
+          RELEASE_REPAIR: ${{ inputs.release_repair }}
           PUBLIC_WHEEL_GUARD: ${{ github.workspace }}/.pipeline-contract/.github/actions/verify-release-version/public_wheel.py
         run: |
           set -euo pipefail
@@ -320,6 +377,10 @@ jobs:
             --target "$MATRIX_TARGET")"
           if [[ -n "$PUBLISHED_WHEEL_EXTRAS" && "$PUBLISHED_WHEEL_EXTRAS" != "$extras" ]]; then
             echo "::error::Requested published wheel extras do not match the reviewed container target."
+            exit 1
+          fi
+          if [[ "${RELEASE_REPAIR:-false}" == true && "$(python3 -c 'import json,sys; print(str(json.loads(sys.argv[1]).get("connector", False)).lower())' "$identity")" != true ]]; then
+            echo '::error::Reviewed release repair requires a connector identity.'
             exit 1
           fi
           python3 - "$identity" "$GITHUB_OUTPUT" "$extras" <<'PY'
@@ -337,7 +398,7 @@ jobs:
           PY
 
       - name: Verify published connector wheel before container build
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true' && steps.published-wheel.outputs.connector == 'true'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.release_repair == true) && steps.target.outputs.exists == 'true' && steps.published-wheel.outputs.connector == 'true'
         uses: ./.pipeline-contract/.github/actions/verify-release-version
         with:
           mode: published-wheel
@@ -466,8 +527,8 @@ jobs:
             type=ref,event=branch,suffix=${{ matrix.suffix }}
             type=ref,event=pr,suffix=${{ matrix.suffix }}
             type=sha,suffix=${{ matrix.suffix }}
-            type=raw,value=${{ matrix.main_tag }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-            type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.version.outputs.version != '' }}
+            type=raw,value=${{ matrix.main_tag }},enable=${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || inputs.release_repair == true }}
+            type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},enable=${{ ((github.event_name == 'push' && github.ref == 'refs/heads/main') || inputs.release_repair == true) && steps.version.outputs.version != '' }}
             type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}
             type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution == 'scion-sdk' }}
 
@@ -500,7 +561,7 @@ jobs:
           build-args: |
             ${{ steps.runtime.outputs.build-args }}
             ${{ steps.render.outputs.build-args }}
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' || inputs.release_repair == true }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
@@ -539,7 +600,7 @@ jobs:
       # PyPI version and the <version>-mcp image. This step fails the run when either
       # is missing after the publish, so a skipped or blocked leg is never silent.
       - name: Verify the release artifacts
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true' && steps.version.outputs.version != ''
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.release_repair == true) && steps.target.outputs.exists == 'true' && steps.version.outputs.version != ''
         env:
           VERSION: ${{ steps.version.outputs.version }}
           SUFFIX: ${{ matrix.suffix }}

@@ -50,7 +50,7 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
         "${{ steps.runtime.outputs.build-args }}\n${{ steps.render.outputs.build-args }}\n"
     )
     assert builds[0]["with"]["target"] == "${{ steps.target.outputs.target }}"
-    assert builds[0]["with"]["push"] == "${{ github.event_name == 'push' }}"
+    assert builds[0]["with"]["push"] == "${{ github.event_name == 'push' || inputs.release_repair == true }}"
     assert steps.index(next(step for step in steps if step.get("id") == "runtime")) < steps.index(builds[0])
     assert steps.index(_render_needed_step()) < steps.index(next(step for step in steps if step.get("id") == "render"))
     assert steps.index(next(step for step in steps if step.get("id") == "render")) < steps.index(
@@ -75,7 +75,7 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
     builds = [step for step in steps if "docker/build-push-action@" in step.get("uses", "")]
     assert (
         identity["if"]
-        == "github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true'"
+        == "(github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.release_repair == true) && steps.target.outputs.exists == 'true'"
     )
     assert "steps.published-wheel.outputs.connector == 'true'" in guard["if"]
     assert guard["uses"] == "./.pipeline-contract/.github/actions/verify-release-version"
@@ -93,6 +93,122 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
     assert "--resolve-extras" in identity["run"]
     assert "MATRIX_TARGET" in identity["env"]
     assert "connector" in identity["run"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_reviewed_release_repair_is_opt_in_and_preflights_before_publish() -> None:
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    inputs = workflow[True]["workflow_call"]["inputs"]
+    repair = inputs["release_repair"]
+    assert repair["type"] == "boolean" and repair["required"] is False and repair["default"] is False
+    steps = workflow["jobs"]["publish-docker"]["steps"]
+    validate = next(step for step in steps if step.get("name") == "Validate reviewed release repair request")
+    checkout = next(step for step in steps if step.get("name") == "Checkout release guard contract")
+    identity = next(step for step in steps if step.get("id") == "published-wheel")
+    guard = next(
+        step for step in steps if step.get("name") == "Verify published connector wheel before container build"
+    )
+    builder = next(step for step in steps if step.get("id") == "builder")
+    login = next(step for step in steps if "docker/login-action@" in step.get("uses", ""))
+    verify = next(step for step in steps if step.get("name") == "Verify the release artifacts")
+    build = next(step for step in steps if step.get("id") == "buildx1")
+    assert validate["if"] == "inputs.release_repair == true"
+    assert "workflow_dispatch" in validate["run"]
+    assert "refs/heads/main" in validate["run"]
+    assert "git rev-parse --verify HEAD" in validate["run"]
+    assert "git ls-remote origin refs/heads/main" in validate["run"]
+    assert "canonical connector renderer" in validate["run"]
+    assert "inputs.release_repair == true" in checkout["if"]
+    assert "inputs.release_repair == true" in identity["if"]
+    assert "inputs.release_repair == true" in guard["if"]
+    assert "inputs.release_repair == true" in verify["if"]
+    assert "inputs.release_repair == true" in build["with"]["push"]
+    assert steps.index(validate) < steps.index(checkout) < steps.index(identity) < steps.index(guard)
+    assert steps.index(guard) < steps.index(builder) < steps.index(login) < steps.index(build)
+    assert steps.index(build) < steps.index(verify)
+    assert "never republished" in repair["description"]
+
+
+def _run_repair_validation(
+    tmp_path: Path,
+    script: str,
+    *,
+    event: str = "workflow_dispatch",
+    ref: str = "refs/heads/main",
+    sha: str | None = None,
+    render: str = "true",
+) -> subprocess.CompletedProcess[str]:
+    root = tmp_path / "source"
+    root.mkdir(parents=True)
+    (root / "README.md").write_text("reviewed\n")
+    overridden = {
+        "EVENT_NAME",
+        "REF",
+        "REVIEWED_SHA",
+        "BUILD_CONTEXT",
+        "DOCKERFILE",
+        "BUILD_TARGET",
+        "RENDER_CONNECTOR",
+        "RUNTIME_INPUTS",
+    }
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_") and key not in overridden}
+    subprocess.run(["git", "init", "-q"], cwd=root, env=env, check=True)
+    subprocess.run(["git", "add", "--", "README.md"], cwd=root, env=env, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=root,
+        env=env,
+        check=True,
+    )
+    current = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, env=env, text=True).strip()
+    origin = tmp_path / "origin.git"
+    subprocess.run(["git", "init", "--bare", "-q", str(origin)], env=env, check=True)
+    subprocess.run(["git", "remote", "add", "origin", str(origin)], cwd=root, env=env, check=True)
+    subprocess.run(["git", "push", "-q", "origin", "HEAD:refs/heads/main"], cwd=root, env=env, check=True)
+    result_env = {
+        **env,
+        "EVENT_NAME": event,
+        "REF": ref,
+        "REVIEWED_SHA": sha or current,
+        "BUILD_CONTEXT": ".",
+        "DOCKERFILE": "docker/Dockerfile",
+        "BUILD_TARGET": "",
+        "RENDER_CONNECTOR": render,
+        "RUNTIME_INPUTS": "",
+    }
+    return subprocess.run(["bash", "-c", script], cwd=root, env=result_env, capture_output=True, text=True)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+@pytest.mark.parametrize(
+    ("event", "ref", "expected_message"),
+    [
+        ("workflow_dispatch", "refs/heads/main", None),
+        ("push", "refs/heads/main", "workflow_dispatch"),
+        ("workflow_dispatch", "refs/heads/release", "refs/heads/main"),
+    ],
+)
+def test_reviewed_release_repair_validation_accepts_only_current_main_dispatch(
+    tmp_path: Path, event: str, ref: str, expected_message: str | None
+) -> None:
+    steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+    script = next(step for step in steps if step.get("name") == "Validate reviewed release repair request")["run"]
+    result = _run_repair_validation(tmp_path, script, event=event, ref=ref)
+    assert (result.returncode == 0) == (expected_message is None), result.stderr
+    if expected_message:
+        assert expected_message in result.stdout + result.stderr
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_reviewed_release_repair_rejects_a_stale_or_noncanonical_source(tmp_path: Path) -> None:
+    steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+    script = next(step for step in steps if step.get("name") == "Validate reviewed release repair request")["run"]
+    stale = _run_repair_validation(tmp_path / "stale", script, sha="0" * 40)
+    assert stale.returncode != 0
+    assert "does not equal github.sha" in stale.stdout + stale.stderr
+    noncanonical = _run_repair_validation(tmp_path / "renderer", script, render="false")
+    assert noncanonical.returncode != 0
+    assert "canonical connector renderer" in noncanonical.stdout + noncanonical.stderr
 
 
 def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp_path: Path) -> None:
@@ -161,6 +277,17 @@ def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp
     )
     assert result.returncode != 0
     assert "do not match" in result.stdout + result.stderr
+
+    repair_nonconnector = {
+        **environment,
+        "RELEASE_REPAIR": "true",
+        "GITHUB_OUTPUT": str(tmp_path / "repair-nonconnector-output"),
+    }
+    result = subprocess.run(
+        ["bash", "-c", step["run"]], cwd=tmp_path / "0", env=repair_nonconnector, capture_output=True, text=True
+    )
+    assert result.returncode != 0
+    assert "requires a connector identity" in result.stdout + result.stderr
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
@@ -727,14 +854,15 @@ def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
     meta = next(step for step in steps if step.get("id") == "meta")
     assert steps.index(_version_step()) < steps.index(meta)
     assert _version_step()["if"] == "steps.target.outputs.exists == 'true'"
-    on_main = "github.event_name == 'push' && github.ref == 'refs/heads/main'"
+    on_main = "(github.event_name == 'push' && github.ref == 'refs/heads/main') || inputs.release_repair == true"
+    on_main_version = f"({on_main}) && steps.version.outputs.version != ''"
     assert meta["with"]["tags"].splitlines() == [
         "type=ref,event=branch,suffix=${{ matrix.suffix }}",
         "type=ref,event=pr,suffix=${{ matrix.suffix }}",
         "type=sha,suffix=${{ matrix.suffix }}",
         f"type=raw,value=${{{{ matrix.main_tag }}}},enable=${{{{ {on_main} }}}}",
         "type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},"
-        f"enable=${{{{ {on_main} && steps.version.outputs.version != '' }}}}",
+        f"enable=${{{{ {on_main_version} }}}}",
         "type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},"
         "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}",
         "type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}${{ matrix.suffix }},"

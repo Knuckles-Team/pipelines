@@ -154,15 +154,21 @@ def test_container_workflow_renders_and_tags_by_sdk_version() -> None:
 def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_container_pipeline() -> None:
     document = yaml.safe_load((WORKFLOWS / "connector_sdk_rebuild_pipeline.yml").read_text(encoding="utf-8"))
     resolve, rebuild = document["jobs"]["resolve"], document["jobs"]["rebuild"]
+    inputs = document[True]["workflow_call"]["inputs"]
+    assert inputs["release_repair"]["type"] == "boolean" and inputs["release_repair"]["default"] is False
+    login = next(step for step in resolve["steps"] if "docker/login-action@" in step.get("uses", ""))
+    assert login["if"] == "inputs.release_repair != true"
     script = next(s for s in resolve["steps"] if s.get("id") == "sdk")["run"]
     assert "imagetools inspect" in script and "-sdk${sdk}" in script and "pypi.org/pypi/" in script
     assert "sdk_distribution" in script and "scion-sdk" in script
     assert "PAYLOAD_SDK_DISTRIBUTION" in script and "INPUT_SDK_DISTRIBUTION:-${PAYLOAD_SDK_DISTRIBUTION:-}" in script
     assert 'sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"' in script
+    assert 'RELEASE_REPAIR,,}" != true' in script
     assert rebuild["needs"] == "resolve" and rebuild["if"] == "needs.resolve.outputs.stale == 'true'"
     assert rebuild["uses"].endswith("/container_pipeline.yml@main")
     assert rebuild["with"] == {
         "render_connector": True,
+        "release_repair": "${{ inputs.release_repair }}",
         "sdk_version": "${{ needs.resolve.outputs.sdk_version }}",
         "sdk_distribution": "${{ needs.resolve.outputs.sdk_distribution }}",
     }

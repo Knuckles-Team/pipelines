@@ -16,9 +16,17 @@ name: Connector SDK rebuild
 #     schedule:
 #       - cron: '17 5 * * *'
 #     workflow_dispatch:
+#       inputs:
+#         release_repair:
+#           description: Republish the already published container after the reviewed public-wheel guard.
+#           required: false
+#           default: false
+#           type: boolean
 #   jobs:
 #     rebuild:
 #       uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
+#       with:
+#         release_repair: ${{ inputs.release_repair || false }}
 #       secrets: inherit
 
 on:
@@ -34,6 +42,13 @@ on:
         required: false
         type: string
         default: ''
+      release_repair:
+        description: >-
+          Explicit reviewed release repair. Only a workflow_dispatch on the current main HEAD
+          may publish the already published connector source through the guarded container path.
+        required: false
+        type: boolean
+        default: false
     secrets:
       DOCKER_REGISTRY:
         required: false
@@ -60,6 +75,7 @@ jobs:
           persist-credentials: false
 
       - name: Log in to Docker registry
+        if: inputs.release_repair != true
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ${{ secrets.DOCKER_REGISTRY }}
@@ -76,6 +92,7 @@ jobs:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
           IMAGE: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
+          RELEASE_REPAIR: ${{ inputs.release_repair }}
         run: |
           set -euo pipefail
           sdk_distribution="${INPUT_SDK_DISTRIBUTION:-${PAYLOAD_SDK_DISTRIBUTION:-}}"
@@ -116,7 +133,7 @@ jobs:
             sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"
           fi
           stale=true
-          if docker buildx imagetools inspect "${IMAGE}:${sdk_tag}" > /dev/null 2>&1; then
+          if [[ "${RELEASE_REPAIR,,}" != true ]] && docker buildx imagetools inspect "${IMAGE}:${sdk_tag}" > /dev/null 2>&1; then
             stale=false
           fi
           echo "sdk_version=$sdk" >> "$GITHUB_OUTPUT"
@@ -132,6 +149,7 @@ jobs:
     uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
     with:
       render_connector: true
+      release_repair: ${{ inputs.release_repair }}
       sdk_version: ${{ needs.resolve.outputs.sdk_version }}
       sdk_distribution: ${{ needs.resolve.outputs.sdk_distribution }}
     secrets: inherit

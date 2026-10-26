@@ -495,7 +495,7 @@
         "tests/hooks/test_connector_central.py:104",
         "tests/hooks/test_connector_central.py:114",
         "tests/hooks/test_connector_central.py:123",
-        "tests/hooks/test_connector_central.py:325",
+        "tests/hooks/test_connector_central.py:331",
         "tests/hooks/test_connector_central.py:64"
       ]
     },
@@ -715,11 +715,11 @@
         "4ddfe8ed473a"
       ],
       "verified_by": [
+        "tests/test_container_pipeline_contract.py:182",
+        "tests/test_container_pipeline_contract.py:202",
         "tests/test_container_pipeline_contract.py:61",
-        "tests/test_public_wheel_guard.py:130",
-        "tests/test_public_wheel_guard.py:163",
-        "tests/test_public_wheel_guard.py:229",
-        "tests/test_public_wheel_guard.py:293"
+        "tests/test_container_pipeline_contract.py:98",
+        "tests/test_public_wheel_guard.py:130"
       ]
     },
     {
@@ -758,7 +758,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:746"
+        "tests/test_container_pipeline_contract.py:874"
       ]
     },
     {
