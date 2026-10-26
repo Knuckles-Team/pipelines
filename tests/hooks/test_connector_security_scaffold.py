@@ -168,6 +168,13 @@ def test_committed_bootstrap_script_is_a_finding_that_names_what_replaces_it(tmp
     assert "scripts/bootstrap.sh" in line and "uv sync --locked" in line and "pre-commit install" in line
 
 
+@pytest.mark.spec("PIPE-VALIDATION-R001.11")
+def test_untracked_bootstrap_script_is_not_reported_as_a_central_file(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    _write(root, "scripts/bootstrap.sh", "#!/usr/bin/env bash\n")
+    assert not any("scripts/bootstrap.sh" in line for line in files.findings(root))
+
+
 # --- PIPE-VALIDATION-R001.12: API-to-MCP parity -----------------------------------------------------------------
 CLIENT = """class DemoApi:
     def authenticate(self): ...
@@ -209,6 +216,18 @@ def test_parity_counts_decorated_tools_and_catalog_dispatch_and_prefixed_tools_o
     assert plain is not None and plain["total"] == 4 and plain["unmapped"] == ["get_b"] and plain["coverage"] == 75.0
     prefixed = api_parity.measure(root, ("demo_",))
     assert prefixed is not None and prefixed["coverage"] == 100.0 and prefixed["unmapped"] == []
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.12")
+def test_parity_scans_sibling_mcp_registrars(tmp_path: Path) -> None:
+    root = _parity_repo(tmp_path)
+    _write(
+        root,
+        "demo_mcp/mcp/actions.py",
+        "@mcp.tool\ndef sibling(client):\n    return client.get_b()\n",
+    )
+    result = api_parity.measure(root, ())
+    assert result is not None and result["coverage"] == 100.0 and result["unmapped"] == []
 
 
 @pytest.mark.spec("PIPE-VALIDATION-R001.12")
