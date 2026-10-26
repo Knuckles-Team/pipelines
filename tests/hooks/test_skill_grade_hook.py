@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
 
 from pipelines_hooks.cli import GATES
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.docs import public_surface_links, skill_grade
+from tests.hooks.conftest import Repo
 
 
 VALID_SKILL = """---
@@ -68,6 +71,8 @@ def test_skill_grade_model(tmp_path: Path) -> None:
     assert report.document_path == report.skill_path
     assert report.criterion_scores == report.scores
     assert report.source_digest == "sha256:" + hashlib.sha256(document.read_bytes()).hexdigest()
+    assert report.snapshot["identity"]
+    assert report.policy_source_digest == policy.digest
     assert report.status == "pass"
 
 
@@ -199,3 +204,107 @@ def test_nested_skill_links_cli(tmp_path: Path) -> None:
         "See the [README](README.md).",
     )
     assert root_link_findings == []
+
+
+@pytest.mark.spec("PIPE-PAGES-R023.1")
+@pytest.mark.spec("PIPE-PAGES-R023.6")
+def test_skill_grade_inventory_keeps_all_canonical_roots_and_order(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = _repo(tmp_path / "repo")
+    other = _skill(root, rel="components/skills/other/SKILL.md")
+    (other.parent / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    (root / "components/README.md").write_text("# components\n", encoding="utf-8")
+
+    assert (
+        skill_grade.main(
+            [
+                "--root",
+                str(root),
+                "--skills-root",
+                "components/skills",
+                "--skills-root",
+                "skills",
+                "--skills-root",
+                "skills",
+                "--json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["inventory"] == {
+        "roots": ["components/skills", "skills"],
+        "documents": ["components/skills/other/SKILL.md", "skills/demo/SKILL.md"],
+        "root_count": 2,
+        "document_count": 2,
+    }
+    assert payload["snapshot"]["mode"] == "filesystem"
+
+    assert skill_grade.main(["--root", str(root), "--json"]) == 0
+    auto_payload = json.loads(capsys.readouterr().out)
+    assert auto_payload["inventory"] == payload["inventory"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R023.4")
+@pytest.mark.spec("PIPE-PAGES-R023.5")
+def test_skill_grade_snapshot_reads_staged_index_when_worktree_is_dirty(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _repo(tmp_path / "repo")
+    fixture_repo = Repo(root)
+    fixture_repo.git("init", "-q", "-b", "main")
+    fixture_repo.git("add", "--", "README.md", "skills/demo/SKILL.md", "skills/demo/guide.md")
+    fixture_repo.git("commit", "-q", "-m", "base")
+    policy_text = (
+        "schema_version: skill-grade-v1\ncriterion_weights:\n"
+        "  frontmatter: 20\n  description: 20\n  structure: 20\n  links: 20\n  file_metadata: 20\n"
+        "minimum_grade: 80\n"
+    )
+    (root / "policy.yaml").write_text(policy_text, encoding="utf-8")
+    fixture_repo.git("add", "--", "policy.yaml")
+    staged_skill = (root / "skills/demo/SKILL.md").read_bytes()
+    (root / "skills/demo/SKILL.md").write_text("malformed working tree\n", encoding="utf-8")
+    (root / "policy.yaml").write_text("schema_version: skill-grade-v9\n", encoding="utf-8")
+
+    assert skill_grade.main(["--root", str(root), "--policy", "policy.yaml", "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    report = payload["reports"][0]
+    assert payload["snapshot"]["mode"] == "index"
+    assert payload["snapshot"]["commit"]
+    assert payload["snapshot"]["tree"]
+    assert report["source_digest"] == "sha256:" + hashlib.sha256(staged_skill).hexdigest()
+    assert report["policy_source_digest"] == "sha256:" + hashlib.sha256(policy_text.encode()).hexdigest()
+    assert report["snapshot"] == payload["snapshot"]
+
+    tree = subprocess.run(
+        ["git", "write-tree"], cwd=root, env=sanitized_env(), check=True, capture_output=True, text=True
+    ).stdout.strip()
+    assert payload["snapshot"]["tree"] == tree
+
+    fixture_repo.git("commit", "-q", "-m", "policy")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    assert skill_grade.main(["--root", str(root), "--json"]) == 0
+    committed_payload = json.loads(capsys.readouterr().out)
+    assert committed_payload["snapshot"]["mode"] == "commit"
+    assert committed_payload["snapshot"]["commit"] == fixture_repo.git("rev-parse", "HEAD").strip()
+    assert committed_payload["reports"][0]["source_digest"] == "sha256:" + hashlib.sha256(staged_skill).hexdigest()
+
+
+@pytest.mark.spec("PIPE-PAGES-R023.2")
+@pytest.mark.spec("PIPE-PAGES-R023.5")
+def test_skill_grade_external_links_are_explicitly_unchecked(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    text = VALID_SKILL.replace(
+        "See the [sibling guide](guide.md) and the [repository README](../../README.md).",
+        "See the [sibling guide](guide.md), [repository README](../../README.md), and [remote](https://example.invalid/guide).",
+    )
+    root = _repo(tmp_path / "repo", text)
+    assert skill_grade.main(["--root", str(root), "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    finding = next(item for item in payload["reports"][0]["findings"] if item["code"] == "external-unchecked")
+    assert finding["target"] == "https://example.invalid/guide"
+    assert finding["disposition"] == "unchecked"
+    assert finding["blocking"] is False
+    assert payload["reports"][0]["scores"]["links"] == 20
