@@ -421,7 +421,9 @@
       "title": "Test binding forms",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_spec_status.py:58"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R003",
@@ -4006,7 +4008,7 @@
         "0f9f73b150d7"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_status.py:277"
+        "tests/hooks/test_spec_status.py:314"
       ]
     },
     {

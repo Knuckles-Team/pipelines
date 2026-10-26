@@ -12,7 +12,8 @@ from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.specs.ids import BIND_RE, ID
 
 _GREP_PATTERN = r"(//|#)\s*spec:\s*[A-Z]|mark\.spec\("
-_EXCLUDED_PATHSPECS = (":!specs", ":!docs", ":!*.md")
+# JSON can carry historical source snippets as data; it is never executable test evidence.
+_EXCLUDED_PATHSPECS = (":!specs", ":!docs", ":!*.md", ":!*.json")
 MAX_GREP_OUTPUT_BYTES = 16 * 1024 * 1024
 
 
