@@ -7,7 +7,6 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
-import sys
 import zipfile
 
 import pytest
@@ -180,9 +179,10 @@ def test_packaging_role_closure_cli(tmp_path: Path) -> None:
     )
     result = subprocess.run(
         [
-            sys.executable,
-            "-m",
-            "pipelines_hooks.cli",
+            "uv",
+            "run",
+            "--frozen",
+            "pipelines-hook",
             "packaging-roles",
             "--contract",
             str(contract_path),
