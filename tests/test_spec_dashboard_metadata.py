@@ -153,10 +153,13 @@ def test_code_cells_replace_concepts(tmp_path):
     assert "1 with no code mapped" in count_caption(snapshot)
 
 
-def test_generator_entry_point_writes_architecture(tmp_path, monkeypatch):
+@pytest.mark.spec("PIPE-PAGES-R015.3")
+def test_generator_entry_point_writes_architecture_and_metadata(tmp_path, monkeypatch):
     from scripts import spec_dashboard as dashboard
 
-    fixture(tmp_path, "Component: gateway\nDepends-on: AU-OTHER\n")
+    fixture(tmp_path, "Component: gateway\nDepends-on: AU-OTHER\nCode: src/entry.py\n")
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/entry.py").write_text("pass\n")
     config = tmp_path / ".config/spec-dashboard.json"
     config.parent.mkdir()
     config.write_text('{"version":1,"sources":[{"glob":"specs/*/status.json"}]}')
@@ -164,9 +167,15 @@ def test_generator_entry_point_writes_architecture(tmp_path, monkeypatch):
     monkeypatch.setattr(dashboard, "github_snapshot", lambda *args: {})
     assert dashboard.main(["--root", str(tmp_path), "--repository", "Knuckles-Team/connector"]) == 0
     generated = tmp_path / "site/spec-delivery"
-    assert "Spec architecture" in (generated / "index.html").read_text()
+    page = (generated / "index.html").read_text()
+    assert "Spec architecture" in page
+    assert "<th>Relationship</th>" in page
+    assert "<td>depends on</td>" in page and "AU-OTHER" in page
     assert "-->|depends on|" in (generated / "architecture.mmd").read_text()
-    assert json.loads((generated / "snapshot.json").read_text())["records"][0]["component"] == "gateway"
+    snapshot = json.loads((generated / "snapshot.json").read_text())
+    control = next(row for row in snapshot["records"] if row["id"] == "AU-CONTROL")
+    assert control["component"] == "gateway"
+    assert any(ref["label"] == "src/entry.py" and ref["role"] == "implementation" for ref in control["code_refs"])
 
 
 def test_commit_and_bound_test_evidence_survive_normalization(tmp_path):
