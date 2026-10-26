@@ -85,6 +85,34 @@ def blob_text(root: Path, spec: str) -> str | None:
     return git_text(root, ("show", spec), preserve_index=True)
 
 
+def blob_bytes(root: Path, spec: str) -> bytes | None:
+    """Bytes of ``HEAD:path``/``:path``, or ``None`` when the path is absent.
+
+    Snapshot consumers must hash and decode the exact Git blob.  The text
+    helper intentionally uses ``text=True`` for source parsers; this sibling
+    keeps invalid UTF-8 observable to the caller instead of turning it into a
+    subprocess-level refusal.
+    """
+    if run_git(root, ("cat-file", "-e", spec), preserve_index=True).returncode != 0:
+        return None
+    try:
+        result = subprocess.run(
+            ["git", "show", spec],
+            cwd=str(root),
+            env=sanitized_env(preserve_index=True),
+            capture_output=True,
+            text=False,
+            timeout=GIT_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise CannotRun(f"could not execute git show {spec}: {exc}") from exc
+    if result.returncode != 0:
+        detail = (result.stderr or b"").decode("utf-8", errors="replace").strip()[:400]
+        raise CannotRun(f"git show {spec} failed: {detail}")
+    return result.stdout or b""
+
+
 def staged_paths(root: Path) -> list[str]:
     """Paths staged as added, copied, modified or renamed."""
     raw = git_text(
