@@ -37,6 +37,24 @@ class DependencyLoop:
     members: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class InvalidDependencyGroup:
+    """One located-invalid ``include-group`` reference.
+
+    Invalid references are kept out of the graph: reporting them separately
+    prevents an unknown target from becoming an invented node while still
+    making the manifest fail closed through the supply-chain gate.
+    """
+
+    source_group: str
+    value: object
+    reason: str
+    include_index: int
+
+
+INVALID_GROUP_RULE = "SC-DEP-006"
+
+
 def _table(document: dict[str, Any], key: str) -> dict[str, Any]:
     value = document.get(key)
     return value if isinstance(value, dict) else {}
@@ -88,9 +106,42 @@ def _include_groups(item: object) -> Iterable[str]:
     included = item.get("include-group")
     if isinstance(included, str):
         return (included,)
-    if isinstance(included, list):
-        return (value for value in included if isinstance(value, str))
     return ()
+
+
+def invalid_dependency_groups(document: dict[str, Any]) -> list[InvalidDependencyGroup]:
+    """Return malformed or undeclared include references without graph nodes."""
+    declarations = _group_values(document)
+    groups = _group_names(declarations)
+    issues: list[InvalidDependencyGroup] = []
+    include_index = 0
+    for source_group, values in declarations:
+        for item in _items(values):
+            if not isinstance(item, dict) or "include-group" not in item:
+                continue
+            value = item["include-group"]
+            current_index = include_index
+            include_index += 1
+            if not isinstance(value, str):
+                issues.append(
+                    InvalidDependencyGroup(
+                        source_group,
+                        value,
+                        f"malformed include-group reference {value!r} (expected a string)",
+                        current_index,
+                    )
+                )
+                continue
+            if not value.strip() or _known_group(value, groups) is None:
+                issues.append(
+                    InvalidDependencyGroup(
+                        source_group,
+                        value,
+                        f"unknown include-group target {value!r}",
+                        current_index,
+                    )
+                )
+    return issues
 
 
 _SELF_EXTRA_RE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9_.-]*)\s*\[([^]]+)\]")
@@ -110,9 +161,9 @@ def group_edges(document: dict[str, Any]) -> list[DependencyEdge]:
 
     ``include-group`` is represented by a PEP 735 inline table.  A dependency
     such as ``project-name[lint]`` is an edge from the declaring group to the
-    named optional extra.  Unknown include targets and extras are ignored here;
-    they are manifest validity concerns, while this gate is specifically the
-    cycle check.
+    named optional extra.  Unknown or malformed include targets are omitted
+    from the graph and reported by :func:`dependency_group_findings` so an
+    invalid manifest cannot invent a node while silently passing the gate.
     """
     declarations = _group_values(document)
     groups = _group_names(declarations)
@@ -133,6 +184,27 @@ def group_edges(document: dict[str, Any]) -> list[DependencyEdge]:
                 if target_group is not None:
                     edges.append(DependencyEdge(source_group, target_group, str(item)))
     return edges
+
+
+def dependency_group_findings(label: str, text: str, document: dict[str, Any]) -> list[Finding]:
+    """Locate malformed or undeclared include references in the manifest."""
+    source = Source(label, "pyproject.toml", text)
+    include_offsets = [match.start() for match in re.finditer(r"(?:['\"]?include-group['\"]?)\s*=", text)]
+    findings: list[Finding] = []
+    for issue in invalid_dependency_groups(document):
+        offset = (
+            include_offsets[issue.include_index]
+            if issue.include_index < len(include_offsets)
+            else _group_offset(text, issue.source_group)
+        )
+        findings.append(
+            source.at_offset(
+                offset,
+                rule=INVALID_GROUP_RULE,
+                message=f"dependency group {issue.source_group!r} has {issue.reason}",
+            )
+        )
+    return findings
 
 
 def find_loops(edges: Iterable[DependencyEdge]) -> list[DependencyLoop]:
@@ -169,7 +241,7 @@ def loop_findings(label: str, pyproject: Path, reader: Callable[[Path], str]) ->
     except (CannotRun, tomllib.TOMLDecodeError):
         return []
     source = Source(label, "pyproject.toml", text)
-    findings: list[Finding] = []
+    findings = dependency_group_findings(label, text, document)
     for loop in find_loops(group_edges(document)):
         members = ", ".join(loop.members)
         offset = min((_group_offset(text, member) for member in loop.members), default=0)
