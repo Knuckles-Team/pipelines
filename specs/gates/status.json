@@ -224,37 +224,29 @@
     {
       "id": "PIPE-GATES-R006.1",
       "title": "Wave 1: webarchiver",
-      "delivery_state": "LANDED",
-      "landed_in": [
-        "fd3995928148"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.2",
       "title": "Wave 2: small connectors",
-      "delivery_state": "LANDED",
-      "landed_in": [
-        "fd3995928148"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.3",
       "title": "Wave 3: the remaining connectors",
-      "delivery_state": "LANDED",
-      "landed_in": [
-        "fd3995928148"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": []
     },
     {
       "id": "PIPE-GATES-R006.4",
       "title": "Wave 4: skills, pipelines and the user interfaces",
-      "delivery_state": "LANDED",
-      "landed_in": [
-        "fd3995928148"
-      ],
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
       "verified_by": []
     },
     {
