@@ -15,7 +15,7 @@ import zipfile
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
-from .build import DOC_HEAD, DOC_TAIL, HERE, template_source
+from .build import DOC_HEAD, DOC_TAIL, HERE, template_with_stories
 
 SOURCE = "https://knuckles-team.github.io/.github/architecture/"
 PROBE = """<script>
@@ -54,15 +54,16 @@ def extract_payload(source: str) -> tuple[str, dict]:
     return raw, payload
 
 
-def prepare_preview(source: str, output: Path, candidate: str) -> dict:
+def prepare_preview(source: str, output: Path, candidate: str, *, source_url: str = SOURCE) -> dict:
     raw, payload = extract_payload(source)
     template = (HERE / "template.html").read_text()
-    page = template_source().replace("/*__DATA__*/null", raw)
+    page = template_with_stories(payload["tree"], payload["meta"]).replace("/*__DATA__*/null", raw)
     output.mkdir(parents=True, exist_ok=True)
     (output / "index.html").write_text(DOC_HEAD + page + DOC_TAIL)
     (output / "README.txt").write_text(
         "Visual/navigation preview only. Spec detail shards are not included; expand-detail offline is unavailable.\n"
-        "The canonical deployed generator and its full detail behavior are unchanged.\n"
+        "before/ records the supplied source HTML; same-build source-file runs are not previous-deployment comparisons.\n"
+        "Rich-chart proof uses its separately retained extension-free, identical-payload baseline.\n"
         "Open the exact, complete index.html to test theme/navigation.\n"
         "Gzipped DOM diagnostics are COMPACTED, not raw or replayable HTML. Duplicate PAYLOAD/font/art\n"
         "are replaced only at known inline locations by SHA256/UTF-8-byte-count markers; per-capture\n"
@@ -79,7 +80,7 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
         original = source.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
         (before / f"{theme}.html").write_text(original.replace("</body>", PROBE + "</body>"))
     evidence = {
-        "source_url": SOURCE,
+        "source_url": source_url,
         "source_built_at": payload["meta"].get("built_at"),
         "source_heads": payload["meta"].get("heads"),
         "candidate_sha": candidate,
@@ -217,6 +218,11 @@ def verify_browser_results(report: Path) -> None:
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-1440,1000]",
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-390,844]",
     }
+    expected.update(
+        f"test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[{viewport}-{theme}]"
+        for viewport in ("1440,1000", "1920,1080", "2560,1440", "390,844")
+        for theme in ("light", "dark")
+    )
     cases = {case.attrib.get("name"): case for case in ElementTree.parse(report).iter("testcase")}
     for name in sorted(expected):
         if name not in cases or any(cases[name].find(tag) is not None for tag in ("skipped", "failure", "error")):
@@ -246,7 +252,7 @@ def main() -> None:
             source = response.read(16 * 1024 * 1024).decode("utf-8")
     candidate = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     output = args.output.resolve()
-    prepare_preview(source, output, candidate)
+    prepare_preview(source, output, candidate, source_url=str(args.source_file) if args.source_file else SOURCE)
     if args.prepare_only:
         return
     chrome = shutil.which("google-chrome") or shutil.which("chromium")

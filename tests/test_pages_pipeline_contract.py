@@ -153,8 +153,11 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "pipelines_hooks/__init__.py",
         "pipelines_hooks/core/__init__.py",
         "pipelines_hooks/core/repositories.py",
+        "pipelines_hooks/core/errors.py",
         "pipelines_hooks/specs/__init__.py",
         "pipelines_hooks/specs/ids.py",
+        "pipelines_hooks/specs/aliases.py",
+        "pipelines_hooks/specs/trailer_ids.py",
         "pipelines_hooks/specs/priority.py",
         "pipelines_hooks/specs/requirements_doc.py",
     ]
@@ -205,6 +208,8 @@ def test_architecture_explorer_defaults_to_core_repositories_and_builds_before_u
     assert "medulla|arbora|scion-sdk|meristem|tuig|overstory|pipelines|universal-skills" in text
     assert text.index("Build architecture explorer") < text.index("Upload artifact")
     assert "--page site/architecture/index.html" in text
+    assert "--source-families .pipeline-contract/scripts/architecture_explorer/source-families.json" in text
+    assert "python -m pip install networkx==3.6.1" in text
     assert "npm ci --prefix .pipeline-contract/scripts/architecture_explorer" in text
     assert "ARCHITECTURE_EXPLORER_ENABLED: ${{ steps.explorer.outputs.enabled }}" in text
     assert "build.py --redirect" in text and "on) enabled=true; build=true ;;" in text

@@ -95,6 +95,12 @@ def _validate_standard_aliases(root: Path, aliases: Aliases, path: Path) -> None
             raise CannotRun(f"{path}: could not read {requirements}: {exc}") from exc
         current.update(row.id for row in rows)
         active.update(row.id for row in rows if row.retired_reason is None)
+    validate_alias_inventory(aliases, current, active, path)
+
+
+def validate_alias_inventory(aliases: Aliases, current: set[str], active: set[str], path: Path) -> None:
+    """Validate standard aliases against a complete frozen requirement inventory."""
+    standard = {old: new for old, new in aliases.items() if _NEW_ID_RE.fullmatch(old)}
     prefixes = {old: new for old, new in aliases.items() if old.endswith("-")}
     for old, new in standard.items():
         if retired_prefix(old, prefixes) or retired_prefix(new, aliases):
@@ -103,6 +109,15 @@ def _validate_standard_aliases(root: Path, aliases: Aliases, path: Path) -> None
             raise CannotRun(f"{path}: standard alias {old!r} still has a requirement row; remove the old row")
         if new not in active:
             raise CannotRun(f"{path}: standard alias {old!r} target {new!r} is not an active requirement row")
+
+
+def validate_alias_document(
+    document: dict, *, current_ids: set[str], active_ids: set[str], source_path: Path
+) -> dict[str, str]:
+    """Validate raw frozen alias TOML using the same rules as filesystem gates."""
+    aliases = _validated(document, source_path)
+    validate_alias_inventory(aliases, current_ids, active_ids, source_path)
+    return aliases
 
 
 def retired_prefix(rid: str, aliases: Aliases) -> str | None:
