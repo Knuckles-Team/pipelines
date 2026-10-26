@@ -1570,7 +1570,12 @@ def test_ocean_browser_count_text_and_completion_tracks_never_overlap(
     spy = """<script>
 window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];
 const originalText=CanvasRenderingContext2D.prototype.fillText, originalRect=CanvasRenderingContext2D.prototype.fillRect, originalClear=CanvasRenderingContext2D.prototype.clearRect;
-CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];return originalClear.apply(this,args);};
+CanvasRenderingContext2D.prototype.clearRect=function(...args){
+ window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];
+ const box=this.canvas.getBoundingClientRect();
+ window.__countFrame={cam:{...window.__arch.cam},width:box.width,height:box.height,fonts:document.fonts.status};
+ return originalClear.apply(this,args);
+};
 CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);window.__allPaint.push({text,x,y,font:this.font,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
 CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w>20)window.__barPaint.push({x,y,w,h});return originalRect.call(this,x,y,w,h);};
 </script>"""
@@ -1578,7 +1583,18 @@ CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w
 setTimeout(async()=>{
  await document.fonts.ready;
  const result=document.createElement('output');result.id='count-track-result';
+ const current=()=>{const box=document.getElementById('cv').getBoundingClientRect();return {cam:{...window.__arch.cam},width:box.width,height:box.height,fonts:document.fonts.status};};
  try{
+  const faces=await document.fonts.load('500 6px Inter');
+  if(!faces.some(face=>face.family.replaceAll('"','').replaceAll("'",'')==='Inter'&&face.status==='loaded'))throw Error('Count probe Inter face not loaded');
+  let previous='',stable=0;
+  for(let attempt=0;attempt<60;attempt++){
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   const now=JSON.stringify(current()),paint=JSON.stringify(window.__countFrame);
+   stable=now===paint&&now===previous&&window.__barPaint.length?stable+1:0;previous=now;
+   if(stable>=2)break;
+  }
+  if(stable<2)throw Error('Count probe did not reach a matching stable painted camera');
   const a=window.__arch,evidence=[];
   for(const id of IDS){
    const r=a.rect(id);if(!r)continue;
@@ -1602,6 +1618,7 @@ setTimeout(async()=>{
   if(evidence.length<2)throw Error('Insufficient actual closed-card paint coverage');
   result.dataset.evidence=JSON.stringify(evidence);result.textContent='PASS';
  }catch(error){result.textContent='FAIL: '+error.message;}
+ result.dataset.diagnostics=JSON.stringify({frame:window.__countFrame,current:current(),counts:window.__countPaint,bars:window.__barPaint,allPaint:window.__allPaint});
  document.body.append(result);
 },1600);
 </script>""".replace("IDS", json.dumps(ids))
