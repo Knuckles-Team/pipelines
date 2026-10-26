@@ -29,15 +29,17 @@ import argparse
 import hashlib
 import json
 import re
+import tomllib
 import unicodedata
 from collections import defaultdict
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
-from pipelines_hooks.core.config import load_config
+from pipelines_hooks.core.config import RepoConfig, SECTIONS
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.core.gitenv import git_text, repo_root
+from pipelines_hooks.core.gitenv import blob_text, git_text, nul_split, repo_root
 from pipelines_hooks.core.tracked import tracked_paths
 
 POLICY_VERSION = 1
@@ -125,6 +127,7 @@ class PathReport:
     inventory_digest: str
     checked_paths: tuple[dict[str, object], ...]
     violations: tuple[PathViolation, ...]
+    config_digest: str = "unbound"
 
     @property
     def clean(self) -> bool:
@@ -139,6 +142,7 @@ class PathReport:
             "package_roots": list(self.package_roots),
             "supported_platforms": list(self.supported_platforms),
             "inventory_digest": self.inventory_digest,
+            "config_digest": self.config_digest,
             "checked_path_count": len(self.checked_paths),
             "checked_paths": list(self.checked_paths),
             "violations": [item.as_dict() for item in self.violations],
@@ -283,6 +287,7 @@ def inspect_paths(
     policy: PathPortabilityPolicy,
     *,
     source_snapshot: str = "unbound",
+    config_digest: str = "unbound",
 ) -> PathReport:
     """Evaluate repository-relative source paths without touching their bytes."""
     policy.validate()
@@ -332,21 +337,79 @@ def inspect_paths(
                 key=lambda item: (item.path, item.rule, item.component or "", item.detail),
             )
         ),
+        config_digest=config_digest,
     )
 
 
+_CONFIG_TOP_LEVEL = frozenset({"packages"}) | frozenset(SECTIONS)
+
+
+def _index_mode(root: Path, path: str) -> str | None:
+    """Return the selected index mode for one path, or ``None`` when absent."""
+    raw = git_text(root, ("ls-files", "--stage", "-z", "--", path), preserve_index=True)
+    for entry in nul_split(raw):
+        metadata, separator, name = entry.partition("\t")
+        if separator and name == path:
+            fields = metadata.split()
+            return fields[0] if fields else None
+    return None
+
+
+def _selected_pyproject(root: Path) -> str:
+    """Read the selected Git index's pyproject, refusing worktree fallbacks."""
+    mode = _index_mode(root, "pyproject.toml")
+    if mode is None:
+        raise CannotRun("source-path portability requires pyproject.toml in the selected Git index")
+    if mode == "120000":
+        raise CannotRun("source-path portability refuses a symlinked pyproject.toml")
+    source = blob_text(root, ":pyproject.toml")
+    if source is None:
+        raise CannotRun("source-path portability could not read pyproject.toml from the selected Git index")
+    return source
+
+
+def _selected_config_table(source: str) -> Mapping[str, Any]:
+    """Parse the selected pyproject using the same strict top-level contract."""
+    try:
+        document = tomllib.loads(source)
+    except (TypeError, tomllib.TOMLDecodeError) as exc:
+        raise CannotRun(f"cannot parse selected pyproject.toml: {exc}") from exc
+    tool = document.get("tool", {})
+    if not isinstance(tool, Mapping):
+        raise CannotRun("selected pyproject.toml [tool] must be a table")
+    table = tool.get("pipelines_hooks", {})
+    if not isinstance(table, Mapping):
+        raise CannotRun("selected pyproject.toml [tool.pipelines_hooks] must be a table")
+    unknown = sorted(set(table) - _CONFIG_TOP_LEVEL)
+    if unknown:
+        raise CannotRun("[tool.pipelines_hooks] has unknown key(s): " + ", ".join(unknown))
+    return table
+
+
+def _load_index_policy(root: Path) -> tuple[PathPortabilityPolicy, str]:
+    """Load policy and digest from the same selected Git snapshot as inventory."""
+    source = _selected_pyproject(root)
+    config = RepoConfig(root=root, table=_selected_config_table(source))
+    policy = PathPortabilityPolicy(package_roots=config.required_packages())
+    policy.validate()
+    digest = f"sha256:{hashlib.sha256(source.encode('utf-8')).hexdigest()}"
+    return policy, digest
+
+
 def load_policy(root: Path) -> PathPortabilityPolicy:
-    """Load the package roots declared by the consumer's validated config."""
-    config = load_config(root)
-    return PathPortabilityPolicy(package_roots=config.required_packages())
+    """Load package roots from the selected Git index, never the worktree."""
+    return _load_index_policy(root)[0]
 
 
 def scan(root: Path, policy: PathPortabilityPolicy | None = None) -> PathReport:
     """Scan tracked paths under declared package roots in ``root``."""
     root = repo_root(Path(root))
-    selected_policy = policy or load_policy(root)
+    index_policy, config_digest = _load_index_policy(root)
+    selected_policy = index_policy if policy is None else policy
     selected_policy.validate()
-    all_paths = tracked_paths(root)
+    if policy is not None and policy.package_roots != index_policy.package_roots:
+        raise CannotRun("explicit source-path policy does not match the selected Git index")
+    all_paths = tracked_paths(root, preserve_index=True)
     selected = [
         path
         for path in all_paths
@@ -362,7 +425,7 @@ def scan(root: Path, policy: PathPortabilityPolicy | None = None) -> PathReport:
     snapshot = git_text(root, ("rev-parse", "HEAD")).strip()
     if not snapshot:
         raise CannotRun("source-path portability requires a committed source snapshot")
-    return inspect_paths(selected, selected_policy, source_snapshot=snapshot)
+    return inspect_paths(selected, selected_policy, source_snapshot=snapshot, config_digest=config_digest)
 
 
 def _print_report(report: PathReport, *, as_json: bool) -> None:
