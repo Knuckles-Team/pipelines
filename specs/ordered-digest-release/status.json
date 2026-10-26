@@ -688,9 +688,9 @@
       "landed_in": [
         "0f2baf0bc01f",
         "23b1e1111638",
-        "2bfa0714a152",
         "2e89db0000e5",
-        "39bd54475107"
+        "3d0455152b96",
+        "4ddfe8ed473a"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -710,9 +710,9 @@
       "landed_in": [
         "0f2baf0bc01f",
         "23b1e1111638",
-        "2bfa0714a152",
         "2e89db0000e5",
-        "39bd54475107"
+        "4ddfe8ed473a",
+        "99bb16f91b93"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:61",
