@@ -880,9 +880,17 @@
     {
       "id": "PIPE-CONNSPEC-R108",
       "title": "`audiobookshelf-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:112",
+        "tests/test_connector_consumer_r101_r115.py:75",
+        "tests/test_connector_consumer_r108_r115.py:79",
+        "tests/test_connector_consumer_r108_r115.py:80"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R108.1",
         "PIPE-CONNSPEC-R108.2",
@@ -915,16 +923,24 @@
     {
       "id": "PIPE-CONNSPEC-R108.3",
       "title": "`audiobookshelf-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:79"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R108.4",
       "title": "`audiobookshelf-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:80"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R109",
@@ -1080,9 +1096,17 @@
     {
       "id": "PIPE-CONNSPEC-R112",
       "title": "`clarity-api` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:113",
+        "tests/test_connector_consumer_r101_r115.py:76",
+        "tests/test_connector_consumer_r108_r115.py:81",
+        "tests/test_connector_consumer_r108_r115.py:82"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R112.1",
         "PIPE-CONNSPEC-R112.2",
@@ -1115,23 +1139,39 @@
     {
       "id": "PIPE-CONNSPEC-R112.3",
       "title": "`clarity-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:81"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R112.4",
       "title": "`clarity-api` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:82"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R113",
       "title": "`container-manager-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:77",
+        "tests/test_connector_consumer_r108_r115.py:83",
+        "tests/test_connector_consumer_r108_r115.py:84",
+        "tests/test_connector_consumer_r108_r115.py:85"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R113.1",
         "PIPE-CONNSPEC-R113.2",
@@ -1153,30 +1193,50 @@
     {
       "id": "PIPE-CONNSPEC-R113.2",
       "title": "`container-manager-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:83"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R113.3",
       "title": "`container-manager-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:84"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R113.4",
       "title": "`container-manager-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:85"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R114",
       "title": "`data-science-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:114",
+        "tests/test_connector_consumer_r101_r115.py:78",
+        "tests/test_connector_consumer_r108_r115.py:86",
+        "tests/test_connector_consumer_r108_r115.py:87"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R114.1",
         "PIPE-CONNSPEC-R114.2",
@@ -1209,23 +1269,39 @@
     {
       "id": "PIPE-CONNSPEC-R114.3",
       "title": "`data-science-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:86"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R114.4",
       "title": "`data-science-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:87"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R115",
       "title": "`dockerhub-api` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48",
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:115",
+        "tests/test_connector_consumer_r101_r115.py:79",
+        "tests/test_connector_consumer_r108_r115.py:88",
+        "tests/test_connector_consumer_r108_r115.py:89"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R115.1",
         "PIPE-CONNSPEC-R115.2",
@@ -1258,16 +1334,24 @@
     {
       "id": "PIPE-CONNSPEC-R115.3",
       "title": "`dockerhub-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:88"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R115.4",
       "title": "`dockerhub-api` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3023e9165c48"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r108_r115.py:89"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R116",
