@@ -2748,16 +2748,24 @@
     {
       "id": "PIPE-PAGES-R021.37",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "93cec20a4de6"
+      ],
+      "verified_by": [
+        "tests/hooks/test_structural_limits.py:46"
+      ]
     },
     {
       "id": "PIPE-PAGES-R021.38",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "93cec20a4de6"
+      ],
+      "verified_by": [
+        "tests/hooks/test_structural_limits.py:71"
+      ]
     },
     {
       "id": "PIPE-PAGES-R021.39",
