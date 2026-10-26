@@ -221,14 +221,15 @@ def _state_volume_entries(raw: Any) -> list[dict[str, str]]:
             raise CannotRun("state volume target is a string")
         path = PurePosixPath(target)
         if (
-            not path.is_absolute()
+            "$" in target
+            or not path.is_absolute()
             or target == "/"
             or ":" in target
             or ".." in path.parts
             or str(path) != target
             or not _PLAIN_PATH.fullmatch(target)
         ):
-            raise CannotRun(f"state volume target {target!r} must be a normalized absolute path other than /")
+            raise CannotRun(f"state volume target {target!r} must be a literal normalized absolute path other than /")
         if CONFIG_ROOT == path or CONFIG_ROOT in path.parents:
             raise CannotRun(f"state volume target {target!r} must not be under /etc")
         if name in names:

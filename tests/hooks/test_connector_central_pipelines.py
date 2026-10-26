@@ -419,6 +419,7 @@ def test_render_refuses_a_config_mount_the_sdk_schema_refuses(repo: Path, mounts
         ([{"name": "/srv/state", "target": "/workspace"}], "Docker named-volume name"),
         ([{"name": "demo-mcp-state", "target": "workspace"}], "normalized absolute"),
         ([{"name": "demo-mcp-state", "target": "/workspace/../etc"}], "normalized absolute"),
+        ([{"name": "demo-mcp-state", "target": "/${STATE_TARGET}"}], "literal normalized"),
         ([{"name": "demo-mcp-state", "target": "/etc/connector"}], "must not be under /etc"),
         (
             [{"name": "demo-mcp-state", "target": "/workspace"}, {"name": "demo-mcp-state", "target": "/data"}],
@@ -516,6 +517,10 @@ def test_o_a_volume_the_sdk_schema_cannot_express_stays_blocking(repo: Path, edi
         (
             lambda t: t.replace("      - type: volume\n", "      - type: bind\n"),
             "not a read-only bind mount",
+        ),
+        (
+            lambda t: t.replace("        target: /workspace\n", "        target: /${STATE_TARGET}\n"),
+            "literal normalized",
         ),
     ],
 )
