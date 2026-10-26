@@ -296,7 +296,7 @@ def get_client():
 """
 
 
-@pytest.mark.spec("PIPE-GATES-R016.74")
+@pytest.mark.spec("PIPE-GATES-R016.74")  # reviewed existing assertion binding
 def test_r7_delegation_holder_is_review_with_delegation_proposal(tmp_path: Path) -> None:
     src = _auth(DELEGATING)
     root = _repo(tmp_path, src, _api('H = {"Authorization": f"Bearer {token}"}'))
@@ -305,7 +305,7 @@ def test_r7_delegation_holder_is_review_with_delegation_proposal(tmp_path: Path)
     assert any(i["step"] == "auth.r7" and "delegation=True" in i["detail"] for i in ctx.review.items)
 
 
-@pytest.mark.spec("PIPE-GATES-R016.75")
+@pytest.mark.spec("PIPE-GATES-R016.75")  # reviewed existing assertion binding
 def test_r8_delegation_wrappers_are_review(tmp_path: Path) -> None:
     src = _auth(DELEGATING.replace("local = threading.local()\n", ""))
     root = _repo(tmp_path, src, _api('H = {"Authorization": f"Bearer {token}"}'))
@@ -333,7 +333,7 @@ def test_r9_missing_tls_profile_is_review(tmp_path: Path) -> None:
     assert any(i["step"] == "auth.r9" and "tls=" in i["detail"] for i in ctx.review.items)
 
 
-@pytest.mark.spec("PIPE-GATES-R016.77")
+@pytest.mark.spec("PIPE-GATES-R016.77")  # reviewed existing assertion binding
 def test_r10_hand_configured_session_is_review(tmp_path: Path) -> None:
     body = """def get_client():
     import requests

@@ -55,7 +55,7 @@ def test_tests_comparing_a_record_source_follow_the_derived_name(tmp_path: Path)
     assert 'payload["source"] == "demo-mcp"' in text and 'out["service"] == "demo-agent"' in text
 
 
-@pytest.mark.spec("PIPE-GATES-R016.101")
+@pytest.mark.spec("PIPE-GATES-R016.101")  # reviewed existing assertion binding
 def test_own_workflow_refs_are_main(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
     wf = ctx.root / ".github/workflows/connector-pr.yml"
@@ -71,7 +71,7 @@ def test_own_workflow_refs_are_main(tmp_path: Path) -> None:
     assert wf.read_text(encoding="utf-8") == text
 
 
-@pytest.mark.spec("PIPE-GATES-R016.103")
+@pytest.mark.spec("PIPE-GATES-R016.103")  # reviewed existing assertion binding
 def test_org_site_workflow_is_written_only_when_pipelines_provides_the_shared_one(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
     pl = tmp_path / "pl"
@@ -216,7 +216,7 @@ def test_internal_hostnames_in_tests_become_the_reserved_example_form(tmp_path: 
     assert not ctx.applied
 
 
-@pytest.mark.spec("PIPE-GATES-R016.108")
+@pytest.mark.spec("PIPE-GATES-R016.108")  # reviewed existing assertion binding
 def test_mutable_checkout_and_setup_python_tags_become_the_fleet_pins(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
     wf = ctx.root / ".github/workflows/docs.yml"
@@ -236,7 +236,7 @@ def test_mutable_checkout_and_setup_python_tags_become_the_fleet_pins(tmp_path: 
     assert not ctx.applied
 
 
-@pytest.mark.spec("PIPE-GATES-R016.109")
+@pytest.mark.spec("PIPE-GATES-R016.109")  # reviewed existing assertion binding
 def test_publication_workflow_test_expects_the_shared_main_revision(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
     (ctx.root / "tests").mkdir()
