@@ -56,6 +56,52 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     if(!frames[i].waves.every((w,j)=>w.playState==='running'&&w.time>frames[i-1].waves[j].time+1500&&Math.abs(w.x-frames[i-1].waves[j].x)>8))throw Error('Ocean motion not visibly progressing');
   }
   writeFileSync(join(output,`${theme}-continuous-motion.json`),JSON.stringify({kind:'Unforced real wall-clock browser frames; no animation seeking or virtual time',frames},null,2)+'\n');
+  // Annotation access is exercised only after the untouched wall-clock motion sequence.
+  // Input.dispatchKeyEvent sends trusted browser keyboard events; fullscreen is a real
+  // user-gesture request, not a replacement for document.fullscreenElement.
+  const navigation={kind:'Real CDP keyboard/focus/fullscreen proof after unforced motion capture',theme,steps:[]};
+  const state=()=>evaluate(`(()=>{const link=document.getElementById('annotation-jump'),rail=document.getElementById('annotations'),r=link.getBoundingClientRect();return {selected:window.__arch.selected,hash:location.hash,active:document.activeElement.id,fullscreen:document.fullscreenElement?.id||null,linkHidden:link.hidden,linkText:link.textContent,linkVisible:r.width>0&&r.height>0&&r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth,railHidden:rail.hidden,railFocusVisible:rail.matches(':focus-visible'),railOutlineWidth:getComputedStyle(rail).outlineWidth,railItems:document.querySelectorAll('#annotation-list li').length,trustedEvents:window.__annotationTrusted||[]};})()`);
+  const waitFor=async(expression,message)=>{for(let i=0;i<50;i++){if(await evaluate(expression))return;await delay(100);}throw Error(message);};
+  const navigationScreenshot=async(name)=>{
+    const result=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+    const bytes=Buffer.from(result.data,'base64'),file=`${theme}-annotation-${name}.png`;
+    writeFileSync(join(output,file),bytes);return {file,sha256:createHash('sha256').update(bytes).digest('hex')};
+  };
+  const pressEnter=async()=>{
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+    await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+  };
+  const assertAccess=(before,after)=>{
+    if(after.active!=='annotations'||after.fullscreen||after.railHidden||!after.railItems)throw Error('Annotation destination not focused/available: '+JSON.stringify(after));
+    if(!after.railFocusVisible||parseFloat(after.railOutlineWidth)<2)throw Error('Annotation destination lacks visible keyboard focus');
+    if(after.selected!==before.selected||after.hash!==before.hash)throw Error('Annotation navigation changed the graph selection/hash');
+    if(!after.trustedEvents.some(event=>event.type==='click'&&event.trusted)||!after.trustedEvents.some(event=>event.type==='keydown'&&event.key==='Enter'&&event.trusted))throw Error('Trusted keyboard activation missing');
+  };
+  try{
+    await evaluate("window.__arch.go('root',{instant:true});window.scrollTo(0,0);true");await delay(1000);
+    await evaluate(`(()=>{window.__annotationTrusted=[];const link=document.getElementById('annotation-jump');for(const type of ['keydown','click'])link.addEventListener(type,event=>window.__annotationTrusted.push({type:event.type,key:event.key||null,trusted:event.isTrusted}));link.focus();return true;})()`);
+    const before=await state();
+    if(before.active!=='annotation-jump'||before.linkHidden||!before.linkVisible||before.railHidden||!before.railItems)throw Error('Normal-view annotation link coverage unavailable: '+JSON.stringify(before));
+    await pressEnter();
+    await waitFor("document.activeElement.id==='annotations'",'Keyboard annotation link did not focus rail');
+    const after=await state();assertAccess(before,after);
+    navigation.steps.push({mode:'normal',before,after,screenshot:await navigationScreenshot('keyboard-rail')});
+    await evaluate("window.scrollTo(0,0);window.__annotationTrusted=[];true");
+    const request=await command('Runtime.evaluate',{expression:"document.getElementById('wrap').requestFullscreen().then(()=>true)",awaitPromise:true,returnByValue:true,userGesture:true});
+    if(request.exceptionDetails||request.result.value!==true)throw Error('Real fullscreen request failed: '+JSON.stringify(request));
+    await waitFor("document.fullscreenElement?.id==='wrap'",'Browser did not enter fullscreen');await delay(1000);
+    await evaluate("document.getElementById('annotation-jump').focus();true");
+    const fullBefore=await state();
+    if(fullBefore.fullscreen!=='wrap'||fullBefore.active!=='annotation-jump'||fullBefore.linkHidden||!fullBefore.linkVisible)throw Error('Fullscreen annotation link coverage unavailable: '+JSON.stringify(fullBefore));
+    const fullScreenshot=await navigationScreenshot('fullscreen-link');
+    await pressEnter();
+    await waitFor("!document.fullscreenElement&&document.activeElement.id==='annotations'",'Annotation activation did not exit real fullscreen and focus rail');
+    await delay(300);
+    const fullAfter=await state();assertAccess(fullBefore,fullAfter);
+    navigation.steps.push({mode:'fullscreen',before:fullBefore,after:fullAfter,fullscreenScreenshot:fullScreenshot,screenshot:await navigationScreenshot('fullscreen-exit-rail')});
+    navigation.passed=true;
+  }catch(error){navigation.passed=false;navigation.error=String(error);throw error;}
+  finally{writeFileSync(join(output,`${theme}-annotation-navigation.json`),JSON.stringify(navigation,null,2)+'\n');}
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
   writeFileSync(join(output,`${theme}-continuous-motion.log`),logs);
   try{await call('Browser.close');}catch{}

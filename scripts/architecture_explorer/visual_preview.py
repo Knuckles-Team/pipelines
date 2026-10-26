@@ -206,6 +206,16 @@ def verify_browser_results(report: Path) -> None:
         "test_ocean_browser_count_text_and_completion_tracks_never_overlap[webui-1440,1000]",
         "test_ocean_browser_count_text_and_completion_tracks_never_overlap[webui-390,844]",
         "test_ocean_browser_count_text_and_completion_tracks_never_overlap[eg-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[default-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[default-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[root-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[root-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[webui-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[webui-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[eg-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[eg-390,844]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-1440,1000]",
+        "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-390,844]",
     }
     cases = {case.attrib.get("name"): case for case in ElementTree.parse(report).iter("testcase")}
     for name in sorted(expected):

@@ -192,13 +192,13 @@ def test_header_status_badges_contrast_on_stacked_translucent_surfaces() -> None
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_canvas_labels_have_neutral_reading_plates_not_faded_unprotected_text() -> None:
+def test_canvas_labels_use_neutral_glyph_halos_instead_of_plates() -> None:
     source = TEMPLATE.read_text()
-    for label in ("z[0]", "lp.label"):
-        assert "mapLabel(" + label + ".toUpperCase()" in source
-    assert "ctx.globalAlpha=alpha; mapLabel(" in source
-    assert "ctx.fillStyle=C.opaque?C.surface:C.nodeTop;rr(" in source
-    assert "ctx.globalAlpha=alpha*0.8; rr(x-w/2" not in source
+    assert 'caption(n,"zone",z[0]' in source
+    assert 'caption(n,"loop",lp.label' in source
+    assert "ctx.globalAlpha=a.alpha;ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo" in source
+    assert "ctx.strokeText(a.text,x,y)" in source
+    assert "function mapLabel(" not in source
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -250,7 +250,7 @@ def test_root_band_heading_fits_existing_gutter_without_truncation() -> None:
     source = TEMPLATE.read_text()
     assert "L.kids[L.loop.around]" in source
     assert "available/Math.max(1,...labels.map(text=>ctx.measureText(text).width))" in source
-    assert "ctx.fillText(text,left,sy+5)" in source
+    assert 'caption(n,"band",text,left,sy+5,fs,alpha' in source
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -259,13 +259,13 @@ def test_swimlanes_use_only_quiet_gutter_typography_and_short_markers() -> None:
     bands = source.split("function drawBands(", 1)[1].split("function drawZones(", 1)[0]
     assert "C.laneTop" not in source and "--lane-top" not in source
     assert "createLinearGradient" not in bands and "mapLabel(" not in bands and "rr(" not in bands
-    assert "ctx.fillText(text,left,sy+5)" in bands and "text=labels[i]" in bands
+    assert 'caption(n,"band",text,left,sy+5,fs,alpha' in bands and "text=labels[i]" in bands
     assert "const fs=headingSize" in bands and "headingSize=Math.min(11,sw0*0.024)" in bands
     assert "sh*0.14" not in bands
     assert 'ctx.font="500 "+fs+"px "+C.display' in bands
-    assert "ctx.strokeText(text,left,sy+5)" in bands
-    assert "ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo" in bands
-    assert "ctx.fillRect(gutter,sy+5+fs*.5,7,1.5)" in bands
+    assert "ctx.strokeText(a.text,x,y)" in source
+    assert "ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo" in source
+    assert "ctx.fillRect(x-12,y+a.fs*.5,7,1.5)" in source
     assert 'const key=n.id==="root"?["person","entry","gateway","control","core","server"][i]:n.layer;' in bands
 
 
@@ -290,3 +290,65 @@ def test_count_track_is_metric_based_and_bar_inset_is_capped() -> None:
     assert "drawRich(countsLine(n),cx,countBaseline,sw-fc)" in source
     assert "by=barY, bh=barHeight" in source
     assert "by=sy+sh-Math.max(3,sh*0.06)" not in source
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_all_map_annotations_share_collision_aware_text_only_paint() -> None:
+    source = TEMPLATE.read_text()
+    assert "function mapLabel(" not in source
+    zones = source.split("function drawZones(", 1)[1].split("function countsLine(", 1)[0]
+    assert "toUpperCase()" not in zones
+    assert "ctx.fillText(" not in zones
+    for kind in ("zone", "loop", "flow"):
+        assert f'caption(n,"{kind}",' in zones
+    painter = source.split("function paintAnnotations(pass=0){", 1)[1].split("// Overview bands", 1)[0]
+    assert "rr(" not in painter and "ctx.fill()" not in painter
+    assert "annotationClear(r,used)" in painter
+    assert 'placement:"rail"' in painter and 'placement:"canvas"' in painter
+    assert "fitText(" not in painter and "toUpperCase" not in painter
+    assert "text:a.text" in painter
+    assert 'id="annotations"' in source.split("</main>", 1)[1]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_annotation_intersections_handle_segments_cards_and_labels() -> None:
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node unavailable")
+    source = TEMPLATE.read_text()
+    functions = source.split("function intersects(", 1)[1].split("function caption(", 1)[0]
+    script = (
+        "function intersects("
+        + functions
+        + """
+const assert=require('node:assert/strict');
+let W=100,H=100,annotationRects=[],annotationSegments=[];
+const box=[20,20,20,10];
+for(const [a,b] of [[[0,25],[80,25]],[[25,0],[25,80]],[[0,0],[80,80]],[[25,25],[25,25]]])assert(segmentHitsRect(a,b,box));
+for(const [a,b] of [[[0,0],[10,10]],[[0,31],[80,31]],[[41,0],[41,80]]])assert(!segmentHitsRect(a,b,box));
+assert(annotationClear(box,[]));
+annotationRects=[[25,25,30,30]];assert(!annotationClear(box,[]));
+annotationRects=[];assert(!annotationClear(box,[[18,19,10,10]]));
+// Two glyph halos need clearance on both labels, not just the incoming label.
+assert(!annotationClear(box,[[45,20,20,10]]));
+assert(annotationClear(box,[[49,20,20,10]]));
+annotationSegments=[[[0,25],[100,25]]];assert(!annotationClear(box,[]));
+assert(!annotationClear([-1,20,10,10],[]));
+"""
+    )
+    subprocess.run([node, "-e", script], check=True, capture_output=True, text=True)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_crowded_annotations_have_keyboard_access_without_overlay_or_hash_change() -> None:
+    source = TEMPLATE.read_text()
+    assert 'href="#annotations" hidden' in source
+    assert 'id="annotations" tabindex="-1"' in source
+    assert "event.preventDefault();" in source
+    assert "await document.exitFullscreen()" in source
+    assert "$(" + '"annotations").focus({preventScroll:true})' in source
+    assert "before.width!==after.width||before.height!==after.height" in source
+    assert "return paintAnnotations(pass+1)" in source
