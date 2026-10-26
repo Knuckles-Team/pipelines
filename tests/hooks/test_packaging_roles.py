@@ -9,6 +9,7 @@ import sys
 
 import pytest
 
+from pipelines_hooks.cli import GATES
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.release.packaging_roles import RoleContract, parse_contract, validate_metadata, verify
 
@@ -90,8 +91,9 @@ def test_role_evidence_retains_independent_digest_and_failure_state() -> None:
     assert [item["evidence_digest"] for item in result["evidence"]] == ["a" * 64, "b" * 64]
 
 
-def test_role_module_cli_executes_bound_json_contract(tmp_path: Path) -> None:
-    """The module boundary emits JSON for the later published-hook adapter."""
+@pytest.mark.spec("PIPE-PAGES-R025.6")
+def test_packaging_role_closure_cli(tmp_path: Path) -> None:
+    """The published dispatcher reaches the role closure gate with real files."""
     payloads = {
         "contract.json": {
             "version": 1,
@@ -123,7 +125,8 @@ def test_role_module_cli_executes_bound_json_contract(tmp_path: Path) -> None:
         [
             sys.executable,
             "-m",
-            "pipelines_hooks.release.packaging_roles",
+            "pipelines_hooks.cli",
+            "packaging-roles",
             "--contract",
             str(tmp_path / "contract.json"),
             "--metadata",
@@ -137,3 +140,4 @@ def test_role_module_cli_executes_bound_json_contract(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["status"] == "pass"
+    assert GATES["packaging-roles"] == "pipelines_hooks.release.packaging_roles"

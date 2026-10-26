@@ -40,6 +40,7 @@ KEPT = {
     "no-legacy-concepts",
     "release-standard",
     "dependency-readiness",
+    "packaging-roles",
     "gate-set",
     "pr-test-scope",
     "project-version-sync",

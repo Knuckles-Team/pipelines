@@ -357,6 +357,14 @@
   always_run: true
   require_serial: true
   stages: [manual]
+- id: packaging-roles
+  name: Packaging role/extra closure (explicit contract and evidence paths)
+  entry: pipelines-hook packaging-roles
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
 
 # --- spec lifecycle (SPEC-STATUS-LIFECYCLE.md) ------------------------------
 - id: spec-status
