@@ -870,7 +870,7 @@
         "246cc47a897a"
       ],
       "verified_by": [
-        "tests/test_pages_pipeline_contract.py:202"
+        "tests/test_pages_pipeline_contract.py:257"
       ]
     },
     {
@@ -878,7 +878,9 @@
       "title": "Overstory, Tuig, and Axil adopt it through the caller pattern in PIPE-CONNSPEC-R004. Each caller change belongs to the repository's own spec",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_pages_pipeline_contract.py:303"
+      ]
     },
     {
       "id": "PIPE-PAGES-R015.3",
@@ -4407,7 +4409,7 @@
         "afcf5e9611e3"
       ],
       "verified_by": [
-        "tests/test_pages_pipeline_contract.py:91",
+        "tests/test_pages_pipeline_contract.py:146",
         "tests/test_pages_readiness.py:195",
         "tests/test_pages_readiness.py:247",
         "tests/test_pages_readiness.py:367",
@@ -4452,7 +4454,7 @@
         "afcf5e9611e3"
       ],
       "verified_by": [
-        "tests/test_pages_pipeline_contract.py:91"
+        "tests/test_pages_pipeline_contract.py:146"
       ]
     },
     {
