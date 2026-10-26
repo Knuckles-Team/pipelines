@@ -272,7 +272,6 @@ def _source_validation_fixture(
         check=True,
     )
     source_sha = git("rev-parse", "HEAD")
-    source_epoch = git("show", "-s", "--format=%ct", source_sha)
     (root / "workflow-only.txt").write_text("repair input\n")
     subprocess.run(["git", "add", "--", "workflow-only.txt"], cwd=root, env=git_env, check=True)
     subprocess.run(
@@ -323,7 +322,8 @@ def _source_validation_fixture(
     source_checkout = root / ".release-source"
     subprocess.run(["git", "clone", "-q", str(origin), str(source_checkout)], env=git_env, check=True)
     subprocess.run(["git", "checkout", "-q", selected_sha], cwd=source_checkout, env=git_env, check=True)
-    return root, reviewed_sha, selected_sha, epoch if epoch is not None else source_epoch
+    selected_epoch = git("show", "-s", "--format=%ct", selected_sha, cwd=source_checkout)
+    return root, reviewed_sha, selected_sha, epoch if epoch is not None else selected_epoch
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
