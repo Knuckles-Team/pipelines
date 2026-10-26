@@ -53,9 +53,9 @@ const results=[];
     const states=[];
     for(const page of pages){
      await page.command('Page.bringToFront');await delay(100);
-     if(step){
+     {
       const p=await page.evaluate('(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()');
-      await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',...p,deltaX:0,deltaY:-160});await delay(450);
+      await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',...p,deltaX:0,deltaY:step?-160:-1});await delay(450);
      }
      states.push(await page.evaluate(`(()=>{const ids=[];const walk=n=>{ids.push(n.id);n.children.forEach(walk)};walk(PAYLOAD.tree);const r=document.querySelector('#cv').getBoundingClientRect();return {cam:{...__arch.cam},focus:__arch.focus,rects:ids.map(id=>[id,__arch.rect(id)]),canvas:[r.x,r.y,r.width,r.height],controls:[...document.querySelectorAll('button,input,select')].map(e=>[e.tagName,e.id,e.textContent]),story:window.__storyQA?__storyQA():null}})()`));
     }
