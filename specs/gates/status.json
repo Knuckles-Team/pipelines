@@ -304,7 +304,7 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:218",
+        "tests/hooks/test_connector_central.py:226",
         "tests/hooks/test_lockfile_version_mirrors.py:14"
       ],
       "rollup_of": [
@@ -319,7 +319,7 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:218"
+        "tests/hooks/test_connector_central.py:226"
       ]
     },
     {
@@ -1004,9 +1004,9 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:178",
-        "tests/hooks/test_connector_central.py:198",
-        "tests/hooks/test_connector_central.py:209"
+        "tests/hooks/test_connector_central.py:186",
+        "tests/hooks/test_connector_central.py:206",
+        "tests/hooks/test_connector_central.py:217"
       ]
     },
     {
@@ -1017,8 +1017,8 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:281",
-        "tests/hooks/test_connector_central.py:310"
+        "tests/hooks/test_connector_central.py:289",
+        "tests/hooks/test_connector_central.py:318"
       ]
     },
     {
@@ -1040,7 +1040,7 @@
         "89e96300d187"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:295"
+        "tests/hooks/test_connector_central.py:303"
       ]
     },
     {
