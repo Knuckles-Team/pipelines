@@ -4329,7 +4329,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "a86b11ee9b95",
-        "dd326634dc85"
+        "dd326634dc85",
+        "eeffa360f86b"
       ],
       "verified_by": [
         "tests/test_connector_consumer_r168_177.py:51",
@@ -4360,7 +4361,8 @@
       "title": "`wger-agent` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "dd326634dc85"
+        "dd326634dc85",
+        "eeffa360f86b"
       ],
       "verified_by": [
         "tests/test_connector_consumer_r173.py:63"
@@ -4371,7 +4373,8 @@
       "title": "`wger-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "dd326634dc85"
+        "dd326634dc85",
+        "eeffa360f86b"
       ],
       "verified_by": [
         "tests/test_connector_consumer_r173.py:64"
@@ -4382,7 +4385,8 @@
       "title": "`wger-agent` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "dd326634dc85"
+        "dd326634dc85",
+        "eeffa360f86b"
       ],
       "verified_by": [
         "tests/test_connector_consumer_r173.py:65"
