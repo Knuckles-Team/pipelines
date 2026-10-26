@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
+import shutil
+import subprocess
+import sys
+import textwrap
 
 import yaml
 
@@ -10,6 +15,7 @@ import yaml
 ACTION = Path(__file__).parents[1] / ".github/actions/publish-python-package/action.yml"
 RELEASE_ACTION = Path(__file__).parents[1] / ".github/actions/create-version-release/action.yml"
 WORKFLOW = Path(__file__).parents[1] / ".github/workflows/python_pipeline.yml"
+ROOT = Path(__file__).parents[1]
 
 
 def test_release_body_has_an_unambiguous_commit_identity() -> None:
@@ -45,11 +51,76 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
     assert contract["with"] == {
         "repository": "${{ job.workflow_repository }}",
         "ref": "${{ job.workflow_sha }}",
-        "sparse-checkout": ".github/actions\n",
+        "sparse-checkout": (
+            "/.github/actions/\n"
+            "/pipelines_hooks/__init__.py\n"
+            "/pipelines_hooks/connector/__init__.py\n"
+            "/pipelines_hooks/connector/project.py\n"
+            "/pipelines_hooks/core/__init__.py\n"
+            "/pipelines_hooks/core/errors.py\n"
+        ),
+        "sparse-checkout-cone-mode": False,
         "path": ".pipeline-contract",
         "persist-credentials": False,
     }
     assert publisher["uses"] == "./.pipeline-contract/.github/actions/publish-python-package"
+
+
+def test_python_workflow_sparse_contract_keeps_readiness_validator_importable(tmp_path: Path) -> None:
+    """The hosted sparse checkout contains the canonical readiness import closure."""
+
+    document = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    checkout = next(
+        step for step in document["jobs"]["publish-pypi"]["steps"] if step.get("name") == "Checkout pipeline contract"
+    )
+    sparse = checkout["with"]["sparse-checkout"].splitlines()
+    closure = (
+        ".github/actions/wheel-readiness/readiness.py",
+        "pipelines_hooks/__init__.py",
+        "pipelines_hooks/connector/__init__.py",
+        "pipelines_hooks/connector/project.py",
+        "pipelines_hooks/core/__init__.py",
+        "pipelines_hooks/core/errors.py",
+    )
+
+    assert checkout["with"]["sparse-checkout-cone-mode"] is False
+    assert "/.github/actions/" in sparse
+    assert all(f"/{path}" in sparse for path in closure[1:])
+
+    caller = tmp_path / "caller"
+    contract = caller / ".pipeline-contract"
+    for relative in closure:
+        source = ROOT / relative
+        destination = contract / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+    (caller / "pyproject.toml").write_text(
+        '[tool.pipelines]\nallow-source-build = ["Uptime_Kuma.API"]\n', encoding="utf-8"
+    )
+    probe = textwrap.dedent(
+        """
+        import importlib.util
+        from pathlib import Path
+
+        script = Path('.pipeline-contract/.github/actions/wheel-readiness/readiness.py')
+        spec = importlib.util.spec_from_file_location('readiness_probe', script)
+        assert spec is not None and spec.loader is not None
+        readiness = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(readiness)
+        print(readiness.source_build_allowance(Path.cwd()))
+        """
+    )
+    environment = {**os.environ, "PYTHONPATH": ""}
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", probe],
+        cwd=caller,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "['uptime-kuma-api']"
 
 
 def test_publish_action_persists_uv_cache_in_tool_cache() -> None:

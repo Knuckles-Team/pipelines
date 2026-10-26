@@ -97,14 +97,15 @@ def source_build_allowance(project: Path | None = None) -> list[str]:
         data = tomllib.loads(path.read_text())
     except tomllib.TOMLDecodeError as error:
         raise ValueError("pyproject.toml is not valid TOML") from error
-    section = data.get("tool", {}).get("pipelines", {})
-    require(isinstance(section, dict), "[tool.pipelines] must be a table")
-    names = section.get("allow-source-build", [])
-    require(isinstance(names, list), "allow-source-build must be a list of package names")
-    require(valid_profile_names(names), "allow-source-build entries must be exact package names")
-    normalized = [canonicalize_name(name) for name in names]
-    require(len(set(normalized)) == len(normalized), "duplicate allow-source-build entry")
-    return sorted(normalized)
+    contract_root = Path(__file__).resolve().parents[3]
+    if str(contract_root) not in sys.path:
+        sys.path.insert(0, str(contract_root))
+    from pipelines_hooks.connector.project import source_build_allowance as shared_source_build_allowance
+
+    try:
+        return shared_source_build_allowance(data)
+    except RuntimeError as error:
+        raise ValueError(str(error)) from error
 
 
 def profiles(raw: str, extras: list[str]) -> list[str]:

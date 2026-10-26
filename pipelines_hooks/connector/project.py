@@ -48,6 +48,7 @@ LIMIT_KEYS = frozenset({"memory_limit_env", "memory_limit", "cpu_limit_env", "cp
 DEFAULT_COMPOSE_HOST = "127.0.0.1"
 _ENV_NAME = re.compile(r"[A-Z_][A-Z0-9_]*")
 _BINDING_KEYS = frozenset({"env", "default"})
+_DISTRIBUTION_NAME = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?")
 
 
 def load(root: Path) -> dict[str, Any]:
@@ -57,6 +58,44 @@ def load(root: Path) -> dict[str, Any]:
         return tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, tomllib.TOMLDecodeError) as exc:
         raise CannotRun(f"cannot read {path}: {exc}") from exc
+
+
+def canonicalize_distribution_name(name: str) -> str:
+    """Normalize a distribution name using the public package-name convention."""
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _distribution_names(raw: Any, key: str) -> list[str]:
+    if not isinstance(raw, list):
+        raise CannotRun(f"{key} must be a list of package names")
+    if not all(isinstance(name, str) and _DISTRIBUTION_NAME.fullmatch(name) for name in raw):
+        raise CannotRun(f"{key} entries must be exact package names")
+    names = [canonicalize_distribution_name(name) for name in raw]
+    if len(set(names)) != len(names):
+        raise CannotRun(f"duplicate {key} entry")
+    return sorted(names)
+
+
+def source_build_allowance(pyproject: dict[str, Any]) -> list[str]:
+    """Return the exact named source-build exceptions from ``[tool.pipelines]``.
+
+    The same list drives wheel readiness and connector image rendering.  An empty
+    or absent list keeps every dependency under the image's binary-only rule.
+    """
+    tool = pyproject.get("tool", {})
+    if not isinstance(tool, dict):
+        raise CannotRun("[tool] must be a table")
+    pipelines = tool.get("pipelines", {})
+    if not isinstance(pipelines, dict):
+        raise CannotRun("[tool.pipelines] must be a table")
+    return _distribution_names(pipelines.get("allow-source-build", []), "allow-source-build")
+
+
+def container_source_builds(pyproject: dict[str, Any], table: dict[str, Any]) -> list[str]:
+    """Combine the canonical allowance with the retained legacy container field."""
+    names = source_build_allowance(pyproject)
+    legacy = _distribution_names(table.get("sdist_deps", []), "[tool.pipelines.container].sdist_deps")
+    return sorted(set(names).union(legacy))
 
 
 def container_table(pyproject: dict[str, Any]) -> dict[str, Any]:

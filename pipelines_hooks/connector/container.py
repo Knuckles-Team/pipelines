@@ -17,9 +17,11 @@ Nothing is read from a committed Dockerfile; a connector commits none of these f
 ``--check`` renders into memory and fails when a tracked copy exists under ``docker/``
 (a committed rendering is a second source of truth), printing nothing else.
 
-The image installs the published wheel from PyPI with ``--only-binary :all:``, never
-copies source, runs as a fixed non-root UID, and re-resolves the SDK inside the wheel's
-supported range on every build (``ARG SDK_VERSION`` busts the layer when the SDK ships).
+The image installs the published wheel from PyPI with ``--only-binary :all:`` and
+per-package ``--no-binary`` exceptions from ``[tool.pipelines].allow-source-build``
+(plus the retained legacy container field), never copies source, runs as a fixed
+non-root UID, and re-resolves the SDK inside the wheel's supported range on every
+build (``ARG SDK_VERSION`` busts the layer when the SDK ships).
 
 ``compose_host`` in ``[tool.pipelines.container]`` controls only the host-side
 port publication. It defaults to the secure loopback address and accepts an
@@ -376,6 +378,10 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
     if not is_distribution(sdk, SDK_ROLE):
         raise CannotRun(f"unsupported SDK distribution: {sdk}")
     table = project.container_table(pyproject)
+    source_builds = project.container_source_builds(pyproject, table)
+    if project.canonicalize_distribution_name(dist) in source_builds:
+        raise CannotRun("the published package itself cannot be a source build")
+    table["sdist_deps"] = source_builds
     extras = set(meta.get("optional-dependencies", {}))
     entries = _entrypoints(table, set(meta.get("scripts", {})), dist)
     debug_extras = list(table.get("debug_extras", sorted(extras & set(RUNTIME_TARGETS))))
