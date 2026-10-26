@@ -488,8 +488,8 @@
       "title": "Versions and container files are derived",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "5ff231c270b1",
-        "9e87a415065f"
+        "0f2baf0bc01f",
+        "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
@@ -686,11 +686,11 @@
       "title": "A connector release publishes PyPI and Docker, and verifies both",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0f2baf0bc01f",
         "23b1e1111638",
         "2e89db0000e5",
         "3d0455152b96",
-        "9e87a415065f",
-        "b006e36574a5"
+        "c4e90fa75d39"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -708,10 +708,10 @@
       "title": "Published-wheel image preflight",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0f2baf0bc01f",
         "23b1e1111638",
         "2e89db0000e5",
-        "9e87a415065f",
-        "b006e36574a5"
+        "c4e90fa75d39"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:61",
@@ -726,7 +726,7 @@
       "title": "Release-standard check",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "9e87a415065f",
+        "0f2baf0bc01f",
         "cf912c89cd2f"
       ],
       "verified_by": [
