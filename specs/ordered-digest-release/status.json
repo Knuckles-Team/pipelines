@@ -488,13 +488,14 @@
       "title": "Versions and container files are derived",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "5ff231c270b1"
+        "5ff231c270b1",
+        "9e87a415065f"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
         "tests/hooks/test_connector_central.py:114",
         "tests/hooks/test_connector_central.py:123",
-        "tests/hooks/test_connector_central.py:322",
+        "tests/hooks/test_connector_central.py:325",
         "tests/hooks/test_connector_central.py:64"
       ]
     },
@@ -507,7 +508,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:136",
-        "tests/hooks/test_connector_central.py:150"
+        "tests/hooks/test_connector_central.py:153"
       ]
     },
     {
@@ -688,6 +689,7 @@
         "23b1e1111638",
         "2e89db0000e5",
         "3d0455152b96",
+        "9e87a415065f",
         "db468196e870"
       ],
       "verified_by": [
@@ -707,13 +709,15 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "23b1e1111638",
-        "2e89db0000e5"
+        "2e89db0000e5",
+        "9e87a415065f"
       ],
       "verified_by": [
-        "tests/test_public_wheel_guard.py:35",
-        "tests/test_public_wheel_guard.py:52",
-        "tests/test_public_wheel_guard.py:81",
-        "tests/test_public_wheel_guard.py:94"
+        "tests/test_public_wheel_guard.py:147",
+        "tests/test_public_wheel_guard.py:163",
+        "tests/test_public_wheel_guard.py:170",
+        "tests/test_public_wheel_guard.py:183",
+        "tests/test_public_wheel_guard.py:35"
       ]
     },
     {
@@ -721,13 +725,15 @@
       "title": "Release-standard check",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "9e87a415065f",
         "cf912c89cd2f"
       ],
       "verified_by": [
         "tests/hooks/test_release_standard.py:19",
         "tests/hooks/test_release_standard.py:28",
         "tests/hooks/test_release_standard.py:36",
-        "tests/hooks/test_release_standard.py:47"
+        "tests/hooks/test_release_standard.py:42",
+        "tests/hooks/test_release_standard.py:59"
       ]
     },
     {
@@ -750,7 +756,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:517"
+        "tests/test_container_pipeline_contract.py:616"
       ]
     },
     {
