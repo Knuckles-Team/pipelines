@@ -426,13 +426,17 @@ function mapLabel(text,x,y,fs){
 // Overview bands span the whole canvas width; their labels stay at the layout's right edge.
 function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.bands.length) return;
   const r=R[n.id]; const x0=n.id==="root"?r[0]:t.ox, w=n.id==="root"?r[2]:L.w*t.s;
+  const anchor=L.loop&&L.kids[L.loop.around], sx0=toS(x0,0)[0], sw0=w*cam.k;
+  const gutter=anchor?toS(t.ox+(anchor[0]+anchor[2]+24)*t.s,0)[0]:sx0+sw0*0.72;
+  const left=gutter+12, right=sx0+sw0-8, available=Math.max(1,right-left);
+  const overviewTitles={"People and clients":"People and Clients","Front ends":"Front Ends","Arbora door":"Arbora Door","Agent control plane and skills":"Agent Control Plane and Skills","Engine core, connectors and sources":"Engine Core, Connectors and Sources","Serving and delivery":"Serving and Delivery"};
+  const labels=L.bands.map(b=>n.id==="root"?(overviewTitles[b[0]]||b[0]):b[0]);
+  let headingSize=Math.min(11,sw0*0.024);ctx.font="500 "+headingSize+"px "+C.display;
+  headingSize*=Math.min(1,available/Math.max(1,...labels.map(text=>ctx.measureText(text).width)));
   L.bands.forEach((b,i)=>{ const [sx,sy]=toS(x0, t.oy+b[1]*t.s), sh=(b[2]-b[1])*t.s*cam.k, sw=w*cam.k;
     if(sy>H||sy+sh<0) return;
     // Quiet lane hierarchy lives only in the existing right gutter, not over the graph.
-    let fs=Math.min(12,Math.max(8,sh*0.14),sw*0.024); if(fs>=7){
-      const anchor=L.loop&&L.kids[L.loop.around], gutter=anchor?toS(t.ox+(anchor[0]+anchor[2]+24)*t.s,0)[0]:sx+sw*0.72;
-      const left=gutter+12, right=sx+sw-8, available=Math.max(1,right-left), text=b[0];
-      ctx.font="500 "+fs+"px "+C.display; fs*=Math.min(1,available/Math.max(1,ctx.measureText(text).width));
+    const fs=headingSize, text=labels[i];if(fs>=6.5){
       ctx.font="500 "+fs+"px "+C.display;ctx.textAlign="left";ctx.textBaseline="top";ctx.globalAlpha=alpha;
       // A neutral glyph halo, not a box or blur, protects text through every ocean phase.
       ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo;ctx.lineWidth=3;ctx.lineJoin="round";ctx.strokeText(text,left,sy+5);

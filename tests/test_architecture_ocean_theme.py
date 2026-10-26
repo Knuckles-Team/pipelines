@@ -249,7 +249,7 @@ def test_connectors_have_neutral_contrast_halo_against_any_photo_pixel() -> None
 def test_root_band_heading_fits_existing_gutter_without_truncation() -> None:
     source = TEMPLATE.read_text()
     assert "L.kids[L.loop.around]" in source
-    assert "available/Math.max(1,ctx.measureText(text).width)" in source
+    assert "available/Math.max(1,...labels.map(text=>ctx.measureText(text).width))" in source
     assert "ctx.fillText(text,left,sy+5)" in source
 
 
@@ -259,7 +259,9 @@ def test_swimlanes_use_only_quiet_gutter_typography_and_short_markers() -> None:
     bands = source.split("function drawBands(", 1)[1].split("function drawZones(", 1)[0]
     assert "C.laneTop" not in source and "--lane-top" not in source
     assert "createLinearGradient" not in bands and "mapLabel(" not in bands and "rr(" not in bands
-    assert "ctx.fillText(text,left,sy+5)" in bands and "text=b[0]" in bands
+    assert "ctx.fillText(text,left,sy+5)" in bands and "text=labels[i]" in bands
+    assert "const fs=headingSize" in bands and "headingSize=Math.min(11,sw0*0.024)" in bands
+    assert "sh*0.14" not in bands
     assert 'ctx.font="500 "+fs+"px "+C.display' in bands
     assert "ctx.strokeText(text,left,sy+5)" in bands
     assert "ctx.strokeStyle=C.opaque?C.surface:C.edgeHalo" in bands

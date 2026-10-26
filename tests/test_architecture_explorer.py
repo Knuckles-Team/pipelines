@@ -696,7 +696,7 @@ def test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle() -> None:
     assert "calc(100vh - 150px)" not in html
     assert 'id="zfull"' in html and "requestFullscreen" in html and ".canvas:fullscreen" in html
     assert 'id="zpanel"' in html and "main.work.nopanel" in html
-    assert "const left=gutter+12, right=sx+sw-8" in html
+    assert "const left=gutter+12, right=sx0+sw0-8" in html
     fixed = json.loads((ROOT / "scripts/architecture_explorer/model.json").read_text())["fixed_layout"]
     assert fixed["w"] / fixed["h"] >= 1.6
 
@@ -1424,7 +1424,7 @@ setTimeout(async()=>{
    check(counts.every(p=>p.top>subtitle.bottom),id+' counts clear subtitle');
    evidence.push({id,label,role,title,subtitle,counts,card:[x,y,w,h]});
   }
-  const band=window.__paint.find(p=>p.text==='Engine core, connectors and sources');
+  const band=window.__paint.find(p=>p.text==='Engine Core, Connectors and Sources');
   check(band,'complete engine band heading actually painted');
   for(const id of ['eg','pipelines']){
    const r=a.rect(id), x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
@@ -1571,7 +1571,7 @@ def test_ocean_browser_count_text_and_completion_tracks_never_overlap(
 window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];
 const originalText=CanvasRenderingContext2D.prototype.fillText, originalRect=CanvasRenderingContext2D.prototype.fillRect, originalClear=CanvasRenderingContext2D.prototype.clearRect;
 CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];return originalClear.apply(this,args);};
-CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);window.__allPaint.push({text,x,y,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
+CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);window.__allPaint.push({text,x,y,font:this.font,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
 CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w>20)window.__barPaint.push({x,y,w,h});return originalRect.call(this,x,y,w,h);};
 </script>"""
     probe = """<script>
@@ -1591,6 +1591,8 @@ setTimeout(async()=>{
    evidence.push({id,bar,counts});
   }
   if(a.selected==='root'&&window.innerWidth>1000){
+   const headings=['People and Clients','Front Ends','Arbora Door','Agent Control Plane and Skills','Engine Core, Connectors and Sources','Serving and Delivery'].map(text=>window.__allPaint.find(p=>p.text===text));
+   if(headings.some(p=>!p)||new Set(headings.map(p=>p.font)).size!==1)throw Error('Overview headings must share one complete-label font size');
    for(const [id,role] of [['sdk','Connector SDK'],['au','Agent Harness'],['skills','Agent Skills'],['webui','Browser Experience'],['tui','TUI / CLI'],['geniusbot','Desktop GUI']]){
     const r=a.rect(id),x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
     if(!window.__allPaint.some(p=>p.text===role&&p.x>=x&&p.x<=x+w&&p.top>=y&&p.bottom<=y+h))throw Error(id+' public overview subtitle missing');
