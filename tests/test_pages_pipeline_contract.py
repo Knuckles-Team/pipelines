@@ -199,6 +199,52 @@ def test_dashboard_caller_checkout_materializes_source_files():
     assert checkout["with"]["fetch-depth"] == 1
 
 
+@pytest.mark.spec("PIPE-PAGES-R015.1")
+def test_pages_workflow_runs_relation_steps(tmp_path, monkeypatch):
+    """The shared caller checkout contains and reaches the relation generator."""
+    contract = _workflow()
+    steps = contract["document"]["jobs"]["deploy"]["steps"]
+    checkout = next(step for step in steps if step.get("name") == "Checkout pipeline-owned scripts")
+    declared = set(checkout["with"]["sparse-checkout"].splitlines())
+    required = {
+        "scripts/spec_dashboard.py",
+        "scripts/spec_dashboard_render.py",
+        "scripts/spec_dashboard_sources.py",
+        "scripts/spec_dashboard_metadata.py",
+        "scripts/spec_dashboard_relations.py",
+        "scripts/spec_dashboard_relations_view.py",
+        "scripts/spec_dashboard_drilldown.py",
+        "scripts/spec_dashboard_architecture.py",
+        "scripts/spec_dashboard_records.py",
+        "scripts/spec_dashboard_panels.py",
+        "scripts/spec_dashboard_nav.py",
+        "scripts/spec_dashboard_style.py",
+    }
+    assert required <= declared
+
+    build = next(step for step in steps if step.get("name") == "Build spec delivery snapshot")
+    assert build["if"] == "inputs.spec_dashboard_enabled"
+    assert "python .pipeline-contract/scripts/spec_dashboard.py" in build["run"]
+    assert '--output site/spec-delivery --repository "$GITHUB_REPOSITORY"' in build["run"]
+    assert "Knuckles-Team/" not in build["run"]
+
+    from scripts import spec_dashboard as dashboard
+    from tests.test_spec_dashboard_metadata import fixture
+
+    fixture(tmp_path, "Component: gateway\nDepends-on: AU-OTHER\n")
+    config = tmp_path / ".config/spec-dashboard.json"
+    config.parent.mkdir()
+    config.write_text('{"version":1,"sources":[{"glob":"specs/*/status.json"}]}')
+    monkeypatch.setattr(dashboard, "git", lambda *args: b"a" * 40)
+    monkeypatch.setattr(dashboard, "github_snapshot", lambda *args: {})
+
+    assert dashboard.main(["--root", str(tmp_path), "--repository", "Knuckles-Team/fixture"]) == 0
+    page = (tmp_path / "site/spec-delivery/index.html").read_text(encoding="utf-8")
+    assert "Spec relationships" in page
+    assert "depends on" in page
+    assert 'href="#spec-AU-CONTROL"' in page
+
+
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_architecture_explorer_defaults_to_core_repositories_and_builds_before_upload() -> None:
     contract = _workflow()
