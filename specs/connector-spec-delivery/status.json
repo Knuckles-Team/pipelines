@@ -512,9 +512,14 @@
     {
       "id": "PIPE-CONNSPEC-R101.1",
       "title": "`ansible-tower-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:72",
+        "tests/test_connector_consumer_r101_r115.py:97"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R101.2",
@@ -553,23 +558,35 @@
     {
       "id": "PIPE-CONNSPEC-R102.1",
       "title": "`archimate-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:73"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R102.2",
       "title": "`archimate-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:111"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R102.3",
       "title": "`archimate-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:136"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R102.4",
@@ -741,9 +758,13 @@
     {
       "id": "PIPE-CONNSPEC-R106.1",
       "title": "`atlassian-agent` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:74"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R106.2",
@@ -831,16 +852,24 @@
     {
       "id": "PIPE-CONNSPEC-R108.1",
       "title": "`audiobookshelf-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:75"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R108.2",
       "title": "`audiobookshelf-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:112"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R108.3",
@@ -1023,16 +1052,24 @@
     {
       "id": "PIPE-CONNSPEC-R112.1",
       "title": "`clarity-api` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:76"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R112.2",
       "title": "`clarity-api` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:113"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R112.3",
@@ -1064,9 +1101,13 @@
     {
       "id": "PIPE-CONNSPEC-R113.1",
       "title": "`container-manager-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:77"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R113.2",
@@ -1105,16 +1146,24 @@
     {
       "id": "PIPE-CONNSPEC-R114.1",
       "title": "`data-science-mcp` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:78"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R114.2",
       "title": "`data-science-mcp` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:114"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R114.3",
@@ -1146,16 +1195,24 @@
     {
       "id": "PIPE-CONNSPEC-R115.1",
       "title": "`dockerhub-api` has a `specs/` tree with a generated `status.json`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:79"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R115.2",
       "title": "`dockerhub-api` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "afd8a5efe60e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r101_r115.py:115"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R115.3",
