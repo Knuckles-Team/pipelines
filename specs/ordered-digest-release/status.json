@@ -69,6 +69,7 @@
     "PIPE-RELEASE-R010",
     "PIPE-RELEASE-R011",
     "PIPE-RELEASE-R012",
+    "PIPE-RELEASE-R012.1",
     "PIPE-RELEASE-R013",
     "PIPE-RELEASE-R014",
     "PIPE-RELEASE-R015",
@@ -684,6 +685,7 @@
       "title": "A connector release publishes PyPI and Docker, and verifies both",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "23b1e1111638",
         "3d0455152b96",
         "db468196e870"
       ],
@@ -693,6 +695,23 @@
         "tests/test_connector_release_pipeline.py:83",
         "tests/test_connector_release_pipeline.py:88",
         "tests/test_connector_release_pipeline.py:89"
+      ],
+      "rollup_of": [
+        "PIPE-RELEASE-R012.1"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R012.1",
+      "title": "Published-wheel image preflight",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "23b1e1111638"
+      ],
+      "verified_by": [
+        "tests/test_public_wheel_guard.py:35",
+        "tests/test_public_wheel_guard.py:52",
+        "tests/test_public_wheel_guard.py:81",
+        "tests/test_public_wheel_guard.py:94"
       ]
     },
     {
