@@ -1163,7 +1163,7 @@ def test_l1_non_conventional_value_stays_and_is_reviewed(tmp_path: Path) -> None
 
 
 # --- l.2 ------------------------------------------------------------------------------------------------------
-@pytest.mark.spec("PIPE-GATES-R016.65")
+@pytest.mark.spec("PIPE-GATES-R016.65")  # reviewed existing assertion binding
 def test_l2_empty_marker_deleted_when_package_data_covers_the_content(tmp_path: Path) -> None:
     root = _make(tmp_path)
     ctx = _ctx(root)
