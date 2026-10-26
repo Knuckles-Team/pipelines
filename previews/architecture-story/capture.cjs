@@ -34,7 +34,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const results=[];
 (async()=>{
  for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide']){
-  const pages=[];
+  const pages=[];let fullPageCaptured=false;
   try{
    for(const variant of ['baseline','preview']){
     const {targetId}=await call('Target.createTarget',{url:'about:blank'});
@@ -69,7 +69,15 @@ const results=[];
      await page.command('Page.bringToFront');await delay(100);
      hashes.push(await page.evaluate(`(()=>{const c=document.querySelector('#cv'),a=c.getContext('2d').getImageData(0,0,c.width,c.height).data,r=${JSON.stringify(mask)},ratio=c.width/c.getBoundingClientRect().width;let h=2166136261;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){if(r&&x>=(r[0]-2)*ratio&&x<=(r[0]+r[2]+2)*ratio&&y>=(r[1]-2)*ratio&&y<=(r[1]+r[3]+2)*ratio)continue;const i=(y*c.width+x)*4;for(let k=0;k<4;k++)h=Math.imul(h^a[i+k],16777619)}return h>>>0})()`));
      const shot=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}.png`),Buffer.from(shot.data,'base64'));
+     if(device.name==='mobile'&&mask&&!fullPageCaptured){
+      const metrics=await page.command('Page.getLayoutMetrics');const size=metrics.cssContentSize;
+      const full=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:size.width,height:size.height,scale:1}});
+      writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}-fullpage.png`),Buffer.from(full.data,'base64'));
+      const unchanged=await page.evaluate('JSON.stringify({cam:{...__arch.cam},rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
+      if(unchanged!==JSON.stringify({cam:states[0].cam,rect:states[0].canvas}))throw Error('Fullpage capture changed native geometry');
+     }
     }
+    if(device.name==='mobile'&&mask)fullPageCaptured=true;
     if(hashes[0]!==hashes[1])throw Error('Existing canvas pixels changed outside chart bounds');
     results.push({device:device.name,node,step,camera:states[1].cam,focus:states[1].focus,story,geometryEqual:true,outsideChartPixelHash:hashes[0]});
     writeFileSync(join(output,'native-proof.json'),JSON.stringify(results,null,2));
