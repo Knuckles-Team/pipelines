@@ -54,10 +54,13 @@ function chooseStory(id,data,bounds,obstacles,segments){
 function storyLayout(kind,data,groups){
   const width=280,ops=[];let y=0,invalid=false;
   ctx.save();try{
+    ctx.textAlign='left';ctx.textBaseline='top';
     const line=(text,x,top,size=11,weight=400)=>{
-      ctx.font=weight+' '+size+'px '+C.body;const measured=ctx.measureText(text).width;
-      if(x<0||x+measured>width+.01)invalid=true;
-      ops.push({type:'text',text,x,y:top,size,weight,width:measured,height:size+2});
+      ctx.font=weight+' '+size+'px '+C.body;const metrics=ctx.measureText(text),measured=metrics.width,left=metrics.actualBoundingBoxLeft||0,right=Number.isFinite(metrics.actualBoundingBoxRight)?metrics.actualBoundingBoxRight:measured;
+      if(x<0||x+measured>width+.01){invalid=true;return;}
+      const px=Math.min(width-Math.max(measured,right),Math.max(x,left,0));
+      if(px<0||px-left<0||px+Math.max(measured,right)>width+.01)invalid=true;
+      ops.push({type:'text',text,x:px,y:top,size,weight,width:measured,height:size+2});
     };
     const wrap=(items,separator,maxLines=2)=>{
       ctx.font='400 11px '+C.body;const lines=[];let current='';
@@ -92,12 +95,13 @@ function storyLayout(kind,data,groups){
     return {kind,width,height:y+2,ops};
   }finally{ctx.restore();}
 }
+function storyBandColors(kind){return kind==='comparison'||kind==='concentration'?C.progress:C.st;}
 function drawComposition(choice){
   const [x,y]=choice.rect;ctx.save();try{
     ctx.globalAlpha=1;ctx.textAlign='left';ctx.textBaseline='top';
     for(const op of choice.layout.ops){
       if(op.type==='text'){ctx.font=op.weight+' '+op.size+'px '+C.body;ctx.fillStyle=C.fg;ctx.fillText(op.text,x+op.x,y+op.y);}
-      else{if(op.track){ctx.fillStyle=C.line;ctx.fillRect(x+op.x,y+op.y,op.width,op.height);}let offset=0;for(const part of op.segments){const size=op.width*part.fraction;ctx.fillStyle=C.st[part.state];ctx.fillRect(x+op.x+offset,y+op.y,size,op.height);offset+=size;}}
+      else{if(op.track){ctx.fillStyle=C.line;ctx.fillRect(x+op.x,y+op.y,op.width,op.height);}let offset=0;for(const part of op.segments){const size=op.width*part.fraction;ctx.fillStyle=storyBandColors(choice.kind)[part.state];ctx.fillRect(x+op.x+offset,y+op.y,size,op.height);offset+=size;}}
     }
   }finally{ctx.restore();}
 }
@@ -124,7 +128,7 @@ function paintStories(){
 // LOCAL pure layout builder. Native canvas painting and hit geometry remain separate.
 function richLayout(kind,view,width,measure){
   const ops=[];let y=0,invalid=false;
-  const line=(text,x,top,size=11,weight=400)=>{const w=measure(text,size,weight);if(x<0||x+w>width+.01)invalid=true;ops.push({type:'text',text,x,y:top,size,weight,width:w,height:size+2});};
+  const line=(text,x,top,size=11,weight=400)=>{const w=measure(text,size,weight);if(x<0||x+w>width+.01){invalid=true;return;}const m=measure.bounds?measure.bounds(text,size,weight):{},left=m.actualBoundingBoxLeft||0,right=Number.isFinite(m.actualBoundingBoxRight)?m.actualBoundingBoxRight:w,px=Math.min(width-Math.max(w,right),Math.max(x,left,0));if(px<0||px-left<0||px+Math.max(w,right)>width+.01)invalid=true;ops.push({type:'text',text,x:px,y:top,size,weight,width:w,height:size+2});};
   const para=(text,size=11,weight=400,maxLines=4)=>{let current='',lines=[];for(const word of text.split(' ')){if(measure(word,size,weight)>width){invalid=true;return;}const next=current?current+' '+word:word;if(measure(next,size,weight)>width){lines.push(current);current=word;}else current=next;}if(current)lines.push(current);if(lines.length>maxLines){invalid=true;return;}for(const t of lines){line(t,0,y,size,weight);y+=size+4;}};
   const scope=()=>{para(view.scopeLabel);para('Built '+view.scope.freeze.slice(0,16).replace('T',' ')+' UTC');para('Selected scope, not whole-node ranking');y+=6;};
   if(kind==='frontier'){
@@ -154,7 +158,7 @@ function richLayout(kind,view,width,measure){
   }else if(kind==='dependencies'){
     if(!view.graph)return null;
     para('Recorded prerequisite paths',13,600);scope();
-    para('Arrows: dependent → required row');y+=7;
+    para(width<420?'Blocked row → prerequisites':'Arrows: dependent → required row');y+=7;
     const rows=view.graph.nodes,edges=view.graph.edges;
     // Complete connected graph when wide; bounded ego of highest-scored blocked row when narrow.
     const narrow=width<420;
@@ -193,9 +197,8 @@ function richLayout(kind,view,width,measure){
       else{if(measure(short,11,400)>p.w)return null;line(short,p.x,p.y+62);line(meaning,p.x,p.y+78);}
     }
     y=Math.max(...[...positions.values()].map(p=>p.y+p.h))+10;
-    para(shownRows.length+' of '+rows.length+' connected rows · '+shownEdges.length+' of '+edges.length+' recorded edges');
-    if(narrow)para('Direct prerequisites of the top blocked row.');
-    para('Source requirements, not runtime traffic.');
+    if(narrow)para(shownRows.length+' of '+rows.length+' rows · '+shownEdges.length+' of '+edges.length+' edges in scope');
+    else{para(shownRows.length+' of '+rows.length+' connected rows · '+shownEdges.length+' of '+edges.length+' recorded edges');para('Source requirements, not runtime traffic.');}
   }else return null;
   if(invalid)return null;
   const detail=kind==='frontier'?view.families.map(f=>f.key+': '+f.ready+' ready and '+f.blocked+' blocked; denominator '+(f.ready+f.blocked)+' eligible non-rollup open rows').join('. '):kind==='priority'?(width<420?view.priorities.slice(0,2):view.priorities).map(r=>r.id+': '+r.title+'; score '+r.priority.value+'; '+r.readiness).join('. '):ops.filter(o=>o.type==='edge').map(e=>view.refs[e.source].id+' requires '+view.refs[e.target].id).join('. ');
@@ -241,7 +244,8 @@ function availableRichLayouts(id,data,bounds){
   const layouts=[];
   if(id==='webui'&&SOURCE_VIEW){
     const width=W>=510?460:280,measure=(t,s,w)=>{ctx.font=w+' '+s+'px '+C.body;return ctx.measureText(t).width;};
-    ctx.save();try{
+    measure.bounds=(t,s,w)=>{ctx.font=w+' '+s+'px '+C.body;return ctx.measureText(t);};
+    ctx.save();try{ctx.textAlign='left';ctx.textBaseline='top';
       const kinds=bounds[2]>=2560?['dependencies','priority','frontier']:bounds[2]>=1280?['priority','frontier']:['frontier'];
       for(const kind of kinds)for(const candidateWidth of width===460?[460,280]:[280]){const layout=richLayout(kind,SOURCE_VIEW,candidateWidth,measure);if(layout)layouts.push(layout);}
     }finally{ctx.restore();}
@@ -272,7 +276,7 @@ function drawComposition(choice){
         ctx.strokeStyle=C.fg;ctx.fillStyle=C.fg;ctx.lineWidth=1.3;ctx.beginPath();op.points.forEach((p,i)=>i?ctx.lineTo(x+p[0],y+p[1]):ctx.moveTo(x+p[0],y+p[1]));ctx.stroke();
         const b=op.points.at(-1),a=op.points.at(-2),angle=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.beginPath();ctx.moveTo(x+b[0],y+b[1]);ctx.lineTo(x+b[0]-5*Math.cos(angle-.5),y+b[1]-5*Math.sin(angle-.5));ctx.lineTo(x+b[0]-5*Math.cos(angle+.5),y+b[1]-5*Math.sin(angle+.5));ctx.closePath();ctx.fill();
       }else if(op.type==='rule'){ctx.fillStyle=C.line;ctx.fillRect(x+op.x,y+op.y,op.width,op.height);}
-      else{if(op.track){ctx.fillStyle=C.line;ctx.fillRect(x+op.x,y+op.y,op.width,op.height);}let offset=0;for(const part of op.segments){const w=op.width*part.fraction;ctx.fillStyle=C.st[part.state];ctx.fillRect(x+op.x+offset,y+op.y,w,op.height);offset+=w;}}
+      else{if(op.track){ctx.fillStyle=C.line;ctx.fillRect(x+op.x,y+op.y,op.width,op.height);}let offset=0;for(const part of op.segments){const w=op.width*part.fraction;ctx.fillStyle=storyBandColors(choice.kind)[part.state];ctx.fillRect(x+op.x+offset,y+op.y,w,op.height);offset+=w;}}
     }
   }finally{ctx.restore();}
 }

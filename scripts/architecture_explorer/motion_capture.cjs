@@ -45,7 +45,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const frames=[],origin=Date.now();
   for(let i=0;i<3;i++){
     if(i)await delay(2000);
-    const evidence=await evaluate(`(()=>({theme:document.documentElement.dataset.theme,state:document.documentElement.dataset.oceanMotion,hidden:document.hidden,compat:document.compatMode,charset:document.characterSet,waves:[...document.querySelectorAll('.ocean-wave')].map(w=>{const a=w.getAnimations()[0],m=new DOMMatrixReadOnly(getComputedStyle(w).transform);return {time:a.currentTime,playState:a.playState,x:m.m41,y:m.m42};})}))()`);
+    const evidence=await evaluate(`(()=>({theme:document.documentElement.dataset.theme,state:document.documentElement.dataset.oceanMotion,hidden:document.hidden,compat:document.compatMode,charset:document.characterSet,waves:[...document.querySelectorAll('.ocean-wave')].map(w=>{const a=w.getAnimations()[0],m=new DOMMatrixReadOnly(getComputedStyle(w).transform);const tide=w.getAnimations().find(a=>a.animationName==='ocean-tide');return {time:a.currentTime,playState:a.playState,x:m.m41,y:m.m42,opacity:Number(getComputedStyle(w).opacity),tide:tide?{time:tide.currentTime,playState:tide.playState}:null};})}))()`);
     if(evidence.theme!==theme||evidence.state!=='running'||evidence.hidden||evidence.compat!=='CSS1Compat'||evidence.charset!=='UTF-8'||evidence.waves.length!==3)throw Error('Motion capture page state invalid: '+JSON.stringify(evidence));
     const screenshot=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
     const bytes=Buffer.from(screenshot.data,'base64'),name=`${theme}-continuous-motion-${i}.png`;
@@ -55,6 +55,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     if(frames[i].wall_ms-frames[i-1].wall_ms<1800||frames[i].sha256===frames[i-1].sha256)throw Error('No actual elapsed/pixel progression');
     if(!frames[i].waves.every((w,j)=>w.playState==='running'&&w.time>frames[i-1].waves[j].time+1500&&Math.abs(w.x-frames[i-1].waves[j].x)>8))throw Error('Ocean motion not visibly progressing');
   }
+  if(!frames.every(f=>f.waves.every(w=>w.tide?.playState==='running'))||!frames[2].waves.some((w,i)=>Math.abs(w.opacity-frames[0].waves[i].opacity)>.001))throw Error('Slow backdrop palette fade did not progress');
   writeFileSync(join(output,`${theme}-continuous-motion.json`),JSON.stringify({kind:'Unforced real wall-clock browser frames; no animation seeking or virtual time',frames},null,2)+'\n');
   // Semantic caption proof uses only the existing controls after the untouched motion frames.
   const navigation={kind:'Real native zoom input, unchanged world geometry, and actual caption paint',theme,steps:[]};

@@ -157,5 +157,32 @@ const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('nod
 const refs={};for(let i=0;i<5;i++){const key='R:TEST-'+i;refs[key]={key,id:'TEST-'+i,title:'Source requirement '+i,rollupOf:[],readiness:i?'blocked':'ready',priority:{value:6-i},url:'https://github.com/Knuckles-Team/pipelines/blob/'+ 'a'.repeat(40)+'/specs/demo/requirements.md',provenance:{fragment:'TEST-'+i}};}
 const view={scope:{freeze:'2026-01-02T03:04:05Z'},scopeLabel:'Synthetic scope',accessibility:'Selected scope only.',priorities:Object.values(refs),priorityScale:6,priorityCounts:{positiveOmitted:1,zeroScore:0},refs};
 for(const width of [280,460]){const l=richLayout('priority',view,width,(t,s)=>Array.from(t).length*s*.52);assert(l);const shown=width<420?2:5;assert(l.ops.some(o=>o.text?.includes(shown+' of 6 positive rows')));assert(l.accessibility.includes((6-shown)+' omitted'));assert(l.ops.some(o=>o.text?.includes('2026-01-02 03:04')));for(const op of l.ops.filter(o=>o.type==='text'))assert(op.size>=11&&op.x>=0&&op.x+op.width<=width+.01);}
+const huge=structuredClone(view);huge.priorityScale=Number.MAX_SAFE_INTEGER;huge.priorities[0].priority.value=Number.MAX_SAFE_INTEGER;assert.equal(richLayout('priority',huge,280,(t,s)=>Array.from(t).length*s*.52),null,'defer a complete oversized number rather than shift it across its bar');
+"""
+    subprocess.run(["node", "-e", js, str(path)], check=True, capture_output=True, text=True)
+
+
+def test_actual_glyph_overhang_is_placed_inside_unchanged_module_bounds():
+    from scripts.architecture_explorer import story_render
+
+    path = Path(story_render.__file__).with_name("story_canvas.js")
+    js = r"""
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const stack=[],ctx={font:'400 11px Inter',save(){stack.push(this.font)},restore(){this.font=stack.pop()},measureText(t){const w=Array.from(t).length*Number(this.font.match(/(\d+)px/)[1])*.52;return {width:w,actualBoundingBoxLeft:1,actualBoundingBoxRight:w+.104}}};
+const c={module:{exports:{}},Intl,ctx,C:{body:'Inter'},fmt:n=>String(n),ST:['VERIFIED','LANDED','SPECIFIED','RETIRED']};vm.createContext(c);vm.runInContext(fs.readFileSync(process.argv[1],'utf8')+';this.familyLayout=storyLayout;',c);
+const groups=[{key:'r:one',label:'Family one',total:735,counts:{VERIFIED:700,LANDED:30,SPECIFIED:5,RETIRED:0}},{key:'r:two',label:'Family two',total:8,counts:{VERIFIED:0,LANDED:0,SPECIFIED:8,RETIRED:0}}];
+const l=c.familyLayout('comparison',{total:743,familyCount:2,takeaway:null},groups);assert(l);assert.equal(l.width,280);const count=l.ops.find(o=>o.text==='735 / 743');assert(count);for(const o of l.ops.filter(o=>o.type==='text'))assert(o.x>=1&&o.x+o.width+.104<=280.000001);assert(count.x+count.width+.104<=280.000001);
+"""
+    subprocess.run(["node", "-e", js, str(path)], check=True, capture_output=True, text=True)
+
+
+def test_evidence_fills_share_native_progress_tokens_not_text_colors():
+    from scripts.architecture_explorer import story_render
+
+    path = Path(story_render.__file__).with_name("story_canvas.js")
+    js = r"""
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const c={module:{exports:{}},Intl,C:{st:{VERIFIED:'text-color'},progress:{VERIFIED:'semantic-fill'}}};vm.createContext(c);vm.runInContext(fs.readFileSync(process.argv[1],'utf8')+';this.palette=storyBandColors;',c);
+assert.equal(c.palette('comparison').VERIFIED,'semantic-fill');assert.equal(c.palette('concentration').VERIFIED,'semantic-fill');assert.equal(c.palette('priority').VERIFIED,'text-color');assert.equal(c.palette('frontier').VERIFIED,'text-color');
 """
     subprocess.run(["node", "-e", js, str(path)], check=True, capture_output=True, text=True)

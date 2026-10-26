@@ -72,6 +72,8 @@ def test_workflow_requires_current_source_build_and_paired_rich_browser_proof():
     assert "--source-families scripts/architecture_explorer/source-families.json" in text
     assert "--source-file architecture-build/index.html" in text
     assert "scripts.architecture_explorer.story_browser" in text
-    assert "--source architecture-build/index.html --output architecture-preview/rich" in text
-    assert "current-build-tree.json" in text
+    assert "--source architecture-build/index.html --output architecture-rich-proof" in text
+    assert "architecture-source-proof/current-build-tree.json" in text
+    assert "path: architecture-rich-proof/" in text
+    assert "path: architecture-source-proof/" in text
     assert "secrets." not in text and "contents: read" in text

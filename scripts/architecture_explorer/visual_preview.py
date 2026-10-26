@@ -62,7 +62,8 @@ def prepare_preview(source: str, output: Path, candidate: str, *, source_url: st
     (output / "index.html").write_text(DOC_HEAD + page + DOC_TAIL)
     (output / "README.txt").write_text(
         "Visual/navigation preview only. Spec detail shards are not included; expand-detail offline is unavailable.\n"
-        "The canonical deployed generator and its full detail behavior are unchanged.\n"
+        "before/ records the supplied source HTML; same-build source-file runs are not previous-deployment comparisons.\n"
+        "Rich-chart proof uses its separately retained extension-free, identical-payload baseline.\n"
         "Open the exact, complete index.html to test theme/navigation.\n"
         "Gzipped DOM diagnostics are COMPACTED, not raw or replayable HTML. Duplicate PAYLOAD/font/art\n"
         "are replaced only at known inline locations by SHA256/UTF-8-byte-count markers; per-capture\n"
@@ -217,6 +218,11 @@ def verify_browser_results(report: Path) -> None:
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-1440,1000]",
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-390,844]",
     }
+    expected.update(
+        f"test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[{viewport}-{theme}]"
+        for viewport in ("1440,1000", "1920,1080", "2560,1440", "390,844")
+        for theme in ("light", "dark")
+    )
     cases = {case.attrib.get("name"): case for case in ElementTree.parse(report).iter("testcase")}
     for name in sorted(expected):
         if name not in cases or any(cases[name].find(tag) is not None for tag in ("skipped", "failure", "error")):

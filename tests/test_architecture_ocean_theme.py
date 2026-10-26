@@ -143,12 +143,23 @@ def _ocean_bounds(block):
     # Actual two opaque SVG fill colors; max three overlapping layers over the body gradient.
     from urllib.parse import unquote
 
-    svg = unquote(TEMPLATE.read_text().split("data:image/svg+xml,", 1)[1].split('")', 1)[0])
-    fills = [tuple(int(value[i : i + 2], 16) for i in (0, 2, 4)) for value in re.findall(r'fill="#([\da-f]{6})"', svg)]
-    assert len(fills) == 2 and len(colors) == 2
+    svgs = re.findall(r'data:image/svg\+xml,([^"\s]+)', TEMPLATE.read_text())
+    fills = [
+        tuple(int(value[i : i + 2], 16) for i in (0, 2, 4))
+        for svg in svgs
+        for value in re.findall(r'fill="#([\da-f]{6})"', unquote(svg))
+    ]
+    assert len(fills) == 6 and len(colors) == 2
+    # The three cached color layers only transform/fade. Include no wave, both
+    # opacity extrema and the intermediate keyframe for every overlapping layer.
     candidates = colors[:]
     for _ in range(3):
-        candidates += [_blend(fill, back, opacity) for fill in fills for back in candidates[:]]
+        candidates += [
+            _blend(fill, back, opacity * phase)
+            for fill in fills
+            for phase in (0.55, 0.775, 1)
+            for back in candidates[:]
+        ]
     return [tuple(fn(c[i] for c in candidates) for i in range(3)) for fn in (min, max)]
 
 
@@ -430,3 +441,79 @@ assert.throws(()=>paintAnnotations(),/measurement failed/);assert.deepEqual(styl
 """
     )
     subprocess.run([node, "-e", script], check=True, capture_output=True, text=True)
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_progress_fills_contrast_on_actual_tinted_glass_and_have_distinct_hues() -> None:
+    import colorsys
+
+    source = TEMPLATE.read_text()
+    tints = re.findall(r"--t-[\w-]+:rgba\((\d+),(\d+),(\d+),([.\d]+)\)", source.split(":root{", 1)[1].split("}", 1)[0])
+    for selector in (":root{", ':root[data-theme="dark"]{'):
+        block = source.split(selector, 1)[1].split("}", 1)[0]
+        tokens = dict(re.findall(r"(--[\w-]+):\s*(#[\da-f]{6})", block))
+        colors = [tokens[f"--p-{state}"] for state in ("verified", "landed", "specified", "retired")]
+        hues = []
+        for color in colors:
+            rgb = tuple(int(color[i : i + 2], 16) / 255 for i in (1, 3, 5))
+            hue, saturation, _ = colorsys.rgb_to_hsv(*rgb)
+            assert saturation >= 0.14
+            hues.append(hue * 360)
+            assert _contrast(color, tokens["--surface"]) >= 3
+        for i, hue in enumerate(hues):
+            for other in hues[i + 1 :]:
+                assert min(abs(hue - other), 360 - abs(hue - other)) >= 35
+        for ocean in _ocean_bounds(block):
+            canvas = _blend((255, 255, 255), ocean, 0.10)
+            for endpoint in ("top", "bottom"):
+                match = re.search(r"--node-" + endpoint + r":rgba\((\d+),(\d+),(\d+),([.\d]+)\)", block)
+                material = _blend(tuple(int(match[i]) for i in (1, 2, 3)), canvas, float(match[4]))
+                surfaces = [material] + [_blend(tuple(map(int, tint[:3])), material, float(tint[3])) for tint in tints]
+                for surface in surfaces:
+                    for color in colors:
+                        assert _contrast(color, _hex(surface)) >= 3, (selector, endpoint, color, _hex(surface))
+    assert "ctx.fillStyle=C.progress[s]" in source
+    assert 'C.progress[s]=g("--p-"+s.toLowerCase())' in source
+    assert "--p-verified:CanvasText; --p-landed:Highlight;" in source
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_top_level_progress_growth_preserves_bottom_edge_and_metric_count_gap() -> None:
+    source = TEMPLATE.read_text()
+    assert 'topLevel=parentOf[n.id]==="root"' in source
+    assert "barHeight=baseBarHeight*(topLevel?1.65:1)" in source
+    assert "barY=sy+sh-Math.max(3,Math.min(5,sh*0.04))-(barHeight-baseBarHeight)" in source
+    assert "countBaseline=barY-Math.max(1,countMetrics.actualBoundingBoxDescent||0)-3" in source
+    for height in (15, 32, 44, 84, 194, 600, 2000):
+        base = max(1.5, min(3, height * 0.02))
+        old_top = height - max(3, min(5, height * 0.04))
+        thick = base * 1.65
+        new_top = old_top - (thick - base)
+        assert new_top + thick == pytest.approx(old_top + base)
+        assert thick / base == pytest.approx(1.65)
+        assert new_top >= 0
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_progress_summary_is_a_full_name_responsive_color_key() -> None:
+    source = TEMPLATE.read_text()
+    assert "repeat(auto-fit,minmax(min(100%,145px),1fr))" in source
+    assert ".stat .total{grid-column:1/-1}" in source
+    assert ".stat span{overflow:visible;white-space:normal;overflow-wrap:normal}" in source
+    assert '"aria-label":"Progress status legend and counts"' in source
+    assert 'text:"Progress status · color key"' in source
+    for state in ("Verified", "Landed", "Specified", "Retired"):
+        assert '"' + state + '"' in source
+    assert 'class:"status-swatch","aria-hidden":"true"' in source
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_ocean_color_variance_is_backdrop_only_slow_compositor_opacity() -> None:
+    source = TEMPLATE.read_text()
+    assert "ocean-tide 48s ease-in-out infinite alternate" in source
+    assert "animation-duration:16s,56s" in source and "animation-duration:20s,64s" in source
+    assert "@keyframes ocean-tide{from{opacity:calc(var(--wave-opacity)*.55)}to{opacity:var(--wave-opacity)}}" in source
+    assert "hue-rotate" not in source
+    assert source.count("data:image/svg+xml,") == 3
+    assert ':root[data-ocean-motion="running"] .ocean-wave{animation-play-state:running}' in source
+    assert ".ocean-wave{animation:none!important}" in source

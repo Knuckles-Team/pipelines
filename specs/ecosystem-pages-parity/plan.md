@@ -650,3 +650,32 @@ binds full commits, row parity and build time. Source validation fails before
 writes without stale chart or anonymous fallback. Production activation awaits
 review, existing-token current source proof and source-rich visual checks;
 all-box mapping completeness and whole-bundle atomic promotion are not claimed.
+
+### Legible progress tracks and status summary (2026-10-26)
+
+Within the combined native graph/story delivery, increase only top-level closed
+node progress-track thickness by 65 percent. Preserve each track's bottom edge,
+reserve the same measured count-text gap above its raised top, and retain every
+world rectangle and camera operation. Use shared, distinguishable progress-fill
+tokens for diagram segments, evidence graphics and the visible status-color key;
+keep status text colors independently contrast-qualified. Replace the cramped
+five-column sidebar summary with full-name, responsive status/count rows and a
+full-width total, without widening the sidebar or adding filters. Require actual
+light/dark browser bounds at 390, 1440, 1920 and 2560 pixels, existing count-track
+and previous-formula negative proof, and contrast against tinted glass and ocean
+bounds before publication. Preserve status values and classification.
+
+Reduce backdrop-only blue concentration with three cached sea-glass/blue, soft
+lavender/blue and warm peach-orange vector wave layers. Slowly cross-fade their opacity over
+48–64 seconds while retaining the existing gentle spatial drift; never animate
+status/text/glass hues. Keep the same three shared layers and motion preference,
+reduced-motion and hidden-page controls. Validate actual ocean/canvas/glass/tint
+composites at opacity extrema and midpoint, plus unforced fade evidence.
+
+The first same-build hosted proof captured 8371 rows at 2026-10-26T14:57:20Z
+and passed all 22 original browser cases, but correctly rejected a 0.104px
+actual Inter glyph overhang after 49 paired states. The combined follow-on must
+use actual glyph bounds without loosening the comparator, retain all dependency
+counts/provenance, and pass the new 30-case core plus rich native proof. Retain
+core, current-source and rich-pair artifacts separately; keep the core 31 MiB
+limit and all original pixels rather than hiding the recorded failure.

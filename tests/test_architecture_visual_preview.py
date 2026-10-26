@@ -81,6 +81,14 @@ def test_real_browser_receipt_fails_closed_for_skipped_missing_or_failed_cases(t
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[eg-390,844]",
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-1440,1000]",
         "test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels[connectors-390,844]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1440,1000-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1440,1000-dark]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1920,1080-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[1920,1080-dark]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[2560,1440-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[2560,1440-dark]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[390,844-light]",
+        "test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit[390,844-dark]",
     ]
     cases = [f'<testcase name="{name}"/>' for name in names]
     if bad == "missing":
