@@ -9,10 +9,10 @@ inputs:
     description: unpublished checks the release tag; published-wheel binds an existing public pure-Python wheel to reviewed container source.
     default: unpublished
   distribution:
-    description: Exact project distribution name, required for published-wheel.
+    description: Exact project distribution name for published-wheel; the central container workflow can infer it.
     default: ""
   module:
-    description: Exact Python package module whose complete payload must match reviewed HEAD.
+    description: Exact Python package module whose complete payload must match reviewed HEAD; the central container workflow can infer it for one connector module.
     default: ""
   dockerfile:
     description: Reviewed Dockerfile path for published-wheel.

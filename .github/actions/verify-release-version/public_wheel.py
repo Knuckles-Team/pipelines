@@ -6,18 +6,136 @@ import argparse
 import hashlib
 import io
 import json
+import os
 import re
 import shlex
 import subprocess
+import sys
+import tarfile
+import tempfile
 import tomllib
 from pathlib import Path
 from urllib.parse import urlsplit
 from urllib.request import urlopen
 from zipfile import ZipFile
 
+MODULE_RE = re.compile(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*")
+
+
+def _reviewed_connector_metadata(root: Path) -> tuple[dict[str, object], list[str]]:
+    """Read connector identity from the immutable reviewed tree."""
+    pyproject = subprocess.check_output(["git", "show", "HEAD:pyproject.toml"], cwd=root, text=False)
+    try:
+        document = tomllib.loads(pyproject.decode("utf-8"))
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("Reviewed pyproject.toml is not valid UTF-8 TOML") from error
+    sources = [
+        path
+        for path in subprocess.check_output(
+            ["git", "ls-tree", "-r", "--name-only", "HEAD"], cwd=root, text=True
+        ).splitlines()
+        if Path(path).name == "connector_sources.py"
+    ]
+    return document, sources
+
+
+def _connector_modules(document: dict[str, object], sources: list[str]) -> set[str]:
+    points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    modules: set[str] = set()
+    if isinstance(points, dict):
+        for value in points.values():
+            if isinstance(value, str):
+                candidate = value.split(":", 1)[0].strip()
+                if MODULE_RE.fullmatch(candidate):
+                    modules.add(candidate)
+    for path in sources:
+        if Path(path).name == "connector_sources.py":
+            candidate = ".".join(Path(path).with_suffix("").parts[:-1])
+            if MODULE_RE.fullmatch(candidate):
+                modules.add(candidate)
+    return modules
+
+
+def reviewed_identity(root: Path, distribution: str = "", module: str = "") -> dict[str, object]:
+    """Resolve a connector's distribution and package module from reviewed HEAD."""
+    document, sources = _reviewed_connector_metadata(root)
+    project = document.get("project", {})
+    points = project.get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    connector = (isinstance(points, dict) and bool(points)) or bool(sources)
+    if not connector:
+        return {"connector": False}
+    project_distribution = project.get("name")
+    resolved_distribution = distribution or project_distribution
+    if not isinstance(resolved_distribution, str) or not resolved_distribution:
+        raise ValueError("Connector project metadata has no distribution name")
+    if module:
+        if not MODULE_RE.fullmatch(module):
+            raise ValueError("Package module must be an explicit dotted Python package")
+        resolved_module = module
+    else:
+        modules = _connector_modules(document, sources)
+        if len(modules) != 1:
+            raise ValueError("Connector package module is ambiguous; pass an explicit module")
+        resolved_module = next(iter(modules))
+    return {"connector": True, "distribution": resolved_distribution, "module": resolved_module}
+
+
+def _generated_payload(root: Path, module: str) -> dict[str, bytes]:
+    """Recreate release-only ontology files from the reviewed source tree.
+
+    Connector release generation intentionally writes these files into the build tree and
+    leaves them untracked.  The public wheel therefore carries bytes that are not present
+    in ``git ls-tree``; generating from an isolated HEAD archive keeps the guard's source
+    binding exact while accounting for that supported packaging format.
+    """
+    document, sources = _reviewed_connector_metadata(root)
+    points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    if not ((isinstance(points, dict) and bool(points)) or sources):
+        return {}
+
+    provider_root = Path(__file__).resolve().parents[3]
+    if not (provider_root / "pipelines_hooks" / "connector" / "generate.py").is_file():
+        raise ValueError("Generated wheel verification requires the provider generator checkout")
+    with tempfile.TemporaryDirectory(prefix="public-wheel-source-") as directory:
+        source = Path(directory)
+        archive = subprocess.check_output(["git", "archive", "HEAD"], cwd=root)
+        with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+            tar.extractall(source, filter="data")
+        package = source / module.replace(".", "/")
+        # Minimal connector fixtures can exercise the Docker renderer without declaring
+        # ontology generation.  Such a package has no generated payload to bind here.
+        if not (package / "ontology" / "mappings" / "source.yaml").is_file():
+            return {}
+        old_epoch = os.environ.get("SOURCE_DATE_EPOCH")
+        if old_epoch is None:
+            os.environ["SOURCE_DATE_EPOCH"] = subprocess.check_output(
+                ["git", "show", "-s", "--format=%ct", "HEAD"], cwd=root, text=True
+            ).strip()
+        sys.path.insert(0, str(provider_root))
+        try:
+            from pipelines_hooks.connector import generate
+
+            generated = generate.generate(source)
+        except Exception as error:
+            raise ValueError("Reviewed connector ontology generation failed") from error
+        finally:
+            sys.path.pop(0)
+            if old_epoch is None:
+                os.environ.pop("SOURCE_DATE_EPOCH", None)
+            else:
+                os.environ["SOURCE_DATE_EPOCH"] = old_epoch
+        prefix = module.replace(".", "/") + "/"
+        payload: dict[str, bytes] = {}
+        for path, text in generated.items():
+            name = path.relative_to(source).as_posix()
+            if not name.startswith(prefix):
+                raise ValueError("Generated connector artifact is outside the reviewed package")
+            payload[name] = text.encode("utf-8")
+        return payload
+
 
 def reviewed_payload(root: Path, module: str) -> dict[str, bytes]:
-    if not re.fullmatch(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*", module):
+    if not MODULE_RE.fullmatch(module):
         raise ValueError("Package module must be an explicit dotted Python package")
     prefix = module.replace(".", "/") + "/"
     files = subprocess.check_output(
@@ -25,7 +143,9 @@ def reviewed_payload(root: Path, module: str) -> dict[str, bytes]:
     ).splitlines()
     if not files:
         raise ValueError("Reviewed package payload is empty")
-    return {name: subprocess.check_output(["git", "show", f"HEAD:{name}"], cwd=root) for name in files}
+    payload = {name: subprocess.check_output(["git", "show", f"HEAD:{name}"], cwd=root) for name in files}
+    payload.update(_generated_payload(root, module))
+    return payload
 
 
 def verify_payload(data: bytes, digest: str, expected: dict[str, bytes], module: str) -> None:
@@ -49,6 +169,54 @@ def read_public(url: str) -> bytes:
         return response.read()
 
 
+def _rendered_dockerfile(root: Path) -> str:
+    """Render the canonical Dockerfile from the reviewed ``HEAD`` metadata."""
+    provider_root = Path(__file__).resolve().parents[3]
+    if not (provider_root / "pipelines_hooks" / "connector" / "container.py").is_file():
+        raise ValueError("Generated Dockerfile verification requires the provider renderer checkout")
+    sys.path.insert(0, str(provider_root))
+    try:
+        from pipelines_hooks.connector.container import render
+    finally:
+        sys.path.pop(0)
+
+    with tempfile.TemporaryDirectory(prefix="public-wheel-source-") as directory:
+        source = Path(directory)
+        pyproject = subprocess.check_output(
+            ["git", "show", "HEAD:pyproject.toml"], cwd=root, text=False, stderr=subprocess.DEVNULL
+        )
+        try:
+            document = tomllib.loads(pyproject.decode("utf-8"))
+        except (UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+            raise ValueError("Generated Dockerfile verification requires readable reviewed pyproject.toml") from error
+        points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+        tracked_sources = [
+            path
+            for path in subprocess.check_output(
+                ["git", "ls-tree", "-r", "--name-only", "HEAD"], cwd=root, text=True
+            ).splitlines()
+            if Path(path).name == "connector_sources.py"
+        ]
+        if (not isinstance(points, dict) or not points) and not any(
+            Path(path).name == "connector_sources.py" for path in tracked_sources
+        ):
+            raise ValueError("Generated Dockerfile verification requires a connector identity")
+        (source / "pyproject.toml").write_bytes(pyproject)
+        return render(source)["Dockerfile"]
+
+
+def _reviewed_dockerfile(root: Path, dockerfile: str) -> str:
+    """Read a tracked Dockerfile or the provider-rendered canonical one."""
+    try:
+        return subprocess.check_output(
+            ["git", "show", f"HEAD:{dockerfile}"], cwd=root, text=True, stderr=subprocess.DEVNULL
+        )
+    except subprocess.CalledProcessError as error:
+        if dockerfile != "docker/Dockerfile":
+            raise ValueError(f"Reviewed Dockerfile is not tracked: {dockerfile}") from error
+        return _rendered_dockerfile(root)
+
+
 def verify_release(root: Path, distribution: str, module: str, dockerfile: str, extras: str) -> dict[str, object]:
     project = tomllib.loads(subprocess.check_output(["git", "show", "HEAD:pyproject.toml"], cwd=root, text=True))[
         "project"
@@ -58,7 +226,7 @@ def verify_release(root: Path, distribution: str, module: str, dockerfile: str, 
     version = project["version"]
     suffix = f"[{extras}]" if extras else ""
     pin = f"{distribution}{suffix}=={version}"
-    docker = subprocess.check_output(["git", "show", f"HEAD:{dockerfile}"], cwd=root, text=True)
+    docker = _reviewed_dockerfile(root, dockerfile)
     if pin not in shlex.split(docker, comments=True):
         raise ValueError("Dockerfile must pin the reviewed package version")
     expected = reviewed_payload(root, module)
@@ -83,11 +251,17 @@ def verify_release(root: Path, distribution: str, module: str, dockerfile: str, 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
-    parser.add_argument("--distribution", required=True)
-    parser.add_argument("--module", required=True)
+    parser.add_argument("--distribution", default="")
+    parser.add_argument("--module", default="")
     parser.add_argument("--dockerfile", default="docker/Dockerfile")
     parser.add_argument("--extras", default="mcp")
+    parser.add_argument("--resolve-identity", action="store_true")
     args = parser.parse_args()
+    if args.resolve_identity:
+        print(json.dumps(reviewed_identity(args.root, args.distribution, args.module), sort_keys=True))
+        return
+    if not args.distribution or not args.module:
+        parser.error("--distribution and --module are required unless --resolve-identity is used")
     print(
         json.dumps(
             verify_release(args.root, args.distribution, args.module, args.dockerfile, args.extras), sort_keys=True
