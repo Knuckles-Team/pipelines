@@ -18,6 +18,14 @@ WORKFLOW = ROOT / ".github/workflows/container_pipeline.yml"
 ACTION = ROOT / ".github/actions/stage-container-runtime/action.yml"
 
 
+def _render_needed_step() -> dict:
+    return next(
+        step
+        for step in yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+        if step.get("id") == "render-needed"
+    )
+
+
 def test_workflow_contract_and_legacy_publication_controls() -> None:
     workflow = yaml.safe_load(WORKFLOW.read_text())
     job = workflow["jobs"]["publish-docker"]
@@ -44,6 +52,202 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
     assert builds[0]["with"]["target"] == "${{ steps.target.outputs.target }}"
     assert builds[0]["with"]["push"] == "${{ github.event_name == 'push' }}"
     assert steps.index(next(step for step in steps if step.get("id") == "runtime")) < steps.index(builds[0])
+    assert steps.index(_render_needed_step()) < steps.index(next(step for step in steps if step.get("id") == "render"))
+    assert steps.index(next(step for step in steps if step.get("id") == "render")) < steps.index(
+        next(step for step in steps if step.get("id") == "target")
+    )
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_main_connector_release_preflights_public_wheel_before_builder_or_login() -> None:
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    inputs = workflow[True]["workflow_call"]["inputs"]
+    assert inputs["published_wheel_distribution"]["default"] == ""
+    assert inputs["published_wheel_module"]["default"] == ""
+    assert inputs["published_wheel_extras"]["default"] == ""
+    steps = workflow["jobs"]["publish-docker"]["steps"]
+    identity = next(step for step in steps if step.get("id") == "published-wheel")
+    guard = next(
+        step for step in steps if step.get("name") == "Verify published connector wheel before container build"
+    )
+    builder = next(step for step in steps if step.get("id") == "builder")
+    login = next(step for step in steps if "docker/login-action@" in step.get("uses", ""))
+    builds = [step for step in steps if "docker/build-push-action@" in step.get("uses", "")]
+    assert (
+        identity["if"]
+        == "github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true'"
+    )
+    assert "steps.published-wheel.outputs.connector == 'true'" in guard["if"]
+    assert guard["uses"] == "./.pipeline-contract/.github/actions/verify-release-version"
+    assert guard["with"] == {
+        "mode": "published-wheel",
+        "distribution": "${{ steps.published-wheel.outputs.distribution }}",
+        "module": "${{ steps.published-wheel.outputs.module }}",
+        "dockerfile": "${{ inputs.dockerfile }}",
+        "extras": "${{ steps.published-wheel.outputs.extras }}",
+        "root": "${{ inputs.build_context }}",
+    }
+    assert steps.index(identity) < steps.index(guard) < steps.index(builder) < steps.index(login)
+    assert steps.index(guard) < steps.index(builds[0])
+    assert "--resolve-identity" in identity["run"]
+    assert "--resolve-extras" in identity["run"]
+    assert "MATRIX_TARGET" in identity["env"]
+    assert "connector" in identity["run"]
+
+
+def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp_path: Path) -> None:
+    step = next(
+        step
+        for step in yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+        if step.get("id") == "published-wheel"
+    )
+    git_env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+
+    def commit_fixture(root: Path, pyproject: str, package: bool = False) -> None:
+        root.mkdir()
+        if package:
+            (root / "demo").mkdir()
+            (root / "demo/__init__.py").write_text("\n")
+        (root / "pyproject.toml").write_text(pyproject)
+        subprocess.run(["git", "init", "-q"], cwd=root, env=git_env, check=True)
+        subprocess.run(["git", "add", "--", "."], cwd=root, env=git_env, check=True)
+        subprocess.run(
+            ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+            cwd=root,
+            env=git_env,
+            check=True,
+        )
+
+    cases = [
+        (
+            'name = "demo-dist"\nversion = "1.2.3"\n',
+            {"connector": "false", "distribution": "", "module": ""},
+        ),
+        (
+            '[project]\nname = "demo-dist"\nversion = "1.2.3"\n'
+            '[project.entry-points."agent_connector_sdk.connector"]\n'
+            'demo = "demo:connector"\n',
+            {"connector": "true", "distribution": "demo-dist", "module": "demo"},
+        ),
+    ]
+    for index, (pyproject, expected) in enumerate(cases):
+        root = tmp_path / str(index)
+        if not pyproject.startswith("[project]"):
+            pyproject = "[project]\n" + pyproject
+        commit_fixture(root, pyproject, package=index == 1)
+        output = root / "output"
+        environment = {
+            **git_env,
+            "BUILD_CONTEXT": ".",
+            "PUBLISHED_WHEEL_DISTRIBUTION": "",
+            "PUBLISHED_WHEEL_MODULE": "",
+            "PUBLISHED_WHEEL_EXTRAS": "",
+            "DOCKERFILE": "docker/Dockerfile",
+            "MATRIX_TARGET": "mcp",
+            "PUBLIC_WHEEL_GUARD": str(ROOT / ".github/actions/verify-release-version/public_wheel.py"),
+            "GITHUB_OUTPUT": str(output),
+        }
+        result = subprocess.run(["bash", "-c", step["run"]], cwd=root, env=environment, capture_output=True, text=True)
+        assert result.returncode == 0, result.stderr
+        assert dict(line.split("=", 1) for line in output.read_text().splitlines()) == expected | {"extras": ""}
+
+    mismatch = {
+        **environment,
+        "PUBLISHED_WHEEL_EXTRAS": "mcp",
+        "GITHUB_OUTPUT": str(tmp_path / "mismatch-output"),
+    }
+    result = subprocess.run(
+        ["bash", "-c", step["run"]], cwd=tmp_path / "1", env=mismatch, capture_output=True, text=True
+    )
+    assert result.returncode != 0
+    assert "do not match" in result.stdout + result.stderr
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+@pytest.mark.parametrize(
+    ("pyproject", "dockerfile", "render_connector", "tracked", "expected"),
+    [
+        (
+            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            "docker/Dockerfile",
+            "false",
+            False,
+            True,
+        ),
+        (
+            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            "docker/Dockerfile",
+            "false",
+            True,
+            False,
+        ),
+        (
+            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            "custom/Dockerfile",
+            "false",
+            False,
+            False,
+        ),
+        ('[project]\nname = "demo"\n', "docker/Dockerfile", "false", False, False),
+        ('[project]\nname = "demo"\n', "custom/Dockerfile", "true", False, True),
+    ],
+)
+def test_connector_render_is_selected_only_for_missing_canonical_dockerfile(
+    tmp_path: Path,
+    *,
+    pyproject: str,
+    dockerfile: str,
+    render_connector: str,
+    tracked: bool,
+    expected: bool,
+) -> None:
+    step = _render_needed_step()
+    (tmp_path / "pyproject.toml").write_text(pyproject)
+    if tracked:
+        recipe = tmp_path / dockerfile
+        recipe.parent.mkdir(parents=True)
+        recipe.write_text("FROM scratch\n")
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "DOCKERFILE": dockerfile,
+            "RENDER_CONNECTOR": render_connector,
+            "GITHUB_OUTPUT": str(output),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert output.read_text() == f"render={str(expected).lower()}\n"
+
+
+def test_connector_sources_identity_enables_canonical_render(tmp_path: Path) -> None:
+    step = _render_needed_step()
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "demo"\n')
+    (tmp_path / "connector_sources.py").write_text('CONNECTOR = "demo"\n')
+    git_env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, env=git_env, check=True)
+    subprocess.run(
+        ["git", "add", "--", "pyproject.toml", "connector_sources.py"], cwd=tmp_path, env=git_env, check=True
+    )
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **git_env,
+            "DOCKERFILE": "docker/Dockerfile",
+            "RENDER_CONNECTOR": "false",
+            "GITHUB_OUTPUT": str(output),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert output.read_text() == "render=true\n"
 
 
 @pytest.mark.parametrize(
@@ -90,6 +294,31 @@ def test_target_selection(
         assert values["exists"] == str(enabled).lower()
         assert values.get("target") == target
         assert values["runtime"] == "false"
+
+
+def test_missing_custom_dockerfile_fails_closed(tmp_path: Path) -> None:
+    step = next(
+        step
+        for step in yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+        if step.get("id") == "target"
+    )
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "DOCKERFILE": "custom/Dockerfile",
+            "GITHUB_OUTPUT": str(output),
+            "REQUESTED_TARGET": "",
+            "MATRIX_TARGET": "agent",
+            "RUNTIME_REQUEST": "",
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "custom Dockerfile is absent" in result.stdout + result.stderr
 
 
 def test_action_download_is_opt_in_same_run_and_before_verified_staging(tmp_path: Path) -> None:

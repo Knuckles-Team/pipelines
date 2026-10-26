@@ -1,13 +1,17 @@
 """Stream tracked paths and bodies for prohibited identities without loading whole files.
 
-Text is split into lexical groups (letters, digits, ``_`` and ``-``). A group
-matches when an identity appears in it with separators removed, unless the
-match is formed only by the interiors of adjacent camel-case segments.
+Text is split into Unicode lexical groups (letters, numbers, marks, ``_`` and
+``-``). A group matches when an identity appears in it with separators removed
+and the match has non-word boundaries, unless it is formed only by the
+interiors of adjacent camel-case segments. Exact and explicitly delimited
+identities therefore remain sensitive while longer product words do not match.
 """
 
 from __future__ import annotations
 
+import codecs
 import re
+import unicodedata
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,8 +21,8 @@ from pipelines_hooks.privacy.identity_catalog import IdentityPolicyError
 
 READ_SIZE = 64 * 1024
 MAX_GROUP_BYTES = 64 * 1024
-_CAMEL_SEGMENT_RE = re.compile(rb"[A-Z]+(?=[A-Z][a-z]|[0-9]|$)|[A-Z]?[a-z]+|[A-Z]+|[0-9]+")
-_SEPARATORS = frozenset(b"_-")
+_CAMEL_SEGMENT_RE = re.compile(r"[A-Z]+(?=[A-Z][a-z]|[0-9]|$)|[A-Z]?[a-z]+|[A-Z]+|[0-9]+")
+_SEPARATORS = frozenset("_-")
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,23 +32,43 @@ class IdentityFinding:
     evidence: str
 
 
-def _is_group_byte(value: int) -> bool:
-    return 48 <= value <= 57 or 65 <= value <= 90 or 97 <= value <= 122 or value in _SEPARATORS
+def _is_word_character(value: str) -> bool:
+    """Whether ``value`` extends an identity-bearing Unicode word."""
+    return value.isalnum() or unicodedata.category(value).startswith("M")
 
 
-def _cross_segment_coincidence(group: bytes, start: int, end: int) -> bool:
+def _is_group_character(value: str) -> bool:
+    return _is_word_character(value) or value in _SEPARATORS
+
+
+def _ascii_lower(value: str) -> str:
+    """Fold ASCII case without expanding Unicode characters or positions."""
+    return "".join(chr(ord(character) + 32) if "A" <= character <= "Z" else character for character in value)
+
+
+def _cross_segment_coincidence(group: str, start: int, end: int) -> bool:
     overlapping = [m.span() for m in _CAMEL_SEGMENT_RE.finditer(group) if m.start() < end and m.end() > start]
     return len(overlapping) >= 2 and start > overlapping[0][0] and end < overlapping[-1][1]
 
 
 def group_matches(group: bytes, identities: tuple[bytes, ...]) -> bool:
-    positions = [index for index, value in enumerate(group) if value not in _SEPARATORS]
-    normalized = bytes(group[index] for index in positions).lower()
-    for identity in identities:
+    text = group.decode("utf-8", "replace")
+    positions = [index for index, value in enumerate(text) if value not in _SEPARATORS]
+    normalized = _ascii_lower("".join(text[index] for index in positions))
+    for encoded_identity in identities:
+        try:
+            identity = encoded_identity.decode("ascii").lower()
+        except UnicodeDecodeError:
+            continue
+        if not identity:
+            continue
         start = normalized.find(identity)
         while start >= 0:
             raw_start, raw_end = positions[start], positions[start + len(identity) - 1] + 1
-            if not _cross_segment_coincidence(group, raw_start, raw_end):
+            bounded = (raw_start == 0 or not _is_word_character(text[raw_start - 1])) and (
+                raw_end == len(text) or not _is_word_character(text[raw_end])
+            )
+            if bounded and not _cross_segment_coincidence(text, raw_start, raw_end):
                 return True
             start = normalized.find(identity, start + 1)
     return False
@@ -58,16 +82,17 @@ class _Grouper:
     line: int = 1
     group_line: int = 1
 
-    def feed(self, value: int) -> tuple[int, bytes] | None:
-        """Consume one byte; returns a completed group, if this byte ended one."""
-        if _is_group_byte(value):
+    def feed(self, value: str) -> tuple[int, bytes] | None:
+        """Consume one character; return a completed group at a delimiter."""
+        if _is_group_character(value):
             self.group_line = self.group_line if self.group else self.line
-            if len(self.group) >= MAX_GROUP_BYTES:
+            encoded = value.encode("utf-8")
+            if len(self.group) + len(encoded) >= MAX_GROUP_BYTES:
                 raise IdentityPolicyError("tracked lexical group exceeds the size limit")
-            self.group.append(value)
+            self.group.extend(encoded)
             return None
         completed = self.flush()
-        self.line += value == 10
+        self.line += value == "\n"
         return completed
 
     def flush(self) -> tuple[int, bytes] | None:
@@ -81,8 +106,16 @@ class _Grouper:
 def _groups(stream: BinaryIO) -> Iterator[tuple[int, bytes]]:
     """``(line, group)`` for every lexical group, streamed in bounded chunks."""
     grouper = _Grouper(bytearray())
+    decoder = codecs.getincrementaldecoder("utf-8")("replace")
     while chunk := stream.read(READ_SIZE):
-        yield from filter(None, map(grouper.feed, chunk))
+        for value in decoder.decode(chunk):
+            completed = grouper.feed(value)
+            if completed is not None:
+                yield completed
+    for value in decoder.decode(b"", final=True):
+        completed = grouper.feed(value)
+        if completed is not None:
+            yield completed
     last = grouper.flush()
     if last:
         yield last

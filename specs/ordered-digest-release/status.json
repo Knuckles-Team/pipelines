@@ -488,13 +488,14 @@
       "title": "Versions and container files are derived",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0f2baf0bc01f",
         "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
         "tests/hooks/test_connector_central.py:114",
         "tests/hooks/test_connector_central.py:123",
-        "tests/hooks/test_connector_central.py:322",
+        "tests/hooks/test_connector_central.py:325",
         "tests/hooks/test_connector_central.py:64"
       ]
     },
@@ -507,7 +508,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:136",
-        "tests/hooks/test_connector_central.py:150"
+        "tests/hooks/test_connector_central.py:153"
       ]
     },
     {
@@ -685,10 +686,11 @@
       "title": "A connector release publishes PyPI and Docker, and verifies both",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0f2baf0bc01f",
+        "154f96235334",
         "23b1e1111638",
         "2e89db0000e5",
-        "3d0455152b96",
-        "db468196e870"
+        "3d0455152b96"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -706,14 +708,18 @@
       "title": "Published-wheel image preflight",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0f2baf0bc01f",
+        "154f96235334",
         "23b1e1111638",
-        "2e89db0000e5"
+        "2e89db0000e5",
+        "4ddfe8ed473a"
       ],
       "verified_by": [
-        "tests/test_public_wheel_guard.py:35",
-        "tests/test_public_wheel_guard.py:52",
-        "tests/test_public_wheel_guard.py:81",
-        "tests/test_public_wheel_guard.py:94"
+        "tests/test_container_pipeline_contract.py:61",
+        "tests/test_public_wheel_guard.py:130",
+        "tests/test_public_wheel_guard.py:163",
+        "tests/test_public_wheel_guard.py:229",
+        "tests/test_public_wheel_guard.py:293"
       ]
     },
     {
@@ -721,13 +727,15 @@
       "title": "Release-standard check",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0f2baf0bc01f",
         "cf912c89cd2f"
       ],
       "verified_by": [
         "tests/hooks/test_release_standard.py:19",
         "tests/hooks/test_release_standard.py:28",
         "tests/hooks/test_release_standard.py:36",
-        "tests/hooks/test_release_standard.py:47"
+        "tests/hooks/test_release_standard.py:42",
+        "tests/hooks/test_release_standard.py:59"
       ]
     },
     {
@@ -750,7 +758,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:517"
+        "tests/test_container_pipeline_contract.py:746"
       ]
     },
     {

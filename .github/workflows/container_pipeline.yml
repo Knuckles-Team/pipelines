@@ -19,6 +19,25 @@ on:
         required: false
         type: boolean
         default: false
+      published_wheel_distribution:
+        description: >-
+          Optional connector distribution name for the public-wheel release preflight. Empty
+          derives the name from reviewed pyproject.toml; non-connectors skip the preflight.
+        required: false
+        type: string
+        default: ''
+      published_wheel_module:
+        description: >-
+          Optional connector Python module for the public-wheel release preflight. Empty derives
+          the sole connector entry-point/source module and refuses an ambiguous identity.
+        required: false
+        type: string
+        default: ''
+      published_wheel_extras:
+        description: Optional assertion for the reviewed target extra; empty derives it from connector metadata.
+        required: false
+        type: string
+        default: ''
       sdk_version:
         description: >-
           SDK version this build re-resolves inside the wheel's supported range
@@ -109,9 +128,48 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
 
+      - name: Determine whether to render connector container files
+        id: render-needed
+        env:
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          RENDER_CONNECTOR: ${{ inputs.render_connector }}
+        run: |
+          set -euo pipefail
+          render=false
+          if [[ "${RENDER_CONNECTOR,,}" == true ]]; then
+            render=true
+          elif [[ "$DOCKERFILE" == docker/Dockerfile && ! -e "$DOCKERFILE" && ! -L "$DOCKERFILE" && -f pyproject.toml ]]; then
+            if python3 - <<'PY'
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          import tomllib
+
+          try:
+              pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          except (OSError, tomllib.TOMLDecodeError):
+              sys.exit(1)
+          points = pyproject.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+          sources = subprocess.run(
+              ["git", "ls-files", "--", "*connector_sources.py"], capture_output=True, text=True, check=False
+          ).stdout.splitlines()
+          sys.exit(
+              0
+              if (isinstance(points, dict) and bool(points))
+              or any(Path(path).name == "connector_sources.py" for path in sources)
+              else 1
+          )
+          PY
+            then
+              render=true
+            fi
+          fi
+          printf 'render=%s\n' "$render" >> "$GITHUB_OUTPUT"
+
       - name: Render the connector container files
         id: render
-        if: inputs.render_connector
+        if: steps.render-needed.outputs.render == 'true'
         env:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
@@ -169,6 +227,10 @@ jobs:
           fi
           target="${REQUESTED_TARGET:-$MATRIX_TARGET}"
           echo "cache-key=$target" >> "$GITHUB_OUTPUT"
+          if [[ "$DOCKERFILE" != docker/Dockerfile && ! -f "$DOCKERFILE" ]]; then
+            echo '::error::Selected custom Dockerfile is absent; refusing to skip the container build.'
+            exit 1
+          fi
           if [[ "$target" == default ]]; then
             echo 'target=' >> "$GITHUB_OUTPUT"
             echo 'exists=true' >> "$GITHUB_OUTPUT"
@@ -216,6 +278,74 @@ jobs:
           arbora-revision: ${{ inputs.arbora_revision }}
           lock-sha256: ${{ inputs.runtime_lock_sha256 }}
           freeze-sha256: ${{ inputs.source_freeze_sha256 }}
+
+      # A main-branch connector publish may have no tracked Dockerfile because the
+      # canonical renderer writes it only for this job.  Fetch the contract before
+      # the public-wheel check when runtime staging did not already fetch it.
+      - name: Validate release guard checkout destination
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true' && steps.target.outputs.runtime != 'true'
+        env:
+          CONTRACT_PATH: ${{ github.workspace }}/.pipeline-contract
+        run: |
+          set -euo pipefail
+          if [[ -e "$CONTRACT_PATH" || -L "$CONTRACT_PATH" ]]; then
+            echo '::error::Pipeline checkout destination already exists; refusing to replace caller content.'
+            exit 1
+          fi
+
+      - name: Checkout release guard contract
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true' && steps.target.outputs.runtime != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .pipeline-contract
+          persist-credentials: false
+
+      - name: Determine published connector wheel
+        id: published-wheel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true'
+        env:
+          BUILD_CONTEXT: ${{ inputs.build_context }}
+          MATRIX_TARGET: ${{ matrix.target }}
+          PUBLISHED_WHEEL_DISTRIBUTION: ${{ inputs.published_wheel_distribution }}
+          PUBLISHED_WHEEL_MODULE: ${{ inputs.published_wheel_module }}
+          PUBLISHED_WHEEL_EXTRAS: ${{ inputs.published_wheel_extras }}
+          PUBLIC_WHEEL_GUARD: ${{ github.workspace }}/.pipeline-contract/.github/actions/verify-release-version/public_wheel.py
+        run: |
+          set -euo pipefail
+          identity="$(python3 -I "$PUBLIC_WHEEL_GUARD" --root "$BUILD_CONTEXT" --resolve-identity \
+            --distribution "$PUBLISHED_WHEEL_DISTRIBUTION" --module "$PUBLISHED_WHEEL_MODULE")"
+          extras="$(python3 -I "$PUBLIC_WHEEL_GUARD" --root "$BUILD_CONTEXT" --resolve-extras \
+            --target "$MATRIX_TARGET")"
+          if [[ -n "$PUBLISHED_WHEEL_EXTRAS" && "$PUBLISHED_WHEEL_EXTRAS" != "$extras" ]]; then
+            echo "::error::Requested published wheel extras do not match the reviewed container target."
+            exit 1
+          fi
+          python3 - "$identity" "$GITHUB_OUTPUT" "$extras" <<'PY'
+          import json
+          import sys
+
+          identity = json.loads(sys.argv[1])
+          with open(sys.argv[2], "a", encoding="utf-8") as output:
+              for key in ("connector", "distribution", "module"):
+                  value = identity.get(key, "")
+                  if isinstance(value, bool):
+                      value = str(value).lower()
+                  output.write(f"{key}={value}\n")
+              output.write(f"extras={sys.argv[3]}\n")
+          PY
+
+      - name: Verify published connector wheel before container build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.target.outputs.exists == 'true' && steps.published-wheel.outputs.connector == 'true'
+        uses: ./.pipeline-contract/.github/actions/verify-release-version
+        with:
+          mode: published-wheel
+          distribution: ${{ steps.published-wheel.outputs.distribution }}
+          module: ${{ steps.published-wheel.outputs.module }}
+          dockerfile: ${{ inputs.dockerfile }}
+          extras: ${{ steps.published-wheel.outputs.extras }}
+          root: ${{ inputs.build_context }}
 
       # PIPE-RELEASE-R015: reuse ONE named BuildKit builder per runner pod instead of
       # creating and removing a builder every job. Each pod's Docker daemon (and its
