@@ -58,7 +58,11 @@ def test_public_wheel_uses_committed_source_and_refuses_stale_pin(guard, tmp_pat
     (tmp_path / "demo").mkdir()
     (tmp_path / "docker").mkdir()
     (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
-    (tmp_path / "pyproject.toml").write_text('[project]\nname="demo-dist"\nversion="1.2.3"\n')
+    (tmp_path / "pyproject.toml").write_text(
+        '[build-system]\nrequires = ["setuptools>=80"]\nbuild-backend = "setuptools.build_meta"\n\n'
+        '[project]\nname="demo-dist"\nversion="1.2.3"\n\n'
+        '[tool.setuptools.packages.find]\ninclude = ["demo*"]\n'
+    )
     (tmp_path / "docker/Dockerfile").write_text("RUN pip install demo-dist[mcp]==1.2.2\n")
     subprocess.run(
         ["git", "add", "--", "demo/__init__.py", "pyproject.toml", "docker/Dockerfile"], cwd=tmp_path, check=True
@@ -89,11 +93,18 @@ def test_public_wheel_binds_release_generated_connector_artifacts(guard, tmp_pat
     (package / "ontology" / "mappings" / "source.yaml").write_text("ontology_source: demo\n")
     (package / "ontology" / "demo.ttl").write_text(":Book a owl:Class .\n")
     (tmp_path / "pyproject.toml").write_text(
-        """[project]
+        """[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "demo-dist"
 version = "1.2.3"
 [project.entry-points."agent_connector_sdk.connector"]
 demo = "demo:connector"
+
+[tool.setuptools.package-data]
+demo = ["ontology/**"]
 """,
         encoding="utf-8",
     )
@@ -125,6 +136,100 @@ demo = "demo:connector"
         assert name in expected and expected[name] == text.encode("utf-8")
     payload = archive(expected)
     guard.verify_payload(payload, hashlib.sha256(payload).hexdigest(), expected, "demo")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_uses_publisher_package_data_boundary(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    package = tmp_path / "demo"
+    (package / "ontology").mkdir(parents=True)
+    package.joinpath("__init__.py").write_bytes(b"reviewed")
+    package.joinpath("main_agent.md").write_text("source-only documentation\n", encoding="utf-8")
+    package.joinpath("ontology/source.yaml").write_text("included\n", encoding="utf-8")
+    (tmp_path / "pyproject.toml").write_text(
+        """[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demo-dist"
+version = "1.2.3"
+
+[tool.setuptools.package-data]
+demo = ["ontology/**"]
+""",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", "demo", "pyproject.toml"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    expected = guard.reviewed_payload(tmp_path, "demo")
+    assert expected == {"demo/__init__.py": b"reviewed", "demo/ontology/source.yaml": b"included\n"}
+    assert "demo/main_agent.md" not in expected
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_preserves_tracked_generated_artifacts(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    package = tmp_path / "demo"
+    (package / "ontology" / "mappings").mkdir(parents=True)
+    package.joinpath("__init__.py").write_bytes(b"reviewed")
+    (package / "ontology" / "mappings" / "source.yaml").write_text("ontology_source: demo\n", encoding="utf-8")
+    (package / "ontology" / "demo.ttl").write_text(":Book a owl:Class .\n", encoding="utf-8")
+    (tmp_path / "pyproject.toml").write_text(
+        """[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demo-dist"
+version = "1.2.3"
+[project.entry-points."agent_connector_sdk.connector"]
+demo = "demo:connector"
+
+[tool.setuptools.package-data]
+demo = ["ontology/**"]
+""",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", "demo", "pyproject.toml"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "source"],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    from pipelines_hooks.connector import generate
+
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "100")
+    generated = generate.generate(tmp_path)
+    for path, text in generated.items():
+        path.write_text(text, encoding="utf-8")
+    subprocess.run(
+        ["git", "add", "--", "demo/ontology/certification.json", "demo/ontology/shapes"], cwd=tmp_path, check=True
+    )
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "generated"],
+        cwd=tmp_path,
+        check=True,
+    )
+    tracked = {
+        name: (tmp_path / name).read_bytes()
+        for name in ("demo/ontology/certification.json", "demo/ontology/shapes/connector.shacl.ttl")
+    }
+
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "200")
+    expected = guard.reviewed_payload(tmp_path, "demo")
+    assert expected["demo/ontology/certification.json"] == tracked["demo/ontology/certification.json"]
+    assert expected["demo/ontology/shapes/connector.shacl.ttl"] == tracked["demo/ontology/shapes/connector.shacl.ttl"]
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
@@ -169,6 +274,10 @@ def test_public_wheel_renders_generated_dockerfile_from_reviewed_head(guard, tmp
     (tmp_path / "demo").mkdir()
     (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
     pyproject = """\
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "demo-dist"
 version = "1.2.3"
@@ -233,6 +342,7 @@ def test_public_wheel_repair_refuses_an_unpublished_version_before_container_pub
     (tmp_path / "demo").mkdir()
     (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
     (tmp_path / "pyproject.toml").write_text(
+        '[build-system]\nrequires = ["setuptools>=80"]\nbuild-backend = "setuptools.build_meta"\n\n'
         '[project]\nname = "demo-dist"\nversion = "1.2.3"\n'
         '[project.scripts]\ndemo-mcp = "demo:main"\n'
         '[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
@@ -262,13 +372,17 @@ def test_public_wheel_target_extra_matches_generated_and_tracked_targets(
     (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
     optional = "[project.optional-dependencies]\nmcp = []\n\n" if has_mcp_extra else ""
     (tmp_path / "pyproject.toml").write_text(
+        "[build-system]\n"
+        'requires = ["setuptools>=80"]\n'
+        'build-backend = "setuptools.build_meta"\n\n'
         "[project]\n"
         'name = "demo-dist"\n'
         'version = "1.2.3"\n'
         'dependencies = ["agent-connector-sdk[mcp]>=1"]\n\n'
         "[project.scripts]\n"
         'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."agent_connector_sdk.connector"]\n'
-        'demo = "demo:connector"\n',
+        'demo = "demo:connector"\n\n'
+        '[tool.setuptools.packages.find]\ninclude = ["demo*"]\n',
         encoding="utf-8",
     )
     expected_extra = "mcp" if has_mcp_extra else ""
