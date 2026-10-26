@@ -45,6 +45,10 @@ KEPT = {
     "project-version-sync",
     "uv-lock-check",
     "validate",
+    "source-path-portability",
+    "prompt-format",
+    "skill-grade",
+    "test-layout",
 }
 
 

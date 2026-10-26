@@ -40,6 +40,38 @@ repos:
     always_run: true
     require_serial: true
     stages: [pre-commit, pre-push]
+  - id: source-path-portability
+    name: Source path portability - tracked package paths are cross-platform legal
+    entry: uv run --frozen --quiet pipelines-hook source-path-portability
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-commit, pre-push]
+  - id: prompt-format
+    name: Prompt JSON/Pydantic stable disk format and semantic roundtrip
+    entry: uv run --frozen --quiet pipelines-hook prompt-format
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-commit, pre-push]
+  - id: skill-grade
+    name: Deterministic skill quality grading with snapshot-bound evidence
+    entry: uv run --frozen --quiet pipelines-hook skill-grade
+    language: system
+    pass_filenames: false
+    always_run: true
+    require_serial: true
+    stages: [pre-commit, pre-push]
+  - id: test-layout
+    name: Test layout independence - isolated order and fixture inventory
+    entry: uv run --frozen --quiet pipelines-hook test-layout
+    language: system
+    pass_filenames: false
+    files: ^\.config/test-layout\.(json|toml)$
+    require_serial: true
+    stages: [pre-push, manual]
   # --- types -----------------------------------------------------------------
   - id: types
     name: Types (mypy)
