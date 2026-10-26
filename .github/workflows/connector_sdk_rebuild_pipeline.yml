@@ -16,9 +16,29 @@ name: Connector SDK rebuild
 #     schedule:
 #       - cron: '17 5 * * *'
 #     workflow_dispatch:
+#       inputs:
+#         release_repair:
+#           description: Republish the already published container after the reviewed public-wheel guard.
+#           required: false
+#           default: false
+#           type: boolean
+#         release_source_sha:
+#           description: Full SHA of the original package source that produced the public wheel.
+#           required: false
+#           default: ''
+#           type: string
+#         release_source_epoch:
+#           description: Exact SOURCE_DATE_EPOCH used to generate the public connector payload.
+#           required: false
+#           default: ''
+#           type: string
 #   jobs:
 #     rebuild:
 #       uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
+#       with:
+#         release_repair: ${{ inputs.release_repair || false }}
+#         release_source_sha: ${{ inputs.release_source_sha || '' }}
+#         release_source_epoch: ${{ inputs.release_source_epoch || '' }}
 #       secrets: inherit
 
 on:
@@ -31,6 +51,23 @@ on:
         default: ''
       sdk_distribution:
         description: SDK distribution to resolve and pass to the connector renderer; empty detects the project dependency.
+        required: false
+        type: string
+        default: ''
+      release_repair:
+        description: >-
+          Explicit reviewed release repair. Only a workflow_dispatch on the current main HEAD
+          may publish the already published connector source through the guarded container path.
+        required: false
+        type: boolean
+        default: false
+      release_source_sha:
+        description: Full immutable source SHA that produced the already-published connector wheel.
+        required: false
+        type: string
+        default: ''
+      release_source_epoch:
+        description: Exact SOURCE_DATE_EPOCH used to generate the already-published connector payload.
         required: false
         type: string
         default: ''
@@ -59,7 +96,39 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Validate release source checkout destination
+        if: inputs.release_repair == true
+        run: |
+          set -euo pipefail
+          if [[ -e .release-source || -L .release-source ]]; then
+            echo '::error::Immutable release source checkout destination already exists.'
+            exit 1
+          fi
+
+      - name: Checkout immutable release source
+        if: inputs.release_repair == true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ inputs.release_source_sha }}
+          fetch-depth: 0
+          path: .release-source
+          persist-credentials: false
+
+      - name: Select SDK resolution context
+        id: sdk-context
+        env:
+          RELEASE_REPAIR: ${{ inputs.release_repair }}
+        run: |
+          set -euo pipefail
+          context=.
+          if [[ "${RELEASE_REPAIR,,}" == true ]]; then
+            context=.release-source
+          fi
+          printf 'path=%s\n' "$context" >> "$GITHUB_OUTPUT"
+
       - name: Log in to Docker registry
+        if: inputs.release_repair != true
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ${{ secrets.DOCKER_REGISTRY }}
@@ -76,14 +145,17 @@ jobs:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
           IMAGE: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
+          RELEASE_REPAIR: ${{ inputs.release_repair }}
+          SDK_CONTEXT: ${{ steps.sdk-context.outputs.path }}
         run: |
           set -euo pipefail
           sdk_distribution="${INPUT_SDK_DISTRIBUTION:-${PAYLOAD_SDK_DISTRIBUTION:-}}"
           if [[ -z "$sdk_distribution" ]]; then
             sdk_distribution="$(python3 - <<'PY'
+          import os
           import tomllib
 
-          project = tomllib.load(open("pyproject.toml", "rb")).get("project", {})
+          project = tomllib.load(open(os.path.join(os.environ["SDK_CONTEXT"], "pyproject.toml"), "rb")).get("project", {})
           values = list(project.get("dependencies", []))
           for entries in project.get("optional-dependencies", {}).values():
               values.extend(entries)
@@ -110,13 +182,13 @@ jobs:
             exit 1
           fi
           python3 -m pip install --quiet uv
-          version="$(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root . read)"
+          version="$(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root "$SDK_CONTEXT" read)"
           sdk_tag="${version}-sdk${sdk}"
           if [[ "$sdk_distribution" == "scion-sdk" ]]; then
             sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"
           fi
           stale=true
-          if docker buildx imagetools inspect "${IMAGE}:${sdk_tag}" > /dev/null 2>&1; then
+          if [[ "${RELEASE_REPAIR,,}" != true ]] && docker buildx imagetools inspect "${IMAGE}:${sdk_tag}" > /dev/null 2>&1; then
             stale=false
           fi
           echo "sdk_version=$sdk" >> "$GITHUB_OUTPUT"
@@ -132,6 +204,9 @@ jobs:
     uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
     with:
       render_connector: true
+      release_repair: ${{ inputs.release_repair }}
+      release_source_sha: ${{ inputs.release_source_sha }}
+      release_source_epoch: ${{ inputs.release_source_epoch }}
       sdk_version: ${{ needs.resolve.outputs.sdk_version }}
       sdk_distribution: ${{ needs.resolve.outputs.sdk_distribution }}
     secrets: inherit
