@@ -54,6 +54,16 @@ runtime extras must still be explicitly supplied. Test/development extras are
 not inferred. Each selected profile installs in a separate fresh environment.
 Verification recomputes the profile set from those same digest-bound wheel bytes.
 
+The reusable `publish-python-package` action also exposes an optional
+`role-contract` path for packaging role closure. The default is empty, so existing
+publishers keep their current path. An adopting publisher supplies a tracked JSON
+contract with an explicit base/extra role inventory; after wheel readiness succeeds,
+the action passes the actual wheel SHA-256, `release-readiness.json`, and the exact
+`runtime-profiles` input to `pipelines-hook packaging-roles` from the immutable
+workflow source. A missing, untracked, symlinked, ambiguous, or mismatched artifact
+fails closed. The contract does not create runtime profiles or replace the wheel
+readiness proof.
+
 Raw wheel `Provides-Extra` declarations are checked before normalization.
 For Core Metadata 2.3+, names must already be normalized and unique. For older
 metadata, valid name aliases (including repeated punctuation) and canonical

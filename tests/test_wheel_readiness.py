@@ -219,6 +219,34 @@ def test_all_python_publication_paths_guard_before_upload_and_release():
         assert item["inputs"]["runtime-profiles"]["default"] == "[]"
 
 
+def test_packaging_role_contract_is_opt_in_and_runs_after_readiness():
+    python = yaml.safe_load((ROOT / ".github/actions/publish-python-package/action.yml").read_text())
+    assert python["inputs"]["role-contract"]["required"] is False
+    assert python["inputs"]["role-contract"]["default"] == ""
+    steps = python["runs"]["steps"]
+    names = [step["name"] for step in steps]
+    role_step = next(step for step in steps if step["name"] == "Prove opt-in packaging role closure")
+    assert role_step["if"] == "inputs.role-contract != ''"
+    assert names.index("Prove wheel runtime readiness") < names.index("Prove opt-in packaging role closure")
+    assert names.index("Prove opt-in packaging role closure") < names.index("Build source distribution")
+    command = role_step["run"]
+    for argument in (
+        '--contract "$ROLE_CONTRACT"',
+        '--wheel "$wheel"',
+        '--wheel-sha256 "$wheel_sha256"',
+        "--receipt release-readiness.json",
+        "--readiness-checker .pipeline-contract/.github/actions/wheel-readiness/readiness.py",
+        '--runtime-profiles "$RUNTIME_PROFILES"',
+    ):
+        assert argument in command
+    assert (
+        'uvx --from "git+https://${{ job.workflow_repository }}@${{ job.workflow_sha }}" pipelines-hook packaging-roles'
+        in command
+    )
+    assert 'git ls-files --error-unmatch -- "$ROLE_CONTRACT"' in command
+    assert "continue-on-error" not in role_step and "|| true" not in command
+
+
 def test_transport_rejects_poisoned_origins_and_direct_candidates(tmp_path, monkeypatch):
     import sys
     from types import SimpleNamespace

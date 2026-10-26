@@ -806,8 +806,8 @@
         "tests/hooks/test_connector_central.py:106",
         "tests/hooks/test_connector_central.py:120",
         "tests/hooks/test_connector_central.py:132",
-        "tests/test_wheel_readiness.py:482",
-        "tests/test_wheel_readiness.py:489"
+        "tests/test_wheel_readiness.py:510",
+        "tests/test_wheel_readiness.py:517"
       ]
     },
     {
@@ -890,8 +890,8 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_wheel_readiness.py:553",
-        "tests/test_wheel_readiness.py:583"
+        "tests/test_wheel_readiness.py:581",
+        "tests/test_wheel_readiness.py:611"
       ]
     },
     {
@@ -913,7 +913,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_python_pipeline_contract.py:127"
+        "tests/test_python_pipeline_contract.py:133"
       ]
     },
     {

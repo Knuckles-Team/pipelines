@@ -121,7 +121,7 @@ def test_contract_model_uses_authoritative_profile_values_without_defaults() -> 
 @pytest.mark.spec("PIPE-PAGES-R025.2")
 def test_role_gate_verifies_actual_wheel_readiness_closure(tmp_path: Path) -> None:
     artifact, digest, receipt, _ = readiness_fixture(tmp_path)
-    result = verify(contract(), artifact, digest, receipt, READINESS)
+    result = verify(contract(), artifact, digest, receipt, READINESS, runtime_profiles="[]")
     assert result["schema"] == 1
     assert result["status"] == "pass"
     assert result["artifact"]["sha256"] == digest
@@ -156,6 +156,12 @@ def test_role_gate_refuses_tampered_artifact_digest_and_receipt_metadata(tmp_pat
     receipt["wheels"][0]["metadata"]["provides_extra"] = []
     with pytest.raises(CannotRun, match="metadata does not match"):
         verify(contract(), artifact, digest, receipt, READINESS)
+
+
+def test_role_gate_refuses_runtime_profile_inventory_mismatch(tmp_path: Path) -> None:
+    artifact, digest, receipt, _ = readiness_fixture(tmp_path)
+    with pytest.raises(CannotRun, match="runtime profiles"):
+        verify(contract(), artifact, digest, receipt, READINESS, runtime_profiles='["agent"]')
 
 
 @pytest.mark.spec("PIPE-PAGES-R025.5")
@@ -194,6 +200,8 @@ def test_packaging_role_closure_cli(tmp_path: Path) -> None:
             str(receipt_path),
             "--readiness-checker",
             str(READINESS),
+            "--runtime-profiles",
+            "[]",
         ],
         capture_output=True,
         check=False,
