@@ -1,5 +1,6 @@
 /* Real wall-clock Chrome capture, using only Node built-ins and the runner's browser.
- * No virtual time, animation seeking, synthetic frames, browser download or network service.
+ * Unforced motion proof never seeks. Separately labeled palette diagnostics sample
+ * paused native timelines; no synthetic frames, browser download or network service.
  */
 const {spawn}=require('node:child_process');
 const {mkdtempSync,writeFileSync,rmSync}=require('node:fs');
@@ -45,7 +46,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const frames=[],origin=Date.now();
   for(let i=0;i<3;i++){
     if(i)await delay(2000);
-    const evidence=await evaluate(`(()=>({theme:document.documentElement.dataset.theme,state:document.documentElement.dataset.oceanMotion,hidden:document.hidden,compat:document.compatMode,charset:document.characterSet,waves:[...document.querySelectorAll('.ocean-wave')].map(w=>{const a=w.getAnimations()[0],m=new DOMMatrixReadOnly(getComputedStyle(w).transform);return {time:a.currentTime,playState:a.playState,x:m.m41,y:m.m42};})}))()`);
+    const evidence=await evaluate(`(()=>({theme:document.documentElement.dataset.theme,state:document.documentElement.dataset.oceanMotion,hidden:document.hidden,compat:document.compatMode,charset:document.characterSet,waves:[...document.querySelectorAll('.ocean-wave')].map(w=>{const a=w.getAnimations()[0],m=new DOMMatrixReadOnly(getComputedStyle(w).transform);const tide=w.getAnimations().find(a=>a.animationName==='ocean-tide');return {time:a.currentTime,playState:a.playState,x:m.m41,y:m.m42,opacity:Number(getComputedStyle(w).opacity),tide:tide?{time:tide.currentTime,playState:tide.playState}:null};})}))()`);
     if(evidence.theme!==theme||evidence.state!=='running'||evidence.hidden||evidence.compat!=='CSS1Compat'||evidence.charset!=='UTF-8'||evidence.waves.length!==3)throw Error('Motion capture page state invalid: '+JSON.stringify(evidence));
     const screenshot=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
     const bytes=Buffer.from(screenshot.data,'base64'),name=`${theme}-continuous-motion-${i}.png`;
@@ -55,7 +56,48 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     if(frames[i].wall_ms-frames[i-1].wall_ms<1800||frames[i].sha256===frames[i-1].sha256)throw Error('No actual elapsed/pixel progression');
     if(!frames[i].waves.every((w,j)=>w.playState==='running'&&w.time>frames[i-1].waves[j].time+1500&&Math.abs(w.x-frames[i-1].waves[j].x)>8))throw Error('Ocean motion not visibly progressing');
   }
+  if(!frames.every(f=>f.waves.every(w=>w.tide?.playState==='running'))||!frames[2].waves.some((w,i)=>Math.abs(w.opacity-frames[0].waves[i].opacity)>.001))throw Error('Slow backdrop palette fade did not progress');
   writeFileSync(join(output,`${theme}-continuous-motion.json`),JSON.stringify({kind:'Unforced real wall-clock browser frames; no animation seeking or virtual time',frames},null,2)+'\n');
+  // Diagnostic only: sample the unchanged 48/56/64-second alternating palette
+  // timelines while paused. These are actual browser pixels, NOT elapsed video.
+  // The unforced wall-clock frames above remain untouched and separately labeled.
+  const paletteClip=await evaluate("(()=>{const r=document.getElementById('cv').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1};})()");
+  const palette={kind:'Paused native palette timeline diagnostics; canvas-only browser captures, not real-time video',theme,clip:paletteClip,samples:[]};
+  const paletteSetup=await evaluate(`(()=>{
+    window.__paletteSaved=[...document.querySelectorAll('.ocean-wave')].flatMap(w=>w.getAnimations()).map(a=>({a,time:a.currentTime,state:a.playState}));
+    window.__paletteSaved.forEach(s=>s.a.pause());
+    const waves=[...document.querySelectorAll('.ocean-wave')],times=new Set([0,64000,128000]);
+    const metadata=waves.map(w=>{const a=w.getAnimations().find(a=>a.animationName==='ocean-tide'),timing=a.effect.getTiming();
+      for(const phase of [0,.5,1,1.5,2]){const t=timing.delay+timing.duration*phase;if(t>=0&&t<=128000)times.add(t);}
+      return {duration:timing.duration,delay:timing.delay,direction:timing.direction,keyframes:a.effect.getKeyframes(),maxOpacity:Number(getComputedStyle(w).getPropertyValue('--wave-opacity')),background:getComputedStyle(w).backgroundImage};});
+    return {metadata,times:[...times].sort((a,b)=>a-b)};
+  })()`);
+  palette.keyframes=paletteSetup.metadata;
+  try{
+    for(const time of paletteSetup.times){
+      const state=await evaluate(`(async()=>{
+        const waves=[...document.querySelectorAll('.ocean-wave')];waves.forEach(w=>w.getAnimations().find(a=>a.animationName==='ocean-tide').currentTime=${time});
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        return {theme:document.documentElement.dataset.theme,waves:waves.map(w=>{const a=w.getAnimations().find(a=>a.animationName==='ocean-tide');return {opacity:Number(getComputedStyle(w).opacity),time:a.currentTime,playState:a.playState,progress:a.effect.getComputedTiming().progress};})};
+      })()`);
+      if(state.theme!==theme||state.waves.some(w=>w.playState!=='paused'))throw Error('Palette diagnostic did not freeze native timeline');
+      const sample={timeline_ms:time,...state};
+      if([0,64000,128000].includes(time)){
+        const shot=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,clip:paletteClip});
+        const bytes=Buffer.from(shot.data,'base64'),file=`${theme}-palette-timeline-${time/1000}s.png`;
+        writeFileSync(join(output,file),bytes);sample.screenshot={file,sha256:createHash('sha256').update(bytes).digest('hex')};
+      }
+      palette.samples.push(sample);
+    }
+    for(let i=0;i<3;i++){
+      const values=palette.samples.map(s=>s.waves[i].opacity),cap=palette.keyframes[i].maxOpacity;
+      if(Math.abs(Math.min(...values)-cap*.55)>.0001||Math.abs(Math.max(...values)-cap)>.0001)throw Error('Full palette opacity extrema not sampled');
+    }
+    palette.passed=true;
+  }finally{
+    await evaluate("window.__paletteSaved.forEach(s=>{s.a.currentTime=s.time;if(s.state==='running')s.a.play();});delete window.__paletteSaved;true");
+    writeFileSync(join(output,`${theme}-palette-timeline.json`),JSON.stringify(palette,null,2)+'\n');
+  }
   // Semantic caption proof uses only the existing controls after the untouched motion frames.
   const navigation={kind:'Real native zoom input, unchanged world geometry, and actual caption paint',theme,steps:[]};
   const key=async(key,code,virtual)=>{

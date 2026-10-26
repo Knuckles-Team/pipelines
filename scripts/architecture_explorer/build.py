@@ -284,11 +284,21 @@ def build(mode: str, workspace: Path | None) -> tuple[dict, dict]:
     return data, meta
 
 
-def build_with_sources(mode: str, workspace: Path | None) -> tuple[dict, dict, list]:
+def build_with_sources(
+    mode: str, workspace: Path | None, *, source_families: dict | None = None
+) -> tuple[dict, dict, list]:
     model = json.loads((HERE / "model.json").read_text())
     registry = json.loads((HERE / "registry.json").read_text())
     scanned = scan_set(registry["repositories"], mode, os.environ.get("GITHUB_TOKEN") or None)
-    snaps = load_all(scanned, mode, workspace)
+    chart = None
+    if source_families is None:
+        snaps = load_all(scanned, mode, workspace)
+    else:
+        from .story_build import load_build_sources
+
+        snaps, chart = load_build_sources(
+            scanned, mode, workspace, source_families, token=os.environ.get("GITHUB_TOKEN", "")
+        )
     fit_fleet(model, scanned)
     rows = [r for s in snaps for r in s.rows]
     tree = Tree(model)
@@ -327,6 +337,12 @@ def build_with_sources(mode: str, workspace: Path | None) -> tuple[dict, dict, l
         "aliases": {k: v for snap in reversed(snaps) for k, v in snap.aliases.items()},
         "crossings": count_crossings(layouts),
     }
+    if chart is not None:
+        from .story_build import seal_chart
+
+        if meta["errors"] or meta["unmapped_violations"]:
+            raise ValueError("source-chart build refuses incomplete fleet snapshots or unreviewed unmapped rows")
+        data["sourceChart"] = seal_chart(chart, built_at=meta["built_at"], snapshots=snaps)
     return data, meta, snaps
 
 
@@ -347,12 +363,19 @@ def template_source() -> str:
     )
 
 
+def template_with_stories(data: dict, meta: dict) -> str:
+    """One injection seam for generation and byte-preserving visual previews."""
+    from .story_render import render_story
+
+    return template_source().replace("/*__STORY_SCRIPT__*/", render_story(data, meta))
+
+
 def render(data: dict, meta: dict) -> str:
     aliases = meta.get("aliases", {})
     meta = {k: v for k, v in meta.items() if k != "aliases"}
     index = search_index(data, aliases)
     payload = json.dumps({"tree": data, "meta": meta, "search": index}, separators=(",", ":")).replace("</", "<\\/")
-    page = template_source()
+    page = template_with_stories(data, meta)
     return page.replace("/*__DATA__*/null", payload)
 
 
@@ -400,9 +423,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--artifact", type=Path, help="write the page body without a document wrapper")
     parser.add_argument("--page", type=Path, help="write a standalone HTML document")
     parser.add_argument("--tree", type=Path, help="write the placed tree and layouts as JSON")
+    parser.add_argument(
+        "--source-families", type=Path, help="opt-in same-build strict source-family chart configuration"
+    )
     parser.add_argument("--redirect", action="store_true", help="write a page that redirects to the canonical explorer")
     args = parser.parse_args(argv)
     if args.redirect:
+        if args.source_families:
+            parser.error("--redirect cannot qualify source families")
         if not args.page:
             parser.error("--redirect needs --page")
         args.page.parent.mkdir(parents=True, exist_ok=True)
@@ -410,7 +438,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.mode == "local" and not args.workspace:
         parser.error("--workspace is required in local mode")
-    data, meta, snaps = build_with_sources(args.mode, args.workspace)
+    if args.source_families:
+        from .story_build import read_family_config
+
+        families = read_family_config(args.source_families)
+        data, meta, snaps = build_with_sources(args.mode, args.workspace, source_families=families)
+    else:
+        data, meta, snaps = build_with_sources(args.mode, args.workspace)
     body = render(data, meta)
     target = args.page or args.artifact
     if target:

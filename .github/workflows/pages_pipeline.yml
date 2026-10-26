@@ -178,8 +178,11 @@ jobs:
             pipelines_hooks/__init__.py
             pipelines_hooks/core/__init__.py
             pipelines_hooks/core/repositories.py
+            pipelines_hooks/core/errors.py
             pipelines_hooks/specs/__init__.py
             pipelines_hooks/specs/ids.py
+            pipelines_hooks/specs/aliases.py
+            pipelines_hooks/specs/trailer_ids.py
             pipelines_hooks/specs/priority.py
             pipelines_hooks/specs/requirements_doc.py
 
@@ -296,8 +299,10 @@ jobs:
               --page site/architecture/index.html
             exit 0
           fi
+          python -m pip install networkx==3.6.1
           npm ci --prefix .pipeline-contract/scripts/architecture_explorer --no-audit --no-fund
           python .pipeline-contract/scripts/architecture_explorer/build.py --mode github \
+            --source-families .pipeline-contract/scripts/architecture_explorer/source-families.json \
             --page site/architecture/index.html
 
       - name: Setup Pages
