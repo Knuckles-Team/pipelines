@@ -732,6 +732,33 @@ def _normalise_loose(text: str) -> str:
     return "\n".join(generations.loose_lines(text)) + "\n"
 
 
+_SHORT_PORT = re.compile(
+    r'^      - (?P<quote>"?)(?:(?P<host>\[[^\]]+\]|[^:\s"]+):)?'
+    r"(?P<published>[0-9]+):(?P<target>[0-9]+)(?P=quote)\s*$"
+)
+
+
+def _normalise_port_syntax(text: str) -> str:
+    """Compare the retired short port spelling with the renderer's long form."""
+    out: list[str] = []
+    for line in text.splitlines():
+        match = _SHORT_PORT.fullmatch(line)
+        if match is None:
+            out.append(line)
+            continue
+        host = match["host"] or "127.0.0.1"
+        if host.startswith("["):
+            host = host[1:-1]
+        out.extend(
+            [
+                f'      - host_ip: "{host}"',
+                f'        published: "{match["published"]}"',
+                f"        target: {match['target']}",
+            ]
+        )
+    return "\n".join(out) + "\n"
+
+
 def _compose_old_to_new(ctx: Ctx, name: str, text: str, dist: str) -> str:
     target = name.split(".")[0].split("/")[-1]
     services = re.findall(r"^  ([A-Za-z0-9_.-]+):\s*$", text.split("services:", 1)[-1], re.M)
@@ -764,6 +791,7 @@ def container_pair(
         return None  # one file for the mcp and the agent service: the render writes one file per image kind
     if name.endswith("compose.yml"):
         old = _compose_nonfunctional(_compose_old_to_new(ctx, rel, _list_environment(old), dist))
+        old = _normalise_port_syntax(old)
         old = _normalise_state_volume_syntax(old)
     if name in ("Dockerfile", "debug.Dockerfile"):
         old = _align_dist_version(old, new, dist)
@@ -772,7 +800,7 @@ def container_pair(
         return _dockerfile_nonfunctional(_normalise_dockerfile(old, False)), _dockerfile_nonfunctional(
             _normalise_dockerfile(new, True)
         )
-    a, b = _normalise_loose(old), _normalise_loose(new)
+    a, b = _normalise_loose(old), _normalise_loose(_normalise_port_syntax(new))
     if rewrite:
         # Recorded rewrites name the install line as the older generator wrote it (``.[mcp]``), so they run before rule l4's
         # dropped extras are removed from it; running them after would never match once l4 had changed ``pyproject.toml``.

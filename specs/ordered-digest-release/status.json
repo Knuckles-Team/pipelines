@@ -618,14 +618,15 @@
         "0f2baf0bc01f",
         "520609e0ae33",
         "5b1843a5a360",
-        "5ff231c270b1"
+        "5ff231c270b1",
+        "8a5d41d64229"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:104",
-        "tests/hooks/test_connector_central.py:120",
-        "tests/hooks/test_connector_central.py:146",
-        "tests/hooks/test_connector_central.py:156",
-        "tests/hooks/test_connector_central.py:165"
+        "tests/hooks/test_connector_central.py:106",
+        "tests/hooks/test_connector_central.py:148",
+        "tests/hooks/test_connector_central.py:164",
+        "tests/hooks/test_connector_central.py:197",
+        "tests/hooks/test_connector_central.py:217"
       ]
     },
     {
@@ -636,8 +637,8 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:178",
-        "tests/hooks/test_connector_central.py:195"
+        "tests/hooks/test_connector_central.py:298",
+        "tests/hooks/test_connector_central.py:315"
       ]
     },
     {

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -96,25 +97,121 @@ def test_render_is_deterministic_and_driven_by_the_table(tmp_path: Path) -> None
     assert "@@" not in "".join(first.values())
     assert 'CMD ["demo-mcp"]' in first["debug.Dockerfile"] and "COPY . /app" in first["debug.Dockerfile"]
     compose = yaml.safe_load(first["mcp.compose.yml"])["services"]["demo-mcp-mcp"]
-    assert compose["ports"] == ["127.0.0.1:9000:9000"] and compose["user"] == "10001:10001"
+    assert compose["ports"] == [{"host_ip": "127.0.0.1", "published": "9000", "target": 9000}]
+    assert compose["user"] == "10001:10001"
     version.write_version(root, "1.2.4")
     assert "demo-mcp[mcp]==1.2.4" in container.render(root)["Dockerfile"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_preserves_explicit_runtime_contract(tmp_path: Path) -> None:
+    pyproject = (
+        PYPROJECT
+        + """
+image_var = "SYSTEMS_MANAGER_MCP_IMAGE_DIGEST"
+restart = "unless-stopped"
+tmpfs_size = "128m"
+env_file_mode = "none"
+compose_host = {env = "SYSTEMS_MANAGER_MCP_BIND_ADDRESS", default = "127.0.0.1"}
+publish_port = {env = "SYSTEMS_MANAGER_MCP_PORT", default = 9000}
+container_name = false
+hostname = false
+health_timeout = "5s"
+health_command_timeout = 3
+compose_env = ["AUTH_TYPE=${AUTH_TYPE:?authenticated MCP transport required}"]
+limits = {mcp = {memory_limit_env = "", memory_limit = "1g", cpu_limit_env = "", cpu_limit = "1.0"}}
+"""
+    )
+    root = _repo(tmp_path, pyproject)
+    compose = container.render(root)["mcp.compose.yml"]
+    assert (
+        "image: ${SYSTEMS_MANAGER_MCP_IMAGE_DIGEST:?set-SYSTEMS_MANAGER_MCP_IMAGE_DIGEST-to-image@sha256-digest}"
+        in compose
+    )
+    assert "restart: unless-stopped\n" in compose and "size=128m\n" in compose
+    assert "mem_limit: 1g\n    cpus: 1.0\n" in compose
+    assert "    env_file:" not in compose
+    assert "- AUTH_TYPE=${AUTH_TYPE:?authenticated MCP transport required}\n" in compose
+    assert 'host_ip: "${SYSTEMS_MANAGER_MCP_BIND_ADDRESS:-127.0.0.1}"' in compose
+    assert 'published: "${SYSTEMS_MANAGER_MCP_PORT:-9000}"' in compose
+    assert "target: 9000" in compose
+    assert "container_name:" not in compose and "hostname:" not in compose
+    assert '    init: true\n    user: "10001:10001"\n    read_only: true\n' in compose
+    assert (
+        "    cap_drop:\n      - ALL\n    security_opt:\n      - no-new-privileges:true\n    pids_limit: 256\n"
+        in compose
+    )
+    assert "urlopen('http://localhost:9000/health', timeout=3)" in compose
+    assert "      timeout: 5s\n" in compose
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
 @pytest.mark.parametrize(
     ("host", "expected"),
     [
-        ("127.0.0.1", "127.0.0.1:9000:9000"),
-        ("0.0.0.0", "0.0.0.0:9000:9000"),
-        ("::1", "[::1]:9000:9000"),
+        ("127.0.0.1", "127.0.0.1"),
+        ("0.0.0.0", "0.0.0.0"),
+        ("::1", "::1"),
     ],
 )
 def test_render_uses_a_validated_compose_host(tmp_path: Path, host: str, expected: str) -> None:
     pyproject = PYPROJECT.replace("port = 9000\n", f'port = 9000\ncompose_host = "{host}"\n')
     root = _repo(tmp_path, pyproject)
     compose = yaml.safe_load(container.render(root)["mcp.compose.yml"])["services"]["demo-mcp-mcp"]
-    assert compose["ports"] == [expected]
+    assert compose["ports"] == [{"host_ip": expected, "published": "9000", "target": 9000}]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_resolves_typed_bindings_through_compose(tmp_path: Path) -> None:
+    pyproject = PYPROJECT.replace(
+        "port = 9000\n",
+        'port = 9000\ncompose_host = {env = "DEMO_BIND", default = "127.0.0.1"}\n'
+        'publish_port = {env = "DEMO_PORT", default = 9000}\nenv_file_mode = "none"\n',
+    )
+    root = _repo(tmp_path, pyproject)
+    compose_path = tmp_path / "compose.yml"
+    compose_path.write_text(container.render(root)["mcp.compose.yml"], encoding="utf-8")
+    base_env = {"DEMO_MCP_MCP_IMAGE": "example.invalid/demo@sha256:" + "a" * 64}
+    for bind in ("127.0.0.1", "::1"):
+        env = {**base_env, "DEMO_BIND": bind, "DEMO_PORT": "9001"}
+        result = subprocess.run(
+            ["docker", "compose", "-f", str(compose_path), "config", "--quiet"],
+            env={**os.environ, **env},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+    for bind in ("localhost", "127.0.0.1:9000", "[::1]", "fe80::1%eth0"):
+        env = {**base_env, "DEMO_BIND": bind, "DEMO_PORT": "9001"}
+        result = subprocess.run(
+            ["docker", "compose", "-f", str(compose_path), "config", "--quiet"],
+            env={**os.environ, **env},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode != 0, bind
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("image_var", "not-an-env-name"),
+        ("restart", "sometimes"),
+        ("tmpfs_size", "0m"),
+        ("publish_port", "9000:9001"),
+        ("health_timeout", "0s"),
+        ("health_command_timeout", 0),
+        ("env_file_mode", "secret"),
+    ],
+)
+def test_render_refuses_invalid_runtime_contract(tmp_path: Path, key: str, value: object) -> None:
+    rendered = json.dumps(value) if isinstance(value, str) else str(value).lower()
+    root = _repo(tmp_path, PYPROJECT + f"{key} = {rendered}\n")
+    with pytest.raises(CannotRun):
+        container.render(root)
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
@@ -141,6 +238,29 @@ def test_render_refuses_an_invalid_compose_host(tmp_path: Path, host: str) -> No
     pyproject = PYPROJECT.replace("port = 9000\n", f'port = 9000\ncompose_host = "{host}"\n')
     with pytest.raises(CannotRun, match="compose_host"):
         container.render(_repo(tmp_path, pyproject))
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("compose_host", '{env = "bad-name", default = "127.0.0.1"}'),
+        ("compose_host", '{env = "GOOD", default = "127.0.0.1:9000"}'),
+        ("compose_host", '{env = "GOOD", default = "127.0.0.1", extra = "refuse"}'),
+        ("publish_port", '{env = "GOOD", default = 0}'),
+        ("publish_port", '{env = "GOOD", default = "9000:9001"}'),
+        ("publish_port", '{env = "GOOD", default = 9000, extra = "refuse"}'),
+    ],
+)
+def test_render_refuses_malformed_typed_bindings(tmp_path: Path, key: str, value: str) -> None:
+    with pytest.raises(CannotRun, match=key.split("_")[0]):
+        container.render(_repo(tmp_path, PYPROJECT + f"{key} = {value}\n"))
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+def test_render_refuses_the_retired_publish_host_alias(tmp_path: Path) -> None:
+    with pytest.raises(CannotRun, match="unknown keys.*publish_host"):
+        container.render(_repo(tmp_path, PYPROJECT + 'publish_host = "127.0.0.1"\n'))
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
