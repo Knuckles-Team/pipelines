@@ -96,6 +96,18 @@ def verify_snapshot(directory: Path, snapshot: dict, raw: str, evidence: Path) -
     source = validate_source(guard, directory, snapshot["source"], snapshot["targets"], raw, identity, evidence)
     actual = {path.name for path in directory.iterdir()}
     guard.require(actual == {*owned, source}, "publication bundle contains missing or extra artifacts")
+    # Older source fixtures contain no kernel declaration. Aggregated release
+    # receipts do, and those receipts must be rechecked against the exact wheel
+    # bytes instead of becoming an unchecked publication claim on verification.
+    if "kernel_cells" in snapshot:
+        kernels = guard.sibling("kernels")
+        matrix, binaries = kernels.scan_bundle(directory, snapshot["targets"], guard.sibling("targets").TARGETS)
+        missing = kernels.missing_cells(matrix)
+        guard.require(not missing, str(kernels.KernelCellMissing(missing)))
+        guard.require(
+            snapshot["kernel_cells"] == kernels.receipt_cells(matrix, binaries),
+            "kernel cell evidence changed",
+        )
 
 
 def aggregate(directory: Path, receipts: Path, output: Path, raw: str, evidence: Path) -> None:
@@ -114,4 +126,11 @@ def aggregate(directory: Path, receipts: Path, output: Path, raw: str, evidence:
     source = proofs.pop("sdist")
     snapshot = {"schema": 2, **guard.identity(), "targets": proofs, "source": source}
     verify_snapshot(directory, snapshot, raw, evidence)
+    kernels = guard.sibling("kernels")
+    matrix, binaries = kernels.scan_bundle(directory, proofs, guard.sibling("targets").TARGETS)
+    missing = kernels.missing_cells(matrix)
+    if missing:
+        reason = "no-kernel-declared" if not matrix.found else None
+        raise kernels.KernelCellMissing(missing, reason=reason)
+    snapshot["kernel_cells"] = kernels.receipt_cells(matrix, binaries)
     output.write_text(json.dumps(snapshot, indent=2) + "\n")
