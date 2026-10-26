@@ -587,12 +587,14 @@
     {
       "id": "PIPE-PAGES-R012.2",
       "title": "Source declarations must survive status regeneration without adding hand-edited status fields",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "13e5f2f6b948",
         "303d05f2ffc1"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_spec_status.py:242"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.3",
