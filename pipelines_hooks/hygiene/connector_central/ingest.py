@@ -415,9 +415,9 @@ def _best_effort_reasons(tree: ast.Module) -> list[str]:
         for alias in node.names:
             if alias.name in exception_names:
                 exception_names.add(alias.asname or alias.name)
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ExceptHandler) and node.type is not None:
-            for sub in ast.walk(node.type):
+    for candidate in ast.walk(tree):
+        if isinstance(candidate, ast.ExceptHandler) and candidate.type is not None:
+            for sub in ast.walk(candidate.type):
                 if isinstance(sub, ast.Name) and sub.id in exception_names:
                     found.add(f"except {sub.id} wrapper (best_effort)")
     return sorted(found)
