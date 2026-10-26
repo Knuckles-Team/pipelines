@@ -22,8 +22,10 @@ jobs:
         with:
           persist-credentials: false
       - name: Build isolated study from the checked-in snapshot
-        run: python3 previews/architecture-story/prepare.py --output architecture-story-preview
-      - name: Capture four actual examples with the runner browser
+        run: |
+          python3 previews/architecture-story/prepare.py --output architecture-story-preview
+          node architecture-story-preview/check-slots.cjs
+      - name: Compare native desktop and mobile zoom with the runner browser
         run: |
           CHROME=$(command -v google-chrome || command -v chromium)
           test -n "$CHROME"

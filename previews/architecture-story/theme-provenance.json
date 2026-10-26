@@ -8,8 +8,9 @@
   "scene": "Exact current abstract ocean SVG; paused static study, not activity",
   "sourceRevision": "d7f41a476f50c00cf5d4ec209dd95d55c97e4fe1",
   "authenticatedSourceBlobSha": "2c77ca544f12043943a13703835fe562a62709f2",
-  "snapshotArchiveSha256": "9021bd14099847ef16effd091baf626f4f7b01eb15581f22fe2643bd41bff83d",
+  "snapshotArchiveSha256": "059ae42234af382536321f39ca8b6314d197b157bd97fcf751908612f6cfca20",
   "snapshotCompression": "XZ (LZMA2), lossless JSON snapshot",
   "studyRevision": "in-box-source-geometry-grapheme-keyboard",
-  "geometrySource": "Exact layout.kids and layout.edges from the recorded 2026-10-26T02:31:30Z architecture payload"
+  "geometrySource": "Exact layout.kids and layout.edges from the recorded 2026-10-26T02:31:30Z architecture payload",
+  "study": "Native canvas baseline/extension; prior resized SVG study superseded"
 }
