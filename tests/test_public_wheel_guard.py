@@ -92,7 +92,8 @@ def test_public_wheel_action_is_explicit_and_preserves_release_default():
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
-def test_public_wheel_release_receipt_binds_source_and_public_bytes(guard, tmp_path, monkeypatch):
+@pytest.mark.parametrize("quoted", [False, True])
+def test_public_wheel_release_receipt_binds_source_and_public_bytes(guard, tmp_path, monkeypatch, quoted):
     expected = {"demo/__init__.py": b"reviewed", "demo/shapes.ttl": b"shapes"}
     payload = archive(expected)
     digest = hashlib.sha256(payload).hexdigest()
@@ -111,7 +112,8 @@ def test_public_wheel_release_receipt_binds_source_and_public_bytes(guard, tmp_p
         if argv[1:] == ["show", "HEAD:pyproject.toml"]:
             return '[project]\nname="demo-dist"\nversion="1.2.3"\n'
         if argv[1:] == ["show", "HEAD:docker/Dockerfile"]:
-            return "RUN pip install demo-dist[mcp]==1.2.3\n"
+            quote = '"' if quoted else ""
+            return f"RUN pip install {quote}demo-dist[mcp]==1.2.3{quote}\n"
         if argv[1:] == ["rev-parse", "HEAD"]:
             return "a" * 40 + "\n"
         raise AssertionError(argv)

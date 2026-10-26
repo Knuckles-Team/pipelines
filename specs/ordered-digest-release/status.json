@@ -686,6 +686,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "23b1e1111638",
+        "2e89db0000e5",
         "3d0455152b96",
         "db468196e870"
       ],
@@ -705,7 +706,8 @@
       "title": "Published-wheel image preflight",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "23b1e1111638"
+        "23b1e1111638",
+        "2e89db0000e5"
       ],
       "verified_by": [
         "tests/test_public_wheel_guard.py:35",
