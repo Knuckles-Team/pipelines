@@ -296,7 +296,7 @@ def get_client():
 """
 
 
-@pytest.mark.spec("PIPE-GATES-R016.74")
+@pytest.mark.spec("PIPE-GATES-R016.74")  # reviewed existing assertion binding
 def test_r7_delegation_holder_is_review_with_delegation_proposal(tmp_path: Path) -> None:
     src = _auth(DELEGATING)
     root = _repo(tmp_path, src, _api('H = {"Authorization": f"Bearer {token}"}'))
@@ -305,7 +305,7 @@ def test_r7_delegation_holder_is_review_with_delegation_proposal(tmp_path: Path)
     assert any(i["step"] == "auth.r7" and "delegation=True" in i["detail"] for i in ctx.review.items)
 
 
-@pytest.mark.spec("PIPE-GATES-R016.75")
+@pytest.mark.spec("PIPE-GATES-R016.75")  # reviewed existing assertion binding
 def test_r8_delegation_wrappers_are_review(tmp_path: Path) -> None:
     src = _auth(DELEGATING.replace("local = threading.local()\n", ""))
     root = _repo(tmp_path, src, _api('H = {"Authorization": f"Bearer {token}"}'))
@@ -333,7 +333,7 @@ def test_r9_missing_tls_profile_is_review(tmp_path: Path) -> None:
     assert any(i["step"] == "auth.r9" and "tls=" in i["detail"] for i in ctx.review.items)
 
 
-@pytest.mark.spec("PIPE-GATES-R016.77")
+@pytest.mark.spec("PIPE-GATES-R016.77")  # reviewed existing assertion binding
 def test_r10_hand_configured_session_is_review(tmp_path: Path) -> None:
     body = """def get_client():
     import requests
@@ -353,7 +353,7 @@ def test_r10_hand_configured_session_is_review(tmp_path: Path) -> None:
 LOGIN_BODY = BASIC_BODY
 
 
-@pytest.mark.spec("PIPE-GATES-R016.78")
+@pytest.mark.spec("PIPE-GATES-R016.78")  # reviewed existing assertion binding
 def test_r11_session_login_rewrite(tmp_path: Path) -> None:
     root = _repo(tmp_path, _auth(LOGIN_BODY), _api('L = "/api/v2/auth/login"', API_BASIC))
     ctx = _run(root)
@@ -365,13 +365,17 @@ def test_r11_session_login_rewrite(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.78")
-def test_r11_two_login_paths_still_matches_r11_but_proposes_placeholder(tmp_path: Path) -> None:
+def test_r11_two_login_paths_are_reviewed_with_an_exact_fallback_reason(tmp_path: Path) -> None:
     src = _auth(LOGIN_BODY)
     root = _repo(tmp_path, src, _api('L = "/a/login"\nM = "/b/login"', API_BASIC))
     ctx = _run(root)
-    assert _text(root) == src or "login_path=" in _text(root)
-    if _text(root) == src:
-        assert any(i["step"] == "auth.r11" for i in ctx.review.items)
+    assert _text(root) == src
+    assert "auth.r11" not in ctx.applied
+    (item,) = [i for i in ctx.review.items if i["step"] == "auth.r11"]
+    assert item["detail"] == (
+        'proposed SessionLogin(login_path="<login path>", user_env="DEMO_USERNAME", '
+        'password_env="DEMO_PASSWORD"): several literal login paths; choose one for SessionLogin by hand'
+    )
 
 
 # spec: PIPE-GATES-R016.79 — reviewed existing assertion binding
