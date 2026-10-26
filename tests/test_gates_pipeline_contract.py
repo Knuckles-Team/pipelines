@@ -77,12 +77,24 @@ def test_require_tag_defaults_off_and_guards_the_publish_step() -> None:
     assert {"runtime-profiles", "web-assets"} <= set(_on(PYTHON_WORKFLOW)["workflow_call"]["inputs"])
 
 
+# spec: PIPE-RELEASE-R007.4
 def test_require_tag_refuses_a_branch_ref_and_names_it() -> None:
     refused = _run_guard("refs/heads/main")
     assert refused.returncode == 1
     assert "refs/heads/main" in refused.stdout
     assert _run_guard("refs/tags/v1.2.3").returncode == 0
-    assert _run_guard("refs/tags/nightly").returncode == 1
+    nightly = _run_guard("refs/tags/nightly")
+    assert nightly.returncode == 1
+    assert "refs/tags/nightly" in nightly.stdout
+
+
+# spec: PIPE-RELEASE-R007.5
+def test_gates_logs_scope_before_running_tests() -> None:
+    text = GATES_WORKFLOW.read_text(encoding="utf-8")
+    scope = text.index('scope="$(uvx')
+    evidence = text.index('echo "pr-test-scope: $scope"', scope)
+    dispatch = text.index('case "$scope"', evidence)
+    assert scope < evidence < dispatch
 
 
 def test_skip_template_is_the_inverse_of_the_documented_ignore_list() -> None:

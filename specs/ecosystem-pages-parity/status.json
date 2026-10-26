@@ -581,18 +581,20 @@
         "303d05f2ffc1"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:191"
+        "tests/test_spec_dashboard_metadata.py:200"
       ]
     },
     {
       "id": "PIPE-PAGES-R012.2",
       "title": "Source declarations must survive status regeneration without adding hand-edited status fields",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "13e5f2f6b948",
         "303d05f2ffc1"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_spec_status.py:242"
+      ]
     },
     {
       "id": "PIPE-PAGES-R012.3",
@@ -667,8 +669,8 @@
         "6cd8906edd00"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:205",
-        "tests/test_spec_dashboard_metadata.py:216",
+        "tests/test_spec_dashboard_metadata.py:214",
+        "tests/test_spec_dashboard_metadata.py:225",
         "tests/test_spec_dashboard_metadata.py:28",
         "tests/test_spec_dashboard_metadata.py:29",
         "tests/test_spec_dashboard_metadata.py:30"
@@ -706,7 +708,7 @@
         "911c63f923e5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:205",
+        "tests/test_spec_dashboard_metadata.py:214",
         "tests/test_spec_dashboard_reference_prose.py:10"
       ]
     },
@@ -768,7 +770,7 @@
         "6cd983d5fe0b"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard_metadata.py:216"
+        "tests/test_spec_dashboard_metadata.py:225"
       ]
     },
     {
@@ -853,13 +855,17 @@
     {
       "id": "PIPE-PAGES-R015",
       "title": "One generator for connectors and client repositories",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "246cc47a897a",
         "5b454e4b7eb4",
         "6f853265406b"
       ],
-      "verified_by": [],
+      "verified_by": [
+        "tests/test_pages_pipeline_contract.py:257",
+        "tests/test_pages_pipeline_contract.py:303",
+        "tests/test_spec_dashboard_metadata.py:156"
+      ],
       "rollup_of": [
         "PIPE-PAGES-R015.1",
         "PIPE-PAGES-R015.2",
@@ -891,11 +897,13 @@
     {
       "id": "PIPE-PAGES-R015.3",
       "title": "Connectors must inherit code references and relationship views through the shared Pages generator when enabled",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "5b454e4b7eb4"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_spec_dashboard_metadata.py:156"
+      ]
     },
     {
       "id": "PIPE-PAGES-R016",

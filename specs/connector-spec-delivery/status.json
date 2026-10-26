@@ -424,7 +424,7 @@
         "e01884644a83"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_status.py:58"
+        "tests/hooks/test_spec_status.py:60"
       ]
     },
     {
@@ -733,9 +733,17 @@
     {
       "id": "PIPE-CONNSPEC-R105",
       "title": "`arr-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a75eb4ea62fd",
+        "f82d25db4632"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r105.py:62",
+        "tests/test_connector_consumer_r105.py:63",
+        "tests/test_connector_consumer_rollout.py:50",
+        "tests/test_connector_consumer_rollout.py:80"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R105.1",
         "PIPE-CONNSPEC-R105.2",
@@ -768,16 +776,24 @@
     {
       "id": "PIPE-CONNSPEC-R105.3",
       "title": "`arr-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f82d25db4632"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r105.py:62"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R105.4",
       "title": "`arr-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "f82d25db4632"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r105.py:63"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R106",
@@ -4512,7 +4528,7 @@
         "0f9f73b150d7"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_status.py:314"
+        "tests/hooks/test_spec_status.py:371"
       ]
     },
     {
