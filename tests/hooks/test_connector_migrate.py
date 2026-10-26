@@ -741,7 +741,7 @@ def test_rebump_also_points_reference_assertions_at_the_live_layout(tmp_path: Pa
     assert '"relations/Job/launchedFrom"' in (root / "tests" / "test_refs.py").read_text(encoding="utf-8")
 
 
-@pytest.mark.spec("PIPE-GATES-R016.25")
+@pytest.mark.spec("PIPE-GATES-R016.25")  # reviewed existing assertion binding
 def test_driver_sync_falls_back_to_the_pr_gate_extras_and_each_repo_gets_its_own_pre_commit_home(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
