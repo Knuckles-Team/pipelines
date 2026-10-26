@@ -395,3 +395,38 @@ assert.deepEqual(ink,['Self-Evolution']);
     )
     subprocess.run([node, "-e", script], check=True, capture_output=True, text=True)
 
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_annotation_paint_restores_canvas_styles_between_repeated_frames() -> None:
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node unavailable")
+    source = TEMPLATE.read_text()
+    functions = "function intersects(" + source.split("function intersects(", 1)[1].split("// Overview bands", 1)[0]
+    script = (
+        """
+const assert=require('node:assert/strict');
+let W=500,H=300,annotations=[],annotationRects=[],annotationSegments=[],annotationEvidence=[],dirty=false;
+const $=()=>({addEventListener(){}}),C={display:'Inter',edgeHalo:'#fff',fg:'#222'},ink=[],stack=[];
+const keys=['font','textAlign','textBaseline','globalAlpha','strokeStyle','fillStyle','lineWidth','lineJoin'];
+const styles=()=>Object.fromEntries(keys.map(key=>[key,ctx[key]]));
+const ctx={font:'13px sans-serif',textAlign:'center',textBaseline:'alphabetic',globalAlpha:.7,strokeStyle:'#123',fillStyle:'#456',lineWidth:2,lineJoin:'miter',
+ save(){stack.push(styles());},restore(){Object.assign(this,stack.pop());},
+ measureText:t=>({width:t.length*6,actualBoundingBoxAscent:0,actualBoundingBoxDescent:10}),strokeText(){},fillText(t,x,y){ink.push({t,x,y,styles:styles()});},fillRect(){}};
+"""
+        + functions
+        + """
+caption({id:'test'},'loop','Self-evolution loop: evaluate, promote, roll back',100,100,11,1);
+const original=styles();paintAnnotations();
+assert.deepEqual(styles(),original);assert.equal(stack.length,0);
+const first=JSON.stringify({ink,labels:annotationEvidence});ink.length=0;paintAnnotations();
+assert.equal(JSON.stringify({ink,labels:annotationEvidence}),first);
+assert.deepEqual(styles(),original);assert.equal(ctx.lineJoin,'miter');assert.equal(stack.length,0);
+ctx.measureText=()=>{throw Error('measurement failed');};
+assert.throws(()=>paintAnnotations(),/measurement failed/);assert.deepEqual(styles(),original);assert.equal(stack.length,0);
+"""
+    )
+    subprocess.run([node, "-e", script], check=True, capture_output=True, text=True)
