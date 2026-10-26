@@ -688,9 +688,9 @@
       "landed_in": [
         "0f2baf0bc01f",
         "23b1e1111638",
+        "2bfa0714a152",
         "2e89db0000e5",
-        "39bd54475107",
-        "3d0455152b96"
+        "39bd54475107"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -710,9 +710,9 @@
       "landed_in": [
         "0f2baf0bc01f",
         "23b1e1111638",
+        "2bfa0714a152",
         "2e89db0000e5",
-        "39bd54475107",
-        "c4e90fa75d39"
+        "39bd54475107"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:61",
@@ -758,7 +758,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:735"
+        "tests/test_container_pipeline_contract.py:746"
       ]
     },
     {
