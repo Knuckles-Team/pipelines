@@ -23,6 +23,7 @@ KNOWN_SETTINGS = {
     "COMMIT_IDENTITY_ALLOWLIST": "path of the configured commit-identity allowlist JSON",
     "GITHUB_EVENT_NAME": "GitHub Actions event name (CI comparison and fork exemption)",
     "GITHUB_EVENT_PATH": "path of the GitHub Actions event payload (CI comparison and fork exemption)",
+    "GITHUB_REF": "GitHub Actions ref (pull-request merge ref detection)",
     "USER": "ambient account name (tracked-privacy)",
     "LOGNAME": "ambient account name (tracked-privacy)",
     "USERNAME": "ambient account name (tracked-privacy)",
