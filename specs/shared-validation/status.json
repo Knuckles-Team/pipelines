@@ -32,10 +32,10 @@
         "af9b1ddcb25f"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:280",
-        "tests/hooks/test_connector_central.py:299",
-        "tests/hooks/test_connector_central.py:307",
-        "tests/hooks/test_connector_central.py:318",
+        "tests/hooks/test_connector_central.py:400",
+        "tests/hooks/test_connector_central.py:419",
+        "tests/hooks/test_connector_central.py:427",
+        "tests/hooks/test_connector_central.py:438",
         "tests/hooks/test_connector_security_scaffold.py:111"
       ],
       "rollup_of": [
@@ -137,8 +137,8 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:280",
-        "tests/hooks/test_connector_central.py:299"
+        "tests/hooks/test_connector_central.py:400",
+        "tests/hooks/test_connector_central.py:419"
       ]
     },
     {
@@ -149,7 +149,7 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:307"
+        "tests/hooks/test_connector_central.py:427"
       ]
     },
     {
@@ -161,7 +161,7 @@
         "d9ae8754cd03"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:318"
+        "tests/hooks/test_connector_central.py:438"
       ]
     },
     {
