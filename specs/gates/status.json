@@ -650,8 +650,10 @@
     {
       "id": "PIPE-GATES-R016.11",
       "title": "Cut files and packaging (migrate b)",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "072841d0fc31"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_migrate.py:162",
         "tests/hooks/test_connector_migrate.py:259"
@@ -1479,8 +1481,10 @@
     {
       "id": "PIPE-GATES-R016.87",
       "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i6`",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "072841d0fc31"
+      ],
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:394",
         "tests/hooks/test_connector_central_ingest.py:406"
