@@ -1359,8 +1359,10 @@
     {
       "id": "PIPE-PAGES-R020.7",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "52361755abc9"
+      ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:130"
       ]
@@ -1368,8 +1370,11 @@
     {
       "id": "PIPE-PAGES-R020.8",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "52361755abc9",
+        "68f2a63bf62b"
+      ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:143"
       ]
@@ -1377,8 +1382,10 @@
     {
       "id": "PIPE-PAGES-R020.9",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "52361755abc9"
+      ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:167"
       ]
@@ -1386,8 +1393,10 @@
     {
       "id": "PIPE-PAGES-R020.10",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "52361755abc9"
+      ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:196"
       ]
@@ -1395,8 +1404,10 @@
     {
       "id": "PIPE-PAGES-R020.11",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "52361755abc9"
+      ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:253"
       ]
@@ -1404,11 +1415,14 @@
     {
       "id": "PIPE-PAGES-R020.12",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "52361755abc9",
+        "68f2a63bf62b"
+      ],
       "verified_by": [
         "tests/hooks/test_public_surface_claims.py:282",
-        "tests/hooks/test_public_surface_claims.py:320"
+        "tests/hooks/test_public_surface_claims.py:333"
       ]
     },
     {
