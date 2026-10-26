@@ -62,6 +62,7 @@ def _fixture(repo: Repo) -> str:
     return repo.commit(FILES, message="fixture")
 
 
+# spec: PIPE-RELEASE-R006.1
 def test_project_version_inventory() -> None:
     inventory = _inventory()
     assert isinstance(inventory, ProjectVersionInventory)
@@ -85,6 +86,7 @@ def test_project_version_inventory() -> None:
         parse_inventory(missing)
 
 
+# spec: PIPE-RELEASE-R006.2
 def test_project_version_values() -> None:
     inventory = _inventory()
     checks = check_inventory(inventory, _contents())
@@ -122,6 +124,7 @@ def test_project_version_assignment_does_not_match_similar_manifest_keys() -> No
     assert metadata[0].actual == VERSION
 
 
+# spec: PIPE-RELEASE-R006.4
 def test_project_version_refusals() -> None:
     with pytest.raises(CannotRun, match="config-invalid: malformed"):
         parse_inventory("[bumpversion\ncurrent_version = 1\n")
@@ -152,6 +155,7 @@ def test_project_version_refusals() -> None:
         )
 
 
+# spec: PIPE-RELEASE-R006.5
 def test_project_version_evidence() -> None:
     checks = check_inventory(_inventory(), _contents())
     assert [(check.role, check.path, check.line) for check in checks] == [
@@ -169,6 +173,7 @@ def test_project_version_evidence() -> None:
         assert check.snapshot == "index-tree:fixture"
 
 
+# spec: PIPE-RELEASE-R006.3
 def test_project_version_hook_wiring(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     """The integration owner supplies the registry/catalogue/self-run entries."""
     assert GATES["project-version-sync"] == "pipelines_hooks.release.project_version"
@@ -181,6 +186,7 @@ def test_project_version_hook_wiring(repo: Repo, capsys: pytest.CaptureFixture[s
     assert "version-mismatch" in output
 
 
+# spec: PIPE-RELEASE-R006.6
 def test_project_version_sync_cli(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     base = _fixture(repo)
     assert repo.run("project-version-sync") == 0
