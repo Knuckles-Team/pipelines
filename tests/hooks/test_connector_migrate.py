@@ -847,6 +847,7 @@ def test_driver_retry_starts_clean_and_resyncs_after_migrate_with_per_repo_envs(
     remove_i = next(i for i, cmd in enumerate(retry_commands) if cmd[:3] == ["git", "worktree", "remove"])
     add_i = next(i for i, cmd in enumerate(retry_commands) if cmd[:3] == ["git", "worktree", "add"])
     migrate_i = next(i for i, cmd in enumerate(retry_commands) if "migrate" in cmd)
+    assert retry_commands[add_i][-1] == "origin/main"
     sync_is = [i for i, cmd in enumerate(retry_commands) if cmd[:2] == ["uv", "sync"]]
     assert remove_i < add_i < sync_is[0] < migrate_i < sync_is[1]
     sync_envs = [env for cmd, env in calls if cmd[:2] == ["uv", "sync"]]
