@@ -103,6 +103,43 @@ def test_render_is_deterministic_and_driven_by_the_table(tmp_path: Path) -> None
     assert "demo-mcp[mcp]==1.2.4" in container.render(root)["Dockerfile"]
 
 
+@pytest.mark.spec("PIPE-RELEASE-R010")
+def test_render_applies_named_source_build_allowance_to_each_runtime_target(tmp_path: Path) -> None:
+    pyproject = PYPROJECT.replace(
+        "[tool.pipelines.container]",
+        '[tool.pipelines]\nallow-source-build = ["Uptime_Kuma.API", "pyspark"]\n\n[tool.pipelines.container]',
+        1,
+    )
+    docker = container.render(_repo(tmp_path, pyproject))["Dockerfile"]
+    install = "--only-binary :all: --no-binary pyspark --no-binary uptime-kuma-api"
+    assert docker.count(install) == 2
+    assert "demo-mcp[mcp]==1.2.3" in docker and "demo-mcp[agent]==1.2.3" in docker
+    assert "--no-binary demo-mcp" not in docker
+
+
+@pytest.mark.spec("PIPE-RELEASE-R010")
+@pytest.mark.parametrize("allowance", ['[":all:"]', '["a", "A"]', '["bad name"]'])
+def test_render_refuses_invalid_named_source_build_allowance(tmp_path: Path, allowance: str) -> None:
+    pyproject = PYPROJECT.replace(
+        "[tool.pipelines.container]",
+        f"[tool.pipelines]\nallow-source-build = {allowance}\n\n[tool.pipelines.container]",
+        1,
+    )
+    with pytest.raises(CannotRun):
+        container.render(_repo(tmp_path, pyproject))
+
+
+@pytest.mark.spec("PIPE-RELEASE-R010")
+def test_render_refuses_the_published_package_as_a_source_build(tmp_path: Path) -> None:
+    pyproject = PYPROJECT.replace(
+        "[tool.pipelines.container]",
+        '[tool.pipelines]\nallow-source-build = ["demo_mcp"]\n\n[tool.pipelines.container]',
+        1,
+    )
+    with pytest.raises(CannotRun, match="published package itself"):
+        container.render(_repo(tmp_path, pyproject))
+
+
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
 def test_render_preserves_explicit_runtime_contract(tmp_path: Path) -> None:
     pyproject = (

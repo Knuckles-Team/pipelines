@@ -3,11 +3,12 @@
 # `pipelines-connector render`. Never committed: change the template or
 # the connector's [tool.pipelines.container] table in pyproject.toml.
 #
-# Wheel-only connector image. The published @@DIST@@ wheel is installed from PyPI at
-# the exact version in pyproject.toml (read from pyproject.toml); no source is
-# copied into any stage, and every distribution in the closure must be a wheel
-# (--only-binary :all:). The release pipeline publishes the wheel before this build,
-# so the install retries while the new version propagates through the index.
+# Binary-only connector image by default. The published @@DIST@@ wheel is installed
+# from PyPI at the exact version in pyproject.toml (read from pyproject.toml); no
+# source is copied into any stage. Every dependency uses --only-binary :all: except
+# names listed in [tool.pipelines].allow-source-build, which receive --no-binary.
+# The release pipeline publishes the wheel before this build, so the install retries
+# while the new version propagates through the index.
 #
 #   docker build --target <stage> -t @@DIST@@:local -f docker/Dockerfile .
 #   stages: @@STAGES@@
