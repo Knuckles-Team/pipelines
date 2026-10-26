@@ -3296,9 +3296,18 @@
     {
       "id": "PIPE-CONNSPEC-R153",
       "title": "`portainer-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d37c6af0e600",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:132",
+        "tests/test_connector_consumer_r138_157.py:78",
+        "tests/test_connector_consumer_r153.py:143",
+        "tests/test_connector_consumer_r153.py:185",
+        "tests/test_connector_consumer_r153.py:61"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R153.1",
         "PIPE-CONNSPEC-R153.2",
@@ -3331,16 +3340,26 @@
     {
       "id": "PIPE-CONNSPEC-R153.3",
       "title": "`portainer-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d37c6af0e600"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r153.py:143",
+        "tests/test_connector_consumer_r153.py:61"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R153.4",
       "title": "`portainer-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d37c6af0e600"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r153.py:185",
+        "tests/test_connector_consumer_r153.py:62"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R154",
