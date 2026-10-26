@@ -18,17 +18,20 @@ function nodeStoryAnchors(id){
   if(storyAnchorSets.has(id))return storyAnchorSets.get(id);
   const r=R[id],children=nodes[id].children.map(c=>R[c.id]).filter(Boolean);
   const left=r[0]+r[2]*.015,top=r[1]+r[3]*.105,right=r[0]+r[2]*.985,bottom=r[1]+r[3]*.985;
-  const xs=[left,...children.map(c=>c[0]+c[2]+r[2]*.012)].filter(x=>x<right);
-  const ys=[top,...children.map(c=>c[1]+c[3]+r[3]*.018)].filter(y=>y<bottom);
-  const points=[];
+  const gridX=[.03,.15,.2,.225,.25,.3,.35,.4,.5,.65,.8].map(f=>r[0]+r[2]*f),gridY=[.14,.25,.4,.45,.5,.55,.7].map(f=>r[1]+r[3]*f);
+  const xs=[left,...gridX,...children.map(c=>c[0]+c[2]+r[2]*.012)].filter(x=>x<right);
+  const ys=[top,...gridY,...children.map(c=>c[1]+c[3]+r[3]*.018)].filter(y=>y<bottom);
+  const points=[],seen=new Set();
   for(const y of ys)for(const x of xs){
+    const key=x+':'+y;if(seen.has(key))continue;seen.add(key);
     if(children.some(c=>x>=c[0]&&x<=c[0]+c[2]&&y>=c[1]&&y<=c[1]+c[3]))continue;
     let w=right-x,h=bottom-y;
     for(const c of children){if(c[0]>=x&&c[1]<=y&&c[1]+c[3]>=y)w=Math.min(w,c[0]-x);if(c[1]>=y&&c[0]<=x&&c[0]+c[2]>=x)h=Math.min(h,c[1]-y);}
-    points.push({x,y,score:w*h});
+    points.push({x,y,score:w*h,grid:gridX.includes(x)&&gridY.includes(y)});
   }
   points.sort((a,b)=>b.score-a.score||a.y-b.y||a.x-b.x);
-  const anchors=points.slice(0,96);storyAnchorSets.set(id,anchors);return anchors;
+  const interior=points.filter(p=>p.grid),other=points.filter(p=>!p.grid);
+  const anchors=[...interior,...other.slice(0,96-interior.length)].sort((a,b)=>b.score-a.score||a.y-b.y||a.x-b.x);storyAnchorSets.set(id,anchors);return anchors;
 }
 function clearStoryRect(rect,bounds,obstacles,segments,spare=0){
   const [x,y,w,h]=rect,p=[x-8-spare,y-8-spare,w+16+2*spare,h+16+2*spare];
@@ -111,7 +114,7 @@ function paintStories(){
     if(openness(n,bounds[2])>=.995){
       const labels=annotationEvidence.filter(a=>a.placement==='canvas').map(a=>[a.rect[0]-4,a.rect[1]-4,a.rect[2]+8,a.rect[3]+8]);
       const obstacles=[...annotationRects,...labels],choice=chooseStory(id,data,bounds,obstacles,annotationSegments);
-      if(choice){drawComposition(choice);storyEvidence={owner:id,placement:'canvas',...choice,total:data.total,takeaway:data.takeaway,obstacles,segments:annotationSegments};}
+      if(choice){drawComposition(choice);storyEvidence={owner:id,placement:'canvas',...choice,total:data.total,takeaway:data.takeaway,obstacles,segments:annotationSegments};}else storyEvidence={...storyEvidence,bounds,anchorCandidates:nodeStoryAnchors(id).map(a=>toS(a.x,a.y)),obstacles,segments:annotationSegments};
     }
   }
   const s=storyEvidence;

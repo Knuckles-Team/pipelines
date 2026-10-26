@@ -33,7 +33,8 @@ function call(method,params={},sessionId){return new Promise((resolve,reject)=>{
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const results=[];
 (async()=>{
- for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide']){
+ for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide'])for(const route of ['center','left-gap']){
+  if(route==='left-gap'&&results.some(r=>r.device===device.name&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas'))continue;
   const pages=[];let fullPageCaptured=false;
   try{
    for(const variant of ['baseline','preview']){
@@ -56,21 +57,22 @@ const results=[];
      await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))))');
      await delay(150);
      {
-      const p=await page.evaluate('(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()');
+      const fraction=route==='center'?.5:.2;
+      const p=await page.evaluate(`(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return {x:r.x+r.width*${fraction},y:r.y+r.height/2}})()`);
       const before=await page.evaluate('({...__arch.cam})'),delta=step?-160:-1;
       await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',...p,deltaX:0,deltaY:delta});
       const expected=Math.max(.02,Math.min(before.k*Math.exp(-delta*.0016),4e6));
       let matched=false;
       for(let tick=0;tick<30;tick++){await delay(100);const actual=await page.evaluate('__arch.cam.k');if(Math.abs(actual-expected)<=Math.max(1,expected)*1e-12){matched=true;break;}}
-      if(!matched){writeFileSync(join(output,'wheel-failure.json'),JSON.stringify({device,node,step,variant:page.variant,before,expected,actual:await page.evaluate('({...__arch.cam})')}));throw Error('Trusted wheel camera formula did not settle');}
+      if(!matched){writeFileSync(join(output,'wheel-failure.json'),JSON.stringify({device,node,route,step,variant:page.variant,before,expected,actual:await page.evaluate('({...__arch.cam})')}));throw Error('Trusted wheel camera formula did not settle');}
       await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))))');await delay(450);
      }
      states.push(await page.evaluate(`(()=>{const ids=[];const walk=n=>{ids.push(n.id);n.children.forEach(walk)};walk(PAYLOAD.tree);const r=document.querySelector('#cv').getBoundingClientRect();return {cam:{...__arch.cam},focus:__arch.focus,rects:ids.map(id=>[id,__arch.rect(id)]),canvas:[r.x,r.y,r.width,r.height],controls:[...document.querySelectorAll('button,input,select')].map(e=>[e.tagName,e.id,e.textContent]),story:window.__storyQA?__storyQA():null}})()`));
     }
-    for(const field of ['cam','rects','canvas','controls'])if(JSON.stringify(states[0][field])!==JSON.stringify(states[1][field])){writeFileSync(join(output,'invariant-failure.json'),JSON.stringify({device,node,step,field,states},null,2));throw Error('Native invariant changed: '+field);}
+    for(const field of ['cam','rects','canvas','controls'])if(JSON.stringify(states[0][field])!==JSON.stringify(states[1][field])){writeFileSync(join(output,'invariant-failure.json'),JSON.stringify({device,node,route,step,field,states},null,2));throw Error('Native invariant changed: '+field);}
     const story=states[1].story,mask=story?.placement==='canvas'?story.rect:null,hashes=[];
     if(mask){
-     const prior=results.filter(r=>r.device===device.name&&r.node===node&&r.story?.placement==='canvas'&&r.story.owner===story.owner&&r.story.tier===story.tier).at(-1);
+     const prior=results.filter(r=>r.device===device.name&&r.node===node&&r.route===route&&r.story?.placement==='canvas'&&r.story.owner===story.owner&&r.story.tier===story.tier).at(-1);
      if(prior&&(prior.story.index!==story.index||prior.story.kind!==story.kind))throw Error('Story anchor jumped inside native zoom tier');
      const text=story.layout.ops.filter(op=>op.type==='text');
      for(const op of text)if(op.x<0||op.x+op.width>story.rect[2]+.01||op.y<0||op.y+op.height>story.rect[3]||op.size<11)throw Error('Unreadable or out-of-bounds story text');
@@ -85,17 +87,17 @@ const results=[];
      await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))))');
      await delay(150);
      hashes.push(await page.evaluate(`(()=>{const c=document.querySelector('#cv'),a=c.getContext('2d').getImageData(0,0,c.width,c.height).data,r=${JSON.stringify(mask)},ratio=c.width/c.getBoundingClientRect().width;let h=2166136261;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){if(r&&x>=(r[0]-2)*ratio&&x<=(r[0]+r[2]+2)*ratio&&y>=(r[1]-2)*ratio&&y<=(r[1]+r[3]+2)*ratio)continue;const i=(y*c.width+x)*4;for(let k=0;k<4;k++)h=Math.imul(h^a[i+k],16777619)}return h>>>0})()`));
-     const shot=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}.png`),Buffer.from(shot.data,'base64'));
+     const shot=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(join(output,`${device.name}-${node}-${route}-${step}-${page.variant}.png`),Buffer.from(shot.data,'base64'));
      if(device.name==='mobile'&&mask&&!fullPageCaptured){
       const beforeScroll=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
       await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',x:20,y:20,deltaX:0,deltaY:350});await delay(600);
       const scrolled=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
       const sameCam=JSON.stringify(scrolled.cam)===JSON.stringify(beforeScroll.cam),sameSize=JSON.stringify(scrolled.rect.slice(2))===JSON.stringify(beforeScroll.rect.slice(2));
       const wholePlot=scrolled.rect[1]+mask[1]>=0&&scrolled.rect[1]+mask[1]+mask[3]<=device.height;
-      writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}-scroll.json`),JSON.stringify({beforeScroll,scrolled,sameCam,sameSize,wholePlot},null,2));
+      writeFileSync(join(output,`${device.name}-${node}-${route}-${step}-${page.variant}-scroll.json`),JSON.stringify({beforeScroll,scrolled,sameCam,sameSize,wholePlot},null,2));
       if(!sameCam||!sameSize||!wholePlot)throw Error('Native document scroll changed map geometry or did not expose complete chart');
       const full=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
-      writeFileSync(join(output,`${device.name}-${node}-${step}-${page.variant}-footer.png`),Buffer.from(full.data,'base64'));
+      writeFileSync(join(output,`${device.name}-${node}-${route}-${step}-${page.variant}-footer.png`),Buffer.from(full.data,'base64'));
       await page.command('Input.dispatchKeyEvent',{type:'keyDown',key:'Home',code:'Home',windowsVirtualKeyCode:36});
       await page.command('Input.dispatchKeyEvent',{type:'keyUp',key:'Home',code:'Home',windowsVirtualKeyCode:36});await delay(600);
       const restored=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
@@ -104,7 +106,7 @@ const results=[];
     }
     if(device.name==='mobile'&&mask)fullPageCaptured=true;
     if(hashes[0]!==hashes[1])throw Error('Existing canvas pixels changed outside chart bounds');
-    results.push({device:device.name,node,step,camera:states[1].cam,focus:states[1].focus,story,geometryEqual:true,outsideChartPixelHash:hashes[0]});
+    results.push({device:device.name,node,route,step,camera:states[1].cam,focus:states[1].focus,story,geometryEqual:true,outsideChartPixelHash:hashes[0]});
     writeFileSync(join(output,'native-proof.json'),JSON.stringify(results,null,2));
    }
   }finally{for(const page of pages)await call('Target.closeTarget',{targetId:page.targetId});}

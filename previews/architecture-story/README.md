@@ -47,3 +47,9 @@ Frozen PAYLOAD has family IDs, not curated family display titles. Existing requi
 - Expanded pure tests cover uniform-family/zero-SPECIFIED data, very large numbers (complete or deferred), long Unicode labels, all text rectangles, kind-specific aria, tier entry/return, stable world anchors and immediate collision deferral. These use deterministic mock text metrics, not an Inter browser-render acceptance claim.
 
 Because measured wrapping can increase height, the original ~230px comparison estimate is not a guarantee. The candidate uses the measured footprint, and smaller concentration annotations remain available where a full comparison cannot fit. Actual mobile/Arbora/Overstory reveal and typography are still unproven until the unchanged hosted tests and pixel review are authorized for this new LOCAL design.
+
+### Native navigation qualification routes
+
+Every nominated node/device first receives the unchanged center-directed mouse-wheel sweep. Only if it has no positive reveal, a second fresh baseline/candidate pair receives trusted mouse-wheel input at 20% of the original canvas width, aimed toward existing left-side whitespace. No camera injection, node movement, renderer resizing or collision tolerance is used. Receipts and screenshot filenames distinguish `center` from `left-gap`. Requiring that navigation is a discoverability limitation, not evidence that richness is automatic everywhere; all-node production fulfillment is not claimed by three examples.
+
+The node-local anchor list retains a finite deduplicated interior set as well as child-boundary anchors (maximum96); selection remains pinned within its native zoom tier and immediately defers on collision.
