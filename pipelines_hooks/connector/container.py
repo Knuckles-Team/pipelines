@@ -18,6 +18,11 @@ Nothing is read from a committed Dockerfile; a connector commits none of these f
 The image installs the published wheel from PyPI with ``--only-binary :all:``, never
 copies source, runs as a fixed non-root UID, and re-resolves the SDK inside the wheel's
 supported range on every build (``ARG SDK_VERSION`` busts the layer when the SDK ships).
+
+``compose_host`` in ``[tool.pipelines.container]`` controls only the host-side
+port publication. It defaults to the secure loopback address and accepts an
+explicit validated IP address when a connector intentionally
+needs a different bind (for example, ``0.0.0.0`` for a LAN-facing service).
 """
 
 from __future__ import annotations
@@ -311,6 +316,9 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
     env = "".join(f"      - {line}\n" for line in table.get("compose_env", []))
     volumes, top_level_volumes = compose_volume_blocks(table.get("config_mounts"), table.get("state_volumes"))
     env_file = ENV_FILE_OPTIONAL if table.get("env_file_optional") else ENV_FILE_REQUIRED
+    compose_host = project.compose_host(table)
+    if ":" in compose_host:
+        compose_host = f"[{compose_host}]"
     for target in entries:
         service = f"{dist}-{target}"
         limits = {**DEFAULT_LIMITS, **dict(table.get("limits", {}).get(target, {}))}
@@ -321,6 +329,7 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
                 "@@IMAGE_VAR@@": re.sub(r"[^A-Z0-9]", "_", service.upper()) + "_IMAGE",
                 "@@UID@@": uid,
                 "@@PORT@@": port,
+                "@@COMPOSE_HOST@@": compose_host,
                 "@@COMPOSE_ENV@@": env,
                 "@@VOLUMES@@": volumes,
                 "@@TOP_LEVEL_VOLUMES@@": top_level_volumes,

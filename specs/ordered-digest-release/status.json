@@ -616,14 +616,16 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f2baf0bc01f",
+        "520609e0ae33",
+        "5b1843a5a360",
         "5ff231c270b1"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
-        "tests/hooks/test_connector_central.py:114",
-        "tests/hooks/test_connector_central.py:123",
-        "tests/hooks/test_connector_central.py:339",
-        "tests/hooks/test_connector_central.py:64"
+        "tests/hooks/test_connector_central.py:120",
+        "tests/hooks/test_connector_central.py:146",
+        "tests/hooks/test_connector_central.py:156",
+        "tests/hooks/test_connector_central.py:165"
       ]
     },
     {
@@ -634,8 +636,8 @@
         "5ff231c270b1"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:136",
-        "tests/hooks/test_connector_central.py:153"
+        "tests/hooks/test_connector_central.py:178",
+        "tests/hooks/test_connector_central.py:195"
       ]
     },
     {
