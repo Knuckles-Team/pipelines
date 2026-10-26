@@ -77,13 +77,19 @@ def selected_paths(root: Path, paths: list[str]) -> list[str]:
     return sorted(selected)
 
 
-def command(executable: str, root: Path, base_ref: str | None) -> list[str]:
+def command(
+    executable: str,
+    root: Path,
+    base_ref: str | None,
+    *,
+    threshold: float = DUPEHOUND_THRESHOLD,
+) -> list[str]:
     arguments = [
         executable,
         "check",
         "--json",
         "--threshold",
-        str(DUPEHOUND_THRESHOLD),
+        str(threshold),
         "--min-tokens",
         str(DUPEHOUND_MIN_TOKENS),
         "--exclude-tests",
@@ -95,11 +101,17 @@ def command(executable: str, root: Path, base_ref: str | None) -> list[str]:
     return [*arguments, str(root)]
 
 
-def run(executable: str, root: Path, base_ref: str | None) -> subprocess.CompletedProcess[str]:
+def run(
+    executable: str,
+    root: Path,
+    base_ref: str | None,
+    *,
+    threshold: float = DUPEHOUND_THRESHOLD,
+) -> subprocess.CompletedProcess[str]:
     """Without ``--diff`` dupehound compares the staged index against HEAD."""
     try:
         return subprocess.run(
-            command(executable, root, base_ref),
+            command(executable, root, base_ref, threshold=threshold),
             cwd=str(root),
             env=sanitized_env(preserve_index=base_ref is None),
             capture_output=True,
