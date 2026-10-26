@@ -9,7 +9,7 @@ import pytest
 
 from pipelines_hooks.hygiene import ontology_orphan_map as omap
 
-pytestmark = pytest.mark.spec("PIPE-GATES-R015")
+pytestmark = pytest.mark.spec("PIPE-GATES-R015")  # binds reviewed parent mapping and apply behavior
 
 HEAD = """@prefix : <http://knuckles.team/kg#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
