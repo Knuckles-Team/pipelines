@@ -22,7 +22,9 @@ services:
       - PORT=@@PORT@@
       - TRANSPORT=streamable-http
 @@COMPOSE_ENV@@    ports:
-      - "@@PUBLISH_HOST@@:@@PUBLISH_PORT@@:@@PORT@@"
+      - host_ip: "@@COMPOSE_HOST@@"
+        published: "@@PUBLISH_PORT@@"
+        target: @@PORT@@
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:@@PORT@@/health'@@HEALTH_COMMAND_TIMEOUT@@)"]
       interval: 30s

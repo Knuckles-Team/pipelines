@@ -20,6 +20,12 @@ Nothing is read from a committed Dockerfile; a connector commits none of these f
 The image installs the published wheel from PyPI with ``--only-binary :all:``, never
 copies source, runs as a fixed non-root UID, and re-resolves the SDK inside the wheel's
 supported range on every build (``ARG SDK_VERSION`` busts the layer when the SDK ships).
+
+``compose_host`` in ``[tool.pipelines.container]`` controls only the host-side
+port publication. It defaults to the secure loopback address and accepts an
+explicit validated IP address or an ``{env, default}`` binding when a connector
+intentionally needs a different bind. ``publish_port`` uses the same typed
+binding shape for the host port; arbitrary Compose interpolation is refused.
 """
 
 from __future__ import annotations
@@ -389,8 +395,8 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
     )
     env = "".join(f"      - {line}\n" for line in table.get("compose_env", []))
     volumes, top_level_volumes = compose_volume_blocks(table.get("config_mounts"), table.get("state_volumes"))
-    publish_host = _compose_token(table.get("publish_host"), "publish_host", "127.0.0.1")
-    publish_port = _compose_token(table.get("publish_port"), "publish_port", port)
+    compose_host = project.compose_host(table)
+    publish_port = project.publish_port(table, port)
     restart = _restart(table.get("restart"))
     tmpfs_size = _size(table.get("tmpfs_size"))
     health_timeout = _duration(table.get("health_timeout"), "health_timeout", "10s")
@@ -416,6 +422,7 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
                 "@@IMAGE_VAR@@": image_var,
                 "@@UID@@": uid,
                 "@@PORT@@": port,
+                "@@COMPOSE_HOST@@": compose_host,
                 "@@COMPOSE_ENV@@": env,
                 "@@VOLUMES@@": volumes,
                 "@@TOP_LEVEL_VOLUMES@@": top_level_volumes,
@@ -424,7 +431,6 @@ def render(root: Path, sdk_distribution: str | None = None) -> dict[str, str]:
                 "@@CPU@@": _limit(limits, "cpu_limit_env", "cpu_limit"),
                 "@@TMPFS_SIZE@@": tmpfs_size,
                 "@@RESTART@@": restart,
-                "@@PUBLISH_HOST@@": publish_host,
                 "@@PUBLISH_PORT@@": publish_port,
                 "@@HEALTH_TIMEOUT@@": health_timeout,
                 "@@HEALTH_COMMAND_TIMEOUT@@": command_timeout,

@@ -92,6 +92,19 @@ def verify_snapshot(directory: Path, snapshot: dict, raw: str, evidence: Path) -
     identity = guard.identity()
     for key, value in identity.items():
         guard.require(snapshot[key] == value, "bundle source identity changed")
+    # Aggregated receipts carry kernel evidence. Inspect those wheel archives
+    # before the general wheel verifier opens any member, so archive caps,
+    # path policy and compiled-payload CRC/header checks are the first bytes
+    # consumed from a release artifact.
+    if "kernel_cells" in snapshot:
+        kernels = guard.sibling("kernels")
+        matrix, binaries = kernels.scan_bundle(directory, snapshot["targets"], guard.sibling("targets").TARGETS)
+        missing = kernels.missing_cells(matrix)
+        guard.require(not missing, str(kernels.KernelCellMissing(missing)))
+        guard.require(
+            snapshot["kernel_cells"] == kernels.receipt_cells(matrix, binaries),
+            "kernel cell evidence changed",
+        )
     owned = validate_wheels(guard, directory, snapshot["targets"], raw, identity)
     source = validate_source(guard, directory, snapshot["source"], snapshot["targets"], raw, identity, evidence)
     actual = {path.name for path in directory.iterdir()}
@@ -113,5 +126,12 @@ def aggregate(directory: Path, receipts: Path, output: Path, raw: str, evidence:
         proofs[name] = json.loads(path.read_text())
     source = proofs.pop("sdist")
     snapshot = {"schema": 2, **guard.identity(), "targets": proofs, "source": source}
+    kernels = guard.sibling("kernels")
+    matrix, binaries = kernels.scan_bundle(directory, proofs, guard.sibling("targets").TARGETS)
+    missing = kernels.missing_cells(matrix)
+    if missing:
+        reason = "no-kernel-declared" if not matrix.found else None
+        raise kernels.KernelCellMissing(missing, reason=reason)
+    snapshot["kernel_cells"] = kernels.receipt_cells(matrix, binaries)
     verify_snapshot(directory, snapshot, raw, evidence)
     output.write_text(json.dumps(snapshot, indent=2) + "\n")
