@@ -1,20 +1,23 @@
-"""Validate an explicit package-role to extra closure contract.
+"""Validate package-role closure against an existing wheel-readiness receipt.
 
-The wheel-readiness action already proves dependency closure for each selected
-runtime extra.  This small value layer gives callers a typed, digest-bound
-role inventory to place beside that proof.  It deliberately has no default
-roles or extras: a consumer must declare the role mapping, and the wheel
-metadata remains authoritative for which extras exist.
+The wheel-readiness action owns artifact metadata parsing and runtime closure
+verification. This gate binds its receipt to one exact wheel digest and
+projects the verified profile results into the declared role inventory. It
+does not accept caller-authored metadata or resolver results as proof.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.util
 import json
 import re
 import sys
+import zipfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from types import ModuleType
 from typing import Any, Mapping
 
 from packaging.utils import canonicalize_name
@@ -28,11 +31,7 @@ _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 @dataclass(frozen=True, order=True)
 class RoleBinding:
-    """One declared role and the wheel extra that supplies it.
-
-    ``extra=None`` denotes the base role.  The role name is consumer-owned;
-    this module never invents or silently aliases product roles.
-    """
+    """One declared role and the wheel extra that supplies it."""
 
     role: str
     extra: str | None
@@ -48,7 +47,7 @@ class RoleContract:
 
 @dataclass(frozen=True)
 class RoleProof:
-    """One role's independent closure result."""
+    """One role's independently verified readiness result."""
 
     role: str
     extra: str | None
@@ -98,6 +97,9 @@ def parse_contract(raw: Mapping[str, Any]) -> RoleContract:
     base = [binding for binding in bindings if binding.extra is None]
     if len(base) != 1 or base[0].role != "base":
         raise _invalid("exactly one role named base must use a null extra")
+    extras = [binding.extra for binding in bindings if binding.extra is not None]
+    if len(set(extras)) != len(extras):
+        raise _invalid("each role must name a distinct extra")
     return RoleContract(version=SCHEMA_VERSION, bindings=tuple(sorted(bindings)))
 
 
@@ -123,54 +125,126 @@ def validate_metadata(contract: RoleContract, metadata: Mapping[str, Any]) -> tu
     return contract.bindings
 
 
-def parse_proof(raw: Mapping[str, Any]) -> tuple[RoleProof, ...]:
-    """Parse one independent closure result per declared role."""
-    if not isinstance(raw, Mapping) or set(raw) != {"roles"}:
-        raise _invalid("evidence requires exactly roles")
-    items = raw["roles"]
-    if not isinstance(items, list):
-        raise _invalid("evidence roles must be a list")
+def _readiness_checker(path: Path) -> ModuleType:
+    if not path.is_file() or path.is_symlink():
+        raise _invalid(f"wheel-readiness checker is not a regular file: {path}")
+    spec = importlib.util.spec_from_file_location("pipelines_wheel_readiness", path)
+    if spec is None or spec.loader is None:
+        raise _invalid(f"cannot load wheel-readiness checker: {path}")
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except (ImportError, OSError, SyntaxError) as exc:
+        raise _invalid(f"cannot load wheel-readiness checker {path}: {exc}") from exc
+    return module
+
+
+def _receipt_item(
+    receipt: Mapping[str, Any], wheel: Path
+) -> tuple[Mapping[str, Any], Mapping[str, Any], tuple[str, ...]]:
+    if receipt.get("schema") != SCHEMA_VERSION or receipt.get("scope") != "all-runtime-dependencies":
+        raise _invalid("readiness receipt has unsupported schema or scope")
+    context = receipt.get("context")
+    if not isinstance(context, Mapping):
+        raise _invalid("readiness receipt has no context")
+    source_builds = receipt.get("source_builds")
+    if not isinstance(source_builds, list) or not all(isinstance(item, str) for item in source_builds):
+        raise _invalid("readiness receipt has no source-build inventory")
+    wheels = receipt.get("wheels")
+    if not isinstance(wheels, list):
+        raise _invalid("readiness receipt has no wheel inventory")
+    matches = [item for item in wheels if isinstance(item, Mapping) and item.get("file") == wheel.name]
+    if len(matches) != 1:
+        raise _invalid(f"readiness receipt must contain exactly one wheel item for {wheel.name}")
+    item = matches[0]
+    return item, context, tuple(source_builds)
+
+
+def _profiles(contract: RoleContract) -> list[str]:
+    values = ["base", *(binding.extra for binding in contract.bindings if binding.extra is not None)]
+    return sorted(values)
+
+
+def _evidence_digest(entry: Mapping[str, Any]) -> str:
+    payload = json.dumps(entry, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def verify(
+    contract: RoleContract,
+    wheel: Path,
+    expected_digest: str,
+    receipt: Mapping[str, Any],
+    readiness_path: Path,
+) -> dict[str, Any]:
+    """Verify one exact wheel through the existing readiness implementation."""
+    if not _SHA256.fullmatch(expected_digest) or set(expected_digest) == {"0"}:
+        raise _invalid("wheel-sha256 must be a nonzero lowercase SHA-256 digest")
+    if not wheel.is_file() or wheel.is_symlink():
+        raise _invalid(f"wheel is not a regular file: {wheel}")
+    readiness = _readiness_checker(readiness_path)
+    try:
+        actual_digest = readiness.digest(wheel)
+    except (OSError, TypeError, ValueError) as exc:
+        raise _invalid(f"cannot hash wheel: {exc}") from exc
+    if actual_digest != expected_digest:
+        raise _invalid("wheel bytes do not match wheel-sha256")
+    item, context, source_builds = _receipt_item(receipt, wheel)
+    try:
+        if receipt.get("index") != readiness.PUBLIC_INDEX:
+            raise _invalid("readiness receipt index is not the approved public index")
+        if receipt.get("interpreter") != context.get("interpreter"):
+            raise _invalid("readiness receipt interpreter is not bound to its context")
+        if readiness.observed_context() != context:
+            raise _invalid("readiness receipt context does not match this verifier")
+        if tuple(readiness.source_build_allowance()) != source_builds:
+            raise _invalid("readiness source-build allowance changed")
+    except CannotRun:
+        raise
+    except (AttributeError, KeyError, OSError, TypeError, ValueError) as exc:
+        raise _invalid(f"readiness receipt context cannot be verified: {exc}") from exc
+    if item.get("sha256") != actual_digest:
+        raise _invalid("readiness receipt wheel digest does not match artifact bytes")
+    try:
+        actual_metadata = readiness.metadata(wheel, context)
+    except (KeyError, OSError, TypeError, ValueError, zipfile.BadZipFile) as exc:
+        raise _invalid(f"wheel metadata cannot be verified: {exc}") from exc
+    if item.get("metadata") != actual_metadata:
+        raise _invalid("readiness receipt metadata does not match artifact bytes")
+    validate_metadata(contract, {"provides_extra": actual_metadata.get("provides_extra", [])})
+    expected_profiles = _profiles(contract)
+    profiles = item.get("profiles")
+    if not isinstance(profiles, list) or profiles != expected_profiles:
+        raise _invalid(f"role/profile inventory mismatch (expected={expected_profiles}, observed={profiles})")
+    try:
+        readiness.verify_item(wheel, item, json.dumps(expected_profiles), context, source_builds)
+    except (KeyError, OSError, TypeError, ValueError) as exc:
+        raise _invalid(f"readiness closure proof failed: {exc}") from exc
+    entries = item.get("evidence")
+    if not isinstance(entries, list):
+        raise _invalid("readiness receipt has no profile evidence")
+    by_profile = {"base" if binding.extra is None else binding.extra: binding for binding in contract.bindings}
     proofs: list[RoleProof] = []
     seen: set[str] = set()
-    for index, item in enumerate(items):
-        if not isinstance(item, Mapping) or set(item) != {"role", "extra", "status", "evidence_digest"}:
-            raise _invalid(f"evidence roles[{index}] has an unsupported shape")
-        role = _name(item["role"], what=f"evidence roles[{index}].role")
-        if role in seen:
-            raise _invalid(f"duplicate evidence role {role!r}")
-        seen.add(role)
-        extra = _extra(item["extra"])
-        status = item["status"]
-        if status not in {"pass", "fail"}:
-            raise _invalid(f"evidence roles[{index}].status must be pass or fail")
-        digest = item["evidence_digest"]
-        if not isinstance(digest, str) or not _SHA256.fullmatch(digest) or set(digest) == {"0"}:
-            raise _invalid(f"evidence roles[{index}].evidence_digest must be sha256")
-        proofs.append(RoleProof(role=role, extra=extra, status=status, evidence_digest=digest))
-    return tuple(sorted(proofs, key=lambda item: item.role))
-
-
-def verify(contract: RoleContract, metadata: Mapping[str, Any], evidence: Mapping[str, Any]) -> dict[str, Any]:
-    """Return deterministic role evidence or raise on an unchecked surface."""
-    bindings = validate_metadata(contract, metadata)
-    proofs = parse_proof(evidence)
-    expected = {binding.role: binding for binding in bindings}
-    observed = {proof.role: proof for proof in proofs}
-    if set(observed) != set(expected):
-        missing = sorted(set(expected) - set(observed))
-        extra = sorted(set(observed) - set(expected))
-        raise _invalid(f"evidence role inventory mismatch (missing={missing}, extra={extra})")
-    for role, binding in expected.items():
-        proof = observed[role]
-        if proof.extra != binding.extra:
-            raise _invalid(f"evidence extra mismatch for role {role!r}")
-    payload = {
+    for entry in entries:
+        if not isinstance(entry, Mapping) or not isinstance(entry.get("profile"), str):
+            raise _invalid("readiness profile evidence has unsupported shape")
+        profile = entry["profile"]
+        if profile in seen or profile not in by_profile:
+            raise _invalid(f"readiness profile evidence does not match role inventory: {profile!r}")
+        seen.add(profile)
+        binding = by_profile[profile]
+        proofs.append(RoleProof(binding.role, binding.extra, "pass", _evidence_digest(entry)))
+    if seen != set(by_profile):
+        raise _invalid("readiness profile evidence is incomplete")
+    proofs.sort(key=lambda item: item.role)
+    return {
         "schema": SCHEMA_VERSION,
-        "roles": [asdict(binding) for binding in bindings],
+        "artifact": {"file": wheel.name, "sha256": actual_digest, "metadata": actual_metadata},
+        "roles": [asdict(binding) for binding in contract.bindings],
         "evidence": [asdict(proof) for proof in proofs],
-        "status": "pass" if all(proof.status == "pass" for proof in proofs) else "fail",
+        "status": "pass",
     }
-    return payload
 
 
 def _read(path: Path) -> Mapping[str, Any]:
@@ -184,19 +258,27 @@ def _read(path: Path) -> Mapping[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Validate a role contract against wheel metadata and closure evidence."""
+    """Validate one exact wheel through the published readiness receipt."""
     parser = argparse.ArgumentParser(prog="packaging-roles")
     parser.add_argument("--contract", type=Path, required=True)
-    parser.add_argument("--metadata", type=Path, required=True)
-    parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--wheel", type=Path, required=True)
+    parser.add_argument("--wheel-sha256", required=True)
+    parser.add_argument("--receipt", type=Path, required=True)
+    parser.add_argument("--readiness-checker", type=Path, default=Path(".github/actions/wheel-readiness/readiness.py"))
     args = parser.parse_args(argv)
     try:
-        result = verify(parse_contract(_read(args.contract)), _read(args.metadata), _read(args.evidence))
+        result = verify(
+            parse_contract(_read(args.contract)),
+            args.wheel,
+            args.wheel_sha256,
+            _read(args.receipt),
+            args.readiness_checker,
+        )
     except CannotRun as exc:
         print(str(exc), file=sys.stderr)
         return 2
     print(json.dumps(result, sort_keys=True))
-    return 0 if result["status"] == "pass" else 1
+    return 0
 
 
 if __name__ == "__main__":

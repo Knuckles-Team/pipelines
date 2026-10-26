@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
 import sys
+import zipfile
 
 import pytest
 
 from pipelines_hooks.cli import GATES
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.release.packaging_roles import RoleContract, parse_contract, validate_metadata, verify
+
+ROOT = Path(__file__).parents[2]
+READINESS = ROOT / ".github/actions/wheel-readiness/readiness.py"
 
 
 def contract() -> RoleContract:
@@ -30,19 +36,83 @@ def metadata() -> dict[str, list[str]]:
     return {"provides_extra": ["mcp"]}
 
 
-def evidence(
-    *, status: str = "pass", role: str = "mcp", extra: str | None = "mcp"
-) -> dict[str, list[dict[str, str | None]]]:
-    return {
-        "roles": [
-            {"role": "base", "extra": None, "status": "pass", "evidence_digest": "a" * 64},
-            {"role": role, "extra": extra, "status": status, "evidence_digest": "b" * 64},
+def load_readiness():
+    spec = importlib.util.spec_from_file_location("test_packaging_roles_readiness", READINESS)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def wheel(tmp_path: Path) -> Path:
+    path = tmp_path / "fixture-1.0-py3-none-any.whl"
+    metadata_text = "\n".join(
+        [
+            "Metadata-Version: 2.3",
+            "Name: fixture",
+            "Version: 1.0",
+            "Requires-Python: >=3.12",
+            "Provides-Extra: mcp",
         ]
+    )
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("fixture-1.0.dist-info/METADATA", metadata_text + "\n")
+        archive.writestr(
+            "fixture-1.0.dist-info/WHEEL",
+            "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        )
+        archive.writestr("fixture-1.0.dist-info/RECORD", "")
+    return path
+
+
+def readiness_fixture(tmp_path: Path) -> tuple[Path, str, dict, Path]:
+    guard = load_readiness()
+    artifact = wheel(tmp_path)
+    context = guard.observed_context()
+    root = guard.metadata(artifact, context)
+    digest = guard.digest(artifact)
+    pip_version = guard.sibling("bootstrap").PIN["version"]
+
+    def report() -> dict:
+        return {
+            "version": "1",
+            "pip_version": pip_version,
+            "environment": context["environment"],
+            "install": [
+                {
+                    "metadata": root,
+                    "is_direct": True,
+                    "download_info": {
+                        "url": artifact.as_uri(),
+                        "archive_info": {"hashes": {"sha256": digest}},
+                    },
+                }
+            ],
+        }
+
+    item = {
+        "file": artifact.name,
+        "sha256": digest,
+        "metadata": root,
+        "profiles": ["base", "mcp"],
+        "evidence": [{"profile": profile, "report": report()} for profile in ("base", "mcp")],
     }
+    receipt = {
+        "schema": 1,
+        "scope": "all-runtime-dependencies",
+        "index": guard.PUBLIC_INDEX,
+        "context": context,
+        "interpreter": context["interpreter"],
+        "source_builds": [],
+        "wheels": [item],
+    }
+    receipt_path = tmp_path / "release-readiness.json"
+    receipt_path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
+    return artifact, digest, receipt, receipt_path
 
 
 @pytest.mark.spec("PIPE-PAGES-R025.1")
-def test_contract_model_normalizes_extras_without_inventing_roles() -> None:
+def test_contract_model_uses_authoritative_profile_values_without_defaults() -> None:
     parsed = contract()
     assert parsed.version == 1
     assert [(item.role, item.extra) for item in parsed.bindings] == [("base", None), ("mcp", "mcp")]
@@ -50,15 +120,18 @@ def test_contract_model_normalizes_extras_without_inventing_roles() -> None:
 
 
 @pytest.mark.spec("PIPE-PAGES-R025.2")
-def test_role_closure_evidence_is_deterministic_and_reports_status() -> None:
-    result = verify(contract(), metadata(), evidence())
+def test_role_gate_verifies_actual_wheel_readiness_closure(tmp_path: Path) -> None:
+    artifact, digest, receipt, _ = readiness_fixture(tmp_path)
+    result = verify(contract(), artifact, digest, receipt, READINESS)
     assert result["schema"] == 1
     assert result["status"] == "pass"
+    assert result["artifact"]["sha256"] == digest
     assert result["roles"] == [
         {"role": "base", "extra": None},
         {"role": "mcp", "extra": "mcp"},
     ]
-    assert result["evidence"][1]["evidence_digest"] == "b" * 64
+    assert [item["status"] for item in result["evidence"]] == ["pass", "pass"]
+    assert all(len(item["evidence_digest"]) == 64 for item in result["evidence"])
 
 
 @pytest.mark.spec("PIPE-PAGES-R025.4")
@@ -77,50 +150,34 @@ def test_role_contract_refuses_undeclared_duplicate_or_unknown_shapes(bad: dict[
 
 
 @pytest.mark.spec("PIPE-PAGES-R025.4")
-def test_role_evidence_refuses_missing_or_mismatched_roles() -> None:
-    with pytest.raises(CannotRun, match="inventory mismatch"):
-        verify(contract(), metadata(), {"roles": evidence()["roles"][:1]})
-    with pytest.raises(CannotRun, match="extra mismatch"):
-        verify(contract(), metadata(), evidence(extra="other"))
+def test_role_gate_refuses_tampered_artifact_digest_and_receipt_metadata(tmp_path: Path) -> None:
+    artifact, digest, receipt, _ = readiness_fixture(tmp_path)
+    with pytest.raises(CannotRun, match="wheel bytes"):
+        verify(contract(), artifact, "b" * 64, receipt, READINESS)
+    receipt["wheels"][0]["metadata"]["provides_extra"] = []
+    with pytest.raises(CannotRun, match="metadata does not match"):
+        verify(contract(), artifact, digest, receipt, READINESS)
 
 
 @pytest.mark.spec("PIPE-PAGES-R025.5")
-def test_role_evidence_retains_independent_digest_and_failure_state() -> None:
-    result = verify(contract(), metadata(), evidence(status="fail"))
-    assert result["status"] == "fail"
-    assert [item["evidence_digest"] for item in result["evidence"]] == ["a" * 64, "b" * 64]
+def test_role_gate_evidence_digest_is_bound_to_verified_resolver_report(tmp_path: Path) -> None:
+    artifact, digest, receipt, _ = readiness_fixture(tmp_path)
+    result = verify(contract(), artifact, digest, receipt, READINESS)
+    expected = hashlib.sha256(
+        json.dumps(receipt["wheels"][0]["evidence"][0], sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    assert result["evidence"][0]["evidence_digest"] == expected
 
 
 @pytest.mark.spec("PIPE-PAGES-R025.6")
 def test_packaging_role_closure_cli(tmp_path: Path) -> None:
     """The published dispatcher reaches the role closure gate with real files."""
-    payloads = {
-        "contract.json": {
-            "version": 1,
-            "roles": [{"role": "base", "extra": None}, {"role": "mcp", "extra": "mcp"}],
-        },
-        "metadata.json": metadata(),
-        "evidence.json": {
-            "roles": [
-                {
-                    "role": "base",
-                    "extra": None,
-                    "status": "pass",
-                    "evidence_digest": "a" * 64,
-                },
-                {
-                    "role": "mcp",
-                    "extra": "mcp",
-                    "status": "pass",
-                    "evidence_digest": "b" * 64,
-                },
-            ]
-        },
-    }
-    for name, value in payloads.items():
-        path = tmp_path / name
-        path.write_text(json.dumps(value) + "\n", encoding="utf-8")
-        assert json.loads(path.read_text(encoding="utf-8")) == value
+    artifact, digest, _, receipt_path = readiness_fixture(tmp_path)
+    contract_path = tmp_path / "contract.json"
+    contract_path.write_text(
+        json.dumps({"version": 1, "roles": [{"role": "base", "extra": None}, {"role": "mcp", "extra": "mcp"}]}) + "\n",
+        encoding="utf-8",
+    )
     result = subprocess.run(
         [
             sys.executable,
@@ -128,16 +185,22 @@ def test_packaging_role_closure_cli(tmp_path: Path) -> None:
             "pipelines_hooks.cli",
             "packaging-roles",
             "--contract",
-            str(tmp_path / "contract.json"),
-            "--metadata",
-            str(tmp_path / "metadata.json"),
-            "--evidence",
-            str(tmp_path / "evidence.json"),
+            str(contract_path),
+            "--wheel",
+            str(artifact),
+            "--wheel-sha256",
+            digest,
+            "--receipt",
+            str(receipt_path),
+            "--readiness-checker",
+            str(READINESS),
         ],
         capture_output=True,
         check=False,
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["status"] == "pass"
+    output = json.loads(result.stdout)
+    assert output["status"] == "pass"
+    assert output["artifact"]["sha256"] == digest
     assert GATES["packaging-roles"] == "pipelines_hooks.release.packaging_roles"
