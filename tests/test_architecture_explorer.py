@@ -1717,7 +1717,7 @@ setTimeout(async()=>{
 def test_ocean_browser_annotation_paint_avoids_cards_connectors_and_other_labels(
     monkeypatch, tmp_path: Path, camera: str, viewport: str
 ) -> None:
-    """Independent actual glyph bounds and segment intersection checks, including rail fallback."""
+    """Independent actual glyph bounds and segment intersection checks, including native-zoom deferral."""
     import gzip
     import hashlib
     import os
@@ -1773,10 +1773,13 @@ setTimeout(async()=>{
    return corners.some((p,i)=>meets(a,b,p,corners[(i+1)%4]));
   };
   if(!evidence.labels.length)throw Error('No annotation coverage');
-  const painted=[],railItems=[...document.querySelectorAll('#annotation-list li')];
+  if(document.querySelector('#annotations,#annotation-list,#annotation-jump,dialog,[role=dialog]'))throw Error('Unexpected annotation rail/link/popup');
+  const painted=[];
   for(const label of evidence.labels){
-   if(label.placement==='rail'){
-    if(!railItems.some(li=>[...li.children].some(span=>span.textContent===label.text)))throw Error('Missing complete rail caption: '+label.text);
+   if(!label.fullText||label.text.length>36||label.text.includes('…'))throw Error('Missing original or non-authored short caption');
+   if(label.placement==='deferred'){
+    if(!['scale','space'].includes(label.reason))throw Error('Unexplained native-zoom deferral');
+    if(!evidence.labels.some(other=>other.text===label.text&&other.placement==='canvas')&&window.__annotationPaint.some(p=>p.text===label.text&&p.font.startsWith('500 ')&&Math.abs(parseFloat(p.font.slice(4))-label.fs)<.01))throw Error('Deferred caption still painted: '+label.text);
     continue;
    }
    if(label.placement!=='canvas')throw Error('Unknown annotation placement');
@@ -1792,15 +1795,16 @@ setTimeout(async()=>{
   }
   if(['default','root'].includes(CAMERA)){
    for(const text of ['External systems and connectors','Self-evolution loop: evaluate, promote, roll back']){
-    if(!evidence.labels.some(label=>label.text===text))throw Error('Missing reported regression caption: '+text);
+    if(!evidence.labels.some(label=>label.fullText===text))throw Error('Missing reported regression caption: '+text);
    }
   }
-  if(railItems.length){
-   const rail=document.getElementById('annotations'),r=rail.getBoundingClientRect();
-   if(rail.hidden||r.top<canvas.bottom-1)throw Error('Annotation rail must remain outside drawing');
-   if(rail.closest('#panel'))throw Error('Annotation rail depends on ledger visibility');
+  if(['default','root'].includes(CAMERA)){
+   for(const text of ['External Integrations','Self-Evolution'])if(!evidence.labels.some(label=>label.text===text))throw Error('Missing authored short caption: '+text);
   }
-  result.dataset.evidence=JSON.stringify({source:SOURCE,camera:CAMERA,labels:evidence.labels,painted,obstacleRects:evidence.rects.length,connectorSegments:evidence.segments.length,railItems:railItems.length});
+  const description=document.querySelector('#panel .desc')?.textContent||'';
+  const originalGroups={default:['External systems and connectors','Self-evolution loop: evaluate, promote, roll back'],root:['External systems and connectors','Self-evolution loop: evaluate, promote, roll back'],eg:['Self-evolution loop: evaluate, promote, roll back'],connectors:['External systems and connectors']};
+  for(const original of originalGroups[CAMERA]||[])if(!description.includes(original))throw Error('Original group meaning missing from existing Description: '+original);
+  result.dataset.evidence=JSON.stringify({source:SOURCE,camera:CAMERA,labels:evidence.labels,painted,obstacleRects:evidence.rects.length,connectorSegments:evidence.segments.length,deferred:evidence.labels.filter(label=>label.placement==='deferred').length});
   result.textContent='PASS';
  }catch(error){result.textContent='FAIL: '+error.message;}
  document.body.append(result);
@@ -1850,5 +1854,5 @@ setTimeout(async()=>{
         return out
 
     capture_annotation(url, name)
-    # Normal/fullscreen rail pixels use the settled real-CDP keyboard captures in
-    # motion_capture.cjs; CLI virtual-time scrolling can retain a stale compositor frame.
+    # Native zoom appearance and existing fullscreen controls use real CDP input
+    # after the separate unforced-motion sequence in motion_capture.cjs.

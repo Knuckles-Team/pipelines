@@ -616,3 +616,16 @@ link text changes. Do not alter world geometry, data, statuses,
 node IDs, navigation, card hues or ocean motion. Hosted evidence must measure actual
 text paint against obstacles at default, deep-link, nested and mobile cameras,
 including the external-systems caption and self-evolution loop, without skips.
+
+### Native progressive diagram captions (2026-10-26)
+
+Supersede the separate annotation rail and hint link entirely. Keep captions inside
+the original zoomable diagram, using authored concise display copy and only local
+collision-free anchors. Defer unreadable or crowded captions until native focus
+and zoom provide space; never shrink them to force visibility, paint over cards or
+arrows, or add a popup/control/filter. Preserve full source wording in the existing
+selected-part Description and Wired with semantics. Preserve all original world
+geometry, node sizes, routing, counts, category hues and camera behavior. Hosted
+proof must show deferred captions actually painted after native zoom, with no rail
+or link, unchanged world rectangles and independent collision bounds. Keep every
+existing count-track check; synchronization diagnostics are a separate test fix.

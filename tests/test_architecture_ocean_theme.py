@@ -301,13 +301,13 @@ def test_all_map_annotations_share_collision_aware_text_only_paint() -> None:
     assert "ctx.fillText(" not in zones
     for kind in ("zone", "loop", "flow"):
         assert f'caption(n,"{kind}",' in zones
-    painter = source.split("function paintAnnotations(pass=0){", 1)[1].split("// Overview bands", 1)[0]
+    painter = source.split("function paintAnnotations(){", 1)[1].split("// Overview bands", 1)[0]
     assert "rr(" not in painter and "ctx.fill()" not in painter
     assert "annotationClear(r,used)" in painter
-    assert 'placement:"rail"' in painter and 'placement:"canvas"' in painter
+    assert 'placement:"deferred"' in painter and 'placement:"canvas"' in painter
     assert "fitText(" not in painter and "toUpperCase" not in painter
-    assert "text:a.text" in painter
-    assert 'id="annotations"' in source.split("</main>", 1)[1]
+    assert 'reason:"space"' in painter and 'reason:"scale"' in painter
+    assert 'id="annotations"' not in source and 'id="annotation-jump"' not in source
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -343,12 +343,55 @@ assert(!annotationClear([-1,20,10,10],[]));
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_crowded_annotations_have_keyboard_access_without_overlay_or_hash_change() -> None:
+def test_captions_are_native_progressive_and_full_text_stays_in_existing_details() -> None:
     source = TEMPLATE.read_text()
-    assert 'href="#annotations" hidden' in source
-    assert 'id="annotations" tabindex="-1"' in source
-    assert "event.preventDefault();" in source
-    assert "await document.exitFullscreen()" in source
-    assert "$(" + '"annotations").focus({preventScroll:true})' in source
-    assert "before.width!==after.width||before.height!==after.height" in source
-    assert "return paintAnnotations(pass+1)" in source
+    assert "annotation-rail" not in source and "annotation-jump" not in source
+    assert "Map annotations" not in source
+    assert '"External systems and connectors":"External Integrations"' in source
+    assert '"Self-evolution loop: evaluate, promote, roll back":"Self-Evolution"' in source
+    assert "a.fs<9" in source
+    assert "a.text.length>36" in source
+    assert 'placement:"deferred"' in source
+    assert "function diagramContext(n)" in source
+    assert "Diagram context: " in source
+    assert "text.push(L.loop.label)" in source and "text.push(z[0])" in source
+    assert 'class:"desc",text:n.description+' in source
+    assert 'el("h3",{text:"Wired with"})' in source
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_native_caption_scale_and_collision_deferral_preserve_original_copy() -> None:
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node unavailable")
+    source = TEMPLATE.read_text()
+    functions = "function intersects(" + source.split("function intersects(", 1)[1].split("// Overview bands", 1)[0]
+    script = (
+        """
+const assert=require('node:assert/strict');
+let W=500,H=300,annotations=[],annotationRects=[],annotationSegments=[],annotationEvidence=[],dirty=false;
+const $=()=>({addEventListener(){}}),C={display:'Inter',edgeHalo:'#fff',fg:'#222'},ink=[];
+const ctx={save(){},restore(){},measureText:t=>({width:t.length*6,actualBoundingBoxAscent:0,actualBoundingBoxDescent:10}),strokeText(){},fillText:t=>ink.push(t),fillRect(){}};
+"""
+        + functions
+        + """
+const n={id:'test'};
+caption(n,'flow','facts',100,100,4,1);paintAnnotations();
+assert.equal(annotationEvidence[0].reason,'scale');assert.deepEqual(ink,[]);
+annotations=[];caption(n,'flow','facts',100,100,10,1);paintAnnotations();
+assert.equal(annotationEvidence[0].placement,'canvas');assert.deepEqual(ink,['facts']);
+annotations=[];ink.length=0;annotationRects=[[90,50,100,100]];
+caption(n,'flow','facts',100,100,10,1);paintAnnotations();
+assert.equal(annotationEvidence[0].reason,'space');assert.deepEqual(ink,[]);
+annotations=[];annotationRects=[];
+caption(n,'loop','Self-evolution loop: evaluate, promote, roll back',100,100,11,1);paintAnnotations();
+assert.equal(annotationEvidence[0].text,'Self-Evolution');
+assert.equal(annotationEvidence[0].fullText,'Self-evolution loop: evaluate, promote, roll back');
+assert.deepEqual(ink,['Self-Evolution']);
+"""
+    )
+    subprocess.run([node, "-e", script], check=True, capture_output=True, text=True)
+
