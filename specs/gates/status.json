@@ -224,30 +224,59 @@
     {
       "id": "PIPE-GATES-R006.1",
       "title": "Wave 1: webarchiver",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fd3995928148"
+      ],
+      "verified_by": [
+        "tests/hooks/test_migration_waves.py:54",
+        "tests/hooks/test_migration_waves.py:56",
+        "tests/hooks/test_migration_waves.py:61",
+        "tests/hooks/test_migration_waves.py:63"
+      ]
     },
     {
       "id": "PIPE-GATES-R006.2",
       "title": "Wave 2: small connectors",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fd3995928148"
+      ],
+      "verified_by": [
+        "tests/hooks/test_migration_waves.py:76",
+        "tests/hooks/test_migration_waves.py:78",
+        "tests/hooks/test_migration_waves.py:88",
+        "tests/hooks/test_migration_waves.py:90"
+      ]
     },
     {
       "id": "PIPE-GATES-R006.3",
       "title": "Wave 3: the remaining connectors",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fd3995928148"
+      ],
+      "verified_by": [
+        "tests/hooks/test_migration_waves.py:101",
+        "tests/hooks/test_migration_waves.py:103",
+        "tests/hooks/test_migration_waves.py:116",
+        "tests/hooks/test_migration_waves.py:118"
+      ]
     },
     {
       "id": "PIPE-GATES-R006.4",
       "title": "Wave 4: skills, pipelines and the user interfaces",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "fd3995928148"
+      ],
+      "verified_by": [
+        "tests/hooks/test_migration_waves.py:132",
+        "tests/hooks/test_migration_waves.py:134",
+        "tests/hooks/test_migration_waves.py:153",
+        "tests/hooks/test_migration_waves.py:155",
+        "tests/hooks/test_migration_waves.py:175"
+      ]
     },
     {
       "id": "PIPE-GATES-R006.5",
