@@ -1,0 +1,1115 @@
+{
+  "schema_version": 1,
+  "purpose": "Immutable source-bound proof for strict PIPE-CONNSPEC R108/R112/R113/R114/R115 leaves; existing verified leaves and rollups are not recounted.",
+  "provider": {
+    "sha": "2a048eaad63c8f977ce46312d5228abad8c794f5",
+    "requirements_sha256": "2cb6e004ecfbbc7594e276e20266204074b6de68187985fe9e152f756004cca8",
+    "status_sha256": "1da442d782dec3f9a48146ba80027dd7e71c943d1bdfe4ead69e561f64b3b442",
+    "spec_group": [
+      "spec-standard",
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "canonical_template_sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed",
+    "repo": "pipelines",
+    "requirements_path": "specs/connector-spec-delivery/requirements.md",
+    "status_path": "specs/connector-spec-delivery/status.json",
+    "spec_group_source": "pipelines_hooks/cli.py:71-74",
+    "canonical_template": {
+      "rev": "main",
+      "hooks": [
+        "connector-standard",
+        "dependency-readiness",
+        "secrets",
+        "spec",
+        "tests-fast"
+      ]
+    }
+  },
+  "target_rows": [
+    "PIPE-CONNSPEC-R108.3",
+    "PIPE-CONNSPEC-R108.4",
+    "PIPE-CONNSPEC-R112.3",
+    "PIPE-CONNSPEC-R112.4",
+    "PIPE-CONNSPEC-R113.2",
+    "PIPE-CONNSPEC-R113.3",
+    "PIPE-CONNSPEC-R113.4",
+    "PIPE-CONNSPEC-R114.3",
+    "PIPE-CONNSPEC-R114.4",
+    "PIPE-CONNSPEC-R115.3",
+    "PIPE-CONNSPEC-R115.4"
+  ],
+  "strict_leaf_counts": {
+    ".1": 0,
+    ".2": 1,
+    ".3": 5,
+    ".4": 5
+  },
+  "central_requirements": {
+    "R108": {
+      "PIPE-CONNSPEC-R108": {
+        "id": "PIPE-CONNSPEC-R108",
+        "title": "`audiobookshelf-mcp` adopts the standard spec-delivery method and page",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R108.1",
+          "PIPE-CONNSPEC-R108.2",
+          "PIPE-CONNSPEC-R108.3",
+          "PIPE-CONNSPEC-R108.4"
+        ]
+      },
+      "PIPE-CONNSPEC-R108.1": {
+        "id": "PIPE-CONNSPEC-R108.1",
+        "title": "`audiobookshelf-mcp` has a `specs/` tree with a generated `status.json`",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:75"
+        ]
+      },
+      "PIPE-CONNSPEC-R108.2": {
+        "id": "PIPE-CONNSPEC-R108.2",
+        "title": "`audiobookshelf-mcp` has the three spec hooks in its pre-commit config",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:112"
+        ]
+      },
+      "PIPE-CONNSPEC-R108.3": {
+        "id": "PIPE-CONNSPEC-R108.3",
+        "title": "`audiobookshelf-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R108.4": {
+        "id": "PIPE-CONNSPEC-R108.4",
+        "title": "`audiobookshelf-mcp` has the rapid-delivery section in its development skill",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      }
+    },
+    "R112": {
+      "PIPE-CONNSPEC-R112": {
+        "id": "PIPE-CONNSPEC-R112",
+        "title": "`clarity-api` adopts the standard spec-delivery method and page",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R112.1",
+          "PIPE-CONNSPEC-R112.2",
+          "PIPE-CONNSPEC-R112.3",
+          "PIPE-CONNSPEC-R112.4"
+        ]
+      },
+      "PIPE-CONNSPEC-R112.1": {
+        "id": "PIPE-CONNSPEC-R112.1",
+        "title": "`clarity-api` has a `specs/` tree with a generated `status.json`",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:76"
+        ]
+      },
+      "PIPE-CONNSPEC-R112.2": {
+        "id": "PIPE-CONNSPEC-R112.2",
+        "title": "`clarity-api` has the three spec hooks in its pre-commit config",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:113"
+        ]
+      },
+      "PIPE-CONNSPEC-R112.3": {
+        "id": "PIPE-CONNSPEC-R112.3",
+        "title": "`clarity-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R112.4": {
+        "id": "PIPE-CONNSPEC-R112.4",
+        "title": "`clarity-api` has the rapid-delivery section in its development skill",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      }
+    },
+    "R113": {
+      "PIPE-CONNSPEC-R113": {
+        "id": "PIPE-CONNSPEC-R113",
+        "title": "`container-manager-mcp` adopts the standard spec-delivery method and page",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R113.1",
+          "PIPE-CONNSPEC-R113.2",
+          "PIPE-CONNSPEC-R113.3",
+          "PIPE-CONNSPEC-R113.4"
+        ]
+      },
+      "PIPE-CONNSPEC-R113.1": {
+        "id": "PIPE-CONNSPEC-R113.1",
+        "title": "`container-manager-mcp` has a `specs/` tree with a generated `status.json`",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:77"
+        ]
+      },
+      "PIPE-CONNSPEC-R113.2": {
+        "id": "PIPE-CONNSPEC-R113.2",
+        "title": "`container-manager-mcp` has the three spec hooks in its pre-commit config",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R113.3": {
+        "id": "PIPE-CONNSPEC-R113.3",
+        "title": "`container-manager-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R113.4": {
+        "id": "PIPE-CONNSPEC-R113.4",
+        "title": "`container-manager-mcp` has the rapid-delivery section in its development skill",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      }
+    },
+    "R114": {
+      "PIPE-CONNSPEC-R114": {
+        "id": "PIPE-CONNSPEC-R114",
+        "title": "`data-science-mcp` adopts the standard spec-delivery method and page",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R114.1",
+          "PIPE-CONNSPEC-R114.2",
+          "PIPE-CONNSPEC-R114.3",
+          "PIPE-CONNSPEC-R114.4"
+        ]
+      },
+      "PIPE-CONNSPEC-R114.1": {
+        "id": "PIPE-CONNSPEC-R114.1",
+        "title": "`data-science-mcp` has a `specs/` tree with a generated `status.json`",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:78"
+        ]
+      },
+      "PIPE-CONNSPEC-R114.2": {
+        "id": "PIPE-CONNSPEC-R114.2",
+        "title": "`data-science-mcp` has the three spec hooks in its pre-commit config",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:114"
+        ]
+      },
+      "PIPE-CONNSPEC-R114.3": {
+        "id": "PIPE-CONNSPEC-R114.3",
+        "title": "`data-science-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R114.4": {
+        "id": "PIPE-CONNSPEC-R114.4",
+        "title": "`data-science-mcp` has the rapid-delivery section in its development skill",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      }
+    },
+    "R115": {
+      "PIPE-CONNSPEC-R115": {
+        "id": "PIPE-CONNSPEC-R115",
+        "title": "`dockerhub-api` adopts the standard spec-delivery method and page",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R115.1",
+          "PIPE-CONNSPEC-R115.2",
+          "PIPE-CONNSPEC-R115.3",
+          "PIPE-CONNSPEC-R115.4"
+        ]
+      },
+      "PIPE-CONNSPEC-R115.1": {
+        "id": "PIPE-CONNSPEC-R115.1",
+        "title": "`dockerhub-api` has a `specs/` tree with a generated `status.json`",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:79"
+        ]
+      },
+      "PIPE-CONNSPEC-R115.2": {
+        "id": "PIPE-CONNSPEC-R115.2",
+        "title": "`dockerhub-api` has the three spec hooks in its pre-commit config",
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "afd8a5efe60e"
+        ],
+        "verified_by": [
+          "tests/test_connector_consumer_r101_r115.py:115"
+        ]
+      },
+      "PIPE-CONNSPEC-R115.3": {
+        "id": "PIPE-CONNSPEC-R115.3",
+        "title": "`dockerhub-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R115.4": {
+        "id": "PIPE-CONNSPEC-R115.4",
+        "title": "`dockerhub-api` has the rapid-delivery section in its development skill",
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "verified_by": []
+      }
+    }
+  },
+  "repos": {
+    "audiobookshelf-mcp": {
+      "row": "PIPE-CONNSPEC-R108",
+      "sha": "28f426777c2c7fa4ba07bf78b377608285e990aa",
+      "tree_sha": "d7e179ff9b55ec73f513888f3528a1a070ddb3c3",
+      "dashboard_config": ".github/spec-dashboard.json",
+      "skill_path": "audiobookshelf_mcp/skills/audiobookshelf-mcp-development/SKILL.md",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R108.1",
+        "PIPE-CONNSPEC-R108.2"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R108.1": false,
+        "PIPE-CONNSPEC-R108.2": false,
+        "PIPE-CONNSPEC-R108.3": true,
+        "PIPE-CONNSPEC-R108.4": true
+      },
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "encoding": "base64",
+          "data": "ewogICJ2ZXJzaW9uIjogMSwKICAic291cmNlcyI6IFsKICAgIHsKICAgICAgImdsb2IiOiAic3BlY3MvKi9zdGF0dXMuanNvbiIsCiAgICAgICJraW5kIjogInNwZWMiCiAgICB9CiAgXQp9Cg==",
+          "bytes": 109,
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "encoding": "base64",
+          "data": "bmFtZTogRGVwbG95IEdpdEh1YiBQYWdlcwoKb246CiAgcHVzaDoKICAgIGJyYW5jaGVzOgogICAgICAtIG1haW4KICAgIHBhdGhzOgogICAgICAtICdkb2NzLyoqJwogICAgICAtICdta2RvY3MueW1sJwogICAgICAtICdSRUFETUUubWQnCiAgICAgIC0gJ3NwZWNzLyoqJwogICAgICAtICcuZ2l0aHViL3NwZWMtZGFzaGJvYXJkLmpzb24nCiAgICAgIC0gJy5naXRodWIvd29ya2Zsb3dzL3BhZ2VzLnltbCcKCnBlcm1pc3Npb25zOgogIGNvbnRlbnRzOiByZWFkCgpqb2JzOgogIHB1Ymxpc2gtcGFnZXM6CiAgICB1c2VzOiBLbnVja2xlcy1UZWFtL3BpcGVsaW5lcy8uZ2l0aHViL3dvcmtmbG93cy9wYWdlc19waXBlbGluZS55bWxAbWFpbgogICAgd2l0aDoKICAgICAgY29udGVudF9zb3VyY2U6IGRvY3MKICAgICAgc3BlY19kYXNoYm9hcmRfZW5hYmxlZDogdHJ1ZQogICAgICBzcGVjX2Rhc2hib2FyZF9jb25maWc6IC5naXRodWIvc3BlYy1kYXNoYm9hcmQuanNvbgogICAgcGVybWlzc2lvbnM6CiAgICAgIGNvbnRlbnRzOiByZWFkCiAgICAgIHBhZ2VzOiB3cml0ZQogICAgICBpZC10b2tlbjogd3JpdGUK",
+          "bytes": 570,
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".pre-commit-config.yaml": {
+          "encoding": "base64",
+          "data": "IyBUaGUgd2hvbGUgcHJlLWNvbW1pdCBjb25maWd1cmF0aW9uIG9mIGEgY29ubmVjdG9yIChQSVBFLVZBTElEQVRJT04tUjAwMS45KS4gRXZlcnl0aGluZyBhCiMgY29ubmVjdG9yIHVzZWQgdG8gY29weSBsaXZlcyBpbiBwaXBlbGluZXMgYXQgYHJldjogbWFpbmA6IHRoZSBzYW5pdGl6ZXIsIHRoZSBzdGFuZGFyZC1maWxlCiMgY2hlY2ssIHRoZSBjb2Rlc3BlbGwgZGVmYXVsdHMgYW5kIHRoZSBnYXRlIHNldC4gQSBjaGFuZ2UgdG8gYSBzaGFyZWQgY2hlY2sgcmVhY2hlcyBldmVyeQojIGNvbm5lY3RvciB3aXRoIG5vIGVkaXQgaGVyZS4gUGVyLXJlcG8gb3B0aW9ucyBnbyBpbiBweXByb2plY3QudG9tbCB0YWJsZXMgb25seS4KZGVmYXVsdF9pbnN0YWxsX2hvb2tfdHlwZXM6IFtwcmUtY29tbWl0LCBwcmUtcHVzaF0KZGVmYXVsdF9zdGFnZXM6IFtwcmUtY29tbWl0XQpyZXBvczoKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vcHJlLWNvbW1pdC9wcmUtY29tbWl0LWhvb2tzCiAgcmV2OiAzZThhODcwMzI2NGEyZjRhNjk0MjhhMGFhNGRjYjUxMjc5MGIyYzhjICMgdjYuMC4wCiAgaG9va3M6CiAgLSBpZDogdHJhaWxpbmctd2hpdGVzcGFjZQogIC0gaWQ6IGVuZC1vZi1maWxlLWZpeGVyCiAgLSBpZDogY2hlY2stbWVyZ2UtY29uZmxpY3QKICAtIGlkOiBjaGVjay15YW1sCiAgICBhcmdzOiBbLS11bnNhZmVdCiAgLSBpZDogY2hlY2stdG9tbAogIC0gaWQ6IGNoZWNrLWpzb24KICAtIGlkOiBkZXRlY3QtcHJpdmF0ZS1rZXkKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vYXN0cmFsLXNoL3J1ZmYtcHJlLWNvbW1pdAogIHJldjogY2I4YzUyM2ZkNDgzNWFiYTQyYWY3MGY0Y2FkNTU2OGRiNGRmMGI2YyAjIHYwLjE2LjAKICBob29rczoKICAtIGlkOiBydWZmLWNoZWNrCiAgLSBpZDogcnVmZi1mb3JtYXQKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vS251Y2tsZXMtVGVhbS9waXBlbGluZXMKICByZXY6IG1haW4KICBob29rczoKICAtIGlkOiBjb25uZWN0b3Itc3RhbmRhcmQKICAtIGlkOiBzZWNyZXRzCiAgLSBpZDogc3BlYwogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogdGVzdHMtZmFzdAogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogZGVwZW5kZW5jeS1yZWFkaW5lc3MK",
+          "bytes": 1134,
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "audiobookshelf_mcp/skills/audiobookshelf-mcp-development/SKILL.md": {
+          "encoding": "base64",
+          "data": "LS0tCm5hbWU6IGF1ZGlvYm9va3NoZWxmLW1jcC1kZXZlbG9wbWVudApza2lsbF90eXBlOiBza2lsbApkb21haW46IGRldmVsb3BtZW50CmRlc2NyaXB0aW9uOiA+LQogIERldmVsb3AsIHRlc3QsIGdhdGUsIGFuZCByZWxlYXNlIHRoZSBhdWRpb2Jvb2tzaGVsZi1tY3AgY29ubmVjdG9yLiBVc2UgdGhpcwogIHNraWxsIHdoZW4gY2hhbmdpbmcgdGhlIGNvbm5lY3RvcidzIEFQSSBtYXBwaW5ncywgTUNQIHRvb2xzLCBwYWNrYWdpbmcsCiAgZG9jdW1lbnRhdGlvbiwgb3IgcmVwb3NpdG9yeSBnYXRlcy4KbGljZW5zZTogTUlUCnRhZ3M6IFthdWRpb2Jvb2tzaGVsZi1tY3AsIGRldmVsb3BtZW50LCBjb25uZWN0b3IsIHRlc3QsIGdhdGVzXQp0aWVyOiByZXBvc2l0b3J5Cm1ldGFkYXRhOgogIGF1dGhvcjogR2VuaXVzCiAgdmVyc2lvbjogJzAuMS4wJwotLS0KCiMgYXVkaW9ib29rc2hlbGYtbWNwIGRldmVsb3BtZW50CgpUaGlzIHJlcG9zaXRvcnkgb3ducyB0aGUgQXVkaW9ib29rc2hlbGYgdHJhbnNwb3J0LCBtYXBwaW5ncywgTUNQIHRvb2xzLCBhbmQKYWdlbnQgZW50cnkgcG9pbnRzLiBTaGFyZWQgY29ubmVjdG9yIGNvbnRyYWN0cyBhbmQgdHJhbnNwb3J0cyBiZWxvbmcgdG8KYGFnZW50LWNvbm5lY3Rvci1zZGtgOyBhZG1pc3Npb24sIHNlcnZpbmcsIGFuZCBkdXJhYmxlIGdyYXBoIHN0YXRlIGJlbG9uZyB0bwp0aGVpciBvd25pbmcgcmVwb3NpdG9yaWVzLiBSZWFkIGBBR0VOVFMubWRgIGJlZm9yZSBjaGFuZ2luZyBjb2RlIGFuZCBrZWVwCnByb3ZpZGVyIGNyZWRlbnRpYWxzIGFuZCBlbmRwb2ludHMgb3V0IG9mIHNvdXJjZSwgbG9ncywgYW5kIHNraWxsIGNvbnRlbnQuCgojIyBSYXBpZCBkZWxpdmVyeTogdGhlIDUtbWludXRlIGNvbnRyYWN0CgpTcGVjcyBhcmUgYWxyZWFkeSBkZXNpZ25lZC4gRGVsaXZlciBzbWFsbCwgcmV2aWV3YWJsZSBzbGljZXMgYW5kIGNpdGUgdGhlCm93bmluZyBzcGVjIHJvdyBpbiB0aGUgY29tbWl0IHRyYWlsZXIuCgotIEZpbmQgdGhlIG93bmluZyByb3cgZmlyc3Qgd2l0aCBgZ2l0IGdyZXAgLW4gIjx0ZXJtPiIgLS0gc3BlY3NgIGFuZCBleHRlbmQgdGhlCiAgZXhpc3Rpbmcgc3BlYyBiZWZvcmUgYWRkaW5nIG5ldyByZXF1aXJlbWVudCB0ZXh0LgotIFJldXNlIGV4aXN0aW5nIFNESyBjbGllbnRzLCB0cmFuc3BvcnQgcG9saWNpZXMsIGFuZCB0b29sIGZhY3Rvcmllcy4gRG8gbm90CiAgY3JlYXRlIGEgc2Vjb25kIGltcGxlbWVudGF0aW9uIG9mIGEgY29ubmVjdG9yIGNhcGFiaWxpdHkuCi0gS2VlcCBjaGFuZ2VzIHNjb3BlZCB0byB0aGlzIGNvbm5lY3Rvci4gQSBjaGFuZ2Ugb3duZWQgYnkgdGhlIFNESywgQXJib3JhLCBvcgogIHRoZSBrbm93bGVkZ2UgZ3JhcGggYmVsb25ncyBpbiB0aGF0IHJlcG9zaXRvcnkgaW5zdGVhZC4KLSBFdmVyeSBkZWxpdmVyZWQgcmVxdWlyZW1lbnQgbmVlZHMgYSBib3VuZCB0ZXN0LiBHZW5lcmF0ZWQgYHN0YXR1cy5qc29uYAogIGZpbGVzIGFyZSBwcm9kdWNlZCBieSBgcGlwZWxpbmVzLWhvb2sgc3BlYy1zdGF0dXNgOyBuZXZlciBoYW5kLWVkaXQgdGhlbS4KLSBPbmUgbG9naWNhbCBjaGFuZ2UgcGVyIGNvbW1pdCwgd2l0aCBgU3BlYzogPElEPmAgYW5kIHRoZSBhc3Npc3RpbmcgYWdlbnQKICB0cmFpbGVyIGFkamFjZW50IGluIHRoZSBmaW5hbCBwYXJhZ3JhcGguCgojIyBTZXR1cCBhbmQgZ2F0ZXMKClVzZSB0aGUgcGlubmVkIGVudmlyb25tZW50IGZyb20gYHV2IHN5bmMgLS1sb2NrZWRgLiBSdW4gdGhlIHJlcG9zaXRvcnkgZ2F0ZQpmcm9tIHRoZSBjaGVja291dCByb290OgoKYGBgYmFzaAp1dnggcHJlLWNvbW1pdCBydW4gLS1hbGwtZmlsZXMKYGBgCgpGb3IgZm9jdXNlZCBmZWVkYmFjaywgcnVuIHRoZSByZWxldmFudCB0ZXN0cyB3aXRoIHRoZSByZXBvc2l0b3J5J3MgcGlubmVkCmVudmlyb25tZW50LCBmb3IgZXhhbXBsZToKCmBgYGJhc2gKdXYgcnVuIC0tYWxsLWV4dHJhcyBweXRlc3QgdGVzdHMvdGVzdF9wdWJsaWNhdGlvbl93b3JrZmxvdy5weSAtcQp1diBydW4gLS1hbGwtZXh0cmFzIHB5dGVzdCB0ZXN0cy90ZXN0X2F1ZGlvYm9va3NoZWxmX21jcF92YWxpZGF0aW9uLnB5IC1xCmBgYAoKVGhlIGNhbm9uaWNhbCBgLnByZS1jb21taXQtY29uZmlnLnlhbWxgIGRlbGVnYXRlcyBjb25uZWN0b3Itc3RhbmRhcmQsIHNlY3JldHMsCnNwZWMsIHRlc3RzLWZhc3QsIGFuZCBkZXBlbmRlbmN5LXJlYWRpbmVzcyBjaGVja3MgdG8KYEtudWNrbGVzLVRlYW0vcGlwZWxpbmVzYCBhdCBgcmV2OiBtYWluYC4gRG8gbm90IHJlcGxhY2UgdGhvc2Ugc2hhcmVkIGhvb2tzCndpdGggbG9jYWwgY29waWVzIG9yIGJ5cGFzcyBhIGZhaWxpbmcgY2hlY2suCgojIyBDb25uZWN0b3Itc3BlY2lmaWMgY2hlY2tzCgotIEtlZXAgdGhlIE1DUCBhbmQgYWdlbnQgc3VyZmFjZXMgYWxpZ25lZCB3aXRoIGBhZ2VudC1jb25uZWN0b3Itc2RrYC4KLSBWYWxpZGF0ZSBlbnZpcm9ubWVudCBhbmQgVExTIHNldHRpbmdzIGJlZm9yZSBtYWtpbmcgcHJvdmlkZXIgY2FsbHMuCi0gTW9jayBleHRlcm5hbCBBdWRpb2Jvb2tzaGVsZiBjYWxscyBpbiB0ZXN0czsgbmV2ZXIgdXNlIGxpdmUgY3JlZGVudGlhbHMgaW4gYQogIGxvY2FsIGdhdGUuCi0gS2VlcCBgYXVkaW9ib29rc2hlbGZfbWNwL3NraWxscy9gIHBhY2thZ2UgZGF0YSBpbnRhY3Qgd2hlbiBhZGRpbmcgc2tpbGxzLgotIERvY3VtZW50YXRpb24gbGl2ZXMgdW5kZXIgYGRvY3MvYCBhbmQgaXMgcHVibGlzaGVkIGJ5IHRoZSBzaGFyZWQgUGFnZXMKICB3b3JrZmxvdzsgc291cmNlIHN0YXR1cyByZWNvcmRzIGxpdmUgdW5kZXIgYHNwZWNzL2AuCgojIyBEZWxpdmVyeSBkaXNjaXBsaW5lCgpXb3JrIGluIGEgcmVhbCBHaXQgd29ya3RyZWUgYmFzZWQgb24gYG9yaWdpbi9tYWluYC4gSW5zcGVjdCB0aGUgY29tcGxldGUgZGlmZiwKc3RhZ2Ugb25seSByZXZpZXdlZCBwYXRocywgYW5kIHZlcmlmeSBgZ2l0IHN0YXR1cyAtLXNob3J0YCBhZnRlciBldmVyeSBnYXRlLgpEbyBub3QgdXNlIGBnaXQgc3Rhc2hgLCBgZ2l0IGFkZCAtQWAsIG9yIGBnaXQgYWRkIC5gOyBkbyBub3QgY2xhaW0gUGFnZXMKcHVibGljYXRpb24gdW50aWwgYSBzdWNjZXNzZnVsIGV4YWN0LXNvdXJjZSB3b3JrZmxvdyBydW4gYW5kIHRoZSBwdWJsaWMgcGFnZQphcmUgYm90aCBvYnNlcnZlZC4K",
+          "bytes": 3159,
+          "sha256": "317ffaaea0e7093c6d742a421492fa1302f88c57b1b673a47f4dba28a90eab88"
+        }
+      },
+      "status_files": {
+        "specs/_template/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiUkVQTEFDRV9XSVRIX1NUQUJMRV9JRCIsCiAgIm93bmVyX3JlcG8iOiAiYXVkaW9ib29rc2hlbGYtbWNwIiwKICAiZGVsaXZlcnlfc3RhdGUiOiAiUkVUSVJFRCIsCiAgInJlcXVpcmVtZW50X2lkcyI6IFtdLAogICJyZXF1aXJlbWVudHMiOiBbXQp9Cg==",
+          "bytes": 181,
+          "sha256": "d2a639919c39116a21e26c4554773f91f2e7ed6dadbf4c830141aa72178fba8d"
+        },
+        "specs/connector-content/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1BVURJT0JPT0tTSEVMRi1NQ1AtQ09OTkVDVE9SLUNPTlRFTlQiLAogICJvd25lcl9yZXBvIjogImF1ZGlvYm9va3NoZWxmLW1jcCIsCiAgImRlbGl2ZXJ5X3N0YXRlIjogIkxBTkRFRCIsCiAgInJlcXVpcmVtZW50X2lkcyI6IFsKICAgICJDT05OLUFVRElPQk9PS1NIRUxGLU1DUC1DT05ORUNUT1ItQ09OVEVOVC1SMDAxIgogIF0sCiAgInJlcXVpcmVtZW50cyI6IFsKICAgIHsKICAgICAgImlkIjogIkNPTk4tQVVESU9CT09LU0hFTEYtTUNQLUNPTk5FQ1RPUi1DT05URU5ULVIwMDEiLAogICAgICAidGl0bGUiOiAiRGVmYXVsdCBjb250ZW50IiwKICAgICAgImRlbGl2ZXJ5X3N0YXRlIjogIkxBTkRFRCIsCiAgICAgICJsYW5kZWRfaW4iOiBbCiAgICAgICAgIjBiZmNjY2NhNDRiOCIsCiAgICAgICAgIjQ0NGVmNzU3ODEwZSIKICAgICAgXSwKICAgICAgInZlcmlmaWVkX2J5IjogW10KICAgIH0KICBdCn0K",
+          "bytes": 501,
+          "sha256": "c96470716ce6b1818c7a72675efeecae442a468970cf93ba9fd667759d699ec9"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "provider": true,
+        "canonical_hooks": {
+          "rev": "main",
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ]
+        },
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "pages": {
+        "strict_ready": true,
+        "caller_count": 1,
+        "required_paths": true,
+        "shape_ready": true,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T16:17:14Z",
+          "databaseId": 40357642735,
+          "event": "push",
+          "headSha": "28f426777c2c7fa4ba07bf78b377608285e990aa",
+          "status": "completed",
+          "updatedAt": "2026-10-26T16:18:17Z",
+          "url": "https://github.com/Knuckles-Team/audiobookshelf-mcp/actions/runs/40357642735",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true,
+          "spec_dashboard_config": ".github/spec-dashboard.json"
+        },
+        "config": {
+          "version": 1,
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ]
+        },
+        "pages_api": {
+          "url": "https://api.github.com/repos/Knuckles-Team/audiobookshelf-mcp/pages",
+          "status": null,
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/audiobookshelf-mcp/",
+          "build_type": "workflow",
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "public": true,
+          "protected_domain_state": null,
+          "pending_domain_unverified_at": null,
+          "https_enforced": true
+        },
+        "http_200": {
+          "status": 200,
+          "bytes": 19652,
+          "index_sha256": "3ab7e3162d924d00556495485d40c903e799bd379e2fb4359f4179ee7a49f3d8",
+          "snapshot_bytes": 2909,
+          "snapshot_sha256": "22847523a3ad04a7fe6927e7d5ff1211747eecf96177d40e4a8e55d71e8c85a2",
+          "snapshot_revision": "28f426777c2c7fa4ba07bf78b377608285e990aa",
+          "snapshot_repository": "Knuckles-Team/audiobookshelf-mcp",
+          "snapshot_version": 1
+        },
+        "index_url": "https://knuckles-team.github.io/audiobookshelf-mcp/spec-delivery/",
+        "snapshot_url": "https://knuckles-team.github.io/audiobookshelf-mcp/spec-delivery/snapshot.json"
+      },
+      "skills": {
+        "required_phrase": "Rapid delivery: the 5-minute contract",
+        "path": "audiobookshelf_mcp/skills/audiobookshelf-mcp-development/SKILL.md",
+        "ready": true
+      },
+      "release": {
+        "evidence_claimed": false,
+        "success_claimed": false
+      }
+    },
+    "clarity-api": {
+      "row": "PIPE-CONNSPEC-R112",
+      "sha": "797073611faf61be84858a414745a1ac1e45cff1",
+      "tree_sha": "865bf0405cb3b664735871ca2556caf7e8829a4b",
+      "dashboard_config": ".github/spec-dashboard.json",
+      "skill_path": "clarity_api/skills/clarity-api-development/SKILL.md",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R112.1",
+        "PIPE-CONNSPEC-R112.2"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R112.1": false,
+        "PIPE-CONNSPEC-R112.2": false,
+        "PIPE-CONNSPEC-R112.3": true,
+        "PIPE-CONNSPEC-R112.4": true
+      },
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "encoding": "base64",
+          "data": "ewogICJ2ZXJzaW9uIjogMSwKICAic291cmNlcyI6IFsKICAgIHsKICAgICAgImdsb2IiOiAic3BlY3MvKi9zdGF0dXMuanNvbiIsCiAgICAgICJraW5kIjogInNwZWMiCiAgICB9CiAgXQp9Cg==",
+          "bytes": 109,
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "encoding": "base64",
+          "data": "bmFtZTogRGVwbG95IEdpdEh1YiBQYWdlcwoKb246CiAgcHVzaDoKICAgIGJyYW5jaGVzOgogICAgICAtIG1haW4KICAgIHBhdGhzOgogICAgICAtICdkb2NzLyoqJwogICAgICAtICdta2RvY3MueW1sJwogICAgICAtICdSRUFETUUubWQnCiAgICAgIC0gJ3NwZWNzLyoqJwogICAgICAtICcuZ2l0aHViL3NwZWMtZGFzaGJvYXJkLmpzb24nCiAgICAgIC0gJy5naXRodWIvd29ya2Zsb3dzL3BhZ2VzLnltbCcKCnBlcm1pc3Npb25zOgogIGNvbnRlbnRzOiByZWFkCgpqb2JzOgogIHB1Ymxpc2gtcGFnZXM6CiAgICB1c2VzOiBLbnVja2xlcy1UZWFtL3BpcGVsaW5lcy8uZ2l0aHViL3dvcmtmbG93cy9wYWdlc19waXBlbGluZS55bWxAbWFpbgogICAgd2l0aDoKICAgICAgY29udGVudF9zb3VyY2U6IGRvY3MKICAgICAgc3BlY19kYXNoYm9hcmRfZW5hYmxlZDogdHJ1ZQogICAgICBzcGVjX2Rhc2hib2FyZF9jb25maWc6IC5naXRodWIvc3BlYy1kYXNoYm9hcmQuanNvbgogICAgcGVybWlzc2lvbnM6CiAgICAgIGNvbnRlbnRzOiByZWFkCiAgICAgIHBhZ2VzOiB3cml0ZQogICAgICBpZC10b2tlbjogd3JpdGUK",
+          "bytes": 570,
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".pre-commit-config.yaml": {
+          "encoding": "base64",
+          "data": "IyBUaGUgd2hvbGUgcHJlLWNvbW1pdCBjb25maWd1cmF0aW9uIG9mIGEgY29ubmVjdG9yIChQSVBFLVZBTElEQVRJT04tUjAwMS45KS4gRXZlcnl0aGluZyBhCiMgY29ubmVjdG9yIHVzZWQgdG8gY29weSBsaXZlcyBpbiBwaXBlbGluZXMgYXQgYHJldjogbWFpbmA6IHRoZSBzYW5pdGl6ZXIsIHRoZSBzdGFuZGFyZC1maWxlCiMgY2hlY2ssIHRoZSBjb2Rlc3BlbGwgZGVmYXVsdHMgYW5kIHRoZSBnYXRlIHNldC4gQSBjaGFuZ2UgdG8gYSBzaGFyZWQgY2hlY2sgcmVhY2hlcyBldmVyeQojIGNvbm5lY3RvciB3aXRoIG5vIGVkaXQgaGVyZS4gUGVyLXJlcG8gb3B0aW9ucyBnbyBpbiBweXByb2plY3QudG9tbCB0YWJsZXMgb25seS4KZGVmYXVsdF9pbnN0YWxsX2hvb2tfdHlwZXM6IFtwcmUtY29tbWl0LCBwcmUtcHVzaF0KZGVmYXVsdF9zdGFnZXM6IFtwcmUtY29tbWl0XQpyZXBvczoKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vcHJlLWNvbW1pdC9wcmUtY29tbWl0LWhvb2tzCiAgcmV2OiAzZThhODcwMzI2NGEyZjRhNjk0MjhhMGFhNGRjYjUxMjc5MGIyYzhjICMgdjYuMC4wCiAgaG9va3M6CiAgLSBpZDogdHJhaWxpbmctd2hpdGVzcGFjZQogIC0gaWQ6IGVuZC1vZi1maWxlLWZpeGVyCiAgLSBpZDogY2hlY2stbWVyZ2UtY29uZmxpY3QKICAtIGlkOiBjaGVjay15YW1sCiAgICBhcmdzOiBbLS11bnNhZmVdCiAgLSBpZDogY2hlY2stdG9tbAogIC0gaWQ6IGNoZWNrLWpzb24KICAtIGlkOiBkZXRlY3QtcHJpdmF0ZS1rZXkKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vYXN0cmFsLXNoL3J1ZmYtcHJlLWNvbW1pdAogIHJldjogY2I4YzUyM2ZkNDgzNWFiYTQyYWY3MGY0Y2FkNTU2OGRiNGRmMGI2YyAjIHYwLjE2LjAKICBob29rczoKICAtIGlkOiBydWZmLWNoZWNrCiAgLSBpZDogcnVmZi1mb3JtYXQKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vS251Y2tsZXMtVGVhbS9waXBlbGluZXMKICByZXY6IG1haW4KICBob29rczoKICAtIGlkOiBjb25uZWN0b3Itc3RhbmRhcmQKICAtIGlkOiBzZWNyZXRzCiAgLSBpZDogc3BlYwogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogdGVzdHMtZmFzdAogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogZGVwZW5kZW5jeS1yZWFkaW5lc3MK",
+          "bytes": 1134,
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "clarity_api/skills/clarity-api-development/SKILL.md": {
+          "encoding": "base64",
+          "data": "LS0tCm5hbWU6IGNsYXJpdHktYXBpLWRldmVsb3BtZW50CnNraWxsX3R5cGU6IHNraWxsCmRlc2NyaXB0aW9uOiA+LQogIERldmVsb3AsIHRlc3QsIGFuZCBwdWJsaXNoIHRoZSBjbGFyaXR5LWFwaSBjb25uZWN0b3Igd2l0aG91dCBicmVha2luZyBpdHMKICB0eXBlZCBDbGFyaXR5IGV4cG9ydCBjb250cmFjdCwgcGFja2FnZWQgY29udGVudCwgc3BlYyBkZWxpdmVyeSBkYXNoYm9hcmQsIG9yCiAgZ292ZXJuZWQgUGFnZXMgd29ya2Zsb3cuIFVzZSB3aGVuIGNoYW5naW5nIGNvbm5lY3RvciBjb2RlLCBkb2NzLCBza2lsbHMsCiAgd29ya2Zsb3dzLCBvciByZXBvc2l0b3J5LW93bmVkIHNwZWNzLgpsaWNlbnNlOiBNSVQKdGFnczogW2NsYXJpdHksIGNvbm5lY3RvciwgZGV2ZWxvcG1lbnQsIHRlc3RpbmcsIHBhZ2VzLCBzcGVjc10KbWV0YWRhdGE6CiAgYXV0aG9yOiBHZW5pdXMKICB2ZXJzaW9uOiAnMC4xLjAnCi0tLQojIENsYXJpdHkgQVBJIERldmVsb3BtZW50CgpVc2UgdGhpcyBza2lsbCBmb3IgY2hhbmdlcyBpbnNpZGUgdGhlIGNsYXJpdHktYXBpIHBhY2thZ2UuIFRoZSBjb25uZWN0b3Igd3JhcHMKTWljcm9zb2Z0IENsYXJpdHkncyBsaXZlLWluc2lnaHRzIGV4cG9ydCBiZWhpbmQgYSB0eXBlZCBjbGllbnQsIE1DUCB0b29sLCBBMkEKYWdlbnQsIGFuZCBwYWNrYWdlZCBza2lsbC9jb250ZW50IHJlc291cmNlcy4gS2VlcCB0aG9zZSBzdXJmYWNlcyBhbGlnbmVkIHdoZW4gYQpjaGFuZ2UgY3Jvc3NlcyBhIGJvdW5kYXJ5LgoKIyMgUmVwb3NpdG9yeSBtYXAKCi0gY2xhcml0eV9hcGkvYXBpLyBjb250YWlucyB0aGUgY29tcG9zYWJsZSBIVFRQIGNsaWVudCBtaXhpbnMgYW5kIEFwaSBmYWNhZGUuCi0gY2xhcml0eV9hcGkvbWNwLyByZWdpc3RlcnMgYWN0aW9uLXJvdXRlZCB0b29scyBvdmVyIGFuIGluamVjdGVkIGNsaWVudC4KLSBjbGFyaXR5X2FwaS9zZXJ2aWNlcy8gb3ducyB0aGUgZXhwb3J0IHVzZSBjYXNlIGFuZCBpdHMga25vd2xlZGdlLWdyYXBoCiAgaW5nZXN0aW9uIHNlYW0uCi0gY2xhcml0eV9hcGkvc2tpbGxzLywgcHJvbXB0cy8sIG9udG9sb2d5LywgYW5kIGNvbm5lY3RvcnMvIGFyZSBwYWNrYWdlZAogIHJlc291cmNlcyBleHBvc2VkIGJ5IHRoZSBjb25uZWN0b3IgZW50cnkgcG9pbnQuCi0gc3BlY3MvY29ubmVjdG9yLWNvbnRlbnQvIGFuZCBzcGVjcy9jb25uZWN0b3ItaWRlbnRpdHkvIGFyZSB0aGUgc291cmNlCiAgc3BlY2lmaWNhdGlvbnM7IHRoZWlyIHN0YXR1cy5qc29uIGZpbGVzIGFyZSBnZW5lcmF0ZWQgZXZpZGVuY2UsIG5ldmVyIGhhbmQKICBlZGl0ZWQuCgojIyBCZWZvcmUgZWRpdGluZwoKMS4gV29yayBmcm9tIGEgcmVhbCB3b3JrdHJlZSBiYXNlZCBvbiB0aGUgcmVwb3NpdG9yeSdzIGN1cnJlbnQgb3JpZ2luL21haW4uCjIuIEZpbmQgdGhlIG93bmluZyByb3cgdW5kZXIgc3BlY3MvIGJlZm9yZSBhZGRpbmcgYmVoYXZpb3IsIGFuZCBwcmVzZXJ2ZSB0aGUKICAgZXhpc3RpbmcgQ09OQ0VQVDogcmVnaXN0cnkgd2hlbiBhIGRvbWFpbiBjYXBhYmlsaXR5IGlzIGludm9sdmVkLgozLiBUcmFjZSBhIGNoYW5nZWQgaW5wdXQgZnJvbSB0aGUgTUNQIG1vZGVsIHRocm91Z2ggdGhlIHNlcnZpY2UgYW5kIEFQSSBjbGllbnQKICAgdG8gdGhlIHJlc3BvbnNlIG1vZGVsLiBEbyBub3QgYWRkIGEgc2Vjb25kIHJvdXRlIGZvciB0aGUgc2FtZSBleHBvcnQgY2FsbC4KNC4gS2VlcCBjcmVkZW50aWFscyBhbmQgZXh0ZXJuYWwgQ2xhcml0eSBjYWxscyBvdXQgb2YgdGVzdHM7IHVzZSB0aGUgZXhpc3RpbmcKICAgcmVxdWVzdCBmaXh0dXJlcyBhbmQgbW9jayBjbGllbnRzLgoKIyMgSW1wbGVtZW50YXRpb24gY29udHJhY3QKCi0gUHJlc2VydmUgdGhlIGNsYXJpdHktbWNwIGNvbm5lY3RvciBuYW1lIGFuZCB0aGUgcHVibGljIEFwaSAvCiAgZ2V0X2RhdGFfZXhwb3J0IGNvbnRyYWN0LgotIFZhbGlkYXRlIHJlcXVlc3QgYm91bmRzIGFuZCBkaW1lbnNpb25zIGF0IHRoZSBQeWRhbnRpYyBib3VuZGFyeS4gS2VlcCByZXNwb25zZQogIGVudmVsb3BlcyBhbmQgcmVkYWN0aW9uIGJlaGF2aW9yIGNvbnNpc3RlbnQgd2l0aCBuZWlnaGJvcmluZyB0b29scy4KLSBVc2UgdGhlIHNoYXJlZCBhZ2VudC11dGlsaXRpZXMgc2VydmVyL2FnZW50IGZhY3RvcmllcyBhbmQgdGhlIGluamVjdGVkCiAgY2xpZW50IHNlYW0uIERvIG5vdCBpbXBvcnQgcnVudGltZSBjb2RlIGZyb20gYW5vdGhlciBjb25uZWN0b3IuCi0gQWRkIG9yIHVwZGF0ZSBhIGZvY3VzZWQgdGVzdCB3aGVuIGJlaGF2aW9yIGNoYW5nZXMuIFRlc3QgcmVmdXNhbCBhbmQgbWFsZm9ybWVkCiAgaW5wdXQgcGF0aHMgYXMgd2VsbCBhcyB0aGUgc3VjY2Vzc2Z1bCByZXNwb25zZSBzaGFwZS4KLSBLZWVwIGFsbCBwYWNrYWdlIHJlc291cmNlcyB1bmRlciB0aGUgZXhpc3RpbmcgcGFja2FnZS1kYXRhIGdsb2JzIHNvIGFuIHNkaXN0CiAgYW5kIHdoZWVsIGV4cG9zZSB0aGUgc2FtZSBza2lsbHMsIHByb21wdHMsIG9udG9sb2d5LCBhbmQgY29ubmVjdG9yIG1hbmlmZXN0LgoKIyMgUmFwaWQgZGVsaXZlcnk6IHRoZSA1LW1pbnV0ZSBjb250cmFjdAoKU3BlY3MgYXJlIGFscmVhZHkgZGVzaWduZWQuIERlbGl2ZXIgb25lIHNtYWxsLCByZXZpZXdhYmxlIGNoYW5nZSBhdCBhIHRpbWUuCgotIFN0YXJ0IHdpdGggb25lIG93bmluZyByZXF1aXJlbWVudCBhbmQgc3RhdGUgaXRzIHByb29mIGJlZm9yZSBlZGl0aW5nLgotIEtlZXAgYSBzbGljZSB0byBvbmUgY29ubmVjdG9yIGNvbmNlcm46IHNvdXJjZSBjb2RlLCBvbmUgdGVzdCBzZWFtLCBvbmUKICB3b3JrZmxvdy9jb25maWd1cmF0aW9uIHJlcGFpciwgb3Igb25lIHN1YnN0YW50aXZlIHNraWxsLgotIFJ1biB0aGUgc21hbGxlc3QgcmVsZXZhbnQgdGVzdHMgZmlyc3QsIHRoZW4gdGhlIHJlcG9zaXRvcnkgcHJlLWNvbW1pdCBzdWl0ZQogIG9uIHRoZSBjYW5kaWRhdGUgd29ya3RyZWUuIEZpeCB3YXJuaW5ncyBhbmQgZmFpbHVyZXMgcmF0aGVyIHRoYW4gYnlwYXNzaW5nIGEKICBob29rLgotIFJlY29yZCB0aGUgZXhhY3Qgc291cmNlIGFuZCB0ZXN0IGNvbW1hbmRzIGluIHRoZSBjb21taXQgb3IgcmV2aWV3IGhhbmRvZmYuCi0gTmV2ZXIgY2xhaW0gYSBQYWdlcyBvciBzcGVjIHJvdyBmcm9tIGEgWUFNTCBtYXJrZXIgYWxvbmU6IHRoZSBkYXNoYm9hcmQgY29uZmlnLAogIGdlbmVyYXRlZCBzdGF0dXMgcmVjb3Jkcywgc3VjY2Vzc2Z1bCBleGFjdC1zb3VyY2Ugd29ya2Zsb3csIGFuZCBwdWJsaXNoZWQKICBwYWdlIG11c3QgYWdyZWUuCi0gQ29tbWl0IG9ubHkgcmV2aWV3ZWQgcGF0aHMgd2l0aCBhbiBleHBsaWNpdCBwYXRoIGxpc3QuIE5ldmVyIHN0YWdlIGEgd2hvbGUKICBzaGFyZWQgY2hlY2tvdXQsIGNyZWRlbnRpYWxzLCBjYWNoZXMsIGdlbmVyYXRlZCBsb2dzLCBvciB0ZW1wb3Jhcnkgb3V0cHV0LgoKIyMgU3BlYyBkZWxpdmVyeSBhbmQgUGFnZXMKClRoZSBjYW5vbmljYWwgUGFnZXMgY2FsbGVyIGlzIC5naXRodWIvd29ya2Zsb3dzL3BhZ2VzLnltbC4gVGhpcyByZXBvc2l0b3J5IHVzZXMKdGhlIGRvY3MvIGNvbnRlbnQgc291cmNlLCBzbyB0aGUgY2FsbGVyIG11c3QgcGFzcyBjb250ZW50X3NvdXJjZTogZG9jcywgZW5hYmxlCnNwZWNfZGFzaGJvYXJkX2VuYWJsZWQsIGFuZCBwb2ludCBzcGVjX2Rhc2hib2FyZF9jb25maWcgYXQKLmdpdGh1Yi9zcGVjLWRhc2hib2FyZC5qc29uLiBUaGUgcHVzaCBwYXRoIHNldCBtdXN0IGluY2x1ZGUgc3BlY3MvKiosIHRoZQpkYXNoYm9hcmQgY29uZmlnLCBhbmQgdGhlIFBhZ2VzIHdvcmtmbG93IGl0c2VsZiBpbiBhZGRpdGlvbiB0byBkb2N1bWVudGF0aW9uCnBhdGhzLiBLZWVwIHRoZSBjb25maWcgdmVyc2lvbmVkIGFuZCBib3VuZGVkIHRvIHNwZWNzLyovc3RhdHVzLmpzb247IHRoZQpjZW50cmFsIHJlbmRlcmVyIG93bnMgdGhlIEhUTUwgbGF5b3V0LgoKUmVnZW5lcmF0ZSBzdGF0dXMgZXZpZGVuY2Ugd2l0aCB0aGUgcGlwZWxpbmUgaG9vayB3aGVuIGEgc3BlYyBjaGFuZ2VzLCBpbnNwZWN0CnRoZSByZXN1bHRpbmcgZGlmZiwgYW5kIHZlcmlmeSB0aGF0IG5vIHN0YXR1cyByb3cgd2FzIGFkdmFuY2VkIHdpdGhvdXQgYSByZWFsCmltcGxlbWVudGF0aW9uIG9yIHRlc3QgcmVjZWlwdC4gVGhlIFBhZ2VzIHByb29mIGlzIGNvbXBsZXRlIG9ubHkgYWZ0ZXIgdGhlCnB1Ymxpc2hlZCBydW4gdXNlcyB0aGUgY2FuZGlkYXRlIGNvbW1pdCBhbmQgL3NwZWMtZGVsaXZlcnkvIHNlcnZlcyB0aGUKY2FuZGlkYXRlIHNuYXBzaG90LgoKIyMgVmVyaWZpY2F0aW9uCgpGcm9tIHRoZSByZXBvc2l0b3J5IHJvb3Q6CgogICAgcHJlLWNvbW1pdCBydW4gLS1hbGwtZmlsZXMKICAgIHB5dGhvbiAtbSBweXRlc3QgdGVzdHMgLXEKClByZWZlciBmb2N1c2VkIHRlc3RzIGZvciB0aGUgdG91Y2hlZCBtb2R1bGUgd2hpbGUgaXRlcmF0aW5nLiBGb3IgUGFnZXMgY2hhbmdlcywKYWxzbyBydW4gdGhlIGNlbnRyYWwgZGFzaGJvYXJkIHJlbmRlcmVyIGFnYWluc3QgYSB0YXNrLWxvY2FsIG91dHB1dCBkaXJlY3RvcnkKYW5kIHZlcmlmeSB0aGUgY29uZmlnIHBhcnNlcywgc3RhdHVzIGZpbGVzIGFyZSBkaXNjb3ZlcmVkLCBhbmQgdGhlIHJlc3VsdApjb250YWlucyB0aGUgY29ubmVjdG9yIGNvbnRlbnQgYW5kIGlkZW50aXR5IHJlY29yZHMuCgojIyBTYWZldHkKCk5ldmVyIGNvbW1pdCAuZW52IGZpbGVzLCB0b2tlbnMsIHJhdyBDbGFyaXR5IGlkZW50aWZpZXJzLCBvciBnZW5lcmF0ZWQgc2l0ZQpvdXRwdXQuIE5ldmVyIG1ha2UgbGl2ZSBDbGFyaXR5IGNhbGxzIGZyb20gdGVzdHMuIFByZXNlcnZlIHRoZSBkZXN0cnVjdGl2ZQpib3VuZGFyeSBhbmQgdGhlIG5vLWVuZ2luZSBpbmdlc3Rpb24gbm8tb3Agc2VtYW50aWNzLiBJZiBhIGRlcGVuZGVuY3kgb3IKcGFja2FnZWQgbWV0YWRhdGEgY2hhbmdlIGlzIG5lY2Vzc2FyeSwgdXBkYXRlIHRoZSBsb2NrZmlsZSBpbiB0aGUgc2FtZSBzbGljZQphbmQgZXhwbGFpbiB3aHkgaW4gdGhlIHJldmlldy4K",
+          "bytes": 4986,
+          "sha256": "5bb2766836827ea8a98f2fb2af75ae89ab17a66d172354fcb5b3b3d4ed459fee"
+        }
+      },
+      "status_files": {
+        "specs/_template/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiUkVQTEFDRV9XSVRIX1NUQUJMRV9JRCIsCiAgIm93bmVyX3JlcG8iOiAiY2xhcml0eS1hcGkiLAogICJkZWxpdmVyeV9zdGF0ZSI6ICJSRVRJUkVEIiwKICAicmVxdWlyZW1lbnRfaWRzIjogW10sCiAgInJlcXVpcmVtZW50cyI6IFtdCn0K",
+          "bytes": 174,
+          "sha256": "d7b89270d42c1c313a1faa63683ca753b5c7e85b336937975e6a8b1e8e115220"
+        },
+        "specs/connector-content/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1DTEFSSVRZLUFQSS1DT05ORUNUT1ItQ09OVEVOVCIsCiAgIm93bmVyX3JlcG8iOiAiY2xhcml0eS1hcGkiLAogICJkZWxpdmVyeV9zdGF0ZSI6ICJMQU5ERUQiLAogICJyZXF1aXJlbWVudF9pZHMiOiBbCiAgICAiQ09OTi1DTEFSSVRZLUFQSS1DT05ORUNUT1ItQ09OVEVOVC1SMDAxIgogIF0sCiAgInJlcXVpcmVtZW50cyI6IFsKICAgIHsKICAgICAgImlkIjogIkNPTk4tQ0xBUklUWS1BUEktQ09OTkVDVE9SLUNPTlRFTlQtUjAwMSIsCiAgICAgICJ0aXRsZSI6ICJEZWZhdWx0IGNvbnRlbnQiLAogICAgICAiZGVsaXZlcnlfc3RhdGUiOiAiTEFOREVEIiwKICAgICAgImxhbmRlZF9pbiI6IFsKICAgICAgICAiMTRmMjQ5NmFlMmViIgogICAgICBdLAogICAgICAidmVyaWZpZWRfYnkiOiBbXQogICAgfQogIF0KfQo=",
+          "bytes": 449,
+          "sha256": "361ef4ff9957dd7c31fdb0e9c68dd9aeaa554cffa119a49965ef6ef1c8bd6e91"
+        },
+        "specs/connector-identity/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1DTEFSSVRZLUFQSS1DT05ORUNUT1ItSURFTlRJVFkiLAogICJvd25lcl9yZXBvIjogImNsYXJpdHktYXBpIiwKICAiZGVsaXZlcnlfc3RhdGUiOiAiVkVSSUZJRUQiLAogICJyZXF1aXJlbWVudF9pZHMiOiBbCiAgICAiQ09OTi1DTEFSSVRZLUFQSS1DT05ORUNUT1ItSURFTlRJVFktUjAwMSIKICBdLAogICJyZXF1aXJlbWVudHMiOiBbCiAgICB7CiAgICAgICJpZCI6ICJDT05OLUNMQVJJVFktQVBJLUNPTk5FQ1RPUi1JREVOVElUWS1SMDAxIiwKICAgICAgInRpdGxlIjogIkZsZWV0IG5hbWUiLAogICAgICAiZGVsaXZlcnlfc3RhdGUiOiAiVkVSSUZJRUQiLAogICAgICAibGFuZGVkX2luIjogWwogICAgICAgICI2MTNiODUzM2I5YTAiCiAgICAgIF0sCiAgICAgICJ2ZXJpZmllZF9ieSI6IFsKICAgICAgICAidGVzdHMvdGVzdF9mbGVldF9uYW1lLnB5OjM0IgogICAgICBdCiAgICB9CiAgXQp9Cg==",
+          "bytes": 496,
+          "sha256": "49e3be50d045ce56a14efb61fb6007193c6963fd3a4ecf0575c5f942460f07c6"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "provider": true,
+        "canonical_hooks": {
+          "rev": "main",
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ]
+        },
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "pages": {
+        "strict_ready": true,
+        "caller_count": 1,
+        "required_paths": true,
+        "shape_ready": true,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T16:04:48Z",
+          "databaseId": 40355606402,
+          "event": "push",
+          "headSha": "797073611faf61be84858a414745a1ac1e45cff1",
+          "status": "completed",
+          "updatedAt": "2026-10-26T16:05:29Z",
+          "url": "https://github.com/Knuckles-Team/clarity-api/actions/runs/40355606402",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true,
+          "spec_dashboard_config": ".github/spec-dashboard.json"
+        },
+        "config": {
+          "version": 1,
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ]
+        },
+        "pages_api": {
+          "url": "https://api.github.com/repos/Knuckles-Team/clarity-api/pages",
+          "status": null,
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/clarity-api/",
+          "build_type": "workflow",
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "public": true,
+          "protected_domain_state": null,
+          "pending_domain_unverified_at": null,
+          "https_enforced": true
+        },
+        "http_200": {
+          "status": 200,
+          "bytes": 23650,
+          "index_sha256": "dbf7751115b17d8bde114089ed4b594945dbc386f9e884fc7f381a4838ff6c74",
+          "snapshot_bytes": 5266,
+          "snapshot_sha256": "339423b26f97575cd85a913d3159cbc108813f79e894ddfbeafd1c1098e0572e",
+          "snapshot_revision": "797073611faf61be84858a414745a1ac1e45cff1",
+          "snapshot_repository": "Knuckles-Team/clarity-api",
+          "snapshot_version": 1
+        },
+        "index_url": "https://knuckles-team.github.io/clarity-api/spec-delivery/",
+        "snapshot_url": "https://knuckles-team.github.io/clarity-api/spec-delivery/snapshot.json"
+      },
+      "skills": {
+        "required_phrase": "Rapid delivery: the 5-minute contract",
+        "path": "clarity_api/skills/clarity-api-development/SKILL.md",
+        "ready": true
+      },
+      "release": {
+        "evidence_claimed": false,
+        "success_claimed": false
+      }
+    },
+    "container-manager-mcp": {
+      "row": "PIPE-CONNSPEC-R113",
+      "sha": "261689cb22ff40fc7e8dfb4ddabeea781de46df8",
+      "tree_sha": "1377e3207ad33426dd0a3a7d48b41213ae5600b2",
+      "dashboard_config": ".github/spec-dashboard.json",
+      "skill_path": "container_manager_mcp/skills/container-manager-mcp-development/SKILL.md",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R113.1"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R113.1": false,
+        "PIPE-CONNSPEC-R113.2": true,
+        "PIPE-CONNSPEC-R113.3": true,
+        "PIPE-CONNSPEC-R113.4": true
+      },
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "encoding": "base64",
+          "data": "ewogICJ2ZXJzaW9uIjogMSwKICAic291cmNlcyI6IFsKICAgIHsKICAgICAgImdsb2IiOiAic3BlY3MvKi9zdGF0dXMuanNvbiIsCiAgICAgICJraW5kIjogInNwZWMiCiAgICB9CiAgXQp9Cg==",
+          "bytes": 109,
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "encoding": "base64",
+          "data": "bmFtZTogRGVwbG95IEdpdEh1YiBQYWdlcwoKb246CiAgd29ya2Zsb3dfZGlzcGF0Y2g6IHt9CiAgcHVzaDoKICAgIGJyYW5jaGVzOgogICAgICAtIG1haW4KICAgIHBhdGhzOgogICAgICAtICdkb2NzLyoqJwogICAgICAtICdta2RvY3MueW1sJwogICAgICAtICdSRUFETUUubWQnCiAgICAgIC0gJ3NwZWNzLyoqJwogICAgICAtICcuZ2l0aHViL3NwZWMtZGFzaGJvYXJkLmpzb24nCiAgICAgIC0gJy5naXRodWIvd29ya2Zsb3dzL3BhZ2VzLnltbCcKCnBlcm1pc3Npb25zOgogIGNvbnRlbnRzOiByZWFkCgpqb2JzOgogIHB1Ymxpc2gtcGFnZXM6CiAgICB1c2VzOiBLbnVja2xlcy1UZWFtL3BpcGVsaW5lcy8uZ2l0aHViL3dvcmtmbG93cy9wYWdlc19waXBlbGluZS55bWxAbWFpbgogICAgd2l0aDoKICAgICAgY29udGVudF9zb3VyY2U6IGRvY3MKICAgICAgc3BlY19kYXNoYm9hcmRfZW5hYmxlZDogdHJ1ZQogICAgICBzcGVjX2Rhc2hib2FyZF9jb25maWc6IC5naXRodWIvc3BlYy1kYXNoYm9hcmQuanNvbgogICAgcGVybWlzc2lvbnM6CiAgICAgIGNvbnRlbnRzOiByZWFkCiAgICAgIHBhZ2VzOiB3cml0ZQogICAgICBpZC10b2tlbjogd3JpdGUK",
+          "bytes": 594,
+          "sha256": "6ef8e2f90cf14c54e825742393581736ccbd622f8a800a7336ad8a48ffcfb9e4"
+        },
+        ".pre-commit-config.yaml": {
+          "encoding": "base64",
+          "data": "IyBUaGUgd2hvbGUgcHJlLWNvbW1pdCBjb25maWd1cmF0aW9uIG9mIGEgY29ubmVjdG9yIChQSVBFLVZBTElEQVRJT04tUjAwMS45KS4gRXZlcnl0aGluZyBhCiMgY29ubmVjdG9yIHVzZWQgdG8gY29weSBsaXZlcyBpbiBwaXBlbGluZXMgYXQgYHJldjogbWFpbmA6IHRoZSBzYW5pdGl6ZXIsIHRoZSBzdGFuZGFyZC1maWxlCiMgY2hlY2ssIHRoZSBjb2Rlc3BlbGwgZGVmYXVsdHMgYW5kIHRoZSBnYXRlIHNldC4gQSBjaGFuZ2UgdG8gYSBzaGFyZWQgY2hlY2sgcmVhY2hlcyBldmVyeQojIGNvbm5lY3RvciB3aXRoIG5vIGVkaXQgaGVyZS4gUGVyLXJlcG8gb3B0aW9ucyBnbyBpbiBweXByb2plY3QudG9tbCB0YWJsZXMgb25seS4KZGVmYXVsdF9pbnN0YWxsX2hvb2tfdHlwZXM6IFtwcmUtY29tbWl0LCBwcmUtcHVzaF0KZGVmYXVsdF9zdGFnZXM6IFtwcmUtY29tbWl0XQpyZXBvczoKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vcHJlLWNvbW1pdC9wcmUtY29tbWl0LWhvb2tzCiAgcmV2OiAzZThhODcwMzI2NGEyZjRhNjk0MjhhMGFhNGRjYjUxMjc5MGIyYzhjICMgdjYuMC4wCiAgaG9va3M6CiAgLSBpZDogdHJhaWxpbmctd2hpdGVzcGFjZQogIC0gaWQ6IGVuZC1vZi1maWxlLWZpeGVyCiAgLSBpZDogY2hlY2stbWVyZ2UtY29uZmxpY3QKICAtIGlkOiBjaGVjay15YW1sCiAgICBhcmdzOiBbLS11bnNhZmVdCiAgLSBpZDogY2hlY2stdG9tbAogIC0gaWQ6IGNoZWNrLWpzb24KICAtIGlkOiBkZXRlY3QtcHJpdmF0ZS1rZXkKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vYXN0cmFsLXNoL3J1ZmYtcHJlLWNvbW1pdAogIHJldjogY2I4YzUyM2ZkNDgzNWFiYTQyYWY3MGY0Y2FkNTU2OGRiNGRmMGI2YyAjIHYwLjE2LjAKICBob29rczoKICAtIGlkOiBydWZmLWNoZWNrCiAgLSBpZDogcnVmZi1mb3JtYXQKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vS251Y2tsZXMtVGVhbS9waXBlbGluZXMKICByZXY6IG1haW4KICBob29rczoKICAtIGlkOiBjb25uZWN0b3Itc3RhbmRhcmQKICAtIGlkOiBzZWNyZXRzCiAgLSBpZDogc3BlYwogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogdGVzdHMtZmFzdAogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogZGVwZW5kZW5jeS1yZWFkaW5lc3MK",
+          "bytes": 1134,
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "container_manager_mcp/skills/container-manager-mcp-development/SKILL.md": {
+          "encoding": "base64",
+          "data": "LS0tCm5hbWU6IGNvbnRhaW5lci1tYW5hZ2VyLW1jcC1kZXZlbG9wbWVudApza2lsbF90eXBlOiBza2lsbApkZXNjcmlwdGlvbjogPi0KICBEZXZlbG9wLCB0ZXN0LCBhbmQgcmVsZWFzZSBjb250YWluZXItbWFuYWdlci1tY3AgY2hhbmdlcyBzYWZlbHkuIFVzZSB0aGlzIHNraWxsIGZvcgogIGNvbm5lY3RvciBjb2RlLCBzcGVjcywgd29ya2Zsb3cgd2lyaW5nLCBwYWNrYWdlZCBza2lsbHMsIHJlbGVhc2UgbWV0YWRhdGEsIGFuZCB0aGUKICBmb2N1c2VkIGdhdGVzIHRoYXQgcHJvdmUgdGhlIERvY2tlciwgUG9kbWFuLCBTd2FybSwgYW5kIEt1YmVybmV0ZXMgTUNQIHN1cmZhY2VzLgpsaWNlbnNlOiBNSVQKdGFnczogW2NvbnRhaW5lci1tYW5hZ2VyLW1jcCwgZGV2ZWxvcG1lbnQsIGNvbm5lY3RvcnMsIG1jcCwgc3BlY3MsIGdhdGVzXQptZXRhZGF0YToKICBhdXRob3I6IFByb2plY3QgTWFpbnRhaW5lcnMKICB2ZXJzaW9uOiAnMC4xLjAnCi0tLQojIGNvbnRhaW5lci1tYW5hZ2VyLW1jcCBkZXZlbG9wbWVudAoKVGhpcyBza2lsbCBpcyB0aGUgcmVwb3NpdG9yeSBjb250cmFjdCBmb3IgdGhlIGNvbnRhaW5lci1tYW5hZ2VyLW1jcCBjb25uZWN0b3IuIFRoZQpwYWNrYWdlIG93bnMgdGhlIERvY2tlciwgUG9kbWFuLCBTd2FybSwgYW5kIEt1YmVybmV0ZXMgY2FsbHMgYW5kIHRoZWlyIE1DUCBjb250ZW50Owp0cmFuc3BvcnQsIHJlbGVhc2UgcmVuZGVyaW5nLCBnZW5lcmF0ZWQgb250b2xvZ3kgYXJ0aWZhY3RzLCBhbmQgc2hhcmVkIHZhbGlkYXRpb24KY29tZSBmcm9tIGBhZ2VudC1jb25uZWN0b3Itc2RrYCBhbmQgYHBpcGVsaW5lc2AuCgojIyBSZXBvc2l0b3J5IHdvcmtmbG93CgoxLiBTdGFydCBmcm9tIGEgcmVhbCB3b3JrdHJlZSBiYXNlZCBvbiBgb3JpZ2luL21haW5gOyBrZWVwIHRoZSBjYW5vbmljYWwgY2hlY2tvdXQgYW5kCiAgIG90aGVyIHdvcmt0cmVlcyB1bnRvdWNoZWQuCjIuIEZpbmQgdGhlIG93bmluZyByb3cgd2l0aCBgZ2l0IGdyZXAgLW4gIjx0ZXJtPiIgLS0gc3BlY3NgIGJlZm9yZSBjaGFuZ2luZyBiZWhhdmlvci4KMy4gS2VlcCBjaGFuZ2VzIGluIHRoZSBjb25uZWN0b3IgYm91bmRhcnkuIFVzZSB0aGUgU0RLIGZvciBNQ1AgY29uc3RydWN0aW9uLCBnb3Zlcm5lZAogICBIVFRQLCBjcmVkZW50aWFscywgVExTLCBhbmQgcGFja2FnZWQgY29udGVudCBkaXNjb3ZlcnkuCjQuIFJ1biB0aGUgbmFycm93IHRlc3Qgb3IgZ2F0ZSB0aGF0IHByb3ZlcyB0aGUgY2hhbmdlZCBiZWhhdmlvciwgdGhlbiBydW4KICAgYHV2eCBwcmUtY29tbWl0IHJ1biAtLWFsbC1maWxlc2AgYmVmb3JlIG9wZW5pbmcgYSBQUi4KNS4gTGV0IHRoZSBzaGFyZWQgcGlwZWxpbmVzIHJlbmRlciBEb2NrZXIvY29tcG9zZSBmaWxlcyBhbmQgZ2VuZXJhdGUgY29ubmVjdG9yCiAgIG9udG9sb2d5IGFydGlmYWN0cyBkdXJpbmcgcmVsZWFzZS4gVGhvc2UgZ2VuZXJhdGVkIGZpbGVzIGFyZSBub3QgY29tbWl0dGVkIGhlcmUuCgojIyBDb250YWluZXItbWFuYWdlciBjaGVja3MKClVzZSB0aGUgbG9ja2VkIHByb2plY3QgZW52aXJvbm1lbnQgKGB1diBzeW5jIC0tbG9ja2VkYCkgd2hlbiBpdCBpcyBhbHJlYWR5IGF2YWlsYWJsZS4KRm9jdXNlZCB0ZXN0cyBjYW4gc2VsZWN0IG9uZSBiYWNrZW5kIG9yIHRvb2wgZmFtaWx5LCBmb3IgZXhhbXBsZToKCmBgYGJhc2gKdXYgcnVuIC0tZnJvemVuIHB5dGVzdCAtcSB0ZXN0cy90ZXN0X2NhbGxfY29udGV4dC5weQp1diBydW4gLS1mcm96ZW4gcHl0ZXN0IC1xIHRlc3RzL3Rlc3RfbWNwX3NlcnZlci5weQpgYGAKCkRvIG5vdCBjYWxsIGEgcmVhbCBjb250YWluZXIgZW5naW5lIG9yIEt1YmVybmV0ZXMgY2x1c3RlciBmcm9tIGEgdW5pdCB0ZXN0LiBNb2NrIHRoZQptYW5hZ2VyIGJvdW5kYXJ5IGFuZCBwcm92ZSBjb250ZXh0IHNlbGVjdGlvbiwgcmVmdXNhbCwgYW5kIHNlcmlhbGl6YXRpb24uIEtlZXAKY3JlZGVudGlhbHMsIGhvc3RuYW1lcywga3ViZWNvbmZpZ3MsIGFuZCBwcml2YXRlIHBhdGhzIG91dCBvZiBmaXh0dXJlcyBhbmQgcmVjZWlwdHMuCgojIyBSYXBpZCBkZWxpdmVyeTogdGhlIDUtbWludXRlIGNvbnRyYWN0CgpTcGVjcyBhcmUgYWxyZWFkeSBkZXNpZ25lZC4gVGhlIHdvcmsgaXMgaW1wbGVtZW50YXRpb24sIGRlbGl2ZXJlZCBpbiB2ZXJ5IHNtYWxsLCBjb250aW51b3VzbHkgbGFuZGVkIHNsaWNlcy4KCioqRXh0ZW5kIGZpcnN0IChhbnRpLXNwcmF3bCkqKgotIEJlZm9yZSBhbnkgY29kZSBjaGFuZ2UsIGZpbmQgdGhlIHNwZWMgcm93IHRoYXQgb3ducyB0aGUgYmVoYXZpb3I6IGBnaXQgZ3JlcCAtbiAiPHRlcm0+IiAtLSBzcGVjc2AuIENpdGUgaXRzIElEIGluIHRoZSBjb21taXQgYFNwZWM6YCB0cmFpbGVyLgotIEJlZm9yZSBhbnkgbmV3IHNwZWMgdGV4dCwgZXh0ZW5kIHRoZSBvd25pbmcgc3BlYzogYSBjaGlsZCByb3cgKGBSMDEyLjRgKSwgYSBuZXcgcm9sbHVwIGF0IHRoZSBlbmQgb2YgdGhhdCBzcGVjLCBvciBhIGRhdGVkIGVudHJ5IGluIHRoZSBgcGxhbi5tZGAgc2VjdGlvbiAiQW1lbmRtZW50cyIuIENyZWF0ZSBhIG5ldyBzcGVjIG9ubHkgZm9yIGEgY2FwYWJpbGl0eSB0aGF0IG5vIHNwZWMgb3ducywgYW5kIHJlY29yZCB0aGUgc2VhcmNoIGluICJXaHkgYSBuZXcgc3BlYyIuCi0gQXVkaXRzLCByZXZpZXdzLCBnYXAgYW5hbHlzZXMgYW5kIGNhcnJ5LW92ZXJzIG5ldmVyIGdldCBhIHNwZWMgZGlyZWN0b3J5LiBUaGVpciBmaW5kaW5ncyBsYW5kIGluIHRoZSBzcGVjIHRoYXQgb3ducyB0aGUgcm93OyBhIGZpbmRpbmcgYWdhaW5zdCBhbm90aGVyIHJlcG9zaXRvcnkgbGFuZHMgaW4gdGhhdCByZXBvc2l0b3J5J3Mgc3BlYy4KLSBCZWZvcmUgYW55IG5ldyBmdW5jdGlvbiwgbW9kdWxlLCBwbGFubmVyLCBzZWxlY3RvciBvciBzdG9yZSwgc2VhcmNoIGZvciB0aGUgZXhpc3Rpbmcgb25lIGFuZCByZXVzZSBpdC4gQSBzZWNvbmQgaW1wbGVtZW50YXRpb24gb2YgYW4gb3duZWQgY2FwYWJpbGl0eSBpcyBhIGRlZmVjdCwgbm90IGEgZGVsaXZlcnkuCi0gVGhlIHJ1bGVzIGFyZSBpbiBgc3BlY3MvUkVBRE1FLm1kYC4gVGhlIGBzcGVjLXN0YW5kYXJkYCBnYXRlIGVuZm9yY2VzIHRoZSBuYW1lcywgZmlsZSBzZXQsIHRpdGxlIGFuZCBpbmRleC4KCioqVGltZSBhbmQgc2l6ZSoqCi0gT25lIGFnZW50IGRlbGl2ZXJzIG9uZSBQUiBpbiA1IG1pbnV0ZXMgb3IgbGVzcy4gTm8gYWdlbnQgb3Igc3ViLWFnZW50IHJ1bnMgbG9uZ2VyIHRoYW4gNSBtaW51dGVzOyBhbiBvcmNoZXN0cmF0b3IgZGlzcGF0Y2hlcyB0aGUgbmV4dCBzbGljZSB0byBhIGZyZXNoIGFnZW50LgotIFNlbGYtdGltZXIgKGhhcmQpOiBydW4gYGRhdGUgKyVzID4gL3RtcC9hZ2VudC1zdGFydC0kJGAgYXMgeW91ciBGSVJTVCBjb21tYW5kLCBhbmQgYmVmb3JlIGV2ZXJ5IGxhdGVyIHN0ZXAgY2hlY2sgZWxhcHNlZCB3aXRoIGBlY2hvICQoKCAkKGRhdGUgKyVzKSAtICQoY2F0IC90bXAvYWdlbnQtc3RhcnQtKikgKSlgLiBBdCAzMDAgcywgc3RvcCBzdGFydGluZyBuZXcgd29yay4gQXQgNDgwIHMsIGNvbW1pdCB3aGF0IHBhc3NlcywgcHVzaCBpdCwgb3BlbiB0aGUgUFIsIHJlcG9ydCBhbmQgU1RPUC4gTmV2ZXIgZXhjZWVkIDYwMCBzLiBOZXZlciB3YWl0IG9uIENJIG9yIGJhY2tncm91bmQgam9iczsgdXNlIGBnaXQgY29tbWl0IC0tbm8tdmVyaWZ5YCBhbmQgYGdpdCBwdXNoIC0tbm8tdmVyaWZ5YCBhZnRlciBydW5uaW5nIHByZS1jb21taXQgb24gdGhlIGNoYW5nZWQgZmlsZXMgeW91cnNlbGYuCi0gQ0kgdHVybnMgYXJvdW5kIGluIDUgbWludXRlcyBvciBsZXNzLiBQUiBDSSBydW5zIHRoZSBmYXN0IHN1YnNldDogbGludCwgdHlwZSBjaGVjaywgdGhlIHNwZWMgY2hlY2ssIGFuZCBvbmx5IHRoZSB0ZXN0cyBhbmQgY3JhdGVzIHRoZSBkaWZmIHRvdWNoZXMuIFB1c2hlcyB0byBtYWluIHJ1biB0aGUgZnVsbCBzdWl0ZS4KLSBDSSB0aW1lciAoaGFyZCk6IGV2ZXJ5IFBSLXBhdGggam9iIGNhcnJpZXMgYHRpbWVvdXQtbWludXRlczogJHt7IGdpdGh1Yi5ldmVudF9uYW1lID09ICdwdWxsX3JlcXVlc3QnICYmIDEwIHx8IDYwIH19YCwgc28gYSBQUiBnYXRlIGlzIGtpbGxlZCBhdCAxMCBtaW51dGVzIGFuZCBhIHNsb3cgZ2F0ZSBzaG93cyB1cCBhcyBhIGZhaWx1cmUgaW5zdGVhZCBvZiBhIHNpbGVudCBxdWV1ZS4KLSBOZXZlciBzcGF3biBzdWItYWdlbnRzIGZyb20gYSBkZWxpdmVyeSBhZ2VudC4KCioqSW52ZXN0aWdhdGlvbiBidWRnZXQqKgotIEF0IG1vc3QgMiBtaW51dGVzIGFuZCBhYm91dCAxMCB0b29sIGNhbGxzIG9mIHJlYWRpbmcgYmVmb3JlIHRoZSBmaXJzdCBlZGl0LCBhbmQgYXQgbW9zdCBhYm91dCAyNSB0b29sIGNhbGxzIHBlciBQUi4KLSBJZiB0aGUgY2hhbmdlIGlzIG5vdCBjbGVhciBieSB0aGVuLCBzaGlwIHRoZSBgLjFgIHNsaWNlICh0eXBlZCBtb2RlbCBwbHVzIHJlZnVzYWwgdGVzdCkgb3Igc2tpcCB0aGUgcm93IHdpdGggYSBvbmUtbGluZSBub3RlLiBEbyBub3Qgd3JpdGUgZGVmZXJyYWwgZXNzYXlzLgotIFRydXN0IHRoZSBvcmNoZXN0cmF0b3IncyBldmlkZW5jZSBhbmQgSUQgbGlzdDsgZG8gbm90IHJlLXZlcmlmeSBpdC4KCioqU2l6aW5nIChkZXRlcm1pbmlzdGljKSoqCi0gU3BsaXQgYSByZXF1aXJlbWVudCB3aGVuIGl0cyBzaXplIHNjb3JlIGlzIGFib3ZlIDYsIGl0IG5hbWVzIG1vcmUgdGhhbiAyIGNvZGUgcm9vdHMsIG9yIGl0IGlzIGNyb3NzLXJlcG8uIENoaWxkcmVuIGFyZSBgPElEPi48bj5gLCBwcm9kdWNlciBmaXJzdC4KLSBOZXQtbmV3IHdvcmsgaXMgc2xpY2VkLCBuZXZlciBza2lwcGVkOiBgLjFgIHR5cGVkIG1vZGVsIHBsdXMgdmFsaWRhdGlvbiBhbmQgcmVmdXNhbCB0ZXN0cywgYC4yYCB0aGUgb25lIGVudHJ5IHBvaW50IHRoYXQgdXNlcyBpdCwgYC4zYCsgZWFjaCBmdXJ0aGVyIGJlaGF2aW9yLgotIENyb3NzLXJlcG8gbW92ZXMgc3BsaXQgaW50byBvbmUgY2hpbGQgcGVyIHJlcG86IHRoZSBkZXN0aW5hdGlvbiBjb3BpZXMgdGhlIGJlaGF2aW9yIGZpcnN0LCB0aGVuIHRoZSBzb3VyY2Ugc3dpdGNoZXMgaW1wb3J0ZXJzIGFuZCBkZWxldGVzLgoKKipTcGVjcyB1cGRhdGUgdGhlbXNlbHZlcyAobGFuZCBWRVJJRklFRCwgbm90IGp1c3QgTEFOREVEKSoqCi0gRXZlcnkgY29tbWl0IHRoYXQgZGVsaXZlcnMgYSByZXF1aXJlbWVudCBlbmRzIHdpdGggdGhlIHRyYWlsZXIgYFNwZWM6IDxJRD5bLCA8SUQ+Li4uXWAuIEEgY29tbWl0IHRoYXQgdG91Y2hlcyBjb2RlIHdpdGhvdXQgZGVsaXZlcmluZyBvbmUgc2F5cyBgU3BlYzogbm9uZSAoY2l8ZGVwc3xyZWZhY3RvcnxmaXgtZm9yd2FyZClgLgotIEV2ZXJ5IGRlbGl2ZXJlZCBJRCBnZXRzIGF0IGxlYXN0IG9uZSB0ZXN0IGJvdW5kIHRvIGl0IGluIHRoZSBzYW1lIFBSLiBQeXRob246IGBAcHl0ZXN0Lm1hcmsuc3BlYygiPElEPiIpYC4gUnVzdC9UeXBlU2NyaXB0OiBhIGAvLyBzcGVjOiA8SUQ+YCBsaW5lIGRpcmVjdGx5IGFib3ZlIHRoZSB0ZXN0LgotIE5ldmVyIGhhbmQtZWRpdCBgc3RhdHVzLmpzb25gOyBpdCBpcyBnZW5lcmF0ZWQgKGBzcGVjLXN0YXR1c2ApLiBOZXZlciB3cml0ZSBwbGFjZWhvbGRlciBTSEFzLiBJZiB0aGUgd29yayBpcyBvbmx5IHBhcnQgb2YgYSByZXF1aXJlbWVudCwgZGVjb21wb3NlIGl0IGludG8gYDxJRD4uPG4+YCBjaGlsZHJlbiBmaXJzdCBhbmQgZGVsaXZlciB3aG9sZSBjaGlsZHJlbi4KLSBXcml0ZSB0aGUgbWFya2VyIHdpdGggdGhlIGxpdGVyYWwgSUQsIG5ldmVyIGEgdmFyaWFibGUuIFB1dCBgU3BlYzpgIGFuZCBgQ28tQXV0aG9yZWQtQnk6YCBvbiBjb25zZWN1dGl2ZSBsaW5lcyBpbiB0aGUgbGFzdCBwYXJhZ3JhcGggb2YgdGhlIGNvbW1pdCBtZXNzYWdlLCBvciBgU3BlYzpgIGlzIG5vdCByZWFkIGFzIGEgdHJhaWxlci4KLSBHZW5lcmF0ZWQgc3RhdHVzIGRlcGVuZHMgb24gdGhlIGNvbW1pdDogcnVuIGBwaXBlbGluZXMtaG9vayBzcGVjLXN0YXR1cyAtLXdyaXRlYCBhZ2FpbiBhZnRlciBjb21taXR0aW5nIGFuZCBjb21taXQgdGhlIHJlc3VsdC4KLSBUaGUgZ2VuZXJhdG9yIGFwcGxpZXMgdGhlIHJ1bGVzLiBSdW4gYHBpcGVsaW5lcy1ob29rIHNwZWMtc3RhdHVzYCB0byBzZWUgZWFjaCByb3cncyBzdGF0ZS4KCioqRGVsaXZlcmVkIG1lYW5zIHRoZSByb3cncyBhY2NlcHRhbmNlIGlzIG1ldCoqCi0gTmV2ZXIgZGVsZXRlIG9yIHN0dWIgb3V0IGJlaGF2aW91ciB3aG9zZSByZXBsYWNlbWVudCBpcyBub3Qgd2lyZWQuIE5ldmVyIG1ha2UgYSBjYWxsZXIgImZhaWwgY2xvc2VkIiBpbiBwbGFjZSBvZiByZXBvaW50aW5nIGl0LiBOZXZlciBzdWJzdGl0dXRlIGEgc2NvcGUsIHdlYWtlbiBhbiBhc3NlcnRpb24gb3IgYWRkIGFuIGFsbG93bGlzdCBlbnRyeSB0byBwYXNzIGEgZ2F0ZS4KLSBJZiB0aGUgcmVwbGFjZW1lbnQgbGl2ZXMgaW4gYW5vdGhlciByZXBvc2l0b3J5LCBkbyBub3QgZGVsaXZlcjogcmVjb3JkIHRoZSBibG9ja2VyIGluIHRoZSByb3csIG5hbWUgdGhlIG1pc3NpbmcgY2FwYWJpbGl0eSwgYW5kIHN0b3AuIFRoZSBvcmNoZXN0cmF0b3IgYWRkcyB0aGUgcm93IGluIHRoZSBvd25pbmcgcmVwb3NpdG9yeS4KLSBOZXZlciByZS1hZGQgYSBwYXRoIHRoYXQgYW5vdGhlciByZXF1aXJlbWVudCByZXRpcmVkOyByZXBvcnQgdGhlIGNvbmZsaWN0LgotIFZhbGlkIG91dGNvbWVzIGFyZSBERUxJVkVSRUQgKHdpdGggYSBib3VuZCB0ZXN0KSwgU1BMSVQsIEJMT0NLRUQgYW5kIEdBUCAoYSAibGFuZGVkIiByb3cgdGhhdCBpcyBub3QgcmVhbGx5IGRlbGl2ZXJlZCkuIEEgaGFsZi1kZWxpdmVyeSBpcyBub3QgYW4gb3V0Y29tZS4KCioqV2hlcmUgcHJvZ3Jlc3Mgc2hvd3MqKgotIFRoZSByZXBvc2l0b3J5J3Mgc3BlYy1kZWxpdmVyeSBwYWdlIGlzIHJlYnVpbHQgZnJvbSBgc3BlY3MvKi9zdGF0dXMuanNvbmAgb24gZWFjaCBwdXNoIHRvIG1haW4uIFNQRUNJRklFRCBpcyB3cml0dGVuLCBMQU5ERUQgaXMgb24gbWFpbiwgVkVSSUZJRUQgaXMgb24gbWFpbiB3aXRoIGEgYm91bmQgdGVzdC4KCioqQmVmb3JlIGV2ZXJ5IHB1c2gqKgotIFdvcmsgaW4gYSByZWFsIGBnaXQgd29ya3RyZWUgYWRkYCBmcm9tIGBvcmlnaW4vbWFpbmAuIE5ldmVyIGVkaXQgYSBzaGFyZWQgY2hlY2tvdXQsIG5ldmVyIGBnaXQgc3Rhc2hgLCBuZXZlciBgZ2l0IGFkZCAtQWAsIG5ldmVyIGZvcmNlLXB1c2guCi0gUnVuIHRoZSByZXBvJ3Mgb3duIHByZS1jb21taXQgb24gdGhlIGNoYW5nZWQgZmlsZXM6IGB1dnggLS1mcm9tIHByZS1jb21taXQ9PTQuNi4wIHByZS1jb21taXQgcnVuIC0tZmlsZXMgJChnaXQgZGlmZiAtLW5hbWUtb25seSBvcmlnaW4vbWFpbi4uLkhFQUQpYC4gRml4IGV2ZXJ5IGZhaWx1cmUuIE5vIGBub3FhYCwgYHR5cGU6IGlnbm9yZWAsIHNraXAsIHhmYWlsIG9yIHdoaXRlbGlzdCBlbnRyaWVzIHRvIHBhc3MgYSBnYXRlLgotIFJ1biB0aGUgdGFyZ2V0ZWQgdGVzdHMgb25seSwgbmV2ZXIgYSBmdWxsIHN1aXRlLiBSdW4gdGhlIHR5cGUgY2hlY2tlciBvbiBldmVyeSBjaGFuZ2VkIGZpbGUsIGFuZCBrZWVwIGVhY2ggZnVuY3Rpb24gYXQgY3ljbG9tYXRpYyBjb21wbGV4aXR5IDEwIG9yIGxlc3MuCgoqKkxhbmRpbmcqKgotIEV2ZXJ5IFBSIGxhbmRzIHdpdGhpbiBtaW51dGVzIG9mIGdvaW5nIGdyZWVuOyBubyBQUiBzaXRzIGlkbGUuIE1lY2hhbmljYWwgY29uZmxpY3RzIChnZW5lcmF0ZWQgZmlsZXMsIE1hcmtkb3duLCBgc3RhdHVzLmpzb25gKSBhcmUgcmVzb2x2ZWQgYXV0b21hdGljYWxseSBieSB0aGUgbWVyZ2UtdHJhaW4gdG9vbC4gUmVhbCBjb25mbGljdHMgYXJlIGFkZGl0aXZlIGluIG1vc3QgY2FzZXMgYW5kIGFyZSByZXNvbHZlZCwgbm90IGRlZmVycmVkLgotIE1hbnkgb3BlbiBQUnMgbGFuZCB0b2dldGhlciBhcyBhIG1lcmdlIHRyYWluOiBvbmUgaW50ZWdyYXRpb24gYnJhbmNoIGFuZCBvbmUgQ0kgcnVuLgotIEZ1bGwgQ0kgb24gbWFpbiBjYXRjaGVzIHdoYXQgdGhlIGZhc3Qgc3Vic2V0IG1pc3NlZDsgcmVncmVzc2lvbnMgYXJlIGZpeGVkIGZvcndhcmQgaW1tZWRpYXRlbHkuCi0gTGFuZGluZyBpbiB0aGlzIHJlcG86IG9wZW4gb25lIHJldmlld2FibGUgUFI7IHRoZSBvcmNoZXN0cmF0b3IgbWVyZ2VzIG9ubHkgYWZ0ZXIgaW5kZXBlbmRlbnQgcmV2aWV3IGFuZCBncmVlbiBob3N0ZWQgY2hlY2tzLgoKKipSZXBvcnQqKjogYXQgbW9zdCA4IGxpbmVzOiBQUiBVUkwsIHJlcXVpcmVtZW50IElEcywgdGVzdCByZXN1bHQsIGFuZCBhbnkgYElEOjxtYWluIHNoYT5gIHByb29mIGZvciByb3dzIGFscmVhZHkgb24gbWFpbi4KCiMjIFJlbGVhc2UgYm91bmRhcnkKClRoZSBwYWNrYWdlIHZlcnNpb24gbGl2ZXMgb25seSBpbiBgcHlwcm9qZWN0LnRvbWxgLiBUaGUgY2VudHJhbCBQeXRob24gd29ya2Zsb3cgaXMKY2FsbGVkIHdpdGggYGNvbm5lY3RvcjogdHJ1ZWA7IHRoZSBjZW50cmFsIGNvbnRhaW5lciB3b3JrZmxvdyBpcyBjYWxsZWQgd2l0aApgcmVuZGVyX2Nvbm5lY3RvcjogdHJ1ZWAuIEEgcGFja2FnZS1jb250ZW50IGNoYW5nZSByZXF1aXJlcyBhIG5vcm1hbCBwYXRjaCB2ZXJzaW9uCmJ1bXAgYW5kIGEgbWF0Y2hpbmcgYHV2LmxvY2tgIHVwZGF0ZSBiZWZvcmUgcHVibGljYXRpb24uIEV4aXN0aW5nIDMuMy42IHJ1bnRpbWUKaW1hZ2VzIGFyZSBkZXBsb3ltZW50IGV2aWRlbmNlIGFuZCBhcmUgbmV2ZXIgcmV3cml0dGVuIGJ5IHRoaXMgc2tpbGwuCg==",
+          "bytes": 8698,
+          "sha256": "f3f4548289f49992c67b14b8a88ca8f3e32af4119f690bdd7cfc4fed3c1eca08"
+        }
+      },
+      "status_files": {
+        "specs/_template/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiUkVQTEFDRV9XSVRIX1NUQUJMRV9JRCIsCiAgIm93bmVyX3JlcG8iOiAiY29udGFpbmVyLW1hbmFnZXItbWNwIiwKICAiZGVsaXZlcnlfc3RhdGUiOiAiUkVUSVJFRCIsCiAgInJlcXVpcmVtZW50X2lkcyI6IFtdLAogICJyZXF1aXJlbWVudHMiOiBbXQp9Cg==",
+          "bytes": 184,
+          "sha256": "b7d72aa5b252b15e7df0dc5413cebc86aecd5996e299bd5990ad98e71f65e4a6"
+        },
+        "specs/connector-content/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtQ09OTkVDVE9SLUNPTlRFTlQiLAogICJvd25lcl9yZXBvIjogImNvbnRhaW5lci1tYW5hZ2VyLW1jcCIsCiAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAicmVxdWlyZW1lbnRfaWRzIjogWwogICAgIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLUNPTk5FQ1RPUi1DT05URU5ULVIwMDEiCiAgXSwKICAicmVxdWlyZW1lbnRzIjogWwogICAgewogICAgICAiaWQiOiAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtQ09OTkVDVE9SLUNPTlRFTlQtUjAwMSIsCiAgICAgICJ0aXRsZSI6ICJEZWZhdWx0IGNvbnRlbnQiLAogICAgICAiZGVsaXZlcnlfc3RhdGUiOiAiVkVSSUZJRUQiLAogICAgICAibGFuZGVkX2luIjogWwogICAgICAgICIzY2UxZjM5NDVjN2IiLAogICAgICAgICI0MTgxNzI2MTMyMmYiLAogICAgICAgICJkMjBjZWM4Y2ZlYjciLAogICAgICAgICJkNDNkODYzNmE3MTYiCiAgICAgIF0sCiAgICAgICJ2ZXJpZmllZF9ieSI6IFsKICAgICAgICAidGVzdHMvdGVzdF9kZWZhdWx0X2NvbnRlbnRfc3VyZmFjZXMucHk6MTUiCiAgICAgIF0KICAgIH0KICBdCn0K",
+          "bytes": 624,
+          "sha256": "f1592660a0f84899a567d25434624504cf4c19f449e081d6938836f7fc888964"
+        },
+        "specs/container-manager-mcp/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AiLAogICJvd25lcl9yZXBvIjogImNvbnRhaW5lci1tYW5hZ2VyLW1jcCIsCiAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAicmVxdWlyZW1lbnRfaWRzIjogWwogICAgIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVIwMDEiLAogICAgIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVIwMDEuMSIsCiAgICAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtUjAwMS4yIiwKICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjMiLAogICAgIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVIwMDEuNCIsCiAgICAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtUjAwMS41IgogIF0sCiAgInJlcXVpcmVtZW50cyI6IFsKICAgIHsKICAgICAgImlkIjogIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVIwMDEiLAogICAgICAidGl0bGUiOiAiUGVyLWNhbGwgY29udGV4dCIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJWRVJJRklFRCIsCiAgICAgICJsYW5kZWRfaW4iOiBbCiAgICAgICAgIjcyNTY5YjczZTI3ZCIKICAgICAgXSwKICAgICAgInZlcmlmaWVkX2J5IjogWwogICAgICAgICJ0ZXN0cy90ZXN0X2NhbGxfY29udGV4dC5weToyOCIsCiAgICAgICAgInRlc3RzL3Rlc3RfY2FsbF9jb250ZXh0LnB5OjY0IiwKICAgICAgICAidGVzdHMvdGVzdF9jYWxsX2NvbnRleHQucHk6NjUiLAogICAgICAgICJ0ZXN0cy90ZXN0X2NhbGxfY29udGV4dC5weTo2NiIsCiAgICAgICAgInRlc3RzL3Rlc3RfY2FsbF9jb250ZXh0LnB5OjkyIgogICAgICBdLAogICAgICAicm9sbHVwX29mIjogWwogICAgICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjEiLAogICAgICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjIiLAogICAgICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjMiLAogICAgICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjQiLAogICAgICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjUiCiAgICAgIF0KICAgIH0sCiAgICB7CiAgICAgICJpZCI6ICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjEiLAogICAgICAidGl0bGUiOiAiQWR2ZXJ0aXNlZCBhcmd1bWVudCIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJWRVJJRklFRCIsCiAgICAgICJsYW5kZWRfaW4iOiBbCiAgICAgICAgIjcyNTY5YjczZTI3ZCIKICAgICAgXSwKICAgICAgInZlcmlmaWVkX2J5IjogWwogICAgICAgICJ0ZXN0cy90ZXN0X2NhbGxfY29udGV4dC5weToyOCIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgImlkIjogIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVIwMDEuMiIsCiAgICAgICJ0aXRsZSI6ICJOYW1lZCBjb250ZXh0IHNlbGVjdHMgdGhlIG1hbmFnZXIiLAogICAgICAiZGVsaXZlcnlfc3RhdGUiOiAiVkVSSUZJRUQiLAogICAgICAibGFuZGVkX2luIjogWwogICAgICAgICI3MjU2OWI3M2UyN2QiCiAgICAgIF0sCiAgICAgICJ2ZXJpZmllZF9ieSI6IFsKICAgICAgICAidGVzdHMvdGVzdF9jYWxsX2NvbnRleHQucHk6NjQiCiAgICAgIF0KICAgIH0sCiAgICB7CiAgICAgICJpZCI6ICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1SMDAxLjMiLAogICAgICAidGl0bGUiOiAiRGVmYXVsdCBtYW5hZ2VyIiwKICAgICAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAgICAgImxhbmRlZF9pbiI6IFsKICAgICAgICAiNzI1NjliNzNlMjdkIgogICAgICBdLAogICAgICAidmVyaWZpZWRfYnkiOiBbCiAgICAgICAgInRlc3RzL3Rlc3RfY2FsbF9jb250ZXh0LnB5OjkyIgogICAgICBdCiAgICB9LAogICAgewogICAgICAiaWQiOiAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtUjAwMS40IiwKICAgICAgInRpdGxlIjogIldpcmluZyIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJWRVJJRklFRCIsCiAgICAgICJsYW5kZWRfaW4iOiBbCiAgICAgICAgIjcyNTY5YjczZTI3ZCIKICAgICAgXSwKICAgICAgInZlcmlmaWVkX2J5IjogWwogICAgICAgICJ0ZXN0cy90ZXN0X2NhbGxfY29udGV4dC5weTo2NSIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgImlkIjogIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVIwMDEuNSIsCiAgICAgICJ0aXRsZSI6ICJIb3QtcGF0aCBwcm9vZiIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJWRVJJRklFRCIsCiAgICAgICJsYW5kZWRfaW4iOiBbCiAgICAgICAgIjcyNTY5YjczZTI3ZCIKICAgICAgXSwKICAgICAgInZlcmlmaWVkX2J5IjogWwogICAgICAgICJ0ZXN0cy90ZXN0X2NhbGxfY29udGV4dC5weTo2NiIKICAgICAgXQogICAgfQogIF0KfQo=",
+          "bytes": 2402,
+          "sha256": "3880941fb3e934937c345619f8e825aa9ba7e1702582cf796b1349c6d4242b49"
+        },
+        "specs/sdk-centralization/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtU0RLLUNFTlRSQUxJWkFUSU9OIiwKICAib3duZXJfcmVwbyI6ICJjb250YWluZXItbWFuYWdlci1tY3AiLAogICJkZWxpdmVyeV9zdGF0ZSI6ICJWRVJJRklFRCIsCiAgInJlcXVpcmVtZW50X2lkcyI6IFsKICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1TREstQ0VOVFJBTElaQVRJT04tUjAwMSIsCiAgICAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtU0RLLUNFTlRSQUxJWkFUSU9OLVIwMDEuMSIsCiAgICAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtU0RLLUNFTlRSQUxJWkFUSU9OLVIwMDEuMiIsCiAgICAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtU0RLLUNFTlRSQUxJWkFUSU9OLVIwMDEuMyIKICBdLAogICJyZXF1aXJlbWVudHMiOiBbCiAgICB7CiAgICAgICJpZCI6ICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1TREstQ0VOVFJBTElaQVRJT04tUjAwMSIsCiAgICAgICJ0aXRsZSI6ICJUcmFuc3BvcnQgY29tZXMgZnJvbSB0aGUgU0RLIChyb2xsdXApIiwKICAgICAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAgICAgImxhbmRlZF9pbiI6IFsKICAgICAgICAiNDFkMGU0YjIxNmYzIgogICAgICBdLAogICAgICAidmVyaWZpZWRfYnkiOiBbCiAgICAgICAgInRlc3RzL3Rlc3Rfa3ViZWNvbmZpZ19pbXBvcnQucHk6MzQ3IiwKICAgICAgICAidGVzdHMvdGVzdF9rdWJlY29uZmlnX2ltcG9ydC5weTozNzIiLAogICAgICAgICJ0ZXN0cy90ZXN0X2t1YmVjb25maWdfaW1wb3J0LnB5OjM5MSIsCiAgICAgICAgInRlc3RzL3Rlc3Rfa3ViZWNvbmZpZ19pbXBvcnQucHk6NDA0IiwKICAgICAgICAidGVzdHMvdGVzdF9zZGtfdHJhbnNwb3J0LnB5OjExIgogICAgICBdLAogICAgICAicm9sbHVwX29mIjogWwogICAgICAgICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1TREstQ0VOVFJBTElaQVRJT04tUjAwMS4xIiwKICAgICAgICAiQ09OTi1DT05UQUlORVItTUFOQUdFUi1NQ1AtU0RLLUNFTlRSQUxJWkFUSU9OLVIwMDEuMiIsCiAgICAgICAgIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVNESy1DRU5UUkFMSVpBVElPTi1SMDAxLjMiCiAgICAgIF0KICAgIH0sCiAgICB7CiAgICAgICJpZCI6ICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1TREstQ0VOVFJBTElaQVRJT04tUjAwMS4xIiwKICAgICAgInRpdGxlIjogIk9JREMgdGhyb3VnaCB0aGUgZ292ZXJuZWQgY2xpZW50IiwKICAgICAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAgICAgImxhbmRlZF9pbiI6IFsKICAgICAgICAiNDFkMGU0YjIxNmYzIgogICAgICBdLAogICAgICAidmVyaWZpZWRfYnkiOiBbCiAgICAgICAgInRlc3RzL3Rlc3Rfa3ViZWNvbmZpZ19pbXBvcnQucHk6MzQ3IiwKICAgICAgICAidGVzdHMvdGVzdF9rdWJlY29uZmlnX2ltcG9ydC5weTozNzIiLAogICAgICAgICJ0ZXN0cy90ZXN0X2t1YmVjb25maWdfaW1wb3J0LnB5OjM5MSIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgImlkIjogIkNPTk4tQ09OVEFJTkVSLU1BTkFHRVItTUNQLVNESy1DRU5UUkFMSVpBVElPTi1SMDAxLjIiLAogICAgICAidGl0bGUiOiAiVExTIHByb2ZpbGUgZm9yIE9JREMiLAogICAgICAiZGVsaXZlcnlfc3RhdGUiOiAiVkVSSUZJRUQiLAogICAgICAibGFuZGVkX2luIjogWwogICAgICAgICI0MWQwZTRiMjE2ZjMiCiAgICAgIF0sCiAgICAgICJ2ZXJpZmllZF9ieSI6IFsKICAgICAgICAidGVzdHMvdGVzdF9rdWJlY29uZmlnX2ltcG9ydC5weTo0MDQiCiAgICAgIF0KICAgIH0sCiAgICB7CiAgICAgICJpZCI6ICJDT05OLUNPTlRBSU5FUi1NQU5BR0VSLU1DUC1TREstQ0VOVFJBTElaQVRJT04tUjAwMS4zIiwKICAgICAgInRpdGxlIjogIlNESyBmbG9vciIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJWRVJJRklFRCIsCiAgICAgICJsYW5kZWRfaW4iOiBbCiAgICAgICAgIjQxZDBlNGIyMTZmMyIKICAgICAgXSwKICAgICAgInZlcmlmaWVkX2J5IjogWwogICAgICAgICJ0ZXN0cy90ZXN0X3Nka190cmFuc3BvcnQucHk6MTEiCiAgICAgIF0KICAgIH0KICBdCn0K",
+          "bytes": 2103,
+          "sha256": "d65b438e559b956fa6b488ee6a38d40bf269125d45692a2604f31f5034da33de"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "provider": true,
+        "canonical_hooks": {
+          "rev": "main",
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ]
+        },
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "pages": {
+        "strict_ready": true,
+        "caller_count": 1,
+        "required_paths": true,
+        "shape_ready": true,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T16:16:40Z",
+          "databaseId": 40357550547,
+          "event": "push",
+          "headSha": "261689cb22ff40fc7e8dfb4ddabeea781de46df8",
+          "status": "completed",
+          "updatedAt": "2026-10-26T16:17:20Z",
+          "url": "https://github.com/Knuckles-Team/container-manager-mcp/actions/runs/40357550547",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true,
+          "spec_dashboard_config": ".github/spec-dashboard.json"
+        },
+        "config": {
+          "version": 1,
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ]
+        },
+        "pages_api": {
+          "url": "https://api.github.com/repos/Knuckles-Team/container-manager-mcp/pages",
+          "status": null,
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/container-manager-mcp/",
+          "build_type": "workflow",
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "public": true,
+          "protected_domain_state": null,
+          "pending_domain_unverified_at": null,
+          "https_enforced": true
+        },
+        "http_200": {
+          "status": 200,
+          "bytes": 44943,
+          "index_sha256": "3707c27519c796ed9e3ff80e0b61d7906fe6e1c4aa4fbdf7acfd61cee6260412",
+          "snapshot_bytes": 21559,
+          "snapshot_sha256": "a7bdf78e62f7b87dd14d963e719bdc4df0deed097e970b95979ec2a332dea3f4",
+          "snapshot_revision": "261689cb22ff40fc7e8dfb4ddabeea781de46df8",
+          "snapshot_repository": "Knuckles-Team/container-manager-mcp",
+          "snapshot_version": 1
+        },
+        "index_url": "https://knuckles-team.github.io/container-manager-mcp/spec-delivery/",
+        "snapshot_url": "https://knuckles-team.github.io/container-manager-mcp/spec-delivery/snapshot.json"
+      },
+      "skills": {
+        "required_phrase": "Rapid delivery: the 5-minute contract",
+        "path": "container_manager_mcp/skills/container-manager-mcp-development/SKILL.md",
+        "ready": true
+      },
+      "release": {
+        "evidence_claimed": false,
+        "success_claimed": false
+      }
+    },
+    "data-science-mcp": {
+      "row": "PIPE-CONNSPEC-R114",
+      "sha": "f03b94f79f4097d8153997311547a52ff9cca1e9",
+      "tree_sha": "ba95e8f09eb8f6427ab3a8d470c43541e2e30d95",
+      "dashboard_config": ".config/spec-dashboard.json",
+      "skill_path": "data_science_mcp/skills/data-science-mcp-development/SKILL.md",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R114.1",
+        "PIPE-CONNSPEC-R114.2"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R114.1": false,
+        "PIPE-CONNSPEC-R114.2": false,
+        "PIPE-CONNSPEC-R114.3": true,
+        "PIPE-CONNSPEC-R114.4": true
+      },
+      "source_files": {
+        ".config/spec-dashboard.json": {
+          "encoding": "base64",
+          "data": "ewogICJ2ZXJzaW9uIjogMSwKICAic291cmNlcyI6IFsKICAgIHsKICAgICAgImdsb2IiOiAic3BlY3MvKi9zdGF0dXMuanNvbiIsCiAgICAgICJraW5kIjogInNwZWMiCiAgICB9CiAgXQp9Cg==",
+          "bytes": 109,
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "encoding": "base64",
+          "data": "bmFtZTogRGVwbG95IEdpdEh1YiBQYWdlcwoKb246CiAgcHVzaDoKICAgIGJyYW5jaGVzOgogICAgICAtIG1haW4KICAgIHBhdGhzOgogICAgICAtICdkb2NzLyoqJwogICAgICAtICdta2RvY3MueW1sJwogICAgICAtICdSRUFETUUubWQnCiAgICAgIC0gJ3NwZWNzLyoqJwogICAgICAtICcuY29uZmlnL3NwZWMtZGFzaGJvYXJkLmpzb24nCiAgICAgIC0gJy5naXRodWIvd29ya2Zsb3dzL3BhZ2VzLnltbCcKICB3b3JrZmxvd19kaXNwYXRjaDoKCnBlcm1pc3Npb25zOgogIGNvbnRlbnRzOiByZWFkCgpqb2JzOgogIHB1Ymxpc2gtcGFnZXM6CiAgICB1c2VzOiBLbnVja2xlcy1UZWFtL3BpcGVsaW5lcy8uZ2l0aHViL3dvcmtmbG93cy9wYWdlc19waXBlbGluZS55bWxAbWFpbgogICAgd2l0aDoKICAgICAgY29udGVudF9zb3VyY2U6IGRvY3MKICAgICAgc3BlY19kYXNoYm9hcmRfZW5hYmxlZDogdHJ1ZQogICAgICBzcGVjX2Rhc2hib2FyZF9jb25maWc6IC5jb25maWcvc3BlYy1kYXNoYm9hcmQuanNvbgogICAgcGVybWlzc2lvbnM6CiAgICAgIGNvbnRlbnRzOiByZWFkCiAgICAgIHBhZ2VzOiB3cml0ZQogICAgICBpZC10b2tlbjogd3JpdGUK",
+          "bytes": 591,
+          "sha256": "5c3706992d200ea6d9d4c6d9b7c62803dbf70ebe74dd604c7f500ee4be6ec1c6"
+        },
+        ".pre-commit-config.yaml": {
+          "encoding": "base64",
+          "data": "IyBUaGUgd2hvbGUgcHJlLWNvbW1pdCBjb25maWd1cmF0aW9uIG9mIGEgY29ubmVjdG9yIChQSVBFLVZBTElEQVRJT04tUjAwMS45KS4gRXZlcnl0aGluZyBhCiMgY29ubmVjdG9yIHVzZWQgdG8gY29weSBsaXZlcyBpbiBwaXBlbGluZXMgYXQgYHJldjogbWFpbmA6IHRoZSBzYW5pdGl6ZXIsIHRoZSBzdGFuZGFyZC1maWxlCiMgY2hlY2ssIHRoZSBjb2Rlc3BlbGwgZGVmYXVsdHMgYW5kIHRoZSBnYXRlIHNldC4gQSBjaGFuZ2UgdG8gYSBzaGFyZWQgY2hlY2sgcmVhY2hlcyBldmVyeQojIGNvbm5lY3RvciB3aXRoIG5vIGVkaXQgaGVyZS4gUGVyLXJlcG8gb3B0aW9ucyBnbyBpbiBweXByb2plY3QudG9tbCB0YWJsZXMgb25seS4KZGVmYXVsdF9pbnN0YWxsX2hvb2tfdHlwZXM6IFtwcmUtY29tbWl0LCBwcmUtcHVzaF0KZGVmYXVsdF9zdGFnZXM6IFtwcmUtY29tbWl0XQpyZXBvczoKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vcHJlLWNvbW1pdC9wcmUtY29tbWl0LWhvb2tzCiAgcmV2OiAzZThhODcwMzI2NGEyZjRhNjk0MjhhMGFhNGRjYjUxMjc5MGIyYzhjICMgdjYuMC4wCiAgaG9va3M6CiAgLSBpZDogdHJhaWxpbmctd2hpdGVzcGFjZQogIC0gaWQ6IGVuZC1vZi1maWxlLWZpeGVyCiAgLSBpZDogY2hlY2stbWVyZ2UtY29uZmxpY3QKICAtIGlkOiBjaGVjay15YW1sCiAgICBhcmdzOiBbLS11bnNhZmVdCiAgLSBpZDogY2hlY2stdG9tbAogIC0gaWQ6IGNoZWNrLWpzb24KICAtIGlkOiBkZXRlY3QtcHJpdmF0ZS1rZXkKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vYXN0cmFsLXNoL3J1ZmYtcHJlLWNvbW1pdAogIHJldjogY2I4YzUyM2ZkNDgzNWFiYTQyYWY3MGY0Y2FkNTU2OGRiNGRmMGI2YyAjIHYwLjE2LjAKICBob29rczoKICAtIGlkOiBydWZmLWNoZWNrCiAgLSBpZDogcnVmZi1mb3JtYXQKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vS251Y2tsZXMtVGVhbS9waXBlbGluZXMKICByZXY6IG1haW4KICBob29rczoKICAtIGlkOiBjb25uZWN0b3Itc3RhbmRhcmQKICAtIGlkOiBzZWNyZXRzCiAgLSBpZDogc3BlYwogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogdGVzdHMtZmFzdAogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogZGVwZW5kZW5jeS1yZWFkaW5lc3MK",
+          "bytes": 1134,
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "data_science_mcp/skills/data-science-mcp-development/SKILL.md": {
+          "encoding": "base64",
+          "data": "LS0tCm5hbWU6IGRhdGEtc2NpZW5jZS1tY3AtZGV2ZWxvcG1lbnQKc2tpbGxfdHlwZTogc2tpbGwKZGVzY3JpcHRpb246ID4tCiAgRGV2ZWxvcCBhbmQgdmFsaWRhdGUgZGF0YS1zY2llbmNlLW1jcCB3aXRoaW4gdGhlIHNoYXJlZCBjb25uZWN0b3IgYW5kIHNwZWMtZGVsaXZlcnkKICBjb250cmFjdHMuCmxpY2Vuc2U6IE1JVAp0YWdzOiBbZGF0YS1zY2llbmNlLCBkZXZlbG9wbWVudCwgbWNwLCBzcGVjLWRlbGl2ZXJ5XQptZXRhZGF0YToKICBhdXRob3I6IEdlbml1cwogIHZlcnNpb246ICcwLjEuMCcKLS0tCgojIERhdGEgU2NpZW5jZSBNQ1AgRGV2ZWxvcG1lbnQKClVzZSB0aGlzIHNraWxsIHdoZW4gY2hhbmdpbmcgdGhlIGBkYXRhLXNjaWVuY2UtbWNwYCBjb25uZWN0b3IsIGl0cyBkb2N1bWVudGF0aW9uLCBvcgppdHMgc3BlYy1kZWxpdmVyeSBpbnRlZ3JhdGlvbi4gV29yayBmcm9tIHRoZSByZXBvc2l0b3J5IHJvb3QgYW5kIHJlYWQgYEFHRU5UUy5tZGAsIHRoZQphZmZlY3RlZCBtb2R1bGUsIGFuZCB0aGUgcmVsZXZhbnQgYHNwZWNzL2Agc3RhdHVzIGJlZm9yZSBlZGl0aW5nLiBLZWVwIHRoZSBjb25uZWN0b3IKZm9jdXNlZCBvbiBNQ1AgYW5kIEEyQSBleHBvc3VyZTsgbW9kZWwgY29tcHV0YXRpb24gYmVsb25ncyBpbiB0aGUgZXBpc3RlbWljLWdyYXBoCmVuZ2luZSB0aHJvdWdoIHRoZSBleGlzdGluZyBgTUxFbmdpbmVgIGFuZCBjbGllbnQgcHJvdG9jb2wuCgojIyBSYXBpZCBkZWxpdmVyeTogdGhlIDUtbWludXRlIGNvbnRyYWN0CgpGb3IgYSBzbWFsbCwgcmV2aWV3YWJsZSBjaGFuZ2U6CgoxLiBJZGVudGlmeSBvbmUgcmVxdWlyZW1lbnQgb3IgbWFpbnRlbmFuY2Ugc2xpY2UgYW5kIG5hbWUgdGhlIGV4YWN0IGZpbGVzIGl0IHRvdWNoZXMuCjIuIFJldXNlIHRoZSBleGlzdGluZyBjb25uZWN0b3IsIFNESywgY2VudHJhbCBwaXBlbGluZXMsIGFuZCBwYWNrYWdlIGNvbnZlbnRpb25zLiBEbwogICBub3QgYWRkIGEgbG9jYWwgcGxhbm5lciwgQ0kgZnJhbWV3b3JrLCBwdWJsaXNoZXIsIG9yIHBhcmFsbGVsIHRyYW5zcG9ydC4KMy4gS2VlcCBzcGVjIHN0YXR1cyBnZW5lcmF0ZWQgZnJvbSB0aGUgY2Fub25pY2FsIHBpcGVsaW5lIHRvb2xzLiBSdW4gdGhlIGZvY3VzZWQgdGVzdHMKICAgZm9yIHRoZSBjaGFuZ2VkIGJlaGF2aW9yLCB0aGVuIHJ1biBgcHJlLWNvbW1pdCBydW4gLS1hbGwtZmlsZXNgIGZyb20gdGhlIHJlcG8gcm9vdC4KNC4gUmV2aWV3IHRoZSBjb21wbGV0ZSBkaWZmLCBpbmNsdWRpbmcgd29ya2Zsb3cgYW5kIHBhY2thZ2UtZGF0YSBjaGFuZ2VzLCBhbmQgcmVjb3JkCiAgIHRoZSBzb3VyY2UgcmV2aXNpb24gcGx1cyB0aGUgY29tbWFuZHMgYW5kIHJlc3VsdHMgdXNlZCBhcyBldmlkZW5jZS4KNS4gS2VlcCBjcmVkZW50aWFscywgZ2VuZXJhdGVkIG91dHB1dCwgY2FjaGVzLCBhbmQgc2NyYXRjaCBmaWxlcyBvdXRzaWRlIHRoZSBjaGVja291dC4KICAgQSBQYWdlcyBjbGFpbSBpcyBjb21wbGV0ZSBvbmx5IGFmdGVyIHRoZSBjZW50cmFsIHJldXNhYmxlIHdvcmtmbG93IGhhcyBydW4gYW5kIHRoZQogICBleGFjdCBwdWJsaXNoZWQgYHNwZWMtZGVsaXZlcnkvYCBzb3VyY2UgY2FuIGJlIGNoZWNrZWQuCgojIyMgQ2hhbmdlIGJvdW5kYXJpZXMKCi0gUm91dGUgTUwgY29tcHV0ZSB0aHJvdWdoIHRoZSBleGlzdGluZyBlbmdpbmUgaW5zdGVhZCBvZiBpbnRyb2R1Y2luZyBhIFB5dGhvbiBjb21wdXRlCiAgZmFsbGJhY2suCi0gRXh0ZW5kIGFuIGV4aXN0aW5nIHNwZWMgb3IgY29ubmVjdG9yIG9wZXJhdGlvbiBiZWZvcmUgYWRkaW5nIGEgbmV3IGFic3RyYWN0aW9uLgotIFVzZSB0aGUgY2VudHJhbCBQYWdlcyB3b3JrZmxvdyBhbmQgYC5jb25maWcvc3BlYy1kYXNoYm9hcmQuanNvbmAgZm9yIHRoZSBzcGVjCiAgZGFzaGJvYXJkOyBrZWVwIG9uZSBkb2N1bWVudGF0aW9uIHB1Ymxpc2hlciBmb3IgdGhpcyByZXBvc2l0b3J5LgotIERvIG5vdCBlZGl0IHJ1bnRpbWUgb3Igb250b2xvZ3kgYXNzZXRzIGZvciBhIGRvY3VtZW50YXRpb24gb3IgZGVsaXZlcnkgd29ya2Zsb3cKICBjaGFuZ2UgdW5sZXNzIHRoZSByZXF1aXJlbWVudCBleHBsaWNpdGx5IGNhbGxzIGZvciB0aGVtLgoKIyMjIFZhbGlkYXRpb24gZXZpZGVuY2UKCkZvciBjb2RlIGNoYW5nZXMsIHJ1biB0aGUgbmFycm93ZXN0IHJlbGV2YW50IHRlc3QgZmlyc3QgYW5kIHRoZW4gdGhlIHJlcG9zaXRvcnkgaG9va3MuCkZvciBkZWxpdmVyeSBjaGFuZ2VzLCB2YWxpZGF0ZSBKU09OIGFuZCBZQU1MIHN5bnRheCBhbmQgaW5zcGVjdCB0aGUgcmVuZGVyZWQgZGFzaGJvYXJkCmlucHV0cyBiZWZvcmUgcmVxdWVzdGluZyByZXZpZXcuIFJlcG9ydCBmYWlsdXJlcyB3aXRoIHRoZSBjb21tYW5kLCByZXZpc2lvbiwgYW5kIGZpbGUKb3IgbGluZSB0aGF0IG5lZWRzIGF0dGVudGlvbjsgZG8gbm90IGhpZGUgYSBmYWlsaW5nIGNoZWNrIGJlaGluZCBhIHNraXBwZWQgaG9vay4K",
+          "bytes": 2466,
+          "sha256": "af3e7376a22f603249904259fc0dc480f1dfa54ea2ae9396f6fd0d943a4fcb30"
+        }
+      },
+      "status_files": {
+        "specs/_template/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiUkVQTEFDRV9XSVRIX1NUQUJMRV9JRCIsCiAgIm93bmVyX3JlcG8iOiAiZGF0YS1zY2llbmNlLW1jcCIsCiAgImRlbGl2ZXJ5X3N0YXRlIjogIlJFVElSRUQiLAogICJyZXF1aXJlbWVudF9pZHMiOiBbXSwKICAicmVxdWlyZW1lbnRzIjogW10KfQo=",
+          "bytes": 179,
+          "sha256": "9a341107ed30df50d414014f90d6e3ed61019baf076ae9717d9e6611a847b5e5"
+        },
+        "specs/connector/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1EQVRBLVNDSUVOQ0UtTUNQIiwKICAib3duZXJfcmVwbyI6ICJkYXRhLXNjaWVuY2UtbWNwIiwKICAiZGVsaXZlcnlfc3RhdGUiOiAiVkVSSUZJRUQiLAogICJyZXF1aXJlbWVudF9pZHMiOiBbCiAgICAiQ09OTi1EQVRBLVNDSUVOQ0UtTUNQLVIwMDEiLAogICAgIkNPTk4tREFUQS1TQ0lFTkNFLU1DUC1SMDAyIgogIF0sCiAgInJlcXVpcmVtZW50cyI6IFsKICAgIHsKICAgICAgImlkIjogIkNPTk4tREFUQS1TQ0lFTkNFLU1DUC1SMDAxIiwKICAgICAgInRpdGxlIjogIlNpZ25lZCBlbmdpbmUgY29tcHV0ZSBjb25uZWN0aW9uIiwKICAgICAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAgICAgImxhbmRlZF9pbiI6IFsKICAgICAgICAiZWFjN2MzMjBiZTMzIgogICAgICBdLAogICAgICAidmVyaWZpZWRfYnkiOiBbCiAgICAgICAgInRlc3RzL3Rlc3RfZW5naW5lX2Nvbm5lY3Rpb24ucHk6OCIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgImlkIjogIkNPTk4tREFUQS1TQ0lFTkNFLU1DUC1SMDAyIiwKICAgICAgInRpdGxlIjogIkVuZ2luZSBhdWRpZW5jZSBmcm9tIHRoZSBkZXBsb3ltZW50IiwKICAgICAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAgICAgImxhbmRlZF9pbiI6IFsKICAgICAgICAiMmNlZDg0Y2JiMWExIgogICAgICBdLAogICAgICAidmVyaWZpZWRfYnkiOiBbCiAgICAgICAgInRlc3RzL3Rlc3RfZW5naW5lX2F1ZGllbmNlLnB5OjYiCiAgICAgIF0KICAgIH0KICBdCn0K",
+          "bytes": 792,
+          "sha256": "a410803dfd49d9a0654aa4985676ba7b4b77a3fed9e557a4ca449bbd334f9f64"
+        },
+        "specs/connector-content/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1EQVRBLVNDSUVOQ0UtTUNQLUNPTk5FQ1RPUi1DT05URU5UIiwKICAib3duZXJfcmVwbyI6ICJkYXRhLXNjaWVuY2UtbWNwIiwKICAiZGVsaXZlcnlfc3RhdGUiOiAiTEFOREVEIiwKICAicmVxdWlyZW1lbnRfaWRzIjogWwogICAgIkNPTk4tREFUQS1TQ0lFTkNFLU1DUC1DT05ORUNUT1ItQ09OVEVOVC1SMDAxIgogIF0sCiAgInJlcXVpcmVtZW50cyI6IFsKICAgIHsKICAgICAgImlkIjogIkNPTk4tREFUQS1TQ0lFTkNFLU1DUC1DT05ORUNUT1ItQ09OVEVOVC1SMDAxIiwKICAgICAgInRpdGxlIjogIkRlZmF1bHQgY29udGVudCIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJMQU5ERUQiLAogICAgICAibGFuZGVkX2luIjogWwogICAgICAgICI2Y2QyMzdjN2UyZWIiCiAgICAgIF0sCiAgICAgICJ2ZXJpZmllZF9ieSI6IFtdCiAgICB9CiAgXQp9Cg==",
+          "bytes": 469,
+          "sha256": "e82b70ca21435d157186b9086005c70de1f1ca41bc14d54a2362702428d0a05e"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "provider": true,
+        "canonical_hooks": {
+          "rev": "main",
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ]
+        },
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "pages": {
+        "strict_ready": true,
+        "caller_count": 1,
+        "required_paths": true,
+        "shape_ready": true,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T16:08:16Z",
+          "databaseId": 40356172811,
+          "event": "push",
+          "headSha": "f03b94f79f4097d8153997311547a52ff9cca1e9",
+          "status": "completed",
+          "updatedAt": "2026-10-26T16:08:54Z",
+          "url": "https://github.com/Knuckles-Team/data-science-mcp/actions/runs/40356172811",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true,
+          "spec_dashboard_config": ".config/spec-dashboard.json"
+        },
+        "config": {
+          "version": 1,
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ]
+        },
+        "pages_api": {
+          "url": "https://api.github.com/repos/Knuckles-Team/data-science-mcp/pages",
+          "status": null,
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/data-science-mcp/",
+          "build_type": "workflow",
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "public": true,
+          "protected_domain_state": null,
+          "pending_domain_unverified_at": null,
+          "https_enforced": true
+        },
+        "http_200": {
+          "status": 200,
+          "bytes": 25566,
+          "index_sha256": "6d9a127bd9d7a9e212ff72905acebb3b4a1b79098b5e99e3e8a2b01bf93d66c2",
+          "snapshot_bytes": 7040,
+          "snapshot_sha256": "3450aac834f57771c30a2cfe2e5fd04de5511460f6554edfcf69d8e5cb1c8910",
+          "snapshot_revision": "f03b94f79f4097d8153997311547a52ff9cca1e9",
+          "snapshot_repository": "Knuckles-Team/data-science-mcp",
+          "snapshot_version": 1
+        },
+        "index_url": "https://knuckles-team.github.io/data-science-mcp/spec-delivery/",
+        "snapshot_url": "https://knuckles-team.github.io/data-science-mcp/spec-delivery/snapshot.json"
+      },
+      "skills": {
+        "required_phrase": "Rapid delivery: the 5-minute contract",
+        "path": "data_science_mcp/skills/data-science-mcp-development/SKILL.md",
+        "ready": true
+      },
+      "release": {
+        "evidence_claimed": false,
+        "success_claimed": false
+      }
+    },
+    "dockerhub-api": {
+      "row": "PIPE-CONNSPEC-R115",
+      "sha": "3bfb7b0471e8fab2d567641a1022d5b8ccf51c36",
+      "tree_sha": "40c92d9b0bc4b242013144c24451b3d6de417e0c",
+      "dashboard_config": ".github/spec-dashboard.json",
+      "skill_path": "dockerhub_api/skills/dockerhub-api-development/SKILL.md",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R115.1",
+        "PIPE-CONNSPEC-R115.2"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R115.1": false,
+        "PIPE-CONNSPEC-R115.2": false,
+        "PIPE-CONNSPEC-R115.3": true,
+        "PIPE-CONNSPEC-R115.4": true
+      },
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "encoding": "base64",
+          "data": "ewogICJ2ZXJzaW9uIjogMSwKICAic291cmNlcyI6IFsKICAgIHsKICAgICAgImdsb2IiOiAic3BlY3MvKi9zdGF0dXMuanNvbiIsCiAgICAgICJraW5kIjogInNwZWMiCiAgICB9CiAgXQp9Cg==",
+          "bytes": 109,
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "encoding": "base64",
+          "data": "bmFtZTogRGVwbG95IEdpdEh1YiBQYWdlcwoKb246CiAgcHVzaDoKICAgIGJyYW5jaGVzOgogICAgICAtIG1haW4KICAgIHBhdGhzOgogICAgICAtICdkb2NzLyoqJwogICAgICAtICdta2RvY3MueW1sJwogICAgICAtICdSRUFETUUubWQnCiAgICAgIC0gJ3NwZWNzLyoqJwogICAgICAtICcuZ2l0aHViL3NwZWMtZGFzaGJvYXJkLmpzb24nCiAgICAgIC0gJy5naXRodWIvd29ya2Zsb3dzL3BhZ2VzLnltbCcKCnBlcm1pc3Npb25zOgogIGNvbnRlbnRzOiByZWFkCgpqb2JzOgogIHB1Ymxpc2gtcGFnZXM6CiAgICB1c2VzOiBLbnVja2xlcy1UZWFtL3BpcGVsaW5lcy8uZ2l0aHViL3dvcmtmbG93cy9wYWdlc19waXBlbGluZS55bWxAbWFpbgogICAgd2l0aDoKICAgICAgY29udGVudF9zb3VyY2U6IGRvY3MKICAgICAgc3BlY19kYXNoYm9hcmRfZW5hYmxlZDogdHJ1ZQogICAgICBzcGVjX2Rhc2hib2FyZF9jb25maWc6IC5naXRodWIvc3BlYy1kYXNoYm9hcmQuanNvbgogICAgcGVybWlzc2lvbnM6CiAgICAgIGNvbnRlbnRzOiByZWFkCiAgICAgIHBhZ2VzOiB3cml0ZQogICAgICBpZC10b2tlbjogd3JpdGUK",
+          "bytes": 570,
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".pre-commit-config.yaml": {
+          "encoding": "base64",
+          "data": "IyBUaGUgd2hvbGUgcHJlLWNvbW1pdCBjb25maWd1cmF0aW9uIG9mIGEgY29ubmVjdG9yIChQSVBFLVZBTElEQVRJT04tUjAwMS45KS4gRXZlcnl0aGluZyBhCiMgY29ubmVjdG9yIHVzZWQgdG8gY29weSBsaXZlcyBpbiBwaXBlbGluZXMgYXQgYHJldjogbWFpbmA6IHRoZSBzYW5pdGl6ZXIsIHRoZSBzdGFuZGFyZC1maWxlCiMgY2hlY2ssIHRoZSBjb2Rlc3BlbGwgZGVmYXVsdHMgYW5kIHRoZSBnYXRlIHNldC4gQSBjaGFuZ2UgdG8gYSBzaGFyZWQgY2hlY2sgcmVhY2hlcyBldmVyeQojIGNvbm5lY3RvciB3aXRoIG5vIGVkaXQgaGVyZS4gUGVyLXJlcG8gb3B0aW9ucyBnbyBpbiBweXByb2plY3QudG9tbCB0YWJsZXMgb25seS4KZGVmYXVsdF9pbnN0YWxsX2hvb2tfdHlwZXM6IFtwcmUtY29tbWl0LCBwcmUtcHVzaF0KZGVmYXVsdF9zdGFnZXM6IFtwcmUtY29tbWl0XQpyZXBvczoKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vcHJlLWNvbW1pdC9wcmUtY29tbWl0LWhvb2tzCiAgcmV2OiAzZThhODcwMzI2NGEyZjRhNjk0MjhhMGFhNGRjYjUxMjc5MGIyYzhjICMgdjYuMC4wCiAgaG9va3M6CiAgLSBpZDogdHJhaWxpbmctd2hpdGVzcGFjZQogIC0gaWQ6IGVuZC1vZi1maWxlLWZpeGVyCiAgLSBpZDogY2hlY2stbWVyZ2UtY29uZmxpY3QKICAtIGlkOiBjaGVjay15YW1sCiAgICBhcmdzOiBbLS11bnNhZmVdCiAgLSBpZDogY2hlY2stdG9tbAogIC0gaWQ6IGNoZWNrLWpzb24KICAtIGlkOiBkZXRlY3QtcHJpdmF0ZS1rZXkKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vYXN0cmFsLXNoL3J1ZmYtcHJlLWNvbW1pdAogIHJldjogY2I4YzUyM2ZkNDgzNWFiYTQyYWY3MGY0Y2FkNTU2OGRiNGRmMGI2YyAjIHYwLjE2LjAKICBob29rczoKICAtIGlkOiBydWZmLWNoZWNrCiAgLSBpZDogcnVmZi1mb3JtYXQKLSByZXBvOiBodHRwczovL2dpdGh1Yi5jb20vS251Y2tsZXMtVGVhbS9waXBlbGluZXMKICByZXY6IG1haW4KICBob29rczoKICAtIGlkOiBjb25uZWN0b3Itc3RhbmRhcmQKICAtIGlkOiBzZWNyZXRzCiAgLSBpZDogc3BlYwogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogdGVzdHMtZmFzdAogICAgc3RhZ2VzOiBbcHJlLXB1c2hdCiAgLSBpZDogZGVwZW5kZW5jeS1yZWFkaW5lc3MK",
+          "bytes": 1134,
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "dockerhub_api/skills/dockerhub-api-development/SKILL.md": {
+          "encoding": "base64",
+          "data": "LS0tCm5hbWU6IGRvY2tlcmh1Yi1hcGktZGV2ZWxvcG1lbnQKc2tpbGxfdHlwZTogc2tpbGwKZGVzY3JpcHRpb246ID4tCiAgRGV2ZWxvcCwgdGVzdCwgYW5kIHB1Ymxpc2ggdGhlIGRvY2tlcmh1Yi1hcGkgY29ubmVjdG9yIHdpdGhvdXQgYnJlYWtpbmcgaXRzCiAgdHlwZWQgRG9ja2VyIEh1YiBBUEkgY29udHJhY3QsIHBhY2thZ2VkIGNvbnRlbnQsIHNwZWMgZGVsaXZlcnkgZGFzaGJvYXJkLCBvcgogIGdvdmVybmVkIFBhZ2VzIHdvcmtmbG93LiBVc2Ugd2hlbiBjaGFuZ2luZyBjb25uZWN0b3IgY29kZSwgZG9jcywgc2tpbGxzLAogIHdvcmtmbG93cywgb3IgcmVwb3NpdG9yeS1vd25lZCBzcGVjcy4KbGljZW5zZTogTUlUCnRhZ3M6IFtkb2NrZXJodWIsIGNvbm5lY3RvciwgZGV2ZWxvcG1lbnQsIHRlc3RpbmcsIHBhZ2VzLCBzcGVjc10KbWV0YWRhdGE6CiAgYXV0aG9yOiBHZW5pdXMKICB2ZXJzaW9uOiAnMC4xLjAnCi0tLQojIERvY2tlciBIdWIgQVBJIERldmVsb3BtZW50CgpVc2UgdGhpcyBza2lsbCBmb3IgY2hhbmdlcyBpbnNpZGUgdGhlIGRvY2tlcmh1Yi1hcGkgcGFja2FnZS4gVGhlIGNvbm5lY3RvcgpleHBvc2VzIERvY2tlciBIdWIgbWFuYWdlbWVudCwgcmVnaXN0cnksIFNjb3V0LCBhbmQga25vd2xlZGdlLWdyYXBoIG9wZXJhdGlvbnMKdGhyb3VnaCB0eXBlZCBIVFRQIGNsaWVudHMsIGFjdGlvbi1yb3V0ZWQgTUNQIHRvb2xzLCBhbiBBMkEgYWdlbnQsIGFuZCBwYWNrYWdlZApyZXNvdXJjZSBjb250ZW50LiBLZWVwIHRob3NlIHN1cmZhY2VzIGFsaWduZWQgd2hlbiBhIGNoYW5nZSBjcm9zc2VzIGEgYm91bmRhcnkuCgojIyBSZXBvc2l0b3J5IG1hcAoKLSBkb2NrZXJodWJfYXBpL2FwaS8gY29udGFpbnMgZG9tYWluIGNsaWVudCBtaXhpbnMgY29tcG9zZWQgaW50byB0aGUgQXBpIGZhY2FkZS4KLSBkb2NrZXJodWJfYXBpL2F1dGgucHkgb3ducyBKV1QgbWludGluZywgY2FjaGluZywgcmVmcmVzaCwgYW5kIGNsaWVudCBzZXR1cC4KLSBkb2NrZXJodWJfYXBpL21jcC8gcmVnaXN0ZXJzIGRvbWFpbiB0b29scyBhbmQga2VlcHMgYWN0aW9ucyByb3V0ZWQgdGhyb3VnaCB0aGUKICBjb3JyZXNwb25kaW5nIGNsaWVudCBtZXRob2QuCi0gZG9ja2VyaHViX2FwaS9za2lsbHMvLCBwcm9tcHRzLywgb250b2xvZ3kvLCBhbmQgY29ubmVjdG9ycy8gYXJlIHBhY2thZ2VkCiAgcmVzb3VyY2VzIGV4cG9zZWQgYnkgdGhlIGNvbm5lY3RvciBlbnRyeSBwb2ludC4KLSBzcGVjcy9jb25uZWN0b3ItY29udGVudC8gYW5kIHNwZWNzL2Nvbm5lY3Rvci1pZGVudGl0eS8gYXJlIHRoZSBzb3VyY2UKICBzcGVjaWZpY2F0aW9uczsgdGhlaXIgc3RhdHVzLmpzb24gZmlsZXMgYXJlIGdlbmVyYXRlZCBldmlkZW5jZSwgbmV2ZXIgaGFuZAogIGVkaXRlZC4KCiMjIEJlZm9yZSBlZGl0aW5nCgoxLiBXb3JrIGZyb20gYSByZWFsIHdvcmt0cmVlIGJhc2VkIG9uIHRoZSByZXBvc2l0b3J5J3MgY3VycmVudCBvcmlnaW4vbWFpbi4KMi4gRmluZCB0aGUgb3duaW5nIHJvdyB1bmRlciBzcGVjcy8gYmVmb3JlIGFkZGluZyBiZWhhdmlvciwgYW5kIHByZXNlcnZlIHRoZQogICBleGlzdGluZyBDT05DRVBUOiByZWdpc3RyeSB3aGVuIGEgZG9tYWluIGNhcGFiaWxpdHkgaXMgaW52b2x2ZWQuCjMuIFRyYWNlIGEgY2hhbmdlZCBhY3Rpb24gZnJvbSBpdHMgUHlkYW50aWMgaW5wdXQgbW9kZWwgdGhyb3VnaCB0aGUgTUNQIHJvdXRlciwKICAgY2xpZW50IG1peGluLCBhdXRoIGxpZmVjeWNsZSwgYW5kIHJlc3BvbnNlIGVudmVsb3BlLiBEbyBub3QgZHVwbGljYXRlIGFuCiAgIGV4aXN0aW5nIEhUVFAgcGF0aC4KNC4gS2VlcCBjcmVkZW50aWFscyBhbmQgZXh0ZXJuYWwgRG9ja2VyIEh1YiBjYWxscyBvdXQgb2YgdGVzdHM7IGV4dGVuZCB0aGUKICAgZXhpc3RpbmcgTW9ja0h1YiB0cmFuc3BvcnQgYW5kIGFzc2VydCB0aGUgcmVxdWVzdCBhbmQgcmVkYWN0ZWQgcmVzdWx0LgoKIyMgSW1wbGVtZW50YXRpb24gY29udHJhY3QKCi0gUHJlc2VydmUgdGhlIGRvY2tlcmh1Yi1tY3AgY29ubmVjdG9yIG5hbWUgYW5kIHRoZSB1bmlmb3JtCiAgc3RhdHVzX2NvZGUvZGF0YS9yYXRlX2xpbWl0IHJlc3BvbnNlIGVudmVsb3BlLgotIEtlZXAgZGVzdHJ1Y3RpdmUgb3BlcmF0aW9ucyBiZWhpbmQgRG9ja2VySHViQXBpQmFzZS5fZ3VhcmRfZGVzdHJ1Y3RpdmUgYW5kCiAgbmV2ZXIgcGVyc2lzdCBvciByZXR1cm4gYmVhcmVyIHRva2VucyBleGNlcHQgdGhlIGRvY3VtZW50ZWQgb25lLXRpbWUgY3JlYXRlCiAgcmVzcG9uc2UuCi0gVXNlIFB5ZGFudGljIGlucHV0IGFuZCByZXNwb25zZSBtb2RlbHMsIGFjdGlvbi1yb3V0ZWQgdG9vbHMsIGFuZCB0aGUgc2hhcmVkCiAgYWdlbnQtdXRpbGl0aWVzIHNlcnZlci9hZ2VudCBmYWN0b3JpZXMuCi0gQWRkIG9yIHVwZGF0ZSBhIGZvY3VzZWQgdGVzdCB3aGVuIGJlaGF2aW9yIGNoYW5nZXMuIENvdmVyIGludmFsaWQgYWN0aW9uIG9yCiAgcGFyYW1ldGVycyBhbmQgdGhlIHN1Y2Nlc3NmdWwgcmVzcG9uc2Ugc2hhcGUuCi0gS2VlcCBhbGwgcGFja2FnZSByZXNvdXJjZXMgdW5kZXIgdGhlIGV4aXN0aW5nIHBhY2thZ2UtZGF0YSBnbG9icyBzbyBhbiBzZGlzdAogIGFuZCB3aGVlbCBleHBvc2UgdGhlIHNhbWUgc2tpbGxzLCBwcm9tcHRzLCBvbnRvbG9neSwgYWdlbnQgZGF0YSwgYW5kCiAgY29ubmVjdG9yIG1hbmlmZXN0LgoKIyMgUmFwaWQgZGVsaXZlcnk6IHRoZSA1LW1pbnV0ZSBjb250cmFjdAoKU3BlY3MgYXJlIGFscmVhZHkgZGVzaWduZWQuIERlbGl2ZXIgb25lIHNtYWxsLCByZXZpZXdhYmxlIGNoYW5nZSBhdCBhIHRpbWUuCgotIFN0YXJ0IHdpdGggb25lIG93bmluZyByZXF1aXJlbWVudCBhbmQgc3RhdGUgaXRzIHByb29mIGJlZm9yZSBlZGl0aW5nLgotIEtlZXAgYSBzbGljZSB0byBvbmUgY29ubmVjdG9yIGNvbmNlcm46IHNvdXJjZSBjb2RlLCBvbmUgdGVzdCBzZWFtLCBvbmUKICB3b3JrZmxvdy9jb25maWd1cmF0aW9uIHJlcGFpciwgb3Igb25lIHN1YnN0YW50aXZlIHNraWxsLgotIFJ1biB0aGUgc21hbGxlc3QgcmVsZXZhbnQgdGVzdHMgZmlyc3QsIHRoZW4gdGhlIHJlcG9zaXRvcnkgcHJlLWNvbW1pdCBzdWl0ZQogIG9uIHRoZSBjYW5kaWRhdGUgd29ya3RyZWUuIEZpeCB3YXJuaW5ncyBhbmQgZmFpbHVyZXMgcmF0aGVyIHRoYW4gYnlwYXNzaW5nIGEKICBob29rLgotIFJlY29yZCB0aGUgZXhhY3Qgc291cmNlIGFuZCB0ZXN0IGNvbW1hbmRzIGluIHRoZSBjb21taXQgb3IgcmV2aWV3IGhhbmRvZmYuCi0gTmV2ZXIgY2xhaW0gYSBQYWdlcyBvciBzcGVjIHJvdyBmcm9tIGEgWUFNTCBtYXJrZXIgYWxvbmU6IHRoZSBkYXNoYm9hcmQgY29uZmlnLAogIGdlbmVyYXRlZCBzdGF0dXMgcmVjb3Jkcywgc3VjY2Vzc2Z1bCBleGFjdC1zb3VyY2Ugd29ya2Zsb3csIGFuZCBwdWJsaXNoZWQKICBwYWdlIG11c3QgYWdyZWUuCi0gQ29tbWl0IG9ubHkgcmV2aWV3ZWQgcGF0aHMgd2l0aCBhbiBleHBsaWNpdCBwYXRoIGxpc3QuIE5ldmVyIHN0YWdlIGEgd2hvbGUKICBzaGFyZWQgY2hlY2tvdXQsIGNyZWRlbnRpYWxzLCBjYWNoZXMsIGdlbmVyYXRlZCBsb2dzLCBvciB0ZW1wb3Jhcnkgb3V0cHV0LgoKIyMgU3BlYyBkZWxpdmVyeSBhbmQgUGFnZXMKClRoZSBjYW5vbmljYWwgUGFnZXMgY2FsbGVyIGlzIC5naXRodWIvd29ya2Zsb3dzL3BhZ2VzLnltbC4gVGhpcyByZXBvc2l0b3J5IHVzZXMKdGhlIGRvY3MvIGNvbnRlbnQgc291cmNlLCBzbyB0aGUgY2FsbGVyIG11c3QgcGFzcyBjb250ZW50X3NvdXJjZTogZG9jcywgZW5hYmxlCnNwZWNfZGFzaGJvYXJkX2VuYWJsZWQsIGFuZCBwb2ludCBzcGVjX2Rhc2hib2FyZF9jb25maWcgYXQKLmdpdGh1Yi9zcGVjLWRhc2hib2FyZC5qc29uLiBUaGUgcHVzaCBwYXRoIHNldCBtdXN0IGluY2x1ZGUgc3BlY3MvKiosIHRoZQpkYXNoYm9hcmQgY29uZmlnLCBhbmQgdGhlIFBhZ2VzIHdvcmtmbG93IGl0c2VsZiBpbiBhZGRpdGlvbiB0byBkb2N1bWVudGF0aW9uCnBhdGhzLiBLZWVwIHRoZSBjb25maWcgdmVyc2lvbmVkIGFuZCBib3VuZGVkIHRvIHNwZWNzLyovc3RhdHVzLmpzb247IHRoZQpjZW50cmFsIHJlbmRlcmVyIG93bnMgdGhlIEhUTUwgbGF5b3V0LgoKUmVnZW5lcmF0ZSBzdGF0dXMgZXZpZGVuY2Ugd2l0aCB0aGUgcGlwZWxpbmUgaG9vayB3aGVuIGEgc3BlYyBjaGFuZ2VzLCBpbnNwZWN0CnRoZSByZXN1bHRpbmcgZGlmZiwgYW5kIHZlcmlmeSB0aGF0IG5vIHN0YXR1cyByb3cgd2FzIGFkdmFuY2VkIHdpdGhvdXQgYSByZWFsCmltcGxlbWVudGF0aW9uIG9yIHRlc3QgcmVjZWlwdC4gVGhlIFBhZ2VzIHByb29mIGlzIGNvbXBsZXRlIG9ubHkgYWZ0ZXIgdGhlCnB1Ymxpc2hlZCBydW4gdXNlcyB0aGUgY2FuZGlkYXRlIGNvbW1pdCBhbmQgL3NwZWMtZGVsaXZlcnkvIHNlcnZlcyB0aGUKY2FuZGlkYXRlIHNuYXBzaG90LgoKIyMgVmVyaWZpY2F0aW9uCgpGcm9tIHRoZSByZXBvc2l0b3J5IHJvb3Q6CgogICAgcHJlLWNvbW1pdCBydW4gLS1hbGwtZmlsZXMKICAgIHB5dGhvbiAtbSBweXRlc3QgdGVzdHMgLXEKClByZWZlciBmb2N1c2VkIHRlc3RzIGZvciB0aGUgdG91Y2hlZCBtb2R1bGUgd2hpbGUgaXRlcmF0aW5nLiBGb3IgUGFnZXMgY2hhbmdlcywKYWxzbyBydW4gdGhlIGNlbnRyYWwgZGFzaGJvYXJkIHJlbmRlcmVyIGFnYWluc3QgYSB0YXNrLWxvY2FsIG91dHB1dCBkaXJlY3RvcnkKYW5kIHZlcmlmeSB0aGUgY29uZmlnIHBhcnNlcywgc3RhdHVzIGZpbGVzIGFyZSBkaXNjb3ZlcmVkLCBhbmQgdGhlIHJlc3VsdApjb250YWlucyB0aGUgY29ubmVjdG9yIGNvbnRlbnQgYW5kIGlkZW50aXR5IHJlY29yZHMuCgojIyBTYWZldHkKCk5ldmVyIGNvbW1pdCAuZW52IGZpbGVzLCB0b2tlbnMsIHJhdyBEb2NrZXIgSHViIGlkZW50aWZpZXJzLCBvciBnZW5lcmF0ZWQgc2l0ZQpvdXRwdXQuIE5ldmVyIG1ha2UgbGl2ZSBEb2NrZXIgSHViIGNhbGxzIGZyb20gdGVzdHMuIFByZXNlcnZlIGRlc3RydWN0aXZlCmdhdGluZyBhbmQgc2VjcmV0IHJlZGFjdGlvbi4gSWYgYSBkZXBlbmRlbmN5IG9yIHBhY2thZ2VkIG1ldGFkYXRhIGNoYW5nZSBpcwpuZWNlc3NhcnksIHVwZGF0ZSB0aGUgbG9ja2ZpbGUgaW4gdGhlIHNhbWUgc2xpY2UgYW5kIGV4cGxhaW4gd2h5IGluIHRoZSByZXZpZXcuCg==",
+          "bytes": 5125,
+          "sha256": "f513e304df219627a3b7fe8226b0be42507ed7ce9296fae4b7c93569ac985b58"
+        }
+      },
+      "status_files": {
+        "specs/_template/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiUkVQTEFDRV9XSVRIX1NUQUJMRV9JRCIsCiAgIm93bmVyX3JlcG8iOiAiZG9ja2VyaHViLWFwaSIsCiAgImRlbGl2ZXJ5X3N0YXRlIjogIlJFVElSRUQiLAogICJyZXF1aXJlbWVudF9pZHMiOiBbXSwKICAicmVxdWlyZW1lbnRzIjogW10KfQo=",
+          "bytes": 176,
+          "sha256": "11206bc38e0b0775cd9d262921136b0b213551fd3b82b69ececb1cc24bfbb151"
+        },
+        "specs/connector-content/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1ET0NLRVJIVUItQVBJLUNPTk5FQ1RPUi1DT05URU5UIiwKICAib3duZXJfcmVwbyI6ICJkb2NrZXJodWItYXBpIiwKICAiZGVsaXZlcnlfc3RhdGUiOiAiTEFOREVEIiwKICAicmVxdWlyZW1lbnRfaWRzIjogWwogICAgIkNPTk4tRE9DS0VSSFVCLUFQSS1DT05ORUNUT1ItQ09OVEVOVC1SMDAxIgogIF0sCiAgInJlcXVpcmVtZW50cyI6IFsKICAgIHsKICAgICAgImlkIjogIkNPTk4tRE9DS0VSSFVCLUFQSS1DT05ORUNUT1ItQ09OVEVOVC1SMDAxIiwKICAgICAgInRpdGxlIjogIkRlZmF1bHQgY29udGVudCIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJMQU5ERUQiLAogICAgICAibGFuZGVkX2luIjogWwogICAgICAgICIyNDA1MWUyZjJjZTYiCiAgICAgIF0sCiAgICAgICJ2ZXJpZmllZF9ieSI6IFtdCiAgICB9CiAgXQp9Cg==",
+          "bytes": 457,
+          "sha256": "8fc9569369035fdd507e43dd4448a70cb4ac8fc531b5490b09a7509dd1204e3b"
+        },
+        "specs/connector-identity/status.json": {
+          "encoding": "base64",
+          "data": "ewogICJzY2hlbWFfdmVyc2lvbiI6IDIsCiAgInNwZWNfaWQiOiAiQ09OTi1ET0NLRVJIVUItQVBJLUNPTk5FQ1RPUi1JREVOVElUWSIsCiAgIm93bmVyX3JlcG8iOiAiZG9ja2VyaHViLWFwaSIsCiAgImRlbGl2ZXJ5X3N0YXRlIjogIlZFUklGSUVEIiwKICAicmVxdWlyZW1lbnRfaWRzIjogWwogICAgIkNPTk4tRE9DS0VSSFVCLUFQSS1DT05ORUNUT1ItSURFTlRJVFktUjAwMSIKICBdLAogICJyZXF1aXJlbWVudHMiOiBbCiAgICB7CiAgICAgICJpZCI6ICJDT05OLURPQ0tFUkhVQi1BUEktQ09OTkVDVE9SLUlERU5USVRZLVIwMDEiLAogICAgICAidGl0bGUiOiAiRmxlZXQgbmFtZSIsCiAgICAgICJkZWxpdmVyeV9zdGF0ZSI6ICJWRVJJRklFRCIsCiAgICAgICJsYW5kZWRfaW4iOiBbCiAgICAgICAgIjE0NjRjMzdhMTVjMyIsCiAgICAgICAgIjI3YTBiYzZlNTE3ZSIKICAgICAgXSwKICAgICAgInZlcmlmaWVkX2J5IjogWwogICAgICAgICJ0ZXN0cy90ZXN0X2ZsZWV0X25hbWUucHk6MzQiCiAgICAgIF0KICAgIH0KICBdCn0K",
+          "bytes": 528,
+          "sha256": "2898cf23304e0ef27bcdbd209c0a64094707a738039b923012dbf96629db8c5f"
+        }
+      },
+      "precommit": {
+        "aggregate_ready": true,
+        "provider": true,
+        "canonical_hooks": {
+          "rev": "main",
+          "hooks": [
+            "connector-standard",
+            "dependency-readiness",
+            "secrets",
+            "spec",
+            "tests-fast"
+          ]
+        },
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "literal_hooks_present": [],
+        "missing": [],
+        "validate_config": {
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      },
+      "pages": {
+        "strict_ready": true,
+        "caller_count": 1,
+        "required_paths": true,
+        "shape_ready": true,
+        "exact_source_publisher_ready": true,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-26T16:04:58Z",
+          "databaseId": 40355635059,
+          "event": "push",
+          "headSha": "3bfb7b0471e8fab2d567641a1022d5b8ccf51c36",
+          "status": "completed",
+          "updatedAt": "2026-10-26T16:05:42Z",
+          "url": "https://github.com/Knuckles-Team/dockerhub-api/actions/runs/40355635059",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_enabled": true,
+          "spec_dashboard_config": ".github/spec-dashboard.json"
+        },
+        "config": {
+          "version": 1,
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ]
+        },
+        "pages_api": {
+          "url": "https://api.github.com/repos/Knuckles-Team/dockerhub-api/pages",
+          "status": null,
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/dockerhub-api/",
+          "build_type": "workflow",
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "public": true,
+          "protected_domain_state": null,
+          "pending_domain_unverified_at": null,
+          "https_enforced": true
+        },
+        "http_200": {
+          "status": 200,
+          "bytes": 23881,
+          "index_sha256": "63f111d047f9cab54c927f7bf3d619c253258b7f144da15af01c0df8a6e03a72",
+          "snapshot_bytes": 5336,
+          "snapshot_sha256": "cc95c2bb2705362b3d3077dd6653879319b1704089cfbb1548b4e197d5a6f50a",
+          "snapshot_revision": "3bfb7b0471e8fab2d567641a1022d5b8ccf51c36",
+          "snapshot_repository": "Knuckles-Team/dockerhub-api",
+          "snapshot_version": 1
+        },
+        "index_url": "https://knuckles-team.github.io/dockerhub-api/spec-delivery/",
+        "snapshot_url": "https://knuckles-team.github.io/dockerhub-api/spec-delivery/snapshot.json"
+      },
+      "skills": {
+        "required_phrase": "Rapid delivery: the 5-minute contract",
+        "path": "dockerhub_api/skills/dockerhub-api-development/SKILL.md",
+        "ready": true
+      },
+      "release": {
+        "evidence_claimed": false,
+        "success_claimed": false
+      }
+    }
+  },
+  "qualification": {
+    "already_qualified_dot_one_recounted": false,
+    "already_qualified_dot_two_recounted": false,
+    "rollups_promoted": false,
+    "source_release_success_claimed": false,
+    "pages_all_exact": true
+  },
+  "excluded_release_failures": [],
+  "collection": {
+    "captured_at": "2026-10-26T16:15:57.182080+00:00",
+    "source_matrix_sha256": "d05a2ec36649a31dab136496eb4be746ec88feae90504133009898314e841cdf"
+  }
+}
