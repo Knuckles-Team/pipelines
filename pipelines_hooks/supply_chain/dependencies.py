@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.supply_chain.dependency_cycles import loop_findings
 from pipelines_hooks.supply_chain.finding import NETWORK_TO_SHELL_RE, Finding, Source
 
 VCS_REVISION_RE = re.compile(r"@[0-9a-fA-F]{40}(?:$|[#&])")
@@ -105,6 +106,7 @@ def dependency_findings(
     ]
     if "pyproject.toml" in names:
         findings += _pyproject_findings(label, repository / "pyproject.toml", reader)
+        findings += loop_findings(label, repository / "pyproject.toml", reader)
     return findings
 
 
