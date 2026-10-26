@@ -478,8 +478,7 @@
       "landed_in": [],
       "verified_by": [
         "tests/hooks/test_agent_contract.py:20",
-        "tests/hooks/test_agent_contract.py:31",
-        "tests/hooks/test_agent_contract.py:39"
+        "tests/hooks/test_agent_contract.py:68"
       ]
     },
     {
@@ -487,14 +486,20 @@
       "title": "Every repository carries the standard tool-neutral AGENTS.md section",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_agent_contract.py:31",
+        "tests/hooks/test_agent_contract.py:39"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R177",
       "title": "The agent-contract check is warn-level first",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_agent_contract.py:47",
+        "tests/hooks/test_agent_contract.py:58"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R101",
