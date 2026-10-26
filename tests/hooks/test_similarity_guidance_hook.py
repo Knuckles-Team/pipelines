@@ -114,6 +114,7 @@ def test_similarity_report_model(tmp_path: Path) -> None:
     assert report.finding["file"] == report.file
     assert report.finding["original_file"] == report.original_file
     assert report.as_dict()["scanner"] == "dupehound 0.1.2"
+    assert report.as_dict()["verdict"] == report.disposition
 
 
 @pytest.mark.spec("PIPE-PAGES-R024.2")
