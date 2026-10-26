@@ -208,6 +208,8 @@ def test_native_caption_zoom_uses_trusted_input_and_unchanged_world_geometry_aft
     helper = (ROOT / "scripts/architecture_explorer/motion_capture.cjs").read_text()
     assert helper.index("const navigation=") > helper.index("`${theme}-continuous-motion.json`")
     assert "Input.dispatchKeyEvent" in helper and "key('Enter','Enter',13)" in helper
+    assert "unmodifiedText:text" in helper and "Page.bringToFront" in helper
+    assert helper.index("navigation.steps.push(buttonStep)") < helper.index("buttonStep.expected=assertZoom")
     assert "Input.dispatchMouseEvent" in helper and "type:'mouseWheel'" in helper
     assert "e.isTrusted" in helper and "current.focusVisible" in helper
     assert "assertZoom(" in helper and "assertGeometry(" in helper

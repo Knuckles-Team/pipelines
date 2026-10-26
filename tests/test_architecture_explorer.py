@@ -1640,23 +1640,29 @@ setTimeout(async()=>{
     page = tmp_path / "count-track.html"
     page.write_text(source.replace("<script>", spy + "<script>", 1).replace("</body>", probe + "</body>"))
     name = f"count-track-{node}-{viewport.replace(',', 'x')}"
-    out = subprocess.run(
-        [
-            _chrome(),
-            "--headless=new",
-            "--no-sandbox",
-            "--disable-gpu",
-            f"--window-size={viewport}",
-            "--virtual-time-budget=5000",
-            f"--screenshot={destination / (name + '.png')}",
-            "--dump-dom",
-            page.as_uri() + (f"#node={node}" if node != "root" else ""),
-        ],
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=True,
-    ).stdout
+
+    def capture_count(page_url: str, capture_name: str) -> str:
+        result = subprocess.run(
+            [
+                shutil.which("node"),
+                str(ROOT / "tests/architecture_count_capture.cjs"),
+                _chrome(),
+                page_url,
+                viewport,
+                str(destination / (capture_name + ".png")),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        (destination / (capture_name + ".stderr.txt")).write_text(result.stderr)
+        if result.returncode:
+            (destination / (capture_name + ".failed.txt")).write_text(result.stdout[-12000:])
+        assert result.returncode == 0, result.stderr[-5000:]
+        return result.stdout
+
+    out = capture_count(page.as_uri() + (f"#node={node}" if node != "root" else ""), name)
     _assert_browser_document(out)
     match = re.search(r'<output[^>]*id="count-track-result"[^>]*>.*?</output>', out)
     (destination / (name + ".txt")).write_text(
@@ -1675,23 +1681,7 @@ setTimeout(async()=>{
             )
             .replace("for(const id of " + json.dumps(ids) + ")", 'for(const id of ["eg"])')
         )
-        old = subprocess.run(
-            [
-                _chrome(),
-                "--headless=new",
-                "--no-sandbox",
-                "--disable-gpu",
-                "--window-size=1440,1000",
-                "--virtual-time-budget=5000",
-                f"--screenshot={destination / 'previous-count-track-root.png'}",
-                "--dump-dom",
-                baseline.as_uri(),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=120,
-            check=True,
-        ).stdout
+        old = capture_count(baseline.as_uri(), "previous-count-track-root")
         _assert_browser_document(old)
         old_match = re.search(r'<output[^>]*id="count-track-result"[^>]*>.*?</output>', old)
         (destination / "previous-count-track-root.txt").write_text(
@@ -1856,3 +1846,42 @@ setTimeout(async()=>{
     capture_annotation(url, name)
     # Native zoom appearance and existing fullscreen controls use real CDP input
     # after the separate unforced-motion sequence in motion_capture.cjs.
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_count_capture_uses_real_frame_scheduling_and_handles_browser_exit(tmp_path: Path) -> None:
+    import os
+    import subprocess
+
+    helper = ROOT / "tests/architecture_count_capture.cjs"
+    source = helper.read_text()
+    assert "--remote-debugging-pipe" in source and "--virtual-time-budget" not in source
+    assert "Target.activateTarget" in source and "Page.bringToFront" in source
+    assert "document.getElementById('count-track-result')" in source
+    assert source.index("await exited;") < source.index("rmSync(profile,")
+    # The repair must retain the page's stable actual-paint synchronization and all
+    # count assertions, rather than replacing requestAnimationFrame with a timer.
+    tests = (
+        Path(__file__)
+        .read_text()
+        .split("def test_ocean_browser_count_text_and_completion_tracks_never_overlap", 1)[1]
+        .split("\n\n@pytest.mark.spec", 1)[0]
+    )
+    assert "requestAnimationFrame(()=>requestAnimationFrame(resolve))" in tests
+    assert "now===paint&&now===previous&&window.__barPaint.length" in tests
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node unavailable")
+    browser = tmp_path / "exits-immediately"
+    browser.write_text("#!/bin/sh\nexit 1\n")
+    browser.chmod(0o755)
+    result = subprocess.run(
+        [node, str(helper), str(browser), "about:blank", "1440,1000", str(tmp_path / "capture.png")],
+        env={**os.environ, "TMPDIR": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert not list(tmp_path.glob("architecture-count-*"))

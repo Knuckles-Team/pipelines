@@ -36,7 +36,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const {sessionId}=await call('Target.attachToTarget',{targetId,flatten:true});
   const command=(method,params)=>call(method,params,sessionId);
   const evaluate=async expression=>{const r=await command('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
-  await command('Page.enable');await command('Runtime.enable');
+  await command('Page.enable');await command('Runtime.enable');await command('Page.bringToFront');
   await command('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
   await command('Page.navigate',{url:pathToFileURL(join(output,`${theme}.html`)).href+'#node=webui'});
   // Wait for real page load, fonts and camera settling, without modifying animation clocks.
@@ -59,7 +59,8 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   // Semantic caption proof uses only the existing controls after the untouched motion frames.
   const navigation={kind:'Real native zoom input, unchanged world geometry, and actual caption paint',theme,steps:[]};
   const key=async(key,code,virtual)=>{
-    await command('Input.dispatchKeyEvent',{type:'keyDown',key,code,windowsVirtualKeyCode:virtual,nativeVirtualKeyCode:virtual});
+    const text=key==='Enter'?'\r':key.length===1?key:undefined;
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key,code,text,unmodifiedText:text,windowsVirtualKeyCode:virtual,nativeVirtualKeyCode:virtual});
     await command('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode:virtual,nativeVirtualKeyCode:virtual});
   };
   const screenshot=async(name)=>{
@@ -96,7 +97,8 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     await evaluate("document.getElementById('zin').focus();true");
     await key('Enter','Enter',13);await delay(350);
     let current=await state();
-    navigation.steps.push({input:'existing zoom-in button via trusted Enter',expected:assertZoom(low,current,1.6,low.canvas.w/2,low.canvas.h/2),after:current});
+    const buttonStep={input:'existing zoom-in button via trusted Enter',after:current};navigation.steps.push(buttonStep);
+    buttonStep.expected=assertZoom(low,current,1.6,low.canvas.w/2,low.canvas.h/2);
     await evaluate("document.getElementById('cv').focus();true");
     const keyboardBefore=await state();
     await key('+','Equal',187);await delay(350);
