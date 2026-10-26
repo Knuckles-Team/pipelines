@@ -64,7 +64,10 @@ def container_table(pyproject: dict[str, Any]) -> dict[str, Any]:
 
 
 def compose_host(table: dict[str, Any]) -> str:
-    """Return the validated IP address used for published Compose ports."""
+    """Return the validated IP address used for published Compose ports.
+
+    Compose's short port syntax accepts an IP host binding, not a DNS name.
+    """
     raw = table.get("compose_host", DEFAULT_COMPOSE_HOST)
     if not isinstance(raw, str) or raw != raw.strip() or not raw:
         raise CannotRun("[tool.pipelines.container] compose_host must be a non-empty IP address")
