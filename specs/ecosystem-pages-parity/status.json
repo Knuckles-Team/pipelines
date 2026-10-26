@@ -865,9 +865,13 @@
     {
       "id": "PIPE-PAGES-R015.1",
       "title": "The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller. It adds no per-repository input and no per-repository copy",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "246cc47a897a"
+      ],
+      "verified_by": [
+        "tests/test_pages_pipeline_contract.py:202"
+      ]
     },
     {
       "id": "PIPE-PAGES-R015.2",
@@ -894,11 +898,11 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:149",
-        "tests/test_spec_dashboard.py:157",
-        "tests/test_spec_dashboard.py:164",
-        "tests/test_spec_dashboard.py:186",
-        "tests/test_spec_dashboard.py:198"
+        "tests/test_spec_dashboard.py:161",
+        "tests/test_spec_dashboard.py:169",
+        "tests/test_spec_dashboard.py:176",
+        "tests/test_spec_dashboard.py:198",
+        "tests/test_spec_dashboard.py:210"
       ],
       "rollup_of": [
         "PIPE-PAGES-R016.1",
@@ -916,7 +920,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:149"
+        "tests/test_spec_dashboard.py:161"
       ]
     },
     {
@@ -927,7 +931,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:157"
+        "tests/test_spec_dashboard.py:169"
       ]
     },
     {
@@ -938,7 +942,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:164"
+        "tests/test_spec_dashboard.py:176"
       ]
     },
     {
@@ -949,7 +953,7 @@
         "a81cc87849a5"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:198"
+        "tests/test_spec_dashboard.py:210"
       ]
     },
     {
@@ -960,7 +964,7 @@
         "9e705970e4c9"
       ],
       "verified_by": [
-        "tests/test_spec_dashboard.py:186"
+        "tests/test_spec_dashboard.py:198"
       ]
     },
     {
