@@ -442,7 +442,7 @@ function segmentHitsRect(a,b,r){
 function annotationClear(r,used){
   const padded=[r[0]-4,r[1]-4,r[2]+8,r[3]+8];
   return r[0]>=6&&r[1]>=6&&r[0]+r[2]<=W-6&&r[1]+r[3]<=H-6&&
-    !annotationRects.some(b=>intersects(padded,b))&&!used.some(b=>intersects(padded,b))&&
+    !annotationRects.some(b=>intersects(padded,b))&&!used.some(b=>intersects(padded,[b[0]-4,b[1]-4,b[2]+8,b[3]+8]))&&
     !annotationSegments.some(([a,b])=>segmentHitsRect(a,b,padded));
 }
 function caption(n,kind,text,x,y,fs,alpha,extra={}){

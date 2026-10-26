@@ -1833,13 +1833,5 @@ setTimeout(async()=>{
         return out
 
     capture_annotation(url, name)
-    if camera == "default" and viewport == "1440,1000":
-        # Separate real capture of the normal-flow rail, never a fabricated composition.
-        rail_page = tmp_path / "annotation-rail.html"
-        rail_page.write_text(
-            page.read_text().replace(
-                "</body>",
-                "<script>setTimeout(()=>document.getElementById('annotations').scrollIntoView({block:'start'}),2300);</script></body>",
-            )
-        )
-        capture_annotation(rail_page.as_uri(), name + "-rail")
+    # Normal/fullscreen rail pixels use the settled real-CDP keyboard captures in
+    # motion_capture.cjs; CLI virtual-time scrolling can retain a stale compositor frame.

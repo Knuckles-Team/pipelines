@@ -332,6 +332,9 @@ for(const [a,b] of [[[0,0],[10,10]],[[0,31],[80,31]],[[41,0],[41,80]]])assert(!s
 assert(annotationClear(box,[]));
 annotationRects=[[25,25,30,30]];assert(!annotationClear(box,[]));
 annotationRects=[];assert(!annotationClear(box,[[18,19,10,10]]));
+// Two glyph halos need clearance on both labels, not just the incoming label.
+assert(!annotationClear(box,[[45,20,20,10]]));
+assert(annotationClear(box,[[49,20,20,10]]));
 annotationSegments=[[[0,25],[100,25]]];assert(!annotationClear(box,[]));
 assert(!annotationClear([-1,20,10,10],[]));
 """
