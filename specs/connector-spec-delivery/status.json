@@ -4142,9 +4142,17 @@
     {
       "id": "PIPE-CONNSPEC-R170",
       "title": "`uptime-kuma-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95",
+        "c6421c2094dd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:48",
+        "tests/test_connector_consumer_r170_r171.py:66",
+        "tests/test_connector_consumer_r170_r171.py:67",
+        "tests/test_connector_consumer_r170_r171.py:68"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R170.1",
         "PIPE-CONNSPEC-R170.2",
@@ -4166,30 +4174,50 @@
     {
       "id": "PIPE-CONNSPEC-R170.2",
       "title": "`uptime-kuma-agent` has the three spec hooks in its pre-commit config",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c6421c2094dd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r170_r171.py:66"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R170.3",
       "title": "`uptime-kuma-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c6421c2094dd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r170_r171.py:67"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R170.4",
       "title": "`uptime-kuma-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c6421c2094dd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r170_r171.py:68"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R171",
       "title": "`vaultwarden-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a86b11ee9b95",
+        "c6421c2094dd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r168_177.py:49",
+        "tests/test_connector_consumer_r168_177.py:95",
+        "tests/test_connector_consumer_r170_r171.py:69",
+        "tests/test_connector_consumer_r170_r171.py:70"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R171.1",
         "PIPE-CONNSPEC-R171.2",
@@ -4222,16 +4250,24 @@
     {
       "id": "PIPE-CONNSPEC-R171.3",
       "title": "`vaultwarden-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c6421c2094dd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r170_r171.py:69"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R171.4",
       "title": "`vaultwarden-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c6421c2094dd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r170_r171.py:70"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R172",
