@@ -460,6 +460,8 @@ def _analyse_into(ctx: Ctx, an: Analysis, tree: ast.Module, path: Path, src: str
                 blockers.append(
                     ("auth.r11", "login path only appears inside an f-string, so its API root prefix is unknown")
                 )
+            elif len(paths) > 1:
+                blockers.append(("auth.r11", "several literal login paths; choose one for SessionLogin by hand"))
             cands.append(f'SessionLogin(login_path="{lp}", user_env="{user}", password_env="{pw}")')
             decl = decl or cands[-1]
     elif kinds == {"client_id", "client_secret"} and ev["cc"]:

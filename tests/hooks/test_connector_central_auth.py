@@ -365,13 +365,17 @@ def test_r11_session_login_rewrite(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R016.78")
-def test_r11_two_login_paths_still_matches_r11_but_proposes_placeholder(tmp_path: Path) -> None:
+def test_r11_two_login_paths_are_reviewed_with_an_exact_fallback_reason(tmp_path: Path) -> None:
     src = _auth(LOGIN_BODY)
     root = _repo(tmp_path, src, _api('L = "/a/login"\nM = "/b/login"', API_BASIC))
     ctx = _run(root)
-    assert _text(root) == src or "login_path=" in _text(root)
-    if _text(root) == src:
-        assert any(i["step"] == "auth.r11" for i in ctx.review.items)
+    assert _text(root) == src
+    assert "auth.r11" not in ctx.applied
+    (item,) = [i for i in ctx.review.items if i["step"] == "auth.r11"]
+    assert item["detail"] == (
+        'proposed SessionLogin(login_path="<login path>", user_env="DEMO_USERNAME", '
+        'password_env="DEMO_PASSWORD"): several literal login paths; choose one for SessionLogin by hand'
+    )
 
 
 # spec: PIPE-GATES-R016.79 — reviewed existing assertion binding

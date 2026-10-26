@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -767,6 +768,95 @@ def test_driver_sync_falls_back_to_the_pr_gate_extras_and_each_repo_gets_its_own
     assert led.data["r"]["sync_args"].startswith("--all-groups")
     src = Path(batch.__file__).read_text(encoding="utf-8")
     assert '"PRE_COMMIT_HOME"' in src and 'worktree", "remove", "--force"' in src
+
+
+@pytest.mark.spec("PIPE-GATES-R016.25")
+def test_driver_retry_starts_clean_and_resyncs_after_migrate_with_per_repo_envs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import argparse
+    from scripts import connector_migrate_batch as batch
+
+    worktrees = tmp_path / "worktrees"
+    templates = {
+        "demo-agent": make(tmp_path / "template-demo"),
+        "other-agent": make(tmp_path / "template-other"),
+    }
+    stale = make(tmp_path / "stale-demo")
+    stale_marker = stale / "demo_agent" / "connector_manifest.yml"
+    stale_marker.write_text("STALE HALF MIGRATED TREE\n", encoding="utf-8")
+    retry_wt = worktrees / "demo-agent" / "manifest-cut"
+    retry_wt.parent.mkdir(parents=True)
+    retry_wt.symlink_to(stale)
+
+    args = argparse.Namespace(
+        fleet=tmp_path / "fleet",
+        worktrees=worktrees,
+        tmpdir=str(tmp_path / "tmp"),
+        eg_repo=tmp_path,
+        pipelines_venv=tmp_path,
+        sdk_path=None,
+        dry_run=True,
+        patches=tmp_path / "patches",
+        rebump=False,
+        central=False,
+    )
+    led = batch.Ledger(tmp_path / "ledger.json")
+    led.record("demo-agent", status="failed")
+    calls: list[tuple[list[str], dict[str, str]]] = []
+    fresh_snapshots: dict[str, str] = {}
+
+    def fake_sh(step, cmd, cwd=None, env=None, ok=(0,)):  # noqa: ANN001
+        call_env = dict(env or {})
+        calls.append((cmd, call_env))
+        if cmd[:3] == ["git", "worktree", "remove"]:
+            Path(cmd[-1]).unlink()
+            return ""
+        if cmd[:3] == ["git", "worktree", "add"]:
+            dest = Path(cmd[3])
+            repo = dest.parts[-2]
+            shutil.copytree(templates[repo], dest)
+            fresh_snapshots[repo] = (dest / "demo_agent/connector_manifest.yml").read_text(encoding="utf-8")
+            return ""
+        if "migrate" in cmd:
+            root = Path(cmd[cmd.index("--root") + 1])
+            report = cm.migrate(root, None, lock=False)
+            Path(cmd[cmd.index("--out") + 1]).write_text(json.dumps(report), encoding="utf-8")
+            return ""
+        if cmd[:3] == ["git", "diff", "--cached"]:
+            return " 5 files changed, 10 insertions(+)\n"
+        if any(str(c).endswith("connector_verify.py") for c in cmd):
+            return 'banner\n{"ok": true}\n'
+        if "graph-check" in cmd:
+            return "ORPHAN_CLASS: 1\n"
+        if "pr-test-scope" in cmd:
+            return "NONE\n"
+        return ""
+
+    monkeypatch.setattr(batch, "sh", fake_sh)
+    batch.migrate_repo("demo-agent", args, led)
+    batch.migrate_repo("other-agent", args, led)
+
+    assert fresh_snapshots["demo-agent"] == (templates["demo-agent"] / "demo_agent/connector_manifest.yml").read_text(
+        encoding="utf-8"
+    )
+    assert fresh_snapshots["other-agent"] == (templates["other-agent"] / "demo_agent/connector_manifest.yml").read_text(
+        encoding="utf-8"
+    )
+    retry_commands = [cmd for cmd, _env in calls]
+    remove_i = next(i for i, cmd in enumerate(retry_commands) if cmd[:3] == ["git", "worktree", "remove"])
+    add_i = next(i for i, cmd in enumerate(retry_commands) if cmd[:3] == ["git", "worktree", "add"])
+    migrate_i = next(i for i, cmd in enumerate(retry_commands) if "migrate" in cmd)
+    sync_is = [i for i, cmd in enumerate(retry_commands) if cmd[:2] == ["uv", "sync"]]
+    assert remove_i < add_i < sync_is[0] < migrate_i < sync_is[1]
+    sync_envs = [env for cmd, env in calls if cmd[:2] == ["uv", "sync"]]
+    assert {env["PRE_COMMIT_HOME"] for env in sync_envs} == {
+        str(tmp_path / "pc" / "demo-agent"),
+        str(tmp_path / "pc" / "other-agent"),
+    }
+    assert all(env["TMPDIR"].startswith(str(tmp_path / "tmp")) for env in sync_envs)
+    assert led.data["demo-agent"]["status"] == "dry-run-verified"
+    assert led.data["other-agent"]["status"] == "dry-run-verified"
 
 
 @pytest.mark.spec("PIPE-GATES-R016.26")
