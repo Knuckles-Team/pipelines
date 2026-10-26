@@ -690,7 +690,7 @@
         "154f96235334",
         "23b1e1111638",
         "2e89db0000e5",
-        "3d0455152b96"
+        "336e2c7c4265"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -712,13 +712,13 @@
         "154f96235334",
         "23b1e1111638",
         "2e89db0000e5",
-        "4ddfe8ed473a"
+        "336e2c7c4265"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:101",
-        "tests/test_container_pipeline_contract.py:297",
-        "tests/test_container_pipeline_contract.py:353",
-        "tests/test_container_pipeline_contract.py:373",
+        "tests/test_container_pipeline_contract.py:329",
+        "tests/test_container_pipeline_contract.py:385",
+        "tests/test_container_pipeline_contract.py:405",
         "tests/test_container_pipeline_contract.py:61"
       ]
     },
@@ -758,7 +758,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:1049"
+        "tests/test_container_pipeline_contract.py:1081"
       ]
     },
     {

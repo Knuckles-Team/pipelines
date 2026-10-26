@@ -258,6 +258,7 @@ jobs:
         id: build-context
         env:
           INPUT_BUILD_CONTEXT: ${{ inputs.build_context }}
+          INPUT_DOCKERFILE: ${{ inputs.dockerfile }}
           RELEASE_REPAIR: ${{ inputs.release_repair }}
         run: |
           set -euo pipefail
@@ -266,6 +267,11 @@ jobs:
             context=.release-source
           fi
           printf 'path=%s\n' "$context" >> "$GITHUB_OUTPUT"
+          dockerfile="$INPUT_DOCKERFILE"
+          if [[ "${RELEASE_REPAIR,,}" == true && "$dockerfile" != /* ]]; then
+            dockerfile="$context/$dockerfile"
+          fi
+          printf 'dockerfile=%s\n' "$dockerfile" >> "$GITHUB_OUTPUT"
 
       - name: Determine whether to render connector container files
         id: render-needed
@@ -654,7 +660,7 @@ jobs:
         with: &docker_build_push_with
           builder: ${{ steps.builder.outputs.name }}
           context: ${{ steps.build-context.outputs.path }}
-          file: ${{ inputs.dockerfile }}
+          file: ${{ steps.build-context.outputs.dockerfile }}
           target: ${{ steps.target.outputs.target }}
           build-args: |
             ${{ steps.runtime.outputs.build-args }}

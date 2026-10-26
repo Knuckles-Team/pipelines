@@ -151,6 +151,7 @@ def test_reviewed_release_repair_is_opt_in_and_preflights_before_publish() -> No
     assert version["env"]["BUILD_CONTEXT"] == "${{ steps.build-context.outputs.path }}"
     assert verify["env"]["BUILD_CONTEXT"] == "${{ steps.build-context.outputs.path }}"
     assert build["with"]["context"] == "${{ steps.build-context.outputs.path }}"
+    assert build["with"]["file"] == "${{ steps.build-context.outputs.dockerfile }}"
     assert "inputs.release_repair == true" in checkout["if"]
     assert "inputs.release_repair == true" in identity["if"]
     assert "inputs.release_repair == true" in guard["if"]
@@ -161,6 +162,37 @@ def test_reviewed_release_repair_is_opt_in_and_preflights_before_publish() -> No
     assert steps.index(guard) < steps.index(builder) < steps.index(login) < steps.index(build)
     assert steps.index(build) < steps.index(verify)
     assert "never republished" in repair["description"]
+
+
+def test_repair_build_dockerfile_follows_immutable_context(tmp_path: Path) -> None:
+    steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
+    context = next(step for step in steps if step.get("id") == "build-context")
+    caller = tmp_path / "caller"
+    source = tmp_path / ".release-source"
+    (caller / "docker").mkdir(parents=True)
+    (source / "docker").mkdir(parents=True)
+    (caller / "docker/Dockerfile").write_text("FROM caller\n")
+    (source / "docker/Dockerfile").write_text("FROM immutable-source\n")
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", context["run"]],
+        cwd=caller,
+        env={
+            **os.environ,
+            "GITHUB_OUTPUT": str(output),
+            "INPUT_BUILD_CONTEXT": ".",
+            "INPUT_DOCKERFILE": "docker/Dockerfile",
+            "RELEASE_REPAIR": "true",
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    values = dict(line.split("=", 1) for line in output.read_text().splitlines())
+    selected = source / "docker/Dockerfile"
+    assert values == {"path": ".release-source", "dockerfile": ".release-source/docker/Dockerfile"}
+    assert selected.read_text() != (caller / "docker/Dockerfile").read_text()
+    assert selected.read_text() == "FROM immutable-source\n"
 
 
 def _run_repair_validation(
