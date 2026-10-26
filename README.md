@@ -93,6 +93,11 @@ The [wheel readiness contract](reference/python-release-readiness.md) describes
 metadata-derived runtime profiles, release-only public-index proof, and current release
 blockers. Consumer migrations must wait for a reviewed immutable guard ref.
 
+The manual `packaging-roles` hook validates an explicit role/extra contract against
+one exact wheel and its existing readiness receipt:
+`pipelines-hook packaging-roles --contract <path> --wheel <path> --wheel-sha256 <digest>
+--receipt <path>`.
+
 Release callers also use the [exact PyPI publication identity checker](reference/publication-identity.md)
 to reject same-version filename/digest conflicts. It checks every staged file after upload.
 This supplements their existing readiness and platform-completeness gates.
