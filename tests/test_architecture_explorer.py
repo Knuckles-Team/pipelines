@@ -1864,6 +1864,8 @@ def test_count_capture_uses_real_frame_scheduling_and_handles_browser_exit(tmp_p
     source = helper.read_text()
     assert "--remote-debugging-pipe" in source and "--virtual-time-budget" not in source
     assert "Target.activateTarget" in source and "Page.bringToFront" in source
+    assert "mode==='exact-viewport'" in source and "Emulation.setDeviceMetricsOverride" in source
+    assert "state.viewport[0]!==width||state.viewport[1]!==height" in source
     assert "document.getElementById('count-track-result')" in source
     assert source.index("await exited;") < source.index("rmSync(profile,")
     # The repair must retain the page's stable actual-paint synchronization and all
@@ -1924,11 +1926,13 @@ def test_ocean_browser_progress_summary_full_labels_counts_and_swatches_fit(
     source_kind = "Original captured public payload" if captured_page.is_file() else "Candidate model fixture"
     # Keep the existing helper's terminal sentinel ID, not a second browser dependency.
     # The output explicitly identifies this independent summary probe and its metrics.
-    probe = """<script>
+    probe = (
+        """<script>
 setTimeout(async()=>{
  await document.fonts.ready;
  const result=document.createElement('output');result.id='count-track-result';result.hidden=true;
  try{
+  if(innerWidth!==REQUESTED_WIDTH||innerHeight!==REQUESTED_HEIGHT)throw Error('Requested summary viewport differs from actual '+innerWidth+'x'+innerHeight);
   if(document.documentElement.dataset.theme!==THEME)throw Error('Wrong summary theme');
   const faces=await document.fonts.load('500 12px Inter');
   if(!faces.some(face=>face.family.replaceAll('"','').replaceAll("'",'')==='Inter'&&face.status==='loaded'))throw Error('Summary Inter face not loaded');
@@ -1968,7 +1972,11 @@ setTimeout(async()=>{
  }catch(error){result.textContent='FAIL: '+error.message;}
  document.body.append(result);
 },1000);
-</script>""".replace("THEME", json.dumps(theme)).replace("SOURCE", json.dumps(source_kind))
+</script>""".replace("THEME", json.dumps(theme))
+        .replace("SOURCE", json.dumps(source_kind))
+        .replace("REQUESTED_WIDTH", viewport.split(",")[0])
+        .replace("REQUESTED_HEIGHT", viewport.split(",")[1])
+    )
     page = tmp_path / "progress-summary.html"
     page.write_text(source.replace("</body>", probe + "</body>"))
     name = f"progress-summary-{viewport.replace(',', 'x')}-{theme}"
@@ -1980,6 +1988,7 @@ setTimeout(async()=>{
             page.as_uri(),
             viewport,
             str(destination / (name + ".png")),
+            "exact-viewport",
         ],
         capture_output=True,
         text=True,

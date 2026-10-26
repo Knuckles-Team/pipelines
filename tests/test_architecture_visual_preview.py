@@ -174,7 +174,8 @@ def test_motion_capture_uses_real_elapsed_browser_time_without_seeking() -> None
     assert "--remote-debugging-pipe" in helper
     assert "await delay(2000)" in helper
     assert "Page.captureScreenshot" in helper
-    assert "currentTime=" not in helper and "--virtual-time-budget" not in helper
+    unforced = helper.split("const palette=", 1)[0]
+    assert "currentTime=" not in unforced and "--virtual-time-budget" not in helper
     assert "Math.abs(w.x-frames[i-1].waves[j].x)>8" in helper
     assert "sha256===frames[i-1].sha256" in helper
     runner = (ROOT / "scripts/architecture_explorer/visual_preview.py").read_text()
@@ -230,3 +231,16 @@ def test_native_caption_zoom_uses_trusted_input_and_unchanged_world_geometry_aft
     assert "`${theme}-native-caption-zoom.json`" in helper
     assert "navigation.passed=false" in helper and "throw error;" in helper
     assert "document.fullscreenElement=" not in helper
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_palette_cycle_diagnostics_are_separate_from_unforced_motion_and_restore_timeline() -> None:
+    helper = (ROOT / "scripts/architecture_explorer/motion_capture.cjs").read_text()
+    assert helper.index("const palette=") > helper.index("`${theme}-continuous-motion.json`")
+    assert "Paused native palette timeline diagnostics; canvas-only browser captures, not real-time video" in helper
+    assert "clip:paletteClip" in helper
+    assert "[0,.5,1,1.5,2]" in helper and "timing.delay+timing.duration*phase" in helper
+    assert "[0,64000,128000]" in helper
+    assert "Full palette opacity extrema not sampled" in helper
+    assert "s.a.currentTime=s.time;if(s.state==='running')s.a.play()" in helper
+    assert "`${theme}-palette-timeline.json`" in helper

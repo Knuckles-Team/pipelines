@@ -33,7 +33,7 @@ function call(method,params={},sessionId){return new Promise((resolve,reject)=>{
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const results=[];
 (async()=>{
- for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide'])for(const route of ['center','left-gap','right-gap']){
+ for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide'])for(const route of ['center','left-gap','right-gap','child-focus']){
   const revealed=results.filter(r=>r.device===device.name&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas');
   if(route!=='center'&&(node==='webui'&&device.name==='desktop'?['priority','dependencies'].every(k=>revealed.some(r=>r.story.kind===k)):revealed.length>0))continue;
   if(route==='right-gap'&&node!=='webui')continue;
@@ -70,7 +70,16 @@ const results=[];
      await delay(150);
      {
       const fraction=route==='center'?.5:route==='left-gap'?.2:.8;
-      const p=await page.evaluate(`(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return {x:r.x+r.width*${fraction},y:r.y+r.height/2}})()`);
+      // Supplement the original center/side sweeps with native zoom aimed at
+      // a visible child, rather than an empty center that loses all child context.
+      // Hold the initial screen point fixed; only trusted wheel input moves camera.
+      if(route==='child-focus'&&!page.childPointer)page.childPointer=await page.evaluate(`(()=>{
+       const find=n=>n.id===${JSON.stringify(node)}?n:n.children.map(find).find(Boolean),n=find(PAYLOAD.tree),b=document.querySelector('#cv').getBoundingClientRect(),c=__arch.cam;
+       const candidates=n.children.map(ch=>{const r=__arch.rect(ch.id),x=(r[0]+r[2]/2-c.x)*c.k,y=(r[1]+r[3]/2-c.y)*c.k;return {id:ch.id,x:b.x+x,y:b.y+y,d:Math.hypot(x-b.width/2,y-b.height/2),inside:(r[0]-c.x)*c.k>=0&&(r[1]-c.y)*c.k>=0&&(r[0]+r[2]-c.x)*c.k<=b.width&&(r[1]+r[3]-c.y)*c.k<=b.height&&b.x+(r[0]-c.x)*c.k>=0&&b.y+(r[1]-c.y)*c.k>=0&&b.x+(r[0]+r[2]-c.x)*c.k<=innerWidth&&b.y+(r[1]+r[3]-c.y)*c.k<=innerHeight};})
+        .filter(p=>p.inside&&p.x>0&&p.x<innerWidth&&p.y>0&&p.y<innerHeight).sort((a,b)=>a.d-b.d||a.id.localeCompare(b.id));
+       if(!candidates.length)throw Error('No initially visible native child for pointer-directed zoom');const {id,x,y}=candidates[0];return {id,x,y};
+      })()`);
+      const p=route==='child-focus'?{x:page.childPointer.x,y:page.childPointer.y}:await page.evaluate(`(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return {x:r.x+r.width*${fraction},y:r.y+r.height/2}})()`);
       const before=await page.evaluate('({...__arch.cam})'),delta=step?-160:-1;
       await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',...p,deltaX:0,deltaY:delta});
       const expected=Math.max(.02,Math.min(before.k*Math.exp(-delta*.0016),4e6));
@@ -131,7 +140,8 @@ const results=[];
     }
     if(device.name==='mobile'&&mask)fullPageCaptured=true;
     if(hashes[0]!==hashes[1])throw Error('Existing canvas pixels changed outside chart bounds');
-    results.push({device:device.name,node,route,step,camera:states[1].cam,focus:states[1].focus,story,geometryEqual:true,outsideChartPixelHash:hashes[0]});
+    if(route==='child-focus'&&JSON.stringify(pages[0].childPointer)!==JSON.stringify(pages[1].childPointer))throw Error('Native child pointer differs between variants');
+    results.push({device:device.name,node,route,step,...(route==='child-focus'?{nativeChildPointer:pages[1].childPointer}:{}),camera:states[1].cam,focus:states[1].focus,story,geometryEqual:true,outsideChartPixelHash:hashes[0]});
     writeFileSync(join(output,'native-proof.json'),JSON.stringify(results,null,2));
    }
   }finally{for(const page of pages)await call('Target.closeTarget',{targetId:page.targetId});}

@@ -679,3 +679,18 @@ use actual glyph bounds without loosening the comparator, retain all dependency
 counts/provenance, and pass the new 30-case core plus rich native proof. Retain
 core, current-source and rich-pair artifacts separately; keep the core 31 MiB
 limit and all original pixels rather than hiding the recorded failure.
+
+The second current-source run passed 124 core tests and all 30 named cases,
+with 108 invariant paired rich states including actual priority and dependency
+reveals. It still deferred all mobile DecisionEngine charts under center/side
+wheel sweeps. Add a supplementary trusted wheel route anchored at a fully visible
+native child, preserving the original routes, readable-child context, geometry,
+pixel and final reveal gates. Do not change renderer placement to satisfy a test.
+Review also found the named 390px summary capture was actually 500px due to the
+browser CLI minimum. Opt only the eight summary captures into exact CDP viewport
+metrics and require requested dimensions to equal actual dimensions. Original
+count-track cases remain unchanged. Retain the unforced four-second motion proof;
+separate, explicitly paused native timeline diagnostics sample all three palette
+extrema across the 128-second longest alternating cycle. These diagnostics are
+actual browser pixels, not a claim of elapsed full-cycle video. Require the new
+exact-head hosted receipts and pixel review before production promotion.
