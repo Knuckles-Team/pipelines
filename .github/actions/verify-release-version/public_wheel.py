@@ -7,6 +7,7 @@ import hashlib
 import io
 import json
 import re
+import shlex
 import subprocess
 import tomllib
 from pathlib import Path
@@ -58,7 +59,7 @@ def verify_release(root: Path, distribution: str, module: str, dockerfile: str, 
     suffix = f"[{extras}]" if extras else ""
     pin = f"{distribution}{suffix}=={version}"
     docker = subprocess.check_output(["git", "show", f"HEAD:{dockerfile}"], cwd=root, text=True)
-    if pin not in docker.split():
+    if pin not in shlex.split(docker, comments=True):
         raise ValueError("Dockerfile must pin the reviewed package version")
     expected = reviewed_payload(root, module)
     metadata = json.loads(read_public(f"https://pypi.org/pypi/{distribution}/{version}/json"))
