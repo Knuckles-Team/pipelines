@@ -102,6 +102,48 @@ def test_render_is_deterministic_and_driven_by_the_table(tmp_path: Path) -> None
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [
+        ("127.0.0.1", "127.0.0.1:9000:9000"),
+        ("0.0.0.0", "0.0.0.0:9000:9000"),
+        ("::1", "[::1]:9000:9000"),
+    ],
+)
+def test_render_uses_a_validated_compose_host(tmp_path: Path, host: str, expected: str) -> None:
+    pyproject = PYPROJECT.replace("port = 9000\n", f'port = 9000\ncompose_host = "{host}"\n')
+    root = _repo(tmp_path, pyproject)
+    compose = yaml.safe_load(container.render(root)["mcp.compose.yml"])["services"]["demo-mcp-mcp"]
+    assert compose["ports"] == [expected]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
+@pytest.mark.parametrize(
+    "host",
+    [
+        "",
+        " 127.0.0.1",
+        "127.0.0.1:9000",
+        "127.0.0.999",
+        "http://127.0.0.1",
+        "127.0.0.1/24",
+        "[::1]",
+        "fe80::1%eth0",
+        "localhost",
+        "connector.example",
+        "bad host",
+        "*",
+        "a..b",
+        "-connector.example",
+    ],
+)
+def test_render_refuses_an_invalid_compose_host(tmp_path: Path, host: str) -> None:
+    pyproject = PYPROJECT.replace("port = 9000\n", f'port = 9000\ncompose_host = "{host}"\n')
+    with pytest.raises(CannotRun, match="compose_host"):
+        container.render(_repo(tmp_path, pyproject))
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.13")
 def test_render_refreshes_the_detected_branded_sdk_distribution(tmp_path: Path) -> None:
     pyproject = PYPROJECT.replace(
         "[project.optional-dependencies]", 'dependencies = ["scion-sdk[mcp]>=1.0"]\n[project.optional-dependencies]'
