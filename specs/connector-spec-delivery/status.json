@@ -419,8 +419,10 @@
     {
       "id": "PIPE-CONNSPEC-R002",
       "title": "Test binding forms",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "e01884644a83"
+      ],
       "verified_by": [
         "tests/hooks/test_spec_status.py:58"
       ]
