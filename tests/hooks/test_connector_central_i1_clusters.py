@@ -118,6 +118,7 @@ def _notes(ctx: base.Ctx, rid: str) -> list[dict]:
 
 
 # --- w1.i1: the typed declaration cluster -------------------------------------------------------------------
+# spec: PIPE-GATES-R016.62 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.62")
 def test_i1_typed_declaration_cluster_is_migrated(tmp_path: Path) -> None:
     root = _repo(tmp_path, HEAD + TYPED_BODY, tests={"test_ingest_sources.py": TEST_USING})
@@ -175,6 +176,7 @@ def test_i1_typed_declaration_that_filters_or_adds_fields_is_reviewed(
     assert {p: p.read_text(encoding="utf-8") for p in root.rglob("*") if p.is_file()} == before
 
 
+# spec: PIPE-GATES-R016.63 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.63")
 def test_i1_then_i2_groups_the_shared_fields_of_an_annotated_module(tmp_path: Path) -> None:
     root = _repo(tmp_path, HEAD + TYPED_BODY, tests={"test_ingest_sources.py": TEST_USING})

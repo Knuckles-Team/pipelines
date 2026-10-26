@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import os
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,35 @@ import pytest
 from pipelines_hooks.hygiene.connector_central import ingest
 from pipelines_hooks.hygiene.connector_central.base import RULES, Ctx, make_ctx
 
-SDK = Path("/home/genius/.local/state/repository-worktrees/agent-connector-sdk/wave2-dryrun")
+
+def _sdk_checkout() -> Path:
+    """Find the real SDK checkout used by a central migration dry run.
+
+    The migration driver accepts an explicit checkout path.  Tests may provide
+    the same path through ``PIPELINES_SDK_PATH``; locally, prefer the current
+    Scion rename worktree and then the workspace checkout.  The test remains
+    skipped when neither checkout is available, rather than comparing against
+    a fabricated helper implementation.
+    """
+    state = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state"))
+    worktrees = state / "repository-worktrees" / "agent-connector-sdk"
+    configured = os.environ.get("PIPELINES_SDK_PATH")
+    candidates = tuple(
+        path
+        for path in (
+            *((Path(configured),) if configured else ()),
+            *sorted(worktrees.glob("codex/pypi-rename-scion-sdk-*"), reverse=True),
+            Path("/home/apps/workspace/agent-packages/agent-connector-sdk"),
+            worktrees / "wave2-dryrun",
+        )
+    )
+    for candidate in candidates:
+        if (candidate / "agent_connector_sdk/ingest/mapping.py").is_file():
+            return candidate
+    return candidates[0]
+
+
+SDK = _sdk_checkout()
 
 PYPROJECT = """[project]
 name = "demo-mcp"
@@ -184,6 +213,7 @@ def _steps(ctx: Ctx) -> list[str]:
 # ---------------------------------------------------------------- i1
 
 
+# spec: PIPE-GATES-R016.82 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.82")
 def test_i1_deletes_standard_plumbing_only(tmp_path: Path) -> None:
     root = _connector(tmp_path)
@@ -238,6 +268,7 @@ def test_i1_nonstandard_body_goes_to_review(tmp_path: Path) -> None:
 # ---------------------------------------------------------------- i2
 
 
+# spec: PIPE-GATES-R016.83 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.83")
 def test_i2_for_package_stream_and_imports(tmp_path: Path) -> None:
     root = _connector(tmp_path)
@@ -276,6 +307,7 @@ def test_i2_without_i1_plan_does_nothing(tmp_path: Path) -> None:
 # ---------------------------------------------------------------- i3
 
 
+# spec: PIPE-GATES-R016.84 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.84")
 def test_i3_rewrites_call_sites_and_deletes_helper_tests(tmp_path: Path) -> None:
     root = _connector(tmp_path)
@@ -394,6 +426,7 @@ async def ingest_all(get_page):
 """
 
 
+# spec: PIPE-GATES-R016.88 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.88")
 def test_i7_paging_is_review_and_stops_i1(tmp_path: Path) -> None:
     root = _connector(tmp_path, extra=KG_MAPPER + PAGING)

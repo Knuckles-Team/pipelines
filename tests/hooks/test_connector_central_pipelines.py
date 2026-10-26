@@ -139,6 +139,7 @@ def toml(root: Path) -> dict:
 
 
 # --- pl.n -------------------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.91 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.91")
 def test_n_removes_bumpversion_readme_line_literal_and_test_assertion(repo: Path) -> None:
     (repo / ".bumpversion.cfg").write_text("[bumpversion]\ncurrent_version = 1.2.3\n", encoding="utf-8")
@@ -576,6 +577,7 @@ def security_dir(root: Path) -> None:
     (root / ".security" / "security-contract.json").write_text(json.dumps(CONTRACT), encoding="utf-8")
 
 
+# spec: PIPE-GATES-R016.97 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.97")
 def test_t_removes_security_dir_and_ports_licenses(repo: Path) -> None:
     security_dir(repo)
@@ -600,6 +602,7 @@ def test_t_keeps_contract_when_validator_is_tracked(repo: Path) -> None:
 
 
 # --- pl.u -------------------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.98 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.98")
 def test_u_deletes_bootstrap_and_rewrites_setup_line(repo: Path) -> None:
     (repo / "scripts").mkdir()
@@ -627,6 +630,7 @@ def parity_script(root: Path, baselines: str) -> None:
     (root / "scripts" / "verify_api_integration.py").write_text(f"BASELINES = {baselines}\n", encoding="utf-8")
 
 
+# spec: PIPE-GATES-R016.99 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.99")
 def test_v_ports_baseline_and_deletes_script_and_test(repo: Path) -> None:
     parity_script(repo, '{"demo-mcp": 50.0, "other": 90.0}')
@@ -665,6 +669,7 @@ def test_v_dynamic_baselines_table_is_blocking(repo: Path) -> None:
 
 
 # --- pl.s -------------------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.96 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.96")
 def test_s_drops_dupehound_skip_and_bump2version_step(repo: Path) -> None:
     wf = repo / ".github/workflows/connector-pr.yml"
