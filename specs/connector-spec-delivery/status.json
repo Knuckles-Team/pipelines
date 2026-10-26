@@ -430,9 +430,13 @@
     {
       "id": "PIPE-CONNSPEC-R003",
       "title": "The spec-delivery page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "0e995cf10c3d"
+      ],
+      "verified_by": [
+        "tests/test_spec_dashboard.py:14"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R004",
