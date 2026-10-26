@@ -74,3 +74,11 @@ def test_bootstrap_that_pipes_a_network_response_into_a_shell_is_flagged(repo: R
     clean = "#!/bin/sh\n# curl x | sh is only a comment\npython3 -m pip install --user uv\n"
     repo.commit({"scripts/bootstrap.sh": clean})
     assert repo.run("agent-contract", "--strict") == 0
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R175")
+def test_bootstrap_dynamic_expression_is_flagged(repo: Repo, capsys) -> None:
+    dynamic = '#!/bin/sh\neval "$BOOTSTRAP_INSTALLER"\n'
+    repo.commit({"AGENTS.md": "# a\n\n" + SECTION, "scripts/bootstrap.sh": dynamic})
+    assert repo.run("agent-contract", "--strict") == 1
+    assert "scripts/bootstrap.sh:2: SC-INSTALL-002" in capsys.readouterr().out
