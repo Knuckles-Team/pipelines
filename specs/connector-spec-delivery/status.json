@@ -3115,6 +3115,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "8b12b7066e0b",
+        "d0b62fe19086",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3122,7 +3123,7 @@
         "tests/test_connector_consumer_r138_157.py:74",
         "tests/test_connector_consumer_r149.py:127",
         "tests/test_connector_consumer_r149.py:166",
-        "tests/test_connector_consumer_r149.py:44"
+        "tests/test_connector_consumer_r149.py:198"
       ],
       "rollup_of": [
         "PIPE-CONNSPEC-R149.1",
@@ -3158,10 +3159,12 @@
       "title": "`opensearch-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "8b12b7066e0b"
+        "8b12b7066e0b",
+        "d0b62fe19086"
       ],
       "verified_by": [
         "tests/test_connector_consumer_r149.py:127",
+        "tests/test_connector_consumer_r149.py:198",
         "tests/test_connector_consumer_r149.py:44"
       ]
     },
@@ -3170,7 +3173,8 @@
       "title": "`opensearch-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "8b12b7066e0b"
+        "8b12b7066e0b",
+        "d0b62fe19086"
       ],
       "verified_by": [
         "tests/test_connector_consumer_r149.py:166",
