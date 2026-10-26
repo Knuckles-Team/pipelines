@@ -1657,9 +1657,18 @@
     {
       "id": "PIPE-CONNSPEC-R121",
       "title": "`firefly-iii-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2523602d5bf6",
+        "a56aeaef8e7f"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r118_137.py:52",
+        "tests/test_connector_consumer_r118_137.py:96",
+        "tests/test_connector_consumer_r121.py:148",
+        "tests/test_connector_consumer_r121.py:186",
+        "tests/test_connector_consumer_r121.py:67"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R121.1",
         "PIPE-CONNSPEC-R121.2",
@@ -1692,16 +1701,26 @@
     {
       "id": "PIPE-CONNSPEC-R121.3",
       "title": "`firefly-iii-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2523602d5bf6"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r121.py:148",
+        "tests/test_connector_consumer_r121.py:67"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R121.4",
       "title": "`firefly-iii-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "2523602d5bf6"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r121.py:186",
+        "tests/test_connector_consumer_r121.py:68"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R122",
