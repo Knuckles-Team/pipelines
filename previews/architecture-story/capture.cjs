@@ -50,6 +50,24 @@ const results=[];
     await command('Page.navigate',{url:pathToFileURL(join(output,variant+'.html')).href+'#node='+node});
     for(let i=0;i<100;i++){if(await evaluate('!!window.__arch && document.readyState==="complete"'))break;await delay(50);}
     await evaluate('document.fonts.ready.then(()=>true)');await delay(700);
+    // Native hash landing runs before font settlement. Re-select through the real search UI
+    // after fonts load so both pages use the same final native fit dimensions.
+    await command('Page.bringToFront');
+    const target=await evaluate(`(()=>{let found;const walk=n=>{if(n.id===${JSON.stringify(node)})found=n;n.children.forEach(walk)};walk(PAYLOAD.tree);const r=document.querySelector('#q').getBoundingClientRect();return {label:found.label,x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+    await command('Input.dispatchMouseEvent',{type:'mousePressed',x:target.x,y:target.y,button:'left',clickCount:1});
+    await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:target.x,y:target.y,button:'left',clickCount:1});
+    await command('Input.insertText',{text:target.label});await delay(150);
+    const result=await evaluate(`(()=>{const i=__arch.hits.findIndex(h=>h.kind==='part'&&h.node===${JSON.stringify(node)});if(i<0)throw Error('Exact native part result missing');const r=document.querySelector('#res-'+i+' button').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+    await command('Input.dispatchMouseEvent',{type:'mousePressed',...result,button:'left',clickCount:1});
+    await command('Input.dispatchMouseEvent',{type:'mouseReleased',...result,button:'left',clickCount:1});
+    await delay(500);
+    if(await evaluate('__arch.selected')!==node)throw Error('Native search selected wrong target');
+    // Clear the search text with trusted keys without changing the native camera.
+    await command('Input.dispatchMouseEvent',{type:'mousePressed',x:target.x,y:target.y,button:'left',clickCount:1});
+    await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:target.x,y:target.y,button:'left',clickCount:1});
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'a',code:'KeyA',modifiers:2});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'a',code:'KeyA',modifiers:2});
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Backspace',code:'Backspace'});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Backspace',code:'Backspace'});
+    await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape'});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape'});await delay(200);
     pages.push({targetId,variant,command,evaluate});
    }
    for(let step=0;step<12;step++){
@@ -75,7 +93,7 @@ const results=[];
     const story=states[1].story,mask=story?.placement==='canvas'?story.rect:null,hashes=[];
     if(mask){
      const prior=results.filter(r=>r.device===device.name&&r.node===node&&r.route===route&&r.story?.placement==='canvas'&&r.story.owner===story.owner&&r.story.tier===story.tier).at(-1);
-     if(prior&&(prior.story.index!==story.index||prior.story.kind!==story.kind||prior.story.align!==story.align))throw Error('Story anchor jumped inside native zoom tier');
+     if(prior&&(prior.story.index!==story.index||prior.story.kind!==story.kind||prior.story.align!==story.align||prior.story.layoutWidth!==story.layoutWidth))throw Error('Story anchor jumped inside native zoom tier');
      const text=story.layout.ops.filter(op=>op.type==='text');
      for(const op of text)if(op.x<0||op.x+op.width>story.rect[2]+.01||op.y<0||op.y+op.height>story.rect[3]||op.size<11)throw Error('Unreadable or out-of-bounds story text');
      for(let i=0;i<text.length;i++)for(let j=i+1;j<text.length;j++){const a=text[i],b=text[j];if(a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y)throw Error('Story labels overlap');}

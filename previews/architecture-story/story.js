@@ -142,7 +142,9 @@ function richLayout(kind,view,width,measure){
   }else if(kind==='priority'){
     para('Priority and frontier',13,600);scope();
     para('Scope score · shared 0–'+view.priorityScale+' scale');y+=4;
-    for(const row of view.priorities){
+    const displayed=width<420?view.priorities.slice(0,2):view.priorities;
+    para(displayed.length+' of '+view.priorities.length+' positive-score rows');
+    for(const row of displayed){
       const title=row.title;para(title,12,500,2);
       const state=row.readiness==='ready'?'Ready':row.readiness==='blocked'?'Blocked':'Not actionable';
       const label=row.id+' · '+state;para(label);y+=2;
@@ -167,17 +169,20 @@ function richLayout(kind,view,width,measure){
     const ranks=new Map(shownRows.map(r=>[r.key,0]));
     for(let i=0;i<shownRows.length;i++){let changed=false;for(const e of shownEdges)if(ranks.get(e.target)<=ranks.get(e.source)){ranks.set(e.target,ranks.get(e.source)+1);changed=true;}if(!changed)break;if(i===shownRows.length-1)return null;}
     const maxRank=Math.max(...ranks.values()),positions=new Map(),baseY=y;
-    const cellW=narrow?width-32:130,cellH=98,gap=26;
+    const cellW=narrow?(width-30)/2:130,cellH=98,gap=26;
     if(narrow){
-      // Vertical native-space graph; no map inset or custom camera.
-      shownRows.sort((a,b)=>ranks.get(a.key)-ranks.get(b.key)||a.key.localeCompare(b.key)).forEach((r,i)=>positions.set(r.key,{x:32,y:baseY+i*(cellH+gap),w:cellW,h:cellH}));
+      // Compact two-column ego graph; no map inset or custom camera.
+      const dependents=shownRows.filter(r=>ranks.get(r.key)===0),targets=shownRows.filter(r=>ranks.get(r.key)>0);
+      if(dependents.length!==1||targets.length>2)return null;
+      positions.set(dependents[0].key,{x:0,y:baseY+(targets.length-1)*(cellH+gap)/2,w:cellW,h:cellH});
+      targets.forEach((r,i)=>positions.set(r.key,{x:width-cellW,y:baseY+i*(cellH+gap),w:cellW,h:cellH}));
     }else{
       for(let rank=0;rank<=maxRank;rank++){
         const layer=shownRows.filter(r=>ranks.get(r.key)===rank).sort((a,b)=>a.key.localeCompare(b.key));
         layer.forEach((r,i)=>positions.set(r.key,{x:rank*(width-cellW)/maxRank,y:baseY+i*(cellH+gap),w:cellW,h:cellH}));
       }
     }
-    for(const e of shownEdges){const a=positions.get(e.source),b=positions.get(e.target);ops.push({type:'edge',source:e.source,target:e.target,points:narrow?[[a.x-6,a.y+a.h/2],[8,a.y+a.h/2],[8,b.y+b.h/2],[b.x-6,b.y+b.h/2]]:[[a.x+a.w,a.y+a.h/2],[b.x-6,b.y+b.h/2]]});}
+    for(const e of shownEdges){const a=positions.get(e.source),b=positions.get(e.target);ops.push({type:'edge',source:e.source,target:e.target,points:[[a.x+a.w,a.y+a.h/2],[b.x-6,b.y+b.h/2]]});}
     // Source titles wrap; no white cards or panel backgrounds.
     for(const row of shownRows){
       const p=positions.get(row.key);let cy=p.y;const full=row.title;
@@ -194,8 +199,8 @@ function richLayout(kind,view,width,measure){
     para('Source requirements, not runtime traffic.');
   }else return null;
   if(invalid)return null;
-  const detail=kind==='frontier'?view.families.map(f=>f.key+': '+f.ready+' ready and '+f.blocked+' blocked; denominator '+(f.ready+f.blocked)+' eligible non-rollup open rows').join('. '):kind==='priority'?view.priorities.map(r=>r.id+': '+r.title+'; score '+r.priority.value+'; '+r.readiness).join('. '):ops.filter(o=>o.type==='edge').map(e=>view.refs[e.source].id+' requires '+view.refs[e.target].id).join('. ');
-  const visibleKeys=kind==='dependencies'?[...new Set(ops.filter(o=>o.type==='edge').flatMap(e=>[e.source,e.target]))]:kind==='priority'?view.priorities.map(r=>r.key):view.families.map(f=>Object.values(view.refs).find(r=>r.key.startsWith(f.key.split(':')[0]+':')&&r.provenance.path==='specs/'+f.key.split(':')[1]+'/requirements.md').key);
+  const detail=kind==='frontier'?view.families.map(f=>f.key+': '+f.ready+' ready and '+f.blocked+' blocked; denominator '+(f.ready+f.blocked)+' eligible non-rollup open rows').join('. '):kind==='priority'?(width<420?view.priorities.slice(0,2):view.priorities).map(r=>r.id+': '+r.title+'; score '+r.priority.value+'; '+r.readiness).join('. '):ops.filter(o=>o.type==='edge').map(e=>view.refs[e.source].id+' requires '+view.refs[e.target].id).join('. ');
+  const visibleKeys=kind==='dependencies'?[...new Set(ops.filter(o=>o.type==='edge').flatMap(e=>[e.source,e.target]))]:kind==='priority'?(width<420?view.priorities.slice(0,2):view.priorities).map(r=>r.key):view.families.map(f=>Object.values(view.refs).find(r=>r.key.startsWith(f.key.split(':')[0]+':')&&r.provenance.path==='specs/'+f.key.split(':')[1]+'/requirements.md').key);
   const sources=visibleKeys.map(key=>{const r=view.refs[key],children=r.rollupOf.map(k=>{const child=view.refs[k]||view.evidenceOnly[k];return child.id+' ('+(view.evidenceOnly[k]?'unscored evidence only':'scored scope')+') at '+child.url;});return r.id+': '+r.title+'. Immutable source file '+r.url+'; locate row '+r.provenance.fragment+(children.length?'. Rollup evidence: '+children.join('; '):'');}).join('. ');
   return {kind,width,height:y+2,ops,scope:view.scope,accessibility:view.accessibility+' '+detail+'. '+sources};
 }
@@ -204,8 +209,17 @@ if(typeof module!=='undefined')module.exports={richLayout};
 // LOCAL extension seam only. No geometry, input handler, control or camera writes.
 function storyContext(id){
   const children=nodes[id].children,visible=[];
-  for(const ch of children){const r=R[ch.id],p=toS(r[0],r[1]);const w=Math.max(0,Math.min(W,p[0]+r[2]*cam.k)-Math.max(0,p[0])),h=Math.max(0,Math.min(H,p[1]+r[3]*cam.k)-Math.max(0,p[1]));if(w>=40&&h>=24)visible.push({id:ch.id,width:w,height:h});}
-  return {applicable:children.length>0,visibleChildren:visible,retained:!children.length||visible.length>0};
+  ctx.save();try{for(const ch of children){
+    const r=R[ch.id],p=toS(r[0],r[1]),sw=r[2]*cam.k,sh=r[3]*cam.k;
+    const w=Math.max(0,Math.min(W,p[0]+sw)-Math.max(0,p[0])),h=Math.max(0,Math.min(H,p[1]+sh)-Math.max(0,p[1]));
+    const op=openness(ch,sw),hasRole=!!ch.role&&sw>=64&&sh>=32;
+    const closedFont=Math.max(Math.min(19,sw/10,sh/(hasRole?5.8:4.2)),sw>=48&&sh>=26?7:0);
+    const wholeCard=op<=.15&&closedFont>=11&&p[0]>=0&&p[1]>=0&&p[0]+sw<=W&&p[1]+sh<=H;
+    let readableTitle=null;
+    if(op>=.85){const head=sh*.09,fs=Math.min(26,head*.62,sw/28);if(fs>=11){ctx.font='600 '+fs+'px '+C.display;const title=fitText(ch.label,sw*.5),tw=ctx.measureText(title).width,x=p[0]+sw*.01,y=p[1]+head*.45;const rect=[x,y-fs,tw,fs*2];if(title&&rect[0]>=0&&rect[1]>=0&&rect[0]+rect[2]<=W&&rect[1]+rect[3]<=H)readableTitle={text:title,rect,size:fs};}}
+    if(wholeCard||readableTitle)visible.push({id:ch.id,width:w,height:h,wholeCard,readableTitle});
+  }}finally{ctx.restore();}
+  return {applicable:children.length>0,visibleChildren:visible,retained:!children.length||visible.length>0,criterion:'whole closed card with >=11px title or visible open-child title >=11px; not a cropped sliver'};
 }
 function availableRichLayouts(id,data,bounds){
   const compact={kind:'context',width:80,height:40,ops:[]};
@@ -218,7 +232,7 @@ function availableRichLayouts(id,data,bounds){
     const width=W>=510?460:280,measure=(t,s,w)=>{ctx.font=w+' '+s+'px '+C.body;return ctx.measureText(t).width;};
     ctx.save();try{
       const kinds=bounds[2]>=2560?['dependencies','priority','frontier']:bounds[2]>=1280?['priority','frontier']:['frontier'];
-      for(const kind of kinds){const layout=richLayout(kind,SOURCE_VIEW,width,measure);if(layout)layouts.push(layout);}
+      for(const kind of kinds)for(const candidateWidth of width===460?[460,280]:[280]){const layout=richLayout(kind,SOURCE_VIEW,candidateWidth,measure);if(layout)layouts.push(layout);}
     }finally{ctx.restore();}
   }
   const family=storyLayout('comparison',data,compactStoryGroups(data));if(family)layouts.push(family);
@@ -227,12 +241,12 @@ function availableRichLayouts(id,data,bounds){
 }
 function chooseStory(id,data,bounds,obstacles,segments){
   const tier=Math.floor(Math.log2(Math.max(1,bounds[2]/640))),key=id+':'+tier,anchors=nodeStoryAnchors(id),prior=storyAnchorChoices.get(key),context=storyContext(id);
-  const layouts=availableRichLayouts(id,data,bounds),byKind=new Map(layouts.map(l=>[l.kind,l]));
+  const layouts=availableRichLayouts(id,data,bounds),byKind=new Map(layouts.map(l=>[l.kind+':'+l.width,l]));
   const rectFor=(choice,layout)=>{const p=toS(anchors[choice.index].x,anchors[choice.index].y);return [p[0]-(choice.align==='right'?layout.width:0),p[1],layout.width,layout.height];};
   if(!context.retained)return null;
-  if(prior){const layout=byKind.get(prior.kind);if(!layout)return null;const rect=rectFor(prior,layout);return clearStoryRect(rect,bounds,obstacles,segments)?{...prior,rect,tier,layout,groups:compactStoryGroups(data),context}:null;}
+  if(prior){const layout=byKind.get(prior.kind+':'+prior.layoutWidth);if(!layout)return null;const rect=rectFor(prior,layout);return clearStoryRect(rect,bounds,obstacles,segments)?{...prior,rect,tier,layout,groups:compactStoryGroups(data),context}:null;}
   for(const layout of layouts)for(let index=0;index<anchors.length;index++)for(const align of ['left','right']){
-    const choice={index,kind:layout.kind,align},rect=rectFor(choice,layout);
+    const choice={index,kind:layout.kind,align,layoutWidth:layout.width},rect=rectFor(choice,layout);
     // Small summaries cannot afford the old large-chart entry moat; the invariant 8px collision halo is retained.
     if(clearStoryRect(rect,bounds,obstacles,segments,layout.kind==='context'?0:12)){storyAnchorChoices.set(key,choice);return {...choice,rect,tier,layout,groups:compactStoryGroups(data),context};}
   }
