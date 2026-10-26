@@ -853,8 +853,12 @@
     {
       "id": "PIPE-PAGES-R015",
       "title": "One generator for connectors and client repositories",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "LANDED",
+      "landed_in": [
+        "246cc47a897a",
+        "5b454e4b7eb4",
+        "6f853265406b"
+      ],
       "verified_by": [],
       "rollup_of": [
         "PIPE-PAGES-R015.1",
@@ -876,8 +880,10 @@
     {
       "id": "PIPE-PAGES-R015.2",
       "title": "Overstory, Tuig, and Axil adopt it through the caller pattern in PIPE-CONNSPEC-R004. Each caller change belongs to the repository's own spec",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "6f853265406b"
+      ],
       "verified_by": [
         "tests/test_pages_pipeline_contract.py:303"
       ]
