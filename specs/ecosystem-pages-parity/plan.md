@@ -80,8 +80,40 @@ Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:79
 - Failure. An unresolvable claim yields `claims-unchecked`. The gate never passes silently.
 - Reused. `local_link_findings` and `quick_start_findings` stay as they are. New: `claims.py` and the resolvers.
 - Decision. The gate must resolve claims against the tree and the gate registry. DECIDED.
+- Syntax. Documents opt in with an HTML comment such as `<!-- claim:path docs/guide.md -->` (the whitespace form and the `pipelines-claim` prefix are accepted). Counts use an explicit selector such as `files=3`, `gates=42` or `path:docs=2`; each finding retains the source document and line.
 - Rejected: a hand-kept list of allowed claims. It repeats the drift the gate prevents.
 - Cross-repository. Each consumer repository runs the same hook. No row restates a consumer's own docs.
+
+### Amendment: R020.1–R020.6 typed claims and policy-scoped links (2026-10-26)
+
+The R020.1–R020.6 implementation keeps the claim syntax typed and explicit:
+`path`, `command`, `gate`, `count` and `diagram-node` are the complete kinds;
+each uses the comment form above and is resolved by its named offline resolver.
+Ordinary prose is not automatically treated as a semantic command or count
+claim, and this amendment does not claim completion of the later R020 rollup.
+The existing Markdown link/path validator also runs over every Markdown file
+in the repository's existing documentation inventory (`mkdocs.yml`'s declared
+`docs_dir`, or the established `docs/`/`pages/` fallback), resolving links
+relative to their source document while enforcing repository containment.
+Malformed claim comments refuse with their source location; ordinary links
+remain ordinary link findings rather than becoming typed claims.
+
+### Amendment: R020.7–R020.12 located evidence (2026-10-26)
+
+The R020.7–R020.12 extension adds the shared `LocatedFinding` report-boundary
+contract in `claims.py`: repository-relative source path, positive line, source
+digest, rule, observed value, expected value and evidence digest. The
+`located-evidence` validator checks the exact scanned bytes, line bounds,
+source digest and the producer's measured value before export. Missing
+measurements, escaped paths, invalid lines and stale digests become an
+`unsupported-finding` refusal; malformed evidence remains `CannotRun` (exit
+2), while a measured claim mismatch remains exit 1. Export is deterministic,
+repository-relative and redacts secrets/absolute machine paths. The public
+surface CLI now exercises the same report-boundary validator and accepts its
+bounded `--evidence` JSON export for replay against a changed tree; its generic
+function is available for later skill-grade and test-quality producers without
+introducing a second parser or status store. These children do not claim the
+R020 rollup or unrelated future consumers.
 
 ## Test quality gate (PIPE-PAGES-R021)
 
