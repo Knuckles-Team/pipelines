@@ -1,0 +1,13 @@
+{
+  "sourceTemplate": "scripts/architecture_explorer/template.html",
+  "sourceTemplateSha256": "bb5c0e869211fc05c31c85520040b03b51236b1f804d22cfa27e318fb19d555d",
+  "themeCssSha256": "d52d20c8578192285d43d76ff7257956a429d867f4afa429bdba57b151c677b0",
+  "fontSha256": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3",
+  "sourceFontIdentical": true,
+  "noPublication": true,
+  "scene": "Exact current abstract ocean SVG; paused static study, not activity",
+  "sourceRevision": "d7f41a476f50c00cf5d4ec209dd95d55c97e4fe1",
+  "authenticatedSourceBlobSha": "2c77ca544f12043943a13703835fe562a62709f2",
+  "snapshotArchiveSha256": "61ba094658161958b810de7f2795e3d2bc21c644ba216c0070c805a35df8cf04",
+  "snapshotCompression": "XZ (LZMA2), lossless JSON snapshot"
+}

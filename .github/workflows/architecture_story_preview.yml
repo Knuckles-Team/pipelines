@@ -1,0 +1,39 @@
+name: Architecture story study preview
+
+on:
+  pull_request:
+    paths:
+      - previews/architecture-story/**
+      - .github/workflows/architecture_story_preview.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: architecture-story-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build isolated study from the checked-in snapshot
+        run: python3 previews/architecture-story/prepare.py --output architecture-story-preview
+      - name: Capture four actual examples with the runner browser
+        run: |
+          CHROME=$(command -v google-chrome || command -v chromium)
+          test -n "$CHROME"
+          "$CHROME" --version > architecture-story-preview/chrome-version.txt
+          node previews/architecture-story/capture.cjs "$CHROME" architecture-story-preview
+      - name: Keep the study and actual capture receipts without deployment
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: architecture-story-study-${{ github.sha }}
+          path: architecture-story-preview/
+          if-no-files-found: error
+          retention-days: 7

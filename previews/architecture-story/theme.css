@@ -1,0 +1,61 @@
+/* Exact renderer font/tokens and ocean scene rules; standalone scene remains paused. */
+
+@font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(assets/InterVariable.woff2) format("woff2")}
+/* Layout: one zoomable drawing sheet (semantic zoom over strata) beside a spec ledger panel; stacks on phones. */
+:root{
+  --bg:#e8e9e9; --sheet:#f7f7f6; --surface:#fcfcfb; --fg:#252a2d; --muted:#2b3032; --faint:#313638;
+  --line:#a5bfcc; --grid:#d8e7ee; --edge:#42494e; --edge-halo:rgba(255,255,255,.70); --accent:#163e3a; --focus:#075c86;
+  --band-a:#e5e7e7; --band-b:#f0f1f0;
+  --glass-reading:rgb(255 255 255 / .76); --glass-control:rgb(255 255 255 / .68);
+  --glass-chrome:rgb(255 255 255 / .60); --ocean-dim:rgb(18 65 91 / 0);
+  --ocean-top:#bddce3; --ocean-bottom:#83b5c6; --wave-opacity:.38;
+  --node-top:rgba(255,255,255,.86); --node-bottom:rgba(245,245,245,.63);
+  --node-edge:rgba(255,255,255,.90); --node-shadow:rgba(0,0,0,.12);
+  --button-neutral:rgb(255 255 255 / .68); --button-hover:rgb(255 255 255 / .86); --button-active:rgb(225 225 221 / .92); --selection:rgb(202 203 200 / .92); --motion-on:rgb(210 229 213 / .90);
+  --atmosphere:#9ac4d7; --glass-edge:rgb(255 255 255 / .8);
+  --glass-shadow:0 16px 40px rgb(0 0 0 / .13);
+  --l-person:#3f3147; --l-entry:#2f3c2b; --l-gateway:#493420; --l-control:#313748; --l-core:#3d3349;
+  --l-server:#283c3b; --l-source:#333c21; --l-delivery:#4b332b; --l-unmapped:#542523;
+  --s-verified:#1d422a; --s-landed:#293a4a; --s-specified:#4d3500; --s-retired:#3a353e;
+  --t-person:rgba(177,111,198,.22); --t-entry:rgba(102,170,98,.22); --t-gateway:rgba(211,155,61,.22); --t-control:rgba(102,143,205,.22); --t-core:rgba(155,116,211,.22); --t-server:rgba(62,165,155,.22); --t-source:rgba(157,171,63,.22); --t-delivery:rgba(203,124,87,.22); --t-unmapped:rgba(201,91,91,.22);
+  --font-display:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#202123; --sheet:#292a2c; --surface:#303133; --fg:#f5f5f3; --muted:#e0e1dd; --faint:#d8dad6;
+  --line:#53788b; --grid:#203c4b; --edge:#e2e4e2; --edge-halo:rgba(0,0,0,.65); --accent:#9edcf4; --focus:#b2e7ff;
+  --band-a:#2e3032; --band-b:#252729;
+  --glass-reading:rgb(28 29 31 / .80); --glass-control:rgb(75 76 78 / .65);
+  --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / 0);
+  --ocean-top:#102c3b; --ocean-bottom:#183d4c; --wave-opacity:.12;
+  --node-top:rgba(55,56,58,.76); --node-bottom:rgba(25,26,28,.70);
+  --node-edge:rgba(255,255,255,.60); --node-shadow:rgba(0,0,0,.25);
+  --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
+  --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
+  --glass-shadow:0 16px 40px rgb(0 0 0 / .24);
+  --l-person:#e8d4f0; --l-entry:#cce6c2; --l-gateway:#f1d5a7; --l-control:#cad9f3; --l-core:#ddd0f6;
+  --l-server:#bae7df; --l-source:#dce5b2; --l-delivery:#f0d0bf; --l-unmapped:#ffd4cc;
+  --s-verified:#bfe6d3; --s-landed:#c2e4f8; --s-specified:#ecd99f; --s-retired:#d0dde5; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#202123; --sheet:#292a2c; --surface:#303133; --fg:#f5f5f3; --muted:#e0e1dd; --faint:#d8dad6;
+  --line:#53788b; --grid:#203c4b; --edge:#e2e4e2; --edge-halo:rgba(0,0,0,.65); --accent:#9edcf4; --focus:#b2e7ff;
+  --band-a:#2e3032; --band-b:#252729;
+  --glass-reading:rgb(28 29 31 / .80); --glass-control:rgb(75 76 78 / .65);
+  --glass-chrome:rgb(28 29 31 / .60); --ocean-dim:rgb(3 22 40 / 0);
+  --ocean-top:#102c3b; --ocean-bottom:#183d4c; --wave-opacity:.12;
+  --node-top:rgba(55,56,58,.76); --node-bottom:rgba(25,26,28,.70);
+  --node-edge:rgba(255,255,255,.60); --node-shadow:rgba(0,0,0,.25);
+  --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
+  --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
+  --glass-shadow:0 16px 40px rgb(0 0 0 / .24);
+  --l-person:#e8d4f0; --l-entry:#cce6c2; --l-gateway:#f1d5a7; --l-control:#cad9f3; --l-core:#ddd0f6;
+  --l-server:#bae7df; --l-source:#dce5b2; --l-delivery:#f0d0bf; --l-unmapped:#ffd4cc;
+  --s-verified:#bfe6d3; --s-landed:#c2e4f8; --s-specified:#ecd99f; --s-retired:#d0dde5; color-scheme:dark}
+body{background-image:linear-gradient(155deg,var(--ocean-top),var(--ocean-bottom));background-attachment:fixed}
+.ocean-scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;contain:strict}
+.ocean-wave{position:absolute;inset:-12% -15%;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201000%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22%23a3d5d3%22%20d%3D%22M-200%20380C140%2030%20430%20780%20890%20400S1540%20150%201800%20350V1100H-200Z%22%2F%3E%3Cpath%20fill%3D%22%2364abb6%22%20d%3D%22M-200%20760C260%20360%20560%201090%201000%20650S1500%20460%201800%20590V1100H-200Z%22%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;opacity:var(--wave-opacity);animation:ocean-drift 12s ease-in-out infinite alternate;animation-play-state:paused}
+.ocean-wave:nth-child(2){inset:-20% -18%;animation-duration:16s;animation-direction:alternate-reverse}
+.ocean-wave:nth-child(3){inset:-5% -12%;animation-duration:20s;animation-delay:-5s}
+:root[data-ocean-motion="running"] .ocean-wave{animation-play-state:running}
+@keyframes ocean-drift{from{transform:translate3d(-7%,-2%,0) rotate(-2deg)}to{transform:translate3d(7%,2%,0) rotate(2deg)}}
