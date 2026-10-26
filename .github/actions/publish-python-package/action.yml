@@ -14,6 +14,12 @@ inputs:
     description: Additional runtime extras as JSON; base and declared mcp/agent/all are always proven.
     required: false
     default: '[]'
+  role-contract:
+    description: >-
+      Optional tracked JSON role/extra contract. Empty keeps existing publishers unchanged;
+      a supplied path runs packaging-roles against the built wheel and readiness receipt.
+    required: false
+    default: ''
 runs:
   using: composite
   steps:
@@ -80,6 +86,29 @@ runs:
       uses: ./.pipeline-contract/.github/actions/wheel-readiness
       with:
         runtime-profiles: ${{ inputs.runtime-profiles }}
+
+    - name: Prove opt-in packaging role closure
+      if: inputs.role-contract != ''
+      shell: bash
+      env:
+        ROLE_CONTRACT: ${{ inputs.role-contract }}
+        RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
+      run: |
+        set -euo pipefail
+        test -f "$ROLE_CONTRACT" && test ! -L "$ROLE_CONTRACT"
+        git ls-files --error-unmatch -- "$ROLE_CONTRACT" >/dev/null
+        shopt -s nullglob
+        wheels=(dist/*.whl)
+        test "${#wheels[@]}" -eq 1
+        wheel="${wheels[0]}"
+        wheel_sha256="$(sha256sum "$wheel" | cut -d ' ' -f 1)"
+        uvx --from "git+https://${{ job.workflow_repository }}@${{ job.workflow_sha }}" pipelines-hook packaging-roles \
+          --contract "$ROLE_CONTRACT" \
+          --wheel "$wheel" \
+          --wheel-sha256 "$wheel_sha256" \
+          --receipt release-readiness.json \
+          --readiness-checker .pipeline-contract/.github/actions/wheel-readiness/readiness.py \
+          --runtime-profiles "$RUNTIME_PROFILES"
 
     # PIPE-RELEASE-R008: the wheel and the source distribution publish together.
     # The sdist builds into its own directory so dist/ stays wheel-only for the

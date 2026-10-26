@@ -46,6 +46,8 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
     steps = document["jobs"]["publish-pypi"]["steps"]
     contract = next(step for step in steps if step.get("name") == "Checkout pipeline contract")
     publisher = next(step for step in steps if step.get("name") == "Build, publish and release")
+    trigger = document.get("on", document.get(True))
+    role_contract = trigger["workflow_call"]["inputs"]["role-contract"]
 
     assert contract["uses"].startswith("actions/checkout@")
     assert contract["with"] == {
@@ -64,6 +66,10 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
         "persist-credentials": False,
     }
     assert publisher["uses"] == "./.pipeline-contract/.github/actions/publish-python-package"
+    assert role_contract["required"] is False
+    assert role_contract["default"] == ""
+    assert role_contract["type"] == "string"
+    assert publisher["with"]["role-contract"] == "${{ inputs.role-contract }}"
 
 
 def test_python_workflow_sparse_contract_keeps_readiness_validator_importable(tmp_path: Path) -> None:

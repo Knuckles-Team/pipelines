@@ -8,6 +8,13 @@ on:
         required: false
         default: '[]'
         type: string
+      role-contract:
+        description: >-
+          Optional tracked JSON role/extra contract; empty preserves existing publishers,
+          while a supplied path runs packaging-roles after wheel readiness.
+        required: false
+        default: ''
+        type: string
       web-assets:
         description: >-
           This package ships a Node/pnpm frontend (package.json) that must be
@@ -136,3 +143,4 @@ jobs:
           pypi-token: ${{ secrets.PYPI_API_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           runtime-profiles: ${{ inputs.runtime-profiles }}
+          role-contract: ${{ inputs.role-contract }}

@@ -3271,7 +3271,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_packaging_roles.py:161"
+        "tests/hooks/test_packaging_roles.py:167"
       ]
     },
     {
@@ -3280,7 +3280,7 @@
       "delivery_state": "SPECIFIED",
       "landed_in": [],
       "verified_by": [
-        "tests/hooks/test_packaging_roles.py:171"
+        "tests/hooks/test_packaging_roles.py:177"
       ]
     },
     {
