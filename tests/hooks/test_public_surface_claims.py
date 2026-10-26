@@ -298,6 +298,19 @@ def test_public_surface_located_evidence_cli(repo: Repo) -> None:
     assert "README.md:3 path docs/missing.md" in stale.stdout
     assert '"source_path":"README.md"' in stale.stdout
 
+    empty_evidence = repo.root.parent / "empty-located-evidence.json"
+    empty_evidence.write_text(export_located_evidence([]), encoding="utf-8")
+    bypass_attempt = subprocess.run(
+        [*command, "--evidence", str(empty_evidence)],
+        cwd=repo.root,
+        env=sanitized_env(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert bypass_attempt.returncode == 1
+    assert "README.md:3 path docs/missing.md" in bypass_attempt.stdout
+
     repo.write(
         "README.md",
         "# fixture\n\n<!-- claim:path docs/asset.md -->\n\n## Installation\n\n```bash\nuv sync\n```\n",

@@ -75,18 +75,35 @@ def validate(
         if relative not in {"README.md", "AGENTS.md"}:
             findings += local_link_findings(root, text, name=relative, base=path.parent)
     if persisted_findings is not None:
-        claim_results = []
+        if located_findings is None:
+            claim_results = claim_findings(root, claims)
+        else:
+            claim_results = claim_findings(root, claims, located_findings=located_findings, refusals=refusals)
+        existing_records = {
+            (item.source_path, item.line, item.source_digest, item.rule, item.evidence_digest)
+            for item in (located_findings or [])
+        }
         for finding in persisted_findings:
             refusal = validate_located_evidence(root, finding, measured=finding.observed)
             if refusal is not None:
                 if refusals is not None:
                     refusals.append(refusal)
                 continue
-            if located_findings is not None:
+            record_key = (
+                finding.source_path,
+                finding.line,
+                finding.source_digest,
+                finding.rule,
+                finding.evidence_digest,
+            )
+            if located_findings is not None and record_key not in existing_records:
                 located_findings.append(finding)
+                existing_records.add(record_key)
             if finding.observed != finding.expected:
                 record = finding.as_dict()
-                claim_results.append(f"{record['source_path']}:{record['line']} {record['rule']}")
+                result = f"{record['source_path']}:{record['line']} {record['rule']}"
+                if result not in claim_results:
+                    claim_results.append(result)
     elif located_findings is None:
         claim_results = claim_findings(root, claims)
     else:
