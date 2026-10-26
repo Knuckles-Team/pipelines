@@ -562,7 +562,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f2baf0bc01f",
-        "5ff231c270b1"
+        "5ff231c270b1",
+        "8a5d41d64229"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:104",
