@@ -584,6 +584,7 @@
       "title": "`archimate-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "2cfb5169e508",
         "449c1193701b",
         "afd8a5efe60e"
       ],
@@ -591,6 +592,7 @@
         "tests/test_connector_consumer_r101_r115.py:111",
         "tests/test_connector_consumer_r101_r115.py:136",
         "tests/test_connector_consumer_r101_r115.py:73",
+        "tests/test_connector_consumer_r102.py:150",
         "tests/test_connector_consumer_r102.py:62"
       ],
       "rollup_of": [
@@ -638,9 +640,11 @@
       "title": "`archimate-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "2cfb5169e508",
         "449c1193701b"
       ],
       "verified_by": [
+        "tests/test_connector_consumer_r102.py:150",
         "tests/test_connector_consumer_r102.py:62"
       ]
     },
