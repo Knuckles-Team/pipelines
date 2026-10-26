@@ -113,6 +113,15 @@ def test_project_version_values() -> None:
         parse_inventory(CONFIG.replace('search = version = "{current_version}"', "search = {current_version}"))
 
 
+def test_project_version_assignment_does_not_match_similar_manifest_keys() -> None:
+    contents = _contents()
+    contents["pyproject.toml"] += '\n[tool.ruff]\ntarget-version = "py312"\n[tool.mypy]\npython_version = "3.12"\n'
+    checks = check_inventory(_inventory(), contents)
+    metadata = [check for check in checks if check.role == "metadata"]
+    assert len(metadata) == 1
+    assert metadata[0].actual == VERSION
+
+
 def test_project_version_refusals() -> None:
     with pytest.raises(CannotRun, match="config-invalid: malformed"):
         parse_inventory("[bumpversion\ncurrent_version = 1\n")

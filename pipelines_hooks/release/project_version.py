@@ -274,7 +274,11 @@ def _sha256(value: str) -> str:
 def _extractor(location: VersionLocation) -> re.Pattern[str]:
     prefix, suffix = _template_parts(location.search, "{current_version}")
     capture = r"(?P<version>[^\s\r\n]+)" if not suffix else r"(?P<version>[^\s\r\n]+?)"
-    return re.compile(re.escape(prefix) + capture + re.escape(suffix))
+    # Metadata and source selectors describe literal assignments. Anchor those
+    # templates to a line start so ``version =`` does not also match keys such
+    # as ``target-version`` or ``python_version`` in the same manifest.
+    anchor = r"(?m)^[ \t]*" if location.role in {"metadata", "source"} else ""
+    return re.compile(anchor + re.escape(prefix) + capture + re.escape(suffix))
 
 
 def _line(text: str, offset: int) -> int:
