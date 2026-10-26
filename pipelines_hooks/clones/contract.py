@@ -12,6 +12,9 @@ from pathlib import PurePosixPath
 from pipelines_hooks.core.paths import glob_match, normalise_path
 
 DUPEHOUND_THRESHOLD = 0.85
+#: The lower inclusive floor used to surface review guidance before the
+#: blocking threshold.  The enforcement threshold above remains unchanged.
+DUPEHOUND_DIAGNOSTIC_THRESHOLD = 0.80
 DUPEHOUND_MIN_TOKENS = 40
 JSCPD_MIN_TOKENS = 50
 JSCPD_MIN_LINES = 5

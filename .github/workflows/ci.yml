@@ -30,6 +30,7 @@ jobs:
       # tracked-privacy needs the operator's private identity catalog, which is
       # not published to hosted runners; it runs wherever the catalog is installed.
       skip-hooks: tracked-privacy
+      scanners: dupehound
 
   main:
     if: github.event_name == 'push'
