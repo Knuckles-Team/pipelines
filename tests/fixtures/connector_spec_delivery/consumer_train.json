@@ -1,0 +1,1853 @@
+{
+  "observed_utc": "2026-10-26T13:43:17Z",
+  "provider": {
+    "canonical_template": {
+      "hooks": [
+        "connector-standard",
+        "dependency-readiness",
+        "secrets",
+        "spec",
+        "tests-fast"
+      ],
+      "rev": "main"
+    },
+    "proof_json": "/var/tmp/arbora-delivery/scale/consumer-contract-proof-5c1de08-20261026.json",
+    "proof_json_sha256": "eb6852b02be75ac0eb206fe0c90e41fc35da501505ed486877eba648b8df3cde",
+    "proof_script_sha256": "4c6e5cb0c7458172afbbe7862f7e4f11d09fd914f5f47303df93172219f530bd",
+    "repo": "pipelines",
+    "sha": "5c1de08df84e4e67ebc4fd04210626135c336de9",
+    "spec_group": [
+      "spec-standard",
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "spec_group_source": "pipelines_hooks/cli.py:73",
+    "spec_group_source_sha256": "34ffc10ed1fdad94c90b95c2c6fee2f2de76746af976a35dad0783e979ecf619",
+    "spec_leaf_hooks": [
+      "spec-status",
+      "spec-decomposition",
+      "spec-trailers"
+    ]
+  },
+  "purpose": "Test-only immutable consumer contract evidence for PIPE-CONNSPEC rollout.",
+  "repos": {
+    "archivebox-api": {
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T07:40:22Z",
+          "databaseId": 40075056630,
+          "headSha": "e829c5748cb4be8407e8cf73b86c0f51aaf8222f",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/archivebox-api/actions/runs/40075056630",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/archivebox-api/spec-delivery/"
+        },
+        "known_pages_run": "40075056630",
+        "required_paths": false,
+        "with": {}
+      },
+      "precommit": {
+        "hooks": [
+          "connector-standard",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "missing_canonical": [
+          "dependency-readiness"
+        ],
+        "provider_rev": "main",
+        "validate_config_rc": 0,
+        "validate_config_warning": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+      },
+      "publication_test": false,
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R103",
+      "sha": "e829c5748cb4be8407e8cf73b86c0f51aaf8222f",
+      "source_files": {
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1105,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n",
+          "sha256": "ecc68f521091e183ca130d5d8e14e33d49d03d6b89bb6ffdfa132dcd9035d7ad"
+        }
+      },
+      "status_documents": {
+        "specs/connector-content/status.json": {
+          "delivery_state": "LANDED",
+          "owner_repo": "archivebox-api",
+          "requirement_ids": [
+            "CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "8cfe46d9802f"
+              ],
+              "title": "Default content",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT"
+        },
+        "specs/sdk-centralization/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "archivebox-api",
+          "requirement_ids": [
+            "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001",
+            "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.1",
+            "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.2",
+            "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.3",
+            "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.4"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001",
+              "landed_in": [
+                "a4823e38ee38"
+              ],
+              "rollup_of": [
+                "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.1",
+                "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.2",
+                "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.3",
+                "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.4"
+              ],
+              "title": "Capabilities come from the SDK (rollup)",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.1",
+              "landed_in": [],
+              "title": "Governed client",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.2",
+              "landed_in": [],
+              "title": "TLS profile only",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.3",
+              "landed_in": [],
+              "title": "One session refresh",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.4",
+              "landed_in": [],
+              "title": "SDK floor",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION"
+        },
+        "specs/web-source/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "archivebox-api",
+          "requirement_ids": [
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.1",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.2",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.3",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.4",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.5",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.6",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.7",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.8",
+            "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.9"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001",
+              "landed_in": [],
+              "rollup_of": [
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.1",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.2",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.3",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.4",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.5",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.6",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.7",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.8",
+                "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.9"
+              ],
+              "title": "Archived pages answer through the web-source contract (rollup)",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.1",
+              "landed_in": [
+                "bbb45b8946da"
+              ],
+              "title": "Model",
+              "verified_by": [
+                "tests/test_conformance.py:136"
+              ]
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.2",
+              "landed_in": [
+                "054ae58c11ac",
+                "dbbffa293d27"
+              ],
+              "title": "Add URL",
+              "verified_by": [
+                "tests/test_web_source.py:150",
+                "tests/test_web_source.py:242"
+              ]
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.3",
+              "landed_in": [
+                "c603609b7f9a",
+                "dbbffa293d27"
+              ],
+              "title": "Snapshot status",
+              "verified_by": [
+                "tests/test_web_source.py:162"
+              ]
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.4",
+              "landed_in": [
+                "dbbffa293d27"
+              ],
+              "title": "Extracted text",
+              "verified_by": [
+                "tests/test_web_source.py:172",
+                "tests/test_web_source.py:209"
+              ]
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.5",
+              "landed_in": [
+                "dbbffa293d27"
+              ],
+              "title": "Refusal and evidence",
+              "verified_by": [
+                "tests/test_web_source.py:187"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.6",
+              "landed_in": [],
+              "title": "Hot-path proof",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.7",
+              "landed_in": [
+                "93d21335f669"
+              ],
+              "title": "Ingest mappings",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.8",
+              "landed_in": [
+                "bbb45b8946da"
+              ],
+              "title": "Conformance",
+              "verified_by": [
+                "tests/test_conformance.py:137"
+              ]
+            },
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.9",
+              "landed_in": [
+                "3743a52a8eba"
+              ],
+              "title": "Fleet name",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-ARCHIVEBOX-API-WEB-SOURCE"
+        }
+      },
+      "status_file_sha256": {
+        "specs/connector-content/status.json": "79df2d5bf010e482501de69af91a657a0e0d637c825f23c69d5244605870d71b",
+        "specs/sdk-centralization/status.json": "cfe9bc0216377f342be8d5457a17478d74be2b4ee6e81be380057c2788a8ae7e",
+        "specs/web-source/status.json": "f50d9b51c398f12b7244e00fdd930a1ebf62c8420ed33a12190603e08f929e28"
+      },
+      "status_record_count": 19,
+      "status_source": {
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"archivebox-api\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"8cfe46d9802f\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"archivebox-api\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001\",\n    \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.1\",\n    \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.2\",\n    \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.3\",\n    \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.4\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Capabilities come from the SDK (rollup)\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [\n        \"a4823e38ee38\"\n      ],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.1\",\n        \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.2\",\n        \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.3\",\n        \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.4\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.1\",\n      \"title\": \"Governed client\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.2\",\n      \"title\": \"TLS profile only\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.3\",\n      \"title\": \"One session refresh\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.4\",\n      \"title\": \"SDK floor\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/web-source/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE\",\n  \"owner_repo\": \"archivebox-api\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.1\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.2\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.3\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.4\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.5\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.6\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.7\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.8\",\n    \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.9\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001\",\n      \"title\": \"Archived pages answer through the web-source contract (rollup)\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.1\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.2\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.3\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.4\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.5\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.6\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.7\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.8\",\n        \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.9\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.1\",\n      \"title\": \"Model\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"bbb45b8946da\"\n      ],\n      \"verified_by\": [\n        \"tests/test_conformance.py:136\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.2\",\n      \"title\": \"Add URL\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"054ae58c11ac\",\n        \"dbbffa293d27\"\n      ],\n      \"verified_by\": [\n        \"tests/test_web_source.py:150\",\n        \"tests/test_web_source.py:242\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.3\",\n      \"title\": \"Snapshot status\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"c603609b7f9a\",\n        \"dbbffa293d27\"\n      ],\n      \"verified_by\": [\n        \"tests/test_web_source.py:162\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.4\",\n      \"title\": \"Extracted text\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"dbbffa293d27\"\n      ],\n      \"verified_by\": [\n        \"tests/test_web_source.py:172\",\n        \"tests/test_web_source.py:209\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.5\",\n      \"title\": \"Refusal and evidence\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"dbbffa293d27\"\n      ],\n      \"verified_by\": [\n        \"tests/test_web_source.py:187\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.6\",\n      \"title\": \"Hot-path proof\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.7\",\n      \"title\": \"Ingest mappings\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"93d21335f669\"\n      ],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.8\",\n      \"title\": \"Conformance\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"bbb45b8946da\"\n      ],\n      \"verified_by\": [\n        \"tests/test_conformance.py:137\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.9\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"3743a52a8eba\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT",
+        "CONN-ARCHIVEBOX-API-CONNECTOR-CONTENT-R001",
+        "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION",
+        "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001",
+        "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.1",
+        "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.2",
+        "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.3",
+        "CONN-ARCHIVEBOX-API-SDK-CENTRALIZATION-R001.4",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.1",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.2",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.3",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.4",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.5",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.6",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.7",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.8",
+        "CONN-ARCHIVEBOX-API-WEB-SOURCE-R001.9"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R103.1": true,
+        "PIPE-CONNSPEC-R103.2": false,
+        "PIPE-CONNSPEC-R103.3": false,
+        "PIPE-CONNSPEC-R103.4": false
+      }
+    },
+    "aris-mcp": {
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T10:05:28Z",
+          "databaseId": 40084527970,
+          "headSha": "e3401cdc491777ec6b8c1f6c4c765789ec0fb565",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/aris-mcp/actions/runs/40084527970",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 28776,
+          "has_spec_id": true,
+          "status": 200,
+          "url": "https://knuckles-team.github.io/aris-mcp/spec-delivery/"
+        },
+        "known_pages_run": "40084527970",
+        "required_paths": true,
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "precommit": {
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "missing_canonical": [],
+        "provider_rev": "main",
+        "validate_config_rc": 0,
+        "validate_config_warning": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+      },
+      "publication_test": true,
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R104",
+      "sha": "e3401cdc491777ec6b8c1f6c4c765789ec0fb565",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 460,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n",
+          "sha256": "48876063f950d3725041e4b6656984c78b93c2640ee37b1dba8bd5d971962a89"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status_documents": {
+        "specs/connector-content/status.json": {
+          "delivery_state": "LANDED",
+          "owner_repo": "aris-mcp",
+          "requirement_ids": [
+            "CONN-ARIS-MCP-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-ARIS-MCP-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "0c18188d4c32"
+              ],
+              "title": "Default content",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-ARIS-MCP-CONNECTOR-CONTENT"
+        },
+        "specs/sdk-centralization/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "aris-mcp",
+          "requirement_ids": [
+            "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001",
+            "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.1",
+            "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.2",
+            "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.3",
+            "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.4"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001",
+              "landed_in": [
+                "c4ff2d5f4041"
+              ],
+              "rollup_of": [
+                "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.1",
+                "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.2",
+                "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.3",
+                "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.4"
+              ],
+              "title": "Capabilities come from the SDK (rollup)",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.1",
+              "landed_in": [],
+              "title": "Governed client",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.2",
+              "landed_in": [],
+              "title": "TLS profile only",
+              "verified_by": [
+                "tests/test_auth.py:90"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.3",
+              "landed_in": [],
+              "title": "Same behaviour",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.4",
+              "landed_in": [],
+              "title": "SDK floor",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-ARIS-MCP-SDK-CENTRALIZATION"
+        }
+      },
+      "status_file_sha256": {
+        "specs/connector-content/status.json": "300181b4a6a1310de22766111cc3d29437f23ae77aa34f3390bd319fde8004c1",
+        "specs/sdk-centralization/status.json": "c8cfbf273bdfd62f1c490ae439f6b647832052bc3b0dea89e6a3e6481f516f6f"
+      },
+      "status_record_count": 8,
+      "status_source": {
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARIS-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"aris-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-ARIS-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARIS-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"0c18188d4c32\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARIS-MCP-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"aris-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001\",\n    \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.1\",\n    \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.2\",\n    \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.3\",\n    \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.4\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Capabilities come from the SDK (rollup)\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [\n        \"c4ff2d5f4041\"\n      ],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.1\",\n        \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.2\",\n        \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.3\",\n        \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.4\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.1\",\n      \"title\": \"Governed client\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.2\",\n      \"title\": \"TLS profile only\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_auth.py:90\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.3\",\n      \"title\": \"Same behaviour\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.4\",\n      \"title\": \"SDK floor\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-ARIS-MCP-CONNECTOR-CONTENT",
+        "CONN-ARIS-MCP-CONNECTOR-CONTENT-R001",
+        "CONN-ARIS-MCP-SDK-CENTRALIZATION",
+        "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001",
+        "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.1",
+        "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.2",
+        "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.3",
+        "CONN-ARIS-MCP-SDK-CENTRALIZATION-R001.4"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R104.1": true,
+        "PIPE-CONNSPEC-R104.2": true,
+        "PIPE-CONNSPEC-R104.3": true,
+        "PIPE-CONNSPEC-R104.4": false
+      }
+    },
+    "arr-mcp": {
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T10:30:30Z",
+          "databaseId": 40086185465,
+          "headSha": "cab5b54237fd2d1cf1d24c174a7a3ca192117c57",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/arr-mcp/actions/runs/40086185465",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/arr-mcp/spec-delivery/"
+        },
+        "known_pages_run": "40086185465",
+        "required_paths": false,
+        "with": {}
+      },
+      "precommit": {
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "missing_canonical": [],
+        "provider_rev": "main",
+        "validate_config_rc": 0,
+        "validate_config_warning": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+      },
+      "publication_test": false,
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R105",
+      "sha": "cab5b54237fd2d1cf1d24c174a7a3ca192117c57",
+      "source_files": {
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status_documents": {
+        "specs/connector-content/status.json": {
+          "delivery_state": "LANDED",
+          "owner_repo": "arr-mcp",
+          "requirement_ids": [
+            "CONN-ARR-MCP-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-ARR-MCP-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "2e8f788b1ce6"
+              ],
+              "title": "Default content",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-ARR-MCP-CONNECTOR-CONTENT"
+        },
+        "specs/sdk-centralization/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "arr-mcp",
+          "requirement_ids": [
+            "CONN-ARR-MCP-SDK-CENTRALIZATION-R001",
+            "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.1",
+            "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.2",
+            "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.3",
+            "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.4"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARR-MCP-SDK-CENTRALIZATION-R001",
+              "landed_in": [
+                "2fc16b373e36"
+              ],
+              "rollup_of": [
+                "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.1",
+                "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.2",
+                "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.3",
+                "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.4"
+              ],
+              "title": "Capabilities come from the SDK (rollup)",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.1",
+              "landed_in": [],
+              "title": "Governed client",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.2",
+              "landed_in": [],
+              "title": "TLS profile only",
+              "verified_by": [
+                "tests/test_auth_coverage.py:26"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.3",
+              "landed_in": [],
+              "title": "Same behaviour",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.4",
+              "landed_in": [],
+              "title": "SDK floor",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-ARR-MCP-SDK-CENTRALIZATION"
+        }
+      },
+      "status_file_sha256": {
+        "specs/connector-content/status.json": "d3895e078c9732fdf7469463cd7a6e8b0e7d7339dcbc4f277f3efd1dde513300",
+        "specs/sdk-centralization/status.json": "cbe683d9dfa41c32ed7f458a0fd1a010713d7b05334f9f42ef5eae96228a8be0"
+      },
+      "status_record_count": 8,
+      "status_source": {
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARR-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"arr-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-ARR-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARR-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"2e8f788b1ce6\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ARR-MCP-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"arr-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001\",\n    \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.1\",\n    \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.2\",\n    \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.3\",\n    \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.4\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Capabilities come from the SDK (rollup)\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [\n        \"2fc16b373e36\"\n      ],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.1\",\n        \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.2\",\n        \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.3\",\n        \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.4\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.1\",\n      \"title\": \"Governed client\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.2\",\n      \"title\": \"TLS profile only\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_auth_coverage.py:26\"\n      ]\n    },\n    {\n      \"id\": \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.3\",\n      \"title\": \"Same behaviour\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-ARR-MCP-SDK-CENTRALIZATION-R001.4\",\n      \"title\": \"SDK floor\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-ARR-MCP-CONNECTOR-CONTENT",
+        "CONN-ARR-MCP-CONNECTOR-CONTENT-R001",
+        "CONN-ARR-MCP-SDK-CENTRALIZATION",
+        "CONN-ARR-MCP-SDK-CENTRALIZATION-R001",
+        "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.1",
+        "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.2",
+        "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.3",
+        "CONN-ARR-MCP-SDK-CENTRALIZATION-R001.4"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R105.1": true,
+        "PIPE-CONNSPEC-R105.2": true,
+        "PIPE-CONNSPEC-R105.3": false,
+        "PIPE-CONNSPEC-R105.4": false
+      }
+    },
+    "audio-transcriber": {
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T09:42:20Z",
+          "databaseId": 40083009786,
+          "headSha": "983f3565b680a439a5394dd1382d868263211c0e",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/audio-transcriber/actions/runs/40083009786",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/audio-transcriber/spec-delivery/"
+        },
+        "known_pages_run": "40083009786",
+        "required_paths": false,
+        "with": {}
+      },
+      "precommit": {
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "missing_canonical": [],
+        "provider_rev": "main",
+        "validate_config_rc": 0,
+        "validate_config_warning": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+      },
+      "publication_test": false,
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R107",
+      "sha": "983f3565b680a439a5394dd1382d868263211c0e",
+      "source_files": {
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status_documents": {
+        "specs/connector-content/status.json": {
+          "delivery_state": "LANDED",
+          "owner_repo": "audio-transcriber",
+          "requirement_ids": [
+            "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "4fb26a280176"
+              ],
+              "title": "Default content",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT"
+        },
+        "specs/connector/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "audio-transcriber",
+          "requirement_ids": [
+            "CONN-AUDIO-TRANSCRIBER-R001",
+            "CONN-AUDIO-TRANSCRIBER-R002",
+            "CONN-AUDIO-TRANSCRIBER-R003"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-AUDIO-TRANSCRIBER-R001",
+              "landed_in": [
+                "593d6635ee61"
+              ],
+              "title": "Read-only engine health",
+              "verified_by": [
+                "tests/test_read_only_health.py:13"
+              ]
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-AUDIO-TRANSCRIBER-R002",
+              "landed_in": [
+                "315cf71b94ac"
+              ],
+              "title": "Fleet name",
+              "verified_by": [
+                "tests/test_fleet_name.py:34"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-AUDIO-TRANSCRIBER-R003",
+              "landed_in": [],
+              "title": "Microphone extra",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-AUDIO-TRANSCRIBER"
+        },
+        "specs/sdk-centralization/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "audio-transcriber",
+          "requirement_ids": [
+            "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001",
+            "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+            "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001",
+              "landed_in": [
+                "2890148ee449"
+              ],
+              "rollup_of": [
+                "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+                "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2"
+              ],
+              "title": "Capabilities come from the SDK (rollup)",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+              "landed_in": [],
+              "title": "TLS profile for secure streams",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2",
+              "landed_in": [],
+              "title": "Stream dependency from the SDK",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION"
+        },
+        "specs/transcription/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "audio-transcriber",
+          "requirement_ids": [
+            "TRANSCRIBE-R001",
+            "TRANSCRIBE-R001.1",
+            "TRANSCRIBE-R001.2",
+            "TRANSCRIBE-R001.3",
+            "TRANSCRIBE-R001.4",
+            "TRANSCRIBE-R001.5",
+            "TRANSCRIBE-R001.6"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "TRANSCRIBE-R001",
+              "landed_in": [],
+              "rollup_of": [
+                "TRANSCRIBE-R001.1",
+                "TRANSCRIBE-R001.2",
+                "TRANSCRIBE-R001.3",
+                "TRANSCRIBE-R001.4",
+                "TRANSCRIBE-R001.5",
+                "TRANSCRIBE-R001.6"
+              ],
+              "title": "Local-model speech transcription with egress controls",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "TRANSCRIBE-R001.1",
+              "landed_in": [],
+              "title": "Model",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "TRANSCRIBE-R001.2",
+              "landed_in": [],
+              "title": "Behavior",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "TRANSCRIBE-R001.3",
+              "landed_in": [],
+              "title": "Wiring",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "TRANSCRIBE-R001.4",
+              "landed_in": [],
+              "title": "Refusal",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "TRANSCRIBE-R001.5",
+              "landed_in": [],
+              "title": "Evidence",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "TRANSCRIBE-R001.6",
+              "landed_in": [],
+              "title": "Hot-path proof",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "TRANSCRIBE"
+        }
+      },
+      "status_file_sha256": {
+        "specs/connector-content/status.json": "f65e7b5799f051216057d385a430c7182d83559dbe9eebbdd979f1bfa4aef76f",
+        "specs/connector/status.json": "b188d5c87feefb44a59d9df8317cc80dc6a883aea73480291600b0de4992f913",
+        "specs/sdk-centralization/status.json": "fe2f71bf3d66932977bbe49b263da5e7db668e3af94816837f4f3b9fc8ee414d",
+        "specs/transcription/status.json": "b13dac42525be6dc3f93b56889f14c34effdaee9ba97caa0776b4c75e9e09070"
+      },
+      "status_record_count": 18,
+      "status_source": {
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"4fb26a280176\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/connector/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-AUDIO-TRANSCRIBER\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-AUDIO-TRANSCRIBER-R001\",\n    \"CONN-AUDIO-TRANSCRIBER-R002\",\n    \"CONN-AUDIO-TRANSCRIBER-R003\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-R001\",\n      \"title\": \"Read-only engine health\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"593d6635ee61\"\n      ],\n      \"verified_by\": [\n        \"tests/test_read_only_health.py:13\"\n      ]\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-R002\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"315cf71b94ac\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-R003\",\n      \"title\": \"Microphone extra\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001\",\n    \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1\",\n    \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Capabilities come from the SDK (rollup)\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [\n        \"2890148ee449\"\n      ],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1\",\n        \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2\"\n      ]\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1\",\n      \"title\": \"TLS profile for secure streams\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2\",\n      \"title\": \"Stream dependency from the SDK\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/transcription/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"TRANSCRIBE\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"TRANSCRIBE-R001\",\n    \"TRANSCRIBE-R001.1\",\n    \"TRANSCRIBE-R001.2\",\n    \"TRANSCRIBE-R001.3\",\n    \"TRANSCRIBE-R001.4\",\n    \"TRANSCRIBE-R001.5\",\n    \"TRANSCRIBE-R001.6\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"TRANSCRIBE-R001\",\n      \"title\": \"Local-model speech transcription with egress controls\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"TRANSCRIBE-R001.1\",\n        \"TRANSCRIBE-R001.2\",\n        \"TRANSCRIBE-R001.3\",\n        \"TRANSCRIBE-R001.4\",\n        \"TRANSCRIBE-R001.5\",\n        \"TRANSCRIBE-R001.6\"\n      ]\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.1\",\n      \"title\": \"Model\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.2\",\n      \"title\": \"Behavior\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.3\",\n      \"title\": \"Wiring\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.4\",\n      \"title\": \"Refusal\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.5\",\n      \"title\": \"Evidence\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.6\",\n      \"title\": \"Hot-path proof\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-AUDIO-TRANSCRIBER",
+        "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT",
+        "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001",
+        "CONN-AUDIO-TRANSCRIBER-R001",
+        "CONN-AUDIO-TRANSCRIBER-R002",
+        "CONN-AUDIO-TRANSCRIBER-R003",
+        "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION",
+        "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001",
+        "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+        "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2",
+        "TRANSCRIBE",
+        "TRANSCRIBE-R001",
+        "TRANSCRIBE-R001.1",
+        "TRANSCRIBE-R001.2",
+        "TRANSCRIBE-R001.3",
+        "TRANSCRIBE-R001.4",
+        "TRANSCRIBE-R001.5",
+        "TRANSCRIBE-R001.6"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R107.1": true,
+        "PIPE-CONNSPEC-R107.2": true,
+        "PIPE-CONNSPEC-R107.3": false,
+        "PIPE-CONNSPEC-R107.4": false
+      }
+    },
+    "caddy-mcp": {
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T12:07:54Z",
+          "databaseId": 40092664741,
+          "headSha": "7d9b6cd0d5438d22c17e7c919cd1b3044cad6717",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/caddy-mcp/actions/runs/40092664741",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 30142,
+          "has_spec_id": true,
+          "status": 200,
+          "url": "https://knuckles-team.github.io/caddy-mcp/spec-delivery/"
+        },
+        "known_pages_run": "40092664741",
+        "required_paths": true,
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "precommit": {
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "missing_canonical": [],
+        "provider_rev": "main",
+        "validate_config_rc": 0,
+        "validate_config_warning": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+      },
+      "publication_test": true,
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R109",
+      "sha": "7d9b6cd0d5438d22c17e7c919cd1b3044cad6717",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 594,
+          "content": "name: Deploy GitHub Pages\n\non:\n  workflow_dispatch: {}\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "6ef8e2f90cf14c54e825742393581736ccbd622f8a800a7336ad8a48ffcfb9e4"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status_documents": {
+        "specs/caddy-mcp/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "caddy-mcp",
+          "requirement_ids": [
+            "CONN-CADDY-MCP-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CADDY-MCP-R001",
+              "landed_in": [],
+              "title": "Connector reports its released version",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-CADDY-MCP"
+        },
+        "specs/connector-content/status.json": {
+          "delivery_state": "LANDED",
+          "owner_repo": "caddy-mcp",
+          "requirement_ids": [
+            "CONN-CADDY-MCP-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-CADDY-MCP-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "62ce16ce8227"
+              ],
+              "title": "Default content",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-CADDY-MCP-CONNECTOR-CONTENT"
+        },
+        "specs/sdk-centralization/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "caddy-mcp",
+          "requirement_ids": [
+            "CONN-CADDY-MCP-SDK-CENTRALIZATION-R001",
+            "CONN-CADDY-MCP-SDK-CENTRALIZATION-R002",
+            "CONN-CADDY-MCP-SDK-CENTRALIZATION-R003"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CADDY-MCP-SDK-CENTRALIZATION-R001",
+              "landed_in": [],
+              "title": "Requests use the governed SDK client",
+              "verified_by": [
+                "tests/test_sdk_centralization.py:27"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CADDY-MCP-SDK-CENTRALIZATION-R002",
+              "landed_in": [],
+              "title": "SDK floor and dependency set",
+              "verified_by": [
+                "tests/test_sdk_centralization.py:58"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CADDY-MCP-SDK-CENTRALIZATION-R003",
+              "landed_in": [],
+              "title": "Production wiring and hot path",
+              "verified_by": [
+                "tests/test_sdk_centralization.py:27",
+                "tests/test_sdk_centralization.py:43"
+              ]
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-CADDY-MCP-SDK-CENTRALIZATION"
+        }
+      },
+      "status_file_sha256": {
+        "specs/caddy-mcp/status.json": "9b361f39507fec7bbea278a7896f27cddb87e12a48c9798e90f6b4e036d7a501",
+        "specs/connector-content/status.json": "27381d451f1ec4d61d046fc087b88db7b5af7e1614b0f4c5fb8079f06ed0a6aa",
+        "specs/sdk-centralization/status.json": "4d62d93ffb0c3ba220b286d9bd794d84f1fc7d9687186c3375f676875694d020"
+      },
+      "status_record_count": 8,
+      "status_source": {
+        "specs/caddy-mcp/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CADDY-MCP\",\n  \"owner_repo\": \"caddy-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-CADDY-MCP-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CADDY-MCP-R001\",\n      \"title\": \"Connector reports its released version\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CADDY-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"caddy-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-CADDY-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CADDY-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"62ce16ce8227\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CADDY-MCP-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"caddy-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-CADDY-MCP-SDK-CENTRALIZATION-R001\",\n    \"CONN-CADDY-MCP-SDK-CENTRALIZATION-R002\",\n    \"CONN-CADDY-MCP-SDK-CENTRALIZATION-R003\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CADDY-MCP-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Requests use the governed SDK client\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:27\"\n      ]\n    },\n    {\n      \"id\": \"CONN-CADDY-MCP-SDK-CENTRALIZATION-R002\",\n      \"title\": \"SDK floor and dependency set\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:58\"\n      ]\n    },\n    {\n      \"id\": \"CONN-CADDY-MCP-SDK-CENTRALIZATION-R003\",\n      \"title\": \"Production wiring and hot path\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:27\",\n        \"tests/test_sdk_centralization.py:43\"\n      ]\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-CADDY-MCP",
+        "CONN-CADDY-MCP-CONNECTOR-CONTENT",
+        "CONN-CADDY-MCP-CONNECTOR-CONTENT-R001",
+        "CONN-CADDY-MCP-R001",
+        "CONN-CADDY-MCP-SDK-CENTRALIZATION",
+        "CONN-CADDY-MCP-SDK-CENTRALIZATION-R001",
+        "CONN-CADDY-MCP-SDK-CENTRALIZATION-R002",
+        "CONN-CADDY-MCP-SDK-CENTRALIZATION-R003"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R109.1": true,
+        "PIPE-CONNSPEC-R109.2": true,
+        "PIPE-CONNSPEC-R109.3": true,
+        "PIPE-CONNSPEC-R109.4": false
+      }
+    },
+    "camunda-mcp": {
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T09:55:05Z",
+          "databaseId": 40083846473,
+          "headSha": "8a3b4e28cec1e3b6f500039a2b11f2323836a1a6",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/camunda-mcp/actions/runs/40083846473",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 25965,
+          "has_spec_id": true,
+          "status": 200,
+          "url": "https://knuckles-team.github.io/camunda-mcp/spec-delivery/"
+        },
+        "known_pages_run": "40083846473",
+        "required_paths": true,
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "precommit": {
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "missing_canonical": [],
+        "provider_rev": "main",
+        "validate_config_rc": 0,
+        "validate_config_warning": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+      },
+      "publication_test": true,
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R110",
+      "sha": "8a3b4e28cec1e3b6f500039a2b11f2323836a1a6",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 570,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status_documents": {
+        "specs/camunda-mcp/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "camunda-mcp",
+          "requirement_ids": [
+            "CONN-CAMUNDA-MCP-R001",
+            "CONN-CAMUNDA-MCP-R002",
+            "CONN-CAMUNDA-MCP-R003"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CAMUNDA-MCP-R001",
+              "landed_in": [],
+              "title": "Connector reports its released version",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CAMUNDA-MCP-R002",
+              "landed_in": [],
+              "title": "One tool per API operation",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CAMUNDA-MCP-R003",
+              "landed_in": [],
+              "title": "No condensed action facades",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-CAMUNDA-MCP"
+        },
+        "specs/connector-content/status.json": {
+          "delivery_state": "LANDED",
+          "owner_repo": "camunda-mcp",
+          "requirement_ids": [
+            "CONN-CAMUNDA-MCP-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-CAMUNDA-MCP-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "e0e43f00a74b"
+              ],
+              "title": "Default content",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-CAMUNDA-MCP-CONNECTOR-CONTENT"
+        }
+      },
+      "status_file_sha256": {
+        "specs/camunda-mcp/status.json": "37d0b4609d051528f9a557b5cc9062dd01c0aa2fcc2f0dbe74fbf3af78285ce9",
+        "specs/connector-content/status.json": "436bbff59100b006f0f058073a4465fd602af5fd7b2e78aeb537e4d19ce59cd0"
+      },
+      "status_record_count": 6,
+      "status_source": {
+        "specs/camunda-mcp/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CAMUNDA-MCP\",\n  \"owner_repo\": \"camunda-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-CAMUNDA-MCP-R001\",\n    \"CONN-CAMUNDA-MCP-R002\",\n    \"CONN-CAMUNDA-MCP-R003\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CAMUNDA-MCP-R001\",\n      \"title\": \"Connector reports its released version\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-CAMUNDA-MCP-R002\",\n      \"title\": \"One tool per API operation\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-CAMUNDA-MCP-R003\",\n      \"title\": \"No condensed action facades\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CAMUNDA-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"camunda-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-CAMUNDA-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CAMUNDA-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"e0e43f00a74b\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-CAMUNDA-MCP",
+        "CONN-CAMUNDA-MCP-CONNECTOR-CONTENT",
+        "CONN-CAMUNDA-MCP-CONNECTOR-CONTENT-R001",
+        "CONN-CAMUNDA-MCP-R001",
+        "CONN-CAMUNDA-MCP-R002",
+        "CONN-CAMUNDA-MCP-R003"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R110.1": true,
+        "PIPE-CONNSPEC-R110.2": true,
+        "PIPE-CONNSPEC-R110.3": true,
+        "PIPE-CONNSPEC-R110.4": false
+      }
+    },
+    "ciso-assistant-api": {
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "hosted_run": null,
+        "http": {
+          "bytes": 30973,
+          "has_spec_id": true,
+          "status": 200,
+          "url": "https://knuckles-team.github.io/ciso-assistant-api/spec-delivery/"
+        },
+        "known_pages_run": null,
+        "required_paths": true,
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "precommit": {
+        "hooks": [
+          "dependency-readiness"
+        ],
+        "missing_canonical": [
+          "connector-standard",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider_rev": "ed8ea8ac5989cbc883c149843b311aeecb44e6a2",
+        "validate_config_rc": 0,
+        "validate_config_warning": ""
+      },
+      "publication_test": true,
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R111",
+      "sha": "c193df418335c84cce6e933f0d59ef4b7bac6a0f",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 570,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 712,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "d0885173d3c382502e4fd5d80a51055c5f4ab8aec31844cfc5a5a80eeebec938"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 2627,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n  - repo: https://github.com/pre-commit/pre-commit-hooks\n    rev: v6.0.0 # v6.0.0\n    hooks:\n    - id: check-added-large-files\n      exclude: '(ciso_assistant_api/skills/.*-docs/|ciso_assistant_api/specs/.*|ciso_assistant_api/api/_operation_manifest\\.py)'\n    - id: check-ast\n    - id: check-yaml\n      args: [\"--unsafe\"]\n    - id: check-toml\n    - id: check-json\n    - id: fix-byte-order-marker\n      exclude: .gitignore\n    - id: check-merge-conflict\n    - id: detect-private-key\n      exclude: '^ciso_assistant_api/specs/.*'\n    - id: trailing-whitespace\n    - id: end-of-file-fixer\n    - id: no-commit-to-branch\n  - repo: https://github.com/psf/black\n    rev: 26.10.1 # 26.1.0\n    hooks:\n    - id: black\n  - repo: https://github.com/astral-sh/ruff-pre-commit\n    rev: v0.17.1 # v0.15.4\n    hooks:\n      - id: ruff\n        exclude: ^(tests/|test/|scripts/|script/)\n        types_or: [ python, pyi, jupyter ]\n        args: [\"--fix\", \"--ignore=E402\"]\n  - repo: https://github.com/codespell-project/codespell\n    rev: v2.4.3 # v2.4.1\n    hooks:\n      - id: codespell\n        args: [\"-L\", \"ans,linar,nam,tread,ot,\"]\n        exclude: |\n            (?x)^(\n              \\./test/.*|\n              \\./tests/.*|\n              ciso_assistant_api/skills/.*-docs/.*|\n              ciso_assistant_api/specs/.*\n            )$\n  - repo: https://github.com/nbQA-dev/nbQA\n    rev: 1.9.1 # 1.9.1\n    hooks:\n      - id: nbqa-black\n        exclude: ^(tests/|test/|scripts/|script/)\n  - repo: local\n    hooks:\n      - id: env-var-drift\n        name: check env-var/config drift\n        entry: bash -c 'if [ -f uv.lock ]; then uv run python -m agent_connector_sdk.mcp.env_drift --check; else python -m agent_connector_sdk.mcp.env_drift --check; fi'\n        language: system\n        pass_filenames: false\n        files: ^(README\\.md|\\.env\\.example|mcp_config.*\\.json|.*/mcp_config.*\\.json|docker/.*compose.*\\.ya?ml|.*/auth\\.py|.*/mcp_server\\.py)$\n  - repo: https://github.com/Knuckles-Team/pipelines\n    rev: ed8ea8ac5989cbc883c149843b311aeecb44e6a2\n    hooks:\n    - id: dependency-readiness\n",
+          "sha256": "bac7a0a561c17e8f959af536dff64e8a72f9a7388965130283d12a00ace32b47"
+        }
+      },
+      "status_documents": {
+        "specs/ciso-assistant-api/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "ciso-assistant-api",
+          "requirement_ids": [
+            "CONN-CISO-ASSISTANT-API-R001",
+            "CONN-CISO-ASSISTANT-API-R002",
+            "CONN-CISO-ASSISTANT-API-R003",
+            "CONN-CISO-ASSISTANT-API-R004"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CISO-ASSISTANT-API-R001",
+              "landed_in": [],
+              "title": "SDK floor",
+              "verified_by": [
+                "tests/test_credential_refs.py:11"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CISO-ASSISTANT-API-R002",
+              "landed_in": [],
+              "title": "Wiring",
+              "verified_by": [
+                "tests/test_credential_refs.py:22"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-CISO-ASSISTANT-API-R003",
+              "landed_in": [],
+              "title": "Headless login",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-CISO-ASSISTANT-API-R004",
+              "landed_in": [
+                "60bd1be05869",
+                "e8d176cf25c8"
+              ],
+              "title": "Fleet name",
+              "verified_by": [
+                "tests/test_fleet_name.py:35"
+              ]
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-CISO-ASSISTANT-API"
+        },
+        "specs/connector-content/status.json": {
+          "delivery_state": "VERIFIED",
+          "owner_repo": "ciso-assistant-api",
+          "requirement_ids": [
+            "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "4317988a9190"
+              ],
+              "title": "Default content",
+              "verified_by": [
+                "tests/test_default_content_surfaces.py:15"
+              ]
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT"
+        }
+      },
+      "status_file_sha256": {
+        "specs/ciso-assistant-api/status.json": "4b003f4be58f7a043caa379901a92ceddb2182c674fb45bd4a7f4b82cdcb980c",
+        "specs/connector-content/status.json": "635c6d862cc3fc4ff7da980916cafa14a418ca7c39e623fbf2a423d5a9374bd4"
+      },
+      "status_record_count": 7,
+      "status_source": {
+        "specs/ciso-assistant-api/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CISO-ASSISTANT-API\",\n  \"owner_repo\": \"ciso-assistant-api\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-CISO-ASSISTANT-API-R001\",\n    \"CONN-CISO-ASSISTANT-API-R002\",\n    \"CONN-CISO-ASSISTANT-API-R003\",\n    \"CONN-CISO-ASSISTANT-API-R004\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R001\",\n      \"title\": \"SDK floor\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_credential_refs.py:11\"\n      ]\n    },\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R002\",\n      \"title\": \"Wiring\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_credential_refs.py:22\"\n      ]\n    },\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R003\",\n      \"title\": \"Headless login\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R004\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"60bd1be05869\",\n        \"e8d176cf25c8\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:35\"\n      ]\n    }\n  ]\n}\n",
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"ciso-assistant-api\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"4317988a9190\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-CISO-ASSISTANT-API",
+        "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT",
+        "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001",
+        "CONN-CISO-ASSISTANT-API-R001",
+        "CONN-CISO-ASSISTANT-API-R002",
+        "CONN-CISO-ASSISTANT-API-R003",
+        "CONN-CISO-ASSISTANT-API-R004"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R111.1": true,
+        "PIPE-CONNSPEC-R111.2": false,
+        "PIPE-CONNSPEC-R111.3": false,
+        "PIPE-CONNSPEC-R111.4": false
+      }
+    },
+    "documentdb-mcp": {
+      "pages": {
+        "caller_count": 1,
+        "config": null,
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-23T19:19:36Z",
+          "databaseId": 40010517916,
+          "headSha": "b40295e905456aa8ea059ccdc70e9aeb16e59ba6",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/documentdb-mcp/actions/runs/40010517916",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 0,
+          "has_spec_id": false,
+          "status": 404,
+          "url": "https://knuckles-team.github.io/documentdb-mcp/spec-delivery/"
+        },
+        "known_pages_run": "40010517916",
+        "required_paths": false,
+        "with": {}
+      },
+      "precommit": {
+        "hooks": [],
+        "missing_canonical": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "provider_rev": null,
+        "validate_config_rc": 0,
+        "validate_config_warning": ""
+      },
+      "publication_test": false,
+      "release": {
+        "container_render_connector": [
+          false
+        ],
+        "python_connector": [
+          false
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R116",
+      "sha": "b40295e905456aa8ea059ccdc70e9aeb16e59ba6",
+      "source_files": {
+        ".github/workflows/pages.yml": {
+          "bytes": 346,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "81a32b3ea1d58d8100dadab89b92087f92f5940e963df28eb0ead7bb330fa537"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 712,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "d0885173d3c382502e4fd5d80a51055c5f4ab8aec31844cfc5a5a80eeebec938"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 4693,
+          "content": "# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`\n# runs nothing and every hook staged pre-push is silently dead code.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_language_version:\n  python: python3\n# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no\n# explicit `stages:` below is commit-only, never both.\ndefault_stages: [pre-commit]\nexclude: 'dotnet|node_modules'\nci:\n  autofix_prs: true\n  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'\n  autoupdate_schedule: 'monthly'\n\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: v6.0.0 # v6.0.0\n  hooks:\n  - id: check-added-large-files\n    args: [\"--maxkb=2000\"]\n  - id: check-ast\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: check-yaml\n    args: [\"--unsafe\"]\n  - id: check-toml\n  - id: check-json\n  - id: fix-byte-order-marker\n    exclude: .gitignore\n  - id: check-merge-conflict\n  - id: detect-private-key\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: no-commit-to-branch\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: v0.17.1 # v0.15.12\n  hooks:\n  - id: ruff-check\n    args: [\"--fix\", \"--ignore=E402,B008,E501\"]\n    exclude: ^(tests/|test/|scripts/|script/)\n  - id: ruff-format\n    exclude: ^(tests/|test/|scripts/|script/)\n- repo: https://github.com/pre-commit/mirrors-mypy\n  rev: v2.4.0 # v1.20.2\n  hooks:\n  - id: mypy\n    additional_dependencies: [pydantic==2.13.4, types-PyYAML==6.0.12.20260518, types-requests==2.33.0.20260518,\n        types-setuptools==83.0.0.20260706]\n    args: [\"--ignore-missing-imports\"]\n- repo: https://github.com/jendrikseipp/vulture\n  rev: v2.16 # v2.16\n  hooks:\n  - id: vulture\n    pass_filenames: false\n    args: [\".\", \"--min-confidence\", \"95\", \"--exclude\", \"node_modules,dotnet,.venv,venv,node_modules,.git,build,dist,test_typing.py\",\n      \"--ignore-names\", \"request,connector,stream\"]\n    require_serial: true\n- repo: https://github.com/codespell-project/codespell\n  rev: v2.4.3 # v2.4.2\n  hooks:\n  - id: codespell\n    args: [\"-L\", \"ans,linar,nam,tread,ot,\", \"--ignore-words=.codespellignore\"]\n    exclude: ^(tests/|test/|scripts/|script/|.*lock.*)\n- repo: https://github.com/PyCQA/bandit\n  rev: 1.9.4 # 1.9.4\n  hooks:\n  - id: bandit\n    args: [\"--skip\", \"B101,B404,B603\"]\n    exclude: ^(tests/|test/|scripts/|script/|__tests__/)\n- repo: https://github.com/nbQA-dev/nbQA\n  rev: 1.9.1 # 1.9.1\n  hooks:\n  - id: nbqa-ruff\n    args: [\"--fix\"]\n- repo: local\n  hooks:\n  - id: dependency-readiness\n    name: Dependency readiness \u2014 every declared intra-fleet constraint is installable\n    entry: bash -c 'P=\"\"; d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do [ -d \"$d/agent-packages/agents/repository-manager\" ] && { P=\"$d/agent-packages/agents/repository-manager\"; break; }; d=$(dirname \"$d\"); done; [ -n \"$P\" ] || P=repository-manager; uv run --no-project --python 3.12 --prerelease=allow --with \"$P\" python -m repository_manager.dependency_readiness .'\n    language: system\n    pass_filenames: false\n    always_run: true\n    stages: [manual, pre-push]\n- repo: local\n  hooks:\n  - id: mermaid-validate\n    name: mermaid-validate\n    entry: mermaid-validate\n    language: node\n    additional_dependencies: ['@zabaca/mermaid-validate@1.0.1']\n    types: [markdown]\n    pass_filenames: true\n  - id: check-cli-help\n    name: check cli help\n    entry: |-\n      bash -c 'for f in $(find . -type f -name \"mcp_server.py\" -not -path \"*/\\.venv/*\" -not -path \"*/__pycache__/*\"); do mod=$(echo \"$f\" | sed -e \"s/^\\.\\///\" -e \"s/\\.py$//\" -e \"s/\\//./g\"); uv run python -m \"$mod\" --help >/dev/null || exit 1; done'\n    language: system\n    pass_filenames: false\n    always_run: true\n  - id: check-bumpversion\n    name: validate bumpversion config\n    entry: |-\n      bash -c 'if [ -f \".bumpversion.cfg\" ]; then bump2version patch --dry-run --allow-dirty; fi'\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: https://github.com/AleksaC/hadolint-py\n  rev: v2.15.1 # v2.14.0\n  hooks:\n  - id: hadolint\n    args:\n    - --ignore=DL3008\n    - --ignore=DL3015\n    - --ignore=DL3009\n    - --ignore=DL4006\n    - --ignore=SC2102\n- repo: https://github.com/IamTheFij/docker-pre-commit\n  rev: v3.0.1 # v3.0.1\n  hooks:\n  - id: docker-compose-check\n\n- repo: local\n  hooks:\n  - id: verify-api-integration\n    name: Verify API-to-MCP Integration Coverage\n    entry: python scripts/verify_api_integration.py --local\n    language: system\n    pass_filenames: false\n    always_run: true\n- repo: local\n  hooks:\n  - id: security-sanitizer\n    name: Security and Garbage Sanitizer\n    entry: python scripts/security_sanitizer.py\n    language: python\n    pass_filenames: false\n    always_run: true\n",
+          "sha256": "69faa5802f4fca7bcdfdd8954ad24e313c2d8cb547f13db6272f03f96f19b5f9"
+        }
+      },
+      "status_documents": {
+        "specs/connector-content/status.json": {
+          "delivery_state": "VERIFIED",
+          "owner_repo": "documentdb-mcp",
+          "requirement_ids": [
+            "CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "VERIFIED",
+              "id": "CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "9a5bf0840205"
+              ],
+              "title": "Default content",
+              "verified_by": [
+                "tests/test_default_content_surfaces.py:15"
+              ]
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT"
+        },
+        "specs/sdk-centralization/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "documentdb-mcp",
+          "requirement_ids": [
+            "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001",
+            "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.1",
+            "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.2"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001",
+              "landed_in": [
+                "a53aaf84b4bc"
+              ],
+              "rollup_of": [
+                "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.1",
+                "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.2"
+              ],
+              "title": "Capabilities come from the SDK (rollup)",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.1",
+              "landed_in": [],
+              "title": "Database driver from the SDK",
+              "verified_by": []
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.2",
+              "landed_in": [],
+              "title": "SDK floor",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION"
+        }
+      },
+      "status_file_sha256": {
+        "specs/connector-content/status.json": "9e352e16b45eb37d8637c050903b4565bd5c631101c7b70e5615e623f34817c9",
+        "specs/sdk-centralization/status.json": "7c98c4a97924338d70f3e23a85421a8572847ee48096d869671fbbbb0326e7c0"
+      },
+      "status_record_count": 6,
+      "status_source": {
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"documentdb-mcp\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"9a5bf0840205\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n",
+        "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"documentdb-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001\",\n    \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.1\",\n    \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.2\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Capabilities come from the SDK (rollup)\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [\n        \"a53aaf84b4bc\"\n      ],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.1\",\n        \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.2\"\n      ]\n    },\n    {\n      \"id\": \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.1\",\n      \"title\": \"Database driver from the SDK\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.2\",\n      \"title\": \"SDK floor\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT",
+        "CONN-DOCUMENTDB-MCP-CONNECTOR-CONTENT-R001",
+        "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION",
+        "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001",
+        "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.1",
+        "CONN-DOCUMENTDB-MCP-SDK-CENTRALIZATION-R001.2"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R116.1": true,
+        "PIPE-CONNSPEC-R116.2": false,
+        "PIPE-CONNSPEC-R116.3": false,
+        "PIPE-CONNSPEC-R116.4": false
+      }
+    },
+    "egeria-mcp": {
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "hosted_run": {
+          "conclusion": "success",
+          "createdAt": "2026-10-24T10:06:50Z",
+          "databaseId": 40084617093,
+          "headSha": "0a4b2eafb805284de3924b509183677fb5b1a9b2",
+          "status": "completed",
+          "url": "https://github.com/Knuckles-Team/egeria-mcp/actions/runs/40084617093",
+          "workflowName": "Deploy GitHub Pages"
+        },
+        "http": {
+          "bytes": 27049,
+          "has_spec_id": true,
+          "status": 200,
+          "url": "https://knuckles-team.github.io/egeria-mcp/spec-delivery/"
+        },
+        "known_pages_run": "40084617093",
+        "required_paths": true,
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "precommit": {
+        "hooks": [
+          "connector-standard",
+          "dependency-readiness",
+          "secrets",
+          "spec",
+          "tests-fast"
+        ],
+        "missing_canonical": [],
+        "provider_rev": "main",
+        "validate_config_rc": 0,
+        "validate_config_warning": "[WARNING] The 'rev' field of repo 'https://github.com/Knuckles-Team/pipelines' appears to be a mutable reference (moving tag / branch).  Mutable references are never updated after first install and are not supported.  See https://pre-commit.com/#using-the-latest-version-for-a-repository for more details.  Hint: `pre-commit autoupdate` often fixes this."
+      },
+      "publication_test": true,
+      "release": {
+        "container_render_connector": [
+          true
+        ],
+        "python_connector": [
+          true
+        ]
+      },
+      "row": "PIPE-CONNSPEC-R117",
+      "sha": "0a4b2eafb805284de3924b509183677fb5b1a9b2",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 570,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        ".github/workflows/pipeline.yml": {
+          "bytes": 783,
+          "content": "name: Build|Upload|Release Python Package\n\non:\n  push:\n    branches:\n      - 'main'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n    with:\n      connector: true\n    permissions:\n      contents: write\n    secrets:\n      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}\n  publish-docker:\n    needs: publish-pypi\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n    with:\n      render_connector: true\n    permissions:\n      contents: read\n    secrets:\n      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}\n      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}\n      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}\n      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}\n",
+          "sha256": "daec790800fd9b4b229ef0e7372e4bc1e654fa79b9c2c32b739ef4ded2518652"
+        },
+        ".pre-commit-config.yaml": {
+          "bytes": 1134,
+          "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
+          "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        }
+      },
+      "status_documents": {
+        "specs/connector-content/status.json": {
+          "delivery_state": "LANDED",
+          "owner_repo": "egeria-mcp",
+          "requirement_ids": [
+            "CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "LANDED",
+              "id": "CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001",
+              "landed_in": [
+                "49159f58eae9"
+              ],
+              "title": "Default content",
+              "verified_by": []
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-EGERIA-MCP-CONNECTOR-CONTENT"
+        },
+        "specs/sdk-centralization/status.json": {
+          "delivery_state": "SPECIFIED",
+          "owner_repo": "egeria-mcp",
+          "requirement_ids": [
+            "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R001",
+            "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R002",
+            "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R003"
+          ],
+          "requirements": [
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R001",
+              "landed_in": [],
+              "title": "Governed HTTP client",
+              "verified_by": [
+                "tests/test_sdk_centralization.py:17"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R002",
+              "landed_in": [],
+              "title": "OpenBao token by reference",
+              "verified_by": [
+                "tests/test_sdk_centralization.py:29"
+              ]
+            },
+            {
+              "delivery_state": "SPECIFIED",
+              "id": "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R003",
+              "landed_in": [],
+              "title": "Database driver from the SDK extra",
+              "verified_by": [
+                "tests/test_sdk_centralization.py:40"
+              ]
+            }
+          ],
+          "schema_version": 2,
+          "spec_id": "CONN-EGERIA-MCP-SDK-CENTRALIZATION"
+        }
+      },
+      "status_file_sha256": {
+        "specs/connector-content/status.json": "53a87e7463bc98ffb503fd70c3346dd7e4a871c6c352ba9cce64758f6c1cb16a",
+        "specs/sdk-centralization/status.json": "493d1c6eff1166f08f929a68c68a050e2bd9cb63f6ba452c9b242f2499984e3d"
+      },
+      "status_record_count": 6,
+      "status_source": {
+        "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-EGERIA-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"egeria-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"49159f58eae9\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+        "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-EGERIA-MCP-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"egeria-mcp\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-EGERIA-MCP-SDK-CENTRALIZATION-R001\",\n    \"CONN-EGERIA-MCP-SDK-CENTRALIZATION-R002\",\n    \"CONN-EGERIA-MCP-SDK-CENTRALIZATION-R003\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-EGERIA-MCP-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Governed HTTP client\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:17\"\n      ]\n    },\n    {\n      \"id\": \"CONN-EGERIA-MCP-SDK-CENTRALIZATION-R002\",\n      \"title\": \"OpenBao token by reference\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:29\"\n      ]\n    },\n    {\n      \"id\": \"CONN-EGERIA-MCP-SDK-CENTRALIZATION-R003\",\n      \"title\": \"Database driver from the SDK extra\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_sdk_centralization.py:40\"\n      ]\n    }\n  ]\n}\n"
+      },
+      "status_spec_ids": [
+        "CONN-EGERIA-MCP-CONNECTOR-CONTENT",
+        "CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001",
+        "CONN-EGERIA-MCP-SDK-CENTRALIZATION",
+        "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R001",
+        "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R002",
+        "CONN-EGERIA-MCP-SDK-CENTRALIZATION-R003"
+      ],
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R117.1": true,
+        "PIPE-CONNSPEC-R117.2": true,
+        "PIPE-CONNSPEC-R117.3": true,
+        "PIPE-CONNSPEC-R117.4": false
+      }
+    }
+  },
+  "requirements": {
+    ".1": "Consumer specs/*/status.json are readable through existing scripts.spec_dashboard_sources.read_records.",
+    ".2": "Consumer pre-commit configs contain the provider canonical aggregate hooks and validate-config succeeds.",
+    ".3": "Consumer Pages caller/config, exact-source successful Pages publisher, and live /spec-delivery/ HTTP 200 all agree.",
+    ".4": "No development-skill evidence was found; no .4 rows are bound."
+  },
+  "schema_version": 1,
+  "strict_leaf_counts": {
+    ".1": 9,
+    ".2": 6,
+    ".3": 4,
+    ".4": 0
+  }
+}
