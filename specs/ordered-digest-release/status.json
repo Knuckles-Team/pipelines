@@ -644,13 +644,19 @@
     {
       "id": "PIPE-RELEASE-R007",
       "title": "Shared gates workflow, tag-only publish guard and fast-tests hook",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "3cfd039fe3e2",
         "3d0455152b96",
         "4f1e1f0aff4a"
       ],
-      "verified_by": [],
+      "verified_by": [
+        "tests/hooks/test_fast_tests.py:10",
+        "tests/hooks/test_fast_tests.py:27",
+        "tests/hooks/test_fast_tests.py:35",
+        "tests/hooks/test_fast_tests.py:46",
+        "tests/hooks/test_pr_test_scope.py:189"
+      ],
       "rollup_of": [
         "PIPE-RELEASE-R007.1",
         "PIPE-RELEASE-R007.2",
@@ -700,20 +706,27 @@
     {
       "id": "PIPE-RELEASE-R007.4",
       "title": "Refusal",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "4f1e1f0aff4a"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_fast_tests.py:46",
+        "tests/test_gates_pipeline_contract.py:80"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R007.5",
       "title": "Evidence",
-      "delivery_state": "LANDED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "4f1e1f0aff4a"
       ],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_fast_tests.py:27",
+        "tests/hooks/test_fast_tests.py:35",
+        "tests/test_gates_pipeline_contract.py:91"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R007.6",
