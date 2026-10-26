@@ -1612,7 +1612,8 @@
       "title": "Ingest (Scion SDK 0.5.2) rule `ingest.i8`",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "1bd2f8fcfb6c"
+        "1bd2f8fcfb6c",
+        "8d8cc8f2e3ba"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central_ingest.py:465",
