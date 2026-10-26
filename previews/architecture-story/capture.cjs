@@ -55,6 +55,12 @@ const geometry=`(()=>{const rect=e=>{const r=e.getBoundingClientRect();return {x
       if(scenario.zoom)await evaluate('document.documentElement.style.zoom="2";true');
       await delay(150);
       receipt.geometry=await evaluate(geometry);
+      const viewport=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+      writeFileSync(join(output,`${node}-${scenario.name}-viewport.png`),Buffer.from(viewport.data,'base64'));
+      await evaluate("[...document.querySelectorAll('h2')].find(e=>e.textContent==='Requirement mosaic')?.scrollIntoView();true");await delay(100);
+      const mosaicView=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+      writeFileSync(join(output,`${node}-${scenario.name}-mosaic-viewport.png`),Buffer.from(mosaicView.data,'base64'));
+      await evaluate('window.scrollTo(0,0);true');await delay(100);
       const metrics=await command('Page.getLayoutMetrics');
       const shot=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:metrics.cssContentSize.width,height:metrics.cssContentSize.height,scale:1}});
       const name=`${node}-${scenario.name}.png`;const bytes=Buffer.from(shot.data,'base64');writeFileSync(join(output,name),bytes);receipt.screenshot={file:name,sha256:createHash('sha256').update(bytes).digest('hex')};
@@ -64,13 +70,13 @@ const geometry=`(()=>{const rect=e=>{const r=e.getBoundingClientRect();return {x
       // Real CDP key events activate native disclosure; no synthetic key dispatch.
       if(await evaluate("!!document.querySelector('#tile-list')")){
         await evaluate("document.querySelector('#tile-list summary').focus();window.__trustedKeys=[];document.addEventListener('keydown',e=>window.__trustedKeys.push({key:e.key,trusted:e.isTrusted}));true");
-        await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});await delay(50);
+        await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13,text:'\r',unmodifiedText:'\r'});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});await delay(50);
         receipt.keyboard=await evaluate("({open:document.querySelector('#tile-list').open,rows:document.querySelectorAll('#tile-list li').length,events:window.__trustedKeys,active:document.activeElement.tagName})");
         if(!receipt.keyboard.open||receipt.keyboard.rows>64||!receipt.keyboard.events.some(e=>e.key==='Enter'&&e.trusted))throw Error('Trusted keyboard disclosure failed');
       }
       const target=node==='webui.api.gen'?'arbora':'webui.api.gen';
       await evaluate(`document.querySelector('[data-example="${target}"]').focus();true`);
-      await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});await delay(100);
+      await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13,text:'\r',unmodifiedText:'\r'});await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});await delay(100);
       receipt.navigation=await evaluate("({hash:location.hash,active:document.activeElement.tagName})");
       if(receipt.navigation.hash!=='#'+target||receipt.navigation.active!=='H1')throw Error('Example navigation/focus failed');
       await evaluate('history.back();true');await delay(100);
