@@ -19,6 +19,15 @@ on:
         required: false
         type: boolean
         default: false
+      legacy_profile:
+        description: >-
+          Explicit wheel-only legacy profile. Preserve the reviewed tracked package tree and
+          tracked custom Dockerfile without invoking the current connector renderer. This may
+          be combined with release_repair to build from current main while proving the original
+          public wheel source and epoch; it is never inferred from a missing Dockerfile.
+        required: false
+        type: boolean
+        default: false
       release_repair:
         description: >-
           Explicit reviewed release repair. Only a workflow_dispatch on the current main HEAD
@@ -158,6 +167,7 @@ jobs:
           DOCKERFILE: ${{ inputs.dockerfile }}
           BUILD_TARGET: ${{ inputs.build_target }}
           RENDER_CONNECTOR: ${{ inputs.render_connector }}
+          LEGACY_PROFILE: ${{ inputs.legacy_profile }}
           SOURCE_SHA: ${{ inputs.release_source_sha }}
           SOURCE_EPOCH: ${{ inputs.release_source_epoch }}
           RUNTIME_INPUTS: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.arbora_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
@@ -193,16 +203,41 @@ jobs:
             echo '::error::Reviewed release repair does not accept a runtime artifact or alternate build target.'
             exit 1
           }
-          [[ "${RENDER_CONNECTOR,,}" == true ]] || {
-            echo '::error::Reviewed release repair requires the canonical connector renderer.'
-            exit 1
-          }
+          if [[ "${LEGACY_PROFILE,,}" == true ]]; then
+            [[ "${RENDER_CONNECTOR,,}" == false ]] || {
+              echo '::error::Legacy release repair requires render_connector=false.'
+              exit 1
+            }
+          else
+            [[ "${RENDER_CONNECTOR,,}" == true ]] || {
+              echo '::error::Reviewed release repair requires the canonical connector renderer.'
+              exit 1
+            }
+          fi
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || {
             echo '::error::Reviewed release repair requires the original package source SHA.'
             exit 1
           }
           [[ "$SOURCE_EPOCH" =~ ^[0-9]+$ ]] || {
             echo '::error::Reviewed release repair requires the original package generation epoch.'
+            exit 1
+          }
+
+      - name: Validate legacy profile request
+        if: inputs.legacy_profile == true
+        env:
+          BUILD_CONTEXT: ${{ inputs.build_context }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          RENDER_CONNECTOR: ${{ inputs.render_connector }}
+          LEGACY_PROFILE: ${{ inputs.legacy_profile }}
+        run: |
+          set -euo pipefail
+          [[ "$BUILD_CONTEXT" == . && "$DOCKERFILE" == docker/Dockerfile ]] || {
+            echo '::error::Legacy profile only permits the canonical repository Docker context and tracked Dockerfile path.'
+            exit 1
+          }
+          [[ "${RENDER_CONNECTOR,,}" == false ]] || {
+            echo '::error::Legacy profile requires render_connector=false.'
             exit 1
           }
 
@@ -260,10 +295,11 @@ jobs:
           INPUT_BUILD_CONTEXT: ${{ inputs.build_context }}
           INPUT_DOCKERFILE: ${{ inputs.dockerfile }}
           RELEASE_REPAIR: ${{ inputs.release_repair }}
+          LEGACY_PROFILE: ${{ inputs.legacy_profile }}
         run: |
           set -euo pipefail
           context="$INPUT_BUILD_CONTEXT"
-          if [[ "${RELEASE_REPAIR,,}" == true ]]; then
+          if [[ "${RELEASE_REPAIR,,}" == true && "${LEGACY_PROFILE,,}" != true ]]; then
             context=.release-source
           fi
           printf 'path=%s\n' "$context" >> "$GITHUB_OUTPUT"
@@ -279,16 +315,18 @@ jobs:
           BUILD_CONTEXT: ${{ steps.build-context.outputs.path }}
           DOCKERFILE: ${{ inputs.dockerfile }}
           RENDER_CONNECTOR: ${{ inputs.render_connector }}
+          LEGACY_PROFILE: ${{ inputs.legacy_profile }}
         run: |
           set -euo pipefail
           render=false
+          legacy_profile="${LEGACY_PROFILE:-false}"
           dockerfile="$DOCKERFILE"
           if [[ "$dockerfile" != /* ]]; then
             dockerfile="$BUILD_CONTEXT/$dockerfile"
           fi
           if [[ "${RENDER_CONNECTOR,,}" == true ]]; then
             render=true
-          elif [[ "$DOCKERFILE" == docker/Dockerfile && ! -e "$dockerfile" && ! -L "$dockerfile" && -f "$BUILD_CONTEXT/pyproject.toml" ]]; then
+          elif [[ "${legacy_profile,,}" != true && "$DOCKERFILE" == docker/Dockerfile && ! -e "$dockerfile" && ! -L "$dockerfile" && -f "$BUILD_CONTEXT/pyproject.toml" ]]; then
             if (
               cd "$BUILD_CONTEXT"
               python3 - <<'PY'
@@ -355,6 +393,7 @@ jobs:
           DOCKERFILE: ${{ inputs.dockerfile }}
           REQUESTED_TARGET: ${{ inputs.build_target }}
           MATRIX_TARGET: ${{ matrix.target }}
+          LEGACY_PROFILE: ${{ inputs.legacy_profile }}
           RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.arbora_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
         run: |
           set -euo pipefail
@@ -381,9 +420,14 @@ jobs:
           fi
           target="${REQUESTED_TARGET:-$MATRIX_TARGET}"
           echo "cache-key=$target" >> "$GITHUB_OUTPUT"
+          legacy_profile="${LEGACY_PROFILE:-false}"
           dockerfile="$DOCKERFILE"
           if [[ "$dockerfile" != /* ]]; then
             dockerfile="$BUILD_CONTEXT/$dockerfile"
+          fi
+          if [[ "${legacy_profile,,}" == true && "$DOCKERFILE" == docker/Dockerfile && ! -f "$dockerfile" ]]; then
+            echo '::error::Legacy profile requires a tracked canonical Dockerfile; refusing to skip the container build.'
+            exit 1
           fi
           if [[ "$DOCKERFILE" != docker/Dockerfile && ! -f "$dockerfile" ]]; then
             echo '::error::Selected custom Dockerfile is absent; refusing to skip the container build.'
@@ -509,8 +553,10 @@ jobs:
           distribution: ${{ steps.published-wheel.outputs.distribution }}
           module: ${{ steps.published-wheel.outputs.module }}
           dockerfile: ${{ inputs.dockerfile }}
+          docker-root: ${{ inputs.release_repair == true && inputs.legacy_profile == true && steps.build-context.outputs.path || '' }}
           extras: ${{ steps.published-wheel.outputs.extras }}
-          root: ${{ steps.build-context.outputs.path }}
+          legacy-profile: ${{ inputs.legacy_profile }}
+          root: ${{ inputs.release_repair == true && inputs.legacy_profile == true && '.release-source' || steps.build-context.outputs.path }}
 
       # PIPE-RELEASE-R015: reuse ONE named BuildKit builder per runner pod instead of
       # creating and removing a builder every job. Each pod's Docker daemon (and its

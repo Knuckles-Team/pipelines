@@ -300,6 +300,7 @@ def test_container_workflow_renders_and_tags_by_sdk_version() -> None:
     document = yaml.safe_load((WORKFLOWS / "container_pipeline.yml").read_text(encoding="utf-8"))
     inputs = document[True]["workflow_call"]["inputs"]
     assert inputs["render_connector"]["default"] is False and inputs["sdk_version"]["default"] == ""
+    assert inputs["legacy_profile"]["default"] is False and inputs["legacy_profile"]["type"] == "boolean"
     steps = document["jobs"]["publish-docker"]["steps"]
     render_needed = next(s for s in steps if s.get("id") == "render-needed")
     assert "agent_connector_sdk.connector" in render_needed["run"]
@@ -318,6 +319,7 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
     resolve, rebuild = document["jobs"]["resolve"], document["jobs"]["rebuild"]
     inputs = document[True]["workflow_call"]["inputs"]
     assert inputs["release_repair"]["type"] == "boolean" and inputs["release_repair"]["default"] is False
+    assert inputs["legacy_profile"]["type"] == "boolean" and inputs["legacy_profile"]["default"] is False
     assert inputs["release_source_sha"]["type"] == "string" and inputs["release_source_sha"]["default"] == ""
     assert inputs["release_source_epoch"]["type"] == "string" and inputs["release_source_epoch"]["default"] == ""
     login = next(step for step in resolve["steps"] if "docker/login-action@" in step.get("uses", ""))
@@ -335,7 +337,8 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
     assert rebuild["needs"] == "resolve" and rebuild["if"] == "needs.resolve.outputs.stale == 'true'"
     assert rebuild["uses"].endswith("/container_pipeline.yml@main")
     assert rebuild["with"] == {
-        "render_connector": True,
+        "render_connector": "${{ !inputs.legacy_profile }}",
+        "legacy_profile": "${{ inputs.legacy_profile }}",
         "release_repair": "${{ inputs.release_repair }}",
         "release_source_sha": "${{ inputs.release_source_sha }}",
         "release_source_epoch": "${{ inputs.release_source_epoch }}",
