@@ -367,6 +367,13 @@ def test_i4_dispatch_table_is_noted(tmp_path: Path) -> None:
     assert not plain.review.items
 
 
+@pytest.mark.spec("PIPE-GATES-R016.85")
+def test_i4_annotated_dispatch_table_is_noted(tmp_path: Path) -> None:
+    extra = KG_MAPPER + '\n\n_MAPPERS: dict[str, object] = {"Item": ingest_items}\n'
+    ctx = _run(_ctx(_connector(tmp_path, extra=extra)), "ingest.i4")
+    assert _steps(ctx) == ["ingest.i4"] and "dispatch" in ctx.review.items[0]["detail"]
+
+
 @pytest.mark.spec("PIPE-GATES-R016.86")
 def test_i5_mapper_functions_are_noted(tmp_path: Path) -> None:
     extra = KG_MAPPER + "\n\ndef map_items(records):\n    return [], []\n"
@@ -374,6 +381,13 @@ def test_i5_mapper_functions_are_noted(tmp_path: Path) -> None:
     assert _steps(ctx) == ["ingest.i5"] and "map_items" in ctx.review.items[0]["detail"]
     plain = _run(_ctx(_connector(tmp_path / "b")), "ingest.i5")
     assert not plain.review.items
+
+
+@pytest.mark.spec("PIPE-GATES-R016.86")
+def test_i5_async_mapper_functions_are_noted(tmp_path: Path) -> None:
+    extra = KG_MAPPER + "\n\nasync def map_documents(records):\n    return records\n"
+    ctx = _run(_ctx(_connector(tmp_path, extra=extra)), "ingest.i5")
+    assert _steps(ctx) == ["ingest.i5"] and "map_documents" in ctx.review.items[0]["detail"]
 
 
 # ---------------------------------------------------------------- i6
@@ -459,6 +473,21 @@ def test_i8_best_effort_wrapper_is_review_and_stops_i1(tmp_path: Path) -> None:
     assert not plain.review.items
 
 
+@pytest.mark.spec("PIPE-GATES-R016.89")
+def test_i8_aliased_sdk_exception_wrapper_is_review_and_stops_i1(tmp_path: Path) -> None:
+    extra = (
+        KG_MAPPER + "\n\nfrom agent_connector_sdk.ingest import IngestError as RetryableError\n"
+        "\nasync def try_ingest(entities):\n"
+        "    try:\n"
+        "        return await ingest_entities(entities)\n"
+        "    except RetryableError:\n"
+        "        return None\n"
+    )
+    ctx = _run(_ctx(_connector(tmp_path, extra=extra)), *ingest.ORDER)
+    assert any(item["step"] == "ingest.i8" and "RetryableError" in item["detail"] for item in ctx.review.items)
+    assert not ctx.applied
+
+
 MEDIA = """
 
 async def ingest_blob(data: bytes) -> dict[str, int]:
@@ -477,6 +506,18 @@ def test_i9_media_change_set_is_review_and_stops_i1(tmp_path: Path) -> None:
     assert "ingest.i9" in _steps(ctx)
     plain = _run(_ctx(_connector(tmp_path / "b")), "ingest.i9")
     assert not plain.review.items
+
+
+@pytest.mark.parametrize(
+    ("construction", "reason"),
+    [("ChangeSet(payload)", "positional"), ("ChangeSet(**payload)", "dynamic")],
+)
+@pytest.mark.spec("PIPE-GATES-R016.90")
+def test_i9_dynamic_change_set_is_review_and_stops_i1(tmp_path: Path, construction: str, reason: str) -> None:
+    extra = KG_MAPPER + f"\n\nasync def ingest_blob(payload):\n    change_set = {construction}\n    return change_set\n"
+    ctx = _run(_ctx(_connector(tmp_path, extra=extra)), *ingest.ORDER)
+    assert any(item["step"] == "ingest.i9" and reason in item["detail"] for item in ctx.review.items)
+    assert not ctx.applied
 
 
 # ---------------------------------------------------------------- whole module
