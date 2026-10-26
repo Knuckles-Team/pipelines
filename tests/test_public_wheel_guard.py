@@ -227,6 +227,30 @@ demo-mcp = "demo:main"
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_repair_refuses_an_unpublished_version_before_container_publish(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    (tmp_path / "demo").mkdir()
+    (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo-dist"\nversion = "1.2.3"\n'
+        '[project.scripts]\ndemo-mcp = "demo:main"\n'
+        '[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", "."], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+    monkeypatch.setattr(guard, "read_public", lambda url: json.dumps({"urls": []}).encode())
+    with pytest.raises(ValueError, match="Exactly one public pure-Python wheel"):
+        guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", "")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
 @pytest.mark.parametrize("has_mcp_extra", [False, True])
 @pytest.mark.parametrize("tracked", [False, True])
 def test_public_wheel_target_extra_matches_generated_and_tracked_targets(

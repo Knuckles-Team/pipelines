@@ -57,6 +57,39 @@
   pass_filenames: false
   always_run: true
   stages: [pre-push, manual]
+- id: source-path-portability
+  name: Source path portability - tracked package paths are cross-platform legal
+  entry: pipelines-hook source-path-portability
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: prompt-format
+  name: Prompt JSON/Pydantic stable disk format and semantic roundtrip
+  entry: pipelines-hook prompt-format
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: skill-grade
+  name: Deterministic skill quality grading with snapshot-bound evidence
+  entry: pipelines-hook skill-grade
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: test-layout
+  name: Test layout independence - isolated order and fixture inventory
+  entry: pipelines-hook test-layout
+  language: python
+  additional_dependencies: [pytest==9.1.1]
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-push, manual]
 
 # ============================ DEPRECATED ======================================
 # Superseded by the gate standard. Do not add new references. Each id stays
