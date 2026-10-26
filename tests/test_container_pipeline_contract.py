@@ -151,6 +151,17 @@ def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp
         assert result.returncode == 0, result.stderr
         assert dict(line.split("=", 1) for line in output.read_text().splitlines()) == expected | {"extras": ""}
 
+    mismatch = {
+        **environment,
+        "PUBLISHED_WHEEL_EXTRAS": "mcp",
+        "GITHUB_OUTPUT": str(tmp_path / "mismatch-output"),
+    }
+    result = subprocess.run(
+        ["bash", "-c", step["run"]], cwd=tmp_path / "1", env=mismatch, capture_output=True, text=True
+    )
+    assert result.returncode != 0
+    assert "do not match" in result.stdout + result.stderr
+
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
 @pytest.mark.parametrize(
