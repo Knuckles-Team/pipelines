@@ -1278,86 +1278,138 @@
     {
       "id": "PIPE-PAGES-R020.1",
       "title": "Model",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "69ec236595d9",
+        "9847837cebbd",
+        "df2be07ea025"
+      ],
+      "verified_by": [
+        "tests/hooks/test_doc_claims.py:36"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.2",
       "title": "Behavior",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "69ec236595d9",
+        "9847837cebbd",
+        "df2be07ea025"
+      ],
+      "verified_by": [
+        "tests/hooks/test_doc_claims.py:42"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.3",
       "title": "Wiring",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "69ec236595d9",
+        "9847837cebbd",
+        "df2be07ea025"
+      ],
+      "verified_by": [
+        "tests/hooks/test_doc_claims.py:66",
+        "tests/hooks/test_public_surface_claims.py:43",
+        "tests/hooks/test_public_surface_claims.py:71"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.4",
       "title": "Refusal",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "69ec236595d9",
+        "9847837cebbd",
+        "df2be07ea025"
+      ],
+      "verified_by": [
+        "tests/hooks/test_doc_claims.py:86",
+        "tests/hooks/test_public_surface_claims.py:95"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.5",
       "title": "Evidence",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "69ec236595d9",
+        "9847837cebbd",
+        "df2be07ea025"
+      ],
+      "verified_by": [
+        "tests/hooks/test_doc_claims.py:94"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.6",
       "title": "Hot-path proof",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "69ec236595d9",
+        "9847837cebbd",
+        "df2be07ea025"
+      ],
+      "verified_by": [
+        "tests/hooks/test_public_surface_claims.py:27"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.7",
       "title": "Model",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_public_surface_claims.py:130"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.8",
       "title": "Behavior",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_public_surface_claims.py:143"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.9",
       "title": "Wiring",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_public_surface_claims.py:167"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.10",
       "title": "Refusal",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_public_surface_claims.py:196"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.11",
       "title": "Evidence",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_public_surface_claims.py:253"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.12",
       "title": "Hot-path proof",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_public_surface_claims.py:282",
+        "tests/hooks/test_public_surface_claims.py:320"
+      ]
     },
     {
       "id": "PIPE-PAGES-R020.13",
