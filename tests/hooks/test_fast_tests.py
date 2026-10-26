@@ -24,11 +24,31 @@ def test_fast_tests_runs_only_the_affected_subset(repo: Repo, capsys: pytest.Cap
     assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 1
 
 
+# spec: PIPE-RELEASE-R007.5
 def test_fast_tests_reports_no_affected_tests(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     base = repo.commit({"README.md": "x\n", "tests/test_x.py": "def test_x() -> None:\n    assert True\n"}, "baseline")
     repo.commit({"README.md": "y\n"}, "docs")
     assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 0
     assert "no affected tests" in capsys.readouterr().out
+
+
+# spec: PIPE-RELEASE-R007.5
+def test_fast_tests_reports_full_suite_ownership(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.commit(
+        {"pyproject.toml": '[project]\nname = "fixture"\nversion = "0"\n\n# shared config change\n'},
+        "config",
+    )
+    assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 0
+    assert "main CI" in capsys.readouterr().out
+
+
+# spec: PIPE-RELEASE-R007.4
+def test_fast_tests_rejects_a_non_positive_timeout(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    base = repo.commit({"README.md": "x\n"}, "baseline")
+    repo.commit({"README.md": "y\n"}, "docs")
+    assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg", "--timeout", "0") == 2
+    assert "positive" in capsys.readouterr().err
 
 
 def test_fast_tests_timeout_fails_the_hook(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
