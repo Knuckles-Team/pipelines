@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import re
 import shutil
@@ -14,6 +16,25 @@ import yaml
 
 
 WORKFLOW = Path(__file__).parents[1] / ".github/workflows/pages_pipeline.yml"
+CLIENT_CALLER_FIXTURE = Path(__file__).parents[1] / "tests/fixtures/pages_client_callers.json"
+CLIENT_CALLER_EXPECTATIONS = {
+    "overstory": {
+        "repository": "Knuckles-Team/overstory",
+        "source_sha": "b14d0215fd71614286448ba23411de41dc889bcc",
+        "sha256": "27b9620de2ada001dfd8a3cfc0d66a5c83ce62f6f9658642e0e9bc0b5ff1c765",
+    },
+    "tuig": {
+        "repository": "Knuckles-Team/tuig",
+        "source_sha": "4f53111e53f6179312995883f4f62c8bb584d502",
+        "sha256": "da9eac532c8826ac1dfb57c9e1cc64cd68fd592ab849fd5cc9b53648ea94878f",
+    },
+    "axil": {
+        "repository": "Knuckles-Team/axil",
+        "source_sha": "cc2995d8f3a13aab2d534835befdc3ff5ac9157b",
+        "sha256": "da9eac532c8826ac1dfb57c9e1cc64cd68fd592ab849fd5cc9b53648ea94878f",
+    },
+}
+PAGES_WORKFLOW = "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main"
 
 
 def _workflow() -> dict:
@@ -23,6 +44,40 @@ def _workflow() -> dict:
     value = parsed.get("on", parsed.get(True))
     assert isinstance(value, dict)
     return {"document": parsed, "on": value}
+
+
+def _client_caller_rows() -> dict[str, dict]:
+    payload = json.loads(CLIENT_CALLER_FIXTURE.read_text(encoding="utf-8"))
+    assert payload["schema_version"] == 1
+    rows = {row["name"]: row for row in payload["callers"]}
+    assert set(rows) == set(CLIENT_CALLER_EXPECTATIONS)
+    return rows
+
+
+def _assert_client_caller(name: str, row: dict) -> None:
+    expected = CLIENT_CALLER_EXPECTATIONS[name]
+    assert row["repository"] == expected["repository"]
+    assert row["source_sha"] == expected["source_sha"]
+    assert row["path"] == ".github/workflows/pages.yml"
+    content = row["content"]
+    assert hashlib.sha256(content.encode()).hexdigest() == row["sha256"]
+    assert row["sha256"] == expected["sha256"]
+
+    document = yaml.safe_load(content)
+    assert isinstance(document, dict)
+    jobs = document.get("jobs")
+    assert isinstance(jobs, dict)
+    pages_calls = [
+        job
+        for job in jobs.values()
+        if isinstance(job, dict) and job.get("uses", "").startswith(PAGES_WORKFLOW.rsplit("@", 1)[0] + "@")
+    ]
+    assert len(pages_calls) == 1, f"{name} must have exactly one Pages reusable-workflow call"
+    pages_call = pages_calls[0]
+    assert pages_call["uses"] == PAGES_WORKFLOW, f"{name} must pin the caller pattern at @main"
+    assert pages_call.get("with", {}).get("spec_dashboard_enabled") is True, (
+        f"{name} must enable the shared spec dashboard"
+    )
 
 
 def test_content_source_declares_the_authority_and_defaults_to_pages() -> None:
@@ -243,6 +298,29 @@ def test_pages_workflow_runs_relation_steps(tmp_path, monkeypatch):
     assert "Spec relationships" in page
     assert "depends on" in page
     assert 'href="#spec-AU-CONTROL"' in page
+
+
+@pytest.mark.spec("PIPE-PAGES-R015.2")
+def test_client_callers_use_reusable_workflow():
+    """Pinned current consumer workflows use the common Pages caller contract."""
+    for name, row in _client_caller_rows().items():
+        _assert_client_caller(name, row)
+
+
+@pytest.mark.parametrize(
+    ("replacement", "expected"),
+    [
+        ("Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main", "@deadbeef"),
+        ("spec_dashboard_enabled: true", "spec_dashboard_enabled: false"),
+    ],
+)
+def test_client_caller_rejects_wrong_ref_or_missing_dashboard(replacement, expected):
+    """The adoption check fails closed when a caller loses either contract input."""
+    row = dict(_client_caller_rows()["tuig"])
+    row["content"] = row["content"].replace(replacement, expected, 1)
+    row["sha256"] = hashlib.sha256(row["content"].encode()).hexdigest()
+    with pytest.raises(AssertionError):
+        _assert_client_caller("tuig", row)
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")

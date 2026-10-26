@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "description": "Pinned source snapshots for PIPE-PAGES-R015.2 caller adoption.",
+  "callers": [
+    {
+      "name": "overstory",
+      "repository": "Knuckles-Team/overstory",
+      "source_sha": "b14d0215fd71614286448ba23411de41dc889bcc",
+      "path": ".github/workflows/pages.yml",
+      "sha256": "27b9620de2ada001dfd8a3cfc0d66a5c83ce62f6f9658642e0e9bc0b5ff1c765",
+      "content": "name: Documentation\n\non:\n  push:\n    branches:\n      - main\n  workflow_dispatch:\n\nconcurrency:\n  group: pages-${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: false\n\npermissions:\n  contents: read\n\njobs:\n  pages:\n    name: Build and deploy the shared documentation experience\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n"
+    },
+    {
+      "name": "tuig",
+      "repository": "Knuckles-Team/tuig",
+      "source_sha": "4f53111e53f6179312995883f4f62c8bb584d502",
+      "path": ".github/workflows/pages.yml",
+      "sha256": "da9eac532c8826ac1dfb57c9e1cc64cd68fd592ab849fd5cc9b53648ea94878f",
+      "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n  workflow_dispatch: {}\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: pages-${{ github.ref }}\n  cancel-in-progress: false\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n    with:\n      content_source: docs\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n"
+    },
+    {
+      "name": "axil",
+      "repository": "Knuckles-Team/axil",
+      "source_sha": "cc2995d8f3a13aab2d534835befdc3ff5ac9157b",
+      "path": ".github/workflows/pages.yml",
+      "sha256": "da9eac532c8826ac1dfb57c9e1cc64cd68fd592ab849fd5cc9b53648ea94878f",
+      "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n  workflow_dispatch: {}\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: pages-${{ github.ref }}\n  cancel-in-progress: false\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n    with:\n      content_source: docs\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n"
+    }
+  ]
+}
