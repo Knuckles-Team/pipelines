@@ -10,7 +10,7 @@ import pytest
 
 from pipelines_hooks.clones.jscpd_snapshot import materialize
 
-pytestmark = pytest.mark.spec("PIPE-GATES-R011")
+pytestmark = pytest.mark.spec("PIPE-GATES-R011")  # binds cache freshness and symlink snapshot behavior
 
 
 def _git(root: Path, *args: str) -> str:
