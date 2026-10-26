@@ -30,8 +30,22 @@ jobs:
           command -v google-chrome || command -v chromium
           uv sync --frozen
           npm ci --prefix scripts/architecture_explorer --ignore-scripts
-      - name: Capture actual public data with candidate template
-        run: uv run --frozen python -m scripts.architecture_explorer.visual_preview --output architecture-preview
+      - name: Build current frozen source data with existing token
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          uv run --frozen python -m scripts.architecture_explorer.build --mode github \
+            --source-families scripts/architecture_explorer/source-families.json \
+            --page architecture-build/index.html --tree architecture-build/tree.json
+      - name: Capture same-build data with candidate template
+        run: |
+          uv run --frozen python -m scripts.architecture_explorer.visual_preview \
+            --source-file architecture-build/index.html --output architecture-preview
+          cp architecture-build/tree.json architecture-preview/current-build-tree.json
+      - name: Prove rich charts against extension-free same-build native baseline
+        run: |
+          uv run --frozen python -m scripts.architecture_explorer.story_browser \
+            --source architecture-build/index.html --output architecture-preview/rich
       - name: Run explorer contracts including real-browser interaction tests
         env:
           ARCHITECTURE_EVIDENCE_DIR: architecture-preview

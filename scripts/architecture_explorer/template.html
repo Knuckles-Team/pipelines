@@ -594,10 +594,11 @@ function frame(now){
     // DOM chrome is also an obstacle; no caption may sit under the zoom controls or build/hint text.
     const origin=cv.getBoundingClientRect();
     for(const e of [document.querySelector(".zoom"),$("fresh"),$("hint")]){const r=e.getBoundingClientRect();annotationRects.push([r.left-origin.left,r.top-origin.top,r.width,r.height]);}
-    paintAnnotations(); }
+    paintAnnotations(); paintStories(); }
   requestAnimationFrame(frame);
 }
 
+/*__STORY_SCRIPT__*/
 // ---------- focus, breadcrumb, settle ----------
 let settleTimer=null, focus="root", selected="root", hitId=null, hist=[];
 function scheduleSettle(){ clearTimeout(settleTimer); settleTimer=setTimeout(settle, 140); }
@@ -887,6 +888,7 @@ cam=fitCam(R.root,1.01); selected="root"; resetSpecs(); renderPanel(); renderCru
 if(location.hash.length>1) applyHash(true);
 window.addEventListener("hashchange",()=>{ const h=ArchSearch.parseHash(location.hash); if((h.node||"root")!==selected||h.q!==activeQ) applyHash(false); });
 scheduleSettle(); requestAnimationFrame(frame);
+window.__storyQA=()=>storyEvidence;
 window.__arch={ search:SX.search, get hits(){return hits;}, get cam(){return cam;}, get focus(){return focus;}, get selected(){return selected;}, rect:id=>R[id], meta:META, go, up, hitAt, visible:()=>hitList.length, annotations:()=>({labels:annotationEvidence,rects:annotationRects,segments:annotationSegments}) };
 })();
 </script>

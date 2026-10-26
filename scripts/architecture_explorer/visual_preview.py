@@ -15,7 +15,7 @@ import zipfile
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
-from .build import DOC_HEAD, DOC_TAIL, HERE, template_source
+from .build import DOC_HEAD, DOC_TAIL, HERE, template_with_stories
 
 SOURCE = "https://knuckles-team.github.io/.github/architecture/"
 PROBE = """<script>
@@ -54,10 +54,10 @@ def extract_payload(source: str) -> tuple[str, dict]:
     return raw, payload
 
 
-def prepare_preview(source: str, output: Path, candidate: str) -> dict:
+def prepare_preview(source: str, output: Path, candidate: str, *, source_url: str = SOURCE) -> dict:
     raw, payload = extract_payload(source)
     template = (HERE / "template.html").read_text()
-    page = template_source().replace("/*__DATA__*/null", raw)
+    page = template_with_stories(payload["tree"], payload["meta"]).replace("/*__DATA__*/null", raw)
     output.mkdir(parents=True, exist_ok=True)
     (output / "index.html").write_text(DOC_HEAD + page + DOC_TAIL)
     (output / "README.txt").write_text(
@@ -79,7 +79,7 @@ def prepare_preview(source: str, output: Path, candidate: str) -> dict:
         original = source.replace('<html lang="en">', f'<html lang="en" data-theme="{theme}">')
         (before / f"{theme}.html").write_text(original.replace("</body>", PROBE + "</body>"))
     evidence = {
-        "source_url": SOURCE,
+        "source_url": source_url,
         "source_built_at": payload["meta"].get("built_at"),
         "source_heads": payload["meta"].get("heads"),
         "candidate_sha": candidate,
@@ -246,7 +246,7 @@ def main() -> None:
             source = response.read(16 * 1024 * 1024).decode("utf-8")
     candidate = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     output = args.output.resolve()
-    prepare_preview(source, output, candidate)
+    prepare_preview(source, output, candidate, source_url=str(args.source_file) if args.source_file else SOURCE)
     if args.prepare_only:
         return
     chrome = shutil.which("google-chrome") or shutil.which("chromium")

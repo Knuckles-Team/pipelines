@@ -9,7 +9,7 @@ import pytest
 from scripts.architecture_explorer.visual_preview import extract_payload, prepare_preview
 
 ROOT = Path(__file__).parents[1]
-RAW = r'{"tree":{"label":"A \/ B \\ path"},"meta":{"built_at":"2026-01-01","rows":1},"search":{}}'
+RAW = r'{"tree":{"id":"root","label":"A \/ B \\ path","specs":[{"repo":"pipelines","id":"PIPE-DEMO-R001","title":"Fixture","family":"demo","status":"SPECIFIED"}],"children":[]},"meta":{"built_at":"2026-01-01","rows":1,"nodes":1},"search":{}}'
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -26,6 +26,9 @@ def test_visual_preview_preserves_raw_json_escaping_and_records_provenance(tmp_p
         html = (tmp_path / name).read_text()
         assert f"const PAYLOAD = {RAW};\n" in html
         assert "/*__SEARCH__*/" not in html
+        assert "/*__STORY_SCRIPT__*/" not in html
+        assert "function paintStories" in html
+        assert "const STORY=" in html
     assert 'data-theme="dark"' in (tmp_path / "dark.html").read_text()
     assert "id='visual-evidence'" in (tmp_path / "light.html").read_text()
 

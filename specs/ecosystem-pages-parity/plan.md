@@ -629,3 +629,24 @@ geometry, node sizes, routing, counts, category hues and camera behavior. Hosted
 proof must show deferred captions actually painted after native zoom, with no rail
 or link, unchanged world rectangles and independent collision bounds. Keep every
 existing count-track check; synchronization diagnostics are a separate test fix.
+
+### 2026-10-26 — Local frozen source chart integration proposal
+
+Prepare a source-only chart view for PIPE-PAGES-R042 using exact full-SHA raw
+Git captures, shared requirement alias validation and existing priority/frontier
+semantics. No canvas mappings, activity counts or current-production claims are
+inferred. Complete-repository scope fails on unresolved prerequisites; an
+explicit selected-family plus prerequisite-closure scope records excluded gaps
+and labels its scoring denominator. The 02:31 preview Overstory/Arbora snapshot
+qualifies a 248-row scoped graph with six declared edges, not full fleet or all
+component coverage. Existing zero-row mapping reviews and whole-bundle promotion
+remain required. No live consumer wiring or publication is part of this local
+proposal.
+
+The bounded follow-on now prepares an opt-in real rebuild source-family seam:
+configured repositories are captured once from the existing frozen scan and
+used for both public rows/details and scoped graph/priority. A same-build receipt
+binds full commits, row parity and build time. Source validation fails before
+writes without stale chart or anonymous fallback. Production activation awaits
+review, existing-token current source proof and source-rich visual checks;
+all-box mapping completeness and whole-bundle atomic promotion are not claimed.
