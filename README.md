@@ -20,6 +20,8 @@
 
 Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The package centralizes shared hook and release policy. Consumers supply immutable references and repository-specific inputs.
 
+<!-- project-version: 2.1.1 -->
+
 ## Overview
 
 `pipelines-hooks` is a small Python package with the `pipelines-hook` command. It publishes repository-agnostic pre-commit gates. The reusable workflows supply tested building blocks for Python, native, container, service, desktop, and Pages delivery.

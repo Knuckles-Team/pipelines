@@ -66,6 +66,13 @@ repos:
     always_run: true
     require_serial: true
     stages: [pre-push, manual]
+  - id: project-version-sync
+    name: Project version sync - metadata, source and documentation agree
+    entry: uv run --frozen --quiet pipelines-hook project-version-sync
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push, manual]
   # --- on-demand report (not a blocking stage) -------------------------------
   - id: validate
     name: Repository validation

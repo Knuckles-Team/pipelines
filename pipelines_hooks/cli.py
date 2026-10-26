@@ -27,6 +27,7 @@ GATES: dict[str, str] = {
     "commit-identity": "pipelines_hooks.identity.commit_gate",
     "commit-identity-range": "pipelines_hooks.identity.range_gate",
     "supply-chain": "pipelines_hooks.supply_chain.gate",
+    "project-version-sync": "pipelines_hooks.release.project_version",
     "root-hygiene": "pipelines_hooks.hygiene.root",
     "gitignore-convergence": "pipelines_hooks.hygiene.gitignore",
     "sprawl": "pipelines_hooks.hygiene.sprawl",
