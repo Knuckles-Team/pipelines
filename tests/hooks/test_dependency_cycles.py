@@ -128,19 +128,20 @@ def test_installed_supply_chain_cli_refuses_invalid_include_group(repo: Repo, in
         }
     )
     executable = Path(sys.executable).with_name("pipelines-hook")
-    result = subprocess.run(
-        [str(executable), "supply-chain", "--root", str(repo.root)],
-        cwd=repo.root,
-        env=sanitized_env(),
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    output = result.stdout + result.stderr
-    assert result.returncode == 1
-    assert "SC-DEP-006" in output
-    assert message in output
-    assert "supply-chain: FAILED" in output
+    for root_args in (("--root", str(repo.root)), (str(repo.root),)):
+        result = subprocess.run(
+            [str(executable), "supply-chain", *root_args],
+            cwd=repo.root.parent,
+            env=sanitized_env(),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        output = result.stdout + result.stderr
+        assert result.returncode == 1
+        assert "SC-DEP-006" in output
+        assert message in output
+        assert "supply-chain: FAILED" in output
 
 
 # spec: PIPE-RELEASE-R005.3

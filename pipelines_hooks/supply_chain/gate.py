@@ -105,7 +105,8 @@ def _repositories(arguments: argparse.Namespace) -> tuple[Path, tuple[Path, ...]
         return root, repositories, SnapshotBudget()
     if arguments.fleet_root:
         _require_sibling(Path(arguments.fleet_root), "fleet root")
-    fleet_root = Path(arguments.fleet_root or arguments.root).resolve()
+    root = arguments.root_option or arguments.root_positional or "."
+    fleet_root = Path(arguments.fleet_root or root).resolve()
     repositories = discover_repositories(fleet_root)
     if not repositories and arguments.fleet_root:
         raise Unavailable(f"no Git repositories are checked out under the fleet root {fleet_root}")
@@ -116,8 +117,8 @@ def _repositories(arguments: argparse.Namespace) -> tuple[Path, tuple[Path, ...]
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="supply-chain", description=__doc__)
-    parser.add_argument("root", nargs="?", default=".")
-    parser.add_argument("--root", dest="root", help="alias of the positional repository root")
+    parser.add_argument("root_positional", nargs="?", default=None)
+    parser.add_argument("--root", dest="root_option", help="alias of the positional repository root")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--fleet-root")
     mode.add_argument("--source-snapshot-root")
