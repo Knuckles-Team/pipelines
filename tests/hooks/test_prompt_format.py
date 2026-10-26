@@ -137,3 +137,78 @@ def test_au121_roundtrip_cli(tmp_path: Path, capsys: pytest.CaptureFixture[str])
 
     assert prompt_format.main(["--root", str(tmp_path), "prompts/missing.json"]) == 2
     assert "does not exist" in capsys.readouterr().err
+
+
+@pytest.mark.spec("PIPE-PAGES-R035.4")
+def test_au121_bounded_json_numbers_refuse_before_conversion_or_expansion() -> None:
+    prefix = (
+        b'{"task":"pages-test","type":"prompt","schema_version":"1.0","instructions":{"core_directive":"x"},"value":'
+    )
+    with pytest.raises(prompt_format.PromptFormatError, match="integer"):
+        prompt_format.load_prompt(prefix + (b"1" * 4_301) + b"}")
+    with pytest.raises(prompt_format.PromptFormatError, match="exponent"):
+        prompt_format.load_prompt(prefix + b"1e100000000}")
+    with pytest.raises(prompt_format.PromptFormatError, match="expansion"):
+        prompt_format.serialize_prompt(_prompt(custom={"value": Decimal("1e4096")}))
+    padded_exponent = prompt_format.serialize_prompt(prompt_format.load_prompt(prefix + b"1e0002}"))
+    assert b'"value": 100' in padded_exponent
+
+    exact = _prompt(
+        custom={
+            "integer": int("9" * 100),
+            "decimal": Decimal("1.2300"),
+            "long_decimal": Decimal("9" * 100),
+        }
+    )
+    canonical = prompt_format.serialize_prompt(exact)
+    assert b'"integer": ' + (b"9" * 100) in canonical
+    assert b'"decimal": 1.23' in canonical
+    assert b'"long_decimal": ' + (b"9" * 100) in canonical
+    assert prompt_format.difference_oracle(exact, prompt_format.load_prompt(canonical)) == []
+
+
+@pytest.mark.spec("PIPE-PAGES-R035.6")
+def test_au121_cli_rejects_absolute_outside_and_traversal_before_open(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    outside = tmp_path / "outside.json"
+    outside.write_bytes(prompt_format.serialize_prompt(_prompt()))
+
+    original_read_bytes = Path.read_bytes
+
+    def fail_if_opened(path: Path) -> bytes:
+        if path in {outside, root / "prompts" / ".." / "outside.json"}:
+            raise AssertionError(f"untrusted path was opened: {path}")
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", fail_if_opened)
+    assert prompt_format.main(["--root", str(root), str(outside)]) == 2
+    assert "escapes repository root" in capsys.readouterr().err
+
+    traversal = root / "prompts" / ".." / "outside.json"
+    assert prompt_format.main(["--root", str(root), str(traversal)]) == 2
+    assert "traversal" in capsys.readouterr().err
+
+
+@pytest.mark.spec("PIPE-PAGES-R035.6")
+def test_au121_cli_rejects_symlink_ancestor_and_accepts_contained_absolute(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    root = tmp_path / "repo"
+    prompt_path = root / "prompts" / "demo.json"
+    prompt_path.parent.mkdir(parents=True)
+    prompt_path.write_bytes(prompt_format.serialize_prompt(_prompt()))
+    assert prompt_format.main(["--root", str(root), str(prompt_path)]) == 0
+    assert "sha256=" in capsys.readouterr().out
+
+    outside = tmp_path / "outside.json"
+    outside.write_bytes(prompt_path.read_bytes())
+    link = root / "prompts" / "outside.json"
+    link.symlink_to(outside)
+    assert prompt_format.main(["--root", str(root), str(link)]) == 2
+    assert "symlink ancestor" in capsys.readouterr().err

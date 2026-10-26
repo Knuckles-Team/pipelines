@@ -23,11 +23,13 @@ import math
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+
+from pipelines_hooks.core.paths import relative_to_root
 
 
 GATE_ID = "prompt-format"
@@ -35,6 +37,13 @@ FORMAT_VERSION = "1.0"
 MAX_PROMPT_BYTES = 2 * 1024 * 1024
 MAX_PROMPT_DEPTH = 64
 MAX_PROMPT_NODES = 65_536
+# Numeric values are kept exact, but an unbounded Decimal exponent or integer
+# coefficient would make canonical expansion allocate without regard to the
+# document byte cap.  These limits are checked on the JSON lexeme before the
+# stdlib converts it, and again on values supplied by Python callers.
+MAX_PROMPT_NUMBER_DIGITS = 4_096
+MAX_PROMPT_NUMBER_EXPONENT = 4_096
+MAX_PROMPT_INTEGER_BITS = int(MAX_PROMPT_NUMBER_DIGITS * math.log2(10)) + 1
 
 # R094.2-.7 are the graph producers/consumers named by PIPE-PAGES-R035.3.
 # Keeping the complete range here makes the dependency visible to callers and
@@ -47,6 +56,10 @@ _RETIRED_OPTIMIZER_KEYS = frozenset({"few_shot_examples", "optimized_instruction
 
 class PromptFormatError(ValueError):
     """A prompt cannot be trusted as a canonical disk document."""
+
+
+class PromptPathError(RuntimeError):
+    """A CLI input path cannot be proven to stay inside its repository root."""
 
 
 class _PermissiveSection(BaseModel):
@@ -208,6 +221,101 @@ def _reject_nonfinite(value: str) -> Any:
     raise PromptFormatError(f"non-finite JSON number is forbidden: {value}")
 
 
+def _check_integer_bounds(value: int) -> None:
+    """Refuse integer values before formatting can invoke a huge conversion."""
+
+    # ``int.bit_length`` works for negative values without making an absolute
+    # copy.  It is a cheap conservative check before ``str(int)`` below.
+    if value.bit_length() > MAX_PROMPT_INTEGER_BITS:
+        raise PromptFormatError(f"JSON integer exceeds the {MAX_PROMPT_NUMBER_DIGITS}-digit limit")
+
+
+def _bounded_decimal_parts(value: Decimal) -> tuple[int, tuple[int, ...], int]:
+    """Return exact, context-independent Decimal parts after applying bounds."""
+
+    if not value.is_finite():
+        raise PromptFormatError("non-finite Decimal is forbidden")
+    sign, digits, raw_exponent = value.as_tuple()
+    if not isinstance(raw_exponent, int):
+        raise PromptFormatError("Decimal exponent must be an integer")
+    if len(digits) > MAX_PROMPT_NUMBER_DIGITS:
+        raise PromptFormatError(f"Decimal coefficient exceeds the {MAX_PROMPT_NUMBER_DIGITS}-digit limit")
+    if abs(raw_exponent) > MAX_PROMPT_NUMBER_EXPONENT:
+        raise PromptFormatError(f"Decimal exponent exceeds the +/-{MAX_PROMPT_NUMBER_EXPONENT} limit")
+
+    # ``Decimal.normalize`` uses the process context precision and can round a
+    # perfectly valid 100-digit exact value.  Strip lexical trailing zeroes
+    # directly from the tuple instead, preserving all significant digits.
+    end = len(digits)
+    while end > 1 and digits[end - 1] == 0:
+        end -= 1
+    normalized_digits = digits[:end]
+    normalized_exponent = raw_exponent + len(digits) - end
+    if abs(normalized_exponent) > MAX_PROMPT_NUMBER_EXPONENT:
+        raise PromptFormatError(f"Decimal exponent exceeds the +/-{MAX_PROMPT_NUMBER_EXPONENT} limit")
+    expanded_digits = len(normalized_digits) + abs(normalized_exponent)
+    if expanded_digits > MAX_PROMPT_NUMBER_DIGITS:
+        raise PromptFormatError(f"Decimal expansion exceeds the {MAX_PROMPT_NUMBER_DIGITS}-digit limit")
+    return sign, normalized_digits, normalized_exponent
+
+
+def _check_decimal_bounds(value: Decimal) -> None:
+    """Refuse Decimal coefficients/exponents before canonical zero expansion."""
+
+    _bounded_decimal_parts(value)
+
+
+def _parse_integer(value: str) -> int:
+    """Parse a JSON integer with a typed refusal for oversized input."""
+
+    sign = 1 if value[:1] in {"+", "-"} else 0
+    if len(value) - sign > MAX_PROMPT_NUMBER_DIGITS:
+        raise PromptFormatError(f"JSON integer exceeds the {MAX_PROMPT_NUMBER_DIGITS}-digit limit")
+    try:
+        return int(value)
+    except (OverflowError, ValueError) as exc:
+        raise PromptFormatError(f"invalid JSON integer: {exc}") from exc
+
+
+def _parse_decimal(value: str) -> Decimal:
+    """Parse a JSON decimal after bounding coefficient and exponent lexemes."""
+
+    marker = value.find("e")
+    upper_marker = value.find("E")
+    if marker < 0 or (upper_marker >= 0 and upper_marker < marker):
+        marker = upper_marker
+    mantissa_end = marker if marker >= 0 else len(value)
+    sign = 1 if value[:1] in {"+", "-"} else 0
+    decimal_point = value.find(".", sign, mantissa_end)
+    significant_digits = mantissa_end - sign - (1 if decimal_point >= 0 else 0)
+    if significant_digits > MAX_PROMPT_NUMBER_DIGITS:
+        raise PromptFormatError(f"Decimal coefficient exceeds the {MAX_PROMPT_NUMBER_DIGITS}-digit limit")
+
+    if marker >= 0:
+        exponent_start = marker + 1
+        exponent_sign = value[exponent_start : exponent_start + 1]
+        magnitude_start = exponent_start + (1 if exponent_sign in {"+", "-"} else 0)
+        first_nonzero = magnitude_start
+        while first_nonzero < len(value) and value[first_nonzero] == "0":
+            first_nonzero += 1
+        exponent_digits = len(value) - first_nonzero
+        if exponent_digits > len(str(MAX_PROMPT_NUMBER_EXPONENT)):
+            raise PromptFormatError(f"Decimal exponent exceeds the +/-{MAX_PROMPT_NUMBER_EXPONENT} limit")
+        try:
+            magnitude = int(value[first_nonzero:] or "0")
+        except (OverflowError, ValueError) as exc:
+            raise PromptFormatError(f"invalid Decimal exponent: {exc}") from exc
+        exponent = -magnitude if exponent_sign == "-" else magnitude
+        if abs(exponent) > MAX_PROMPT_NUMBER_EXPONENT:
+            raise PromptFormatError(f"Decimal exponent exceeds the +/-{MAX_PROMPT_NUMBER_EXPONENT} limit")
+    try:
+        result = Decimal(value)
+    except (InvalidOperation, ValueError) as exc:
+        raise PromptFormatError(f"invalid JSON decimal: {exc}") from exc
+    _check_decimal_bounds(result)
+    return result
+
+
 def _check_tree(value: Any, *, depth: int = 1, nodes: list[int] | None = None) -> None:
     """Enforce the bounded JSON tree admitted by the prompt contract."""
 
@@ -234,7 +342,11 @@ def _check_tree(value: Any, *, depth: int = 1, nodes: list[int] | None = None) -
     elif isinstance(value, float):
         if not math.isfinite(value):
             raise PromptFormatError("non-finite JSON number is forbidden")
-    elif not isinstance(value, (str, int, bool, Decimal, type(None))):
+    elif isinstance(value, int) and not isinstance(value, bool):
+        _check_integer_bounds(value)
+    elif isinstance(value, Decimal):
+        _check_decimal_bounds(value)
+    elif not isinstance(value, (str, bool, type(None))):
         raise PromptFormatError(f"unsupported JSON value: {type(value).__name__}")
 
 
@@ -250,7 +362,8 @@ def _parse_json_bytes(raw: bytes) -> dict[str, Any]:
             text,
             object_pairs_hook=_duplicate_key_object,
             parse_constant=_reject_nonfinite,
-            parse_float=Decimal,
+            parse_float=_parse_decimal,
+            parse_int=_parse_integer,
         )
     except PromptFormatError:
         raise
@@ -329,14 +442,10 @@ def _model_data(model: PromptDiskDocument) -> dict[str, Any]:
 
 
 def _decimal_text(value: Decimal) -> str:
-    if not value.is_finite():
-        raise PromptFormatError("non-finite Decimal is forbidden")
+    _check_decimal_bounds(value)
     if value.is_zero():
         return "0"
-    sign, digits, raw_exponent = value.normalize().as_tuple()
-    if not isinstance(raw_exponent, int):
-        raise PromptFormatError("Decimal exponent must be an integer")
-    exponent = raw_exponent
+    sign, digits, exponent = _bounded_decimal_parts(value)
     coefficient = "".join(str(digit) for digit in digits) or "0"
     if exponent >= 0:
         text = coefficient + ("0" * exponent)
@@ -368,7 +477,14 @@ def _json_number(value: Any) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, int):
-        return str(value)
+        _check_integer_bounds(value)
+        try:
+            text = str(value)
+        except ValueError as exc:
+            raise PromptFormatError(f"invalid JSON integer: {exc}") from exc
+        if len(text.lstrip("+-")) > MAX_PROMPT_NUMBER_DIGITS:
+            raise PromptFormatError(f"JSON integer exceeds the {MAX_PROMPT_NUMBER_DIGITS}-digit limit")
+        return text
     if isinstance(value, float):
         if not math.isfinite(value):
             raise PromptFormatError("non-finite JSON number is forbidden")
@@ -451,7 +567,8 @@ def _coerce_for_difference(value: Any) -> Any:
 
 def _semantic_value(value: Any) -> Any:
     if isinstance(value, Decimal):
-        return value.normalize()
+        sign, digits, exponent = _bounded_decimal_parts(value)
+        return Decimal((sign, digits, exponent))
     if isinstance(value, float):
         return Decimal(str(value)).normalize()
     if isinstance(value, Mapping):
@@ -515,13 +632,51 @@ diff_prompts = difference_oracle
 difference = difference_oracle
 
 
+def _validate_prompt_path(root: Path, candidate: Path) -> Path:
+    """Prove an input path stays in ``root`` before any file open.
+
+    ``relative_to_root`` is the repository-wide containment check; the
+    lexical segment check and ancestor walk add the prompt gate's stronger
+    rule that traversal spelling and symlink ancestors are refused even when
+    they happen to resolve back inside the root.
+    """
+
+    base = root.resolve(strict=False)
+    path = candidate if candidate.is_absolute() else base / candidate
+    try:
+        relative = path.relative_to(base)
+    except ValueError as exc:
+        raise PromptPathError(f"prompt path escapes repository root: {candidate}") from exc
+    if any(part in {".", ".."} for part in relative.parts):
+        raise PromptPathError(f"prompt path contains traversal: {candidate}")
+    current = base
+    for part in relative.parts:
+        current /= part
+        try:
+            is_link = current.is_symlink()
+        except OSError as exc:
+            raise PromptPathError(f"cannot inspect prompt path {candidate}: {exc}") from exc
+        if is_link:
+            raise PromptPathError(f"prompt path contains a symlink ancestor: {candidate}")
+    try:
+        relative_to_root(path, base)
+    except (OSError, ValueError) as exc:
+        raise PromptPathError(f"prompt path escapes repository root: {candidate}") from exc
+    return path
+
+
 def _discover_prompt_files(root: Path) -> list[Path]:
     directories = {root / "prompts", root / "agent_utilities" / "prompts"}
-    directories.update(path for path in root.glob("*/prompts") if path.is_dir())
+    directories.update(root.glob("*/prompts"))
     files: set[Path] = set()
-    for directory in directories:
+    for directory in sorted(directories):
+        directory = _validate_prompt_path(root, directory)
         if directory.is_dir():
-            files.update(path for path in directory.rglob("*.json") if path.is_file() and not path.is_symlink())
+            files.update(
+                _validate_prompt_path(root, path)
+                for path in directory.rglob("*.json")
+                if path.is_file() and not path.is_symlink()
+            )
     return sorted(files)
 
 
@@ -529,8 +684,13 @@ def _explicit_prompt_files(root: Path, paths: Sequence[Path]) -> list[Path]:
     files: list[Path] = []
     for path in paths:
         candidate = path if path.is_absolute() else root / path
+        candidate = _validate_prompt_path(root, candidate)
         if candidate.is_dir():
-            files.extend(sorted(p for p in candidate.rglob("*.json") if p.is_file() and not p.is_symlink()))
+            files.extend(
+                _validate_prompt_path(root, child)
+                for child in sorted(candidate.rglob("*.json"))
+                if child.is_file() and not child.is_symlink()
+            )
         else:
             files.append(candidate)
     return files
@@ -544,7 +704,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    files = _explicit_prompt_files(root, args.paths) if args.paths else _discover_prompt_files(root)
+    try:
+        if not root.is_dir():
+            raise PromptPathError(f"prompt repository root is not a directory: {root}")
+        files = _explicit_prompt_files(root, args.paths) if args.paths else _discover_prompt_files(root)
+    except PromptPathError as exc:
+        print(f"Prompt format gate: CANNOT RUN: {exc}", file=sys.stderr)
+        return 2
     if not files:
         print("Prompt format gate: no prompt JSON files found.")
         return 0
@@ -553,7 +719,8 @@ def main(argv: list[str] | None = None) -> int:
     cannot_run = 0
     for path in files:
         try:
-            raw = path.read_bytes()
+            safe_path = _validate_prompt_path(root, path)
+            raw = safe_path.read_bytes()
             snapshot = snapshot_prompt(raw)
             if raw != snapshot.canonical_bytes:
                 print(f"FAIL {path}: bytes are not canonical; rewrite with serialize_prompt")
@@ -564,6 +731,9 @@ def main(argv: list[str] | None = None) -> int:
                 failures += 1
                 continue
             print(f"OK   {path} sha256={snapshot.sha256}")
+        except PromptPathError as exc:
+            print(f"CANNOT RUN {path}: {exc}", file=sys.stderr)
+            cannot_run += 1
         except FileNotFoundError:
             print(f"CANNOT RUN {path}: prompt file does not exist", file=sys.stderr)
             cannot_run += 1
