@@ -690,7 +690,7 @@
         "2e89db0000e5",
         "3d0455152b96",
         "9e87a415065f",
-        "db468196e870"
+        "b006e36574a5"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -710,7 +710,8 @@
       "landed_in": [
         "23b1e1111638",
         "2e89db0000e5",
-        "9e87a415065f"
+        "9e87a415065f",
+        "b006e36574a5"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:61",
