@@ -4007,11 +4007,11 @@
         "26f5095aaa92"
       ],
       "verified_by": [
+        "tests/test_architecture_activity_probe.py:12",
         "tests/test_architecture_explorer.py:1006",
         "tests/test_architecture_explorer.py:1030",
         "tests/test_architecture_explorer.py:105",
-        "tests/test_architecture_explorer.py:1086",
-        "tests/test_architecture_explorer.py:1107"
+        "tests/test_architecture_explorer.py:1086"
       ],
       "rollup_of": [
         "PIPE-PAGES-R042.1",

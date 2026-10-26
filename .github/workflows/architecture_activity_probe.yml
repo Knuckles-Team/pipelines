@@ -1,0 +1,28 @@
+name: Architecture activity qualification
+
+# Separate from production generation/deployment; only the current repository.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/architecture_activity_probe.yml
+      - scripts/architecture_explorer/activity_probe.py
+      - scripts/architecture_explorer/story_activity.py
+      - tests/test_architecture_activity_probe.py
+
+# Same existing read-only permission as CI. Do not add issue/PR writes or tokens.
+permissions:
+  contents: read
+
+jobs:
+  existing-token-probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify separate open issue and PR counts with the existing token
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.architecture_explorer.activity_probe
