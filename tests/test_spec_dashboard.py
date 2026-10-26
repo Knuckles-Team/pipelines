@@ -11,6 +11,18 @@ import pytest
 from scripts.spec_dashboard import github_snapshot, read_records, record, render
 
 
+@pytest.mark.spec("PIPE-CONNSPEC-R003")
+def test_reusable_pages_workflow_publishes_spec_dashboard() -> None:
+    root = Path(__file__).parents[1]
+    workflow = (root / ".github/workflows/pages_pipeline.yml").read_text(encoding="utf-8")
+
+    assert (root / "scripts/spec_dashboard.py").is_file()
+    assert "scripts/spec_dashboard.py" in workflow
+    assert "spec_dashboard_enabled:" in workflow
+    assert "SPEC_DELIVERY_ENABLED: ${{ inputs.spec_dashboard_enabled }}" in workflow
+    assert "--output site/spec-delivery" in workflow
+
+
 def test_canonical_nested_status_and_template(tmp_path):
     for name in ("live", "_template"):
         path = tmp_path / "specs" / name
