@@ -92,6 +92,7 @@ def test_unknowns_empty_and_isolated_specs_remain_discoverable(tmp_path):
     assert "Architecture is unknown" in architecture_panel({"records": []})
 
 
+@pytest.mark.spec("PIPE-PAGES-R009")
 @pytest.mark.spec("PIPE-PAGES-R013.4")
 def test_deterministic_escaped_output_and_plan_diagram_coverage(tmp_path):
     snapshot = fixture(tmp_path, 'Component: runtime "]; evil <script>\n', "```mermaid\nflowchart LR\n  A-->B\n```\n")
