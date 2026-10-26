@@ -493,10 +493,13 @@ function drawNode(n, alpha){
       const contentTop=sy+pad+(showParts?fc*1.3:0), contentBottom=showCounts?countBaseline-Math.max(fc*.75,countMetrics.actualBoundingBoxAscent||0)-2:sy+sh-pad;
       ctx.font="600 "+fs+"px "+C.display;
       const lines=wrapText(n.label,sw-fs*1.2,sh>fs*7.5?2:1);
-      const titleHeight=lines.length*fs*1.1, showRole=hasRole&&contentBottom-contentTop>=titleHeight+fr*1.4;
-      const blockHeight=titleHeight+(showRole?fr*1.4:0), first=contentTop+Math.max(0,(contentBottom-contentTop-blockHeight)/2)+fs;
-      ctx.fillStyle=C.fg; lines.forEach((ln,i)=>ctx.fillText(ln,cx,first+i*fs*1.1));
-      if(showRole){ctx.font="400 "+fr+"px "+C.body;ctx.fillStyle=C.muted;ctx.fillText(fitText(n.role,sw-fr*2),cx,first+(lines.length-1)*fs*1.1+fr*1.4);}
+      const titleMetrics=lines.map(ln=>ctx.measureText(ln)), titleAscent=Math.max(fs*.7,...titleMetrics.map(m=>m.actualBoundingBoxAscent||0)), titleDescent=Math.max(0,...titleMetrics.map(m=>m.actualBoundingBoxDescent||0));
+      ctx.font="400 "+fr+"px "+C.body;const role=fitText(n.role||"",sw-fr*2), roleMetrics=ctx.measureText(role), roleAscent=Math.max(fr*.65,roleMetrics.actualBoundingBoxAscent||0), roleDescent=Math.max(0,roleMetrics.actualBoundingBoxDescent||0), rowGap=Math.max(1,Math.min(3,fs*.15));
+      const titleHeight=(lines.length-1)*fs*1.1+titleAscent+titleDescent, roleHeight=roleAscent+roleDescent;
+      const showRole=hasRole&&contentBottom-contentTop>=titleHeight+rowGap+roleHeight;
+      const blockHeight=titleHeight+(showRole?rowGap+roleHeight:0), first=contentTop+Math.max(0,(contentBottom-contentTop-blockHeight)/2)+titleAscent;
+      ctx.font="600 "+fs+"px "+C.display;ctx.fillStyle=C.fg;lines.forEach((ln,i)=>ctx.fillText(ln,cx,first+i*fs*1.1));
+      if(showRole){ctx.font="400 "+fr+"px "+C.body;ctx.fillStyle=C.muted;ctx.fillText(role,cx,first+(lines.length-1)*fs*1.1+titleDescent+rowGap+roleAscent);}
       if(showCounts){ctx.font="500 "+fc+"px "+C.body;drawRich(countsLine(n),cx,countBaseline,sw-fc);}
       if(showParts){ctx.font="500 "+fc+"px "+C.body;ctx.fillStyle=col;ctx.textAlign="right";ctx.fillText(n.children.length+" parts ›",sx+sw-fc*0.8,sy+pad+fc);}
     }

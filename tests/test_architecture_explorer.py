@@ -1568,10 +1568,10 @@ def test_ocean_browser_count_text_and_completion_tracks_never_overlap(
 
     visit(json.loads((PKG / "model.json").read_text()))
     spy = """<script>
-window.__countPaint=[];window.__barPaint=[];
+window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];
 const originalText=CanvasRenderingContext2D.prototype.fillText, originalRect=CanvasRenderingContext2D.prototype.fillRect, originalClear=CanvasRenderingContext2D.prototype.clearRect;
-CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__countPaint=[];window.__barPaint=[];return originalClear.apply(this,args);};
-CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
+CanvasRenderingContext2D.prototype.clearRect=function(...args){window.__countPaint=[];window.__barPaint=[];window.__allPaint=[];return originalClear.apply(this,args);};
+CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){const m=this.measureText(text);window.__allPaint.push({text,x,y,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});if(/^(V |L |S |[\\d,]+ specs)/.test(text))window.__countPaint.push({text,left:x-m.actualBoundingBoxLeft,right:x+m.actualBoundingBoxRight,top:y-m.actualBoundingBoxAscent,bottom:y+m.actualBoundingBoxDescent});return originalText.call(this,text,x,y,...rest);};
 CanvasRenderingContext2D.prototype.fillRect=function(x,y,w,h){if(h>=1.5&&h<=3&&w>20)window.__barPaint.push({x,y,w,h});return originalRect.call(this,x,y,w,h);};
 </script>"""
     probe = """<script>
@@ -1590,6 +1590,13 @@ setTimeout(async()=>{
    for(const p of counts)if(p.bottom>bar.y-2)throw Error(id+' count/bar overlap: '+JSON.stringify({p,bar}));
    evidence.push({id,bar,counts});
   }
+  if(a.selected==='root'&&window.innerWidth>1000){
+   for(const [id,role] of [['sdk','Connector SDK'],['au','Agent Harness'],['skills','Agent Skills'],['webui','Browser Experience'],['tui','TUI / CLI'],['geniusbot','Desktop GUI']]){
+    const r=a.rect(id),x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
+    if(!window.__allPaint.some(p=>p.text===role&&p.x>=x&&p.x<=x+w&&p.top>=y&&p.bottom<=y+h))throw Error(id+' public overview subtitle missing');
+    if(!evidence.some(e=>e.id===id))throw Error(id+' public overview count track missing');
+   }
+  }
   if(evidence.length<2)throw Error('Insufficient actual closed-card paint coverage');
   result.dataset.evidence=JSON.stringify(evidence);result.textContent='PASS';
  }catch(error){result.textContent='FAIL: '+error.message;}
@@ -1601,7 +1608,11 @@ setTimeout(async()=>{
     # Hosted capture already retained the original public payload with this exact renderer.
     # Exercise its real default-card sizes, not only the smaller unit-test data fixture.
     captured_page = destination / "index.html"
-    source = captured_page.read_text() if captured_page.is_file() else _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+    source = (
+        _with_document_mode_probe(captured_page.read_text())
+        if captured_page.is_file()
+        else _build_page(monkeypatch, tmp_path, _SEARCH_ROWS)
+    )
     source_kind = (
         "Original captured public payload with candidate renderer"
         if captured_page.is_file()
