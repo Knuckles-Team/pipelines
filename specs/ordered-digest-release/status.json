@@ -687,10 +687,10 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f2baf0bc01f",
+        "154f96235334",
         "23b1e1111638",
         "2e89db0000e5",
-        "3d0455152b96",
-        "c4e90fa75d39"
+        "3d0455152b96"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -709,16 +709,17 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f2baf0bc01f",
+        "154f96235334",
         "23b1e1111638",
         "2e89db0000e5",
-        "c4e90fa75d39"
+        "4ddfe8ed473a"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:61",
-        "tests/test_public_wheel_guard.py:129",
-        "tests/test_public_wheel_guard.py:162",
-        "tests/test_public_wheel_guard.py:228",
-        "tests/test_public_wheel_guard.py:244"
+        "tests/test_public_wheel_guard.py:130",
+        "tests/test_public_wheel_guard.py:163",
+        "tests/test_public_wheel_guard.py:229",
+        "tests/test_public_wheel_guard.py:293"
       ]
     },
     {
@@ -757,7 +758,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:730"
+        "tests/test_container_pipeline_contract.py:746"
       ]
     },
     {
