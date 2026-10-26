@@ -123,6 +123,23 @@ Preflight refusal writes no pins. Post-admission failures retain explicit partia
 ### 2026-10-12 — PIPE-RELEASE-R002 publication source binding
 
 Reuse the source verifier's frozen workflow commit and wheel readiness proof.
+
+### 2026-10-26 — PIPE-RELEASE-R004 canonical interpreter and payload proof
+
+The current normative publication axis is the one already enforced by
+`.github/actions/wheel-readiness/targets.py` and
+`.github/actions/maturin-build-wheels/action.yml`: CPython 3.14 (`cp314`).
+Earlier R004 prose that described a line-30 3.13 pin was an observational
+description of an older tree, not a second authority. The kernel default must
+follow the current target validator and publisher; callers may supply a
+different axis only when their own reviewed matrix declares it.
+
+R004 archive evidence reads bounded bytes and validates the target format's
+loadable executable structure: ELF `ET_DYN` executable `PT_LOAD`, Mach-O
+`MH_DYLIB`/`MH_BUNDLE` executable segment or instruction section, or PE DLL
+code section. It checks table counts and offsets before reads and never
+executes or disassembles untrusted bytes; this proves static artifact shape,
+not compiler provenance or ABI compatibility.
 Before Python or native-wheel upload, compare the frozen source with checkout
 HEAD, release metadata and the workflow SHA. Read the repository and exact tag
 through GitHub's API; peel annotated tags with a bounded traversal. A conflicting
