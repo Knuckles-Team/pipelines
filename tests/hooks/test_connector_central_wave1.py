@@ -567,6 +567,7 @@ def test_g3_manifest_keyword_is_reviewed(tmp_path: Path) -> None:
     assert "manifest" in _notes(ctx, "w1.g3")[0]["detail"] and _snapshot(root) == before
 
 
+# spec: PIPE-GATES-R016.55 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.55")
 def test_g6_health_route_is_deleted_with_the_bootstrap(tmp_path: Path) -> None:
     root = _make(tmp_path)
@@ -977,6 +978,7 @@ def test_k1_test_importer_with_other_use_is_reviewed(tmp_path: Path) -> None:
 
 
 # --- k.2 ------------------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.59 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.59")
 def test_k2_bumpversion_reduced_to_pyproject_only(tmp_path: Path) -> None:
     root = _make(tmp_path)
@@ -998,6 +1000,7 @@ def test_k2_without_pyproject_section_is_reviewed(tmp_path: Path) -> None:
 
 
 # --- k.3 / k.4 ----------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.60 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.60")
 def test_k3_readme_package_version_line_is_deleted(tmp_path: Path) -> None:
     root = _make(tmp_path)
@@ -1135,6 +1138,7 @@ def test_i2_without_repeated_dicts_or_literals_nothing_changes(tmp_path: Path) -
 
 
 # --- l.1 ------------------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.64 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.64")
 def test_l1_conventional_provider_tables_and_their_comment_are_deleted(tmp_path: Path) -> None:
     root = _make(tmp_path)
@@ -1189,6 +1193,7 @@ def test_l2_non_empty_marker_is_kept(tmp_path: Path) -> None:
 
 
 # --- l.3 ------------------------------------------------------------------------------------------------------
+# spec: PIPE-GATES-R016.66 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.66")
 def test_l3_tests_asserting_the_deleted_scaffold_are_deleted(tmp_path: Path) -> None:
     root = _make(tmp_path, init=SCAFFOLD_INIT)
@@ -1317,6 +1322,7 @@ def test_normalisation_replaces_names_and_semvers_and_drops_comments() -> None:
     assert a == b and wave1.digest(a) == wave1.digest(b)
 
 
+# spec: PIPE-GATES-R016.57 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.57")
 def test_h_scaffold_test_matching_a_fingerprint_is_deleted(tmp_path: Path) -> None:
     root = _make(tmp_path)
