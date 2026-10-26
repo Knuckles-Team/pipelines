@@ -18,6 +18,7 @@ from pipelines_hooks.core.tracked import tracked_paths
 from pipelines_hooks.kiss import runner
 from pipelines_hooks.kiss.report import format_violation, parse_report
 from pipelines_hooks.kiss.scope import in_scope, kiss_paths
+from pipelines_hooks.kiss import structural
 
 
 def census_files(root: Path, scope: tuple[str, ...]) -> list[str]:
@@ -39,5 +40,16 @@ def main(argv: list[str]) -> int:
     findings = [format_violation(v) for path in files for v in parse_report(runner.check(kiss, root, path))]
     for line in findings:
         print(line)
+    structural_report = None
+    policy = structural.adopted_policy(root)
+    if policy is not None:
+        structural_report = structural.scan(
+            root,
+            files,
+            policy,
+            source_snapshot=structural.source_snapshot(root),
+        )
+        for line in structural.render(structural_report):
+            print(line)
     print(f"kiss census: {len(files)} file(s), {len(findings)} finding(s)")
-    return 1 if findings else 0
+    return 1 if findings or (structural_report is not None and not structural_report.clean) else 0
