@@ -73,7 +73,7 @@ const results=[];
     const story=states[1].story,mask=story?.placement==='canvas'?story.rect:null,hashes=[];
     if(mask){
      const prior=results.filter(r=>r.device===device.name&&r.node===node&&r.route===route&&r.story?.placement==='canvas'&&r.story.owner===story.owner&&r.story.tier===story.tier).at(-1);
-     if(prior&&(prior.story.index!==story.index||prior.story.kind!==story.kind))throw Error('Story anchor jumped inside native zoom tier');
+     if(prior&&(prior.story.index!==story.index||prior.story.kind!==story.kind||prior.story.align!==story.align))throw Error('Story anchor jumped inside native zoom tier');
      const text=story.layout.ops.filter(op=>op.type==='text');
      for(const op of text)if(op.x<0||op.x+op.width>story.rect[2]+.01||op.y<0||op.y+op.height>story.rect[3]||op.size<11)throw Error('Unreadable or out-of-bounds story text');
      for(let i=0;i<text.length;i++)for(let j=i+1;j<text.length;j++){const a=text[i],b=text[j];if(a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y)throw Error('Story labels overlap');}

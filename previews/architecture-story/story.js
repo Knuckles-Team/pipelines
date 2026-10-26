@@ -41,12 +41,12 @@ function chooseStory(id,data,bounds,obstacles,segments){
   const groups=compactStoryGroups(data),tier=Math.floor(Math.log2(Math.max(1,bounds[2]/640)));
   const key=id+':'+tier,anchors=nodeStoryAnchors(id),prior=storyAnchorChoices.get(key);
   const layouts=Object.fromEntries(['comparison','concentration'].map(kind=>[kind,storyLayout(kind,data,groups)]));
-  const rectFor=choice=>{const p=toS(anchors[choice.index].x,anchors[choice.index].y);return [p[0],p[1],280,layouts[choice.kind].height];};
+  const rectFor=choice=>{const p=toS(anchors[choice.index].x,anchors[choice.index].y);return [p[0]-(choice.align==='right'?280:0),p[1],280,layouts[choice.kind].height];};
   if(prior){if(!layouts[prior.kind])return null;const rect=rectFor(prior);return clearStoryRect(rect,bounds,obstacles,segments)?{...prior,rect,groups,tier,layout:layouts[prior.kind]}:null;}
   for(const kind of ['comparison','concentration']){
     if(!layouts[kind])continue;
-    for(let index=0;index<anchors.length;index++){
-      const choice={index,kind},rect=rectFor(choice);
+    for(let index=0;index<anchors.length;index++)for(const align of ['left','right']){
+      const choice={index,kind,align},rect=rectFor(choice);
       if(clearStoryRect(rect,bounds,obstacles,segments,12)){storyAnchorChoices.set(key,choice);return {...choice,rect,groups,tier,layout:layouts[kind]};}
     }
   }

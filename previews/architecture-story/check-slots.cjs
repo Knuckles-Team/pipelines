@@ -5,7 +5,7 @@ const source=fs.readFileSync(__dirname+'/story.js','utf8');
 const states=['VERIFIED','LANDED','SPECIFIED','RETIRED'];
 const fontStack=[];const ctx={font:'400 11px Inter',save(){fontStack.push(this.font);},restore(){this.font=fontStack.pop();},measureText(text){const size=Number(this.font.match(/(\d+)px/)[1]);return {width:Array.from(text).length*size*.52};}};
 const context={ctx,C:{body:'Inter'},fmt:n=>n.toLocaleString('en-US'),W:1000,H:800,Intl,ST:states,R:{test:[0,0,1000,800]},nodes:{test:{children:[]}},shift:0};
-vm.createContext(context);vm.runInContext(collision+'\n'+source+'\nthis.choose=chooseStory;this.compact=compactStoryGroups;this.layout=storyLayout;this.describe=storyDescription;this.toS=(x,y)=>[x+shift,y];',context);
+vm.createContext(context);vm.runInContext(collision+'\n'+source+'\nthis.choose=chooseStory;this.compact=compactStoryGroups;this.layout=storyLayout;this.describe=storyDescription;this.seedAnchors=(id,points)=>storyAnchorSets.set(id,points);this.toS=(x,y)=>[x+shift,y];',context);
 const models=JSON.parse(fs.readFileSync(__dirname+'/chart-model.json','utf8'));
 for(const m of Object.values(models)){
  const groups=context.compact(m);assert(groups.length<=3);
@@ -38,3 +38,8 @@ const hugeLayout=context.layout('comparison',huge,huge.groups);if(hugeLayout){as
 const description=context.describe({placement:'canvas',kind:'concentration',takeaway:{family:'repo:one',count:3,total:5},groups:[],total:10});assert(description.includes('3 of 5'));assert(!description.includes('Equal bands'));assert(!description.includes('10 unique'));
 context.shift=0;const otherTier=context.choose('test',data,[0,0,2200,800],[],[]);assert(otherTier);const returnTier=context.choose('test',data,bounds,[],[]);assert.equal(returnTier.index,first.index);
 console.log('PASS: kind-specific aria; measured no-overlap text; uniform/zero specified; large complete numbers or deferral; long Unicode; tier return');
+
+context.W=357;context.H=600;context.seedAnchors('rightOnly',[{x:304,y:100,score:1}]);
+const right=context.choose('rightOnly',data,[0,0,1000,800],[],[]);assert(right);assert.equal(right.align,'right');assert.equal(right.rect[0],24);
+assert.equal(context.choose('rightOnly',data,[0,0,1000,800],[right.rect],[]),null,'pinned right edge must defer on collision');
+console.log('PASS: stable right-edge anchor reveals in narrow viewport; collision still defers');
