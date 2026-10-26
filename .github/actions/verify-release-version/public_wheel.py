@@ -138,14 +138,17 @@ def _wheel_payload(wheel: Path, module: str) -> dict[str, bytes]:
         return {name: archive.read(name) for name in entries}
 
 
-def _published_payload(root: Path, module: str) -> dict[str, bytes]:
+def _published_payload(root: Path, module: str, *, legacy_profile: bool = False) -> dict[str, bytes]:
     """Build the immutable reviewed source through the public package boundary.
 
     The release workflow runs ``uv build`` after connector generation.  Repeating that
     command against a ``git archive HEAD`` checkout makes setuptools/package-data (or any
     other reviewed backend) decide which files are public.  A generated artifact already
     tracked by the source tree is restored after generation so a new caller epoch cannot
-    replace historical published bytes.
+    replace historical published bytes.  A declared legacy profile preserves the tracked
+    package tree without invoking ontology generation; this is required for wheel-only
+    connectors whose historical generated files or ontology filename do not satisfy the
+    current renderer contract.
     """
     document, sources = _reviewed_connector_metadata(root)
     points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
@@ -153,7 +156,7 @@ def _published_payload(root: Path, module: str) -> dict[str, bytes]:
 
     provider_root = Path(__file__).resolve().parents[3]
     generator = provider_root / "pipelines_hooks" / "connector" / "generate.py"
-    if connector and not generator.is_file():
+    if connector and not legacy_profile and not generator.is_file():
         raise ValueError("Generated wheel verification requires the provider generator checkout")
     uv = shutil.which("uv")
     if uv is None:
@@ -175,7 +178,7 @@ def _published_payload(root: Path, module: str) -> dict[str, bytes]:
         old_epoch = os.environ.get("SOURCE_DATE_EPOCH")
         os.environ["SOURCE_DATE_EPOCH"] = epoch
         try:
-            if connector and (package / "ontology" / "mappings" / "source.yaml").is_file():
+            if connector and not legacy_profile and (package / "ontology" / "mappings" / "source.yaml").is_file():
                 sys.path.insert(0, str(provider_root))
                 try:
                     from pipelines_hooks.connector import generate
@@ -222,10 +225,10 @@ def _published_payload(root: Path, module: str) -> dict[str, bytes]:
                 os.environ["SOURCE_DATE_EPOCH"] = old_epoch
 
 
-def reviewed_payload(root: Path, module: str) -> dict[str, bytes]:
+def reviewed_payload(root: Path, module: str, *, legacy_profile: bool = False) -> dict[str, bytes]:
     if not MODULE_RE.fullmatch(module):
         raise ValueError("Package module must be an explicit dotted Python package")
-    return _published_payload(root, module)
+    return _published_payload(root, module, legacy_profile=legacy_profile)
 
 
 def verify_payload(data: bytes, digest: str, expected: dict[str, bytes], module: str) -> None:
@@ -297,19 +300,67 @@ def _reviewed_dockerfile(root: Path, dockerfile: str) -> str:
         return _rendered_dockerfile(root)
 
 
-def verify_release(root: Path, distribution: str, module: str, dockerfile: str, extras: str) -> dict[str, object]:
-    project = tomllib.loads(subprocess.check_output(["git", "show", "HEAD:pyproject.toml"], cwd=root, text=True))[
-        "project"
-    ]
+def _validate_legacy_dockerfile(docker: str) -> None:
+    """Require a tracked wheel-only image recipe for a legacy profile."""
+    if "Wheel-only connector image." not in docker:
+        raise ValueError("Legacy public-wheel profile requires a wheel-only Dockerfile marker")
+    for line in docker.splitlines():
+        content = line.split("#", 1)[0].strip()
+        if not content:
+            continue
+        directive = content.split(None, 1)[0].upper()
+        if directive in {"COPY", "ADD"} and "--from=" not in content:
+            raise ValueError("Legacy public-wheel profile Dockerfile must not copy source files")
+
+
+def _reviewed_project(root: Path) -> dict[str, object]:
+    try:
+        document = tomllib.loads(subprocess.check_output(["git", "show", "HEAD:pyproject.toml"], cwd=root, text=True))
+    except (subprocess.CalledProcessError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("Reviewed pyproject.toml is not valid TOML") from error
+    project = document.get("project")
+    if not isinstance(project, dict):
+        raise ValueError("Reviewed pyproject.toml has no project table")
+    return project
+
+
+def verify_release(
+    root: Path,
+    distribution: str,
+    module: str,
+    dockerfile: str,
+    extras: str,
+    *,
+    docker_root: Path | None = None,
+    legacy_profile: bool = False,
+) -> dict[str, object]:
+    project = _reviewed_project(root)
     if project["name"] != distribution:
         raise ValueError("Explicit distribution differs from reviewed project metadata")
     version = project["version"]
     suffix = f"[{extras}]" if extras else ""
     pin = f"{distribution}{suffix}=={version}"
-    docker = _reviewed_dockerfile(root, dockerfile)
+    docker_source = docker_root or root
+    if legacy_profile:
+        try:
+            docker = subprocess.check_output(
+                ["git", "show", f"HEAD:{dockerfile}"], cwd=docker_source, text=True, stderr=subprocess.DEVNULL
+            )
+        except subprocess.CalledProcessError as error:
+            raise ValueError(f"Legacy public-wheel profile requires a tracked Dockerfile: {dockerfile}") from error
+        _validate_legacy_dockerfile(docker)
+        if docker_root is not None:
+            docker_project = _reviewed_project(docker_root)
+            if (docker_project.get("name"), docker_project.get("version")) != (
+                project.get("name"),
+                project.get("version"),
+            ):
+                raise ValueError("Legacy Docker source metadata differs from the immutable package source")
+    else:
+        docker = _reviewed_dockerfile(docker_source, dockerfile)
     if pin not in shlex.split(docker, comments=True):
         raise ValueError("Dockerfile must pin the reviewed package version")
-    expected = reviewed_payload(root, module)
+    expected = reviewed_payload(root, module, legacy_profile=legacy_profile)
     metadata = json.loads(read_public(f"https://pypi.org/pypi/{distribution}/{version}/json"))
     wheels = [item for item in metadata["urls"] if item["filename"].endswith("-py3-none-any.whl")]
     if len(wheels) != 1:
@@ -317,15 +368,19 @@ def verify_release(root: Path, distribution: str, module: str, dockerfile: str, 
     item = wheels[0]
     digest = item["digests"]["sha256"]
     verify_payload(read_public(item["url"]), digest, expected, module)
-    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
-    return {
+    receipt = {
         "package": distribution,
         "module": module,
         "version": version,
-        "source_revision": revision,
+        "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
         "wheel_sha256": digest,
         "verified_payload_files": len(expected),
     }
+    if docker_root is not None:
+        receipt["docker_revision"] = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=docker_root, text=True
+        ).strip()
+    return receipt
 
 
 def main() -> None:
@@ -334,8 +389,10 @@ def main() -> None:
     parser.add_argument("--distribution", default="")
     parser.add_argument("--module", default="")
     parser.add_argument("--dockerfile", default="docker/Dockerfile")
+    parser.add_argument("--docker-root", type=Path, default=None)
     parser.add_argument("--extras", default="mcp")
     parser.add_argument("--target", default="mcp")
+    parser.add_argument("--legacy-profile", action="store_true")
     parser.add_argument("--resolve-identity", action="store_true")
     parser.add_argument("--resolve-extras", action="store_true")
     args = parser.parse_args()
@@ -349,7 +406,16 @@ def main() -> None:
         parser.error("--distribution and --module are required unless --resolve-identity is used")
     print(
         json.dumps(
-            verify_release(args.root, args.distribution, args.module, args.dockerfile, args.extras), sort_keys=True
+            verify_release(
+                args.root,
+                args.distribution,
+                args.module,
+                args.dockerfile,
+                args.extras,
+                docker_root=args.docker_root,
+                legacy_profile=args.legacy_profile,
+            ),
+            sort_keys=True,
         )
     )
 

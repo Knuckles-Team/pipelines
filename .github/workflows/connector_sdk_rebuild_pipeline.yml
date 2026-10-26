@@ -32,6 +32,11 @@ name: Connector SDK rebuild
 #           required: false
 #           default: ''
 #           type: string
+#         legacy_profile:
+#           description: Preserve the reviewed tracked wheel-only package tree without renderer generation.
+#           required: false
+#           default: false
+#           type: boolean
 #   jobs:
 #     rebuild:
 #       uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
@@ -71,6 +76,13 @@ on:
         required: false
         type: string
         default: ''
+      legacy_profile:
+        description: >-
+          Explicit wheel-only legacy profile. The repair proves the immutable public package
+          source and builds the current main tracked Dockerfile with render_connector=false.
+        required: false
+        type: boolean
+        default: false
     secrets:
       DOCKER_REGISTRY:
         required: false
@@ -119,10 +131,11 @@ jobs:
         id: sdk-context
         env:
           RELEASE_REPAIR: ${{ inputs.release_repair }}
+          LEGACY_PROFILE: ${{ inputs.legacy_profile }}
         run: |
           set -euo pipefail
           context=.
-          if [[ "${RELEASE_REPAIR,,}" == true ]]; then
+          if [[ "${RELEASE_REPAIR,,}" == true && "${LEGACY_PROFILE,,}" != true ]]; then
             context=.release-source
           fi
           printf 'path=%s\n' "$context" >> "$GITHUB_OUTPUT"
@@ -203,7 +216,8 @@ jobs:
       contents: read
     uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
     with:
-      render_connector: true
+      render_connector: ${{ !inputs.legacy_profile }}
+      legacy_profile: ${{ inputs.legacy_profile }}
       release_repair: ${{ inputs.release_repair }}
       release_source_sha: ${{ inputs.release_source_sha }}
       release_source_epoch: ${{ inputs.release_source_epoch }}

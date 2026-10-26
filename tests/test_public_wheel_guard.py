@@ -233,6 +233,115 @@ demo = ["ontology/**"]
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_legacy_profile_preserves_historical_payload_and_current_docker_root(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    source = tmp_path / "source"
+    (source / "demo" / "ontology" / "mappings").mkdir(parents=True)
+    (source / "docker").mkdir()
+    (source / "demo/__init__.py").write_bytes(b"reviewed")
+    (source / "demo/ontology/mappings/source.yaml").write_text("ontology_source: demo\n", encoding="utf-8")
+    (source / "demo/ontology/legacy.ttl").write_text(":Legacy a owl:Class .\n", encoding="utf-8")
+    (source / "demo/ontology/certification.json").write_bytes(b'{"historical":true}\n')
+    (source / "pyproject.toml").write_text(
+        """[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demo-dist"
+version = "1.2.3"
+[project.entry-points."agent_connector_sdk.connector"]
+demo = "demo:connector"
+
+[tool.setuptools.package-data]
+demo = ["ontology/**"]
+
+[tool.setuptools.packages.find]
+include = ["demo*"]
+""",
+        encoding="utf-8",
+    )
+    wheel_only = "# Wheel-only connector image.\nFROM builder\nCOPY --from=builder /usr/local /usr/local\n"
+    (source / "docker/Dockerfile").write_text(wheel_only + "RUN pip install demo-dist[mcp]==1.2.2\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=source, check=True)
+    subprocess.run(["git", "add", "--", "."], cwd=source, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "source"],
+        cwd=source,
+        check=True,
+    )
+    current = tmp_path / "current"
+    subprocess.run(["git", "clone", "-q", str(source), str(current)], check=True)
+    (current / "docker/Dockerfile").write_text(wheel_only + "RUN pip install demo-dist[mcp]==1.2.3\n", encoding="utf-8")
+    subprocess.run(["git", "add", "--", "docker/Dockerfile"], cwd=current, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "current"],
+        cwd=current,
+        check=True,
+    )
+
+    # The current renderer cannot resolve demo.ttl, so the ordinary path fails closed.
+    with pytest.raises(ValueError, match="ontology generation failed"):
+        guard.reviewed_payload(source, "demo")
+    expected = guard.reviewed_payload(source, "demo", legacy_profile=True)
+    assert expected["demo/ontology/legacy.ttl"] == b":Legacy a owl:Class .\n"
+    assert expected["demo/ontology/certification.json"] == b'{"historical":true}\n'
+    payload = archive(expected)
+    digest = hashlib.sha256(payload).hexdigest()
+    monkeypatch.setattr(
+        guard,
+        "read_public",
+        lambda url: (
+            payload
+            if url.endswith(".whl")
+            else json.dumps(
+                {
+                    "urls": [
+                        {
+                            "filename": "demo_dist-1.2.3-py3-none-any.whl",
+                            "url": "https://files.pythonhosted.org/demo.whl",
+                            "digests": {"sha256": digest},
+                        }
+                    ]
+                }
+            ).encode()
+        ),
+    )
+    receipt = guard.verify_release(
+        source,
+        "demo-dist",
+        "demo",
+        "docker/Dockerfile",
+        "mcp",
+        docker_root=current,
+        legacy_profile=True,
+    )
+    assert (
+        receipt["source_revision"]
+        == subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source, text=True).strip()
+    )
+    assert (
+        receipt["docker_revision"]
+        == subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=current, text=True).strip()
+    )
+    assert receipt["verified_payload_files"] == len(expected)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+@pytest.mark.parametrize(
+    "docker",
+    [
+        "FROM builder\nRUN pip install demo-dist==1.2.3\n",
+        "# Wheel-only connector image.\nFROM builder\nCOPY . /src\n",
+    ],
+)
+def test_public_wheel_legacy_profile_rejects_non_wheel_only_dockerfiles(guard, docker):
+    with pytest.raises(ValueError, match="wheel-only|copy source"):
+        guard._validate_legacy_dockerfile(docker)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
 def test_public_wheel_identity_skips_non_connectors_and_refuses_ambiguity(guard, tmp_path, monkeypatch):
     for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
         monkeypatch.delenv(name, raising=False)
@@ -522,6 +631,8 @@ def test_public_wheel_action_is_explicit_and_preserves_release_default():
     assert old["if"] == "inputs.mode == 'unpublished'"
     assert public["if"] == "inputs.mode == 'published-wheel'"
     assert all(name in public["env"] for name in ("RELEASE_DISTRIBUTION", "RELEASE_MODULE", "RELEASE_DOCKERFILE"))
+    assert all(name in public["env"] for name in ("RELEASE_DOCKER_ROOT", "RELEASE_LEGACY_PROFILE"))
+    assert "--docker-root" in public["run"] and "--legacy-profile" in public["run"]
     assert "python3 -I" in public["run"]
 
 
@@ -557,7 +668,7 @@ def test_public_wheel_release_receipt_binds_source_and_public_bytes(guard, tmp_p
         return payload if url.endswith(".whl") else json.dumps(metadata).encode()
 
     monkeypatch.setattr(guard.subprocess, "check_output", git_output)
-    monkeypatch.setattr(guard, "reviewed_payload", lambda root, module: expected)
+    monkeypatch.setattr(guard, "reviewed_payload", lambda root, module, **kwargs: expected)
     monkeypatch.setattr(guard, "read_public", download)
     receipt = guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", "mcp")
     assert receipt == {

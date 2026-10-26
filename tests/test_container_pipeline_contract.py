@@ -65,6 +65,7 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
     assert inputs["published_wheel_distribution"]["default"] == ""
     assert inputs["published_wheel_module"]["default"] == ""
     assert inputs["published_wheel_extras"]["default"] == ""
+    assert inputs["legacy_profile"]["type"] == "boolean" and inputs["legacy_profile"]["default"] is False
     assert inputs["release_source_sha"]["type"] == "string" and inputs["release_source_sha"]["default"] == ""
     assert inputs["release_source_epoch"]["type"] == "string" and inputs["release_source_epoch"]["default"] == ""
     steps = workflow["jobs"]["publish-docker"]["steps"]
@@ -87,7 +88,9 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
         "module": "${{ steps.published-wheel.outputs.module }}",
         "dockerfile": "${{ inputs.dockerfile }}",
         "extras": "${{ steps.published-wheel.outputs.extras }}",
-        "root": "${{ steps.build-context.outputs.path }}",
+        "docker-root": "${{ inputs.release_repair == true && inputs.legacy_profile == true && steps.build-context.outputs.path || '' }}",
+        "legacy-profile": "${{ inputs.legacy_profile }}",
+        "root": "${{ inputs.release_repair == true && inputs.legacy_profile == true && '.release-source' || steps.build-context.outputs.path }}",
     }
     assert guard["env"] == {"SOURCE_DATE_EPOCH": "${{ inputs.release_source_epoch }}"}
     assert steps.index(identity) < steps.index(guard) < steps.index(builder) < steps.index(login)
@@ -104,6 +107,8 @@ def test_reviewed_release_repair_is_opt_in_and_preflights_before_publish() -> No
     inputs = workflow[True]["workflow_call"]["inputs"]
     repair = inputs["release_repair"]
     assert repair["type"] == "boolean" and repair["required"] is False and repair["default"] is False
+    legacy = inputs["legacy_profile"]
+    assert legacy["type"] == "boolean" and legacy["required"] is False and legacy["default"] is False
     steps = workflow["jobs"]["publish-docker"]["steps"]
     validate = next(step for step in steps if step.get("name") == "Validate reviewed release repair request")
     source_checkout = next(step for step in steps if step.get("name") == "Checkout immutable release source")
@@ -139,6 +144,7 @@ def test_reviewed_release_repair_is_opt_in_and_preflights_before_publish() -> No
     assert "git rev-parse --verify HEAD" in validate["run"]
     assert "git ls-remote origin refs/heads/main" in validate["run"]
     assert "canonical connector renderer" in validate["run"]
+    assert "Legacy release repair requires render_connector=false" in validate["run"]
     assert validate["env"]["SOURCE_SHA"] == "${{ inputs.release_source_sha }}"
     assert validate["env"]["SOURCE_EPOCH"] == "${{ inputs.release_source_epoch }}"
     assert "merge-base --is-ancestor" in source_validation["run"]
@@ -164,6 +170,25 @@ def test_reviewed_release_repair_is_opt_in_and_preflights_before_publish() -> No
     assert "never republished" in repair["description"]
 
 
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_reviewed_legacy_release_repair_uses_current_custom_dockerfile_and_frozen_wheel_source() -> None:
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    steps = workflow["jobs"]["publish-docker"]["steps"]
+    context = next(step for step in steps if step.get("id") == "build-context")
+    guard = next(
+        step for step in steps if step.get("name") == "Verify published connector wheel before container build"
+    )
+    assert "LEGACY_PROFILE" in context["env"]
+    assert "LEGACY_PROFILE" in context["run"]
+    assert "context=.release-source" in context["run"]
+    assert (
+        "LEGACY_PROFILE" in guard.get("with", {}).get("legacy-profile", "")
+        or guard["with"]["legacy-profile"] == "${{ inputs.legacy_profile }}"
+    )
+    assert guard["with"]["docker-root"].endswith("|| '' }}")
+    assert "'.release-source'" in guard["with"]["root"]
+
+
 def test_repair_build_dockerfile_follows_immutable_context(tmp_path: Path) -> None:
     steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
     context = next(step for step in steps if step.get("id") == "build-context")
@@ -183,6 +208,7 @@ def test_repair_build_dockerfile_follows_immutable_context(tmp_path: Path) -> No
             "INPUT_BUILD_CONTEXT": ".",
             "INPUT_DOCKERFILE": "docker/Dockerfile",
             "RELEASE_REPAIR": "true",
+            "LEGACY_PROFILE": "false",
         },
         capture_output=True,
         text=True,
@@ -203,6 +229,7 @@ def _run_repair_validation(
     ref: str = "refs/heads/main",
     sha: str | None = None,
     render: str = "true",
+    legacy: str = "false",
 ) -> subprocess.CompletedProcess[str]:
     root = tmp_path / "source"
     root.mkdir(parents=True)
@@ -215,6 +242,7 @@ def _run_repair_validation(
         "DOCKERFILE",
         "BUILD_TARGET",
         "RENDER_CONNECTOR",
+        "LEGACY_PROFILE",
         "SOURCE_SHA",
         "SOURCE_EPOCH",
         "RUNTIME_INPUTS",
@@ -245,6 +273,7 @@ def _run_repair_validation(
         "DOCKERFILE": "docker/Dockerfile",
         "BUILD_TARGET": "",
         "RENDER_CONNECTOR": render,
+        "LEGACY_PROFILE": legacy,
         "SOURCE_SHA": current,
         "SOURCE_EPOCH": epoch,
         "RUNTIME_INPUTS": "",
@@ -412,6 +441,11 @@ def test_reviewed_release_repair_rejects_a_stale_or_noncanonical_source(tmp_path
     noncanonical = _run_repair_validation(tmp_path / "renderer", script, render="false")
     assert noncanonical.returncode != 0
     assert "canonical connector renderer" in noncanonical.stdout + noncanonical.stderr
+    legacy = _run_repair_validation(tmp_path / "legacy", script, render="false", legacy="true")
+    assert legacy.returncode == 0, legacy.stderr
+    conflicting = _run_repair_validation(tmp_path / "conflicting", script, render="true", legacy="true")
+    assert conflicting.returncode != 0
+    assert "render_connector=false" in conflicting.stdout + conflicting.stderr
 
 
 def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp_path: Path) -> None:
@@ -546,6 +580,7 @@ def test_connector_render_is_selected_only_for_missing_canonical_dockerfile(
             "BUILD_CONTEXT": ".",
             "DOCKERFILE": dockerfile,
             "RENDER_CONNECTOR": render_connector,
+            "LEGACY_PROFILE": "false",
             "GITHUB_OUTPUT": str(output),
         },
         capture_output=True,
@@ -573,6 +608,7 @@ def test_connector_sources_identity_enables_canonical_render(tmp_path: Path) -> 
             "BUILD_CONTEXT": ".",
             "DOCKERFILE": "docker/Dockerfile",
             "RENDER_CONNECTOR": "false",
+            "LEGACY_PROFILE": "false",
             "GITHUB_OUTPUT": str(output),
         },
         capture_output=True,
@@ -580,6 +616,30 @@ def test_connector_sources_identity_enables_canonical_render(tmp_path: Path) -> 
     )
     assert result.returncode == 0, result.stderr
     assert output.read_text() == "render=true\n"
+
+
+def test_legacy_profile_keeps_a_missing_canonical_dockerfile_unrendered(tmp_path: Path) -> None:
+    step = _render_needed_step()
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n'
+    )
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "BUILD_CONTEXT": ".",
+            "DOCKERFILE": "docker/Dockerfile",
+            "RENDER_CONNECTOR": "false",
+            "LEGACY_PROFILE": "true",
+            "GITHUB_OUTPUT": str(output),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert output.read_text() == "render=false\n"
 
 
 @pytest.mark.parametrize(
