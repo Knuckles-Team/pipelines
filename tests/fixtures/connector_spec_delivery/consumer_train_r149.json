@@ -286,7 +286,18 @@
         "Generated `specs/*/status.json`",
         "package-data",
         "canonical Pages"
-      ]
+      ],
+      "identity": {
+        "requested_repo": "Knuckles-Team/opensearch-mcp",
+        "canonical_repo": "Knuckles-Team/lucerna-mcp",
+        "canonical_api_full_name": "Knuckles-Team/lucerna-mcp",
+        "requested_api_full_name": "Knuckles-Team/lucerna-mcp",
+        "redirect_location": "https://github.com/Knuckles-Team/lucerna-mcp",
+        "requested_main_sha": "c17488ee8fd16c3ed134426a94772be20478109e",
+        "canonical_main_sha": "c17488ee8fd16c3ed134426a94772be20478109e",
+        "created_at": "2026-08-27T13:44:59Z",
+        "pages_url": "https://knuckles-team.github.io/lucerna-mcp/"
+      }
     }
   },
   "scope": [

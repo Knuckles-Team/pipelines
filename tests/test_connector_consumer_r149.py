@@ -193,3 +193,14 @@ def test_fixture_cannot_create_false_json_test_bindings() -> None:
     fixture_text = FIXTURE.read_text(encoding="utf-8")
     assert "mark.spec(" not in fixture_text
     assert "# spec:" not in fixture_text
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R149.3")
+def test_requirement_repo_identity_is_the_canonical_rename() -> None:
+    identity = _evidence()["repos"]["lucerna-mcp"]["identity"]
+    assert identity["requested_repo"] == "Knuckles-Team/opensearch-mcp"
+    assert identity["canonical_repo"] == "Knuckles-Team/lucerna-mcp"
+    assert identity["requested_api_full_name"] == identity["canonical_api_full_name"] == identity["canonical_repo"]
+    assert identity["redirect_location"] == "https://github.com/Knuckles-Team/lucerna-mcp"
+    assert identity["requested_main_sha"] == identity["canonical_main_sha"] == EXPECTED_CONSUMER["merge"]
+    assert identity["pages_url"] == EXPECTED_CONSUMER["repo_url"]
