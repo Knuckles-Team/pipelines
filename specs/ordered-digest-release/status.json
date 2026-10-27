@@ -655,11 +655,11 @@
       "title": "Shared gates workflow, tag-only publish guard and fast-tests hook",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "1cd54151332e",
         "3cfd039fe3e2",
         "3d0455152b96",
         "4f1e1f0aff4a",
-        "5655978dd7c2",
-        "6e39e9664fd1"
+        "5655978dd7c2"
       ],
       "verified_by": [
         "tests/hooks/test_fast_tests.py:10",
@@ -683,14 +683,15 @@
       "title": "Model",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "1cd54151332e",
         "3d0455152b96",
         "4f1e1f0aff4a",
         "5655978dd7c2",
-        "6e39e9664fd1",
-        "efa54aa768ae"
+        "6e39e9664fd1"
       ],
       "verified_by": [
-        "tests/test_gates_pipeline_contract.py:44"
+        "tests/test_gates_pipeline_contract.py:44",
+        "tests/test_gates_pipeline_contract.py:52"
       ]
     },
     {
@@ -702,7 +703,7 @@
         "4f1e1f0aff4a"
       ],
       "verified_by": [
-        "tests/test_gates_pipeline_contract.py:52"
+        "tests/test_gates_pipeline_contract.py:65"
       ]
     },
     {
@@ -714,7 +715,7 @@
         "4f1e1f0aff4a"
       ],
       "verified_by": [
-        "tests/test_gates_pipeline_contract.py:65"
+        "tests/test_gates_pipeline_contract.py:78"
       ]
     },
     {
@@ -726,7 +727,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_fast_tests.py:46",
-        "tests/test_gates_pipeline_contract.py:80"
+        "tests/test_gates_pipeline_contract.py:93"
       ]
     },
     {
@@ -739,7 +740,7 @@
       "verified_by": [
         "tests/hooks/test_fast_tests.py:27",
         "tests/hooks/test_fast_tests.py:35",
-        "tests/test_gates_pipeline_contract.py:91"
+        "tests/test_gates_pipeline_contract.py:104"
       ]
     },
     {
