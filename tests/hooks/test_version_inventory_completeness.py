@@ -7,6 +7,8 @@ import pytest
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.release.project_version import (
     VERSION_DISCOVERY_POLICY,
+    VERSION_FILE_SELECTOR,
+    check_inventory,
     compare_version_inventory,
     discover_version_locations,
     parse_inventory,
@@ -31,10 +33,23 @@ replace = __version__ = \"{{new_version}}\"
 search = <!-- project-version: {{current_version}} -->
 replace = <!-- project-version: {{new_version}} -->
 """
+VERSION_CONFIG = (
+    CONFIG
+    + f"""
+[bumpversion:file(source):VERSION]
+selector = {VERSION_FILE_SELECTOR}
+search = {{current_version}}
+replace = {{new_version}}
+"""
+)
 
 
 def _inventory():
     return parse_inventory(CONFIG, config_digest="sha256:config", snapshot="tree:fixture")
+
+
+def _version_inventory():
+    return parse_inventory(VERSION_CONFIG, config_digest="sha256:version-config", snapshot="tree:fixture")
 
 
 def _contents() -> dict[str, str]:
@@ -48,10 +63,17 @@ def _contents() -> dict[str, str]:
     }
 
 
+def _version_contents() -> dict[str, str]:
+    contents = _contents()
+    contents["VERSION"] = f"{VERSION}\n"
+    return contents
+
+
 # spec: PIPE-RELEASE-R006.7
 def test_version_inventory_completeness_model() -> None:
     discovered = discover_version_locations(_contents(), first_party_roots=("pkg",))
     assert VERSION_DISCOVERY_POLICY == "project-version-inventory/v1"
+    assert _inventory().policy_version == VERSION_DISCOVERY_POLICY
     assert [(item.role, item.path, item.selector, item.value, item.line) for item in discovered] == [
         ("documentation", "README.md", "documentation.project-version", VERSION, 2),
         ("metadata", "pyproject.toml", "project.version", VERSION, 3),
@@ -63,6 +85,20 @@ def test_version_inventory_completeness_model() -> None:
     assert report.missing == ()
     assert report.selector_mismatch == ()
     assert report.value_mismatch == ()
+
+    owned_inventory = _version_inventory()
+    owned_discovered = discover_version_locations(
+        _version_contents(), first_party_roots=("pkg",), inventory=owned_inventory
+    )
+    assert ("source", "VERSION", VERSION_FILE_SELECTOR, VERSION, 1) in [
+        (item.role, item.path, item.selector, item.value, item.line) for item in owned_discovered
+    ]
+    assert all(item.path != "vendor/VERSION" for item in owned_discovered)
+    owned_report = compare_version_inventory(owned_inventory, owned_discovered)
+    assert owned_report.complete
+    assert owned_report.policy_version == VERSION_DISCOVERY_POLICY
+    owned_checks = check_inventory(owned_inventory, _version_contents())
+    assert [(check.path, check.actual) for check in owned_checks if check.path == "VERSION"] == [("VERSION", VERSION)]
 
 
 # spec: PIPE-RELEASE-R006.8

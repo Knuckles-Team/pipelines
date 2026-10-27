@@ -47,6 +47,8 @@ _MAX_CONFIG_BYTES = 512 * 1024
 _MAX_SOURCE_BYTES = 8 * 1024 * 1024
 _CONFIG_CANDIDATES = (".config/bumpversion.cfg", ".bumpversion.cfg", "setup.cfg", "tox.ini")
 VERSION_DISCOVERY_POLICY = "project-version-inventory/v1"
+VERSION_FILE_SELECTOR = "source.VERSION"
+_VERSION_FILE_SELECTOR_ALIASES = frozenset({VERSION_FILE_SELECTOR.casefold(), "project-version", "version-file"})
 _PROJECT_VERSION_RE = re.compile(
     r"(?m)^[ \t]*version[ \t]*=[ \t]*(?P<quote>['\"])(?P<value>[^'\"\r\n]+)(?P=quote)[ \t]*$"
 )
@@ -91,6 +93,7 @@ class ProjectVersionInventory:
     snapshot: str
     config_path: str = ".config/bumpversion.cfg"
     schema_version: int = 1
+    policy_version: str = VERSION_DISCOVERY_POLICY
 
     @property
     def roles(self) -> frozenset[str]:
@@ -186,6 +189,15 @@ def _template_parts(template: str, placeholder: str) -> tuple[str, str]:
     return prefix, suffix
 
 
+def _is_owned_version_file(location: VersionLocation) -> bool:
+    """Return whether a source ``VERSION`` file is explicitly project-owned."""
+    return (
+        location.role == "source"
+        and PurePosixPath(location.path).name == "VERSION"
+        and location.selector.casefold() in _VERSION_FILE_SELECTOR_ALIASES
+    )
+
+
 def _validate_location(location: VersionLocation) -> None:
     """Reject a location whose selector cannot provide an exact round trip."""
     if location.role not in _ROLE_SET:
@@ -196,13 +208,17 @@ def _validate_location(location: VersionLocation) -> None:
         raise CannotRun(f"unsupported-extraction: {location.path} has no selector")
     search_prefix, search_suffix = _template_parts(location.search, "{current_version}")
     replace_prefix, replace_suffix = _template_parts(location.replace, "{new_version}")
-    if not search_prefix and not search_suffix:
+    if not search_prefix and not search_suffix and not _is_owned_version_file(location):
         raise CannotRun(f"unsupported-extraction: {location.path} selector is too broad")
     if (search_prefix, search_suffix) != (replace_prefix, replace_suffix):
         raise CannotRun(f"unsupported-extraction: {location.path} replacement changes text outside the version token")
     if "\r" in location.search or "\r" in location.replace:
         raise CannotRun(f"unsupported-extraction: {location.path} has unsupported carriage returns")
-    if location.role in {"metadata", "source"} and not _ASSIGNMENT_RE.search(location.search):
+    if (
+        location.role in {"metadata", "source"}
+        and not _is_owned_version_file(location)
+        and not _ASSIGNMENT_RE.search(location.search)
+    ):
         raise CannotRun(
             f"unsupported-extraction: {location.role} selector for {location.path} must target a literal assignment"
         )
@@ -375,6 +391,7 @@ def discover_version_locations(
     contents: Mapping[str, str],
     *,
     first_party_roots: tuple[str, ...] = ("src",),
+    inventory: ProjectVersionInventory | None = None,
 ) -> tuple[DiscoveredVersion, ...]:
     """Discover version surfaces using the versioned static policy.
 
@@ -383,12 +400,19 @@ def discover_version_locations(
     ``__version__`` literals under declared first-party roots, and the marked
     ``project-version`` documentation comment.  Dependency ``VERSION`` files,
     historical prose, imports and computed expressions are outside this
-    grammar and cannot become accidental authorities.
+    grammar and cannot become accidental authorities.  A ``VERSION`` file is
+    inspected only when the supplied inventory explicitly owns that exact
+    path with the named project-version selector.
     """
     roots = tuple(_safe_discovery_path(root.rstrip("/")) for root in first_party_roots if root.strip())
     if not roots:
         raise CannotRun("inventory-incomplete: no first-party source root declared")
     discovered: list[DiscoveredVersion] = []
+    owned_version_files = {
+        location.path: location
+        for location in (inventory.locations if inventory is not None else ())
+        if _is_owned_version_file(location)
+    }
     metadata = contents.get("pyproject.toml")
     if metadata is not None:
         try:
@@ -416,6 +440,33 @@ def discover_version_locations(
         path = _safe_discovery_path(raw_path)
         if path == "pyproject.toml" or not isinstance(text, str):
             continue
+        if PurePosixPath(path).name == "VERSION":
+            location = owned_version_files.get(path)
+            if location is not None:
+                if "\r" in text:
+                    raise CannotRun(
+                        f"unsupported-extraction: owned VERSION file {path} has unsupported carriage returns"
+                    )
+                value_text = text[:-1] if text.endswith("\n") else text
+                if "\n" in value_text:
+                    raise CannotRun(f"unsupported-extraction: owned VERSION file {path} must contain one version")
+                value = value_text.strip()
+                if (
+                    not value
+                    or not _SAFE_VERSION_RE.fullmatch(value)
+                    or any(character.isspace() for character in value)
+                ):
+                    raise CannotRun(f"unsupported-extraction: owned VERSION file {path} must contain one version")
+                discovered.append(
+                    DiscoveredVersion(
+                        path=path,
+                        role=location.role,
+                        selector=VERSION_FILE_SELECTOR,
+                        value=value,
+                        line=1,
+                    )
+                )
+            continue
         if path.endswith(".py") and _source_path_is_first_party(path, roots):
             discovered.extend(_literal_source_versions(path, text))
         if path.endswith((".md", ".markdown", ".rst")):
@@ -434,6 +485,8 @@ def discover_version_locations(
 
 def _configured_selector(location: VersionLocation) -> str | None:
     """Translate an existing location template to the discovery selector."""
+    if _is_owned_version_file(location):
+        return VERSION_FILE_SELECTOR
     if location.role == "metadata" and re.search(r"(?m)^\s*version\s*=", location.search):
         return "project.version"
     if location.role == "source" and "__version__" in location.search:
@@ -478,6 +531,7 @@ def compare_version_inventory(
         selector_mismatch=tuple(sorted(selector_mismatch, key=lambda item: (item[0], item[1]))),
         duplicates=tuple(sorted(set(duplicates))),
         value_mismatch=tuple(sorted(value_mismatch)),
+        policy_version=inventory.policy_version,
     )
 
 
@@ -506,6 +560,8 @@ def _sha256(value: str) -> str:
 
 
 def _extractor(location: VersionLocation) -> re.Pattern[str]:
+    if _is_owned_version_file(location):
+        return re.compile(r"(?m)^[ \t]*(?P<version>[^\s\r\n]+)[ \t]*(?:\n|$)")
     prefix, suffix = _template_parts(location.search, "{current_version}")
     capture = r"(?P<version>[^\s\r\n]+)" if not suffix else r"(?P<version>[^\s\r\n]+?)"
     # Metadata and source selectors describe literal assignments. Anchor those
