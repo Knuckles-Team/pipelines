@@ -11,6 +11,7 @@ import yaml
 ROOT = Path(__file__).parents[1]
 ACTION = ROOT / ".github/actions/verify-release-version"
 REFERENCE = "./.pipeline-contract/.github/actions/verify-release-version"
+SETUP_UV = "astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4"
 
 
 @pytest.fixture
@@ -26,6 +27,23 @@ def package(tmp_path, version="0.5.1", bump=None):
     if bump:
         (tmp_path / ".bumpversion.cfg").write_text(f"[bumpversion]\ncurrent_version = {bump}\n")
     return tmp_path
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_published_wheel_guard_sets_up_pinned_uv_before_publisher() -> None:
+    action = yaml.safe_load((ACTION / "action.yml").read_text())
+    steps = action["runs"]["steps"]
+    setup = next(step for step in steps if step.get("name") == "Set up uv for published wheel verification")
+    publisher = next(step for step in steps if step.get("name") == "Verify published wheel payload and container pin")
+
+    assert setup == {
+        "name": "Set up uv for published wheel verification",
+        "if": "inputs.mode == 'published-wheel'",
+        "uses": SETUP_UV,
+    }
+    assert publisher["if"] == "inputs.mode == 'published-wheel'"
+    assert "public_wheel.py" in publisher["run"]
+    assert steps.index(setup) < steps.index(publisher)
 
 
 def absent(name, version, base):

@@ -40,6 +40,9 @@ runs:
         RELEASE_REF: ${{ github.ref }}
         RELEASE_ROOT: ${{ inputs.root }}
       run: python3 -I "${{ github.action_path }}/verify_release_version.py" --root "$RELEASE_ROOT" --ref "$RELEASE_REF"
+    - name: Set up uv for published wheel verification
+      if: inputs.mode == 'published-wheel'
+      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
     - name: Verify published wheel payload and container pin
       if: inputs.mode == 'published-wheel'
       shell: bash

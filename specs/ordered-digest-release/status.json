@@ -114,11 +114,11 @@
         "d6a43376acc9"
       ],
       "verified_by": [
-        "tests/test_release_version_guard.py:110",
-        "tests/test_release_version_guard.py:118",
-        "tests/test_release_version_guard.py:39",
-        "tests/test_release_version_guard.py:44",
-        "tests/test_release_version_guard.py:50"
+        "tests/test_release_version_guard.py:108",
+        "tests/test_release_version_guard.py:115",
+        "tests/test_release_version_guard.py:128",
+        "tests/test_release_version_guard.py:136",
+        "tests/test_release_version_guard.py:57"
       ]
     },
     {
