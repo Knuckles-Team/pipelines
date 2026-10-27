@@ -104,7 +104,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Use the runner-provided portable Python (trusted runner)
-        if: inputs.runner == '"arbora-ci-trusted"'
+        if: runner.environment == 'self-hosted'
         shell: bash
         run: |
           set -euo pipefail
@@ -124,7 +124,7 @@ jobs:
           echo "VIRTUAL_ENV=$venv" >> "$GITHUB_ENV"
           "$venv/bin/python" --version
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        if: inputs.runner != '"arbora-ci-trusted"'
+        if: runner.environment != 'self-hosted'
         with:
           python-version-file: '.python-version'
       - name: Install manifest Rust toolchain and rustfmt
@@ -192,7 +192,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Use the runner-provided portable Python (trusted runner)
-        if: inputs.runner == '"arbora-ci-trusted"'
+        if: runner.environment == 'self-hosted'
         shell: bash
         run: |
           set -euo pipefail
@@ -212,7 +212,7 @@ jobs:
           echo "VIRTUAL_ENV=$venv" >> "$GITHUB_ENV"
           "$venv/bin/python" --version
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        if: inputs.runner != '"arbora-ci-trusted"'
+        if: runner.environment != 'self-hosted'
         with:
           python-version-file: '.python-version'
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0

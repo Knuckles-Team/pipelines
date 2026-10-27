@@ -84,8 +84,8 @@ def test_spec_trailers_stays_pull_request_only_and_jobs_remain_independent() -> 
 
 def test_trusted_runner_uses_image_python_and_hosted_runner_uses_setup_python() -> None:
     document = _workflow()
-    trusted = "inputs.runner == '\"arbora-ci-trusted\"'"
-    hosted = "inputs.runner != '\"arbora-ci-trusted\"'"
+    trusted = "runner.environment == 'self-hosted'"
+    hosted = "runner.environment != 'self-hosted'"
     for name in ("lint-and-architecture", "spec-gates"):
         steps = document["jobs"][name]["steps"]
         portable = next(
@@ -98,3 +98,19 @@ def test_trusted_runner_uses_image_python_and_hosted_runner_uses_setup_python() 
         assert ".python-version" in portable["run"]
         setup = next(step for step in steps if step.get("uses", "").startswith("actions/setup-python@"))
         assert setup["if"] == hosted
+
+
+def test_python_selection_follows_resolved_runner_environment() -> None:
+    document = _workflow()
+    for name in ("lint-and-architecture", "spec-gates"):
+        steps = document["jobs"][name]["steps"]
+        portable = next(
+            step for step in steps if step.get("name", "").startswith("Use the runner-provided portable Python")
+        )
+        setup = next(step for step in steps if step.get("uses", "").startswith("actions/setup-python@"))
+        # The fork-safe reserved input and a same-repository custom JSON input
+        # can both resolve to hosted/self-hosted runners respectively.  The
+        # selected Python must follow that resolved environment, not spelling
+        # of the caller input.
+        assert portable["if"] == "runner.environment == 'self-hosted'"
+        assert setup["if"] == "runner.environment != 'self-hosted'"
