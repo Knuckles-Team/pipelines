@@ -29,59 +29,6 @@ EXPECTED_HOOKS = {
     "tests-fast",
 }
 EXPECTED_CADDY_SKILL = "caddy_mcp/skills/caddy-mcp-development/SKILL.md"
-EXPECTED_PACKAGE_PUBLICATIONS = {
-    "aris-mcp": {
-        "source_sha": "c5df897fa6e4ff561c21c5d57c74f513f0ff2e3d",
-        "skill": "aris_mcp/skills/aris-mcp-development/SKILL.md",
-        "skill_bytes": 5084,
-        "skill_sha256": "df336dd71907f68bffd848bc8a66162102f4b44514ca3651f2bf4e786b37c567",
-        "skill_terms": (
-            "aris_mcp/__init__.py",
-            "ARIS_API_BASE",
-            "ARIS_TLS_PROFILE",
-            "connector: true",
-            "render_connector: true",
-        ),
-        "package_run": 40431780316,
-        "version": "1.3.6",
-        "wheel_sha256": "3a037cc88107c8f08ed21672d081b7bea42365a2e89affbf245412357c8c8ecf",
-        "sdist_sha256": "5bb52c6c5c804a0df9d40500a52a5da592eb68c681a83a90c4b1fbc126e11949",
-    },
-    "camunda-mcp": {
-        "source_sha": "933b2f44838535b621b999b1499b076efe564978",
-        "skill": "camunda_mcp/skills/camunda-mcp-development/SKILL.md",
-        "skill_bytes": 6541,
-        "skill_sha256": "abb84ee6c269a6d91b9c363b1d72d492142d6ca2ef2b20871f91e43a0e1ecaba",
-        "skill_terms": (
-            "camunda_mcp/__init__.py",
-            "CAMUNDA7_URL",
-            "CAMUNDA_TLS_PROFILE",
-            "connector: true",
-            "render_connector: true",
-        ),
-        "package_run": 40431609053,
-        "version": "2.6.6",
-        "wheel_sha256": "519ed5339c1db3a1e8d2f793e2547c0bacb47b08df2576ca11451c4e59a03b49",
-        "sdist_sha256": "a3b612e6b52bf8df34b08e79c7374044118773c0c2879364ce4e7f15782ebba5",
-    },
-    "egeria-mcp": {
-        "source_sha": "d6c0e954f2c21fcde036a5b5e98535927cf3f3d8",
-        "skill": "egeria_mcp/skills/egeria-mcp-development/SKILL.md",
-        "skill_bytes": 6001,
-        "skill_sha256": "8f752af999e787965b80a9a3bd42e4248795664d2c6b7942da0cae919429dbbd",
-        "skill_terms": (
-            "egeria_mcp/__init__.py",
-            "EGERIA_PLATFORM_URL",
-            "EGERIA_ENABLE_WRITE",
-            "connector: true",
-            "render_connector: true",
-        ),
-        "package_run": 40432274511,
-        "version": "2.3.5",
-        "wheel_sha256": "7eb94348b0537fe577f5fc5e69b19b9a326234ed9e39f9e1ec82a5f8fc3f1568",
-        "sdist_sha256": "390538705d651763e3cde80415eff2e451730aa4edf0360fc87e58fe7adfbaa1",
-    },
-}
 STATUS_CONFIG = {"sources": [{"glob": "specs/*/status.json", "kind": "spec"}]}
 
 
@@ -191,8 +138,7 @@ def test_consumer_pages_are_current_and_published(tmp_path):
         assert pages["with"]["spec_dashboard_enabled"] is True
         assert pages["config"]["version"] == 1
         assert pages["hosted_run"]["conclusion"] == "success"
-        historical_source_sha = pages.get("historical_source_sha", row["sha"])
-        assert pages["hosted_run"]["headSha"] == historical_source_sha
+        assert pages["hosted_run"]["headSha"] == pages.get("historical_source_sha", row["sha"])
         assert pages["hosted_run"]["url"].startswith(f"https://github.com/Knuckles-Team/{name}/actions/runs/")
         assert pages["http"]["status"] == 200
         assert pages["http"]["has_spec_id"] is True
@@ -218,6 +164,61 @@ def test_caddy_rapid_delivery_skill_and_pages_are_source_backed():
     assert pages["hosted_run"]["databaseId"] == 40425009250
     assert pages["hosted_run"]["headSha"] == row["sha"]
     assert pages["http"]["status"] == 200
+
+
+EXPECTED_PACKAGE_PUBLICATIONS = {
+    "aris-mcp": {
+        "source_sha": "c5df897fa6e4ff561c21c5d57c74f513f0ff2e3d",
+        "skill": "aris_mcp/skills/aris-mcp-development/SKILL.md",
+        "skill_bytes": 5084,
+        "skill_sha256": "df336dd71907f68bffd848bc8a66162102f4b44514ca3651f2bf4e786b37c567",
+        "skill_terms": (
+            "aris_mcp/__init__.py",
+            "ARIS_API_BASE",
+            "ARIS_TLS_PROFILE",
+            "connector: true",
+            "render_connector: true",
+        ),
+        "package_run": 40431780316,
+        "version": "1.3.6",
+        "wheel_sha256": "3a037cc88107c8f08ed21672d081b7bea42365a2e89affbf245412357c8c8ecf",
+        "sdist_sha256": "5bb52c6c5c804a0df9d40500a52a5da592eb68c681a83a90c4b1fbc126e11949",
+    },
+    "camunda-mcp": {
+        "source_sha": "933b2f44838535b621b999b1499b076efe564978",
+        "skill": "camunda_mcp/skills/camunda-mcp-development/SKILL.md",
+        "skill_bytes": 6541,
+        "skill_sha256": "abb84ee6c269a6d91b9c363b1d72d492142d6ca2ef2b20871f91e43a0e1ecaba",
+        "skill_terms": (
+            "camunda_mcp/__init__.py",
+            "CAMUNDA7_URL",
+            "CAMUNDA_TLS_PROFILE",
+            "connector: true",
+            "render_connector: true",
+        ),
+        "package_run": 40431609053,
+        "version": "2.6.6",
+        "wheel_sha256": "519ed5339c1db3a1e8d2f793e2547c0bacb47b08df2576ca11451c4e59a03b49",
+        "sdist_sha256": "a3b612e6b52bf8df34b08e79c7374044118773c0c2879364ce4e7f15782ebba5",
+    },
+    "egeria-mcp": {
+        "source_sha": "d6c0e954f2c21fcde036a5b5e98535927cf3f3d8",
+        "skill": "egeria_mcp/skills/egeria-mcp-development/SKILL.md",
+        "skill_bytes": 6001,
+        "skill_sha256": "8f752af999e787965b80a9a3bd42e4248795664d2c6b7942da0cae919429dbbd",
+        "skill_terms": (
+            "egeria_mcp/__init__.py",
+            "EGERIA_PLATFORM_URL",
+            "EGERIA_ENABLE_WRITE",
+            "connector: true",
+            "render_connector: true",
+        ),
+        "package_run": 40432274511,
+        "version": "2.3.5",
+        "wheel_sha256": "7eb94348b0537fe577f5fc5e69b19b9a326234ed9e39f9e1ec82a5f8fc3f1568",
+        "sdist_sha256": "390538705d651763e3cde80415eff2e451730aa4edf0360fc87e58fe7adfbaa1",
+    },
+}
 
 
 @pytest.mark.spec("PIPE-CONNSPEC-R104.4")
