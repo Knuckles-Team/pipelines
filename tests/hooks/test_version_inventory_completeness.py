@@ -1,0 +1,87 @@
+"""PIPE-RELEASE-R006.7--R006.8: static version inventory completeness."""
+
+from __future__ import annotations
+
+import pytest
+
+from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.release.project_version import (
+    VERSION_DISCOVERY_POLICY,
+    compare_version_inventory,
+    discover_version_locations,
+    parse_inventory,
+    require_complete_version_inventory,
+)
+
+VERSION = "1.2.3"
+CONFIG = f"""[bumpversion]
+current_version = {VERSION}
+commit = False
+tag = False
+
+[bumpversion:file(metadata):pyproject.toml]
+search = version = \"{{current_version}}\"
+replace = version = \"{{new_version}}\"
+
+[bumpversion:file(source):pkg/version.py]
+search = __version__ = \"{{current_version}}\"
+replace = __version__ = \"{{new_version}}\"
+
+[bumpversion:file(documentation):README.md]
+search = <!-- project-version: {{current_version}} -->
+replace = <!-- project-version: {{new_version}} -->
+"""
+
+
+def _inventory():
+    return parse_inventory(CONFIG, config_digest="sha256:config", snapshot="tree:fixture")
+
+
+def _contents() -> dict[str, str]:
+    return {
+        ".config/bumpversion.cfg": CONFIG,
+        "pyproject.toml": f'[project]\nname = "fixture"\nversion = "{VERSION}"\n',
+        "pkg/version.py": f'__version__ = "{VERSION}"\n',
+        "README.md": f"# fixture\n<!-- project-version: {VERSION} -->\n",
+        "vendor/VERSION": "9.9.9\n",
+        "docs/history.md": "Released 9.9.9 before the current project version.\n",
+    }
+
+
+# spec: PIPE-RELEASE-R006.7
+def test_version_inventory_completeness_model() -> None:
+    discovered = discover_version_locations(_contents(), first_party_roots=("pkg",))
+    assert VERSION_DISCOVERY_POLICY == "project-version-inventory/v1"
+    assert [(item.role, item.path, item.selector, item.value, item.line) for item in discovered] == [
+        ("documentation", "README.md", "documentation.project-version", VERSION, 2),
+        ("metadata", "pyproject.toml", "project.version", VERSION, 3),
+        ("source", "pkg/version.py", "module.__version__", VERSION, 1),
+    ]
+    report = compare_version_inventory(_inventory(), discovered)
+    assert report.complete
+    assert report.unmapped == ()
+    assert report.missing == ()
+    assert report.selector_mismatch == ()
+
+
+# spec: PIPE-RELEASE-R006.8
+def test_version_inventory_completeness_refuses_unmapped_and_dynamic_surfaces() -> None:
+    contents = _contents()
+    contents["pkg/extra.py"] = '__version__ = "1.2.3"\n'
+    discovered = discover_version_locations(contents, first_party_roots=("pkg",))
+    report = compare_version_inventory(_inventory(), discovered)
+    assert [(item.path, item.line) for item in report.unmapped] == [("pkg/extra.py", 1)]
+    with pytest.raises(CannotRun, match=r"unmapped discovered locations \(pkg/extra.py:1\)"):
+        require_complete_version_inventory(report)
+
+    dynamic = _contents()
+    dynamic["pkg/version.py"] = "from build import version\n__version__ = version()\n"
+    with pytest.raises(CannotRun, match="dynamic __version__ assignment"):
+        discover_version_locations(dynamic, first_party_roots=("pkg",))
+
+    missing_doc = _contents()
+    del missing_doc["README.md"]
+    missing = compare_version_inventory(
+        _inventory(), discover_version_locations(missing_doc, first_party_roots=("pkg",))
+    )
+    assert [(item.role, item.path) for item in missing.missing] == [("documentation", "README.md")]

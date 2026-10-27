@@ -531,14 +531,18 @@
       "title": "Model",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_version_inventory_completeness.py:51"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006.8",
       "title": "Behavior",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/hooks/test_version_inventory_completeness.py:67"
+      ]
     },
     {
       "id": "PIPE-RELEASE-R006.9",
