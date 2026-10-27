@@ -534,7 +534,7 @@
         "a5cc6e652e41"
       ],
       "verified_by": [
-        "tests/hooks/test_version_inventory_completeness.py:51"
+        "tests/hooks/test_version_inventory_completeness.py:72"
       ]
     },
     {
@@ -546,7 +546,7 @@
         "a5cc6e652e41"
       ],
       "verified_by": [
-        "tests/hooks/test_version_inventory_completeness.py:68"
+        "tests/hooks/test_version_inventory_completeness.py:104"
       ]
     },
     {
