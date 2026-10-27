@@ -900,9 +900,17 @@
     {
       "id": "PIPE-CONNSPEC-R107",
       "title": "`audio-transcriber` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a75eb4ea62fd",
+        "d7d1a86cc659"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:48",
+        "tests/test_connector_consumer_r107_r155_public_batch.py:93",
+        "tests/test_connector_consumer_rollout.py:52",
+        "tests/test_connector_consumer_rollout.py:82"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R107.1",
         "PIPE-CONNSPEC-R107.2",
@@ -935,8 +943,10 @@
     {
       "id": "PIPE-CONNSPEC-R107.3",
       "title": "`audio-transcriber` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d7d1a86cc659"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:48"
       ]
@@ -944,10 +954,12 @@
     {
       "id": "PIPE-CONNSPEC-R107.4",
       "title": "`audio-transcriber` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d7d1a86cc659"
+      ],
       "verified_by": [
-        "tests/test_connector_consumer_r107_r155_public_batch.py:92"
+        "tests/test_connector_consumer_r107_r155_public_batch.py:93"
       ]
     },
     {
@@ -3697,10 +3709,12 @@
     {
       "id": "PIPE-CONNSPEC-R155.4",
       "title": "`pulselink-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d7d1a86cc659"
+      ],
       "verified_by": [
-        "tests/test_connector_consumer_r107_r155_public_batch.py:103"
+        "tests/test_connector_consumer_r107_r155_public_batch.py:104"
       ]
     },
     {
