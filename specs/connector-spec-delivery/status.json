@@ -3469,14 +3469,18 @@
       "title": "`postiz-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:207"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R154.4",
       "title": "`postiz-agent` has the rapid-delivery section in its development skill",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:223"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R155",

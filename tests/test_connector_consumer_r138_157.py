@@ -45,7 +45,7 @@ READY_SPEC_3 = {
     "PIPE-CONNSPEC-R147.3",
     "PIPE-CONNSPEC-R148.3",
     "PIPE-CONNSPEC-R157.3",
-}
+} | {"PIPE-CONNSPEC-R154.3"}
 
 
 def _evidence() -> dict:
@@ -178,7 +178,7 @@ def test_consumer_pages_are_current_and_published():
         assert pages["missing_required_paths"] == []
         assert pages["with"]["content_source"] == "docs"
         assert pages["with"]["spec_dashboard_enabled"] is True
-        assert pages["with"]["spec_dashboard_config"] == ".github/spec-dashboard.json"
+        assert pages["with"]["spec_dashboard_config"] in {".github/spec-dashboard.json", ".config/spec-dashboard.json"}
         assert pages["config"]["version"] == 1
         assert pages["config"]["valid"] is True
         assert run["conclusion"] == "success"
@@ -200,5 +200,35 @@ def test_unqualified_rows_remain_explicitly_held():
         )
         for suffix in (".1", ".2", ".3", ".4")
     }
-    assert states == {".1": 20, ".2": 10, ".3": 4, ".4": 0}
-    assert all(row["leaves"][f"PIPE-CONNSPEC-{row['row']}.4"]["status"] == "HELD" for row in evidence["repos"].values())
+    assert states == {".1": 20, ".2": 10, ".3": 5, ".4": 1}
+    assert states[".4"] == 1
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R154.3")
+def test_postiz_pages_are_current_and_published():
+    row = _evidence()["repos"]["R154"]
+    pages = row["pages"]
+    assert row["leaves"]["PIPE-CONNSPEC-R154.3"]["status"] == "READY"
+    assert pages["caller_count"] == 1
+    assert pages["with"]["content_source"] == "docs"
+    assert pages["with"]["spec_dashboard_enabled"] is True
+    assert pages["with"]["spec_dashboard_config"] == ".config/spec-dashboard.json"
+    assert pages["config"]["valid"] is True
+    assert pages["hosted_run"]["headSha"] == row["sha"]
+    assert pages["hosted_run"]["databaseId"] == 40426272448
+    assert pages["http"]["status"] == 200
+    assert pages["http"]["sha256"] == "c47e53d51fc8e29eb447f62e46afb663a116db31ad22d64f46ece5b2ea4fe0d8"
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R154.4")
+def test_postiz_development_skill_is_source_backed():
+    row = _evidence()["repos"]["R154"]
+    skill = row["skills"]
+    assert row["leaves"]["PIPE-CONNSPEC-R154.4"]["status"] == "READY"
+    assert skill["ready"] is True
+    assert skill["present"] is True
+    assert skill["path"] == "postiz_agent/skills/postiz-agent-development/SKILL.md"
+    assert skill["matches"] == [skill["path"]]
+    source = row["source_files"][skill["path"]]
+    assert source["sha256"] == skill["source_sha256"]
+    assert skill["phrase"] in source["content"]
