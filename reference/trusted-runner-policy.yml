@@ -12,7 +12,6 @@ labels:
   - linux
   - x64
   - homelab
-  - avx2
   - rust-1.96
 fork_pull_request_fallback: ubuntu-latest
 trusted_events:
