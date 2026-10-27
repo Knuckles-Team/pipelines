@@ -839,11 +839,11 @@
       "title": "A connector release publishes PyPI and Docker, and verifies both",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "07ffdeee05fb",
         "08735fb01481",
         "0f2baf0bc01f",
         "154f96235334",
-        "23b1e1111638",
-        "2e89db0000e5"
+        "23b1e1111638"
       ],
       "verified_by": [
         "tests/hooks/test_distribution_aliases.py:22",
@@ -861,11 +861,11 @@
       "title": "Published-wheel image preflight",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "07ffdeee05fb",
         "08735fb01481",
         "0f2baf0bc01f",
         "154f96235334",
-        "23b1e1111638",
-        "2e89db0000e5"
+        "23b1e1111638"
       ],
       "verified_by": [
         "tests/test_container_pipeline_contract.py:104",
