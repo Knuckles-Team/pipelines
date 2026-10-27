@@ -697,9 +697,17 @@
     {
       "id": "PIPE-CONNSPEC-R104",
       "title": "`aris-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a75eb4ea62fd",
+        "d982a5d40269"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:124",
+        "tests/test_connector_consumer_rollout.py:224",
+        "tests/test_connector_consumer_rollout.py:50",
+        "tests/test_connector_consumer_rollout.py:80"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R104.1",
         "PIPE-CONNSPEC-R104.2",
@@ -743,9 +751,13 @@
     {
       "id": "PIPE-CONNSPEC-R104.4",
       "title": "`aris-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d982a5d40269"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:224"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R105",
@@ -1059,9 +1071,17 @@
     {
       "id": "PIPE-CONNSPEC-R110",
       "title": "`camunda-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a75eb4ea62fd",
+        "d982a5d40269"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:126",
+        "tests/test_connector_consumer_rollout.py:225",
+        "tests/test_connector_consumer_rollout.py:54",
+        "tests/test_connector_consumer_rollout.py:84"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R110.1",
         "PIPE-CONNSPEC-R110.2",
@@ -1105,9 +1125,13 @@
     {
       "id": "PIPE-CONNSPEC-R110.4",
       "title": "`camunda-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d982a5d40269"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:225"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R111",
@@ -1470,9 +1494,17 @@
     {
       "id": "PIPE-CONNSPEC-R117",
       "title": "`egeria-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "a75eb4ea62fd",
+        "d982a5d40269"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:127",
+        "tests/test_connector_consumer_rollout.py:226",
+        "tests/test_connector_consumer_rollout.py:57",
+        "tests/test_connector_consumer_rollout.py:85"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R117.1",
         "PIPE-CONNSPEC-R117.2",
@@ -1516,9 +1548,13 @@
     {
       "id": "PIPE-CONNSPEC-R117.4",
       "title": "`egeria-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "d982a5d40269"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:226"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R118",

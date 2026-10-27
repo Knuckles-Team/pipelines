@@ -1,5 +1,5 @@
 {
-  "observed_utc": "2026-10-26T13:43:17Z",
+  "observed_utc": "2026-10-27T01:42:32Z",
   "provider": {
     "canonical_template": {
       "hooks": [
@@ -382,7 +382,8 @@
           "content_source": "docs",
           "spec_dashboard_config": ".github/spec-dashboard.json",
           "spec_dashboard_enabled": true
-        }
+        },
+        "historical_source_sha": "e3401cdc491777ec6b8c1f6c4c765789ec0fb565"
       },
       "precommit": {
         "hooks": [
@@ -407,7 +408,7 @@
         ]
       },
       "row": "PIPE-CONNSPEC-R104",
-      "sha": "e3401cdc491777ec6b8c1f6c4c765789ec0fb565",
+      "sha": "c5df897fa6e4ff561c21c5d57c74f513f0ff2e3d",
       "source_files": {
         ".github/spec-dashboard.json": {
           "bytes": 109,
@@ -428,6 +429,11 @@
           "bytes": 1134,
           "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
           "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "aris_mcp/skills/aris-mcp-development/SKILL.md": {
+          "bytes": 5084,
+          "content": "---\nname: aris-mcp-development\nskill_type: skill\ndescription: >-\n  Develop and maintain the Software AG ARIS connector while preserving its\n  Connector boundary, REST client contract, authentication policy, KG source\n  declarations, package contents, and release evidence.\nlicense: MIT\ntags: [aris, connector, mcp, sdk, development]\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n# ARIS MCP Development\n\nThis is the repository development skill for `aris-mcp`. The owning delivery\nrow is `PIPE-CONNSPEC-R104.4`; use this skill together with the repository\n`AGENTS.md`, the relevant connector specification, and the focused tests.\n\n## Repository and runtime map\n\n- `aris_mcp/__init__.py` declares the one SDK `Connector`, including the\n  `ArisApi` client, `get_client` factory, tool registrar module, and connector\n  instructions.\n- `aris_mcp/api/api_client_aris.py` is the thin ARIS REST facade. Keep the\n  stable model, object, connection, attribute, and export method contracts.\n- `aris_mcp/auth.py` builds the client from OAuth2 client credentials, a bearer\n  token, or HTTP basic authentication and resolves the shared TLS profile.\n- `aris_mcp/mcp/mcp_aris.py` registers the `aris_model`, `aris_object`,\n  `aris_ingest_models`, and `aris_ingest_model_export` tools. Attribute writes\n  remain gated by `ARIS_ENABLE_WRITE`.\n- `aris_mcp/connector_sources.py` is the live `aris-models` source and its\n  ProcessModel, EPC, connection, and model-export schema declarations.\n- `aris_mcp/skills/**` is included in the packaged connector data. A skill\n  change therefore needs a package-content check before publication.\n- `pyproject.toml` exposes the `aris-mcp` console script through\n  `agent_connector_sdk.cli:serve` and registers the `aris-mcp` SDK connector\n  entry point for `aris_mcp:connector`.\n\n## Connection and security contract\n\n`ARIS_API_BASE` selects the REST root. OAuth2 uses `ARIS_OAUTH_URL`,\n`ARIS_CLIENT_ID`, `ARIS_CLIENT_SECRET`, and optionally `ARIS_TENANT`; a static\n`ARIS_TOKEN` or `ARIS_USERNAME`/`ARIS_PASSWORD` is an alternative auth path.\n`ARIS_TLS_PROFILE` and `ARIS_TLS_PROFILE_REF` select the shared verified TLS\npolicy. `ARIS_PATHS_JSON` can override tenant-specific REST path templates.\nTLS verification stays enabled, and credentials belong in injected environment\nsecrets. `ARIS_ENABLE_WRITE` defaults to false and must remain an explicit\nwriteback gate.\n\n## Rapid delivery: the 5-minute contract\n\n1. Read the owning spec row, this skill, `AGENTS.md`, and the focused tests\n   before changing a connector surface.\n2. Inspect the active `Connector`, tool registrar and action maps, REST client,\n   authentication/TLS setup, source declarations, and package-data rules.\n3. Make the smallest connector-owned change. Preserve public tool names,\n   action names, payloads, endpoint path overrides, authentication choices,\n   TLS verification, ontology/source identifiers, and the SDK `Connector`\n   boundary.\n4. Run the directly bound tests with `uv run --locked --extra test pytest`,\n   then run the repository hooks. Use the approved narrow test wrapper when\n   the delivery lane requires it; never bypass a hook or a failing gate.\n5. If package code or package content changes, update the package and lockfile\n   through the repository's normal release process. Inspect the built wheel\n   and sdist for the intended `aris_mcp/skills/**` content before publication.\n6. Treat Pages as separate evidence: after the exact main commit publishes,\n   verify the successful Pages revision and probe `/spec-delivery/`,\n   `/spec-delivery/index.html`, and its `snapshot.json`. Record the revision\n   before making a delivery claim.\n\n## Focused validation\n\nFor a tool or client change, exercise the smallest relevant test file and keep\nthe read-first and write-gated paths distinct. Include tenant path overrides,\nauth/TLS selection, source declarations, or KG ingestion only when the change\ntouches those contracts. For a skill or package-data change, verify the skill\nfrontmatter, required headings, and wheel/sdist contents without importing a\nlive ARIS tenant.\n\nUse the normal commands from `AGENTS.md`:\n\n```bash\nuv sync --locked\nuv run --locked --extra test pytest -q tests/<focused-test>.py\nuvx pre-commit run --all-files\n```\n\n## Publication and Pages\n\n`.github/workflows/pipeline.yml` delegates package publication to\n`Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main` with\n`connector: true`, then invokes\n`Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main` with\n`render_connector: true`. `.github/workflows/pages.yml` delegates documentation\nand the spec dashboard to `pages_pipeline.yml@main`. Keep these shared caller\ncontracts and their main-branch triggers intact. Generated spec status belongs\nto Pipelines; do not hand-edit central status or promote a rollup from a\nconnector change.\n\nNever place credentials, tenant data, generated release artifacts, or bypass\ninstructions in a skill. Keep a commit focused on the owning row and cite it\nwith `Spec: PIPE-CONNSPEC-R104.4` when this development skill is changed.\n",
+          "sha256": "df336dd71907f68bffd848bc8a66162102f4b44514ca3651f2bf4e786b37c567"
         }
       },
       "status_documents": {
@@ -535,7 +541,25 @@
         "PIPE-CONNSPEC-R104.1": true,
         "PIPE-CONNSPEC-R104.2": true,
         "PIPE-CONNSPEC-R104.3": true,
-        "PIPE-CONNSPEC-R104.4": false
+        "PIPE-CONNSPEC-R104.4": true
+      },
+      "candidate_sha": "c5df897fa6e4ff561c21c5d57c74f513f0ff2e3d",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R104.1",
+        "PIPE-CONNSPEC-R104.2",
+        "PIPE-CONNSPEC-R104.3"
+      ],
+      "skill_path": "aris_mcp/skills/aris-mcp-development/SKILL.md",
+      "publication": {
+        "source_sha": "c5df897fa6e4ff561c21c5d57c74f513f0ff2e3d",
+        "package_run": 40431780316,
+        "package_conclusion": "success",
+        "version": "1.3.6",
+        "wheel_sha256": "3a037cc88107c8f08ed21672d081b7bea42365a2e89affbf245412357c8c8ecf",
+        "sdist_sha256": "5bb52c6c5c804a0df9d40500a52a5da592eb68c681a83a90c4b1fbc126e11949",
+        "skill_sha256": "df336dd71907f68bffd848bc8a66162102f4b44514ca3651f2bf4e786b37c567",
+        "wheel_contains_skill": true,
+        "sdist_contains_skill": true
       }
     },
     "arr-mcp": {
@@ -1221,7 +1245,8 @@
           "content_source": "docs",
           "spec_dashboard_config": ".github/spec-dashboard.json",
           "spec_dashboard_enabled": true
-        }
+        },
+        "historical_source_sha": "8a3b4e28cec1e3b6f500039a2b11f2323836a1a6"
       },
       "precommit": {
         "hooks": [
@@ -1246,7 +1271,7 @@
         ]
       },
       "row": "PIPE-CONNSPEC-R110",
-      "sha": "8a3b4e28cec1e3b6f500039a2b11f2323836a1a6",
+      "sha": "933b2f44838535b621b999b1499b076efe564978",
       "source_files": {
         ".github/spec-dashboard.json": {
           "bytes": 109,
@@ -1267,6 +1292,11 @@
           "bytes": 1134,
           "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
           "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "camunda_mcp/skills/camunda-mcp-development/SKILL.md": {
+          "bytes": 6541,
+          "content": "---\nname: camunda-mcp-development\nskill_type: skill\ndescription: >-\n  Develop and verify camunda-mcp as a connector-owned package while preserving\n  its SDK Connector wiring, Camunda 7 and 8 authentication/TLS boundaries,\n  typed operation tools, packaged content, and source-backed spec delivery.\nlicense: MIT\ntags: [camunda-mcp, development, connector, test, gates, camunda]\ntier: repository\nmetadata:\n  author: Repository Maintainers\n  version: '0.1.0'\n---\n\n# Camunda MCP development\n\nUse this skill for changes to the `camunda-mcp` connector. The package owns the\nCamunda API calls, MCP tool registration, knowledge-graph mappings, connector\nsources, and packaged skills. The SDK transport, shared Pages renderer, and\nPipelines hooks remain external boundaries.\n\n## Repository map and runtime boundary\n\n- `camunda_mcp/__init__.py` creates the SDK `Connector` with the Camunda 7 and\n  Camunda 8 client classes, `get_client`, and `camunda_mcp.mcp_server` as the\n  tool module. Preserve this connector identity and its verbose tool prefixes.\n- `camunda_mcp/mcp_server.py` exposes `register_camunda_tools`, while\n  `camunda_mcp/mcp/mcp_camunda.py` owns the two connector-specific tools:\n  `camunda_deploy` and `camunda_ingest_processes`. The SDK supplies the\n  `camunda7_*` and `camunda8_*` one-operation tools; do not reintroduce a\n  condensed or duplicate action facade.\n- `camunda_mcp/api/api_client_camunda7.py` owns the Camunda 7 Engine REST\n  surface and `camunda_mcp/api/api_client_camunda8.py` owns the Zeebe, Operate,\n  and Tasklist REST surfaces. `camunda_mcp/api/api_client_base.py` centralizes\n  bounded requests, origin checks, redirects, response limits, and TLS setup.\n- `camunda_mcp/auth.py` reads `CAMUNDA_PLATFORM`, `CAMUNDA7_URL`,\n  `CAMUNDA7_TOKEN`, `CAMUNDA7_USERNAME`, `CAMUNDA7_PASSWORD`,\n  `CAMUNDA8_ZEEBE_REST_URL`, `CAMUNDA8_OPERATE_URL`,\n  `CAMUNDA8_TASKLIST_URL`, `CAMUNDA8_CLIENT_ID`, `CAMUNDA8_CLIENT_SECRET`,\n  and `CAMUNDA8_OAUTH_URL`, plus timeout/response limits and the named\n  `CAMUNDA_TLS_PROFILE` or `CAMUNDA_TLS_PROFILE_REF`. Preserve SDK setting\n  lookup, OAuth/basic/bearer behavior, and TLS verification; never embed a\n  credential or weaken verification.\n- `camunda_mcp/connector_sources.py`, `camunda_mcp/ontology/`, and\n  `camunda_mcp/skills/` are packaged connector content. `pyproject.toml`\n  includes these trees through package data; inspect a built wheel when\n  changing packaged content.\n- The declared console script is `camunda-mcp = agent_connector_sdk.cli:serve`\n  and the connector entry point is `camunda-mcp = camunda_mcp:connector`.\n  Do not invent a second server or agent entry point.\n\n## Rapid delivery: the 5-minute contract\n\n1. Read the owning `specs/` row, this repository's `AGENTS.md`, and the focused\n   tests before editing. Find the row with `git grep -n '<term>' -- specs` and\n   put its identifier in the commit trailer.\n2. Inspect the active SDK Connector, `mcp_server.py` registrar, typed operation\n   clients, auth/TLS path, and package-data declaration before changing runtime\n   or packaged content. Reuse those seams instead of creating a second client,\n   tool registry, or content loader.\n3. Make the smallest connector-owned change. Preserve tool names and payload\n   shapes, Camunda 7/8 REST paths, `CAMUNDA_*` settings, TLS verification,\n   ontology/source mappings, and the SDK Connector boundary unless the owning\n   requirement changes.\n4. Bind each delivered requirement to a focused test. Run the actual tests\n   through the narrow test-slot wrapper, then run the repository hooks normally;\n   never use `--no-verify`, skipped hooks, or a live credential-bearing test.\n5. When packaged content changes, advance the patch version and update\n   `uv.lock` together. Inspect the built wheel or sdist to confirm the skill is\n   included before claiming package publication.\n6. Generated `specs/*/status.json` files are written by `pipelines-hook\n   spec-status`; never hand-edit them. Treat Pages as separate proof: after an\n   exact main SHA has a successful Pages run, check `/spec-delivery/` over HTTPS\n   and record the observed snapshot revision.\n\n## Focused development commands\n\nFrom the repository root:\n\n```bash\nuv sync --locked\n\n/var/tmp/arbora-delivery/scale/run-narrow-test-slot.sh \\\n  uv run --locked --extra test pytest -q \\\n    tests/test_publication_workflow.py \\\n    tests/test_tool_surface.py \\\n    tests/test_http_security.py \\\n    tests/test_kg_ingest.py\n\nuvx pre-commit run --all-files\nuvx pre-commit run --all-files --hook-stage pre-push\n```\n\nThese checks cover the source-backed publication contract, the SDK-discovered\ntool surface, bounded outbound HTTP behavior, and typed KG ingestion. Do not\nreplace them with a live Camunda call or a credential-bearing test.\n\n## Pages and package publication\n\n`.github/workflows/pages.yml` is the sole Pages caller. It invokes\n`pages_pipeline.yml@main` with `content_source: docs`,\n`spec_dashboard_enabled: true`, and `.github/spec-dashboard.json`; its push\nfilters cover `docs/**`, `mkdocs.yml`, `README.md`, `specs/**`, the dashboard\nconfig, and the Pages workflow. The package workflow uses the shared\n`connector: true` and `render_connector: true` callers. Keep those callers and\ntheir permissions intact while changing connector content.\n\nAfter a merge, verify the exact main SHA in the successful Pages run and probe:\n\n```bash\ncurl -fsSI https://knuckles-team.github.io/camunda-mcp/\ncurl -fsSI https://knuckles-team.github.io/camunda-mcp/spec-delivery/\ncurl -fsSI https://knuckles-team.github.io/camunda-mcp/spec-delivery/index.html\ncurl -fsS https://knuckles-team.github.io/camunda-mcp/spec-delivery/snapshot.json\n```\n\nDo not claim a Pages or package result from local source inspection alone. Keep\ngenerated status changes with the Pipelines/status owner.\n\n## Change discipline\n\n- Keep Camunda API calls, MCP schemas, auth settings, TLS resolution, ontology\n  mappings, and ingestion declarations under this connector's boundary. SDK and\n  shared renderer behavior belong to their owner repositories.\n- Use injected `CAMUNDA_*` configuration only; never print or commit tokens,\n  client secrets, passwords, host-specific profiles, or generated runtime state.\n- Preserve Camunda request/auth/TLS semantics and the existing one-operation\n  tool mapping. For mutations, inspect current state and verify the durable\n  result through the governed procedure.\n- Generated status files and central promotion are owned by Pipelines; this\n  skill does not authorize editing `specs/*/status.json`.\n",
+          "sha256": "abb84ee6c269a6d91b9c363b1d72d492142d6ca2ef2b20871f91e43a0e1ecaba"
         }
       },
       "status_documents": {
@@ -1346,7 +1376,25 @@
         "PIPE-CONNSPEC-R110.1": true,
         "PIPE-CONNSPEC-R110.2": true,
         "PIPE-CONNSPEC-R110.3": true,
-        "PIPE-CONNSPEC-R110.4": false
+        "PIPE-CONNSPEC-R110.4": true
+      },
+      "candidate_sha": "933b2f44838535b621b999b1499b076efe564978",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R110.1",
+        "PIPE-CONNSPEC-R110.2",
+        "PIPE-CONNSPEC-R110.3"
+      ],
+      "skill_path": "camunda_mcp/skills/camunda-mcp-development/SKILL.md",
+      "publication": {
+        "source_sha": "933b2f44838535b621b999b1499b076efe564978",
+        "package_run": 40431609053,
+        "package_conclusion": "success",
+        "version": "2.6.6",
+        "wheel_sha256": "519ed5339c1db3a1e8d2f793e2547c0bacb47b08df2576ca11451c4e59a03b49",
+        "sdist_sha256": "a3b612e6b52bf8df34b08e79c7374044118773c0c2879364ce4e7f15782ebba5",
+        "skill_sha256": "abb84ee6c269a6d91b9c363b1d72d492142d6ca2ef2b20871f91e43a0e1ecaba",
+        "wheel_contains_skill": true,
+        "sdist_contains_skill": true
       }
     },
     "ciso-assistant-api": {
@@ -1708,7 +1756,8 @@
           "content_source": "docs",
           "spec_dashboard_config": ".github/spec-dashboard.json",
           "spec_dashboard_enabled": true
-        }
+        },
+        "historical_source_sha": "0a4b2eafb805284de3924b509183677fb5b1a9b2"
       },
       "precommit": {
         "hooks": [
@@ -1733,7 +1782,7 @@
         ]
       },
       "row": "PIPE-CONNSPEC-R117",
-      "sha": "0a4b2eafb805284de3924b509183677fb5b1a9b2",
+      "sha": "d6c0e954f2c21fcde036a5b5e98535927cf3f3d8",
       "source_files": {
         ".github/spec-dashboard.json": {
           "bytes": 109,
@@ -1754,6 +1803,11 @@
           "bytes": 1134,
           "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
           "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "egeria_mcp/skills/egeria-mcp-development/SKILL.md": {
+          "bytes": 6001,
+          "content": "---\nname: egeria-mcp-development\nskill_type: skill\ndomain: development\ndescription: >-\n  Develop, test, gate, and release the egeria-mcp connector while preserving\n  its raw OMVS client, metadata and lineage boundary, write policy, packaged\n  resources, and shared publication contracts.\nlicense: MIT\ntags: [egeria, development, connector, mcp, lineage, glossary, governance]\ntier: repository\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# Egeria MCP Development\n\nUse this skill for changes inside `egeria-mcp`. The owning delivery row is\n`PIPE-CONNSPEC-R117.4`; read it with `AGENTS.md` and the focused tests before\nchanging a connector surface.\n\n## Repository and runtime map\n\n- `egeria_mcp/__init__.py` is the SDK connector entry point. It binds the\n  `Connector` to `EgeriaApi`, `get_client`, `egeria_mcp.mcp_server`, and the\n  connector instructions.\n- `egeria_mcp/api_client.py` is the public `EgeriaApi`/`Api` facade, while\n  `egeria_mcp/api/api_client_egeria.py` owns the raw `httpx` OMVS client,\n  normalized list methods, typed catalog searches, and metadata writes. Keep\n  the Python 3.14-safe no-`pyegeria` runtime boundary intact.\n- `egeria_mcp/auth.py` resolves `EGERIA_PLATFORM_URL`, `EGERIA_VIEW_SERVER`,\n  `EGERIA_USER`, `EGERIA_USER_PASSWORD`, and the shared\n  `EGERIA_TLS_PROFILE`, then passes the explicit `EGERIA_ENABLE_WRITE` policy\n  to the client.\n- `egeria_mcp/mcp/mcp_egeria.py` registers the lineage, glossary, catalog,\n  governance, actor, metadata, harvest, reconciliation, audit, and KG-ingest\n  tools, including `egeria_lineage_scan`, `egeria_governed_route`,\n  `egeria_harvest`, `egeria_reconcile`, `egeria_audit`,\n  `egeria_ingest_catalog`, and the catalog/action tools. `EGERIA_ENABLE_WRITE`\n  gates harvest, classification, reconciliation, and other mutating paths.\n- `egeria_mcp/connector_sources.py` declares the live `connector://resources`\n  sources and their `GlossaryTerm`/`GovernanceRule` mappings. `egeria_mcp/ontology/`\n  carries the packaged Egeria ontology contribution.\n- `egeria_mcp/harvest/` contains the config-driven bottom-up estate harvest;\n  `harvest/topology.py` reads an optional `EGERIA_HARVEST_TOPOLOGY` override,\n  and `harvest/runner.py` owns layer selection and KG-ingest policy.\n- `egeria_mcp/skills/**`, `prompts/**`, `ontology/**`, and `connectors/**` are\n  package resources. The existing `pyproject.toml` package-data rule must keep\n  them in wheels and sdists.\n\n## Federation and safety boundary\n\nEgeria is the metadata, governance, and lineage system of record. The\nepistemic-graph KG consumes Egeria records; it does not become the lineage\nstore, and Egeria does not become the orchestration engine. Preserve\n`externalToolId`/`domain=\"egeria\"` identity on Egeria-sourced KG records.\n\nKeep credentials and tenant data in injected environment secrets. TLS uses the\nshared verified transport profile; never disable certificate verification or add\nan insecure TLS escape hatch or a credential/endpoint dump. Keep write\noperations disabled by default and require\n`EGERIA_ENABLE_WRITE=true` for intentional writes. Do not reintroduce a\n`pyegeria` runtime dependency: the committed client uses raw `httpx` against\nthe Apache Egeria 6.0 OMAG View Server (OMVS).\n\n## Rapid delivery: the 5-minute contract\n\n1. Read the owning spec row, this skill, `AGENTS.md`, and the directly bound\n   tests before editing a connector surface.\n2. Trace the changed behavior through the SDK `Connector`, `get_client`, raw\n   OMVS facade, MCP registrar, source declarations, ontology, and package-data\n   boundary. Reuse existing API methods and action dispatch; do not create a\n   second connector or orchestration path.\n3. Make the smallest connector-owned change. Preserve OMVS paths and response\n   normalization, MCP tool/action names, KG node identity, source identifiers,\n   TLS verification, and the `EGERIA_ENABLE_WRITE` gate.\n4. Run the directly bound mock/focused tests with the locked environment, then\n   run the normal repository hooks. Never bypass a failing hook or use a live\n   Egeria tenant in a local test.\n5. When package code or resources change, inspect the wheel and sdist for the\n   intended `egeria_mcp/skills/**`, prompt, ontology, and connector content.\n   Change a version or `uv.lock` only through the normal release process and\n   only when a real release or dependency input changed.\n6. Treat generated status and Pages as separate evidence. Pipelines owns\n   `specs/**/status.json`; do not hand-edit status or promote a rollup from a\n   connector change. After an exact main revision publishes, verify the\n   successful Pages revision and public `spec-delivery/` snapshot before making\n   a publication claim.\n\n## Focused validation\n\nFor API or MCP changes, use mock HTTP responses and exercise the smallest\nrelevant test file. Keep read paths separate from write-gated harvest,\nclassification, lineage, and reconciliation paths. For a skill or package-data\nchange, check frontmatter, the required delivery heading, source-backed terms,\nand packaged resource inclusion without importing a live Egeria tenant.\n\nFrom the repository root, the normal commands are:\n\n```bash\nuv sync --locked\nuv run --locked --extra test pytest -q tests/<focused-test>.py\nuvx pre-commit run --all-files\n```\n\n## Publication and Pages\n\n`.github/workflows/pipeline.yml` delegates package publication to\n`Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main` with\n`connector: true`, then invokes\n`Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main` with\n`render_connector: true`. `.github/workflows/pages.yml` delegates docs and the\nspec dashboard to `pages_pipeline.yml@main` with the checked-in dashboard\nconfiguration. Keep the existing triggers and shared caller contracts intact.\n\nNever place credentials, tenant data, generated release artifacts, or bypass\ninstructions in a skill. Keep a change focused on `PIPE-CONNSPEC-R117.4` and\ncite that row in the commit trailer when this development skill changes.\n",
+          "sha256": "8f752af999e787965b80a9a3bd42e4248795664d2c6b7942da0cae919429dbbd"
         }
       },
       "status_documents": {
@@ -1839,7 +1893,25 @@
         "PIPE-CONNSPEC-R117.1": true,
         "PIPE-CONNSPEC-R117.2": true,
         "PIPE-CONNSPEC-R117.3": true,
-        "PIPE-CONNSPEC-R117.4": false
+        "PIPE-CONNSPEC-R117.4": true
+      },
+      "candidate_sha": "d6c0e954f2c21fcde036a5b5e98535927cf3f3d8",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R117.1",
+        "PIPE-CONNSPEC-R117.2",
+        "PIPE-CONNSPEC-R117.3"
+      ],
+      "skill_path": "egeria_mcp/skills/egeria-mcp-development/SKILL.md",
+      "publication": {
+        "source_sha": "d6c0e954f2c21fcde036a5b5e98535927cf3f3d8",
+        "package_run": 40432274511,
+        "package_conclusion": "success",
+        "version": "2.3.5",
+        "wheel_sha256": "7eb94348b0537fe577f5fc5e69b19b9a326234ed9e39f9e1ec82a5f8fc3f1568",
+        "sdist_sha256": "390538705d651763e3cde80415eff2e451730aa4edf0360fc87e58fe7adfbaa1",
+        "skill_sha256": "8f752af999e787965b80a9a3bd42e4248795664d2c6b7942da0cae919429dbbd",
+        "wheel_contains_skill": true,
+        "sdist_contains_skill": true
       }
     }
   },
@@ -1854,6 +1926,6 @@
     ".1": 9,
     ".2": 6,
     ".3": 4,
-    ".4": 1
+    ".4": 4
   }
 }
