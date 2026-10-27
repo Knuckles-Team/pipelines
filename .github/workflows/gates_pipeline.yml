@@ -69,10 +69,11 @@ on:
         default: ''
       runner:
         description: >-
-          JSON runner label or label list for runs-on. The reserved value
-          "arbora-ci-trusted" opts this gate into the dedicated trusted group
-          for same-repository pull requests and default-branch pushes; fork
-          pull requests always fall back to ubuntu-latest.
+          JSON runner label or label list for runs-on. Custom runners are
+          accepted only for same-repository pull requests and default-branch
+          pushes; every other event, including fork pull requests, is forced
+          to ubuntu-latest. The reserved value "arbora-ci-trusted" selects
+          the dedicated group only on those trusted events.
         required: false
         type: string
         default: '"ubuntu-latest"'
@@ -139,21 +140,33 @@ permissions:
 jobs:
   gates:
     name: gates
-    # Keep the opt-in path direct so it creates exactly one required check. The
-    # reserved value is private-runner eligible only for default-branch pushes
-    # and same-repository pull requests; fork PRs always use hosted GitHub.
+    # Keep the opt-in path direct so it creates exactly one required check. Do
+    # not pass an arbitrary caller runner through on an untrusted event: a fork
+    # can edit its caller workflow and otherwise submit the trusted group as
+    # JSON. Custom runners remain compatible on the two trusted event shapes.
     runs-on: >-
       ${{ fromJSON(
-        inputs.runner == '"arbora-ci-trusted"' &&
         (
-          (github.event_name == 'push' &&
-           github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
-          (github.event_name == 'pull_request' &&
-           github.event.pull_request.head.repo.full_name == github.repository)
-        ) &&
-        '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}' ||
-        inputs.runner == '"arbora-ci-trusted"' && '"ubuntu-latest"' ||
-        inputs.runner
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner == '"arbora-ci-trusted"' &&
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+        ) ||
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner != '"arbora-ci-trusted"' &&
+          inputs.runner
+        ) ||
+        '"ubuntu-latest"'
       ) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
