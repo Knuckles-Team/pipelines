@@ -1006,11 +1006,11 @@
         },
         "hosted_run": {
           "conclusion": "success",
-          "createdAt": "2026-10-24T12:07:54Z",
-          "databaseId": 40092664741,
-          "headSha": "7d9b6cd0d5438d22c17e7c919cd1b3044cad6717",
+          "createdAt": "2026-10-27T00:13:27Z",
+          "databaseId": 40425009250,
+          "headSha": "0ab6f0e84bcf1060e2ed5c2c011ca1f2e33bd973",
           "status": "completed",
-          "url": "https://github.com/Knuckles-Team/caddy-mcp/actions/runs/40092664741",
+          "url": "https://github.com/Knuckles-Team/caddy-mcp/actions/runs/40425009250",
           "workflowName": "Deploy GitHub Pages"
         },
         "http": {
@@ -1019,7 +1019,7 @@
           "status": 200,
           "url": "https://knuckles-team.github.io/caddy-mcp/spec-delivery/"
         },
-        "known_pages_run": "40092664741",
+        "known_pages_run": "40425009250",
         "required_paths": true,
         "with": {
           "content_source": "docs",
@@ -1050,7 +1050,7 @@
         ]
       },
       "row": "PIPE-CONNSPEC-R109",
-      "sha": "7d9b6cd0d5438d22c17e7c919cd1b3044cad6717",
+      "sha": "0ab6f0e84bcf1060e2ed5c2c011ca1f2e33bd973",
       "source_files": {
         ".github/spec-dashboard.json": {
           "bytes": 109,
@@ -1071,6 +1071,11 @@
           "bytes": 1134,
           "content": "# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a\n# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file\n# check, the codespell defaults and the gate set. A change to a shared check reaches every\n# connector with no edit here. Per-repo options go in pyproject.toml tables only.\ndefault_install_hook_types: [pre-commit, pre-push]\ndefault_stages: [pre-commit]\nrepos:\n- repo: https://github.com/pre-commit/pre-commit-hooks\n  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0\n  hooks:\n  - id: trailing-whitespace\n  - id: end-of-file-fixer\n  - id: check-merge-conflict\n  - id: check-yaml\n    args: [--unsafe]\n  - id: check-toml\n  - id: check-json\n  - id: detect-private-key\n- repo: https://github.com/astral-sh/ruff-pre-commit\n  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0\n  hooks:\n  - id: ruff-check\n  - id: ruff-format\n- repo: https://github.com/Knuckles-Team/pipelines\n  rev: main\n  hooks:\n  - id: connector-standard\n  - id: secrets\n  - id: spec\n    stages: [pre-push]\n  - id: tests-fast\n    stages: [pre-push]\n  - id: dependency-readiness\n",
           "sha256": "dc27d305f79459d31b3038c2102f477f6161f26c1a9dcbb6839061e7094536ed"
+        },
+        "caddy_mcp/skills/caddy-mcp-development/SKILL.md": {
+          "bytes": 5370,
+          "content": "---\nname: caddy-mcp-development\nskill_type: skill\ndescription: >-\n  Develop and verify caddy-mcp as a connector-owned package while preserving its\n  SDK Connector wiring, Caddy Admin API authentication and TLS boundary, action\n  tools, packaged content, and source-backed spec-delivery publication.\n---\n\n# Caddy MCP Development\n\nUse this skill for changes to the `caddy-mcp` connector. The package owns Caddy\nAdmin API calls, MCP action mappings, connector content, and its packaged skills;\nthe SDK transport, shared Pages renderer, and Pipelines hooks remain external\nboundaries.\n\n## Repository map and runtime boundary\n\n- `caddy_mcp/__init__.py` creates the SDK `Connector` with `Api`, `get_client`,\n  and `caddy_mcp.mcp.mcp_config` as the tool module. It serves `stdio` and\n  `streamable-http`; preserve this connector identity and transport declaration.\n- `caddy_mcp/mcp/mcp_config.py` owns the action-routed tools for Caddy config,\n  PKI, reverse-proxy upstreams, debug endpoints, and topology ingestion. The\n  API methods they call live in `caddy_mcp/api/api_client_config.py` and inherit\n  request behavior from `caddy_mcp/api/api_client_base.py`.\n- `caddy_mcp/auth.py` reads `CADDY_URL` (falling back to\n  `CADDY_MCP_BASE_URL`), bearer `CADDY_TOKEN`, optional\n  `CADDY_MCP_USERNAME`/`CADDY_MCP_PASSWORD`, and the named\n  `CADDY_TLS_PROFILE`/`CADDY_TLS_PROFILE_REF`. Preserve SDK setting lookup and\n  TLS profile resolution; never embed credentials or disable verification.\n- `caddy_mcp/ontology/`, `caddy_mcp/prompts/`, `caddy_mcp/connectors/`, and\n  `caddy_mcp/skills/` are packaged connector content. `pyproject.toml` already\n  includes each tree through `caddy_mcp` package data; inspect a built wheel when\n  changing content.\n- The only declared console script is `caddy-mcp = agent_connector_sdk.cli:serve`.\n  Do not invent a second server or claim a `caddy-agent` entry point.\n\n## Rapid delivery: the 5-minute contract\n\n1. Read the owning `specs/` row, this repository's `AGENTS.md`, and the focused\n   tests before editing.\n2. Inspect the active SDK Connector, action map, API client, auth/TLS path, and\n   package-data declaration before changing runtime or packaged content.\n3. Prefer the smallest connector-owned change. Preserve action names and payload\n   schemas, Caddy API paths, `CADDY_*` settings, TLS verification, ontology\n   mappings, and the SDK Connector boundary unless the owning requirement changes.\n4. Run the focused publication/runtime tests through the narrow test-slot wrapper;\n   run the repository hooks normally without `--no-verify` or skipped gates.\n5. When packaged content changes, advance the patch version and update `uv.lock`\n   together; inspect the wheel for the skill and other declared resources.\n6. Treat Pages as separate proof: after the exact main SHA has a successful Pages\n   run, check `/spec-delivery/`, its `index.html`, and `snapshot.json` over HTTPS\n   and record the snapshot revision.\n\n## Focused development commands\n\nFrom the repository root:\n\n```bash\nuv sync --locked\n\n/var/tmp/arbora-delivery/scale/run-narrow-test-slot.sh \\\n  uv run --locked --extra test pytest -q \\\n    tests/test_publication_workflow.py \\\n    tests/test_init_dynamics.py \\\n    tests/test_mcp_server.py \\\n    tests/test_api_client.py \\\n    tests/test_sdk_centralization.py\n\nuvx pre-commit run --all-files\nuvx pre-commit run --all-files --hook-stage pre-push\n```\n\nThese checks cover the shared Pages/release contract, lazy runtime imports,\naction dispatch, API client behavior, and SDK centralization. Do not replace them\nwith a live Caddy call or a credential-bearing test.\n\n## Pages and package publication\n\n`.github/workflows/pages.yml` is the sole Pages caller. It invokes\n`pages_pipeline.yml@main` with `content_source: docs`,\n`spec_dashboard_enabled: true`, and `.github/spec-dashboard.json`; keep its\nmanual dispatch and docs/spec/config/workflow path filters. The package workflow\nuses the shared `connector: true` and `render_connector: true` callers. Preserve\nthe existing runtime, auth, and container environment contract while inspecting\ngenerated output before making publication claims.\n\nAfter a merge, verify the exact main SHA in the successful Pages run and probe:\n\n```bash\ncurl -fsSI https://knuckles-team.github.io/caddy-mcp/\ncurl -fsSI https://knuckles-team.github.io/caddy-mcp/spec-delivery/\ncurl -fsSI https://knuckles-team.github.io/caddy-mcp/spec-delivery/index.html\ncurl -fsS https://knuckles-team.github.io/caddy-mcp/spec-delivery/snapshot.json\n```\n\nDo not claim a Pages or package result from local source inspection alone. Keep\ngenerated status changes with the Pipelines/status owner.\n\n## Change discipline\n\n- Keep Caddy API calls, MCP schemas, auth settings, ontology mappings, and\n  ingestion declarations under the connector's existing boundary. SDK and shared\n  renderer behavior belong to their owner repositories.\n- Use injected `CADDY_*` configuration only; never print or commit token/password\n  values, host-specific profiles, or generated runtime state.\n- Preserve the Caddy Admin API's request/auth/TLS semantics and the existing\n  action-to-method mappings. For mutations, inspect current state and verify the\n  durable result through the governed procedure.\n- Generated status files and central promotion are owned by Pipelines; this skill\n  does not authorize editing `specs/*/status.json`.\n",
+          "sha256": "ec5f595089bceb2bd822bdc90f7ad44f816e3d9515fd910ed5c9ddec4af813d8"
         }
       },
       "status_documents": {
@@ -1179,8 +1184,9 @@
         "PIPE-CONNSPEC-R109.1": true,
         "PIPE-CONNSPEC-R109.2": true,
         "PIPE-CONNSPEC-R109.3": true,
-        "PIPE-CONNSPEC-R109.4": false
-      }
+        "PIPE-CONNSPEC-R109.4": true
+      },
+      "skill_path": "caddy_mcp/skills/caddy-mcp-development/SKILL.md"
     },
     "camunda-mcp": {
       "pages": {
@@ -1841,13 +1847,13 @@
     ".1": "Consumer specs/*/status.json are readable through existing scripts.spec_dashboard_sources.read_records.",
     ".2": "Consumer pre-commit configs contain the provider canonical aggregate hooks and validate-config succeeds.",
     ".3": "Consumer Pages caller/config, exact-source successful Pages publisher, and live /spec-delivery/ HTTP 200 all agree.",
-    ".4": "No development-skill evidence was found; no .4 rows are bound."
+    ".4": "Consumer development-skill evidence is source-backed; rows without evidence remain unbound."
   },
   "schema_version": 1,
   "strict_leaf_counts": {
     ".1": 9,
     ".2": 6,
     ".3": 4,
-    ".4": 0
+    ".4": 1
   }
 }
