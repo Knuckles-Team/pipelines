@@ -767,6 +767,7 @@
       "title": "Python release publishes the wheel and the source distribution together",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "05f3ffe79a66",
         "5433baf91995",
         "8d87cddcb719",
         "c5cad0580cf9"
@@ -824,8 +825,11 @@
       "title": "Connector pull request workflow",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "202653782839",
+        "242bc1dcb02b",
         "3d0455152b96",
-        "8f223cc5bbbd"
+        "8f223cc5bbbd",
+        "9e908499d247"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:19",
@@ -881,6 +885,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "0f2baf0bc01f",
+        "242bc1dcb02b",
         "cf912c89cd2f"
       ],
       "verified_by": [

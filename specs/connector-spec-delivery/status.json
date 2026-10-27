@@ -412,8 +412,8 @@
         "tests/hooks/test_spec_landing_attribution.py:18",
         "tests/hooks/test_spec_landing_attribution.py:46",
         "tests/hooks/test_spec_landing_attribution.py:56",
-        "tests/hooks/test_spec_repository_identity.py:23",
-        "tests/hooks/test_spec_repository_identity.py:31"
+        "tests/hooks/test_spec_landing_attribution.py:66",
+        "tests/hooks/test_spec_repository_identity.py:23"
       ]
     },
     {
@@ -480,7 +480,8 @@
       "title": "Every repository ships one-command agent setup",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "86a085a2865d"
+        "86a085a2865d",
+        "b6a2fbb27499"
       ],
       "verified_by": [
         "tests/hooks/test_agent_contract.py:20",
@@ -4749,7 +4750,9 @@
       "id": "PIPE-CONNSPEC-R009",
       "title": "Requirement state read from the engine (rollup)",
       "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "landed_in": [
+        "b6d61da291ad"
+      ],
       "verified_by": [],
       "rollup_of": [
         "PIPE-CONNSPEC-R009.1",
@@ -4775,6 +4778,7 @@
       "title": "Binding suggester ranks existing tests for unverified rows",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "b6d61da291ad",
         "c9681d3a4727"
       ],
       "verified_by": [
@@ -4786,7 +4790,8 @@
       "title": "Explicit retired standard-ID aliases",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "026b93b29c01"
+        "026b93b29c01",
+        "b6d61da291ad"
       ],
       "verified_by": [
         "tests/hooks/test_spec_standard_aliases.py:14"

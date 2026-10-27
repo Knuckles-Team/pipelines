@@ -61,3 +61,35 @@ def test_multiple_trailers_keep_ranges_and_shorthand(repo: Repo) -> None:
     assert mentioned_tokens(landing_commits(repo.root, "HEAD")) == {
         rid: {sha} for rid in ("TEST-R001", "TEST-R002", "TEST-R003", "TEST-R004.1", "TEST-R004.2")
     }
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_github_squash_message_keeps_source_spec_trailers(repo: Repo) -> None:
+    """A squash commit's embedded source trailers remain landing evidence."""
+    from pipelines_hooks.specs.git_log import landing_commits
+    from pipelines_hooks.specs.records import mentioned_tokens
+
+    message = """feat: admitted child lineage (#370)
+
+* feat: admitted child lineage
+
+Spec: TEST-R001
+Co-Authored-By: Codex <codex@example.invalid>
+
+* fix: refuse unbound lineage children
+
+Spec: TEST-R001
+Co-Authored-By: Codex <codex@example.invalid>
+
+* chore(spec): refresh generated delivery evidence
+
+Spec: none (generated status refresh)
+Co-Authored-By: Codex <codex@example.invalid>
+
+---------
+
+Co-authored-by: Codex <codex@example.invalid>
+"""
+    sha = repo.commit({"pkg/lineage.py": "lineage = True\n"}, message)
+
+    assert mentioned_tokens(landing_commits(repo.root, "HEAD")) == {"TEST-R001": {sha}}
