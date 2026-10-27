@@ -3,6 +3,7 @@
     "107": {
       "PIPE-CONNSPEC-R107": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R107",
         "landed_in": [],
         "rollup_of": [
           "PIPE-CONNSPEC-R107.1",
@@ -15,6 +16,7 @@
       },
       "PIPE-CONNSPEC-R107.1": {
         "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R107.1",
         "landed_in": [
           "a75eb4ea62fd"
         ],
@@ -25,6 +27,7 @@
       },
       "PIPE-CONNSPEC-R107.2": {
         "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R107.2",
         "landed_in": [
           "a75eb4ea62fd"
         ],
@@ -35,20 +38,482 @@
       },
       "PIPE-CONNSPEC-R107.3": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R107.3",
         "landed_in": [],
         "title": "`audio-transcriber` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
         "verified_by": []
       },
       "PIPE-CONNSPEC-R107.4": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R107.4",
         "landed_in": [],
         "title": "`audio-transcriber` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "111": {
+      "PIPE-CONNSPEC-R111": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R111",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R111.1",
+          "PIPE-CONNSPEC-R111.2",
+          "PIPE-CONNSPEC-R111.3",
+          "PIPE-CONNSPEC-R111.4"
+        ],
+        "title": "`ciso-assistant-api` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R111.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R111.1",
+        "landed_in": [
+          "a75eb4ea62fd"
+        ],
+        "title": "`ciso-assistant-api` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_rollout.py:55"
+        ]
+      },
+      "PIPE-CONNSPEC-R111.2": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R111.2",
+        "landed_in": [],
+        "title": "`ciso-assistant-api` has the three spec hooks in its pre-commit config",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R111.3": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R111.3",
+        "landed_in": [],
+        "title": "`ciso-assistant-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R111.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R111.4",
+        "landed_in": [],
+        "title": "`ciso-assistant-api` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "118": {
+      "PIPE-CONNSPEC-R118": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R118",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R118.1",
+          "PIPE-CONNSPEC-R118.2",
+          "PIPE-CONNSPEC-R118.3",
+          "PIPE-CONNSPEC-R118.4"
+        ],
+        "title": "`emerald-exchange` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R118.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R118.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`emerald-exchange` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:49"
+        ]
+      },
+      "PIPE-CONNSPEC-R118.2": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R118.2",
+        "landed_in": [],
+        "title": "`emerald-exchange` has the three spec hooks in its pre-commit config",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R118.3": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R118.3",
+        "landed_in": [],
+        "title": "`emerald-exchange` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R118.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R118.4",
+        "landed_in": [],
+        "title": "`emerald-exchange` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "119": {
+      "PIPE-CONNSPEC-R119": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R119",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R119.1",
+          "PIPE-CONNSPEC-R119.2",
+          "PIPE-CONNSPEC-R119.3",
+          "PIPE-CONNSPEC-R119.4"
+        ],
+        "title": "`erpnext-agent` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R119.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R119.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`erpnext-agent` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:50"
+        ]
+      },
+      "PIPE-CONNSPEC-R119.2": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R119.2",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`erpnext-agent` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:94"
+        ]
+      },
+      "PIPE-CONNSPEC-R119.3": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R119.3",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`erpnext-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:147"
+        ]
+      },
+      "PIPE-CONNSPEC-R119.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R119.4",
+        "landed_in": [],
+        "title": "`erpnext-agent` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "120": {
+      "PIPE-CONNSPEC-R120": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R120",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R120.1",
+          "PIPE-CONNSPEC-R120.2",
+          "PIPE-CONNSPEC-R120.3",
+          "PIPE-CONNSPEC-R120.4"
+        ],
+        "title": "`fan-manager` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R120.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R120.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`fan-manager` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:51"
+        ]
+      },
+      "PIPE-CONNSPEC-R120.2": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R120.2",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`fan-manager` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:95"
+        ]
+      },
+      "PIPE-CONNSPEC-R120.3": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R120.3",
+        "landed_in": [],
+        "title": "`fan-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R120.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R120.4",
+        "landed_in": [],
+        "title": "`fan-manager` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "122": {
+      "PIPE-CONNSPEC-R122": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R122",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R122.1",
+          "PIPE-CONNSPEC-R122.2",
+          "PIPE-CONNSPEC-R122.3",
+          "PIPE-CONNSPEC-R122.4"
+        ],
+        "title": "`freshrss-agent` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R122.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R122.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`freshrss-agent` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:53"
+        ]
+      },
+      "PIPE-CONNSPEC-R122.2": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R122.2",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`freshrss-agent` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:97"
+        ]
+      },
+      "PIPE-CONNSPEC-R122.3": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R122.3",
+        "landed_in": [],
+        "title": "`freshrss-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R122.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R122.4",
+        "landed_in": [],
+        "title": "`freshrss-agent` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "128": {
+      "PIPE-CONNSPEC-R128": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R128",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R128.1",
+          "PIPE-CONNSPEC-R128.2",
+          "PIPE-CONNSPEC-R128.3",
+          "PIPE-CONNSPEC-R128.4"
+        ],
+        "title": "`home-assistant-agent` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R128.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R128.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`home-assistant-agent` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:59"
+        ]
+      },
+      "PIPE-CONNSPEC-R128.2": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R128.2",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`home-assistant-agent` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:101"
+        ]
+      },
+      "PIPE-CONNSPEC-R128.3": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R128.3",
+        "landed_in": [],
+        "title": "`home-assistant-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R128.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R128.4",
+        "landed_in": [],
+        "title": "`home-assistant-agent` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "130": {
+      "PIPE-CONNSPEC-R130": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R130",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R130.1",
+          "PIPE-CONNSPEC-R130.2",
+          "PIPE-CONNSPEC-R130.3",
+          "PIPE-CONNSPEC-R130.4"
+        ],
+        "title": "`jena-mcp` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R130.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R130.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`jena-mcp` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:61"
+        ]
+      },
+      "PIPE-CONNSPEC-R130.2": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R130.2",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`jena-mcp` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:103"
+        ]
+      },
+      "PIPE-CONNSPEC-R130.3": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R130.3",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`jena-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:148"
+        ]
+      },
+      "PIPE-CONNSPEC-R130.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R130.4",
+        "landed_in": [],
+        "title": "`jena-mcp` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "131": {
+      "PIPE-CONNSPEC-R131": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R131",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R131.1",
+          "PIPE-CONNSPEC-R131.2",
+          "PIPE-CONNSPEC-R131.3",
+          "PIPE-CONNSPEC-R131.4"
+        ],
+        "title": "`kafka-mcp` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R131.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R131.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`kafka-mcp` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:62"
+        ]
+      },
+      "PIPE-CONNSPEC-R131.2": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R131.2",
+        "landed_in": [],
+        "title": "`kafka-mcp` has the three spec hooks in its pre-commit config",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R131.3": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R131.3",
+        "landed_in": [],
+        "title": "`kafka-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R131.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R131.4",
+        "landed_in": [],
+        "title": "`kafka-mcp` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "132": {
+      "PIPE-CONNSPEC-R132": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R132",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R132.1",
+          "PIPE-CONNSPEC-R132.2",
+          "PIPE-CONNSPEC-R132.3",
+          "PIPE-CONNSPEC-R132.4"
+        ],
+        "title": "`keycloak-agent` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R132.1": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R132.1",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`keycloak-agent` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:63"
+        ]
+      },
+      "PIPE-CONNSPEC-R132.2": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R132.2",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`keycloak-agent` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:104"
+        ]
+      },
+      "PIPE-CONNSPEC-R132.3": {
+        "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R132.3",
+        "landed_in": [
+          "a56aeaef8e7f"
+        ],
+        "title": "`keycloak-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": [
+          "tests/test_connector_consumer_r118_137.py:149"
+        ]
+      },
+      "PIPE-CONNSPEC-R132.4": {
+        "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R132.4",
+        "landed_in": [],
+        "title": "`keycloak-agent` has the rapid-delivery section in its development skill",
         "verified_by": []
       }
     },
     "155": {
       "PIPE-CONNSPEC-R155": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R155",
         "landed_in": [],
         "rollup_of": [
           "PIPE-CONNSPEC-R155.1",
@@ -61,6 +526,7 @@
       },
       "PIPE-CONNSPEC-R155.1": {
         "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R155.1",
         "landed_in": [
           "ed11593ea8c8"
         ],
@@ -71,18 +537,21 @@
       },
       "PIPE-CONNSPEC-R155.2": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R155.2",
         "landed_in": [],
         "title": "`pulselink-mcp` has the three spec hooks in its pre-commit config",
         "verified_by": []
       },
       "PIPE-CONNSPEC-R155.3": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R155.3",
         "landed_in": [],
         "title": "`pulselink-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
         "verified_by": []
       },
       "PIPE-CONNSPEC-R155.4": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R155.4",
         "landed_in": [],
         "title": "`pulselink-mcp` has the rapid-delivery section in its development skill",
         "verified_by": []
@@ -91,6 +560,7 @@
     "156": {
       "PIPE-CONNSPEC-R156": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R156",
         "landed_in": [],
         "rollup_of": [
           "PIPE-CONNSPEC-R156.1",
@@ -103,6 +573,7 @@
       },
       "PIPE-CONNSPEC-R156.1": {
         "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R156.1",
         "landed_in": [
           "ed11593ea8c8"
         ],
@@ -113,6 +584,7 @@
       },
       "PIPE-CONNSPEC-R156.2": {
         "delivery_state": "VERIFIED",
+        "id": "PIPE-CONNSPEC-R156.2",
         "landed_in": [
           "ed11593ea8c8"
         ],
@@ -123,19 +595,21 @@
       },
       "PIPE-CONNSPEC-R156.3": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R156.3",
         "landed_in": [],
         "title": "`qbittorrent-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
         "verified_by": []
       },
       "PIPE-CONNSPEC-R156.4": {
         "delivery_state": "SPECIFIED",
+        "id": "PIPE-CONNSPEC-R156.4",
         "landed_in": [],
         "title": "`qbittorrent-agent` has the rapid-delivery section in its development skill",
         "verified_by": []
       }
     }
   },
-  "observed_utc": "2026-10-27T10:01:45.684005+00:00",
+  "observed_utc": "2026-10-27T04:40:00Z",
   "provider": {
     "canonical_template": {
       "path": ".github/workflows/pages_pipeline.yml",
@@ -161,6 +635,11 @@
     "already_qualified_dot_one_recounted": false,
     "already_qualified_dot_two_recounted": false,
     "held_rows": [
+      "PIPE-CONNSPEC-R118.3",
+      "PIPE-CONNSPEC-R118.4",
+      "PIPE-CONNSPEC-R122.3",
+      "PIPE-CONNSPEC-R131.3",
+      "PIPE-CONNSPEC-R131.4",
       "PIPE-CONNSPEC-R155.3",
       "PIPE-CONNSPEC-R156.3",
       "PIPE-CONNSPEC-R156.4"
@@ -171,14 +650,29 @@
       "PIPE-CONNSPEC-R155.1"
     ],
     "new_pages_rows": [
-      "PIPE-CONNSPEC-R107.3"
+      "PIPE-CONNSPEC-R107.3",
+      "PIPE-CONNSPEC-R111.3",
+      "PIPE-CONNSPEC-R120.3",
+      "PIPE-CONNSPEC-R128.3"
     ],
     "new_skill_rows": [
       "PIPE-CONNSPEC-R107.4",
+      "PIPE-CONNSPEC-R111.4",
+      "PIPE-CONNSPEC-R119.4",
+      "PIPE-CONNSPEC-R120.4",
+      "PIPE-CONNSPEC-R122.4",
+      "PIPE-CONNSPEC-R128.4",
+      "PIPE-CONNSPEC-R130.4",
+      "PIPE-CONNSPEC-R132.4",
       "PIPE-CONNSPEC-R155.4"
     ],
     "promoted_rollups": [
-      "PIPE-CONNSPEC-R107"
+      "PIPE-CONNSPEC-R107",
+      "PIPE-CONNSPEC-R119",
+      "PIPE-CONNSPEC-R120",
+      "PIPE-CONNSPEC-R128",
+      "PIPE-CONNSPEC-R130",
+      "PIPE-CONNSPEC-R132"
     ],
     "rollups_promoted": true,
     "source_release_success_claimed": false
@@ -755,6 +1249,1896 @@
         ]
       }
     },
+    "ciso-assistant-api": {
+      "candidate_sha": "6ff3f1eee2b772df793cc30f29855c31470d5730",
+      "historical_verified_leaves": [],
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "config_path": ".github/spec-dashboard.json",
+        "expected_pages_run": 40449900699,
+        "hosted_run": {
+          "actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "artifacts_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/actions/runs/40449900699/artifacts",
+          "cancel_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/actions/runs/40449900699/cancel",
+          "check_suite_id": 109632856091,
+          "check_suite_node_id": "CS_kwDOS9XcZ88AAAAZhqCgGw",
+          "check_suite_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/check-suites/109632856091",
+          "conclusion": "success",
+          "created_at": "2026-10-27T04:28:12Z",
+          "display_title": "fix: publish CISO runtime skill",
+          "event": "push",
+          "head_branch": "main",
+          "head_commit": {
+            "author": {
+              "email": "knucklessg1@gmail.com",
+              "name": "Audel Rouhi"
+            },
+            "committer": {
+              "email": "noreply@github.com",
+              "name": "GitHub"
+            },
+            "id": "6ff3f1eee2b772df793cc30f29855c31470d5730",
+            "message": "fix: publish CISO runtime skill\n\nMerge reviewed public-first Docker pin repair after all required checks passed.",
+            "timestamp": "2026-10-27T04:28:09Z",
+            "tree_id": "2b3ae37334fdea3323b154b171204eaa7af654a5"
+          },
+          "head_repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/deployments",
+            "description": "CISO Assistant GRC API + MCP Server + A2A Agent \u2014 100% API coverage by codegen",
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/forks",
+            "full_name": "Knuckles-Team/ciso-assistant-api",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/hooks",
+            "html_url": "https://github.com/Knuckles-Team/ciso-assistant-api",
+            "id": 1272306791,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/milestones{/number}",
+            "name": "ciso-assistant-api",
+            "node_id": "R_kgDOS9XcZw",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api"
+          },
+          "head_sha": "6ff3f1eee2b772df793cc30f29855c31470d5730",
+          "html_url": "https://github.com/Knuckles-Team/ciso-assistant-api/actions/runs/40449900699",
+          "id": 40449900699,
+          "jobs_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/actions/runs/40449900699/jobs",
+          "logs_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/actions/runs/40449900699/logs",
+          "name": "Deploy GitHub Pages",
+          "node_id": "WFR_kwLOS9XcZ88AAAAJawCAmw",
+          "path": ".github/workflows/pages.yml",
+          "previous_attempt_url": null,
+          "pull_requests": [],
+          "referenced_workflows": [
+            {
+              "path": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+              "ref": "refs/heads/main",
+              "sha": "6ce28b9347c97c317937a6012d409183c314cbd5"
+            }
+          ],
+          "repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/deployments",
+            "description": "CISO Assistant GRC API + MCP Server + A2A Agent \u2014 100% API coverage by codegen",
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/forks",
+            "full_name": "Knuckles-Team/ciso-assistant-api",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/hooks",
+            "html_url": "https://github.com/Knuckles-Team/ciso-assistant-api",
+            "id": 1272306791,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/milestones{/number}",
+            "name": "ciso-assistant-api",
+            "node_id": "R_kgDOS9XcZw",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api"
+          },
+          "rerun_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/actions/runs/40449900699/rerun",
+          "run_attempt": 1,
+          "run_number": 10,
+          "run_started_at": "2026-10-27T04:28:12Z",
+          "status": "completed",
+          "triggering_actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "updated_at": "2026-10-27T04:36:35Z",
+          "url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/actions/runs/40449900699",
+          "workflow_id": 344846639,
+          "workflow_url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/actions/workflows/344846639"
+        },
+        "live": {
+          "bytes": 31078,
+          "has_spec_id": true,
+          "sha256": "3b217c13c432cfd40950688a73908b618de6e912f2a2ba8ce9f02489ff1037a0",
+          "spec_id": "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/ciso-assistant-api/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/ciso-assistant-api/",
+          "https_enforced": true,
+          "pending_domain_unverified_at": null,
+          "protected_domain_state": null,
+          "public": true,
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "status": null,
+          "url": "https://api.github.com/repos/Knuckles-Team/ciso-assistant-api/pages"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md",
+          "specs/**",
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml"
+        ],
+        "snapshot": {
+          "bytes": 11449,
+          "revision": "6ff3f1eee2b772df793cc30f29855c31470d5730",
+          "sha256": "0f1859aaf21d836d44f14741a3d1921967234529b14b2797aa5a093bfdd8d07f",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/ciso-assistant-api/spec-delivery/snapshot.json"
+        },
+        "uses": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R111.3",
+        "PIPE-CONNSPEC-R111.4"
+      ],
+      "row": "PIPE-CONNSPEC-R111",
+      "sha": "6ff3f1eee2b772df793cc30f29855c31470d5730",
+      "skill": {
+        "bytes": 5063,
+        "path": "ciso_assistant_api/skills/ciso-assistant-api-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "cf8842cd1d1e0a74c4826b7e277b69663d17581b9619fce6bb6052908c7292a0"
+      },
+      "skill_path": "ciso_assistant_api/skills/ciso-assistant-api-development/SKILL.md",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "git_blob_sha": "09d55fd5899bc3e7e65ed8a0443205135396b1e8",
+          "path": ".github/spec-dashboard.json",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 570,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "git_blob_sha": "04f8f766d79f9cac9302ecde80f07d8743a4473e",
+          "path": ".github/workflows/pages.yml",
+          "sha256": "149e0ca7e928999f9f61bed48768f0fef88c66170aafb7d1479041f6c96116bb"
+        },
+        "ciso_assistant_api/skills/ciso-assistant-api-development/SKILL.md": {
+          "bytes": 5063,
+          "content": "---\nname: ciso-assistant-api-development\nskill_type: skill\ndescription: >-\n  Develop and verify ciso-assistant-api as a connector-owned package while\n  preserving its generated CISO Assistant client, action-routed MCP tools,\n  SDK authentication boundary, packaged content, and spec-delivery contract.\n---\n\n# CISO Assistant API Development\n\nUse this skill for changes to the `ciso-assistant-api` connector. The package\nowns CISO Assistant API calls, mappings, MCP tools, and connector content; it\ndoes not own the connector SDK, Arbora admission, the shared Pages renderer, or\nPipelines hooks.\n\n## Repository map and runtime boundary\n\n- `ciso_assistant_api/specs/*.json` are the vendored OpenAPI sources. The\n  generator emits the domain clients, operation manifest, and generated MCP\n  modules; change the generator or source spec before regenerating those files.\n- `ciso_assistant_api/api_client.py` composes the generated API domains, while\n  `api/api_client_base.py`, `auth.py`, and `mcp/mcp_custom_api.py` contain the\n  hand-authored client, authentication, and custom surface. Preserve the SDK\n  `Connector` registration in `__init__.py`.\n- `mcp_server.py` registers the action-routed generated tool domains, typed\n  verbose operations, opt-in KG ingestion, and prompts. Keep the\n  `MCP_TOOL_MODE` and `KG_INGESTTOOL` boundaries intact when changing tools.\n- `ciso_assistant_api/ontology/`, `prompts/`, and `skills/` are packaged\n  connector content. The package-data table includes these trees; inspect a\n  built wheel when changing them.\n- `auth.py` resolves `CISO_ASSISTANT_URL`, referenced credentials, delegation,\n  and the named CISO Assistant TLS profile. Keep secret values out of source,\n  tests, logs, and durable connector configuration.\n\n## Rapid delivery: the 5-minute contract\n\n1. Read the owning `specs/` row and this repository's `AGENTS.md` before\n   editing.\n2. Inspect the active generated client or MCP registration path and its\n   focused tests before changing API behavior, auth, ontology content, or\n   packaged skills.\n3. Prefer the smallest connector-owned change. Preserve generated-file\n   provenance, action names, parameter schemas, SDK `Connector` wiring, CISO\n   Assistant authentication, and package-data declarations.\n4. Run focused tests through the narrow test-slot wrapper, then run the\n   repository pre-commit and pre-push gates without bypasses.\n5. For public packaged content, update the patch version and `uv.lock`\n   together; inspect the built wheel for the new skill.\n6. Treat Pages as a separate proof: after the exact main SHA has a successful\n   Pages run, check `/spec-delivery/`, its `index.html`, and `snapshot.json`\n   over HTTPS and record the revision from the snapshot.\n\n## Focused development commands\n\nFrom the repository root:\n\n```bash\nuv sync --locked\n\n/var/tmp/arbora-delivery/scale/run-narrow-test-slot.sh \\\n  uv run --locked --extra test pytest -q \\\n    tests/test_publication_workflow.py \\\n    tests/test_default_content_surfaces.py \\\n    tests/test_mcp_server.py\n\nuvx pre-commit run --all-files\nuvx pre-commit run --all-files --hook-stage pre-push\n```\n\nThese checks cover the publication contract, packaged content, and MCP server\nsurface. Keep tests credential-free and do not replace them with a live CISO\nAssistant call.\n\n## Pages and package publication\n\n`.github/workflows/pages.yml` is the one Pages caller. It invokes the shared\nPipelines `pages_pipeline.yml@main` workflow with the dashboard enabled and\nkeeps the docs, specs, dashboard configuration, and workflow path filters.\nAfter a merge, verify the exact main SHA in the successful Pages run and probe:\n\n```bash\ncurl -fsSI https://knuckles-team.github.io/ciso-assistant-api/\ncurl -fsSI https://knuckles-team.github.io/ciso-assistant-api/spec-delivery/\ncurl -fsSI https://knuckles-team.github.io/ciso-assistant-api/spec-delivery/index.html\ncurl -fsS https://knuckles-team.github.io/ciso-assistant-api/spec-delivery/snapshot.json\n```\n\nKeep package and container publication on their shared Pipelines workflows.\nInspect generated output and the built wheel before making a public release\nclaim; a local build does not prove Pages or registry publication.\n\n## Change discipline\n\n- Keep CISO Assistant API calls, request models, ontology mappings, and MCP\n  schemas under this repository's `CONN-CISO-ASSISTANT-API-*` boundary. The\n  connector SDK and shared Pipelines behavior belong to their owner repositories.\n- Do not hand-edit generated API clients, operation manifests, or generated MCP\n  modules. Use `scripts/generate_from_openapi.py` and inspect the resulting diff.\n- Use `CISO_ASSISTANT_TOKEN_REF` or the username/password reference settings\n  only through the runtime credential boundary. Preserve TLS verification and\n  the named profile path.\n- Keep KG ingestion opt-in and preserve its privacy, tenant, provenance, and\n  attachment policy. Do not claim graph persistence from a local mock.\n- For mutations, inspect current state first and require operator approval\n  where the existing connector procedure calls for it.\n",
+          "git_blob_sha": "e9f974b2bc19a6f3c759faba19d4eb4e99fb7861",
+          "path": "ciso_assistant_api/skills/ciso-assistant-api-development/SKILL.md",
+          "sha256": "cf8842cd1d1e0a74c4826b7e277b69663d17581b9619fce6bb6052908c7292a0"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "ciso-assistant-api",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/ciso-assistant-api/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "ciso-assistant-api",
+            "requirement_ids": [
+              "CONN-CISO-ASSISTANT-API-R001",
+              "CONN-CISO-ASSISTANT-API-R002",
+              "CONN-CISO-ASSISTANT-API-R003",
+              "CONN-CISO-ASSISTANT-API-R004"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-CISO-ASSISTANT-API-R001",
+                "landed_in": [
+                  "262cb1a5cdaf"
+                ],
+                "title": "SDK floor",
+                "verified_by": [
+                  "tests/test_credential_refs.py:11"
+                ]
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-CISO-ASSISTANT-API-R002",
+                "landed_in": [],
+                "title": "Wiring",
+                "verified_by": [
+                  "tests/test_credential_refs.py:20"
+                ]
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-CISO-ASSISTANT-API-R003",
+                "landed_in": [],
+                "title": "Headless login",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-CISO-ASSISTANT-API-R004",
+                "landed_in": [
+                  "60bd1be05869",
+                  "e8d176cf25c8"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:34"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-CISO-ASSISTANT-API"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "ciso-assistant-api",
+            "requirement_ids": [
+              "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "262cb1a5cdaf",
+                  "4317988a9190"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_default_content_surfaces.py:15"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "b267809f11eded9bbaa34012bb25883fe115a1f84e0035f06eb08baed0efdd67",
+          "specs/ciso-assistant-api/status.json": "7c21c6794c2ed0865157eb9da86d2948ab0330bec98b492025e382ea22ccab73",
+          "specs/connector-content/status.json": "0e1c18535753439e6066e03d0e77e278fe1756a577b6819688642c90cad4e50b"
+        },
+        "status_record_count": 7,
+        "status_record_states": {
+          "SPECIFIED": 2,
+          "VERIFIED": 3
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"ciso-assistant-api\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/ciso-assistant-api/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CISO-ASSISTANT-API\",\n  \"owner_repo\": \"ciso-assistant-api\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-CISO-ASSISTANT-API-R001\",\n    \"CONN-CISO-ASSISTANT-API-R002\",\n    \"CONN-CISO-ASSISTANT-API-R003\",\n    \"CONN-CISO-ASSISTANT-API-R004\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R001\",\n      \"title\": \"SDK floor\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"262cb1a5cdaf\"\n      ],\n      \"verified_by\": [\n        \"tests/test_credential_refs.py:11\"\n      ]\n    },\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R002\",\n      \"title\": \"Wiring\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [\n        \"tests/test_credential_refs.py:20\"\n      ]\n    },\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R003\",\n      \"title\": \"Headless login\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-R004\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"60bd1be05869\",\n        \"e8d176cf25c8\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    }\n  ]\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"ciso-assistant-api\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"262cb1a5cdaf\",\n        \"4317988a9190\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-CISO-ASSISTANT-API",
+          "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT",
+          "CONN-CISO-ASSISTANT-API-CONNECTOR-CONTENT-R001",
+          "CONN-CISO-ASSISTANT-API-R001",
+          "CONN-CISO-ASSISTANT-API-R002",
+          "CONN-CISO-ASSISTANT-API-R003",
+          "CONN-CISO-ASSISTANT-API-R004"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R111.3": true,
+        "PIPE-CONNSPEC-R111.4": true
+      }
+    },
+    "erpnext-agent": {
+      "candidate_sha": "3ef3c15565ec40cd9bdd08aef0afea11686ad521",
+      "historical_verified_leaves": [],
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R119.4"
+      ],
+      "row": "PIPE-CONNSPEC-R119",
+      "sha": "3ef3c15565ec40cd9bdd08aef0afea11686ad521",
+      "skill": {
+        "bytes": 5784,
+        "path": "erpnext_agent/skills/erpnext-agent-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "184119f240c5aa9c9e91835bd5143f6808a2bac517a2a53f18f90658e12ee1ed"
+      },
+      "skill_path": "erpnext_agent/skills/erpnext-agent-development/SKILL.md",
+      "source_files": {
+        "erpnext_agent/skills/erpnext-agent-development/SKILL.md": {
+          "bytes": 5784,
+          "content": "---\nname: erpnext-agent-development\ndomain: development\nskill_type: skill\ndescription: >-\n  Develop, test, gate, and release the erpnext-agent connector. Use this skill\n  when changing ERPNext/Frappe resource mappings, governed MCP tools,\n  knowledge-graph ingestion, packaged connector content, documentation, or\n  repository gates.\nlicense: MIT\ntags: [erpnext, frappe, development, connector, mcp, test, gates]\ntier: repository\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# erpnext-agent development\n\nThis repository owns the ERPNext/Frappe REST client, document resource mappings,\naction-routed MCP tools, source declarations and knowledge-graph ingestion, and\npackaged connector content. Shared connector contracts, transports, TLS profiles,\nand credential helpers belong to `agent-connector-sdk`; admission, serving, and\ndurable graph state belong to their owning repositories. Read `AGENTS.md` before\nchanging code and keep credentials, private endpoints, tenant data, and customer\nrecords out of source, logs, fixtures, and skill content.\n\n## Rapid delivery: the 5-minute contract\n\nSpecs are already designed. Deliver small, reviewable slices and cite the\nowning spec row in the commit trailer.\n\n- Find the owning row first with `git grep -n \"<term>\" -- specs` and extend the\n  existing spec before adding requirement text. `PIPE-CONNSPEC-R119.4` is a\n  central pipelines criterion; do not invent a local status row for it.\n- Reuse the one `Connector` in `erpnext_agent/__init__.py`, the `Api` facade in\n  `erpnext_agent/api_client.py`, and the resource client in\n  `erpnext_agent/api/api_client_resource.py` over the shared\n  `erpnext_agent/api/api_client_base.py` boundary. Do not create a second API,\n  MCP, authentication, or transport plane.\n- Preserve `ERPNEXT_URL`, `ERPNEXT_TOKEN`,\n  `ERPNEXT_AGENT_USERNAME`, and `ERPNEXT_AGENT_PASSWORD` handling in\n  `erpnext_agent/auth.py`, together with the SDK TLS resolver for\n  `erpnext_agent`. Never hardcode a secret, endpoint, tenant, or TLS-verification\n  bypass.\n- Keep the action-routed registrations in\n  `erpnext_agent/mcp/mcp_authentication.py`, `erpnext_agent/mcp/mcp_resource.py`,\n  and `erpnext_agent/mcp/mcp_ingest.py` aligned with the registry in\n  `erpnext_agent/mcp_server.py`. Preserve source declarations in\n  `erpnext_agent/connector_sources.py` and typed mappings in\n  `erpnext_agent/kg_ingest.py`; keep tenant and installation data neutral.\n- Every delivered requirement needs a bound focused test. Generated\n  `specs/*/status.json` files come from the shared hooks; never hand-edit them.\n- Keep `erpnext_agent/skills/`, `erpnext_agent/ontology/`, prompts,\n  `mcp_config.json`, and source declarations coherent with the existing\n  package-data and `erpnext-mcp` entry point. One logical change per commit, with\n  the central criterion recorded using the repository's documented\n  `Spec: none (<reason>)` form when no local requirements row exists, plus the\n  assisting-agent trailer.\n\n## Setup and gates\n\nUse the pinned environment from `uv sync --locked`, then run the shared gates:\n\n```bash\nuv sync --locked\nuvx pre-commit run --all-files\nuvx pre-commit run --all-files --hook-stage pre-push\n```\n\nFor focused feedback, run the smallest affected test with the locked\nenvironment:\n\n```bash\nuv run --locked --extra test pytest -q tests/test_erpnext_development_skill.py\n```\n\nThe canonical `.pre-commit-config.yaml` delegates connector-standard, secrets,\nspec, tests-fast, and dependency-readiness checks to\n`Knuckles-Team/pipelines` at `rev: main`. Do not copy those hooks locally or\nbypass a failing check.\n\n## Connector-specific checks\n\n- Keep ERPNext document CRUD, authentication, and pagination behind the one\n  `Api` facade. Validate Frappe responses at the existing client boundary and\n  preserve the established error behavior.\n- Preserve SDK TLS resolution and token/basic-auth handling. Mock ERPNext HTTP\n  responses in local tests; never call a live site or use live credentials in a\n  gate.\n- Keep `erpnext_agent/skills/`, `erpnext_agent/ontology/`,\n  `erpnext_agent/connectors/` (when present), prompts, and `mcp_config.json` in\n  package data. Keep source declarations and ontology mappings explicit and\n  installation-neutral.\n- Documentation is published by `.github/workflows/pages.yml`, which calls\n  `pages_pipeline.yml@main` with the canonical spec dashboard config. The Python release and rendered connector\n  image are called by `.github/workflows/pipeline.yml`; do not add a second\n  publisher or commit generated Docker artifacts.\n\n## Packaging and publication\n\n`pyproject.toml` declares\n`erpnext-mcp = \"erpnext_agent:connector\"` and packages `skills/**`, prompts,\nontology, connector content, `agent_data/**`, and `mcp_config.json`. For a\ngenuine packaged-content release, keep the project version, `CHANGELOG.md`, and\nthe editable `erpnext-agent` entry in `uv.lock` coherent, then inspect `uv build`\noutput for\n`erpnext_agent/skills/erpnext-agent-development/SKILL.md`.\n\nThe canonical release caller is `.github/workflows/pipeline.yml`: it publishes\nthe Python connector with `python_pipeline.yml@main`, then builds the rendered\nconnector container with `container_pipeline.yml@main` and\n`render_connector: true`. Do not claim package, container, or Pages publication\nfrom a local build; require exact-source hosted evidence and the public artifact.\n\n## Delivery discipline\n\nWork in a real Git worktree based on `origin/main`. Inspect the complete diff,\nstage only reviewed paths, and verify `git status --short` after every gate.\nDo not use `git stash`, `git add -A`, or `git add .`; preserve unrelated working\ntree changes. Keep runtime, ontology, source status, and generated artifacts\noutside a bounded skill slice unless the owning requirement explicitly requires\nthem.\n",
+          "git_blob_sha": "d58feb56e13c218beec9ce2593d1ec274adea8cf",
+          "path": "erpnext_agent/skills/erpnext-agent-development/SKILL.md",
+          "sha256": "184119f240c5aa9c9e91835bd5143f6808a2bac517a2a53f18f90658e12ee1ed"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "erpnext-agent",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "erpnext-agent",
+            "requirement_ids": [
+              "CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "671d58e24af5"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT"
+          },
+          "specs/erpnext-agent/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "erpnext-agent",
+            "requirement_ids": [
+              "CONN-ERPNEXT-AGENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-ERPNEXT-AGENT-R001",
+                "landed_in": [],
+                "title": "Connector reports its released version",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-ERPNEXT-AGENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "af179b4161046ac5933998542a10f4bfe3aaef2140a6250b955b9cd8cc8f24c1",
+          "specs/connector-content/status.json": "4350f45cf10dbbb04eb3482eaeb83172f164a31594c67e2cdd6a52e6e33aab5f",
+          "specs/erpnext-agent/status.json": "8858e61abf56d803ecc591b347ec6242d83827c986fd035c8485251fc53fea46"
+        },
+        "status_record_count": 4,
+        "status_record_states": {
+          "LANDED": 1,
+          "SPECIFIED": 1
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"erpnext-agent\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"erpnext-agent\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"671d58e24af5\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/erpnext-agent/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-ERPNEXT-AGENT\",\n  \"owner_repo\": \"erpnext-agent\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-ERPNEXT-AGENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-ERPNEXT-AGENT-R001\",\n      \"title\": \"Connector reports its released version\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-ERPNEXT-AGENT",
+          "CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT",
+          "CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT-R001",
+          "CONN-ERPNEXT-AGENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R119.4": true
+      }
+    },
+    "fan-manager": {
+      "candidate_sha": "4687e1ecaf5831abdc162d387754816f41fc5b29",
+      "historical_verified_leaves": [],
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "config_path": ".github/spec-dashboard.json",
+        "expected_pages_run": 40442897053,
+        "hosted_run": {
+          "actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "artifacts_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/actions/runs/40442897053/artifacts",
+          "cancel_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/actions/runs/40442897053/cancel",
+          "check_suite_id": 109614277458,
+          "check_suite_node_id": "CS_kwDOIvy5OM8AAAAZhYUjUg",
+          "check_suite_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/check-suites/109614277458",
+          "conclusion": "success",
+          "created_at": "2026-10-27T03:12:47Z",
+          "display_title": "Merge pull request #31 from Knuckles-Team/delivery/pipe-r1203-pages-2\u2026",
+          "event": "push",
+          "head_branch": "main",
+          "head_commit": {
+            "author": {
+              "email": "knucklessg1@gmail.com",
+              "name": "Audel Rouhi"
+            },
+            "committer": {
+              "email": "noreply@github.com",
+              "name": "GitHub"
+            },
+            "id": "4687e1ecaf5831abdc162d387754816f41fc5b29",
+            "message": "Merge pull request #31 from Knuckles-Team/delivery/pipe-r1203-pages-20261027\n\nfeat(pages): enable spec dashboard for fan manager",
+            "timestamp": "2026-10-27T03:12:44Z",
+            "tree_id": "a56089d25e66bd02f5572422e15fd3168a02cdfc"
+          },
+          "head_repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/deployments",
+            "description": "Manager your Dell PowerEdge Fan Speed with this handy tool!",
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/forks",
+            "full_name": "Knuckles-Team/fan-manager",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/hooks",
+            "html_url": "https://github.com/Knuckles-Team/fan-manager",
+            "id": 586987832,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/milestones{/number}",
+            "name": "fan-manager",
+            "node_id": "R_kgDOIvy5OA",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/fan-manager"
+          },
+          "head_sha": "4687e1ecaf5831abdc162d387754816f41fc5b29",
+          "html_url": "https://github.com/Knuckles-Team/fan-manager/actions/runs/40442897053",
+          "id": 40442897053,
+          "jobs_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/actions/runs/40442897053/jobs",
+          "logs_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/actions/runs/40442897053/logs",
+          "name": "Deploy GitHub Pages",
+          "node_id": "WFR_kwLOIvy5OM8AAAAJapWinQ",
+          "path": ".github/workflows/pages.yml",
+          "previous_attempt_url": null,
+          "pull_requests": [],
+          "referenced_workflows": [
+            {
+              "path": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+              "ref": "refs/heads/main",
+              "sha": "6ce28b9347c97c317937a6012d409183c314cbd5"
+            }
+          ],
+          "repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/deployments",
+            "description": "Manager your Dell PowerEdge Fan Speed with this handy tool!",
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/forks",
+            "full_name": "Knuckles-Team/fan-manager",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/hooks",
+            "html_url": "https://github.com/Knuckles-Team/fan-manager",
+            "id": 586987832,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/milestones{/number}",
+            "name": "fan-manager",
+            "node_id": "R_kgDOIvy5OA",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/fan-manager"
+          },
+          "rerun_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/actions/runs/40442897053/rerun",
+          "run_attempt": 1,
+          "run_number": 26,
+          "run_started_at": "2026-10-27T03:12:47Z",
+          "status": "completed",
+          "triggering_actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "updated_at": "2026-10-27T03:15:26Z",
+          "url": "https://api.github.com/repos/Knuckles-Team/fan-manager/actions/runs/40442897053",
+          "workflow_id": 293091660,
+          "workflow_url": "https://api.github.com/repos/Knuckles-Team/fan-manager/actions/workflows/293091660"
+        },
+        "live": {
+          "bytes": 51331,
+          "has_spec_id": true,
+          "sha256": "4f3d1d77bde3243ec6d2c48c30d8f26ff2fe3c865efbfc88f227606dd4276607",
+          "spec_id": "CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/fan-manager/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/fan-manager/",
+          "https_enforced": true,
+          "pending_domain_unverified_at": null,
+          "protected_domain_state": null,
+          "public": true,
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "status": null,
+          "url": "https://api.github.com/repos/Knuckles-Team/fan-manager/pages"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md",
+          "specs/**",
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml"
+        ],
+        "snapshot": {
+          "bytes": 26051,
+          "revision": "4687e1ecaf5831abdc162d387754816f41fc5b29",
+          "sha256": "f38d40488bd093ccf2579945db2b77b0ace0303d2620dd3145b4ae253146e615",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/fan-manager/spec-delivery/snapshot.json"
+        },
+        "uses": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R120.3",
+        "PIPE-CONNSPEC-R120.4"
+      ],
+      "row": "PIPE-CONNSPEC-R120",
+      "sha": "4687e1ecaf5831abdc162d387754816f41fc5b29",
+      "skill": {
+        "bytes": 5380,
+        "path": "fan_manager/skills/fan-manager-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "d35955e8e8cc3d13428b62ae3bea60ca89f7306dec86643059f61896c41f2ed1"
+      },
+      "skill_path": "fan_manager/skills/fan-manager-development/SKILL.md",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "git_blob_sha": "09d55fd5899bc3e7e65ed8a0443205135396b1e8",
+          "path": ".github/spec-dashboard.json",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 594,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n  workflow_dispatch: {}\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "git_blob_sha": "4f94dbb5b6ca594a38143cb4a966d677d6dae013",
+          "path": ".github/workflows/pages.yml",
+          "sha256": "933e5625cedc82a016f1b974f0686aee07def39e3d774bc8fd7b3a2a94e6880e"
+        },
+        "fan_manager/skills/fan-manager-development/SKILL.md": {
+          "bytes": 5380,
+          "content": "---\nname: fan-manager-development\nskill_type: skill\ndescription: >-\n  Develop and release the fan-manager connector. Use this skill for changes to\n  its local hardware facade, MCP tools, typed telemetry ingestion, packaged\n  skills, or the standard release gates.\ndomain: development\nlicense: MIT\ntags: [fan-manager, dell, ipmi, sensors, mcp, knowledge-graph, rapid-delivery]\nmetadata:\n  author: Genius\n  version: '1.0.0'\n---\n\n# Fan Manager development\n\nUse this skill from a fan-manager checkout before changing the connector. Read\n`AGENTS.md` first: it defines the local hardware boundary, worktree discipline,\nquality gates, version/lock policy, and release ownership.\n\n## Repository and runtime map\n\n- `fan_manager/fan_manager.py` owns the local `sensors -j` temperature path,\n  bounded 0-100 fan writes, automatic fan curve, and the injected\n  `CommandRunner` seam. Fixed argv with `shell=False` is the hardware boundary.\n- `fan_manager/api_client.py` is the thin `Api` facade over\n  `FanControlService`; `fan_manager/services/fan_control_service.py` owns\n  dependency-injected temperature and fan-control calls.\n- `fan_manager/mcp_server.py` builds the MCP surface. Domain registrars in\n  `fan_manager/mcp/mcp_temperature.py`,\n  `fan_manager/mcp/mcp_fan_control.py`, and `fan_manager/mcp/mcp_kg.py`\n  expose one action-routed tool per domain through `TOOL_REGISTRY`.\n- `fan_manager/connector_sources.py` declares the live `fan-sensors` source;\n  `fan_manager/kg_ingest.py` maps telemetry to typed `ManagedHost`,\n  `FanController`, `TemperatureReading`, `FanSpeedSetting`, and\n  `SensorReading` nodes through the SDK ingest stream.\n- Packaged content lives below `fan_manager/skills/`, `prompts/`, and\n  `ontology/`. `pyproject.toml` must continue to include `skills/**` in\n  setuptools package data.\n\n## Local and security contract\n\nFan Manager is a local hardware connector. `fan_manager/auth.py` returns the\nlocal `Api` facade and resolves only `IPMITOOL_PATH` and `SENSORS_PATH`; it does\nnot accept a remote URL or credentials. Preserve this boundary when editing\ncode or documentation.\n\nThe runtime may read `FAN_MANAGER_HOST`, `FAN_MANAGER_HOSTS`,\n`FAN_MANAGER_NODE_API_BIND`, `FAN_MANAGER_NODE_API_PORT`,\n`FAN_MANAGER_NODE_API_TOKEN`, `FAN_MANAGER_NODE_URL_TEMPLATE`,\n`FAN_MANAGER_KG_INGEST`, `FAN_MANAGER_KG_AGGREGATE_S`,\n`FAN_MANAGER_POLICY_FILE`, `FAN_MANAGER_POLICY_REFRESH`,\n`FAN_MANAGER_CURVE`, and `FAN_MANAGER_NOTIFY_URL`. Treat values as runtime\nconfiguration, never as secrets to embed in this skill. Keep node reads\nread-only and require one explicit out-of-band target for write operations.\nThe MCP domains are gated by `TEMPERATURETOOL`, `FAN_CONTROLTOOL`, and\n`KGTOOL`; preserve the inherited `MCP_TOOL_MODE` surface and the existing\n`agent_connector_sdk` registration path.\n\n## Rapid delivery: the 5-minute contract\n\nSpecs are already designed. Deliver one small, reviewable slice and bind it to\n`PIPE-CONNSPEC-R120.4` in the focused test and commit trailer.\n\n1. Start from an immutable `origin/main` fan-manager revision in a private real\n   worktree. Read the owning spec row in the central pipelines repository and\n   do not edit central status, runtime manifests, or deployment files here.\n2. Find and reuse the existing facade, registrar, source declaration, and\n   SDK-ingest seam before adding code. Keep local sensor/BMC commands fixed,\n   validate fan levels before execution, and preserve fail-safe maximum fans on\n   an automatic-control temperature failure.\n3. For MCP changes, test registration and action routing through the public\n   FastMCP surface. Keep unknown actions and malformed JSON on their existing\n   structured/error paths; do not broaden tools or bypass the domain toggles.\n4. For ingestion changes, preserve source IDs and typed node names from\n   `connector_sources.py`/`kg_ingest.py`. Never add a local graph client or\n   direct database write.\n5. For packaged content, add the focused package-content test in `tests/` and\n   verify `pyproject.toml` still includes `skills/**`. If the public package\n   content changes, use the repository's established patch-version release\n   procedure, update `CHANGELOG.md`, and refresh `uv.lock` in the same change.\n6. Run the focused test plus the configured pre-commit commit and push stages\n   against the frozen range. Inspect the built wheel/sdist when content is\n   released; Pages, container rendering, and publication are separate hosted\n   gates and cannot be inferred from a local test.\n\n## Focused validation\n\n```bash\nuv run --locked --extra test pytest -q tests/test_fan_manager_development_skill.py\nuvx pre-commit run --all-files\nuv build --wheel --sdist\n```\n\nRun hardware-facing tests only with the injected runner or existing mocks. Do\nnot call a real BMC, persist tokens, or claim package/Pages/container\npublication from a local checkout. Record the exact source SHA, focused result,\npre-commit result, and any hosted evidence in the delivery receipt.\n\n## Publication references\n\nThe standard callers are `.github/workflows/pipeline.yml` with\n`python_pipeline.yml@main` and `connector: true`,\n`container_pipeline.yml@main` with `render_connector: true`, and\n`pages.yml` with `pages_pipeline.yml@main`. Keep public-first version guards,\nsource provenance, and the package-data boundary intact; a development-skill\nchange alone does not prove a Pages or image release.\n",
+          "git_blob_sha": "743514a3493be1287ea732fe26090e6b8797c8cd",
+          "path": "fan_manager/skills/fan-manager-development/SKILL.md",
+          "sha256": "d35955e8e8cc3d13428b62ae3bea60ca89f7306dec86643059f61896c41f2ed1"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "fan-manager",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "fan-manager",
+            "requirement_ids": [
+              "CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "0920dd68e9aa"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-FAN-MANAGER-CONNECTOR-CONTENT"
+          },
+          "specs/fan-manager/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "fan-manager",
+            "requirement_ids": [
+              "CONN-FAN-MANAGER-R001",
+              "CONN-FAN-MANAGER-R001.1",
+              "CONN-FAN-MANAGER-R001.2",
+              "CONN-FAN-MANAGER-R001.3",
+              "CONN-FAN-MANAGER-R001.4",
+              "CONN-FAN-MANAGER-R001.5",
+              "CONN-FAN-MANAGER-R002",
+              "CONN-FAN-MANAGER-R002.1",
+              "CONN-FAN-MANAGER-R002.2",
+              "CONN-FAN-MANAGER-R002.3",
+              "CONN-FAN-MANAGER-R003",
+              "CONN-FAN-MANAGER-R003.1",
+              "CONN-FAN-MANAGER-R003.2",
+              "CONN-FAN-MANAGER-R003.3",
+              "CONN-FAN-MANAGER-R003.4",
+              "CONN-FAN-MANAGER-R003.5",
+              "CONN-FAN-MANAGER-R004",
+              "CONN-FAN-MANAGER-R005"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R001",
+                "landed_in": [
+                  "b14b79765db3",
+                  "d85b9cbe45a0"
+                ],
+                "rollup_of": [
+                  "CONN-FAN-MANAGER-R001.1",
+                  "CONN-FAN-MANAGER-R001.2",
+                  "CONN-FAN-MANAGER-R001.3",
+                  "CONN-FAN-MANAGER-R001.4",
+                  "CONN-FAN-MANAGER-R001.5"
+                ],
+                "title": "Ingest tools stay served",
+                "verified_by": [
+                  "tests/test_served_surface_keeps_ingest.py:20",
+                  "tests/test_served_surface_keeps_ingest.py:27",
+                  "tests/test_served_surface_keeps_ingest.py:33",
+                  "tests/test_served_surface_keeps_ingest.py:44",
+                  "tests/test_served_surface_keeps_ingest.py:45"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R001.1",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Ingest actions served",
+                "verified_by": [
+                  "tests/test_served_surface_keeps_ingest.py:20"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R001.2",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Daemon loop is not a tool",
+                "verified_by": [
+                  "tests/test_served_surface_keeps_ingest.py:27"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R001.3",
+                "landed_in": [
+                  "b14b79765db3"
+                ],
+                "title": "Shared SDK floor",
+                "verified_by": [
+                  "tests/test_served_surface_keeps_ingest.py:33"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R001.4",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Wiring",
+                "verified_by": [
+                  "tests/test_served_surface_keeps_ingest.py:44"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R001.5",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Hot-path proof",
+                "verified_by": [
+                  "tests/test_served_surface_keeps_ingest.py:45"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R002",
+                "landed_in": [
+                  "b14b79765db3",
+                  "d85b9cbe45a0"
+                ],
+                "rollup_of": [
+                  "CONN-FAN-MANAGER-R002.1",
+                  "CONN-FAN-MANAGER-R002.2",
+                  "CONN-FAN-MANAGER-R002.3"
+                ],
+                "title": "Per-node read endpoint",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:58",
+                  "tests/test_fleet_endpoints.py:71",
+                  "tests/test_fleet_endpoints.py:82"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R002.1",
+                "landed_in": [
+                  "b14b79765db3"
+                ],
+                "title": "Reads served, writes refused",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:58"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R002.2",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Read operations only",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:82"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R002.3",
+                "landed_in": [
+                  "b14b79765db3"
+                ],
+                "title": "Bearer token",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:71"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R003",
+                "landed_in": [
+                  "b14b79765db3",
+                  "d85b9cbe45a0"
+                ],
+                "rollup_of": [
+                  "CONN-FAN-MANAGER-R003.1",
+                  "CONN-FAN-MANAGER-R003.2",
+                  "CONN-FAN-MANAGER-R003.3",
+                  "CONN-FAN-MANAGER-R003.4",
+                  "CONN-FAN-MANAGER-R003.5"
+                ],
+                "title": "Connector aggregation",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:107",
+                  "tests/test_fleet_endpoints.py:116",
+                  "tests/test_fleet_endpoints.py:144",
+                  "tests/test_fleet_endpoints.py:190",
+                  "tests/test_fleet_endpoints.py:199"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R003.1",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Temperature by node",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:107"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R003.2",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "In-band IPMI reads by node",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:116"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R003.3",
+                "landed_in": [
+                  "b14b79765db3"
+                ],
+                "title": "Writes stay guarded",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:144"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R003.4",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Dead node is typed",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:190"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R003.5",
+                "landed_in": [
+                  "d85b9cbe45a0"
+                ],
+                "title": "Node names to endpoints",
+                "verified_by": [
+                  "tests/test_fleet_endpoints.py:199"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FAN-MANAGER-R004",
+                "landed_in": [
+                  "c03661f300ed"
+                ],
+                "title": "Engine identity",
+                "verified_by": [
+                  "tests/test_engine_identity.py:7"
+                ]
+              },
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-FAN-MANAGER-R005",
+                "landed_in": [
+                  "11bd6fec3621"
+                ],
+                "title": "Ingest connector name",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-FAN-MANAGER"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "e1c0323695708f417a2c9d01a8ca86f9aa25199fe5c525beef8d83880f6b724f",
+          "specs/connector-content/status.json": "32df0622207ff112ea2796bcc745aeec9f1a1dc0d5ded13e532f80e713ec899b",
+          "specs/fan-manager/status.json": "ddfdc396a859e564fc9692d8240cb60d32638b05790d532ef4f23559c22d3a84"
+        },
+        "status_record_count": 21,
+        "status_record_states": {
+          "LANDED": 2,
+          "VERIFIED": 17
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"fan-manager\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-FAN-MANAGER-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"fan-manager\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"0920dd68e9aa\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/fan-manager/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-FAN-MANAGER\",\n  \"owner_repo\": \"fan-manager\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-FAN-MANAGER-R001\",\n    \"CONN-FAN-MANAGER-R001.1\",\n    \"CONN-FAN-MANAGER-R001.2\",\n    \"CONN-FAN-MANAGER-R001.3\",\n    \"CONN-FAN-MANAGER-R001.4\",\n    \"CONN-FAN-MANAGER-R001.5\",\n    \"CONN-FAN-MANAGER-R002\",\n    \"CONN-FAN-MANAGER-R002.1\",\n    \"CONN-FAN-MANAGER-R002.2\",\n    \"CONN-FAN-MANAGER-R002.3\",\n    \"CONN-FAN-MANAGER-R003\",\n    \"CONN-FAN-MANAGER-R003.1\",\n    \"CONN-FAN-MANAGER-R003.2\",\n    \"CONN-FAN-MANAGER-R003.3\",\n    \"CONN-FAN-MANAGER-R003.4\",\n    \"CONN-FAN-MANAGER-R003.5\",\n    \"CONN-FAN-MANAGER-R004\",\n    \"CONN-FAN-MANAGER-R005\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-FAN-MANAGER-R001\",\n      \"title\": \"Ingest tools stay served\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b14b79765db3\",\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_served_surface_keeps_ingest.py:20\",\n        \"tests/test_served_surface_keeps_ingest.py:27\",\n        \"tests/test_served_surface_keeps_ingest.py:33\",\n        \"tests/test_served_surface_keeps_ingest.py:44\",\n        \"tests/test_served_surface_keeps_ingest.py:45\"\n      ],\n      \"rollup_of\": [\n        \"CONN-FAN-MANAGER-R001.1\",\n        \"CONN-FAN-MANAGER-R001.2\",\n        \"CONN-FAN-MANAGER-R001.3\",\n        \"CONN-FAN-MANAGER-R001.4\",\n        \"CONN-FAN-MANAGER-R001.5\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R001.1\",\n      \"title\": \"Ingest actions served\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_served_surface_keeps_ingest.py:20\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R001.2\",\n      \"title\": \"Daemon loop is not a tool\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_served_surface_keeps_ingest.py:27\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R001.3\",\n      \"title\": \"Shared SDK floor\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b14b79765db3\"\n      ],\n      \"verified_by\": [\n        \"tests/test_served_surface_keeps_ingest.py:33\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R001.4\",\n      \"title\": \"Wiring\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_served_surface_keeps_ingest.py:44\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R001.5\",\n      \"title\": \"Hot-path proof\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_served_surface_keeps_ingest.py:45\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R002\",\n      \"title\": \"Per-node read endpoint\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b14b79765db3\",\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:58\",\n        \"tests/test_fleet_endpoints.py:71\",\n        \"tests/test_fleet_endpoints.py:82\"\n      ],\n      \"rollup_of\": [\n        \"CONN-FAN-MANAGER-R002.1\",\n        \"CONN-FAN-MANAGER-R002.2\",\n        \"CONN-FAN-MANAGER-R002.3\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R002.1\",\n      \"title\": \"Reads served, writes refused\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b14b79765db3\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:58\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R002.2\",\n      \"title\": \"Read operations only\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:82\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R002.3\",\n      \"title\": \"Bearer token\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b14b79765db3\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:71\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R003\",\n      \"title\": \"Connector aggregation\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b14b79765db3\",\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:107\",\n        \"tests/test_fleet_endpoints.py:116\",\n        \"tests/test_fleet_endpoints.py:144\",\n        \"tests/test_fleet_endpoints.py:190\",\n        \"tests/test_fleet_endpoints.py:199\"\n      ],\n      \"rollup_of\": [\n        \"CONN-FAN-MANAGER-R003.1\",\n        \"CONN-FAN-MANAGER-R003.2\",\n        \"CONN-FAN-MANAGER-R003.3\",\n        \"CONN-FAN-MANAGER-R003.4\",\n        \"CONN-FAN-MANAGER-R003.5\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R003.1\",\n      \"title\": \"Temperature by node\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:107\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R003.2\",\n      \"title\": \"In-band IPMI reads by node\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:116\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R003.3\",\n      \"title\": \"Writes stay guarded\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"b14b79765db3\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:144\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R003.4\",\n      \"title\": \"Dead node is typed\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:190\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R003.5\",\n      \"title\": \"Node names to endpoints\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"d85b9cbe45a0\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_endpoints.py:199\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R004\",\n      \"title\": \"Engine identity\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"c03661f300ed\"\n      ],\n      \"verified_by\": [\n        \"tests/test_engine_identity.py:7\"\n      ]\n    },\n    {\n      \"id\": \"CONN-FAN-MANAGER-R005\",\n      \"title\": \"Ingest connector name\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"11bd6fec3621\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-FAN-MANAGER",
+          "CONN-FAN-MANAGER-CONNECTOR-CONTENT",
+          "CONN-FAN-MANAGER-CONNECTOR-CONTENT-R001",
+          "CONN-FAN-MANAGER-R001",
+          "CONN-FAN-MANAGER-R001.1",
+          "CONN-FAN-MANAGER-R001.2",
+          "CONN-FAN-MANAGER-R001.3",
+          "CONN-FAN-MANAGER-R001.4",
+          "CONN-FAN-MANAGER-R001.5",
+          "CONN-FAN-MANAGER-R002",
+          "CONN-FAN-MANAGER-R002.1",
+          "CONN-FAN-MANAGER-R002.2",
+          "CONN-FAN-MANAGER-R002.3",
+          "CONN-FAN-MANAGER-R003",
+          "CONN-FAN-MANAGER-R003.1",
+          "CONN-FAN-MANAGER-R003.2",
+          "CONN-FAN-MANAGER-R003.3",
+          "CONN-FAN-MANAGER-R003.4",
+          "CONN-FAN-MANAGER-R003.5",
+          "CONN-FAN-MANAGER-R004",
+          "CONN-FAN-MANAGER-R005"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R120.3": true,
+        "PIPE-CONNSPEC-R120.4": true
+      }
+    },
+    "freshrss-agent": {
+      "candidate_sha": "e1efed841dfcc5fdd1f67ced5af7739fd2353916",
+      "historical_verified_leaves": [],
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R122.4"
+      ],
+      "row": "PIPE-CONNSPEC-R122",
+      "sha": "e1efed841dfcc5fdd1f67ced5af7739fd2353916",
+      "skill": {
+        "bytes": 5795,
+        "path": "freshrss_agent/skills/freshrss-agent-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "9cf4999b1bf2f3c66203834a087d9265417bd6e5a445dad28ba31ba87c7d6552"
+      },
+      "skill_path": "freshrss_agent/skills/freshrss-agent-development/SKILL.md",
+      "source_files": {
+        "freshrss_agent/skills/freshrss-agent-development/SKILL.md": {
+          "bytes": 5795,
+          "content": "---\nname: freshrss-agent-development\nskill_type: skill\ndomain: development\ndescription: >-\n  Develop, test, gate, and release the freshrss-agent connector. Use this skill\n  when changing FreshRSS Reader API mappings, governed MCP tools, delegated or\n  fixed authentication, KG ingestion, packaged content, or repository gates.\nlicense: MIT\ntags: [freshrss, rss, greader, development, connector, test, gates]\ntier: repository\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# freshrss-agent development\n\nThis repository owns the FreshRSS Google Reader API facade, authentication\nboundary, action-routed MCP tools, feed ontology and KG ingestion mappings, and\npackaged connector content. Shared connector contracts, transports, TLS\nprofiles, and credential helpers belong to `agent-connector-sdk`; admission,\nserving, and durable graph state belong to their owning repositories. Read\n`AGENTS.md` before changing code and keep credentials, private endpoints,\ntenant data, and customer records out of source, logs, fixtures, and skill\ncontent.\n\n## Rapid delivery: the 5-minute contract\n\nSpecs are already designed. Deliver small, reviewable slices and cite the owning\nspec row in the commit trailer.\n\n- Find the owning row first with `git grep -n \"<term>\" -- specs` and extend the\n  existing spec before adding requirement text.\n- Reuse the single `Connector` in `freshrss_agent/__init__.py`, the facade in\n  `freshrss_agent/api_client.py`, modular API clients under\n  `freshrss_agent/api/`, and action-routed tools in `freshrss_agent/mcp/` plus\n  `freshrss_agent/mcp_server.py`. Do not create a second API, MCP,\n  authentication, or transport plane.\n- Preserve `FRESHRSS_URL`, `FRESHRSS_USER`, `FRESHRSS_API_PASSWORD`,\n  `FRESHRSS_TLS_PROFILE`, and `FRESHRSS_TLS_PROFILE_REF` handling in\n  `freshrss_agent/auth.py`. Keep the existing optional OIDC delegation path\n  (`ENABLE_DELEGATION`) and SDK TLS resolution; never print credentials or add\n  a verification bypass.\n- Keep the FreshRSS GReader API paths, cursor pagination, item normalization,\n  subscription actions, and response models stable. Mock HTTP responses in\n  tests; never call a live FreshRSS instance or use live credentials in a gate.\n- Preserve best-effort typed/document KG ingestion in\n  `freshrss_agent/kg_ingest.py`, source declarations in\n  `freshrss_agent/connector_sources.py`, and neutral ontology mappings. Do not\n  bypass the shared `agent_connector_sdk.ingest` facade.\n- Keep `skills/**`, `ontology/**`, prompts, and `mcp_config.json` coherent with\n  package data and the `agent_connector_sdk.connector` entry point\n  (`freshrss-mcp = \"freshrss_agent:connector\"`). Generated `specs/*/status.json`\n  files come from shared hooks; never hand-edit them.\n- Every delivered requirement needs a bound focused test. This development\n  skill binds to the central criterion `PIPE-CONNSPEC-R122.4`; it does not add a\n  local status or rollup edit.\n\n## Setup and gates\n\nUse the pinned environment from `uv sync --locked`, then run the shared gates:\n\n```bash\nuv sync --locked\nuvx pre-commit run --all-files\nuvx pre-commit run --all-files --hook-stage pre-push\n```\n\nFor focused feedback, run the smallest affected tests with the locked\nenvironment, for example:\n\n```bash\nuv run --locked --extra test pytest -q tests/test_freshrss_development_skill.py\nuv run --locked --extra test pytest -q tests/test_api_wrapper.py tests/test_auth.py\n```\n\nThe canonical `.pre-commit-config.yaml` delegates connector-standard, secrets,\nspec, tests-fast, and dependency-readiness to `Knuckles-Team/pipelines`. Do not\ncopy those hooks locally or bypass a failing check.\n\n## Connector-specific checks\n\n- Preserve GReader endpoint paths, action names, cursor semantics, and response\n  normalization when changing Reader or subscription operations. Add focused\n  mocked request tests for a changed provider path.\n- Keep OIDC RFC 8693 token exchange and fixed API-password fallback at the\n  existing authentication boundary. Resolve TLS policy through the SDK and do\n  not bake static bearer tokens into the client.\n- Keep feed items as searchable `Document` records and subscriptions as typed\n  entities with their category relationships. Ingestion stays best-effort when\n  the graph engine is unavailable.\n- Keep `freshrss_agent/skills/`, `freshrss_agent/ontology/`,\n  `freshrss_agent/connectors/`, prompts, and `freshrss_agent/mcp_config.json`\n  in package data. Keep source metadata tenant-neutral.\n- Documentation is published by the existing Pages workflow and dashboard\n  configuration; source status records under `specs/` are generated by shared\n  hooks.\n\n## Packaging and publication\n\n`pyproject.toml` declares the `agent_connector_sdk.connector` entry point\n`freshrss-mcp = \"freshrss_agent:connector\"` and packages `skills/**`,\n`ontology/**`, `connectors/**`, prompts, and `mcp_config.json`. When packaged\ncontent changes, inspect `uv build` output for\n`freshrss_agent/skills/freshrss-agent-development/SKILL.md` and keep the public\nversion and editable lock entry coherent. This slice leaves the already-current\n2.3.5 package metadata unchanged.\n\nThe canonical release caller delegates publication and connector rendering to\nthe shared pipelines. Do not commit generated Docker artifacts or claim\npackage, container, or Pages publication from a local build; require exact\nsource hosted evidence and the public artifact.\n\n## Delivery discipline\n\nWork in a real Git worktree based on `origin/main`. Inspect the complete diff,\nstage only reviewed paths, and verify `git status --short` after every gate. Do\nnot use `git stash`, `git add -A`, or `git add .`; preserve unrelated working\ntree changes. Keep runtime, ontology, status, and generated artifacts outside\nthis bounded skill slice unless the owning requirement explicitly requires them.\n",
+          "git_blob_sha": "ab619d31b4cca56eb997c98231f8403eeeee0270",
+          "path": "freshrss_agent/skills/freshrss-agent-development/SKILL.md",
+          "sha256": "9cf4999b1bf2f3c66203834a087d9265417bd6e5a445dad28ba31ba87c7d6552"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "freshrss-agent",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "freshrss-agent",
+            "requirement_ids": [
+              "CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "0e2a13a2287b"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT"
+          },
+          "specs/connector-identity/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "freshrss-agent",
+            "requirement_ids": [
+              "CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY-R001",
+                "landed_in": [
+                  "580771d42dd2"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:34"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY"
+          },
+          "specs/sdk-centralization/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "freshrss-agent",
+            "requirement_ids": [
+              "CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION-R001",
+                "landed_in": [],
+                "title": "Governed HTTP",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "e25657de93dbd5bcfe5206d90de3f12f58922e0c8deae02e59533b892e359a42",
+          "specs/connector-content/status.json": "00fc7323c149ad8b66b4a7b761d8f79da6c725b6a833d2ba5bd61170130fe665",
+          "specs/connector-identity/status.json": "d30da91ef52b4f21ad77335eb3b47e3a8b6feb0b9b28caeaacf2c45b5bef10aa",
+          "specs/sdk-centralization/status.json": "e44d6822cac803eb01d02e80131114d62c40b53024f6d0e9c18e80b5dea89602"
+        },
+        "status_record_count": 6,
+        "status_record_states": {
+          "LANDED": 1,
+          "SPECIFIED": 1,
+          "VERIFIED": 1
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"freshrss-agent\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"freshrss-agent\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"0e2a13a2287b\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/connector-identity/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY\",\n  \"owner_repo\": \"freshrss-agent\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY-R001\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"580771d42dd2\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    }\n  ]\n}\n",
+          "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"freshrss-agent\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Governed HTTP\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT",
+          "CONN-FRESHRSS-AGENT-CONNECTOR-CONTENT-R001",
+          "CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY",
+          "CONN-FRESHRSS-AGENT-CONNECTOR-IDENTITY-R001",
+          "CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION",
+          "CONN-FRESHRSS-AGENT-SDK-CENTRALIZATION-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R122.4": true
+      }
+    },
+    "home-assistant-agent": {
+      "candidate_sha": "1ce1cb47bf4d82878f9ee08cc9d61dad3ff9d9f9",
+      "historical_verified_leaves": [],
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "config_path": ".github/spec-dashboard.json",
+        "expected_pages_run": 40442923909,
+        "hosted_run": {
+          "actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "artifacts_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/actions/runs/40442923909/artifacts",
+          "cancel_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/actions/runs/40442923909/cancel",
+          "check_suite_id": 109614347117,
+          "check_suite_node_id": "CS_kwDORztRY88AAAAZhYYzbQ",
+          "check_suite_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/check-suites/109614347117",
+          "conclusion": "success",
+          "created_at": "2026-10-27T03:13:04Z",
+          "display_title": "Merge pull request #17 from Knuckles-Team/delivery/home-assistant-r12\u2026",
+          "event": "push",
+          "head_branch": "main",
+          "head_commit": {
+            "author": {
+              "email": "knucklessg1@gmail.com",
+              "name": "Audel Rouhi"
+            },
+            "committer": {
+              "email": "noreply@github.com",
+              "name": "GitHub"
+            },
+            "id": "1ce1cb47bf4d82878f9ee08cc9d61dad3ff9d9f9",
+            "message": "Merge pull request #17 from Knuckles-Team/delivery/home-assistant-r1283-20261027\n\nfeat(pages): enable home-assistant spec dashboard",
+            "timestamp": "2026-10-27T03:13:01Z",
+            "tree_id": "d1a931ec73fe9e4fd608c0b0269f9f95e46110ee"
+          },
+          "head_repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/deployments",
+            "description": null,
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/forks",
+            "full_name": "Knuckles-Team/home-assistant-agent",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/hooks",
+            "html_url": "https://github.com/Knuckles-Team/home-assistant-agent",
+            "id": 1195069795,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/milestones{/number}",
+            "name": "home-assistant-agent",
+            "node_id": "R_kgDORztRYw",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent"
+          },
+          "head_sha": "1ce1cb47bf4d82878f9ee08cc9d61dad3ff9d9f9",
+          "html_url": "https://github.com/Knuckles-Team/home-assistant-agent/actions/runs/40442923909",
+          "id": 40442923909,
+          "jobs_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/actions/runs/40442923909/jobs",
+          "logs_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/actions/runs/40442923909/logs",
+          "name": "Deploy GitHub Pages",
+          "node_id": "WFR_kwLORztRY88AAAAJapYLhQ",
+          "path": ".github/workflows/pages.yml",
+          "previous_attempt_url": null,
+          "pull_requests": [],
+          "referenced_workflows": [
+            {
+              "path": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+              "ref": "refs/heads/main",
+              "sha": "6ce28b9347c97c317937a6012d409183c314cbd5"
+            }
+          ],
+          "repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/deployments",
+            "description": null,
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/forks",
+            "full_name": "Knuckles-Team/home-assistant-agent",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/hooks",
+            "html_url": "https://github.com/Knuckles-Team/home-assistant-agent",
+            "id": 1195069795,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/milestones{/number}",
+            "name": "home-assistant-agent",
+            "node_id": "R_kgDORztRYw",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent"
+          },
+          "rerun_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/actions/runs/40442923909/rerun",
+          "run_attempt": 1,
+          "run_number": 35,
+          "run_started_at": "2026-10-27T03:13:04Z",
+          "status": "completed",
+          "triggering_actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "updated_at": "2026-10-27T03:16:46Z",
+          "url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/actions/runs/40442923909",
+          "workflow_id": 273936033,
+          "workflow_url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/actions/workflows/273936033"
+        },
+        "live": {
+          "bytes": 19622,
+          "has_spec_id": true,
+          "sha256": "289c2877167e4d47ddd913e5831d3766259552c37cc870439e298912b9f6ac46",
+          "spec_id": "CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT-R001",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/home-assistant-agent/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/home-assistant-agent/",
+          "https_enforced": true,
+          "pending_domain_unverified_at": null,
+          "protected_domain_state": null,
+          "public": true,
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "status": null,
+          "url": "https://api.github.com/repos/Knuckles-Team/home-assistant-agent/pages"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md",
+          "specs/**",
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml"
+        ],
+        "snapshot": {
+          "bytes": 2905,
+          "revision": "1ce1cb47bf4d82878f9ee08cc9d61dad3ff9d9f9",
+          "sha256": "0f328621eebce971a55c80d19074a04fa119fef9ee76b8a98c999c05d32d2ca3",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/home-assistant-agent/spec-delivery/snapshot.json"
+        },
+        "uses": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+        "with": {
+          "content_source": "docs",
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R128.3",
+        "PIPE-CONNSPEC-R128.4"
+      ],
+      "row": "PIPE-CONNSPEC-R128",
+      "sha": "1ce1cb47bf4d82878f9ee08cc9d61dad3ff9d9f9",
+      "skill": {
+        "bytes": 5899,
+        "path": "home_assistant_agent/skills/home-assistant-agent-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "acda4c4a9663e25b46b72b040f01ff0a657736424c81a8f3acd852f475725f02"
+      },
+      "skill_path": "home_assistant_agent/skills/home-assistant-agent-development/SKILL.md",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "git_blob_sha": "09d55fd5899bc3e7e65ed8a0443205135396b1e8",
+          "path": ".github/spec-dashboard.json",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 594,
+          "content": "name: Deploy GitHub Pages\n\non:\n  workflow_dispatch: {}\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "git_blob_sha": "e0f1fae52967517da37c6b9eb18b542f0b847c6a",
+          "path": ".github/workflows/pages.yml",
+          "sha256": "6ef8e2f90cf14c54e825742393581736ccbd622f8a800a7336ad8a48ffcfb9e4"
+        },
+        "home_assistant_agent/skills/home-assistant-agent-development/SKILL.md": {
+          "bytes": 5899,
+          "content": "---\nname: home-assistant-agent-development\ndomain: development\nskill_type: skill\ndescription: >-\n  Develop, test, gate, and release the home-assistant-agent connector. Use this\n  skill when changing Home Assistant REST or WebSocket mappings, governed MCP\n  tools, knowledge-graph ingestion, packaged connector content, documentation,\n  or repository gates.\nlicense: MIT\ntags: [home-assistant, development, connector, mcp, test, gates]\ntier: repository\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# home-assistant-agent development\n\nThis repository owns the Home Assistant REST and WebSocket API clients, their\nPydantic models, action-routed MCP tools, source declarations and knowledge-graph\ningestion mappings, and packaged connector content. Shared connector contracts,\ntransports, TLS profiles, and credential helpers belong to\n`agent-connector-sdk`; admission, serving, and durable graph state belong to\ntheir owning repositories. Read `AGENTS.md` before changing code and keep\ncredentials, private endpoints, entity data, and customer records out of source,\nlogs, fixtures, and skill content.\n\n## Rapid delivery: the 5-minute contract\n\nSpecs are already designed. Deliver small, reviewable slices and cite the\nowning spec row in the commit trailer.\n\n- Find the owning row first with `git grep -n \"<term>\" -- specs` and extend the\n  existing spec before adding requirement text. `PIPE-CONNSPEC-R128.4` is a\n  central pipelines criterion; do not invent a local status row for it.\n- Reuse the one `Connector` in `home_assistant_agent/__init__.py`, the unified\n  `HomeAssistantApi` facade in `home_assistant_agent/api/__init__.py`, and the\n  shared `BaseApiClient` in `home_assistant_agent/api/api_client_base.py`. Do\n  not create a second API, MCP, authentication, or transport plane.\n- Preserve the `HOME_ASSISTANT_URL` and `HOME_ASSISTANT_TOKEN` settings in\n  `home_assistant_agent/auth.py`, the SDK TLS resolver used by\n  `BaseApiClient`, and the REST/WebSocket split in\n  `home_assistant_agent/api/api_client_rest.py` and\n  `home_assistant_agent/api/api_client_websocket.py`. Never hardcode a secret,\n  endpoint, or TLS-verification bypass.\n- Keep the action-routed registrations in `home_assistant_agent/mcp_server.py`\n  aligned with the SDK dynamic surface. Preserve the source declarations in\n  `home_assistant_agent/connector_sources.py` and the typed mappings in\n  `home_assistant_agent/kg_ingest.py`; keep tenant and installation data\n  neutral.\n- Every delivered requirement needs a bound focused test. Generated\n  `specs/*/status.json` files come from the shared hooks; never hand-edit them.\n- Keep `home_assistant_agent/skills/`, `home_assistant_agent/ontology/`,\n  prompts, `mcp_config.json`, and source declarations coherent with the existing\n  package-data and `home-assistant-mcp` entry point. One logical change per\n  commit, with the central criterion recorded using the repository's documented\n  `Spec: none (<reason>)` form when no local requirements row exists, plus the\n  assisting-agent trailer.\n\n## Setup and gates\n\nUse the pinned environment from `uv sync --locked`, then run the shared gates:\n\n```bash\nuv sync --locked\nuvx pre-commit run --all-files\nuvx pre-commit run --all-files --hook-stage pre-push\n```\n\nFor focused feedback, run the smallest affected test with the locked\nenvironment:\n\n```bash\nuv run --locked --extra test pytest -q tests/test_home_assistant_development_skill.py\n```\n\nThe canonical `.pre-commit-config.yaml` delegates connector-standard, secrets,\nspec, tests-fast, and dependency-readiness checks to\n`Knuckles-Team/pipelines` at `rev: main`. Do not copy those hooks locally or\nbypass a failing check.\n\n## Connector-specific checks\n\n- Keep the REST client methods and WebSocket command methods behind the single\n  `HomeAssistantApi` facade. Validate response models and translate provider\n  failures through the existing SDK and client boundaries.\n- Preserve SDK TLS resolution and bearer-token handling. Mock Home Assistant\n  HTTP/WebSocket responses in local tests; never call a live instance or use\n  live credentials in a gate.\n- Keep the `home_assistant_agent/skills/`, `home_assistant_agent/ontology/`,\n  `home_assistant_agent/connectors/` (when present), prompts, and\n  `mcp_config.json` files in package data. Keep the source declarations and\n  ontology mappings explicit and installation-neutral.\n- Documentation is published by `.github/workflows/pages.yml`, which calls\n  `pages_pipeline.yml@main`. The Python release and rendered connector image\n  are called by `.github/workflows/pipeline.yml`; do not add a second publisher\n  or commit generated Docker artifacts.\n\n## Packaging and publication\n\n`pyproject.toml` declares\n`home-assistant-mcp = \"home_assistant_agent:connector\"` and packages\n`skills/**`, prompts, ontology, connector content, and `mcp_config.json`. For a\ngenuine packaged-content release, keep the project version, `CHANGELOG.md`, and\nthe editable `home-assistant-agent` entry in `uv.lock` coherent, then inspect\n`uv build` output for\n`home_assistant_agent/skills/home-assistant-agent-development/SKILL.md`.\n\nThe canonical release caller is `.github/workflows/pipeline.yml`: it publishes\nthe Python connector with `python_pipeline.yml@main`, then builds the rendered\nconnector container with `container_pipeline.yml@main` and\n`render_connector: true`. Do not claim package, container, or Pages publication\nfrom a local build; require exact-source hosted evidence and the public artifact.\n\n## Delivery discipline\n\nWork in a real Git worktree based on `origin/main`. Inspect the complete diff,\nstage only reviewed paths, and verify `git status --short` after every gate.\nDo not use `git stash`, `git add -A`, or `git add .`; preserve unrelated working\ntree changes. Keep runtime, ontology, source status, and generated artifacts\noutside a bounded skill slice unless the owning requirement explicitly requires\nthem.\n",
+          "git_blob_sha": "5fd7088b5004dfa0e88b3794323b90e5deda4e45",
+          "path": "home_assistant_agent/skills/home-assistant-agent-development/SKILL.md",
+          "sha256": "acda4c4a9663e25b46b72b040f01ff0a657736424c81a8f3acd852f475725f02"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "home-assistant-agent",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "home-assistant-agent",
+            "requirement_ids": [
+              "CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "65a983b9ecb5"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "377d5411a83b05dd23e503b86ad694369234212cfd579997bfe027f4c89e8348",
+          "specs/connector-content/status.json": "af855603c6357e5dcd9bca5af0d9d9bf8cbd389a7da71929b06b448d88995124"
+        },
+        "status_record_count": 2,
+        "status_record_states": {
+          "LANDED": 1
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"home-assistant-agent\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"home-assistant-agent\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"65a983b9ecb5\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT",
+          "CONN-HOME-ASSISTANT-AGENT-CONNECTOR-CONTENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R128.3": true,
+        "PIPE-CONNSPEC-R128.4": true
+      }
+    },
+    "jena-mcp": {
+      "candidate_sha": "f2a75a0cc76be0c32ea0445bf326c7aabf1c7985",
+      "historical_verified_leaves": [],
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R130.4"
+      ],
+      "row": "PIPE-CONNSPEC-R130",
+      "sha": "f2a75a0cc76be0c32ea0445bf326c7aabf1c7985",
+      "skill": {
+        "bytes": 3633,
+        "path": "jena_mcp/skills/jena-mcp-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "d3a1485db3160968260722ab8300ae734b5fcc730ad1cfd849b7b1939e462ca2"
+      },
+      "skill_path": "jena_mcp/skills/jena-mcp-development/SKILL.md",
+      "source_files": {
+        "jena_mcp/skills/jena-mcp-development/SKILL.md": {
+          "bytes": 3633,
+          "content": "---\nname: jena-mcp-development\nskill_type: skill\ndescription: >-\n  Develop and maintain the jena-mcp connector, including its Fuseki client,\n  governed MCP tools, source declarations, packaged content, and release gates.\n  Use when changing connector behavior, skills, prompts, ontology, or delivery\n  configuration.\nlicense: MIT\ntags: [jena, fuseki, mcp, connector, development, delivery]\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# Jena MCP Development\n\nUse this skill with the repository `AGENTS.md`, the owning `specs/` files, and\nthe focused tests. Keep the connector's one-door boundaries intact: the MCP\nserver exposes governed operations, while the API client owns HTTP details and\nthe source declarations describe ingestion metadata.\n\n## Route and inspect before editing\n\n1. Find the owning requirement under `specs/` before changing behavior. Record\n   the requirement ID in the commit trailer.\n2. Inspect the relevant source seam before editing:\n   `jena_mcp/api/api_client_jena.py` owns Fuseki requests,\n   `jena_mcp/mcp/mcp_jena.py` owns the typed `jena_sparql`, `jena_graph`,\n   `jena_admin`, and `jena_source_records` tools, and\n   `jena_mcp/connector_sources.py` owns source metadata.\n3. Reuse the existing skills and workflow catalog for provider-specific\n   procedures. Keep Graph Store, SPARQL, and server administration concerns in\n   their respective skills instead of duplicating recipes here.\n4. Preserve authentication and TLS policy in `jena_mcp/auth.py`; use\n   `APACHE_JENA_URL` and `APACHE_JENA_TOKEN` first, with `JENA_TLS_PROFILE` for\n   the named TLS policy. Never add credentials, raw endpoints, or bypassed TLS\n   examples to a skill or test.\n\n## Rapid delivery: the 5-minute contract\n\nDeliver one small, reviewable slice tied to the owning spec row.\n\n1. Read the owning spec, this skill, `AGENTS.md`, and the focused tests before\n   editing. Confirm whether the change belongs to the connector, SDK, or\n   pipelines repository before touching a file.\n2. Make the smallest source or packaged-content change. Generated\n   `specs/*/status.json` files are produced by the pipelines hook; never hand\n   edit them. Keep package data under `jena_mcp/skills/`, `prompts/`, or\n   `ontology/` so the existing setuptools declaration includes it.\n3. Add or update a focused, network-free test that proves the changed contract\n   and uses the real package paths. Do not turn a documentation check into a\n   live Fuseki request.\n4. Run the focused test and the repository's normal pre-commit checks. Inspect\n   the complete diff and confirm that no root scratch files, credentials, or\n   generated artifacts were added.\n5. Commit with `Spec: PIPE-CONNSPEC-R130.4` when this skill contract is the\n   owning delivery row, followed by the required `Co-Authored-By:` trailer.\n\n## Setup and gates\n\nUse the project extras for local checks:\n\n```bash\nuv sync --extra test\nuv run pytest tests/test_jena_development_skill.py\npre-commit run --all-files\n```\n\nKeep test fixtures deterministic and offline. The normal package-data entry in\n`pyproject.toml` must continue to include `skills/**`; do not add a second\ninstaller or copy skill content into Python strings. If dependencies change,\nuse the repository's version and lockfile workflow from `AGENTS.md`.\n\n## Delivery discipline\n\nWork in a private real Git worktree based on the exact current `origin/main`.\nInspect `git status --short`, the staged allowlist, and the full diff before\ncommitting. A skill-only change does not claim a released wheel, hosted Pages\npublication, or runtime Fuseki evidence; those require their own release and\npublication receipts.\n",
+          "git_blob_sha": "81c3c7cb34a25af4dc5c34b8b360225735a07917",
+          "path": "jena_mcp/skills/jena-mcp-development/SKILL.md",
+          "sha256": "d3a1485db3160968260722ab8300ae734b5fcc730ad1cfd849b7b1939e462ca2"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "jena-mcp",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "jena-mcp",
+            "requirement_ids": [
+              "CONN-JENA-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-JENA-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "dd0a5429f62f"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-JENA-MCP-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "03530d6d62a527190f8029d0d3e32578d04bc2c152ef3f1b1e7c1f96d55eb4dc",
+          "specs/connector-content/status.json": "b69ba4c2e89cc1885245acbf8a6e079a48918e4c7a0c2cf3f0b6549f2c6dfca7"
+        },
+        "status_record_count": 2,
+        "status_record_states": {
+          "LANDED": 1
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"jena-mcp\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-JENA-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"jena-mcp\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-JENA-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-JENA-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"dd0a5429f62f\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-JENA-MCP-CONNECTOR-CONTENT",
+          "CONN-JENA-MCP-CONNECTOR-CONTENT-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R130.4": true
+      }
+    },
+    "keycloak-agent": {
+      "candidate_sha": "105ab390b759376978f5837330686505b5ed9738",
+      "historical_verified_leaves": [],
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R132.4"
+      ],
+      "row": "PIPE-CONNSPEC-R132",
+      "sha": "105ab390b759376978f5837330686505b5ed9738",
+      "skill": {
+        "bytes": 5860,
+        "path": "keycloak_agent/skills/keycloak-agent-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "fe5ae5eaa69acfa6957111eda6649369904f9859407ff31873078ef6acec1588"
+      },
+      "skill_path": "keycloak_agent/skills/keycloak-agent-development/SKILL.md",
+      "source_files": {
+        "keycloak_agent/skills/keycloak-agent-development/SKILL.md": {
+          "bytes": 5860,
+          "content": "---\nname: keycloak-agent-development\nskill_type: skill\ndomain: development\ndescription: >-\n  Develop, test, gate, and release the keycloak-agent connector. Use this skill\n  when changing Keycloak API mappings, governed MCP tools, packaged connector\n  content, knowledge-graph ingestion, documentation, or repository gates.\nlicense: MIT\ntags: [keycloak, development, connector, test, gates]\ntier: repository\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n\n# keycloak-agent development\n\nThis repository owns the Keycloak admin API facade, authentication boundary,\naction-routed MCP tools, ontology and ingestion mappings, and packaged\nconnector content. Shared connector contracts, transports, TLS profiles, and\ncredential helpers belong to `agent-connector-sdk`; admission, serving, and\ndurable graph state belong to their owning repositories. Read `AGENTS.md`\nbefore changing code and keep credentials, private endpoints, realm data, and\ncustomer records out of source, logs, fixtures, and skill content.\n\n## Rapid delivery: the 5-minute contract\n\nSpecs are already designed. Deliver small, reviewable slices and cite the\nowning spec row in the commit trailer.\n\n- Find the owning row first with `git grep -n \"<term>\" -- specs` and extend\n  the existing spec before adding requirement text.\n- Reuse the one `Connector` in `keycloak_agent/__init__.py`, the `Api` facade\n  in `keycloak_agent/api_client.py`, and the generated operation methods loaded\n  by `keycloak_agent/api/api_client_base.py` from `keycloak_agent/api/openapi.json`. Do not\n  create a second API, MCP, authentication, or transport plane.\n- Preserve `KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_TOKEN`,\n  `KEYCLOAK_AGENT_USERNAME`, `KEYCLOAK_AGENT_PASSWORD`,\n  `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`, and\n  `KEYCLOAK_CLIENT_AUDIENCE` handling in `keycloak_agent/auth.py`. Use the SDK\n  TLS resolver and client-credentials provider; never add a TLS-verification\n  bypass or print credentials.\n- Keep the registered tool modules in `keycloak_agent/mcp_server.py` and\n  `keycloak_agent/mcp/` action-routed and aligned with the SDK dynamic surface.\n  Preserve the source declarations in `keycloak_agent/connector_sources.py` and\n  keep ingest mappings explicit and tenant-neutral.\n  Mock Keycloak HTTP responses in local tests; never call a live realm or use\n  live credentials in a gate.\n- Every delivered requirement needs a bound focused test. Generated\n  `specs/*/status.json` files come from the shared hooks; never hand-edit them.\n- Keep `skills/**`, `ontology/**`, prompts, `mcp_config.json`, and connector\n  source declarations coherent with the existing package-data and\n  `keycloak-mcp` entry point. One logical change per commit, with the central\n  criterion recorded using the repository's documented `Spec: none (<reason>)`\n  form when no local requirements row exists, plus the assisting-agent trailer.\n\n## Setup and gates\n\nUse the pinned environment from `uv sync --locked`, then run the shared gates:\n\n```bash\nuv sync --locked\nuvx pre-commit run --all-files\nuvx pre-commit run --all-files --hook-stage pre-push\n```\n\nFor focused feedback, run the smallest affected tests with the locked\nenvironment, for example:\n\n```bash\nuv run --locked --extra test pytest -q tests/test_keycloak_development_skill.py\nuv run --locked --extra test pytest -q tests/test_api_client.py tests/test_identity_realm_scoping.py\n```\n\nThe canonical `.pre-commit-config.yaml` delegates `connector-standard`,\n`secrets`, `spec`, `tests-fast`, and `dependency-readiness` to\n`Knuckles-Team/pipelines` at `rev: main`. Do not copy those hooks locally or\nbypass a failing check.\n\n## Connector-specific checks\n\n- Keep the multi-inheritance `Api` facade and OpenAPI-derived method naming\n  stable when changing provider operations; add a focused mocked request test\n  for a changed path.\n- Preserve the SDK TLS profile, bearer/client-credentials refresh behavior, and\n  the default `master` realm. Validate environment settings before provider\n  calls and translate provider failures through the existing client boundary.\n- Keep the `keycloak_agent/skills/`, `keycloak_agent/ontology/`,\n  `keycloak_agent/connectors/`, prompts, and `mcp_config.json` files in package\n  data. Keep ontology mappings and ingestion\n  source metadata neutral and free of tenant-specific values.\n- Documentation is published by `.github/workflows/pages.yml`, which calls\n  `pages_pipeline.yml@main` with the checked-in spec dashboard config. Source\n  status records live under `specs/` and are generated by the shared hooks.\n\n## Packaging and publication\n\n`pyproject.toml` declares `keycloak-mcp = \"keycloak_agent:connector\"` and\npackages `skills/**`, `ontology/**`, `connectors/**`, prompts, and\n`mcp_config.json`. For a genuine packaged-content release, keep the project\nversion, `CHANGELOG.md`, and the editable `keycloak-agent` entry in `uv.lock`\ncoherent, then inspect `uv build` output for\n`keycloak_agent/skills/keycloak-agent-development/SKILL.md`.\n\nThe canonical release caller is `.github/workflows/pipeline.yml`: it publishes\nthe Python connector with `python_pipeline.yml@main`, then builds the rendered\nconnector container with `container_pipeline.yml@main` and\n`render_connector: true`. Do not commit generated Docker artifacts or add a\nsecond release publisher. Do not claim package, container, or Pages publication\nfrom a local build; require the exact-source hosted evidence and public artifact.\n\n## Delivery discipline\n\nWork in a real Git worktree based on `origin/main`. Inspect the complete diff,\nstage only reviewed paths, and verify `git status --short` after every gate.\nDo not use `git stash`, `git add -A`, or `git add .`; preserve unrelated working\ntree changes. Keep runtime, ontology, status, and generated artifacts outside\nthe bounded skill slice unless the owning requirement explicitly requires them.\n",
+          "git_blob_sha": "787e1b85cad7d3f096c7df9aadddf375ab3a2959",
+          "path": "keycloak_agent/skills/keycloak-agent-development/SKILL.md",
+          "sha256": "fe5ae5eaa69acfa6957111eda6649369904f9859407ff31873078ef6acec1588"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "keycloak-agent",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "keycloak-agent",
+            "requirement_ids": [
+              "CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "56d43c85ce54"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT"
+          },
+          "specs/connector-identity/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "keycloak-agent",
+            "requirement_ids": [
+              "CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY-R001",
+                "landed_in": [
+                  "88cd551054e6",
+                  "edf6b09d17b3"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:34"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "9ddd99fabfbe974160c9c37be8db08a1d876e14cf5d831f4d8023ec9ee5b2861",
+          "specs/connector-content/status.json": "17d7f544cf8b9c3cb70ffbf557715924f57a9e657451dedc5d45664617c9d77f",
+          "specs/connector-identity/status.json": "c9605cb976293d6f4de870e2775c1686164b908a5ce68c77b6fbed72923e41a0"
+        },
+        "status_record_count": 4,
+        "status_record_states": {
+          "LANDED": 1,
+          "VERIFIED": 1
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"keycloak-agent\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"keycloak-agent\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"56d43c85ce54\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/connector-identity/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY\",\n  \"owner_repo\": \"keycloak-agent\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY-R001\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"88cd551054e6\",\n        \"edf6b09d17b3\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT",
+          "CONN-KEYCLOAK-AGENT-CONNECTOR-CONTENT-R001",
+          "CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY",
+          "CONN-KEYCLOAK-AGENT-CONNECTOR-IDENTITY-R001"
+        ]
+      },
+      "strict_leaves": {
+        "PIPE-CONNSPEC-R132.4": true
+      }
+    },
     "pulselink-mcp": {
       "candidate_sha": "9069c0409771f460da2afafe410e1bbe7f0a375e",
       "historical_verified_leaves": [
@@ -836,7 +3220,7 @@
   },
   "schema_version": 1,
   "strict_leaf_counts": {
-    ".3": 1,
-    ".4": 2
+    ".3": 4,
+    ".4": 9
   }
 }
