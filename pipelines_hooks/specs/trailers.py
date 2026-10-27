@@ -14,6 +14,10 @@ when:
 5. a trailered, known ID has no bound test anywhere in the tree: a Python
    ``mark.spec("ID")`` call, or a ``// spec: ID`` / ``# spec: ID`` line.
 
+Commits already reachable from the current ``origin/main`` are excluded even
+when the pushed-over base is older; new branch commits are still checked
+against the current requirement and test-binding tree.
+
 A repository's ``.config/spec-aliases.toml`` (see :mod:`pipelines_hooks.specs.aliases`)
 maps retired ID prefixes to canonical ones: a trailer or binding with a retired
 prefix counts for the canonical ID, and a trailer in the range that still uses a
@@ -146,7 +150,16 @@ def _github_synthetic_merge(root: Path, base: str | None) -> str | None:
 
 def _load_commits(root: Path, base: str | None) -> list[_Commit]:
     rev_range = f"{base}..HEAD" if base else "HEAD"
-    raw = git_text(root, ("log", "--diff-merges=first-parent", f"--format={_LOG_FORMAT}", "--name-only", rev_range))
+    arguments = ["log", "--diff-merges=first-parent", f"--format={_LOG_FORMAT}", "--name-only", rev_range]
+    # PRE_COMMIT_FROM_REF can be older than a freshly advanced origin/main. A
+    # topic branch may merge that current main and inherit commits with Spec
+    # trailers that are no longer part of the branch's unpublished changes.
+    # Exclude the current main reachability independently of the pushed-over
+    # base, while retaining every commit unique to the branch.
+    current_main = commit(root, "origin/main")
+    if current_main is not None:
+        arguments.extend(("--not", current_main))
+    raw = git_text(root, tuple(arguments))
     commits = _parse_log(raw)
     synthetic_merge = _github_synthetic_merge(root, base)
     if synthetic_merge is not None:
