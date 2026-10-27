@@ -902,6 +902,7 @@
       "title": "`audio-transcriber` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "5536587da291",
         "a75eb4ea62fd",
         "d7d1a86cc659"
       ],
@@ -945,6 +946,7 @@
       "title": "`audio-transcriber` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "5536587da291",
         "d7d1a86cc659"
       ],
       "verified_by": [
@@ -956,6 +958,7 @@
       "title": "`audio-transcriber` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "5536587da291",
         "d7d1a86cc659"
       ],
       "verified_by": [
@@ -1191,8 +1194,10 @@
     {
       "id": "PIPE-CONNSPEC-R111.3",
       "title": "`ciso-assistant-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:77"
       ]
@@ -1200,8 +1205,10 @@
     {
       "id": "PIPE-CONNSPEC-R111.4",
       "title": "`ciso-assistant-api` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:128"
       ]
@@ -1645,9 +1652,17 @@
     {
       "id": "PIPE-CONNSPEC-R119",
       "title": "`erpnext-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291",
+        "a56aeaef8e7f"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:129",
+        "tests/test_connector_consumer_r118_137.py:147",
+        "tests/test_connector_consumer_r118_137.py:50",
+        "tests/test_connector_consumer_r118_137.py:94"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R119.1",
         "PIPE-CONNSPEC-R119.2",
@@ -1691,8 +1706,10 @@
     {
       "id": "PIPE-CONNSPEC-R119.4",
       "title": "`erpnext-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:129"
       ]
@@ -1700,9 +1717,17 @@
     {
       "id": "PIPE-CONNSPEC-R120",
       "title": "`fan-manager` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291",
+        "a56aeaef8e7f"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:130",
+        "tests/test_connector_consumer_r107_r155_public_batch.py:78",
+        "tests/test_connector_consumer_r118_137.py:51",
+        "tests/test_connector_consumer_r118_137.py:95"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R120.1",
         "PIPE-CONNSPEC-R120.2",
@@ -1735,8 +1760,10 @@
     {
       "id": "PIPE-CONNSPEC-R120.3",
       "title": "`fan-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:78"
       ]
@@ -1744,8 +1771,10 @@
     {
       "id": "PIPE-CONNSPEC-R120.4",
       "title": "`fan-manager` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:130"
       ]
@@ -1863,8 +1892,10 @@
     {
       "id": "PIPE-CONNSPEC-R122.4",
       "title": "`freshrss-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:131"
       ]
@@ -2149,9 +2180,17 @@
     {
       "id": "PIPE-CONNSPEC-R128",
       "title": "`home-assistant-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291",
+        "a56aeaef8e7f"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:132",
+        "tests/test_connector_consumer_r107_r155_public_batch.py:79",
+        "tests/test_connector_consumer_r118_137.py:101",
+        "tests/test_connector_consumer_r118_137.py:59"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R128.1",
         "PIPE-CONNSPEC-R128.2",
@@ -2184,8 +2223,10 @@
     {
       "id": "PIPE-CONNSPEC-R128.3",
       "title": "`home-assistant-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:79"
       ]
@@ -2193,8 +2234,10 @@
     {
       "id": "PIPE-CONNSPEC-R128.4",
       "title": "`home-assistant-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:132"
       ]
@@ -2267,9 +2310,17 @@
     {
       "id": "PIPE-CONNSPEC-R130",
       "title": "`jena-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291",
+        "a56aeaef8e7f"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:133",
+        "tests/test_connector_consumer_r118_137.py:103",
+        "tests/test_connector_consumer_r118_137.py:148",
+        "tests/test_connector_consumer_r118_137.py:61"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R130.1",
         "PIPE-CONNSPEC-R130.2",
@@ -2313,8 +2364,10 @@
     {
       "id": "PIPE-CONNSPEC-R130.4",
       "title": "`jena-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:133"
       ]
@@ -2367,9 +2420,17 @@
     {
       "id": "PIPE-CONNSPEC-R132",
       "title": "`keycloak-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291",
+        "a56aeaef8e7f"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:134",
+        "tests/test_connector_consumer_r118_137.py:104",
+        "tests/test_connector_consumer_r118_137.py:149",
+        "tests/test_connector_consumer_r118_137.py:63"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R132.1",
         "PIPE-CONNSPEC-R132.2",
@@ -2413,8 +2474,10 @@
     {
       "id": "PIPE-CONNSPEC-R132.4",
       "title": "`keycloak-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "5536587da291"
+      ],
       "verified_by": [
         "tests/test_connector_consumer_r107_r155_public_batch.py:134"
       ]
@@ -3731,6 +3794,7 @@
       "title": "`pulselink-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "5536587da291",
         "d7d1a86cc659"
       ],
       "verified_by": [
