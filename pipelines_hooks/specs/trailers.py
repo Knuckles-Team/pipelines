@@ -16,7 +16,11 @@ when:
 
 Commits already reachable from the current ``origin/main`` are excluded even
 when the pushed-over base is older; new branch commits are still checked
-against the current requirement and test-binding tree.
+against the current requirement and test-binding tree. A merge commit is
+excluded only when it is a pure upstream integration: it has exactly two
+parents, its incoming second parent is reachable from trusted ``origin/main``
+or the pushed-over base, and its tree is exactly Git's clean ``merge-tree``
+result. Merge commits with conflict-resolution edits remain in the check.
 
 A repository's ``.config/spec-aliases.toml`` (see :mod:`pipelines_hooks.specs.aliases`)
 maps retired ID prefixes to canonical ones: a trailer or binding with a retired
@@ -26,8 +30,9 @@ retired prefix only prints a WARN line.
 Explicit evidence withdrawals additionally validate the complete PR diff against
 its merge base. See ``reference/spec-standard.md`` for the restricted contract.
 
-History and bindings are scanned without a subprocess per commit.
-Withdrawals additionally inspect the affected source blobs.
+History and bindings use bounded history/grep scans. Candidate merge commits
+add one bounded ``merge-tree`` check. Withdrawals additionally inspect the
+affected source blobs.
 """
 
 from __future__ import annotations
@@ -57,7 +62,7 @@ from pipelines_hooks.specs.withdrawal import withdrawals
 #: then sha/trailer separator. Both are illegal in a sha or a trailer value.
 _RECORD = "\x01"
 _FIELD = "\x02"
-_LOG_FORMAT = f"{_RECORD}%H{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
+_LOG_FORMAT = f"{_RECORD}%H{_FIELD}%P{_FIELD}%T{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
 
 _EXEMPT_PREFIXES = ("specs/", "docs/", ".github/")
 _PULL_MERGE_REF = re.compile(r"^refs/pull/(?P<number>[1-9][0-9]*)/merge$")
@@ -73,9 +78,11 @@ _BOUND_TEST_PATTERN = r"mark\.spec\(|//[[:space:]]*spec:|#[[:space:]]*spec:"
 
 @dataclass(frozen=True)
 class _Commit:
-    """One commit's sha, raw ``Spec:`` trailer text, and changed paths."""
+    """One commit's identity, parents/tree, raw trailer text, and changed paths."""
 
     sha: str
+    parents: tuple[str, ...]
+    tree: str
     trailer_raw: str
     paths: tuple[str, ...]
 
@@ -93,10 +100,53 @@ def _parse_log(raw: str) -> list[_Commit]:
         if not chunk:
             continue
         header, _, remainder = chunk.partition("\n")
-        sha, _, trailer_raw = header.partition(_FIELD)
+        fields = header.split(_FIELD)
+        if len(fields) != 4:
+            raise CannotRun("spec-trailers: malformed git log record")
+        sha, parent_raw, tree, trailer_raw = fields
         paths = tuple(line for line in remainder.splitlines() if line)
-        commits.append(_Commit(sha=sha, trailer_raw=trailer_raw, paths=paths))
+        commits.append(
+            _Commit(
+                sha=sha,
+                parents=tuple(parent_raw.split()),
+                tree=tree,
+                trailer_raw=trailer_raw,
+                paths=paths,
+            )
+        )
     return commits
+
+
+def _is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
+    result = run_git(root, ("merge-base", "--is-ancestor", ancestor, descendant))
+    if result.returncode == 0:
+        return True
+    if result.returncode == 1:
+        return False
+    detail = (result.stderr or "").strip()[:400]
+    raise CannotRun(f"git merge-base --is-ancestor failed: {detail}")
+
+
+def _is_pure_upstream_merge(root: Path, record: _Commit, base: str | None) -> bool:
+    """Whether an untrailered merge only integrates a trusted upstream tree."""
+    if len(record.parents) != 2:
+        return False
+
+    protected = []
+    current_main = commit(root, "origin/main")
+    if current_main is not None:
+        protected.append(current_main)
+    if base is not None and base not in protected:
+        protected.append(base)
+    if not protected or not any(_is_ancestor(root, record.parents[1], ref) for ref in protected):
+        return False
+
+    merged = run_git(root, ("merge-tree", "--write-tree", record.parents[0], record.parents[1]))
+    if merged.returncode != 0:
+        # A conflict or an unavailable merge input is never an exemption.
+        return False
+    merge_tree = (merged.stdout or "").splitlines()
+    return bool(merge_tree) and merge_tree[0].strip() == record.tree
 
 
 def _github_synthetic_merge(root: Path, base: str | None) -> str | None:
@@ -164,7 +214,7 @@ def _load_commits(root: Path, base: str | None) -> list[_Commit]:
     synthetic_merge = _github_synthetic_merge(root, base)
     if synthetic_merge is not None:
         commits = [commit for commit in commits if commit.sha != synthetic_merge]
-    return commits
+    return [commit for commit in commits if not _is_pure_upstream_merge(root, commit, base)]
 
 
 def _is_product_path(path: str) -> bool:

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import subprocess
 
 import pytest
 
+from pipelines_hooks.specs.trailers import _load_commits
 from tests.hooks.conftest import Repo
 
 
@@ -92,7 +94,92 @@ def test_real_untrailed_merge_commit_with_a_product_diff_is_rejected(repo: Repo)
     head = repo.commit({"docs/topic.md": "topic\n"}, "topic docs")
     merge = _synthetic_merge(repo, base=base, head=head, message="real branch merge")
     assert merge != head
+    assert merge in {record.sha for record in _load_commits(repo.root, base)}
     assert repo.run("spec-trailers", "--base-ref", base) == 1
+
+
+def test_pure_upstream_integration_merge_without_a_trailer_is_ignored(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.git("checkout", "-qb", "topic")
+    repo.commit({"docs/topic.md": "topic\n"}, "topic docs")
+    repo.git("checkout", "-q", "main")
+    upstream = repo.commit({"pkg/upstream.py": "upstream = True\n"}, "upstream product")
+    repo.git("update-ref", "refs/remotes/origin/main", upstream)
+    repo.git("checkout", "-q", "topic")
+    repo.git("merge", "--no-ff", "-q", "-m", "Merge branch 'main' into topic", "main")
+    merge = repo.git("rev-parse", "HEAD").strip()
+
+    assert merge
+    assert repo.run("spec-trailers", "--base-ref", base) == 0
+
+
+def test_upstream_merge_with_an_introduced_resolution_tree_is_rejected(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.git("checkout", "-qb", "topic")
+    topic = repo.commit({"docs/topic.md": "topic\n"}, "topic docs")
+    repo.git("checkout", "-q", "main")
+    upstream = repo.commit({"pkg/upstream.py": "upstream = True\n"}, "upstream product")
+    repo.git("update-ref", "refs/remotes/origin/main", upstream)
+    repo.git("checkout", "-q", "topic")
+    repo.write("pkg/resolution.py", "manual = True\n")
+    repo.git("add", "--", "pkg/resolution.py")
+    tree = repo.git("write-tree").strip()
+    merge = repo.git(
+        "commit-tree",
+        tree,
+        "-p",
+        topic,
+        "-p",
+        upstream,
+        "-m",
+        "Merge branch 'main' into topic with resolution",
+    ).strip()
+    repo.git("reset", "--hard", "-q", merge)
+
+    assert merge in {record.sha for record in _load_commits(repo.root, base)}
+    assert repo.run("spec-trailers", "--base-ref", base) == 1
+
+
+def test_conflict_resolution_merge_without_a_trailer_is_rejected(repo: Repo) -> None:
+    base = repo.commit({"pkg/shared.py": "base\n"}, "base product")
+    repo.git("checkout", "-qb", "topic")
+    repo.commit({"pkg/shared.py": "topic\n"}, "topic product")
+    repo.git("checkout", "-q", "main")
+    upstream = repo.commit({"pkg/shared.py": "upstream\n"}, "upstream product")
+    repo.git("update-ref", "refs/remotes/origin/main", upstream)
+    repo.git("checkout", "-q", "topic")
+    with pytest.raises(subprocess.CalledProcessError):
+        repo.git("merge", "--no-ff", "-q", "-m", "Merge branch 'main' into topic", "main")
+    repo.write("pkg/shared.py", "resolved\n")
+    repo.git("add", "--", "pkg/shared.py")
+    repo.git("commit", "-q", "-m", "Merge branch 'main' into topic with conflict resolution")
+
+    merge = repo.git("rev-parse", "HEAD").strip()
+    assert merge in {record.sha for record in _load_commits(repo.root, base)}
+    assert repo.run("spec-trailers", "--base-ref", base) == 1
+
+
+def test_pure_upstream_merge_keeps_unknown_feature_ids_in_scope(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.git("checkout", "-qb", "topic")
+    _commit(
+        repo,
+        {
+            "pkg/feature.py": "feature = True\n",
+        },
+        "feature",
+        trailer="BRANCH-R998",
+    )
+    repo.git("checkout", "-q", "main")
+    upstream = repo.commit({"pkg/upstream.py": "upstream = True\n"}, "upstream product")
+    repo.git("update-ref", "refs/remotes/origin/main", upstream)
+    repo.git("checkout", "-q", "topic")
+    repo.git("merge", "--no-ff", "-q", "-m", "Merge branch 'main' into topic", "main")
+    merge = repo.git("rev-parse", "HEAD").strip()
+
+    assert merge
+    assert repo.run("spec-trailers", "--base-ref", base) == 1
+    assert "unknown requirement id" in capsys.readouterr().out
 
 
 def test_pass_none_exemption_covers_a_product_only_change(repo: Repo) -> None:
