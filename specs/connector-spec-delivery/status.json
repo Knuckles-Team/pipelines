@@ -937,14 +937,18 @@
       "title": "`audio-transcriber` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:48"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R107.4",
       "title": "`audio-transcriber` has the rapid-delivery section in its development skill",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:92"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R108",
@@ -3695,7 +3699,9 @@
       "title": "`pulselink-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "SPECIFIED",
       "landed_in": [],
-      "verified_by": []
+      "verified_by": [
+        "tests/test_connector_consumer_r107_r155_public_batch.py:103"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R156",

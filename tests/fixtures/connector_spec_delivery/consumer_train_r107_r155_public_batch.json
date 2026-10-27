@@ -1,0 +1,842 @@
+{
+  "central_requirements": {
+    "107": {
+      "PIPE-CONNSPEC-R107": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R107.1",
+          "PIPE-CONNSPEC-R107.2",
+          "PIPE-CONNSPEC-R107.3",
+          "PIPE-CONNSPEC-R107.4"
+        ],
+        "title": "`audio-transcriber` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R107.1": {
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "a75eb4ea62fd"
+        ],
+        "title": "`audio-transcriber` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_rollout.py:52"
+        ]
+      },
+      "PIPE-CONNSPEC-R107.2": {
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "a75eb4ea62fd"
+        ],
+        "title": "`audio-transcriber` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_rollout.py:82"
+        ]
+      },
+      "PIPE-CONNSPEC-R107.3": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`audio-transcriber` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R107.4": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`audio-transcriber` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "155": {
+      "PIPE-CONNSPEC-R155": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R155.1",
+          "PIPE-CONNSPEC-R155.2",
+          "PIPE-CONNSPEC-R155.3",
+          "PIPE-CONNSPEC-R155.4"
+        ],
+        "title": "`pulselink-mcp` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R155.1": {
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "ed11593ea8c8"
+        ],
+        "title": "`pulselink-mcp` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r138_157.py:80"
+        ]
+      },
+      "PIPE-CONNSPEC-R155.2": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`pulselink-mcp` has the three spec hooks in its pre-commit config",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R155.3": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`pulselink-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R155.4": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`pulselink-mcp` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    },
+    "156": {
+      "PIPE-CONNSPEC-R156": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "rollup_of": [
+          "PIPE-CONNSPEC-R156.1",
+          "PIPE-CONNSPEC-R156.2",
+          "PIPE-CONNSPEC-R156.3",
+          "PIPE-CONNSPEC-R156.4"
+        ],
+        "title": "`qbittorrent-agent` adopts the standard spec-delivery method and page",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R156.1": {
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "ed11593ea8c8"
+        ],
+        "title": "`qbittorrent-agent` has a `specs/` tree with a generated `status.json`",
+        "verified_by": [
+          "tests/test_connector_consumer_r138_157.py:81"
+        ]
+      },
+      "PIPE-CONNSPEC-R156.2": {
+        "delivery_state": "VERIFIED",
+        "landed_in": [
+          "ed11593ea8c8"
+        ],
+        "title": "`qbittorrent-agent` has the three spec hooks in its pre-commit config",
+        "verified_by": [
+          "tests/test_connector_consumer_r138_157.py:134"
+        ]
+      },
+      "PIPE-CONNSPEC-R156.3": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`qbittorrent-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
+        "verified_by": []
+      },
+      "PIPE-CONNSPEC-R156.4": {
+        "delivery_state": "SPECIFIED",
+        "landed_in": [],
+        "title": "`qbittorrent-agent` has the rapid-delivery section in its development skill",
+        "verified_by": []
+      }
+    }
+  },
+  "observed_utc": "2026-10-27T10:01:45.684005+00:00",
+  "provider": {
+    "canonical_template": {
+      "path": ".github/workflows/pages_pipeline.yml",
+      "rev": "main",
+      "sha": "40fe75b242094ccfaf3c3406df0852deffcee57e"
+    },
+    "hooks": [
+      "spec-decomposition",
+      "spec-standard",
+      "spec-status",
+      "spec-trailers"
+    ],
+    "sha": "40fe75b242094ccfaf3c3406df0852deffcee57e",
+    "spec_group": [
+      "spec-standard",
+      "spec-decomposition",
+      "spec-status",
+      "spec-trailers"
+    ]
+  },
+  "purpose": "Qualify only consumer .3/.4 leaves with source and live-publication evidence bound to exact main revisions.",
+  "qualification": {
+    "already_qualified_dot_one_recounted": false,
+    "already_qualified_dot_two_recounted": false,
+    "held_rows": [
+      "PIPE-CONNSPEC-R155.3",
+      "PIPE-CONNSPEC-R156.3",
+      "PIPE-CONNSPEC-R156.4"
+    ],
+    "historical_verified_leaves": [
+      "PIPE-CONNSPEC-R107.1",
+      "PIPE-CONNSPEC-R107.2",
+      "PIPE-CONNSPEC-R155.1"
+    ],
+    "new_pages_rows": [
+      "PIPE-CONNSPEC-R107.3"
+    ],
+    "new_skill_rows": [
+      "PIPE-CONNSPEC-R107.4",
+      "PIPE-CONNSPEC-R155.4"
+    ],
+    "promoted_rollups": [
+      "PIPE-CONNSPEC-R107"
+    ],
+    "rollups_promoted": true,
+    "source_release_success_claimed": false
+  },
+  "repos": {
+    "audio-transcriber": {
+      "candidate_sha": "df6fc5e45a99ef6a573b57f58f73638ce565c188",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R107.1",
+        "PIPE-CONNSPEC-R107.2"
+      ],
+      "pages": {
+        "caller_count": 1,
+        "config": {
+          "sources": [
+            {
+              "glob": "specs/*/status.json",
+              "kind": "spec"
+            }
+          ],
+          "version": 1
+        },
+        "config_path": ".github/spec-dashboard.json",
+        "expected_pages_run": 40442911852,
+        "hosted_run": {
+          "actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "artifacts_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/actions/runs/40442911852/artifacts",
+          "cancel_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/actions/runs/40442911852/cancel",
+          "check_suite_id": 109614315953,
+          "check_suite_node_id": "CS_kwDOIrwHhM8AAAAZhYW5sQ",
+          "check_suite_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/check-suites/109614315953",
+          "conclusion": "success",
+          "created_at": "2026-10-27T03:12:57Z",
+          "display_title": "Merge pull request #30 from Knuckles-Team/delivery/audio-r1073-pages-\u2026",
+          "event": "push",
+          "head_branch": "main",
+          "head_commit": {
+            "author": {
+              "email": "knucklessg1@gmail.com",
+              "name": "Audel Rouhi"
+            },
+            "committer": {
+              "email": "noreply@github.com",
+              "name": "GitHub"
+            },
+            "id": "df6fc5e45a99ef6a573b57f58f73638ce565c188",
+            "message": "Merge pull request #30 from Knuckles-Team/delivery/audio-r1073-pages-20261027\n\nfeat: enable the spec delivery Pages dashboard",
+            "timestamp": "2026-10-27T03:12:53Z",
+            "tree_id": "b075cabc990176e18a295021b1150cad4e0fbc8e"
+          },
+          "head_repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/deployments",
+            "description": "Transcribe audio into text. Agentic AI supported through MCP Server.",
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/forks",
+            "full_name": "Knuckles-Team/audio-transcriber",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/hooks",
+            "html_url": "https://github.com/Knuckles-Team/audio-transcriber",
+            "id": 582748036,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/milestones{/number}",
+            "name": "audio-transcriber",
+            "node_id": "R_kgDOIrwHhA",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber"
+          },
+          "head_sha": "df6fc5e45a99ef6a573b57f58f73638ce565c188",
+          "html_url": "https://github.com/Knuckles-Team/audio-transcriber/actions/runs/40442911852",
+          "id": 40442911852,
+          "jobs_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/actions/runs/40442911852/jobs",
+          "logs_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/actions/runs/40442911852/logs",
+          "name": "Deploy GitHub Pages",
+          "node_id": "WFR_kwLOIrwHhM8AAAAJapXcbA",
+          "path": ".github/workflows/pages.yml",
+          "previous_attempt_url": null,
+          "pull_requests": [],
+          "referenced_workflows": [
+            {
+              "path": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+              "ref": "refs/heads/main",
+              "sha": "6ce28b9347c97c317937a6012d409183c314cbd5"
+            }
+          ],
+          "repository": {
+            "archive_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/{archive_format}{/ref}",
+            "assignees_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/branches{/branch}",
+            "collaborators_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/comments{/number}",
+            "commits_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/contributors",
+            "deployments_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/deployments",
+            "description": "Transcribe audio into text. Agentic AI supported through MCP Server.",
+            "downloads_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/downloads",
+            "events_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/events",
+            "fork": false,
+            "forks_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/forks",
+            "full_name": "Knuckles-Team/audio-transcriber",
+            "git_commits_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/tags{/sha}",
+            "hooks_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/hooks",
+            "html_url": "https://github.com/Knuckles-Team/audio-transcriber",
+            "id": 582748036,
+            "issue_comment_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/issues{/number}",
+            "keys_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/labels{/name}",
+            "languages_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/languages",
+            "merges_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/merges",
+            "milestones_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/milestones{/number}",
+            "name": "audio-transcriber",
+            "node_id": "R_kgDOIrwHhA",
+            "notifications_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/notifications{?since,all,participating}",
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/119072828?v=4",
+              "events_url": "https://api.github.com/users/Knuckles-Team/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Knuckles-Team/followers",
+              "following_url": "https://api.github.com/users/Knuckles-Team/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Knuckles-Team/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Knuckles-Team",
+              "id": 119072828,
+              "login": "Knuckles-Team",
+              "node_id": "O_kgDOBxjoPA",
+              "organizations_url": "https://api.github.com/users/Knuckles-Team/orgs",
+              "received_events_url": "https://api.github.com/users/Knuckles-Team/received_events",
+              "repos_url": "https://api.github.com/users/Knuckles-Team/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Knuckles-Team/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Knuckles-Team/subscriptions",
+              "type": "Organization",
+              "url": "https://api.github.com/users/Knuckles-Team",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pulls_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/pulls{/number}",
+            "releases_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/releases{/id}",
+            "stargazers_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/stargazers",
+            "statuses_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/subscribers",
+            "subscription_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/subscription",
+            "tags_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/tags",
+            "teams_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/teams",
+            "trees_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/git/trees{/sha}",
+            "url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber"
+          },
+          "rerun_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/actions/runs/40442911852/rerun",
+          "run_attempt": 1,
+          "run_number": 37,
+          "run_started_at": "2026-10-27T03:12:57Z",
+          "status": "completed",
+          "triggering_actor": {
+            "avatar_url": "https://avatars.githubusercontent.com/u/8661571?v=4",
+            "events_url": "https://api.github.com/users/Knucklessg1/events{/privacy}",
+            "followers_url": "https://api.github.com/users/Knucklessg1/followers",
+            "following_url": "https://api.github.com/users/Knucklessg1/following{/other_user}",
+            "gists_url": "https://api.github.com/users/Knucklessg1/gists{/gist_id}",
+            "gravatar_id": "",
+            "html_url": "https://github.com/Knucklessg1",
+            "id": 8661571,
+            "login": "Knucklessg1",
+            "node_id": "MDQ6VXNlcjg2NjE1NzE=",
+            "organizations_url": "https://api.github.com/users/Knucklessg1/orgs",
+            "received_events_url": "https://api.github.com/users/Knucklessg1/received_events",
+            "repos_url": "https://api.github.com/users/Knucklessg1/repos",
+            "site_admin": false,
+            "starred_url": "https://api.github.com/users/Knucklessg1/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/Knucklessg1/subscriptions",
+            "type": "User",
+            "url": "https://api.github.com/users/Knucklessg1",
+            "user_view_type": "public"
+          },
+          "updated_at": "2026-10-27T03:16:55Z",
+          "url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/actions/runs/40442911852",
+          "workflow_id": 273935998,
+          "workflow_url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/actions/workflows/273935998"
+        },
+        "live": {
+          "bytes": 43203,
+          "has_spec_id": true,
+          "sha256": "f22269b372502d48a3bfeada1ec3ef23b3d0a1ce3751bba679429719786ecfd5",
+          "spec_id": "CONN-AUDIO-TRANSCRIBER",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/audio-transcriber/spec-delivery/"
+        },
+        "pages_api": {
+          "build_type": "workflow",
+          "cname": null,
+          "custom_404": false,
+          "html_url": "https://knuckles-team.github.io/audio-transcriber/",
+          "https_enforced": true,
+          "pending_domain_unverified_at": null,
+          "protected_domain_state": null,
+          "public": true,
+          "source": {
+            "branch": "main",
+            "path": "/"
+          },
+          "status": null,
+          "url": "https://api.github.com/repos/Knuckles-Team/audio-transcriber/pages"
+        },
+        "path_triggers": [
+          "docs/**",
+          "mkdocs.yml",
+          "README.md",
+          "specs/**",
+          ".github/spec-dashboard.json",
+          ".github/workflows/pages.yml"
+        ],
+        "snapshot": {
+          "bytes": 20006,
+          "revision": "df6fc5e45a99ef6a573b57f58f73638ce565c188",
+          "sha256": "88c30d6a332131094cf4c90593c00b7310948def6dcd5b776f1d409c9a08f77f",
+          "status": 200,
+          "url": "https://knuckles-team.github.io/audio-transcriber/spec-delivery/snapshot.json"
+        },
+        "uses": "Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main",
+        "with": {
+          "spec_dashboard_config": ".github/spec-dashboard.json",
+          "spec_dashboard_enabled": true
+        }
+      },
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R107.3",
+        "PIPE-CONNSPEC-R107.4"
+      ],
+      "row": "PIPE-CONNSPEC-R107",
+      "sha": "df6fc5e45a99ef6a573b57f58f73638ce565c188",
+      "skill": {
+        "bytes": 5229,
+        "path": "audio_transcriber/skills/audio-transcriber-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "6c1c3d50915f249701faf847fc39909fdfa0d9e523f59afbdd324e58264a4132"
+      },
+      "skill_path": "audio_transcriber/skills/audio-transcriber-development/SKILL.md",
+      "source_files": {
+        ".github/spec-dashboard.json": {
+          "bytes": 109,
+          "content": "{\n  \"version\": 1,\n  \"sources\": [\n    {\n      \"glob\": \"specs/*/status.json\",\n      \"kind\": \"spec\"\n    }\n  ]\n}\n",
+          "path": ".github/spec-dashboard.json",
+          "sha256": "69c443b039c3c2e1e5cda538daeb21855f1add673fe680dd56f28c13706dc38e"
+        },
+        ".github/workflows/pages.yml": {
+          "bytes": 594,
+          "content": "name: Deploy GitHub Pages\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'README.md'\n      - 'specs/**'\n      - '.github/spec-dashboard.json'\n      - '.github/workflows/pages.yml'\n  workflow_dispatch: {}\n\npermissions:\n  contents: read\n\njobs:\n  publish-pages:\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n",
+          "path": ".github/workflows/pages.yml",
+          "sha256": "933e5625cedc82a016f1b974f0686aee07def39e3d774bc8fd7b3a2a94e6880e"
+        },
+        "audio_transcriber/skills/audio-transcriber-development/SKILL.md": {
+          "bytes": 5229,
+          "content": "---\nname: audio-transcriber-development\nskill_type: skill\ndescription: >-\n  Develop and maintain the Audio Transcriber connector while preserving its\n  Whisper backend boundary, MCP tool surface, typed transcript ingestion,\n  optional hardware behavior, package resources, and public-first evidence.\nlicense: MIT\ntags: [audio, transcription, whisper, connector, mcp, knowledge-graph]\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n# Audio Transcriber Development\n\nThis is the repository development skill for `audio-transcriber`. The owning\ncentral delivery row is `PIPE-CONNSPEC-R107.4`; use this skill with the\nrepository `AGENTS.md`, the connector-content specifications, and focused tests.\n\n## Repository and runtime map\n\n- `audio_transcriber/mcp_server.py` registers transcription, media-sidecar,\n  health, and KG-ingestion tools plus the packaged prompts. Preserve the public\n  tool names, progress reporting, and Connector registration boundary.\n- `audio_transcriber/audio_transcriber.py` owns the `TranscriberBackend`\n  interface, faster-whisper/openai-whisper selection, file and microphone paths,\n  bounded exports, and best-effort KG handoff. Keep microphone dependencies\n  optional so file transcription remains importable without PortAudio.\n- `audio_transcriber/connector_sources.py` is the live transcript source and\n  schema declaration. Change source IDs, record mappings, and resource names\n  there rather than duplicating them in tool code.\n- `audio_transcriber/kg_ingest.py` and `kg_media.py` map transcript documents,\n  segments, and audio assets through the SDK/epistemic-graph ingestion boundary.\n  Preserve stable IDs and no-op behavior when no engine is available.\n- `audio_transcriber/skills/**`, `prompts/**`, `ontology/**`, and\n  `connectors/**` are package data. A skill change needs a package-content check\n  before release.\n\n## Runtime and security contract\n\n`WHISPER_MODEL` selects the default model and `TRANSCRIBE_DIRECTORY` selects\nconnector-owned scratch storage, with `XDG_DATA_HOME` supplying the safe default\nroot. Keep paths explicit and bounded; do not persist audio, transcripts, model\ncredentials, or provider data in source, skills, fixtures, or logs.\n\nPreserve the optional `pyaudio` import boundary, the supported faster-whisper\nand openai-whisper backends, `MCP_TOOL_MODE` surface selection, SDK transport\nconfiguration, and the SDK credential/TLS settings inherited by the connector.\nModel downloads and microphone access remain operator-controlled; never add a\nnetwork or hardware bypass.\n\n## Rapid delivery: the 5-minute contract\n\n1. Read the owning connector-content specs, this skill, `AGENTS.md`, and the\n   directly bound tests before changing a surface.\n2. Inspect the SDK `Connector`, MCP registrars and prompts, backend interface,\n   file/microphone paths, source declarations, KG/media mappers, and package-data\n   rules.\n3. Make the smallest connector-owned change. Preserve public tool names and\n   payloads, backend selection and optional dependencies, safe file/path\n   handling, progress behavior, transcript source IDs, stable KG IDs, and\n   canonical/legacy server routes.\n4. Run the smallest directly bound tests with\n   `uv run --locked --extra test pytest`, then run repository hooks. Use the\n   approved narrow wrapper when the lane requires it; never bypass a hook or a\n   failing gate.\n5. If package content changes, advance the version with the repository's normal\n   release metadata, refresh `uv.lock`, and inspect the built wheel and sdist\n   for the intended `audio_transcriber/skills/**` bytes before publication.\n6. Treat Pages and containers as separate evidence. After the exact main commit\n   publishes, verify the Pages revision and `/spec-delivery/` artifacts. Keep\n   package publication ahead of any image pin or generated connector build.\n\n## Focused validation\n\nFor backend or MCP changes, run the smallest relevant test file and keep file,\nmicrophone, optional-backend, and unavailable-KG paths distinct. For this\nskill/package-data change, verify frontmatter, the required rapid-delivery\nheading, Audio Transcriber-specific source references, package-data inclusion,\nand absence of token-like material without loading a model or using hardware.\n\nUse repository commands from `AGENTS.md`:\n\n```bash\nuv sync --locked\nuv run --locked --extra test pytest -q tests/test_audio_transcriber_development_skill.py\nuvx pre-commit run --all-files\n```\n\n## Publication and Pages\n\n`.github/workflows/pipeline.yml` publishes the package through\n`Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main` with\n`connector: true`, then invokes the container pipeline with\n`render_connector: true`. `.github/workflows/pages.yml` delegates README/docs\npublication to `pages_pipeline.yml@main`. Keep the public wheel/source guard\nand package-before-image ordering intact.\n\nA successful local test or workflow run is not package, Pages, or image proof.\nRecord exact merged source, public wheel/sdist hashes, skill bytes, Pages\nrevision, and image digest separately. Do not hand-edit central Pipelines\nstatus, promote a rollup from this skill change, or put credentials, provider\ndata, generated release artifacts, or bypass instructions in this skill.\n",
+          "path": "audio_transcriber/skills/audio-transcriber-development/SKILL.md",
+          "sha256": "6c1c3d50915f249701faf847fc39909fdfa0d9e523f59afbdd324e58264a4132"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "audio-transcriber",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "LANDED",
+            "owner_repo": "audio-transcriber",
+            "requirement_ids": [
+              "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "LANDED",
+                "id": "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "4fb26a280176"
+                ],
+                "title": "Default content",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT"
+          },
+          "specs/connector/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "audio-transcriber",
+            "requirement_ids": [
+              "CONN-AUDIO-TRANSCRIBER-R001",
+              "CONN-AUDIO-TRANSCRIBER-R002",
+              "CONN-AUDIO-TRANSCRIBER-R003"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-AUDIO-TRANSCRIBER-R001",
+                "landed_in": [
+                  "593d6635ee61"
+                ],
+                "title": "Read-only engine health",
+                "verified_by": [
+                  "tests/test_read_only_health.py:13"
+                ]
+              },
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-AUDIO-TRANSCRIBER-R002",
+                "landed_in": [
+                  "315cf71b94ac"
+                ],
+                "title": "Fleet name",
+                "verified_by": [
+                  "tests/test_fleet_name.py:34"
+                ]
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-AUDIO-TRANSCRIBER-R003",
+                "landed_in": [],
+                "title": "Microphone extra",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-AUDIO-TRANSCRIBER"
+          },
+          "specs/sdk-centralization/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "audio-transcriber",
+            "requirement_ids": [
+              "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001",
+              "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+              "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001",
+                "landed_in": [
+                  "2890148ee449"
+                ],
+                "rollup_of": [
+                  "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+                  "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2"
+                ],
+                "title": "Capabilities come from the SDK (rollup)",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+                "landed_in": [],
+                "title": "TLS profile for secure streams",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2",
+                "landed_in": [],
+                "title": "Stream dependency from the SDK",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION"
+          },
+          "specs/transcription/status.json": {
+            "delivery_state": "SPECIFIED",
+            "owner_repo": "audio-transcriber",
+            "requirement_ids": [
+              "TRANSCRIBE-R001",
+              "TRANSCRIBE-R001.1",
+              "TRANSCRIBE-R001.2",
+              "TRANSCRIBE-R001.3",
+              "TRANSCRIBE-R001.4",
+              "TRANSCRIBE-R001.5",
+              "TRANSCRIBE-R001.6"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "TRANSCRIBE-R001",
+                "landed_in": [],
+                "rollup_of": [
+                  "TRANSCRIBE-R001.1",
+                  "TRANSCRIBE-R001.2",
+                  "TRANSCRIBE-R001.3",
+                  "TRANSCRIBE-R001.4",
+                  "TRANSCRIBE-R001.5",
+                  "TRANSCRIBE-R001.6"
+                ],
+                "title": "Local-model speech transcription with egress controls",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "TRANSCRIBE-R001.1",
+                "landed_in": [],
+                "title": "Model",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "TRANSCRIBE-R001.2",
+                "landed_in": [],
+                "title": "Behavior",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "TRANSCRIBE-R001.3",
+                "landed_in": [],
+                "title": "Wiring",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "TRANSCRIBE-R001.4",
+                "landed_in": [],
+                "title": "Refusal",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "TRANSCRIBE-R001.5",
+                "landed_in": [],
+                "title": "Evidence",
+                "verified_by": []
+              },
+              {
+                "delivery_state": "SPECIFIED",
+                "id": "TRANSCRIBE-R001.6",
+                "landed_in": [],
+                "title": "Hot-path proof",
+                "verified_by": []
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "TRANSCRIBE"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "3f8d3750d530e2db3102904cd96ec009b6ff8d4eecda26bf48c6d35cea2ab443",
+          "specs/connector-content/status.json": "f65e7b5799f051216057d385a430c7182d83559dbe9eebbdd979f1bfa4aef76f",
+          "specs/connector/status.json": "b188d5c87feefb44a59d9df8317cc80dc6a883aea73480291600b0de4992f913",
+          "specs/sdk-centralization/status.json": "fe2f71bf3d66932977bbe49b263da5e7db668e3af94816837f4f3b9fc8ee414d",
+          "specs/transcription/status.json": "b13dac42525be6dc3f93b56889f14c34effdaee9ba97caa0776b4c75e9e09070"
+        },
+        "status_record_count": 18,
+        "status_record_states": {
+          "CONN-AUDIO-TRANSCRIBER": "SPECIFIED",
+          "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT": "LANDED",
+          "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001": "LANDED",
+          "CONN-AUDIO-TRANSCRIBER-R001": "VERIFIED",
+          "CONN-AUDIO-TRANSCRIBER-R002": "VERIFIED",
+          "CONN-AUDIO-TRANSCRIBER-R003": "SPECIFIED",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION": "SPECIFIED",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001": "SPECIFIED",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1": "SPECIFIED",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2": "SPECIFIED",
+          "TRANSCRIBE": "SPECIFIED",
+          "TRANSCRIBE-R001": "SPECIFIED",
+          "TRANSCRIBE-R001.1": "SPECIFIED",
+          "TRANSCRIBE-R001.2": "SPECIFIED",
+          "TRANSCRIBE-R001.3": "SPECIFIED",
+          "TRANSCRIBE-R001.4": "SPECIFIED",
+          "TRANSCRIBE-R001.5": "SPECIFIED",
+          "TRANSCRIBE-R001.6": "SPECIFIED"
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"LANDED\",\n  \"requirement_ids\": [\n    \"CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"LANDED\",\n      \"landed_in\": [\n        \"4fb26a280176\"\n      ],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/connector/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-AUDIO-TRANSCRIBER\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-AUDIO-TRANSCRIBER-R001\",\n    \"CONN-AUDIO-TRANSCRIBER-R002\",\n    \"CONN-AUDIO-TRANSCRIBER-R003\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-R001\",\n      \"title\": \"Read-only engine health\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"593d6635ee61\"\n      ],\n      \"verified_by\": [\n        \"tests/test_read_only_health.py:13\"\n      ]\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-R002\",\n      \"title\": \"Fleet name\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"315cf71b94ac\"\n      ],\n      \"verified_by\": [\n        \"tests/test_fleet_name.py:34\"\n      ]\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-R003\",\n      \"title\": \"Microphone extra\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/sdk-centralization/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001\",\n    \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1\",\n    \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001\",\n      \"title\": \"Capabilities come from the SDK (rollup)\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [\n        \"2890148ee449\"\n      ],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1\",\n        \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2\"\n      ]\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1\",\n      \"title\": \"TLS profile for secure streams\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2\",\n      \"title\": \"Stream dependency from the SDK\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n",
+          "specs/transcription/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"TRANSCRIBE\",\n  \"owner_repo\": \"audio-transcriber\",\n  \"delivery_state\": \"SPECIFIED\",\n  \"requirement_ids\": [\n    \"TRANSCRIBE-R001\",\n    \"TRANSCRIBE-R001.1\",\n    \"TRANSCRIBE-R001.2\",\n    \"TRANSCRIBE-R001.3\",\n    \"TRANSCRIBE-R001.4\",\n    \"TRANSCRIBE-R001.5\",\n    \"TRANSCRIBE-R001.6\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"TRANSCRIBE-R001\",\n      \"title\": \"Local-model speech transcription with egress controls\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": [],\n      \"rollup_of\": [\n        \"TRANSCRIBE-R001.1\",\n        \"TRANSCRIBE-R001.2\",\n        \"TRANSCRIBE-R001.3\",\n        \"TRANSCRIBE-R001.4\",\n        \"TRANSCRIBE-R001.5\",\n        \"TRANSCRIBE-R001.6\"\n      ]\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.1\",\n      \"title\": \"Model\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.2\",\n      \"title\": \"Behavior\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.3\",\n      \"title\": \"Wiring\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.4\",\n      \"title\": \"Refusal\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.5\",\n      \"title\": \"Evidence\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    },\n    {\n      \"id\": \"TRANSCRIBE-R001.6\",\n      \"title\": \"Hot-path proof\",\n      \"delivery_state\": \"SPECIFIED\",\n      \"landed_in\": [],\n      \"verified_by\": []\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-AUDIO-TRANSCRIBER",
+          "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT",
+          "CONN-AUDIO-TRANSCRIBER-CONNECTOR-CONTENT-R001",
+          "CONN-AUDIO-TRANSCRIBER-R001",
+          "CONN-AUDIO-TRANSCRIBER-R002",
+          "CONN-AUDIO-TRANSCRIBER-R003",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.1",
+          "CONN-AUDIO-TRANSCRIBER-SDK-CENTRALIZATION-R001.2",
+          "TRANSCRIBE",
+          "TRANSCRIBE-R001",
+          "TRANSCRIBE-R001.1",
+          "TRANSCRIBE-R001.2",
+          "TRANSCRIBE-R001.3",
+          "TRANSCRIBE-R001.4",
+          "TRANSCRIBE-R001.5",
+          "TRANSCRIBE-R001.6"
+        ]
+      }
+    },
+    "pulselink-mcp": {
+      "candidate_sha": "9069c0409771f460da2afafe410e1bbe7f0a375e",
+      "historical_verified_leaves": [
+        "PIPE-CONNSPEC-R155.1"
+      ],
+      "qualified_leaves": [
+        "PIPE-CONNSPEC-R155.4"
+      ],
+      "row": "PIPE-CONNSPEC-R155",
+      "sha": "9069c0409771f460da2afafe410e1bbe7f0a375e",
+      "skill": {
+        "bytes": 6014,
+        "path": "pulselink_mcp/skills/pulselink-mcp-development/SKILL.md",
+        "rapid_heading": true,
+        "sha256": "799578e6606489892de1b20eb77d8290242e67efcdce5bb4c902a1427590c0ce"
+      },
+      "skill_path": "pulselink_mcp/skills/pulselink-mcp-development/SKILL.md",
+      "source_files": {
+        "pulselink_mcp/skills/pulselink-mcp-development/SKILL.md": {
+          "bytes": 6014,
+          "content": "---\nname: pulselink-mcp-development\nskill_type: skill\ndescription: >-\n  Develop and maintain the PulseLink connector while preserving its keyless\n  source ladder, injected credential authority, MCP tool surfaces, source\n  declarations, package content, and release evidence.\nlicense: MIT\ntags: [pulselink, connector, mcp, sdk, research]\nmetadata:\n  author: Genius\n  version: '0.1.0'\n---\n# PulseLink MCP Development\n\nThis is the repository development skill for `pulselink-mcp`. The owning delivery\nrow is `PIPE-CONNSPEC-R155.4`; use this skill with the repository `AGENTS.md`,\nthe connector-content specification, and the focused tests.\n\n## Repository and runtime map\n\n- `pulselink_mcp/__init__.py` exposes the SDK `Connector` and keeps the safe\n  import boundary for the core client and optional MCP server.\n- `pulselink_mcp/api/api_client_pulse.py` is the client facade over the source\n  adapters. Keep the stable search, fetch, list, status, ingest, and transcribe\n  contracts while preserving source-specific fallback behavior.\n- `pulselink_mcp/auth.py` composes `PulseLinkClient` from an injected\n  `CredentialResolver`; `pulselink_mcp/credentials.py` resolves the\n  `SOURCE_CREDENTIALS` descriptors without storing secret values in source.\n- `pulselink_mcp/mcp_server.py` builds `ConnectorContent`, registers the\n  `pulse` tool surface behind `PULSETOOL`, and supports the legacy and canonical\n  SDK server paths. `pulselink_mcp/mcp/mcp_pulse.py` owns the action-routed\n  registrars.\n- `pulselink_mcp/sources/**` contains the source ladders, HTTP transport, and\n  unavailable-credential boundary. `pulselink_mcp/connector_sources.py` is the\n  live `pulselink-mcp` source and schema declaration; edit declarations rather\n  than duplicating them in tool code.\n- `pulselink_mcp/skills/**`, `prompts/**`, `ontology/**`, and `connectors/**`\n  are package data. A skill change therefore needs a package-content check before\n  publication. `pyproject.toml` also exposes the `pulselink-mcp` CLI and SDK\n  connector entry point.\n\n## Connection and security contract\n\nPulseLink is a source ladder, not one remote endpoint. Keyless sources such as\nweb, RSS/news, Hacker News, YouTube, V2EX, and Bilibili must continue to work\nwithout credentials. `SOURCE_CREDENTIALS` is an operator-supplied JSON map of\nsource descriptors; secret fields are URI references resolved by the injected\ncredential authority. Never place tokens, cookies, tenant data, or resolved\nendpoints in code, skills, fixtures, logs, or docs.\n\n`PULSELINK_TLS_PROFILE`, `PULSELINK_TLS_PROFILE_REF`, `TLS_PROFILE`, and\n`TLS_PROFILES_REF` select the shared verified TLS policy. Keep certificate and\nhostname verification enabled. `MCP_TOOL_MODE` selects the intent, condensed,\nverbose, or both tool surfaces; `PULSETOOL` gates the condensed PulseLink\nregistrar. Preserve the supported `stdio`, `streamable-http`, and `sse`\ntransports, host/port configuration, and the SDK's runtime secret boundary.\n\n## Rapid delivery: the 5-minute contract\n\n1. Read the owning connector-content spec, this skill, `AGENTS.md`, and the\n   focused tests before changing a connector surface.\n2. Inspect the active `Connector`, MCP registrar and action maps, source client\n   and ladders, credential resolver, source declarations, and package-data rules.\n3. Make the smallest connector-owned change. Preserve public tool names and\n   payloads, source IDs and mappings, keyless fallbacks, credential authority,\n   TLS verification, canonical and legacy routes, and the SDK `Connector`\n   boundary.\n4. Run the directly bound tests with `uv run --locked --extra test pytest`, then\n   run the repository hooks. Use the approved narrow test wrapper when the lane\n   requires it; never bypass a hook or a failing gate.\n5. If package code or packaged content changes, bump the version with the\n   repository's `.bumpversion.cfg`, refresh `uv.lock`, and inspect the built\n   wheel and sdist for the intended `pulselink_mcp/skills/**` content before\n   publication.\n6. Treat Pages and containers as separate evidence. After the exact main commit\n   publishes, verify the Pages revision and `/spec-delivery/` artifacts. The\n   container-release workflow is pin-driven: its public-wheel guard runs before\n   the legacy-profile container build, and a deployed image pin must not move\n   until the corresponding public package has passed its exact guard.\n\n## Focused validation\n\nFor client or source changes, run the smallest relevant test file and keep\nkeyless, credentialed, and unavailable-authority paths distinct. Add source\nmapping or ontology checks only when those declarations change. For a skill or\npackage-data change, verify frontmatter, the required rapid-delivery heading,\nsource-specific contract references, and wheel/sdist contents without contacting\nan external provider.\n\nUse the repository commands from `AGENTS.md`:\n\n```bash\nuv sync --locked\nuv run --locked --extra test pytest -q tests/test_pulselink_development_skill.py\nuvx pre-commit run --all-files\n```\n\n## Publication and Pages\n\n`.github/workflows/pipeline.yml` publishes the Python package through\n`Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main` on `main`.\nIts path filters deliberately leave the Docker pin refresh separate. The\n`.github/workflows/container-release.yml` caller first verifies the exact public\nwheel with `legacy-profile: true`, then invokes the shared container pipeline\nwith `legacy_profile: true` and `render_connector: false`; preserve that custom\nDockerfile and public-first ordering. `.github/workflows/pages.yml` delegates\nREADME/docs publication to `pages_pipeline.yml@main`.\n\nA successful local test or workflow run is not package, Pages, or image proof.\nRecord the exact merged source, public wheel/sdist hashes, skill bytes, Pages\nrevision, and image digest separately. Do not hand-edit central Pipelines\nstatus or promote a rollup from a connector change. Never put credentials,\nprovider data, generated release artifacts, or bypass instructions in this\nskill.\n",
+          "path": "pulselink_mcp/skills/pulselink-mcp-development/SKILL.md",
+          "sha256": "799578e6606489892de1b20eb77d8290242e67efcdce5bb4c902a1427590c0ce"
+        }
+      },
+      "status": {
+        "status_documents": {
+          "specs/_template/status.json": {
+            "delivery_state": "RETIRED",
+            "owner_repo": "pulselink-mcp",
+            "requirement_ids": [],
+            "requirements": [],
+            "schema_version": 2,
+            "spec_id": "REPLACE_WITH_STABLE_ID"
+          },
+          "specs/connector-content/status.json": {
+            "delivery_state": "VERIFIED",
+            "owner_repo": "pulselink-mcp",
+            "requirement_ids": [
+              "CONN-PULSELINK-MCP-CONNECTOR-CONTENT-R001"
+            ],
+            "requirements": [
+              {
+                "delivery_state": "VERIFIED",
+                "id": "CONN-PULSELINK-MCP-CONNECTOR-CONTENT-R001",
+                "landed_in": [
+                  "68fba8789df6",
+                  "944db9eb4da7"
+                ],
+                "title": "Default content",
+                "verified_by": [
+                  "tests/test_default_content_surfaces.py:15"
+                ]
+              }
+            ],
+            "schema_version": 2,
+            "spec_id": "CONN-PULSELINK-MCP-CONNECTOR-CONTENT"
+          }
+        },
+        "status_file_sha256": {
+          "specs/_template/status.json": "c5a9cab1939e4b9ed916d5356f952b05b31c529b7b54e6ece4ae13ef20b2dc1d",
+          "specs/connector-content/status.json": "41223740744eb6e0a48c567eafc388fe8c7f021b1b0c6a2f31e3d60c35c1ea03"
+        },
+        "status_record_count": 2,
+        "status_record_states": {
+          "CONN-PULSELINK-MCP-CONNECTOR-CONTENT": "VERIFIED",
+          "CONN-PULSELINK-MCP-CONNECTOR-CONTENT-R001": "VERIFIED"
+        },
+        "status_source": {
+          "specs/_template/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"REPLACE_WITH_STABLE_ID\",\n  \"owner_repo\": \"pulselink-mcp\",\n  \"delivery_state\": \"RETIRED\",\n  \"requirement_ids\": [],\n  \"requirements\": []\n}\n",
+          "specs/connector-content/status.json": "{\n  \"schema_version\": 2,\n  \"spec_id\": \"CONN-PULSELINK-MCP-CONNECTOR-CONTENT\",\n  \"owner_repo\": \"pulselink-mcp\",\n  \"delivery_state\": \"VERIFIED\",\n  \"requirement_ids\": [\n    \"CONN-PULSELINK-MCP-CONNECTOR-CONTENT-R001\"\n  ],\n  \"requirements\": [\n    {\n      \"id\": \"CONN-PULSELINK-MCP-CONNECTOR-CONTENT-R001\",\n      \"title\": \"Default content\",\n      \"delivery_state\": \"VERIFIED\",\n      \"landed_in\": [\n        \"68fba8789df6\",\n        \"944db9eb4da7\"\n      ],\n      \"verified_by\": [\n        \"tests/test_default_content_surfaces.py:15\"\n      ]\n    }\n  ]\n}\n"
+        },
+        "status_spec_ids": [
+          "CONN-PULSELINK-MCP-CONNECTOR-CONTENT",
+          "CONN-PULSELINK-MCP-CONNECTOR-CONTENT-R001"
+        ]
+      }
+    }
+  },
+  "schema_version": 1,
+  "strict_leaf_counts": {
+    ".3": 1,
+    ".4": 2
+  }
+}
