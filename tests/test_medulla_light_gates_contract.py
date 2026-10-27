@@ -28,6 +28,12 @@ def test_workflow_is_a_three_job_reusable_caller_contract() -> None:
     assert call["inputs"]["runner"]["default"] == '"ubuntu-latest"'
     assert call["outputs"]["code"]["value"] == "${{ jobs.changes.outputs.code }}"
     assert set(document["jobs"]) == {"changes", "lint-and-architecture", "spec-gates"}
+    assert document["jobs"]["changes"]["timeout-minutes"] == "${{ github.event_name == 'pull_request' && 10 || 60 }}"
+    assert (
+        document["jobs"]["lint-and-architecture"]["timeout-minutes"]
+        == "${{ github.event_name == 'pull_request' && 20 || 60 }}"
+    )
+    assert document["jobs"]["spec-gates"]["timeout-minutes"] == 5
 
 
 def test_change_scope_output_is_preserved_for_native_caller_jobs() -> None:

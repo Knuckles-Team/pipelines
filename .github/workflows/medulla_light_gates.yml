@@ -71,7 +71,7 @@ jobs:
         run: python3 scripts/ci_change_scope.py --event "$EVENT" --base "$BASE" --head "$HEAD" >> "$GITHUB_OUTPUT"
 
   lint-and-architecture:
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 10 || 60 }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 20 || 60 }}
     name: Lint, format and architecture (pre-commit)
     runs-on: >-
       ${{ fromJSON(
