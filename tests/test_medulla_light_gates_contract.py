@@ -80,3 +80,21 @@ def test_spec_trailers_stays_pull_request_only_and_jobs_remain_independent() -> 
     assert trailers["if"] == "github.event_name == 'pull_request'"
     for job in document["jobs"].values():
         assert "needs" not in job
+
+
+def test_trusted_runner_uses_image_python_and_hosted_runner_uses_setup_python() -> None:
+    document = _workflow()
+    trusted = "inputs.runner == '\"arbora-ci-trusted\"'"
+    hosted = "inputs.runner != '\"arbora-ci-trusted\"'"
+    for name in ("lint-and-architecture", "spec-gates"):
+        steps = document["jobs"][name]["steps"]
+        portable = next(
+            step for step in steps if step.get("name", "").startswith("Use the runner-provided portable Python")
+        )
+        assert portable["if"] == trusted
+        assert "command -v python3" in portable["run"]
+        assert "python3" in portable["run"]
+        assert "-m venv" in portable["run"]
+        assert ".python-version" in portable["run"]
+        setup = next(step for step in steps if step.get("uses", "").startswith("actions/setup-python@"))
+        assert setup["if"] == hosted

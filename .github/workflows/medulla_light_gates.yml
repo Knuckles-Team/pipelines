@@ -42,7 +42,7 @@ jobs:
              github.event.pull_request.head.repo.full_name == github.repository)
           ) &&
           inputs.runner == '"arbora-ci-trusted"' &&
-          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}'
         ) ||
         (
           (
@@ -83,7 +83,7 @@ jobs:
              github.event.pull_request.head.repo.full_name == github.repository)
           ) &&
           inputs.runner == '"arbora-ci-trusted"' &&
-          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}'
         ) ||
         (
           (
@@ -103,7 +103,28 @@ jobs:
           # spec-status reconstructs generated status from commit trailers.
           fetch-depth: 0
           persist-credentials: false
+      - name: Use the runner-provided portable Python (trusted runner)
+        if: inputs.runner == '"arbora-ci-trusted"'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_bin="$(command -v python3)"
+          required_version="$(tr -d '[:space:]' < .python-version)"
+          actual_version="$("$python_bin" -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')"
+          case "$actual_version" in
+            "$required_version"|"$required_version".*) ;;
+            *)
+              echo "Runner Python $actual_version does not satisfy .python-version $required_version" >&2
+              exit 1
+              ;;
+          esac
+          venv="$RUNNER_TEMP/medulla-python"
+          "$python_bin" -m venv "$venv"
+          echo "$venv/bin" >> "$GITHUB_PATH"
+          echo "VIRTUAL_ENV=$venv" >> "$GITHUB_ENV"
+          "$venv/bin/python" --version
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: inputs.runner != '"arbora-ci-trusted"'
         with:
           python-version-file: '.python-version'
       - name: Install manifest Rust toolchain and rustfmt
@@ -151,7 +172,7 @@ jobs:
              github.event.pull_request.head.repo.full_name == github.repository)
           ) &&
           inputs.runner == '"arbora-ci-trusted"' &&
-          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}'
         ) ||
         (
           (
@@ -170,7 +191,28 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Use the runner-provided portable Python (trusted runner)
+        if: inputs.runner == '"arbora-ci-trusted"'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_bin="$(command -v python3)"
+          required_version="$(tr -d '[:space:]' < .python-version)"
+          actual_version="$("$python_bin" -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')"
+          case "$actual_version" in
+            "$required_version"|"$required_version".*) ;;
+            *)
+              echo "Runner Python $actual_version does not satisfy .python-version $required_version" >&2
+              exit 1
+              ;;
+          esac
+          venv="$RUNNER_TEMP/medulla-python"
+          "$python_bin" -m venv "$venv"
+          echo "$venv/bin" >> "$GITHUB_PATH"
+          echo "VIRTUAL_ENV=$venv" >> "$GITHUB_ENV"
+          "$venv/bin/python" --version
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: inputs.runner != '"arbora-ci-trusted"'
         with:
           python-version-file: '.python-version'
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0

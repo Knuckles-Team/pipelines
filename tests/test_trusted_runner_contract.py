@@ -27,7 +27,8 @@ def test_policy_is_separate_from_recovery_and_restricts_compatible_workflows() -
     assert policy["fork_pull_request_fallback"] == "ubuntu-latest"
     assert policy["compatible_workflows"] == ["gates_pipeline.yml", "main_pipeline.yml"]
     assert set(policy["compatible_workflows"]).isdisjoint(policy["excluded_workflows"])
-    assert {"avx2", "rust-1.96"} <= set(policy["labels"])
+    assert "avx2" not in policy["labels"]
+    assert "rust-1.96" in policy["labels"]
 
 
 def test_gates_trusted_routing_is_opt_in_and_fork_safe() -> None:
@@ -67,7 +68,7 @@ def _expected_runner(
     if not trusted_event:
         return '"ubuntu-latest"'
     if requested == '"arbora-ci-trusted"':
-        return '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+        return '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}'
     return requested or '"ubuntu-latest"'
 
 
