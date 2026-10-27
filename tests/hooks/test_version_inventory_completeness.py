@@ -62,6 +62,7 @@ def test_version_inventory_completeness_model() -> None:
     assert report.unmapped == ()
     assert report.missing == ()
     assert report.selector_mismatch == ()
+    assert report.value_mismatch == ()
 
 
 # spec: PIPE-RELEASE-R006.8
@@ -73,6 +74,15 @@ def test_version_inventory_completeness_refuses_unmapped_and_dynamic_surfaces() 
     assert [(item.path, item.line) for item in report.unmapped] == [("pkg/extra.py", 1)]
     with pytest.raises(CannotRun, match=r"unmapped discovered locations \(pkg/extra.py:1\)"):
         require_complete_version_inventory(report)
+
+    mismatched = _contents()
+    mismatched["pkg/version.py"] = '__version__ = "9.9.9"\n'
+    value_report = compare_version_inventory(
+        _inventory(), discover_version_locations(mismatched, first_party_roots=("pkg",))
+    )
+    assert [(item.path, item.value) for item in value_report.value_mismatch] == [("pkg/version.py", "9.9.9")]
+    with pytest.raises(CannotRun, match=r"version-mismatch: discovered values differ"):
+        require_complete_version_inventory(value_report)
 
     dynamic = _contents()
     dynamic["pkg/version.py"] = "from build import version\n__version__ = version()\n"

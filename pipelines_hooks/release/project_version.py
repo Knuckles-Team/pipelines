@@ -157,12 +157,13 @@ class VersionInventoryCompleteness:
     missing: tuple[VersionLocation, ...]
     selector_mismatch: tuple[tuple[DiscoveredVersion, VersionLocation], ...]
     duplicates: tuple[DiscoveredVersion, ...]
+    value_mismatch: tuple[DiscoveredVersion, ...]
     policy_version: str = VERSION_DISCOVERY_POLICY
 
     @property
     def complete(self) -> bool:
         """Whether every discovered token has one canonical selector."""
-        return not (self.unmapped or self.missing or self.selector_mismatch or self.duplicates)
+        return not (self.unmapped or self.missing or self.selector_mismatch or self.duplicates or self.value_mismatch)
 
 
 def _safe_relative_path(value: str, *, what: str) -> str:
@@ -454,6 +455,7 @@ def compare_version_inventory(
     unmapped: list[DiscoveredVersion] = []
     selector_mismatch: list[tuple[DiscoveredVersion, VersionLocation]] = []
     duplicates: list[DiscoveredVersion] = []
+    value_mismatch: list[DiscoveredVersion] = []
     for item in discovered:
         location = configured_by_key.get((item.path, item.role))
         if location is None:
@@ -461,6 +463,8 @@ def compare_version_inventory(
             continue
         if _configured_selector(location) != item.selector:
             selector_mismatch.append((item, location))
+        if item.value != inventory.current_version:
+            value_mismatch.append(item)
         if len(discovered_by_key[(item.path, item.role)]) > 1:
             duplicates.append(item)
     missing = [
@@ -473,6 +477,7 @@ def compare_version_inventory(
         missing=tuple(sorted(missing)),
         selector_mismatch=tuple(sorted(selector_mismatch, key=lambda item: (item[0], item[1]))),
         duplicates=tuple(sorted(set(duplicates))),
+        value_mismatch=tuple(sorted(value_mismatch)),
     )
 
 
@@ -489,6 +494,9 @@ def require_complete_version_inventory(report: VersionInventoryCompleteness) -> 
     if report.selector_mismatch:
         paths = ", ".join(f"{item.path}:{item.line}" for item, _ in report.selector_mismatch)
         raise CannotRun(f"inventory-incomplete: selector mismatch ({paths})")
+    if report.value_mismatch:
+        paths = ", ".join(f"{item.path}:{item.line}" for item in report.value_mismatch)
+        raise CannotRun(f"version-mismatch: discovered values differ ({paths})")
     paths = ", ".join(f"{item.path}:{item.line}" for item in report.duplicates)
     raise CannotRun(f"selector-ambiguous: duplicate discovered locations ({paths})")
 
