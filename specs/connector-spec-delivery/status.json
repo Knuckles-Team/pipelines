@@ -3078,9 +3078,18 @@
     {
       "id": "PIPE-CONNSPEC-R148",
       "title": "`openbao-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "95c31e627d5e",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:130",
+        "tests/test_connector_consumer_r138_157.py:160",
+        "tests/test_connector_consumer_r138_157.py:73",
+        "tests/test_connector_consumer_r148.py:163",
+        "tests/test_connector_consumer_r148.py:77"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R148.1",
         "PIPE-CONNSPEC-R148.2",
@@ -3124,9 +3133,14 @@
     {
       "id": "PIPE-CONNSPEC-R148.4",
       "title": "`openbao-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "95c31e627d5e"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r148.py:163",
+        "tests/test_connector_consumer_r148.py:77"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R149",
