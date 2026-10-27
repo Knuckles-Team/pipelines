@@ -3433,9 +3433,17 @@
     {
       "id": "PIPE-CONNSPEC-R154",
       "title": "`postiz-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c940238f01fc",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:133",
+        "tests/test_connector_consumer_r138_157.py:207",
+        "tests/test_connector_consumer_r138_157.py:223",
+        "tests/test_connector_consumer_r138_157.py:79"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R154.1",
         "PIPE-CONNSPEC-R154.2",
@@ -3468,16 +3476,24 @@
     {
       "id": "PIPE-CONNSPEC-R154.3",
       "title": "`postiz-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c940238f01fc"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:207"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R154.4",
       "title": "`postiz-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "c940238f01fc"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:223"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R155",
