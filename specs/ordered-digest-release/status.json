@@ -542,10 +542,11 @@
       "title": "Behavior",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "008269c3085b",
         "a5cc6e652e41"
       ],
       "verified_by": [
-        "tests/hooks/test_version_inventory_completeness.py:67"
+        "tests/hooks/test_version_inventory_completeness.py:68"
       ]
     },
     {
