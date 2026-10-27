@@ -43,6 +43,7 @@ def test_gates_trusted_routing_is_opt_in_and_fork_safe() -> None:
     assert 'HEAD_REPOSITORY" == "$REPOSITORY"' in script
     assert "refs/heads/$DEFAULT_BRANCH" in script
     assert 'runs-on="ubuntu-latest"' in script
+    assert '"group":"arbora-ci-trusted"' in script
     assert workflow["jobs"]["gates"]["needs"] == "runner-selection"
     assert workflow["jobs"]["gates"]["runs-on"] == "${{ fromJSON(needs.runner-selection.outputs.runs-on) }}"
 
@@ -54,6 +55,7 @@ def test_main_trusted_routing_is_main_only() -> None:
     assert 'EVENT_NAME" == "push"' in script
     assert "refs/heads/$DEFAULT_BRANCH" in script
     assert 'runs-on="ubuntu-latest"' in script
+    assert '"group":"arbora-ci-trusted"' in script
     for name in ("tests", "backward", "supply-chain"):
         assert workflow["jobs"][name]["needs"] == "runner-selection"
         assert workflow["jobs"][name]["runs-on"] == "${{ fromJSON(needs.runner-selection.outputs.runs-on) }}"
@@ -61,5 +63,9 @@ def test_main_trusted_routing_is_main_only() -> None:
 
 def test_pipelines_ci_is_the_explicit_opt_in_and_no_container_job_is_rerouted() -> None:
     workflow = _workflow("ci.yml")
-    assert workflow["jobs"]["gates"]["with"]["runner"] == '"arbora-ci-trusted"'
-    assert workflow["jobs"]["main"]["with"]["runner"] == '"arbora-ci-trusted"'
+    expected = "${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '\"arbora-ci-trusted\"' || '\"ubuntu-latest\"' }}"
+    assert workflow["jobs"]["gates"]["with"]["runner"] == expected
+    assert workflow["jobs"]["main"]["with"]["runner"] == expected
+    policy = yaml.safe_load(POLICY.read_text(encoding="utf-8"))
+    assert policy["enablement_variable"] == "ARBORA_TRUSTED_CI_RUNNER"
+    assert policy["enablement_default"] is False

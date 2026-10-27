@@ -5,12 +5,13 @@ schema: 1
 # This repository intentionally does not mutate organization runner settings.
 runner_selector: arbora-ci-trusted
 runner_group: arbora-ci-trusted
+enablement_variable: ARBORA_TRUSTED_CI_RUNNER
+enablement_default: false
 labels:
   - self-hosted
   - linux
   - x64
   - homelab
-  - arbora-ci-trusted
   - avx2
   - rust-1.96
 fork_pull_request_fallback: ubuntu-latest

@@ -93,7 +93,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$REQUESTED_RUNNER" == '"arbora-ci-trusted"' && "$EVENT_NAME" == "push" && "$REF" == "refs/heads/$DEFAULT_BRANCH" ]]; then
-            echo 'runs-on=["self-hosted","linux","x64","homelab","arbora-ci-trusted","avx2","rust-1.96"]' >> "$GITHUB_OUTPUT"
+            echo 'runs-on={"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}' >> "$GITHUB_OUTPUT"
           elif [[ "$REQUESTED_RUNNER" == '"arbora-ci-trusted"' ]]; then
             echo 'runs-on="ubuntu-latest"' >> "$GITHUB_OUTPUT"
           else

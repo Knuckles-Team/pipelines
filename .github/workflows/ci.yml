@@ -27,7 +27,9 @@ jobs:
     uses: ./.github/workflows/gates_pipeline.yml
     with:
       src-root: pipelines_hooks
-      runner: '"arbora-ci-trusted"'
+      # Hosted by default. Set the repository/org variable only after the
+      # arbora-ci-trusted group and its AVX2/Rust runner have been verified.
+      runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '"arbora-ci-trusted"' || '"ubuntu-latest"' }}
       # tracked-privacy needs the operator's private identity catalog, which is
       # not published to hosted runners; it runs wherever the catalog is installed.
       skip-hooks: tracked-privacy
@@ -39,4 +41,5 @@ jobs:
       contents: read
     uses: ./.github/workflows/main_pipeline.yml
     with:
-      runner: '"arbora-ci-trusted"'
+      # Keep required main checks hosted until the dedicated pool is live.
+      runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '"arbora-ci-trusted"' || '"ubuntu-latest"' }}
