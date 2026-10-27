@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from pipelines_hooks.cli import GATES, main as cli_main
-from tests.hooks.conftest import Repo, write_identity_allowlist
+from tests.hooks.conftest import Repo, set_local_identity, stage_file, write_identity_allowlist
 
 ALLOWED = {"name": "Example Author", "email": "author@example.invalid"}
 
@@ -76,3 +76,18 @@ def test_commit_identity_range_is_invocable_through_the_cli_entrypoint(
     monkeypatch.setenv("CI", "false")
     monkeypatch.chdir(repo.root)
     assert cli_main(["commit-identity-range", "--base", "HEAD"]) == 0
+
+
+def test_commit_identity_rejection_uses_the_published_cli_path(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """PIPE-IDENTITY-R001: the real CLI rejects an unallowlisted pending identity."""
+    write_identity_allowlist(repo.root, [ALLOWED])
+    set_local_identity(repo.root, name="Outside Contributor", email="outside@example.invalid")
+    stage_file(repo.root)
+    monkeypatch.setenv("CI", "true")
+    monkeypatch.chdir(repo.root)
+    assert cli_main(["commit-identity", "--root", str(repo.root)]) == 1
+    output = capsys.readouterr().out
+    assert "author" in output
+    assert "Outside Contributor" not in output
