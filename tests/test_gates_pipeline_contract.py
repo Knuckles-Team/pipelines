@@ -17,7 +17,7 @@ SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
     "python-version", "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
-    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "docs-only-paths", "timeout-minutes", "scanners",
+    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "uv-cache-local-path", "docs-only-paths", "timeout-minutes", "scanners",
 }  # fmt: skip
 
 
@@ -47,6 +47,19 @@ def test_gates_workflow_inputs_all_default() -> None:
     assert set(inputs) == EXPECTED_INPUTS
     assert all(not spec["required"] and "default" in spec for spec in inputs.values())
     assert _on(GATES_WORKFLOW)["workflow_call"].get("secrets") is None
+
+
+# spec: PIPE-RELEASE-R007.1
+def test_gates_workflow_forwards_optional_uv_cache_path() -> None:
+    inputs = _on(GATES_WORKFLOW)["workflow_call"]["inputs"]
+    cache_input = inputs["uv-cache-local-path"]
+    assert cache_input["required"] is False
+    assert cache_input["type"] == "string" and cache_input["default"] == ""
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    install = next(step for step in steps if step.get("name") == "Install uv")
+    assert install["with"]["cache-local-path"] == "${{ inputs.uv-cache-local-path }}"
+    assert install["with"]["enable-cache"] is True
+    assert "uv.lock" in install["with"]["cache-dependency-glob"]
 
 
 # spec: PIPE-RELEASE-R007.2

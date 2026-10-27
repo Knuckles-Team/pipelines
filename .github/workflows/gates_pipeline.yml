@@ -120,6 +120,11 @@ on:
         required: false
         type: string
         default: ''
+      uv-cache-local-path:
+        description: Optional local uv cache path passed to setup-uv; empty keeps its default.
+        required: false
+        type: string
+        default: ''
       docs-only-paths:
         description: >-
           Space-separated bash patterns (`*` crosses `/`) of docs and spec paths. When
@@ -221,6 +226,7 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
           enable-cache: true
+          cache-local-path: ${{ inputs.uv-cache-local-path }}
           cache-dependency-glob: |
             uv.lock
             ${{ inputs.config }}
