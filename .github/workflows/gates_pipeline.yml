@@ -68,7 +68,11 @@ on:
         type: string
         default: ''
       runner:
-        description: JSON runner label or label list for runs-on.
+        description: >-
+          JSON runner label or label list for runs-on. The reserved value
+          "arbora-ci-trusted" opts this gate into the dedicated trusted group
+          for same-repository pull requests and default-branch pushes; fork
+          pull requests always fall back to ubuntu-latest.
         required: false
         type: string
         default: '"ubuntu-latest"'
@@ -135,7 +139,22 @@ permissions:
 jobs:
   gates:
     name: gates
-    runs-on: ${{ fromJSON(inputs.runner) }}
+    # Keep the opt-in path direct so it creates exactly one required check. The
+    # reserved value is private-runner eligible only for default-branch pushes
+    # and same-repository pull requests; fork PRs always use hosted GitHub.
+    runs-on: >-
+      ${{ fromJSON(
+        inputs.runner == '"arbora-ci-trusted"' &&
+        (
+          (github.event_name == 'push' &&
+           github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name == github.repository)
+        ) &&
+        '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}' ||
+        inputs.runner == '"arbora-ci-trusted"' && '"ubuntu-latest"' ||
+        inputs.runner
+      ) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read
