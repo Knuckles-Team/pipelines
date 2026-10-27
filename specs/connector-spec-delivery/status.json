@@ -2825,9 +2825,18 @@
     {
       "id": "PIPE-CONNSPEC-R144",
       "title": "`nextcloud-agent` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1bd43d95d2c6",
+        "ed11593ea8c8"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r138_157.py:127",
+        "tests/test_connector_consumer_r138_157.py:69",
+        "tests/test_connector_consumer_r144.py:136",
+        "tests/test_connector_consumer_r144.py:174",
+        "tests/test_connector_consumer_r144.py:50"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R144.1",
         "PIPE-CONNSPEC-R144.2",
@@ -2860,16 +2869,26 @@
     {
       "id": "PIPE-CONNSPEC-R144.3",
       "title": "`nextcloud-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1bd43d95d2c6"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r144.py:136",
+        "tests/test_connector_consumer_r144.py:50"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R144.4",
       "title": "`nextcloud-agent` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "1bd43d95d2c6"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_r144.py:174",
+        "tests/test_connector_consumer_r144.py:51"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R145",
