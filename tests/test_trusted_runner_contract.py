@@ -124,12 +124,12 @@ def test_pipelines_ci_is_the_explicit_opt_in_and_no_container_job_is_rerouted() 
     expected = "${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '\"arbora-ci-trusted\"' || '\"ubuntu-latest\"' }}"
     assert workflow["jobs"]["gates"]["with"]["runner"] == expected
     assert workflow["jobs"]["main"]["with"]["runner"] == expected
-    reviewed_sha = "b49b77468d0048f58a5876560f1767072b73c04d"
+    reviewed_ref = "main"
     assert workflow["jobs"]["gates"]["uses"] == (
-        f"Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@{reviewed_sha}"
+        f"Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@{reviewed_ref}"
     )
     assert workflow["jobs"]["main"]["uses"] == (
-        f"Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@{reviewed_sha}"
+        f"Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@{reviewed_ref}"
     )
     policy = yaml.safe_load(POLICY.read_text(encoding="utf-8"))
     assert policy["enablement_variable"] == "ARBORA_TRUSTED_CI_RUNNER"
