@@ -162,3 +162,12 @@ retains Cargo package names without applying pytest filename rules. Regression
 coverage includes mixed Python/Rust changes, duplicate crate hits, empty and
 unrelated changes, and conservative Rust fallback. This repairs omitted Rust
 checks without changing the full-suite or unavailable-diff contracts.
+
+## Amendment: caller-selected uv cache path (PIPE-RELEASE-R007.1)
+
+The gates workflow accepts an optional `uv-cache-local-path` string. Its empty
+default preserves the setup action's existing cache location. A caller may set
+it to an isolated path on the same filesystem as its project environment so
+uv can use filesystem links when the runner supports them. The workflow passes
+the value to `setup-uv` and keeps dependency-keyed cache restore enabled. This
+option does not change the tests, hooks, or runner trust policy.
