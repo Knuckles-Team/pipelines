@@ -22,6 +22,7 @@ _ROLLUP_ROWS = (
 )
 _REVERT_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R030` | **Reverted feature.** |\n"
 _STALE_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R040` | **Needs regeneration.** |\n"
+_TEMPLATE_ROW = "# template\n\n| ID | Requirement |\n|---|---|\n| `TEMPLATE-R001` | **Template only.** |\n"
 
 
 def _status(repo: Repo) -> dict:
@@ -198,6 +199,31 @@ def test_check_mode_fails_on_a_stale_status_json(repo: Repo) -> None:
 def test_no_specs_directory_is_a_clean_pass(repo: Repo) -> None:
     assert repo.run("spec-status") == 0
     assert not (Path(repo.root) / "specs").exists()
+
+
+def test_template_status_is_ignored_but_real_specs_are_checked(repo: Repo) -> None:
+    """The distributable template is not an authored spec, while real specs remain guarded."""
+    template_status = json.dumps({"schema_version": 2, "spec_id": "template", "requirements": []})
+    repo.commit(
+        {
+            "specs/_template/requirements.md": _TEMPLATE_ROW,
+            "specs/_template/status.json": template_status,
+            "specs/demo/requirements.md": _STALE_ROW,
+        },
+        "add template and authored spec",
+    )
+
+    assert repo.run("spec-status", "--write") == 0
+    template_path = repo.root / "specs/_template/status.json"
+    assert template_path.read_text(encoding="utf-8") == template_status
+
+    stale_template = "{\"stale\": true}\n"
+    repo.commit({"specs/_template/status.json": stale_template}, "update template metadata")
+    assert repo.run("spec-status") == 0
+    assert template_path.read_text(encoding="utf-8") == stale_template
+
+    repo.commit({"specs/demo/status.json": stale_template}, "drift authored status")
+    assert repo.run("spec-status") == 1
 
 
 def test_same_line_shorthand_inherits_prefix() -> None:
