@@ -28,6 +28,7 @@ EXPECTED_HOOKS = {
     "spec",
     "tests-fast",
 }
+EXPECTED_CADDY_SKILL = "caddy_mcp/skills/caddy-mcp-development/SKILL.md"
 STATUS_CONFIG = {"sources": [{"glob": "specs/*/status.json", "kind": "spec"}]}
 
 
@@ -144,9 +145,31 @@ def test_consumer_pages_are_current_and_published(tmp_path):
         assert pages["http"]["url"].endswith("/spec-delivery/")
 
 
+@pytest.mark.spec("PIPE-CONNSPEC-R109.4")
+def test_caddy_rapid_delivery_skill_and_pages_are_source_backed():
+    row = _evidence()["repos"]["caddy-mcp"]
+    assert row["skill_path"] == EXPECTED_CADDY_SKILL
+    skill = row["source_files"][EXPECTED_CADDY_SKILL]["content"]
+    assert "## Rapid delivery: the 5-minute contract" in skill
+    for source_reference in (
+        "caddy_mcp/__init__.py",
+        "CADDY_TOKEN",
+        "agent_connector_sdk.cli:serve",
+        "uvx pre-commit",
+    ):
+        assert source_reference in skill
+
+    pages = row["pages"]
+    assert pages["known_pages_run"] == "40425009250"
+    assert pages["hosted_run"]["databaseId"] == 40425009250
+    assert pages["hosted_run"]["headSha"] == row["sha"]
+    assert pages["http"]["status"] == 200
+
+
 def test_unqualified_rows_remain_explicitly_unbound():
     evidence = _evidence()
-    assert evidence["strict_leaf_counts"] == {".1": 9, ".2": 6, ".3": 4, ".4": 0}
+    assert evidence["strict_leaf_counts"] == {".1": 9, ".2": 6, ".3": 4, ".4": 1}
     assert evidence["repos"]["ciso-assistant-api"]["strict_leaves"]["PIPE-CONNSPEC-R111.3"] is False
     assert evidence["repos"]["ciso-assistant-api"]["pages"]["hosted_run"] is None
-    assert all(not row["strict_leaves"][f"{row['row']}.4"] for row in evidence["repos"].values())
+    assert evidence["repos"]["caddy-mcp"]["strict_leaves"]["PIPE-CONNSPEC-R109.4"] is True
+    assert [name for name, row in evidence["repos"].items() if row["strict_leaves"][f"{row['row']}.4"]] == ["caddy-mcp"]

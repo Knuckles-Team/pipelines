@@ -669,7 +669,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:48"
+        "tests/test_connector_consumer_rollout.py:49"
       ]
     },
     {
@@ -714,7 +714,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:49"
+        "tests/test_connector_consumer_rollout.py:50"
       ]
     },
     {
@@ -725,7 +725,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:79"
+        "tests/test_connector_consumer_rollout.py:80"
       ]
     },
     {
@@ -736,7 +736,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:123"
+        "tests/test_connector_consumer_rollout.py:124"
       ]
     },
     {
@@ -757,8 +757,8 @@
       "verified_by": [
         "tests/test_connector_consumer_r105.py:62",
         "tests/test_connector_consumer_r105.py:63",
-        "tests/test_connector_consumer_rollout.py:50",
-        "tests/test_connector_consumer_rollout.py:80"
+        "tests/test_connector_consumer_rollout.py:51",
+        "tests/test_connector_consumer_rollout.py:81"
       ],
       "rollup_of": [
         "PIPE-CONNSPEC-R105.1",
@@ -775,7 +775,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:50"
+        "tests/test_connector_consumer_rollout.py:51"
       ]
     },
     {
@@ -786,7 +786,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:80"
+        "tests/test_connector_consumer_rollout.py:81"
       ]
     },
     {
@@ -897,7 +897,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:51"
+        "tests/test_connector_consumer_rollout.py:52"
       ]
     },
     {
@@ -908,7 +908,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:81"
+        "tests/test_connector_consumer_rollout.py:82"
       ]
     },
     {
@@ -993,9 +993,17 @@
     {
       "id": "PIPE-CONNSPEC-R109",
       "title": "`caddy-mcp` adopts the standard spec-delivery method and page",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4c822b3c2dd7",
+        "a75eb4ea62fd"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:125",
+        "tests/test_connector_consumer_rollout.py:148",
+        "tests/test_connector_consumer_rollout.py:53",
+        "tests/test_connector_consumer_rollout.py:83"
+      ],
       "rollup_of": [
         "PIPE-CONNSPEC-R109.1",
         "PIPE-CONNSPEC-R109.2",
@@ -1011,7 +1019,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:52"
+        "tests/test_connector_consumer_rollout.py:53"
       ]
     },
     {
@@ -1022,7 +1030,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:82"
+        "tests/test_connector_consumer_rollout.py:83"
       ]
     },
     {
@@ -1033,15 +1041,19 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:124"
+        "tests/test_connector_consumer_rollout.py:125"
       ]
     },
     {
       "id": "PIPE-CONNSPEC-R109.4",
       "title": "`caddy-mcp` has the rapid-delivery section in its development skill",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "4c822b3c2dd7"
+      ],
+      "verified_by": [
+        "tests/test_connector_consumer_rollout.py:148"
+      ]
     },
     {
       "id": "PIPE-CONNSPEC-R110",
@@ -1064,7 +1076,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:53"
+        "tests/test_connector_consumer_rollout.py:54"
       ]
     },
     {
@@ -1075,7 +1087,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:83"
+        "tests/test_connector_consumer_rollout.py:84"
       ]
     },
     {
@@ -1086,7 +1098,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:125"
+        "tests/test_connector_consumer_rollout.py:126"
       ]
     },
     {
@@ -1117,7 +1129,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:54"
+        "tests/test_connector_consumer_rollout.py:55"
       ]
     },
     {
@@ -1422,7 +1434,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:55"
+        "tests/test_connector_consumer_rollout.py:56"
       ]
     },
     {
@@ -1475,7 +1487,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:56"
+        "tests/test_connector_consumer_rollout.py:57"
       ]
     },
     {
@@ -1486,7 +1498,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:84"
+        "tests/test_connector_consumer_rollout.py:85"
       ]
     },
     {
@@ -1497,7 +1509,7 @@
         "a75eb4ea62fd"
       ],
       "verified_by": [
-        "tests/test_connector_consumer_rollout.py:126"
+        "tests/test_connector_consumer_rollout.py:127"
       ]
     },
     {
