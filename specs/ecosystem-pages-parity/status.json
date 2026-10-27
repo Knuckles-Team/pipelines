@@ -609,7 +609,7 @@
         "303d05f2ffc1"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_status.py:242"
+        "tests/hooks/test_spec_status.py:268"
       ]
     },
     {

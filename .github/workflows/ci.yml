@@ -24,7 +24,7 @@ jobs:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
-    uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@b49b77468d0048f58a5876560f1767072b73c04d
+    uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main
     with:
       src-root: pipelines_hooks
       # Hosted by default. Set the repository/org variable only after the
@@ -39,7 +39,7 @@ jobs:
     if: github.event_name == 'push'
     permissions:
       contents: read
-    uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@b49b77468d0048f58a5876560f1767072b73c04d
+    uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@main
     with:
       # Keep required main checks hosted until the dedicated pool is live.
       runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '"arbora-ci-trusted"' || '"ubuntu-latest"' }}

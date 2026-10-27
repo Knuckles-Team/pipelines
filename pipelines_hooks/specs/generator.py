@@ -96,8 +96,10 @@ def _history_evidence(
 
 
 def generate(repo: Path, head: str) -> dict[Path, dict]:
-    """status.json path -> generated document, for every ``specs/*/requirements.md``."""
-    requirements_paths = sorted(repo.glob("specs/*/requirements.md"))
+    """status.json path -> generated document for every authored spec."""
+    requirements_paths = sorted(
+        path for path in repo.glob("specs/*/requirements.md") if path.parent.name != "_template"
+    )
     if not requirements_paths:
         return {}
     if git_text(repo, ("rev-parse", "--is-shallow-repository")).strip() == "true":
