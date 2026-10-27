@@ -217,7 +217,7 @@ def test_template_status_is_ignored_but_real_specs_are_checked(repo: Repo) -> No
     template_path = repo.root / "specs/_template/status.json"
     assert template_path.read_text(encoding="utf-8") == template_status
 
-    stale_template = "{\"stale\": true}\n"
+    stale_template = '{"stale": true}\n'
     repo.commit({"specs/_template/status.json": stale_template}, "update template metadata")
     assert repo.run("spec-status") == 0
     assert template_path.read_text(encoding="utf-8") == stale_template
