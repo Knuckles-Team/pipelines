@@ -50,7 +50,12 @@ on:
         type: string
         default: tests
       runner:
-        description: JSON runner label or label list for runs-on.
+        description: >-
+          JSON runner label or label list for runs-on. Custom runners are
+          accepted only for same-repository pull requests and default-branch
+          pushes; every other event, including fork pull requests, is forced
+          to ubuntu-latest. The reserved value "arbora-ci-trusted" selects
+          the dedicated group only on those trusted events.
         required: false
         type: string
         default: '"ubuntu-latest"'
@@ -77,7 +82,30 @@ jobs:
   tests:
     name: tests
     if: inputs.test-scope != ''
-    runs-on: ${{ fromJSON(inputs.runner) }}
+    runs-on: >-
+      ${{ fromJSON(
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner == '"arbora-ci-trusted"' &&
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+        ) ||
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner != '"arbora-ci-trusted"' &&
+          inputs.runner
+        ) ||
+        '"ubuntu-latest"'
+      ) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read
@@ -116,7 +144,30 @@ jobs:
   backward:
     name: backward-python
     if: inputs.backward-python != ''
-    runs-on: ${{ fromJSON(inputs.runner) }}
+    runs-on: >-
+      ${{ fromJSON(
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner == '"arbora-ci-trusted"' &&
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+        ) ||
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner != '"arbora-ci-trusted"' &&
+          inputs.runner
+        ) ||
+        '"ubuntu-latest"'
+      ) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read
@@ -159,7 +210,30 @@ jobs:
 
   supply-chain:
     name: supply-chain
-    runs-on: ${{ fromJSON(inputs.runner) }}
+    runs-on: >-
+      ${{ fromJSON(
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner == '"arbora-ci-trusted"' &&
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+        ) ||
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner != '"arbora-ci-trusted"' &&
+          inputs.runner
+        ) ||
+        '"ubuntu-latest"'
+      ) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read

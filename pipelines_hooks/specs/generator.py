@@ -19,7 +19,7 @@ from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.git_log import landing_commits, reachable_shas, reverted_shas
 from pipelines_hooks.specs.legacy import legacy_landings
 from pipelines_hooks.specs.records import build_record, mentioned_tokens
-from pipelines_hooks.specs.repository_identity import remote_owner
+from pipelines_hooks.specs.repository_identity import canonical_owner, repository_owner
 from pipelines_hooks.specs.requirements_doc import Row, parse_rows
 from pipelines_hooks.specs.rollup import apply_rollup, overall_state
 from pipelines_hooks.specs.standard import check_title
@@ -111,7 +111,7 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
     aliases = load_aliases(repo)
     landed_by, tested_by = _history_evidence(repo, head, aliases)
     resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
-    owner = remote_owner(repo)
+    owner = repository_owner(repo)
     result: dict[Path, dict] = {}
     for requirements_path in requirements_paths:
         spec_dir = requirements_path.parent
@@ -121,6 +121,15 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
         evidence = Evidence(landed_by, tested_by, legacy_by)
         rows = parse_rows(requirements_path.read_text(encoding="utf-8"))
         result[status_path] = _spec_document(
-            spec_dir, old=old, rows=rows, evidence=evidence, owner=owner or old.get("owner_repo") or repo.resolve().name
+            spec_dir,
+            old=old,
+            rows=rows,
+            evidence=evidence,
+            owner=(
+                owner
+                or canonical_owner(old.get("owner_repo"))
+                or canonical_owner(repo.resolve().name)
+                or repo.resolve().name
+            ),
         )
     return result
