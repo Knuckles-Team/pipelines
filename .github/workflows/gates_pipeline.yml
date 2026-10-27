@@ -137,48 +137,24 @@ permissions:
   contents: read
 
 jobs:
-  # Runner selection itself is hosted so an untrusted fork never executes
-  # selection code on the dedicated group. Only the small, read-only gate job
-  # consumes the opt-in trusted labels; callers keep Docker/release jobs on
-  # their existing runner contracts.
-  runner-selection:
-    name: runner-selection
-    runs-on: ubuntu-latest
-    outputs:
-      runs-on: ${{ steps.select.outputs.runs-on }}
-    steps:
-      - name: Select a trusted runner only for same-repository code
-        id: select
-        env:
-          REQUESTED_RUNNER: ${{ inputs.runner }}
-          EVENT_NAME: ${{ github.event_name }}
-          REF: ${{ github.ref }}
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          REPOSITORY: ${{ github.repository }}
-          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || '' }}
-        run: |
-          set -euo pipefail
-          if [[ "$REQUESTED_RUNNER" != '"arbora-ci-trusted"' ]]; then
-            printf 'runs-on=%s\n' "$REQUESTED_RUNNER" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          same_repository=false
-          if [[ "$EVENT_NAME" == "push" && "$REF" == "refs/heads/$DEFAULT_BRANCH" ]]; then
-            same_repository=true
-          elif [[ "$EVENT_NAME" == "pull_request" && "$HEAD_REPOSITORY" == "$REPOSITORY" ]]; then
-            same_repository=true
-          fi
-          if [[ "$same_repository" == true ]]; then
-            echo 'runs-on={"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}' >> "$GITHUB_OUTPUT"
-          else
-            # A fork PR is untrusted code and must never land on a private runner.
-            echo 'runs-on="ubuntu-latest"' >> "$GITHUB_OUTPUT"
-          fi
-
   gates:
     name: gates
-    needs: runner-selection
-    runs-on: ${{ fromJSON(needs.runner-selection.outputs.runs-on) }}
+    # Keep the opt-in path direct so it creates exactly one required check. The
+    # reserved value is private-runner eligible only for default-branch pushes
+    # and same-repository pull requests; fork PRs always use hosted GitHub.
+    runs-on: >-
+      ${{ fromJSON(
+        inputs.runner == '"arbora-ci-trusted"' &&
+        (
+          (github.event_name == 'push' &&
+           github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name == github.repository)
+        ) &&
+        '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}' ||
+        inputs.runner == '"arbora-ci-trusted"' && '"ubuntu-latest"' ||
+        inputs.runner
+      ) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read

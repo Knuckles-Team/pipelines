@@ -35,30 +35,24 @@ def test_gates_trusted_routing_is_opt_in_and_fork_safe() -> None:
     inputs = _on(workflow)["workflow_call"]["inputs"]
     assert inputs["runner"]["default"] == '"ubuntu-latest"'
     assert "arbora-ci-trusted" in inputs["runner"]["description"]
-    selection = workflow["jobs"]["runner-selection"]
-    assert selection["runs-on"] == "ubuntu-latest"
-    assert "github.event.pull_request.head.repo.full_name" in selection["steps"][0]["env"]["HEAD_REPOSITORY"]
-    script = selection["steps"][0]["run"]
-    assert 'REQUESTED_RUNNER" != \'"arbora-ci-trusted"\'' in script
-    assert 'HEAD_REPOSITORY" == "$REPOSITORY"' in script
-    assert "refs/heads/$DEFAULT_BRANCH" in script
-    assert 'runs-on="ubuntu-latest"' in script
-    assert '"group":"arbora-ci-trusted"' in script
-    assert workflow["jobs"]["gates"]["needs"] == "runner-selection"
-    assert workflow["jobs"]["gates"]["runs-on"] == "${{ fromJSON(needs.runner-selection.outputs.runs-on) }}"
+    assert "runner-selection" not in workflow["jobs"]
+    runs_on = workflow["jobs"]["gates"]["runs-on"]
+    assert "github.event.pull_request.head.repo.full_name == github.repository" in runs_on
+    assert "github.event_name == 'push'" in runs_on
+    assert "refs/heads/{0}" in runs_on
+    assert '"group":"arbora-ci-trusted"' in runs_on
+    assert "inputs.runner == '\"arbora-ci-trusted\"' && '\"ubuntu-latest\"'" in runs_on
 
 
 def test_main_trusted_routing_is_main_only() -> None:
     workflow = _workflow("main_pipeline.yml")
-    selection = workflow["jobs"]["runner-selection"]
-    script = selection["steps"][0]["run"]
-    assert 'EVENT_NAME" == "push"' in script
-    assert "refs/heads/$DEFAULT_BRANCH" in script
-    assert 'runs-on="ubuntu-latest"' in script
-    assert '"group":"arbora-ci-trusted"' in script
+    assert "runner-selection" not in workflow["jobs"]
     for name in ("tests", "backward", "supply-chain"):
-        assert workflow["jobs"][name]["needs"] == "runner-selection"
-        assert workflow["jobs"][name]["runs-on"] == "${{ fromJSON(needs.runner-selection.outputs.runs-on) }}"
+        runs_on = workflow["jobs"][name]["runs-on"]
+        assert "github.event_name == 'push'" in runs_on
+        assert "refs/heads/{0}" in runs_on
+        assert '"group":"arbora-ci-trusted"' in runs_on
+        assert "inputs.runner == '\"arbora-ci-trusted\"' && '\"ubuntu-latest\"'" in runs_on
 
 
 def test_pipelines_ci_is_the_explicit_opt_in_and_no_container_job_is_rerouted() -> None:
