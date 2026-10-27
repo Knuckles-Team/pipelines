@@ -35,6 +35,40 @@ def test_renamed_first_party_remote_uses_canonical_owner(repo: Repo) -> None:
     assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "meristem"
 
 
+def test_declared_repository_is_stable_across_worktree_names(repo: Repo) -> None:
+    # spec: PIPE-CONNSPEC-R001
+    pyproject = (
+        '[project]\nname = "epistemic-graph"\nversion = "0"\n\n'
+        '[tool.pipelines_hooks]\npackages = ["pkg"]\n\n'
+        '[tool.pipelines_hooks.public_surface]\nrepository = "Knuckles-Team/epistemic-graph"\n'
+    )
+    repo.commit(
+        {"pyproject.toml": pyproject, "specs/demo/requirements.md": _ROWS},
+        "declare repository identity",
+    )
+    first = repo.root.parent / "medulla-private-lane-a"
+    second = repo.root.parent / "medulla-private-lane-b"
+    repo.git("worktree", "add", "--detach", str(first), "HEAD")
+    repo.git("worktree", "add", "--detach", str(second), "HEAD")
+    for path in (first, second):
+        lane = Repo(path)
+        assert lane.run("spec-status", "--write") == 0
+        assert json.loads((path / _STATUS).read_text())["owner_repo"] == "medulla"
+
+
+def test_legacy_medulla_alias_is_canonicalized_without_remote(repo: Repo) -> None:
+    # spec: PIPE-CONNSPEC-R001
+    repo.commit(
+        {
+            "specs/demo/requirements.md": _ROWS,
+            _STATUS: json.dumps({"owner_repo": "epistemic-graph"}),
+        },
+        "record legacy owner",
+    )
+    assert repo.run("spec-status", "--write") == 0
+    assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "medulla"
+
+
 @pytest.mark.parametrize("version", [1, 2])
 def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: int) -> None:
     # spec: PIPE-CONNSPEC-R001
