@@ -27,9 +27,10 @@ jobs:
     uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main
     with:
       src-root: pipelines_hooks
-      # Hosted by default. Set the repository/org variable only after the
-      # arbora-ci-trusted group and its AVX2/Rust runner have been verified.
-      runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '"arbora-ci-trusted"' || '"ubuntu-latest"' }}
+      # Hosted by default. The explicit group JSON keeps this caller compatible
+      # with the verified non-AVX2 trusted pool; the central workflow still
+      # forces fork events to ubuntu-latest.
+      runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}' || '"ubuntu-latest"' }}
       # tracked-privacy needs the operator's private identity catalog, which is
       # not published to hosted runners; it runs wherever the catalog is installed.
       skip-hooks: tracked-privacy
@@ -42,4 +43,4 @@ jobs:
     uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@main
     with:
       # Keep required main checks hosted until the dedicated pool is live.
-      runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '"arbora-ci-trusted"' || '"ubuntu-latest"' }}
+      runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}' || '"ubuntu-latest"' }}

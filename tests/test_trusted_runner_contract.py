@@ -122,7 +122,11 @@ def test_fork_cannot_smuggle_a_custom_group_json_runner() -> None:
 
 def test_pipelines_ci_is_the_explicit_opt_in_and_no_container_job_is_rerouted() -> None:
     workflow = _workflow("ci.yml")
-    expected = "${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '\"arbora-ci-trusted\"' || '\"ubuntu-latest\"' }}"
+    expected = (
+        "${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && "
+        '\'{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}\' '
+        "|| '\"ubuntu-latest\"' }}"
+    )
     assert workflow["jobs"]["gates"]["with"]["runner"] == expected
     assert workflow["jobs"]["main"]["with"]["runner"] == expected
     reviewed_ref = "main"
