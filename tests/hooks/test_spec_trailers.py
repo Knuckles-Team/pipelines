@@ -209,3 +209,52 @@ def test_item5_a_delivery_reverted_in_range_needs_no_bound_test(repo: Repo) -> N
         trailer="none (refactor)",
     )
     assert repo.run("spec-trailers", "--base-ref", base) == 0
+
+
+def _repo_with_inherited_main_spec_trailer(repo: Repo) -> str:
+    """Point origin/main at a merge whose second parent has an unknown Spec ID."""
+    base = repo.git("rev-parse", "HEAD").strip()
+    repo.git("checkout", "-qb", "inherited-side")
+    repo.commit(
+        {"pkg/inherited.py": "inherited = True\n"},
+        "inherited upstream feature\n\nSpec: CONNECTOR-COMPETENCY-R999",
+    )
+    repo.git("checkout", "-q", "main")
+    repo.commit({"docs/main.md": "current main\n"}, "advance main")
+    repo.git("merge", "--no-ff", "-m", "merge upstream feature", "inherited-side")
+    current_main = repo.git("rev-parse", "HEAD").strip()
+    repo.git("update-ref", "refs/remotes/origin/main", current_main)
+    repo.git("checkout", "-qb", "topic")
+    return base
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_stale_push_base_excludes_unknown_trailer_already_in_origin_main(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stale_base = _repo_with_inherited_main_spec_trailer(repo)
+    _commit(
+        repo,
+        {
+            "pkg/new_feature.py": "new_feature = True\n",
+            "specs/demo/requirements.md": _requirements_md("DEMO-R001"),
+            "tests/test_new_feature.py": '@pytest.mark.spec("DEMO-R001")\ndef test_new_feature():\n    assert True\n',
+        },
+        "new branch feature",
+        trailer="DEMO-R001",
+    )
+
+    monkeypatch.setenv("PRE_COMMIT_FROM_REF", stale_base)
+    assert repo.run("spec-trailers") == 0
+
+
+def test_stale_push_base_still_rejects_unknown_trailer_added_by_branch(
+    repo: Repo, capsys: pytest.CaptureFixture[str]
+) -> None:
+    stale_base = _repo_with_inherited_main_spec_trailer(repo)
+    _commit(repo, {"pkg/new_feature.py": "new_feature = True\n"}, "new branch feature", trailer="BRANCH-R998")
+
+    assert repo.run("spec-trailers", "--base-ref", stale_base) == 1
+    output = capsys.readouterr().out
+    assert "BRANCH-R998" in output
+    assert "CONNECTOR-COMPETENCY-R999" not in output

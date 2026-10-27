@@ -30,3 +30,5 @@ PIPE-CONNSPEC-R013 binds tests/hooks/test_goal_priority.py: Priority from compet
 PIPE-CONNSPEC-R014 binds tests/hooks/test_goal_priority.py: Priority, frontier, and unserved from the organization aggregate.
 PIPE-CONNSPEC-R015 binds tests/hooks/test_goal_priority.py: Derived release bundles.
 PIPE-CONNSPEC-R016 binds tests/test_architecture_delivery.py: Architecture page delivery views.
+
+PIPE-CONNSPEC-R001 is also bound by `tests/hooks/test_spec_trailers.py::test_stale_push_base_excludes_unknown_trailer_already_in_origin_main` and `::test_stale_push_base_still_rejects_unknown_trailer_added_by_branch`. They prove current-main inherited IDs are ignored even with an older pushed-over base, while new branch trailers and current requirement bindings remain enforced.
