@@ -338,6 +338,7 @@
       "title": "Connector names agree with the declared fleet name",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "a268ca1599c8",
         "cf912c89cd2f"
       ],
       "verified_by": [
@@ -349,7 +350,8 @@
       "title": "Shared hooks are current and snapshots accept symlinks",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "147049d18114"
+        "147049d18114",
+        "270b968a56a4"
       ],
       "verified_by": [
         "tests/hooks/test_jscpd_snapshot.py:13"
@@ -396,6 +398,7 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "147049d18114",
+        "e4e8fe71c024",
         "f58ea0355db7"
       ],
       "verified_by": [

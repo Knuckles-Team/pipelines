@@ -13,6 +13,9 @@ from pipelines_hooks.specs.trailer_ids import NONE_EXEMPTION
 _RECORD_SEP = "\x1e"
 _FIELD_SEP = "\x1f"
 _REVERT_RE = re.compile(r"This reverts commit ([0-9a-f]{40})")
+_SQUASH_SEPARATOR = re.compile(r"(?m)^-{3,}\s*$")
+_SQUASH_PR_SUBJECT = re.compile(r"\s\(#\d+\)\s*$")
+_SPEC_LINE = re.compile(r"(?m)^Spec:\s*(.+?)\s*$")
 
 
 class _Record(NamedTuple):
@@ -30,10 +33,20 @@ def _parse_record(record: str) -> _Record | None:
 
 
 def _declarations(message: str, trailers: str) -> str:
-    """Explicit Spec trailers, plus the historical Spec-only subject form."""
+    """Explicit Spec trailers, plus GitHub squash-commit source trailers.
+
+    GitHub's squash message embeds the source commit messages in a bullet list
+    (and, for multi-commit PRs, a ``---------`` footer).  Git's trailer parser
+    only sees the final footer block, so source ``Spec:`` trailers would
+    otherwise disappear from canonical status history.  Restrict recovery to
+    the recognizable squash shape; ordinary prose is still ignored.
+    """
     subject = message.splitlines()[0] if message else ""
     if subject.lower().startswith("spec:"):
         trailers += "\n" + subject.partition(":")[2].strip()
+    if _SQUASH_SEPARATOR.search(message) or _SQUASH_PR_SUBJECT.search(subject):
+        source_block = _SQUASH_SEPARATOR.split(message, maxsplit=1)[0]
+        trailers += "\n" + "\n".join(_SPEC_LINE.findall(source_block))
     return expand_ranges("\n".join(line for line in trailers.splitlines() if not NONE_EXEMPTION.match(line.strip())))
 
 
