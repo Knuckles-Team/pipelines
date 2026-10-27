@@ -657,7 +657,9 @@
       "landed_in": [
         "3cfd039fe3e2",
         "3d0455152b96",
-        "4f1e1f0aff4a"
+        "4f1e1f0aff4a",
+        "5655978dd7c2",
+        "6e39e9664fd1"
       ],
       "verified_by": [
         "tests/hooks/test_fast_tests.py:10",
@@ -682,7 +684,9 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "3d0455152b96",
-        "4f1e1f0aff4a"
+        "4f1e1f0aff4a",
+        "5655978dd7c2",
+        "6e39e9664fd1"
       ],
       "verified_by": [
         "tests/test_gates_pipeline_contract.py:44"
