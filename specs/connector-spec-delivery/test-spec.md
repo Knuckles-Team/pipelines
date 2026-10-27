@@ -13,6 +13,8 @@ PIPE-CONNSPEC-R001 also binds tests/hooks/test_spec_repository_identity.py: remo
 
 PIPE-CONNSPEC-R001 also binds `test_verified_rollup_carries_its_childrens_evidence` in tests/hooks/test_spec_status.py. A rollup that reaches VERIFIED names its children's landing commits and bound tests. A LANDED rollup names their landing commits.
 
+PIPE-CONNSPEC-R001 is also bound by the pending-merge tests in tests/hooks/test_spec_status.py. They assert actual landing SHAs and test bindings from both parents, exclude the `Spec: none` exemption and synthetic context from evidence, preserve HEAD/index/MERGE_HEAD, cover explicit-head use even with unresolved conflicts, and fail closed for default unresolved or worktree/index-mismatch cases.
+
 ## Requirement state read from the engine
 
 | Row | Proving test |

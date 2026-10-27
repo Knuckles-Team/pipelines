@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -199,6 +200,110 @@ def test_check_mode_fails_on_a_stale_status_json(repo: Repo) -> None:
 def test_no_specs_directory_is_a_clean_pass(repo: Repo) -> None:
     assert repo.run("spec-status") == 0
     assert not (Path(repo.root) / "specs").exists()
+
+
+_MERGE_ROWS = (
+    "# demo\n\n| ID | Requirement |\n|---|---|\n"
+    "| `TEST-R001` | **Main-side feature.** |\n"
+    "| `TEST-R002` | **Incoming-side feature.** |\n"
+)
+
+
+def _pending_merge_with_two_features(repo: Repo) -> tuple[str, str]:
+    repo.commit({"specs/demo/requirements.md": _MERGE_ROWS}, "add merge fixture spec")
+    repo.git("checkout", "-qb", "incoming")
+    incoming = repo.commit({"pkg/incoming.py": "# TEST-R002\n"}, "Spec: TEST-R002")
+    repo.commit({"pkg/exempt.py": "# fixture\n"}, "Spec: none (fixture exemption)")
+    repo.commit(
+        {"tests/test_incoming.py": "# spec: TEST-R002\ndef test_incoming() -> None:\n    assert True\n"},
+        "bind incoming test",
+    )
+    repo.git("checkout", "-q", "main")
+    main = repo.commit({"pkg/main.py": "# TEST-R001\n"}, "Spec: TEST-R001")
+    repo.commit(
+        {"tests/test_main.py": "# spec: TEST-R001\ndef test_main() -> None:\n    assert True\n"},
+        "bind main test",
+    )
+    repo.git("merge", "--no-commit", "--no-ff", "incoming")
+    return main, incoming
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_default_spec_status_uses_both_sides_of_pending_merge(repo: Repo) -> None:
+    main_landing, incoming_landing = _pending_merge_with_two_features(repo)
+    head_before = repo.git("rev-parse", "HEAD").strip()
+    tree_before = repo.git("write-tree").strip()
+    merge_head_before = repo.git("rev-parse", "MERGE_HEAD").strip()
+
+    assert repo.run("spec-status", "--write") == 0
+
+    rows = _by_id(repo)
+    for spec_id, commit, binding in (
+        ("TEST-R001", main_landing, "tests/test_main.py:1"),
+        ("TEST-R002", incoming_landing, "tests/test_incoming.py:1"),
+    ):
+        assert rows[spec_id]["delivery_state"] == "VERIFIED"
+        assert rows[spec_id]["landed_in"] == [commit[:12]]
+        assert rows[spec_id]["verified_by"] == [binding]
+    all_receipts = [sha for row in rows.values() for sha in row["landed_in"]]
+    assert all_receipts == [main_landing[:12], incoming_landing[:12]]
+    assert repo.git("rev-parse", "HEAD").strip() == head_before
+    assert repo.git("write-tree").strip() == tree_before
+    assert repo.git("rev-parse", "MERGE_HEAD").strip() == merge_head_before
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_explicit_head_keeps_requested_premerge_history(repo: Repo) -> None:
+    _, incoming_landing = _pending_merge_with_two_features(repo)
+
+    assert repo.run("spec-status", "--head", "HEAD", "--write") == 0
+
+    rows = _by_id(repo)
+    assert rows["TEST-R001"]["delivery_state"] == "VERIFIED"
+    assert rows["TEST-R002"]["delivery_state"] == "SPECIFIED"
+    assert rows["TEST-R002"]["landed_in"] == []
+    assert incoming_landing[:12] not in rows["TEST-R001"]["landed_in"]
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_unresolved_pending_merge_fails_closed_without_status_write(repo: Repo) -> None:
+    repo.commit({"specs/demo/requirements.md": _MERGE_ROWS, "pkg/conflict.py": "base\n"}, "fixture")
+    repo.git("checkout", "-qb", "incoming")
+    repo.commit({"pkg/conflict.py": "incoming\n"}, "incoming edit")
+    repo.git("checkout", "-q", "main")
+    repo.commit({"pkg/conflict.py": "main\n"}, "main edit")
+    with pytest.raises(subprocess.CalledProcessError):
+        repo.git("merge", "--no-commit", "--no-ff", "incoming")
+
+    assert repo.run("spec-status", "--write") == 2
+    assert not (repo.root / "specs/demo/status.json").exists()
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_pending_merge_fails_closed_when_worktree_differs_from_index(repo: Repo) -> None:
+    _pending_merge_with_two_features(repo)
+    (repo.root / "pkg/main.py").write_text("# unstaged edit\n", encoding="utf-8")
+
+    assert repo.run("spec-status", "--write") == 2
+    assert not (repo.root / "specs/demo/status.json").exists()
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001")
+def test_explicit_head_is_honored_during_unresolved_pending_merge(repo: Repo) -> None:
+    repo.commit({"specs/demo/requirements.md": _MERGE_ROWS, "pkg/conflict.py": "base\n"}, "fixture")
+    repo.git("checkout", "-qb", "incoming")
+    repo.commit({"pkg/conflict.py": "incoming\n"}, "incoming edit")
+    repo.git("checkout", "-q", "main")
+    repo.commit({"pkg/conflict.py": "main\n"}, "main edit")
+    with pytest.raises(subprocess.CalledProcessError):
+        repo.git("merge", "--no-commit", "--no-ff", "incoming")
+
+    assert repo.run("spec-status", "--head", "HEAD", "--write") == 0
+    rows = _by_id(repo)
+    assert rows["TEST-R001"]["delivery_state"] == "SPECIFIED"
+    assert rows["TEST-R002"]["delivery_state"] == "SPECIFIED"
+    assert rows["TEST-R001"]["landed_in"] == []
+    assert rows["TEST-R002"]["landed_in"] == []
 
 
 def test_template_status_is_ignored_but_real_specs_are_checked(repo: Repo) -> None:
