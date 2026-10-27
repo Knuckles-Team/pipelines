@@ -20,9 +20,11 @@ yields a located mismatch instead of a misleading missing-selector refusal.
 from __future__ import annotations
 
 import argparse
+import ast
 import configparser
 import hashlib
 import re
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Mapping
@@ -44,6 +46,14 @@ _SAFE_VERSION_RE = re.compile(r"^[^\x00-\x1f\x7f\r\n]+$")
 _MAX_CONFIG_BYTES = 512 * 1024
 _MAX_SOURCE_BYTES = 8 * 1024 * 1024
 _CONFIG_CANDIDATES = (".config/bumpversion.cfg", ".bumpversion.cfg", "setup.cfg", "tox.ini")
+VERSION_DISCOVERY_POLICY = "project-version-inventory/v1"
+VERSION_FILE_SELECTOR = "source.VERSION"
+_VERSION_FILE_SELECTOR_ALIASES = frozenset({VERSION_FILE_SELECTOR.casefold(), "project-version", "version-file"})
+_PROJECT_VERSION_RE = re.compile(
+    r"(?m)^[ \t]*version[ \t]*=[ \t]*(?P<quote>['\"])(?P<value>[^'\"\r\n]+)(?P=quote)[ \t]*$"
+)
+_DOCUMENTATION_VERSION_RE = re.compile(r"(?m)^[ \t]*<!--\s*project-version:\s*(?P<value>[^>\r\n]+?)\s*-->[ \t]*$")
+_SOURCE_ROOT_EXCLUDES = frozenset({".git", ".venv", "build", "dist", "tests", "test"})
 
 
 @dataclass(frozen=True, order=True)
@@ -83,6 +93,7 @@ class ProjectVersionInventory:
     snapshot: str
     config_path: str = ".config/bumpversion.cfg"
     schema_version: int = 1
+    policy_version: str = VERSION_DISCOVERY_POLICY
 
     @property
     def roles(self) -> frozenset[str]:
@@ -123,6 +134,41 @@ class VersionCheck:
         return self.location.selector
 
 
+@dataclass(frozen=True, order=True)
+class DiscoveredVersion:
+    """One statically discovered project-version token.
+
+    The selector is a policy identity, rather than a grep expression.  This
+    lets completeness compare a discovery result with the canonical
+    bumpversion location without importing or executing the target package.
+    """
+
+    path: str
+    role: str
+    selector: str
+    value: str
+    line: int
+
+
+@dataclass(frozen=True)
+class VersionInventoryCompleteness:
+    """The closed comparison between discovered and configured locations."""
+
+    discovered: tuple[DiscoveredVersion, ...]
+    configured: tuple[VersionLocation, ...]
+    unmapped: tuple[DiscoveredVersion, ...]
+    missing: tuple[VersionLocation, ...]
+    selector_mismatch: tuple[tuple[DiscoveredVersion, VersionLocation], ...]
+    duplicates: tuple[DiscoveredVersion, ...]
+    value_mismatch: tuple[DiscoveredVersion, ...]
+    policy_version: str = VERSION_DISCOVERY_POLICY
+
+    @property
+    def complete(self) -> bool:
+        """Whether every discovered token has one canonical selector."""
+        return not (self.unmapped or self.missing or self.selector_mismatch or self.duplicates or self.value_mismatch)
+
+
 def _safe_relative_path(value: str, *, what: str) -> str:
     """Validate and normalize a repository-relative POSIX path."""
     path = PurePosixPath(value)
@@ -143,6 +189,15 @@ def _template_parts(template: str, placeholder: str) -> tuple[str, str]:
     return prefix, suffix
 
 
+def _is_owned_version_file(location: VersionLocation) -> bool:
+    """Return whether a source ``VERSION`` file is explicitly project-owned."""
+    return (
+        location.role == "source"
+        and PurePosixPath(location.path).name == "VERSION"
+        and location.selector.casefold() in _VERSION_FILE_SELECTOR_ALIASES
+    )
+
+
 def _validate_location(location: VersionLocation) -> None:
     """Reject a location whose selector cannot provide an exact round trip."""
     if location.role not in _ROLE_SET:
@@ -153,13 +208,17 @@ def _validate_location(location: VersionLocation) -> None:
         raise CannotRun(f"unsupported-extraction: {location.path} has no selector")
     search_prefix, search_suffix = _template_parts(location.search, "{current_version}")
     replace_prefix, replace_suffix = _template_parts(location.replace, "{new_version}")
-    if not search_prefix and not search_suffix:
+    if not search_prefix and not search_suffix and not _is_owned_version_file(location):
         raise CannotRun(f"unsupported-extraction: {location.path} selector is too broad")
     if (search_prefix, search_suffix) != (replace_prefix, replace_suffix):
         raise CannotRun(f"unsupported-extraction: {location.path} replacement changes text outside the version token")
     if "\r" in location.search or "\r" in location.replace:
         raise CannotRun(f"unsupported-extraction: {location.path} has unsupported carriage returns")
-    if location.role in {"metadata", "source"} and not _ASSIGNMENT_RE.search(location.search):
+    if (
+        location.role in {"metadata", "source"}
+        and not _is_owned_version_file(location)
+        and not _ASSIGNMENT_RE.search(location.search)
+    ):
         raise CannotRun(
             f"unsupported-extraction: {location.role} selector for {location.path} must target a literal assignment"
         )
@@ -267,11 +326,242 @@ def parse_inventory(
 load_inventory = parse_inventory
 
 
+def _line_for_offset(text: str, offset: int) -> int:
+    """Return a one-based line number for a source offset."""
+    return text.count("\n", 0, offset) + 1
+
+
+def _safe_discovery_path(path: str) -> str:
+    """Validate the repository-relative path used by the discovery policy."""
+    candidate = PurePosixPath(path)
+    if (
+        not path
+        or candidate.is_absolute()
+        or ".." in candidate.parts
+        or "\\" in path
+        or candidate == PurePosixPath(".")
+    ):
+        raise CannotRun(f"unsupported-extraction: discovery path {path!r} is not repository-relative")
+    return path
+
+
+def _source_path_is_first_party(path: str, roots: tuple[str, ...]) -> bool:
+    """Return whether a Python path belongs to a declared first-party root."""
+    parts = PurePosixPath(path).parts
+    if not parts or any(part in _SOURCE_ROOT_EXCLUDES for part in parts):
+        return False
+    return any(path == root or path.startswith(root.rstrip("/") + "/") for root in roots)
+
+
+def _literal_source_versions(path: str, text: str) -> list[DiscoveredVersion]:
+    """Find literal module-level ``__version__`` assignments without imports."""
+    try:
+        tree = ast.parse(text, filename=path)
+    except SyntaxError as exc:
+        raise CannotRun(f"unsupported-extraction: cannot parse first-party source {path}") from exc
+    discovered: list[DiscoveredVersion] = []
+    for statement in tree.body:
+        targets: tuple[ast.expr, ...]
+        value: ast.expr | None
+        if isinstance(statement, ast.Assign):
+            targets = tuple(statement.targets)
+            value = statement.value
+        elif isinstance(statement, ast.AnnAssign):
+            targets = (statement.target,)
+            value = statement.value
+        else:
+            continue
+        if not any(isinstance(target, ast.Name) and target.id == "__version__" for target in targets):
+            continue
+        if not isinstance(value, ast.Constant) or not isinstance(value.value, str):
+            raise CannotRun(f"unsupported-extraction: dynamic __version__ assignment in {path}")
+        discovered.append(
+            DiscoveredVersion(
+                path=path,
+                role="source",
+                selector="module.__version__",
+                value=value.value,
+                line=getattr(statement, "lineno", 1),
+            )
+        )
+    return discovered
+
+
+def discover_version_locations(
+    contents: Mapping[str, str],
+    *,
+    first_party_roots: tuple[str, ...] = ("src",),
+    inventory: ProjectVersionInventory | None = None,
+) -> tuple[DiscoveredVersion, ...]:
+    """Discover version surfaces using the versioned static policy.
+
+    ``contents`` is a selected Git snapshot supplied by the caller.  The
+    scanner understands only the project metadata literal, module-level
+    ``__version__`` literals under declared first-party roots, and the marked
+    ``project-version`` documentation comment.  Dependency ``VERSION`` files,
+    historical prose, imports and computed expressions are outside this
+    grammar and cannot become accidental authorities.  A ``VERSION`` file is
+    inspected only when the supplied inventory explicitly owns that exact
+    path with the named project-version selector.
+    """
+    roots = tuple(_safe_discovery_path(root.rstrip("/")) for root in first_party_roots if root.strip())
+    if not roots:
+        raise CannotRun("inventory-incomplete: no first-party source root declared")
+    discovered: list[DiscoveredVersion] = []
+    owned_version_files = {
+        location.path: location
+        for location in (inventory.locations if inventory is not None else ())
+        if _is_owned_version_file(location)
+    }
+    metadata = contents.get("pyproject.toml")
+    if metadata is not None:
+        try:
+            document = tomllib.loads(metadata)
+        except tomllib.TOMLDecodeError as exc:
+            raise CannotRun("unsupported-extraction: malformed pyproject.toml") from exc
+        project = document.get("project")
+        if isinstance(project, dict) and "version" in project:
+            value = project["version"]
+            if not isinstance(value, str):
+                raise CannotRun("unsupported-extraction: project.version must be a literal string")
+            match = _PROJECT_VERSION_RE.search(metadata)
+            if match is None:
+                raise CannotRun("unsupported-extraction: project.version has no literal assignment")
+            discovered.append(
+                DiscoveredVersion(
+                    path="pyproject.toml",
+                    role="metadata",
+                    selector="project.version",
+                    value=value,
+                    line=_line_for_offset(metadata, match.start("value")),
+                )
+            )
+    for raw_path, text in sorted(contents.items()):
+        path = _safe_discovery_path(raw_path)
+        if path == "pyproject.toml" or not isinstance(text, str):
+            continue
+        if PurePosixPath(path).name == "VERSION":
+            location = owned_version_files.get(path)
+            if location is not None:
+                if "\r" in text:
+                    raise CannotRun(
+                        f"unsupported-extraction: owned VERSION file {path} has unsupported carriage returns"
+                    )
+                value_text = text[:-1] if text.endswith("\n") else text
+                if "\n" in value_text:
+                    raise CannotRun(f"unsupported-extraction: owned VERSION file {path} must contain one version")
+                value = value_text.strip()
+                if (
+                    not value
+                    or not _SAFE_VERSION_RE.fullmatch(value)
+                    or any(character.isspace() for character in value)
+                ):
+                    raise CannotRun(f"unsupported-extraction: owned VERSION file {path} must contain one version")
+                discovered.append(
+                    DiscoveredVersion(
+                        path=path,
+                        role=location.role,
+                        selector=VERSION_FILE_SELECTOR,
+                        value=value,
+                        line=1,
+                    )
+                )
+            continue
+        if path.endswith(".py") and _source_path_is_first_party(path, roots):
+            discovered.extend(_literal_source_versions(path, text))
+        if path.endswith((".md", ".markdown", ".rst")):
+            for match in _DOCUMENTATION_VERSION_RE.finditer(text):
+                discovered.append(
+                    DiscoveredVersion(
+                        path=path,
+                        role="documentation",
+                        selector="documentation.project-version",
+                        value=match.group("value"),
+                        line=_line_for_offset(text, match.start("value")),
+                    )
+                )
+    return tuple(sorted(discovered, key=lambda item: (item.role, item.path, item.line)))
+
+
+def _configured_selector(location: VersionLocation) -> str | None:
+    """Translate an existing location template to the discovery selector."""
+    if _is_owned_version_file(location):
+        return VERSION_FILE_SELECTOR
+    if location.role == "metadata" and re.search(r"(?m)^\s*version\s*=", location.search):
+        return "project.version"
+    if location.role == "source" and "__version__" in location.search:
+        return "module.__version__"
+    if location.role == "documentation" and "project-version" in (location.selector + location.search).casefold():
+        return "documentation.project-version"
+    return None
+
+
+def compare_version_inventory(
+    inventory: ProjectVersionInventory,
+    discovered: tuple[DiscoveredVersion, ...],
+) -> VersionInventoryCompleteness:
+    """Compare static discoveries with one canonical configured inventory."""
+    configured_by_key = {(location.path, location.role): location for location in inventory.locations}
+    discovered_by_key: dict[tuple[str, str], list[DiscoveredVersion]] = {}
+    for item in discovered:
+        discovered_by_key.setdefault((item.path, item.role), []).append(item)
+    unmapped: list[DiscoveredVersion] = []
+    selector_mismatch: list[tuple[DiscoveredVersion, VersionLocation]] = []
+    duplicates: list[DiscoveredVersion] = []
+    value_mismatch: list[DiscoveredVersion] = []
+    for item in discovered:
+        location = configured_by_key.get((item.path, item.role))
+        if location is None:
+            unmapped.append(item)
+            continue
+        if _configured_selector(location) != item.selector:
+            selector_mismatch.append((item, location))
+        if item.value != inventory.current_version:
+            value_mismatch.append(item)
+        if len(discovered_by_key[(item.path, item.role)]) > 1:
+            duplicates.append(item)
+    missing = [
+        location for location in inventory.locations if not discovered_by_key.get((location.path, location.role))
+    ]
+    return VersionInventoryCompleteness(
+        discovered=tuple(sorted(discovered, key=lambda item: (item.role, item.path, item.line))),
+        configured=inventory.locations,
+        unmapped=tuple(sorted(unmapped)),
+        missing=tuple(sorted(missing)),
+        selector_mismatch=tuple(sorted(selector_mismatch, key=lambda item: (item[0], item[1]))),
+        duplicates=tuple(sorted(set(duplicates))),
+        value_mismatch=tuple(sorted(value_mismatch)),
+        policy_version=inventory.policy_version,
+    )
+
+
+def require_complete_version_inventory(report: VersionInventoryCompleteness) -> None:
+    """Fail closed when discovery is not fully mapped by the canonical config."""
+    if report.complete:
+        return
+    if report.unmapped:
+        paths = ", ".join(f"{item.path}:{item.line}" for item in report.unmapped)
+        raise CannotRun(f"inventory-incomplete: unmapped discovered locations ({paths})")
+    if report.missing:
+        paths = ", ".join(f"{item.role}:{item.path}" for item in report.missing)
+        raise CannotRun(f"inventory-incomplete: configured locations not discovered ({paths})")
+    if report.selector_mismatch:
+        paths = ", ".join(f"{item.path}:{item.line}" for item, _ in report.selector_mismatch)
+        raise CannotRun(f"inventory-incomplete: selector mismatch ({paths})")
+    if report.value_mismatch:
+        paths = ", ".join(f"{item.path}:{item.line}" for item in report.value_mismatch)
+        raise CannotRun(f"version-mismatch: discovered values differ ({paths})")
+    paths = ", ".join(f"{item.path}:{item.line}" for item in report.duplicates)
+    raise CannotRun(f"selector-ambiguous: duplicate discovered locations ({paths})")
+
+
 def _sha256(value: str) -> str:
     return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def _extractor(location: VersionLocation) -> re.Pattern[str]:
+    if _is_owned_version_file(location):
+        return re.compile(r"(?m)^[ \t]*(?P<version>[^\s\r\n]+)[ \t]*(?:\n|$)")
     prefix, suffix = _template_parts(location.search, "{current_version}")
     capture = r"(?P<version>[^\s\r\n]+)" if not suffix else r"(?P<version>[^\s\r\n]+?)"
     # Metadata and source selectors describe literal assignments. Anchor those
