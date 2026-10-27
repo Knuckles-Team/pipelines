@@ -1,0 +1,27 @@
+schema: 1
+
+# GitHub organization administrators must create this group and restrict its
+# repository allow-list before any caller opts into the reserved runner value.
+# This repository intentionally does not mutate organization runner settings.
+runner_selector: arbora-ci-trusted
+runner_group: arbora-ci-trusted
+labels:
+  - self-hosted
+  - linux
+  - x64
+  - homelab
+  - arbora-ci-trusted
+  - avx2
+  - rust-1.96
+fork_pull_request_fallback: ubuntu-latest
+trusted_events:
+  - same_repository_pull_request
+  - default_branch_push
+compatible_workflows:
+  - gates_pipeline.yml
+  - main_pipeline.yml
+excluded_workflows:
+  - container_pipeline.yml
+  - container_build_check.yml
+  - python_pipeline.yml
+  - eg-release-recovery.yml

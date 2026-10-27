@@ -50,7 +50,10 @@ on:
         type: string
         default: tests
       runner:
-        description: JSON runner label or label list for runs-on.
+        description: >-
+          JSON runner label or label list for runs-on. The reserved value
+          "arbora-ci-trusted" opts this suite into the dedicated trusted group
+          for default-branch pushes; non-main events use ubuntu-latest.
         required: false
         type: string
         default: '"ubuntu-latest"'
@@ -74,10 +77,34 @@ permissions:
   contents: read
 
 jobs:
+  runner-selection:
+    name: runner-selection
+    runs-on: ubuntu-latest
+    outputs:
+      runs-on: ${{ steps.select.outputs.runs-on }}
+    steps:
+      - name: Select a trusted runner only for the default branch
+        id: select
+        env:
+          REQUESTED_RUNNER: ${{ inputs.runner }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          if [[ "$REQUESTED_RUNNER" == '"arbora-ci-trusted"' && "$EVENT_NAME" == "push" && "$REF" == "refs/heads/$DEFAULT_BRANCH" ]]; then
+            echo 'runs-on=["self-hosted","linux","x64","homelab","arbora-ci-trusted","avx2","rust-1.96"]' >> "$GITHUB_OUTPUT"
+          elif [[ "$REQUESTED_RUNNER" == '"arbora-ci-trusted"' ]]; then
+            echo 'runs-on="ubuntu-latest"' >> "$GITHUB_OUTPUT"
+          else
+            printf 'runs-on=%s\n' "$REQUESTED_RUNNER" >> "$GITHUB_OUTPUT"
+          fi
+
   tests:
     name: tests
     if: inputs.test-scope != ''
-    runs-on: ${{ fromJSON(inputs.runner) }}
+    needs: runner-selection
+    runs-on: ${{ fromJSON(needs.runner-selection.outputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read
@@ -116,7 +143,8 @@ jobs:
   backward:
     name: backward-python
     if: inputs.backward-python != ''
-    runs-on: ${{ fromJSON(inputs.runner) }}
+    needs: runner-selection
+    runs-on: ${{ fromJSON(needs.runner-selection.outputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read
@@ -159,7 +187,8 @@ jobs:
 
   supply-chain:
     name: supply-chain
-    runs-on: ${{ fromJSON(inputs.runner) }}
+    needs: runner-selection
+    runs-on: ${{ fromJSON(needs.runner-selection.outputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read

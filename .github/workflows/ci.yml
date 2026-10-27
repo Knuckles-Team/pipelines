@@ -27,6 +27,7 @@ jobs:
     uses: ./.github/workflows/gates_pipeline.yml
     with:
       src-root: pipelines_hooks
+      runner: '"arbora-ci-trusted"'
       # tracked-privacy needs the operator's private identity catalog, which is
       # not published to hosted runners; it runs wherever the catalog is installed.
       skip-hooks: tracked-privacy
@@ -37,3 +38,5 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/main_pipeline.yml
+    with:
+      runner: '"arbora-ci-trusted"'
