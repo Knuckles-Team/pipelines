@@ -131,11 +131,11 @@ jobs:
         run: rustup toolchain install --profile minimal --component rustfmt && rustup show active-toolchain
       - name: Install uv, pre-commit and the hooks' one third-party import
         run: python -m pip install --disable-pip-version-check uv==0.8.17 pre-commit==4.6.2 pyyaml==6.0.3
-      # lane-guard is owned by agent-utilities and read from a sibling checkout.
-      - name: Check out agent-utilities gate scripts
+      # lane-guard is owned by meristem and read from a sibling checkout.
+      - name: Check out meristem gate scripts
         run: |
-          git clone --depth 1 https://github.com/Knuckles-Team/agent-utilities "$RUNNER_TEMP/agent-utilities"
-          echo "AGENT_UTILITIES_ROOT=$RUNNER_TEMP/agent-utilities" >> "$GITHUB_ENV"
+          git clone --depth 1 https://github.com/Knuckles-Team/meristem "$RUNNER_TEMP/meristem"
+          echo "AGENT_UTILITIES_ROOT=$RUNNER_TEMP/meristem" >> "$GITHUB_ENV"
       # Match the caller's existing lint and architecture gate commands.
       - name: pre-commit (commit stage, PR diff or full publication)
         env:
