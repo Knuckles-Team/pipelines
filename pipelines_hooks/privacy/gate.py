@@ -95,9 +95,7 @@ def _catalog(path: Path) -> tuple[bytes, ...]:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="tracked-privacy", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    default = (
-        platformdirs.user_config_path("arbora", appauthor=False) / "governance" / "prohibited-identities.json"
-    )
+    default = platformdirs.user_config_path("arbora", appauthor=False) / "governance" / "prohibited-identities.json"
     parser.add_argument("--identity-catalog", type=Path, default=default)
     args = parser.parse_args(argv)
     rows = scan(args.root.resolve(), _catalog(args.identity_catalog))
