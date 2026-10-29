@@ -287,10 +287,13 @@ jobs:
             echo "::error::tag v${version} already exists; refusing to release it again."
             exit 1
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${version}" -m "Release v${version}"
-          git push "https://x-access-token:${GIT_TOKEN}@github.com/${REPO}.git" "refs/tags/v${version}"
+          # Create the annotated tag through the API (token in GH_TOKEN, never in a URL).
+          # A tag ref created with GIT_TOKEN fires the push event that runs the publish jobs.
+          head="$(git rev-parse HEAD)"
+          tag_sha="$(GH_TOKEN="$GIT_TOKEN" gh api -X POST "repos/${REPO}/git/tags" \
+            -f tag="v${version}" -f message="Release v${version}" -f object="$head" -f type=commit --jq .sha)"
+          GH_TOKEN="$GIT_TOKEN" gh api -X POST "repos/${REPO}/git/refs" \
+            -f ref="refs/tags/v${version}" -f sha="$tag_sha" > /dev/null
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "::notice::pushed tag v${version} on the green main head; the tag push runs the publish jobs."
 
@@ -343,7 +346,10 @@ jobs:
           git add -- pyproject.toml
           git commit -q -m "chore(release): sync ${name} to ${version}" -m "Spec: none (release version sync)
           Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/${branch}"
+          # git asks gh for the credential (gh reads GH_TOKEN = GIT_TOKEN): the token is never in a
+          # URL or persisted, and a GIT_TOKEN push triggers the sync pull request's CI.
+          gh auth setup-git
+          git push origin "HEAD:refs/heads/${branch}"
           gh pr create -R "$REPO" --base main --head "$branch" \
             --title "chore(release): sync ${name} to ${version}" \
             --body "Sets pyproject [project].version to the released ${version} (tag ${TAG}). Merged by the standard auto-merge once CI required is green."

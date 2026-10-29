@@ -45,7 +45,11 @@ def test_central_pipeline_routes_each_event_to_its_jobs() -> None:
 @pytest.mark.spec("PIPE-RELEASE-R018")
 def test_nothing_publishes_on_a_main_push_and_a_v_tag_publishes() -> None:
     jobs = _jobs()
-    publishers = {"publish-pypi": "python_pipeline", "publish-docker": "container_pipeline", "publish-pages": "pages_pipeline"}
+    publishers = {
+        "publish-pypi": "python_pipeline",
+        "publish-docker": "container_pipeline",
+        "publish-pages": "pages_pipeline",
+    }
     for name, workflow in publishers.items():
         assert jobs[name]["uses"].endswith(f"/{workflow}.yml@main")
         assert jobs[name]["if"].startswith(TAG), name
@@ -92,7 +96,13 @@ def test_one_caller_template_triggers_every_route_without_top_level_write() -> N
     assert document["permissions"] == {}
     pipeline = document["jobs"]["pipeline"]
     assert pipeline["uses"] == "Knuckles-Team/pipelines/.github/workflows/connector_pipeline.yml@main"
-    assert pipeline["permissions"] == {"contents": "write", "pages": "write", "id-token": "write", "checks": "read", "pull-requests": "write"}
+    assert pipeline["permissions"] == {
+        "contents": "write",
+        "pages": "write",
+        "id-token": "write",
+        "checks": "read",
+        "pull-requests": "write",
+    }
     assert "pull_request_target" not in CALLER.read_text(encoding="utf-8")
     assert "inherit" not in CALLER.read_text(encoding="utf-8")
     required = document["jobs"]["ci-required"]
@@ -132,10 +142,11 @@ def test_release_tags_only_a_ci_green_head_and_never_pushes_a_branch() -> None:
     text = "\n".join(step.get("run", "") for step in jobs["release"]["steps"])
     assert '.name=="CI required"' in text and "!= success" in text and "refusing to release" in text
     assert 'ls-remote --exit-code --tags origin "refs/tags/v${version}"' in text
-    assert text.index("already exists") < text.index('git tag -a "v${version}"') < text.index("git push")
+    assert text.index("already exists") < text.index("git/tags") < text.index("git/refs")
     assert "git tag --list 'v[0-9]*.[0-9]*.[0-9]*'" in text and 'bump "$LEVEL"' in text
-    assert 'git push "https://x-access-token:${GIT_TOKEN}@github.com/${REPO}.git" "refs/tags/v${version}"' in text
-    assert "git commit" not in text and "refs/heads" not in text.split("git push")[1]
+    assert "repos/${REPO}/git/refs" in text and "refs/tags/v${version}" in text
+    assert "x-access-token" not in text, "no token in a URL (secrets gate basic_auth_url)"
+    assert "git commit" not in text and "git push" not in text and "refs/heads" not in text
     assert "git add" not in text
 
 
@@ -147,9 +158,9 @@ def test_only_the_sync_job_pushes_a_branch_and_never_main() -> None:
             for line in step.get("run", "").splitlines():
                 if "git push" in line:
                     pushes.setdefault(name, []).append(line.strip())
-    assert set(pushes) == {"release", "release-sync"}
-    assert all("refs/tags/" in line for line in pushes["release"])
-    assert all('"HEAD:refs/heads/${branch}"' in line for line in pushes["release-sync"])
+    assert set(pushes) == {"release-sync"}, "the release job creates the tag through the API and pushes nothing"
+    assert all('git push origin "HEAD:refs/heads/${branch}"' in line for line in pushes["release-sync"])
+    assert "x-access-token" not in "".join(pushes["release-sync"]), "no token in a URL (secrets gate basic_auth_url)"
     assert "refs/heads/main" not in "".join(pushes["release-sync"])
 
 
@@ -192,5 +203,5 @@ def test_caller_exposes_the_release_choice_and_the_helper_dispatches_it() -> Non
     assert pipeline["with"]["release"] == "${{ inputs.release || 'none' }}"
     assert pipeline["permissions"]["contents"] == "write" and pipeline["permissions"]["checks"] == "read"
     script = (ROOT / "scripts/release_connector.sh").read_text(encoding="utf-8")
-    assert "gh workflow run connector.yml -R \"$repo\" -f \"release=$level\"" in script
+    assert 'gh workflow run connector.yml -R "$repo" -f "release=$level"' in script
     assert "patch|minor|major" in script
