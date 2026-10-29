@@ -56,4 +56,3 @@ Every repository gives a cold agent the same setup and the same orientation (PIP
 - Each repository allows auto-merge, and its main ruleset requires a pull request plus the single check `CI required`, and blocks force-push and deletion.
 - The PR author enables auto-merge (`gh pr merge <n> --auto --merge`). GitHub merges once `CI required` is green. No workflow merges, and no workflow holds a merge or push token.
 - A release is a `v*` tag pushed by a maintainer. The tag runs the publish jobs (PyPI, Docker, Pages). Main pushes run CI and the org-site notify only.
-
