@@ -76,7 +76,11 @@ def _mirrored_test(tests_root: str, rel: str, tree: Path) -> str | None:
 
 
 class _DedupedScope:
-    """The order-stable, deduplicated list this gate prints, or a fallback."""
+    """The sorted, deduplicated list this gate prints, or a fallback.
+
+    Sorted so that tests of one directory stay contiguous: pytest drops a directory conftest
+    when its files are split by files of another directory.
+    """
 
     def __init__(self) -> None:
         self._selected: list[str] = []
@@ -88,7 +92,7 @@ class _DedupedScope:
             self._selected.append(item)
 
     def resolve(self) -> list[str]:
-        return self._selected or [NONE]
+        return sorted(self._selected) or [NONE]
 
 
 def _add_python_test(scope: _DedupedScope, path: str) -> None:
