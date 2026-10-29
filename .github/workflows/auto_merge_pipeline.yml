@@ -19,10 +19,7 @@ on:
         description: Token that arms the merge (a PAT or app token, so downstream workflows fire). Falls back to the workflow token.
         required: false
 
-permissions:
-  contents: write
-  pull-requests: write
-  checks: read
+permissions: {}
 
 concurrency:
   group: auto-merge-${{ github.repository }}-${{ github.event.pull_request.number || github.event.check_run.head_sha || github.run_id }}
@@ -32,10 +29,13 @@ jobs:
   arm:
     name: Arm green auto-merge
     if: >-
-      github.event_name == 'pull_request_target' ||
-      (github.event_name == 'check_run' &&
+      github.event_name == 'check_run' &&
       github.event.check_run.name == inputs.required-check &&
-      github.event.check_run.conclusion == 'success')
+      github.event.check_run.conclusion == 'success'
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
