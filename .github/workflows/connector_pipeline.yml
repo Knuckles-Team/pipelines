@@ -1,0 +1,246 @@
+name: Connector pipeline
+
+# PIPE-RELEASE-R018: the ONE reusable workflow of the connector fleet. A connector carries a
+# single caller (templates/workflows/connector.yml) and every connector pipeline change is a
+# change to this file. The workflow routes by the triggering event:
+#
+#   pull_request                      -> pr (connector_pr_pipeline.yml: gates, affected tests, image check)
+#   push to main                      -> org-site (spec updates reach the architecture page) + main
+#                                        (main_pipeline.yml, backward Python); never publishes
+#   push of a v* tag                  -> publish-pypi, then publish-docker, and publish-pages
+#   schedule / repository_dispatch /
+#   workflow_dispatch                 -> sdk-rebuild (connector_sdk_rebuild_pipeline.yml)
+#
+# A v* tag push is what publishes: nothing publishes from a main push. Write scopes sit on the
+# publishing jobs only; the workflow level is read-only. The caller passes secrets explicitly
+# (SC-GHA-006 forbids blanket secret inheritance) and carries the job-scoped permissions the
+# publishing jobs need (contents: write, pages: write, id-token: write).
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: JSON runner label or label list for runs-on.
+        required: false
+        type: string
+        default: '"ubuntu-latest"'
+      test-scope:
+        description: Tests directory for the affected-test subset and the main suite; empty disables the test steps.
+        required: false
+        type: string
+        default: tests
+      sync-args:
+        description: Extra arguments for `uv sync --frozen`; a connector with an extra that cannot build on a CPU runner lists the extras to install instead of `--all-extras`.
+        required: false
+        type: string
+        default: --all-extras --all-groups
+      skip-hooks:
+        description: Comma-separated hook ids exported as SKIP on the pull request gate.
+        required: false
+        type: string
+        default: docker-compose-check
+      backward-python:
+        description: Backward-support Python version proven on a main push (the requires-python floor); empty disables it.
+        required: false
+        type: string
+        default: '3.12'
+      python-connector:
+        description: Publish the wheel as a connector (generates the ontology shapes and certification into the build tree).
+        required: false
+        type: boolean
+        default: true
+      render-connector:
+        description: Render docker/Dockerfile and the compose files from pyproject.toml at release (the connector commits none of them).
+        required: false
+        type: boolean
+        default: true
+      runtime-profiles:
+        description: Additional runtime extras as JSON for the wheel readiness proof.
+        required: false
+        type: string
+        default: '[]'
+      role-contract:
+        description: Optional tracked JSON role/extra contract; empty keeps the default.
+        required: false
+        type: string
+        default: ''
+      web-assets:
+        description: The connector ships a Node/pnpm frontend that is built before packaging.
+        required: false
+        type: boolean
+        default: false
+      container-enabled:
+        description: Publish the container image on a v* tag; false for a connector that ships no image.
+        required: false
+        type: boolean
+        default: true
+      pages-enabled:
+        description: Deploy GitHub Pages on a v* tag.
+        required: false
+        type: boolean
+        default: true
+      pages-content-source:
+        description: Documentation content directory passed to pages_pipeline.yml.
+        required: false
+        type: string
+        default: docs
+      pages-spec-dashboard-config:
+        description: Spec dashboard configuration path passed to pages_pipeline.yml.
+        required: false
+        type: string
+        default: .github/spec-dashboard.json
+      release_repair:
+        description: Reviewed repair of an already published container (workflow_dispatch on main only).
+        required: false
+        type: boolean
+        default: false
+      release_source_sha:
+        description: Full SHA of the original package source for a release repair.
+        required: false
+        type: string
+        default: ''
+      release_source_epoch:
+        description: Exact SOURCE_DATE_EPOCH of the original connector payload for a release repair.
+        required: false
+        type: string
+        default: ''
+      legacy_profile:
+        description: Wheel-only legacy profile for a release repair.
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      PYPI_API_TOKEN:
+        required: false
+      DOCKER_REGISTRY:
+        required: false
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+      DOCKER_REPOSITORY:
+        required: false
+      org_site_app_id:
+        required: false
+      org_site_app_private_key:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  pr:
+    name: pr
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/connector_pr_pipeline.yml@main
+    with:
+      runner: ${{ inputs.runner }}
+      test-scope: ${{ inputs.test-scope }}
+      sync-args: ${{ inputs.sync-args }}
+      skip-hooks: ${{ inputs.skip-hooks }}
+
+  org-site:
+    name: org-site
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/notify_org_site.yml@main
+    secrets:
+      org_site_app_id: ${{ secrets.org_site_app_id }}
+      org_site_app_private_key: ${{ secrets.org_site_app_private_key }}
+
+  main:
+    name: main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@main
+    with:
+      runner: ${{ inputs.runner }}
+      test-scope: ${{ inputs.test-scope }}
+      backward-python: ${{ inputs.backward-python }}
+      setup-command: uv sync --frozen ${{ inputs.sync-args }}
+
+  publish-pypi:
+    name: publish-pypi
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main
+    with:
+      connector: ${{ inputs.python-connector }}
+      require-tag: true
+      runtime-profiles: ${{ inputs.runtime-profiles }}
+      role-contract: ${{ inputs.role-contract }}
+      web-assets: ${{ inputs.web-assets }}
+    secrets:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+  publish-docker:
+    name: publish-docker
+    needs: publish-pypi
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && inputs.container-enabled
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
+    with:
+      render_connector: ${{ inputs.render-connector }}
+    secrets:
+      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+
+  publish-pages:
+    name: publish-pages
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && inputs.pages-enabled
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main
+    with:
+      content_source: ${{ inputs.pages-content-source }}
+      spec_dashboard_enabled: true
+      spec_dashboard_config: ${{ inputs.pages-spec-dashboard-config }}
+
+  sdk-rebuild:
+    name: sdk-rebuild
+    if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
+    with:
+      release_repair: ${{ inputs.release_repair }}
+      legacy_profile: ${{ inputs.legacy_profile }}
+      release_source_sha: ${{ inputs.release_source_sha }}
+      release_source_epoch: ${{ inputs.release_source_epoch }}
+    secrets:
+      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+
+  # The aggregate of the routed jobs (reference/ci-standard.md). A skipped job (an event the
+  # route does not take) passes; a failed or cancelled one fails. The repository's required
+  # check is the caller's own `CI required` job, because a check produced inside a reusable
+  # workflow is named `<caller job> / <job>`.
+  ci-required:
+    name: CI required
+    if: always()
+    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, sdk-rebuild]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Fail on any failed or cancelled job (skipped is fine)
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "needed job results: $RESULTS"
+          for r in $RESULTS; do
+            case "$r" in failure|cancelled) echo "::error::a required job ended $r"; exit 1;; esac
+          done
