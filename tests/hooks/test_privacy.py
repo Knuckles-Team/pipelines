@@ -90,6 +90,18 @@ def test_privacy_allows_a_hyphenated_requirement_id_citation(repo: Repo, catalog
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0
 
 
+def test_privacy_ignores_bare_subrow_citations(repo: Repo, catalog: Path) -> None:
+    """A bare sub-row citation like ``R722.5`` (engine-generated API docs) is not a host."""
+    repo.commit({"docs/notes.md": "Bounded by R722.5 and R802.1.3; see (R901.2).\n"})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0
+
+
+def test_privacy_still_fires_on_a_host_with_a_domain(repo: Repo, catalog: Path) -> None:
+    """A host alias followed by its domain (``r820.arpa``) must still be caught."""
+    repo.commit({"docs/notes.md": "Built on " + "r" + "820.arpa tonight.\n"})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 1
+
+
 def test_privacy_still_fires_on_a_bare_host_token(repo: Repo, catalog: Path) -> None:
     """A bare fleet host alias (no hyphen boundary) must still be caught."""
     repo.commit({"docs/notes.md": "Deployed to " + "rw" + "710 for the pilot.\n"})
