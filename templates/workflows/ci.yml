@@ -1,0 +1,78 @@
+name: CI
+
+# Copy to .github/workflows/ci.yml (reference/ci-standard.md). The caller job
+# `ci-required` (check name `CI required`) is the one required status check.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+# Caller-side concurrency: PR runs cancel superseded runs; main runs too.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}-{1}', github.workflow, github.event.pull_request.number) || format('main-{0}-{1}', github.workflow, github.ref) }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main
+    with:
+      docs-only-paths: 'docs/** specs/**/*.md *.md **/*.md mkdocs.yml'
+
+  full:
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@main
+    with:
+      backward-python: "3.12"
+
+  # Repo-specific fast PR jobs go here (Python 3.14 only on PRs). Gate them with a
+  # path filter and add them to `ci-required` needs, e.g.:
+  #
+  # changes:
+  #   if: github.event_name == 'pull_request'
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     src: ${{ steps.f.outputs.src }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - id: f
+  #       uses: dorny/paths-filter@v3
+  #       with:
+  #         filters: |
+  #           src:
+  #             - 'src/**'
+  # fast-tests:
+  #   needs: changes
+  #   if: needs.changes.outputs.src == 'true'
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   steps:
+  #     - run: echo "repo-specific fast job"
+
+  ci-required:
+    name: CI required
+    if: always()
+    needs: [gates, full]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail on any failed or cancelled job (skipped is fine)
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "needed job results: $RESULTS"
+          for r in $RESULTS; do
+            case "$r" in failure|cancelled) echo "::error::a required job ended $r"; exit 1;; esac
+          done
