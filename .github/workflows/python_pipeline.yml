@@ -38,6 +38,13 @@ on:
         required: false
         type: boolean
         default: false
+      stamp-version-from-tag:
+        description: >-
+          On a v* tag, set [project].version in the build workspace to the tag's version before
+          the release checks and the build (PIPE-RELEASE-R018); the tag carries the version.
+        required: false
+        type: boolean
+        default: false
     secrets:
       PYPI_API_TOKEN:
         required: true
@@ -89,6 +96,20 @@ jobs:
             /pipelines_hooks/core/errors.py
           path: .pipeline-contract
           persist-credentials: false
+
+      # PIPE-RELEASE-R018: the tag carries the version. Main's pyproject lags until the sync
+      # pull request merges, so the build workspace takes the tag's version before anything reads it.
+      - name: Stamp the tag version
+        if: inputs.stamp-version-from-tag && startsWith(github.ref, 'refs/tags/v')
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          version="${REF_NAME#v}"
+          python3 -m pip install --quiet uv
+          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root . set "$version"
 
       # PIPE-RELEASE-R002: refuse a stale-version tag, a bumpversion mismatch or an
       # already-published version before any build time is spent.

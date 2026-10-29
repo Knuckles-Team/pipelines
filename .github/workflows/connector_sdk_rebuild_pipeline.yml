@@ -45,7 +45,11 @@ name: Connector SDK rebuild
 #         legacy_profile: ${{ inputs.legacy_profile || false }}
 #         release_source_sha: ${{ inputs.release_source_sha || '' }}
 #         release_source_epoch: ${{ inputs.release_source_epoch || '' }}
-#       secrets: inherit
+#       secrets:
+#         DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+#         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+#         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+#         DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
 
 on:
   workflow_call:
@@ -90,6 +94,8 @@ on:
       DOCKER_USERNAME:
         required: false
       DOCKER_PASSWORD:
+        required: false
+      DOCKER_REPOSITORY:
         required: false
 
 permissions:
@@ -224,4 +230,8 @@ jobs:
       release_source_epoch: ${{ inputs.release_source_epoch }}
       sdk_version: ${{ needs.resolve.outputs.sdk_version }}
       sdk_distribution: ${{ needs.resolve.outputs.sdk_distribution }}
-    secrets: inherit
+    secrets:
+      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}

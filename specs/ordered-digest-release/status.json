@@ -74,7 +74,8 @@
     "PIPE-RELEASE-R014",
     "PIPE-RELEASE-R015",
     "PIPE-RELEASE-R016",
-    "PIPE-RELEASE-R017"
+    "PIPE-RELEASE-R017",
+    "PIPE-RELEASE-R018"
   ],
   "requirements": [
     {
@@ -947,6 +948,24 @@
       "verified_by": [
         "tests/test_connector_release_pipeline.py:111",
         "tests/test_connector_release_pipeline.py:112"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R018",
+      "title": "One central connector pipeline; a `v*` tag publishes",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "67c8c71a85b4",
+        "89f8b21b1226",
+        "95a10590ddcd",
+        "f85841ba60b3"
+      ],
+      "verified_by": [
+        "tests/test_connector_pipeline.py:112",
+        "tests/test_connector_pipeline.py:121",
+        "tests/test_connector_pipeline.py:139",
+        "tests/test_connector_pipeline.py:153",
+        "tests/test_connector_pipeline.py:167"
       ]
     }
   ]

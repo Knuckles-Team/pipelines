@@ -78,7 +78,7 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
     builds = [step for step in steps if "docker/build-push-action@" in step.get("uses", "")]
     assert (
         identity["if"]
-        == "(github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.release_repair == true) && steps.target.outputs.exists == 'true'"
+        == "(github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) || inputs.release_repair == true) && steps.target.outputs.exists == 'true'"
     )
     assert "steps.published-wheel.outputs.connector == 'true'" in guard["if"]
     assert guard["uses"] == "./.pipeline-contract/.github/actions/verify-release-version"
@@ -1150,7 +1150,7 @@ def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
     meta = next(step for step in steps if step.get("id") == "meta")
     assert steps.index(_version_step()) < steps.index(meta)
     assert _version_step()["if"] == "steps.target.outputs.exists == 'true'"
-    on_main = "(github.event_name == 'push' && github.ref == 'refs/heads/main') || inputs.release_repair == true"
+    on_main = "(github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true"
     on_main_version = f"({on_main}) && steps.version.outputs.version != ''"
     assert meta["with"]["tags"].splitlines() == [
         "type=ref,event=branch,suffix=${{ matrix.suffix }}",
