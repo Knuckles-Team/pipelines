@@ -164,6 +164,13 @@ def test_reusable_workflow_and_templates_are_wired():
     assert "contents/scripts/auto_merge.py?ref=main" in (ROOT / ".github/workflows/auto_merge_pipeline.yml").read_text()
     caller = yaml.safe_load((ROOT / "templates/workflows/auto_merge.yml").read_text())
     assert caller["jobs"]["auto-merge"]["uses"].endswith("auto_merge_pipeline.yml@main")
+    caller_trig = caller.get("on") or caller[True]
+    assert set(caller_trig) == {"check_run"}, "no pull_request_target (SC-GHA-005)"
+    assert caller.get("permissions") == {}, "write is job-scoped (SC-GHA-004)"
+    assert caller["jobs"]["auto-merge"]["permissions"]["contents"] == "write"
+    assert reusable.get("permissions") == {}
+    assert reusable["jobs"]["arm"]["permissions"]["pull-requests"] == "write"
+    assert "pull_request_target" not in (ROOT / ".github/workflows/auto_merge_pipeline.yml").read_text()
     assert (ROOT / ".github/workflows/auto_merge.yml").read_text() == (
         ROOT / "templates/workflows/auto_merge.yml"
     ).read_text()
