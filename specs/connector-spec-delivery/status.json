@@ -5421,10 +5421,15 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "026b93b29c01",
-        "b6d61da291ad"
+        "b6d61da291ad",
+        "c8135464bb6f"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_standard_aliases.py:14"
+        "tests/hooks/test_spec_prefix_rename.py:101",
+        "tests/hooks/test_spec_prefix_rename.py:109",
+        "tests/hooks/test_spec_prefix_rename.py:117",
+        "tests/hooks/test_spec_prefix_rename.py:128",
+        "tests/hooks/test_spec_prefix_rename.py:138"
       ]
     },
     {
