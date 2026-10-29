@@ -44,3 +44,19 @@ jobs:
     with:
       # Keep required main checks hosted until the dedicated pool is live.
       runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}' || '"ubuntu-latest"' }}
+
+  ci-required:
+    name: CI required
+    if: always()
+    needs: [gates, main]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail on any failed or cancelled job (skipped is fine)
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "needed job results: $RESULTS"
+          for r in $RESULTS; do
+            case "$r" in failure|cancelled) echo "::error::a required job ended $r"; exit 1;; esac
+          done

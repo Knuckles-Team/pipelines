@@ -40,7 +40,10 @@ on:
         type: string
         default: ''
       backward-module:
-        description: Module imported by the backward smoke; empty derives it from the pyproject.toml project name.
+        description: >-
+          Module imported by the backward smoke; empty derives it from the pyproject.toml project name.
+          The value 'none' skips the import for a project that ships no Python module (a native-only
+          wheel); backward-test-scope then carries the smoke.
         required: false
         type: string
         default: ''
@@ -64,6 +67,11 @@ on:
         required: false
         type: boolean
         default: false
+      rust-manifest-path:
+        description: Cargo.toml path audited by cargo-deny when rust is true; empty uses the repository root.
+        required: false
+        type: string
+        default: ''
       setup-command:
         description: Shell command run once after uv is installed and before the suite.
         required: false
@@ -202,7 +210,11 @@ jobs:
           if [[ -z "$module" ]]; then
             module="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"].replace("-","_"))')"
           fi
-          "${run[@]}" python -c 'import importlib, sys; importlib.import_module(sys.argv[1]); print(sys.version)' "$module"
+          if [[ "$module" == "none" ]]; then
+            "${run[@]}" python -c 'import sys; print(sys.version)'
+          else
+            "${run[@]}" python -c 'import importlib, sys; importlib.import_module(sys.argv[1]); print(sys.version)' "$module"
+          fi
           if [[ -n "$BACKWARD_SCOPE" ]]; then
             # shellcheck disable=SC2086
             "${run[@]}" pytest -q $BACKWARD_SCOPE
@@ -265,4 +277,12 @@ jobs:
 
       - name: Audit Rust dependencies (cargo deny)
         if: inputs.rust
-        run: cargo deny check advisories
+        env:
+          MANIFEST_PATH: ${{ inputs.rust-manifest-path }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$MANIFEST_PATH" ]]; then
+            cargo deny --manifest-path "$MANIFEST_PATH" check advisories
+          else
+            cargo deny check advisories
+          fi

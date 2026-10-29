@@ -344,6 +344,9 @@ def test_renamed_repositories_keep_ownership_placement_and_canonical_details(tmp
         "tuig": ("tui", "agent-terminal-ui", "core"),
         "axil": ("geniusbot", "geniusbot", "client"),
     }
+    # Medulla's checkout directory followed the repository rename; the other
+    # repositories still keep their legacy directory name.
+    local_dir = {"medulla": "medulla"}
     found = {e["slug"]: "a" * 40 for e in registry["repositories"]}
     found["new-mcp"] = "b" * 40
     scanned = sources.reconcile(registry["repositories"], found)
@@ -356,7 +359,7 @@ def test_renamed_repositories_keep_ownership_placement_and_canonical_details(tmp
         entry = entries[slug]
         assert entry["slug"] == slug and entry["kind"] == kind
         assert not entry.get("discovered") and old_slug not in entries
-        assert entry["local"] == f"agent-packages/{old_slug}"
+        assert entry["local"] == f"agent-packages/{local_dir.get(slug, old_slug)}"
         assert registry["pages_node"][slug] == node_id
         assert tree.nodes[node_id]["repo"] == slug
         if slug == "axil":

@@ -101,7 +101,7 @@
         "tests/hooks/test_validation.py:181",
         "tests/hooks/test_validation.py:202",
         "tests/hooks/test_validation_lifecycle.py:112",
-        "tests/hooks/test_validation_lifecycle.py:148"
+        "tests/hooks/test_validation_lifecycle.py:151"
       ]
     },
     {

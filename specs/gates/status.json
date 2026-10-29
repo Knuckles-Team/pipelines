@@ -139,7 +139,8 @@
     "PIPE-GATES-R016.112",
     "PIPE-GATES-R016.113",
     "PIPE-GATES-R016.114",
-    "PIPE-GATES-R016.115"
+    "PIPE-GATES-R016.115",
+    "PIPE-GATES-R016.116"
   ],
   "requirements": [
     {
@@ -533,7 +534,8 @@
         "PIPE-GATES-R016.112",
         "PIPE-GATES-R016.113",
         "PIPE-GATES-R016.114",
-        "PIPE-GATES-R016.115"
+        "PIPE-GATES-R016.115",
+        "PIPE-GATES-R016.116"
       ]
     },
     {
@@ -1986,6 +1988,23 @@
         "tests/hooks/test_connector_skills.py:49",
         "tests/hooks/test_connector_skills.py:60",
         "tests/hooks/test_connector_skills.py:78"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.116",
+      "title": "The fleet CI standard has one required check and a shared auto-merge",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "318a2a21eca3",
+        "35f930ffcf65",
+        "9c1c3c6361d5"
+      ],
+      "verified_by": [
+        "tests/test_auto_merge.py:103",
+        "tests/test_auto_merge.py:108",
+        "tests/test_auto_merge.py:119",
+        "tests/test_auto_merge.py:124",
+        "tests/test_auto_merge.py:134"
       ]
     }
   ]

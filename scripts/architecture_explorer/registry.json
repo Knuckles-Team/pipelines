@@ -16,7 +16,7 @@
   {
    "name": "medulla",
    "slug": "medulla",
-   "local": "agent-packages/epistemic-graph",
+   "local": "agent-packages/medulla",
    "kind": "core"
   },
   {
