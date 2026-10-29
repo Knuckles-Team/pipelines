@@ -148,7 +148,7 @@ Existing code: `pipelines_hooks/docs/public_surface.py:31` gathers public-surfac
 Reachable today: no. The public-surface gate runs, but `pipelines_hooks/docs/claims.py` and the shared measured-evidence validator are absent. Existing clone validation is format-specific and is not a generic code-enhancer finding validator.
 Attach point: `validate` at `pipelines_hooks/docs/public_surface.py:31`, dispatched by `run_gate` at `pipelines_hooks/cli.py:59`.
 Decision: extend R020 with code and documentation finding provenance. Reuse containment and typed error helpers; require tree-bound measurements before exporting findings. Reject unlocated prose reports rather than guessing their evidence.
-Cross-repository rows: `EG-ORCH-VOCAB` owns trace storage; this producer owns gate evidence. A receipt does not confer host admission.
+Cross-repository rows: `MEDULLA-ORCH-VOCAB` owns trace storage; this producer owns gate evidence. A receipt does not confer host admission.
 Source credit: the source document “SDD enhanced”, Meristem queue candidate 64. No research citation was supplied.
 Acceptance: implement `tests/hooks/test_public_surface_claims.py`, then run `uv run --frozen python -m pytest tests/hooks/test_public_surface_claims.py -q`. The subprocess tests enter the published CLI and assert exact exit codes and structured findings.
 
@@ -356,7 +356,7 @@ Add a spec-artifacts entry to pipelines_hooks/cli.py:13, dispatched through run_
 ### Spec bundle compatibility
 
 `PIPE-PAGES-R012.8` through `PIPE-PAGES-R012.13` extend `PIPE-PAGES-R012`.
-Extend proposed spec-artifacts at pipelines_hooks/cli.py:13 through run_gate at line 59. Validate the bundle before specs/generator.py:93 and dashboard source ingestion. EG-ORCH-VOCAB-R012 owns graph ingestion. Its owner adapter must consume the identical bundle bytes; the Pages renderer must not invent graph compatibility.
+Extend proposed spec-artifacts at pipelines_hooks/cli.py:13 through run_gate at line 59. Validate the bundle before specs/generator.py:93 and dashboard source ingestion. MEDULLA-ORCH-VOCAB-R012 owns graph ingestion. Its owner adapter must consume the identical bundle bytes; the Pages renderer must not invent graph compatibility.
 
 ### Skill dependency audit
 
@@ -411,7 +411,7 @@ Extend the planned test-quality entry at pipelines_hooks/cli.py:13 through run_g
 ### Solution size evidence
 
 `PIPE-PAGES-R021.67` through `PIPE-PAGES-R021.72` extend `PIPE-PAGES-R021`.
-Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under EG-DECISION-ENGINE-R136.4. Meristem run receipts must preserve the same source and evidence identities.
+Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under MEDULLA-DECISION-ENGINE-R136.4. Meristem run receipts must preserve the same source and evidence identities.
 
 ### Graph workflow receipt
 
