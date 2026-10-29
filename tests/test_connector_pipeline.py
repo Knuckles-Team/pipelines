@@ -81,7 +81,7 @@ def test_central_pipeline_has_ci_required_and_read_only_workflow_permissions() -
         for name, job in document["jobs"].items()
         if any(scope == "write" for scope in job.get("permissions", {}).values())
     }
-    assert writers == {"publish-pypi", "publish-pages", "release-sync"}
+    assert writers == {"publish-pypi", "publish-pages"}
     text = CENTRAL.read_text(encoding="utf-8")
     assert "pull_request_target" not in text and "secrets: inherit" not in text
 
@@ -100,8 +100,6 @@ def test_one_caller_template_triggers_every_route_without_top_level_write() -> N
         "contents": "write",
         "pages": "write",
         "id-token": "write",
-        "checks": "read",
-        "pull-requests": "write",
     }
     assert "pull_request_target" not in CALLER.read_text(encoding="utf-8")
     assert "inherit" not in CALLER.read_text(encoding="utf-8")
@@ -119,49 +117,19 @@ def test_caller_passes_exactly_the_secrets_the_central_workflow_declares() -> No
 
 
 @pytest.mark.spec("PIPE-RELEASE-R018")
-def test_release_job_runs_only_on_a_release_dispatch_and_alone_writes_to_main() -> None:
-    jobs = _jobs()
-    release = jobs["release"]
-    condition = release["if"]
-    assert "github.event_name == 'workflow_dispatch'" in condition
-    assert "inputs.release != 'none'" in condition and "inputs.release_repair != true" in condition
-    assert "github.ref == 'refs/heads/main'" in condition
-    assert release["permissions"] == {"contents": "read", "checks": "read"}
-    assert "secrets.GIT_TOKEN" in CENTRAL.read_text(encoding="utf-8")
-    # A release dispatch never also runs the SDK rebuild, and no other job but the publishers writes.
-    assert "inputs.release == 'none'" in jobs["sdk-rebuild"]["if"]
-    assert "release" in jobs["ci-required"]["needs"]
-    inputs = _on(_load(CENTRAL))["workflow_call"]["inputs"]
-    assert inputs["release"]["default"] == "none"
-    assert "GIT_TOKEN" in _on(_load(CENTRAL))["workflow_call"]["secrets"]
-
-
-@pytest.mark.spec("PIPE-RELEASE-R018")
-def test_release_tags_only_a_ci_green_head_and_never_pushes_a_branch() -> None:
-    jobs = _jobs()
-    text = "\n".join(step.get("run", "") for step in jobs["release"]["steps"])
-    assert '.name=="CI required"' in text and "!= success" in text and "refusing to release" in text
-    assert 'ls-remote --exit-code --tags origin "refs/tags/v${version}"' in text
-    assert text.index("already exists") < text.index("git/tags") < text.index("git/refs")
-    assert "git tag --list 'v[0-9]*.[0-9]*.[0-9]*'" in text and 'bump "$LEVEL"' in text
-    assert "repos/${REPO}/git/refs" in text and "refs/tags/v${version}" in text
-    assert "x-access-token" not in text, "no token in a URL (secrets gate basic_auth_url)"
-    assert "git commit" not in text and "git push" not in text and "refs/heads" not in text
-    assert "git add" not in text
-
-
-@pytest.mark.spec("PIPE-RELEASE-R018")
-def test_only_the_sync_job_pushes_a_branch_and_never_main() -> None:
-    pushes = {}
-    for name, job in _jobs().items():
+def test_no_release_job_no_git_token_and_no_branch_push() -> None:
+    document = _load(CENTRAL)
+    assert {"release", "release-sync"}.isdisjoint(document["jobs"])
+    workflow_call = _on(document)["workflow_call"]
+    assert "release" not in workflow_call["inputs"] and "GIT_TOKEN" not in workflow_call["secrets"]
+    assert "GIT_TOKEN" not in CENTRAL.read_text(encoding="utf-8")
+    assert "GIT_TOKEN" not in CALLER.read_text(encoding="utf-8")
+    caller = _load(CALLER)
+    assert "release" not in _on(caller)["workflow_dispatch"]["inputs"]
+    assert "release" not in caller["jobs"]["pipeline"]["with"]
+    for job in document["jobs"].values():
         for step in job.get("steps", []):
-            for line in step.get("run", "").splitlines():
-                if "git push" in line:
-                    pushes.setdefault(name, []).append(line.strip())
-    assert set(pushes) == {"release-sync"}, "the release job creates the tag through the API and pushes nothing"
-    assert all('git push origin "HEAD:refs/heads/${branch}"' in line for line in pushes["release-sync"])
-    assert "x-access-token" not in "".join(pushes["release-sync"]), "no token in a URL (secrets gate basic_auth_url)"
-    assert "refs/heads/main" not in "".join(pushes["release-sync"])
+            assert "git push" not in step.get("run", "")
 
 
 @pytest.mark.spec("PIPE-RELEASE-R018")
@@ -179,29 +147,3 @@ def test_publish_stamps_the_tag_version_before_any_release_check() -> None:
         assert names.index("Stamp the tag version") < names.index(anchor)
         assert "startsWith(github.ref, 'refs/tags/v')" in stamp["if"]
         assert 'pipelines-connector version --root . set "$version"' in stamp["run"]
-
-
-@pytest.mark.spec("PIPE-RELEASE-R018")
-def test_sync_job_opens_a_pull_request_after_a_successful_publish() -> None:
-    sync = _jobs()["release-sync"]
-    assert sync["needs"] == ["publish-pypi", "publish-docker"]
-    assert sync["permissions"] == {"contents": "write", "pull-requests": "write"}
-    assert "needs.publish-pypi.result == 'success'" in sync["if"]
-    assert "startsWith(github.ref, 'refs/tags/v')" in sync["if"]
-    text = "\n".join(step.get("run", "") for step in sync["steps"])
-    assert 'branch="release/sync-v${version}"' in text and "gh pr create" in text
-    assert "Spec: none (release version sync)" in text and "Co-Authored-By:" in text
-
-
-@pytest.mark.spec("PIPE-RELEASE-R018")
-def test_caller_exposes_the_release_choice_and_the_helper_dispatches_it() -> None:
-    document = _load(CALLER)
-    release = _on(document)["workflow_dispatch"]["inputs"]["release"]
-    assert release["type"] == "choice" and release["default"] == "none"
-    assert release["options"] == ["none", "patch", "minor", "major"]
-    pipeline = document["jobs"]["pipeline"]
-    assert pipeline["with"]["release"] == "${{ inputs.release || 'none' }}"
-    assert pipeline["permissions"]["contents"] == "write" and pipeline["permissions"]["checks"] == "read"
-    script = (ROOT / "scripts/release_connector.sh").read_text(encoding="utf-8")
-    assert 'gh workflow run connector.yml -R "$repo" -f "release=$level"' in script
-    assert "patch|minor|major" in script

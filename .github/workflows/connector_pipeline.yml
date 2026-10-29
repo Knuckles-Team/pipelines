@@ -8,14 +8,14 @@ name: Connector pipeline
 #   push to main                      -> org-site (spec updates reach the architecture page) + main
 #                                        (main_pipeline.yml, backward Python); never publishes
 #   push of a v* tag                  -> publish-pypi, then publish-docker, and publish-pages
-#   workflow_dispatch, release != none -> release (bump, commit to main, push the v<version> tag)
 #   schedule / repository_dispatch /
-#   workflow_dispatch (no release)    -> sdk-rebuild (connector_sdk_rebuild_pipeline.yml)
+#   workflow_dispatch                 -> sdk-rebuild (connector_sdk_rebuild_pipeline.yml)
 #
 # A v* tag push is what publishes: nothing publishes from a main push. Write scopes sit on the
 # publishing jobs only; the workflow level is read-only. The caller passes secrets explicitly
 # (SC-GHA-006 forbids blanket secret inheritance) and carries the job-scoped permissions the
-# publishing jobs need (contents: write, pages: write, id-token: write).
+# publishing jobs need (contents: write, pages: write, id-token: write). No workflow holds a
+# merge or push token: the owner arms merges and cuts releases with gh (scripts/release_connector.sh).
 
 on:
   workflow_call:
@@ -110,15 +110,7 @@ on:
         required: false
         type: boolean
         default: false
-      release:
-        description: Cut a release from main by workflow_dispatch - none, patch, minor or major. The tag push then publishes.
-        required: false
-        type: string
-        default: none
     secrets:
-      GIT_TOKEN:
-        description: Token that may push to main and push tags; a GITHUB_TOKEN push does not trigger the publish workflow.
-        required: false
       PYPI_API_TOKEN:
         required: false
       DOCKER_REGISTRY:
@@ -217,147 +209,9 @@ jobs:
       spec_dashboard_enabled: true
       spec_dashboard_config: ${{ inputs.pages-spec-dashboard-config }}
 
-  # PIPE-RELEASE-R018: the tag carries the version; no job pushes a branch. The tag is created
-  # on the CI-green main head with the merge token (a GITHUB_TOKEN push would not trigger the
-  # publish jobs); the publish jobs stamp the tag's version into the build workspace, and the
-  # release-sync job opens the pull request that brings main's pyproject up to the release.
-  release:
-    name: release
-    if: github.event_name == 'workflow_dispatch' && inputs.release != 'none' && inputs.release != '' && inputs.release_repair != true && inputs.legacy_profile != true && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      checks: read
-    outputs:
-      version: ${{ steps.tag.outputs.version }}
-    steps:
-      - name: Checkout main
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: main
-          fetch-depth: 0
-          fetch-tags: true
-          persist-credentials: false
-
-      - name: Refuse unless main is green and not ahead of this run
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          RUN_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          head="$(git rev-parse HEAD)"
-          if [[ "$head" != "$RUN_SHA" ]]; then
-            echo "::error::main moved since this run started ($head != $RUN_SHA); dispatch again."
-            exit 1
-          fi
-          ok="$(gh api "repos/${REPO}/commits/${head}/check-runs?per_page=100" \
-            --jq '[.check_runs[] | select(.name=="CI required" and .status=="completed")] | sort_by(.completed_at) | last | .conclusion // "none"')"
-          if [[ "$ok" != success ]]; then
-            echo "::error::main@${head} has no successful 'CI required' check run (latest: ${ok}); refusing to release."
-            exit 1
-          fi
-
-      - name: Compute the next version and tag the green head
-        id: tag
-        env:
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-          REPO: ${{ github.repository }}
-          LEVEL: ${{ inputs.release }}
-          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
-          PIPELINES_SHA: ${{ job.workflow_sha }}
-        run: |
-          set -euo pipefail
-          case "$LEVEL" in patch|minor|major) ;; *) echo "::error::release must be none, patch, minor or major."; exit 1 ;; esac
-          if [[ -z "${GIT_TOKEN:-}" ]]; then
-            echo "::error::secret GIT_TOKEN is required: a GITHUB_TOKEN push would not trigger the publish workflow."
-            exit 1
-          fi
-          python3 -m pip install --quiet uv
-          tool=(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root .)
-          latest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)"
-          if [[ -n "$latest" ]]; then
-            "${tool[@]}" set "${latest#v}" > /dev/null
-          fi
-          "${tool[@]}" bump "$LEVEL" > /dev/null
-          version="$("${tool[@]}" read)"
-          git checkout -q -- pyproject.toml
-          if git ls-remote --exit-code --tags origin "refs/tags/v${version}" > /dev/null 2>&1; then
-            echo "::error::tag v${version} already exists; refusing to release it again."
-            exit 1
-          fi
-          # Create the annotated tag through the API (token in GH_TOKEN, never in a URL).
-          # A tag ref created with GIT_TOKEN fires the push event that runs the publish jobs.
-          head="$(git rev-parse HEAD)"
-          tag_sha="$(GH_TOKEN="$GIT_TOKEN" gh api -X POST "repos/${REPO}/git/tags" \
-            -f tag="v${version}" -f message="Release v${version}" -f object="$head" -f type=commit --jq .sha)"
-          GH_TOKEN="$GIT_TOKEN" gh api -X POST "repos/${REPO}/git/refs" \
-            -f ref="refs/tags/v${version}" -f sha="$tag_sha" > /dev/null
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "::notice::pushed tag v${version} on the green main head; the tag push runs the publish jobs."
-
-  # After a successful tag publish, a pull request sets main's [project].version to the released
-  # version; the standard auto_merge.yml merges it once `CI required` is green. The only job
-  # that writes to the repository (a branch and a pull request, never a push to main).
-  release-sync:
-    name: release-sync
-    needs: [publish-pypi, publish-docker]
-    if: always() && startsWith(github.ref, 'refs/tags/v') && needs.publish-pypi.result == 'success' && (needs.publish-docker.result == 'success' || needs.publish-docker.result == 'skipped')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout main
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: main
-          persist-credentials: false
-
-      - name: Open the version sync pull request
-        env:
-          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
-          REPO: ${{ github.repository }}
-          TAG: ${{ github.ref_name }}
-          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
-          PIPELINES_SHA: ${{ job.workflow_sha }}
-        run: |
-          set -euo pipefail
-          if [[ -z "${GH_TOKEN:-}" ]]; then
-            echo "::error::secret GIT_TOKEN is required to open the version sync pull request."
-            exit 1
-          fi
-          version="${TAG#v}"
-          python3 -m pip install --quiet uv
-          tool=(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root .)
-          current="$("${tool[@]}" read)"
-          if [[ "$current" == "$version" ]]; then
-            echo "::notice::main already carries ${version}; nothing to sync."
-            exit 0
-          fi
-          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
-          "${tool[@]}" set "$version" > /dev/null
-          branch="release/sync-v${version}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -q -b "$branch"
-          git add -- pyproject.toml
-          git commit -q -m "chore(release): sync ${name} to ${version}" -m "Spec: none (release version sync)
-          Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
-          # git asks gh for the credential (gh reads GH_TOKEN = GIT_TOKEN): the token is never in a
-          # URL or persisted, and a GIT_TOKEN push triggers the sync pull request's CI.
-          gh auth setup-git
-          git push origin "HEAD:refs/heads/${branch}"
-          gh pr create -R "$REPO" --base main --head "$branch" \
-            --title "chore(release): sync ${name} to ${version}" \
-            --body "Sets pyproject [project].version to the released ${version} (tag ${TAG}). Merged by the standard auto-merge once CI required is green."
-          gh pr edit "$branch" -R "$REPO" --add-label auto-merge || echo "::warning::label auto-merge missing; auto_merge.yml arms on CI required alone."
-
   sdk-rebuild:
     name: sdk-rebuild
-    if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && (inputs.release == 'none' || inputs.release == ''))
+    if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
     uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
@@ -379,7 +233,7 @@ jobs:
   ci-required:
     name: CI required
     if: always()
-    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, release, release-sync, sdk-rebuild]
+    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, sdk-rebuild]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

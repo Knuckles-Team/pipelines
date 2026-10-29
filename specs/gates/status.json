@@ -1992,21 +1992,18 @@
     },
     {
       "id": "PIPE-GATES-R016.116",
-      "title": "The fleet CI standard has one required check and a shared auto-merge",
+      "title": "The fleet CI standard has one required check; GitHub's native auto-merge merges",
       "delivery_state": "VERIFIED",
       "landed_in": [
         "2971057484c0",
         "318a2a21eca3",
         "35f930ffcf65",
-        "9c1c3c6361d5",
-        "d83d9042bb18"
+        "8287d5b7e5dc",
+        "90a24d812711"
       ],
       "verified_by": [
-        "tests/test_auto_merge.py:103",
-        "tests/test_auto_merge.py:110",
-        "tests/test_auto_merge.py:122",
-        "tests/test_auto_merge.py:130",
-        "tests/test_auto_merge.py:138"
+        "tests/test_no_merge_workflows.py:13",
+        "tests/test_no_merge_workflows.py:23"
       ]
     }
   ]
