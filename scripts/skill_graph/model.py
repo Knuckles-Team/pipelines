@@ -15,8 +15,8 @@ SCHEMA = "knuckles-skill-graph/v1"
 REPOS: dict[str, tuple[str, str, str]] = {
     "epistemic-graph": (
         "epistemic-graph",
-        "https://knuckles-team.github.io/epistemic-graph/",
-        "Epistemic Graph",
+        "https://knuckles-team.github.io/medulla/",
+        "Medulla",
     ),
     "agent-utilities": (
         "agent-utilities",

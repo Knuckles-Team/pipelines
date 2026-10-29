@@ -517,7 +517,7 @@ lowercase executable description.
 This amendment supersedes the earlier terminal title/subtitle choices: the
 canonical model uses the five approved product display names documented in
 `reference/ecosystem-boundaries.md`.
-Axil Desk is the desktop GUI; Epistemic Graph and Arbora retain their names.
+Axil Desk is the desktop GUI; Medulla and Arbora retain their names.
 The Tuig executable remains `tuig`. Stable node IDs, repository slugs, code
 paths, imports, dependency identifiers and protocol contracts do not change.
 Existing runtime and release qualification caveats remain in force.

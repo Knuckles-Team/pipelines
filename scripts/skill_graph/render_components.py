@@ -1,4 +1,4 @@
-"""One generated page per major (top-level) component for epistemic-graph:
+"""One generated page per major (top-level) component for Medulla:
 the 6 top-level "layer boundary root seam" components in
 ``architecture/component-registry.yml``, each owning a set of child
 implementation components -- see ``skill_graph/eg.py``.
@@ -75,7 +75,7 @@ def render_index(components: list[dict[str, Any]]) -> str:
     lines = [
         "# Components",
         "",
-        "The epistemic-graph engine's major components (the top-level layer",
+        "The Medulla engine's major components (the top-level layer",
         "boundary seams in `architecture/component-registry.yml`), each",
         "generated from that registry, one page per component.",
         "",
