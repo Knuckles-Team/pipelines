@@ -955,6 +955,7 @@
       "title": "One central connector pipeline; a `v*` tag publishes",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "67c8c71a85b4",
         "89f8b21b1226",
         "95a10590ddcd"
       ],
@@ -963,7 +964,7 @@
         "tests/test_connector_pipeline.py:111",
         "tests/test_connector_pipeline.py:129",
         "tests/test_connector_pipeline.py:142",
-        "tests/test_connector_pipeline.py:29"
+        "tests/test_connector_pipeline.py:156"
       ]
     }
   ]
