@@ -100,10 +100,12 @@ PR_EVENT = {"number": 7}
 CHECK_EVENT = {"check_run": {"name": "CI required", "conclusion": "success", "head_sha": SHA}}
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_arms_on_pr_open_when_required_check_already_green():
     assert _run("pull_request_target", PR_EVENT, _api()) == [(7, SHA)]
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_does_not_merge_when_required_check_not_success_on_head():
     for runs in (
         _runs(conclusion="failure"),
@@ -114,10 +116,12 @@ def test_does_not_merge_when_required_check_not_success_on_head():
         assert _run("pull_request_target", PR_EVENT, _api(runs=runs)) == []
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_merges_on_check_run_success_for_head_sha():
     assert _run("check_run", CHECK_EVENT, _api()) == [(7, SHA)]
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_ignores_other_check_names():
     other = {"check_run": {"name": "gates / gates", "conclusion": "success", "head_sha": SHA}}
     assert _run("check_run", other, _api()) == []
@@ -127,18 +131,21 @@ def test_ignores_other_check_names():
     assert _run("pull_request_target", PR_EVENT, _api(runs=_runs(name="lint"))) == []
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_refuses_when_no_required_check_is_configured():
     assert _run("pull_request_target", PR_EVENT, _api(contexts=())) == []
     assert _run("pull_request_target", PR_EVENT, _api(contexts=("gates / gates",))) == []
     assert _run("pull_request_target", PR_EVENT, _api(), required_check=" ") == []
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_required_check_name_is_configurable():
     api = _api(contexts=("Fleet ok",), runs=_runs(name="Fleet ok"))
     assert _run("pull_request_target", PR_EVENT, api, required_check="Fleet ok") == [(7, SHA)]
     assert _run("pull_request_target", PR_EVENT, api) == []
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_draft_and_non_main_pulls_are_not_armed():
     draft = _pull()
     draft["draft"] = True
@@ -148,6 +155,7 @@ def test_draft_and_non_main_pulls_are_not_armed():
     assert _run("pull_request_target", PR_EVENT, _api(pull=other)) == []
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_reusable_workflow_and_templates_are_wired():
     reusable = yaml.safe_load((ROOT / ".github/workflows/auto_merge_pipeline.yml").read_text())
     trig = reusable.get("on") or reusable[True]
@@ -161,6 +169,7 @@ def test_reusable_workflow_and_templates_are_wired():
     ).read_text()
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 @pytest.mark.parametrize("path", [".github/workflows/ci.yml", "templates/workflows/ci.yml"])
 def test_ci_required_aggregate_job(path):
     wf = yaml.safe_load((ROOT / path).read_text())
@@ -171,24 +180,28 @@ def test_ci_required_aggregate_job(path):
     assert "failure|cancelled" in job["steps"][0]["run"]
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_settings_script_refuses_without_green_check_and_has_dry_run():
     text = (ROOT / "scripts/apply_repo_ci_settings.sh").read_text()
     assert "--dry-run" in text and "exit 2" in text
     assert text.index("refusing") < text.index("gh api -X PATCH")
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_required_check_from_ruleset_without_classic_protection():
     """Repos protected only by a ruleset (no classic protection, HTTP 404) still arm."""
     api = _api(contexts=(), ruleset_contexts=("CI required",))
     am._check_required_rule(repo=REPO, required_check="CI required", api_get=api, log=lambda _m: None)
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_ruleset_requiring_another_check_refuses():
     api = _api(contexts=(), ruleset_contexts=("gates / gates",))
     with pytest.raises(am.GateNotReady):
         am._check_required_rule(repo=REPO, required_check="CI required", api_get=api, log=lambda _m: None)
 
 
+@pytest.mark.spec("PIPE-GATES-R016.116")
 def test_no_classic_protection_and_no_ruleset_refuses():
     api = _api(contexts=(), ruleset_contexts=())
     with pytest.raises(am.GateNotReady):
