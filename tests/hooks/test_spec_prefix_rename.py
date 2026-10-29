@@ -160,3 +160,13 @@ def test_range_of_row_ids_rewrites_both_ends(repo: Path) -> None:
     _write(repo, "docs/range.md", f"{_SDK}CONNECTOR-CONTROL-R014.18-R014.20\n")
     _run(repo, "other")
     assert (repo / "docs/range.md").read_text() == "SCION-CONNECTOR-CONTROL-R014.18-R014.20\n"
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R011")
+def test_exact_alias_targets_follow_but_keys_do_not(repo: Path) -> None:
+    key = f"{_EG}DECISION-R801.7.1"
+    _write(repo, ".config/spec-aliases.toml", f'"{key}" = "{_EG}DECISION-R801.8"\n')
+    _run(repo, "medulla")
+    text = (repo / ".config/spec-aliases.toml").read_text()
+    assert f'"{key}" = "MEDULLA-DECISION-R801.8"' in text
+    assert f'"{_EG}" = "MEDULLA-"' in text

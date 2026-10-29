@@ -16,9 +16,10 @@ An already standardized retired ID can also map to one active current row::
     "FOO-R002.2.2.3.1" = "FOO-R002.2.3.1"
 
 Standard-ID alias sources must have no current row, including retired rows.
-Aliases must not target absent or retired rows,
-chain through another alias, or overlap retired prefixes. Exact aliases never
-implicitly map children. Trailer checks still require the target to be bound.
+An exact alias key may start with a retired prefix: the exact alias applies first and
+the prefix mapping is not applied to its result (one hop). Aliases must not target
+absent or retired rows, or chain through another alias or a retired prefix. Exact
+aliases never implicitly map children. Trailer checks still require the target to be bound.
 
 Every spec gate reads IDs through :func:`canonical_id`, so a historical trailer
 or test binding that uses the old prefix counts for the canonical (new) ID. The
@@ -101,10 +102,11 @@ def _validate_standard_aliases(root: Path, aliases: Aliases, path: Path) -> None
 def validate_alias_inventory(aliases: Aliases, current: set[str], active: set[str], path: Path) -> None:
     """Validate standard aliases against a complete frozen requirement inventory."""
     standard = {old: new for old, new in aliases.items() if _NEW_ID_RE.fullmatch(old)}
-    prefixes = {old: new for old, new in aliases.items() if old.endswith("-")}
     for old, new in standard.items():
-        if retired_prefix(old, prefixes) or retired_prefix(new, aliases):
-            raise CannotRun(f"{path}: standard alias {old!r} overlaps a retired prefix or chains through an alias")
+        if retired_prefix(new, aliases):
+            raise CannotRun(
+                f"{path}: standard alias {old!r} target {new!r} starts with a retired prefix or is an alias key"
+            )
         if old in current:
             raise CannotRun(f"{path}: standard alias {old!r} still has a requirement row; remove the old row")
         if new not in active:

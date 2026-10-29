@@ -117,8 +117,7 @@ def test_standard_alias_rejects_invalid_current_rows(repo: Repo, requirements: s
         _ALIAS + '"ARBORA-" = "OTHER-"\n',
         _ALIAS + '"ARBORA-A2A-" = "OTHER-"\n',
         '"OLD-R001" = "CURRENT-R001"\n"CURRENT-" = "NEW-"\n',
-        '"OLD-R001" = "CURRENT-R001"\n"OLD-" = "CURRENT-"\n',
-        '"OLD-AREA-R001" = "CURRENT-R001"\n"OLD-" = "CURRENT-"\n"OLD-AREA-" = "OTHER-"\n',
+        '"OLD-R001" = "OLD-R002"\n"OLD-" = "CURRENT-"\n',
     ],
 )
 def test_standard_alias_rejects_cycles_chains_and_prefix_collisions(repo: Repo, text: str) -> None:
@@ -148,3 +147,31 @@ def test_standard_alias_does_not_rescue_unknown_trailers(
     )
     assert repo.run("spec-trailers", "--base-ref", base) == 1
     assert "unknown requirement id(s)" in capsys.readouterr().out
+
+
+_EXACT = '"EG-" = "MEDULLA-"\n"EG-DECISION-ENGINE-R801.7.1" = "MEDULLA-DECISION-ENGINE-R801.8"\n'
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R011")
+def test_exact_alias_under_retired_prefix_applies_before_prefix_mapping(repo: Repo) -> None:
+    repo.write("specs/demo/requirements.md", _rows("MEDULLA-DECISION-ENGINE-R801.8", "MEDULLA-X-R001"))
+    _alias_file(repo.root, _EXACT)
+    aliases = load_aliases(repo.root)
+    assert canonical_id("EG-DECISION-ENGINE-R801.7.1", aliases) == "MEDULLA-DECISION-ENGINE-R801.8"
+    assert canonical_id("EG-X-R001", aliases) == "MEDULLA-X-R001"
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R011")
+@pytest.mark.parametrize(
+    "text",
+    [
+        '"EG-" = "MEDULLA-"\n"EG-A-R001" = "EG-B-R001"\n',
+        '"EG-" = "MEDULLA-"\n"EG-A-R001" = "MEDULLA-GONE-R001"\n',
+        '"EG-" = "MEDULLA-"\n"EG-A-R001" = "EG-A-R001"\n',
+    ],
+)
+def test_exact_alias_under_retired_prefix_refuses_chains_and_absent_targets(repo: Repo, text: str) -> None:
+    repo.write("specs/demo/requirements.md", _rows("MEDULLA-X-R001"))
+    _alias_file(repo.root, text)
+    with pytest.raises(CannotRun):
+        load_aliases(repo.root)

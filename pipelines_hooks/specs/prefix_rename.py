@@ -173,7 +173,7 @@ class Renamer:
         return "\n".join(lines)
 
     def rewrite_alias_file(self, text: str) -> str:
-        """Alias values follow the new prefixes; keys are never rewritten."""
+        """Alias values (targets) follow the new prefixes; keys are history and never rewritten."""
         out = []
         for line in text.split("\n"):
             match = _ALIAS_LINE.match(line)
