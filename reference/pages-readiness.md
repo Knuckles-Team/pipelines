@@ -162,10 +162,10 @@ private URLs are never printed.
 
 ### Runtime architecture diagram
 
-There is one `runtime-architecture.svg`, owned by Knuckles-Team/epistemic-graph at
+There is one `runtime-architecture.svg`, owned by Knuckles-Team/medulla at
 `docs/assets/runtime-architecture.svg`. The theme neither ships nor syncs it, and
 "Verify shared Pages theme assets" requires no local copy. Pages that show the diagram
-reference `https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/main/docs/assets/runtime-architecture.svg`;
+reference `https://raw.githubusercontent.com/Knuckles-Team/medulla/main/docs/assets/runtime-architecture.svg`;
 the check fails on any other reference to `runtime-architecture.svg` in the content
 source. Do not commit copies.
 

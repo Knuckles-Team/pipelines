@@ -50,7 +50,7 @@ THEME_FILES = (
 
 
 RUNTIME_DIAGRAM_URL = (
-    "https://raw.githubusercontent.com/Knuckles-Team/epistemic-graph/main/docs/assets/runtime-architecture.svg"
+    "https://raw.githubusercontent.com/Knuckles-Team/medulla/main/docs/assets/runtime-architecture.svg"
 )
 # The live, generated architecture view; every page that shows the static diagram links it.
 ARCHITECTURE_EXPLORER_URL = "https://knuckles-team.github.io/.github/architecture/"
