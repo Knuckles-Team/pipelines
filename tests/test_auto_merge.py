@@ -101,23 +101,21 @@ CHECK_EVENT = {"check_run": {"name": "CI required", "conclusion": "success", "he
 
 
 @pytest.mark.spec("PIPE-GATES-R016.116")
-def test_arms_on_pr_open_when_required_check_already_green():
-    assert _run("pull_request_target", PR_EVENT, _api()) == [(7, SHA)]
+def test_arms_native_auto_merge_on_pr_event_before_checks_run():
+    """A PR event arms GitHub's native auto-merge; GitHub then waits for the required check."""
+    for runs in (_runs(), _runs(status="in_progress", conclusion=None), {"check_runs": []}):
+        assert _run("pull_request", PR_EVENT, _api(runs=runs)) == [(7, SHA)]
 
 
 @pytest.mark.spec("PIPE-GATES-R016.116")
-def test_does_not_merge_when_required_check_not_success_on_head():
+def test_check_run_event_still_requires_success_on_head():
     for runs in (
         _runs(conclusion="failure"),
         _runs(status="in_progress", conclusion=None),
         _runs(sha="b" * 40),
         {"check_runs": []},
     ):
-        assert _run("pull_request_target", PR_EVENT, _api(runs=runs)) == []
-
-
-@pytest.mark.spec("PIPE-GATES-R016.116")
-def test_merges_on_check_run_success_for_head_sha():
+        assert _run("check_run", CHECK_EVENT, _api(runs=runs)) == []
     assert _run("check_run", CHECK_EVENT, _api()) == [(7, SHA)]
 
 
@@ -127,32 +125,31 @@ def test_ignores_other_check_names():
     assert _run("check_run", other, _api()) == []
     failed = {"check_run": {"name": "CI required", "conclusion": "failure", "head_sha": SHA}}
     assert _run("check_run", failed, _api()) == []
-    # only a differently named run is green on the head: not enough
-    assert _run("pull_request_target", PR_EVENT, _api(runs=_runs(name="lint"))) == []
 
 
 @pytest.mark.spec("PIPE-GATES-R016.116")
 def test_refuses_when_no_required_check_is_configured():
-    assert _run("pull_request_target", PR_EVENT, _api(contexts=())) == []
-    assert _run("pull_request_target", PR_EVENT, _api(contexts=("gates / gates",))) == []
-    assert _run("pull_request_target", PR_EVENT, _api(), required_check=" ") == []
+    """Native auto-merge with no required check would merge at once (the 2026-10-28 incident)."""
+    assert _run("pull_request", PR_EVENT, _api(contexts=())) == []
+    assert _run("pull_request", PR_EVENT, _api(contexts=("gates / gates",))) == []
+    assert _run("pull_request", PR_EVENT, _api(), required_check=" ") == []
 
 
 @pytest.mark.spec("PIPE-GATES-R016.116")
 def test_required_check_name_is_configurable():
-    api = _api(contexts=("Fleet ok",), runs=_runs(name="Fleet ok"))
-    assert _run("pull_request_target", PR_EVENT, api, required_check="Fleet ok") == [(7, SHA)]
-    assert _run("pull_request_target", PR_EVENT, api) == []
+    api = _api(contexts=("Fleet ok",))
+    assert _run("pull_request", PR_EVENT, api, required_check="Fleet ok") == [(7, SHA)]
+    assert _run("pull_request", PR_EVENT, api) == []
 
 
 @pytest.mark.spec("PIPE-GATES-R016.116")
 def test_draft_and_non_main_pulls_are_not_armed():
     draft = _pull()
     draft["draft"] = True
-    assert _run("pull_request_target", PR_EVENT, _api(pull=draft)) == []
+    assert _run("pull_request", PR_EVENT, _api(pull=draft)) == []
     other = _pull()
     other["base"]["ref"] = "dev"
-    assert _run("pull_request_target", PR_EVENT, _api(pull=other)) == []
+    assert _run("pull_request", PR_EVENT, _api(pull=other)) == []
 
 
 @pytest.mark.spec("PIPE-GATES-R016.116")
@@ -165,7 +162,11 @@ def test_reusable_workflow_and_templates_are_wired():
     caller = yaml.safe_load((ROOT / "templates/workflows/auto_merge.yml").read_text())
     assert caller["jobs"]["auto-merge"]["uses"].endswith("auto_merge_pipeline.yml@main")
     caller_trig = caller.get("on") or caller[True]
-    assert set(caller_trig) == {"check_run"}, "no pull_request_target (SC-GHA-005)"
+    assert set(caller_trig) == {"pull_request", "check_run"}, "no pull_request_target (SC-GHA-005)"
+    assert caller_trig["pull_request"]["types"] == ["opened", "reopened", "ready_for_review", "synchronize"]
+    assert (
+        "head.repo.full_name == github.repository" in (ROOT / ".github/workflows/auto_merge_pipeline.yml").read_text()
+    )
     assert caller.get("permissions") == {}, "write is job-scoped (SC-GHA-004)"
     assert caller["jobs"]["auto-merge"]["permissions"]["contents"] == "write"
     assert reusable.get("permissions") == {}
