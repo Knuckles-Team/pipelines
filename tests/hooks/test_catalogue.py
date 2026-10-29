@@ -37,6 +37,7 @@ KEPT = {
     "connector-surface-audit",
     "connector-ontology-map",
     "spec-bind-suggest",
+    "spec-prefix-rename",
     "no-legacy-concepts",
     "release-standard",
     "dependency-readiness",

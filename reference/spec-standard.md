@@ -73,12 +73,14 @@ A rollup must include a wiring row and a hot-path proof row. The wiring row name
 
 | Item | Rule | Example |
 |---|---|---|
-| Spec ID | `<OWNER>-<AREA>`, upper case, hyphen-separated, no numeric suffix | `EG-IDENTITY` |
-| Owner prefix | The owner map in the repository `specs/README.md` | `EG`, `AU`, `ARBORA`, `SDK`, `WEBUI`, `RM`, `PIPE` |
-| Directory | The area in lower case, hyphen-separated | `specs/identity/` for `EG-IDENTITY` |
-| Title line | The first line of `spec.md`: `# <ID> — <Title>` with an em dash | `# EG-IDENTITY — Engine identity and scope` |
-| Row ID | `<ID>-R<nnn>`, children `.n`, three digits | `EG-IDENTITY-R007.2` |
+| Spec ID | `<OWNER>-<AREA>`, upper case, hyphen-separated, no numeric suffix | `MEDULLA-IDENTITY` |
+| Owner prefix | The owner map in the repository `specs/README.md` | `MEDULLA`, `MERISTEM`, `ARBORA`, `SCION`, `OVERSTORY`, `TUIG`, `AXIL`, `PIPE`, `US` |
+| Directory | The area in lower case, hyphen-separated | `specs/identity/` for `MEDULLA-IDENTITY` |
+| Title line | The first line of `spec.md`: `# <ID> — <Title>` with an em dash | `# MEDULLA-IDENTITY — Engine identity and scope` |
+| Row ID | `<ID>-R<nnn>`, children `.n`, three digits | `MEDULLA-IDENTITY-R007.2` |
 | Index | One line per spec in `specs/README.md`: `` [`<ID>`](<dir>/spec.md) — <one sentence> `` | |
+
+Prefixes follow the owning repository name; old prefixes resolve through spec-aliases (`"EG-" = "MEDULLA-"` in `.config/spec-aliases.toml` of the owning repository). `pipelines-hook spec-prefix-rename` performs the rewrite in a repository checkout and is idempotent.
 
 A connector repository uses its repository name as the area, in upper case, after the owner prefix `CONN`. Example: `CONN-JELLYFIN-MCP`.
 
@@ -181,10 +183,10 @@ References declarations accept explicit links, canonical spec or requirement ide
 
 ## Priority from competency questions
 
-A competency question is an ordinary spec row whose ID starts with `EG-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:
+A competency question is an ordinary spec row whose ID starts with `MEDULLA-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:
 
 ```markdown
-| `X-R001` | **Title.** Text. Depends-on: EG-FOO-R004, SDK-BAR-R002. | Verification |
+| `X-R001` | **Title.** Text. Depends-on: MEDULLA-FOO-R004, SCION-BAR-R002. | Verification |
 ```
 
 The organization architecture page computes `priority` for each open row. No `status.json` carries it and a person never edits it.

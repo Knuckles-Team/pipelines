@@ -21,6 +21,12 @@ _OWNER_PREFIXES = {
     "SDK": "scion-sdk",
     "TUI": "tuig",
     "WEBUI": "overstory",
+    "AXIL": "axil",
+    "MEDULLA": "medulla",
+    "MERISTEM": "meristem",
+    "OVERSTORY": "overstory",
+    "SCION": "scion-sdk",
+    "TUIG": "tuig",
 }
 _SPEC_PREFIX = re.compile(r"(?<![A-Z0-9])([A-Z][A-Z0-9]*)-[A-Z][A-Z0-9-]*(?:-R[0-9]{3})?")
 
