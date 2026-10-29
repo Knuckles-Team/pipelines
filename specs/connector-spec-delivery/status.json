@@ -654,7 +654,7 @@
       "title": "`archivebox-api` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a75eb4ea62fd",
         "ede2cdeae90f"
       ],
@@ -687,7 +687,7 @@
       "title": "`archivebox-api` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:172"
@@ -1178,7 +1178,7 @@
       "title": "`ciso-assistant-api` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "5536587da291",
         "a75eb4ea62fd"
       ],
@@ -1211,7 +1211,7 @@
       "title": "`ciso-assistant-api` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:173"
@@ -1635,7 +1635,7 @@
       "title": "`emerald-exchange` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f"
       ],
       "verified_by": [
@@ -1667,7 +1667,7 @@
       "title": "`emerald-exchange` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:174"
@@ -1678,7 +1678,7 @@
       "title": "`emerald-exchange` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:200"
@@ -1689,7 +1689,7 @@
       "title": "`emerald-exchange` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:225"
@@ -1898,7 +1898,7 @@
       "title": "`freshrss-agent` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "5536587da291",
         "a56aeaef8e7f"
       ],
@@ -1942,7 +1942,7 @@
       "title": "`freshrss-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:201"
@@ -1964,7 +1964,7 @@
       "title": "`genius-agent` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f"
       ],
       "verified_by": [
@@ -2007,7 +2007,7 @@
       "title": "`genius-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:202"
@@ -2018,7 +2018,7 @@
       "title": "`genius-agent` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:226"
@@ -2029,7 +2029,7 @@
       "title": "`github-agent` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f"
       ],
       "verified_by": [
@@ -2061,7 +2061,7 @@
       "title": "`github-agent` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:175"
@@ -2072,7 +2072,7 @@
       "title": "`github-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:203"
@@ -2083,7 +2083,7 @@
       "title": "`github-agent` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:227"
@@ -2094,7 +2094,7 @@
       "title": "`gitlab-api` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f",
         "ede2cdeae90f"
       ],
@@ -2127,7 +2127,7 @@
       "title": "`gitlab-api` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:176"
@@ -2485,7 +2485,7 @@
       "title": "`kafka-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f"
       ],
       "verified_by": [
@@ -2517,7 +2517,7 @@
       "title": "`kafka-mcp` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:177"
@@ -2528,7 +2528,7 @@
       "title": "`kafka-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:204"
@@ -2539,7 +2539,7 @@
       "title": "`kafka-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:228"
@@ -2615,7 +2615,7 @@
       "title": "`lakekeeper-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f",
         "ede2cdeae90f"
       ],
@@ -2659,7 +2659,7 @@
       "title": "`lakekeeper-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:205"
@@ -2811,7 +2811,7 @@
       "title": "`legal-peripherals-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f"
       ],
       "verified_by": [
@@ -2843,7 +2843,7 @@
       "title": "`legal-peripherals-mcp` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:178"
@@ -2854,7 +2854,7 @@
       "title": "`legal-peripherals-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:206"
@@ -2865,7 +2865,7 @@
       "title": "`legal-peripherals-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:229"
@@ -2876,7 +2876,7 @@
       "title": "`lgtm-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "a56aeaef8e7f"
       ],
       "verified_by": [
@@ -2930,7 +2930,7 @@
       "title": "`lgtm-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:230"
@@ -3009,7 +3009,7 @@
       "title": "`bellwether-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3041,7 +3041,7 @@
       "title": "`bellwether-mcp` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:179"
@@ -3052,7 +3052,7 @@
       "title": "`bellwether-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:207"
@@ -3063,7 +3063,7 @@
       "title": "`bellwether-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:231"
@@ -3074,7 +3074,7 @@
       "title": "`mattermost-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3106,7 +3106,7 @@
       "title": "`mattermost-mcp` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:180"
@@ -3128,7 +3128,7 @@
       "title": "`mattermost-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:232"
@@ -3207,7 +3207,7 @@
       "title": "`media-downloader` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3239,7 +3239,7 @@
       "title": "`media-downloader` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:181"
@@ -3250,7 +3250,7 @@
       "title": "`media-downloader` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:208"
@@ -3261,7 +3261,7 @@
       "title": "`media-downloader` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:233"
@@ -3272,7 +3272,7 @@
       "title": "`microsoft-agent` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3304,7 +3304,7 @@
       "title": "`microsoft-agent` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:182"
@@ -3315,7 +3315,7 @@
       "title": "`microsoft-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:209"
@@ -3326,7 +3326,7 @@
       "title": "`microsoft-agent` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:234"
@@ -3541,7 +3541,7 @@
       "title": "`onetrust-api` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3573,7 +3573,7 @@
       "title": "`onetrust-api` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:183"
@@ -3595,7 +3595,7 @@
       "title": "`onetrust-api` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:235"
@@ -3745,7 +3745,7 @@
       "title": "`owncast-agent` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3777,7 +3777,7 @@
       "title": "`owncast-agent` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:184"
@@ -3788,7 +3788,7 @@
       "title": "`owncast-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:210"
@@ -3799,7 +3799,7 @@
       "title": "`owncast-agent` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:236"
@@ -3810,7 +3810,7 @@
       "title": "`paperless-ngx-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -3842,7 +3842,7 @@
       "title": "`paperless-ngx-mcp` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:185"
@@ -3853,7 +3853,7 @@
       "title": "`paperless-ngx-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:211"
@@ -3864,7 +3864,7 @@
       "title": "`paperless-ngx-mcp` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:237"
@@ -3875,7 +3875,7 @@
       "title": "`plane-agent` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8",
         "ede2cdeae90f"
       ],
@@ -3908,7 +3908,7 @@
       "title": "`plane-agent` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:186"
@@ -4074,7 +4074,7 @@
       "title": "`pulselink-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "5536587da291",
         "d7d1a86cc659",
         "ed11593ea8c8"
@@ -4108,7 +4108,7 @@
       "title": "`pulselink-mcp` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:187"
@@ -4119,7 +4119,7 @@
       "title": "`pulselink-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:212"
@@ -4142,7 +4142,7 @@
       "title": "`qbittorrent-agent` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1",
+        "2bfb34d15ff8",
         "ed11593ea8c8"
       ],
       "verified_by": [
@@ -4185,7 +4185,7 @@
       "title": "`qbittorrent-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:213"
@@ -4196,7 +4196,7 @@
       "title": "`qbittorrent-agent` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:238"
@@ -4249,7 +4249,7 @@
       "title": "`repository-manager` has the rapid-delivery section in its development skill",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:239"
@@ -4455,8 +4455,8 @@
       "title": "`searxng-mcp` adopts the standard spec-delivery method and page",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "2bfb34d15ff8",
         "2d9cc833b524",
-        "444f49d63af1",
         "a86b11ee9b95"
       ],
       "verified_by": [
@@ -4488,7 +4488,7 @@
       "title": "`searxng-mcp` has the three spec hooks in its pre-commit config",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "444f49d63af1"
+        "2bfb34d15ff8"
       ],
       "verified_by": [
         "tests/test_connector_consumer_remeasure_20261028.py:188"
