@@ -392,6 +392,14 @@
   always_run: true
   stages: [manual]
 
+- id: spec-prefix-rename
+  name: Spec prefix rename - rewrite retired spec ID prefixes to repository-name prefixes (codemod, run by hand)
+  entry: pipelines-hook spec-prefix-rename
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+
 # Affected tests only under a hard 120 s cap (CI-STANDARD pre-push); the base is
 # pre-commit's --from-ref (PRE_COMMIT_FROM_REF). FULL/NONE run nothing locally.
 - id: fast-tests

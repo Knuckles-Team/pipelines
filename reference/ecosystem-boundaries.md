@@ -14,13 +14,13 @@ remain unchanged. The Tuig executable is `tuig`.
 
 | Repository | Owns | Never owns (route it to) | ID prefix | Allowed dependencies |
 |---|---|---|---|---|
-| medulla (EG) | Facts, records, vocabulary and durable state. Storage, query (UQL and natural language), retrieval and ingest. Reasoning, decisions and choices. Code is native Rust. Each row sets latency and memory budgets and names a benchmark. | Served operations, admission and auth (arbora); connector contracts and transports (SDK); run mechanics (AU); views (UIs). | `EG-` | Rust crates; its own Python client and bindings. No ecosystem Python package. |
+| medulla | Facts, records, vocabulary and durable state. Storage, query (UQL and natural language), retrieval and ingest. Reasoning, decisions and choices. Code is native Rust. Each row sets latency and memory budgets and names a benchmark. | Served operations, admission and auth (arbora); connector contracts and transports (SDK); run mechanics (AU); views (UIs). | `MEDULLA-` | Rust crates; its own Python client and bindings. No ecosystem Python package. |
 | arbora | The one door. Admission, auth, approvals and served operations. The MCP server and multiplexer. A2A serving and routing. The tool and operation registry. Platform config at `~/.config/arbora`. The EG methods served as `eg.*`. | Facts, stores, policy tables and decisions (EG); protocol libraries (SDK); the run loop (AU). | `ARBORA-` | medulla, agent-connector-sdk, and only `agent_utilities.host_ports`, `.harness`, `.runtime` and `.core.paths`. |
-| agent-connector-sdk (SDK) | Connector contracts. Transports: REST, GraphQL, gRPC, MCP, the A2A protocol library and the others. The EG client adapter. Connector ontology pack generation. | Serving and routing (arbora); facts, storage and pushdown planning (EG). | `SDK-` | medulla client; protocol libraries. |
-| agent-utilities (AU) | The in-run harness. The run loop, context assembly, fan-out, sandbox runs and replay. Trace event emission. Enforcement of a limit it receives. | An MCP server, server, gateway, API or A2A (arbora). A store, planner, selector, router, retriever or policy (EG). Contracts (SDK). | `AU-` | agent-connector-sdk; the model client library. No MCP, web server or storage package. |
-| agent-webui | What a person sees in the browser. | Data access other than through arbora; decisions (EG). | `WEBUI-` | `arbora.client`; agent-connector-sdk. |
-| agent-terminal-ui (TUI) | What a person sees in the terminal. | Data access other than through arbora; decisions (EG). | `TUI-` | `arbora.client`; agent-connector-sdk. |
-| geniusbot | What a person sees in the desktop and chat client. | Data access other than through arbora; decisions (EG). | `GENIUSBOT-` | `arbora.client`; agent-connector-sdk. |
+| scion-sdk | Connector contracts. Transports: REST, GraphQL, gRPC, MCP, the A2A protocol library and the others. The EG client adapter. Connector ontology pack generation. | Serving and routing (arbora); facts, storage and pushdown planning (EG). | `SCION-` | medulla client; protocol libraries. |
+| meristem | The in-run harness. The run loop, context assembly, fan-out, sandbox runs and replay. Trace event emission. Enforcement of a limit it receives. | An MCP server, server, gateway, API or A2A (arbora). A store, planner, selector, router, retriever or policy (EG). Contracts (SDK). | `MERISTEM-` | agent-connector-sdk; the model client library. No MCP, web server or storage package. |
+| overstory | What a person sees in the browser. | Data access other than through arbora; decisions (EG). | `OVERSTORY-` | `arbora.client`; agent-connector-sdk. |
+| tuig | What a person sees in the terminal. | Data access other than through arbora; decisions (EG). | `TUIG-` | `arbora.client`; agent-connector-sdk. |
+| axil | What a person sees in the desktop and chat client. | Data access other than through arbora; decisions (EG). | `AXIL-` | `arbora.client`; agent-connector-sdk. |
 | Connectors (`*-mcp`, `*-api`, `*-agent`) | The behavior of one external system: its venue or API calls, mappings and MCP tools. | Domain maths and stores (EG); shared helpers (SDK); serving to other callers (arbora). | `CONN-<REPO>-` | agent-connector-sdk only. |
 | pipelines | Gates, pages, release rules, the spec standard and this standard. | Product behavior of any repository. | `PIPE-` | No ecosystem package. |
 | universal-skills | Skill content and the connector scaffold (mcp-builder). | Served operations (arbora); selection of skills (EG). | `US-` | `arbora.client` in skill scripts. |
@@ -46,7 +46,7 @@ Route a feature before any code or spec text.
 3. File each part as a row in its owner's `specs/`. Link the dependent rows to each other by ID.
 4. Write code only in the repository that owns the part. A part that this repository does not own stops here; its row goes to the owner.
 
-An `AU-` row never decides. It names the decision it receives and the owner prefix that produces it. A threshold in an `AU-` row is a received value, with a fallback default. If no part is left for the harness, write no `AU-` row.
+A `MERISTEM-` row never decides. It names the decision it receives and the owner prefix that produces it. A threshold in an `MERISTEM-` row is a received value, with a fallback default. If no part is left for the harness, write no `MERISTEM-` row.
 
 ## Worked examples
 

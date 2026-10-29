@@ -5420,11 +5420,18 @@
       "title": "Explicit retired standard-ID aliases",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "0063c7f20872",
         "026b93b29c01",
+        "aa22f1f6cb94",
+        "b1acfbb8ea82",
         "b6d61da291ad"
       ],
       "verified_by": [
-        "tests/hooks/test_spec_standard_aliases.py:14"
+        "tests/hooks/test_spec_prefix_rename.py:101",
+        "tests/hooks/test_spec_prefix_rename.py:109",
+        "tests/hooks/test_spec_prefix_rename.py:117",
+        "tests/hooks/test_spec_prefix_rename.py:128",
+        "tests/hooks/test_spec_prefix_rename.py:138"
       ]
     },
     {

@@ -43,7 +43,7 @@ A design section in `plan.md` must trace the requirement to the live call path. 
 | New rollup | Add a requirement that the spec owns but does not state | Next free `R###` at the end of the same spec |
 | Correction | Change a wrong or outdated statement | Edit the row and the `plan.md` text in place. The commit message states the reason. |
 
-A spec states the current requirements only. A moved or renamed row takes its new ID in every file; no row is left behind under the old ID. A removed requirement is deleted from the spec. Git history holds every previous state. A delivered row keeps its ID, because tests and commit trailers bind to it. Every active row ID matches `^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-R[0-9]{3}(\.[0-9]+)*$`; an older form such as `DS-01` is renamed, and the `.config/spec-aliases.toml` entry `"DS-01" = "<ID>-R012"` keeps old `Spec:` trailers resolving. An exact retired standard ID can also map to its current row, for example `"FOO-R002.2.2.3.1" = "FOO-R002.2.3.1"`. The old ID must have no current requirement row, including a retired tombstone, and the target must be an active requirement row. Alias chains, cycles and exact standard aliases that overlap a retired prefix are refused. Exact aliases apply only to the named ID, not its children. Trailer validation still requires a bound test for the canonical target and refuses unknown IDs.
+A spec states the current requirements only. A moved or renamed row takes its new ID in every file; no row is left behind under the old ID. A removed requirement is deleted from the spec. Git history holds every previous state. A delivered row keeps its ID, because tests and commit trailers bind to it. Every active row ID matches `^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-R[0-9]{3}(\.[0-9]+)*$`; an older form such as `DS-01` is renamed, and the `.config/spec-aliases.toml` entry `"DS-01" = "<ID>-R012"` keeps old `Spec:` trailers resolving. An exact retired standard ID can also map to its current row, for example `"FOO-R002.2.2.3.1" = "FOO-R002.2.3.1"`. The old ID must have no current requirement row, including a retired tombstone, and the target must be an active requirement row. Alias chains, cycles and targets that start with a retired prefix are refused. An exact alias whose key starts with a retired prefix is allowed; it applies before the prefix mapping. Exact aliases apply only to the named ID, not its children. Trailer validation still requires a bound test for the canonical target and refuses unknown IDs.
 
 ## Audits, reviews, and carry-overs
 
@@ -73,12 +73,14 @@ A rollup must include a wiring row and a hot-path proof row. The wiring row name
 
 | Item | Rule | Example |
 |---|---|---|
-| Spec ID | `<OWNER>-<AREA>`, upper case, hyphen-separated, no numeric suffix | `EG-IDENTITY` |
-| Owner prefix | The owner map in the repository `specs/README.md` | `EG`, `AU`, `ARBORA`, `SDK`, `WEBUI`, `RM`, `PIPE` |
-| Directory | The area in lower case, hyphen-separated | `specs/identity/` for `EG-IDENTITY` |
-| Title line | The first line of `spec.md`: `# <ID> — <Title>` with an em dash | `# EG-IDENTITY — Engine identity and scope` |
-| Row ID | `<ID>-R<nnn>`, children `.n`, three digits | `EG-IDENTITY-R007.2` |
+| Spec ID | `<OWNER>-<AREA>`, upper case, hyphen-separated, no numeric suffix | `MEDULLA-IDENTITY` |
+| Owner prefix | The owner map in the repository `specs/README.md` | `MEDULLA`, `MERISTEM`, `ARBORA`, `SCION`, `OVERSTORY`, `TUIG`, `AXIL`, `PIPE`, `US` |
+| Directory | The area in lower case, hyphen-separated | `specs/identity/` for `MEDULLA-IDENTITY` |
+| Title line | The first line of `spec.md`: `# <ID> — <Title>` with an em dash | `# MEDULLA-IDENTITY — Engine identity and scope` |
+| Row ID | `<ID>-R<nnn>`, children `.n`, three digits | `MEDULLA-IDENTITY-R007.2` |
 | Index | One line per spec in `specs/README.md`: `` [`<ID>`](<dir>/spec.md) — <one sentence> `` | |
+
+Prefixes follow the owning repository name; old prefixes resolve through spec-aliases (`"EG-" = "MEDULLA-"` in `.config/spec-aliases.toml` of the owning repository). `pipelines-hook spec-prefix-rename` performs the rewrite in a repository checkout and is idempotent.
 
 A connector repository uses its repository name as the area, in upper case, after the owner prefix `CONN`. Example: `CONN-JELLYFIN-MCP`.
 
@@ -181,10 +183,10 @@ References declarations accept explicit links, canonical spec or requirement ide
 
 ## Priority from competency questions
 
-A competency question is an ordinary spec row whose ID starts with `EG-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:
+A competency question is an ordinary spec row whose ID starts with `MEDULLA-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:
 
 ```markdown
-| `X-R001` | **Title.** Text. Depends-on: EG-FOO-R004, SDK-BAR-R002. | Verification |
+| `X-R001` | **Title.** Text. Depends-on: MEDULLA-FOO-R004, SCION-BAR-R002. | Verification |
 ```
 
 The organization architecture page computes `priority` for each open row. No `status.json` carries it and a person never edits it.

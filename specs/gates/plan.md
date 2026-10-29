@@ -23,7 +23,7 @@ The implementation runs this repository's own gates: format, hygiene, secrets, t
 ## Amendments
 
 - 2026-10-20: The engine tree reads arrive with the Medulla
-  changeset tree (EG-SCM-R004). Until then the source provider interface
+  changeset tree (MEDULLA-SCM-R004). Until then the source provider interface
   and the disk provider serve the tree. The verdict-equality contract
   test runs on the disk provider. The T-004 engine-tree fixture needs the
   engine reads. The consumer-side gates (format, hygiene, types, tests)
@@ -34,9 +34,9 @@ The implementation runs this repository's own gates: format, hygiene, secrets, t
 ## Engine records (PIPE-GATES-R004, PIPE-CONNSPEC-R009, PIPE-RELEASE-R009)
 
 Three pipelines steps write lifecycle records to the engine. Each step uses plain HTTP to the
-arbora operations and imports no ecosystem package. Gate runs publish verdicts (EG-SCM-R008).
-The status generator compares its output with the engine-derived state (EG-SDLC-R005). The
-release workflow records each release (EG-SDLC-R002). A failed post never changes a verdict,
+arbora operations and imports no ecosystem package. Gate runs publish verdicts (MEDULLA-SCM-R008).
+The status generator compares its output with the engine-derived state (MEDULLA-SDLC-R005). The
+release workflow records each release (MEDULLA-SDLC-R002). A failed post never changes a verdict,
 a status file or a published release.
 ## Migration waves (R006)
 
