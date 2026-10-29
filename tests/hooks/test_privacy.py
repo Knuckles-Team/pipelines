@@ -117,3 +117,21 @@ def test_privacy_allows_a_zero_padded_bare_row_citation(repo: Repo, catalog: Pat
     """
     repo.commit({"docs/notes.md": "Covered by the later R089 children.\n"})
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0
+
+
+@pytest.mark.spec("PIPE-GATES-R016.42")
+def test_privacy_default_catalog_path_is_under_arbora(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import pipelines_hooks.privacy.gate as gate
+
+    seen: dict[str, Path] = {}
+
+    def fake_catalog(path: Path) -> object:
+        seen["path"] = path
+        raise gate.CannotRun("stop")
+
+    monkeypatch.setattr(gate, "_catalog", fake_catalog)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    with pytest.raises(gate.CannotRun):
+        gate.main(["--root", str(tmp_path)])
+    assert seen["path"] == tmp_path / "arbora" / "governance" / "prohibited-identities.json"
+    assert "agent-utilities" not in Path(gate.__file__).read_text(encoding="utf-8")

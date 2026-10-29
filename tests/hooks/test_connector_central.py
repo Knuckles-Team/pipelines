@@ -507,6 +507,7 @@ def test_connector_pr_workflow_installs_the_identity_catalog_from_the_callers_va
     pr = yaml.safe_load((WORKFLOWS / "connector_pr_pipeline.yml").read_text(encoding="utf-8"))
     setup = pr["jobs"]["gates"]["with"]["setup-command"]
     assert "printf '%s' \"$PROHIBITED_IDENTITY_CATALOG\"" in setup and "prohibited-identities.json" in setup
+    assert ".config/arbora/governance/prohibited-identities.json" in setup and "agent-utilities" not in setup
     assert setup.index("PROHIBITED_IDENTITY_CATALOG") < setup.index("uv sync")
     gates = yaml.safe_load((WORKFLOWS / "gates_pipeline.yml").read_text(encoding="utf-8"))
     step = next(s for s in gates["jobs"]["gates"]["steps"] if s.get("name") == "Caller setup")

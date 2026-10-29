@@ -65,8 +65,8 @@ jobs:
         # PROHIBITED_IDENTITY_CATALOG Actions variable, as in the core repos' CI. A caller without the variable
         # keeps the tracked-privacy hook failing closed (PIPE-GATES-R016.42).
         if [ -n "${PROHIBITED_IDENTITY_CATALOG:-}" ]; then
-          mkdir -p "$HOME/.config/agent-utilities/governance"
-          printf '%s' "$PROHIBITED_IDENTITY_CATALOG" > "$HOME/.config/agent-utilities/governance/prohibited-identities.json"
+          mkdir -p "$HOME/.config/arbora/governance"
+          printf '%s' "$PROHIBITED_IDENTITY_CATALOG" > "$HOME/.config/arbora/governance/prohibited-identities.json"
         fi
         uv sync --frozen ${{ inputs.sync-args }}
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
