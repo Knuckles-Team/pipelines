@@ -83,7 +83,9 @@ class Renamer:
         self.alias_added: list[str] = []
         self.warnings: list[str] = []
         self.stems: set[str] = set()
+        self.bare: set[str] = set()  # spec ID is the bare prefix itself, e.g. FIN-UI-R001
         self._stem_re: re.Pattern[str] | None = None
+        self._bare_re: re.Pattern[str] | None = None
 
     # -- file discovery ---------------------------------------------------
     def files(self) -> list[Path]:
@@ -125,6 +127,8 @@ class Renamer:
                 stem = _ROW_SUFFIX.sub("", match.group(0))
                 if any(stem.startswith(p) and len(stem) > len(p) for p in self.prefixes):
                     self.stems.add(stem)
+                elif stem + "-" in self.mapping:
+                    self.bare.add(stem)
         specs = self.root / "specs"
         if specs.is_dir():
             for child in specs.iterdir():
@@ -133,6 +137,10 @@ class Renamer:
         if self.stems:
             alternation = "|".join(re.escape(s) for s in sorted(self.stems, key=len, reverse=True))
             self._stem_re = re.compile(_BOUND_L + f"(?:{alternation})" + r"(?![A-Za-z0-9_\-])")
+        if self.bare:
+            alternation = "|".join(re.escape(s) for s in sorted(self.bare, key=len, reverse=True))
+            # Only the unambiguous spec-ID positions: a spec_id field and a spec.md title line.
+            self._bare_re = re.compile(rf'("spec_id"\s*:\s*")({alternation})(?=")|(^# )({alternation})(?= )', re.M)
 
     # -- text rewriting -----------------------------------------------------
     def _swap(self, token: str, count: bool) -> str:
@@ -141,10 +149,17 @@ class Renamer:
             self.counts[old] += 1
         return self.mapping[old] + token[len(old) :]
 
+    def _swap_bare(self, match: re.Match[str]) -> str:
+        lead, stem = (match.group(1), match.group(2)) if match.group(1) else (match.group(3), match.group(4))
+        self.counts[stem + "-"] += 1
+        return lead + self.mapping[stem + "-"][:-1]
+
     def rewrite(self, text: str) -> str:
         text = self.id_re.sub(lambda m: self._swap(m.group(0), True), text)
         if self._stem_re is not None:
             text = self._stem_re.sub(lambda m: self._swap(m.group(0), False), text)
+        if self._bare_re is not None:
+            text = self._bare_re.sub(self._swap_bare, text)
         return text
 
     def rewrite_changelog(self, text: str) -> str:

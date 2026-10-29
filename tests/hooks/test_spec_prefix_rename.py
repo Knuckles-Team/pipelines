@@ -142,3 +142,14 @@ def test_bare_prefix_row_id_does_not_rewrite_prose(repo: Path) -> None:
     assert (
         repo / "docs/bare.md"
     ).read_text() == f"`MERISTEM-R001` and the word {_AU[:-1]} stay as prose except the ID.\n"
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R011")
+def test_bare_prefix_spec_id_follows_in_spec_id_field_and_title(repo: Path) -> None:
+    _write(repo, "specs/finance/status.json", f'{{"spec_id": "{_FINUI[:-1]}"}}\n')
+    _write(repo, "specs/finance/spec.md", f"# {_FINUI[:-1]} — Finance\n")
+    _write(repo, "specs/finance/requirements.md", f"| `{_FINUI}R001` | Row. |\n")
+    _run(repo, "other")
+    assert (repo / "specs/finance/status.json").read_text() == '{"spec_id": "OVERSTORY"}\n'
+    assert (repo / "specs/finance/spec.md").read_text() == "# OVERSTORY — Finance\n"
+    assert "`OVERSTORY-R001`" in (repo / "specs/finance/requirements.md").read_text()
