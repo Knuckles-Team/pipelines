@@ -1995,7 +1995,8 @@
       "title": "The fleet CI standard has one required check and a shared auto-merge",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "318a2a21eca3"
+        "318a2a21eca3",
+        "9c1c3c6361d5"
       ],
       "verified_by": [
         "tests/test_auto_merge.py:103",
