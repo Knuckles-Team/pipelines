@@ -51,7 +51,7 @@ _SKIP_NAMES = frozenset({"uv.lock", "package-lock.json", "Cargo.lock", "poetry.l
 _MAX_BYTES = 8_000_000
 _ROW_SUFFIX = re.compile(r"-R[0-9]{3}(?:\.[0-9]+)*$")
 _BOUND_L = r"(?<![A-Za-z0-9_\-])"
-_BOUND_R = r"(?![A-Za-z0-9_\-]|\.[0-9])"
+_BOUND_R = r"(?!(?!-R[0-9]{3})[A-Za-z0-9_\-]|\.[0-9])"
 _ALIAS_LINE = re.compile(r'^(\s*"[^"\n]+"\s*=\s*")([^"\n]*)(".*)$')
 _UNRELEASED = re.compile(r"^#{1,3}\s*\[?unreleased\]?", re.I)
 _HEADING = re.compile(r"^#{1,3}\s")

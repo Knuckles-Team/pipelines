@@ -153,3 +153,10 @@ def test_bare_prefix_spec_id_follows_in_spec_id_field_and_title(repo: Path) -> N
     assert (repo / "specs/finance/status.json").read_text() == '{"spec_id": "OVERSTORY"}\n'
     assert (repo / "specs/finance/spec.md").read_text() == "# OVERSTORY — Finance\n"
     assert "`OVERSTORY-R001`" in (repo / "specs/finance/requirements.md").read_text()
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R011")
+def test_range_of_row_ids_rewrites_both_ends(repo: Path) -> None:
+    _write(repo, "docs/range.md", f"{_SDK}CONNECTOR-CONTROL-R014.18-R014.20\n")
+    _run(repo, "other")
+    assert (repo / "docs/range.md").read_text() == "SCION-CONNECTOR-CONTROL-R014.18-R014.20\n"
