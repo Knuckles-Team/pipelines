@@ -6,7 +6,7 @@ name: Connector
 #   pull_request        gates, affected tests, image check
 #   push to main        org-site notify + main checks; never publishes
 #   push of a v* tag    PyPI, then Docker, and GitHub Pages
-#   workflow_dispatch release=patch|minor|major   bump, commit, tag v<version> (then the tag publishes)
+#   workflow_dispatch release=patch|minor|major   tag the green main head v<version> (the tag publishes)
 #   schedule, repository_dispatch, workflow_dispatch   SDK rebuild
 # Release a connector: scripts/release_connector.sh <owner/repo> <patch|minor|major> in pipelines.
 # Per-connector differences are `with:` inputs of the job below (all defaulted).
@@ -25,7 +25,7 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: Cut a release from main (bump, commit, push the v<version> tag that publishes).
+        description: Cut a release from main (tag the green head with the next version; the tag publishes).
         required: false
         default: none
         type: choice
@@ -65,6 +65,7 @@ jobs:
       pages: write
       id-token: write
       checks: read
+      pull-requests: write
     uses: Knuckles-Team/pipelines/.github/workflows/connector_pipeline.yml@main
     with:
       release_repair: ${{ inputs.release_repair || false }}

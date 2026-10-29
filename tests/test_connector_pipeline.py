@@ -77,7 +77,7 @@ def test_central_pipeline_has_ci_required_and_read_only_workflow_permissions() -
         for name, job in document["jobs"].items()
         if any(scope == "write" for scope in job.get("permissions", {}).values())
     }
-    assert writers == {"publish-pypi", "publish-pages", "release"}
+    assert writers == {"publish-pypi", "publish-pages", "release-sync"}
     text = CENTRAL.read_text(encoding="utf-8")
     assert "pull_request_target" not in text and "secrets: inherit" not in text
 
@@ -92,7 +92,7 @@ def test_one_caller_template_triggers_every_route_without_top_level_write() -> N
     assert document["permissions"] == {}
     pipeline = document["jobs"]["pipeline"]
     assert pipeline["uses"] == "Knuckles-Team/pipelines/.github/workflows/connector_pipeline.yml@main"
-    assert pipeline["permissions"] == {"contents": "write", "pages": "write", "id-token": "write", "checks": "read"}
+    assert pipeline["permissions"] == {"contents": "write", "pages": "write", "id-token": "write", "checks": "read", "pull-requests": "write"}
     assert "pull_request_target" not in CALLER.read_text(encoding="utf-8")
     assert "inherit" not in CALLER.read_text(encoding="utf-8")
     required = document["jobs"]["ci-required"]
@@ -116,7 +116,7 @@ def test_release_job_runs_only_on_a_release_dispatch_and_alone_writes_to_main() 
     assert "github.event_name == 'workflow_dispatch'" in condition
     assert "inputs.release != 'none'" in condition and "inputs.release_repair != true" in condition
     assert "github.ref == 'refs/heads/main'" in condition
-    assert release["permissions"] == {"contents": "write", "checks": "read"}
+    assert release["permissions"] == {"contents": "read", "checks": "read"}
     assert "secrets.GIT_TOKEN" in CENTRAL.read_text(encoding="utf-8")
     # A release dispatch never also runs the SDK rebuild, and no other job but the publishers writes.
     assert "inputs.release == 'none'" in jobs["sdk-rebuild"]["if"]
@@ -127,16 +127,59 @@ def test_release_job_runs_only_on_a_release_dispatch_and_alone_writes_to_main() 
 
 
 @pytest.mark.spec("PIPE-RELEASE-R018")
-def test_release_job_refuses_red_main_and_an_existing_tag_then_pushes_the_tag() -> None:
-    text = "\n".join(step.get("run", "") for step in _jobs()["release"]["steps"])
-    assert '.name=="CI required"' in text and '!= success' in text and "refusing to release" in text
+def test_release_tags_only_a_ci_green_head_and_never_pushes_a_branch() -> None:
+    jobs = _jobs()
+    text = "\n".join(step.get("run", "") for step in jobs["release"]["steps"])
+    assert '.name=="CI required"' in text and "!= success" in text and "refusing to release" in text
     assert 'ls-remote --exit-code --tags origin "refs/tags/v${version}"' in text
-    assert "already exists" in text
-    assert text.index("already exists") < text.index("git commit")
-    assert text.index("git commit") < text.index('git tag -a "v${version}"') < text.index("git push")
-    assert "chore(release): bump ${name} to ${version}" in text
-    assert "Spec: none (release)\n" in text and "Co-Authored-By:" in text
-    assert "pipelines-connector version" in text and "bump \"$LEVEL\"" in text
+    assert text.index("already exists") < text.index('git tag -a "v${version}"') < text.index("git push")
+    assert "git tag --list 'v[0-9]*.[0-9]*.[0-9]*'" in text and 'bump "$LEVEL"' in text
+    assert 'git push "https://x-access-token:${GIT_TOKEN}@github.com/${REPO}.git" "refs/tags/v${version}"' in text
+    assert "git commit" not in text and "refs/heads" not in text.split("git push")[1]
+    assert "git add" not in text
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018")
+def test_only_the_sync_job_pushes_a_branch_and_never_main() -> None:
+    pushes = {}
+    for name, job in _jobs().items():
+        for step in job.get("steps", []):
+            for line in step.get("run", "").splitlines():
+                if "git push" in line:
+                    pushes.setdefault(name, []).append(line.strip())
+    assert set(pushes) == {"release", "release-sync"}
+    assert all("refs/tags/" in line for line in pushes["release"])
+    assert all('"HEAD:refs/heads/${branch}"' in line for line in pushes["release-sync"])
+    assert "refs/heads/main" not in "".join(pushes["release-sync"])
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018")
+def test_publish_stamps_the_tag_version_before_any_release_check() -> None:
+    jobs = _jobs()
+    assert jobs["publish-pypi"]["with"]["stamp-version-from-tag"] is True
+    assert jobs["publish-docker"]["with"]["stamp_version_from_tag"] is True
+    for workflow, key, anchor in (
+        ("python_pipeline.yml", "publish-pypi", "Verify release version"),
+        ("container_pipeline.yml", "publish-docker", "Validate reviewed release repair request"),
+    ):
+        steps = _load(ROOT / ".github/workflows" / workflow)["jobs"][key]["steps"]
+        names = [step.get("name") for step in steps]
+        stamp = steps[names.index("Stamp the tag version")]
+        assert names.index("Stamp the tag version") < names.index(anchor)
+        assert "startsWith(github.ref, 'refs/tags/v')" in stamp["if"]
+        assert 'pipelines-connector version --root . set "$version"' in stamp["run"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018")
+def test_sync_job_opens_a_pull_request_after_a_successful_publish() -> None:
+    sync = _jobs()["release-sync"]
+    assert sync["needs"] == ["publish-pypi", "publish-docker"]
+    assert sync["permissions"] == {"contents": "write", "pull-requests": "write"}
+    assert "needs.publish-pypi.result == 'success'" in sync["if"]
+    assert "startsWith(github.ref, 'refs/tags/v')" in sync["if"]
+    text = "\n".join(step.get("run", "") for step in sync["steps"])
+    assert 'branch="release/sync-v${version}"' in text and "gh pr create" in text
+    assert "Spec: none (release version sync)" in text and "Co-Authored-By:" in text
 
 
 @pytest.mark.spec("PIPE-RELEASE-R018")

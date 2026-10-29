@@ -181,6 +181,7 @@ jobs:
     with:
       connector: ${{ inputs.python-connector }}
       require-tag: true
+      stamp-version-from-tag: true
       runtime-profiles: ${{ inputs.runtime-profiles }}
       role-contract: ${{ inputs.role-contract }}
       web-assets: ${{ inputs.web-assets }}
@@ -196,6 +197,7 @@ jobs:
     uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
     with:
       render_connector: ${{ inputs.render-connector }}
+      stamp_version_from_tag: true
     secrets:
       DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -215,22 +217,27 @@ jobs:
       spec_dashboard_enabled: true
       spec_dashboard_config: ${{ inputs.pages-spec-dashboard-config }}
 
+  # PIPE-RELEASE-R018: the tag carries the version; no job pushes a branch. The tag is created
+  # on the CI-green main head with the merge token (a GITHUB_TOKEN push would not trigger the
+  # publish jobs); the publish jobs stamp the tag's version into the build workspace, and the
+  # release-sync job opens the pull request that brings main's pyproject up to the release.
   release:
     name: release
     if: github.event_name == 'workflow_dispatch' && inputs.release != 'none' && inputs.release != '' && inputs.release_repair != true && inputs.legacy_profile != true && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # The only job that writes to the repository: the version commit and the tag are pushed with
-    # the merge token, and the contents scope covers the checkout of a private repository.
     permissions:
-      contents: write
+      contents: read
       checks: read
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
           fetch-depth: 0
+          fetch-tags: true
           persist-credentials: false
 
       - name: Refuse unless main is green and not ahead of this run
@@ -252,7 +259,8 @@ jobs:
             exit 1
           fi
 
-      - name: Bump, commit, tag and push
+      - name: Compute the next version and tag the green head
+        id: tag
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           REPO: ${{ github.repository }}
@@ -268,23 +276,78 @@ jobs:
           fi
           python3 -m pip install --quiet uv
           tool=(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root .)
-          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
-          "${tool[@]}" bump "$LEVEL"
+          latest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)"
+          if [[ -n "$latest" ]]; then
+            "${tool[@]}" set "${latest#v}" > /dev/null
+          fi
+          "${tool[@]}" bump "$LEVEL" > /dev/null
           version="$("${tool[@]}" read)"
+          git checkout -q -- pyproject.toml
           if git ls-remote --exit-code --tags origin "refs/tags/v${version}" > /dev/null 2>&1; then
             echo "::error::tag v${version} already exists; refusing to release it again."
             exit 1
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- pyproject.toml
-          git commit -q -m "chore(release): bump ${name} to ${version}" -m "Spec: none (release)
-          Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
           git tag -a "v${version}" -m "Release v${version}"
-          remote="https://x-access-token:${GIT_TOKEN}@github.com/${REPO}.git"
-          git push "$remote" HEAD:refs/heads/main
-          git push "$remote" "refs/tags/v${version}"
-          echo "::notice::pushed v${version}; the tag push runs the publish jobs."
+          git push "https://x-access-token:${GIT_TOKEN}@github.com/${REPO}.git" "refs/tags/v${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "::notice::pushed tag v${version} on the green main head; the tag push runs the publish jobs."
+
+  # After a successful tag publish, a pull request sets main's [project].version to the released
+  # version; the standard auto_merge.yml merges it once `CI required` is green. The only job
+  # that writes to the repository (a branch and a pull request, never a push to main).
+  release-sync:
+    name: release-sync
+    needs: [publish-pypi, publish-docker]
+    if: always() && startsWith(github.ref, 'refs/tags/v') && needs.publish-pypi.result == 'success' && (needs.publish-docker.result == 'success' || needs.publish-docker.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Open the version sync pull request
+        env:
+          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "::error::secret GIT_TOKEN is required to open the version sync pull request."
+            exit 1
+          fi
+          version="${TAG#v}"
+          python3 -m pip install --quiet uv
+          tool=(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root .)
+          current="$("${tool[@]}" read)"
+          if [[ "$current" == "$version" ]]; then
+            echo "::notice::main already carries ${version}; nothing to sync."
+            exit 0
+          fi
+          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
+          "${tool[@]}" set "$version" > /dev/null
+          branch="release/sync-v${version}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q -b "$branch"
+          git add -- pyproject.toml
+          git commit -q -m "chore(release): sync ${name} to ${version}" -m "Spec: none (release version sync)
+          Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/${branch}"
+          gh pr create -R "$REPO" --base main --head "$branch" \
+            --title "chore(release): sync ${name} to ${version}" \
+            --body "Sets pyproject [project].version to the released ${version} (tag ${TAG}). Merged by the standard auto-merge once CI required is green."
+          gh pr edit "$branch" -R "$REPO" --add-label auto-merge || echo "::warning::label auto-merge missing; auto_merge.yml arms on CI required alone."
 
   sdk-rebuild:
     name: sdk-rebuild
@@ -310,7 +373,7 @@ jobs:
   ci-required:
     name: CI required
     if: always()
-    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, release, sdk-rebuild]
+    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, release, release-sync, sdk-rebuild]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

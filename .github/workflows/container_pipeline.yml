@@ -115,6 +115,13 @@ on:
         required: false
         type: string
         default: ''
+      stamp_version_from_tag:
+        description: >-
+          On a v* tag, set [project].version in the build workspace to the tag's version before
+          the image version is resolved (PIPE-RELEASE-R018); image tags then derive from the tag.
+        required: false
+        type: boolean
+        default: false
     secrets:
       DOCKER_REGISTRY:
         required: false
@@ -156,6 +163,20 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
+
+      # PIPE-RELEASE-R018: the tag carries the version. Main's pyproject lags until the sync
+      # pull request merges, so the build workspace takes the tag's version before anything reads it.
+      - name: Stamp the tag version
+        if: inputs.stamp_version_from_tag && startsWith(github.ref, 'refs/tags/v')
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          version="${REF_NAME#v}"
+          python3 -m pip install --quiet uv
+          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root . set "$version"
 
       - name: Validate reviewed release repair request
         if: inputs.release_repair == true
