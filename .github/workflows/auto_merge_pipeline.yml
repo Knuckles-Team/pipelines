@@ -29,9 +29,11 @@ jobs:
   arm:
     name: Arm green auto-merge
     if: >-
-      github.event_name == 'check_run' &&
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'check_run' &&
       github.event.check_run.name == inputs.required-check &&
-      github.event.check_run.conclusion == 'success'
+      github.event.check_run.conclusion == 'success')
     permissions:
       contents: write
       pull-requests: write

@@ -116,7 +116,7 @@ def _candidate_pr(
     api_get: ApiGet,
     log: Log,
 ) -> tuple[int, str]:
-    if event_name == "pull_request_target":
+    if event_name in ("pull_request", "pull_request_target"):
         return _pull_request(
             repo=repo,
             number=_positive_int(event.get("number")),
@@ -280,13 +280,19 @@ def run_gate(
         log=log,
     )
     _check_required_rule(repo=repo, required_check=required_check, api_get=api_get, log=log)
-    _required_check_passed(
-        repo=repo,
-        required_check=required_check,
-        head_sha=head_sha,
-        api_get=api_get,
-        log=log,
-    )
+    if event_name == "check_run":
+        _required_check_passed(
+            repo=repo,
+            required_check=required_check,
+            head_sha=head_sha,
+            api_get=api_get,
+            log=log,
+        )
+    # On a pull_request event the check has not run yet. GitHub's native auto-merge
+    # (--auto --match-head-commit) waits for every required check, and the rule check
+    # above refuses unless main requires the configured check, so arming here cannot
+    # merge anything that has not passed CI. check_run events from Actions-created
+    # check runs never start workflows, so arming on the PR event is what works.
     log(f"arming auto-merge for PR {number} at exact head {head_sha}")
     merge(number, head_sha)
 
