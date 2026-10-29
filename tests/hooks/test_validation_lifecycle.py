@@ -123,6 +123,9 @@ def test_runner_signal_cleans_worker_group_and_keeps_signal_exit(tmp_path, signu
         "from pathlib import Path; import signal; "
         "from pipelines_hooks.validation.runner import execute; "
         "signal.signal(signal.SIGTERM, signal.SIG_DFL); "
+        # CI launchers (nohup/background jobs) start us with SIGINT ignored, in which case
+        # Python never installs its KeyboardInterrupt handler; make the precondition explicit.
+        "signal.signal(signal.SIGINT, signal.default_int_handler); "
         f"execute({[sys.executable, '-c', worker]!r}, Path({str(tmp_path)!r}), "
         f"Path({str(tmp_path / 'worker.log')!r}), timeout=20)"
     )
