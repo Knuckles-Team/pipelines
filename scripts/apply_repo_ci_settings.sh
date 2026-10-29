@@ -2,7 +2,7 @@
 # Apply the fleet CI repository settings (reference/ci-standard.md).
 # Usage: apply_repo_ci_settings.sh [--dry-run] <owner/repo>
 # Idempotent. Refuses (exit 2, no changes) unless the default branch already has a
-# completed successful check run named "CI required".
+# successful "CI required" job in its latest main-push run (PR runs never count).
 set -euo pipefail
 
 CHECK="CI required"
@@ -19,14 +19,20 @@ done
 [[ "$repo" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo "usage: $0 [--dry-run] <owner/repo>" >&2; exit 64; }
 
 branch=$(gh api "repos/$repo" --jq .default_branch)
+# Only a push run on the default branch counts: PR-run check runs on commits that
+# a merge commit later brought into main must not satisfy this (they did, 2026-10-29,
+# while tuig main itself was red). The latest main-push run that has a "CI required"
+# job is the truth; it must have concluded success.
 ok=0
-for sha in $(gh api "repos/$repo/commits?sha=$branch&per_page=10" --jq '.[].sha'); do
-  n=$(gh api "repos/$repo/commits/$sha/check-runs?per_page=100" \
-    --jq "[.check_runs[] | select(.name==\"$CHECK\" and .status==\"completed\" and .conclusion==\"success\")] | length")
-  if [[ "$n" -gt 0 ]]; then ok=1; break; fi
+for run in $(gh api "repos/$repo/actions/runs?branch=$branch&event=push&status=completed&per_page=20" --jq '.workflow_runs[].id'); do
+  c=$(gh api "repos/$repo/actions/runs/$run/jobs?per_page=100" \
+    --jq "[.jobs[] | select(.name==\"$CHECK\") | .conclusion] | first // empty")
+  [[ -z "$c" ]] && continue
+  [[ "$c" == success ]] && ok=1
+  break
 done
 if [[ "$ok" -ne 1 ]]; then
-  echo "refusing: $repo@$branch has no completed successful '$CHECK' check run in its latest commits; no changes made" >&2
+  echo "refusing: the latest push run on $repo@$branch with a '$CHECK' job did not succeed (or none exists); no changes made" >&2
   exit 2
 fi
 
