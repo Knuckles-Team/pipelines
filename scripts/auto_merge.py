@@ -312,7 +312,10 @@ def _gh_merge(number: int, head_sha: str, *, repo: str, token: str) -> None:
     ]
     environment = os.environ.copy()
     environment.update({"GH_REPO": repo, "GH_TOKEN": token})
-    subprocess.run(command, check=True, env=environment)
+    result = subprocess.run(command, env=environment, capture_output=True, text=True)
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()
+        raise ApiFailure(f"gh pr merge --auto exited {result.returncode}: {detail or '(no output)'}")
 
 
 def main() -> int:
