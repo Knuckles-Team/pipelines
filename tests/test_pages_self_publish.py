@@ -23,20 +23,11 @@ def test_provider_enables_dashboard_and_canonical_config():
     assert job["permissions"] == {"contents": "read", "pages": "write", "id-token": "write"}
 
 
-def test_provider_rebuilds_on_spec_config_and_generator_changes():
+def test_provider_deploys_on_version_tags():
     workflow = yaml.safe_load((ROOT / ".github/workflows/pages.yml").read_text())
     triggers = workflow.get("on", workflow.get(True))
-    assert triggers["push"]["branches"] == ["main"]
+    assert triggers["push"] == {"tags": ["v*"]}
     assert "workflow_dispatch" in triggers
-    assert set(triggers["push"]["paths"]) >= {
-        "specs/**",
-        "reference/**",
-        ".config/spec-dashboard.json",
-        "scripts/spec_dashboard*.py",
-        ".github/workflows/pages_pipeline.yml",
-        "pages/**",
-        "mkdocs.yml",
-    }
 
 
 def test_provider_retains_one_pages_publisher_and_discovery_link():
