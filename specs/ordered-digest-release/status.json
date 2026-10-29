@@ -961,11 +961,11 @@
         "f85841ba60b3"
       ],
       "verified_by": [
-        "tests/test_connector_pipeline.py:112",
-        "tests/test_connector_pipeline.py:121",
-        "tests/test_connector_pipeline.py:139",
-        "tests/test_connector_pipeline.py:153",
-        "tests/test_connector_pipeline.py:167"
+        "tests/test_connector_pipeline.py:110",
+        "tests/test_connector_pipeline.py:119",
+        "tests/test_connector_pipeline.py:135",
+        "tests/test_connector_pipeline.py:29",
+        "tests/test_connector_pipeline.py:45"
       ]
     }
   ]

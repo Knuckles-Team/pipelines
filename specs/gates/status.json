@@ -409,7 +409,7 @@
     {
       "id": "PIPE-GATES-R016",
       "title": "The composed ontology graph is reachable and bridged",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "LANDED",
       "landed_in": [
         "03512169cad3",
         "072841d0fc31",
@@ -418,11 +418,7 @@
         "12874ccce7f9"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central.py:388",
-        "tests/hooks/test_connector_central.py:408",
-        "tests/hooks/test_connector_central.py:419",
-        "tests/hooks/test_connector_central.py:491",
-        "tests/hooks/test_connector_central.py:505"
+        "tests/hooks/test_ontology_graph_check.py:15"
       ],
       "rollup_of": [
         "PIPE-GATES-R016.1",
@@ -1993,7 +1989,7 @@
     {
       "id": "PIPE-GATES-R016.116",
       "title": "The fleet CI standard has one required check and a shared auto-merge",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "LANDED",
       "landed_in": [
         "2971057484c0",
         "318a2a21eca3",
@@ -2001,13 +1997,7 @@
         "9c1c3c6361d5",
         "d83d9042bb18"
       ],
-      "verified_by": [
-        "tests/test_auto_merge.py:103",
-        "tests/test_auto_merge.py:110",
-        "tests/test_auto_merge.py:122",
-        "tests/test_auto_merge.py:130",
-        "tests/test_auto_merge.py:138"
-      ]
+      "verified_by": []
     }
   ]
 }
