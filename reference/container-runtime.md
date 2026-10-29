@@ -97,7 +97,7 @@ wheel, with matching SHA256 hashes, no remaining markers, directives, editable
 paths, VCS URLs or remote references. Comments and backslash continuations are
 accepted. All first-party entries use
 `distribution[extras] @ file:///opt/arbora-runtime/wheels/<basename>`;
-`epistemic-graph` uses `eg-wheel` instead. Extras must equal the frozen selection.
+`medulla` uses `eg-wheel` instead. Extras must equal the frozen selection.
 Third-party entries may use an equivalent local wheel reference or an exact
 `distribution==version` pin. Every declared wheel must appear in the lock.
 Connector profiles select the caller distribution's explicit `mcp` or `agent`

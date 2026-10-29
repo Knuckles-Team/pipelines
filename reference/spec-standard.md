@@ -19,7 +19,7 @@ One repository owns each kind of requirement. Ask these questions in order. The 
 
 | Question about the requirement | Owner | Examples |
 |---|---|---|
-| Is it a fact, a vocabulary term, a query, or a choice among options? | epistemic-graph | Model facts, the decision that selects tools, run-trace vocabulary |
+| Is it a fact, a vocabulary term, a query, or a choice among options? | medulla | Model facts, the decision that selects tools, run-trace vocabulary |
 | Is it a mechanism inside a run, or the application of a decision? | agent-utilities | The run loop, context management, the signed dispatch envelope |
 | Is it a check when work enters the system, or a served operation? | arbora | Admission, the operation registry, the gateway |
 | Is it a property of a tool, a source, or a connector contract? | agent-connector-sdk | Read-only flags, argument schemas, certification |
@@ -198,7 +198,7 @@ priority = (10 x competency-question rows that transitively depend on the row
 - A row in a spec whose ID holds `GATES`, `PAGES`, `DOCS`, `HYGIENE`, or `STANDARD` is non-functional.
 - The page also lists `frontier` (open leaf rows whose prerequisites are all done) and `unserved` (open functional leaf rows that no competency question reaches).
 - Only the page sees every repository, so cross-repository `Depends-on` edges count. It labels the unserved rows "No CQ dependency path". This means no CQ reaches the row through CQ → Depends-on → requirement edges, not that architecture placement or implementation links are missing.
-- A release bundle is a group of open rows joined by cross-repository `Depends-on` edges. The page derives it and nobody declares it. Its steps follow the release train: epistemic-graph, agent-connector-sdk, agent-utilities, arbora, the front ends, then connectors. Its priority is the maximum row priority.
+- A release bundle is a group of open rows joined by cross-repository `Depends-on` edges. The page derives it and nobody declares it. Its steps follow the release train: medulla, agent-connector-sdk, agent-utilities, arbora, the front ends, then connectors. Its priority is the maximum row priority.
 
 ## Withdrawing invalid verification evidence
 

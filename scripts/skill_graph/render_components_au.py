@@ -1,7 +1,7 @@
 """One generated page per major component (pillar) for agent-utilities (D4).
 
 AU's own ``architecture/component-registry.yml`` has exactly 1 component --
-too sparse to seed a components tier the way epistemic-graph's 6-component
+too sparse to seed a components tier the way Medulla's 6-component
 registry does (see ``render_components.py``). AU's ``docs/concepts.yaml``
 pillars are the honest analogue: 9 top-level groupings over 1229 concepts,
 already generated (by AU's own ``scripts/build_concepts_yaml.py``) and

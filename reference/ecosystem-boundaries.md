@@ -8,15 +8,15 @@ Every package installs from the public package index. A source checkout, a git d
 
 Display names are Overstory (`agent-webui`), Tuig (`agent-terminal-ui`),
 Scion SDK (`agent-connector-sdk`), Trellis (`agent-utilities`) and Axil Desk
-(`geniusbot`, the desktop GUI). Epistemic Graph and Arbora retain their names.
+(`geniusbot`, the desktop GUI). Medulla and Arbora retain their names.
 Repository slugs, packages, imports, dependency names and spec prefixes below
 remain unchanged. The Tuig executable is `tuig`.
 
 | Repository | Owns | Never owns (route it to) | ID prefix | Allowed dependencies |
 |---|---|---|---|---|
-| epistemic-graph (EG) | Facts, records, vocabulary and durable state. Storage, query (UQL and natural language), retrieval and ingest. Reasoning, decisions and choices. Code is native Rust. Each row sets latency and memory budgets and names a benchmark. | Served operations, admission and auth (arbora); connector contracts and transports (SDK); run mechanics (AU); views (UIs). | `EG-` | Rust crates; its own Python client and bindings. No ecosystem Python package. |
-| arbora | The one door. Admission, auth, approvals and served operations. The MCP server and multiplexer. A2A serving and routing. The tool and operation registry. Platform config at `~/.config/arbora`. The EG methods served as `eg.*`. | Facts, stores, policy tables and decisions (EG); protocol libraries (SDK); the run loop (AU). | `ARBORA-` | epistemic-graph, agent-connector-sdk, and only `agent_utilities.host_ports`, `.harness`, `.runtime` and `.core.paths`. |
-| agent-connector-sdk (SDK) | Connector contracts. Transports: REST, GraphQL, gRPC, MCP, the A2A protocol library and the others. The EG client adapter. Connector ontology pack generation. | Serving and routing (arbora); facts, storage and pushdown planning (EG). | `SDK-` | epistemic-graph client; protocol libraries. |
+| medulla (EG) | Facts, records, vocabulary and durable state. Storage, query (UQL and natural language), retrieval and ingest. Reasoning, decisions and choices. Code is native Rust. Each row sets latency and memory budgets and names a benchmark. | Served operations, admission and auth (arbora); connector contracts and transports (SDK); run mechanics (AU); views (UIs). | `EG-` | Rust crates; its own Python client and bindings. No ecosystem Python package. |
+| arbora | The one door. Admission, auth, approvals and served operations. The MCP server and multiplexer. A2A serving and routing. The tool and operation registry. Platform config at `~/.config/arbora`. The EG methods served as `eg.*`. | Facts, stores, policy tables and decisions (EG); protocol libraries (SDK); the run loop (AU). | `ARBORA-` | medulla, agent-connector-sdk, and only `agent_utilities.host_ports`, `.harness`, `.runtime` and `.core.paths`. |
+| agent-connector-sdk (SDK) | Connector contracts. Transports: REST, GraphQL, gRPC, MCP, the A2A protocol library and the others. The EG client adapter. Connector ontology pack generation. | Serving and routing (arbora); facts, storage and pushdown planning (EG). | `SDK-` | medulla client; protocol libraries. |
 | agent-utilities (AU) | The in-run harness. The run loop, context assembly, fan-out, sandbox runs and replay. Trace event emission. Enforcement of a limit it receives. | An MCP server, server, gateway, API or A2A (arbora). A store, planner, selector, router, retriever or policy (EG). Contracts (SDK). | `AU-` | agent-connector-sdk; the model client library. No MCP, web server or storage package. |
 | agent-webui | What a person sees in the browser. | Data access other than through arbora; decisions (EG). | `WEBUI-` | `arbora.client`; agent-connector-sdk. |
 | agent-terminal-ui (TUI) | What a person sees in the terminal. | Data access other than through arbora; decisions (EG). | `TUI-` | `arbora.client`; agent-connector-sdk. |
@@ -66,7 +66,7 @@ This matrix is guidance for reviews and for each repository's own tests. A modul
 
 | Repository | Must not import | Except |
 |---|---|---|
-| epistemic-graph | `arbora`, `agent_utilities`, `agent_connector_sdk`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | |
+| medulla | `arbora`, `agent_utilities`, `agent_connector_sdk`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | |
 | arbora | `agent_utilities`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | `agent_utilities.host_ports`, `agent_utilities.harness`, `agent_utilities.runtime`, `agent_utilities.core.paths` |
 | agent-connector-sdk | `agent_utilities`, `arbora`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | |
 | agent-utilities | `arbora`, UI packages, `fastmcp`, `mcp`, `starlette`, `uvicorn`, `fastapi`, `a2a`, storage packages (`neo4j`, `falkordb`, `real_ladybug`, `kuzu`, `psycopg`, `asyncpg`, `sqlalchemy`, `redis`, `pymongo`, `qdrant_client`, `chromadb`, `lancedb`, `duckdb`, `aiosqlite`) | |

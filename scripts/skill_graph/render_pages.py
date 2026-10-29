@@ -74,7 +74,7 @@ def render_index_md(corpus: dict[str, Any]) -> str:
         f"- [`corpus.jsonld`](corpus.jsonld) — the full machine corpus "
         f"({manpage_count} man pages), consumable by agents directly over "
         "HTTP once this site is published; JSON-LD with `@id` IRIs under "
-        f"`{VOCAB}`, the same namespace Epistemic Graph's own ontology uses.\n\n"
+        f"`{VOCAB}`, the same namespace Medulla's own ontology uses.\n\n"
         "See [Ecosystem glossary](glossary.md) for the shared vocabulary this "
         "corpus's repo and concept names draw from.\n\n"
         '!!! note "Not the same thing as `skills/skill-graphs`"\n'
