@@ -1058,7 +1058,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "5bb38a0a6ba0",
-        "a40c555e675c"
+        "a40c555e675c",
+        "ee434d45e9b2"
       ],
       "verified_by": [
         "tests/hooks/test_privacy.py:32",

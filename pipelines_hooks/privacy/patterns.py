@@ -64,7 +64,8 @@ HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
 # misread as a host.
 # A sub-row citation (`R722.5`, `R802.1.3`) is never a host either: host aliases
 # continue with letters (`r820.arpa`) or nothing, never `.<digit>`.
-MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[0-9]{3,}(?![a-z0-9])(?!\.[0-9])")
+# A zero-padded bare row (`R089`) is not one either: host model numbers never start with 0.
+MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[1-9][0-9]{2,}(?![a-z0-9])(?!\.[0-9])")
 
 
 #: A value that is a route (`endpoint = "/Users/Me"`) or the container user's home (`home = "/home/app"` in pyproject).

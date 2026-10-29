@@ -106,3 +106,14 @@ def test_privacy_still_fires_on_a_bare_host_token(repo: Repo, catalog: Path) -> 
     """A bare fleet host alias (no hyphen boundary) must still be caught."""
     repo.commit({"docs/notes.md": "Deployed to " + "rw" + "710 for the pilot.\n"})
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 1
+
+
+def test_privacy_allows_a_zero_padded_bare_row_citation(repo: Repo, catalog: Path) -> None:
+    """A zero-padded bare row like ``R089`` is a spec row, not a host model number.
+
+    Host model numbers never start with 0, while spec rows are zero-padded
+    (``R001``..``R099``); the engine's generated contract text cites
+    "the later R089 children".
+    """
+    repo.commit({"docs/notes.md": "Covered by the later R089 children.\n"})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0
