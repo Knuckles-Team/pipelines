@@ -77,7 +77,7 @@ def test_central_pipeline_has_ci_required_and_read_only_workflow_permissions() -
         for name, job in document["jobs"].items()
         if any(scope == "write" for scope in job.get("permissions", {}).values())
     }
-    assert writers == {"publish-pypi", "publish-pages"}
+    assert writers == {"publish-pypi", "publish-pages", "release"}
     text = CENTRAL.read_text(encoding="utf-8")
     assert "pull_request_target" not in text and "secrets: inherit" not in text
 
@@ -92,7 +92,7 @@ def test_one_caller_template_triggers_every_route_without_top_level_write() -> N
     assert document["permissions"] == {}
     pipeline = document["jobs"]["pipeline"]
     assert pipeline["uses"] == "Knuckles-Team/pipelines/.github/workflows/connector_pipeline.yml@main"
-    assert pipeline["permissions"] == {"contents": "write", "pages": "write", "id-token": "write"}
+    assert pipeline["permissions"] == {"contents": "write", "pages": "write", "id-token": "write", "checks": "read"}
     assert "pull_request_target" not in CALLER.read_text(encoding="utf-8")
     assert "inherit" not in CALLER.read_text(encoding="utf-8")
     required = document["jobs"]["ci-required"]
@@ -106,3 +106,48 @@ def test_caller_passes_exactly_the_secrets_the_central_workflow_declares() -> No
     assert passed == declared
     inputs = set(_on(_load(CENTRAL))["workflow_call"]["inputs"])
     assert set(_load(CALLER)["jobs"]["pipeline"]["with"]) <= inputs
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018")
+def test_release_job_runs_only_on_a_release_dispatch_and_alone_writes_to_main() -> None:
+    jobs = _jobs()
+    release = jobs["release"]
+    condition = release["if"]
+    assert "github.event_name == 'workflow_dispatch'" in condition
+    assert "inputs.release != 'none'" in condition and "inputs.release_repair != true" in condition
+    assert "github.ref == 'refs/heads/main'" in condition
+    assert release["permissions"] == {"contents": "write", "checks": "read"}
+    assert "secrets.GIT_TOKEN" in CENTRAL.read_text(encoding="utf-8")
+    # A release dispatch never also runs the SDK rebuild, and no other job but the publishers writes.
+    assert "inputs.release == 'none'" in jobs["sdk-rebuild"]["if"]
+    assert "release" in jobs["ci-required"]["needs"]
+    inputs = _on(_load(CENTRAL))["workflow_call"]["inputs"]
+    assert inputs["release"]["default"] == "none"
+    assert "GIT_TOKEN" in _on(_load(CENTRAL))["workflow_call"]["secrets"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018")
+def test_release_job_refuses_red_main_and_an_existing_tag_then_pushes_the_tag() -> None:
+    text = "\n".join(step.get("run", "") for step in _jobs()["release"]["steps"])
+    assert '.name=="CI required"' in text and '!= success' in text and "refusing to release" in text
+    assert 'ls-remote --exit-code --tags origin "refs/tags/v${version}"' in text
+    assert "already exists" in text
+    assert text.index("already exists") < text.index("git commit")
+    assert text.index("git commit") < text.index('git tag -a "v${version}"') < text.index("git push")
+    assert "chore(release): bump ${name} to ${version}" in text
+    assert "Spec: none (release)\n" in text and "Co-Authored-By:" in text
+    assert "pipelines-connector version" in text and "bump \"$LEVEL\"" in text
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018")
+def test_caller_exposes_the_release_choice_and_the_helper_dispatches_it() -> None:
+    document = _load(CALLER)
+    release = _on(document)["workflow_dispatch"]["inputs"]["release"]
+    assert release["type"] == "choice" and release["default"] == "none"
+    assert release["options"] == ["none", "patch", "minor", "major"]
+    pipeline = document["jobs"]["pipeline"]
+    assert pipeline["with"]["release"] == "${{ inputs.release || 'none' }}"
+    assert pipeline["permissions"]["contents"] == "write" and pipeline["permissions"]["checks"] == "read"
+    script = (ROOT / "scripts/release_connector.sh").read_text(encoding="utf-8")
+    assert "gh workflow run connector.yml -R \"$repo\" -f \"release=$level\"" in script
+    assert "patch|minor|major" in script

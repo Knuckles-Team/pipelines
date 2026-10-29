@@ -35,13 +35,15 @@ A connector carries ONE workflow, `.github/workflows/connector.yml`, copied from
 | `pull_request` (main) | `pr` (`connector_pr_pipeline.yml`: gates, affected tests, image check), Python 3.14 only |
 | `push` to main | `org-site` (`notify_org_site.yml`, so spec updates reach the architecture page) and `main` (`main_pipeline.yml`, backward Python 3.12); never publishes |
 | `push` of a `v*` tag | `publish-pypi` (`python_pipeline.yml`, `require-tag`), then `publish-docker` (`container_pipeline.yml`), and `publish-pages` (`pages_pipeline.yml`) |
-| `schedule`, `repository_dispatch` (`sdk-release`), `workflow_dispatch` | `sdk-rebuild` (`connector_sdk_rebuild_pipeline.yml`) |
+| `workflow_dispatch` with `release` patch, minor or major | `release` (bump, commit to main, push the `v<version>` tag) |
+| `schedule`, `repository_dispatch` (`sdk-release`), `workflow_dispatch` without `release` | `sdk-rebuild` (`connector_sdk_rebuild_pipeline.yml`) |
 
 - A `v*` tag push is what publishes, across the board. Nothing publishes from a main push.
 - The caller declares `permissions: {}` and grants `contents: write`, `pages: write` and `id-token: write` to the one `pipeline` job; the central workflow is `contents: read` at the top and grants write only to `publish-pypi` (`contents`) and `publish-pages` (`pages`, `id-token`). Secrets are passed by name (`PYPI_API_TOKEN`, `DOCKER_*`, `org_site_app_id`, `org_site_app_private_key`); `secrets: inherit` is refused (SC-GHA-006).
 - The required check is the caller job `CI required` (it needs `pipeline`; skipped routes pass). The central workflow carries its own `CI required` aggregate over the routed jobs.
 - Per-connector differences are `with:` inputs of the caller job, all defaulted: `runner`, `test-scope`, `sync-args`, `skip-hooks`, `backward-python`, `python-connector`, `render-connector`, `runtime-profiles`, `role-contract`, `web-assets`, `container-enabled`, `pages-enabled`, `pages-content-source` (default `docs`), `pages-spec-dashboard-config` (default `.github/spec-dashboard.json`).
 - The `github-pages` environment needs a deployment policy for the tag pattern `v*`: `gh api -X POST repos/Knuckles-Team/<repo>/environments/github-pages/deployment-branch-policies -f name='v*' -f type=tag`.
+- How to release a connector: `scripts/release_connector.sh <owner/repo> <patch|minor|major>` (it runs `gh workflow run connector.yml -R <repo> -f release=<level>` and prints the run URL). The `release` job refuses unless the dispatch runs on main at its current head and that commit has a successful `CI required` check run, bumps `pyproject.toml` with `pipelines-connector version bump <level>` (the connector version lives there alone), refuses when `v<version>` already exists, commits `chore(release): bump <name> to <version>` with a `Spec: none (release)` trailer, and pushes main and the annotated tag `v<version>` with the secret `GIT_TOKEN` (a `GITHUB_TOKEN` push does not trigger workflows). The tag push then publishes. Only the `release` job holds `contents: write` for this path; the repair inputs never combine with it. The caller job also holds `checks: read`.
 - A custom `docs.yml` (`mkdocs gh-deploy`) is deleted with the old callers; Pages comes from `pages_pipeline.yml`.
 
 ## Agent contract

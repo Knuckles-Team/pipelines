@@ -8,8 +8,9 @@ name: Connector pipeline
 #   push to main                      -> org-site (spec updates reach the architecture page) + main
 #                                        (main_pipeline.yml, backward Python); never publishes
 #   push of a v* tag                  -> publish-pypi, then publish-docker, and publish-pages
+#   workflow_dispatch, release != none -> release (bump, commit to main, push the v<version> tag)
 #   schedule / repository_dispatch /
-#   workflow_dispatch                 -> sdk-rebuild (connector_sdk_rebuild_pipeline.yml)
+#   workflow_dispatch (no release)    -> sdk-rebuild (connector_sdk_rebuild_pipeline.yml)
 #
 # A v* tag push is what publishes: nothing publishes from a main push. Write scopes sit on the
 # publishing jobs only; the workflow level is read-only. The caller passes secrets explicitly
@@ -109,7 +110,15 @@ on:
         required: false
         type: boolean
         default: false
+      release:
+        description: Cut a release from main by workflow_dispatch - none, patch, minor or major. The tag push then publishes.
+        required: false
+        type: string
+        default: none
     secrets:
+      GIT_TOKEN:
+        description: Token that may push to main and push tags; a GITHUB_TOKEN push does not trigger the publish workflow.
+        required: false
       PYPI_API_TOKEN:
         required: false
       DOCKER_REGISTRY:
@@ -206,9 +215,80 @@ jobs:
       spec_dashboard_enabled: true
       spec_dashboard_config: ${{ inputs.pages-spec-dashboard-config }}
 
+  release:
+    name: release
+    if: github.event_name == 'workflow_dispatch' && inputs.release != 'none' && inputs.release != '' && inputs.release_repair != true && inputs.legacy_profile != true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The only job that writes to the repository: the version commit and the tag are pushed with
+    # the merge token, and the contents scope covers the checkout of a private repository.
+    permissions:
+      contents: write
+      checks: read
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Refuse unless main is green and not ahead of this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          head="$(git rev-parse HEAD)"
+          if [[ "$head" != "$RUN_SHA" ]]; then
+            echo "::error::main moved since this run started ($head != $RUN_SHA); dispatch again."
+            exit 1
+          fi
+          ok="$(gh api "repos/${REPO}/commits/${head}/check-runs?per_page=100" \
+            --jq '[.check_runs[] | select(.name=="CI required" and .status=="completed")] | sort_by(.completed_at) | last | .conclusion // "none"')"
+          if [[ "$ok" != success ]]; then
+            echo "::error::main@${head} has no successful 'CI required' check run (latest: ${ok}); refusing to release."
+            exit 1
+          fi
+
+      - name: Bump, commit, tag and push
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          REPO: ${{ github.repository }}
+          LEVEL: ${{ inputs.release }}
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          case "$LEVEL" in patch|minor|major) ;; *) echo "::error::release must be none, patch, minor or major."; exit 1 ;; esac
+          if [[ -z "${GIT_TOKEN:-}" ]]; then
+            echo "::error::secret GIT_TOKEN is required: a GITHUB_TOKEN push would not trigger the publish workflow."
+            exit 1
+          fi
+          python3 -m pip install --quiet uv
+          tool=(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root .)
+          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
+          "${tool[@]}" bump "$LEVEL"
+          version="$("${tool[@]}" read)"
+          if git ls-remote --exit-code --tags origin "refs/tags/v${version}" > /dev/null 2>&1; then
+            echo "::error::tag v${version} already exists; refusing to release it again."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- pyproject.toml
+          git commit -q -m "chore(release): bump ${name} to ${version}" -m "Spec: none (release)
+          Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+          git tag -a "v${version}" -m "Release v${version}"
+          remote="https://x-access-token:${GIT_TOKEN}@github.com/${REPO}.git"
+          git push "$remote" HEAD:refs/heads/main
+          git push "$remote" "refs/tags/v${version}"
+          echo "::notice::pushed v${version}; the tag push runs the publish jobs."
+
   sdk-rebuild:
     name: sdk-rebuild
-    if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && (inputs.release == 'none' || inputs.release == ''))
     permissions:
       contents: read
     uses: Knuckles-Team/pipelines/.github/workflows/connector_sdk_rebuild_pipeline.yml@main
@@ -230,7 +310,7 @@ jobs:
   ci-required:
     name: CI required
     if: always()
-    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, sdk-rebuild]
+    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, release, sdk-rebuild]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
