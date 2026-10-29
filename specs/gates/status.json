@@ -1046,6 +1046,7 @@
       "title": "The connector PR gate installs the identity catalog from the caller's variable",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "49da84faebe2",
         "89e96300d187",
         "c3769c753a53"
       ],
