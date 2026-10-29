@@ -1,6 +1,6 @@
 # Tracked artifact privacy
 
-The `tracked-privacy` gate requires the operator's prohibited-identity catalog.
+The `tracked-privacy` gate requires the operator's prohibited-identity catalog, read by default from `~/.config/arbora/governance/prohibited-identities.json` (`--identity-catalog` overrides it).
 Account names, host names, home-path identities, email values and explicit identity overrides match everywhere.
 The prohibited catalog also matches everywhere.
 
