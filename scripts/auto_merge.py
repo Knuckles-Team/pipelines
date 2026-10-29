@@ -177,29 +177,59 @@ def _required_contexts(payload: object) -> set[str]:
     return contexts
 
 
-def _check_required_rule(*, repo: str, required_check: str, api_get: ApiGet, log: Log) -> None:
+def _classic_contexts(*, repo: str, api_get: ApiGet, log: Log) -> set[str]:
+    """Required contexts from classic branch protection; empty when it does not apply."""
     path = f"/repos/{repo}/branches/{BASE_BRANCH}"
     try:
         payload = _get(api_get, path, log)
     except ApiFailure as exc:
         if "HTTP 404" in str(exc):
-            raise GateNotReady("main has no readable branch protection summary") from exc
+            return set()
         raise
     if not isinstance(payload, Mapping):
         raise ApiFailure("branch API returned a non-object")
-    if payload.get("protected") is not True:
-        raise GateNotReady("main is not protected")
     protection = payload.get("protection")
-    if not isinstance(protection, Mapping):
-        raise GateNotReady("main has no readable protection details")
+    if payload.get("protected") is not True or not isinstance(protection, Mapping):
+        return set()
     required = protection.get("required_status_checks")
     if not isinstance(required, Mapping):
-        raise GateNotReady("main has no required-status-check rule")
+        return set()
     enforcement = required.get("enforcement_level")
     if not isinstance(enforcement, str) or enforcement == "off":
-        raise GateNotReady("main required-status-check enforcement is disabled")
-    contexts = _required_contexts(required)
+        return set()
+    return _required_contexts(required)
+
+
+def _ruleset_contexts(*, repo: str, api_get: ApiGet, log: Log) -> set[str]:
+    """Required contexts from the active repository rulesets that apply to main."""
+    path = f"/repos/{repo}/rules/branches/{BASE_BRANCH}?per_page=100"
+    try:
+        payload = _get(api_get, path, log)
+    except ApiFailure as exc:
+        if "HTTP 404" in str(exc):
+            return set()
+        raise
+    if not isinstance(payload, list):
+        raise ApiFailure("branch rules API returned a non-list")
+    contexts: set[str] = set()
+    for rule in payload:
+        if not isinstance(rule, Mapping) or rule.get("type") != "required_status_checks":
+            continue
+        parameters = rule.get("parameters")
+        checks = parameters.get("required_status_checks") if isinstance(parameters, Mapping) else None
+        if isinstance(checks, list):
+            contexts |= {c["context"] for c in checks if isinstance(c, Mapping) and isinstance(c.get("context"), str)}
+    return contexts
+
+
+def _check_required_rule(*, repo: str, required_check: str, api_get: ApiGet, log: Log) -> None:
+    """Fail closed unless main requires ``required_check`` through classic protection or a ruleset."""
+    contexts = _classic_contexts(repo=repo, api_get=api_get, log=log) | _ruleset_contexts(
+        repo=repo, api_get=api_get, log=log
+    )
     log(f"required status-check contexts: {sorted(contexts)!r}")
+    if not contexts:
+        raise GateNotReady("main has no required status check (classic protection or ruleset)")
     if required_check not in contexts:
         raise GateNotReady(f"required context {required_check!r} is absent; observed {sorted(contexts)!r}")
 

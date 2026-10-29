@@ -50,11 +50,25 @@ def _runs(name="CI required", conclusion="success", sha=SHA, status="completed")
     }
 
 
-def _api(contexts=("CI required",), runs=None, pull=None, pulls=None):
+def _rules(contexts):
+    return [
+        {"type": "deletion"},
+        {
+            "type": "required_status_checks",
+            "parameters": {"required_status_checks": [{"context": c} for c in contexts]},
+        },
+    ]
+
+
+def _api(contexts=("CI required",), runs=None, pull=None, pulls=None, ruleset_contexts=()):
     def get(path):
         if "/check-runs" in path:
             return runs if runs is not None else _runs()
+        if "/rules/branches/main" in path:
+            return _rules(list(ruleset_contexts))
         if "/branches/main" in path:
+            if not contexts:
+                raise am.ApiFailure("HTTP 404: Branch not protected")
             return _branch(list(contexts))
         if "/commits/" in path and "/pulls" in path:
             return pulls if pulls is not None else [_pull()]
@@ -161,3 +175,21 @@ def test_settings_script_refuses_without_green_check_and_has_dry_run():
     text = (ROOT / "scripts/apply_repo_ci_settings.sh").read_text()
     assert "--dry-run" in text and "exit 2" in text
     assert text.index("refusing") < text.index("gh api -X PATCH")
+
+
+def test_required_check_from_ruleset_without_classic_protection():
+    """Repos protected only by a ruleset (no classic protection, HTTP 404) still arm."""
+    api = _api(contexts=(), ruleset_contexts=("CI required",))
+    am._check_required_rule(repo=REPO, required_check="CI required", api_get=api, log=lambda _m: None)
+
+
+def test_ruleset_requiring_another_check_refuses():
+    api = _api(contexts=(), ruleset_contexts=("gates / gates",))
+    with pytest.raises(am.GateNotReady):
+        am._check_required_rule(repo=REPO, required_check="CI required", api_get=api, log=lambda _m: None)
+
+
+def test_no_classic_protection_and_no_ruleset_refuses():
+    api = _api(contexts=(), ruleset_contexts=())
+    with pytest.raises(am.GateNotReady):
+        am._check_required_rule(repo=REPO, required_check="CI required", api_get=api, log=lambda _m: None)
