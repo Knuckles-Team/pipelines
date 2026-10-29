@@ -62,7 +62,9 @@ HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
 # bare host token and a requirement ID embedded without a hyphen boundary
 # caught, while a hyphen-prefixed requirement-ID citation is no longer
 # misread as a host.
-MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[0-9]{3,}(?![a-z0-9])")
+# A sub-row citation (`R722.5`, `R802.1.3`) is never a host either: host aliases
+# continue with letters (`r820.arpa`) or nothing, never `.<digit>`.
+MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[0-9]{3,}(?![a-z0-9])(?!\.[0-9])")
 
 
 #: A value that is a route (`endpoint = "/Users/Me"`) or the container user's home (`home = "/home/app"` in pyproject).
