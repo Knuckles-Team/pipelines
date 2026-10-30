@@ -26,6 +26,11 @@ inputs:
   legacy-profile:
     description: Preserve a reviewed tracked wheel-only package tree without running the current ontology renderer.
     default: false
+  release-version:
+    description: >-
+      Release tag (vX.Y.Z) whose version the build stamps (PIPE-RELEASE-R018.1). Empty verifies the
+      version committed in the reviewed pyproject.toml.
+    default: ''
   root:
     description: Directory holding the package pyproject.toml.
     required: false
@@ -54,6 +59,7 @@ runs:
         RELEASE_DOCKER_ROOT: ${{ inputs.docker-root }}
         RELEASE_EXTRAS: ${{ inputs.extras }}
         RELEASE_LEGACY_PROFILE: ${{ inputs.legacy-profile }}
+        RELEASE_VERSION_FROM_TAG: ${{ inputs.release-version }}
       run: |
         docker_root=()
         legacy_profile=()
@@ -62,6 +68,7 @@ runs:
         python3 -I "${{ github.action_path }}/public_wheel.py" \
           --root "$RELEASE_ROOT" --distribution "$RELEASE_DISTRIBUTION" \
           --module "$RELEASE_MODULE" --dockerfile "$RELEASE_DOCKERFILE" --extras "$RELEASE_EXTRAS" \
+          --release-version "$RELEASE_VERSION_FROM_TAG" \
           "${docker_root[@]}" "${legacy_profile[@]}"
     - name: Validate guard mode
       shell: bash

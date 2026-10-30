@@ -683,3 +683,47 @@ def test_public_wheel_release_receipt_binds_source_and_public_bytes(guard, tmp_p
     metadata["urls"].append(metadata["urls"][0])
     with pytest.raises(ValueError, match="Exactly one"):
         guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", "mcp")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018.1")
+def test_public_wheel_verifies_the_tag_version_the_build_stamps(guard, tmp_path, monkeypatch):
+    """A v* tag carries the version while main's pyproject lags (PIPE-RELEASE-R018).
+
+    The image build stamps the tag version, so the guard must verify that
+    version's public wheel and Dockerfile pin, not the stale committed one.
+    """
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "demo").mkdir()
+    (tmp_path / "docker").mkdir()
+    (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
+    (tmp_path / "pyproject.toml").write_text(
+        '[build-system]\nrequires = ["setuptools>=80"]\nbuild-backend = "setuptools.build_meta"\n\n'
+        '[project]\nname="demo-dist"\nversion="1.2.2"\n\n'
+        '[tool.setuptools.packages.find]\ninclude = ["demo*"]\n'
+    )
+    (tmp_path / "docker/Dockerfile").write_text("RUN pip install demo-dist[mcp]==1.2.3\n")
+    subprocess.run(
+        ["git", "add", "--", "demo/__init__.py", "pyproject.toml", "docker/Dockerfile"], cwd=tmp_path, check=True
+    )
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+    with pytest.raises(ValueError, match="pin"):
+        guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", "mcp")
+
+    fetched = []
+
+    def read_public(url):
+        fetched.append(url)
+        raise LookupError("stop after the metadata request")
+
+    monkeypatch.setattr(guard, "read_public", read_public)
+    with pytest.raises(LookupError):
+        guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", "mcp", release_version="v1.2.3")
+    assert fetched == ["https://pypi.org/pypi/demo-dist/1.2.3/json"]
+    with pytest.raises(ValueError, match="MAJOR.MINOR.PATCH"):
+        guard.verify_release(tmp_path, "demo-dist", "demo", "docker/Dockerfile", "mcp", release_version="main")

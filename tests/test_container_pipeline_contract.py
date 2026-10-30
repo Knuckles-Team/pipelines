@@ -90,6 +90,7 @@ def test_main_connector_release_preflights_public_wheel_before_builder_or_login(
         "extras": "${{ steps.published-wheel.outputs.extras }}",
         "docker-root": "${{ inputs.release_repair == true && inputs.legacy_profile == true && steps.build-context.outputs.path || '' }}",
         "legacy-profile": "${{ inputs.legacy_profile }}",
+        "release-version": "${{ inputs.stamp_version_from_tag && startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}",
         "root": "${{ inputs.release_repair == true && inputs.legacy_profile == true && '.release-source' || steps.build-context.outputs.path }}",
     }
     assert guard["env"] == {"SOURCE_DATE_EPOCH": "${{ inputs.release_source_epoch }}"}
