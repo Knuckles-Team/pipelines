@@ -3,7 +3,7 @@
 Local runs compare the staged index with HEAD; CI compares its commit range.
 Diff-scoped: findings already present at the base are not re-reported when the
 line numbers shift, so a commit fails only for the violations it adds.
-New files are checked in full.
+New files are checked in full; a renamed file is compared with its source.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from pipelines_hooks.core.args import root_and_base_ref
-from pipelines_hooks.core.comparison import comparison
+from pipelines_hooks.core.comparison import comparison, rename_sources
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import blob_text
 from pipelines_hooks.ste import scope
@@ -54,11 +54,12 @@ def _added_paths(
     before_ref: str | None,
     after_ref: str,
     check: Callable[..., list[Finding]],
+    sources: dict[str, str],
 ) -> list[Finding]:
     out: list[Finding] = []
     for rel in rels:
         index = _after_text(root, rel, after_ref)
-        head = blob_text(root, f"{before_ref}:{rel}") if before_ref else None
+        head = blob_text(root, f"{before_ref}:{sources.get(rel, rel)}") if before_ref else None
         out.extend(_added(check(head or "", wordlist, path=rel), check(index, wordlist, path=rel)))
     return out
 
@@ -72,8 +73,15 @@ def _main(root: Path, base_ref: str | None) -> int:
     if not docs and not code:
         print("ste(staged): OK: no in-scope file changed" if after else "ste(staged): OK: no in-scope file staged")
         return 0
-    findings = _added_paths(root, docs, wordlist=wordlist, before_ref=before, after_ref=after, check=check_document)
-    findings.extend(_added_paths(root, code, wordlist=wordlist, before_ref=before, after_ref=after, check=cli_findings))
+    sources = rename_sources(root, before, after)
+    findings = _added_paths(
+        root, docs, wordlist=wordlist, before_ref=before, after_ref=after, check=check_document, sources=sources
+    )
+    findings.extend(
+        _added_paths(
+            root, code, wordlist=wordlist, before_ref=before, after_ref=after, check=cli_findings, sources=sources
+        )
+    )
     return report("ste(staged)", findings)
 
 
