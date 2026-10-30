@@ -364,10 +364,10 @@ def test_renamed_repositories_keep_ownership_placement_and_canonical_details(tmp
         assert tree.nodes[node_id]["repo"] == slug
         if slug == "axil":
             family, source = "desktop-client", "geniusbot/backend.py"
-            row = _row("GENIUSBOT-CLIENT-R001", "Backend integration", family, slug)
+            row = _row("AXIL-CLIENT-R001", "Backend integration", family, slug)
         elif slug == "meristem":
             family, source = "harness-cycle", "agent_utilities/harness/plan.py"
-            row = _row("AU-HARNESS-CYCLE-R001.2", "Propose", family, slug)
+            row = _row("MERISTEM-HARNESS-CYCLE-R001.2", "Propose", family, slug)
         else:
             home = next(
                 n
@@ -469,21 +469,21 @@ _NEEDS_LAYOUT = pytest.mark.skipif(
 _SEARCH_ROWS = {
     "scion-sdk": [
         _row(
-            "SDK-CONNECTOR-CONTROL-R030",
+            "SCION-CONNECTOR-CONTROL-R030",
             "SDK provides GraphQL introspection context helpers for connector tools",
-            "SDK-CONNECTOR-CONTROL",
+            "SCION-CONNECTOR-CONTROL",
             "scion-sdk",
         ),
         _row(
-            "SDK-CONNECTOR-CONTROL-R030.1",
+            "SCION-CONNECTOR-CONTROL-R030.1",
             "SDK owns the one GraphQL client for connectors",
-            "SDK-CONNECTOR-CONTROL",
+            "SCION-CONNECTOR-CONTROL",
             "scion-sdk",
         ),
         _row(
-            "SDK-CONNECTOR-CONTROL-R043",
+            "SCION-CONNECTOR-CONTROL-R043",
             "SDK declares a source access contract for the engine client",
-            "SDK-CONNECTOR-CONTROL",
+            "SCION-CONNECTOR-CONTROL",
             "scion-sdk",
         ),
     ],
@@ -1194,7 +1194,7 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
     desktop = tree.nodes["geniusbot"]
     assert (desktop["repo"], desktop["fam"]) == ("axil", ["desktop-client"])
     expected = {
-        f"GENIUSBOT-CLIENT-R{number:03d}{suffix}": f"geniusbot.{part}"
+        f"AXIL-CLIENT-R{number:03d}{suffix}": f"geniusbot.{part}"
         for part, numbers in _AXIL_PARTS.items()
         for number in numbers
         for suffix in ("", ".1", ".1.1")
@@ -1202,7 +1202,7 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
     rows = [_row(rid, "Requirement", "desktop-client", "axil") for rid in expected]
     unknown = [
         _row(rid, "Requirement", "desktop-client", "axil")
-        for rid in ("GENIUSBOT-CLIENT-R021", "GENIUSBOT-CLIENT-R0010")
+        for rid in ("AXIL-CLIENT-R021", "AXIL-CLIENT-R0010")
     ]
     direct = Placer(tree).run(rows + unknown)
     placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
@@ -1215,7 +1215,7 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
 @_NEEDS_LAYOUT
 def test_axil_parts_survive_generation_without_changing_rows_or_statuses(monkeypatch, tmp_path: Path) -> None:
     rows = [
-        {**_row(f"GENIUSBOT-CLIENT-R{number:03d}", "Requirement", "desktop-client", "axil"), "status": status}
+        {**_row(f"AXIL-CLIENT-R{number:03d}", "Requirement", "desktop-client", "axil"), "status": status}
         for number, status in zip(range(1, 21), ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED") * 5)
     ]
     payload = _payload(_build_page(monkeypatch, tmp_path, {"axil": rows}))

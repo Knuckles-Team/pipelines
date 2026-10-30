@@ -28,6 +28,7 @@ if __package__ in (None, ""):
     __package__ = "scripts.architecture_explorer"
 
 from .details import write_details  # noqa: E402
+from .canonical import canonical_model, failure_message, merged_aliases, tag_family_keys  # noqa: E402
 from .delivery import aggregate  # noqa: E402
 from .geometry import count_crossings  # noqa: E402
 from .place import Placer, Tree, add_dynamic_groups, unmapped_violations, validate_code  # noqa: E402
@@ -299,6 +300,8 @@ def build_with_sources(
         snaps, chart = load_build_sources(
             scanned, mode, workspace, source_families, token=os.environ.get("GITHUB_TOKEN", "")
         )
+    canonical_model(model, merged_aliases(snaps))
+    tag_family_keys(snaps)
     fit_fleet(model, scanned)
     rows = [r for s in snaps for r in s.rows]
     tree = Tree(model)
@@ -341,7 +344,10 @@ def build_with_sources(
         from .story_build import seal_chart
 
         if meta["errors"] or meta["unmapped_violations"]:
-            raise ValueError("source-chart build refuses incomplete fleet snapshots or unreviewed unmapped rows")
+            message = failure_message(meta["errors"], meta["unmapped_violations"])
+            if os.environ.get("GITHUB_ACTIONS"):
+                print("::error title=architecture build refused::" + message.replace("\n", "%0A"), flush=True)
+            raise ValueError(message)
         data["sourceChart"] = seal_chart(chart, built_at=meta["built_at"], snapshots=snaps)
     return data, meta, snaps
 

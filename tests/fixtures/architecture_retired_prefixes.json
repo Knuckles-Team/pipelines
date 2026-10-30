@@ -1,0 +1,24 @@
+{
+ "arbora": {
+  "GRAPHOS-": "ARBORA-"
+ },
+ "axil": {
+  "GENIUSBOT-": "AXIL-"
+ },
+ "medulla": {
+  "EG-HYBRID-STORAGE-": "EG-ENGINE-PARITY-"
+ },
+ "meristem": {
+  "AU-": "MERISTEM-"
+ },
+ "overstory": {
+  "FIN-UI-": "OVERSTORY-",
+  "WEBUI-": "OVERSTORY-"
+ },
+ "scion-sdk": {
+  "SDK-": "SCION-"
+ },
+ "tuig": {
+  "TUI-": "TUIG-"
+ }
+}
