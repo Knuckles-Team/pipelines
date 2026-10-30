@@ -252,7 +252,7 @@ def read_public(url: str) -> bytes:
         return response.read()
 
 
-def _rendered_dockerfile(root: Path) -> str:
+def _rendered_dockerfile(root: Path, release_version: str = "") -> str:
     """Render the canonical Dockerfile from the reviewed ``HEAD`` metadata."""
     provider_root = Path(__file__).resolve().parents[3]
     if not (provider_root / "pipelines_hooks" / "connector" / "container.py").is_file():
@@ -285,10 +285,17 @@ def _rendered_dockerfile(root: Path) -> str:
         ):
             raise ValueError("Generated Dockerfile verification requires a connector identity")
         (source / "pyproject.toml").write_bytes(pyproject)
+        if release_version:
+            sys.path.insert(0, str(provider_root))
+            try:
+                from pipelines_hooks.connector.version import write_version
+            finally:
+                sys.path.pop(0)
+            write_version(source, _release_version(release_version))
         return render(source)["Dockerfile"]
 
 
-def _reviewed_dockerfile(root: Path, dockerfile: str) -> str:
+def _reviewed_dockerfile(root: Path, dockerfile: str, release_version: str = "") -> str:
     """Read a tracked Dockerfile or the provider-rendered canonical one."""
     try:
         return subprocess.check_output(
@@ -297,7 +304,7 @@ def _reviewed_dockerfile(root: Path, dockerfile: str) -> str:
     except subprocess.CalledProcessError as error:
         if dockerfile != "docker/Dockerfile":
             raise ValueError(f"Reviewed Dockerfile is not tracked: {dockerfile}") from error
-        return _rendered_dockerfile(root)
+        return _rendered_dockerfile(root, release_version)
 
 
 def _validate_legacy_dockerfile(docker: str) -> None:
@@ -313,7 +320,18 @@ def _validate_legacy_dockerfile(docker: str) -> None:
             raise ValueError("Legacy public-wheel profile Dockerfile must not copy source files")
 
 
-def _reviewed_project(root: Path) -> dict[str, object]:
+_RELEASE_VERSION = re.compile(r"\d+\.\d+\.\d+")
+
+
+def _release_version(value: str) -> str:
+    """PIPE-RELEASE-R018.1: a ``v*`` tag carries the version; main's pyproject may lag it."""
+    version = value[1:] if value.startswith("v") else value
+    if not _RELEASE_VERSION.fullmatch(version):
+        raise ValueError(f"Release version must be MAJOR.MINOR.PATCH: {value!r}")
+    return version
+
+
+def _reviewed_project(root: Path, release_version: str = "") -> dict[str, object]:
     try:
         document = tomllib.loads(subprocess.check_output(["git", "show", "HEAD:pyproject.toml"], cwd=root, text=True))
     except (subprocess.CalledProcessError, tomllib.TOMLDecodeError) as error:
@@ -321,6 +339,8 @@ def _reviewed_project(root: Path) -> dict[str, object]:
     project = document.get("project")
     if not isinstance(project, dict):
         raise ValueError("Reviewed pyproject.toml has no project table")
+    if release_version:
+        project = {**project, "version": _release_version(release_version)}
     return project
 
 
@@ -333,8 +353,9 @@ def verify_release(
     *,
     docker_root: Path | None = None,
     legacy_profile: bool = False,
+    release_version: str = "",
 ) -> dict[str, object]:
-    project = _reviewed_project(root)
+    project = _reviewed_project(root, release_version)
     if project["name"] != distribution:
         raise ValueError("Explicit distribution differs from reviewed project metadata")
     version = project["version"]
@@ -350,14 +371,14 @@ def verify_release(
             raise ValueError(f"Legacy public-wheel profile requires a tracked Dockerfile: {dockerfile}") from error
         _validate_legacy_dockerfile(docker)
         if docker_root is not None:
-            docker_project = _reviewed_project(docker_root)
+            docker_project = _reviewed_project(docker_root, release_version)
             if (docker_project.get("name"), docker_project.get("version")) != (
                 project.get("name"),
                 project.get("version"),
             ):
                 raise ValueError("Legacy Docker source metadata differs from the immutable package source")
     else:
-        docker = _reviewed_dockerfile(docker_source, dockerfile)
+        docker = _reviewed_dockerfile(docker_source, dockerfile, release_version)
     if pin not in shlex.split(docker, comments=True):
         raise ValueError("Dockerfile must pin the reviewed package version")
     expected = reviewed_payload(root, module, legacy_profile=legacy_profile)
@@ -393,6 +414,7 @@ def main() -> None:
     parser.add_argument("--extras", default="mcp")
     parser.add_argument("--target", default="mcp")
     parser.add_argument("--legacy-profile", action="store_true")
+    parser.add_argument("--release-version", default="")
     parser.add_argument("--resolve-identity", action="store_true")
     parser.add_argument("--resolve-extras", action="store_true")
     args = parser.parse_args()
@@ -414,6 +436,7 @@ def main() -> None:
                 args.extras,
                 docker_root=args.docker_root,
                 legacy_profile=args.legacy_profile,
+                release_version=args.release_version,
             ),
             sort_keys=True,
         )

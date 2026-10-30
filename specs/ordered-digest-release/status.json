@@ -75,7 +75,8 @@
     "PIPE-RELEASE-R015",
     "PIPE-RELEASE-R016",
     "PIPE-RELEASE-R017",
-    "PIPE-RELEASE-R018"
+    "PIPE-RELEASE-R018",
+    "PIPE-RELEASE-R018.1"
   ],
   "requirements": [
     {
@@ -879,11 +880,11 @@
         "23b1e1111638"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:104",
-        "tests/test_container_pipeline_contract.py:173",
-        "tests/test_container_pipeline_contract.py:358",
-        "tests/test_container_pipeline_contract.py:414",
-        "tests/test_container_pipeline_contract.py:434"
+        "tests/test_container_pipeline_contract.py:105",
+        "tests/test_container_pipeline_contract.py:174",
+        "tests/test_container_pipeline_contract.py:359",
+        "tests/test_container_pipeline_contract.py:415",
+        "tests/test_container_pipeline_contract.py:435"
       ]
     },
     {
@@ -923,7 +924,7 @@
         "29f674f887fa"
       ],
       "verified_by": [
-        "tests/test_container_pipeline_contract.py:1170"
+        "tests/test_container_pipeline_contract.py:1171"
       ]
     },
     {
@@ -957,9 +958,9 @@
       "landed_in": [
         "67c8c71a85b4",
         "89f8b21b1226",
+        "8b657397d18a",
         "90a24d812711",
-        "95a10590ddcd",
-        "f85841ba60b3"
+        "95a10590ddcd"
       ],
       "verified_by": [
         "tests/test_connector_pipeline.py:110",
@@ -967,6 +968,20 @@
         "tests/test_connector_pipeline.py:135",
         "tests/test_connector_pipeline.py:29",
         "tests/test_connector_pipeline.py:45"
+      ],
+      "rollup_of": [
+        "PIPE-RELEASE-R018.1"
+      ]
+    },
+    {
+      "id": "PIPE-RELEASE-R018.1",
+      "title": "The image guard verifies the version the tag stamps",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8b657397d18a"
+      ],
+      "verified_by": [
+        "tests/test_public_wheel_guard.py:688"
       ]
     }
   ]
