@@ -159,3 +159,17 @@ def test_staged_index_compares_a_renamed_file_with_its_source(repo: Repo, extra:
     repo.commit({"docs/old.md": CLEAN + DEBT})
     _rename(repo, "docs/old.md", "docs/new.md", extra)
     assert repo.run("ste-staged") == expected
+
+
+def test_ci_range_pairs_a_rewritten_file_in_a_renamed_directory(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every line of an ID-renamed file changes, so Git sees add+delete; the directory rename pairs it."""
+    # spec: PIPE-CONNSPEC-R007
+    ids = "".join(f"OLD-R{n:03d} keeps its row.\n" for n in range(30))
+    base = repo.commit({"docs/OLD-X/spec.md": CLEAN * 5, "docs/OLD-X/requirements.md": ids + DEBT})
+    repo.git("mv", "docs/OLD-X", "docs/NEW-X")
+    repo.write("docs/NEW-X/requirements.md", ids.replace("OLD-", "NEW-") + DEBT)
+    repo.git("add", "-A", "docs")
+    repo.git("commit", "-q", "-m", "rename")
+    assert "A\tdocs/NEW-X/requirements.md" in repo.git("diff", "-M", "--name-status", base, "HEAD")
+    monkeypatch.setenv("PRE_COMMIT_FROM_REF", base)
+    assert repo.run("ste-staged") == 0

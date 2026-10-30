@@ -86,18 +86,40 @@ def rename_sources(root: Path, before: str | None, after: str) -> dict[str, str]
 
     A renamed file is compared with its source, so a pure rename or a small edit
     to a moved file reports only what changed instead of the whole file as new.
+    A file rewritten past Git's similarity threshold inside a renamed directory
+    (an ID rename touches every line) is paired with the deleted file of the
+    same name in that directory's source.
     """
     if before is None:
         return {}
     args = (
-        ("diff", "--cached", "-M", "--name-status", "-z", "--diff-filter=R", before, "--")
+        ("diff", "--cached", "-M", "--name-status", "-z", "--diff-filter=ADR", before, "--")
         if not after
-        else ("diff", "-M", "--name-status", "-z", "--diff-filter=R", before, after, "--")
+        else ("diff", "-M", "--name-status", "-z", "--diff-filter=ADR", before, after, "--")
     )
     fields = nul_split(git_text(root, args, preserve_index=not after))
     sources: dict[str, str] = {}
-    for index in range(0, len(fields) - 2, 3):
-        status, old, new = fields[index : index + 3]
-        if status.startswith("R"):
-            sources[new] = old
+    added: list[str] = []
+    deleted: set[str] = set()
+    index = 0
+    while index < len(fields):
+        status = fields[index]
+        if status.startswith("R") and index + 2 < len(fields):
+            sources[fields[index + 2]] = fields[index + 1]
+            index += 3
+            continue
+        if index + 1 < len(fields):
+            if status == "A":
+                added.append(fields[index + 1])
+            elif status == "D":
+                deleted.add(fields[index + 1])
+        index += 2
+    directories = {str(Path(new).parent): str(Path(old).parent) for new, old in sources.items()}
+    for new in added:
+        source_dir = directories.get(str(Path(new).parent))
+        if source_dir is None:
+            continue
+        candidate = str(Path(source_dir) / Path(new).name)
+        if candidate in deleted:
+            sources[new] = candidate
     return sources
