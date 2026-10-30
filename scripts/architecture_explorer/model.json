@@ -1944,6 +1944,15 @@
          ]
         },
         {
+         "id": "au.loop.cycle.episodes",
+         "label": "Episode read",
+         "role": "retrieval",
+         "desc": "A run reads memory episodes through the served episode read.",
+         "ids": [
+          "MERISTEM-HARNESS-CYCLE-R002"
+         ]
+        },
+        {
          "id": "au.loop.cycle.contract",
          "label": "Cycle contract",
          "role": "model, refusal, wiring",
