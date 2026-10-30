@@ -20,7 +20,7 @@ name: Gates
 #       paths-ignore: [specs/**, docs/**, '**/*.md', plans/**, LICENSE]
 #   concurrency:
 #     group: ${{ github.event_name == 'pull_request' && format('pr-{0}-{1}', github.workflow, github.event.pull_request.number) || format('main-{0}', github.workflow) }}
-#     cancel-in-progress: true
+#     cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 #   jobs:
 #     gates:
 #       uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main

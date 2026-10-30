@@ -12,10 +12,12 @@ on:
     - cron: '17 3 * * *'
   workflow_dispatch:
 
-# Caller-side concurrency: PR runs cancel superseded runs; main runs too.
+# Caller-side concurrency: PR runs cancel superseded runs. Main runs never
+# cancel a running build (only a queued one is replaced), so every landed
+# train gets a complete verdict.
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('pr-{0}-{1}', github.workflow, github.event.pull_request.number) || format('main-{0}-{1}', github.workflow, github.ref) }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
