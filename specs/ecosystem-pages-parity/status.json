@@ -4324,11 +4324,11 @@
         "1127e9047bfa"
       ],
       "verified_by": [
-        "tests/test_architecture_explorer.py:1009",
-        "tests/test_architecture_explorer.py:1033",
-        "tests/test_architecture_explorer.py:105",
-        "tests/test_architecture_explorer.py:1089",
-        "tests/test_architecture_explorer.py:1110"
+        "tests/test_architecture_canonical.py:40",
+        "tests/test_architecture_canonical.py:54",
+        "tests/test_architecture_canonical.py:62",
+        "tests/test_architecture_canonical.py:82",
+        "tests/test_architecture_explorer.py:1009"
       ],
       "rollup_of": [
         "PIPE-PAGES-R042.1",
