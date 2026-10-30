@@ -79,3 +79,25 @@ def comparison(root: Path, explicit: str | None = None) -> tuple[list[str], str 
         else ("ls-tree", "-r", "--name-only", "-z", "HEAD")
     )
     return sorted(set(nul_split(git_text(root, args)))), base, "HEAD"
+
+
+def rename_sources(root: Path, before: str | None, after: str) -> dict[str, str]:
+    """Map each renamed path to its source path in the comparison (``git diff -M``).
+
+    A renamed file is compared with its source, so a pure rename or a small edit
+    to a moved file reports only what changed instead of the whole file as new.
+    """
+    if before is None:
+        return {}
+    args = (
+        ("diff", "--cached", "-M", "--name-status", "-z", "--diff-filter=R", before, "--")
+        if not after
+        else ("diff", "-M", "--name-status", "-z", "--diff-filter=R", before, after, "--")
+    )
+    fields = nul_split(git_text(root, args, preserve_index=not after))
+    sources: dict[str, str] = {}
+    for index in range(0, len(fields) - 2, 3):
+        status, old, new = fields[index : index + 3]
+        if status.startswith("R"):
+            sources[new] = old
+    return sources

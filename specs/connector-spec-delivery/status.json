@@ -469,9 +469,11 @@
       "title": "CI checks changed prose",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "6f1b2623bbda"
+        "6f1b2623bbda",
+        "75f939548554"
       ],
       "verified_by": [
+        "tests/hooks/test_ste_ci.py:149",
         "tests/hooks/test_ste_ci.py:31"
       ]
     },

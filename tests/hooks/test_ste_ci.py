@@ -132,3 +132,30 @@ def test_new_ref_shallow_history_fails_closed(repo: Repo, monkeypatch: pytest.Mo
     repo.write(".git/shallow", head + "\n")
     _event(repo, monkeypatch, event="push", base="0" * 40)
     assert repo.run("ste-staged") == 2
+
+
+def _rename(repo: Repo, old: str, new: str, extra: str = "") -> None:
+    repo.git("mv", old, new)
+    if extra:
+        repo.write(new, (repo.root / new).read_text(encoding="utf-8") + extra)
+        repo.git("add", new)
+
+
+@pytest.mark.parametrize("extra,expected", [("", 0), ("The gate checks the file.\n", 0), (DEBT, 1)])
+def test_ci_range_compares_a_renamed_file_with_its_source(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch, extra: str, expected: int
+) -> None:
+    """A moved doc (a spec-prefix rename) reports only debt it adds, not the whole file."""
+    # spec: PIPE-CONNSPEC-R007
+    base = repo.commit({"docs/old.md": CLEAN + DEBT})
+    _rename(repo, "docs/old.md", "docs/new.md", extra)
+    repo.git("commit", "-q", "-m", "rename")
+    monkeypatch.setenv("PRE_COMMIT_FROM_REF", base)
+    assert repo.run("ste-staged") == expected
+
+
+@pytest.mark.parametrize("extra,expected", [("", 0), (DEBT, 1)])
+def test_staged_index_compares_a_renamed_file_with_its_source(repo: Repo, extra: str, expected: int) -> None:
+    repo.commit({"docs/old.md": CLEAN + DEBT})
+    _rename(repo, "docs/old.md", "docs/new.md", extra)
+    assert repo.run("ste-staged") == expected
