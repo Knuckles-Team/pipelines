@@ -56,7 +56,5 @@ def failure_message(errors: dict[str, str], violations: list[str], limit: int = 
         lines += [f"  {k}: {n}" for k, n in rows[:limit]]
         if len(rows) > limit:
             lines.append(f"  ... and {len(rows) - limit} more")
-        lines.append(
-            "fix: map the family in scripts/architecture_explorer/model.json or add it to unmapped_allow"
-        )
+        lines.append("fix: map the family in scripts/architecture_explorer/model.json or add it to unmapped_allow")
     return "\n".join(lines)

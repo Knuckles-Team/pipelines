@@ -34,7 +34,9 @@ def _model(fam: str) -> dict:
 
 def _snap(family: str) -> Snapshot:
     row = {"id": "SCION-X-R001", "title": "t", "status": "SPECIFIED", "repo": "scion-sdk", "family": family}
-    return Snapshot(repo="scion-sdk", slug="scion-sdk", rows=[{**row, "text": "", "req": ""}], aliases={"SDK-": "SCION-"})
+    return Snapshot(
+        repo="scion-sdk", slug="scion-sdk", rows=[{**row, "text": "", "req": ""}], aliases={"SDK-": "SCION-"}
+    )
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -84,5 +86,7 @@ def test_model_keys_use_no_retired_prefix() -> None:
     """Retired prefixes come from the checked-in alias maps (tests/fixtures/architecture_retired_prefixes.json)."""
     model = json.loads((PKG / "model.json").read_text())
     retired = {old: new for prefixes in RETIRED.values() for old, new in prefixes.items()}
-    stale = sorted({f"{key} (use {new})" for key in _keys(model) for old, new in retired.items() if key.startswith(old)})
+    stale = sorted(
+        {f"{key} (use {new})" for key in _keys(model) for old, new in retired.items() if key.startswith(old)}
+    )
     assert not stale, "model.json keys use retired spec prefixes; rename them: " + ", ".join(stale)

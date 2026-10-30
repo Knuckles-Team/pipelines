@@ -1200,10 +1200,7 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
         for suffix in ("", ".1", ".1.1")
     }
     rows = [_row(rid, "Requirement", "desktop-client", "axil") for rid in expected]
-    unknown = [
-        _row(rid, "Requirement", "desktop-client", "axil")
-        for rid in ("AXIL-CLIENT-R021", "AXIL-CLIENT-R0010")
-    ]
+    unknown = [_row(rid, "Requirement", "desktop-client", "axil") for rid in ("AXIL-CLIENT-R021", "AXIL-CLIENT-R0010")]
     direct = Placer(tree).run(rows + unknown)
     placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
     assert len(placed) == len(rows + unknown)
