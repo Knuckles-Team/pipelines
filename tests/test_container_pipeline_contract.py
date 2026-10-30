@@ -40,10 +40,7 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
     assert "build-target" in yaml.safe_load(ACTION.read_text())["inputs"]
     assert workflow["permissions"] == {"contents": "read"}
     assert job["runs-on"] == "self-hosted"
-    assert job["strategy"]["matrix"]["include"] == [
-        {"target": "agent", "suffix": "", "main_tag": "latest"},
-        {"target": "mcp", "suffix": "-mcp", "main_tag": "mcp"},
-    ]
+    assert "strategy" not in job and job["env"] == {"BUILD_TARGET": "mcp"}
     builds = [step for step in steps if "docker/build-push-action@" in step.get("uses", "")]
     assert len(builds) == 3 and builds[0]["with"] == builds[1]["with"] == builds[2]["with"]
     assert builds[0]["with"]["build-args"] == (
@@ -675,18 +672,14 @@ def test_legacy_profile_missing_canonical_dockerfile_fails_before_target_scan(tm
 @pytest.mark.parametrize(
     ("requested", "leg", "dockerfile", "expected"),
     [
-        ("", "agent", "FROM base AS agent\n", (True, "agent", False)),
         ("", "mcp", "FROM base AS agent\n", (False, None, False)),
         ("", "mcp", "from base as mcp\n", (True, "mcp", False)),
-        ("", "agent", "FROM base AS agent\r\n", (True, "agent", False)),
         ("mcp", "mcp", "FROM base AS mcp\r\n", (True, "mcp", False)),
-        ("default", "agent", "FROM base\n", (True, "", False)),
-        ("default", "mcp", "FROM base\n", (False, None, False)),
-        ("runtime", "agent", "FROM base AS runtime\n", (True, "runtime", False)),
+        ("default", "mcp", "FROM base\n", (True, "", False)),
+        ("runtime", "mcp", "FROM base AS runtime\n", (True, "runtime", False)),
         ("mcp", "mcp", "FROM base AS mcp\n", (True, "mcp", False)),
-        ("mcp", "agent", "FROM base AS mcp\n", (False, None, False)),
-        ("missing", "agent", "FROM base\n", (False, None, True)),
-        ("bad;touch injected", "agent", "FROM base\n", (False, None, True)),
+        ("missing", "mcp", "FROM base\n", (False, None, True)),
+        ("bad;touch injected", "mcp", "FROM base\n", (False, None, True)),
     ],
 )
 def test_target_selection(
@@ -1146,6 +1139,7 @@ def test_version_tag_source(tmp_path: Path, *, files: dict[str, str], context: s
     assert dict(line.split("=", 1) for line in output.read_text().splitlines()) == {"version": expected}
 
 
+@pytest.mark.spec("PIPE-RELEASE-R012")
 def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
     steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["publish-docker"]["steps"]
     meta = next(step for step in steps if step.get("id") == "meta")
@@ -1154,15 +1148,15 @@ def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
     on_main = "(github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true"
     on_main_version = f"({on_main}) && steps.version.outputs.version != ''"
     assert meta["with"]["tags"].splitlines() == [
-        "type=ref,event=branch,suffix=${{ matrix.suffix }}",
-        "type=ref,event=pr,suffix=${{ matrix.suffix }}",
-        "type=sha,suffix=${{ matrix.suffix }}",
-        f"type=raw,value=${{{{ matrix.main_tag }}}},enable=${{{{ {on_main} }}}}",
-        "type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},"
+        "type=ref,event=branch",
+        "type=ref,event=pr",
+        "type=sha",
+        f"type=raw,value=latest,enable=${{{{ {on_main} }}}}",
+        "type=raw,value=${{ steps.version.outputs.version }},"
         f"enable=${{{{ {on_main_version} }}}}",
-        "type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},"
+        "type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }},"
         "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}",
-        "type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}${{ matrix.suffix }},"
+        "type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }},"
         "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution == 'scion-sdk' }}",
     ]
 
