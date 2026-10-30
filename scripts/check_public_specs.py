@@ -12,9 +12,11 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 status_errors = import_module("scripts.public_spec_status").status_errors
+generate = import_module("pipelines_hooks.specs.generator").generate
+render = import_module("pipelines_hooks.specs.generator").render
 requirement_errors = import_module("scripts.public_spec_requirements").requirement_errors
 
-FILES = ("spec.md", "plan.md", "test-spec.md", "tasks.md", "status.json")
+FILES = ("spec.md", "plan.md", "test-spec.md", "tasks.md")
 PRIVATE = re.compile(r"plans/|gitlab|homelab|(?:file://|/(?:home|Users|tmp|workspace)/)|\.arpa\b", re.I)
 LINK = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
 
@@ -53,7 +55,7 @@ def _feature_file_errors(root: Path, feature: Path, index: str) -> list[str]:
         path = feature / filename
         if not path.is_file():
             errors.append(f"{path}: missing owner contract")
-        elif filename != "status.json":
+        else:
             errors.extend(document_errors(root, path))
     if f"]({feature.name}/spec.md)" not in index:
         errors.append(f"{feature}: absent from index")
@@ -76,6 +78,9 @@ def _ownership_errors(status: Path, used: set[str], spec_ids: set[str]) -> list[
 
 def problems(root: Path) -> list[str]:
     specs = root / "specs"
+    # status.json is computed at read time (never committed); materialize it for the checks below.
+    for path, document in generate(root, "HEAD").items():
+        path.write_text(render(document), encoding="utf-8")
     errors = _template_errors(specs)
     index = (specs / "README.md").read_text(encoding="utf-8")
     used: set[str] = set()

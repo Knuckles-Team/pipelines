@@ -6,7 +6,6 @@ files (section 3 of
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
 if __package__:
@@ -43,49 +42,6 @@ def _write_requirements_md(path: Path, req: Requirement, children: list[tuple[st
         new_rows.append(f"| `{child_id}` | {body} | {verification} |")
     lines = _insert_after_match(lines, is_parent_row, new_rows)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
-def _child_status_entry(
-    req: Requirement, child_id: str, *, scope: str, previous_child_id: str | None
-) -> dict[str, object]:
-    # Producer before consumer: each later child depends on the one before
-    # it, chaining the parent's split order; the first child also carries
-    # the parent's own unresolved dependencies.
-    depends_on = [previous_child_id] if previous_child_id else sorted(req.depends_on)
-    return {
-        "id": child_id,
-        "title": f"{req.title} — {scope} slice",
-        "delivery_state": "SPECIFIED",
-        "evidence": [],
-        "depends_on": depends_on,
-    }
-
-
-def _write_status_json(path: Path, req: Requirement, children: list[tuple[str, str]]) -> None:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    requirement_ids = list(data.get("requirement_ids", []))
-    entries = list(data.get("requirements", []))
-    child_ids = [cid for cid, _ in children]
-
-    id_index = requirement_ids.index(req.id)
-    requirement_ids[id_index + 1 : id_index + 1] = child_ids
-    data["requirement_ids"] = requirement_ids
-
-    entry_index = next(i for i, entry in enumerate(entries) if entry.get("id") == req.id)
-    entries[entry_index]["rollup"] = True
-    entries[entry_index]["children"] = child_ids
-    new_entries = [
-        _child_status_entry(
-            req,
-            child_id,
-            scope=scope,
-            previous_child_id=child_ids[position - 1] if position else None,
-        )
-        for position, (child_id, scope) in enumerate(children)
-    ]
-    entries[entry_index + 1 : entry_index + 1] = new_entries
-    data["requirements"] = entries
-    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
 def _write_tasks_md(path: Path, req: Requirement, children: list[tuple[str, str]]) -> None:
@@ -127,7 +83,6 @@ def apply_split(repo_root: Path, req_id: str) -> list[str]:
     _, children = propose_split(req)
     spec_dir = repo_root / "specs" / req.spec
     _write_requirements_md(spec_dir / "requirements.md", req, children)
-    _write_status_json(spec_dir / "status.json", req, children)
     _write_tasks_md(spec_dir / "tasks.md", req, children)
     checker = _load_checker(repo_root)
     errors = checker.problems(repo_root)

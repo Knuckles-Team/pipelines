@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parents[1]))
 from scripts.architecture_explorer import story_browser as browser
 from scripts.architecture_explorer import story_build as build
 from scripts.architecture_explorer.story_contract import ContractError
-from test_architecture_story_build import ENTRY, fake_api
+from test_architecture_story_build import ENTRY, computed_status, fake_api  # noqa: F401 - autouse fixture
 
 pytestmark = pytest.mark.spec("PIPE-PAGES-R042")
 

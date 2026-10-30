@@ -265,8 +265,6 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
                 raise StepFailed(step, "nothing to commit but the cut files are still on origin/main") from None
             led.record(repo, status="merged", noop=True, merged_at=time.strftime("%FT%TZ", time.gmtime()))
             return
-        if a.central:
-            regenerate_status(wt, env, a, led, repo)
         step = "verify"
         # R016.25: the migrate step raised the SDK floor and lock; the venv synced before it still holds the old SDK.
         if not a.sdk_path:
@@ -382,36 +380,6 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
         )  # the ledger keeps only the last 2000 chars
     except Exception as exc:  # noqa: BLE001 - recorded, then this repo stops
         led.record(repo, status="failed", failed_step=step, output_tail=f"{type(exc).__name__}: {exc}")
-
-
-def regenerate_status(wt: Path, env: dict[str, str], a: argparse.Namespace, led: Ledger, repo: str) -> None:
-    """Generated ``specs/*/status.json`` is regenerated after the migration commit and committed last (own commit)."""
-    if not (wt / "specs").is_dir():
-        return
-    sh(
-        "status",
-        hook("spec-status", "--root", str(wt), "--write"),
-        wt,
-        {**env, "UV_PROJECT_ENVIRONMENT": str(a.pipelines_venv)},
-    )
-    changed = [p for p in sh("status", ["git", "status", "--short", "--", "specs"], wt).splitlines() if p.strip()]
-    if not changed:
-        return
-    sh("status", ["git", "add", "--", *[p[3:] for p in changed if p[3:].endswith("status.json")]], wt)
-    sh(
-        "status",
-        [
-            "git",
-            "commit",
-            "-m",
-            "chore(spec): regenerate status",
-            "-m",
-            "Spec: none (generated status)\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>",
-        ],
-        wt,
-        env,
-    )
-    led.record(repo, status_commit=True)
 
 
 def check_status_on_main(wt: Path, env: dict[str, str], a: argparse.Namespace, led: Ledger, repo: str) -> None:

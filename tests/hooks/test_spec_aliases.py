@@ -91,7 +91,6 @@ def test_rename_keeps_every_row_state(repo: Repo) -> None:
     assert repo.run("spec-status", "--write") == 0
     before = {canonical_id(k, {"OLD-": "NEW-"}): v for k, v in _states(repo).items()}
     assert before == {"NEW-R001": "VERIFIED", "NEW-R002": "LANDED", "NEW-R003": "SPECIFIED"}
-    repo.commit({"specs/demo/status.json": (repo.root / "specs/demo/status.json").read_text()}, "status")
 
     repo.commit(
         {
@@ -108,7 +107,6 @@ def test_old_status_landings_carry_forward_under_the_new_id(repo: Repo) -> None:
     repo.commit({"specs/demo/requirements.md": _rows("OLD-R001")}, "add spec")
     sha = repo.commit({"pkg/a.py": "# a\n"}, "land\n\nSpec: OLD-R001")
     assert repo.run("spec-status", "--write") == 0
-    repo.commit({"specs/demo/status.json": (repo.root / "specs/demo/status.json").read_text()}, "status")
     repo.commit(
         {".config/spec-aliases.toml": _ALIASES, "specs/demo/requirements.md": _rows("NEW-R001")},
         "rename\n\nSpec: none (rename)",

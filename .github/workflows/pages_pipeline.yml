@@ -102,12 +102,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # The dashboard renders the current tree only; a shallow checkout is enough.
+      # Spec status is computed from Git history (Spec: trailers), so the checkout is full.
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -176,15 +176,8 @@ jobs:
             scripts/readiness
             scripts/architecture_explorer
             pipelines_hooks/__init__.py
-            pipelines_hooks/core/__init__.py
-            pipelines_hooks/core/repositories.py
-            pipelines_hooks/core/errors.py
-            pipelines_hooks/specs/__init__.py
-            pipelines_hooks/specs/ids.py
-            pipelines_hooks/specs/aliases.py
-            pipelines_hooks/specs/trailer_ids.py
-            pipelines_hooks/specs/priority.py
-            pipelines_hooks/specs/requirements_doc.py
+            pipelines_hooks/core
+            pipelines_hooks/specs
 
       - name: Validate declared content source
         if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
@@ -275,6 +268,15 @@ jobs:
               --readiness-manifest "$READINESS_MANIFEST" \
               --mirror-manifest "$MARKDOWN_MANIFEST"
           done
+
+      # status.json is never committed: compute it into the workspace for the readers below.
+      - name: Compute spec status
+        if: inputs.spec_dashboard_enabled || steps.explorer.outputs.enabled == 'true'
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.pipeline-contract
+        run: |
+          set -euo pipefail
+          python -c 'import sys; from pathlib import Path; from pipelines_hooks.specs.generator import generate, render; [p.write_text(render(d), encoding="utf-8") for p, d in generate(Path.cwd(), "HEAD").items()]'
 
       - name: Build spec delivery snapshot
         if: inputs.spec_dashboard_enabled

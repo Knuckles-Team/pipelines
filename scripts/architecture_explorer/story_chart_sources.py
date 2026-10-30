@@ -12,6 +12,7 @@ from pathlib import Path
 from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.specs.aliases import canonical_id, retired_prefix, validate_alias_document
 from pipelines_hooks.specs.priority import Node, frontier, score
+from pipelines_hooks.specs.generator import generate_at, render
 from pipelines_hooks.specs.requirements_doc import parse_rows
 
 from .story_contract import FORMULA, STATUSES, cycle_groups, provenance, require
@@ -39,9 +40,14 @@ def capture_git(root: Path, commit: str, repository: dict) -> dict:
         if kind != b"blob":
             continue
         paths.append(path)
-        if path == ".config/spec-aliases.toml" or re.fullmatch(r"specs/[^/]+/(requirements\.md|status\.json)", path):
+        if path == ".config/spec-aliases.toml" or re.fullmatch(r"specs/[^/]+/requirements\.md", path):
             require(mode != b"120000", "source document may not be a symlink: " + path)
             documents[path] = git("show", f"{commit}:{path}").decode("utf-8")
+    # status.json is never committed: compute it at this commit and present it as a source document.
+    for path, document in generate_at(str(root), commit).items():
+        if path not in paths:
+            paths.append(path)
+        documents[path] = render(document)
     return {
         "repositoryId": repository["id"],
         "head": commit,

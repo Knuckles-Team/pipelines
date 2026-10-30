@@ -43,7 +43,7 @@
   require_serial: true
   stages: [pre-commit, pre-push]
 - id: spec
-  name: Spec - standard, decomposition, generated status freshness and Spec trailers
+  name: Spec - standard, decomposition, computed status (never tracked) and Spec trailers
   entry: pipelines-hook spec
   language: python
   pass_filenames: false
