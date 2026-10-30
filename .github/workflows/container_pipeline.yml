@@ -139,23 +139,11 @@ jobs:
   publish-docker:
     runs-on: self-hosted
 
-    # Two right-sized images from the ONE multi-stage docker/Dockerfile, one matrix
-    # leg per build target:
-    #   - agent  (DEFAULT, full runtime): tags latest / <version> / <branch> / sha-<sha>
-    #   - mcp    (slim, MCP-server only):  tags mcp / <version>-mcp / <branch>-mcp / sha-<sha>-mcp
-    # The agent image overlaps latest/main; mcp is the slimmed variant tag. fail-fast is
-    # off so one leg failing (e.g. a single-server package without that target) never
-    # cancels the other.
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: agent
-            suffix: ''
-            main_tag: latest
-          - target: mcp
-            suffix: '-mcp'
-            main_tag: mcp
+    # One image from the ONE multi-stage docker/Dockerfile: the MCP server (the
+    # default) built from the `mcp` target, with plain tags latest / <version> /
+    # <branch> / sha-<sha> and no suffix.
+    env:
+      BUILD_TARGET: mcp
 
     steps:
       - name: Checkout code
@@ -413,7 +401,7 @@ jobs:
           BUILD_CONTEXT: ${{ steps.build-context.outputs.path }}
           DOCKERFILE: ${{ inputs.dockerfile }}
           REQUESTED_TARGET: ${{ inputs.build_target }}
-          MATRIX_TARGET: ${{ matrix.target }}
+          MATRIX_TARGET: ${{ env.BUILD_TARGET }}
           LEGACY_PROFILE: ${{ inputs.legacy_profile }}
           RUNTIME_REQUEST: ${{ inputs.runtime_artifact_id }}${{ inputs.runtime_profile }}${{ inputs.source_revision }}${{ inputs.arbora_revision }}${{ inputs.runtime_lock_sha256 }}${{ inputs.source_freeze_sha256 }}
         run: |
@@ -430,14 +418,6 @@ jobs:
           if [[ -n "$REQUESTED_TARGET" && ! "$REQUESTED_TARGET" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]]; then
             echo '::error::Invalid build_target.'
             exit 1
-          fi
-          selected_leg=agent
-          if [[ "$REQUESTED_TARGET" == mcp ]]; then
-            selected_leg=mcp
-          fi
-          if [[ -n "$REQUESTED_TARGET" && "$MATRIX_TARGET" != "$selected_leg" ]]; then
-            echo 'exists=false' >> "$GITHUB_OUTPUT"
-            exit 0
           fi
           target="${REQUESTED_TARGET:-$MATRIX_TARGET}"
           echo "cache-key=$target" >> "$GITHUB_OUTPUT"
@@ -530,7 +510,7 @@ jobs:
         if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) || inputs.release_repair == true) && steps.target.outputs.exists == 'true'
         env:
           BUILD_CONTEXT: ${{ steps.build-context.outputs.path }}
-          MATRIX_TARGET: ${{ matrix.target }}
+          MATRIX_TARGET: ${{ env.BUILD_TARGET }}
           PUBLISHED_WHEEL_DISTRIBUTION: ${{ inputs.published_wheel_distribution }}
           PUBLISHED_WHEEL_MODULE: ${{ inputs.published_wheel_module }}
           PUBLISHED_WHEEL_EXTRAS: ${{ inputs.published_wheel_extras }}
@@ -614,7 +594,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Version tags (<version> on the agent leg, <version>-mcp on the mcp leg) so a
+      # Version tags (<version>) so a
       # deploy can pin by release instead of a floating tag or a digest. The version is
       # the package's own: [project].version of pyproject.toml, else [package].version
       # of Cargo.toml, read from the build context and then the repo root. A setuptools
@@ -693,16 +673,15 @@ jobs:
           # (matches the *-mcp Portainer stack image refs). Derived from the repo
           # name so no per-repo DOCKER_REPOSITORY secret is needed.
           images: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
-          # Per-target tagging: the agent leg gets the bare tags (latest/<branch>/sha),
-          # the mcp leg gets the same set suffixed with -mcp, plus its `mcp` main tag.
+          # Plain tags only (latest/<version>/<branch>/sha-<sha>); the MCP server is the default image.
           tags: |
-            type=ref,event=branch,suffix=${{ matrix.suffix }}
-            type=ref,event=pr,suffix=${{ matrix.suffix }}
-            type=sha,suffix=${{ matrix.suffix }}
-            type=raw,value=${{ matrix.main_tag }},enable=${{ (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true }}
-            type=raw,value=${{ steps.version.outputs.version }},suffix=${{ matrix.suffix }},enable=${{ ((github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true) && steps.version.outputs.version != '' }}
-            type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}
-            type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}${{ matrix.suffix }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution == 'scion-sdk' }}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable=${{ (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ ((github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true) && steps.version.outputs.version != '' }}
+            type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}
+            type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }},enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution == 'scion-sdk' }}
 
       # Build + push with up to 3 attempts. Docker Hub intermittently 400s a layer
       # blob PUT ("400 Bad request" HTML from the CDN edge) on an otherwise-healthy
@@ -713,7 +692,7 @@ jobs:
       # valid in the specified time frame", which intermittently fails the build. The
       # registry cache reuses the already-authenticated Docker login (no SAS token),
       # so it's durable. ignore-error on cache-to keeps cache an optimization, never a gate.
-      # Per-target buildcache tag so the agent/mcp legs don't clobber each other's cache.
+      # Per-target buildcache tag keyed by build target.
       # The three attempts below share one `with:` block via a YAML anchor
       # (&docker_build_push_with / *docker_build_push_with) so the block is
       # spelled out exactly once — a differential clone gate over the raw
@@ -769,13 +748,12 @@ jobs:
         run: docker buildx prune --builder "$BUILDER_NAME" --force --keep-storage 30gb > /dev/null 2>&1 || true
 
       # Post-release verification (PIPE-RELEASE-R012): a release publishes both the
-      # PyPI version and the <version>-mcp image. This step fails the run when either
+      # PyPI version and the <version> image. This step fails the run when either
       # is missing after the publish, so a skipped or blocked leg is never silent.
       - name: Verify the release artifacts
         if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) || inputs.release_repair == true) && steps.target.outputs.exists == 'true' && steps.version.outputs.version != ''
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          SUFFIX: ${{ matrix.suffix }}
           BUILD_CONTEXT: ${{ steps.build-context.outputs.path }}
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           REPO_NAME: ${{ github.event.repository.name }}
@@ -792,7 +770,7 @@ jobs:
             return 1
           }
           status=0
-          tag="${VERSION}${SUFFIX}"
+          tag="${VERSION}"
           if ! exists "https://hub.docker.com/v2/repositories/${DOCKER_USER}/${REPO_NAME}/tags/${tag}"; then
             echo "::error::Docker image ${DOCKER_USER}/${REPO_NAME}:${tag} is missing after the release."
             status=1

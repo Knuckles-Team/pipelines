@@ -71,7 +71,7 @@ def _run_verify(tmp_path: Path, missing: str) -> subprocess.CompletedProcess[str
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "demo-mcp"\nversion = "1.2.3"\n')
     env = {
         "PATH": f"{bin_dir}:/usr/bin:/bin",
-        "VERSION": "1.2.3", "SUFFIX": "-mcp", "BUILD_CONTEXT": ".", "DOCKER_USER": "knucklessg1",
+        "VERSION": "1.2.3", "BUILD_CONTEXT": ".", "DOCKER_USER": "knucklessg1",
         "REPO_NAME": "demo-mcp", "VERIFY_ATTEMPTS": "1", "VERIFY_DELAY": "0",
     }  # fmt: skip
     return subprocess.run(
@@ -89,7 +89,7 @@ def test_verification_passes_when_both_artifacts_exist(tmp_path: Path) -> None:
 @pytest.mark.spec("PIPE-RELEASE-R012")
 @pytest.mark.parametrize(
     ("missing", "message"),
-    [("hub.docker.com", "knucklessg1/demo-mcp:1.2.3-mcp is missing"), ("pypi.org", "demo-mcp==1.2.3 is missing")],
+    [("hub.docker.com", "knucklessg1/demo-mcp:1.2.3 is missing"), ("pypi.org", "demo-mcp==1.2.3 is missing")],
 )
 def test_verification_fails_naming_the_missing_artifact(tmp_path: Path, missing: str, message: str) -> None:
     result = _run_verify(tmp_path, missing)
