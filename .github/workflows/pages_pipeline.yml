@@ -67,7 +67,7 @@ on:
         default: agent-readiness-manifest.json
       architecture_explorer:
         description: >-
-          Serve the Arbora Architecture Explorer at /architecture/. The
+          Serve Canopy at /architecture/. The
           canonical explorer is built on the organization site
           (https://knuckles-team.github.io/.github/architecture/) every 30
           minutes from every repository's default branch. "auto" gives each

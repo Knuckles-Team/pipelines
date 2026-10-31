@@ -1,4 +1,4 @@
-"""Build the Arbora Architecture Explorer.
+"""Build Canopy, the ecosystem architecture explorer.
 
 Usage:
   python -m scripts.architecture_explorer.build --mode github --page site/architecture/index.html
@@ -53,7 +53,7 @@ CONTRIBUTE_STEPS = (
     f"Set up with the arbora-development skill from universal-skills, {ARBORA_DEVELOPMENT}.",
     "Build it, run the repo's gates, and open a PR whose commit carries a Spec: trailer with the row ID.",
 )
-DESCRIPTION = f"Arbora architecture explorer: every part and spec row of the ecosystem. Front door and contribution path: {FRONT_DOOR}"
+DESCRIPTION = f"Canopy shows the whole ecosystem, its specs and its delivery state. Front door and contribution path: {FRONT_DOOR}"
 DOC_HEAD = (
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
@@ -396,7 +396,7 @@ REDIRECT = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Arbora Architecture Explorer</title>
+<title>Canopy — Knuckles-Team ecosystem architecture</title>
 <link rel="canonical" href="{url}">
 <meta http-equiv="refresh" content="0; url={url}">
 <script>location.replace("{url}" + location.hash);</script>
@@ -411,7 +411,7 @@ REDIRECT = """<!doctype html>
 def llms_txt() -> str:
     """Return the plain-text pointer for agents that land on the explorer."""
     lines = [
-        "# Arbora Architecture Explorer: a map of every part and spec row of the ecosystem, with status.",
+        "# Canopy: a map of every part and spec row of the ecosystem, with status.",
         f"Front door: {FRONT_DOOR}",
         f"Contribution guide: {CONTRIBUTING}",
         f"Skills: {SKILLS}",

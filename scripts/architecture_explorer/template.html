@@ -1,4 +1,4 @@
-<title>Arbora Architecture Explorer</title>
+<title>Canopy — Knuckles-Team ecosystem architecture</title>
 <style>
 @font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(data:font/woff2;base64,/*__INTER__*/) format("woff2")}
 /* Layout: one zoomable drawing sheet (semantic zoom over strata) beside a spec ledger panel; stacks on phones. */
@@ -14,6 +14,10 @@
   --button-neutral:rgb(255 255 255 / .68); --button-hover:rgb(255 255 255 / .86); --button-active:rgb(225 225 221 / .92); --selection:rgb(202 203 200 / .92); --motion-on:rgb(210 229 213 / .90);
   --atmosphere:#9ac4d7; --glass-edge:rgb(255 255 255 / .8);
   --glass-shadow:0 16px 40px rgb(0 0 0 / .13);
+  --glass-chrome-edge:rgb(255 255 255 / .80); --glass-control-edge:rgb(255 255 255 / .70); --glass-reading-edge:rgb(255 255 255 / .85);
+  --glass-chrome-hi:rgb(255 255 255 / .70); --glass-control-hi:rgb(255 255 255 / .60); --glass-reading-hi:rgb(255 255 255 / .75);
+  --glass-chrome-blur:16px; --glass-control-blur:12px; --glass-reading-blur:20px;
+  --glass-selected:rgb(22 62 58 / .24); --glass-active:rgb(22 62 58 / .32);
   --l-person:#3f3147; --l-entry:#2f3c2b; --l-gateway:#493420; --l-control:#313748; --l-core:#3d3349;
   --l-server:#283c3b; --l-source:#333c21; --l-delivery:#4b332b; --l-unmapped:#542523;
   --p-verified:#176b46; --p-landed:#186da4; --p-specified:#8c5900; --p-retired:#645367;
@@ -35,6 +39,10 @@
   --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
   --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
   --glass-shadow:0 16px 40px rgb(0 0 0 / .24);
+  --glass-chrome-edge:rgb(255 255 255 / .30); --glass-control-edge:rgb(255 255 255 / .24); --glass-reading-edge:rgb(255 255 255 / .34);
+  --glass-chrome-hi:rgb(255 255 255 / .16); --glass-control-hi:rgb(255 255 255 / .12); --glass-reading-hi:rgb(255 255 255 / .18);
+  --glass-chrome-blur:16px; --glass-control-blur:12px; --glass-reading-blur:20px;
+  --glass-selected:rgb(158 220 244 / .28); --glass-active:rgb(158 220 244 / .38);
   --l-person:#e8d4f0; --l-entry:#cce6c2; --l-gateway:#f1d5a7; --l-control:#cad9f3; --l-core:#ddd0f6;
   --l-server:#bae7df; --l-source:#dce5b2; --l-delivery:#f0d0bf; --l-unmapped:#ffd4cc;
   --p-verified:#69d7a0; --p-landed:#68b8ff; --p-specified:#ffd166; --p-retired:#c0a8c8;
@@ -51,6 +59,10 @@
   --button-neutral:rgb(78 79 81 / .74); --button-hover:rgb(96 97 99 / .86); --button-active:rgb(109 109 105 / .92); --selection:rgb(95 96 94 / .90); --motion-on:rgb(52 74 57 / .90);
   --atmosphere:#234e65; --glass-edge:rgb(255 255 255 / .32);
   --glass-shadow:0 16px 40px rgb(0 0 0 / .24);
+  --glass-chrome-edge:rgb(255 255 255 / .30); --glass-control-edge:rgb(255 255 255 / .24); --glass-reading-edge:rgb(255 255 255 / .34);
+  --glass-chrome-hi:rgb(255 255 255 / .16); --glass-control-hi:rgb(255 255 255 / .12); --glass-reading-hi:rgb(255 255 255 / .18);
+  --glass-chrome-blur:16px; --glass-control-blur:12px; --glass-reading-blur:20px;
+  --glass-selected:rgb(158 220 244 / .28); --glass-active:rgb(158 220 244 / .38);
   --l-person:#e8d4f0; --l-entry:#cce6c2; --l-gateway:#f1d5a7; --l-control:#cad9f3; --l-core:#ddd0f6;
   --l-server:#bae7df; --l-source:#dce5b2; --l-delivery:#f0d0bf; --l-unmapped:#ffd4cc;
   --p-verified:#69d7a0; --p-landed:#68b8ff; --p-specified:#ffd166; --p-retired:#c0a8c8;
@@ -64,17 +76,17 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 .brand p{margin:2px 0 0;color:var(--muted);font-size:12.5px;max-width:80ch}
 .totals{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font:500 12px var(--font-mono);font-variant-numeric:tabular-nums}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.btn{font:500 13px var(--font-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;min-height:34px}
+.btn{font:500 13px var(--font-body);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;min-height:34px}
 .btn:hover{border-color:var(--edge)}
 .btn:disabled{opacity:.45;cursor:default}
 .btn:focus-visible,a:focus-visible,input:focus-visible,canvas:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:2px;min-width:0;flex:1 1 320px;font:500 13px var(--font-body)}
-.crumbs button{background:none;border:0;color:var(--accent);cursor:pointer;padding:4px 4px;font:inherit;border-radius:4px}
+.crumbs button{border:0;color:var(--accent);cursor:pointer;padding:4px 4px;font:inherit;border-radius:4px}
 .crumbs button[aria-current]{color:var(--fg);font-weight:600;cursor:default}
 .crumbs .sep{color:var(--faint)}
 .search{position:relative;flex:1 1 260px;max-width:420px;min-width:0}
-.search input{width:100%;font:14px var(--font-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px;min-height:34px}
-.results{position:absolute;z-index:20;top:calc(100% + 4px);left:0;right:0;max-height:min(60vh,440px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 30px rgb(0 0 0 / .18);padding:4px}
+.search input{width:100%;font:14px var(--font-body);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 10px;min-height:34px}
+.results{position:absolute;z-index:20;top:calc(100% + 4px);left:0;right:0;max-height:min(60vh,440px);overflow:auto;border:1px solid var(--line);border-radius:8px;padding:4px}
 .results button{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:6px 8px;color:var(--fg);cursor:pointer;font:13px var(--font-body)}
 .results button:hover,.results button[aria-selected="true"]{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .results .k{font:500 10.5px var(--font-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center}
@@ -94,22 +106,22 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 main.work{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:8px;flex:1;min-height:0}
 main.work.nopanel{grid-template-columns:minmax(0,1fr)}
 main.work.nopanel .panel{display:none}
-.canvas{position:relative;background:var(--sheet);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:420px;height:100%;touch-action:none}
+.canvas{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:420px;height:100%;touch-action:none}
 .canvas:fullscreen{border:0;border-radius:0;height:100vh;min-height:0}
 .canvas canvas{display:block;width:100%;height:100%;cursor:grab;transition:opacity .18s ease}
 .canvas canvas.dragging{cursor:grabbing}
 .canvas canvas.fade{opacity:0;transition:none}
 .zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px;z-index:2}
 .zoom .btn{width:34px;padding:0;font:600 16px var(--font-mono)}
-.fresh{position:absolute;left:10px;top:10px;z-index:2;font:500 11px var(--font-mono);color:var(--muted);background:color-mix(in srgb,var(--sheet) 85%,transparent);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:calc(100% - 70px)}
+.fresh{position:absolute;left:10px;top:10px;z-index:2;font:500 11px var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:calc(100% - 70px)}
 .fresh summary{cursor:pointer}
 .fresh ul{margin:6px 0 0;padding:0;list-style:none;max-height:40vh;overflow:auto;columns:2;column-gap:14px}
-.hint{position:absolute;left:10px;bottom:10px;font:500 11px var(--font-body);color:var(--muted);background:color-mix(in srgb,var(--sheet) 85%,transparent);border:1px solid var(--line);border-radius:6px;padding:4px 8px;pointer-events:none;max-width:calc(100% - 70px)}
+.hint{position:absolute;left:10px;bottom:10px;font:500 11px var(--font-body);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px;pointer-events:none;max-width:calc(100% - 70px)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-body);color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend>span{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px}
 .legend i{width:10px;height:10px;border-radius:2px;display:inline-block;border:2px solid currentColor}
 /* Panel */
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0;display:flex;flex-direction:column;overflow:hidden;height:100%;min-height:420px}
+.panel{border:1px solid var(--line);border-radius:10px;min-width:0;display:flex;flex-direction:column;overflow:hidden;height:100%;min-height:420px}
 .panel .ph{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
 .eyebrow{font:600 11px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lc,var(--muted));display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .panel h2{font:700 21px/1.15 var(--font-display);margin:4px 0 0;text-wrap:balance}
@@ -130,8 +142,7 @@ main.work.nopanel .panel{display:none}
 .sbar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--line)}
 .sbar i{display:block;height:100%}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font:500 12px var(--font-body);border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:4px 10px;cursor:pointer;min-height:30px;font-variant-numeric:tabular-nums}
-.chip[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.chip{font:500 12px var(--font-body);border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:4px 10px;cursor:pointer;min-height:30px;font-variant-numeric:tabular-nums}
 ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
 .code a{font:12px var(--font-mono);color:var(--accent);word-break:break-all;text-decoration:none}
 .code a:hover{text-decoration:underline}
@@ -153,7 +164,7 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .specs .de{grid-column:2;min-width:0;color:var(--muted);font-size:12.5px;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .specs li[data-open="1"] .de{display:none}
 .xtools{display:flex;flex-wrap:wrap;gap:6px}
-.xbody{grid-column:1/-1;min-width:0;cursor:auto;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:color-mix(in srgb,var(--accent) 4%,var(--surface));display:flex;flex-direction:column;gap:10px;overflow-wrap:anywhere}
+.xbody{grid-column:1/-1;min-width:0;cursor:auto;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;gap:10px;overflow-wrap:anywhere}
 .xbody h4.xh{font:600 10.5px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
 .xbody .xs{min-width:0}
 .xbody .md{min-width:0;font-size:13px;line-height:1.5}
@@ -174,7 +185,7 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .xbody .ev .k{color:var(--muted);font-weight:500}
 .xbody .ev a,.xbody .ev code{word-break:break-all}
 .xbody ul.tl{margin:0;padding-left:1.1em;font-size:12.5px}
-.xbody details{border:1px solid var(--line);border-radius:6px;background:var(--surface);min-width:0}
+.xbody details{border:1px solid var(--line);border-radius:6px;min-width:0}
 .xbody details>summary{cursor:pointer;padding:6px 10px;font:600 12.5px var(--font-body);min-height:32px;display:flex;align-items:center}
 .xbody details>summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:6px}
 .xbody details>.md{padding:0 10px 8px}
@@ -185,17 +196,13 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .muted{color:var(--muted)}
 .note{margin:0;font:12px var(--font-body);color:var(--muted)}
 .note a{color:var(--accent)}
-details.contribute{font:12.5px var(--font-body, system-ui);color:var(--muted);margin:6px 0 10px}
-details.contribute summary{cursor:pointer;color:var(--accent)}
-details.contribute ol{margin:6px 0 0;padding-left:22px;line-height:1.55;overflow-wrap:anywhere}
-footer.foot{font:11.5px var(--font-mono);color:var(--faint);display:flex;flex-wrap:wrap;gap:4px 14px}
 .stat span{overflow:visible;white-space:normal;overflow-wrap:normal}
 .tools{font:500 12px var(--font-mono);color:var(--muted)}
 .goal{font:600 10px var(--font-mono);letter-spacing:.04em;padding:1px 6px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
 .goal.none{border-color:var(--l-unmapped);color:var(--l-unmapped)}
-.prio{font:600 10px var(--font-mono);padding:1px 6px;border-radius:4px;background:var(--fg);color:var(--surface);white-space:nowrap}
+.prio{font:600 10px var(--font-mono);padding:1px 6px;border-radius:4px;color:var(--fg);white-space:nowrap}
 .specs .gb{grid-column:2;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
-select.sel{font:500 12px var(--font-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-height:30px;max-width:100%}
+select.sel{font:500 12px var(--font-body);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-height:30px;max-width:100%}
 .dl-list li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;padding:7px 0;border-top:1px solid var(--line)}
 .dl-list .ti{grid-column:2;min-width:0;overflow-wrap:anywhere}
 .step{border:1px solid var(--line);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
@@ -203,7 +210,6 @@ select.sel{font:500 12px var(--font-body);color:var(--fg);background:var(--surfa
 .step .un{font:11px var(--font-mono);color:var(--muted);overflow-wrap:anywhere}
 .bundle{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:8px}
 .bundle h4{margin:0;font:600 12px var(--font-mono);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.toolbar .btn[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
 @media (max-width: 980px){
   main.work{grid-template-columns:minmax(0,1fr)}
   .app{height:auto}
@@ -224,45 +230,69 @@ body{background-image:linear-gradient(155deg,var(--ocean-top),var(--ocean-bottom
 @keyframes ocean-drift{from{transform:translate3d(-7%,-2%,0) rotate(-2deg)}to{transform:translate3d(7%,2%,0) rotate(2deg)}}
 .app{position:relative;z-index:1}
 .app{padding:12px;gap:10px}
-header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var(--glass-edge);border-radius:20px;box-shadow:var(--glass-shadow)}
+header.top{padding:8px 14px;border-radius:20px;gap:2px 20px}
 .brand h1{font-weight:600;font-size:21px;letter-spacing:-.035em}
 .brand p{font-size:12px}
-.toolbar{padding:6px;background:var(--glass-chrome);border:1px solid var(--glass-edge);border-radius:18px;box-shadow:var(--glass-shadow)}
-.canvas,.panel{border:1px solid var(--glass-edge);border-radius:22px;box-shadow:var(--glass-shadow)}
-.canvas{background:rgb(255 255 255 / .10)}
-.panel{background:var(--glass-reading)}
-.panel .ph{background:transparent;border-bottom:1px solid var(--glass-edge);padding:16px}
+.toolbar{padding:6px;border-radius:18px}
+.canvas,.panel{border-radius:22px}
+.canvas{background:rgb(255 255 255 / .10);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow)}
+.panel .ph{background:transparent;border-bottom:1px solid var(--glass-reading-edge);padding:16px}
 .panel h2{font-weight:600;letter-spacing:-.025em}
-.btn,.chip,.kids button,.links button{background:var(--button-neutral);border-color:transparent;box-shadow:none;border-radius:12px;min-height:44px;transition:background-color 110ms ease}
-.zoom .btn{width:44px;border-radius:14px;background:var(--glass-control)}
+.btn,.chip,.kids button,.links button{background:var(--glass-control);border-color:transparent;box-shadow:none;border-radius:12px;min-height:44px;transition:background-color 110ms ease,transform 160ms cubic-bezier(.34,1.56,.64,1)}
+.zoom .btn{width:44px;border-radius:14px}
 .btn:hover:not(:disabled),.chip:hover,.kids button:hover,.links button:hover{background:var(--button-hover);border-color:transparent}
-.btn:active:not(:disabled),.chip:active,.kids button:active,.links button:active{background:var(--button-active)}
-.toolbar .btn[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--selection);color:var(--fg);border-color:transparent}
-.search input,select.sel{min-height:44px;background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
-.toolbar #ocean-motion[aria-pressed="true"]{background:var(--motion-on);color:var(--fg)}
+.btn:active:not(:disabled),.chip:active,.kids button:active,.links button:active{background:var(--glass-active);transform:scale(.97);transition-duration:60ms}
+.toolbar .btn[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--glass-selected);color:var(--fg);border-color:transparent}
+.search input,select.sel{min-height:44px;border-radius:12px}
+.toolbar #ocean-motion[aria-pressed="true"]{background:var(--glass-selected);color:var(--fg)}
 .search input::placeholder{color:var(--muted);opacity:1}
-.map-notes{padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:var(--glass-reading);border:1px solid var(--glass-edge);border-radius:16px}
-.results{background:var(--surface);box-shadow:var(--glass-shadow);border-radius:16px}
-.fresh,.hint{background:var(--glass-control);border:1px solid var(--glass-edge);border-radius:12px;box-shadow:none}
-.stat div,.step,.xbody{border-radius:12px;background:var(--glass-control);border-color:var(--glass-edge)}
+.map-notes{padding:6px 12px;display:flex;flex-direction:column;gap:6px;border-radius:16px}
+.results{border-radius:16px}
+.fresh,.hint{border-radius:12px}
+.stat div,.step,.xbody{border-radius:12px}
 .stat b{font:600 17px var(--font-body)}
-.stat span,.totals,.eyebrow,.pb h3,.kids .n,.links .n,.fresh,.badge,footer.foot,.goal,.prio,.tools{font-family:var(--font-body);letter-spacing:0}
+.stat span,.totals,.eyebrow,.pb h3,.kids .n,.links .n,.fresh,.badge,.goal,.prio,.tools{font-family:var(--font-body);letter-spacing:0}
 .eyebrow,.pb h3{text-transform:none;font-size:12px;font-weight:500;color:var(--muted)}
-.badge{font-weight:500;border-color:transparent;background:var(--glass-control);border-radius:7px}
+.badge{font-weight:500;border-radius:7px}
 .legend i{width:6px;height:6px;border-radius:50%;border:0;background:currentColor}
 .btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,canvas:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* Frosted glass, one material in three levels (chrome, control, reading). Each level is a fill, a
+   hairline edge, a 1px top highlight and a backdrop blur. Layers on a glass surface use a lower
+   fill alpha than their own level; opaque fills exist only in the two blocks at the end. */
+header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-chrome-edge);box-shadow:inset 0 1px 0 var(--glass-chrome-hi),var(--glass-shadow)}
+.panel,.map-notes,.results{background:var(--glass-reading);border:1px solid var(--glass-reading-edge);box-shadow:inset 0 1px 0 var(--glass-reading-hi),var(--glass-shadow)}
+.fresh,.hint,.search input,select.sel,.stat div,.step,.xbody,.badge,.goal,.prio,.crumbs button,.legend>span,.results .res a.src{background:var(--glass-control);border:1px solid var(--glass-control-edge);box-shadow:inset 0 1px 0 var(--glass-control-hi)}
+.xbody{background:color-mix(in srgb,var(--glass-control) 80%,transparent)}
+.xbody details{background:color-mix(in srgb,var(--glass-control) 60%,transparent);border:1px solid var(--glass-control-edge);box-shadow:inset 0 1px 0 var(--glass-control-hi)}
+.zoom .btn{background:var(--glass-control);box-shadow:inset 0 1px 0 var(--glass-control-hi)}
+.btn,.chip,.kids button,.links button{border:1px solid var(--glass-control-edge);box-shadow:inset 0 1px 0 var(--glass-control-hi)}
+.crumbs button[aria-current]{background:var(--glass-selected)}
+.goal,.prio,.legend>span{border:1px solid var(--glass-control-edge)}
+.agent-strip{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font:500 11px/1.4 var(--font-body);color:var(--muted)}
+.agent-strip a{color:var(--accent)}
+.agent-strip details{flex:1 1 100%}
+.agent-strip summary{cursor:pointer;color:var(--accent);font:500 11px var(--font-body)}
+.agent-strip ol{margin:4px 0 2px;padding-left:20px;line-height:1.5;overflow-wrap:anywhere}
+.ocean-scene::after{content:"";position:absolute;inset:0;background:var(--ocean-tint,transparent);opacity:.16}
+.ocean-wave{translate:calc(var(--ocean-pan-x,0px)*var(--ocean-par,1)) calc(var(--ocean-pan-y,0px)*var(--ocean-par,1))}
+.ocean-wave:nth-child(1){--ocean-par:.5}.ocean-wave:nth-child(2){--ocean-par:.8}.ocean-wave:nth-child(3){--ocean-par:1.1}
+:root[data-ocean-motion="running"][data-ocean-flight="on"] .ocean-wave{animation-play-state:paused}
 @supports (backdrop-filter:blur(12px)){
-  header.top,.toolbar,.panel{backdrop-filter:blur(16px) saturate(115%)}
+  header.top,.toolbar{backdrop-filter:blur(var(--glass-chrome-blur)) saturate(115%)}
+  .panel,.map-notes,.results{backdrop-filter:blur(var(--glass-reading-blur)) saturate(115%)}
+  .fresh,.hint,.zoom .btn,.btn,.chip,.kids button,.links button,.badge,.goal,.prio,.crumbs button,.legend>span,.search input,select.sel{backdrop-filter:blur(var(--glass-control-blur)) saturate(115%)}
 }
 @media (max-width:980px){.app{padding:8px}.brand h1{font-size:20px}.canvas{border-radius:18px}}
 @media (prefers-reduced-transparency: reduce){
   body{background:var(--bg)}
   .ocean-scene{display:none}
-  header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph,.search input,select.sel{background:var(--surface);backdrop-filter:none}
+  header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph,.search input,select.sel,.results,.xbody,.xbody details,.fresh,.hint,.stat div,.step,.zoom .btn,.badge,.btn,.chip,.kids button,.links button,.goal,.prio,.crumbs button,.legend>span{background:var(--surface);backdrop-filter:none}
+  .ocean-wave{translate:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint,.search input,select.sel{box-shadow:none}
 }
 @media (prefers-reduced-motion: reduce){
-  .ocean-wave{animation:none!important}
+  .ocean-wave{animation:none!important;translate:none}
+  .btn:active,.chip:active,.kids button:active,.links button:active{transform:none!important}
   *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
 }
 @media (forced-colors: active){
@@ -277,7 +307,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
     --s-verified:CanvasText; --s-landed:CanvasText; --s-specified:CanvasText; --s-retired:CanvasText;
   }
   .ocean-scene{display:none}
-  body,header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph{background:Canvas;backdrop-filter:none}
+  body,header.top,.toolbar,.canvas,.panel,.map-notes,.panel .ph,.results,.xbody,.xbody details,.fresh,.hint,.search input,select.sel,.btn,.chip,.badge,.goal,.prio,.crumbs button,.legend>span{background:Canvas;backdrop-filter:none}
   .canvas,.panel,.btn,.chip,.results,.fresh,.hint{box-shadow:none}
   .btn,.chip,.kids button,.links button{border-color:ButtonText}
 }
@@ -288,10 +318,25 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
 <div class="app">
   <header class="top">
     <div class="brand">
-      <h1>Arbora Architecture Explorer</h1>
-      <p id="sub">Runtime architecture mapped to spec rows on each default branch.</p>
+      <h1>Canopy</h1>
+      <p id="sub">Canopy shows the whole ecosystem, its specs and its delivery state.</p>
     </div>
     <div class="totals" id="totals"></div>
+    <div class="agent-strip" id="agent-strip">
+      <a href="https://knuckles-team.github.io/.github/">Front door</a>
+      <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">Contribution guide</a>
+      <span>Rebuilt on every merge to main, and at least every 30 minutes.</span>
+      <details id="contribute">
+        <summary>How to contribute</summary>
+        <ol>
+          <li>Start at the front door, <a href="https://knuckles-team.github.io/.github/">https://knuckles-team.github.io/.github/</a>.</li>
+          <li>Read the contribution guide, <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md">https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md</a>.</li>
+          <li>Pick an open (SPECIFIED) row here. Expand it to read its requirement and design, and open its <code>specs/&lt;family&gt;/</code> folder.</li>
+          <li>Set up with the <code>arbora-development</code> skill from universal-skills, <a href="https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development">https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development</a>.</li>
+          <li>Build it, run the repo's gates, and open a PR whose commit carries a <code>Spec:</code> trailer with the row ID.</li>
+        </ol>
+      </details>
+    </div>
   </header>
   <div class="toolbar">
     <button class="btn" id="back" type="button" title="Return to the previous view">&#8592; Back</button>
@@ -325,18 +370,6 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
   </main>
   <div class="map-notes">
   <div class="legend" id="legend" aria-label="Layer colors"></div>
-  <p class="note" id="note">Want to build one of these? Read the <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">contribution guide</a> &middot; <a href="https://knuckles-team.github.io/.github/">Front door</a>. Rebuilt on every merge to main, and at least every 30 minutes.</p>
-  <footer class="foot" id="foot"></footer>
-  <details class="contribute" id="contribute">
-    <summary>How to contribute (for people and agents)</summary>
-    <ol>
-      <li>Start at the front door, <a href="https://knuckles-team.github.io/.github/">https://knuckles-team.github.io/.github/</a>.</li>
-      <li>Read the contribution guide, <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md">https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md</a>.</li>
-      <li>Pick an open (SPECIFIED) row here. Expand it to read its requirement and design, and open its <code>specs/&lt;family&gt;/</code> folder.</li>
-      <li>Set up with the <code>arbora-development</code> skill from universal-skills, <a href="https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development">https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development</a>.</li>
-      <li>Build it, run the repo's gates, and open a PR whose commit carries a <code>Spec:</code> trailer with the row ID.</li>
-    </ol>
-  </details>
   </div>
 </div>
 
@@ -390,19 +423,39 @@ function resize(){ const r=cv.getBoundingClientRect(); DPR=Math.min(2,window.dev
 const fitCam = (rect, margin) => { const m=margin||1.03; const k=Math.min(W/(rect[2]*m), H/(rect[3]*m)); return {x:rect[0]+rect[2]/2-W/(2*k), y:rect[1]+rect[3]/2-H/(2*k), k}; };
 const toS = (x,y) => [(x-cam.x)*cam.k, (y-cam.y)*cam.k];
 function setCam(c){ cam=c; dirty=true; scheduleSettle(); }
+// ---------- background scene follows the camera ----------
+// The ocean scene reads the camera on the same animation frame: pan parallax (CSS translate, transform-only)
+// and a tint that eases toward the focused part's layer colour. Reduced motion and the ocean-motion control
+// remove the parallax; the tint then changes at once.
+const sceneEl=document.querySelector(".ocean-scene");
+let tintNow=null, tintFrom=null, tintTo=null, pendingPulse=null, pulse=null, pulseP=0, flightOn=false;
+const rgbOf = c => { const m=/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(c||"").trim()); if(!m) return null; let h=m[1]; if(h.length===3) h=h.replace(/./g,x=>x+x); return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)); };
+const parallaxOn = () => !reduced() && document.documentElement.dataset.oceanMotion==="running";
+function writeTint(rgb){ tintNow=rgb; if(rgb) sceneEl.style.setProperty("--ocean-tint","rgb("+rgb.map(Math.round).join(" ")+")"); }
+function layerOf(id){ let n=nodes[id]; while(n){ if(n.layer) return n.layer; n=nodes[parentOf[n.id]]; } return "core"; }
+function syncOcean(c, t){
+  if(!sceneEl) return;
+  if(parallaxOn()){ const cx=c.x+W/(2*c.k), cy=c.y+H/(2*c.k), r=R.root;
+    const fx=(cx-(r[0]+r[2]/2))/r[2], fy=(cy-(r[1]+r[3]/2))/r[3];
+    sceneEl.style.setProperty("--ocean-pan-x",(-fx*120).toFixed(2)+"px"); sceneEl.style.setProperty("--ocean-pan-y",(-fy*60).toFixed(2)+"px"); }
+  else { sceneEl.style.setProperty("--ocean-pan-x","0px"); sceneEl.style.setProperty("--ocean-pan-y","0px"); }
+  if(tintTo){ if(!tintFrom||reduced()||t>=1) writeTint(tintTo); else writeTint(tintFrom.map((v,i)=>v+(tintTo[i]-v)*t)); } }
+function setTint(id, instant){ const to=rgbOf(C.layer&&C.layer[layerOf(id)]); if(!to) return; tintFrom=tintNow||to; tintTo=to; if(instant||reduced()||!tintNow) writeTint(to); }
 function flyTo(rect, margin, opts){
   const target=(opts&&opts.cam)||fitCam(rect, margin); if(!W) { cam=target; return; }
-  if(reduced() || (opts&&opts.instant)){ cv.classList.add("fade"); setCam(target); requestAnimationFrame(()=>requestAnimationFrame(()=>cv.classList.remove("fade"))); return; }
+  if(opts&&opts.id) setTint(opts.id, !!opts.instant);
+  if(reduced() || (opts&&opts.instant)){ cv.classList.add("fade"); setCam(target); syncOcean(target,1); requestAnimationFrame(()=>requestAnimationFrame(()=>cv.classList.remove("fade"))); return; }
+  if(opts&&opts.id&&!opts.noPulse) pendingPulse=opts.id;
   const a={...cam}, b=target, t0=performance.now(), dur=Math.min(1100, 450+120*Math.abs(Math.log(b.k/a.k)));
   const ca=[a.x+W/(2*a.k), a.y+H/(2*a.k)], cb=[b.x+W/(2*b.k), b.y+H/(2*b.k)];
   anim=now=>{ let t=Math.min(1,(now-t0)/dur); t=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
     const k=Math.exp(Math.log(a.k)+(Math.log(b.k)-Math.log(a.k))*t);
     let f=t; if(Math.abs(Math.log(b.k/a.k))>0.05){ f=(1/k-1/a.k)/(1/b.k-1/a.k); }
     const cx=ca[0]+(cb[0]-ca[0])*f, cy=ca[1]+(cb[1]-ca[1])*f;
-    cam={x:cx-W/(2*k), y:cy-H/(2*k), k}; dirty=true;
-    if(t>=1){ anim=null; cam=b; scheduleSettle(); } };
+    cam={x:cx-W/(2*k), y:cy-H/(2*k), k}; dirty=true; syncOcean(cam,t);
+    if(t>=1){ anim=null; cam=b; syncOcean(cam,1); scheduleSettle(); } };
 }
-function zoomAt(f, sx, sy){ anim=null; const wx=cam.x+sx/cam.k, wy=cam.y+sy/cam.k; const k=Math.max(0.02, Math.min(cam.k*f, 4e6));
+function zoomAt(f, sx, sy){ anim=null; pendingPulse=null; const wx=cam.x+sx/cam.k, wy=cam.y+sy/cam.k; const k=Math.max(0.02, Math.min(cam.k*f, 4e6));
   setCam({x:wx-sx/k, y:wy-sy/k, k}); }
 
 // ---------- drawing ----------
@@ -555,6 +608,7 @@ function drawNode(n, alpha){
   ctx.strokeStyle=C.opaque?C.edge:C.nodeEdge; ctx.lineWidth=sw<40?0.8:1.2;
   if(n.unmapped) ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
   if(n.id===selected||n.id===hitId){ ctx.strokeStyle=C.accent; ctx.globalAlpha=alpha*0.6; ctx.lineWidth=1.8; rr(sx-2,sy-2,sw+4,sh+4,radius+2); ctx.stroke(); }
+  if(pulse&&pulse.id===n.id){ const e=1-Math.pow(1-pulseP,3), g=e*Math.min(18,Math.max(6,sw*0.06)); ctx.strokeStyle=C.accent; ctx.globalAlpha=alpha*(1-pulseP)*0.8; ctx.lineWidth=2.4; rr(sx-g,sy-g,sw+2*g,sh+2*g,radius+g); ctx.stroke(); ctx.globalAlpha=alpha; }
   hitList.push([n.id,sx,sy,sw,sh,op]);
   // Open containers reserve their title strip and boundary, not the whole child drawing area.
   if(op<.98)annotationRects.push([sx,sy,sw,sh]);
@@ -600,6 +654,10 @@ function drawNode(n, alpha){
 function drawInner(n, alpha){ if(alpha<0.02) return; drawBands(n, alpha); drawZones(n, alpha); drawEdges(n, alpha); n.children.forEach(c=>drawNode(c, alpha)); }
 function frame(now){
   if(anim) anim(now);
+  // A flight starts and ends the background's camera-driven state; idle returns it to its slow drift.
+  if(!!anim!==flightOn){ flightOn=!!anim; if(flightOn) rootEl.dataset.oceanFlight="on"; else { delete rootEl.dataset.oceanFlight;
+    if(pendingPulse&&!reduced()){ pulse={id:pendingPulse,t0:now}; } pendingPulse=null; } }
+  if(pulse){ pulseP=(now-pulse.t0)/700; if(pulseP>=1){ pulse=null; pulseP=0; } dirty=true; }
   if(dirty){ dirty=false; hitList=[]; annotations=[]; annotationRects=[]; annotationSegments=[]; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H); if(C.opaque){ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);} drawInner(T,1);
     // DOM chrome is also an obstacle; no caption may sit under the zoom controls or build/hint text.
     const origin=cv.getBoundingClientRect();
@@ -622,7 +680,7 @@ function syncHash(){ try{ window.history.replaceState(null,"",ArchSearch.hashFor
 function go(id, opts){ opts=opts||{}; const n=nodes[id]; if(!n) return; hist.push({...cam}); if(hist.length>60) hist.shift();
   selected=id; hitId=opts.hit?id:null; if(!opts.keepSpecs) resetSpecs(); setView("map",true);
   const m = n.layout ? 1.04 : (n.id==="root"?1.02:2.6);
-  flyTo(R[id], m, {...opts, cam: opts.open?openCam(id,m):null}); renderPanel(); $("back").disabled=false; }
+  flyTo(R[id], m, {...opts, id, cam: opts.open?openCam(id,m):null}); renderPanel(); $("back").disabled=false; }
 function up(){ const target = parentOf[focus] || "root"; go(focus==="root"?"root":target); }
 $("back").onclick=()=>{ const c=hist.pop(); if(!c) return; if(reduced()) setCam(c); else { const r=[c.x, c.y, W/c.k, H/c.k]; flyTo(r,1); } $("back").disabled=!hist.length; };
 $("up").onclick=up; $("zin").onclick=()=>zoomAt(1.6,W/2,H/2); $("zout").onclick=()=>zoomAt(1/1.6,W/2,H/2); $("zfit").onclick=()=>go("root");
@@ -871,14 +929,11 @@ document.addEventListener("keydown",e=>{ if(e.key==="/"&&!e.ctrlKey&&!e.metaKey&
 // ---------- header, theme, boot ----------
 (function header(){ const c=T.count, t=$("totals");
   t.append(el("span",{class:"badge",style:"color:var(--fg)",text:fmt(c.total)+" SPECS"})); ST.forEach(s=>{ if(c[s]) t.append(el("span",{class:"badge "+s,text:s+" "+fmt(c[s])})); });
-  $("sub").textContent="Runtime architecture mapped to "+fmt(META.rows)+" spec rows from "+META.families+" spec families. "+fmt(META.nodes)+" parts, "+META.connectors+" connectors, "+META.depth+" levels deep. Edge crossings: "+META.crossings.total+".";
-  const f=$("foot"); Object.keys(META.heads).filter(r=>META.pages_node[r]).forEach(r=>f.append(el("span",{text:r+"@"+META.heads[r]})));
-  f.append(el("span",{text:"+"+(Object.keys(META.heads).length-Object.keys(META.pages_node).filter(r=>META.heads[r]).length)+" more repositories"}));
+  $("sub").textContent="Canopy shows the whole ecosystem, its specs and its delivery state: "+fmt(META.rows)+" spec rows in "+fmt(META.nodes)+" parts ("+fmt(META.mapped)+" mapped, "+fmt(META.unmapped)+" unmapped).";
   const heads=Object.keys(META.heads).sort(), built=META.built_at||"";
   $("freshsum").textContent="Built "+built.replace("T"," ").replace("Z"," UTC")+" from "+heads.length+" repository heads";
   $("fresh").title="Generated from each repository's default branch at the commits listed here.";
   heads.forEach(r=>$("freshlist").append(el("li",{},[el("a",{href:gh(r)+"/commit/"+META.heads[r],target:"_blank",rel:"noopener",text:r+"@"+META.heads[r]})])));
-  f.append(el("span",{text:"mapped "+fmt(META.mapped)+" / unmapped "+fmt(META.unmapped)}));
   const lg=$("legend"); Object.keys(LAYERS).forEach(k=>lg.append(el("span",{style:"color:var(--l-"+k+")"},[el("i"),el("span",{style:"color:var(--muted)",text:LAYERS[k]})]))); })();
 const rootEl=document.documentElement; const saved=store.get("arbora-arch-theme"); if(saved==="dark"||saved==="light") rootEl.setAttribute("data-theme",saved);
 // Wallpaper motion is independent of canvas navigation and never repaints graph nodes.
@@ -894,6 +949,7 @@ function oceanMotionState(){
   button.textContent=enabled?"Ocean motion: on":"Ocean motion: off";
   button.disabled=constrained;
   button.title=constrained?"Ocean motion is off to respect your system preference":"Pause or resume background ocean motion";
+  if(W) syncOcean(cam,1);
 }
 $("ocean-motion").onclick=()=>{oceanEnabled=!oceanEnabled;store.set("arbora-arch-ocean-motion",oceanEnabled?"on":"off");oceanMotionState();};
 motionPreference.addEventListener("change",oceanMotionState);
@@ -904,10 +960,10 @@ oceanMotionState();
 function curDark(){ const t=rootEl.getAttribute("data-theme"); if(t) return t==="dark"; return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches; }
 function themeLabel(){ $("theme").textContent=curDark()?"Light theme":"Dark theme"; }
 $("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path"); $("vrel").onclick=()=>setView(view==="rel"?"map":"rel");
-$("theme").onclick=()=>{ const t=curDark()?"light":"dark"; rootEl.setAttribute("data-theme",t); store.set("arbora-arch-theme",t); themeLabel(); readColors(); };
+$("theme").onclick=()=>{ const t=curDark()?"light":"dark"; rootEl.setAttribute("data-theme",t); store.set("arbora-arch-theme",t); themeLabel(); readColors(); setTint(selected,true); };
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
 if(window.matchMedia) ["(forced-colors: active)","(prefers-reduced-transparency: reduce)"].forEach(query=>window.matchMedia(query).addEventListener("change",readColors));
-themeLabel(); readColors(); resize();
+themeLabel(); readColors(); setTint("root",true); resize();
 new ResizeObserver(()=>{ const c=[cam.x+W/(2*cam.k), cam.y+H/(2*cam.k)]; resize(); cam={x:c[0]-W/(2*cam.k), y:c[1]-H/(2*cam.k), k:cam.k}; dirty=true; }).observe(cv);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{dirty=true;});
 function applyHash(instant){ const h=ArchSearch.parseHash(location.hash);
