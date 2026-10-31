@@ -108,6 +108,13 @@ repos:
     always_run: true
     stages: [pre-push]
   # --- spec ------------------------------------------------------------------
+  - id: spec-templates
+    name: Spec templates - .specify/templates equals the vended pipelines templates
+    entry: uv run --frozen --quiet pipelines-hook spec-templates
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push]
   - id: spec
     name: Spec - standard, decomposition, generated status freshness and Spec trailers
     entry: uv run --frozen --quiet pipelines-hook spec

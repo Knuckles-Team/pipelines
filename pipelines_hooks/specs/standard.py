@@ -15,7 +15,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.specs import analysis, narrative
+from pipelines_hooks.specs import analysis, completeness, narrative, placement
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.third_party_names import check_repository
@@ -112,12 +112,27 @@ def check_names(name: str, spec_id: str | None) -> list[str]:
 ROW_RE = narrative.ROW_TOKEN_RE
 
 
+#: Row findings that fail only when the change adds the row.
+ROW_PHRASES = (
+    "has no task line",
+    "has no bound test",
+    "adds types, classes or tables",
+    "is a served behaviour row",
+    "behaviour row lacks",
+    "behaviour row says TBD",
+)
+#: Findings about a whole-spec artifact fail when the change touches any file of the spec.
+SPEC_WIDE = ("contracts/", "checklists/")
+
+
 def _fails(message: str, added: set[str], touched: set[str], spec_dir: Path, base: Path) -> bool:
     """A row finding fails when the change adds that row; any other finding fails when its file is touched."""
     rows = ROW_RE.findall(message)
-    if rows and ("has no task line" in message or "has no bound test" in message):
+    if rows and any(phrase in message for phrase in ROW_PHRASES):
         return bool(set(rows) & added)
     name = message.removeprefix("analyze: ").split(":")[0].split(" ")[0]
+    if name.startswith(SPEC_WIDE):
+        name = ""
     return narrative.is_touched(touched, spec_dir, base, name)
 
 
@@ -142,7 +157,13 @@ def check_touched_rules(
     texts.update({n: _read(spec_dir / n) for n in ("research.md", "data-model.md", "quickstart.md")})
     added = narrative.added_row_ids(base, spec_dir, touched, None)
     design = [f"plan.md: {m}" for m in analysis.check_plan(texts["plan.md"])]
-    for message in [*analysis.analyze(spec_dir, texts, bindings), *analysis.check_checklists(spec_dir), *design]:
+    complete = [f"analyze: {m}" for m in completeness.check_complete_rows(texts["requirements.md"])]
+    for message in [
+        *analysis.analyze(spec_dir, texts, bindings),
+        *analysis.check_checklists(spec_dir),
+        *design,
+        *complete,
+    ]:
         out.append(message if _fails(message, added, touched, spec_dir, base) else message + ADVISORY_TAG)
     return out
 
@@ -169,11 +190,20 @@ def check_spec(
     return [f"spec-standard: specs/{spec_dir.name}: {m}" for m in found]
 
 
+def check_placement(root: Path, touched: set[str]) -> list[str]:
+    """Name and placement findings; a path the change does not touch is advisory."""
+    out = []
+    for path, finding in placement.check_placement(root):
+        hit = path in touched or any(t.startswith(path + "/") for t in touched)
+        out.append(f"spec-standard: {finding}" + ("" if hit else ADVISORY_TAG))
+    return out
+
+
 def _spec_dirs(root: Path) -> list[Path]:
     return [
         d
         for d in sorted((root / "specs").glob("*/"))
-        if d.is_dir() and d.name != "_template" and ((d / "spec.md").is_file() or (d / "requirements.md").is_file())
+        if d.is_dir() and ((d / "spec.md").is_file() or (d / "requirements.md").is_file())
     ]
 
 
@@ -200,6 +230,7 @@ def main(argv: list[str]) -> int:
     except CannotRun:
         bindings = None
     found = [f for d in dirs for f in check_spec(d, index, touched, root, bindings)]
+    found += check_placement(root, touched)
     if dirs:
         found += [f"spec-standard: {m}" for m in narrative.check_constitution(root)]
     advisory = (ADVISORY_TAG, CONSTITUTION_MARK) + (() if args.tombstones else (TOMBSTONE,))

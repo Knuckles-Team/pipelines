@@ -39,6 +39,8 @@ repos:
     stages: [pre-push]
   - id: spec
     stages: [pre-push]
+  - id: spec-templates
+    stages: [pre-push]
   - id: tests-fast
     stages: [pre-push]
     # args: [--src-root, <package>]

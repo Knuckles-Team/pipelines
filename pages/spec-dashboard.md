@@ -13,7 +13,7 @@ Put this configuration in the repository, for example in `.github/spec-dashboard
 {"version":1,"sources":[{"glob":"specs/*/status.json","kind":"spec"}]}
 ```
 
-Version 1 reads only canonical JSON status files. The generator always excludes `_template`.
+Version 1 reads only canonical JSON status files. The generator reads only `specs/<family>/` directories.
 Explicit source paths are also valid. Missing status data is unknown. The generator does
 not infer a state from prose, checkbox counts, source commits or PR counts. An empty
 match shows "No documented records". It does not show a successful delivery.

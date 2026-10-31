@@ -75,7 +75,10 @@ A rollup must include a wiring row and a hot-path proof row. The wiring row name
 |---|---|---|
 | Spec ID | `<OWNER>-<AREA>`, upper case, hyphen-separated, no numeric suffix | `MEDULLA-IDENTITY` |
 | Owner prefix | The owner map in the repository `specs/README.md` | `MEDULLA`, `MERISTEM`, `ARBORA`, `SCION`, `OVERSTORY`, `TUIG`, `AXIL`, `PIPE`, `US` |
-| Directory | The area in lower case, hyphen-separated | `specs/identity/` for `MEDULLA-IDENTITY` |
+| Directory | The area in lower case, hyphen-separated, with no numeric prefix | `specs/identity/` for `MEDULLA-IDENTITY` |
+| File and directory names | Lower-case kebab-case. Upper case only for `README.md`, `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, `LICENSE` and `CHANGELOG.md`. Recorded `evidence/` files keep the name of their tool | `test-spec.md` |
+| Headings and row titles | Sentence case headings. A row title is a bold sentence that ends with a period | `**Short name.**` |
+| Placement | Plans only in `specs/<family>/plan.md`, templates only in `.specify/templates/`, the constitution only in `.specify/memory/` | |
 | Title line | The first line of `spec.md`: `# <ID> — <Title>` with an em dash | `# MEDULLA-IDENTITY — Engine identity and scope` |
 | Row ID | `<ID>-R<nnn>`, children `.n`, three digits | `MEDULLA-IDENTITY-R007.2` |
 | Index | One line per spec in `specs/README.md`: `` [`<ID>`](<dir>/spec.md) — <one sentence> `` | |
@@ -98,23 +101,29 @@ The standard adopts the file layout of the [upstream spec-driven toolkit](https:
 | `tasks.md` | One numbered task per requirement row, producer first |
 | `test-spec.md` | One test row per requirement, with the proving test name |
 
-A spec directory may also hold these optional artifacts:
+Each repository also holds `.specify/memory/constitution.md`. It is one page. It links the organization standards by public URL and adds only the rules of that repository. `.specify/templates/constitution-template.md` is the starting text.
 
-| Artifact | Content |
-|---|---|
-| `research.md` | Findings that support a decision in `plan.md`, stated in this platform's terms |
-| `data-model.md` | Entities, fields and relations |
-| `contracts/` | The boundary registry: one hand-written file per seam (see "Contracts") |
-| `quickstart.md` | The shortest path that shows the feature working |
-| `checklists/` | Requirement-quality checklists; `checklists/requirements.md` is filled before landing (`specs/_template/checklists/requirements.md`) |
-
-Each repository also holds `.specify/memory/constitution.md`. It is one page. It links the organization standards by public URL and adds only the rules of that repository. `specs/_template/constitution.md` is the starting text.
+The templates live only in `.specify/templates/`: `spec-template.md`, `plan-template.md`, `tasks-template.md`, `checklist-template.md`, `constitution-template.md`, plus `requirements-template.md` and `test-spec-template.md`. Pipelines owns them. `scripts/sync_spec_templates.py` copies them into a repository, and the published `spec-templates` hook fails when a repository's copy differs. A `specs/_template/` directory is a finding.
 
 Status is derived, never committed. `pipelines-hook spec-status --write` computes `specs/<dir>/status.json` (gitignored) from `requirements.md`, `Spec:` trailers in Git history, test bindings and the frozen `.config/spec-legacy-landings.json`. Page builders, the architecture explorer and CI gates compute it the same way at read time, so pull requests carry only source and two pull requests on one spec never conflict on status. A tracked `specs/*/status.json` fails the `spec-status` gate.
 
 The four states are `SPECIFIED`, `LANDED`, `VERIFIED` and `RETIRED`. No spec file writes a state. The upstream `Status:` header is not used.
 
 Design, architecture, coverage, and cross-repository notes are sections of `plan.md`. Files named `design.md`, `architecture.md`, `coverage.md`, or `cross-repo.md` must not exist.
+
+## Optional artifacts
+
+A spec directory may also hold these optional artifacts. The plan step adds each one only where it carries real content, and the analysis check requires it there:
+
+| Artifact | Content | Required when |
+|---|---|---|
+| `contracts/` | One human-written `.md` contract document per cross-repo seam: a Wire shape section, a Refusal codes section, and `Provider:` and `Consumer:` lines that name the row IDs on both sides (see "Contracts"). No generated contract | `plan.md` lists a seam under `## Cross-repo seams` |
+| `data-model.md` | Entities, fields and relations | A row adds types, ontology classes or tables |
+| `quickstart.md` | The shortest path that shows the feature working; it names the scenario or test command that runs the served proof | A row is a served behaviour row (its text says "served" or "hot-path proof") |
+| `research.md` | Findings that support a decision in `plan.md`, stated in this platform's terms | `## Phase 0` lists unknowns; the file must not exist when it says "no unknowns" |
+| `checklists/` | Requirement-quality checklists; `checklists/requirements.md` is filled before landing from `.specify/templates/checklist-template.md` | Always, for a touched spec |
+
+The `spec-verifier` skill writes its report to `checklists/analysis.md`. The check fails for a touched spec and is advisory for any other spec; a row finding fails when the change adds the row.
 
 ## Contracts
 
@@ -165,9 +174,13 @@ A task line in `tasks.md` reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. 
 
 The gate also runs a cross-file analysis of each spec directory, the counterpart of the upstream analyze step. It reports an active row with no task line, a task naming no existing row, a behaviour row with neither a bound test nor a test-spec entry, an `FR-` or `SC-` label cited but not defined (or defined twice) in `spec.md`, and an open clarification marker in any design file. A rollup parent is covered by its child rows. A row finding fails when the change adds the row; the others fail when their file is touched.
 
+## Complete rows
+
+A behaviour row holds enough text to implement without an assumption. Each active row that is not a rollup parent carries a `Caller chain:` sentence (entry point to the new code), a `Shape:` sentence (files, types and the existing helper to reuse) and a served test as `path::name`. It also names, where they apply, the files, types and fields, refusal codes from the one taxonomy, the write path, the knobs with starting values, the `Depends on:` row IDs and each cross-repository seam by ID on both sides. A row never says TBD. The check fails a row the change adds and is advisory for any other row.
+
 ## Requirements checklist
 
-Before a spec lands its author fills `checklists/requirements.md` from `specs/_template/checklists/requirements.md`. An unchecked item is a finding.
+Before a spec lands its author fills `checklists/requirements.md` from `.specify/templates/checklist-template.md`. An unchecked item is a finding.
 
 ## Rows
 
@@ -217,6 +230,9 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Title line | `spec.md` line 1 does not match `# <ID> — <Title>` |
 | Spec ID | The ID has a numeric suffix, or an active row ID does not match the row-ID regex or does not start with the ID |
 | Names | The directory name or the ID contains a forbidden word |
+| Artifact names and placement | A name under `specs/` or `.specify/` is not lower-case kebab-case (allowlist above), a spec directory has a numeric prefix, or a plan, template or constitution sits outside its one place. A path the change does not touch is advisory |
+| Optional artifacts | A required optional artifact is absent, or `research.md` exists without unknowns |
+| Templates | `.specify/templates/` differs from the vended templates (`spec-templates`) |
 | Index | `specs/README.md` does not list the spec |
 | Contract coverage | A touched spec's row cites another repository's row and no contract names the pair |
 | Third-party names | Authored `specs/**/*.md` text names a product or project on the denylist in `pipelines_hooks/specs/third_party_names.toml` |

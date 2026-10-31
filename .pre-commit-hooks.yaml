@@ -50,6 +50,13 @@
   always_run: true
   require_serial: true
   stages: [pre-push, manual]
+- id: spec-templates
+  name: Spec templates - .specify/templates equals the vended pipelines templates
+  entry: pipelines-hook spec-templates
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit, pre-push, manual]
 - id: project-version-sync
   name: Project version sync - metadata, source and documentation agree with one canonical bump configuration
   entry: pipelines-hook project-version-sync

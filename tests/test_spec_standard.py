@@ -74,6 +74,13 @@ PLAN = (
 )
 
 
+def _clean_plan() -> str:
+    """The plan with no unknowns and no seams, so no optional artifact is required."""
+    return PLAN.replace("## Phase 0: Research\n\nx", "## Phase 0: Research\n\nno unknowns").replace(
+        "## Cross-repo seams\n\nx", "## Cross-repo seams\n\nnone"
+    )
+
+
 def _stage(root: Path, *names: str) -> None:
     subprocess.run(["git", "-C", str(root), "add", "--", *names], env=fixture_git_environment(), check=True)
 
@@ -84,10 +91,14 @@ def _spec(root: Path, name: str = "foo", spec_id: str = "FOO") -> Path:
     for f in FILES:
         (d / f).write_text(f'{{"spec_id": "{spec_id}"}}\n' if f.endswith(".json") else "x\n")
     (d / "spec.md").write_text(NARRATIVE.format(id=spec_id))
-    (d / "requirements.md").write_text(f"| `{spec_id}-R001` | req |\n")
+    (d / "requirements.md").write_text(
+        f"| `{spec_id}-R001` | req Caller chain: a to b. Shape: edit b. | `tests/t.py::test_a` |\n"
+    )
     (d / "tasks.md").write_text(f"- [ ] T001 {spec_id}-R001 do it\n")
     (d / "test-spec.md").write_text(f"| T-001 | {spec_id}-R001 | Unit | x | y |\n")
-    (d / "plan.md").write_text(PLAN)
+    (d / "plan.md").write_text(_clean_plan())
+    (d / "checklists").mkdir(exist_ok=True)
+    (d / "checklists" / "requirements.md").write_text("- [x] done\n")
     (root / "specs" / "README.md").write_text(f"- [x]({name}/spec.md)\n")
     constitution = root / ".specify" / "memory" / "constitution.md"
     constitution.parent.mkdir(parents=True, exist_ok=True)
@@ -109,13 +120,6 @@ def _run(root: Path, capsys: pytest.CaptureFixture[str]) -> tuple[int, str]:
 def test_clean(root, capsys):
     _spec(root)
     assert _run(root, capsys) == (0, "spec-standard: clean (1 spec(s) checked)\n")
-
-
-def test_template_skipped(root, capsys):
-    _spec(root)
-    (root / "specs" / "_template").mkdir()
-    (root / "specs" / "_template" / "spec.md").write_text("junk\n")
-    assert _run(root, capsys)[0] == 0
 
 
 def test_file_set(root, capsys):
@@ -212,10 +216,10 @@ def test_optional_artifacts_are_accepted(root, capsys):
     d = _spec(root)
     for name in ("research.md", "data-model.md", "quickstart.md"):
         (d / name).write_text("x\n")
-    for name in ("contracts", "checklists"):
-        (d / name).mkdir()
-        (d / name / "a.md").write_text("x\n")
-    assert _run(root, capsys) == (0, "spec-standard: clean (1 spec(s) checked)\n")
+    (d / "contracts").mkdir()
+    (d / "contracts" / "a.md").write_text("x\n")
+    code, out = _run(root, capsys)
+    assert code == 0 and "must be a" not in out
 
 
 def test_optional_artifact_of_the_wrong_kind_is_a_finding(root, capsys):
@@ -384,7 +388,7 @@ def _touch(root, d, name, text):
 def test_complete_plan_is_clean(root, capsys):
     # spec: PIPE-GATES-R028
     d = _spec(root)
-    _touch(root, d, "plan.md", PLAN)
+    _touch(root, d, "plan.md", _clean_plan())
     assert _run(root, capsys)[0] == 0
 
 
@@ -464,7 +468,9 @@ def test_analysis_marker_in_design_files(root, capsys):
 def test_analysis_rollup_parent_is_covered_by_children(root, capsys):
     # spec: PIPE-GATES-R029
     d = _spec(root)
-    (d / "requirements.md").write_text("| `FOO-R001` | parent |\n| `FOO-R001.1` | child |\n")
+    (d / "requirements.md").write_text(
+        "| `FOO-R001` | parent |\n| `FOO-R001.1` | child Caller chain: a. Shape: b. | `t.py::test_a` |\n"
+    )
     _touch(root, d, "tasks.md", "- [ ] T001 FOO-R001.1 do\n")
     _touch(root, d, "test-spec.md", "| T-001 | FOO-R001.1 | Unit | x | y |\n")
     assert _run(root, capsys)[0] == 0
@@ -482,7 +488,6 @@ def test_analysis_is_advisory_for_an_untouched_spec(root, capsys):
 def test_unchecked_checklist_item_is_a_finding(root, capsys):
     # spec: PIPE-GATES-R030
     d = _spec(root)
-    (d / "checklists").mkdir()
     _touch(root, d, "checklists/requirements.md", "- [x] a\n- [ ] b\n")
     code, out = _run(root, capsys)
     assert code == 1 and "unchecked item" in out
@@ -491,6 +496,27 @@ def test_unchecked_checklist_item_is_a_finding(root, capsys):
 def test_checked_checklist_is_clean(root, capsys):
     # spec: PIPE-GATES-R030
     d = _spec(root)
-    (d / "checklists").mkdir()
     _touch(root, d, "checklists/requirements.md", "- [x] a\n")
     assert _run(root, capsys)[0] == 0
+
+
+def test_work_that_landed_on_main_after_the_fork_is_not_touched(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _stage(root, "specs", ".specify")
+    env = fixture_git_environment()
+    for who in ("AUTHOR", "COMMITTER"):
+        env[f"GIT_{who}_NAME"] = "test"
+        env[f"GIT_{who}_EMAIL"] = "test@example.invalid"
+    run = lambda *a: subprocess.run(["git", "-C", str(root), *a], env=env, check=True, capture_output=True)  # noqa: E731
+    run("commit", "-q", "-m", "base")
+    run("branch", "-M", "main")
+    run("update-ref", "refs/remotes/origin/main", "HEAD")
+    run("switch", "-q", "-c", "work")
+    run("switch", "-q", "main")
+    (d / "tasks.md").write_text("No tasks.\n")
+    run("commit", "-qam", "main moves on")
+    run("update-ref", "refs/remotes/origin/main", "HEAD")
+    run("switch", "-q", "work")
+    code, out = _run(root, capsys)
+    assert code == 0 and "No tasks" not in out and "tasks.md has no task line" not in out

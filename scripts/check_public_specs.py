@@ -42,10 +42,12 @@ def document_errors(root: Path, path: Path) -> list[str]:
     return errors
 
 
-def _template_errors(specs: Path) -> list[str]:
-    template = specs / "_template"
+def _template_errors(root: Path) -> list[str]:
+    template = root / ".specify" / "templates"
     return [
-        f"{template / filename}: missing template file" for filename in FILES if not (template / filename).is_file()
+        f"{template / f'{stem}-template.md'}: missing template file"
+        for stem in ("spec", "plan", "requirements", "tasks", "test-spec", "checklist", "constitution")
+        if not (template / f"{stem}-template.md").is_file()
     ]
 
 
@@ -81,11 +83,11 @@ def problems(root: Path) -> list[str]:
     # status.json is computed at read time (never committed); materialize it for the checks below.
     for path, document in generate(root, "HEAD").items():
         path.write_text(render(document), encoding="utf-8")
-    errors = _template_errors(specs)
+    errors = _template_errors(root)
     index = (specs / "README.md").read_text(encoding="utf-8")
     used: set[str] = set()
     spec_ids: set[str] = set()
-    for feature in sorted(path for path in specs.iterdir() if path.is_dir() and path.name != "_template"):
+    for feature in sorted(path for path in specs.iterdir() if path.is_dir()):
         errors.extend(_feature_file_errors(root, feature, index))
         status = feature / "status.json"
         if status.is_file():

@@ -50,3 +50,15 @@
 - [ ] T044 PIPE-GATES-R034.3 Wiring: the gate joins the `spec` group.
 - [ ] T045 PIPE-GATES-R034.4 Refusal: dangling and duplicate contracts.
 - [ ] T046 PIPE-GATES-R034.5 Hot-path proof: the hook refuses an uncovered seam.
+- [x] T047 PIPE-GATES-R035 Move the templates to `.specify/templates/` and remove `specs/_template/`.
+- [x] T048 PIPE-GATES-R036 Add `scripts/sync_spec_templates.py` with `--check`.
+- [x] T049 PIPE-GATES-R037 Add the `spec-templates` check to the `spec` hook and ship the templates in the wheel.
+- [x] T050 PIPE-GATES-R038 Check artifact names against the lower-case kebab-case rule.
+- [x] T051 PIPE-GATES-R039 Check the one place of plans, templates and the constitution.
+- [x] T052 PIPE-GATES-R040 Add the naming article to the constitution and bump it to 1.1.0.
+- [x] T053 PIPE-GATES-R041 Require a contract document per cross-repo seam.
+- [x] T054 PIPE-GATES-R042 Require `data-model.md` for new types, classes and tables.
+- [x] T055 PIPE-GATES-R043 Require `quickstart.md` for a `served` behaviour row.
+- [x] T056 PIPE-GATES-R044 Check `research.md` against the unknowns and require the checklist.
+- [x] T057 PIPE-GATES-R023 Require a one-page constitution in each repository that links the vended template.
+- [x] T058 PIPE-GATES-R045 Fail a touched behaviour row that lacks a caller chain, a Shape sentence or a test path::name.

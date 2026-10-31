@@ -23,7 +23,6 @@ _ROLLUP_ROWS = (
 )
 _REVERT_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R030` | **Reverted feature.** |\n"
 _STALE_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R040` | **Needs regeneration.** |\n"
-_TEMPLATE_ROW = "# template\n\n| ID | Requirement |\n|---|---|\n| `TEMPLATE-R001` | **Template only.** |\n"
 
 
 def _status(repo: Repo) -> dict:
@@ -303,17 +302,6 @@ def test_explicit_head_is_honored_during_unresolved_pending_merge(repo: Repo) ->
     assert rows["TEST-R002"]["delivery_state"] == "SPECIFIED"
     assert rows["TEST-R001"]["landed_in"] == []
     assert rows["TEST-R002"]["landed_in"] == []
-
-
-def test_template_is_not_an_authored_spec(repo: Repo) -> None:
-    """The distributable template is never computed; real specs are."""
-    repo.commit(
-        {"specs/_template/requirements.md": _TEMPLATE_ROW, "specs/demo/requirements.md": _STALE_ROW},
-        "add template and authored spec",
-    )
-    assert repo.run("spec-status", "--write") == 0
-    assert not (repo.root / "specs/_template/status.json").exists()
-    assert (repo.root / "specs/demo/status.json").exists()
 
 
 def test_same_line_shorthand_inherits_prefix() -> None:

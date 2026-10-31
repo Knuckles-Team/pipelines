@@ -38,6 +38,7 @@ KEPT = {
     "connector-ontology-map",
     "spec-bind-suggest",
     "spec-prefix-rename",
+    "spec-templates",
     "no-legacy-concepts",
     "release-standard",
     "dependency-readiness",

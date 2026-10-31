@@ -1,5 +1,7 @@
 # PIPE-GATES — Requirements quality checklist
 
+Fill this before landing. Check an item only when the spec text satisfies it; an unchecked item blocks landing. Copy the file to `specs/<family>/checklists/requirements.md`.
+
 ## Content quality
 
 - [x] No implementation detail leaks into the user stories

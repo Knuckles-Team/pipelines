@@ -43,11 +43,15 @@ dev = [
     "types-PyYAML==6.0.12.20260906",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["pipelines_hooks*"]
+[tool.setuptools]
+# Explicit: the vended spec templates ship from the repository's .specify/templates/ (tests/test_spec_templates.py).
+packages = ["pipelines_hooks", "pipelines_hooks.ci_replica", "pipelines_hooks.clones", "pipelines_hooks.code", "pipelines_hooks.complexity", "pipelines_hooks.connector", "pipelines_hooks.connector.skill_checks", "pipelines_hooks.core", "pipelines_hooks.docs", "pipelines_hooks.hygiene", "pipelines_hooks.hygiene.connector_central", "pipelines_hooks.identity", "pipelines_hooks.kiss", "pipelines_hooks.privacy", "pipelines_hooks.release", "pipelines_hooks.rust", "pipelines_hooks.security", "pipelines_hooks.specs", "pipelines_hooks.ste", "pipelines_hooks.supply_chain", "pipelines_hooks.validation", "pipelines_hooks.spec_templates"]
+
+[tool.setuptools.package-dir]
+"pipelines_hooks.spec_templates" = ".specify/templates"
 
 [tool.setuptools.package-data]
+"pipelines_hooks.spec_templates" = ["*.md"]
 pipelines_hooks = ["py.typed", "identity/fleet-default-allowlist.json", "ste/ste_words.toml", "gate_sets.toml", "specs/third_party_names.toml", "hygiene/ontology_cqs.json", "hygiene/ontology_codemod_overrides.json", "connector/templates/*.tmpl", "connector/defaults/codespellignore", "connector/defaults/security-contract.json", "hygiene/connector_central/container_generations.json", "hygiene/connector_central/scaffold_fingerprints.json"]
 
 [tool.ruff]
