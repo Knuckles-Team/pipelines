@@ -51,6 +51,14 @@ Every repository gives a cold agent the same setup and the same orientation (PIP
 - `AGENTS.md` carries the block between `<!-- agent-contract:start -->` and `<!-- agent-contract:end -->`. The block states the **Owner boundary** (with a link to [ecosystem boundaries](ecosystem-boundaries.md)), **Setup** (`scripts/bootstrap.sh`), **Gates** (`uvx pre-commit run --all-files`), **Commits** (Spec trailer, assisting-agent `Co-Authored-By:` trailer, explicit staging, own Git identity) and a link to the [organization AGENTS.md](https://github.com/Knuckles-Team/.github/blob/main/AGENTS.md). The text is tool-neutral. Content outside the markers belongs to the repository. `CLAUDE.md`, where present, only imports `@AGENTS.md`.
 - The pre-push hook `agent-contract` flags a missing `scripts/bootstrap.sh` or one that trips SC-INSTALL-001/002, a missing `AGENTS.md`, or a missing or incomplete block. It warns (exit 0) until the fleet has converged; `--strict` blocks.
 
+## Pre-commit hook environments
+
+- Every CI job that runs `pre-commit run` restores, installs and saves the hook environments in `~/.cache/pre-commit` the way `gates_pipeline.yml` does: resolve the shared hook revision (pipelines `main` sha, `git ls-remote`), `actions/cache/restore` with key `pre-commit-<os>-<arch>-<hash of the configs>-<pipelines main sha>` and restore-keys `<key>-partial-` then `pre-commit-<os>-<arch>-<hash of the configs>-`, drop the stale shared-hook rows from `db.db` when the matched key is from an older sha, then `pre-commit install-hooks` per config as its own step (`id: hook-install`), then `actions/cache/save` on success when `cache-hit != 'true'` and a `-partial-<run_id>-<run_attempt>` save when the install failed or was cancelled.
+- A repository whose shared hooks are pinned by SHA in CI omits the revision and stale-drop steps.
+- The job that runs on `main` must save the cache, so pull requests restore it; two jobs that run the same config use the identical key.
+- No job sets a per-run `PRE_COMMIT_HOME`: a unique store is never reused.
+- `tests/test_precommit_cache_contract.py` fails a workflow job that runs `pre-commit run` without a `~/.cache/pre-commit` restore and an `install-hooks` step. Reusable-workflow callers are exempt.
+
 ## Auto-merge and releases (keep it simple)
 
 - Each repository allows auto-merge, and its main ruleset requires a pull request plus the single check `CI required`, and blocks force-push and deletion.
