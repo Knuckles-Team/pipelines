@@ -2259,3 +2259,307 @@ def test_glass_text_contrast_is_at_least_4_5_over_the_ocean_in_both_themes() -> 
                 pressed = over(color(tok[state]), over(color(tok["--glass-control"]), base))
                 ratio = _wcag_ratio(color(tok["--fg"])[:3], pressed[:3])
                 assert ratio >= 4.5, f"{theme} pressed {state} over {ocean}: {ratio:.2f}"
+
+
+# ------------------------------------------------- spec-driven delivery in Canopy (PIPE-PAGES-R051)
+
+SDD_PLAN = (
+    "# Plan: Fam\n\n## Summary\n\nSum.\n\n## Constitution Check\n\n- **I. One owner**: pass, no copy.\n"
+    "- **IV. Neutral names**: FAIL - a product name appears.\n\n## Cross-repo seams\n\n"
+    "- FAM-R002 hands the result to FAM-R001.\n\n## Delivery phase\n\nRows serve P3.\n\n## Repeat\n\nA.\n\n## Repeat\n\nB.\n"
+)
+SDD_TASKS = "# Tasks\n\n- [x] Done thing FAM-R001\n- [ ] Open thing Zq-TASK-MARKER\n- [ ] Third thing\n"
+SDD_CONSTITUTION = "# Constitution\n\n**Version**: 1.2.0 | **Ratified**: 2026-10-31\n\n## Core Principles\n\n### I. One owner\n\nText.\n"
+SDD_DOCS = {
+    "spec.md": "# FAM - Fam title\n\n## Purpose\n\nWhy.\n",
+    "plan.md": SDD_PLAN,
+    "tasks.md": SDD_TASKS,
+    "test-spec.md": TEST_MD,
+    "research.md": "# Research\n\nNone.\n",
+    "checklists/req.md": "# Checklist\n\n- [ ] item\n",
+    "contracts/api.yml": "openapi: 3.0.0\n",
+}
+
+
+def _sdd_snapshots() -> list[Snapshot]:
+    snaps = _detail_snapshots()
+    snap = next(s for s in snaps if s.repo == "pipelines")
+    snap.docs = {"fam": dict(SDD_DOCS)}
+    snap.files |= {f"specs/fam/{n}" for n in SDD_DOCS}
+    snap.constitution = SDD_CONSTITUTION
+    return snaps
+
+
+def _sdd_page(monkeypatch, tmp_path: Path) -> Path:
+    return _build_with_details(monkeypatch, tmp_path, _sdd_snapshots())
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.1")
+@_NEEDS_LAYOUT
+def test_family_files_carry_every_spec_document_with_an_outline(monkeypatch, tmp_path: Path) -> None:
+    page = _sdd_page(monkeypatch, tmp_path)
+    doc = json.loads((page.parent / "spec-details/pipelines/fam.json").read_text())
+    docs = {d["name"]: d for d in doc["docs"]}
+    assert set(docs) == set(SDD_DOCS)
+    assert docs["tasks.md"]["label"] == "Tasks" and docs["checklists/req.md"]["label"] == "Checklist: req"
+    assert (
+        docs["contracts/api.yml"]["label"] == "Contract: api"
+        and "<pre><code>openapi" in docs["contracts/api.yml"]["html"]
+    )
+    outline = {name: [o[2] for o in d["outline"]] for name, d in docs.items()}
+    assert outline["plan.md"] == [
+        "plan-fam",
+        "summary",
+        "constitution-check",
+        "cross-repo-seams",
+        "delivery-phase",
+        "repeat",
+        "repeat-2",
+    ]
+    assert details.doc_names({"specs/fam/tasks.md", "specs/fam/contracts/a/b.yml", "specs/fam/notes.md"}, "fam") == [
+        "tasks.md"
+    ]
+    assert "Zq-TASK-MARKER" not in page.read_text()  # documents stay in the lazily loaded family file
+    assert "Zq-TASK-MARKER" in (page.parent / "spec-details/pipelines/fam.json").read_text()
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.2")
+@_NEEDS_LAYOUT
+def test_a_repository_constitution_is_written_versioned_and_linked(monkeypatch, tmp_path: Path) -> None:
+    page = _sdd_page(monkeypatch, tmp_path)
+    doc = json.loads((page.parent / "spec-details/pipelines/_constitution.json").read_text())
+    assert doc["family"] == "_constitution" and doc["docs"][0]["label"] == "Constitution"
+    assert "Core Principles" in doc["docs"][0]["html"]
+    assert doc["docs"][0]["url"].endswith("/blob/HEAD/.specify/memory/constitution.md")
+    assert _payload(page.read_text())["meta"]["constitutions"] == {"pipelines": "1.2.0"}
+    template = (PKG / "template.html").read_text()
+    assert "function constitutionSection" in template and '"_constitution/constitution.md"' in template
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.3")
+@_NEEDS_LAYOUT
+def test_delivery_cards_carry_title_phase_task_progress_and_document_bits(monkeypatch, tmp_path: Path) -> None:
+    from scripts.architecture_explorer import sdd
+
+    page = _sdd_page(monkeypatch, tmp_path)
+    card = _payload(page.read_text())["tree"]["cards"]["pipelines"]["fam"]
+    assert (card["t"], card["p"], card["k"]) == ("Fam title", "P3", [1, 2])
+    expected = sdd.kinds_bits(
+        ["spec.md", "plan.md", "tasks.md", "test-spec.md", "research.md", "checklists/req.md", "contracts/api.yml"]
+    )
+    assert card["d"] == expected and expected & (1 << sdd.KINDS.index("quickstart")) == 0
+    # Without a Delivery phase section the phase falls back to the most common release phase of the rows.
+    bare = sdd.family_card({"plan.md": "# Plan\n"}, set(), "x", ["P2", "P2", "P4"])
+    assert bare["p"] == "P2" and bare["t"] == "Plan" and bare["k"] == [0, 0]
+    assert sdd.family_card({}, set(), "x", [])["p"] == ""
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.3")
+@pytest.mark.spec("PIPE-PAGES-R051.4")
+def test_the_node_panel_renders_own_cards_and_links_each_document() -> None:
+    js = (PKG / "template.html").read_text()
+    assert (
+        "function deliverySection" in js
+        and "const own=famList([n]), below=n.children.length?famList(descNodes(n))" in js
+    )
+    assert "text:countText(tally(f.rows))" in js and "KINDS.forEach((k,i)=>{ if(!(card.d>>i&1)) return;" in js
+    assert 'text:"requirements \u2197"' in js and "const dsec=deliverySection(n)" in js
+    # The aggregate table sorts by phase and by progress and counts delivered only for a passed scenario.
+    assert '["phase","Sort by phase"],["progress","Sort by progress"]' in js
+    assert 'r.status==="VERIFIED"&&PASSED.has(r.release)' in js and 'scenario_state==="passed"' in js
+    assert "innerHTML" not in js
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.5")
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_doc_deep_links_parse_and_round_trip() -> None:
+    import subprocess
+
+    script = (
+        "const A=require('./search.cjs');"
+        "console.log(JSON.stringify(['#node=a.b&doc=fam/plan.md&sec=constitution-check&repo=r','#node=a&doc=fam/checklists/x.md'].map(A.parseHash)));"
+        "console.log(A.hashFor('a.b','',{doc:'fam/plan.md',sec:'summary',repo:'r'}),A.hashFor('a','',null));"
+    )
+    lines = subprocess.run(
+        ["node", "-e", script], cwd=PKG, capture_output=True, text=True, check=True
+    ).stdout.splitlines()
+    assert json.loads(lines[0]) == [
+        {"node": "a.b", "q": "", "doc": "fam/plan.md", "sec": "constitution-check", "repo": "r"},
+        {"node": "a", "q": "", "doc": "fam/checklists/x.md"},
+    ]
+    assert lines[1] == "#node=a.b&doc=fam/plan.md&sec=summary&repo=r #node=a"
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.5")
+def test_outline_anchors_every_plan_heading() -> None:
+    markup = details.render_markdown(SDD_PLAN, details.Ctx("pipelines", "fam"))
+    names = [o[1] for o in details.outline(markup)]
+    assert names == [
+        "Plan: Fam",
+        "Summary",
+        "Constitution Check",
+        "Cross-repo seams",
+        "Delivery phase",
+        "Repeat",
+        "Repeat",
+    ]
+    assert [o[2] for o in details.outline(markup)][-2:] == ["repeat", "repeat-2"]
+    template = (PKG / "template.html").read_text()
+    assert 'hs[i].id="d-"+o[2]' in template and "function linkRowIds" in template and "ROWNODE[id]" in template
+    assert "history.back()" in template and "function openDoc" in template
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.5")
+@pytest.mark.spec("PIPE-PAGES-R051.7")
+@_NEEDS_LAYOUT
+@pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
+def test_the_reader_opens_a_plan_section_and_links_row_ids_in_a_browser(monkeypatch, tmp_path: Path) -> None:
+    import functools
+    import http.server
+    import subprocess
+    import threading
+
+    page = _sdd_page(monkeypatch, tmp_path)
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(page.parent))
+    handler.log_message = lambda *a, **k: None  # type: ignore[method-assign]
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        out = subprocess.run(
+            [
+                _chrome(),
+                "--headless=new",
+                "--no-sandbox",
+                "--disable-gpu",
+                "--window-size=1500,950",
+                "--virtual-time-budget=8000",
+                "--dump-dom",
+                f"http://127.0.0.1:{server.server_port}/index.html#q=FAM-R001&doc=fam/plan.md&sec=cross-repo-seams&repo=pipelines",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        ).stdout
+    finally:
+        server.shutdown()
+    reader = out[out.index('<section class="panel reader"') :]
+    assert (
+        "hidden" not in out[out.index('<section class="panel reader"') : out.index('id="reader"') + 60]
+    )  # the reader is open
+    assert 'id="d-cross-repo-seams"' in reader and 'class="rowlink"' in reader and ">FAM-R002</a>" in reader
+    assert "Constitution: 1 failing" in out  # the card of a plan with a failing principle carries the warning badge
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.6")
+def test_the_program_view_has_a_toggle_and_five_phase_columns() -> None:
+    template = (PKG / "template.html").read_text()
+    assert template.index('id="vnext"') < template.index('id="vpath"') < template.index('id="vprog"')
+    assert ">Delivery</button>" in template and "function renderProgram" in template
+    assert '["P1","P2","P3","P4","P5",' in template and "repeat(5,minmax(190px,1fr))" in template
+    assert "rel.scenario+" not in template and "ROWSTATE[rel.scenario]" in template and "scenario_state" in template
+    for release in sorted((ROOT / "releases").glob("*.yml")):
+        manifest = json.loads(release.read_text())
+        assert manifest["phase"] in {"P1", "P2", "P3", "P4", "P5"} and manifest["scenario"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.7")
+def test_a_failing_principle_in_the_constitution_check_warns() -> None:
+    from scripts.architecture_explorer import sdd
+
+    assert sdd.failing_principles(SDD_PLAN) == ["I. One owner: pass, no copy."][:0] + [
+        "IV. Neutral names: FAIL - a product name appears."
+    ]
+    passing = SDD_PLAN.replace("FAIL - a product name appears", "pass")
+    assert sdd.failing_principles(passing) == [] and sdd.failing_principles("") == []
+    # The template instruction line ("pass or fail") is not a verdict.
+    assert sdd.failing_principles("## Constitution Check\n\n- One line per principle: pass or fail, and why.\n") == []
+    template = (PKG / "template.html").read_text()
+    assert template.count("warnBadge(c.w)") >= 3  # cards, aggregate table and program view
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.8")
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_search_extras_hold_task_lines_and_plan_headings_and_rank_last(monkeypatch, tmp_path: Path) -> None:
+    import subprocess
+
+    from scripts.architecture_explorer import sdd
+
+    snaps = _sdd_snapshots()
+    extra = sdd.search_extra(snaps, {("pipelines", "fam"): "core"})
+    kinds = [(i[0], i[1]) for i in extra["items"]]
+    assert (
+        ("x", "Done thing FAM-R001") in kinds
+        and ("t", "Open thing Zq-TASK-MARKER") in kinds
+        and ("h", "Constitution Check") in kinds
+    )
+    assert sdd.search_extra(snaps, {}) == {"v": 1, "items": []}  # a family no node owns is not searchable
+    index = {
+        "v": 1,
+        "repos": ["r"],
+        "fams": ["f"],
+        "st": ["VERIFIED"],
+        "nodes": [["n", "Node", "Part.", 0, []]],
+        "rows": [["A-R001", "Open thing owner", 0, 0, 0, 0]],
+        "aliases": {},
+    }
+    script = (
+        "const A=require('./search.cjs');const ix=JSON.parse(process.argv[1]);const ex=JSON.parse(process.argv[2]);"
+        "const h=A.create(ix,null,ex).search('open thing');console.log(JSON.stringify(h.map(x=>[x.kind,x.doc||'',x.node])));"
+    )
+    out = subprocess.run(
+        [
+            "node",
+            "-e",
+            script,
+            json.dumps(index),
+            json.dumps({"items": [["t", "Open thing Zq", "n", "r", "f", "tasks.md", ""]]}),
+        ],
+        cwd=PKG,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert json.loads(out.stdout) == [["row", "", "n"], ["task", "tasks.md", "n"]]
+    template = (PKG / "template.html").read_text()
+    assert 'fetch("search-extra.json")' in template and "if(h.doc) openDoc(" in template
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.8")
+@_NEEDS_LAYOUT
+def test_a_build_writes_search_extras_beside_the_page(monkeypatch, tmp_path: Path) -> None:
+    page = _sdd_page(monkeypatch, tmp_path)
+    extra = json.loads((page.parent / "search-extra.json").read_text())
+    assert any(i[0] == "h" and i[1] == "Delivery phase" and i[6] == "delivery-phase" for i in extra["items"])
+    assert all(i[2] for i in extra["items"])  # every item names the node that owns its family
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.1")
+@pytest.mark.spec("PIPE-PAGES-R051.9")
+@_NEEDS_LAYOUT
+def test_the_page_stays_within_ten_percent_and_inlines_no_document(monkeypatch, tmp_path: Path) -> None:
+    page = _sdd_page(monkeypatch, tmp_path)
+    html = page.read_text()
+    template = (PKG / "template.html").read_text()
+    script = template[template.index("// ---------- spec-driven delivery") : template.index("function diagramContext")]
+    style = template[template.index("/* Spec-driven delivery") : template.index("/* Full Overstory glass")]
+    payload = _payload(html)
+    data = len(json.dumps(payload["tree"]["cards"])) + len(json.dumps(payload["meta"]["constitutions"]))
+    added = len(script) + len(style) + data
+    assert added <= 0.10 * (len(html) - added), f"{added} bytes added to a {len(html)} byte page"
+    for marker in ("Zq-TASK-MARKER", "Core Principles", "openapi: 3.0.0"):
+        assert marker not in html
+
+
+@pytest.mark.spec("PIPE-PAGES-R051.9")
+def test_new_panels_use_glass_levels_and_respect_reduced_motion() -> None:
+    template = (PKG / "template.html").read_text()
+    css = template[template.index("<style>") : template.index("</style>")]
+    # The program view and the reader are panels, so they take the reading level, its blur and its edge.
+    assert 'class="panel program"' in template and 'class="panel reader"' in template
+    assert "var(--glass-" in css and "background:var(--surface)" in css
+    new_rules = css[css.index("/* Spec-driven delivery") : css.index("/* Full Overstory glass")]
+    assert "transition" not in new_rules and "animation" not in new_rules and "backdrop-filter" not in new_rules
+    assert not re.search(r"background:\s*(#|rgb\()", new_rules)
+    block = css[css.index("@media (prefers-reduced-motion: reduce){") :]
+    assert "transition:none!important" in block[: block.index("\n}\n")]

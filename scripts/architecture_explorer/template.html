@@ -103,9 +103,13 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 .results .rid{font:500 12px var(--font-mono);color:var(--accent)}
 .results .rrepo{font:500 11px var(--font-mono);color:var(--muted)}
 .results .none{padding:10px;color:var(--muted)}
-main.work{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:8px;flex:1;min-height:0}
-main.work.nopanel{grid-template-columns:minmax(0,1fr)}
-main.work.nopanel .panel{display:none}
+main.work{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"map panel";gap:8px;flex:1;min-height:0}
+main.work.reading{grid-template-columns:minmax(0,1fr) minmax(300px,42%) 360px;grid-template-areas:"map reader panel"}
+main.work.nopanel{grid-template-columns:minmax(0,1fr);grid-template-areas:"map"}
+main.work.nopanel.reading{grid-template-columns:minmax(0,1fr) minmax(300px,42%);grid-template-areas:"map reader"}
+main.work.nopanel #panel{display:none}
+main.work .canvas{grid-area:map} main.work #reader{grid-area:reader} main.work #panel{grid-area:panel} main.work #program{grid-area:map;z-index:3}
+main.work.prog .canvas{visibility:hidden}
 .canvas{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:420px;height:100%;touch-action:none}
 .canvas:fullscreen{border:0;border-radius:0;height:100vh;min-height:0}
 .canvas canvas{display:block;width:100%;height:100%;cursor:grab;transition:opacity .18s ease}
@@ -211,13 +215,37 @@ select.sel{font:500 12px var(--font-body);color:var(--fg);border:1px solid var(-
 .bundle{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:8px}
 .bundle h4{margin:0;font:600 12px var(--font-mono);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 @media (max-width: 980px){
-  main.work{grid-template-columns:minmax(0,1fr)}
+  main.work,main.work.reading,main.work.nopanel,main.work.nopanel.reading{grid-template-columns:minmax(0,1fr);grid-template-areas:"map" "reader" "panel"}
   .app{height:auto}
   .canvas{height:72vh;min-height:360px}
   .panel{height:auto;min-height:0}
   .pb{overflow:visible}
   .search{max-width:none;flex-basis:100%}
 }
+/* Spec-driven delivery: cards, table, program view and reader reuse the glass classes above. */
+a.chip{text-decoration:none;display:inline-flex;align-items:center;color:var(--fg)}
+.dcard{gap:5px}
+.dcard .dh{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dcard .dcount{font:11.5px var(--font-mono);color:var(--muted);overflow-wrap:anywhere}
+.tbar{height:6px;border-radius:3px;overflow:hidden;background:var(--line)}
+.tbar .tfill{display:block;height:100%;background:var(--glass-active)}
+.badge.warn{color:var(--s-specified)}
+.dtab{width:100%;border-collapse:collapse;font-size:12px}
+.dtab th,.dtab td{text-align:left;vertical-align:top;padding:4px 6px;border-top:1px solid var(--line)}
+.dtab td a{color:var(--accent)}
+.dtab .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.progcols{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:8px;min-width:0}
+.progcols .pcol{min-width:0;display:flex;flex-direction:column;gap:6px}
+.progcols .pcol>h4{margin:0;font:600 12px var(--font-mono);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.program .pcard{cursor:pointer;text-align:left;font:inherit;color:var(--fg);border-radius:12px}
+.program .pcard:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.reader .rnav{display:flex;flex-direction:column;gap:2px;font:12px var(--font-body);max-height:22vh;overflow:auto}
+.reader .rnav a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}
+.reader .rdoc{margin-top:0}
+.reader .md li.task{list-style:none;margin-left:-1.1em}
+.reader .md li.task::before{content:"\2610\00a0"} .reader .md li.task.done::before{content:"\2611\00a0"}
+.reader .md li.task.done{color:var(--muted)}
+.reader .md a.rowlink{font-family:var(--font-mono);font-size:.92em}
 /* Full Overstory glass: one shared ocean scene, bounded shell blur, and inexpensive
    translucent vector cards. No per-node filters, cached photo downloads or paint animation. */
 body{background-image:linear-gradient(155deg,var(--ocean-top),var(--ocean-bottom));background-attachment:fixed}
@@ -349,6 +377,7 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
     </div>
     <button class="btn" id="vnext" type="button" aria-pressed="false" title="Open rows whose prerequisites are done, best first">Next up</button>
     <button class="btn" id="vpath" type="button" aria-pressed="false" title="Cross-repository release bundles in train order">Delivery path</button>
+    <button class="btn" id="vprog" type="button" aria-pressed="false" title="Delivery program: phases P1 to P5 with their specs and concept-proof scenarios">Delivery</button>
     <button class="btn" id="vrel" type="button" aria-pressed="false" title="Release bundles: phase, scenario state and scoped rows">Releases</button>
     <button class="btn" id="ocean-motion" type="button" aria-pressed="true" title="Pause or resume background ocean motion">Ocean motion: on</button>
     <button class="btn" id="theme" type="button" title="Switch light or dark">Theme</button>
@@ -366,6 +395,8 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
       <details class="fresh" id="fresh"><summary id="freshsum">Built</summary><ul id="freshlist"></ul></details>
       <div class="hint" id="hint">Click a part to zoom in. Scroll or pinch to zoom. Drag to pan. Esc zooms out.</div>
     </div>
+    <section class="panel program" id="program" aria-label="Delivery program" hidden></section>
+    <section class="panel reader" id="reader" aria-label="Document reader" hidden></section>
     <aside class="panel" id="panel" aria-live="polite"></aside>
   </main>
   <div class="map-notes">
@@ -676,7 +707,7 @@ function settle(){ const f=focusAt(); if(f!==focus){ focus=f; renderCrumbs(); }
   const sp=pathTo(selected);
   if(!sp.includes(focus) || (selected!==focus && pathTo(focus).includes(selected))){ selected=focus; resetSpecs(); renderPanel(); }
   syncHash(); }
-function syncHash(){ try{ window.history.replaceState(null,"",ArchSearch.hashFor(selected,activeQ)||location.pathname+location.search); }catch(_){} }
+function syncHash(push){ try{ const h=ArchSearch.hashFor(selected,activeQ,docRef())||location.pathname+location.search; if(push&&h!==location.hash){ window.history.pushState(null,"",h); docDepth++; } else window.history.replaceState(null,"",h); }catch(_){} }
 function go(id, opts){ opts=opts||{}; const n=nodes[id]; if(!n) return; hist.push({...cam}); if(hist.length>60) hist.shift();
   selected=id; hitId=opts.hit?id:null; if(!opts.keepSpecs) resetSpecs(); setView("map",true);
   const m = n.layout ? 1.04 : (n.id==="root"?1.02:2.6);
@@ -767,7 +798,7 @@ function statBlock(c){ const d=el("div",{class:"stat",role:"list","aria-label":"
     const label=el("span",{class:"status-label"});if(k!=="total")label.append(el("i",{class:"status-swatch","aria-hidden":"true",style:"background:var(--p-"+k.toLowerCase()+")"}));label.append(el("span",{text:l}));
     d.append(el("div",{class:cl,role:"listitem"},[label,el("b",{text:fmt(c[k]||0)})]));});
   const bar=el("div",{class:"sbar","aria-hidden":"true"}); if(c.total) ST.forEach(s=>{ if(c[s]) bar.append(el("i",{style:"width:"+(100*c[s]/c.total)+"%;background:var(--p-"+s.toLowerCase()+")"})); }); return [el("p",{class:"status-key",text:"Progress status · color key"}),d,bar]; }
-function setView(v, quiet){ view=v; $("vnext").setAttribute("aria-pressed",String(v==="next")); $("vpath").setAttribute("aria-pressed",String(v==="path")); $("vrel").setAttribute("aria-pressed",String(v==="rel")); if(!quiet) renderPanel(); }
+function setView(v, quiet){ view=v; $("vprog").setAttribute("aria-pressed",String(v==="prog")); $("program").hidden=v!=="prog"; workEl.classList.toggle("prog",v==="prog"); if(v==="prog") renderProgram(); $("vnext").setAttribute("aria-pressed",String(v==="next")); $("vpath").setAttribute("aria-pressed",String(v==="path")); $("vrel").setAttribute("aria-pressed",String(v==="rel")); if(!quiet) renderPanel(); }
 function rowLink(r){ return el("a",{class:"id",href:gh(r.repo)+"/blob/HEAD/specs/"+(r.family||"")+"/requirements.md",target:"_blank",rel:"noopener",text:r.id}); }
 function goalBadges(serves){ const w=el("span",{class:"gb"}); (serves||[]).forEach(g=>w.append(el("span",{class:"goal",title:(GOALW[g]?GOALW[g].title:"Competency question"),text:g}))); return w; }
 function renderReleases(){
@@ -803,6 +834,114 @@ function renderDelivery(){
       pb.append(box); });
   }
 }
+// ---------- spec-driven delivery: cards, program view, constitution and the document reader (PIPE-PAGES-R051) ----------
+const CARDS = T.cards||{}, CONS = META.constitutions||{};
+const KINDS = ["spec","plan","tasks","test-spec","checklists","research","data-model","quickstart","contracts"];
+const KFILE = {"spec":"spec.md","plan":"plan.md","tasks":"tasks.md","test-spec":"test-spec.md","checklists":"checklists","research":"research.md","data-model":"data-model.md","quickstart":"quickstart.md","contracts":"contracts"};
+const ROWNODE = {}, ROWSTATE = {}; Object.values(nodes).forEach(n=>n.specs.forEach(r=>{ ROWNODE[r.id]=n.id; ROWSTATE[r.id]=r.status; }));
+const PASSED = new Set(REL.releases.filter(r=>r.scenario_state==="passed").map(r=>r.id));
+const cardOf = (repo,fam) => (CARDS[repo]||{})[fam] || {t:fam,p:"",k:[0,0],d:0};
+const descNodes = n => { const o=[]; (function w(x){ x.children.forEach(c=>{ o.push(c); w(c); }); })(n); return o; };
+function famList(list){ const m=new Map();
+  list.forEach(nd=>nd.specs.forEach(r=>{ const k=r.repo+"\u0000"+r.family; let f=m.get(k); if(!f){ f={repo:r.repo,family:r.family,rows:[],per:{}}; m.set(k,f); } f.rows.push(r); f.per[nd.id]=(f.per[nd.id]||0)+1; }));
+  return [...m.values()].map(f=>({...f,node:Object.keys(f.per).sort((a,b)=>f.per[b]-f.per[a])[0]})); }
+function tally(rows){ const c={SPECIFIED:0,LANDED:0,VERIFIED:0,delivered:0};
+  rows.forEach(r=>{ c[r.status]=(c[r.status]||0)+1; if(r.status==="VERIFIED"&&PASSED.has(r.release)) c.delivered++; }); return c; }
+const countText = t => "specified "+t.SPECIFIED+" · landed "+t.LANDED+" · verified "+t.VERIFIED+" · delivered "+t.delivered;
+const taskPct = k => (k[0]+k[1]) ? Math.round(100*k[0]/(k[0]+k[1])) : -1;
+const taskText = k => (k[0]+k[1]) ? k[0]+" of "+(k[0]+k[1])+" tasks" : "no tasks";
+function taskBar(k){ const pct=Math.max(0,taskPct(k)), b=el("div",{class:"tbar",role:"img","aria-label":taskText(k)});
+  b.append(el("span",{class:"tfill",style:"width:"+pct+"%"})); return b; }
+function warnBadge(w){ return el("span",{class:"badge warn",title:w.join("; "),text:"Constitution: "+w.length+" failing"}); }
+const phaseNum = p => p ? +p.slice(1) : 9;
+// A repository holds the family in the node's subtree; the hash names it when two repositories share a family name.
+function repoFor(nodeId, family, hint){ if(hint) return hint; const n=nodes[nodeId]||T;
+  const f=famList([n,...descNodes(n)]).find(x=>x.family===family) || famList(Object.values(nodes)).find(x=>x.family===family); return f?f.repo:""; }
+function docLinks(nodeId, f, card){ const w=el("div",{class:"chips",role:"group","aria-label":"Documents of "+card.t});
+  KINDS.forEach((k,i)=>{ if(!(card.d>>i&1)) return; const file=KFILE[k];
+    const a=el("a",{class:"chip",href:ArchSearch.hashFor(nodeId,"",{doc:f.family+"/"+file,repo:f.repo}),text:k});
+    a.onclick=e=>{ e.preventDefault(); openDoc({repo:f.repo,family:f.family,file}); }; w.append(a); });
+  w.append(el("a",{class:"chip",href:gh(f.repo)+"/blob/HEAD/specs/"+f.family+"/requirements.md",target:"_blank",rel:"noopener",text:"requirements ↗"})); return w; }
+function cardEl(f, nodeId){ const c=cardOf(f.repo,f.family), box=el("div",{class:"step dcard","data-family":f.family});
+  box.append(el("div",{class:"dh"},[el("b",{text:c.t}),c.p?el("span",{class:"prio",text:c.p}):null,c.w?warnBadge(c.w):null]),
+    el("div",{class:"muted",text:f.repo+" · "+f.family}),el("div",{class:"dcount",text:countText(tally(f.rows))}),
+    taskBar(c.k),el("div",{class:"muted",text:taskText(c.k)}),docLinks(nodeId,f,c)); return box; }
+let dsort="phase", dlimit=30;
+function sortFams(fams){ const by={phase:f=>phaseNum(cardOf(f.repo,f.family).p), progress:f=>-taskPct(cardOf(f.repo,f.family).k)};
+  return fams.slice().sort((a,b)=>(by[dsort](a)-by[dsort](b))||(a.family<b.family?-1:1)); }
+function deliveryTable(fams){ const box=el("div",{class:"xs"}), bar=el("div",{class:"chips",role:"group","aria-label":"Sort specs"});
+  [["phase","Sort by phase"],["progress","Sort by progress"]].forEach(([k,l])=>{ const b=el("button",{class:"chip",type:"button","aria-pressed":String(dsort===k),text:l}); b.onclick=()=>{ dsort=k; renderPanel(); }; bar.append(b); });
+  const tb=el("tbody"), shown=sortFams(fams).slice(0,dlimit);
+  shown.forEach(f=>{ const c=cardOf(f.repo,f.family), t=tally(f.rows), a=el("a",{href:ArchSearch.hashFor(f.node,""),text:c.t});
+    a.onclick=e=>{ e.preventDefault(); go(f.node,{hit:true,open:true}); };
+    tb.append(el("tr",{},[el("td",{},[a,c.w?warnBadge(c.w):null]),el("td",{text:c.p||"–"}),el("td",{class:"num",text:t.VERIFIED+"/"+f.rows.length+" verified, "+t.delivered+" delivered"}),el("td",{class:"num",text:c.k[0]+c.k[1]?taskPct(c.k)+"%":"–"})])); });
+  box.append(bar,el("div",{class:"tbl"},[el("table",{class:"dtab"},[el("thead",{},[el("tr",{},["Spec","Phase","Rows","Tasks"].map(h=>el("th",{scope:"col",text:h})))]),tb])]));
+  if(fams.length>dlimit){ const more=el("button",{class:"chip",type:"button",text:"Show "+Math.min(30,fams.length-dlimit)+" more of "+(fams.length-dlimit)}); more.onclick=()=>{ dlimit+=30; renderPanel(); }; box.append(more); }
+  return box; }
+function deliverySection(n){ const own=famList([n]), below=n.children.length?famList(descNodes(n)):[];
+  if(!own.length&&!below.length) return null;
+  const sec=el("section",{id:"delsec"},[el("h3",{text:"Delivery"})]);
+  if(own.length){ sec.append(el("p",{class:"muted",text:"Specs whose rows sit on this part. Counts cover its own rows only."})); own.forEach(f=>sec.append(cardEl(f,n.id))); }
+  if(below.length){ sec.append(el("p",{class:"muted",text:"Specs on the parts below ("+below.length+")."}),deliveryTable(below)); }
+  return sec; }
+function constitutionSection(n){ const host=nodes[parentOf[n.id]];
+  if(!n.repo||!CONS[n.repo]||(host&&host.repo===n.repo)) return null;
+  const a=el("a",{href:ArchSearch.hashFor(n.id,"",{doc:"_constitution/constitution.md",repo:n.repo}),text:"Constitution "+CONS[n.repo]});
+  a.onclick=e=>{ e.preventDefault(); openDoc({repo:n.repo,family:"_constitution",file:"constitution.md"}); };
+  return el("section",{},[el("h3",{text:"Constitution"}),el("p",{class:"desc"},[a])]); }
+function renderProgram(){
+  const p=$("program"); p.textContent=""; p.style.setProperty("--lc","var(--l-delivery)");
+  p.append(el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Program"}),el("span",{text:REL.releases.length+" phases"})]),el("h2",{text:"Delivery program"})]));
+  const pb=el("div",{class:"pb"}), cols=el("div",{class:"progcols"}), fams=famList(Object.values(nodes)); p.append(pb); pb.append(cols);
+  pb.append(el("p",{class:"note",text:"Each column lists the specs of one phase, with the concept-proof scenario that closes it. Select a spec to open its part."}));
+  const phases=[...new Set(["P1","P2","P3","P4","P5",...REL.releases.map(r=>r.phase)])].sort().slice(0,5);
+  phases.forEach(ph=>{ const rel=REL.releases.find(r=>r.phase===ph), col=el("div",{class:"pcol"}), list=fams.filter(f=>cardOf(f.repo,f.family).p===ph);
+    col.append(el("h4",{},[el("span",{class:"prio",text:ph}),el("span",{text:rel?rel.name:"No release bundle"})]));
+    if(rel){ const st=ROWSTATE[rel.scenario]; col.append(el("div",{class:"step"},[el("b",{text:rel.scenario}),el("span",{class:"muted",text:"scenario "+rel.scenario_state+(st?", row "+st:"")}),el("span",{class:"muted",text:rel.verified+" of "+rel.rows+" scoped rows VERIFIED ("+rel.share+"%)"})])); }
+    sortFams(list).slice(0,25).forEach(f=>{ const c=cardOf(f.repo,f.family), t=tally(f.rows), b=el("button",{class:"step pcard",type:"button"},[el("b",{text:c.t}),c.w?warnBadge(c.w):null,el("span",{class:"muted",text:f.repo}),el("span",{class:"dcount",text:t.VERIFIED+"/"+f.rows.length+" verified · "+taskText(c.k)}),taskBar(c.k)]);
+      b.onclick=()=>go(f.node,{hit:true,open:true}); col.append(b); });
+    if(list.length>25) col.append(el("p",{class:"muted",text:(list.length-25)+" more specs in "+ph}));
+    if(!list.length) col.append(el("p",{class:"muted",text:"No spec names this phase."}));
+    cols.append(col); });
+  const loose=fams.filter(f=>!cardOf(f.repo,f.family).p).length; pb.append(el("p",{class:"muted",text:loose+" specs name no phase in their plan or release bundle."})); }
+// ---- reader: one document beside the map, deep link #node=<id>&doc=<family>/<file>[&sec=<heading>]&repo=<repository>
+let doc=null, rdTok=0, docDepth=0;
+const docRef = () => doc ? {doc:doc.family+"/"+doc.file,sec:doc.sec,repo:doc.repo} : null;
+const ID_RE = /[A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9.]+)+/g;
+function pickDoc(d, file){ const stem=file.replace(/\.md$/,"");
+  return d.docs.find(x=>x.name===file)||d.docs.find(x=>x.name.startsWith(stem+"/"))||d.docs[0]; }
+// Row IDs named in a document (task lines, cross-repository seams) become links that fly to the owning part.
+function linkRowIds(host){ const w=document.createTreeWalker(host,NodeFilter.SHOW_TEXT), todo=[]; let t;
+  while((t=w.nextNode())) if(!t.parentNode.closest("a")&&ID_RE.test(t.nodeValue)) todo.push(t);
+  todo.forEach(node=>{ const txt=node.nodeValue, frag=document.createDocumentFragment(); let at=0; ID_RE.lastIndex=0; let m;
+    while((m=ID_RE.exec(txt))){ const id=m[0].replace(/\.+$/,""); if(!ROWNODE[id]) continue;
+      frag.append(document.createTextNode(txt.slice(at,m.index)));
+      const a=el("a",{class:"rowlink",href:ArchSearch.hashFor(ROWNODE[id],id,docRef()),text:id}); a.onclick=e=>{ e.preventDefault(); location.hash=a.getAttribute("href"); };
+      frag.append(a); at=m.index+id.length; ID_RE.lastIndex=at; }
+    frag.append(document.createTextNode(txt.slice(at))); node.replaceWith(frag); }); }
+function decorateTasks(host){ host.querySelectorAll("li").forEach(li=>{ const t=li.firstChild, m=t&&t.nodeType===3&&/^\[([ xX])\]\s+/.exec(t.nodeValue);
+  if(m){ li.className="task "+(m[1]===" "?"open":"done"); t.nodeValue=t.nodeValue.slice(m[0].length); } }); }
+function openDoc(ref, quiet){ doc={repo:ref.repo,family:ref.family,file:ref.file,sec:ref.sec||""}; renderReader(); if(!quiet) syncHash(true); }
+function closeDoc(){ if(!doc) return; doc=null; renderReader(); syncHash(); }
+function renderReader(){
+  const r=$("reader"); r.textContent=""; r.hidden=!doc; workEl.classList.toggle("reading",!!doc); if(!doc) return;
+  const ref=doc, tok=++rdTok, constitution=ref.family==="_constitution", card=cardOf(ref.repo,ref.family);
+  const close=el("button",{class:"chip",type:"button",text:"Close"}); close.onclick=closeDoc;
+  const back=el("button",{class:"chip",type:"button",text:"Back"}); back.onclick=()=>{ if(docDepth>0){ docDepth--; history.back(); } else closeDoc(); };
+  r.append(el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Document"}),el("span",{text:ref.repo})]),el("h2",{text:constitution?"Constitution":card.t}),el("div",{class:"chips"},[back,close])]));
+  const body=el("div",{class:"pb"}); r.append(body); body.append(el("p",{class:"muted",role:"status",text:"Loading document…"}));
+  loadDetail(ref).then(d=>{ if(tok!==rdTok) return; const cur=pickDoc(d,ref.file); body.textContent="";
+    if(!cur){ body.append(el("p",{class:"muted",text:"This spec has no such document."})); return; }
+    const sw=el("div",{class:"chips",role:"group","aria-label":"Documents of this spec"});
+    d.docs.forEach(x=>{ const a=el("a",{class:"chip",href:ArchSearch.hashFor(selected,"",{doc:ref.family+"/"+x.name,repo:ref.repo}),"aria-current":String(x===cur),text:x.label}); a.onclick=e=>{ e.preventDefault(); openDoc({repo:ref.repo,family:ref.family,file:x.name}); }; sw.append(a); });
+    body.append(sw,el("div",{class:"chips"},[linkEl("Open "+cur.name+" on GitHub",cur.url)]));
+    const nav=el("nav",{class:"rnav","aria-label":"Sections of "+cur.label});
+    cur.outline.filter(o=>o[0]<=5).forEach(o=>{ const a=el("a",{href:"#d-"+o[2],text:o[1],style:"padding-left:"+(o[0]-3)*12+"px"}); a.onclick=e=>{ e.preventDefault(); const t=$("d-"+o[2]); if(t) t.scrollIntoView({block:"start"}); }; nav.append(a); });
+    const box=el("div",{class:"xbody rdoc"}); box.append(mdBox(cur.html)); body.append(nav,box);
+    const hs=box.querySelectorAll("h3,h4,h5,h6"); cur.outline.forEach((o,i)=>{ if(hs[i]) hs[i].id="d-"+o[2]; });
+    decorateTasks(box); linkRowIds(box);
+    const t=ref.sec&&$("d-"+ref.sec); if(t) t.scrollIntoView({block:"start"});
+  }).catch(()=>{ if(tok!==rdTok) return; body.textContent=""; body.append(el("p",{class:"muted",role:"alert",text:"The document could not be loaded."})); }); }
 function diagramContext(n){
   const text=[],host=nodes[parentOf[n.id]],L=host?.layout,k=L?.kids[n.id];
   if(L?.loop?.around===n.id)text.push(L.loop.label);
@@ -812,7 +951,7 @@ function diagramContext(n){
   return [...new Set(text)];
 }
 function renderPanel(){
-  if(view!=="map") return renderDelivery();
+  if(view!=="map"&&view!=="prog") return renderDelivery();
   const n=nodes[selected], p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-"+(n.layer||"core")+")");
   const ph=el("div",{class:"ph"});
   ph.append(el("div",{class:"eyebrow"},[el("span",{text:n.id==="root"?"Overview":(LAYERS[n.layer]||"")}),el("span",{text:"Level "+n.level}),n.repo?el("span",{text:n.repo}):null]));
@@ -835,6 +974,8 @@ function renderPanel(){
     wired.forEach(([id,how])=>{ const k=id+how; if(seen.has(k)) return; seen.add(k); const b=el("button",{type:"button"},[el("span",{text:pathTo(id).slice(1).map(i=>nodes[i].label).join(" › ")}),el("span",{class:"n",text:how})]); b.onclick=()=>go(id,{hit:true}); ul.append(el("li",{},[b])); });
     pb.append(el("section",{},[el("h3",{text:"Wired with"}),ul])); }
   if(n.external) return;
+  const dsec=deliverySection(n); if(dsec) pb.append(dsec);
+  const csec=constitutionSection(n); if(csec) pb.append(csec);
   const all=specRows(n), counts={ALL:all.length}; ST.forEach(s=>counts[s]=0); all.forEach(s=>counts[s.status]++);
   const sec=el("section",{id:"specsec"}); sec.append(el("h3",{text:"Spec rows"}));
   const sc=el("div",{class:"chips",role:"group","aria-label":"Scope"});
@@ -888,19 +1029,23 @@ function renderPanel(){
 // ---------- search ----------
 /*__SEARCH__*/
 const DESC={}; Object.values(nodes).forEach(n=>n.specs.forEach(r=>{ if(r.desc) DESC[r.id]=r.desc; }));
-const SX = ArchSearch.create(PAYLOAD.search,id=>DESC[id]);
+let SX = ArchSearch.create(PAYLOAD.search,id=>DESC[id]), extraAsked=false;
+// Task lines and plan headings load once, on the first search, from search-extra.json beside the page.
+function loadExtra(){ if(extraAsked) return; extraAsked=true;
+  fetch("search-extra.json").then(r=>r.ok?r.json():null).then(x=>{ if(!x) return; SX=ArchSearch.create(PAYLOAD.search,id=>DESC[id],x); if(document.activeElement===q&&q.value.trim().length>=2) doSearch(); }).catch(()=>{}); }
 const q=$("q"), res=$("results"), qstat=$("qstatus"); let hits=[], cur=-1, activeQ="";
 function setCur(i){ const bs=[...res.querySelectorAll(".res")]; cur=i; bs.forEach((b,k)=>b.setAttribute("aria-selected",String(k===i)));
   if(i>=0&&bs[i]){ q.setAttribute("aria-activedescendant",bs[i].id); bs[i].scrollIntoView({block:"nearest"}); } else q.removeAttribute("aria-activedescendant"); }
 function showResults(open){ res.hidden=!open; q.setAttribute("aria-expanded",String(open)); }
 function doSearch(){ const v=q.value.trim(); res.textContent=""; cur=-1; q.removeAttribute("aria-activedescendant");
   if(v.length<2){ hits=[]; showResults(false); qstat.textContent=""; return; }
-  hits=SX.search(v);
+  loadExtra(); hits=SX.search(v);
   if(!hits.length){ res.append(el("div",{class:"none",text:"No capability, part or spec row matches “"+v+"”."})); showResults(true); qstat.textContent="No results"; return; }
+  const KIND={row:"spec",part:"part",task:"task",section:"plan"};
   hits.forEach((h,i)=>{ const isRow=h.kind==="row", n=nodes[h.node];
     const where=pathTo(h.node).slice(1).map(x=>nodes[x].label).join(" › ")||n.label;
-    const main=el("button",{type:"button",tabindex:"-1","aria-label":(isRow?h.id+", "+h.title+", ":h.title+", part, ")+h.repo+(isRow?", in "+where:"")},[
-      el("span",{class:"k",text:isRow?"spec":"part"}),
+    const main=el("button",{type:"button",tabindex:"-1","aria-label":(isRow?h.id+", "+h.title+", ":h.title+", "+KIND[h.kind]+", ")+h.repo+(isRow?", in "+where:"")},[
+      el("span",{class:"k",text:KIND[h.kind]}),
       el("span",{class:"t"},[isRow?el("span",{class:"rid",text:h.id+"  "}):null, document.createTextNode(h.title)]),
       el("span",{class:"s"},[el("span",{class:"rrepo",text:h.repo||"architecture"}), document.createTextNode(" · "+where)])]);
     main.onmousedown=e=>e.preventDefault(); main.onclick=()=>choose(i);
@@ -914,7 +1059,8 @@ function showMatches(h){ const ids=hits.filter(x=>x.kind==="row"&&x.node===h.nod
   const specs=nodes[h.node].specs; flashIds=new Set(ids); flashSpec=h.kind==="row"?h.id:ids[0]||null;
   scope="node"; filt="ALL"; const idx=Math.max(0,...ids.map(i=>specs.findIndex(s=>s.id===i))); limit=Math.max(150,idx+20); }
 function choose(i, keep){ const h=hits[i]; if(!h) return; if(!keep){ showResults(false); q.blur(); } activeQ=q.value.trim();
-  go(h.node,{hit:true,keepSpecs:true,open:true}); showMatches(h); renderPanel(); syncHash(); }
+  go(h.node,{hit:true,keepSpecs:true,open:true}); showMatches(h); renderPanel();
+  if(h.doc) openDoc({repo:h.repo,family:h.family,file:h.doc,sec:h.sec},true); syncHash(!!h.doc); }
 q.addEventListener("input",()=>{ if(!q.value.trim()) activeQ=""; doSearch(); });
 q.addEventListener("keydown",e=>{ const n=res.querySelectorAll(".res").length;
   if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(res.hidden){ doSearch(); return; } if(!n) return; setCur((cur+(e.key==="ArrowDown"?1:-1)+n)%n); }
@@ -959,7 +1105,7 @@ document.addEventListener("visibilitychange",oceanMotionState);
 oceanMotionState();
 function curDark(){ const t=rootEl.getAttribute("data-theme"); if(t) return t==="dark"; return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches; }
 function themeLabel(){ $("theme").textContent=curDark()?"Light theme":"Dark theme"; }
-$("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path"); $("vrel").onclick=()=>setView(view==="rel"?"map":"rel");
+$("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path"); $("vrel").onclick=()=>setView(view==="rel"?"map":"rel"); $("vprog").onclick=()=>setView(view==="prog"?"map":"prog");
 $("theme").onclick=()=>{ const t=curDark()?"light":"dark"; rootEl.setAttribute("data-theme",t); store.set("arbora-arch-theme",t); themeLabel(); readColors(); setTint(selected,true); };
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
 if(window.matchMedia) ["(forced-colors: active)","(prefers-reduced-transparency: reduce)"].forEach(query=>window.matchMedia(query).addEventListener("change",readColors));
@@ -969,12 +1115,14 @@ if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{dirty=
 function applyHash(instant){ const h=ArchSearch.parseHash(location.hash);
   if(h.q){ q.value=h.q; doSearch(); if(hits.length){ activeQ=h.q; const top=hits[0]; go(top.node,{hit:true,keepSpecs:true,open:true,instant}); showMatches(top); renderPanel(); } }
   if(h.node&&nodes[h.node]){ go(h.node,{hit:true,open:true,instant}); if(h.q&&hits.length){ const mine=hits.find(x=>x.node===h.node); if(mine){ showMatches(mine); renderPanel(); } } }
-  showResults(!!(h.q&&hits.length)); }
+  showResults(!!(h.q&&hits.length));
+  if(h.doc){ const at=h.doc.indexOf("/"), fam=h.doc.slice(0,at), repo=repoFor(selected,fam,h.repo); if(at>0&&repo) openDoc({repo,family:fam,file:h.doc.slice(at+1),sec:h.sec||""},true); }
+  else if(doc){ doc=null; renderReader(); } }
 cam=fitCam(R.root,1.01); selected="root"; resetSpecs(); renderPanel(); renderCrumbs();
 if(location.hash.length>1) applyHash(true);
-window.addEventListener("hashchange",()=>{ const h=ArchSearch.parseHash(location.hash); if((h.node||"root")!==selected||h.q!==activeQ) applyHash(false); });
+window.addEventListener("hashchange",()=>{ const h=ArchSearch.parseHash(location.hash); if((h.node||"root")!==selected||h.q!==activeQ||(h.doc||"")!==(doc?doc.family+"/"+doc.file:"")) applyHash(false); });
 scheduleSettle(); requestAnimationFrame(frame);
 window.__storyQA=()=>storyEvidence;
-window.__arch={ search:SX.search, get hits(){return hits;}, get cam(){return cam;}, get focus(){return focus;}, get selected(){return selected;}, rect:id=>R[id], meta:META, go, up, hitAt, visible:()=>hitList.length, annotations:()=>({labels:annotationEvidence,rects:annotationRects,segments:annotationSegments}) };
+window.__arch={ search:(...a)=>SX.search(...a), get hits(){return hits;}, get cam(){return cam;}, get focus(){return focus;}, get selected(){return selected;}, rect:id=>R[id], meta:META, go, up, hitAt, visible:()=>hitList.length, annotations:()=>({labels:annotationEvidence,rects:annotationRects,segments:annotationSegments}) };
 })();
 </script>
