@@ -2,8 +2,9 @@
 
 Checks per spec directory: file set, title line, spec ID shape, forbidden name words,
 and the ``specs/README.md`` index entry. Across every authored ``specs/**/*.md`` file:
-no third-party product or project names (``third_party_names.toml``). No baseline and
-no suppression.
+no third-party product or project names (``third_party_names.toml``). The narrative,
+task-line and status-header rules (``narrative.py``) fail for a touched file and are advisory
+for an untouched one. No baseline and no suppression.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import re
 from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.specs import narrative
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.third_party_names import check_repository
 
@@ -36,6 +38,11 @@ FIRST_CELL_RE = re.compile(r"^\|\s*`([^`\s|]+)`\s*\|", re.M)
 
 #: Advisory until every repository has deleted its tombstone rows; `--tombstones` enforces it.
 TOMBSTONE = "is a tombstone for a moved row"
+
+#: Marks a finding that fails only for a touched file and is advisory otherwise.
+ADVISORY_TAG = " (advisory: spec not touched)"
+#: Advisory for every repository until each one carries its constitution.
+CONSTITUTION_MARK = "constitution.md is missing"
 
 
 def _read(path: Path) -> str:
@@ -100,10 +107,32 @@ def check_names(name: str, spec_id: str | None) -> list[str]:
     return out
 
 
-def check_spec(spec_dir: Path, index: str) -> list[str]:
+def check_touched_rules(spec_dir: Path, root: Path | None, touched: set[str]) -> list[str]:
+    """Narrative, task-line and status-header findings; untouched files get ``ADVISORY_TAG``."""
+    texts = {n: _read(spec_dir / n) for n in ("spec.md", "plan.md", "requirements.md", "tasks.md", "test-spec.md")}
+    base = root or spec_dir.parent.parent
+
+    def tag(name: str, items: list[str]) -> list[str]:
+        if narrative.is_touched(touched, spec_dir, base, name):
+            return items
+        return [i + ADVISORY_TAG for i in items]
+
+    out = tag("spec.md", narrative.check_narrative(texts["spec.md"], texts["requirements.md"]))
+    out += tag("tasks.md", narrative.check_tasks(texts["tasks.md"], texts["requirements.md"]))
+    status = narrative.check_status_header(texts)
+    out += [
+        m + ("" if narrative.is_touched(touched, spec_dir, base, m.split(":")[0]) else ADVISORY_TAG) for m in status
+    ]
+    return out
+
+
+def check_spec(spec_dir: Path, index: str, touched: set[str] | None = None, root: Path | None = None) -> list[str]:
     """Findings for one spec directory, as ``(path, message)``-joined lines."""
     spec_id, title = check_title(spec_dir)
-    found = [*check_files(spec_dir), *title]
+    found = [*check_files(spec_dir), *title, *narrative.check_optional(spec_dir)]
+    texts = {n: _read(spec_dir / n) for n in ("spec.md", "requirements.md")}
+    found += narrative.check_markers(spec_dir, texts)
+    found += check_touched_rules(spec_dir, root, touched or set())
     if spec_id:
         found += check_id(spec_dir, spec_id)
     found += check_tombstones(spec_dir)
@@ -129,12 +158,20 @@ def main(argv: list[str]) -> int:
         action="store_true",
         help="fail on a tombstone row for a moved requirement (advisory by default)",
     )
+    parser.add_argument(
+        "--base",
+        default=None,
+        help="revision the change is measured against (default: the pushed-over ref, then origin/main)",
+    )
     args = parser.parse_args(argv)
     root = repo_root(args.root)
     index = _read(root / "specs" / "README.md")
     dirs = _spec_dirs(root)
-    found = [f for d in dirs for f in check_spec(d, index)]
-    advisory = () if args.tombstones else (TOMBSTONE,)
+    touched = narrative.touched_paths(root, args.base)
+    found = [f for d in dirs for f in check_spec(d, index, touched, root)]
+    if dirs:
+        found += [f"spec-standard: {m}" for m in narrative.check_constitution(root)]
+    advisory = (ADVISORY_TAG, CONSTITUTION_MARK) + (() if args.tombstones else (TOMBSTONE,))
     findings = [f for f in found if not any(mark in f for mark in advisory)]
     if (root / "specs").is_dir():
         named = check_repository(root)

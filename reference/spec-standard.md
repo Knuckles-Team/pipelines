@@ -64,7 +64,7 @@ A requirement states what this platform must do, in this platform's terms.
 - A requirement must not define itself by comparison, such as "like X" or "parity with X".
 - A requirement may name an open protocol, format, or standard that the platform implements.
 - A connector requirement names the one external system it integrates. No other spec names that system.
-- Spec content is self-contained. A spec row must not reference third-party products, systems, papers, or repositories as inspiration, analysis, or comparator — no product or system names, no "surveyed/comparator/inspired-by" framing, no paper or arXiv citations in rows or in plan References sections. External names may appear only where the row is about integration support, interop, or use of that product's API/protocol (for example a connector for an external service, a git-compatible export, or an arXiv API source type). Comparative analysis, research grounding, and source records (with digests) live in the plans/ audit documents, never in a repository's specs/ tree.
+- Spec content is self-contained. A spec row must not reference third-party products, systems, papers, or repositories as inspiration, analysis, or comparator — no product or system names, no "surveyed/comparator/inspired-by" framing, no paper or arXiv citations in rows or in plan References sections. External names may appear only where the row is about integration support, interop, or use of that product's API/protocol (for example a connector for an external service, a git-compatible export, or an arXiv API source type). Comparative analysis, research grounding, and source records (with digests) live outside the repository, never in its `specs/` tree.
 - A value taken from a paper is a starting default. A measurement on this platform replaces it.
 
 A rollup must include a wiring row and a hot-path proof row. The wiring row names the production call site as `file:line`. The hot-path proof row is an integration test that enters at the real entry point and observes the effect through the wired call site. A unit test of a function that no production caller reaches does not prove a rollup.
@@ -88,19 +88,45 @@ A directory that predates this standard keeps its name until its spec is next ex
 
 ## Files
 
-Each spec directory holds exactly these files:
+The standard adopts the file layout of the [upstream spec-driven toolkit](https://github.com/github/spec-kit) and adds the requirement register. Each spec directory holds these required files:
 
 | File | Content |
 |---|---|
-| `spec.md` | Outcome, scope, owner, non-goals, "Why a new spec" |
+| `spec.md` | Outcome, prioritized user stories, edge cases, `FR-` and `SC-` labels, assumptions, scope, "Why a new spec" |
 | `plan.md` | Architecture, reuse inventory, interfaces, wiring, and decisions, as they are now |
 | `requirements.md` | One table row per requirement ID |
-| `tasks.md` | One task per requirement row, producer first |
+| `tasks.md` | One numbered task per requirement row, producer first |
 | `test-spec.md` | One test row per requirement, with the proving test name |
+
+A spec directory may also hold these optional artifacts:
+
+| Artifact | Content |
+|---|---|
+| `research.md` | Findings that support a decision in `plan.md`, stated in this platform's terms |
+| `data-model.md` | Entities, fields and relations |
+| `contracts/` | Interface schemas, one file per contract |
+| `quickstart.md` | The shortest path that shows the feature working |
+| `checklists/` | Requirement-quality checklists |
+
+Each repository also holds `.specify/memory/constitution.md`. It is one page. It links the organization standards by public URL and adds only the rules of that repository. `specs/_template/constitution.md` is the starting text.
 
 Status is derived, never committed. `pipelines-hook spec-status --write` computes `specs/<dir>/status.json` (gitignored) from `requirements.md`, `Spec:` trailers in Git history, test bindings and the frozen `.config/spec-legacy-landings.json`. Page builders, the architecture explorer and CI gates compute it the same way at read time, so pull requests carry only source and two pull requests on one spec never conflict on status. A tracked `specs/*/status.json` fails the `spec-status` gate.
 
+The four states are `SPECIFIED`, `LANDED`, `VERIFIED` and `RETIRED`. No spec file writes a state. The upstream `Status:` header is not used.
+
 Design, architecture, coverage, and cross-repository notes are sections of `plan.md`. Files named `design.md`, `architecture.md`, `coverage.md`, or `cross-repo.md` must not exist.
+
+## Narrative and task format
+
+`spec.md` uses these sections, in this order after the delivery mapping:
+
+1. `## User Scenarios & Testing` holds stories headed `### User Story N - <title> (Priority: P1)`. Each story lists acceptance scenarios as `**Given** …, **When** …, **Then** …`. The subsection `### Edge Cases` closes the section.
+2. `## Requirements` holds `FR-` labels. `## Success Criteria` holds `SC-` labels. Each label names the `-R` rows it maps to. Each named row must exist in `requirements.md`. The labels restart at 001 in each spec; only the row IDs are unique across the ecosystem.
+3. `## Assumptions` holds the assumptions that bound the scope.
+
+A question that blocks a row carries the marker `[NEEDS CLARIFICATION: <question>]`. The marker must be resolved and deleted before the row lands; the gate fails while one remains in `spec.md` or `requirements.md`.
+
+A task line in `tasks.md` reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. The task number and the row ID are required. The `[P]` and `[US1]` tokens are optional.
 
 ## Rows
 
@@ -138,12 +164,19 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 
 | Check | Finding |
 |---|---|
-| File set | A required file is absent, or a forbidden file exists |
+| File set | A required file is absent, a forbidden file exists, or an optional artifact has the wrong kind |
+| Clarification | `spec.md` or `requirements.md` holds an open `[NEEDS CLARIFICATION: …]` marker |
+| Narrative | `spec.md` lacks prioritized stories, Given/When/Then scenarios, Edge Cases or Assumptions, or an `FR-` or `SC-` label names no existing row |
+| Task line | A `tasks.md` task does not match the numbered task line or names no existing row |
+| Status | A spec file writes a `Status:` line |
+| Constitution | The repository has no `.specify/memory/constitution.md` (advisory) |
 | Title line | `spec.md` line 1 does not match `# <ID> — <Title>` |
 | Spec ID | The ID has a numeric suffix, or an active row ID does not match the row-ID regex or does not start with the ID |
 | Names | The directory name or the ID contains a forbidden word |
 | Index | `specs/README.md` does not list the spec |
 | Third-party names | Authored `specs/**/*.md` text names a product or project on the denylist in `pipelines_hooks/specs/third_party_names.toml` |
+
+The clarification, file-set, title, ID, name, index and third-party checks always fail on a finding. The narrative, task-line and status checks fail for a file the change touches, that is a staged file or a file that differs from the base revision, and are advisory for every other file. An advisory finding prints with the prefix `ADV` and does not change the exit code. An older spec is rewritten when it is next extended.
 
 The gate exits 0 when clean, 1 on a finding, and 2 when it cannot run. It has no baseline and no suppression.
 

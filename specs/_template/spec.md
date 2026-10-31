@@ -10,14 +10,39 @@ Component: [owned component]
 [Declare Depends-on, Extends, References, and Code lines using the shared spec standard.
 Leave missing mappings unknown. Use public source links for external prerequisites.]
 
-## Purpose and user stories
+## User Scenarios & Testing
 
-[Describe the user, outcome, and reason.]
+### User Story 1 - [Title] (Priority: P1)
 
-## Requirements and acceptance
+[Describe the user, the outcome, and the reason in plain language.]
 
-- FR-001: [Observable behavior, including errors, authorization, and boundaries.]
-- SC-001: [Measurable, independently checkable success condition.]
+**Acceptance Scenarios**:
+
+1. **Given** [initial state], **When** [action], **Then** [observable outcome].
+
+### User Story 2 - [Title] (Priority: P2)
+
+[Describe the next story. Each story must work and be testable on its own.]
+
+**Acceptance Scenarios**:
+
+1. **Given** [initial state], **When** [action], **Then** [observable outcome].
+
+### Edge Cases
+
+- [Boundary condition, error path, or denial, and the behavior it must show.]
+
+## Requirements
+
+- **FR-001**: [Observable behavior, including errors, authorization, and boundaries.] Rows: `[ID]-R001`.
+
+## Success Criteria
+
+- **SC-001**: [Measurable, independently checkable success condition.] Rows: `[ID]-R001.1`.
+
+## Assumptions
+
+- [An assumption that bounds the scope. Delete it when a row replaces it.]
 
 ## Why a new spec
 
@@ -29,10 +54,9 @@ Leave missing mappings unknown. Use public source links for external prerequisit
 
 ## Traceability
 
-| Requirement | Design section | Test ID | Evidence |
-|---|---|---|---|
-| FR-001 | [plan.md anchor] | T-001 |  |
+| Label | Rows | Design section | Test ID | Evidence |
+|---|---|---|---|---|
+| FR-001 | `[ID]-R001` | [plan.md anchor] | T-001 |  |
 
-## Open questions
-
-- [Record unresolved choices; never silently mark them accepted.]
+A question that blocks a row carries the marker `[NEEDS CLARIFICATION: <question>]` in `spec.md`.
+The marker must be resolved and deleted before the row lands. Do not write a status line: the generator computes the state.
