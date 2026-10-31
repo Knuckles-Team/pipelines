@@ -35,12 +35,16 @@ def test_gitignore_convergence_fires_on_a_missing_entry_and_tracked_output(repo:
     assert repo.run("gitignore-convergence") == 1
 
 
-def test_gitignore_convergence_allows_only_tracked_spec_kit_constitution(repo: Repo) -> None:
+def test_gitignore_convergence_allows_only_tracked_spec_kit_constitution_and_templates(repo: Repo) -> None:
     full = "\n".join(sorted(REQUIRED)) + "\n"
     repo.commit({".gitignore": full})
     repo.write(".specify/memory/constitution.md", "# Constitution\n")
     repo.git("add", "-f", ".specify/memory/constitution.md")
     repo.git("commit", "-q", "-m", "track constitution")
+    assert repo.run("gitignore-convergence") == 0
+    repo.write(".specify/templates/spec-template.md", "# Template\n")
+    repo.git("add", "-f", ".specify/templates/spec-template.md")
+    repo.git("commit", "-q", "-m", "track vended template")
     assert repo.run("gitignore-convergence") == 0
     repo.write(".specify/cache/generated.json", "{}\n")
     repo.git("add", "-f", ".specify/cache/generated.json")

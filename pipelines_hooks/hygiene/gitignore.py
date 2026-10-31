@@ -49,6 +49,8 @@ REQUIRED = frozenset(
         "*maturin.lock",
     }
 )
+#: Authored files under `.specify/`: the constitution and the vended templates.
+AUTHORED_SPECIFY = frozenset({".specify/memory/constitution.md"})
 _TRACKED_BUILD_OUTPUT_RE = re.compile(
     r"^(dist|build|target|site)(-[^/]*)?/"
     r"|(^|/)(__pycache__|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.hypothesis|\.pytest_tmp|\.venv|venv|node_modules"
@@ -71,7 +73,9 @@ def problems(root: Path) -> list[str]:
     tracked = sorted(
         path
         for path in tracked_paths(root)
-        if path != ".specify/memory/constitution.md" and _TRACKED_BUILD_OUTPUT_RE.search(path)
+        if path not in AUTHORED_SPECIFY
+        and not path.startswith(".specify/templates/")
+        and _TRACKED_BUILD_OUTPUT_RE.search(path)
     )
     found = []
     if missing:

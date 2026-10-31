@@ -35,7 +35,7 @@ def read_records(root, config):
     for source in config["sources"]:
         for path in sorted(root.glob(source["glob"])):
             relative = path.relative_to(root)
-            if "_template" in relative.parts or path.resolve().is_relative_to(root) is False:
+            if path.resolve().is_relative_to(root) is False:
                 continue
             if relative in seen:
                 continue

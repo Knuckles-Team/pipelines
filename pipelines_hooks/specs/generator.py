@@ -115,9 +115,7 @@ def computed(repo: Path, head: str = "HEAD") -> dict[Path, dict]:
 
 def generate(repo: Path, head: str) -> dict[Path, dict]:
     """``specs/<dir>/status.json`` path -> computed document for every authored spec."""
-    requirements_paths = sorted(
-        path for path in repo.glob("specs/*/requirements.md") if path.parent.name != "_template"
-    )
+    requirements_paths = sorted(repo.glob("specs/*/requirements.md"))
     if not requirements_paths:
         return {}
     if git_text(repo, ("rev-parse", "--is-shallow-repository")).strip() == "true":

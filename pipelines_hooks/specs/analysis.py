@@ -14,6 +14,7 @@ import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
+from pipelines_hooks.specs.artifacts import check_artifacts
 from pipelines_hooks.specs.narrative import (
     LABEL_RE,
     MARKER_RE,
@@ -188,4 +189,5 @@ def analyze(spec_dir: Path, texts: Mapping[str, str], bindings: Mapping[str, obj
     found += check_rows_have_tests(rows, spec_md, texts.get("test-spec.md", ""), bindings)
     found += check_labels(spec_md, cited)
     found += check_open_markers(texts)
+    found += check_artifacts(spec_dir, texts)
     return [f"analyze: {m}" for m in found]

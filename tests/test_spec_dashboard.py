@@ -23,8 +23,8 @@ def test_reusable_pages_workflow_publishes_spec_dashboard() -> None:
     assert "--output site/spec-delivery" in workflow
 
 
-def test_canonical_nested_status_and_template(tmp_path):
-    for name in ("live", "_template"):
+def test_canonical_nested_status(tmp_path):
+    for name in ("live",):
         path = tmp_path / "specs" / name
         path.mkdir(parents=True)
         (path / "status.json").write_text(

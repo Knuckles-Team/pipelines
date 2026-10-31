@@ -70,6 +70,7 @@ GATES: dict[str, str] = {
     "spec-prefix-rename": "pipelines_hooks.specs.prefix_rename",
     "spec-bind-suggest": "pipelines_hooks.specs.bind_suggest",
     "spec-trailers": "pipelines_hooks.specs.trailers",
+    "spec-templates": "pipelines_hooks.specs.templates_sync",
     "gate-set": "pipelines_hooks.gate_runner",
     "connector-standard": "pipelines_hooks.connector.standard",
 }

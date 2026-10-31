@@ -28,11 +28,11 @@ Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 
 ## Phase 0: Research
 
-[Each unknown from Technical Context and its resolution. Write the findings to `research.md` when any unknown exists; otherwise state "no unknowns".]
+[Each unknown from Technical Context and its resolution. Write the findings to `research.md` only when any unknown exists; otherwise state "no unknowns" and add no `research.md`.]
 
 ## Phase 1: Design
 
-[Architecture, ownership, dependency direction, data flow and failure modes. Write entities to `data-model.md`, interface schemas to `contracts/` and the shortest working path to `quickstart.md`, as applicable.]
+[Architecture, ownership, dependency direction, data flow and failure modes. Add `data-model.md` when the spec adds types, ontology classes or tables. Add `quickstart.md` when a row is a served behaviour row: name the scenario or test command that runs its served proof. Add `contracts/` when a cross-repo seam exists.]
 
 ## Phase 2: Task approach
 
@@ -52,4 +52,4 @@ Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 
 ## Cross-repo seams
 
-[Each seam as the row ID that owns it in the other repository, or "none".]
+[Each seam as one line naming the row ID that owns it in the other repository, or "none". Each seam has one human-written document in `contracts/` with the wire shape, the refusal codes and the owner row IDs on both sides. No generated contract.]

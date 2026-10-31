@@ -60,7 +60,7 @@ def check_constitution(root: Path) -> list[str]:
     """A repository with specs holds the one-page constitution (advisory)."""
     if (root / CONSTITUTION).is_file():
         return []
-    return [f"{CONSTITUTION.as_posix()} is missing; copy specs/_template/constitution.md"]
+    return [f"{CONSTITUTION.as_posix()} is missing; copy .specify/templates/constitution-template.md"]
 
 
 def check_markers(spec_dir: Path, texts: dict[str, str]) -> list[str]:

@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
+**Version**: 1.1.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
 
 ## Core Principles
 
@@ -514,6 +514,71 @@ Standards and tests:
 
 **Plan check:** Do the new public files contain only portable, neutral text?
 
+### XXII. Names, titles and artifact placement
+
+File and directory names are lower-case kebab-case. A tool may require upper case for `README.md`, `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, `LICENSE` and `CHANGELOG.md`. A spec directory is the stable lower-case family ID with no numeric prefix. A requirement ID is upper case `<PREFIX>-R<n>`. A heading uses sentence case. A row title is a bold sentence that ends with a period. A plan lives only in specs/<family>/plan.md, a template only in `.specify/templates/` and the constitution only in `.specify/memory/`.
+
+*Rationale*: One predictable place and one spelling for each artifact lets a person, a tool and a gate find it without a search. A second copy drifts.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: spec-standard, spec-templates -->
+- `spec-standard`: Spec standard - names, file set, title, index
+- `spec-templates`: Spec templates - .specify/templates equals the vended pipelines templates
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): the Names, Files and Optional artifacts sections.
+- `tests/test_spec_placement.py`, `tests/test_spec_templates.py`, `tests/test_spec_artifacts.py`.
+
+**Plan check:** Do all new files and directories use lower-case kebab-case names and sit in the one place the constitution names for them?
+
+### XXIII. Versioning and release
+
+One canonical bump configuration per repository, `.bumpversion.cfg` read by bump2version, is the only way a version changes. Nobody hand-edits a version field. The `project-version-sync` gate checks that metadata, source and documentation agree, and `check-bumpversion` checks the configuration where a repository carries it. A `v*` tag push publishes the package, the image and the pages with no manual approval. A release ships only delivered cross-repository spec bundles (the PIPE-RELEASE bundle rows), in dependency order.
+
+*Rationale*: One path for a version keeps every copy equal. A tag that publishes without a hand step leaves nothing to forget. A bundle ships whole, so a consumer never sees half a change.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: project-version-sync, release-standard -->
+- `project-version-sync`: Project version sync - metadata, source and documentation agree with one canonical bump configuration
+- `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Python release readiness](https://github.com/Knuckles-Team/pipelines/blob/main/reference/python-release-readiness.md).
+- `tests/hooks/test_project_version_sync.py`, `tests/hooks/test_release_standard.py`, `tests/test_release_bundle.py`, `tests/test_no_merge_workflows.py`.
+
+**Plan check:** Does the change bump versions only through the bump configuration and land in a delivered bundle?
+
+### XXIV. Specifications are complete enough to implement without assumptions
+
+Every behaviour row names the production caller chain from the entry point to the new code, the exact files to create or change, the types and fields, the refusal codes from the one refusal taxonomy, the write path, the knobs with starting values (safety and gate knobs are fixed), the `Depends on:` row IDs, each cross-repository seam by ID on both sides with a contract document, a test as `path::name` at the proof level the acceptance names, and one `Shape:` sentence that names the files, the types and the existing helper to reuse. A spec is ready only when an implementer who reasons little could deliver every row from the text alone. It holds no open `[NEEDS CLARIFICATION]` marker, no "TBD" and no undefined term, and the Build contract of its plan lists the real gate thresholds.
+
+*Rationale*: A row that leaves a choice open makes each implementer design a different structure. A complete row makes the result the same for everyone.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: spec-standard -->
+- `spec-standard`: Spec standard - names, file set, title, index
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): the Complete rows and Consistency analysis sections.
+- `pipelines_hooks/specs/completeness.py`, `tests/test_spec_completeness.py`.
+
+**Plan check:** Could an implementer with no context deliver each row from its text alone?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -562,12 +627,20 @@ A repository may set stricter limits in its own constitution. It must not set lo
 A change follows one path from requirement to release.
 
 1. **Spec.** Search for the owner, then extend the `requirements.md` of that spec. Each row states one outcome and names the test that proves it.
-2. **Plan.** `plan.md` traces the row to the live call path and answers the Plan check of every article.
+2. **Plan.** `plan.md` traces the row to the live call path and answers the Plan check of every article. It adds `contracts/`, `data-model.md`, `quickstart.md` and `research.md` only where they carry content (see the spec standard).
 3. **Tasks.** `tasks.md` lists numbered task lines, each naming a row ID.
 4. **Implement.** Work in the owning repository only, in units of about five minutes.
 5. **Gates.** The pre-commit and pre-push hooks run the fast set. Pull request CI runs the same pre-commit file and the affected tests.
 6. **Landing.** The commit carries a `Spec: <ID>` trailer. The pull request enables auto-merge and merges once the `CI required` check passes.
 7. **Release bundle.** A maintainer pushes a `v*` tag. The tag publishes the package, the image and the Pages site from the published release.
+
+Every contributor and agent works in isolation:
+
+- One branch and one linked worktree per change, created from `main` with the worktree operations of the repository-manager connector or with plain `git worktree add`.
+- Never stash and never force-push in a shared checkout.
+- Stage explicit paths only. Never stage a whole tree.
+- Hooks always run. Never bypass them.
+- One pull request per change, with auto-merge armed once the checks are green.
 
 ## Governance
 
@@ -578,4 +651,4 @@ A change follows one path from requirement to release.
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
+**Version**: 1.1.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31

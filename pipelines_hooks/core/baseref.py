@@ -25,19 +25,33 @@ def _pushed_from(root: Path) -> str | None:
     return commit(root, value) if value and value != ZERO_SHA else None
 
 
+def _fork_point(root: Path, ref: str) -> str:
+    """The merge base of ``ref`` and ``HEAD``, so a change is measured from where it forked.
+
+    Work that landed on ``ref`` after the fork is not part of the change.
+    """
+    result = run_git(root, ("merge-base", ref, "HEAD"))
+    value = (result.stdout or "").strip()
+    return value if result.returncode == 0 and value else ref
+
+
 def upstream_base(root: Path, explicit: str | None) -> str | None:
     """The widest honest "not yet published" base, or ``None`` for all history.
 
     An explicit ref, then the remote revision pre-commit is pushing over, then
-    ``origin/main``. With none of them the whole history is unpublished, and
+    ``origin/main`` (an explicit ref or ``origin/main`` resolves to its merge base with ``HEAD``). With none of them the whole history is unpublished, and
     ``None`` tells the caller to scan all of it rather than guess a range.
     """
     if explicit:
         resolved = commit(root, explicit)
         if resolved is None:
             raise CannotRun(f"base ref {explicit!r} does not resolve to a commit")
-        return resolved
-    return _pushed_from(root) or commit(root, "origin/main")
+        return _fork_point(root, resolved)
+    pushed = _pushed_from(root)
+    if pushed:
+        return pushed
+    main = commit(root, "origin/main")
+    return _fork_point(root, main) if main else None
 
 
 def change_base(root: Path, explicit: str | None) -> str | None:

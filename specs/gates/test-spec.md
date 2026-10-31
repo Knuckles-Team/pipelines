@@ -110,3 +110,14 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-040 | PIPE-GATES-R034.3 | Unit | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage.py::test_spec_group_runs_contract_coverage` passes and shows the observation the row states. |
 | T-041 | PIPE-GATES-R034.4 | Unit | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage.py::test_dangling_and_duplicate_contracts_are_findings` passes and shows the observation the row states. |
 | T-042 | PIPE-GATES-R034.5 | Served L3 | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage_served.py::test_hook_refuses_uncovered_seam_and_engine_reads_the_covered_one` passes and shows the observation the row states. |
+| T-043 | PIPE-GATES-R035 | Unit | The repository tree, and a tree with `specs/_template/`. | The seven templates exist; the directory is a finding. |
+| T-044 | PIPE-GATES-R036 | Unit | An empty repository, then the sync script, then a drifted copy. | Check fails, write succeeds, check passes, drift fails without writing. |
+| T-045 | PIPE-GATES-R037 | Unit | A copy with a missing, a changed and an unknown template. | Each is a finding; the check is a published hook and the wheel declares the package. |
+| T-046 | PIPE-GATES-R038 | Unit | Upper-case, underscore and allowlisted names under `specs/`. | Only the non-allowlisted names are findings; untouched ones are advisory. |
+| T-047 | PIPE-GATES-R039 | Unit | A numeric-prefixed directory and a misplaced plan, template and constitution. | Each is a finding. |
+| T-048 | PIPE-GATES-R040 | Unit | The constitution. | Article XXII is traced and the version is 1.1.0. |
+| T-049 | PIPE-GATES-R041 | Unit | A plan with a seam, with and without a contract document. | The missing or incomplete document is a finding. |
+| T-050 | PIPE-GATES-R042 | Unit | A row naming new classes and tables, with and without `data-model.md`. | The missing file is a finding. |
+| T-051 | PIPE-GATES-R043 | Unit | A `served` row, with and without `quickstart.md`. | The missing file is a finding; a quoted word is not. |
+| T-052 | PIPE-GATES-R044 | Unit | A plan with and without unknowns, and a spec without a checklist. | Each mismatch is a finding that fails per touch. |
+| T-053 | PIPE-GATES-R045 | Unit | Rows with and without a caller chain, a Shape sentence, a test and with TBD. | Each gap is a finding that fails only for an added row. |

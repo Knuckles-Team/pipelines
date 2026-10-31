@@ -2,7 +2,7 @@
 
 These specs follow the ecosystem [spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): one owning spec per capability, extend an existing spec before creating one, audits and reviews land in the owning spec, one ID and title form, one file set. The `spec-standard` gate enforces it.
 
-This directory is the public build contract for pipeline-owned Arbora ecosystem work. Each feature has `spec.md` (outcome), `plan.md` (architecture), `test-spec.md` (proof), and `tasks.md` (work order). `requirements.md` defines every requirement ID the spec owns. `status.json` is generated and records the state. It carries a `requirements` array, one entry per requirement ID, with its own `delivery_state` and evidence. Start from [_template](_template/). A proposed spec does not claim its behavior has landed.
+This directory is the public build contract for pipeline-owned Arbora ecosystem work. Each feature has `spec.md` (outcome), `plan.md` (architecture), `test-spec.md` (proof), and `tasks.md` (work order). `requirements.md` defines every requirement ID the spec owns. `status.json` is generated and records the state. It carries a `requirements` array, one entry per requirement ID, with its own `delivery_state` and evidence. Start from the templates in `.specify/templates/`. A proposed spec does not claim its behavior has landed.
 
 | Spec | Requirement | Owner boundary |
 |---|---|---|

@@ -12,7 +12,7 @@ from scripts import check_public_specs, constitution
 
 ROOT = Path(__file__).resolve().parents[1]
 FILE = ROOT / ".specify" / "memory" / "constitution.md"
-TEMPLATE = ROOT / "specs" / "_template" / "constitution.md"
+TEMPLATE = ROOT / ".specify" / "templates" / "constitution-template.md"
 VERSION = re.compile(
     r"\*\*Version\*\*: (\d+\.\d+\.\d+) \| \*\*Ratified\*\*: (\d{4}-\d{2}-\d{2}) \| \*\*Last amended\*\*: (\d{4}-\d{2}-\d{2})"
 )
@@ -104,3 +104,35 @@ def test_repository_template_inherits_the_current_version() -> None:
     assert f"**Inherits**: organization constitution v{version.group(1)}" in template
     assert "https://github.com/Knuckles-Team/pipelines/blob/main/.specify/memory/constitution.md" in template
     assert "## Repository articles" in template and "## Repository limits" in template
+
+
+def test_the_naming_article_is_traced_and_the_version_is_current() -> None:
+    # spec: PIPE-GATES-R040
+    text = FILE.read_text(encoding="utf-8")
+    article = dict(_bodies())["XXII. Names, titles and artifact placement"]
+    assert "constitution hooks: spec-standard, spec-templates" in article
+    for rule in ("lower-case kebab-case", "no numeric prefix", "<PREFIX>-R<n>", "sentence case", "ends with a period"):
+        assert rule in article
+    assert "specs/<family>/plan.md" in article and "`.specify/templates/`" in article
+    version = VERSION.search(text)
+    assert version is not None and version.group(1) == "1.1.0"
+
+
+def test_the_release_article_and_isolation_flow_are_stated() -> None:
+    # spec: PIPE-GATES-R040
+    text = FILE.read_text(encoding="utf-8")
+    article = dict(_bodies())["XXIII. Versioning and release"]
+    assert "constitution hooks: project-version-sync, release-standard" in article
+    for rule in (".bumpversion.cfg", "check-bumpversion", "`v*` tag push", "PIPE-RELEASE bundle rows"):
+        assert rule in article
+    workflow = text.split("## Development Workflow", 1)[1].split("## Governance", 1)[0]
+    for rule in ("one linked worktree", "Never stash", "Stage explicit paths", "Hooks always run", "auto-merge"):
+        assert rule.lower() in workflow.lower()
+
+
+def test_the_completeness_article_is_traced() -> None:
+    # spec: PIPE-GATES-R045
+    article = dict(_bodies())["XXIV. Specifications are complete enough to implement without assumptions"]
+    assert "constitution hooks: spec-standard" in article
+    for rule in ("production caller chain", "`Shape:` sentence", 'no "TBD"', "real gate thresholds"):
+        assert rule in article
