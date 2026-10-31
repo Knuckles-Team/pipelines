@@ -142,7 +142,8 @@
     "PIPE-GATES-R016.115",
     "PIPE-GATES-R016.116",
     "PIPE-GATES-R016.117",
-    "PIPE-GATES-R016.118"
+    "PIPE-GATES-R016.118",
+    "PIPE-GATES-R016.119"
   ],
   "requirements": [
     {
@@ -539,7 +540,8 @@
         "PIPE-GATES-R016.115",
         "PIPE-GATES-R016.116",
         "PIPE-GATES-R016.117",
-        "PIPE-GATES-R016.118"
+        "PIPE-GATES-R016.118",
+        "PIPE-GATES-R016.119"
       ]
     },
     {
@@ -1050,9 +1052,9 @@
       "title": "The connector PR gate installs the identity catalog from the caller's variable",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "3bbf915ef23c",
         "49da84faebe2",
         "89e96300d187",
-        "99eaeba1b311",
         "c3769c753a53"
       ],
       "verified_by": [
@@ -2022,8 +2024,8 @@
       "title": "A long token is scanned in overlapping windows, not refused",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "398b8f1d2f52",
-        "99eaeba1b311"
+        "3bbf915ef23c",
+        "56c92f7e1a6a"
       ],
       "verified_by": [
         "tests/hooks/test_privacy_identity_boundaries.py:57"
@@ -2034,7 +2036,7 @@
       "title": "A requirement-row token and a repository-relative path are not machine data",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "99eaeba1b311"
+        "3bbf915ef23c"
       ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:55",
@@ -2042,6 +2044,18 @@
         "tests/test_connector_evidence_sanitize.py:20",
         "tests/test_connector_evidence_sanitize.py:31",
         "tests/test_connector_evidence_sanitize.py:47"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.119",
+      "title": "A local account name is contextual, not a bare word",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "150efe437b04"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_provenance.py:117",
+        "tests/hooks/test_privacy_provenance.py:96"
       ]
     }
   ]
