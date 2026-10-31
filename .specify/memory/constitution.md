@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
+**Version**: 1.2.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
 
 ## Core Principles
 
@@ -79,7 +79,7 @@ Standards and tests:
 
 ### IV. Requirements are neutral and controlled
 
-Requirement text names capabilities and open standards, never a third-party product. Sentences hold 20 words or fewer and use `must`, `should` or `may`.
+Specs, plans and tasks describe our capability in generic terms and open standards. They never name a third-party product or vendor. A product name may appear only in a dependency manifest, in vendored-source attribution or in an upstream pin, such as the upstream source line of a vendored skill. Requirement text never carries one. Sentences hold 20 words or fewer and use `must`, `should` or `may`.
 
 *Rationale*: A product name dates a requirement and ties it to a vendor. Short, uniform sentences make a requirement testable.
 
@@ -491,7 +491,7 @@ Standards and tests:
 
 ### XXI. Public files stay portable and neutral
 
-A public file holds no private host, local path, internal domain, personal identity or operator-specific name. A commit carries an allowlisted identity.
+A public file describes capabilities generically. It never names a host, private domain, internal network, local path, deployment topology, private repository or internal tool. It holds no personal identity or operator-specific name. Environment facts live only in private operations repositories. A commit carries an allowlisted identity.
 
 *Rationale*: A public artifact outlives its environment. A local path or private name breaks for every other reader.
 
@@ -579,6 +579,28 @@ Standards and tests:
 
 **Plan check:** Could an implementer with no context deliver each row from its text alone?
 
+### XXV. Small, modular units
+
+Each package, crate and module has one responsibility. The dependency graph between packages and crates is acyclic and layered downward. A pull request compiles only the units it touches and their dependents. A repository constitution may set a size limit for its units.
+
+*Rationale*: A small unit builds fast and reviews fast. A cycle or a wide unit forces every change to rebuild the world.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: kiss-staged, kiss-census -->
+- `kiss-staged`: KISS - staged Python/Rust, diff-scoped
+- `kiss-census`: KISS census - every tracked file plus orphan modules, enforced
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Ecosystem boundaries](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ecosystem-boundaries.md): the forbidden-import matrix.
+- `tests/hooks/test_kiss.py`, `tests/hooks/test_structural_limits.py`.
+
+**Plan check:** Does the change keep one responsibility per unit, add no dependency cycle and compile only the units it touches and their dependents?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -651,4 +673,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
+**Version**: 1.2.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31

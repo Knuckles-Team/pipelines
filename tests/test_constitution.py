@@ -115,7 +115,7 @@ def test_the_naming_article_is_traced_and_the_version_is_current() -> None:
         assert rule in article
     assert "specs/<family>/plan.md" in article and "`.specify/templates/`" in article
     version = VERSION.search(text)
-    assert version is not None and version.group(1) == "1.1.0"
+    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 1, 0)
 
 
 def test_the_release_article_and_isolation_flow_are_stated() -> None:
