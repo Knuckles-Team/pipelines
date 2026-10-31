@@ -255,3 +255,32 @@ Deployment comes only from published package releases. Releases ship delivered c
 ## Delivery phase
 
 Rows `PIPE-RELEASE-R023` and `R024` serve P5. P5 names its scenario, and every engine release proves that the released SDK still imports.
+
+## Release planning
+
+The release plan is computed from the dependency graph. It is not a list that a person maintains.
+
+- **Closure**: a bundle is the dependency closure of its scoped rows. The closure follows `Depends on:` rows and the provider and consumer rows of contracts, within a project and across projects (`PIPE-RELEASE-R025.1`).
+- **Train order**: the order is the topological order of the repositories in the closure. Today the engine, SDK, harness, door, connectors and user interfaces appear in that order. Their rows depend on each other in that order (`PIPE-RELEASE-R025.2`).
+- **Cycles**: a cycle across bundles refuses with `BUNDLE_CYCLE` (`PIPE-RELEASE-R025.3`).
+- **Plan document**: `scripts/release_plan.py` renders one plan per `releases/<release-id>.yml`. It lists rows per repository, the closure, the train order, the scenario and the open tasks. The rendering is deterministic and writes no committed file (`PIPE-RELEASE-R025.4`).
+- **Graph**: the facts ReleaseBundle, inBundle and dependsOn, and the plan document, are ingested with the ontology (`MEDULLA-SDLC-R018`, `MEDULLA-SDLC-R014.7`). The spec-delivery page and the competency questions read the same data (`PIPE-RELEASE-R025.5`).
+
+## Program exit gates
+
+The program ends when every gate below holds. Each gate names its owning rows and its phase. `PIPE-RELEASE-R026.1` checks that every row exists.
+
+| Gate | Owning rows | Phase | Plan section |
+|---|---|---|---|
+| All specs land | `PIPE-RELEASE-R020`, `PIPE-RELEASE-R021`, `PIPE-RELEASE-R022` | P1 to P5 | This plan, "Delivery phase" |
+| Light audits pass | `PIPE-RELEASE-R022`, `PIPE-GATES-R029` | P5 | This plan, "Production caller chain" |
+| Connectors reach zero open rows with healthy services | `PIPE-RELEASE-R026.2`, `ARBORA-ACCEPTANCE-R006.6` | P5 | This plan, "Program exit gates" |
+| Deployed from main from published releases | `PIPE-RELEASE-R018`, `PIPE-RELEASE-R020`, `PIPE-RELEASE-R024`, `ARBORA-RELEASE-R001` | P5 | This plan, "North star" |
+| Vision questions answered through two channels | `PIPE-RELEASE-R026.3`, `ARBORA-ACCEPTANCE-R006.7` | P5 | This plan, "Program exit gates" |
+| Competency: how to execute task X | `MEDULLA-CQ-ORCH-R001`, `MEDULLA-CQ-ORCH-R008`, `MEDULLA-CQ-ORCH-R012` | P5 | Orchestration competency plan, "North star" |
+| Competency: cross-source reports from connector virtual graphs | `MEDULLA-CQ-XSRC-R006`, `MEDULLA-CQ-XSRC-R012`, `MEDULLA-CQ-CONN-R090` | P5 | Cross-source competency plan, "North star" |
+| Phase P1: minimal closed loop | `ARBORA-ACCEPTANCE-R006.1` | P1 | Acceptance plan, "Delivery phase" |
+| Phase P2: reliable and inspectable loop | `ARBORA-ACCEPTANCE-R006.2` | P2 | Acceptance plan, "Delivery phase" |
+| Phase P3: boundaries hold with several agents | `ARBORA-ACCEPTANCE-R006.3` | P3 | Acceptance plan, "Delivery phase" |
+| Phase P4: cross-modal bet and memory maintenance | `ARBORA-ACCEPTANCE-R006.4` | P4 | Acceptance plan, "Delivery phase" |
+| Phase P5: answers across connectors and virtual graphs | `ARBORA-ACCEPTANCE-R006.7`, `PIPE-RELEASE-R023` | P5 | Acceptance plan, "Delivery phase" |

@@ -44,6 +44,7 @@ Route a feature before any code or spec text.
 
 2. Search the owner's specs first: `git grep -n "<term>" -- specs`. Extend an existing row before a new one.
 3. File each part as a row in its owner's `specs/`. Link the dependent rows to each other by ID.
+   The ingested contracts form a seam graph. Routing uses it: a new requirement that touches a concept finds the owning contract, and so the repositories whose specs to extend on both sides.
 4. Write code only in the repository that owns the part. A part that this repository does not own stops here; its row goes to the owner.
 
 A `MERISTEM-` row never decides. It names the decision it receives and the owner prefix that produces it. A threshold in an `MERISTEM-` row is a received value, with a fallback default. If no part is left for the harness, write no `MERISTEM-` row.
