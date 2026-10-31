@@ -1152,8 +1152,7 @@ def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
         "type=ref,event=pr",
         "type=sha",
         f"type=raw,value=latest,enable=${{{{ {on_main} }}}}",
-        "type=raw,value=${{ steps.version.outputs.version }},"
-        f"enable=${{{{ {on_main_version} }}}}",
+        f"type=raw,value=${{{{ steps.version.outputs.version }}}},enable=${{{{ {on_main_version} }}}}",
         "type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }},"
         "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}",
         "type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }},"
