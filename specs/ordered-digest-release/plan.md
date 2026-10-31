@@ -228,6 +228,14 @@ uv can use filesystem links when the runner supports them. The workflow passes
 the value to `setup-uv` and keeps dependency-keyed cache restore enabled. This
 option does not change the tests, hooks, or runner trust policy.
 
+### Amendment: change-scoped pull request gates (PIPE-RELEASE-R007.8 to R007.12)
+
+Data flow: pull request diff -> `pipelines-hook change-scope` -> step outputs -> gate steps and caller jobs.
+Attach point: `pipelines_hooks/ci_replica/change_scope.py`, the `Classify the change` step of `gates_pipeline.yml`, and `.github/workflows/change_scope.yml`.
+Decision: one classifier replaces the opt-in `docs-only-paths` skip. A spec-only change still runs its spec gates. `ci` and `deps` paths force the full set, because they change what every gate runs against.
+Rejected: keeping `docs-only-paths`. It skipped the spec gates on spec changes, and the hard-cutover policy removes it in one release.
+Acceptance: `uv run --frozen python -m pytest tests/hooks/test_change_scope.py tests/test_gates_pipeline_contract.py -q`.
+
 ## Phase 2: Task approach
 
 tasks.md carries one numbered task line for each active row. Tasks run producer first. A task marked `[P]` may run in parallel with its neighbours.

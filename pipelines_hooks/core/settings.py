@@ -11,6 +11,7 @@ import os
 
 #: Every environment variable a gate reads, with what it controls.
 KNOWN_SETTINGS = {
+    "GITHUB_OUTPUT": "GitHub Actions step-output file that change-scope appends to",
     "CCCC_BIN": "path of the pinned cccc binary",
     "KISS_BIN": "path of the pinned kiss binary",
     "DUPEHOUND_BIN": "path of the pinned dupehound binary",

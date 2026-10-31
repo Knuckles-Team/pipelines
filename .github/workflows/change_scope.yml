@@ -1,0 +1,89 @@
+name: change-scope
+
+# Reusable classification job (reference/ci-standard.md, PIPE-RELEASE-R007.11).
+# A caller gates its own build, test, journey and container jobs on these
+# outputs: `if: needs.scope.outputs.scope != 'spec'`. Pull requests are
+# classified from their diff; every other event reports scope `full`.
+
+on:
+  workflow_call:
+    outputs:
+      scope:
+        description: spec (only spec and docs paths), code, or full (ci or deps paths, non-PR events).
+        value: ${{ jobs.scope.outputs.scope }}
+      code:
+        description: true when any code, ci, deps or unclassified path changed.
+        value: ${{ jobs.scope.outputs.code }}
+      spec:
+        description: true when a specs/** or .specify/** path changed.
+        value: ${{ jobs.scope.outputs.spec }}
+      docs:
+        description: true when a docs path changed.
+        value: ${{ jobs.scope.outputs.docs }}
+      python:
+        description: true when a Python source changed.
+        value: ${{ jobs.scope.outputs.python }}
+      rust:
+        description: true when a Rust source changed.
+        value: ${{ jobs.scope.outputs.rust }}
+      frontend:
+        description: true when a frontend source changed.
+        value: ${{ jobs.scope.outputs.frontend }}
+      ci:
+        description: true when a CI or pre-commit configuration changed.
+        value: ${{ jobs.scope.outputs.ci }}
+      deps:
+        description: true when a lockfile or manifest changed.
+        value: ${{ jobs.scope.outputs.deps }}
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    name: scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+      code: ${{ steps.scope.outputs.code }}
+      spec: ${{ steps.scope.outputs.spec }}
+      docs: ${{ steps.scope.outputs.docs }}
+      python: ${{ steps.scope.outputs.python }}
+      rust: ${{ steps.scope.outputs.rust }}
+      frontend: ${{ steps.scope.outputs.frontend }}
+      ci: ${{ steps.scope.outputs.ci }}
+      deps: ${{ steps.scope.outputs.deps }}
+    steps:
+      - name: Checkout with full history for the diff range
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      - name: Classify the change
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [[ "$EVENT_NAME" != "pull_request" ]]; then
+            args+=(--force-full)
+          else
+            base="$PR_BASE"
+            if [[ -z "$base" ]] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              git fetch --no-tags origin "$BASE_REF" >/dev/null 2>&1 || true
+              base="$(git merge-base HEAD "origin/$BASE_REF")"
+            fi
+            args+=(--base-ref "$base")
+          fi
+          uvx --from "$PIPELINES_SOURCE" pipelines-hook change-scope "${args[@]}"

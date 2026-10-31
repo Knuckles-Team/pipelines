@@ -50,7 +50,7 @@ commit).
 - PIPE-RELEASE-R001.10: Refusal. Implement this contract and bind `test_major_upgrade_pre_pin_refusal` in `tests/hooks/test_major_upgrade_pre_pin.py`.
 - PIPE-RELEASE-R001.11: Evidence. Implement this contract and bind `test_major_upgrade_pre_pin_evidence` in `tests/hooks/test_major_upgrade_pre_pin.py`.
 - PIPE-RELEASE-R001.12: Hot-path proof. Implement this contract and bind `test_major_upgrade_pre_pin_cli` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- PIPE-RELEASE-R007: Deliver all seven children; keep every new input optional.
+- PIPE-RELEASE-R007: Deliver all twelve children; keep every new input optional.
 - PIPE-RELEASE-R007.1: Model. Implement this contract and bind `test_gates_workflow_inputs_all_default` in `tests/test_gates_pipeline_contract.py`.
 - PIPE-RELEASE-R007.2: Behavior. Implement this contract and bind `test_gates_workflow_scopes_to_the_diff_and_caps_time` in `tests/test_gates_pipeline_contract.py`.
 - PIPE-RELEASE-R007.3: Wiring. Implement this contract and bind `test_require_tag_defaults_off_and_guards_the_publish_step` in `tests/test_gates_pipeline_contract.py`.
@@ -58,6 +58,11 @@ commit).
 - PIPE-RELEASE-R007.5: Evidence. Implement this contract and bind `test_fast_tests_reports_no_affected_tests` in `tests/hooks/test_fast_tests.py`.
 - PIPE-RELEASE-R007.6: Hot-path proof. Implement this contract and bind `test_fast_tests_runs_only_the_affected_subset` in `tests/hooks/test_fast_tests.py`.
 - PIPE-RELEASE-R007.7: Release bumps. Ignore member-version-only manifest and lock changes in the Rust scope; bind the three tests in `tests/hooks/test_pr_test_scope.py`.
+- PIPE-RELEASE-R007.8: Change classes. Implement `change-scope` and bind the fixture tests in `tests/hooks/test_change_scope.py`.
+- PIPE-RELEASE-R007.9: Gate-to-class routing. Route each scope in `gates_pipeline.yml`; bind the routing tests.
+- PIPE-RELEASE-R007.10: Refusal and fallback. Fall back to `full` or exit 2; bind the refusal test.
+- PIPE-RELEASE-R007.11: Wiring and cutover. Remove `docs-only-paths`, add `change_scope.yml`; bind the cutover test.
+- PIPE-RELEASE-R007.12: Evidence. Log each not-applicable gate; bind the evidence test.
 - PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
 
 - **PIPE-RELEASE-R009:** Release records publish to the engine (rollup).
@@ -162,3 +167,8 @@ commit).
 - [ ] T090 PIPE-RELEASE-R026.2 Connectors reach zero open rows with healthy services.
 - [ ] T091 PIPE-RELEASE-R026.3 Vision questions run through two channels.
 - [ ] T092 PIPE-RELEASE-R026.4 Hot-path proof: the plan table resolves against the specs.
+- [ ] T093 PIPE-RELEASE-R007.8 Change classes.
+- [ ] T094 PIPE-RELEASE-R007.9 Gate-to-class routing.
+- [ ] T095 PIPE-RELEASE-R007.10 Refusal and fallback.
+- [ ] T096 PIPE-RELEASE-R007.11 Wiring and cutover.
+- [ ] T097 PIPE-RELEASE-R007.12 Evidence.

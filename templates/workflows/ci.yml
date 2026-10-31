@@ -27,9 +27,9 @@ jobs:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
+    # The job classifies the diff itself: a spec or docs only pull request runs
+    # only the spec gate set on the touched files (reference/ci-standard.md).
     uses: Knuckles-Team/pipelines/.github/workflows/gates_pipeline.yml@main
-    with:
-      docs-only-paths: 'docs/** specs/**/*.md *.md **/*.md mkdocs.yml'
 
   full:
     if: github.event_name != 'pull_request'
@@ -39,29 +39,21 @@ jobs:
     with:
       backward-python: "3.12"
 
-  # Repo-specific fast PR jobs go here (Python 3.14 only on PRs). Gate them with a
-  # path filter and add them to `ci-required` needs, e.g.:
+  # Repo-specific PR jobs (builds, journeys, container builds) go here, Python 3.14
+  # only. Gate them on the shared change scope and add them to `ci-required` needs:
   #
-  # changes:
+  # scope:
   #   if: github.event_name == 'pull_request'
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     src: ${{ steps.f.outputs.src }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - id: f
-  #       uses: dorny/paths-filter@v3
-  #       with:
-  #         filters: |
-  #           src:
-  #             - 'src/**'
-  # fast-tests:
-  #   needs: changes
-  #   if: needs.changes.outputs.src == 'true'
+  #   permissions:
+  #     contents: read
+  #   uses: Knuckles-Team/pipelines/.github/workflows/change_scope.yml@main
+  # journeys:
+  #   needs: scope
+  #   if: needs.scope.outputs.scope != 'spec'
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10
   #   steps:
-  #     - run: echo "repo-specific fast job"
+  #     - run: echo "repo-specific job; skipped (not applicable) on a spec/docs-only change"
 
   ci-required:
     name: CI required
