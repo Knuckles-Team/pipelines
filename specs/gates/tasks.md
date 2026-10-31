@@ -62,3 +62,4 @@
 - [x] T056 PIPE-GATES-R044 Check `research.md` against the unknowns and require the checklist.
 - [x] T057 PIPE-GATES-R023 Require a one-page constitution in each repository that links the vended template.
 - [x] T058 PIPE-GATES-R045 Fail a touched behaviour row that lacks a caller chain, a Shape sentence or a test path::name.
+- [ ] T059 PIPE-GATES-R046 Add the idempotent spec-driven standard generator and the connector template check.
