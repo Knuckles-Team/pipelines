@@ -40,3 +40,14 @@
 - [x] T034 PIPE-GATES-R031 Write the organization constitution with traced articles and the test that checks them.
 - [x] T035 PIPE-GATES-R032 Add `scripts/constitution.py`, its `--check` mode and the pre-commit hook.
 - [x] T036 PIPE-GATES-R033 Make the repository constitution template inherit the organization version.
+- [x] T037 PIPE-GATES-R034 Move the templates to `.specify/templates/` and remove `specs/_template/`.
+- [x] T038 PIPE-GATES-R035 Add `scripts/sync_spec_templates.py` with `--check`.
+- [x] T039 PIPE-GATES-R036 Add the `spec-templates` check to the `spec` hook and ship the templates in the wheel.
+- [x] T040 PIPE-GATES-R037 Check artifact names against the lower-case kebab-case rule.
+- [x] T041 PIPE-GATES-R038 Check the one place of plans, templates and the constitution.
+- [x] T042 PIPE-GATES-R039 Add the naming article to the constitution and bump it to 1.1.0.
+- [x] T043 PIPE-GATES-R040 Require a contract document per cross-repo seam.
+- [x] T044 PIPE-GATES-R041 Require `data-model.md` for new types, classes and tables.
+- [x] T045 PIPE-GATES-R042 Require `quickstart.md` for a `served` behaviour row.
+- [x] T046 PIPE-GATES-R043 Check `research.md` against the unknowns and require the checklist.
+- [x] T047 PIPE-GATES-R023 Require a one-page constitution in each repository that links the vended template.

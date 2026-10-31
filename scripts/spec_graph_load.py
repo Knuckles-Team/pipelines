@@ -79,7 +79,7 @@ def _load_status_entries(root: Path, reqs: dict[str, Requirement]) -> list[Path]
     specs_dir = root / "specs"
     if not specs_dir.is_dir():
         return []
-    spec_dirs = sorted(p for p in specs_dir.iterdir() if p.is_dir() and p.name != "_template")
+    spec_dirs = sorted(p for p in specs_dir.iterdir() if p.is_dir())
     computed: dict[Path, dict] | None = None
     for spec_dir in spec_dirs:
         status_path = spec_dir / "status.json"

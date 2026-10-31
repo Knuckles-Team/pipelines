@@ -96,3 +96,13 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-031 | PIPE-GATES-R031 | Unit | The constitution, and a copy with a missing plan check or a cited path that does not exist. | The constitution is clean; each defect is a finding. |
 | T-032 | PIPE-GATES-R032 | Unit | A constitution whose limits table or hook list differs from the configs, and a hook ID the catalogue lacks. | `--check` exits 1 and writes nothing; the render fails on the unknown ID. |
 | T-033 | PIPE-GATES-R033 | Unit | The repository template and the organization constitution version. | The template names the same version and links the organization file. |
+| T-034 | PIPE-GATES-R034 | Unit | The repository tree, and a tree with `specs/_template/`. | The seven templates exist; the directory is a finding. |
+| T-035 | PIPE-GATES-R035 | Unit | An empty repository, then the sync script, then a drifted copy. | Check fails, write succeeds, check passes, drift fails without writing. |
+| T-036 | PIPE-GATES-R036 | Unit | A copy with a missing, a changed and an unknown template. | Each is a finding; the check is a published hook and the wheel declares the package. |
+| T-037 | PIPE-GATES-R037 | Unit | Upper-case, underscore and allowlisted names under `specs/`. | Only the non-allowlisted names are findings; untouched ones are advisory. |
+| T-038 | PIPE-GATES-R038 | Unit | A numeric-prefixed directory and a misplaced plan, template and constitution. | Each is a finding. |
+| T-039 | PIPE-GATES-R039 | Unit | The constitution. | Article XXII is traced and the version is 1.1.0. |
+| T-040 | PIPE-GATES-R040 | Unit | A plan with a seam, with and without a contract document. | The missing or incomplete document is a finding. |
+| T-041 | PIPE-GATES-R041 | Unit | A row naming new classes and tables, with and without `data-model.md`. | The missing file is a finding. |
+| T-042 | PIPE-GATES-R042 | Unit | A `served` row, with and without `quickstart.md`. | The missing file is a finding; a quoted word is not. |
+| T-043 | PIPE-GATES-R043 | Unit | A plan with and without unknowns, and a spec without a checklist. | Each mismatch is a finding that fails per touch. |
