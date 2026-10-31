@@ -171,3 +171,11 @@ it to an isolated path on the same filesystem as its project environment so
 uv can use filesystem links when the runner supports them. The workflow passes
 the value to `setup-uv` and keeps dependency-keyed cache restore enabled. This
 option does not change the tests, hooks, or runner trust policy.
+
+## North star
+
+Deployment comes only from published package releases. Releases ship delivered cross-repository spec bundles. Delivery runs in phases P1 to P5. Concept-proof scenarios define each phase (`ARBORA-ACCEPTANCE-R006`).
+
+## Delivery phase
+
+Rows `PIPE-RELEASE-R023` and `R024` serve P5. P5 names its scenario, and every engine release proves that the released SDK still imports.
