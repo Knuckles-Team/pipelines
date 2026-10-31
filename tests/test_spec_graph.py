@@ -134,14 +134,14 @@ def test_tasks_md_bold_id_names_a_dependency_and_counts_unchecked_lines(
 
 
 def test_cross_repo_heading_section_creates_a_cross_repo_edge(tmp_path: Path) -> None:
-    producer_status = _status("EG-DEMO", "epistemic-graph", [_entry("EG-DEMO-R010")])
+    producer_status = _status("MEDULLA-DEMO", "epistemic-graph", [_entry("MEDULLA-DEMO-R010")])
     producer_spec_md = (
-        "# EG-DEMO\n\n"
+        "# MEDULLA-DEMO\n\n"
         "## Acceptance boundary\n\n"
-        "### Shared facts (EG-DEMO-R010)\n\n"
-        "The consumer contract is AU-DEMO-R001 in agent-utilities.\n"
+        "### Shared facts (MEDULLA-DEMO-R010)\n\n"
+        "The consumer contract is MERISTEM-DEMO-R001 in agent-utilities.\n"
     )
-    consumer_status = _status("AU-DEMO", "agent-utilities", [_entry("AU-DEMO-R001")])
+    consumer_status = _status("MERISTEM-DEMO", "agent-utilities", [_entry("MERISTEM-DEMO-R001")])
     _write_spec(
         tmp_path,
         "epistemic-graph",
@@ -151,9 +151,9 @@ def test_cross_repo_heading_section_creates_a_cross_repo_edge(tmp_path: Path) ->
     )
     _write_spec(tmp_path, "agent-utilities", "au-demo", status=consumer_status)
     reqs = load_repos([tmp_path / "epistemic-graph", tmp_path / "agent-utilities"])
-    assert reqs["EG-DEMO-R010"].depends_on == {"AU-DEMO-R001"}
+    assert reqs["MEDULLA-DEMO-R010"].depends_on == {"MERISTEM-DEMO-R001"}
     edges = dependency_edges(reqs)
-    assert ("EG-DEMO-R010", "AU-DEMO-R001") in edges
+    assert ("MEDULLA-DEMO-R010", "MERISTEM-DEMO-R001") in edges
 
 
 def test_frontier_orders_by_dependents_then_score(tmp_path: Path) -> None:

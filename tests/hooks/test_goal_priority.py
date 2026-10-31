@@ -41,7 +41,7 @@ def test_prose_dependency_forms_resolve_relative_and_full_ids() -> None:
 
 
 def _graph() -> dict[str, Node]:
-    cq1, cq2 = "EG-CQ-ORCH-R001", "EG-CQ-ORCH-R002"
+    cq1, cq2 = "MEDULLA-CQ-ORCH-R001", "MEDULLA-CQ-ORCH-R002"
     return {
         cq1: Node(cq1, "epistemic-graph", "SPECIFIED", ("ARB-R1",)),
         cq2: Node(cq2, "epistemic-graph", "VERIFIED", ("SDK-R1",)),
@@ -60,7 +60,7 @@ def test_priority_formula() -> None:
     got = score(_graph())
     # EG-R1: reached by both CQs (open and done count), unblocks SDK-R1, ARB-R1, CONN-R1, and the open CQ-1: 10*2 + 2*4
     assert got["EG-R1"]["priority"] == 28
-    assert got["EG-R1"]["cqs"] == ["EG-CQ-ORCH-R001", "EG-CQ-ORCH-R002"]
+    assert got["EG-R1"]["cqs"] == ["MEDULLA-CQ-ORCH-R001", "MEDULLA-CQ-ORCH-R002"]
     # SDK-R1: both CQs; unblocks ARB-R1, CONN-R1, CQ-1: 20 + 6
     assert got["SDK-R1"]["priority"] == 26
     # ARB-R1: only CQ-1 reaches it; unblocks CQ-1: 10 + 2
@@ -71,7 +71,7 @@ def test_priority_formula() -> None:
     halved = {
         "N": Node("N", "r", "SPECIFIED", ()),
         "Q": Node("Q", "r", "SPECIFIED", ("N",)),
-        "EG-CQ-X-R001": Node("EG-CQ-X-R001", "r", "VERIFIED", ("N",), functional=True),
+        "MEDULLA-CQ-X-R001": Node("MEDULLA-CQ-X-R001", "r", "VERIFIED", ("N",), functional=True),
     }
     assert score(halved)["N"]["priority"] == 10 + 2
     halved["N"] = halved["N"]._replace(functional=False)
@@ -109,4 +109,4 @@ def test_bundle_orders_steps_by_release_train() -> None:
     assert bundle["priority"] == 28
     assert [s["repo"] for s in bundle["steps"]] == ["epistemic-graph", "agent-connector-sdk", "arbora", "gitlab-api"]
     first = bundle["steps"][0]["rows"][0]
-    assert first["id"] == "EG-R1" and first["unblocks"] == ["ARB-R1", "CONN-R1", "EG-CQ-ORCH-R001", "SDK-R1"]
+    assert first["id"] == "EG-R1" and first["unblocks"] == ["ARB-R1", "CONN-R1", "MEDULLA-CQ-ORCH-R001", "SDK-R1"]

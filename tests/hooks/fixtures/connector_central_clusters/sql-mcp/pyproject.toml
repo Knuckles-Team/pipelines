@@ -38,7 +38,7 @@ sql-mcp = "sql_mcp.prompts"
 [project.entry-points."agent_connector_sdk.ontology_providers"]
 sql-mcp = "sql_mcp.ontology"
 
-# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+# The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]
 sql-mcp = "sql_mcp"
 

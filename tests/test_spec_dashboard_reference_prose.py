@@ -20,14 +20,14 @@ def test_sdk_reference_prose_is_unparsed_evidence_not_word_edges(tmp_path):
 
 
 def test_valid_unresolved_identifiers_links_and_paths_survive(tmp_path):
-    value = "SDK-EXTERNAL-R001.2 [other](../second/spec.md) docs/guide.md explanation"
+    value = "SCION-EXTERNAL-R001.2 [other](../second/spec.md) docs/guide.md explanation"
     snapshot = fixture(tmp_path, "References: " + value + "\n")
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs/guide.md").write_text("Guide")
     enrich_records(tmp_path, snapshot)
     row = snapshot["records"][0]
-    assert {edge["label"] for edge in row["relations"]} == {"SDK-EXTERNAL-R001.2", "other", "docs/guide.md"}
-    unknown = next(edge for edge in row["relations"] if edge["label"] == "SDK-EXTERNAL-R001.2")
+    assert {edge["label"] for edge in row["relations"]} == {"SCION-EXTERNAL-R001.2", "other", "docs/guide.md"}
+    unknown = next(edge for edge in row["relations"] if edge["label"] == "SCION-EXTERNAL-R001.2")
     assert unknown["url"] == "" and unknown["kind"] == "references"
     assert "|references|" in mermaid(snapshot)
     assert row["unparsed_references"][0]["text"] == value

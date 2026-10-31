@@ -26,7 +26,7 @@ test = [
 craft-suite-mcp = "craft_suite_api.mcp_server:mcp_server"
 
 
-# Fleet contribution (CONCEPT:OS-5.52 / AU-KG.ontology.federation-provider-leg): advertise this
+# Fleet contribution (CONCEPT:OS-5.52 / MERISTEM-KG.ontology.federation-provider-leg): advertise this
 # package's skills, prompts, OWL/RDF ontology, and source-connector presets so
 # agent-connector-sdk discovers + federates them without importing this package's agent code.
 [project.entry-points."agent_connector_sdk.skill_providers"]
@@ -38,7 +38,7 @@ craft-suite-api = "craft_suite_api.prompts"
 [project.entry-points."agent_connector_sdk.ontology_providers"]
 craft-suite-api = "craft_suite_api.ontology"
 
-# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+# The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]
 craft-suite-api = "craft_suite_api"
 

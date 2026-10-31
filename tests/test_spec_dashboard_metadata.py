@@ -11,7 +11,7 @@ from scripts.spec_dashboard_sources import read_records
 
 
 def fixture(root, text="", plan=""):
-    for slug, identifier in [("first", "AU-CONTROL"), ("second", "AU-OTHER")]:
+    for slug, identifier in [("first", "MERISTEM-CONTROL"), ("second", "MERISTEM-OTHER")]:
         directory = root / "specs" / slug
         directory.mkdir(parents=True)
         (directory / "spec.md").write_text("# " + identifier + "\n" + (text if slug == "first" else ""))
@@ -30,16 +30,16 @@ def fixture(root, text="", plan=""):
 @pytest.mark.spec("PIPE-PAGES-R013.5")
 def test_local_and_external_dependencies_have_links_and_canonical_identity(tmp_path):
     remote = "https://github.com/Knuckles-Team/arbora/blob/main/specs/host/spec.md"
-    snapshot = fixture(tmp_path, "Depends-on: AU-OTHER-R001, [host](" + remote + ")\n")
+    snapshot = fixture(tmp_path, "Depends-on: MERISTEM-OTHER-R001, [host](" + remote + ")\n")
     enrich_records(tmp_path, snapshot)
     first = snapshot["records"][0]
-    assert first["id"] == "AU-CONTROL"
+    assert first["id"] == "MERISTEM-CONTROL"
     assert {edge["kind"] for edge in first["relations"]} == {"depends on"}
     assert {edge["repository"] for edge in first["relations"]} == {"Knuckles-Team/demo", "Knuckles-Team/arbora"}
     page = relationships_panel(snapshot)
     assert "specs/second/spec.md" in page and remote in page
     assert "not verified" in page
-    assert "AU-OTHER-R001" in page
+    assert "MERISTEM-OTHER-R001" in page
     assert "host" in page
     assert "source: specs/first/spec.md" in page
     assert "local spec declaration" in page
@@ -47,7 +47,7 @@ def test_local_and_external_dependencies_have_links_and_canonical_identity(tmp_p
 
 
 def test_mentions_and_shared_code_never_become_dependencies(tmp_path):
-    snapshot = fixture(tmp_path, "Unblocks AU-OTHER-R001. See [other](../second/spec.md).\nCode: src/entry.py\n")
+    snapshot = fixture(tmp_path, "Unblocks MERISTEM-OTHER-R001. See [other](../second/spec.md).\nCode: src/entry.py\n")
     (tmp_path / "src").mkdir()
     (tmp_path / "src/entry.py").write_text("pass\n")
     enrich_records(tmp_path, snapshot)
@@ -113,7 +113,8 @@ def test_deterministic_escaped_output_and_plan_diagram_coverage(tmp_path):
 @pytest.mark.spec("PIPE-PAGES-R012.7")
 def test_examples_unsafe_links_and_parent_escape_are_not_mappings(tmp_path):
     snapshot = fixture(
-        tmp_path, "```\nDepends-on: AU-OTHER\n```\nCode: [bad](javascript:alert) [escape](../../../../etc/passwd)\n"
+        tmp_path,
+        "```\nDepends-on: MERISTEM-OTHER\n```\nCode: [bad](javascript:alert) [escape](../../../../etc/passwd)\n",
     )
     enrich_records(tmp_path, snapshot)
     first = snapshot["records"][0]
@@ -158,7 +159,7 @@ def test_code_cells_replace_concepts(tmp_path):
 def test_generator_entry_point_writes_architecture_and_metadata(tmp_path, monkeypatch):
     from scripts import spec_dashboard as dashboard
 
-    fixture(tmp_path, "Component: gateway\nDepends-on: AU-OTHER\nCode: src/entry.py\n")
+    fixture(tmp_path, "Component: gateway\nDepends-on: MERISTEM-OTHER\nCode: src/entry.py\n")
     (tmp_path / "src").mkdir()
     (tmp_path / "src/entry.py").write_text("pass\n")
     config = tmp_path / ".config/spec-dashboard.json"
@@ -171,10 +172,10 @@ def test_generator_entry_point_writes_architecture_and_metadata(tmp_path, monkey
     page = (generated / "index.html").read_text()
     assert "Spec architecture" in page
     assert "<th>Relationship</th>" in page
-    assert "<td>depends on</td>" in page and "AU-OTHER" in page
+    assert "<td>depends on</td>" in page and "MERISTEM-OTHER" in page
     assert "-->|depends on|" in (generated / "architecture.mmd").read_text()
     snapshot = json.loads((generated / "snapshot.json").read_text())
-    control = next(row for row in snapshot["records"] if row["id"] == "AU-CONTROL")
+    control = next(row for row in snapshot["records"] if row["id"] == "MERISTEM-CONTROL")
     assert control["component"] == "gateway"
     assert any(ref["label"] == "src/entry.py" and ref["role"] == "implementation" for ref in control["code_refs"])
 
@@ -215,7 +216,8 @@ def test_source_declarations_and_citations_in_both_documents(tmp_path):
 @pytest.mark.spec("PIPE-PAGES-R013.2")
 def test_explicit_edge_kinds_remain_distinct_from_mentions(tmp_path):
     snapshot = fixture(
-        tmp_path, "Depends-on: AU-OTHER\nExtends: AU-OTHER\nReferences: AU-OTHER\nUnblocks MENTION-ONLY.\n"
+        tmp_path,
+        "Depends-on: MERISTEM-OTHER\nExtends: MERISTEM-OTHER\nReferences: MERISTEM-OTHER\nUnblocks MENTION-ONLY.\n",
     )
     enrich_records(tmp_path, snapshot)
     assert {row["kind"] for row in snapshot["records"][0]["relations"]} == {"depends on", "extends", "references"}
@@ -248,19 +250,19 @@ def test_indented_fences_hide_examples_and_citations(tmp_path, indent, fence):
     text = prefix + fence + "\nDepends-on: HIDDEN\nCode: src/example.py\n[hidden](../second/spec.md)\n"
     text += prefix + fence[0] * (len(fence) - 1) + "\nDepends-on: ALSO-HIDDEN\n"
     text += prefix + ("~~~" if fence[0] == "`" else "```") + "\nDepends-on: STILL-HIDDEN\n"
-    text += prefix + fence + "\nDepends-on: AU-OTHER\n"
+    text += prefix + fence + "\nDepends-on: MERISTEM-OTHER\n"
     snapshot = fixture(tmp_path, text)
     (tmp_path / "src").mkdir()
     (tmp_path / "src/example.py").write_text("pass\n")
     enrich_records(tmp_path, snapshot)
-    assert [row["label"] for row in snapshot["records"][0]["relations"]] == ["AU-OTHER"]
+    assert [row["label"] for row in snapshot["records"][0]["relations"]] == ["MERISTEM-OTHER"]
     assert snapshot["records"][0]["code_refs"] == []
 
 
 def test_unclosed_fence_hides_remaining_example_text(tmp_path):
-    snapshot = fixture(tmp_path, "Depends-on: AU-OTHER\n   ```python\nDepends-on: HIDDEN\n")
+    snapshot = fixture(tmp_path, "Depends-on: MERISTEM-OTHER\n   ```python\nDepends-on: HIDDEN\n")
     enrich_records(tmp_path, snapshot)
-    assert [row["label"] for row in snapshot["records"][0]["relations"]] == ["AU-OTHER"]
+    assert [row["label"] for row in snapshot["records"][0]["relations"]] == ["MERISTEM-OTHER"]
 
 
 def assert_code_roles_and_external_evidence(refs):

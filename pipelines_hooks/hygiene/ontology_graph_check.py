@@ -848,7 +848,7 @@ def module_graph(m: Model) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
         declared.setdefault(k, set()).update(v)
     # class and property edges only; an individual's type bridges EG modules, never packs
     pack_ref = [(i, mod) for i, _, mod, _ in m.refs] + [(i, x) for i, x in m.type_refs if m.kind.get(x) != "pack"]
-    # owl:imports bridges EG-internal modules only; a pack import of EG is an antipattern (PACK_IMPORTS_CORE)
+    # owl:imports bridges Medulla-internal modules only; a pack import of EG is an antipattern (PACK_IMPORTS_CORE)
     for mod, onto in m.imports:
         if m.kind.get(mod) == "pack":
             continue

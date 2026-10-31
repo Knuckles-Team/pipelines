@@ -50,7 +50,7 @@ def _rows(root: Path) -> list[str]:
 def test_each_reimplementation_cites_its_row(tmp_path: Path, row: str, source: str) -> None:
     found = sdk_conformance.findings(_connector(tmp_path, source))
     assert any(finding.row == row and finding.location == "demo_api/client.py:1" for finding in found)
-    assert all(finding.render().startswith("SDK-CENTRALIZED-CAPABILITIES-") for finding in found)
+    assert all(finding.render().startswith("SCION-CENTRALIZED-CAPABILITIES-") for finding in found)
 
 
 def test_sdk_usage_is_clean(tmp_path: Path) -> None:
@@ -108,6 +108,6 @@ def test_tests_scripts_and_non_connectors_are_skipped(tmp_path: Path) -> None:
 def test_warns_by_default_and_fails_under_strict(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     root = _connector(tmp_path, "import requests\n")
     assert sdk_conformance.main(["--root", str(root)]) == 0
-    assert "sdk-conformance: WARN: SDK-CENTRALIZED-CAPABILITIES-R001: demo_api/client.py:1" in capsys.readouterr().out
+    assert "sdk-conformance: WARN: SCION-CENTRALIZED-CAPABILITIES-R001: demo_api/client.py:1" in capsys.readouterr().out
     assert sdk_conformance.main(["--root", str(root), "--strict"]) == 1
     assert "sdk-conformance: FAIL:" in capsys.readouterr().out

@@ -307,8 +307,8 @@ def test_explicit_head_is_honored_during_unresolved_pending_merge(repo: Repo) ->
 def test_same_line_shorthand_inherits_prefix() -> None:
     from pipelines_hooks.specs.ids import expand_ranges
 
-    out = expand_ranges("Spec: TUI-RUNTIME-R001.1, R001.2, R001.3\nR009 alone")
-    assert "TUI-RUNTIME-R001.2" in out and "TUI-RUNTIME-R001.3" in out
+    out = expand_ranges("Spec: TUIG-RUNTIME-R001.1, R001.2, R001.3\nR009 alone")
+    assert "TUIG-RUNTIME-R001.2" in out and "TUIG-RUNTIME-R001.3" in out
     assert "-R009" not in out
 
 

@@ -1,7 +1,7 @@
 """The source provider and the tree-based gate run (PIPE-GATES-R003 groundwork).
 
 The engine tree binding awaits the epistemic-graph tree and blob reads
-(EG-SCM-R004); these tests pin the provider contract instead: files by
+(MEDULLA-SCM-R004); these tests pin the provider contract instead: files by
 path and blob digest, no working copy. The verdict-equality contract
 runs one blocking gate on a tree fixture and on an identical materialized
 checkout of the same revision, and asserts that both runs produce the

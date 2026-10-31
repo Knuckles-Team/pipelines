@@ -55,7 +55,7 @@ CREDENTIAL_URI_RE = re.compile(
 )
 HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
 # D-EG-PRIVACY-R001-FALSEPOS (mirrored fix): the lookbehind excluded only
-# alnum, so a hyphen-joined requirement ID (`GRAPHOS-FLEET-R016`) matched
+# alnum, so a hyphen-joined requirement ID (`ARBORA-FLEET-R016`) matched
 # `R016` as a fleet host alias (an `r`/`rw` prefix plus 3+ digits is a real
 # fleet node naming convention) -- the hyphen before `R016` was never
 # itself alnum, so it never blocked the match. Excluding `-` too keeps a

@@ -11,7 +11,7 @@ findings, so an incomplete ledger cannot qualify a wave.
 The ledger shape is deliberately small and serialisable::
 
     {
-        "verified_specs": ["EG-SCM-R001", ...],
+        "verified_specs": ["MEDULLA-SCM-R001", ...],
         "waves": {"1": {"changesets": [...],
                          "auto_revert_rehearsal": {
                              "gate_id": "PIPE-GATES-R002", "result": "passed"
@@ -42,11 +42,11 @@ _TREE_HASH = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})\Z")
 
 _WAVE_ONE_ENTRY = frozenset(
     {
-        "EG-SCM-R001",
-        "EG-SCM-R002",
-        "EG-SCM-R003",
-        "EG-SCM-R004",
-        "EG-SCM-R010",
+        "MEDULLA-SCM-R001",
+        "MEDULLA-SCM-R002",
+        "MEDULLA-SCM-R003",
+        "MEDULLA-SCM-R004",
+        "MEDULLA-SCM-R010",
         "RM-SCM-R001",
         "RM-SCM-R002",
         "ARBORA-OPS-R848.2",
@@ -208,7 +208,7 @@ def evaluate_wave(wave: str, ledger: Mapping[str, object]) -> WaveResult:
         if record is not None:
             findings.extend(_wave_one_exit(record, "waves['1']"))
     elif wave == "2":
-        _require_specs(ledger, {"EG-SCM-R007"}, "wave 2 entry", findings)
+        _require_specs(ledger, {"MEDULLA-SCM-R007"}, "wave 2 entry", findings)
         connectors = [item for item in _records(ledger, "connectors", findings) if item.get("wave") == 2]
         if not connectors:
             findings.append("wave 2 exit: no wave-2 connector receipts")
@@ -219,7 +219,7 @@ def evaluate_wave(wave: str, ledger: Mapping[str, object]) -> WaveResult:
                 findings.append(f"{label}.source_lines: expected an integer below 10000")
             findings.extend(_wave_one_exit(connector, label))
     elif wave == "3":
-        _require_specs(ledger, {"EG-SCM-R011"}, "wave 3 entry", findings)
+        _require_specs(ledger, {"MEDULLA-SCM-R011"}, "wave 3 entry", findings)
         connectors = [item for item in _records(ledger, "connectors", findings) if item.get("wave") == 3]
         if not connectors:
             findings.append("wave 3 exit: no wave-3 connector receipts")

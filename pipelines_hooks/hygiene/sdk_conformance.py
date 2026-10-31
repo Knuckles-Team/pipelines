@@ -1,7 +1,7 @@
 """sdk-conformance: a connector uses the SDK capability instead of its own copy.
 
 The connector SDK centralizes the capabilities a connector needs. Its index is
-the SDK spec ``SDK-CENTRALIZED-CAPABILITIES``; each row says that connectors use
+the SDK spec ``SCION-CENTRALIZED-CAPABILITIES``; each row says that connectors use
 one SDK capability and ship no copy. This gate flags the copies that a static
 scan can see. Every finding cites the row it breaks:
 
@@ -41,7 +41,7 @@ from pipelines_hooks.core.distributions import SDK as SDK_ROLE
 from pipelines_hooks.core.distributions import is_distribution, project_distribution, requirement_name
 
 SDK = "agent-connector-sdk"  # legacy display/default spelling during the transition
-ROW = "SDK-CENTRALIZED-CAPABILITIES-"
+ROW = "SCION-CENTRALIZED-CAPABILITIES-"
 _SKIP_DIRS = {
     ".git",
     ".venv",

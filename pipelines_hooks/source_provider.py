@@ -6,7 +6,7 @@ size, and what one blob's bytes are. The digest binds the bytes to the
 path, so a gate never inspects content the source did not declare. The
 disk provider serves one directory tree; the engine tree provider serves
 an epistemic-graph revision the same way once its tree reads ship
-(EG-SCM-R004).
+(MEDULLA-SCM-R004).
 """
 
 from __future__ import annotations

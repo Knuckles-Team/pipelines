@@ -6,11 +6,11 @@ from pipelines_hooks.migration_waves import evaluate_wave
 
 
 _WAVE_ONE_SPECS = [
-    "EG-SCM-R001",
-    "EG-SCM-R002",
-    "EG-SCM-R003",
-    "EG-SCM-R004",
-    "EG-SCM-R010",
+    "MEDULLA-SCM-R001",
+    "MEDULLA-SCM-R002",
+    "MEDULLA-SCM-R003",
+    "MEDULLA-SCM-R004",
+    "MEDULLA-SCM-R010",
     "RM-SCM-R001",
     "RM-SCM-R002",
     "ARBORA-OPS-R848.2",
@@ -70,7 +70,7 @@ def test_wave_one_refuses_a_mirror_hash_mismatch_and_wrong_land_operation() -> N
 
 def test_wave_2_entry_and_exit() -> None:
     ledger = _ledger()
-    ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007"]  # type: ignore[index]
+    ledger["verified_specs"] = [*ledger["verified_specs"], "MEDULLA-SCM-R007"]  # type: ignore[index]
     _with_connector(ledger, 2, 100, source_lines=9_999)
 
     result = evaluate_wave("2", ledger)
@@ -80,7 +80,7 @@ def test_wave_2_entry_and_exit() -> None:
 
 def test_wave_two_refuses_the_ten_thousand_line_boundary() -> None:
     ledger = _ledger()
-    ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007"]  # type: ignore[index]
+    ledger["verified_specs"] = [*ledger["verified_specs"], "MEDULLA-SCM-R007"]  # type: ignore[index]
     _with_connector(ledger, 2, 200, source_lines=10_000)
 
     result = evaluate_wave("2", ledger)
@@ -91,7 +91,7 @@ def test_wave_two_refuses_the_ten_thousand_line_boundary() -> None:
 
 def test_wave_3_entry_and_exit() -> None:
     ledger = _ledger()
-    ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011"]  # type: ignore[index]
+    ledger["verified_specs"] = [*ledger["verified_specs"], "MEDULLA-SCM-R007", "MEDULLA-SCM-R011"]  # type: ignore[index]
     _with_connector(ledger, 2, 300, source_lines=4_000)
     wave_three = _scope(400)
     wave_three.update({"name": "remaining", "wave": 3, "release_tree_hash": wave_three["mirror_tree_hash"]})
@@ -104,7 +104,7 @@ def test_wave_3_entry_and_exit() -> None:
 
 def test_wave_three_refuses_a_release_that_changes_the_mirror_tree() -> None:
     ledger = _ledger()
-    ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011"]  # type: ignore[index]
+    ledger["verified_specs"] = [*ledger["verified_specs"], "MEDULLA-SCM-R007", "MEDULLA-SCM-R011"]  # type: ignore[index]
     _with_connector(ledger, 2, 500, source_lines=4_000)
     wave_three = _scope(600)
     wave_three.update({"name": "remaining", "wave": 3, "release_tree_hash": "e" * 40})
@@ -118,7 +118,7 @@ def test_wave_three_refuses_a_release_that_changes_the_mirror_tree() -> None:
 
 def test_wave_4_entry_and_exit() -> None:
     ledger = _ledger()
-    ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
+    ledger["verified_specs"] = [*ledger["verified_specs"], "MEDULLA-SCM-R007", "MEDULLA-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
     _with_connector(ledger, 2, 700, source_lines=4_000)
     wave_three = _scope(800)
     wave_three.update({"name": "remaining", "wave": 3, "release_tree_hash": wave_three["mirror_tree_hash"]})
@@ -137,7 +137,7 @@ def test_wave_4_entry_and_exit() -> None:
 
 def test_wave_four_refuses_a_missing_named_repository() -> None:
     ledger = _ledger()
-    ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
+    ledger["verified_specs"] = [*ledger["verified_specs"], "MEDULLA-SCM-R007", "MEDULLA-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
     _with_connector(ledger, 2, 1_000, source_lines=4_000)
     wave_three = _scope(1_100)
     wave_three.update({"name": "remaining", "wave": 3, "release_tree_hash": wave_three["mirror_tree_hash"]})
@@ -157,7 +157,7 @@ def test_wave_four_refuses_a_missing_named_repository() -> None:
 
 def test_wave_four_does_not_accept_a_similar_repository_name() -> None:
     ledger = _ledger()
-    ledger["verified_specs"] = [*ledger["verified_specs"], "EG-SCM-R007", "EG-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
+    ledger["verified_specs"] = [*ledger["verified_specs"], "MEDULLA-SCM-R007", "MEDULLA-SCM-R011", "PIPE-GATES-R003"]  # type: ignore[index]
     _with_connector(ledger, 2, 1_300, source_lines=4_000)
     wave_three = _scope(1_400)
     wave_three.update({"name": "remaining", "wave": 3, "release_tree_hash": wave_three["mirror_tree_hash"]})

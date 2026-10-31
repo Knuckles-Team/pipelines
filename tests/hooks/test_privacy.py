@@ -79,14 +79,14 @@ def test_a_malformed_catalog_is_not_downgraded_locally(
 
 
 def test_privacy_allows_a_hyphenated_requirement_id_citation(repo: Repo, catalog: Path) -> None:
-    """A requirement ID like ``GRAPHOS-FLEET-R016`` is not a fleet host alias.
+    """A requirement ID like ``ARBORA-FLEET-R016`` is not a fleet host alias.
 
     Regression for the false-positive flood that broke requirement-ID
     citations in arbora PRs: ``MACHINE_HOST_ID_RE``'s lookbehind excluded
     only alnum characters, so the hyphen immediately before ``R016`` never
     blocked the match and the requirement ID itself read as a host.
     """
-    repo.commit({"docs/notes.md": "See GRAPHOS-FLEET-R016 and GRAPHOS-FLEET-R017 for scope.\n"})
+    repo.commit({"docs/notes.md": "See ARBORA-FLEET-R016 and ARBORA-FLEET-R017 for scope.\n"})
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 0
 
 
