@@ -206,15 +206,8 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "scripts/readiness",
         "scripts/architecture_explorer",
         "pipelines_hooks/__init__.py",
-        "pipelines_hooks/core/__init__.py",
-        "pipelines_hooks/core/repositories.py",
-        "pipelines_hooks/core/errors.py",
-        "pipelines_hooks/specs/__init__.py",
-        "pipelines_hooks/specs/ids.py",
-        "pipelines_hooks/specs/aliases.py",
-        "pipelines_hooks/specs/trailer_ids.py",
-        "pipelines_hooks/specs/priority.py",
-        "pipelines_hooks/specs/requirements_doc.py",
+        "pipelines_hooks/core",
+        "pipelines_hooks/specs",
     ]
 
 
@@ -240,10 +233,14 @@ def test_spec_dashboard_is_opt_in_and_after_readiness():
     assert '--repository "$GITHUB_REPOSITORY"' in text
 
 
-def test_dashboard_checkout_is_shallow():
+def test_dashboard_checkout_has_full_history_for_computed_status():
     steps = _workflow()["document"]["jobs"]["deploy"]["steps"]
     checkout = next(step for step in steps if step["name"] == "Checkout Repository")
-    assert checkout["with"]["fetch-depth"] == 1
+    assert checkout["with"]["fetch-depth"] == 0
+    compute = next(step for step in steps if step.get("name") == "Compute spec status")
+    names = [step.get("name") for step in steps]
+    assert names.index("Compute spec status") < names.index("Build spec delivery snapshot")
+    assert "generate(" in compute["run"]
     assert checkout["with"]["persist-credentials"] is False
 
 
@@ -251,7 +248,7 @@ def test_dashboard_caller_checkout_materializes_source_files():
     document = _workflow()["document"]
     checkout = next(step for step in document["jobs"]["deploy"]["steps"] if step.get("name") == "Checkout Repository")
     assert "sparse-checkout" not in checkout["with"]
-    assert checkout["with"]["fetch-depth"] == 1
+    assert checkout["with"]["fetch-depth"] == 0
 
 
 @pytest.mark.spec("PIPE-PAGES-R015.1")

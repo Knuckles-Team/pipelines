@@ -152,3 +152,6 @@ htmlcov/
 
 # KISS may write a working cache under .kiss/; its thresholds are tracked in .config/kiss.toml.
 .kiss/
+
+# Spec status is computed at read time (pipelines-hook spec-status --write), never committed.
+specs/*/status.json

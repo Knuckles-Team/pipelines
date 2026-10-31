@@ -8,6 +8,7 @@ tests carry no dependency on anything outside this repository.
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 from scripts.spec_graph import (
@@ -50,7 +51,10 @@ def problems(root):
     for spec_dir in (root / "specs").iterdir():
         if not spec_dir.is_dir():
             continue
-        status = json.loads((spec_dir / "status.json").read_text(encoding="utf-8"))
+        path = spec_dir / "status.json"
+        if not path.is_file():
+            continue
+        status = json.loads(path.read_text(encoding="utf-8"))
         ids = status.get("requirement_ids", [])
         entries = status.get("requirements", [])
         if [entry.get("id") for entry in entries] != ids:
@@ -284,6 +288,13 @@ def test_write_applies_one_split_with_child_ids_and_depends_on(tmp_path: Path) -
         tasks_md=tasks_md,
     )
     repo_root = tmp_path / "demo"
+    (repo_root / "specs/x-demo/status.json").unlink()  # computed at read time, never committed
+    for args in (
+        ("init", "-q"),
+        ("add", "-A"),
+        ("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"),
+    ):
+        subprocess.run(["git", "-C", str(repo_root), *args], check=True, capture_output=True)
     child_ids = apply_split(repo_root, "X-DEMO-R001")
     assert child_ids == ["X-DEMO-R001.1", "X-DEMO-R001.2"]
 
@@ -292,22 +303,7 @@ def test_write_applies_one_split_with_child_ids_and_depends_on(tmp_path: Path) -
     assert "`X-DEMO-R001.1`" in requirements_text
     assert "`X-DEMO-R001.2`" in requirements_text
 
-    data = json.loads((spec_dir / "status.json").read_text(encoding="utf-8"))
-    assert data["requirement_ids"] == [
-        "X-DEMO-R001",
-        "X-DEMO-R001.1",
-        "X-DEMO-R001.2",
-        "X-DEMO-R999",
-    ]
-    entries = {entry["id"]: entry for entry in data["requirements"]}
-    assert [entry["id"] for entry in data["requirements"]] == data["requirement_ids"]
-    assert entries["X-DEMO-R001"]["rollup"] is True
-    assert entries["X-DEMO-R001"]["children"] == child_ids
-    assert entries["X-DEMO-R001.1"]["delivery_state"] == "SPECIFIED"
-    # Producer before consumer: the parent's own unresolved dependency carries
-    # onto the first child, and each later child chains onto the one before it.
-    assert entries["X-DEMO-R001.1"]["depends_on"] == ["X-DEMO-R999"]
-    assert entries["X-DEMO-R001.2"]["depends_on"] == ["X-DEMO-R001.1"]
+    assert not (spec_dir / "status.json").exists()  # the split writes source only
 
     tasks_text = (spec_dir / "tasks.md").read_text(encoding="utf-8")
     assert "X-DEMO-R001.1" in tasks_text

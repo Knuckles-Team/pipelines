@@ -20,22 +20,28 @@ ENTRY = {"name": "pipelines", "slug": "pipelines", "sha": SHA, "kind": "core"}
 A, B = "PIPE-DEMO-R001", "PIPE-DEMO-R002"
 
 
+DEMO_STATUS = {
+    "schema_version": 2,
+    "owner_repo": "pipelines",
+    "delivery_state": "SPECIFIED",
+    "requirement_ids": [A, B],
+    "spec_id": "PIPE-DEMO",
+    "requirements": [
+        {"id": r, "title": title, "delivery_state": "SPECIFIED", "landed_in": [], "verified_by": []}
+        for r, title in [(A, "First"), (B, "Second")]
+    ],
+}
+
+
+@pytest.fixture(autouse=True)
+def computed_status(monkeypatch):
+    """Status is computed from a clone at the frozen commit; the fake API has no clone to compute from."""
+    monkeypatch.setattr(build, "STATUS_SOURCE", lambda url, commit: {"specs/demo/status.json": deepcopy(DEMO_STATUS)})
+
+
 def fake_api():
     docs = {
         "specs/demo/requirements.md": f"| `{A}` | **First**. | tests |\n| `{B}` | **Second**. Depends-on: `{A}`. | tests |\n",
-        "specs/demo/status.json": json.dumps(
-            {
-                "schema_version": 2,
-                "owner_repo": "pipelines",
-                "delivery_state": "SPECIFIED",
-                "requirement_ids": [A, B],
-                "spec_id": "PIPE-DEMO",
-                "requirements": [
-                    {"id": r, "title": title, "delivery_state": "SPECIFIED", "landed_in": [], "verified_by": []}
-                    for r, title in [(A, "First"), (B, "Second")]
-                ],
-            }
-        ),
         "specs/demo/plan.md": "# Exact frozen plan",
     }
     base = build.API + "pipelines"
@@ -70,7 +76,7 @@ def test_same_capture_drives_details_public_rows_chart_and_receipt(monkeypatch):
     _, calls, request = fake_api()
     monkeypatch.setattr(build, "load_all", lambda entries, mode, workspace: [])
     snaps, chart = build.load_build_sources([ENTRY], "github", None, {"pipelines": ["demo"]}, token="", request=request)
-    assert len(calls) == len(set(calls)) == 6
+    assert len(calls) == len(set(calls)) == 5  # status is computed, not fetched
     assert snaps[0].docs["demo"]["plan.md"] == "# Exact frozen plan"
     assert len(snaps[0].rows) == chart["scope"]["scoreRowCount"] == 2
     assert chart["scope"]["repositories"][0]["commit"] == SHA

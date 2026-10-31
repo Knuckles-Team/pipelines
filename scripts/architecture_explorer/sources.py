@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from pipelines_hooks.specs.generator import generate_at
 from pipelines_hooks.specs.requirements_doc import parse_rows
 
 from .details import describe, family_docs, row_parts
@@ -58,6 +59,10 @@ class GitReader:
     def head(self) -> str:
         return self._git("rev-parse", "--short=10", self.ref).strip()
 
+    def statuses(self) -> dict[str, dict]:
+        """Spec status computed at read time (status.json is never committed)."""
+        return generate_at(str(self.path), self._git("rev-parse", self.ref).strip())
+
     def files(self) -> set[str]:
         return {f for f in self._git("ls-tree", "-r", "--name-only", self.ref).split("\n") if f}
 
@@ -90,6 +95,10 @@ class GitHubReader:
     def head(self) -> str:
         return self.sha[:10]
 
+    def statuses(self) -> dict[str, dict]:
+        """Spec status computed at read time from a blobless clone at the frozen SHA."""
+        return generate_at(f"https://github.com/{OWNER}/{self.slug}.git", self.sha)
+
     def files(self) -> set[str]:
         tree = self._json(f"https://api.github.com/repos/{OWNER}/{self.slug}/git/trees/{self.sha}?recursive=1")
         return {e["path"] for e in tree.get("tree", []) if e.get("type") == "blob"}
@@ -102,12 +111,12 @@ class GitHubReader:
 
 
 def spec_dirs(files: set[str]) -> list[str]:
-    """Return the spec family directories that hold a status.json."""
+    """Return the spec family directories that hold a requirements.md."""
     return sorted(
         f.split("/")[1]
         for f in files
         if f.startswith("specs/")
-        and f.endswith("/status.json")
+        and f.endswith("/requirements.md")
         and f.count("/") == 2
         and not f.split("/")[1].startswith("_")
     )
@@ -126,11 +135,9 @@ def requirement_text(markdown: str) -> dict[str, str]:
 def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
     """Read every spec row of one repository."""
     rows = []
+    statuses = reader.statuses()
     for family in spec_dirs(files):
-        try:
-            status = json.loads(reader.read(f"specs/{family}/status.json") or "{}")
-        except json.JSONDecodeError:
-            continue
+        status = statuses.get(f"specs/{family}/status.json", {})
         markdown = reader.read(f"specs/{family}/requirements.md")
         text = requirement_text(markdown)
         # Read from the row text, not status.json: a repository's status.json carries depends_on only after it regenerates.

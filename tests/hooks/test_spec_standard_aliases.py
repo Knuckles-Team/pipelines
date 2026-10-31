@@ -41,7 +41,6 @@ def test_standard_alias_preserves_history_and_current_range(repo: Repo, capsys: 
     landed = repo.commit({"pkg/transport.py": "# transport\n"}, f"implement transport\n\nSpec: {_OLD}")
     repo.commit({"tests/test_transport.py": f"# spec: {_OLD}\n"}, f"prove transport\n\nSpec: {_OLD}")
     assert repo.run("spec-status", "--write") == 0
-    repo.commit({"specs/demo/status.json": (repo.root / "specs/demo/status.json").read_text()}, "status")
     current_base = _current_repo(repo)
     repo.commit({"pkg/transport.py": "# current transport\n"}, f"current fix\n\nSpec: {_NEW}")
 

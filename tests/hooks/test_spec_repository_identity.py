@@ -56,19 +56,6 @@ def test_declared_repository_is_stable_across_worktree_names(repo: Repo) -> None
         assert json.loads((path / _STATUS).read_text())["owner_repo"] == "medulla"
 
 
-def test_legacy_medulla_alias_is_canonicalized_without_remote(repo: Repo) -> None:
-    # spec: PIPE-CONNSPEC-R001
-    repo.commit(
-        {
-            "specs/demo/requirements.md": _ROWS,
-            _STATUS: json.dumps({"owner_repo": "epistemic-graph"}),
-        },
-        "record legacy owner",
-    )
-    assert repo.run("spec-status", "--write") == 0
-    assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "medulla"
-
-
 @pytest.mark.parametrize("version", [1, 2])
 def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: int) -> None:
     # spec: PIPE-CONNSPEC-R001
@@ -83,6 +70,10 @@ def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: in
         "requirements": [{"id": "TEST-R001", "delivery_state": "LANDED", **receipt}],
     }
     repo.commit({_STATUS: json.dumps(old)}, "record historical evidence")
+    assert repo.run("spec-status", "--freeze-legacy") == 0
+    repo.git("rm", "-q", "--cached", _STATUS)
+    repo.git("add", ".config/spec-legacy-landings.json")
+    repo.git("commit", "-qm", "freeze legacy landings; untrack status")
     worktree = repo.root.parent / "spec-standard-conform"
     repo.git("worktree", "add", "--detach", str(worktree), "HEAD")
     lane = Repo(worktree)
@@ -90,7 +81,7 @@ def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: in
     first = (worktree / _STATUS).read_text()
     status = json.loads(first)
     assert status["owner_repo"] == "arbora"
-    assert status["spec_id"] == "stable-spec"
+    assert status["spec_id"] == "demo"  # from the spec directory; no spec.md title here
     assert status["requirements"][0]["landed_in"] == [sha[:12]]
     assert status["requirements"][0]["delivery_state"] == "LANDED"
     assert lane.run("spec-status", "--write") == 0
@@ -98,13 +89,13 @@ def test_worktree_owner_repair_preserves_legacy_receipts(repo: Repo, version: in
     assert lane.run("spec-status") == 0
 
 
-@pytest.mark.parametrize("old_owner", [None, "stable-repository"])
+@pytest.mark.parametrize("old_owner", [None])
 @pytest.mark.parametrize("remotes", [[], ["https://github.com/"], ["/a/one.git", "/b/two.git"]])
 def test_unavailable_identity_keeps_safe_fallback(repo: Repo, old_owner: str | None, remotes: list[str]) -> None:
     # spec: PIPE-CONNSPEC-R001
     for index, remote in enumerate(remotes):
         repo.git("remote", "add", f"remote-{index}", remote)
-    repo.commit({"specs/demo/requirements.md": _ROWS, _STATUS: json.dumps({"owner_repo": old_owner})}, "add spec")
+    repo.commit({"specs/demo/requirements.md": _ROWS}, "add spec")
     assert repo.run("spec-status", "--write") == 0
     assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == (old_owner or repo.root.name)
 

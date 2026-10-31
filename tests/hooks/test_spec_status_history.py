@@ -35,18 +35,22 @@ def _history_with_receipts(repo: Repo, schema: int) -> str:
         ],
     }
     repo.commit({"specs/demo/status.json": json.dumps(old)}, "record historical receipts")
+    assert repo.run("spec-status", "--freeze-legacy") == 0
+    frozen = (repo.root / ".config/spec-legacy-landings.json").read_text(encoding="utf-8")
+    repo.git("rm", "-q", "--cached", "specs/demo/status.json")
+    (repo.root / "specs/demo/status.json").unlink()
+    repo.commit({".config/spec-legacy-landings.json": frozen}, "freeze legacy landings; untrack status")
     return live
 
 
 def _assert_refusal_preserves_files(shallow: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     assert shallow.git("rev-parse", "--is-shallow-repository").strip() == "true"
     status = shallow.root / "specs/demo/status.json"
-    before = status.read_bytes()
     with pytest.raises(CannotRun, match="complete Git history"):
         generate(shallow.root, "HEAD")
-    for args in ((), ("--write",), ("--write", "--changed-only")):
+    for args in ((), ("--write",)):
         assert shallow.run("spec-status", *args) == 2
-        assert status.read_bytes() == before
+        assert not status.exists()
         assert shallow.git("status", "--porcelain") == ""
     assert "git fetch --unshallow" in capsys.readouterr().err
 
@@ -62,15 +66,14 @@ def test_shallow_history_refuses_without_writes_then_full_history_validates_rece
     _assert_refusal_preserves_files(shallow, capsys)
     shallow.git("fetch", "-q", "--unshallow")
     assert shallow.git("rev-parse", "--is-shallow-repository").strip() == "false"
-    # Hosted PR jobs auto-scope to a base; the clone's origin/main is already HEAD.
-    assert shallow.run("spec-status", "--write", "--base-ref", live) == 0
+    assert shallow.run("spec-status", "--write") == 0
     status = shallow.root / "specs/demo/status.json"
     rows = json.loads(status.read_text(encoding="utf-8"))["requirements"]
     assert rows[0]["landed_in"] == [live[:12]]
     assert rows[0]["delivery_state"] == "LANDED"
     assert all(row["landed_in"] == [] for row in rows[1:])
     assert all(row["delivery_state"] == "SPECIFIED" for row in rows[1:])
-    assert shallow.run("spec-status", "--base-ref", live) == 0
+    assert shallow.run("spec-status") == 0
 
 
 def test_shallow_repository_without_specs_is_a_clean_pass(repo: Repo, tmp_path: Path) -> None:

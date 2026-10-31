@@ -4,6 +4,8 @@ into ``Requirement`` objects, resolving cross-repo dependency mentions.
 
 from __future__ import annotations
 
+from pipelines_hooks.specs.generator import generate
+
 import json
 from pathlib import Path
 
@@ -66,7 +68,7 @@ def _requirements_from_status(data: dict, *, repo_name: str, spec_dir: Path, req
 
 
 def _load_status_entries(root: Path, reqs: dict[str, Requirement]) -> list[Path]:
-    """Populate ``reqs`` from every spec's ``status.json`` under ``root`` and
+    """Populate ``reqs`` from every spec's computed status under ``root`` and
     return the spec directories found, without yet walking their other files.
 
     Loading every root's declared requirement IDs before any file is scanned
@@ -78,11 +80,15 @@ def _load_status_entries(root: Path, reqs: dict[str, Requirement]) -> list[Path]
     if not specs_dir.is_dir():
         return []
     spec_dirs = sorted(p for p in specs_dir.iterdir() if p.is_dir() and p.name != "_template")
+    computed: dict[Path, dict] | None = None
     for spec_dir in spec_dirs:
         status_path = spec_dir / "status.json"
-        if not status_path.is_file():
-            continue
-        data = _status_data(status_path)
+        if status_path.is_file():  # written by `pipelines-hook spec-status --write`
+            data = _status_data(status_path)
+        else:  # status.json is never committed: compute it from the repository
+            if computed is None:
+                computed = generate(root, "HEAD") if (root / ".git").exists() else {}
+            data = computed.get(status_path)
         if data is not None:
             _requirements_from_status(data, repo_name=root.name, spec_dir=spec_dir, reqs=reqs)
     return spec_dirs

@@ -160,14 +160,17 @@ def test_git_capture_pinned_commit_not_worktree(tmp_path):
     git("init")
     git("config", "user.name", "Fixture")
     git("config", "user.email", "fixture@example.test")
+    git("remote", "add", "origin", "https://github.com/Knuckles-Team/pipelines.git")
     for path, body in inputs()["captures"][0]["documents"].items():
         target = tmp_path / path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(body)
-    git("add", "specs/demo/requirements.md", "specs/demo/status.json")
+    spec_id = json.loads(inputs()["captures"][0]["documents"]["specs/demo/status.json"])["spec_id"]
+    (tmp_path / "specs/demo/spec.md").write_text(f"# {spec_id} — Demo\n")
+    git("add", "specs/demo/requirements.md", "specs/demo/spec.md")
     git("commit", "-m", "Fixture")
     commit = git("rev-parse", "HEAD")
-    (tmp_path / "specs/demo/status.json").write_text("corrupt worktree")
+    (tmp_path / "specs/demo/requirements.md").write_text("corrupt worktree")
     captured = capture_git(tmp_path, commit, REPO)
     assert captured["head"] == commit
     assert source_chart(captures=[captured], repositories=[REPO], selection=["R_1:demo"])["scope"]["scoreRowCount"] == 2

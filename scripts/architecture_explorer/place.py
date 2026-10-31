@@ -4,9 +4,9 @@ Order of evidence: explicit ID rules (any part of the row's repository), title
 keywords, cited code paths (longest prefix), the placement of the parent row,
 requirement-text keywords, title keywords across the whole repository (a row
 filed under a sibling family still names its part), then the parent row's part
-wherever it sits. A row that only reaches its family home node goes to that
-node's "Unmapped" child when the home node has children, so nothing is lost and
-nothing is guessed. External nodes (people, outside clients) never take rows.
+wherever it sits. A row that only reaches its family home node stays on that node,
+whether or not it has children: a family with a node owns all its rows, so new rows
+never fail the build. Only a family with no node at all is unmapped. External nodes (people, outside clients) never take rows.
 """
 
 from __future__ import annotations
@@ -248,7 +248,6 @@ class Placer:
                 continue
             self.placed[row["id"]], self.how[row["id"]] = nid, how
             direct[nid].append(row)
-        self._split_unmapped(direct)
         if orphans:
             unm = {
                 "id": "root.unmapped",
@@ -262,28 +261,11 @@ class Placer:
             direct[unm["id"]] = orphans
         return direct
 
-    def _split_unmapped(self, direct: dict[str, list[dict]]) -> None:
-        for nid in list(self.tree.order):
-            node = self.tree.nodes[nid]
-            loose = [r for r in direct.get(nid, []) if self.how[r["id"]] == "fallback"]
-            if not node["children"] or not loose:
-                continue
-            unm = {
-                "id": nid + ".unmapped",
-                "label": "Unmapped",
-                "role": "rows not placed in a child",
-                "layer": "unmapped",
-                "unmapped": True,
-                "desc": "These rows belong to this part. No rule placed them on a child part. Review them to find their child.",
-            }
-            self.tree.add_child(nid, unm)
-            direct[unm["id"]] = loose
-            direct[nid] = [r for r in direct[nid] if self.how[r["id"]] != "fallback"]
-
 
 def unmapped_violations(tree: Tree, direct: dict[str, list[dict]], allow: list[str]) -> list[str]:
-    """Every row on an Unmapped part, or left directly on a part with children, that the reviewed
-    allowlist (``repo:ID`` entries) does not name. Every row must sit on a leaf part at any depth.
+    """Every row on the Unmapped part (its family has no node) or on an external part that the
+    reviewed allowlist (``repo:ID`` entries) does not name. A row that matches no child keyword
+    sits on its family's own node and is not a violation.
 
     A row on an external part is always a violation: external parts take no rows.
     """
@@ -293,7 +275,7 @@ def unmapped_violations(tree: Tree, direct: dict[str, list[dict]], allow: list[s
         node = tree.nodes[nid]
         for row in rows:
             key = f"{row['repo']}:{row['id']}"
-            leftover = node.get("unmapped") or bool(node["children"])
+            leftover = bool(node.get("unmapped"))
             if node.get("external") or (leftover and key not in allowed):
                 out.append(key)
     return sorted(out)

@@ -37,8 +37,8 @@ group of existing gates, so each check is one hook id and one line of output.
   `tracked-privacy` with `SKIP=tracked-privacy`; the group honours `SKIP` per
   member.
 - `spec`: `spec-standard` (names, file set, index), `spec-decomposition`
-  (requirement, task, test-spec and status IDs agree), `spec-status` (the
-  generated `status.json` is fresh) and `spec-trailers` (`Spec:` trailers on
+  (requirement, task, test-spec and status IDs agree), `spec-status` (status
+  computes from requirements, history and bindings, and no `status.json` is tracked) and `spec-trailers` (`Spec:` trailers on
   the pull request commits, a range member like the two above). `gates_pipeline.yml` adds `spec-trailers` to
   `SKIP` on a push event.
 - `tests-fast`: the `fast-tests` gate. Pass `--src-root <package>` in `args`.
