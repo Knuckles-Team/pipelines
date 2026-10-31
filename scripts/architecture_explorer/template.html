@@ -357,12 +357,18 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
       <details id="contribute">
         <summary>How to contribute</summary>
         <ol>
-          <li>Start at the front door, <a href="https://knuckles-team.github.io/.github/">https://knuckles-team.github.io/.github/</a>.</li>
-          <li>Read the contribution guide, <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md">https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md</a>.</li>
-          <li>Pick an open (SPECIFIED) row here. Expand it to read its requirement and design, and open its <code>specs/&lt;family&gt;/</code> folder.</li>
-          <li>Set up with the <code>arbora-development</code> skill from universal-skills, <a href="https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development">https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development</a>.</li>
-          <li>Build it, run the repo's gates, and open a PR whose commit carries a <code>Spec:</code> trailer with the row ID.</li>
+          <li>Constitution: read <a href="https://github.com/Knuckles-Team/pipelines/blob/main/.specify/memory/constitution.md">https://github.com/Knuckles-Team/pipelines/blob/main/.specify/memory/constitution.md</a>. Every plan checks against it.</li>
+          <li>Route: pick the owner repository with <a href="https://github.com/Knuckles-Team/pipelines/blob/main/reference/ecosystem-boundaries.md">https://github.com/Knuckles-Team/pipelines/blob/main/reference/ecosystem-boundaries.md</a> and the <code>arbora-development</code> skill, <a href="https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development">https://github.com/Knuckles-Team/universal-skills/tree/main/universal_skills/skills/arbora-development</a>. Choose an open (SPECIFIED) row here.</li>
+          <li>Specify: the <code>spec-intake-wizard</code> and <code>spec-generator</code> skills write <code>specs/&lt;id&gt;/spec.md</code>. It holds user stories, Given/When/Then scenarios, and FR- and SC- labels mapped to row IDs.</li>
+          <li>Clarify: resolve every <code>[NEEDS CLARIFICATION]</code> marker in <code>spec.md</code> before you plan.</li>
+          <li>Plan: <code>spec-generator</code> writes <code>plan.md</code>. Add <code>contracts/</code> for cross-repository seams, <code>data-model.md</code>, <code>quickstart.md</code>, and <code>research.md</code> when unknowns remain.</li>
+          <li>Tasks: <code>task-planner</code> writes <code>tasks.md</code>. Each line reads <code>- [ ] T001 [P] [US1] &lt;ROW-ID&gt;</code>.</li>
+          <li>Analyze and checklist: <code>spec-verifier</code> checks consistency and writes <code>checklists/requirements.md</code>.</li>
+          <li>Implement: <code>sdd-implementer</code> builds each task. Run the repository gates.</li>
+          <li>Land: open a PR whose commits carry a <code>Spec: &lt;ROW-ID&gt;</code> trailer and a bound test.</li>
+          <li>Release: landed rows ship in the next release bundle.</li>
         </ol>
+        <p>Also read the <a href="https://knuckles-team.github.io/.github/">front door</a>, the <a href="https://github.com/Knuckles-Team/.github/blob/main/CONTRIBUTING.md">contribution guide</a>, the <a href="https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md">spec standard</a>, and the <a href="https://github.com/Knuckles-Team/pipelines/tree/main/specs/_template">spec templates</a>.</p>
       </details>
     </div>
   </header>
