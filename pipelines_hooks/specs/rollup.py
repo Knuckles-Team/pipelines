@@ -27,7 +27,11 @@ def apply_rollup(ids: list[str], state: dict[str, str], records: dict[str, dict[
         if not children:
             continue
         live = [state[child] for child in children if state[child] != "RETIRED"]
-        rolled = min(live, key=lambda value: ORDER.get(value, -1)) if live else "RETIRED"
+        if not live:
+            # Only retired children: the parent is a leaf again and keeps its own
+            # state. Only its own RETIRED title retires it.
+            continue
+        rolled = min(live, key=lambda value: ORDER.get(value, -1))
         state[parent] = rolled
         records[parent]["delivery_state"] = rolled
         records[parent]["rollup_of"] = children
