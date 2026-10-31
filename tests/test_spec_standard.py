@@ -498,3 +498,22 @@ def test_checked_checklist_is_clean(root, capsys):
     d = _spec(root)
     _touch(root, d, "checklists/requirements.md", "- [x] a\n")
     assert _run(root, capsys)[0] == 0
+
+
+def test_work_that_landed_on_main_after_the_fork_is_not_touched(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _stage(root, "specs", ".specify")
+    env = fixture_git_environment()
+    run = lambda *a: subprocess.run(["git", "-C", str(root), *a], env=env, check=True, capture_output=True)  # noqa: E731
+    run("commit", "-q", "-m", "base")
+    run("branch", "-M", "main")
+    run("update-ref", "refs/remotes/origin/main", "HEAD")
+    run("switch", "-q", "-c", "work")
+    run("switch", "-q", "main")
+    (d / "tasks.md").write_text("No tasks.\n")
+    run("commit", "-qam", "main moves on")
+    run("update-ref", "refs/remotes/origin/main", "HEAD")
+    run("switch", "-q", "work")
+    code, out = _run(root, capsys)
+    assert code == 0 and "No tasks" not in out and "tasks.md has no task line" not in out
