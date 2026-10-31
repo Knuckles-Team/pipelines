@@ -85,3 +85,11 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 The module-graph tests (PIPE-GATES-R016.1 to R016.3) cover an import-only module, an individuals-only module and the fixture-directory path rule.
 
 The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9) is tested on fixture packs in `tests/hooks/test_ontology_codemod.py`: one test per rule family, idempotence, input-order independence, the projected finding counts, the dry-run command, Medulla `skos:altLabel` matching with a shared alias sent to review, the override table, prefix-preserving rewrites with a `schema.org` fixture, and the refusal to write a file that does not re-parse. The manifest-cut codemod (`connector-ontology-map migrate`, PIPE-GATES-R016.10 to R016.16) is tested on a fixture connector in `tests/hooks/test_connector_migrate.py`: one test per transform, idempotence and determinism, and the review contract. R016.4 and R016.5 are in `tests/hooks/test_ontology_graph_check.py`.
+
+## Planning mechanisms
+
+| Test ID | Requirement | Level | Setup and input | Expected observation |
+|---|---|---|---|---|
+| T-028 | PIPE-GATES-R028 | Unit | A touched spec whose `plan.md` lacks template sections, and an untouched one. | Fails for the touched spec, advisory for the untouched one. |
+| T-029 | PIPE-GATES-R029 | Unit | A spec with a row lacking a task or a test, an orphan label and an open marker in `plan.md`. | Each is a finding; failing only when the change adds the row or touches the file. |
+| T-030 | PIPE-GATES-R030 | Unit | A checklist with an unchecked item, and one fully checked. | The first is a finding; the second is clean. |

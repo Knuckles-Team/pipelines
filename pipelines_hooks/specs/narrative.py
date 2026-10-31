@@ -147,3 +147,29 @@ def is_touched(touched: set[str], spec_dir: Path, root: Path, name: str) -> bool
     """Whether the change touches ``name`` of this spec (a new spec touches every file)."""
     prefix = spec_dir.resolve().relative_to(root.resolve()).as_posix() + "/"
     return any(p == prefix + name or (name == "" and p.startswith(prefix)) for p in touched)
+
+
+def added_row_ids(root: Path, spec_dir: Path, touched: set[str], base: str | None = None) -> set[str]:
+    """Row IDs on lines the change adds to this spec directory (a whole file when it is new or has no base)."""
+    prefix = spec_dir.resolve().relative_to(root.resolve()).as_posix() + "/"
+    try:
+        resolved = upstream_base(root, base)
+    except CannotRun:
+        resolved = None
+    ids: set[str] = set()
+    for path in sorted(p for p in touched if p.startswith(prefix) and p.endswith(".md")):
+        text = ""
+        if resolved:
+            try:
+                diff = git_text(root, ("diff", "-U0", resolved, "--", path))
+            except CannotRun:
+                diff = ""
+            added = (line[1:] for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++"))
+            text = "\n".join(added)
+        if not text:
+            try:
+                text = (root / path).read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                continue
+        ids.update(ROW_TOKEN_RE.findall(text))
+    return ids

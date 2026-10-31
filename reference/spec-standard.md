@@ -93,7 +93,7 @@ The standard adopts the file layout of the [upstream spec-driven toolkit](https:
 | File | Content |
 |---|---|
 | `spec.md` | Outcome, prioritized user stories, edge cases, `FR-` and `SC-` labels, assumptions, scope, "Why a new spec" |
-| `plan.md` | Architecture, reuse inventory, interfaces, wiring, and decisions, as they are now |
+| `plan.md` | The plan template sections (see "Plan format"), as they are now |
 | `requirements.md` | One table row per requirement ID |
 | `tasks.md` | One numbered task per requirement row, producer first |
 | `test-spec.md` | One test row per requirement, with the proving test name |
@@ -106,7 +106,7 @@ A spec directory may also hold these optional artifacts:
 | `data-model.md` | Entities, fields and relations |
 | `contracts/` | Interface schemas, one file per contract |
 | `quickstart.md` | The shortest path that shows the feature working |
-| `checklists/` | Requirement-quality checklists |
+| `checklists/` | Requirement-quality checklists; `checklists/requirements.md` is filled before landing (`specs/_template/checklists/requirements.md`) |
 
 Each repository also holds `.specify/memory/constitution.md`. It is one page. It links the organization standards by public URL and adds only the rules of that repository. `specs/_template/constitution.md` is the starting text.
 
@@ -127,6 +127,30 @@ Design, architecture, coverage, and cross-repository notes are sections of `plan
 A question that blocks a row carries the marker `[NEEDS CLARIFICATION: <question>]`. The marker must be resolved and deleted before the row lands; the gate fails while one remains in `spec.md` or `requirements.md`.
 
 A task line in `tasks.md` reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. The task number and the row ID are required. The `[P]` and `[US1]` tokens are optional.
+
+## Plan format
+
+`plan.md` follows the plan template of the [upstream spec-driven toolkit](https://github.com/github/spec-kit), plus three sections of this platform. The sections, in order:
+
+1. `## Summary`
+2. `## Technical Context` with the fields Language/Version, Primary Dependencies, Storage, Testing, Target Platform, Project Type, Performance Goals, Constraints and Scale/Scope
+3. `## Constitution Check`: each principle of the repository constitution, pass or fail, with the justification
+4. `## Project Structure`: real repository paths
+5. `## Phase 0: Research`: unknowns and their resolution, written to `research.md` when any unknown exists
+6. `## Phase 1: Design`: written to `data-model.md`, `contracts/` and `quickstart.md` as applicable
+7. `## Phase 2: Task approach`
+8. `## Complexity Tracking`: each constitution violation with its justification
+9. `## Build contract`: the real gate thresholds and code shapes
+10. `## Production caller chain`: entrypoint to owner, with file and line
+11. `## Cross-repo seams`: each seam by the row ID that owns it
+
+## Consistency analysis
+
+The gate also runs a cross-file analysis of each spec directory, the counterpart of the upstream analyze step. It reports an active row with no task line, a task naming no existing row, a behaviour row with neither a bound test nor a test-spec entry, an `FR-` or `SC-` label cited but not defined (or defined twice) in `spec.md`, and an open clarification marker in any design file. A rollup parent is covered by its child rows. A row finding fails when the change adds the row; the others fail when their file is touched.
+
+## Requirements checklist
+
+Before a spec lands its author fills `checklists/requirements.md` from `specs/_template/checklists/requirements.md`. An unchecked item is a finding.
 
 ## Rows
 
@@ -168,6 +192,9 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Clarification | `spec.md` or `requirements.md` holds an open `[NEEDS CLARIFICATION: …]` marker |
 | Narrative | `spec.md` lacks prioritized stories, Given/When/Then scenarios, Edge Cases or Assumptions, or an `FR-` or `SC-` label names no existing row |
 | Task line | A `tasks.md` task does not match the numbered task line or names no existing row |
+| Plan | `plan.md` lacks a template section or a Technical Context field |
+| Analysis | A row has no task line or no test, a task names no row, a label is orphaned, or a design file holds an open marker |
+| Checklist | A `checklists/*.md` file holds an unchecked item |
 | Status | A spec file writes a `Status:` line |
 | Constitution | The repository has no `.specify/memory/constitution.md` (advisory) |
 | Title line | `spec.md` line 1 does not match `# <ID> — <Title>` |
@@ -176,7 +203,7 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Index | `specs/README.md` does not list the spec |
 | Third-party names | Authored `specs/**/*.md` text names a product or project on the denylist in `pipelines_hooks/specs/third_party_names.toml` |
 
-The clarification, file-set, title, ID, name, index and third-party checks always fail on a finding. The narrative, task-line and status checks fail for a file the change touches, that is a staged file or a file that differs from the base revision, and are advisory for every other file. An advisory finding prints with the prefix `ADV` and does not change the exit code. An older spec is rewritten when it is next extended.
+The clarification, file-set, title, ID, name, index and third-party checks always fail on a finding. The narrative, task-line, plan, analysis, checklist and status checks fail for a file the change touches, that is a staged file or a file that differs from the base revision, and are advisory for every other file. An advisory finding prints with the prefix `ADV` and does not change the exit code. An older spec is rewritten when it is next extended.
 
 The gate exits 0 when clean, 1 on a finding, and 2 when it cannot run. It has no baseline and no suppression.
 
