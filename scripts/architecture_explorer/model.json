@@ -6285,16 +6285,6 @@
         "tests/hooks"
        ],
        "kw": "quality|hook|gate|grading|similarity|mutation|structural|coverage|test|skill|dependency|packaging|portab|version|ontology governance|prompt|workflow export|installer|single-binary|release coordination|schema generation|tooling|claims"
-      },
-      {
-       "id": "pipe.pages.explorer",
-       "label": "Architecture explorer",
-       "role": "generated architecture map",
-       "desc": "One generator reads the spec rows of every registered repository and places each on the deepest architecture part. A pinned layered layout engine lays out each level.",
-       "kw": "architecture explorer",
-       "code": [
-        "scripts/architecture_explorer"
-       ]
       }
      ]
     },
@@ -6328,9 +6318,53 @@
      "fam": [
       "ordered-digest-release"
      ]
+    },
+    {
+     "id": "pipe.canopy",
+     "label": "Canopy",
+     "role": "ecosystem front door",
+     "desc": "Canopy is the front door of the ecosystem. It shows the architecture, every spec with its plan, tasks and delivery state, and the release phases. It rebuilds from the specs of every repository.",
+     "code": [
+      "scripts/architecture_explorer"
+     ],
+     "ids": [
+      "PIPE-PAGES-R042(\\.\\d+)*$",
+      "PIPE-PAGES-R04[4-9](\\.\\d+)*$",
+      "PIPE-PAGES-R05[0-9](\\.\\d+)*$"
+     ],
+     "kw": "architecture explorer|canopy",
+     "links": [
+      "arbora",
+      "au",
+      "eg",
+      "sdk",
+      "connectors",
+      "skills",
+      "webui",
+      "tui",
+      "geniusbot"
+     ]
+    },
+    {
+     "id": "pipe.site",
+     "label": "Organization site",
+     "role": "hosts Canopy",
+     "desc": "The organization site publishes Canopy at its architecture address. It rebuilds the page on every merge to main and at least every 30 minutes."
     }
    ],
-   "band": 4
+   "band": 4,
+   "edges": [
+    [
+     "pipe.site",
+     "pipe.canopy",
+     "serves"
+    ],
+    [
+     "pipe.canopy",
+     "pipe.release",
+     "consumes"
+    ]
+   ]
   }
  ],
  "bands": [

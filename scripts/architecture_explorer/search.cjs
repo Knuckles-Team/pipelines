@@ -25,19 +25,23 @@ const ArchSearch = (function () {
       let val = part.slice(i + 1).replace(/\+/g, " ");
       try { val = decodeURIComponent(val); } catch (_) { /* keep raw */ }
       if (key === "q") out.q = val; else if (key === "node") out.node = val;
+      else if (key === "doc" || key === "sec" || key === "repo") out[key] = val;
     });
     return out;
   }
 
-  function hashFor(node, q) {
+  // `ref` optionally names an open document: { doc: "<family>/<file>", sec: "<heading slug>", repo: "<repository>" }.
+  function hashFor(node, q, ref) {
     const parts = [];
     if (node && node !== "root") parts.push("node=" + encodeURIComponent(node));
     if (q) parts.push("q=" + encodeURIComponent(q));
+    if (ref && ref.doc) ["doc", "sec", "repo"].forEach(k => { if (ref[k]) parts.push(k + "=" + encodeURIComponent(ref[k]).replace(/%2F/g, "/")); });
     return parts.length ? "#" + parts.join("&") : "";
   }
 
   // `descOf(id)` optionally supplies each row's short description (the page already holds it, so the index does not repeat it).
-  function create(index, descOf) {
+  // `extra` optionally adds the lazily loaded task lines and plan headings: { items: [[kind, text, node, repo, family, doc, anchor]] }.
+  function create(index, descOf, extra) {
     const aliases = {};
     Object.keys(index.aliases || {}).forEach(k => { aliases[k.toLowerCase()] = String(index.aliases[k]).toLowerCase(); });
     const titleCount = {};
@@ -106,8 +110,18 @@ const ArchSearch = (function () {
         }
         if (ok) scored.push([s, n.label.length, n.id, partHit(n)]);
       }
+      searchItems(toks, scored);
       scored.sort((a, b) => b[0] - a[0] || a[1] - b[1] || (a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0));
       return scored.slice(0, max).map(x => x[3]);
+    }
+    // Task lines and plan headings rank below every row and part match (one point per matched word).
+    const items = ((extra && extra.items) || []).map(e => ({ e, lt: String(e[1]).toLowerCase() }));
+    function searchItems(toks, scored) {
+      for (const { e, lt } of items) {
+        if (!toks.every(t => lt.includes(t))) continue;
+        const kind = e[0] === "h" ? "section" : "task";
+        scored.push([toks.length * 0.5, e[1].length, e[1], { kind, id: "", title: e[1], node: e[2], repo: e[3], family: e[4], status: e[0] === "x" ? "done" : "", doc: e[5], sec: e[6] }]);
+      }
     }
     return { search, resolve, size: { rows: rows.length, nodes: nodes.length } };
   }

@@ -16,12 +16,26 @@ import re
 import shutil
 from pathlib import Path
 
+from .sdd import slug as anchor_slug
+
 OWNER = "Knuckles-Team"
 DESC_MAX = 160
 DOC_MAX = 200_000
 TEST_LINES_MAX = 12
 MAX_DEPTH = 8
-DOC_LABELS = {"plan.md": "Plan", "test-spec.md": "Test spec"}
+DOC_LABELS = {
+    "spec.md": "Spec",
+    "plan.md": "Plan",
+    "tasks.md": "Tasks",
+    "test-spec.md": "Test spec",
+    "research.md": "Research",
+    "data-model.md": "Data model",
+    "quickstart.md": "Quickstart",
+}
+NESTED_LABELS = {"checklists": "Checklist", "contracts": "Contract"}
+TEXT_SUFFIXES = (".md", ".yml", ".yaml", ".json", ".txt", ".toml", ".graphql", ".proto")
+HEADING_RE = re.compile(r"<h([3-6])>(.*?)</h\1>", re.S)
+TAG_RE = re.compile(r"<[^>]+>")
 DESIGN_RE = re.compile(r"(^|[-_.])(design|architecture)([-_.]|$)", re.I)
 ESC = html.escape
 
@@ -113,9 +127,9 @@ def describe(requirement: str, title: str = "") -> str:
 class Ctx:
     """Where relative links resolve: ``specs/<family>/`` of one repository on its default branch."""
 
-    def __init__(self, slug: str, family: str) -> None:
+    def __init__(self, slug: str, family: str, base: str = "") -> None:
         self.slug = slug
-        self.base = f"specs/{family}"
+        self.base = base or f"specs/{family}"
 
 
 def safe_url(url: str, ctx: Ctx) -> str | None:
@@ -348,18 +362,71 @@ def _clip(markdown: str) -> str:
     )
 
 
+CONSTITUTION_FILE = "constitution.md"
+EXTRA_FILE = "search-extra.json"
+
+
 def doc_label(name: str) -> str:
+    head, _, rest = name.partition("/")
+    if rest:
+        return f"{NESTED_LABELS.get(head, head)}: {rest.rsplit('.', 1)[0]}"
     return DOC_LABELS.get(name) or "Design: " + name.removesuffix(".md")
 
 
-def family_docs(reader, files: set[str], family: str) -> dict[str, str]:
-    """Read a family's plan, test-spec and design or architecture markdown files (only those that exist)."""
+def doc_names(files: set[str], family: str) -> list[str]:
+    """Return the family documents to read: spec-kit files, checklists, contracts, design and architecture notes."""
     prefix = f"specs/{family}/"
-    names = sorted(
-        f[len(prefix) :] for f in files if f.startswith(prefix) and f.endswith(".md") and "/" not in f[len(prefix) :]
-    )
-    wanted = [n for n in names if n in DOC_LABELS or DESIGN_RE.search(n.removesuffix(".md"))]
-    return {n: text for n in wanted if (text := reader.read(prefix + n))}
+    rel = sorted(f[len(prefix) :] for f in files if f.startswith(prefix))
+    top = [n for n in rel if "/" not in n and n.endswith(".md") and (n in DOC_LABELS or DESIGN_RE.search(n[:-3]))]
+    nested = [
+        n for n in rel if n.partition("/")[0] in NESTED_LABELS and n.count("/") == 1 and n.endswith(TEXT_SUFFIXES)
+    ]
+    return top + nested
+
+
+def family_docs(reader, files: set[str], family: str) -> dict[str, str]:
+    """Read a family's documents (only those that exist)."""
+    out = {}
+    for name in doc_names(files, family):
+        text = reader.read(f"specs/{family}/{name}")
+        if text:
+            out[name] = text
+    return out
+
+
+def outline(markup: str) -> list[list]:
+    """Return ``[level, text, slug]`` for each heading of rendered HTML; a repeated slug gets ``-2``, ``-3``."""
+    seen: dict[str, int] = {}
+    out = []
+    for level, inner in HEADING_RE.findall(markup):
+        text = html.unescape(TAG_RE.sub("", inner)).strip()
+        base = anchor_slug(text)
+        seen[base] = seen.get(base, 0) + 1
+        out.append([int(level), text, base if seen[base] == 1 else f"{base}-{seen[base]}"])
+    return out
+
+
+def doc_entry(repo_slug: str, base: str, name: str, text: str, ctx: Ctx) -> dict:
+    """Return one document of a family file: label, GitHub link, safe HTML and its heading outline."""
+    if not name.endswith(".md"):  # a contract file is shown as code
+        text = f"```\n{text}\n```"
+    markup = render_markdown(_clip(text), ctx)
+    return {
+        "name": name,
+        "label": doc_label(name),
+        "url": _gh(repo_slug, "blob", base + name),
+        "html": markup,
+        "outline": outline(markup),
+    }
+
+
+def constitution_detail(repo: str, slug: str, text: str) -> dict:
+    """Return the detail file of a repository's constitution, shaped like a family file with one document."""
+    ctx = Ctx(slug, "", base=".specify/memory")
+    name = CONSTITUTION_FILE
+    entry = doc_entry(slug, ".specify/memory/", name, text, ctx)
+    entry["label"] = "Constitution"
+    return {"v": 1, "repo": repo, "family": "_constitution", "files": [], "rows": {}, "docs": [entry]}
 
 
 def family_detail(repo: str, slug: str, family: str, rows: list[dict], docs: dict[str, str], files: set[str]) -> dict:
@@ -392,19 +459,24 @@ def family_detail(repo: str, slug: str, family: str, rows: list[dict], docs: dic
         "files": [{"name": n, "url": _gh(slug, "blob", base + n)} for n in (names or ["requirements.md"])],
         "rows": out_rows,
         "docs": [
-            {
-                "name": n,
-                "label": doc_label(n),
-                "url": _gh(slug, "blob", base + n),
-                "html": render_markdown(_clip(t), ctx),
-            }
+            doc_entry(slug, base, n, t, ctx)
             for n, t in sorted(docs.items(), key=lambda kv: (kv[0] != "plan.md", kv[0] == "test-spec.md", kv[0]))
         ],
     }
 
 
-def write_details(page_dir: Path, snaps: list) -> list[Path]:
-    """Write one JSON file per repository family under ``<page_dir>/spec-details`` (replacing any earlier build)."""
+def write_json(path: Path, doc: dict) -> Path:
+    """Write one detail file as compact JSON, creating its directory."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(doc, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def write_details(page_dir: Path, snaps: list, extra: dict | None = None) -> list[Path]:
+    """Write one JSON file per repository family and constitution under ``<page_dir>/spec-details``.
+
+    An earlier build's files are replaced. ``extra`` (the lazy search extras) is written to ``search-extra.json``.
+    """
     root = page_dir / "spec-details"
     if root.exists():
         shutil.rmtree(root)
@@ -415,8 +487,10 @@ def write_details(page_dir: Path, snaps: list) -> list[Path]:
             by_family.setdefault(row["family"], []).append(row)
         for family, rows in by_family.items():
             doc = family_detail(snap.repo, snap.slug, family, rows, snap.docs.get(family, {}), snap.files)
-            path = page_dir / detail_path(snap.repo, family)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(doc, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
-            written.append(path)
+            written.append(write_json(page_dir / detail_path(snap.repo, family), doc))
+        if snap.constitution:
+            doc = constitution_detail(snap.repo, snap.slug, snap.constitution)
+            written.append(write_json(page_dir / detail_path(snap.repo, "_constitution"), doc))
+    if extra is not None:
+        write_json(page_dir / EXTRA_FILE, extra)
     return written

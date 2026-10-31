@@ -1,382 +1,434 @@
 # Tasks — PIPE-PAGES
 
-- [ ] Review public consumer declaration and receipt schema with full commits, content sources, and owner links.
-- [ ] Refactor existing parity script to use exact fetched commits and shared theme enumeration, removing fixed names and worktree fallback.
-- [ ] Add strict dirty/untracked, missing-ref, traversal, and mismatch refusal with asset-specific diagnostics.
-- [ ] Produce deterministic JSON verification fields and readable Pages summary; retain historical links.
-- [ ] Bind parity only to shared theme/navigation promotion; update workflow contract without a live gate on unrelated PRs.
-- [ ] Add P-1–P-5 and N-1–N-6 tests; validate YAML, schema, CCCC, jscpd, Dupehound, KISS, and Pages contract.
-- [ ] Publish from exact commits, collect consumer/served-site evidence, and update delivery and acceptance separately.
+- [ ] T001 PIPE-PAGES-R001 Review public consumer declaration and receipt schema with full commits, content sources, and owner links.
+- [ ] T002 PIPE-PAGES-R001 Refactor existing parity script to use exact fetched commits and shared theme enumeration, removing fixed names and worktree fallback.
+- [ ] T003 PIPE-PAGES-R001 Add strict dirty/untracked, missing-ref, traversal, and mismatch refusal with asset-specific diagnostics.
+- [ ] T004 PIPE-PAGES-R001 Produce deterministic JSON verification fields and readable Pages summary; retain historical links.
+- [ ] T005 PIPE-PAGES-R001 Bind parity only to shared theme/navigation promotion; update workflow contract without a live gate on unrelated PRs.
+- [ ] T006 PIPE-PAGES-R001 Add P-1–P-5 and N-1–N-6 tests; validate YAML, schema, CCCC, jscpd, Dupehound, KISS, and Pages contract.
+- [ ] T007 PIPE-PAGES-R001 Publish from exact commits, collect consumer/served-site evidence, and update delivery and acceptance separately.
 
 No task above cites a `requirements.md` ID by name. PIPE-PAGES-R001 (repository switcher sync) is
 closed by tasks 1-4 above (declared fleet, exact parity, release receipt). PIPE-PAGES-R007 and
 PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `LANDED` per
 `status.json` with merged-head evidence and need no new task.
-- [ ] Build or confirm the remaining documentation-site content requirements not covered above:
+- [ ] T008 PIPE-PAGES-R002 Build or confirm the remaining documentation-site content requirements not covered above:
       layered navigation from overview to reference, present-tense wording with an accessible
       embedded quick start, one progressively disclosed skill-graph content corpus, architecture and
       API-contract reference pages generated from their registries, generated/gate-checked artifacts
       rehomed out of the legacy docs directory, and accessible component package views with
       Mermaid source. Covers PIPE-PAGES-R002, PIPE-PAGES-R003, PIPE-PAGES-R004, PIPE-PAGES-R005,
       PIPE-PAGES-R006, PIPE-PAGES-R008, PIPE-PAGES-R009, PIPE-PAGES-R010.
-- [ ] PIPE-PAGES-R012: The spec-delivery page must map specs to implementation references. It must replace the Concepts column.
-- [ ] PIPE-PAGES-R012.1: The generator must read Code declarations and existing source citations from spec.md and plan.md.
-- [ ] PIPE-PAGES-R012.2: Source declarations must survive status regeneration without adding hand-edited status fields.
-- [ ] PIPE-PAGES-R012.3: Each implementation link must identify its source revision and path. External links must remain unverified.
-- [ ] PIPE-PAGES-R012.4: The page must state Not mapped when a spec has no code references.
-- [ ] PIPE-PAGES-R012.5: The spec table must distinguish implementation, test, and documentation links.
-- [ ] PIPE-PAGES-R012.6: The caption must count specs without resolved implementation links.
-- [ ] PIPE-PAGES-R012.7: The generator must reject unsafe links and paths outside the checkout. It must retain unresolved mappings.
-- [ ] PIPE-PAGES-R013: The page must show declared dependencies within and across repositories. It must distinguish references and shared code.
-- [ ] PIPE-PAGES-R013.1: Depends-on declarations must resolve local spec and requirement IDs through canonical spec ownership.
-- [ ] PIPE-PAGES-R013.2: The generator must distinguish Depends-on, Extends, and References declarations. Mere mentions must not imply prerequisite order.
-- [ ] PIPE-PAGES-R013.3: Repository and component groups must include orphan specs. Missing components must remain Unassigned.
-- [ ] PIPE-PAGES-R013.4: The page must render package diagrams without browser scripts. Mermaid export must escape source labels.
-- [ ] PIPE-PAGES-R013.5: Every relationship must retain its label, source declaration, target link, and evidence limit.
-- [ ] PIPE-PAGES-R013.6: The relationship index must retain unresolved targets and specs without declared relationships.
-- [ ] PIPE-PAGES-R013.7: Large diagrams must split into navigable groups without hiding any spec or relationship.
-- [ ] PIPE-PAGES-R014: Three-level drill-down from the ecosystem view to the spec. Producer first; children below.
-- [ ] PIPE-PAGES-R014.1: Add `ecosystem_components()` to `scripts/spec_dashboard_sources.py`.
-- [ ] PIPE-PAGES-R014.2: Define the URL form in `scripts/spec_dashboard_sources.py`: level 1 `https://knuckles-team.github.io/<repo>/spec-delivery/`, level 2 `.../spec-delivery/#spec-<ID>`, level 3 row `.../spec-delivery/#req-<ID>`.
-- [ ] PIPE-PAGES-R014.3: Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id="spec-<ID>"` and lists its rows, state, code references, and bound tests; each row gets `id="req-<ID>"`..
-- [ ] PIPE-PAGES-R014.4: Link each box in `relation_view` (`scripts/spec_dashboard_panels.py`) to `#spec-<ID>` of its own page, or to the other repository's page for a cross-repository node..
-- [ ] PIPE-PAGES-R014.5: Cross-repository row, owner `Knuckles-Team/.github` (BLOCKED until that repository carries a spec tree): link each component in `profile/README.md` to `ecosystem_components()` URLs at level 1.
-- [ ] PIPE-PAGES-R014.6: Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_sources.py`.
-- [ ] PIPE-PAGES-R015: One generator for connectors and client repositories. Producer first; children below.
-- [ ] PIPE-PAGES-R015.1: The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller.
-- [ ] PIPE-PAGES-R015.2: Overstory, Tuig, and Axil adopt it through the caller pattern in PIPE-CONNSPEC-R004.
-- [ ] PIPE-PAGES-R015.3: Connectors must inherit code references and relationship views through the shared Pages generator when enabled.
+- [ ] T009 PIPE-PAGES-R012 The spec-delivery page must map specs to implementation references. It must replace the Concepts column.
+- [ ] T010 PIPE-PAGES-R012.1 The generator must read Code declarations and existing source citations from spec.md and plan.md.
+- [ ] T011 PIPE-PAGES-R012.2 Source declarations must survive status regeneration without adding hand-edited status fields.
+- [ ] T012 PIPE-PAGES-R012.3 Each implementation link must identify its source revision and path. External links must remain unverified.
+- [ ] T013 PIPE-PAGES-R012.4 The page must state Not mapped when a spec has no code references.
+- [ ] T014 PIPE-PAGES-R012.5 The spec table must distinguish implementation, test, and documentation links.
+- [ ] T015 PIPE-PAGES-R012.6 The caption must count specs without resolved implementation links.
+- [ ] T016 PIPE-PAGES-R012.7 The generator must reject unsafe links and paths outside the checkout. It must retain unresolved mappings.
+- [ ] T017 PIPE-PAGES-R013 The page must show declared dependencies within and across repositories. It must distinguish references and shared code.
+- [ ] T018 PIPE-PAGES-R013.1 Depends-on declarations must resolve local spec and requirement IDs through canonical spec ownership.
+- [ ] T019 PIPE-PAGES-R013.2 The generator must distinguish Depends-on, Extends, and References declarations. Mere mentions must not imply prerequisite order.
+- [ ] T020 PIPE-PAGES-R013.3 Repository and component groups must include orphan specs. Missing components must remain Unassigned.
+- [ ] T021 PIPE-PAGES-R013.4 The page must render package diagrams without browser scripts. Mermaid export must escape source labels.
+- [ ] T022 PIPE-PAGES-R013.5 Every relationship must retain its label, source declaration, target link, and evidence limit.
+- [ ] T023 PIPE-PAGES-R013.6 The relationship index must retain unresolved targets and specs without declared relationships.
+- [ ] T024 PIPE-PAGES-R013.7 Large diagrams must split into navigable groups without hiding any spec or relationship.
+- [ ] T025 PIPE-PAGES-R014 Three-level drill-down from the ecosystem view to the spec. Producer first; children below.
+- [ ] T026 PIPE-PAGES-R014.1 Add `ecosystem_components()` to `scripts/spec_dashboard_sources.py`.
+- [ ] T027 PIPE-PAGES-R014.2 Define the URL form in `scripts/spec_dashboard_sources.py`: level 1 `https://knuckles-team.github.io/<repo>/spec-delivery/`, level 2 `.../spec-delivery/#spec-<ID>`, level 3 row `.../spec-delivery/#req-<ID>`.
+- [ ] T028 PIPE-PAGES-R014.3 Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id="spec-<ID>"` and lists its rows, state, code references, and bound tests; each row gets `id="req-<ID>"`..
+- [ ] T029 PIPE-PAGES-R014.4 Link each box in `relation_view` (`scripts/spec_dashboard_panels.py`) to `#spec-<ID>` of its own page, or to the other repository's page for a cross-repository node..
+- [ ] T030 PIPE-PAGES-R014.5 Cross-repository row, owner `Knuckles-Team/.github` (BLOCKED until that repository carries a spec tree): link each component in `profile/README.md` to `ecosystem_components()` URLs at level 1.
+- [ ] T031 PIPE-PAGES-R014.6 Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_sources.py`.
+- [ ] T032 PIPE-PAGES-R015 One generator for connectors and client repositories. Producer first; children below.
+- [ ] T033 PIPE-PAGES-R015.1 The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller.
+- [ ] T034 PIPE-PAGES-R015.2 Overstory, Tuig, and Axil adopt it through the caller pattern in PIPE-CONNSPEC-R004.
+- [ ] T035 PIPE-PAGES-R015.3 Connectors must inherit code references and relationship views through the shared Pages generator when enabled.
 
-- [ ] Recheck historical R001/R003/R009 acceptance notes against current exact source and served-site evidence.
-- [ ] Validate R013.3 repository and component grouping with orphan specs.
-- [ ] PIPE-PAGES-R016: **Spec-delivery page shows only the current spec state.** Rollup of the children below
-- [ ] PIPE-PAGES-R016.1: Remove the `history` field and the `--history-limit` option from `create_snapshot` and `argument_parser` in `scripts/spec_dashboard.py`. The snapshot holds only records read from the current tree, so no ID absent from that tree enters it.
-- [ ] PIPE-PAGES-R016.2: Remove `history_panels` and the history and per-commit panels from `scripts/spec_dashboard_render.py`, then delete `scripts/spec_dashboard_charts.py`, `scripts/spec_dashboard_history.py`, `scripts/spec_dashboard_history_metrics.py`, and `scripts/spec_dashboard_history_views.py` with their tests. No state-transition table, chart, metric or panel is rendered.
-- [ ] PIPE-PAGES-R016.3: Render only records present in the current `specs/` tree. A requirement ID that was removed in an earlier commit appears nowhere in the HTML.
-- [ ] PIPE-PAGES-R016.4: Remove the history scripts from the sparse checkout and the history option from the dashboard call in `.github/workflows/pages_pipeline.yml`. The Pages workflow does not invoke the history modules.
-- [ ] PIPE-PAGES-R016.5: Do not render records whose state is `RETIRED`. `read_records` in `scripts/spec_dashboard_sources.py` drops them.
-- [ ] PIPE-PAGES-R017: **Three states only.** Rollup of the children below. A requirement row and a spec have one state field with the values `SPECIFIED`, `LANDED` and `VERIFIED`.
-- [ ] PIPE-PAGES-R017.1: The state legend lists exactly three states, `SPECIFIED`, `LANDED` and `VERIFIED`, each with a one-line definition, in `definitions_panel` in `scripts/spec_dashboard_panels.py`.
-- [ ] PIPE-PAGES-R017.2: Every record row shows one state cell. The page has no acceptance column, no release column and no second state label.
-- [ ] PIPE-PAGES-R017.3: A `delivery_state` outside the three states, after `RETIRED` is filtered, renders as `INVALID` and counts in one visible invalid-state number.
-- [ ] PIPE-PAGES-R018: **Spec delivery is a native menu entry on every documentation site.** Rollup of the children below
-- [ ] PIPE-PAGES-R018.1: Add the `spec_delivery` flag to `extra:` in `templates/mkdocs-theme/base.mkdocs.yml` as `!ENV [SPEC_DELIVERY_ENABLED, false]`. Set the variable from `inputs.spec_dashboard_enabled` on the Build Docs step of `.github/workflows/pages_pipeline.yml`.
-- [ ] PIPE-PAGES-R018.2: Render a `Spec delivery` link in `templates/mkdocs-theme/overrides/main.html`. The link must use `base_url` and `/spec-delivery/`, and the block must render only when the flag is set.
-- [ ] PIPE-PAGES-R018.3: List the `spec-delivery/` page of each repository in a native `<details>` list inside the same navigation landmark. The list must iterate `extra.ecosystem.sites` and must hold no second repository list.
-- [ ] PIPE-PAGES-R018.4: Keep every `extra.ecosystem.sites` URL in `templates/mkdocs-theme/base.mkdocs.yml` equal to its `REPOS` entry in `scripts/skill_graph/model.py`.
-- [ ] PIPE-PAGES-R018.5: Style the entry in a `<style>` element inside the block in `templates/mkdocs-theme/overrides/main.html` with a visible focus outline. The override is served from the theme checkout through `custom_dir`, so the theme sync check needs no consumer change.
-- [ ] PIPE-PAGES-R019: **The spec-delivery page carries the documentation site's navigation.** Rollup of the children below. Readers must move between the documentation and the page without the browser's address bar.
-- [ ] PIPE-PAGES-R019.1: Add `site_nav(repository)` to `scripts/spec_dashboard_nav.py`. It renders `<nav aria-label="Site">` with the repository name and a `Documentation` link, both to `../`.
-- [ ] PIPE-PAGES-R019.2: Mark the current page in `site_nav` with `aria-current="page"` on the `Spec delivery` entry.
-- [ ] PIPE-PAGES-R019.3: List every repository in `site_nav` from `ecosystem_components()` in `scripts/spec_dashboard_drilldown.py`. Link each to its level-1 URL and mark the current repository. Define no second list.
-- [ ] PIPE-PAGES-R019.4: Add `skip_link()` to `scripts/spec_dashboard_nav.py` and wrap the sheet in `<main id="main">` in `render` in `scripts/spec_dashboard_render.py`. Style the bar with the existing tokens in `scripts/spec_dashboard_style.py`.
-- [ ] PIPE-PAGES-R019.5: Add `scripts/spec_dashboard_nav.py` to the sparse checkout in `.github/workflows/pages_pipeline.yml`. The page must keep every existing panel.
-- [ ] PIPE-PAGES-R020: **Documentation claims must match the repository.** Rollup of the children below. The public-surface gate resolves each documented path, command, gate name and count against the tree.
-- [ ] PIPE-PAGES-R020.1: **Model.** Add frozen dataclass `DocClaim` (file, line, kind, text) to `pipelines_hooks/docs/claims.py`. The `kind` field takes one of `path`, `command`, `gate`, `count`, `diagram-node`.
-- [ ] PIPE-PAGES-R020.2: **Behavior.** Add `claim_findings(root, claims)` to `pipelines_hooks/docs/claims.py`. Each kind has one named resolver in `RESOLVERS`: a path must exist, a gate must be in `GATES`, a count must equal the measured count, a diagram node must match a registry name. Each resolver is a replaceable default.
-- [ ] PIPE-PAGES-R020.3: **Wiring.** Call `claim_findings` from `validate` at `pipelines_hooks/docs/public_surface.py:31`. `main` in `pipelines_hooks/cli.py:79` reaches it through `run_gate` at `pipelines_hooks/cli.py:66`. The `public-surface` hook at `.pre-commit-hooks.yaml:183` is the production caller.
-- [ ] PIPE-PAGES-R020.4: **Refusal.** When a claim has no resolver or the registry is unreadable, `claim_findings` returns the typed finding `claims-unchecked` with the file and line. It never passes silently.
-- [ ] PIPE-PAGES-R020.5: **Evidence.** The gate prints one line `claims: checked N, unresolved M` and one finding per unresolved claim as `file:line kind text`.
-- [ ] PIPE-PAGES-R020.6: **Hot-path proof.** The entry point is `pipelines-hook public-surface`, run through `main` in `pipelines_hooks/cli.py:79` on a fixture repository whose README names a missing path. The hook must exit 1 and print that path's `file:line`.
-- [ ] PIPE-PAGES-R021: **Test quality gate for repository validation.** Rollup of the children below. The gate rejects placeholder tests and unjustified suppressions, and enforces a coverage threshold. Each finding names its rule and location, so the fixer addresses the root cause before the re-test.
-- [ ] PIPE-PAGES-R021.1: **Model.** Add frozen dataclass `TestQualityFinding` (path, line, rule) to `pipelines_hooks/code/test_quality.py`. The `rule` field takes one of `placeholder-test`, `unjustified-suppression`, `coverage-below-threshold`.
-- [ ] PIPE-PAGES-R021.2: **Behavior.** Add `scan(root, threshold)` to `pipelines_hooks/code/test_quality.py`. A test whose body is only `pass`, `...` or `assert True` is a placeholder. A suppression needs a reason of at least 10 characters. The coverage threshold defaults to 80 percent. Each rule is a replaceable default.
-- [ ] PIPE-PAGES-R021.3: **Wiring.** This row creates the call site. Add `test-quality` to `GATES` at `pipelines_hooks/cli.py:33` and a hook entry beside `no-stub` at `.pre-commit-hooks.yaml:141`. `run_gate` at `pipelines_hooks/cli.py:59` is its caller.
-- [ ] PIPE-PAGES-R021.4: **Refusal.** When no coverage report exists, `main` raises `CannotRun`. `run_gate` maps it to exit 2. The gate never reports a pass without a measured percentage.
-- [ ] PIPE-PAGES-R021.5: **Evidence.** The gate prints `test-quality: files N, placeholders M, coverage P%, threshold T%` and one `path:line rule` line per finding.
-- [ ] PIPE-PAGES-R021.6: **Hot-path proof.** The entry point is `pipelines-hook test-quality` through `main` in `pipelines_hooks/cli.py:79`. A fixture repository with a placeholder test and 70 percent coverage must exit 1 and list both findings.
-- [ ] PIPE-PAGES-R022: **Scheduled mutation testing reports test gaps.** Rollup of the children below. A scheduled run mutates core modules, and each surviving mutation is reported as a test gap with its module and line.
-- [ ] PIPE-PAGES-R022.1: **Model.** Add frozen dataclasses `MutationPolicy` (modules, schedule) and `SurvivingMutation` (module, line, operator) to `pipelines_hooks/code/mutation_gaps.py`. The default `modules` value is `pipelines_hooks/core`.
-- [ ] PIPE-PAGES-R022.2: **Behavior.** Add `survivors(policy, runner)` to `pipelines_hooks/code/mutation_gaps.py`. It returns one `SurvivingMutation` per mutant the tests did not kill and none for killed mutants. The runner is a replaceable default.
-- [ ] PIPE-PAGES-R022.3: **Wiring.** This row creates the call site. Add `mutation-gaps` to `GATES` at `pipelines_hooks/cli.py:33`. Add `.github/workflows/mutation.yml` with a weekly schedule that runs `pipelines-hook mutation-gaps`. `run_gate` at `pipelines_hooks/cli.py:59` is the caller.
-- [ ] PIPE-PAGES-R022.4: **Refusal.** When the runner is absent, `main` raises `Unavailable`, which `run_gate` at `pipelines_hooks/cli.py:66` fails closed in CI. A module with no tests yields the finding `no-tests-for-module`.
-- [ ] PIPE-PAGES-R022.5: **Evidence.** The report prints one line `module:line operator` per survivor and one `module: killed K, survived S` line per module.
-- [ ] PIPE-PAGES-R022.6: **Hot-path proof.** The entry point is `pipelines-hook mutation-gaps` through `main` in `pipelines_hooks/cli.py:79`. A fixture module with one untested branch must exit 1 and print that module and line.
-- [ ] PIPE-PAGES-R020.7: Model: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R020.8: Behavior: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R020.9: Wiring: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R020.10: Refusal: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R020.11: Evidence: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R020.12: Hot-path proof: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.7: Model: Assert the closed edge kinds and separate runtime/type-only permissions. Implement and bind `test_component_contract_model` in `tests/hooks/test_test_quality_hook.py`.
-- [ ] PIPE-PAGES-R021.8: Behavior: Assert allowed lazy imports preserve reachability, forbidden lazy imports fail, and type-only imports cannot prove runtime reachability. Implement and bind `test_component_contract_checks` in `tests/hooks/test_test_quality_hook.py`.
-- [ ] PIPE-PAGES-R021.9: Wiring: Assert the CLI boundary/orphan path consumes the static runtime graph and cycle checks retain the eager graph. Implement and bind `test_component_checks_are_wired` in `tests/hooks/test_test_quality_hook.py`.
-- [ ] PIPE-PAGES-R021.10: Refusal: Assert unresolved dynamic reachability is exit 2, never a false clean or definite orphan; retain receipt refusals. Implement and bind `test_component_proof_refusals` in `tests/hooks/test_test_quality_hook.py`.
-- [ ] PIPE-PAGES-R021.11: Evidence: Assert runtime, type-only and unresolved dynamic evidence remain distinguishable. Implement and bind `test_component_evidence_receipts` in `tests/hooks/test_test_quality_hook.py`.
-- [ ] PIPE-PAGES-R021.12: Hot-path proof: Assert CLI exit codes, exact edge locations, type-only separation and no false orphan for allowed lazy imports. Implement and bind `test_component_handoff_cli` and `test_component_lazy_import_cli` in `tests/hooks/test_test_quality_hook.py`.
-- [ ] PIPE-PAGES-R023.1: Model: implement the requirement and its acceptance test. Carry a document base separately from the containment root.
-- [ ] PIPE-PAGES-R023.2: Behavior: implement the requirement and its acceptance test. Resolve nested and parent-relative links from the document while enforcing repository containment.
-- [ ] PIPE-PAGES-R023.3: Wiring: implement the requirement and its acceptance test. Adapt the shared helper without changing root README behavior.
-- [ ] PIPE-PAGES-R023.4: Refusal: implement the requirement and its acceptance test. Refuse traversal outside the repository, escaped document bases and symlinks outside the repository.
-- [ ] PIPE-PAGES-R023.5: Evidence: implement the requirement and its acceptance test. Emit located source-document and resolved-target evidence.
-- [ ] PIPE-PAGES-R023.6: Hot-path proof: implement the requirement and its acceptance test. Run `test_nested_skill_links_cli` in `tests/hooks/test_skill_grade_hook.py`; sibling and in-repository parent links pass, missing or escaping links fail.
-- [ ] PIPE-PAGES-R024.1: Model: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R024.2: Behavior: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R024.3: Wiring: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R024.4: Refusal: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R024.5: Evidence: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R024.6: Hot-path proof: implement the requirement and its acceptance test.
-- [ ] PIPE-PAGES-R021.13: Model: Reject unknown outcome kinds, empty observables and missing source bindings; accept return, error and side-effect contracts. Implement and bind `test_outcome_contract_schema` in `tests/hooks/test_test_quality_outcomes.py`.
-- [ ] PIPE-PAGES-R021.14: Behavior: Reject a passing test that ignores the result; accept exact return, error and state assertions that detect their counterexamples. Implement and bind `test_outcome_counterexamples` in `tests/hooks/test_test_quality_outcomes.py`.
-- [ ] PIPE-PAGES-R021.15: Wiring: Assert the published CLI invokes the configured runner, validates its receipts and includes outcome findings in its exit code. Implement and bind `test_outcome_checker_wiring` in `tests/hooks/test_test_quality_outcomes.py`.
-- [ ] PIPE-PAGES-R021.16: Refusal: Missing contracts and surviving counterexamples exit 1; stale, skipped, setup-failing and timed-out proofs exit 2. Implement and bind `test_outcome_proof_refusals` in `tests/hooks/test_test_quality_outcomes.py`.
-- [ ] PIPE-PAGES-R021.17: Evidence: Assert distinct static/runtime records and digest-bound receipts; never report coverage or assertion count as outcome proof. Implement and bind `test_outcome_evidence` in `tests/hooks/test_test_quality_outcomes.py`.
-- [ ] PIPE-PAGES-R021.18: Hot-path proof: Assert exit 0 for proved outcomes, exit 1 for missing observation and exit 2 for unchecked proof through the real CLI and runner. Implement and bind `test_outcome_quality_cli` in `tests/hooks/test_test_quality_outcomes.py`.
-- [ ] PIPE-PAGES-R020.13: Model: Reject unknown grammar fields and duplicate releases; represent dated releases and an optional unreleased section with exact locations. Implement and bind `test_changelog_model` in `tests/hooks/test_changelog_gate.py`.
-- [ ] PIPE-PAGES-R020.14: Behavior: Accept dated categorized releases; independently reject invalid dates/versions, misplaced entries, duplicate headings and unknown categories. Implement and bind `test_changelog_grammar` in `tests/hooks/test_changelog_gate.py`.
-- [ ] PIPE-PAGES-R020.15: Wiring: The published CLI/hook reads policy and changelog from one Git snapshot and invokes the new grammar checker. Implement and bind `test_changelog_hook_wiring` in `tests/hooks/test_changelog_gate.py`.
-- [ ] PIPE-PAGES-R020.16: Refusal: Missing files and malformed policy exit 2; missing links and malformed release entries exit 1, with path and source line. Implement and bind `test_changelog_refusals` in `tests/hooks/test_changelog_gate.py`.
-- [ ] PIPE-PAGES-R020.17: Evidence: Bind findings to exact Git bytes and explicitly mark network reachability and change completeness as unverified. Implement and bind `test_changelog_evidence` in `tests/hooks/test_changelog_gate.py`.
-- [ ] PIPE-PAGES-R020.18: Hot-path proof: Assert valid exit 0, grammar exit 1, missing-file and initial-history exit 2, then a valid first-release repair to exit 0, exact locations, snapshot isolation and no file writes or network calls. Implement and bind `test_changelog_cli` in `tests/hooks/test_changelog_gate.py`.
-- [ ] PIPE-PAGES-R020.19: Model: Reject duplicate names, unknown fields, contradictory defaults and unmapped launcher bindings. Implement and bind `test_env_documentation_model` in `tests/hooks/test_env_documentation.py`.
-- [ ] PIPE-PAGES-R020.20: Behavior: Independently corrupt each documentation field and remove, rename or contradict each launcher binding to fail. Implement and bind `test_env_documentation_behavior` in `tests/hooks/test_env_documentation.py`.
-- [ ] PIPE-PAGES-R020.21: Wiring: Invoke CLI and configured pre-commit with all three consumer surfaces from the same indexed snapshot. Implement and bind `test_env_documentation_wiring` in `tests/hooks/test_env_documentation.py`.
-- [ ] PIPE-PAGES-R020.22: Refusal: Malformed and missing launcher JSON fails; unsupported substitutions and computed names refuse without execution. Implement and bind `test_env_documentation_refusal` in `tests/hooks/test_env_documentation.py`.
-- [ ] PIPE-PAGES-R020.23: Evidence: Check exact third-surface locations/digests, missing binding evidence, uncertainty and secret redaction. Implement and bind `test_env_documentation_evidence` in `tests/hooks/test_env_documentation.py`.
-- [ ] PIPE-PAGES-R020.24: Hot-path proof: Assert CLI/hook exits 0/1/2 for all three surfaces, exact JSON pointers, snapshot isolation and no launch/import/network execution. Implement and bind `test_env_documentation_cli` in `tests/hooks/test_env_documentation.py`.
-- [ ] PIPE-PAGES-R020.25: Model: Require all four roles for every declared project and reject duplicate effective authorities. Implement and bind `test_config_inventory_model` in `tests/hooks/test_config_inventory.py`.
-- [ ] PIPE-PAGES-R020.26: Behavior: Render all roles twice byte-identically and detect missing files, sections and managed-field drift. Implement and bind `test_config_inventory_behavior` in `tests/hooks/test_config_inventory.py`.
-- [ ] PIPE-PAGES-R020.27: Wiring: The installed hook invokes check mode; an explicit scratch render runs the same templates and parsers. Implement and bind `test_config_inventory_wiring` in `tests/hooks/test_config_inventory.py`.
-- [ ] PIPE-PAGES-R020.28: Refusal: Reject traversal and overwrite, and fail a project omitted from the declared inventory. Implement and bind `test_config_inventory_refusal` in `tests/hooks/test_config_inventory.py`.
-- [ ] PIPE-PAGES-R020.29: Evidence: Prove all projects and four roles appear, and drift identifies the affected section. Implement and bind `test_config_inventory_evidence` in `tests/hooks/test_config_inventory.py`.
-- [ ] PIPE-PAGES-R020.30: Hot-path proof: Assert deterministic rendering, per-role failures, complete multi-project coverage and no check-mode writes. Implement and bind `test_config_inventory_cli` in `tests/hooks/test_config_inventory.py`.
-- [ ] PIPE-PAGES-R020.31: Model: Reject unknown outcomes, duplicate record identities and counts inconsistent with records. Implement and bind `test_validation_report_model` in `tests/hooks/test_validation_report.py`.
-- [ ] PIPE-PAGES-R020.32: Behavior: Round-trip mixed nested outcomes and compare every field, stable ordering and recomputed metrics. Implement and bind `test_validation_report_behavior` in `tests/hooks/test_validation_report.py`.
-- [ ] PIPE-PAGES-R020.33: Wiring: Run aggregate lint-type results through JSON/Markdown and retain all three phase categories, rules and verdicts. Implement and bind `test_validation_report_wiring` in `tests/hooks/test_validation_report.py`.
-- [ ] PIPE-PAGES-R020.34: Refusal: Tampered verdict/counts, required skips and malformed/truncated JSON refuse rather than pass. Implement and bind `test_validation_report_refusal` in `tests/hooks/test_validation_report.py`.
-- [ ] PIPE-PAGES-R020.35: Evidence: Retain failure detail and skip reasons through JSON and Markdown; never leak secret payloads. Implement and bind `test_validation_report_evidence` in `tests/hooks/test_validation_report.py`.
-- [ ] PIPE-PAGES-R020.36: Hot-path proof: Assert real lint/import/type round-trip, exit 1 at unchanged health score, repaired exit 0 and required-phase skip exit 2. Implement and bind `test_validation_report_cli` in `tests/hooks/test_validation_report.py`.
-- [ ] PIPE-PAGES-R021.19: Model: Reject unpinned tools, missing phases and scope omissions. Implement and bind `test_lint_type_policy_model` in `tests/hooks/test_lint_type_policy.py`.
-- [ ] PIPE-PAGES-R021.20: Behavior: Independent lint, import-order, type and suppression fixtures fail; a clean supported project passes. Implement and bind `test_lint_type_policy_behavior` in `tests/hooks/test_lint_type_policy.py`.
-- [ ] PIPE-PAGES-R021.21: Wiring: Configured pre-commit calls all three real tool phases and the shared report adapter. Implement and bind `test_lint_type_policy_wiring` in `tests/hooks/test_lint_type_policy.py`.
-- [ ] PIPE-PAGES-R021.22: Refusal: Unavailable type checker and an unsupported declared language must not return a clean verdict. Implement and bind `test_lint_type_policy_refusal` in `tests/hooks/test_lint_type_policy.py`.
-- [ ] PIPE-PAGES-R021.23: Evidence: Prove all three phases ran against identical source bytes and each diagnostic retains its original rule ID. Implement and bind `test_lint_type_policy_evidence` in `tests/hooks/test_lint_type_policy.py`.
-- [ ] PIPE-PAGES-R021.24: Hot-path proof: Assert real analyzer results, zero-exception enforcement, snapshot isolation and no autofix/network writes. Implement and bind `test_lint_type_policy_cli` in `tests/hooks/test_lint_type_policy.py`.
-- [ ] PIPE-PAGES-R021.25: Model: Accept the five scored and three required unscored categories; reject unknown categories and invalid weights or snapshots. Implement and bind `test_analyzer_health_model` in `tests/hooks/test_analyzer_health.py`.
-- [ ] PIPE-PAGES-R021.26: Behavior: Stable permutations yield identical score/order; missing categories cannot inflate health. Implement and bind `test_analyzer_health_behavior` in `tests/hooks/test_analyzer_health.py`.
-- [ ] PIPE-PAGES-R021.27: Wiring: The aggregate calls the real structured lint-type runner once and exports every phase with existing health adapters. Implement and bind `test_analyzer_health_wiring` in `tests/hooks/test_analyzer_health.py`.
-- [ ] PIPE-PAGES-R021.28: Refusal: A clean score cannot mask a secret finding, skipped required adapter or stale coverage receipt. Implement and bind `test_analyzer_health_refusal` in `tests/hooks/test_analyzer_health.py`.
-- [ ] PIPE-PAGES-R021.29: Evidence: Recompute health from only scored categories; retain required lint/import/type verdicts, priority and evidence. Implement and bind `test_analyzer_health_evidence` in `tests/hooks/test_analyzer_health.py`.
-- [ ] PIPE-PAGES-R021.30: Hot-path proof: Assert real aggregate lint/import/type reachability, failing-to-repaired verdicts, stable health score and required-skip exit 2. Implement and bind `test_analyzer_health_cli` in `tests/hooks/test_analyzer_health.py`.
-- [ ] PIPE-PAGES-R023.7: Model: Reject duplicate rule IDs, unsupported predicate adapters and unpinned rule packs. Implement and bind `test_external_grade_rules_model` in `tests/hooks/test_external_grade_rules.py`.
-- [ ] PIPE-PAGES-R023.8: Behavior: An applied external rule is identifiable; a conflicting or unmapped heuristic cannot silently alter grade. Implement and bind `test_external_grade_rules_behavior` in `tests/hooks/test_external_grade_rules.py`.
-- [ ] PIPE-PAGES-R023.9: Wiring: The real skill-grade CLI loads the declared pack and emits its exact rule ID in JSON and Markdown. Implement and bind `test_external_grade_rules_wiring` in `tests/hooks/test_external_grade_rules.py`.
-- [ ] PIPE-PAGES-R023.10: Refusal: Tampered packs and unsupported prose-only rules refuse; applicable hard failures retain exit 1. Implement and bind `test_external_grade_rules_refusal` in `tests/hooks/test_external_grade_rules.py`.
-- [ ] PIPE-PAGES-R023.11: Evidence: Round-trip per-finding rule lineage and prove unchanged baseline grading when packs are diagnostic only. Implement and bind `test_external_grade_rules_evidence` in `tests/hooks/test_external_grade_rules.py`.
-- [ ] PIPE-PAGES-R023.12: Hot-path proof: Assert installed CLI/hook integration, exact external rule evidence and stable serialized grading. Implement and bind `test_external_grade_rules_cli` in `tests/hooks/test_external_grade_rules.py`.
-- [ ] PIPE-PAGES-R020.37: Model: Reject duplicate identities, missing schema fields and unbound examples. Implement and bind `test_tool_mapping_model` in `tests/hooks/test_tool_mapping.py`.
-- [ ] PIPE-PAGES-R020.38: Behavior: Independently remove a tool, nested method, parameter, result or example and fail. Implement and bind `test_tool_mapping_behavior` in `tests/hooks/test_tool_mapping.py`.
-- [ ] PIPE-PAGES-R020.39: Wiring: The configured docs CLI/hook consumes the real exported registry and generated mapping. Implement and bind `test_tool_mapping_wiring` in `tests/hooks/test_tool_mapping.py`.
-- [ ] PIPE-PAGES-R020.40: Refusal: Unknown schema and stale registry refuse; an omitted tool is a located failure. Implement and bind `test_tool_mapping_refusal` in `tests/hooks/test_tool_mapping.py`.
-- [ ] PIPE-PAGES-R020.41: Evidence: Locate absent nested rows and preserve the distinction between schema and runtime evidence. Implement and bind `test_tool_mapping_evidence` in `tests/hooks/test_tool_mapping.py`.
-- [ ] PIPE-PAGES-R020.42: Hot-path proof: Assert real producer-to-renderer-to-hook integration and stale-export exit 2. Implement and bind `test_tool_mapping_cli` in `tests/hooks/test_tool_mapping.py`.
-- [ ] PIPE-PAGES-R020.43: Model: Reject duplicate IDs, uncovered source ranges and destinations outside canonical content roots. Implement and bind `test_guide_migration_model` in `tests/hooks/test_guide_migration.py`.
-- [ ] PIPE-PAGES-R020.44: Behavior: Omitting or changing an assertion without matching evidence fails; unsupported claim kinds remain unresolved. Implement and bind `test_guide_migration_behavior` in `tests/hooks/test_guide_migration.py`.
-- [ ] PIPE-PAGES-R020.45: Wiring: The real CLI materializes the declared split and the hook checks its served navigation and claim evidence. Implement and bind `test_guide_migration_wiring` in `tests/hooks/test_guide_migration.py`.
-- [ ] PIPE-PAGES-R020.46: Refusal: Unresolved assertions and unrenderable diagrams cannot produce complete migration evidence. Implement and bind `test_guide_migration_refusal` in `tests/hooks/test_guide_migration.py`.
-- [ ] PIPE-PAGES-R020.47: Evidence: A coverage total equals the original inventory and each moved claim retains its evidence kind. Implement and bind `test_guide_migration_evidence` in `tests/hooks/test_guide_migration.py`.
-- [ ] PIPE-PAGES-R020.48: Hot-path proof: Assert actual CLI/hook, renderer and served-link behavior without helper-only completion. Implement and bind `test_guide_migration_cli` in `tests/hooks/test_guide_migration.py`.
-- [ ] PIPE-PAGES-R020.49: Model: Require all four records and parse configuration/command shapes without fabricated capabilities. Implement and bind `test_deployment_docs_model` in `tests/hooks/test_deployment_docs.py`.
-- [ ] PIPE-PAGES-R020.50: Behavior: Missing configuration, command or mismatched transport fails independently in every pattern. Implement and bind `test_deployment_docs_behavior` in `tests/hooks/test_deployment_docs.py`.
-- [ ] PIPE-PAGES-R020.51: Wiring: Configured pre-commit and docs CLI validate the same owner export, JSON and argv matrix. Implement and bind `test_deployment_docs_wiring` in `tests/hooks/test_deployment_docs.py`.
-- [ ] PIPE-PAGES-R020.52: Refusal: Unsupported patterns are explicit constraints, never false pass coverage or invented commands. Implement and bind `test_deployment_docs_refusal` in `tests/hooks/test_deployment_docs.py`.
-- [ ] PIPE-PAGES-R020.53: Evidence: Export all four patterns and distinguish docs parity from a runtime deployment receipt. Implement and bind `test_deployment_docs_evidence` in `tests/hooks/test_deployment_docs.py`.
-- [ ] PIPE-PAGES-R020.54: Hot-path proof: Assert four-pattern CLI/hook parity and independent owner runtime receipts; documentation alone cannot certify deployment. Implement and bind `test_deployment_docs_cli` in `tests/hooks/test_deployment_docs.py`.
-- [ ] PIPE-PAGES-R020.55: Model: Require every documentation role for every project and reject duplicate canonical authorities. Implement and bind `test_doc_inventory_model` in `tests/hooks/test_doc_inventory.py`.
-- [ ] PIPE-PAGES-R020.56: Behavior: Missing roles, malformed config, stale managed sections and orphan navigation fail independently. Implement and bind `test_doc_inventory_behavior` in `tests/hooks/test_doc_inventory.py`.
-- [ ] PIPE-PAGES-R020.57: Wiring: The existing proposed config-inventory entry consumes both configuration and documentation roles once. Implement and bind `test_doc_inventory_wiring` in `tests/hooks/test_doc_inventory.py`.
-- [ ] PIPE-PAGES-R020.58: Refusal: Retired-path fallback and an undiscovered declared project cannot pass. Implement and bind `test_doc_inventory_refusal` in `tests/hooks/test_doc_inventory.py`.
-- [ ] PIPE-PAGES-R020.59: Evidence: Prove every role and project is checked and preserve user-owned prose during rendering. Implement and bind `test_doc_inventory_evidence` in `tests/hooks/test_doc_inventory.py`.
-- [ ] PIPE-PAGES-R020.60: Hot-path proof: Assert deterministic generation, real served navigation and whole-inventory drift failures. Implement and bind `test_doc_inventory_cli` in `tests/hooks/test_doc_inventory.py`.
-- [ ] PIPE-PAGES-R020.61: Model: Reject missing/duplicate consumer header fields; only the exact provider identity selects non-applicable scope. Implement and bind `test_readme_header_model` in `tests/hooks/test_readme_header.py`.
-- [ ] PIPE-PAGES-R020.62: Behavior: Missing interface/status links, hidden badges, stale owner counts and reused wrong-project marks fail. Implement and bind `test_readme_header_behavior` in `tests/hooks/test_readme_header.py`.
-- [ ] PIPE-PAGES-R020.63: Wiring: The installed provider self-run yields declared non-applicable exit 0; known consumers still execute the shared renderer/checker. Implement and bind `test_readme_header_wiring` in `tests/hooks/test_readme_header.py`.
-- [ ] PIPE-PAGES-R020.64: Refusal: Unknown consumer, same basename under another namespace and unresolved identity exit 2; unavailable telemetry cannot become a measured success. Implement and bind `test_readme_header_refusal` in `tests/hooks/test_readme_header.py`.
-- [ ] PIPE-PAGES-R020.65: Evidence: Bind seven-owner coverage to its registry; provider skip evidence cannot count as a passed consumer or completed header check. Implement and bind `test_readme_header_evidence` in `tests/hooks/test_readme_header.py`.
-- [ ] PIPE-PAGES-R020.66: Hot-path proof: Assert real renderer/browser coverage plus provider CLI/self-run exit 0, unknown identity exit 2 and no consumer bypass through a provider flag. Implement and bind `test_readme_header_cli` in `tests/hooks/test_readme_header.py`.
-- [ ] PIPE-PAGES-R020.67: Model: Reject omitted images, missing theme modes and ambiguous diagram edge identities. Implement and bind `test_image_theme_model` in `tests/hooks/test_image_theme.py`.
-- [ ] PIPE-PAGES-R020.68: Behavior: Missing dark variant, invisible labels, wrong diagram arrow endpoints and unaccounted images fail. Implement and bind `test_image_theme_behavior` in `tests/hooks/test_image_theme.py`.
-- [ ] PIPE-PAGES-R020.69: Wiring: The production docs check evaluates the actual served artifact under both browser media settings. Implement and bind `test_image_theme_wiring` in `tests/hooks/test_image_theme.py`.
-- [ ] PIPE-PAGES-R020.70: Refusal: An image lacking trustworthy theme evidence cannot silently pass or disappear from inventory. Implement and bind `test_image_theme_refusal` in `tests/hooks/test_image_theme.py`.
-- [ ] PIPE-PAGES-R020.71: Evidence: Every image has two bound render results with exact failure locations and reasons. Implement and bind `test_image_theme_evidence` in `tests/hooks/test_image_theme.py`.
-- [ ] PIPE-PAGES-R020.72: Hot-path proof: Assert real served dual-media coverage for every image, failed adversarial probes and stale-receipt exit 2. Implement and bind `test_image_theme_cli` in `tests/hooks/test_image_theme.py`.
-- [ ] PIPE-PAGES-R020.73: Model. Implement this contract and bind `test_spec_artifacts_model` in `tests/hooks/test_spec_artifacts.py`.
-- [ ] PIPE-PAGES-R020.74: Behavior. Implement this contract and bind `test_spec_artifacts_behavior` in `tests/hooks/test_spec_artifacts.py`.
-- [ ] PIPE-PAGES-R020.75: Wiring. Implement this contract and bind `test_spec_artifacts_wiring` in `tests/hooks/test_spec_artifacts.py`.
-- [ ] PIPE-PAGES-R020.76: Refusal. Implement this contract and bind `test_spec_artifacts_refusal` in `tests/hooks/test_spec_artifacts.py`.
-- [ ] PIPE-PAGES-R020.77: Evidence. Implement this contract and bind `test_spec_artifacts_evidence` in `tests/hooks/test_spec_artifacts.py`.
-- [ ] PIPE-PAGES-R020.78: Hot-path proof. Implement this contract and bind `test_spec_artifacts_cli` in `tests/hooks/test_spec_artifacts.py`.
-- [ ] PIPE-PAGES-R012.8: Model. Implement this contract and bind `test_spec_bundle_compatibility_model` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] PIPE-PAGES-R012.9: Behavior. Implement this contract and bind `test_spec_bundle_compatibility_behavior` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] PIPE-PAGES-R012.10: Wiring. Implement this contract and bind `test_spec_bundle_compatibility_wiring` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] PIPE-PAGES-R012.11: Refusal. Implement this contract and bind `test_spec_bundle_compatibility_refusal` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] PIPE-PAGES-R012.12: Evidence. Implement this contract and bind `test_spec_bundle_compatibility_evidence` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] PIPE-PAGES-R012.13: Hot-path proof. Implement this contract and bind `test_spec_bundle_compatibility_cli` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] PIPE-PAGES-R021.31: Model. Implement this contract and bind `test_skill_dependency_audit_model` in `tests/hooks/test_skill_dependency_audit.py`.
-- [ ] PIPE-PAGES-R021.32: Behavior. Implement this contract and bind `test_skill_dependency_audit_behavior` in `tests/hooks/test_skill_dependency_audit.py`.
-- [ ] PIPE-PAGES-R021.33: Wiring. Implement this contract and bind `test_skill_dependency_audit_wiring` in `tests/hooks/test_skill_dependency_audit.py`.
-- [ ] PIPE-PAGES-R021.34: Refusal. Implement this contract and bind `test_skill_dependency_audit_refusal` in `tests/hooks/test_skill_dependency_audit.py`.
-- [ ] PIPE-PAGES-R021.35: Evidence. Implement this contract and bind `test_skill_dependency_audit_evidence` in `tests/hooks/test_skill_dependency_audit.py`.
-- [ ] PIPE-PAGES-R021.36: Hot-path proof. Implement this contract and bind `test_skill_dependency_audit_cli` in `tests/hooks/test_skill_dependency_audit.py`.
-- [ ] PIPE-PAGES-R023.13: Model. Implement this contract and bind `test_aggregate_skill_grade_model` in `tests/hooks/test_aggregate_skill_grade.py`.
-- [ ] PIPE-PAGES-R023.14: Behavior. Implement this contract and bind `test_aggregate_skill_grade_behavior` in `tests/hooks/test_aggregate_skill_grade.py`.
-- [ ] PIPE-PAGES-R023.15: Wiring. Implement this contract and bind `test_aggregate_skill_grade_wiring` in `tests/hooks/test_aggregate_skill_grade.py`.
-- [ ] PIPE-PAGES-R023.16: Refusal. Implement this contract and bind `test_aggregate_skill_grade_refusal` in `tests/hooks/test_aggregate_skill_grade.py`.
-- [ ] PIPE-PAGES-R023.17: Evidence. Implement this contract and bind `test_aggregate_skill_grade_evidence` in `tests/hooks/test_aggregate_skill_grade.py`.
-- [ ] PIPE-PAGES-R023.18: Hot-path proof. Implement this contract and bind `test_aggregate_skill_grade_cli` in `tests/hooks/test_aggregate_skill_grade.py`.
-- [ ] PIPE-PAGES-R012.14: Model. Implement this contract and bind `test_capability_inventory_model` in `tests/hooks/test_capability_inventory.py`.
-- [ ] PIPE-PAGES-R012.15: Behavior. Implement this contract and bind `test_capability_inventory_behavior` in `tests/hooks/test_capability_inventory.py`.
-- [ ] PIPE-PAGES-R012.16: Wiring. Implement this contract and bind `test_capability_inventory_wiring` in `tests/hooks/test_capability_inventory.py`.
-- [ ] PIPE-PAGES-R012.17: Refusal. Implement this contract and bind `test_capability_inventory_refusal` in `tests/hooks/test_capability_inventory.py`.
-- [ ] PIPE-PAGES-R012.18: Evidence. Implement this contract and bind `test_capability_inventory_evidence` in `tests/hooks/test_capability_inventory.py`.
-- [ ] PIPE-PAGES-R012.19: Hot-path proof. Implement this contract and bind `test_capability_inventory_cli` in `tests/hooks/test_capability_inventory.py`.
-- [ ] PIPE-PAGES-R012.20: Model. Implement this contract and bind `test_eg7_capability_authority_model` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] PIPE-PAGES-R012.21: Behavior. Implement this contract and bind `test_eg7_complete_binding_coverage` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] PIPE-PAGES-R012.22: Wiring. Implement this contract and bind `test_eg7_binding_gate_wiring` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] PIPE-PAGES-R012.23: Refusal. Implement this contract and bind `test_eg7_refusal_missing_identity` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] PIPE-PAGES-R012.24: Evidence. Implement this contract and bind `test_eg7_coverage_evidence` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] PIPE-PAGES-R012.25: Hot-path proof. Implement this contract and bind `test_eg7_identity_enforcement_cli` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] PIPE-PAGES-R021.37: Model. Implement this contract and bind `test_structural_limits_model` in `tests/hooks/test_structural_limits.py`.
-- [ ] PIPE-PAGES-R021.38: Behavior. Implement this contract and bind `test_structural_limits_behavior` in `tests/hooks/test_structural_limits.py`.
-- [ ] PIPE-PAGES-R021.39: Wiring. Implement this contract and bind `test_structural_limits_wiring` in `tests/hooks/test_structural_limits.py`.
-- [ ] PIPE-PAGES-R021.40: Refusal. Implement this contract and bind `test_structural_limits_refusal` in `tests/hooks/test_structural_limits.py`.
-- [ ] PIPE-PAGES-R021.41: Evidence. Implement this contract and bind `test_structural_limits_evidence` in `tests/hooks/test_structural_limits.py`.
-- [ ] PIPE-PAGES-R021.42: Hot-path proof. Implement this contract and bind `test_structural_limits_cli` in `tests/hooks/test_structural_limits.py`.
-- [ ] PIPE-PAGES-R021.43: Model. Implement this contract and bind `test_source_path_portability_model` in `tests/hooks/test_source_path_portability.py`.
-- [ ] PIPE-PAGES-R021.44: Behavior. Implement this contract and bind `test_source_path_portability_behavior` in `tests/hooks/test_source_path_portability.py`.
-- [ ] PIPE-PAGES-R021.45: Wiring. Implement this contract and bind `test_source_path_portability_wiring` in `tests/hooks/test_source_path_portability.py`.
-- [ ] PIPE-PAGES-R021.46: Refusal. Implement this contract and bind `test_source_path_portability_refusal` in `tests/hooks/test_source_path_portability.py`.
-- [ ] PIPE-PAGES-R021.47: Evidence. Implement this contract and bind `test_source_path_portability_evidence` in `tests/hooks/test_source_path_portability.py`.
-- [ ] PIPE-PAGES-R021.48: Hot-path proof. Implement this contract and bind `test_source_path_portability_cli` in `tests/hooks/test_source_path_portability.py`.
-- [ ] PIPE-PAGES-R021.49: Model. Implement this contract and bind `test_coverage_closure_model` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.50: Behavior. Implement this contract and bind `test_coverage_closure_behavior` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.51: Wiring. Implement this contract and bind `test_coverage_closure_wiring` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.52: Refusal. Implement this contract and bind `test_coverage_closure_refusal` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.53: Evidence. Implement this contract and bind `test_coverage_closure_evidence` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.54: Hot-path proof. Implement this contract and bind `test_coverage_closure_cli` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R020.79: Model. Implement this contract and bind `test_validation_behavior_inventory_model` in `tests/hooks/test_validation_behavior_inventory.py`.
-- [ ] PIPE-PAGES-R020.80: Behavior. Implement this contract and bind `test_validation_behavior_inventory_behavior` in `tests/hooks/test_validation_behavior_inventory.py`.
-- [ ] PIPE-PAGES-R020.81: Wiring. Implement this contract and bind `test_validation_behavior_inventory_wiring` in `tests/hooks/test_validation_behavior_inventory.py`.
-- [ ] PIPE-PAGES-R020.82: Refusal. Implement this contract and bind `test_validation_behavior_inventory_refusal` in `tests/hooks/test_validation_behavior_inventory.py`.
-- [ ] PIPE-PAGES-R020.83: Evidence. Implement this contract and bind `test_validation_behavior_inventory_evidence` in `tests/hooks/test_validation_behavior_inventory.py`.
-- [ ] PIPE-PAGES-R020.84: Hot-path proof. Implement this contract and bind `test_validation_behavior_inventory_cli` in `tests/hooks/test_validation_behavior_inventory.py`.
-- [ ] PIPE-PAGES-R021.55: Model. Implement this contract and bind `test_offline_unit_profile_model` in `tests/hooks/test_offline_unit_profile.py`.
-- [ ] PIPE-PAGES-R021.56: Behavior. Implement this contract and bind `test_offline_unit_profile_behavior` in `tests/hooks/test_offline_unit_profile.py`.
-- [ ] PIPE-PAGES-R021.57: Wiring. Implement this contract and bind `test_offline_unit_profile_wiring` in `tests/hooks/test_offline_unit_profile.py`.
-- [ ] PIPE-PAGES-R021.58: Refusal. Implement this contract and bind `test_offline_unit_profile_refusal` in `tests/hooks/test_offline_unit_profile.py`.
-- [ ] PIPE-PAGES-R021.59: Evidence. Implement this contract and bind `test_offline_unit_profile_evidence` in `tests/hooks/test_offline_unit_profile.py`.
-- [ ] PIPE-PAGES-R021.60: Hot-path proof. Implement this contract and bind `test_offline_unit_profile_cli` in `tests/hooks/test_offline_unit_profile.py`.
-- [ ] PIPE-PAGES-R020.85: Model. Implement this contract and bind `test_ontology_governance_hook_model` in `tests/hooks/test_ontology_governance_hook.py`.
-- [ ] PIPE-PAGES-R020.86: Behavior. Implement this contract and bind `test_ontology_governance_hook_behavior` in `tests/hooks/test_ontology_governance_hook.py`.
-- [ ] PIPE-PAGES-R020.87: Wiring. Implement this contract and bind `test_ontology_governance_hook_wiring` in `tests/hooks/test_ontology_governance_hook.py`.
-- [ ] PIPE-PAGES-R020.88: Refusal. Implement this contract and bind `test_ontology_governance_hook_refusal` in `tests/hooks/test_ontology_governance_hook.py`.
-- [ ] PIPE-PAGES-R020.89: Evidence. Implement this contract and bind `test_ontology_governance_hook_evidence` in `tests/hooks/test_ontology_governance_hook.py`.
-- [ ] PIPE-PAGES-R020.90: Hot-path proof. Implement this contract and bind `test_ontology_governance_hook_cli` in `tests/hooks/test_ontology_governance_hook.py`.
-- [ ] PIPE-PAGES-R021.61: Model. Implement this contract and bind `test_test_layout_independence_model` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] PIPE-PAGES-R021.62: Behavior. Implement this contract and bind `test_test_layout_independence_behavior` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] PIPE-PAGES-R021.63: Wiring. Implement this contract and bind `test_test_layout_independence_wiring` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] PIPE-PAGES-R021.64: Refusal. Implement this contract and bind `test_test_layout_independence_refusal` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] PIPE-PAGES-R021.65: Evidence. Implement this contract and bind `test_test_layout_independence_evidence` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] PIPE-PAGES-R021.66: Hot-path proof. Implement this contract and bind `test_test_layout_independence_cli` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] PIPE-PAGES-R021.67: Model. Implement this contract and bind `test_solution_size_evidence_model` in `tests/hooks/test_solution_size_evidence.py`.
-- [ ] PIPE-PAGES-R021.68: Behavior. Implement this contract and bind `test_solution_size_evidence_behavior` in `tests/hooks/test_solution_size_evidence.py`.
-- [ ] PIPE-PAGES-R021.69: Wiring. Implement this contract and bind `test_solution_size_evidence_wiring` in `tests/hooks/test_solution_size_evidence.py`.
-- [ ] PIPE-PAGES-R021.70: Refusal. Implement this contract and bind `test_solution_size_evidence_refusal` in `tests/hooks/test_solution_size_evidence.py`.
-- [ ] PIPE-PAGES-R021.71: Evidence. Implement this contract and bind `test_solution_size_evidence_evidence` in `tests/hooks/test_solution_size_evidence.py`.
-- [ ] PIPE-PAGES-R021.72: Hot-path proof. Implement this contract and bind `test_solution_size_evidence_cli` in `tests/hooks/test_solution_size_evidence.py`.
-- [ ] PIPE-PAGES-R021.73: Model. Implement this contract and bind `test_graph_workflow_receipt_model` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.74: Behavior. Implement this contract and bind `test_graph_workflow_receipt_behavior` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.75: Wiring. Implement this contract and bind `test_graph_workflow_receipt_wiring` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.76: Refusal. Implement this contract and bind `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.77: Evidence. Implement this contract and bind `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.78: Hot-path proof. Implement this contract and bind `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.79: Model. Implement this contract and bind `test_pipe9_coverage_runner_model` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.80: Behavior. Implement this contract and bind `test_pipe9_inventory_behavior` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.81: Wiring. Implement this contract and bind `test_pipe9_gate_wiring` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.82: Refusal. Implement this contract and bind `test_pipe9_threshold_refusal` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.83: Evidence. Implement this contract and bind `test_pipe9_closure_evidence` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.84: Hot-path proof. Implement this contract and bind `test_pipe9_closure_cli` in `tests/hooks/test_coverage_closure.py`.
-- [ ] PIPE-PAGES-R021.85: Model. Implement this contract and bind `test_pipe10_workflow_model` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.86: Behavior. Implement this contract and bind `test_pipe10_readback_behavior` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.87: Wiring. Implement this contract and bind `test_pipe10_gate_wiring` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.88: Refusal. Implement this contract and bind `test_pipe10_readback_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.89: Evidence. Implement this contract and bind `test_pipe10_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R021.90: Hot-path proof. Implement this contract and bind `test_pipe10_cli_proof` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] PIPE-PAGES-R032.1: Model. Implement this contract and bind `test_eg56_export_model` in export-import test.
-- [ ] PIPE-PAGES-R032.2: Behavior. Implement this contract and bind `test_eg56_roundtrip_behavior` in export-import test.
-- [ ] PIPE-PAGES-R032.3: Wiring. Implement this contract and bind `test_eg56_export_wiring` in export-import test.
-- [ ] PIPE-PAGES-R032.4: Refusal. Implement this contract and bind `test_eg56_version_refusal` in export-import test.
-- [ ] PIPE-PAGES-R032.5: Evidence. Implement this contract and bind `test_eg56_comparison_evidence` in export-import test.
-- [ ] PIPE-PAGES-R032.6: Hot-path proof. Implement this contract and bind `test_eg56_export_import_cli` in export-import test.
-- [ ] PIPE-PAGES-R033.1: Model. Implement this contract and bind `test_au96_installer_model` in installer test.
-- [ ] PIPE-PAGES-R033.2: Behavior. Implement this contract and bind `test_au96_target_behavior` in installer test.
-- [ ] PIPE-PAGES-R033.3: Wiring. Implement this contract and bind `test_au96_harness_wiring` in installer test.
-- [ ] PIPE-PAGES-R033.4: Refusal. Implement this contract and bind `test_au96_target_refusal` in installer test.
-- [ ] PIPE-PAGES-R033.5: Evidence. Implement this contract and bind `test_au96_coverage_evidence` in installer test.
-- [ ] PIPE-PAGES-R033.6: Hot-path proof. Implement this contract and bind `test_au96_target_binding_cli` in installer test.
-- [ ] PIPE-PAGES-R034.1: Model. Implement this contract and bind `test_eg53_profile_model` in deployment test.
-- [ ] PIPE-PAGES-R034.2: Behavior. Implement this contract and bind `test_eg53_dependency_free_behavior` in deployment test.
-- [ ] PIPE-PAGES-R034.3: Wiring. Implement this contract and bind `test_eg53_parity_wiring` in deployment test.
-- [ ] PIPE-PAGES-R034.4: Refusal. Implement this contract and bind `test_eg53_parity_refusal` in deployment test.
-- [ ] PIPE-PAGES-R034.5: Evidence. Implement this contract and bind `test_eg53_parity_evidence` in deployment test.
-- [ ] PIPE-PAGES-R034.6: Hot-path proof. Implement this contract and bind `test_eg53_portable_deployment_cli` in deployment test.
-- [ ] PIPE-PAGES-R035.1: Model. Implement this contract and bind `test_au121_prompt_model` in prompt test.
-- [ ] PIPE-PAGES-R035.2: Behavior. Implement this contract and bind `test_au121_roundtrip_behavior` in prompt test.
-- [ ] PIPE-PAGES-R035.3: Wiring. Implement this contract and bind `test_au121_serializer_wiring` in prompt test.
-- [ ] PIPE-PAGES-R035.4: Refusal. Implement this contract and bind `test_au121_coverage_refusal` in prompt test.
-- [ ] PIPE-PAGES-R035.5: Evidence. Implement this contract and bind `test_au121_oracle_evidence` in prompt test.
-- [ ] PIPE-PAGES-R035.6: Hot-path proof. Implement this contract and bind `test_au121_roundtrip_cli` in prompt test.
-- [ ] PIPE-PAGES-R021.91: Model. Record validate behaviors and deployment state inventory.
-- [ ] PIPE-PAGES-R021.92: Behavior. Map behaviors to every supported project hook.
-- [ ] PIPE-PAGES-R021.93: Wiring. Require pre-commit parity for all projects.
-- [ ] PIPE-PAGES-R021.94: Refusal. Keep baseline gaps visible in inventory.
-- [ ] PIPE-PAGES-R021.95: Evidence. Bind baseline to source snapshot.
-- [ ] PIPE-PAGES-R021.96: Hot-path proof. Hook rejects unmapped behavior.
-- [ ] PIPE-PAGES-R037.1: Model. Define unit-test profile with external dependency categories.
-- [ ] PIPE-PAGES-R037.2: Behavior. Enforce deterministic doubles in unit tests.
-- [ ] PIPE-PAGES-R037.3: Wiring. Wire unit profile into test-quality gate.
-- [ ] PIPE-PAGES-R037.4: Refusal. Reject unmocked external dependencies.
-- [ ] PIPE-PAGES-R037.5: Evidence. Record external categories and test scope.
-- [ ] PIPE-PAGES-R037.6: Hot-path proof. Gate blocks unmocked network access.
-- [ ] PIPE-PAGES-R038.1: Model. Define Python-only execution boundary and rules.
-- [ ] PIPE-PAGES-R038.2: Behavior. Hook consumes Medulla verdicts without local authority.
-- [ ] PIPE-PAGES-R038.3: Wiring. Pre-commit integrates with Medulla service.
-- [ ] PIPE-PAGES-R038.4: Refusal. Unavailable Medulla service fails closed.
-- [ ] PIPE-PAGES-R038.5: Evidence. Record Medulla verdict identity and version.
-- [ ] PIPE-PAGES-R038.6: Hot-path proof. Planted violation blocks commit.
-- [ ] PIPE-PAGES-R039.1: Model. Define project layout inventory with fixtures.
-- [ ] PIPE-PAGES-R039.2: Behavior. Enforce test independence via isolation gate.
-- [ ] PIPE-PAGES-R039.3: Wiring. Wire inventory check into test-quality gate.
-- [ ] PIPE-PAGES-R039.4: Refusal. Reject undeclared fixtures.
-- [ ] PIPE-PAGES-R039.5: Evidence. Record inventory and independence results.
-- [ ] PIPE-PAGES-R039.6: Hot-path proof. Gate blocks fixture dependency.
-- [ ] PIPE-PAGES-R040.1: Model. Extend approval criteria with coverage evidence.
-- [ ] PIPE-PAGES-R040.2: Behavior. Reject proposals where coverage decreases.
-- [ ] PIPE-PAGES-R040.3: Wiring. Wire coverage check into Meristem admission.
-- [ ] PIPE-PAGES-R040.4: Refusal. Missing coverage evidence causes rejection.
-- [ ] PIPE-PAGES-R040.5: Evidence. Record baseline and candidate coverage.
-- [ ] PIPE-PAGES-R040.6: Hot-path proof. Gate rejects coverage decrease.
-- [ ] PIPE-PAGES-R041.1: Model. Define function-argument and try-block limits.
-- [ ] PIPE-PAGES-R041.2: Behavior. Build fails when functions exceed limit.
-- [ ] PIPE-PAGES-R041.3: Wiring. Wire limits into shared KISS gate.
-- [ ] PIPE-PAGES-R041.4: Refusal. Missing limits or unsupported measurement fail.
-- [ ] PIPE-PAGES-R041.5: Evidence. Record policy digest and function counts.
-- [ ] PIPE-PAGES-R041.6: Hot-path proof. Build fails on excess arguments.
-- [x] PIPE-PAGES-R042: Generated architecture explorer at /architecture/ on every core Pages site, linked from the shared theme.
-- [x] PIPE-PAGES-R042.1: Search index. Bound to tests/test_architecture_explorer.py::test_search_index_covers_every_row_and_maps_it_to_a_node.
-- [x] PIPE-PAGES-R042.2: Ranking. Bound to tests/test_architecture_explorer.py::test_a_capability_search_ranks_the_owning_row_first.
-- [x] PIPE-PAGES-R042.3: Deep links. Bound to tests/test_architecture_explorer.py::test_deep_links_parse.
-- [x] PIPE-PAGES-R042.4: Landing and access. Bound to tests/test_architecture_explorer.py::test_a_q_deep_link_lands_on_the_owning_part_in_a_browser.
-- [x] PIPE-PAGES-R042.5: Viewport. Bound to tests/test_architecture_explorer.py::test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle.
-- [x] PIPE-PAGES-R042.6: Row description. Bound to tests/test_architecture_explorer.py::test_description_is_the_first_plain_sentence_capped_at_160.
-- [x] PIPE-PAGES-R042.7: Expandable full spec. Bound to tests/test_architecture_explorer.py::test_one_family_json_is_written_per_family_with_full_row_detail.
-- [x] PIPE-PAGES-R042.8: Safe rendering. Bound to tests/test_architecture_explorer.py::test_markdown_escapes_raw_html_and_drops_unsafe_links.
-- [x] PIPE-PAGES-R042.9: Every scanned repository has a part. Bound to tests/test_architecture_explorer.py::test_every_registered_repository_has_a_part_and_its_rows_place_without_the_allowlist.
-- [x] PIPE-PAGES-R042.10: Explorer links to the contribution front door. Bound to tests/test_architecture_explorer.py::test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide.
-- [x] PIPE-PAGES-R042.11: Explorer states the contribution path and publishes llms.txt. Bound to tests/test_architecture_explorer.py::test_contribution_path_is_in_the_page_head_details_and_llms_txt.
-- [ ] PIPE-PAGES-R043.1: Model. Bind the existing implementation and `tests/test_pages_readiness.py::test_second_build_and_offline_tck_are_idempotent`.
-- [ ] PIPE-PAGES-R043.2: Behavior. Bind the existing implementation and `tests/test_pages_readiness.py::test_build_publishes_source_markdown_and_served_mime`.
-- [ ] PIPE-PAGES-R043.3: Wiring. Bind the existing implementation and `tests/test_pages_pipeline_contract.py::test_enabled_path_checks_strict_build_and_runs_owned_tck`.
-- [ ] PIPE-PAGES-R043.4: Refusal. Bind the existing implementation and `tests/test_pages_readiness.py::test_stale_source_digest_fails_closed`.
-- [ ] PIPE-PAGES-R043.5: Evidence. Bind the existing implementation and `tests/test_pages_readiness.py::test_cli_failure_result_is_versioned`.
-- [ ] PIPE-PAGES-R043.6: Hot-path proof. Bind the existing implementation and `tests/test_pages_readiness.py::test_direct_entry_requires_and_loads_the_sparse_readiness_package`.
+- [ ] T036 PIPE-PAGES-R016 Recheck historical R001/R003/R009 acceptance notes against current exact source and served-site evidence.
+- [ ] T037 PIPE-PAGES-R016 Validate R013.3 repository and component grouping with orphan specs.
+- [ ] T038 PIPE-PAGES-R016 **Spec-delivery page shows only the current spec state.** Rollup of the children below
+- [ ] T039 PIPE-PAGES-R016.1 Remove the `history` field and the `--history-limit` option from `create_snapshot` and `argument_parser` in `scripts/spec_dashboard.py`. The snapshot holds only records read from the current tree, so no ID absent from that tree enters it.
+- [ ] T040 PIPE-PAGES-R016.2 Remove `history_panels` and the history and per-commit panels from `scripts/spec_dashboard_render.py`, then delete `scripts/spec_dashboard_charts.py`, `scripts/spec_dashboard_history.py`, `scripts/spec_dashboard_history_metrics.py`, and `scripts/spec_dashboard_history_views.py` with their tests. No state-transition table, chart, metric or panel is rendered.
+- [ ] T041 PIPE-PAGES-R016.3 Render only records present in the current `specs/` tree. A requirement ID that was removed in an earlier commit appears nowhere in the HTML.
+- [ ] T042 PIPE-PAGES-R016.4 Remove the history scripts from the sparse checkout and the history option from the dashboard call in `.github/workflows/pages_pipeline.yml`. The Pages workflow does not invoke the history modules.
+- [ ] T043 PIPE-PAGES-R016.5 Do not render records whose state is `RETIRED`. `read_records` in `scripts/spec_dashboard_sources.py` drops them.
+- [ ] T044 PIPE-PAGES-R017 **Three states only.** Rollup of the children below. A requirement row and a spec have one state field with the values `SPECIFIED`, `LANDED` and `VERIFIED`.
+- [ ] T045 PIPE-PAGES-R017.1 The state legend lists exactly three states, `SPECIFIED`, `LANDED` and `VERIFIED`, each with a one-line definition, in `definitions_panel` in `scripts/spec_dashboard_panels.py`.
+- [ ] T046 PIPE-PAGES-R017.2 Every record row shows one state cell. The page has no acceptance column, no release column and no second state label.
+- [ ] T047 PIPE-PAGES-R017.3 A `delivery_state` outside the three states, after `RETIRED` is filtered, renders as `INVALID` and counts in one visible invalid-state number.
+- [ ] T048 PIPE-PAGES-R018 **Spec delivery is a native menu entry on every documentation site.** Rollup of the children below
+- [ ] T049 PIPE-PAGES-R018.1 Add the `spec_delivery` flag to `extra:` in `templates/mkdocs-theme/base.mkdocs.yml` as `!ENV [SPEC_DELIVERY_ENABLED, false]`. Set the variable from `inputs.spec_dashboard_enabled` on the Build Docs step of `.github/workflows/pages_pipeline.yml`.
+- [ ] T050 PIPE-PAGES-R018.2 Render a `Spec delivery` link in `templates/mkdocs-theme/overrides/main.html`. The link must use `base_url` and `/spec-delivery/`, and the block must render only when the flag is set.
+- [ ] T051 PIPE-PAGES-R018.3 List the `spec-delivery/` page of each repository in a native `<details>` list inside the same navigation landmark. The list must iterate `extra.ecosystem.sites` and must hold no second repository list.
+- [ ] T052 PIPE-PAGES-R018.4 Keep every `extra.ecosystem.sites` URL in `templates/mkdocs-theme/base.mkdocs.yml` equal to its `REPOS` entry in `scripts/skill_graph/model.py`.
+- [ ] T053 PIPE-PAGES-R018.5 Style the entry in a `<style>` element inside the block in `templates/mkdocs-theme/overrides/main.html` with a visible focus outline. The override is served from the theme checkout through `custom_dir`, so the theme sync check needs no consumer change.
+- [ ] T054 PIPE-PAGES-R019 **The spec-delivery page carries the documentation site's navigation.** Rollup of the children below. Readers must move between the documentation and the page without the browser's address bar.
+- [ ] T055 PIPE-PAGES-R019.1 Add `site_nav(repository)` to `scripts/spec_dashboard_nav.py`. It renders `<nav aria-label="Site">` with the repository name and a `Documentation` link, both to `../`.
+- [ ] T056 PIPE-PAGES-R019.2 Mark the current page in `site_nav` with `aria-current="page"` on the `Spec delivery` entry.
+- [ ] T057 PIPE-PAGES-R019.3 List every repository in `site_nav` from `ecosystem_components()` in `scripts/spec_dashboard_drilldown.py`. Link each to its level-1 URL and mark the current repository. Define no second list.
+- [ ] T058 PIPE-PAGES-R019.4 Add `skip_link()` to `scripts/spec_dashboard_nav.py` and wrap the sheet in `<main id="main">` in `render` in `scripts/spec_dashboard_render.py`. Style the bar with the existing tokens in `scripts/spec_dashboard_style.py`.
+- [ ] T059 PIPE-PAGES-R019.5 Add `scripts/spec_dashboard_nav.py` to the sparse checkout in `.github/workflows/pages_pipeline.yml`. The page must keep every existing panel.
+- [ ] T060 PIPE-PAGES-R020 **Documentation claims must match the repository.** Rollup of the children below. The public-surface gate resolves each documented path, command, gate name and count against the tree.
+- [ ] T061 PIPE-PAGES-R020.1 **Model.** Add frozen dataclass `DocClaim` (file, line, kind, text) to `pipelines_hooks/docs/claims.py`. The `kind` field takes one of `path`, `command`, `gate`, `count`, `diagram-node`.
+- [ ] T062 PIPE-PAGES-R020.2 **Behavior.** Add `claim_findings(root, claims)` to `pipelines_hooks/docs/claims.py`. Each kind has one named resolver in `RESOLVERS`: a path must exist, a gate must be in `GATES`, a count must equal the measured count, a diagram node must match a registry name. Each resolver is a replaceable default.
+- [ ] T063 PIPE-PAGES-R020.3 **Wiring.** Call `claim_findings` from `validate` at `pipelines_hooks/docs/public_surface.py:31`. `main` in `pipelines_hooks/cli.py:79` reaches it through `run_gate` at `pipelines_hooks/cli.py:66`. The `public-surface` hook at `.pre-commit-hooks.yaml:183` is the production caller.
+- [ ] T064 PIPE-PAGES-R020.4 **Refusal.** When a claim has no resolver or the registry is unreadable, `claim_findings` returns the typed finding `claims-unchecked` with the file and line. It never passes silently.
+- [ ] T065 PIPE-PAGES-R020.5 **Evidence.** The gate prints one line `claims: checked N, unresolved M` and one finding per unresolved claim as `file:line kind text`.
+- [ ] T066 PIPE-PAGES-R020.6 **Hot-path proof.** The entry point is `pipelines-hook public-surface`, run through `main` in `pipelines_hooks/cli.py:79` on a fixture repository whose README names a missing path. The hook must exit 1 and print that path's `file:line`.
+- [ ] T067 PIPE-PAGES-R021 **Test quality gate for repository validation.** Rollup of the children below. The gate rejects placeholder tests and unjustified suppressions, and enforces a coverage threshold. Each finding names its rule and location, so the fixer addresses the root cause before the re-test.
+- [ ] T068 PIPE-PAGES-R021.1 **Model.** Add frozen dataclass `TestQualityFinding` (path, line, rule) to `pipelines_hooks/code/test_quality.py`. The `rule` field takes one of `placeholder-test`, `unjustified-suppression`, `coverage-below-threshold`.
+- [ ] T069 PIPE-PAGES-R021.2 **Behavior.** Add `scan(root, threshold)` to `pipelines_hooks/code/test_quality.py`. A test whose body is only `pass`, `...` or `assert True` is a placeholder. A suppression needs a reason of at least 10 characters. The coverage threshold defaults to 80 percent. Each rule is a replaceable default.
+- [ ] T070 PIPE-PAGES-R021.3 **Wiring.** This row creates the call site. Add `test-quality` to `GATES` at `pipelines_hooks/cli.py:33` and a hook entry beside `no-stub` at `.pre-commit-hooks.yaml:141`. `run_gate` at `pipelines_hooks/cli.py:59` is its caller.
+- [ ] T071 PIPE-PAGES-R021.4 **Refusal.** When no coverage report exists, `main` raises `CannotRun`. `run_gate` maps it to exit 2. The gate never reports a pass without a measured percentage.
+- [ ] T072 PIPE-PAGES-R021.5 **Evidence.** The gate prints `test-quality: files N, placeholders M, coverage P%, threshold T%` and one `path:line rule` line per finding.
+- [ ] T073 PIPE-PAGES-R021.6 **Hot-path proof.** The entry point is `pipelines-hook test-quality` through `main` in `pipelines_hooks/cli.py:79`. A fixture repository with a placeholder test and 70 percent coverage must exit 1 and list both findings.
+- [ ] T074 PIPE-PAGES-R022 **Scheduled mutation testing reports test gaps.** Rollup of the children below. A scheduled run mutates core modules, and each surviving mutation is reported as a test gap with its module and line.
+- [ ] T075 PIPE-PAGES-R022.1 **Model.** Add frozen dataclasses `MutationPolicy` (modules, schedule) and `SurvivingMutation` (module, line, operator) to `pipelines_hooks/code/mutation_gaps.py`. The default `modules` value is `pipelines_hooks/core`.
+- [ ] T076 PIPE-PAGES-R022.2 **Behavior.** Add `survivors(policy, runner)` to `pipelines_hooks/code/mutation_gaps.py`. It returns one `SurvivingMutation` per mutant the tests did not kill and none for killed mutants. The runner is a replaceable default.
+- [ ] T077 PIPE-PAGES-R022.3 **Wiring.** This row creates the call site. Add `mutation-gaps` to `GATES` at `pipelines_hooks/cli.py:33`. Add `.github/workflows/mutation.yml` with a weekly schedule that runs `pipelines-hook mutation-gaps`. `run_gate` at `pipelines_hooks/cli.py:59` is the caller.
+- [ ] T078 PIPE-PAGES-R022.4 **Refusal.** When the runner is absent, `main` raises `Unavailable`, which `run_gate` at `pipelines_hooks/cli.py:66` fails closed in CI. A module with no tests yields the finding `no-tests-for-module`.
+- [ ] T079 PIPE-PAGES-R022.5 **Evidence.** The report prints one line `module:line operator` per survivor and one `module: killed K, survived S` line per module.
+- [ ] T080 PIPE-PAGES-R022.6 **Hot-path proof.** The entry point is `pipelines-hook mutation-gaps` through `main` in `pipelines_hooks/cli.py:79`. A fixture module with one untested branch must exit 1 and print that module and line.
+- [ ] T081 PIPE-PAGES-R020.7 Model: implement the requirement and its acceptance test.
+- [ ] T082 PIPE-PAGES-R020.8 Behavior: implement the requirement and its acceptance test.
+- [ ] T083 PIPE-PAGES-R020.9 Wiring: implement the requirement and its acceptance test.
+- [ ] T084 PIPE-PAGES-R020.10 Refusal: implement the requirement and its acceptance test.
+- [ ] T085 PIPE-PAGES-R020.11 Evidence: implement the requirement and its acceptance test.
+- [ ] T086 PIPE-PAGES-R020.12 Hot-path proof: implement the requirement and its acceptance test.
+- [ ] T087 PIPE-PAGES-R021.7 Model: Assert the closed edge kinds and separate runtime/type-only permissions. Implement and bind `test_component_contract_model` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] T088 PIPE-PAGES-R021.8 Behavior: Assert allowed lazy imports preserve reachability, forbidden lazy imports fail, and type-only imports cannot prove runtime reachability. Implement and bind `test_component_contract_checks` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] T089 PIPE-PAGES-R021.9 Wiring: Assert the CLI boundary/orphan path consumes the static runtime graph and cycle checks retain the eager graph. Implement and bind `test_component_checks_are_wired` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] T090 PIPE-PAGES-R021.10 Refusal: Assert unresolved dynamic reachability is exit 2, never a false clean or definite orphan; retain receipt refusals. Implement and bind `test_component_proof_refusals` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] T091 PIPE-PAGES-R021.11 Evidence: Assert runtime, type-only and unresolved dynamic evidence remain distinguishable. Implement and bind `test_component_evidence_receipts` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] T092 PIPE-PAGES-R021.12 Hot-path proof: Assert CLI exit codes, exact edge locations, type-only separation and no false orphan for allowed lazy imports. Implement and bind `test_component_handoff_cli` and `test_component_lazy_import_cli` in `tests/hooks/test_test_quality_hook.py`.
+- [ ] T093 PIPE-PAGES-R023.1 Model: implement the requirement and its acceptance test. Carry a document base separately from the containment root.
+- [ ] T094 PIPE-PAGES-R023.2 Behavior: implement the requirement and its acceptance test. Resolve nested and parent-relative links from the document while enforcing repository containment.
+- [ ] T095 PIPE-PAGES-R023.3 Wiring: implement the requirement and its acceptance test. Adapt the shared helper without changing root README behavior.
+- [ ] T096 PIPE-PAGES-R023.4 Refusal: implement the requirement and its acceptance test. Refuse traversal outside the repository, escaped document bases and symlinks outside the repository.
+- [ ] T097 PIPE-PAGES-R023.5 Evidence: implement the requirement and its acceptance test. Emit located source-document and resolved-target evidence.
+- [ ] T098 PIPE-PAGES-R023.6 Hot-path proof: implement the requirement and its acceptance test. Run `test_nested_skill_links_cli` in `tests/hooks/test_skill_grade_hook.py`; sibling and in-repository parent links pass, missing or escaping links fail.
+- [ ] T099 PIPE-PAGES-R024.1 Model: implement the requirement and its acceptance test.
+- [ ] T100 PIPE-PAGES-R024.2 Behavior: implement the requirement and its acceptance test.
+- [ ] T101 PIPE-PAGES-R024.3 Wiring: implement the requirement and its acceptance test.
+- [ ] T102 PIPE-PAGES-R024.4 Refusal: implement the requirement and its acceptance test.
+- [ ] T103 PIPE-PAGES-R024.5 Evidence: implement the requirement and its acceptance test.
+- [ ] T104 PIPE-PAGES-R024.6 Hot-path proof: implement the requirement and its acceptance test.
+- [ ] T105 PIPE-PAGES-R021.13 Model: Reject unknown outcome kinds, empty observables and missing source bindings; accept return, error and side-effect contracts. Implement and bind `test_outcome_contract_schema` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] T106 PIPE-PAGES-R021.14 Behavior: Reject a passing test that ignores the result; accept exact return, error and state assertions that detect their counterexamples. Implement and bind `test_outcome_counterexamples` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] T107 PIPE-PAGES-R021.15 Wiring: Assert the published CLI invokes the configured runner, validates its receipts and includes outcome findings in its exit code. Implement and bind `test_outcome_checker_wiring` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] T108 PIPE-PAGES-R021.16 Refusal: Missing contracts and surviving counterexamples exit 1; stale, skipped, setup-failing and timed-out proofs exit 2. Implement and bind `test_outcome_proof_refusals` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] T109 PIPE-PAGES-R021.17 Evidence: Assert distinct static/runtime records and digest-bound receipts; never report coverage or assertion count as outcome proof. Implement and bind `test_outcome_evidence` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] T110 PIPE-PAGES-R021.18 Hot-path proof: Assert exit 0 for proved outcomes, exit 1 for missing observation and exit 2 for unchecked proof through the real CLI and runner. Implement and bind `test_outcome_quality_cli` in `tests/hooks/test_test_quality_outcomes.py`.
+- [ ] T111 PIPE-PAGES-R020.13 Model: Reject unknown grammar fields and duplicate releases; represent dated releases and an optional unreleased section with exact locations. Implement and bind `test_changelog_model` in `tests/hooks/test_changelog_gate.py`.
+- [ ] T112 PIPE-PAGES-R020.14 Behavior: Accept dated categorized releases; independently reject invalid dates/versions, misplaced entries, duplicate headings and unknown categories. Implement and bind `test_changelog_grammar` in `tests/hooks/test_changelog_gate.py`.
+- [ ] T113 PIPE-PAGES-R020.15 Wiring: The published CLI/hook reads policy and changelog from one Git snapshot and invokes the new grammar checker. Implement and bind `test_changelog_hook_wiring` in `tests/hooks/test_changelog_gate.py`.
+- [ ] T114 PIPE-PAGES-R020.16 Refusal: Missing files and malformed policy exit 2; missing links and malformed release entries exit 1, with path and source line. Implement and bind `test_changelog_refusals` in `tests/hooks/test_changelog_gate.py`.
+- [ ] T115 PIPE-PAGES-R020.17 Evidence: Bind findings to exact Git bytes and explicitly mark network reachability and change completeness as unverified. Implement and bind `test_changelog_evidence` in `tests/hooks/test_changelog_gate.py`.
+- [ ] T116 PIPE-PAGES-R020.18 Hot-path proof: Assert valid exit 0, grammar exit 1, missing-file and initial-history exit 2, then a valid first-release repair to exit 0, exact locations, snapshot isolation and no file writes or network calls. Implement and bind `test_changelog_cli` in `tests/hooks/test_changelog_gate.py`.
+- [ ] T117 PIPE-PAGES-R020.19 Model: Reject duplicate names, unknown fields, contradictory defaults and unmapped launcher bindings. Implement and bind `test_env_documentation_model` in `tests/hooks/test_env_documentation.py`.
+- [ ] T118 PIPE-PAGES-R020.20 Behavior: Independently corrupt each documentation field and remove, rename or contradict each launcher binding to fail. Implement and bind `test_env_documentation_behavior` in `tests/hooks/test_env_documentation.py`.
+- [ ] T119 PIPE-PAGES-R020.21 Wiring: Invoke CLI and configured pre-commit with all three consumer surfaces from the same indexed snapshot. Implement and bind `test_env_documentation_wiring` in `tests/hooks/test_env_documentation.py`.
+- [ ] T120 PIPE-PAGES-R020.22 Refusal: Malformed and missing launcher JSON fails; unsupported substitutions and computed names refuse without execution. Implement and bind `test_env_documentation_refusal` in `tests/hooks/test_env_documentation.py`.
+- [ ] T121 PIPE-PAGES-R020.23 Evidence: Check exact third-surface locations/digests, missing binding evidence, uncertainty and secret redaction. Implement and bind `test_env_documentation_evidence` in `tests/hooks/test_env_documentation.py`.
+- [ ] T122 PIPE-PAGES-R020.24 Hot-path proof: Assert CLI/hook exits 0/1/2 for all three surfaces, exact JSON pointers, snapshot isolation and no launch/import/network execution. Implement and bind `test_env_documentation_cli` in `tests/hooks/test_env_documentation.py`.
+- [ ] T123 PIPE-PAGES-R020.25 Model: Require all four roles for every declared project and reject duplicate effective authorities. Implement and bind `test_config_inventory_model` in `tests/hooks/test_config_inventory.py`.
+- [ ] T124 PIPE-PAGES-R020.26 Behavior: Render all roles twice byte-identically and detect missing files, sections and managed-field drift. Implement and bind `test_config_inventory_behavior` in `tests/hooks/test_config_inventory.py`.
+- [ ] T125 PIPE-PAGES-R020.27 Wiring: The installed hook invokes check mode; an explicit scratch render runs the same templates and parsers. Implement and bind `test_config_inventory_wiring` in `tests/hooks/test_config_inventory.py`.
+- [ ] T126 PIPE-PAGES-R020.28 Refusal: Reject traversal and overwrite, and fail a project omitted from the declared inventory. Implement and bind `test_config_inventory_refusal` in `tests/hooks/test_config_inventory.py`.
+- [ ] T127 PIPE-PAGES-R020.29 Evidence: Prove all projects and four roles appear, and drift identifies the affected section. Implement and bind `test_config_inventory_evidence` in `tests/hooks/test_config_inventory.py`.
+- [ ] T128 PIPE-PAGES-R020.30 Hot-path proof: Assert deterministic rendering, per-role failures, complete multi-project coverage and no check-mode writes. Implement and bind `test_config_inventory_cli` in `tests/hooks/test_config_inventory.py`.
+- [ ] T129 PIPE-PAGES-R020.31 Model: Reject unknown outcomes, duplicate record identities and counts inconsistent with records. Implement and bind `test_validation_report_model` in `tests/hooks/test_validation_report.py`.
+- [ ] T130 PIPE-PAGES-R020.32 Behavior: Round-trip mixed nested outcomes and compare every field, stable ordering and recomputed metrics. Implement and bind `test_validation_report_behavior` in `tests/hooks/test_validation_report.py`.
+- [ ] T131 PIPE-PAGES-R020.33 Wiring: Run aggregate lint-type results through JSON/Markdown and retain all three phase categories, rules and verdicts. Implement and bind `test_validation_report_wiring` in `tests/hooks/test_validation_report.py`.
+- [ ] T132 PIPE-PAGES-R020.34 Refusal: Tampered verdict/counts, required skips and malformed/truncated JSON refuse rather than pass. Implement and bind `test_validation_report_refusal` in `tests/hooks/test_validation_report.py`.
+- [ ] T133 PIPE-PAGES-R020.35 Evidence: Retain failure detail and skip reasons through JSON and Markdown; never leak secret payloads. Implement and bind `test_validation_report_evidence` in `tests/hooks/test_validation_report.py`.
+- [ ] T134 PIPE-PAGES-R020.36 Hot-path proof: Assert real lint/import/type round-trip, exit 1 at unchanged health score, repaired exit 0 and required-phase skip exit 2. Implement and bind `test_validation_report_cli` in `tests/hooks/test_validation_report.py`.
+- [ ] T135 PIPE-PAGES-R021.19 Model: Reject unpinned tools, missing phases and scope omissions. Implement and bind `test_lint_type_policy_model` in `tests/hooks/test_lint_type_policy.py`.
+- [ ] T136 PIPE-PAGES-R021.20 Behavior: Independent lint, import-order, type and suppression fixtures fail; a clean supported project passes. Implement and bind `test_lint_type_policy_behavior` in `tests/hooks/test_lint_type_policy.py`.
+- [ ] T137 PIPE-PAGES-R021.21 Wiring: Configured pre-commit calls all three real tool phases and the shared report adapter. Implement and bind `test_lint_type_policy_wiring` in `tests/hooks/test_lint_type_policy.py`.
+- [ ] T138 PIPE-PAGES-R021.22 Refusal: Unavailable type checker and an unsupported declared language must not return a clean verdict. Implement and bind `test_lint_type_policy_refusal` in `tests/hooks/test_lint_type_policy.py`.
+- [ ] T139 PIPE-PAGES-R021.23 Evidence: Prove all three phases ran against identical source bytes and each diagnostic retains its original rule ID. Implement and bind `test_lint_type_policy_evidence` in `tests/hooks/test_lint_type_policy.py`.
+- [ ] T140 PIPE-PAGES-R021.24 Hot-path proof: Assert real analyzer results, zero-exception enforcement, snapshot isolation and no autofix/network writes. Implement and bind `test_lint_type_policy_cli` in `tests/hooks/test_lint_type_policy.py`.
+- [ ] T141 PIPE-PAGES-R021.25 Model: Accept the five scored and three required unscored categories; reject unknown categories and invalid weights or snapshots. Implement and bind `test_analyzer_health_model` in `tests/hooks/test_analyzer_health.py`.
+- [ ] T142 PIPE-PAGES-R021.26 Behavior: Stable permutations yield identical score/order; missing categories cannot inflate health. Implement and bind `test_analyzer_health_behavior` in `tests/hooks/test_analyzer_health.py`.
+- [ ] T143 PIPE-PAGES-R021.27 Wiring: The aggregate calls the real structured lint-type runner once and exports every phase with existing health adapters. Implement and bind `test_analyzer_health_wiring` in `tests/hooks/test_analyzer_health.py`.
+- [ ] T144 PIPE-PAGES-R021.28 Refusal: A clean score cannot mask a secret finding, skipped required adapter or stale coverage receipt. Implement and bind `test_analyzer_health_refusal` in `tests/hooks/test_analyzer_health.py`.
+- [ ] T145 PIPE-PAGES-R021.29 Evidence: Recompute health from only scored categories; retain required lint/import/type verdicts, priority and evidence. Implement and bind `test_analyzer_health_evidence` in `tests/hooks/test_analyzer_health.py`.
+- [ ] T146 PIPE-PAGES-R021.30 Hot-path proof: Assert real aggregate lint/import/type reachability, failing-to-repaired verdicts, stable health score and required-skip exit 2. Implement and bind `test_analyzer_health_cli` in `tests/hooks/test_analyzer_health.py`.
+- [ ] T147 PIPE-PAGES-R023.7 Model: Reject duplicate rule IDs, unsupported predicate adapters and unpinned rule packs. Implement and bind `test_external_grade_rules_model` in `tests/hooks/test_external_grade_rules.py`.
+- [ ] T148 PIPE-PAGES-R023.8 Behavior: An applied external rule is identifiable; a conflicting or unmapped heuristic cannot silently alter grade. Implement and bind `test_external_grade_rules_behavior` in `tests/hooks/test_external_grade_rules.py`.
+- [ ] T149 PIPE-PAGES-R023.9 Wiring: The real skill-grade CLI loads the declared pack and emits its exact rule ID in JSON and Markdown. Implement and bind `test_external_grade_rules_wiring` in `tests/hooks/test_external_grade_rules.py`.
+- [ ] T150 PIPE-PAGES-R023.10 Refusal: Tampered packs and unsupported prose-only rules refuse; applicable hard failures retain exit 1. Implement and bind `test_external_grade_rules_refusal` in `tests/hooks/test_external_grade_rules.py`.
+- [ ] T151 PIPE-PAGES-R023.11 Evidence: Round-trip per-finding rule lineage and prove unchanged baseline grading when packs are diagnostic only. Implement and bind `test_external_grade_rules_evidence` in `tests/hooks/test_external_grade_rules.py`.
+- [ ] T152 PIPE-PAGES-R023.12 Hot-path proof: Assert installed CLI/hook integration, exact external rule evidence and stable serialized grading. Implement and bind `test_external_grade_rules_cli` in `tests/hooks/test_external_grade_rules.py`.
+- [ ] T153 PIPE-PAGES-R020.37 Model: Reject duplicate identities, missing schema fields and unbound examples. Implement and bind `test_tool_mapping_model` in `tests/hooks/test_tool_mapping.py`.
+- [ ] T154 PIPE-PAGES-R020.38 Behavior: Independently remove a tool, nested method, parameter, result or example and fail. Implement and bind `test_tool_mapping_behavior` in `tests/hooks/test_tool_mapping.py`.
+- [ ] T155 PIPE-PAGES-R020.39 Wiring: The configured docs CLI/hook consumes the real exported registry and generated mapping. Implement and bind `test_tool_mapping_wiring` in `tests/hooks/test_tool_mapping.py`.
+- [ ] T156 PIPE-PAGES-R020.40 Refusal: Unknown schema and stale registry refuse; an omitted tool is a located failure. Implement and bind `test_tool_mapping_refusal` in `tests/hooks/test_tool_mapping.py`.
+- [ ] T157 PIPE-PAGES-R020.41 Evidence: Locate absent nested rows and preserve the distinction between schema and runtime evidence. Implement and bind `test_tool_mapping_evidence` in `tests/hooks/test_tool_mapping.py`.
+- [ ] T158 PIPE-PAGES-R020.42 Hot-path proof: Assert real producer-to-renderer-to-hook integration and stale-export exit 2. Implement and bind `test_tool_mapping_cli` in `tests/hooks/test_tool_mapping.py`.
+- [ ] T159 PIPE-PAGES-R020.43 Model: Reject duplicate IDs, uncovered source ranges and destinations outside canonical content roots. Implement and bind `test_guide_migration_model` in `tests/hooks/test_guide_migration.py`.
+- [ ] T160 PIPE-PAGES-R020.44 Behavior: Omitting or changing an assertion without matching evidence fails; unsupported claim kinds remain unresolved. Implement and bind `test_guide_migration_behavior` in `tests/hooks/test_guide_migration.py`.
+- [ ] T161 PIPE-PAGES-R020.45 Wiring: The real CLI materializes the declared split and the hook checks its served navigation and claim evidence. Implement and bind `test_guide_migration_wiring` in `tests/hooks/test_guide_migration.py`.
+- [ ] T162 PIPE-PAGES-R020.46 Refusal: Unresolved assertions and unrenderable diagrams cannot produce complete migration evidence. Implement and bind `test_guide_migration_refusal` in `tests/hooks/test_guide_migration.py`.
+- [ ] T163 PIPE-PAGES-R020.47 Evidence: A coverage total equals the original inventory and each moved claim retains its evidence kind. Implement and bind `test_guide_migration_evidence` in `tests/hooks/test_guide_migration.py`.
+- [ ] T164 PIPE-PAGES-R020.48 Hot-path proof: Assert actual CLI/hook, renderer and served-link behavior without helper-only completion. Implement and bind `test_guide_migration_cli` in `tests/hooks/test_guide_migration.py`.
+- [ ] T165 PIPE-PAGES-R020.49 Model: Require all four records and parse configuration/command shapes without fabricated capabilities. Implement and bind `test_deployment_docs_model` in `tests/hooks/test_deployment_docs.py`.
+- [ ] T166 PIPE-PAGES-R020.50 Behavior: Missing configuration, command or mismatched transport fails independently in every pattern. Implement and bind `test_deployment_docs_behavior` in `tests/hooks/test_deployment_docs.py`.
+- [ ] T167 PIPE-PAGES-R020.51 Wiring: Configured pre-commit and docs CLI validate the same owner export, JSON and argv matrix. Implement and bind `test_deployment_docs_wiring` in `tests/hooks/test_deployment_docs.py`.
+- [ ] T168 PIPE-PAGES-R020.52 Refusal: Unsupported patterns are explicit constraints, never false pass coverage or invented commands. Implement and bind `test_deployment_docs_refusal` in `tests/hooks/test_deployment_docs.py`.
+- [ ] T169 PIPE-PAGES-R020.53 Evidence: Export all four patterns and distinguish docs parity from a runtime deployment receipt. Implement and bind `test_deployment_docs_evidence` in `tests/hooks/test_deployment_docs.py`.
+- [ ] T170 PIPE-PAGES-R020.54 Hot-path proof: Assert four-pattern CLI/hook parity and independent owner runtime receipts; documentation alone cannot certify deployment. Implement and bind `test_deployment_docs_cli` in `tests/hooks/test_deployment_docs.py`.
+- [ ] T171 PIPE-PAGES-R020.55 Model: Require every documentation role for every project and reject duplicate canonical authorities. Implement and bind `test_doc_inventory_model` in `tests/hooks/test_doc_inventory.py`.
+- [ ] T172 PIPE-PAGES-R020.56 Behavior: Missing roles, malformed config, stale managed sections and orphan navigation fail independently. Implement and bind `test_doc_inventory_behavior` in `tests/hooks/test_doc_inventory.py`.
+- [ ] T173 PIPE-PAGES-R020.57 Wiring: The existing proposed config-inventory entry consumes both configuration and documentation roles once. Implement and bind `test_doc_inventory_wiring` in `tests/hooks/test_doc_inventory.py`.
+- [ ] T174 PIPE-PAGES-R020.58 Refusal: Retired-path fallback and an undiscovered declared project cannot pass. Implement and bind `test_doc_inventory_refusal` in `tests/hooks/test_doc_inventory.py`.
+- [ ] T175 PIPE-PAGES-R020.59 Evidence: Prove every role and project is checked and preserve user-owned prose during rendering. Implement and bind `test_doc_inventory_evidence` in `tests/hooks/test_doc_inventory.py`.
+- [ ] T176 PIPE-PAGES-R020.60 Hot-path proof: Assert deterministic generation, real served navigation and whole-inventory drift failures. Implement and bind `test_doc_inventory_cli` in `tests/hooks/test_doc_inventory.py`.
+- [ ] T177 PIPE-PAGES-R020.61 Model: Reject missing/duplicate consumer header fields; only the exact provider identity selects non-applicable scope. Implement and bind `test_readme_header_model` in `tests/hooks/test_readme_header.py`.
+- [ ] T178 PIPE-PAGES-R020.62 Behavior: Missing interface/status links, hidden badges, stale owner counts and reused wrong-project marks fail. Implement and bind `test_readme_header_behavior` in `tests/hooks/test_readme_header.py`.
+- [ ] T179 PIPE-PAGES-R020.63 Wiring: The installed provider self-run yields declared non-applicable exit 0; known consumers still execute the shared renderer/checker. Implement and bind `test_readme_header_wiring` in `tests/hooks/test_readme_header.py`.
+- [ ] T180 PIPE-PAGES-R020.64 Refusal: Unknown consumer, same basename under another namespace and unresolved identity exit 2; unavailable telemetry cannot become a measured success. Implement and bind `test_readme_header_refusal` in `tests/hooks/test_readme_header.py`.
+- [ ] T181 PIPE-PAGES-R020.65 Evidence: Bind seven-owner coverage to its registry; provider skip evidence cannot count as a passed consumer or completed header check. Implement and bind `test_readme_header_evidence` in `tests/hooks/test_readme_header.py`.
+- [ ] T182 PIPE-PAGES-R020.66 Hot-path proof: Assert real renderer/browser coverage plus provider CLI/self-run exit 0, unknown identity exit 2 and no consumer bypass through a provider flag. Implement and bind `test_readme_header_cli` in `tests/hooks/test_readme_header.py`.
+- [ ] T183 PIPE-PAGES-R020.67 Model: Reject omitted images, missing theme modes and ambiguous diagram edge identities. Implement and bind `test_image_theme_model` in `tests/hooks/test_image_theme.py`.
+- [ ] T184 PIPE-PAGES-R020.68 Behavior: Missing dark variant, invisible labels, wrong diagram arrow endpoints and unaccounted images fail. Implement and bind `test_image_theme_behavior` in `tests/hooks/test_image_theme.py`.
+- [ ] T185 PIPE-PAGES-R020.69 Wiring: The production docs check evaluates the actual served artifact under both browser media settings. Implement and bind `test_image_theme_wiring` in `tests/hooks/test_image_theme.py`.
+- [ ] T186 PIPE-PAGES-R020.70 Refusal: An image lacking trustworthy theme evidence cannot silently pass or disappear from inventory. Implement and bind `test_image_theme_refusal` in `tests/hooks/test_image_theme.py`.
+- [ ] T187 PIPE-PAGES-R020.71 Evidence: Every image has two bound render results with exact failure locations and reasons. Implement and bind `test_image_theme_evidence` in `tests/hooks/test_image_theme.py`.
+- [ ] T188 PIPE-PAGES-R020.72 Hot-path proof: Assert real served dual-media coverage for every image, failed adversarial probes and stale-receipt exit 2. Implement and bind `test_image_theme_cli` in `tests/hooks/test_image_theme.py`.
+- [ ] T189 PIPE-PAGES-R020.73 Model. Implement this contract and bind `test_spec_artifacts_model` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] T190 PIPE-PAGES-R020.74 Behavior. Implement this contract and bind `test_spec_artifacts_behavior` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] T191 PIPE-PAGES-R020.75 Wiring. Implement this contract and bind `test_spec_artifacts_wiring` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] T192 PIPE-PAGES-R020.76 Refusal. Implement this contract and bind `test_spec_artifacts_refusal` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] T193 PIPE-PAGES-R020.77 Evidence. Implement this contract and bind `test_spec_artifacts_evidence` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] T194 PIPE-PAGES-R020.78 Hot-path proof. Implement this contract and bind `test_spec_artifacts_cli` in `tests/hooks/test_spec_artifacts.py`.
+- [ ] T195 PIPE-PAGES-R012.8 Model. Implement this contract and bind `test_spec_bundle_compatibility_model` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] T196 PIPE-PAGES-R012.9 Behavior. Implement this contract and bind `test_spec_bundle_compatibility_behavior` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] T197 PIPE-PAGES-R012.10 Wiring. Implement this contract and bind `test_spec_bundle_compatibility_wiring` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] T198 PIPE-PAGES-R012.11 Refusal. Implement this contract and bind `test_spec_bundle_compatibility_refusal` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] T199 PIPE-PAGES-R012.12 Evidence. Implement this contract and bind `test_spec_bundle_compatibility_evidence` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] T200 PIPE-PAGES-R012.13 Hot-path proof. Implement this contract and bind `test_spec_bundle_compatibility_cli` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [ ] T201 PIPE-PAGES-R021.31 Model. Implement this contract and bind `test_skill_dependency_audit_model` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] T202 PIPE-PAGES-R021.32 Behavior. Implement this contract and bind `test_skill_dependency_audit_behavior` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] T203 PIPE-PAGES-R021.33 Wiring. Implement this contract and bind `test_skill_dependency_audit_wiring` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] T204 PIPE-PAGES-R021.34 Refusal. Implement this contract and bind `test_skill_dependency_audit_refusal` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] T205 PIPE-PAGES-R021.35 Evidence. Implement this contract and bind `test_skill_dependency_audit_evidence` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] T206 PIPE-PAGES-R021.36 Hot-path proof. Implement this contract and bind `test_skill_dependency_audit_cli` in `tests/hooks/test_skill_dependency_audit.py`.
+- [ ] T207 PIPE-PAGES-R023.13 Model. Implement this contract and bind `test_aggregate_skill_grade_model` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] T208 PIPE-PAGES-R023.14 Behavior. Implement this contract and bind `test_aggregate_skill_grade_behavior` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] T209 PIPE-PAGES-R023.15 Wiring. Implement this contract and bind `test_aggregate_skill_grade_wiring` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] T210 PIPE-PAGES-R023.16 Refusal. Implement this contract and bind `test_aggregate_skill_grade_refusal` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] T211 PIPE-PAGES-R023.17 Evidence. Implement this contract and bind `test_aggregate_skill_grade_evidence` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] T212 PIPE-PAGES-R023.18 Hot-path proof. Implement this contract and bind `test_aggregate_skill_grade_cli` in `tests/hooks/test_aggregate_skill_grade.py`.
+- [ ] T213 PIPE-PAGES-R012.14 Model. Implement this contract and bind `test_capability_inventory_model` in `tests/hooks/test_capability_inventory.py`.
+- [ ] T214 PIPE-PAGES-R012.15 Behavior. Implement this contract and bind `test_capability_inventory_behavior` in `tests/hooks/test_capability_inventory.py`.
+- [ ] T215 PIPE-PAGES-R012.16 Wiring. Implement this contract and bind `test_capability_inventory_wiring` in `tests/hooks/test_capability_inventory.py`.
+- [ ] T216 PIPE-PAGES-R012.17 Refusal. Implement this contract and bind `test_capability_inventory_refusal` in `tests/hooks/test_capability_inventory.py`.
+- [ ] T217 PIPE-PAGES-R012.18 Evidence. Implement this contract and bind `test_capability_inventory_evidence` in `tests/hooks/test_capability_inventory.py`.
+- [ ] T218 PIPE-PAGES-R012.19 Hot-path proof. Implement this contract and bind `test_capability_inventory_cli` in `tests/hooks/test_capability_inventory.py`.
+- [ ] T219 PIPE-PAGES-R012.20 Model. Implement this contract and bind `test_eg7_capability_authority_model` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] T220 PIPE-PAGES-R012.21 Behavior. Implement this contract and bind `test_eg7_complete_binding_coverage` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] T221 PIPE-PAGES-R012.22 Wiring. Implement this contract and bind `test_eg7_binding_gate_wiring` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] T222 PIPE-PAGES-R012.23 Refusal. Implement this contract and bind `test_eg7_refusal_missing_identity` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] T223 PIPE-PAGES-R012.24 Evidence. Implement this contract and bind `test_eg7_coverage_evidence` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] T224 PIPE-PAGES-R012.25 Hot-path proof. Implement this contract and bind `test_eg7_identity_enforcement_cli` in `tests/test_spec_dashboard_metadata.py`.
+- [ ] T225 PIPE-PAGES-R021.37 Model. Implement this contract and bind `test_structural_limits_model` in `tests/hooks/test_structural_limits.py`.
+- [ ] T226 PIPE-PAGES-R021.38 Behavior. Implement this contract and bind `test_structural_limits_behavior` in `tests/hooks/test_structural_limits.py`.
+- [ ] T227 PIPE-PAGES-R021.39 Wiring. Implement this contract and bind `test_structural_limits_wiring` in `tests/hooks/test_structural_limits.py`.
+- [ ] T228 PIPE-PAGES-R021.40 Refusal. Implement this contract and bind `test_structural_limits_refusal` in `tests/hooks/test_structural_limits.py`.
+- [ ] T229 PIPE-PAGES-R021.41 Evidence. Implement this contract and bind `test_structural_limits_evidence` in `tests/hooks/test_structural_limits.py`.
+- [ ] T230 PIPE-PAGES-R021.42 Hot-path proof. Implement this contract and bind `test_structural_limits_cli` in `tests/hooks/test_structural_limits.py`.
+- [ ] T231 PIPE-PAGES-R021.43 Model. Implement this contract and bind `test_source_path_portability_model` in `tests/hooks/test_source_path_portability.py`.
+- [ ] T232 PIPE-PAGES-R021.44 Behavior. Implement this contract and bind `test_source_path_portability_behavior` in `tests/hooks/test_source_path_portability.py`.
+- [ ] T233 PIPE-PAGES-R021.45 Wiring. Implement this contract and bind `test_source_path_portability_wiring` in `tests/hooks/test_source_path_portability.py`.
+- [ ] T234 PIPE-PAGES-R021.46 Refusal. Implement this contract and bind `test_source_path_portability_refusal` in `tests/hooks/test_source_path_portability.py`.
+- [ ] T235 PIPE-PAGES-R021.47 Evidence. Implement this contract and bind `test_source_path_portability_evidence` in `tests/hooks/test_source_path_portability.py`.
+- [ ] T236 PIPE-PAGES-R021.48 Hot-path proof. Implement this contract and bind `test_source_path_portability_cli` in `tests/hooks/test_source_path_portability.py`.
+- [ ] T237 PIPE-PAGES-R021.49 Model. Implement this contract and bind `test_coverage_closure_model` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T238 PIPE-PAGES-R021.50 Behavior. Implement this contract and bind `test_coverage_closure_behavior` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T239 PIPE-PAGES-R021.51 Wiring. Implement this contract and bind `test_coverage_closure_wiring` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T240 PIPE-PAGES-R021.52 Refusal. Implement this contract and bind `test_coverage_closure_refusal` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T241 PIPE-PAGES-R021.53 Evidence. Implement this contract and bind `test_coverage_closure_evidence` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T242 PIPE-PAGES-R021.54 Hot-path proof. Implement this contract and bind `test_coverage_closure_cli` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T243 PIPE-PAGES-R020.79 Model. Implement this contract and bind `test_validation_behavior_inventory_model` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] T244 PIPE-PAGES-R020.80 Behavior. Implement this contract and bind `test_validation_behavior_inventory_behavior` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] T245 PIPE-PAGES-R020.81 Wiring. Implement this contract and bind `test_validation_behavior_inventory_wiring` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] T246 PIPE-PAGES-R020.82 Refusal. Implement this contract and bind `test_validation_behavior_inventory_refusal` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] T247 PIPE-PAGES-R020.83 Evidence. Implement this contract and bind `test_validation_behavior_inventory_evidence` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] T248 PIPE-PAGES-R020.84 Hot-path proof. Implement this contract and bind `test_validation_behavior_inventory_cli` in `tests/hooks/test_validation_behavior_inventory.py`.
+- [ ] T249 PIPE-PAGES-R021.55 Model. Implement this contract and bind `test_offline_unit_profile_model` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] T250 PIPE-PAGES-R021.56 Behavior. Implement this contract and bind `test_offline_unit_profile_behavior` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] T251 PIPE-PAGES-R021.57 Wiring. Implement this contract and bind `test_offline_unit_profile_wiring` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] T252 PIPE-PAGES-R021.58 Refusal. Implement this contract and bind `test_offline_unit_profile_refusal` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] T253 PIPE-PAGES-R021.59 Evidence. Implement this contract and bind `test_offline_unit_profile_evidence` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] T254 PIPE-PAGES-R021.60 Hot-path proof. Implement this contract and bind `test_offline_unit_profile_cli` in `tests/hooks/test_offline_unit_profile.py`.
+- [ ] T255 PIPE-PAGES-R020.85 Model. Implement this contract and bind `test_ontology_governance_hook_model` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] T256 PIPE-PAGES-R020.86 Behavior. Implement this contract and bind `test_ontology_governance_hook_behavior` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] T257 PIPE-PAGES-R020.87 Wiring. Implement this contract and bind `test_ontology_governance_hook_wiring` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] T258 PIPE-PAGES-R020.88 Refusal. Implement this contract and bind `test_ontology_governance_hook_refusal` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] T259 PIPE-PAGES-R020.89 Evidence. Implement this contract and bind `test_ontology_governance_hook_evidence` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] T260 PIPE-PAGES-R020.90 Hot-path proof. Implement this contract and bind `test_ontology_governance_hook_cli` in `tests/hooks/test_ontology_governance_hook.py`.
+- [ ] T261 PIPE-PAGES-R021.61 Model. Implement this contract and bind `test_test_layout_independence_model` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] T262 PIPE-PAGES-R021.62 Behavior. Implement this contract and bind `test_test_layout_independence_behavior` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] T263 PIPE-PAGES-R021.63 Wiring. Implement this contract and bind `test_test_layout_independence_wiring` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] T264 PIPE-PAGES-R021.64 Refusal. Implement this contract and bind `test_test_layout_independence_refusal` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] T265 PIPE-PAGES-R021.65 Evidence. Implement this contract and bind `test_test_layout_independence_evidence` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] T266 PIPE-PAGES-R021.66 Hot-path proof. Implement this contract and bind `test_test_layout_independence_cli` in `tests/hooks/test_test_layout_independence.py`.
+- [ ] T267 PIPE-PAGES-R021.67 Model. Implement this contract and bind `test_solution_size_evidence_model` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] T268 PIPE-PAGES-R021.68 Behavior. Implement this contract and bind `test_solution_size_evidence_behavior` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] T269 PIPE-PAGES-R021.69 Wiring. Implement this contract and bind `test_solution_size_evidence_wiring` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] T270 PIPE-PAGES-R021.70 Refusal. Implement this contract and bind `test_solution_size_evidence_refusal` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] T271 PIPE-PAGES-R021.71 Evidence. Implement this contract and bind `test_solution_size_evidence_evidence` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] T272 PIPE-PAGES-R021.72 Hot-path proof. Implement this contract and bind `test_solution_size_evidence_cli` in `tests/hooks/test_solution_size_evidence.py`.
+- [ ] T273 PIPE-PAGES-R021.73 Model. Implement this contract and bind `test_graph_workflow_receipt_model` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T274 PIPE-PAGES-R021.74 Behavior. Implement this contract and bind `test_graph_workflow_receipt_behavior` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T275 PIPE-PAGES-R021.75 Wiring. Implement this contract and bind `test_graph_workflow_receipt_wiring` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T276 PIPE-PAGES-R021.76 Refusal. Implement this contract and bind `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T277 PIPE-PAGES-R021.77 Evidence. Implement this contract and bind `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T278 PIPE-PAGES-R021.78 Hot-path proof. Implement this contract and bind `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T279 PIPE-PAGES-R021.79 Model. Implement this contract and bind `test_pipe9_coverage_runner_model` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T280 PIPE-PAGES-R021.80 Behavior. Implement this contract and bind `test_pipe9_inventory_behavior` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T281 PIPE-PAGES-R021.81 Wiring. Implement this contract and bind `test_pipe9_gate_wiring` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T282 PIPE-PAGES-R021.82 Refusal. Implement this contract and bind `test_pipe9_threshold_refusal` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T283 PIPE-PAGES-R021.83 Evidence. Implement this contract and bind `test_pipe9_closure_evidence` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T284 PIPE-PAGES-R021.84 Hot-path proof. Implement this contract and bind `test_pipe9_closure_cli` in `tests/hooks/test_coverage_closure.py`.
+- [ ] T285 PIPE-PAGES-R021.85 Model. Implement this contract and bind `test_pipe10_workflow_model` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T286 PIPE-PAGES-R021.86 Behavior. Implement this contract and bind `test_pipe10_readback_behavior` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T287 PIPE-PAGES-R021.87 Wiring. Implement this contract and bind `test_pipe10_gate_wiring` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T288 PIPE-PAGES-R021.88 Refusal. Implement this contract and bind `test_pipe10_readback_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T289 PIPE-PAGES-R021.89 Evidence. Implement this contract and bind `test_pipe10_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T290 PIPE-PAGES-R021.90 Hot-path proof. Implement this contract and bind `test_pipe10_cli_proof` in `tests/hooks/test_graph_workflow_receipt.py`.
+- [ ] T291 PIPE-PAGES-R032.1 Model. Implement this contract and bind `test_eg56_export_model` in export-import test.
+- [ ] T292 PIPE-PAGES-R032.2 Behavior. Implement this contract and bind `test_eg56_roundtrip_behavior` in export-import test.
+- [ ] T293 PIPE-PAGES-R032.3 Wiring. Implement this contract and bind `test_eg56_export_wiring` in export-import test.
+- [ ] T294 PIPE-PAGES-R032.4 Refusal. Implement this contract and bind `test_eg56_version_refusal` in export-import test.
+- [ ] T295 PIPE-PAGES-R032.5 Evidence. Implement this contract and bind `test_eg56_comparison_evidence` in export-import test.
+- [ ] T296 PIPE-PAGES-R032.6 Hot-path proof. Implement this contract and bind `test_eg56_export_import_cli` in export-import test.
+- [ ] T297 PIPE-PAGES-R033.1 Model. Implement this contract and bind `test_au96_installer_model` in installer test.
+- [ ] T298 PIPE-PAGES-R033.2 Behavior. Implement this contract and bind `test_au96_target_behavior` in installer test.
+- [ ] T299 PIPE-PAGES-R033.3 Wiring. Implement this contract and bind `test_au96_harness_wiring` in installer test.
+- [ ] T300 PIPE-PAGES-R033.4 Refusal. Implement this contract and bind `test_au96_target_refusal` in installer test.
+- [ ] T301 PIPE-PAGES-R033.5 Evidence. Implement this contract and bind `test_au96_coverage_evidence` in installer test.
+- [ ] T302 PIPE-PAGES-R033.6 Hot-path proof. Implement this contract and bind `test_au96_target_binding_cli` in installer test.
+- [ ] T303 PIPE-PAGES-R034.1 Model. Implement this contract and bind `test_eg53_profile_model` in deployment test.
+- [ ] T304 PIPE-PAGES-R034.2 Behavior. Implement this contract and bind `test_eg53_dependency_free_behavior` in deployment test.
+- [ ] T305 PIPE-PAGES-R034.3 Wiring. Implement this contract and bind `test_eg53_parity_wiring` in deployment test.
+- [ ] T306 PIPE-PAGES-R034.4 Refusal. Implement this contract and bind `test_eg53_parity_refusal` in deployment test.
+- [ ] T307 PIPE-PAGES-R034.5 Evidence. Implement this contract and bind `test_eg53_parity_evidence` in deployment test.
+- [ ] T308 PIPE-PAGES-R034.6 Hot-path proof. Implement this contract and bind `test_eg53_portable_deployment_cli` in deployment test.
+- [ ] T309 PIPE-PAGES-R035.1 Model. Implement this contract and bind `test_au121_prompt_model` in prompt test.
+- [ ] T310 PIPE-PAGES-R035.2 Behavior. Implement this contract and bind `test_au121_roundtrip_behavior` in prompt test.
+- [ ] T311 PIPE-PAGES-R035.3 Wiring. Implement this contract and bind `test_au121_serializer_wiring` in prompt test.
+- [ ] T312 PIPE-PAGES-R035.4 Refusal. Implement this contract and bind `test_au121_coverage_refusal` in prompt test.
+- [ ] T313 PIPE-PAGES-R035.5 Evidence. Implement this contract and bind `test_au121_oracle_evidence` in prompt test.
+- [ ] T314 PIPE-PAGES-R035.6 Hot-path proof. Implement this contract and bind `test_au121_roundtrip_cli` in prompt test.
+- [ ] T315 PIPE-PAGES-R021.91 Model. Record validate behaviors and deployment state inventory.
+- [ ] T316 PIPE-PAGES-R021.92 Behavior. Map behaviors to every supported project hook.
+- [ ] T317 PIPE-PAGES-R021.93 Wiring. Require pre-commit parity for all projects.
+- [ ] T318 PIPE-PAGES-R021.94 Refusal. Keep baseline gaps visible in inventory.
+- [ ] T319 PIPE-PAGES-R021.95 Evidence. Bind baseline to source snapshot.
+- [ ] T320 PIPE-PAGES-R021.96 Hot-path proof. Hook rejects unmapped behavior.
+- [ ] T321 PIPE-PAGES-R037.1 Model. Define unit-test profile with external dependency categories.
+- [ ] T322 PIPE-PAGES-R037.2 Behavior. Enforce deterministic doubles in unit tests.
+- [ ] T323 PIPE-PAGES-R037.3 Wiring. Wire unit profile into test-quality gate.
+- [ ] T324 PIPE-PAGES-R037.4 Refusal. Reject unmocked external dependencies.
+- [ ] T325 PIPE-PAGES-R037.5 Evidence. Record external categories and test scope.
+- [ ] T326 PIPE-PAGES-R037.6 Hot-path proof. Gate blocks unmocked network access.
+- [ ] T327 PIPE-PAGES-R038.1 Model. Define Python-only execution boundary and rules.
+- [ ] T328 PIPE-PAGES-R038.2 Behavior. Hook consumes Medulla verdicts without local authority.
+- [ ] T329 PIPE-PAGES-R038.3 Wiring. Pre-commit integrates with Medulla service.
+- [ ] T330 PIPE-PAGES-R038.4 Refusal. Unavailable Medulla service fails closed.
+- [ ] T331 PIPE-PAGES-R038.5 Evidence. Record Medulla verdict identity and version.
+- [ ] T332 PIPE-PAGES-R038.6 Hot-path proof. Planted violation blocks commit.
+- [ ] T333 PIPE-PAGES-R039.1 Model. Define project layout inventory with fixtures.
+- [ ] T334 PIPE-PAGES-R039.2 Behavior. Enforce test independence via isolation gate.
+- [ ] T335 PIPE-PAGES-R039.3 Wiring. Wire inventory check into test-quality gate.
+- [ ] T336 PIPE-PAGES-R039.4 Refusal. Reject undeclared fixtures.
+- [ ] T337 PIPE-PAGES-R039.5 Evidence. Record inventory and independence results.
+- [ ] T338 PIPE-PAGES-R039.6 Hot-path proof. Gate blocks fixture dependency.
+- [ ] T339 PIPE-PAGES-R040.1 Model. Extend approval criteria with coverage evidence.
+- [ ] T340 PIPE-PAGES-R040.2 Behavior. Reject proposals where coverage decreases.
+- [ ] T341 PIPE-PAGES-R040.3 Wiring. Wire coverage check into Meristem admission.
+- [ ] T342 PIPE-PAGES-R040.4 Refusal. Missing coverage evidence causes rejection.
+- [ ] T343 PIPE-PAGES-R040.5 Evidence. Record baseline and candidate coverage.
+- [ ] T344 PIPE-PAGES-R040.6 Hot-path proof. Gate rejects coverage decrease.
+- [ ] T345 PIPE-PAGES-R041.1 Model. Define function-argument and try-block limits.
+- [ ] T346 PIPE-PAGES-R041.2 Behavior. Build fails when functions exceed limit.
+- [ ] T347 PIPE-PAGES-R041.3 Wiring. Wire limits into shared KISS gate.
+- [ ] T348 PIPE-PAGES-R041.4 Refusal. Missing limits or unsupported measurement fail.
+- [ ] T349 PIPE-PAGES-R041.5 Evidence. Record policy digest and function counts.
+- [ ] T350 PIPE-PAGES-R041.6 Hot-path proof. Build fails on excess arguments.
+- [x] T351 PIPE-PAGES-R042 Generated architecture explorer at /architecture/ on every core Pages site, linked from the shared theme.
+- [x] T352 PIPE-PAGES-R042.1 Search index. Bound to tests/test_architecture_explorer.py::test_search_index_covers_every_row_and_maps_it_to_a_node.
+- [x] T353 PIPE-PAGES-R042.2 Ranking. Bound to tests/test_architecture_explorer.py::test_a_capability_search_ranks_the_owning_row_first.
+- [x] T354 PIPE-PAGES-R042.3 Deep links. Bound to tests/test_architecture_explorer.py::test_deep_links_parse.
+- [x] T355 PIPE-PAGES-R042.4 Landing and access. Bound to tests/test_architecture_explorer.py::test_a_q_deep_link_lands_on_the_owning_part_in_a_browser.
+- [x] T356 PIPE-PAGES-R042.5 Viewport. Bound to tests/test_architecture_explorer.py::test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle.
+- [x] T357 PIPE-PAGES-R042.6 Row description. Bound to tests/test_architecture_explorer.py::test_description_is_the_first_plain_sentence_capped_at_160.
+- [x] T358 PIPE-PAGES-R042.7 Expandable full spec. Bound to tests/test_architecture_explorer.py::test_one_family_json_is_written_per_family_with_full_row_detail.
+- [x] T359 PIPE-PAGES-R042.8 Safe rendering. Bound to tests/test_architecture_explorer.py::test_markdown_escapes_raw_html_and_drops_unsafe_links.
+- [x] T360 PIPE-PAGES-R042.9 Every scanned repository has a part. Bound to tests/test_architecture_explorer.py::test_every_registered_repository_has_a_part_and_its_rows_place_without_the_allowlist.
+- [x] T361 PIPE-PAGES-R042.10 Explorer links to the contribution front door. Bound to tests/test_architecture_explorer.py::test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide.
+- [x] T362 PIPE-PAGES-R042.11 Explorer states the contribution path and publishes llms.txt. Bound to tests/test_architecture_explorer.py::test_contribution_path_is_in_the_page_head_details_and_llms_txt.
+- [ ] T363 PIPE-PAGES-R043.1 Model. Bind the existing implementation and `tests/test_pages_readiness.py::test_second_build_and_offline_tck_are_idempotent`.
+- [ ] T364 PIPE-PAGES-R043.2 Behavior. Bind the existing implementation and `tests/test_pages_readiness.py::test_build_publishes_source_markdown_and_served_mime`.
+- [ ] T365 PIPE-PAGES-R043.3 Wiring. Bind the existing implementation and `tests/test_pages_pipeline_contract.py::test_enabled_path_checks_strict_build_and_runs_owned_tck`.
+- [ ] T366 PIPE-PAGES-R043.4 Refusal. Bind the existing implementation and `tests/test_pages_readiness.py::test_stale_source_digest_fails_closed`.
+- [ ] T367 PIPE-PAGES-R043.5 Evidence. Bind the existing implementation and `tests/test_pages_readiness.py::test_cli_failure_result_is_versioned`.
+- [ ] T368 PIPE-PAGES-R043.6 Hot-path proof. Bind the existing implementation and `tests/test_pages_readiness.py::test_direct_entry_requires_and_loads_the_sparse_readiness_package`.
+- [x] T369 PIPE-PAGES-R051.1 T901 [US1] PIPE-PAGES-R051.1 Read spec, plan, tasks, test-spec, checklists, research, data model, quickstart and contracts per family, and write them with a heading outline into the lazy family files (`details.py`, `sources.py`).
+- [x] T370 PIPE-PAGES-R051.2 T902 [P] [US1] PIPE-PAGES-R051.2 Read each repository constitution, write `_constitution.json`, and carry its version in the page (`sdd.py`, `details.py`).
+- [x] T371 PIPE-PAGES-R051.3 T903 [P] [US1] PIPE-PAGES-R051.3 Build the compact delivery card per family and render the Delivery section in the node panel (`sdd.py`, `template.html`).
+- [x] T372 PIPE-PAGES-R051.4 T904 [US1] PIPE-PAGES-R051.4 Render the sortable aggregate table of descendant cards, keeping own rows counted apart (`template.html`).
+- [x] T373 PIPE-PAGES-R051.5 T905 [US1] PIPE-PAGES-R051.5 Add the reading pane, the `doc`, `sec` and `repo` deep link, and row-ID links that fly to the owning node (`template.html`, `search.cjs`).
+- [x] T374 PIPE-PAGES-R051.6 T906 [P] [US1] PIPE-PAGES-R051.6 Add the Delivery toggle and the five-column program view with scenario rows (`template.html`).
+- [x] T375 PIPE-PAGES-R051.7 T907 [P] [US1] PIPE-PAGES-R051.7 Warn on a failing principle in the plan's Constitution Check on cards, table and program view (`sdd.py`, `template.html`).
+- [x] T376 PIPE-PAGES-R051.8 T908 [US1] PIPE-PAGES-R051.8 Write `search-extra.json` and rank task lines and plan headings after rows and parts (`sdd.py`, `search.cjs`).
+- [x] T377 PIPE-PAGES-R051.9 T909 [US1] PIPE-PAGES-R051.9 Measure the page growth and keep the new panels on the glass levels with reduced motion respected (`template.html`).
+- [x] T378 PIPE-PAGES-R051 T910 [US1] PIPE-PAGES-R051 Roll up the children R051.1 to R051.9.
+- [x] T379 PIPE-PAGES-R052 T911 [US1] PIPE-PAGES-R052 Add the Canopy and Organization site parts inside the pipelines box with a serves edge and a consumes edge (`model.json`).
+
+- [ ] T380 PIPE-PAGES-R003 Present-tense docs with accessible embedded start. Bind the existing implementation to its verification.
+- [ ] T381 PIPE-PAGES-R007 Ecosystem flow diagram with exact names and project marks. Bind the existing implementation to its verification.
+- [ ] T382 PIPE-PAGES-R008 Correct ownership and quick start in consumer parity checks. Bind the existing implementation to its verification.
+- [ ] T383 PIPE-PAGES-R011 Present-tense home page with screenshot and repo map. Bind the existing implementation to its verification.
+- [ ] T384 PIPE-PAGES-R025.3 Wiring. Bind the existing implementation to its verification.
+- [ ] T385 PIPE-PAGES-R026.1 Model. Bind the existing implementation to its verification.
+- [ ] T386 PIPE-PAGES-R026.2 Behavior. Bind the existing implementation to its verification.
+- [ ] T387 PIPE-PAGES-R026.3 Wiring. Bind the existing implementation to its verification.
+- [ ] T388 PIPE-PAGES-R026.4 Refusal. Bind the existing implementation to its verification.
+- [ ] T389 PIPE-PAGES-R026.5 Evidence. Bind the existing implementation to its verification.
+- [ ] T390 PIPE-PAGES-R026.6 Hot-path proof. Bind the existing implementation to its verification.
+- [ ] T391 PIPE-PAGES-R027.1 Model. Bind the existing implementation to its verification.
+- [ ] T392 PIPE-PAGES-R027.2 Behavior. Bind the existing implementation to its verification.
+- [ ] T393 PIPE-PAGES-R027.3 Wiring. Bind the existing implementation to its verification.
+- [ ] T394 PIPE-PAGES-R027.4 Refusal. Bind the existing implementation to its verification.
+- [ ] T395 PIPE-PAGES-R027.5 Evidence. Bind the existing implementation to its verification.
+- [ ] T396 PIPE-PAGES-R027.6 Hot-path proof. Bind the existing implementation to its verification.
+- [ ] T397 PIPE-PAGES-R028.1 Model. Bind the existing implementation to its verification.
+- [ ] T398 PIPE-PAGES-R028.2 Behavior. Bind the existing implementation to its verification.
+- [ ] T399 PIPE-PAGES-R028.3 Wiring. Bind the existing implementation to its verification.
+- [ ] T400 PIPE-PAGES-R028.4 Refusal. Bind the existing implementation to its verification.
+- [ ] T401 PIPE-PAGES-R028.5 Evidence. Bind the existing implementation to its verification.
+- [ ] T402 PIPE-PAGES-R028.6 Hot-path proof. Bind the existing implementation to its verification.
+- [ ] T403 PIPE-PAGES-R029.1 Model. Bind the existing implementation to its verification.
+- [ ] T404 PIPE-PAGES-R029.2 Behavior. Bind the existing implementation to its verification.
+- [ ] T405 PIPE-PAGES-R029.3 Wiring. Bind the existing implementation to its verification.
+- [ ] T406 PIPE-PAGES-R029.4 Refusal. Bind the existing implementation to its verification.
+- [ ] T407 PIPE-PAGES-R029.5 Evidence. Bind the existing implementation to its verification.
+- [ ] T408 PIPE-PAGES-R029.6 Hot-path proof. Bind the existing implementation to its verification.
+- [ ] T409 PIPE-PAGES-R030.1 Model. Bind the existing implementation to its verification.
+- [ ] T410 PIPE-PAGES-R030.2 Behavior. Bind the existing implementation to its verification.
+- [ ] T411 PIPE-PAGES-R030.3 Wiring. Bind the existing implementation to its verification.
+- [ ] T412 PIPE-PAGES-R030.4 Refusal. Bind the existing implementation to its verification.
+- [ ] T413 PIPE-PAGES-R030.5 Evidence. Bind the existing implementation to its verification.
+- [ ] T414 PIPE-PAGES-R030.6 Hot-path proof. Bind the existing implementation to its verification.
+- [ ] T415 PIPE-PAGES-R023.19 Aggregate skill grader call contract and lineage preservation. Bind the existing implementation to its verification.
+- [ ] T416 PIPE-PAGES-R044 The architecture page separates verified from delivered. Bind the existing implementation to its verification.
+- [ ] T417 PIPE-PAGES-R046 Each section shows the progress of its own rows. Bind the existing implementation to its verification.
+- [ ] T418 PIPE-PAGES-R047 Connections are typed, labelled and animated. Bind the existing implementation to its verification.
+- [ ] T419 PIPE-PAGES-R048 Each repository box has a code view built from the Medulla code graph. Bind the existing implementation to its verification.

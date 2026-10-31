@@ -17,6 +17,7 @@ from pipelines_hooks.specs.generator import generate_at
 from pipelines_hooks.specs.requirements_doc import parse_rows
 
 from .details import describe, family_docs, row_parts
+from .sdd import CONSTITUTION_PATH
 
 ROW_RE = re.compile(r"^\|\s*`([A-Za-z0-9][A-Za-z0-9.\-]*)`\s*\|(.*)$")
 OWNER = "Knuckles-Team"
@@ -35,6 +36,7 @@ class Snapshot:
     rows: list[dict] = field(default_factory=list)
     aliases: dict[str, str] = field(default_factory=dict)
     docs: dict[str, dict[str, str]] = field(default_factory=dict)
+    constitution: str = ""
     error: str = ""
 
 
@@ -193,6 +195,7 @@ def snapshot(entry: dict, mode: str, workspace: Path | None, token: str | None) 
         snap.rows = rows_for(reader, entry["name"], snap.files)
         snap.docs = {f: family_docs(reader, snap.files, f) for f in {r["family"] for r in snap.rows}}
         snap.aliases = read_aliases(reader, snap.files)
+        snap.constitution = reader.read(CONSTITUTION_PATH) if CONSTITUTION_PATH in snap.files else ""
     except (OSError, KeyError, ValueError, urllib.error.URLError) as exc:
         snap.error = f"{type(exc).__name__}: {exc}"
     return snap
