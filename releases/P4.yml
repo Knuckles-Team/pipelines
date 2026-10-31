@@ -1,0 +1,23 @@
+{
+ "id": "P4",
+ "name": "Cross-modal bet and memory maintenance",
+ "phase": "P4",
+ "scenario": "ARBORA-ACCEPTANCE-R006.4",
+ "scope": [
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-FEDERATED-QUERY",
+   "roots": [
+    "MEDULLA-FEDERATED-QUERY-R720",
+    "MEDULLA-FEDERATED-QUERY-R730"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-TYPED-PACKS",
+   "roots": [
+    "MEDULLA-TYPED-PACKS-R105"
+   ]
+  }
+ ]
+}
