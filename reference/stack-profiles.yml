@@ -1,0 +1,205 @@
+# Stack profiles: the one machine-readable table of which hooks, CI-only gates
+# and reusable workflows a repository runs, by the languages and backend
+# implementations it uses (PIPE-GATES-R022). `pipelines-hook stack-profile`
+# reads this file; project scaffolds call that command and never embed a copy.
+#
+# A repository's hook set is the union of its detected profiles. `base` always
+# applies. Stages follow reference/precommit-standard.md: only fast staged-file
+# checks at pre-commit, the push gates at pre-push, everything else in
+# .config/ci-gates.yaml. `change_scope` names the classes of
+# pipelines_hooks/ci_replica/change_scope.py that the profile's files fall in.
+#
+# Detection keys (any match selects the profile):
+#   files_any          glob patterns relative to the repository root
+#   python_deps_any    distribution names in pyproject dependencies/extras
+#   cargo_deps_any     crate names in Cargo.toml dependency tables
+#   npm_deps_any       package names in package.json dependencies
+#   build_backends_any pyproject build-system build-backend values
+#   pyproject_tables_any pyproject tool tables, e.g. tool.maturin
+#   entry_point_groups_any pyproject entry-point groups
+# `requires` names profiles that always come with this one.
+# `not_project_names` excludes repositories whose own project name matches.
+version: 1
+
+# Where each hook id comes from; a scaffold renders configs from this map.
+hook_repos:
+  pre-commit-hooks:
+    repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+    ids: [trailing-whitespace, end-of-file-fixer, check-merge-conflict, check-added-large-files, check-yaml, check-toml, check-json, detect-private-key]
+  ruff:
+    repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0
+    ids: [ruff-format, ruff-check]
+  mypy:
+    repo: https://github.com/pre-commit/mirrors-mypy
+    rev: fc0f09a29bb495f4a91f00266155d6282d52485d # v1.20.2
+    ids: [mypy]
+  pipelines:
+    repo: https://github.com/Knuckles-Team/pipelines
+    rev: main
+    # every other id is a pipelines hook (.pre-commit-hooks.yaml)
+  local:
+    repo: local
+    # repository-defined commands; the scaffold writes the entry
+    ids: [cargo-clippy, cargo-fmt-check, frontend-typecheck, frontend-lint, frontend-build, go-vet, helm-lint, hadolint, mkdocs-build]
+
+# Hook arguments the standard fixes (templates/pre-commit.yaml).
+hook_args:
+  check-added-large-files: {args: [--maxkb=2000], exclude: ^uv\.lock$}
+  check-yaml: {args: [--unsafe]}
+
+profiles:
+  base:
+    summary: Every repository, with file hygiene, the spec group and the secret group.
+    detect: {always: true}
+    pre-commit: [trailing-whitespace, end-of-file-fixer, check-merge-conflict, check-added-large-files, check-yaml, check-toml, check-json, detect-private-key]
+    pre-push: [spec]
+    ci-gates: [secrets]
+    caller: {template: templates/workflows/ci.yml, path: .github/workflows/ci.yml, config: .config/pre-commit.yaml, ci_config: .config/ci-gates.yaml, priority: 0}
+    workflows: []
+    change_scope: [spec, docs, ci, other]
+
+  python:
+    summary: A Python package managed with uv.
+    detect: {files_any: [pyproject.toml, setup.py]}
+    pre-commit: [ruff-format, ruff-check]
+    pre-push: [uv-lock-check, tests-fast]
+    ci-gates: [mypy]
+    workflows:
+      - {name: gates_pipeline.yml, event: pull_request}
+      - {name: main_pipeline.yml, event: push, inputs: {backward-python: "3.12"}}
+    change_scope: [python, deps]
+
+  rust:
+    summary: A Rust crate or workspace.
+    detect: {files_any: [Cargo.toml]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [cargo-fmt-check, cargo-clippy]
+    workflows:
+      - {name: gates_pipeline.yml, event: pull_request, inputs: {rust: true}}
+      - {name: main_pipeline.yml, event: push, inputs: {rust: true}}
+    change_scope: [rust, deps]
+
+  pyo3-maturin:
+    summary: A Python wheel with a native Rust extension, built with maturin.
+    requires: [python, rust]
+    detect: {build_backends_any: [maturin], pyproject_tables_any: [tool.maturin]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: []
+    workflows:
+      - {name: maturin_pipeline.yml, event: tag}
+    change_scope: [python, rust, deps]
+
+  python-release:
+    summary: A pure-Python distribution published to the package index on a version tag.
+    requires: [python]
+    detect: {build_backends_any: [setuptools.build_meta, hatchling.build, poetry.core.masonry.api, flit_core.buildapi, pdm.backend, uv_build]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [dependency-readiness]
+    workflows:
+      - {name: python_pipeline.yml, event: tag, inputs: {require-tag: true}}
+    change_scope: [python, deps]
+
+  frontend:
+    summary: A TypeScript or JavaScript web frontend (React, Vite and similar).
+    detect: {files_any: [package.json], npm_deps_any: [react, vite, typescript]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [frontend-typecheck, frontend-lint, frontend-build, jscpd-differential]
+    workflows: []
+    change_scope: [frontend, deps]
+
+  go:
+    summary: A Go module.
+    detect: {files_any: [go.mod]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [go-vet]
+    workflows: []
+    # change_scope.py has no go class; Go sources count as other (code).
+    change_scope: [other]
+
+  container:
+    summary: A repository that builds a container image.
+    detect: {files_any: [Dockerfile, docker/Dockerfile, Containerfile]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [hadolint]
+    workflows:
+      - {name: container_build_check.yml, event: pull_request}
+      - {name: container_pipeline.yml, event: tag}
+    change_scope: [other]
+
+  helm:
+    summary: A Helm chart.
+    detect: {files_any: [Chart.yaml, charts/*/Chart.yaml, chart/Chart.yaml]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [helm-lint]
+    workflows: []
+    change_scope: [other]
+
+  docs-site:
+    summary: A published documentation site.
+    detect: {files_any: [mkdocs.yml]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [mkdocs-build]
+    workflows:
+      - {name: pages_pipeline.yml, event: tag}
+      - {name: notify_org_site.yml, event: push}
+    change_scope: [docs]
+
+  mcp-server:
+    summary: A Model Context Protocol server. Its stdio transport forbids stray stdout writes.
+    requires: [python]
+    detect: {python_deps_any: [fastmcp, mcp, "scion-sdk[mcp]"]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [stdout-writes, event-loop-blocking]
+    workflows: []
+    change_scope: [python]
+
+  a2a-agent:
+    summary: An agent served over the agent-to-agent protocol.
+    requires: [python]
+    detect: {python_deps_any: [fasta2a, a2a-sdk, "scion-sdk[a2a]"]}
+    pre-commit: []
+    pre-push: []
+    ci-gates: [event-loop-blocking, swallowed-errors]
+    workflows: []
+    change_scope: [python]
+
+  connector:
+    summary: A connector to one external system, built on the connector SDK.
+    requires: [python, mcp-server]
+    detect: {entry_point_groups_any: [scion_sdk.connector]}
+    not_project_names: [scion-sdk]
+    pre-commit: [connector-standard]
+    pre-push: []
+    ci-gates: [dependency-readiness]
+    # connector_pr_pipeline.yml runs only the pre-commit stage of
+    # .pre-commit-config.yaml, so a connector's CI-only gates sit in that stage.
+    ci_gates_stage: pre-commit
+    # The connector caller replaces ci.yml; connector_pipeline.yml wraps the
+    # gates, main, release, image and pages workflows (reference/ci-standard.md).
+    caller: {template: templates/workflows/connector.yml, path: .github/workflows/connector.yml, config: .pre-commit-config.yaml, ci_config: .pre-commit-config.yaml, config_template: templates/connector/pre-commit-config.yaml, priority: 10}
+    wraps: [gates_pipeline.yml, main_pipeline.yml, python_pipeline.yml, container_pipeline.yml, container_build_check.yml, pages_pipeline.yml, notify_org_site.yml]
+    workflows:
+      - {name: connector_pipeline.yml, event: pull_request}
+    change_scope: [python, deps]
+
+  medulla-client:
+    summary: A package that calls the knowledge engine through its released client.
+    requires: [python]
+    detect: {python_deps_any: [medulla]}
+    not_project_names: [medulla]
+    pre-commit: []
+    pre-push: []
+    ci-gates: [dependency-readiness]
+    workflows: []
+    change_scope: [python, deps]

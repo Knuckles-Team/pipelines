@@ -501,3 +501,9 @@
   pass_filenames: false
   always_run: true
   stages: [pre-commit, pre-push, manual]
+- id: stack-profile
+  name: stack-profile (hooks and workflows match the detected stack profiles)
+  entry: pipelines-hook stack-profile --check
+  language: python
+  pass_filenames: false
+  always_run: true

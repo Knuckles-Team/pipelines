@@ -72,6 +72,7 @@ GATES: dict[str, str] = {
     "spec-templates": "pipelines_hooks.specs.templates_sync",
     "gate-set": "pipelines_hooks.gate_runner",
     "connector-standard": "pipelines_hooks.connector.standard",
+    "stack-profile": "pipelines_hooks.hygiene.stack_profile",
 }
 
 #: Grouped checks of the gate standard (reference/gate-standard.md): one hook id
