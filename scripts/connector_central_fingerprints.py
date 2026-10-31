@@ -22,6 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from pipelines_hooks.hygiene.connector_central.fleet import WORKSPACE_ROOT  # noqa: E402
 from pipelines_hooks.hygiene.connector_central.wave1 import (  # noqa: E402
     FINGERPRINTS_PATH,
     SCAFFOLD_TESTS,
@@ -29,7 +30,7 @@ from pipelines_hooks.hygiene.connector_central.wave1 import (  # noqa: E402
     normalise,
 )
 
-DEFAULT_FLEET = Path("/home/apps/workspace/agent-packages/agents")
+DEFAULT_FLEET = WORKSPACE_ROOT / "agent-packages" / "agents"
 
 
 def _show(repo: Path, path: str) -> str | None:

@@ -17,7 +17,7 @@ _SDK = "S" + "DK-"
 _WEBUI = "WEB" + "UI-"
 _FINUI = "FIN-" + "UI-"
 _TUI = "T" + "UI-"
-_GENIUSBOT = "GENIUS" + "BOT-"
+_GENIUSBOT = "GEN" + "IUS" + "BOT-"
 _GRAPHOS = "GRAPH" + "OS-"
 
 

@@ -63,13 +63,27 @@ HOST_IDENTITY_RE = re.compile(r"(?i)\bssh://(?!\$\{)[^\s/@]+@")
 # caught, while a hyphen-prefixed requirement-ID citation is no longer
 # misread as a host.
 # A sub-row citation (`R722.5`, `R802.1.3`) is never a host either: host aliases
-# continue with letters (`r820.arpa`) or nothing, never `.<digit>`.
+# continue with letters (a domain label) or nothing, never `.<digit>`.
 # A zero-padded bare row (`R089`) is not one either: host model numbers never start with 0.
 MACHINE_HOST_ID_RE = re.compile(r"(?i)(?<![a-z0-9-])(?:rw?|host)[1-9][0-9]{2,}(?![a-z0-9])(?!\.[0-9])")
+#: A bare row key is an upper-case ``R`` and digits not followed by a domain label (``"R138"``, ``R103-R117``).
+_ROW_KEY_RE = re.compile(r"R[0-9]+(?![0-9])(?!\.[A-Za-z])")
+#: A row segment of a snake_case file name (``test_consumer_r101_r115.py``): ``_`` before, ``_`` or an extension after.
+_FILE_NAME_SEGMENT_RE = re.compile(r"(?i)(?<=_)r[0-9]+(?=_|\.(?:py|json|md|ya?ml|toml)\b)")
+
+
+def machine_host_id_in_line(line: str) -> bool:
+    """Whether a line names a fleet host alias that is not a requirement-row token (PIPE-GATES-R016.118)."""
+    for match in MACHINE_HOST_ID_RE.finditer(line):
+        if _ROW_KEY_RE.match(line, match.start()) or _FILE_NAME_SEGMENT_RE.match(line, match.start()):
+            continue
+        return True
+    return False
 
 
 #: A value that is a route (`endpoint = "/Users/Me"`) or the container user's home (`home = "/home/app"` in pyproject).
-_API_ENDPOINT_BEFORE = re.compile(r"""(?:\bendpoint\w*|^\s*home)\s*[:=]\s*[rf]?["']$""")
+#: The quote may be JSON-escaped (`home = \\"/home/app\\"` inside captured file content).
+_API_ENDPOINT_BEFORE = re.compile(r"""(?:\bendpoint\w*|(?:^|\\n)\s*home)\s*[:=]\s*[rf]?\\?["']$""")
 
 
 def has_real_home_path(line: str) -> bool:

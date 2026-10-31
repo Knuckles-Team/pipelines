@@ -25,11 +25,9 @@ def _persisted_machine_path(line: str) -> bool:
     if not persisted or patterns.NEUTRAL_URI_RE.search(persisted.group("value")):
         return False
     value = persisted.group("value").strip(" \t,;)}]\"'").casefold()
-    # An upper-case field or a ${...} template is resolved at runtime, unless absolute.
-    runtime_relative = (persisted.group("field").isupper() or value.startswith("${")) and not re.match(
-        r"^(?:[a-z]:|[/\\]|~)", value, re.IGNORECASE
-    )
-    return value not in {"", "none", "null", "unset"} and not runtime_relative
+    # Only an absolute or home-relative value names this machine's filesystem; a repository-relative path
+    # (`pkg/skills/x/SKILL.md`) or a ${...} template is the same on every checkout (PIPE-GATES-R016.118).
+    return bool(re.match(r"^(?:[a-z]:|[/\\]|~)", value, re.IGNORECASE))
 
 
 def _has_identifier(line: str, identifiers: frozenset[str]) -> bool:
@@ -67,7 +65,7 @@ def classify_line(
         (persisted, "persisted machine path"),
         (not persisted and patterns.has_real_home_path(line), "machine-specific home path"),
         (_has_local_identity(line, identifiers, display_names), "local account or host identifier"),
-        (bool(patterns.MACHINE_HOST_ID_RE.search(line)), "machine-specific host identifier"),
+        (patterns.machine_host_id_in_line(line), "machine-specific host identifier"),
     ]
     if deployment_doc:
         checks += [
