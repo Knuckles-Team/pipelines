@@ -40,9 +40,9 @@ from pipelines_hooks.hygiene.connector_central import container_generations as g
 from pipelines_hooks.hygiene.connector_central import pipelines as P  # noqa: E402
 from pipelines_hooks.hygiene.connector_central import rule_order  # noqa: E402
 from pipelines_hooks.hygiene.connector_central.base import RULES, make_ctx  # noqa: E402
-from pipelines_hooks.hygiene.connector_central.fleet import connector_repos  # noqa: E402
+from pipelines_hooks.hygiene.connector_central.fleet import WORKSPACE_ROOT, connector_repos  # noqa: E402
 
-DEFAULT_FLEET = Path("/home/apps/workspace/agent-packages/agents")
+DEFAULT_FLEET = WORKSPACE_ROOT / "agent-packages" / "agents"
 
 #: What is a stub of the earlier scaffold: a short file that carries one of these instruction lines.
 STUBS: dict[str, tuple[str, ...]] = {

@@ -14,7 +14,11 @@ from pathlib import Path
 
 import yaml
 
-DEFAULT_WORKSPACE = Path("/home/apps/workspace/workspace.yml")
+from pipelines_hooks.core.settings import setting
+
+#: The operator's workspace root: never a literal machine path in source (PIPE-GATES-R016.118).
+WORKSPACE_ROOT = Path(setting("PIPELINES_WORKSPACE_ROOT") or Path.home() / "workspace").expanduser()
+DEFAULT_WORKSPACE = WORKSPACE_ROOT / "workspace.yml"
 ORG = "Knuckles-Team"
 GROUP = ("agent-packages", "agents")
 _URL_NAME = re.compile(r"github\.com[/:][^/]+/([^/]+?)(?:\.git)?$")

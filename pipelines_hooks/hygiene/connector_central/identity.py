@@ -348,8 +348,8 @@ def docs_credential_examples(ctx: Ctx) -> None:
 def _reserve_doc_hostnames(ctx: Ctx) -> None:
     """An internal hostname literal in the docs and the skill content (the tracked-privacy gate flags it) becomes ``.example``.
 
-    ``README.md``, ``docs/**/*.md`` and the package's ``skills/**`` markdown and shell files; ``gitlab.arpa`` reads
-    ``gitlab.example``. These are illustrations, so the reserved name loses nothing.
+    ``README.md``, ``docs/**/*.md`` and the package's ``skills/**`` markdown and shell files; a ``<host>.arpa`` name reads
+    ``<host>.example``. These are illustrations, so the reserved name loses nothing.
     """
     from pipelines_hooks.privacy.hosts import BARE_INTERNAL_HOSTNAME_RE
 
@@ -373,7 +373,7 @@ _TEMPLATE_TLD = re.compile(r"(?<=\})\.(?:arpa|internal|corp|lan)(?![A-Za-z0-9_-]
 
 
 def _reserve_test_hostname(m: re.Match[str]) -> str:
-    """``aris.internal`` becomes ``aris.example``; ``db.svc.cluster.local`` becomes ``db.svc.cluster.example``."""
+    """``<host>.internal`` becomes ``<host>.example``; ``<db>.svc.cluster.local`` becomes ``<db>.svc.cluster.example``."""
     from pipelines_hooks.privacy.hosts import is_reserved_hostname
 
     host = m.group(0)

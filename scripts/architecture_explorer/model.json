@@ -86,13 +86,8 @@
    "SourceIngest"
   ],
   [
-   "eg",
-   "egserver",
-   "installs matching server"
-  ],
-  [
    "pipelines",
-   "egserver",
+   "eg",
    "gates + release"
   ]
  ],
@@ -1941,6 +1936,15 @@
          "desc": "The cycle records lessons in the improvement library.",
          "ids": [
           "MERISTEM-HARNESS-CYCLE-R001.6"
+         ]
+        },
+        {
+         "id": "au.loop.cycle.episodes",
+         "label": "Episode read",
+         "role": "retrieval",
+         "desc": "A run reads memory episodes through the served episode read.",
+         "ids": [
+          "MERISTEM-HARNESS-CYCLE-R002"
          ]
         },
         {
@@ -4072,7 +4076,7 @@
    "id": "eg",
    "label": "Medulla",
    "role": "Durable Multimodal Knowledge, Evidence, Provenance, and Reasoning Engine",
-   "desc": "Medulla is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed.",
+   "desc": "Medulla is the store of record and the reasoning engine. It receives source batches, mutations and questions, and it returns facts, evidence and typed decisions. Every answer carries provenance, and every decision can be replayed. Medulla Stem, the one native server executable inside it, serves the engine over the network.",
    "repo": "medulla",
    "layer": "core",
    "edges": [
@@ -4140,6 +4144,11 @@
      "eg.evo",
      "eg.packs",
      "adopted components"
+    ],
+    [
+     "eg.contract",
+     "egserver",
+     "version-matched server"
     ]
    ],
    "children": [
@@ -4242,7 +4251,7 @@
         "crates/eg-numeric/src/evaluation",
         "crates/eg-numeric/src/decision/audit.rs"
        ],
-       "kw": "off-policy|propensit|importance sampl|effective sample|audit sampl|decisioneval|bandit|full-label|gold-label|explor|outcome aggregate|outcome link|independent outcomes|retrieval outcomes|outcome evidence"
+       "kw": "branch.outcome|breadth adaptation|paired rollout|skill evolution|off-policy|propensit|importance sampl|effective sample|audit sampl|decisioneval|bandit|full-label|gold-label|explor|outcome aggregate|outcome link|independent outcomes|retrieval outcomes|outcome evidence"
       },
       {
        "id": "eg.decide.fit",
@@ -4252,7 +4261,7 @@
        "code": [
         "crates/eg-types/src/decision/jobs.rs"
        ],
-       "kw": "decisionfit|fit request|promot\\w* .*head|head promot|publish receipt|training restricted|training data|write authority"
+       "kw": "knob|decision knob|score corpus|training example|grader|decisionfit|fit request|promot\\w* .*head|head promot|publish receipt|training restricted|training data|write authority"
       },
       {
        "id": "eg.decide.route",
@@ -4280,7 +4289,7 @@
        "label": "Decide contract and parser",
        "role": "DecideText, closure rules",
        "desc": "The decide contract fixes the wire shapes, the parser and the component closure rules. Publish-time checks refuse invalid topology shapes.",
-       "kw": "decidetext|lexer|grammar|client wrappers|contract freeze|component-id|component-kind|forbidden decision|topology-shape|wire contract|embedding admission|package identity|component schema"
+       "kw": "schema repair|shadow ingest|decidetext|lexer|grammar|client wrappers|contract freeze|component-id|component-kind|forbidden decision|topology-shape|wire contract|embedding admission|package identity|component schema"
       },
       {
        "id": "eg.decide.belief",
@@ -4301,7 +4310,7 @@
        "label": "Agents, teams and tools",
        "role": "lifecycle, delegation, tool sets",
        "desc": "Decisions cover the agent lifecycle, team coordination and delegation. The engine selects the smallest tool set that fits the context budget.",
-       "kw": "agent lifecycle|team|delegation|workflow registration|skill document|lazy engine|tool necessity|tool subset|tool-choice|load set|capability card|continuation|checker feedback|quota|trace fact|guard pipeline|write-back proposal|disclosure|field shielding|declared-input"
+       "kw": "capability designation|designation|agent lifecycle|team|delegation|workflow registration|skill document|lazy engine|tool necessity|tool subset|tool-choice|load set|capability card|continuation|checker feedback|quota|trace fact|guard pipeline|write-back proposal|disclosure|field shielding|declared-input|topology|swarm|capacity|subagent|allowance"
       }
      ]
     },
@@ -6075,129 +6084,128 @@
       }
      ],
      "kw": "contract regeneration|generated client|client method|library methods"
+    },
+    {
+     "id": "egserver",
+     "label": "Medulla Stem",
+     "role": "Package epistemic-graph-server: The One Native Server Executable",
+     "desc": "The server package runs the engine as one native executable. It receives network calls over standard wire protocols and passes them to the engine. Its version always matches the client package.",
+     "repo": "medulla",
+     "layer": "server",
+     "edges": [
+      [
+       "egserver.wire",
+       "egserver.dispatch",
+       "calls"
+      ],
+      [
+       "egserver.bin",
+       "egserver.dispatch",
+       "serves"
+      ],
+      [
+       "egserver.dispatch",
+       "egserver.raft",
+       "writes"
+      ],
+      [
+       "egserver.dispatch",
+       "egserver.obs",
+       "spans"
+      ]
+     ],
+     "children": [
+      {
+       "id": "egserver.bin",
+       "label": "Executable and Subcommands",
+       "role": "src/bin + startup",
+       "desc": "The executable starts the server and its offline subcommands.",
+       "code": [
+        "src/bin",
+        "src/main.rs",
+        "src/server_startup.rs",
+        "src/offline_tools",
+        "src/offline_tools.rs",
+        "packaging"
+       ],
+       "kw": "server executable|subcommand|startup"
+      },
+      {
+       "id": "egserver.dispatch",
+       "label": "Request Dispatch",
+       "role": "method routing",
+       "desc": "Dispatch routes each method call to its handler. It applies request scope and cancellation.",
+       "code": [
+        "src/server/dispatch",
+        "src/server/dispatch.rs",
+        "src/server/handlers/mod.rs",
+        "src/server/request_scope.rs",
+        "src/server/request_cancel.rs",
+        "src/server/state.rs",
+        "src/server/mod.rs"
+       ]
+      },
+      {
+       "id": "egserver.wire",
+       "label": "Wire Protocol Adapters",
+       "role": "SQL, graph, messaging wires",
+       "desc": "Wire adapters speak standard database and messaging protocols. Each adapter maps calls into engine methods.",
+       "code": [
+        "src/server/pgwire",
+        "src/server/bolt_wire",
+        "src/server/mysql_wire",
+        "src/server/redis_wire",
+        "src/server/mqtt_wire",
+        "src/server/amqp_wire",
+        "src/server/stomp_wire",
+        "src/server/mssql_wire",
+        "src/server/wire",
+        "src/server/http1.rs",
+        "src/server/transport",
+        "src/server/transport.rs"
+       ]
+      },
+      {
+       "id": "egserver.raft",
+       "label": "Replication",
+       "role": "consensus + replicas",
+       "desc": "Replication keeps replicas in step through a consensus log.",
+       "code": [
+        "src/raft",
+        "src/server/replica.rs",
+        "src/server/handlers/raft_admin.rs"
+       ]
+      },
+      {
+       "id": "egserver.obs",
+       "label": "Telemetry and Audit",
+       "role": "metrics, traces, audit",
+       "desc": "The server exports metrics and traces. It writes an audit trail.",
+       "code": [
+        "src/metrics",
+        "src/metrics.rs",
+        "src/otel.rs",
+        "src/server/obs",
+        "src/server/traces",
+        "src/audit",
+        "src/audit.rs",
+        "src/slow_query.rs"
+       ]
+      },
+      {
+       "id": "egserver.image",
+       "label": "Container Image",
+       "role": "docker/",
+       "desc": "The image build packages the executable for cluster deployment.",
+       "code": [
+        "docker"
+       ]
+      }
+     ]
     }
    ],
    "band": 4,
    "scale": 2.0
-  },
-  {
-   "id": "egserver",
-   "label": "Medulla Stem",
-   "role": "Package epistemic-graph-server: The One Native Server Executable",
-   "desc": "The server package runs the engine as one native executable. It receives network calls over standard wire protocols and passes them to the engine. Its version always matches the client package.",
-   "repo": "medulla",
-   "layer": "server",
-   "edges": [
-    [
-     "egserver.wire",
-     "egserver.dispatch",
-     "calls"
-    ],
-    [
-     "egserver.bin",
-     "egserver.dispatch",
-     "serves"
-    ],
-    [
-     "egserver.dispatch",
-     "egserver.raft",
-     "writes"
-    ],
-    [
-     "egserver.dispatch",
-     "egserver.obs",
-     "spans"
-    ]
-   ],
-   "children": [
-    {
-     "id": "egserver.bin",
-     "label": "Executable and Subcommands",
-     "role": "src/bin + startup",
-     "desc": "The executable starts the server and its offline subcommands.",
-     "code": [
-      "src/bin",
-      "src/main.rs",
-      "src/server_startup.rs",
-      "src/offline_tools",
-      "src/offline_tools.rs",
-      "packaging"
-     ],
-     "kw": "server executable|subcommand|startup"
-    },
-    {
-     "id": "egserver.dispatch",
-     "label": "Request Dispatch",
-     "role": "method routing",
-     "desc": "Dispatch routes each method call to its handler. It applies request scope and cancellation.",
-     "code": [
-      "src/server/dispatch",
-      "src/server/dispatch.rs",
-      "src/server/handlers/mod.rs",
-      "src/server/request_scope.rs",
-      "src/server/request_cancel.rs",
-      "src/server/state.rs",
-      "src/server/mod.rs"
-     ]
-    },
-    {
-     "id": "egserver.wire",
-     "label": "Wire Protocol Adapters",
-     "role": "SQL, graph, messaging wires",
-     "desc": "Wire adapters speak standard database and messaging protocols. Each adapter maps calls into engine methods.",
-     "code": [
-      "src/server/pgwire",
-      "src/server/bolt_wire",
-      "src/server/mysql_wire",
-      "src/server/redis_wire",
-      "src/server/mqtt_wire",
-      "src/server/amqp_wire",
-      "src/server/stomp_wire",
-      "src/server/mssql_wire",
-      "src/server/wire",
-      "src/server/http1.rs",
-      "src/server/transport",
-      "src/server/transport.rs"
-     ]
-    },
-    {
-     "id": "egserver.raft",
-     "label": "Replication",
-     "role": "consensus + replicas",
-     "desc": "Replication keeps replicas in step through a consensus log.",
-     "code": [
-      "src/raft",
-      "src/server/replica.rs",
-      "src/server/handlers/raft_admin.rs"
-     ]
-    },
-    {
-     "id": "egserver.obs",
-     "label": "Telemetry and Audit",
-     "role": "metrics, traces, audit",
-     "desc": "The server exports metrics and traces. It writes an audit trail.",
-     "code": [
-      "src/metrics",
-      "src/metrics.rs",
-      "src/otel.rs",
-      "src/server/obs",
-      "src/server/traces",
-      "src/audit",
-      "src/audit.rs",
-      "src/slow_query.rs"
-     ]
-    },
-    {
-     "id": "egserver.image",
-     "label": "Container Image",
-     "role": "docker/",
-     "desc": "The image build packages the executable for cluster deployment.",
-     "code": [
-      "docker"
-     ]
-    }
-   ],
-   "band": 5
   },
   {
    "id": "pipelines",
@@ -6322,7 +6330,7 @@
      ]
     }
    ],
-   "band": 5
+   "band": 4
   }
  ],
  "bands": [
@@ -6330,12 +6338,11 @@
   "Front ends",
   "Arbora door",
   "Agent control plane and skills",
-  "Engine core, connectors and sources",
-  "Serving and delivery"
+  "Engine core, connectors and sources"
  ],
  "fixed_layout": {
   "w": 3360,
-  "h": 1960,
+  "h": 1830,
   "kids": {
    "people": [
     1540,
@@ -6419,13 +6426,7 @@
     980,
     1100,
     1400,
-    640
-   ],
-   "egserver": [
-    1330,
-    1800,
-    700,
-    120
+    700
    ],
    "pipelines": [
     2604,
@@ -6770,45 +6771,22 @@
     ]
    },
    {
-    "from": "eg",
-    "to": "egserver",
-    "label": "installs matching server",
-    "pts": [
-     [
-      1680,
-      1740
-     ],
-     [
-      1680,
-      1800
-     ]
-    ],
-    "lp": [
-     1834,
-     1770
-    ]
-   },
-   {
     "from": "pipelines",
-    "to": "egserver",
+    "to": "eg",
     "label": "gates + release",
     "pts": [
      [
-      2940,
-      1440
+      2604,
+      1300
      ],
      [
-      2940,
-      1860
-     ],
-     [
-      2030,
-      1860
+      2380,
+      1300
      ]
     ],
     "lp": [
      2492,
-     1845
+     1285
     ]
    }
   ],
@@ -6836,12 +6814,7 @@
    [
     "Engine core, connectors and sources",
     1070,
-    1770
-   ],
-   [
-    "Serving and delivery",
-    1770,
-    1960
+    1830
    ]
   ],
   "zones": [

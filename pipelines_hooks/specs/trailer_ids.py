@@ -22,8 +22,15 @@ def _expand_token(token: str) -> list[str]:
     return [f"{match.group('base')}R{number:0{width}d}" for number in range(start, end + 1)]
 
 
+def _group_tokens(group: str) -> list[str]:
+    """One trailer value's tokens; a ``none (<reason>)`` exemption is a single token, commas and all."""
+    if NONE_EXEMPTION.match(group.strip()):
+        return [group.strip()]
+    return [part.strip() for part in group.split(",")]
+
+
 def _trailer_tokens(trailer_raw: str) -> list[str]:
-    tokens = (part.strip() for group in trailer_raw.split(TRAILER_JOIN) for part in group.split(","))
+    tokens = (token for group in trailer_raw.split(TRAILER_JOIN) for token in _group_tokens(group))
     return [token for token in tokens if token]
 
 

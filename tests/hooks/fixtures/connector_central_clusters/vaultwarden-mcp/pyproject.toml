@@ -42,7 +42,7 @@ vaultwarden-mcp = "vaultwarden_mcp.ontology"
 # CONCEPT:P0.2-nested-uv-workspace-fix — self-declare this package as its own uv
 # workspace root. Without this, uv's workspace discovery walks upward from this
 # package's directory, finds the outer ecosystem workspace at
-# /home/apps/workspace/pyproject.toml, and unconditionally refuses because
+# <workspace>/pyproject.toml, and unconditionally refuses because
 # agent-connector-sdk -- also a member of that outer workspace -- is itself a
 # self-contained uv workspace root ("Nested workspaces are not supported"). This
 # stops discovery here instead, independent of whether uv is invoked from the

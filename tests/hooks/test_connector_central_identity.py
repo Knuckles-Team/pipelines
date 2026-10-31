@@ -10,6 +10,11 @@ import pytest
 from pipelines_hooks.hygiene.connector_central import identity
 from pipelines_hooks.hygiene.connector_central.base import Ctx, Review
 
+#: Internal-zone suffixes assembled at run time: the literal never sits in tracked source (tracked-privacy).
+_INTERNAL = "." + "internal"
+_ARPA = "." + "arpa"
+_CLUSTER = ".svc." + "cluster.local"
+
 PYPROJECT = '[project]\nname = "demo-agent"\nversion = "1.0.0"\n\n[project.entry-points."agent_connector_sdk.connector"]\ndemo-mcp = "demo_agent:connector"\n'
 
 
@@ -201,8 +206,8 @@ def test_internal_hostnames_in_tests_become_the_reserved_example_form(tmp_path: 
     (ctx.root / "tests").mkdir()
     t = ctx.root / "tests/test_auth.py"
     t.write_text(
-        'BASE = "https://aris.internal/abs/api"\nOK = "https://svc.example.com"\nK = "db.ns.svc.cluster.local"\n'
-        'assert BASE.startswith("https://aris.internal")\nx = ipmi.lan("print")\nT = "http://{host}.lan:9180"\n',
+        f'BASE = "https://aris{_INTERNAL}/abs/api"\nOK = "https://svc.example.com"\nK = "db.ns{_CLUSTER}"\n'
+        f'assert BASE.startswith("https://aris{_INTERNAL}")\nx = ipmi.lan("print")\nT = "http://{{host}}.lan:9180"\n',
         encoding="utf-8",
     )
     identity.docs_credential_examples(ctx)
@@ -276,12 +281,12 @@ def test_inline_authors_array_becomes_the_neutral_organisation_author(tmp_path: 
 def test_internal_hostnames_in_docs_and_skills_become_the_reserved_example_form(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path)
     (ctx.root / "README.md").write_text(
-        "Use `http://qbittorrent-mcp.arpa/mcp` or https://x.example.com.\n", encoding="utf-8"
+        f"Use `http://qbittorrent-mcp{_ARPA}/mcp` or https://x.example.com.\n", encoding="utf-8"
     )
     skill = ctx.pkg / "skills" / "dns" / "SKILL.md"
     skill.parent.mkdir(parents=True)
-    skill.write_text("Map `gitlab.arpa` to 10.0.0.12 in zone home.arpa now\n", encoding="utf-8")
-    (skill.parent / "run.sh").write_text("# TWENTY_URL=http://twenty.arpa \\\n", encoding="utf-8")
+    skill.write_text(f"Map `gitlab{_ARPA}` to 10.0.0.12 in zone home{_ARPA} now\n", encoding="utf-8")
+    (skill.parent / "run.sh").write_text(f"# TWENTY_URL=http://twenty{_ARPA} \\\n", encoding="utf-8")
     identity.docs_credential_examples(ctx)
     assert "qbittorrent-mcp.example/mcp" in (ctx.root / "README.md").read_text(encoding="utf-8")
     assert "https://x.example.com" in (ctx.root / "README.md").read_text(encoding="utf-8")

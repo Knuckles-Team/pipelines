@@ -14,10 +14,11 @@ from .story_activity import timestamp
 from .sources import Snapshot, family_docs, load_all, read_aliases, rows_for
 from .story_chart_sources import source_chart
 from .story_contract import ContractError, require
+from pipelines_hooks.specs.generator import generate_at, render
 
 API = "https://api.github.com/repos/Knuckles-Team/"
 SHA = r"[0-9a-f]{40}"
-DOC = re.compile(r"specs/[^/]+/(?:[^/]+\.md|status\.json)$")
+DOC = re.compile(r"specs/[^/]+/[^/]+\.md$")
 
 
 def read_family_config(path):
@@ -82,9 +83,17 @@ def source_transport(token: str, *, max_requests: int = 512):
     return request
 
 
+#: Computes ``{specs/<dir>/status.json: document}`` for a clone URL at a commit.
+STATUS_SOURCE = generate_at
+
+
 class CapturedReader:
     def __init__(self, capture):
         self.capture = capture
+
+    def statuses(self):
+        documents = self.capture["documents"]
+        return {path: json.loads(text) for path, text in documents.items() if path.endswith("/status.json")}
 
     def read(self, path):
         require(path in self.capture["documents"], "uncaptured source document: " + path)
@@ -146,6 +155,11 @@ def capture_repository(entry, request):
             require(digest == oid, "source blob bytes do not match frozen tree")
             blob_cache[oid] = raw.decode("utf-8")
         documents[path] = blob_cache[oid]
+    # status.json is never committed: compute it at the frozen commit and capture it as a source document.
+    for path, document in STATUS_SOURCE(repo["url"] + ".git", commit).items():
+        if path not in paths:
+            paths.append(path)
+        documents[path] = render(document)
     capture = {
         "repositoryId": repo["id"],
         "head": commit,

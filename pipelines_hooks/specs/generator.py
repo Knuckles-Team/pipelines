@@ -1,8 +1,8 @@
-"""Generate every ``specs/*/status.json`` (SPEC-STATUS-LIFECYCLE.md Sec1-4).
+"""Compute every spec's status document (SPEC-STATUS-LIFECYCLE.md Sec1-4).
 
-A pure function of git history, requirements.md and the test tree: no build,
-no network. ``status.json`` is machine output (schema_version 2); a
-hand-edited copy is simply overwritten by the next ``--write``.
+A pure function of git history, requirements.md, the test tree and the frozen
+``.config/spec-legacy-landings.json``: no build, no network, nothing committed.
+``status.json`` (schema_version 2) is read-time output, never tracked.
 """
 
 from __future__ import annotations
@@ -35,8 +35,14 @@ class Evidence(NamedTuple):
     legacy_by: dict[str, list[str]]
 
 
-def _load_status(path: Path) -> dict:
-    """The previously published document, or ``{}`` for a new one."""
+LEGACY_FILE = ".config/spec-legacy-landings.json"
+
+
+def render(document: dict) -> str:
+    return json.dumps(document, indent=2, ensure_ascii=False) + "\n"
+
+
+def _load_json(path: Path) -> dict:
     if not path.exists():
         return {}
     try:
@@ -46,18 +52,19 @@ def _load_status(path: Path) -> dict:
     return loaded if isinstance(loaded, dict) else {}
 
 
+def _legacy_document(repo: Path) -> dict:
+    """Frozen pre-trailer landings as a status-shaped document (``{id: [sha, ...]}`` on disk)."""
+    frozen = _load_json(repo / LEGACY_FILE)
+    return {"requirements": [{"id": rid, "landed_in": shas} for rid, shas in sorted(frozen.items())]}
+
+
 def _requirement_state(rid: str, evidence: Evidence) -> tuple[list[str], list[str]]:
     landed = sorted(evidence.landed_by.get(rid, set()) | set(evidence.legacy_by.get(rid, [])))
     tests = sorted(set(evidence.tested_by.get(rid, [])))
     return landed, tests
 
 
-def _spec_identity(spec_dir: Path, old: dict) -> str:
-    """Read canonical identity while preserving untitled legacy metadata."""
-    return check_title(spec_dir)[0] or old.get("spec_id") or spec_dir.name
-
-
-def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evidence, owner: str) -> dict:
+def _spec_document(spec_dir: Path, *, rows: list[Row], evidence: Evidence, owner: str) -> dict:
     ids = [row.id for row in rows]
     state: dict[str, str] = {}
     records: dict[str, dict[str, object]] = {}
@@ -68,7 +75,7 @@ def _spec_document(spec_dir: Path, *, old: dict, rows: list[Row], evidence: Evid
     apply_rollup(ids, state, records)
     return {
         "schema_version": SCHEMA_VERSION,
-        "spec_id": _spec_identity(spec_dir, old),
+        "spec_id": check_title(spec_dir)[0] or spec_dir.name,
         "owner_repo": owner,
         "delivery_state": overall_state(state),
         "requirement_ids": ids,
@@ -95,8 +102,19 @@ def _history_evidence(
     return landed_by, canonical_lists(test_bindings(repo), aliases)
 
 
+_CACHE: dict[tuple[str, str], dict[Path, dict]] = {}
+
+
+def computed(repo: Path, head: str = "HEAD") -> dict[Path, dict]:
+    """:func:`generate`, memoized per process for gates that read status within one run."""
+    key = (str(repo.resolve()), head)
+    if key not in _CACHE:
+        _CACHE[key] = generate(repo, head)
+    return _CACHE[key]
+
+
 def generate(repo: Path, head: str) -> dict[Path, dict]:
-    """status.json path -> generated document for every authored spec."""
+    """``specs/<dir>/status.json`` path -> computed document for every authored spec."""
     requirements_paths = sorted(
         path for path in repo.glob("specs/*/requirements.md") if path.parent.name != "_template"
     )
@@ -105,31 +123,90 @@ def generate(repo: Path, head: str) -> dict[Path, dict]:
     if git_text(repo, ("rev-parse", "--is-shallow-repository")).strip() == "true":
         raise CannotRun(
             "spec-status needs complete Git history to validate landing receipts; "
-            "fetch full history (git fetch --unshallow or checkout fetch-depth: 0) "
-            "before retrying; no status files were changed"
+            "fetch full history (git fetch --unshallow or checkout fetch-depth: 0)"
         )
     aliases = load_aliases(repo)
     landed_by, tested_by = _history_evidence(repo, head, aliases)
     resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
-    owner = repository_owner(repo)
+    legacy_by = canonical_lists(legacy_landings(_legacy_document(repo), resolve), aliases)
+    evidence = Evidence(landed_by, tested_by, legacy_by)
+    owner = repository_owner(repo) or canonical_owner(repo.resolve().name) or repo.resolve().name
     result: dict[Path, dict] = {}
     for requirements_path in requirements_paths:
         spec_dir = requirements_path.parent
-        status_path = spec_dir / "status.json"
-        old = _load_status(status_path)
-        legacy_by = canonical_lists(legacy_landings(old, resolve), aliases)
-        evidence = Evidence(landed_by, tested_by, legacy_by)
         rows = parse_rows(requirements_path.read_text(encoding="utf-8"))
-        result[status_path] = _spec_document(
-            spec_dir,
-            old=old,
-            rows=rows,
-            evidence=evidence,
-            owner=(
-                owner
-                or canonical_owner(old.get("owner_repo"))
-                or canonical_owner(repo.resolve().name)
-                or repo.resolve().name
-            ),
-        )
+        result[spec_dir / "status.json"] = _spec_document(spec_dir, rows=rows, evidence=evidence, owner=owner)
     return result
+
+
+def freeze_legacy(repo: Path, head: str) -> int:
+    """Cutover: write the landings tracked status.json files carry that trailers do not.
+
+    Reads the committed copies (``git show HEAD:``), so it works before they are deleted.
+    """
+    aliases = load_aliases(repo)
+    landed_by, _ = _history_evidence(repo, head, aliases)
+    resolve = live_resolver(reachable_shas(repo, head), reverted_shas(repo, head))
+    frozen: dict[str, set[str]] = dict((k, set(v)) for k, v in _load_json(repo / LEGACY_FILE).items())
+    tracked = [p for p in git_text(repo, ("ls-files", "--", "specs/*/status.json")).splitlines() if p]
+    for path in tracked:
+        try:
+            old = json.loads(git_text(repo, ("show", f"{head}:{path}")) or "{}")
+        except json.JSONDecodeError:
+            continue
+        for rid, shas in canonical_lists(
+            legacy_landings(old if isinstance(old, dict) else {}, resolve), aliases
+        ).items():
+            extra = {sha[:12] for sha in shas if sha not in landed_by.get(rid, set())}
+            if rid and extra:
+                frozen.setdefault(rid, set()).update(extra)
+    target = repo / LEGACY_FILE
+    if frozen:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(render({k: sorted(v) for k, v in sorted(frozen.items())}), encoding="utf-8")
+    return sum(len(v) for v in frozen.values())
+
+
+def generate_at(source: str, commit: str) -> dict[str, dict]:
+    """Status documents of ``source`` (a local repository path or clone URL) at ``commit``.
+
+    Readers that see a repository only as a commit (the architecture explorer, the
+    story chart) compute status from a throwaway clone: blobless for a URL, object-
+    sharing for a local path; the source repository is never written.
+    Keys are repository-relative ``specs/<dir>/status.json`` paths.
+    """
+    import subprocess
+    import tempfile
+
+    from pipelines_hooks.core.gitenv import sanitized_env
+
+    env = sanitized_env()
+    with tempfile.TemporaryDirectory(prefix="spec-status-") as tmp:
+        local = Path(source).is_dir()
+        clone = [
+            "git",
+            "clone",
+            "-q",
+            "--no-checkout",
+            *(["--shared"] if local else ["--filter=blob:none"]),
+            source,
+            tmp,
+        ]
+        subprocess.run(clone, env=env, check=True, capture_output=True, timeout=600)
+        if local:  # keep the source's own identity (its origin), not the local path
+            origin = subprocess.run(
+                ["git", "-C", source, "remote", "get-url", "origin"], env=env, capture_output=True, text=True
+            ).stdout.strip()
+            if origin:
+                subprocess.run(["git", "-C", tmp, "remote", "set-url", "origin", origin], env=env, check=True)
+            else:
+                subprocess.run(["git", "-C", tmp, "remote", "remove", "origin"], env=env, check=True)
+        subprocess.run(
+            ["git", "-C", tmp, "-c", "advice.detachedHead=false", "checkout", "-q", "--detach", commit],
+            env=env,
+            check=True,
+            capture_output=True,
+            timeout=600,
+        )
+        root = Path(tmp)
+        return {str(path.relative_to(root)): doc for path, doc in generate(root, "HEAD").items()}

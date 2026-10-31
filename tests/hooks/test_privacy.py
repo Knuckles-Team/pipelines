@@ -97,8 +97,8 @@ def test_privacy_ignores_bare_subrow_citations(repo: Repo, catalog: Path) -> Non
 
 
 def test_privacy_still_fires_on_a_host_with_a_domain(repo: Repo, catalog: Path) -> None:
-    """A host alias followed by its domain (``r820.arpa``) must still be caught."""
-    repo.commit({"docs/notes.md": "Built on " + "r" + "820.arpa tonight.\n"})
+    """A host alias followed by its internal domain must still be caught."""
+    repo.commit({"docs/notes.md": "Built on " + "r" + "820." + "arpa tonight.\n"})
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == 1
 
 

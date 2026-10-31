@@ -69,7 +69,7 @@ def test_rows_land_on_the_deepest_matching_part() -> None:
     assert where["CORE-R002"] == "core.solver"
     assert where["CORE-R002.1"] == "core.solver"
     assert where["CORE-R009"] == "core.ledger"
-    assert where["CORE-R010"] == "core.unmapped"
+    assert where["CORE-R010"] == "core"
     assert where["OTHER-R001"] == "root.unmapped"
     assert sum(len(v) for v in direct.values()) == len(rows)
 
@@ -153,13 +153,12 @@ def test_sibling_family_title_and_parent_place_rows_before_unmapped() -> None:
     where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
     assert where["SIDE-R001"] == "core.misc"
     assert where["SIDE-R001.1"] == "core.misc"
-    assert where["SIDE-R002"] == "side.unmapped"
-    assert unmapped_violations(tree, direct, []) == ["core:SIDE-R002"]
-    assert unmapped_violations(tree, direct, ["core:SIDE-R002"]) == []
+    assert where["SIDE-R002"] == "side"
+    assert unmapped_violations(tree, direct, []) == []
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_a_row_on_a_container_descends_to_a_leaf_or_fails_the_gate() -> None:
+def test_a_row_on_a_container_descends_to_a_leaf_or_stays_on_the_family_node() -> None:
     model = _model()
     model["children"][0]["children"][0]["children"] = [
         {"id": "core.solver.exact", "label": "Exact", "desc": "Exact.", "kw": "certificate"}
@@ -173,7 +172,7 @@ def test_a_row_on_a_container_descends_to_a_leaf_or_fails_the_gate() -> None:
     where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
     assert where["CORE-R003"] == "core.solver.exact"
     assert where["CORE-R004"] == "core.solver"
-    assert unmapped_violations(tree, direct, []) == ["core:CORE-R004"]
+    assert unmapped_violations(tree, direct, []) == []
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -199,8 +198,8 @@ def test_vocabulary_additions_mapping_accepts_canonical_reuse_rollup() -> None:
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_build_fails_on_an_unmapped_row(monkeypatch) -> None:
-    rows = [_row("EG-SCM-R999", "Nothing names this row", family="source-changesets", repo="medulla")]
+def test_build_fails_on_a_family_with_no_node(monkeypatch) -> None:
+    rows = [_row("EG-SCM-R999", "Nothing names this row", family="family-no-part-owns", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
@@ -565,11 +564,11 @@ def test_search_index_covers_every_row_and_maps_it_to_a_node(monkeypatch, tmp_pa
 @pytest.mark.spec("PIPE-PAGES-R042.1")
 @_NEEDS_LAYOUT
 def test_search_index_carries_repository_aliases(monkeypatch, tmp_path: Path) -> None:
-    html = _build_page(monkeypatch, tmp_path, _SEARCH_ROWS, aliases={"OLDSDK-": "SDK-CONNECTOR-CONTROL-"})
+    html = _build_page(monkeypatch, tmp_path, _SEARCH_ROWS, aliases={"OLDSCION-": "SCION-CONNECTOR-CONTROL-"})
     index = _payload(html)["search"]
-    assert index["aliases"] == {"OLDSDK-": "SDK-CONNECTOR-CONTROL-"}
-    (hits,) = _node_search(index, ["OLDSDK-R030.1"])
-    assert hits[0]["id"] == "SDK-CONNECTOR-CONTROL-R030.1"
+    assert index["aliases"] == {"OLDSCION-": "SCION-CONNECTOR-CONTROL-"}
+    (hits,) = _node_search(index, ["OLDSCION-R030.1"])
+    assert hits[0]["id"] == "SCION-CONNECTOR-CONTROL-R030.1"
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.2")
@@ -578,8 +577,8 @@ def test_a_capability_search_ranks_the_owning_row_first(monkeypatch, tmp_path: P
     index = _payload(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS))["search"]
     (hits,) = _node_search(index, ["GraphQL client"])
     ids = [h["id"] for h in hits]
-    assert ids[0] == "SDK-CONNECTOR-CONTROL-R030.1"
-    assert {"CONN-ADGUARD-HOME-AGENT-R002", "SDK-CONNECTOR-CONTROL-R030"} <= set(ids[:4])
+    assert ids[0] == "SCION-CONNECTOR-CONTROL-R030.1"
+    assert {"CONN-ADGUARD-HOME-AGENT-R002", "SCION-CONNECTOR-CONTROL-R030"} <= set(ids[:4])
     assert hits[0]["repo"] == "scion-sdk" and hits[0]["kind"] == "row"
 
 
@@ -590,17 +589,17 @@ def test_an_id_search_is_exact(monkeypatch, tmp_path: Path) -> None:
     exact, lower, parent, prefix, nothing = _node_search(
         index,
         [
-            "SDK-CONNECTOR-CONTROL-R030.1",
+            "SCION-CONNECTOR-CONTROL-R030.1",
             "sdk-connector-control-r030.1",
-            "SDK-CONNECTOR-CONTROL-R030",
-            "SDK-CONNECTOR-CONTROL-R04",
-            "SDK-CONNECTOR-CONTROL-R999",
+            "SCION-CONNECTOR-CONTROL-R030",
+            "SCION-CONNECTOR-CONTROL-R04",
+            "SCION-CONNECTOR-CONTROL-R999",
         ],
     )
-    assert [h["id"] for h in exact] == ["SDK-CONNECTOR-CONTROL-R030.1"]
-    assert [h["id"] for h in lower] == ["SDK-CONNECTOR-CONTROL-R030.1"]
-    assert [h["id"] for h in parent] == ["SDK-CONNECTOR-CONTROL-R030", "SDK-CONNECTOR-CONTROL-R030.1"]
-    assert [h["id"] for h in prefix] == ["SDK-CONNECTOR-CONTROL-R043"]
+    assert [h["id"] for h in exact] == ["SCION-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in lower] == ["SCION-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in parent] == ["SCION-CONNECTOR-CONTROL-R030", "SCION-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in prefix] == ["SCION-CONNECTOR-CONTROL-R043"]
     assert nothing == []
 
 
@@ -685,7 +684,7 @@ def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_pa
         check=True,
     ).stdout
     _assert_browser_document(out)
-    assert re.search(r'<li data-spec="SDK-CONNECTOR-CONTROL-R030.1" class="flash"', out)
+    assert re.search(r'<li data-spec="SCION-CONNECTOR-CONTROL-R030.1" class="flash"', out)
     assert 'role="combobox"' in out and 'aria-label="Search results"' in out
     assert re.search(r'<input id="q"[^>]*>', out) and "GraphQL client" in out
 
@@ -1163,7 +1162,10 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
     assert payload["tree"]["label"] == "Arbora Ecosystem"
     assert nodes["eg"]["label"] == "Medulla"
-    assert nodes["egserver"]["label"] == "Medulla Stem"
+    assert "egserver" not in nodes
+    stem = {node["id"]: node for node in nodes["eg"]["children"]}["egserver"]
+    assert stem["label"] == "Medulla Stem"
+    assert {child["id"] for child in stem["children"]} >= {"egserver.bin", "egserver.dispatch", "egserver.wire"}
     assert nodes["arbora"]["label"] == "Arbora"
     assert nodes["geniusbot"]["role"] == "Desktop GUI"
     assert nodes["au"]["role"] == "Agent Harness"
@@ -1204,7 +1206,7 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
     direct = Placer(tree).run(rows + unknown)
     placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
     assert len(placed) == len(rows + unknown)
-    assert dict(placed) == {**expected, **{row["id"]: "geniusbot.unmapped" for row in unknown}}
+    assert dict(placed) == {**expected, **{row["id"]: "geniusbot" for row in unknown}}
     assert all(tree.nodes[nid]["repo"] == "axil" for nid in expected.values())
 
 
@@ -1611,7 +1613,7 @@ setTimeout(async()=>{
    evidence.push({id,bar,counts,topLevel:topLevel.has(id),baseHeight,expectedHeight,originalBottom});
   }
   if(a.selected==='root'&&window.innerWidth>1000){
-   const headings=['People and Clients','Front Ends','Arbora Door','Agent Control Plane and Skills','Engine Core, Connectors and Sources','Serving and Delivery'].map(text=>window.__allPaint.find(p=>p.text===text));
+   const headings=['People and Clients','Front Ends','Arbora Door','Agent Control Plane and Skills','Engine Core, Connectors and Sources'].map(text=>window.__allPaint.find(p=>p.text===text));
    if(headings.some(p=>!p)||new Set(headings.map(p=>p.font)).size!==1)throw Error('Overview headings must share one complete-label font size');
    for(const [id,role] of [['sdk','Connector SDK'],['au','Agent Harness'],['skills','Agent Skills'],['webui','Browser Experience'],['tui','TUI / CLI'],['geniusbot','Desktop GUI']]){
     const r=a.rect(id),x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
@@ -2006,3 +2008,20 @@ setTimeout(async()=>{
         + "\n"
     )
     assert match and ">PASS</output>" in match[0], result.stdout[-3000:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_rows_matching_no_child_stay_on_the_family_node_and_never_fail_the_build(monkeypatch) -> None:
+    """New rows of an owned family whose keywords match no child map to the family's own node."""
+    tree = Tree(_model_with_external())
+    rows = [_row(f"CORE-R{n}", "Matches no keyword anywhere") for n in range(100, 130)]
+    direct = Placer(tree).run(rows)
+    assert {nid for nid in direct} == {"core"}
+    assert not [n for n in tree.nodes if n.endswith(".unmapped")]
+    assert unmapped_violations(tree, direct, []) == []
+
+    shipped = Tree(json.loads((PKG / "model.json").read_text()))
+    new = [_row("MEDULLA-DECISION-ENGINE-R9999", "Matches no keyword zzqx", "decision-engine", "medulla")]
+    placed = Placer(shipped).run(new)
+    assert [nid for nid in placed] == ["eg.decide"]
+    assert unmapped_violations(shipped, placed, []) == []

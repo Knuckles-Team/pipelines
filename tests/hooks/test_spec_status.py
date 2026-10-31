@@ -185,15 +185,14 @@ def test_revert_naming_a_commit_absent_from_this_clone_is_tolerated(repo: Repo) 
     assert row["landed_in"] == [landing_sha[:12]]
 
 
-def test_check_mode_fails_on_a_stale_status_json(repo: Repo) -> None:
+def test_check_mode_fails_only_on_a_tracked_status_json(repo: Repo) -> None:
+    """status.json is computed, never committed: an untracked copy passes, a tracked one fails."""
     repo.commit({"specs/demo/requirements.md": _STALE_ROW}, "add spec")
-
-    assert repo.run("spec-status") == 1
-
-    assert repo.run("spec-status", "--write") == 0
     assert repo.run("spec-status") == 0
+    assert repo.run("spec-status", "--write") == 0
+    assert repo.run("spec-status") == 0  # the written copy is untracked
 
-    repo.commit({"pkg/c.py": "# c\n"}, "Spec: TEST-R040")
+    repo.commit({"specs/demo/status.json": "{}\n"}, "track generated status")
     assert repo.run("spec-status") == 1
 
 
@@ -306,29 +305,15 @@ def test_explicit_head_is_honored_during_unresolved_pending_merge(repo: Repo) ->
     assert rows["TEST-R002"]["landed_in"] == []
 
 
-def test_template_status_is_ignored_but_real_specs_are_checked(repo: Repo) -> None:
-    """The distributable template is not an authored spec, while real specs remain guarded."""
-    template_status = json.dumps({"schema_version": 2, "spec_id": "template", "requirements": []})
+def test_template_is_not_an_authored_spec(repo: Repo) -> None:
+    """The distributable template is never computed; real specs are."""
     repo.commit(
-        {
-            "specs/_template/requirements.md": _TEMPLATE_ROW,
-            "specs/_template/status.json": template_status,
-            "specs/demo/requirements.md": _STALE_ROW,
-        },
+        {"specs/_template/requirements.md": _TEMPLATE_ROW, "specs/demo/requirements.md": _STALE_ROW},
         "add template and authored spec",
     )
-
     assert repo.run("spec-status", "--write") == 0
-    template_path = repo.root / "specs/_template/status.json"
-    assert template_path.read_text(encoding="utf-8") == template_status
-
-    stale_template = '{"stale": true}\n'
-    repo.commit({"specs/_template/status.json": stale_template}, "update template metadata")
-    assert repo.run("spec-status") == 0
-    assert template_path.read_text(encoding="utf-8") == stale_template
-
-    repo.commit({"specs/demo/status.json": stale_template}, "drift authored status")
-    assert repo.run("spec-status") == 1
+    assert not (repo.root / "specs/_template/status.json").exists()
+    assert (repo.root / "specs/demo/status.json").exists()
 
 
 def test_same_line_shorthand_inherits_prefix() -> None:
@@ -342,14 +327,12 @@ def test_same_line_shorthand_inherits_prefix() -> None:
 _LEGACY_ROW = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R050` | **Legacy landing.** |\n"
 
 
-def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> None:
-    """v1 merged_head evidence becomes v2 landed_in; regenerating must carry it forward."""
+def test_frozen_legacy_landings_survive_untracking_status(repo: Repo) -> None:
+    """Cutover: v1 merged_head evidence is frozen, then status.json is untracked without losing it."""
     repo.commit({"specs/demo/requirements.md": _LEGACY_ROW}, "add spec")
     sha = repo.commit({"pkg/legacy.py": "# old work\n"}, "old work without an ID")
     v1 = {
         "schema_version": 1,
-        "spec_id": "demo",
-        "owner_repo": "demo",
         "requirements": [
             {
                 "id": "TEST-R050",
@@ -359,12 +342,14 @@ def test_regeneration_is_idempotent_and_keeps_legacy_landings(repo: Repo) -> Non
         ],
     }
     repo.commit({"specs/demo/status.json": json.dumps(v1)}, "v1 status")
+    assert repo.run("spec-status", "--freeze-legacy") == 0
+    frozen = (repo.root / ".config/spec-legacy-landings.json").read_text(encoding="utf-8")
+    repo.git("rm", "-q", "--cached", "specs/demo/status.json")
+    repo.commit({".config/spec-legacy-landings.json": frozen}, "untrack status")
 
     assert repo.run("spec-status", "--write") == 0
     first = (repo.root / "specs/demo/status.json").read_text(encoding="utf-8")
     assert _by_id(repo)["TEST-R050"]["delivery_state"] == "LANDED"
-    repo.commit({"specs/demo/status.json": first}, "v2 status")
-
     assert repo.run("spec-status", "--write") == 0
     assert (repo.root / "specs/demo/status.json").read_text(encoding="utf-8") == first
     assert repo.run("spec-status") == 0
@@ -425,64 +410,23 @@ def test_source_declarations_survive_status_regeneration(repo: Repo) -> None:
     assert repo.run("spec-status") == 0
 
 
-_LANDED_ROW_A = "# a\n\n| ID | Requirement |\n|---|---|\n| `A-R001` | **Landed only.** |\n"
-_LANDED_ROW_B = "# b\n\n| ID | Requirement |\n|---|---|\n| `B-R001` | **Landed only.** |\n"
-
-
-def test_changed_only_skips_an_untouched_stale_dir(repo: Repo) -> None:
-    """A PR touching spec A passes under --changed-only even while B is stale."""
-    repo.commit(
-        {
-            "specs/a/requirements.md": _LANDED_ROW_A,
-            "specs/b/requirements.md": _LANDED_ROW_B,
-        },
-        "add specs a and b",
-    )
+def test_two_branches_landing_the_same_spec_merge_without_conflict(repo: Repo) -> None:
+    """Concurrent PRs on one spec carry only source; status is derived after the merge."""
+    rows = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R060` | **One.** |\n| `TEST-R061` | **Two.** |\n"
+    repo.commit({"specs/demo/requirements.md": rows}, "add spec")
+    base = repo.git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    repo.git("checkout", "-q", "-b", "lane-a")
+    repo.commit({"pkg/a.py": "# a\n"}, "land a\n\nSpec: TEST-R060")
+    repo.git("checkout", "-q", base)
+    repo.git("checkout", "-q", "-b", "lane-b")
+    repo.commit({"pkg/b.py": "# b\n"}, "land b\n\nSpec: TEST-R061")
+    repo.git("checkout", "-q", base)
+    repo.git("merge", "-q", "--ff-only", "lane-a")
+    repo.git("rebase", "-q", base, "lane-b")  # a rebase-merge of lane-b: no conflict
     assert repo.run("spec-status", "--write") == 0
-    repo.commit(
-        {
-            "specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8"),
-            "specs/b/status.json": (repo.root / "specs/b/status.json").read_text(encoding="utf-8"),
-        },
-        "commit generated status",
-    )
-
-    # main advances on spec b without this PR: hand-drift b's committed status.json.
-    drifted = json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))
-    drifted["delivery_state"] = "LANDED"
-    repo.commit({"specs/b/status.json": json.dumps(drifted)}, "simulate b drift on main")
-
-    base = repo.git("rev-parse", "HEAD").strip()
-
-    # This PR only lands and regenerates spec a.
-    repo.commit({"pkg/a.py": "# a\n"}, "land a\n\nSpec: A-R001")
-    assert repo.run("spec-status", "--base-ref", base, "--changed-only", "--write") == 0
-    repo.commit(
-        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
-        "regenerate a status",
-    )
-
-    # The scoped --write never touched b: it is still drifted.
-    assert json.loads((repo.root / "specs/b/status.json").read_text(encoding="utf-8"))["delivery_state"] == "LANDED"
-
-    assert repo.run("spec-status") == 1  # full-repo mode still catches b's staleness
-    assert repo.run("spec-status", "--base-ref", base, "--changed-only") == 0
-
-
-def test_changed_only_still_fails_when_the_touched_dir_is_stale(repo: Repo) -> None:
-    """A PR touching spec A fails under --changed-only when A itself is stale."""
-    repo.commit({"specs/a/requirements.md": _LANDED_ROW_A}, "add spec a")
-    assert repo.run("spec-status", "--write") == 0
-    repo.commit(
-        {"specs/a/status.json": (repo.root / "specs/a/status.json").read_text(encoding="utf-8")},
-        "commit generated status",
-    )
-
-    base = repo.git("rev-parse", "HEAD").strip()
-    # Lands A-R001 (via the Spec: trailer) without regenerating status.json.
-    repo.commit({"pkg/a.py": "# a\n"}, "land a\n\nSpec: A-R001")
-
-    assert repo.run("spec-status", "--base-ref", base, "--changed-only") == 1
+    rows_by_id = _by_id(repo)
+    assert rows_by_id["TEST-R060"]["delivery_state"] == "LANDED"
+    assert rows_by_id["TEST-R061"]["delivery_state"] == "LANDED"
 
 
 def test_reverting_a_merge_undoes_its_member_commits(repo: Repo) -> None:
@@ -500,14 +444,11 @@ def test_reverting_a_merge_undoes_its_member_commits(repo: Repo) -> None:
 
 
 @pytest.mark.spec("PIPE-CONNSPEC-R008")
-@pytest.mark.parametrize("old", [None, "demo", "OLD-SPEC"])
-def test_canonical_title_controls_generated_identity(repo, old):
+def test_canonical_title_controls_generated_identity(repo):
     files = {
         "specs/demo/requirements.md": _LANDED_ROW,
         "specs/demo/spec.md": "# TEST — Canonical identity\n",
     }
-    if old is not None:
-        files["specs/demo/status.json"] = json.dumps({"spec_id": old})
     repo.commit(files, "declare canonical spec identity")
     assert repo.run("spec-status", "--write") == 0
     assert _status(repo)["spec_id"] == "TEST"

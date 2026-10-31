@@ -1,11 +1,11 @@
-"""spec-decomposition: every ``specs/<dir>/`` with a status.json decomposes IDs consistently.
+"""spec-decomposition: every ``specs/<dir>/`` decomposes IDs consistently.
 
 Detection only -- it never rewrites a spec. The repair tool lives in a different
 repository (``plans/tools/l9/spec_decomp_fix.py``) and is a read-only reference for
 this gate's logic, not something this gate calls.
 
-For each ``specs/<dir>/`` that has a ``status.json``, across that directory's own
-``requirements.md``, ``tasks.md``, ``test-spec.md`` and ``status.json``:
+For each ``specs/<dir>/``, across that directory's own
+``requirements.md``, ``tasks.md``, ``test-spec.md`` and its computed status (spec-status):
 
 (a) an ID appears twice, in requirements.md table rows or in status.json rows;
 (b) a child ID ``<ID>.<n>`` referenced in requirements.md, tasks.md or test-spec.md
@@ -23,13 +23,12 @@ runs those checks.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 from collections import Counter
 from pathlib import Path
 
-from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.specs.generator import computed
 from pipelines_hooks.specs.aliases import Aliases, canonical_id, load_aliases
 from pipelines_hooks.specs.decomposition_checks import (
     SpecIndex,
@@ -91,13 +90,13 @@ def _referenced_child_ids(texts: dict[str, str], known_ids: set[str], aliases: A
     return found
 
 
-def check_spec(spec_dir: Path, aliases: Aliases | None = None) -> list[str]:
-    """Findings for one ``specs/<dir>/``; an empty list means clean."""
-    status_path = spec_dir / "status.json"
-    try:
-        status = json.loads(status_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise CannotRun(f"{status_path}: invalid status.json ({exc})") from exc
+def check_spec(spec_dir: Path, aliases: Aliases | None = None, status: object | None = None) -> list[str]:
+    """Findings for one ``specs/<dir>/``; an empty list means clean.
+
+    ``status`` is the computed status document (default: computed from the repository).
+    """
+    if status is None:
+        status = computed(repo_root(spec_dir)).get(spec_dir / "status.json", {})
 
     texts = {
         name: (spec_dir / name).read_text(encoding="utf-8")
@@ -138,9 +137,9 @@ def main(argv: list[str]) -> int:
     findings: list[str] = []
     checked = 0
     aliases = load_aliases(root)
-    for status_path in sorted(root.glob("specs/*/status.json")):
+    for status_path, document in sorted(computed(root).items()):
         checked += 1
-        findings.extend(check_spec(status_path.parent, aliases))
+        findings.extend(check_spec(status_path.parent, aliases, document))
     if not findings:
         print(f"spec decomposition: clean ({checked} spec(s) checked)")
         return 0

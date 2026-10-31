@@ -170,8 +170,8 @@ EXPECTED_PACKAGE_PUBLICATIONS = {
     "aris-mcp": {
         "source_sha": "c5df897fa6e4ff561c21c5d57c74f513f0ff2e3d",
         "skill": "aris_mcp/skills/aris-mcp-development/SKILL.md",
-        "skill_bytes": 5084,
-        "skill_sha256": "df336dd71907f68bffd848bc8a66162102f4b44514ca3651f2bf4e786b37c567",
+        "skill_bytes": 5100,
+        "skill_sha256": "94d4bd078892fd8d11e636164d8585b06d98f61882f891f8d6e079e09069af1d",
         "skill_terms": (
             "aris_mcp/__init__.py",
             "ARIS_API_BASE",
@@ -204,8 +204,8 @@ EXPECTED_PACKAGE_PUBLICATIONS = {
     "egeria-mcp": {
         "source_sha": "d6c0e954f2c21fcde036a5b5e98535927cf3f3d8",
         "skill": "egeria_mcp/skills/egeria-mcp-development/SKILL.md",
-        "skill_bytes": 6001,
-        "skill_sha256": "8f752af999e787965b80a9a3bd42e4248795664d2c6b7942da0cae919429dbbd",
+        "skill_bytes": 6017,
+        "skill_sha256": "8182f38abf51e441fe67b32c782592232b45f55cf7953dd27d3fbab16c35b93c",
         "skill_terms": (
             "egeria_mcp/__init__.py",
             "EGERIA_PLATFORM_URL",

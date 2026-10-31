@@ -142,12 +142,3 @@ def test_tombstone_row_is_advisory_by_default(root, capsys):
     req.write_text(req.read_text() + "| `FOO-R002` | RETIRED: replaced by BAR-R001 |\n")
     code, out = _run(root, capsys)
     assert code == 0 and "ADV spec-standard:" in out
-
-
-def test_status_spec_id_must_match_title(root, capsys):
-    d = _spec(root)
-    (d / "status.json").write_text('{"spec_id": "BAR"}\n')
-    code, out = _run(root, capsys)
-    assert code == 0
-    assert "ADV spec-standard: specs/foo: status.json spec_id BAR differs from the spec ID FOO" in out
-    assert main(["--root", str(root), "--tombstones"]) == 1
