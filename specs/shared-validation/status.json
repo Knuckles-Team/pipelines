@@ -217,8 +217,8 @@
         "tests/hooks/test_privacy_provenance.py:25",
         "tests/hooks/test_privacy_provenance.py:33",
         "tests/hooks/test_privacy_provenance.py:53",
-        "tests/hooks/test_privacy_provenance.py:75",
-        "tests/hooks/test_privacy_provenance.py:82"
+        "tests/hooks/test_privacy_provenance.py:71",
+        "tests/hooks/test_privacy_provenance.py:78"
       ]
     }
   ]

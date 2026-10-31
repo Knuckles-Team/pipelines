@@ -945,7 +945,7 @@
       "landed_in": [
         "149439ae20cc",
         "2cdfc98f4b32",
-        "8fa2d4254964"
+        "e248b9cf894e"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:111",
