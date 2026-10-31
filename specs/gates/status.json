@@ -411,7 +411,7 @@
     {
       "id": "PIPE-GATES-R016",
       "title": "The composed ontology graph is reachable and bridged",
-      "delivery_state": "SPECIFIED",
+      "delivery_state": "VERIFIED",
       "landed_in": [
         "03512169cad3",
         "072841d0fc31",
@@ -420,7 +420,11 @@
         "12874ccce7f9"
       ],
       "verified_by": [
-        "tests/hooks/test_ontology_graph_check.py:15"
+        "tests/hooks/test_connector_central.py:388",
+        "tests/hooks/test_connector_central.py:408",
+        "tests/hooks/test_connector_central.py:419",
+        "tests/hooks/test_connector_central.py:491",
+        "tests/hooks/test_connector_central.py:505"
       ],
       "rollup_of": [
         "PIPE-GATES-R016.1",
@@ -1048,6 +1052,7 @@
       "landed_in": [
         "49da84faebe2",
         "89e96300d187",
+        "99eaeba1b311",
         "c3769c753a53"
       ],
       "verified_by": [
@@ -2015,18 +2020,28 @@
     {
       "id": "PIPE-GATES-R016.117",
       "title": "A long token is scanned in overlapping windows, not refused",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
-      "verified_by": []
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "398b8f1d2f52",
+        "99eaeba1b311"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_identity_boundaries.py:57"
+      ]
     },
     {
       "id": "PIPE-GATES-R016.118",
       "title": "A requirement-row token and a repository-relative path are not machine data",
-      "delivery_state": "SPECIFIED",
-      "landed_in": [],
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "99eaeba1b311"
+      ],
       "verified_by": [
         "tests/hooks/test_privacy_hostnames.py:55",
-        "tests/hooks/test_privacy_hostnames.py:67"
+        "tests/hooks/test_privacy_hostnames.py:67",
+        "tests/test_connector_evidence_sanitize.py:20",
+        "tests/test_connector_evidence_sanitize.py:31",
+        "tests/test_connector_evidence_sanitize.py:47"
       ]
     }
   ]

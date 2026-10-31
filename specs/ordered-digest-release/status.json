@@ -944,7 +944,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "149439ae20cc",
-        "2cdfc98f4b32"
+        "2cdfc98f4b32",
+        "8fa2d4254964"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:111",
