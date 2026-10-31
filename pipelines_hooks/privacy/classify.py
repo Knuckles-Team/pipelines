@@ -48,6 +48,8 @@ def _attributed_name(line: str, names: frozenset[str]) -> bool:
             return True
         if re.search(token + rf"\s*\({role}\)", line, re.IGNORECASE):
             return True
+        if re.search(token + r"@[\w.-]", line):  # `account@host`
+            return True
     return False
 
 
