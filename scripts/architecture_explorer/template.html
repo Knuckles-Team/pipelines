@@ -484,7 +484,7 @@ function drawBands(n, alpha){ const L=n.layout, t=LT[n.id]; if(!L.bands||!L.band
   const anchor=L.loop&&L.kids[L.loop.around], sx0=toS(x0,0)[0], sw0=w*cam.k;
   const gutter=anchor?toS(t.ox+(anchor[0]+anchor[2]+24)*t.s,0)[0]:sx0+sw0*0.72;
   const left=gutter+12, right=sx0+sw0-8, available=Math.max(1,right-left);
-  const overviewTitles={"People and clients":"People and Clients","Front ends":"Front Ends","Arbora door":"Arbora Door","Agent control plane and skills":"Agent Control Plane and Skills","Engine core, connectors and sources":"Engine Core, Connectors and Sources","Serving and delivery":"Serving and Delivery"};
+  const overviewTitles={"People and clients":"People and Clients","Front ends":"Front Ends","Arbora door":"Arbora Door","Agent control plane and skills":"Agent Control Plane and Skills","Engine core, connectors and sources":"Engine Core, Connectors and Sources"};
   const labels=L.bands.map(b=>n.id==="root"?(overviewTitles[b[0]]||b[0]):b[0]);
   let headingSize=Math.min(11,sw0*0.024);ctx.font="500 "+headingSize+"px "+C.display;
   headingSize*=Math.min(1,available/Math.max(1,...labels.map(text=>ctx.measureText(text).width)));

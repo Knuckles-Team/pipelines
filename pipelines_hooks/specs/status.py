@@ -123,7 +123,7 @@ def main(argv: list[str]) -> int:
     tracked = tracked_status_files(root)
     if tracked:
         print("FAIL: status.json is generated, never committed; untrack it (git rm --cached) and gitignore it:")
-        for path in tracked:
-            print(f"    {path}")
+        for tracked_path in tracked:
+            print(f"    {tracked_path}")
         return 1
     return 0
