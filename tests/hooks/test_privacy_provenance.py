@@ -51,16 +51,12 @@ def test_attribution_contexts_remain_sensitive(line: str) -> None:
 
 
 @pytest.mark.spec("PIPE-VALIDATION-R002")
-@pytest.mark.parametrize("source", ["account", "hostname", "home", "email", "override"])
+@pytest.mark.parametrize("source", ["hostname", "email", "override"])
 def test_independent_sources_override_display_name_context(
     repo: Repo, ambient_catalog: Path, monkeypatch: pytest.MonkeyPatch, source: str
 ) -> None:
-    if source == "account":
-        monkeypatch.setattr(identities.getpass, "getuser", lambda: NAME)
-    elif source == "hostname":
+    if source == "hostname":
         monkeypatch.setattr(identities.socket, "gethostname", lambda: NAME)
-    elif source == "home":
-        monkeypatch.setattr(Path, "home", classmethod(lambda cls: Path("/home") / NAME))
     elif source == "email":
         set_local_identity(repo.root, name=NAME, email=NAME)
     else:
@@ -95,3 +91,36 @@ def test_unicode_display_name_attribution() -> None:
         display_names=frozenset({name.casefold()}),
         deployment_doc=False,
     )
+
+
+@pytest.mark.spec("PIPE-GATES-R016.119")
+@pytest.mark.parametrize("source", ["account", "home"])
+def test_local_account_name_is_contextual(
+    repo: Repo, ambient_catalog: Path, monkeypatch: pytest.MonkeyPatch, source: str
+) -> None:
+    if source == "account":
+        monkeypatch.setattr(identities.getpass, "getuser", lambda: NAME)
+    else:
+        monkeypatch.setattr(Path, "home", classmethod(lambda cls: Path("/home") / NAME))
+    candidates = identities.derive_identity_candidates(repo.root)
+    assert NAME.casefold() not in candidates.strict
+    assert NAME.casefold() in candidates.display_names
+    repo.commit(
+        {
+            "docs/product.md": "Asterloom Agent: the asterloom-web-search skill.\n",
+            "pkg/codes.py": "TITLES = {'SLUS-1': 'Boy Asterloom'}\nENGINE = 'asterloom'\n",
+        }
+    )
+    assert repo.run("tracked-privacy", "--identity-catalog", str(ambient_catalog)) == 0
+
+
+@pytest.mark.spec("PIPE-GATES-R016.119")
+@pytest.mark.parametrize(
+    "text", ["Maintainer: Asterloom\n", "ssh asterloom@build-host\n", "cache under /ho" + "me/Asterloom/x\n"]
+)
+def test_local_account_in_account_context_still_fails(
+    repo: Repo, ambient_catalog: Path, monkeypatch: pytest.MonkeyPatch, text: str
+) -> None:
+    monkeypatch.setattr(identities.getpass, "getuser", lambda: NAME)
+    repo.commit({"docs/product.md": text})
+    assert repo.run("tracked-privacy", "--identity-catalog", str(ambient_catalog)) == 1
