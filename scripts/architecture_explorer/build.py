@@ -28,6 +28,7 @@ if __package__ in (None, ""):
     __package__ = "scripts.architecture_explorer"
 
 from .details import write_details  # noqa: E402
+from .sdd import build_cards, constitutions, family_nodes, search_extra  # noqa: E402
 from .canonical import canonical_model, failure_message, merged_aliases, tag_family_keys  # noqa: E402
 from .delivery import aggregate  # noqa: E402
 from .geometry import count_crossings  # noqa: E402
@@ -323,6 +324,7 @@ def build_with_sources(
     data = emit(tree.root, direct, layouts, delivery)
     data["delivery"] = page_delivery(delivery, rows)
     data["releases"] = release_view(manifests, rows, load_runs(RELEASES))
+    data["cards"] = build_cards(snaps, delivery["release_of"], {m["id"]: m["phase"] for m in manifests})
     unmapped = sum(len(v) for k, v in direct.items() if tree.nodes[k].get("unmapped"))
     violations = unmapped_violations(tree, direct, model.get("unmapped_allow", []))
     meta = {
@@ -344,6 +346,7 @@ def build_with_sources(
         "how": dict(Counter(placer.how.values())),
         "dropped_code": len(dropped),
         "aliases": {k: v for snap in reversed(snaps) for k, v in snap.aliases.items()},
+        "constitutions": constitutions(snaps),
         "crossings": count_crossings(layouts),
     }
     if chart is not None:
@@ -460,7 +463,8 @@ def main(argv: list[str] | None = None) -> int:
     body = render(data, meta)
     target = args.page or args.artifact
     if target:
-        meta["detail_files"] = len(write_details(target.parent, snaps))
+        extra = search_extra(snaps, family_nodes(list(_walk(data))))
+        meta["detail_files"] = len(write_details(target.parent, snaps, extra))
     for path, text in ((args.artifact, body), (args.page, DOC_HEAD + body + DOC_TAIL)):
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)
