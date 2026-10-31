@@ -367,3 +367,10 @@ def test_foreign_rollup_members_are_evidence_only_not_silent_score_expansion():
     assert evidence["provenance"]["commit"] == SHA
     assert "priority" not in evidence and "readiness" not in evidence
     assert result["rows"]["R_1:" + parent]["sourceEvidence"]["rollupOf"] == [evidence["key"]]
+
+
+def test_known_uncaptured_repository_prerequisite_is_external_not_a_gap():
+    from scripts.architecture_explorer import story_chart_sources as sources
+
+    assert "MEDULLA" in sources.ORGANIZATION_SPEC_PREFIXES
+    assert "MISSING" not in sources.ORGANIZATION_SPEC_PREFIXES

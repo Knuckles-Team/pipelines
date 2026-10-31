@@ -18,6 +18,12 @@ from pipelines_hooks.specs.requirements_doc import parse_rows
 from .story_contract import FORMULA, STATUSES, cycle_groups, provenance, require
 from .story_sources import normalize_family, source_ref
 
+# Requirement ID prefixes owned by organization repositories (the routing table in
+# reference/ecosystem-boundaries.md).
+ORGANIZATION_SPEC_PREFIXES = frozenset(
+    {"ARBORA", "AXIL", "CONN", "EMERALD", "MEDULLA", "MERISTEM", "OVERSTORY", "PIPE", "SCION", "TUIG", "US"}
+)
+
 
 def capture_git(root: Path, commit: str, repository: dict) -> dict:
     """Read exactly one existing full Git commit; no fetch, ref fallback, or API."""
@@ -127,6 +133,11 @@ def source_chart(
         )
     indexed = {r["id"]: r for r in rows}
     require(len(indexed) == len(rows), "ambiguous bare requirement IDs in score scope")
+    # A prerequisite owned by a known organization repository outside the
+    # capture is an external reference, not a gap. Captured and unknown
+    # prefixes must still resolve.
+    captured_prefixes = {r["id"].split("-", 1)[0] for r in rows}
+    external_prefixes = ORGANIZATION_SPEC_PREFIXES - captured_prefixes
     dependency_gaps = []
     for row in rows:
         targets, resolutions = [], []
@@ -139,6 +150,9 @@ def source_chart(
                 if resolved != declared and resolved in indexed and indexed[resolved]["repositoryId"] == repo_id:
                     require(indexed[resolved]["status"] != "RETIRED", "alias target is retired: " + resolved)
                     candidates.append((resolved, ref, retired_prefix(declared, rules)))
+            if not candidates and declared.split("-", 1)[0] in external_prefixes:
+                row.setdefault("externalDependencies", []).append(declared)
+                continue
             if len(candidates) != 1:
                 dependency_gaps.append(
                     {

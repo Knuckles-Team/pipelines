@@ -309,7 +309,7 @@ jobs:
             pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-
 
       - name: Drop the stale shared-hook environment
-        if: steps.scope.outputs.docs-only != 'true' && steps.hook-cache.outputs.cache-matched-key != '' && !startsWith(steps.hook-cache.outputs.cache-matched-key, 'pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}')
+        if: steps.scope.outputs.docs-only != 'true' && steps.hook-cache.outputs.cache-matched-key != '' && !startsWith(steps.hook-cache.outputs.cache-matched-key, format('pre-commit-{0}-{1}-{2}-{3}', runner.os, runner.arch, hashFiles(inputs.config, inputs.ci-config), steps.hook-rev.outputs.sha))
         run: |
           set -euo pipefail
           db="$HOME/.cache/pre-commit/db.db"
