@@ -254,7 +254,7 @@ Each row names its entry point and caller chain in its own text. This plan adds 
 
 ## Cross-repo seams
 
-The `Depends on` lines of requirements.md name each seam by the row ID that owns it in the other repository.
+none
 
 ## North star
 
