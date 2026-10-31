@@ -40,6 +40,40 @@ NARRATIVE = """# {id} — Title
 """
 
 
+PLAN = (
+    "# FOO — Plan\n\n## Summary\n\n## Technical Context\n\n"
+    + "".join(
+        f"- **{f}**: x\n"
+        for f in (
+            "Language/Version",
+            "Primary Dependencies",
+            "Storage",
+            "Testing",
+            "Target Platform",
+            "Project Type",
+            "Performance Goals",
+            "Constraints",
+            "Scale/Scope",
+        )
+    )
+    + "\n"
+    + "".join(
+        f"## {s}\n\nx\n\n"
+        for s in (
+            "Constitution Check",
+            "Project Structure",
+            "Phase 0: Research",
+            "Phase 1: Design",
+            "Phase 2: Task approach",
+            "Complexity Tracking",
+            "Build contract",
+            "Production caller chain",
+            "Cross-repo seams",
+        )
+    )
+)
+
+
 def _stage(root: Path, *names: str) -> None:
     subprocess.run(["git", "-C", str(root), "add", "--", *names], env=fixture_git_environment(), check=True)
 
@@ -51,6 +85,9 @@ def _spec(root: Path, name: str = "foo", spec_id: str = "FOO") -> Path:
         (d / f).write_text(f'{{"spec_id": "{spec_id}"}}\n' if f.endswith(".json") else "x\n")
     (d / "spec.md").write_text(NARRATIVE.format(id=spec_id))
     (d / "requirements.md").write_text(f"| `{spec_id}-R001` | req |\n")
+    (d / "tasks.md").write_text(f"- [ ] T001 {spec_id}-R001 do it\n")
+    (d / "test-spec.md").write_text(f"| T-001 | {spec_id}-R001 | Unit | x | y |\n")
+    (d / "plan.md").write_text(PLAN)
     (root / "specs" / "README.md").write_text(f"- [x]({name}/spec.md)\n")
     constitution = root / ".specify" / "memory" / "constitution.md"
     constitution.parent.mkdir(parents=True, exist_ok=True)
@@ -337,3 +374,123 @@ def test_a_change_against_the_base_revision_counts_as_touched(root, capsys):
     assert main(["--root", str(root), "--base", "HEAD"]) == 1
     capsys.readouterr()
     assert main(["--root", str(root)]) == 0
+
+
+def _touch(root, d, name, text):
+    (d / name).write_text(text)
+    _stage(root, f"specs/{d.name}/{name}", f"specs/{d.name}/requirements.md")
+
+
+def test_complete_plan_is_clean(root, capsys):
+    # spec: PIPE-GATES-R028
+    d = _spec(root)
+    _touch(root, d, "plan.md", PLAN)
+    assert _run(root, capsys)[0] == 0
+
+
+def test_plan_sections_fail_for_a_touched_spec(root, capsys):
+    # spec: PIPE-GATES-R028
+    d = _spec(root)
+    _touch(root, d, "plan.md", "# FOO — Plan\n\n## Summary\n\n## Technical Context\n\n- **Testing**: x\n")
+    code, out = _run(root, capsys)
+    assert code == 1
+    for part in (
+        "Constitution Check",
+        "Complexity Tracking",
+        "Build contract",
+        "Cross-repo seams",
+        "Primary Dependencies",
+    ):
+        assert part in out
+
+
+def test_plan_sections_are_advisory_for_an_untouched_spec(root, capsys):
+    # spec: PIPE-GATES-R028
+    d = _spec(root)
+    (d / "plan.md").write_text("# FOO — Plan\n")
+    _stage(root, "specs/README.md")
+    code, out = _run(root, capsys)
+    assert code == 0
+    assert "ADV" in out and "Constitution Check" in out
+
+
+def test_analysis_row_without_task_fails_when_touched(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _touch(root, d, "tasks.md", "No tasks.\n")
+    code, out = _run(root, capsys)
+    assert code == 1 and "no task line for FOO-R001" in out
+
+
+def test_analysis_task_naming_no_row(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _touch(root, d, "tasks.md", "- [ ] T001 FOO-R001 ok\n- [ ] nonsense FOO-R009\n")
+    code, out = _run(root, capsys)
+    assert code == 1 and "names FOO-R009" in out
+
+
+def test_analysis_row_without_test(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _touch(root, d, "test-spec.md", "nothing\n")
+    code, out = _run(root, capsys)
+    assert code == 1 and "FOO-R001 has no bound test" in out
+
+
+def test_analysis_test_by_label_is_enough(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _touch(root, d, "test-spec.md", "| T-001 | FR-001 | Unit | x | y |\n")
+    assert _run(root, capsys)[0] == 0
+
+
+def test_analysis_orphan_label(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _touch(root, d, "test-spec.md", "| T-001 | FOO-R001 FR-007 | Unit | x | y |\n")
+    code, out = _run(root, capsys)
+    assert code == 1 and "cites FR-007" in out
+
+
+def test_analysis_marker_in_design_files(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    _touch(root, d, "plan.md", PLAN + "\n[NEEDS CLARIFICATION: which store?]\n")
+    code, out = _run(root, capsys)
+    assert code == 1 and "plan.md" in out and "NEEDS CLARIFICATION" in out
+
+
+def test_analysis_rollup_parent_is_covered_by_children(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    (d / "requirements.md").write_text("| `FOO-R001` | parent |\n| `FOO-R001.1` | child |\n")
+    _touch(root, d, "tasks.md", "- [ ] T001 FOO-R001.1 do\n")
+    _touch(root, d, "test-spec.md", "| T-001 | FOO-R001.1 | Unit | x | y |\n")
+    assert _run(root, capsys)[0] == 0
+
+
+def test_analysis_is_advisory_for_an_untouched_spec(root, capsys):
+    # spec: PIPE-GATES-R029
+    d = _spec(root)
+    (d / "tasks.md").write_text("No tasks.\n")
+    _stage(root, "specs/README.md")
+    code, out = _run(root, capsys)
+    assert code == 0 and "ADV" in out and "no task line" in out
+
+
+def test_unchecked_checklist_item_is_a_finding(root, capsys):
+    # spec: PIPE-GATES-R030
+    d = _spec(root)
+    (d / "checklists").mkdir()
+    _touch(root, d, "checklists/requirements.md", "- [x] a\n- [ ] b\n")
+    code, out = _run(root, capsys)
+    assert code == 1 and "unchecked item" in out
+
+
+def test_checked_checklist_is_clean(root, capsys):
+    # spec: PIPE-GATES-R030
+    d = _spec(root)
+    (d / "checklists").mkdir()
+    _touch(root, d, "checklists/requirements.md", "- [x] a\n")
+    assert _run(root, capsys)[0] == 0
