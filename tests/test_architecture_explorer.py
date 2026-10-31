@@ -2563,3 +2563,29 @@ def test_new_panels_use_glass_levels_and_respect_reduced_motion() -> None:
     assert not re.search(r"background:\s*(#|rgb\()", new_rules)
     block = css[css.index("@media (prefers-reduced-motion: reduce){") :]
     assert "transition:none!important" in block[: block.index("\n}\n")]
+
+
+@pytest.mark.spec("PIPE-PAGES-R052")
+def test_canopy_is_a_part_inside_pipelines_and_owns_its_rows() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    tree = Tree(model)
+    assert tree.parent["pipe.canopy"] == "pipelines" and tree.nodes["pipe.canopy"]["label"] == "Canopy"
+    assert "pipe.pages.explorer" not in tree.nodes and tree.parent["pipe.site"] == "pipelines"
+    edges = {tuple(e) for e in tree.nodes["pipelines"]["edges"]}
+    assert ("pipe.site", "pipe.canopy", "serves") in edges and ("pipe.canopy", "pipe.release", "consumes") in edges
+    assert {"arbora", "eg", "connectors"} <= set(tree.nodes["pipe.canopy"]["links"])
+    owned = [
+        "PIPE-PAGES-R042",
+        "PIPE-PAGES-R042.12",
+        "PIPE-PAGES-R044",
+        "PIPE-PAGES-R050",
+        "PIPE-PAGES-R051.3",
+        "PIPE-PAGES-R052",
+    ]
+    kept = ["PIPE-PAGES-R043", "PIPE-PAGES-R010", "PIPE-PAGES-R043.2"]
+    rows = [_row(i, "Row " + i, "ecosystem-pages-parity", "pipelines") for i in owned + kept]
+    direct = Placer(tree).run(rows)
+    where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
+    assert {where[i] for i in owned} == {"pipe.canopy"}
+    assert all(where[i] != "pipe.canopy" for i in kept)
+    assert unmapped_violations(tree, direct, model["unmapped_allow"]) == []

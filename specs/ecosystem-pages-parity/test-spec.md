@@ -299,3 +299,131 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R043.4 | PIPE-PAGES-R043.4 | `tests/test_pages_readiness.py::test_stale_source_digest_fails_closed`. The validator must reject stale source digests and private capability references before publication. |
 | T-PIPE-PAGES-R043.5 | PIPE-PAGES-R043.5 | `tests/test_pages_readiness.py::test_cli_failure_result_is_versioned`. The CLI must report versioned failure results rather than imply successful validation. |
 | T-PIPE-PAGES-R043.6 | PIPE-PAGES-R043.6 | `tests/test_pages_readiness.py::test_direct_entry_requires_and_loads_the_sparse_readiness_package`. The direct script entry must load the sparse readiness package and validate the declared content source. |
+
+## Entries added for rows without a prior entry
+
+| Test ID | Requirement | Expected observation |
+|---|---|---|
+| T-PIPE-PAGES-R051.1 | PIPE-PAGES-R051.1 | Test: `tests/test_architecture_explorer.py::test_family_files_carry_every_spec_document_with_an_outline`. |
+| T-PIPE-PAGES-R051.2 | PIPE-PAGES-R051.2 | Test: `tests/test_architecture_explorer.py::test_a_repository_constitution_is_written_versioned_and_linked`. |
+| T-PIPE-PAGES-R051.3 | PIPE-PAGES-R051.3 | Test: `tests/test_architecture_explorer.py::test_delivery_cards_carry_title_phase_task_progress_and_document_bits`. |
+| T-PIPE-PAGES-R051.4 | PIPE-PAGES-R051.4 | Test: `tests/test_architecture_explorer.py::test_the_node_panel_renders_own_cards_and_links_each_document`. |
+| T-PIPE-PAGES-R051.5 | PIPE-PAGES-R051.5 | Test: `tests/test_architecture_explorer.py::test_doc_deep_links_parse_and_round_trip` and `::test_the_reader_opens_a_plan_section_and_links_row_ids_in_a_browser`. |
+| T-PIPE-PAGES-R051.6 | PIPE-PAGES-R051.6 | Test: `tests/test_architecture_explorer.py::test_the_program_view_has_a_toggle_and_five_phase_columns`. |
+| T-PIPE-PAGES-R051.7 | PIPE-PAGES-R051.7 | Test: `tests/test_architecture_explorer.py::test_a_failing_principle_in_the_constitution_check_warns`. |
+| T-PIPE-PAGES-R051.8 | PIPE-PAGES-R051.8 | Test: `tests/test_architecture_explorer.py::test_search_extras_hold_task_lines_and_plan_headings_and_rank_last`. |
+| T-PIPE-PAGES-R051.9 | PIPE-PAGES-R051.9 | Test: `tests/test_architecture_explorer.py::test_the_page_stays_within_ten_percent_and_inlines_no_document` and `::test_new_panels_use_glass_levels_and_respect_reduced_motion`. |
+| T-PIPE-PAGES-R052 | PIPE-PAGES-R052 | Test: `tests/test_architecture_explorer.py::test_canopy_is_a_part_inside_pipelines_and_owns_its_rows`. |
+
+## Entries added for rows without a prior entry
+
+| Test ID | Requirement | Expected observation |
+|---|---|---|
+| T-PIPE-PAGES-R001 | PIPE-PAGES-R001 | A parity check confirms the switcher's repository list matches the declared core-repository set and release receipt, and a source scan confirms the obsolete standalone deployment generator no longer exists. |
+| T-PIPE-PAGES-R002 | PIPE-PAGES-R002 | A navigation-depth and link-structure audit confirms each tier, introduction, component, and reference, exists and links progressively into the next. |
+| T-PIPE-PAGES-R003 | PIPE-PAGES-R003 | Strict documentation build, theme, accessibility, and content-diff checks confirm the README order, embedded start, shared visuals, and present-tense wording. |
+| T-PIPE-PAGES-R007 | PIPE-PAGES-R007 | Focused theme rendering tests plus a changed-file documentation build confirm the diagram's flow, project titles, and logo marks render correctly. |
+| T-PIPE-PAGES-R008 | PIPE-PAGES-R008 | A multi-page render, link, and accessibility audit plus a changed-file build check confirm ownership statements, the quick start, and accessible navigation on the consumer site. |
+| T-PIPE-PAGES-R011 | PIPE-PAGES-R011 | Strict MkDocs render, accessibility, theme, and privacy gates, together with the documentation build run, confirm the home page's content and that it passes without regressions. |
+| T-PIPE-PAGES-R012.20 | PIPE-PAGES-R012.20 | Run `test_eg7_capability_authority_model` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R012.21 | PIPE-PAGES-R012.21 | Run `test_eg7_complete_binding_coverage` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R012.22 | PIPE-PAGES-R012.22 | Run `test_eg7_binding_gate_wiring` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R012.23 | PIPE-PAGES-R012.23 | Run `test_eg7_refusal_missing_identity` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R012.24 | PIPE-PAGES-R012.24 | Run `test_eg7_coverage_evidence` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R012.25 | PIPE-PAGES-R012.25 | Run `test_eg7_identity_enforcement_cli` in `tests/test_spec_dashboard_metadata.py`. |
+| T-PIPE-PAGES-R021.79 | PIPE-PAGES-R021.79 | Run `test_pipe9_coverage_runner_model` in `tests/hooks/test_coverage_closure.py`. |
+| T-PIPE-PAGES-R021.80 | PIPE-PAGES-R021.80 | Run `test_pipe9_inventory_behavior` in `tests/hooks/test_coverage_closure.py`. |
+| T-PIPE-PAGES-R021.81 | PIPE-PAGES-R021.81 | Run `test_pipe9_gate_wiring` in `tests/hooks/test_coverage_closure.py`. |
+| T-PIPE-PAGES-R021.82 | PIPE-PAGES-R021.82 | Run `test_pipe9_threshold_refusal` in `tests/hooks/test_coverage_closure.py`. |
+| T-PIPE-PAGES-R021.83 | PIPE-PAGES-R021.83 | Run `test_pipe9_closure_evidence` in `tests/hooks/test_coverage_closure.py`. |
+| T-PIPE-PAGES-R021.84 | PIPE-PAGES-R021.84 | Run `test_pipe9_closure_cli` in `tests/hooks/test_coverage_closure.py`. |
+| T-PIPE-PAGES-R021.85 | PIPE-PAGES-R021.85 | Run `test_pipe10_workflow_model` in `tests/hooks/test_graph_workflow_receipt.py`. |
+| T-PIPE-PAGES-R021.86 | PIPE-PAGES-R021.86 | Run `test_pipe10_readback_behavior` in `tests/hooks/test_graph_workflow_receipt.py`. |
+| T-PIPE-PAGES-R021.87 | PIPE-PAGES-R021.87 | Run `test_pipe10_gate_wiring` in `tests/hooks/test_graph_workflow_receipt.py`. |
+| T-PIPE-PAGES-R021.88 | PIPE-PAGES-R021.88 | Run `test_pipe10_readback_refusal` in `tests/hooks/test_graph_workflow_receipt.py`. |
+| T-PIPE-PAGES-R021.89 | PIPE-PAGES-R021.89 | Run `test_pipe10_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`. |
+| T-PIPE-PAGES-R021.90 | PIPE-PAGES-R021.90 | Run `test_pipe10_cli_proof` in `tests/hooks/test_graph_workflow_receipt.py`. |
+| T-PIPE-PAGES-R025.3 | PIPE-PAGES-R025.3 | Run integration test. |
+| T-PIPE-PAGES-R026.1 | PIPE-PAGES-R026.1 | Run schema validation test. |
+| T-PIPE-PAGES-R026.2 | PIPE-PAGES-R026.2 | Run generator test. |
+| T-PIPE-PAGES-R026.3 | PIPE-PAGES-R026.3 | Run consumer test. |
+| T-PIPE-PAGES-R026.4 | PIPE-PAGES-R026.4 | Run refusal test. |
+| T-PIPE-PAGES-R026.5 | PIPE-PAGES-R026.5 | Run round-trip test. |
+| T-PIPE-PAGES-R026.6 | PIPE-PAGES-R026.6 | Run `test_artifact_schema_cli`. |
+| T-PIPE-PAGES-R027.1 | PIPE-PAGES-R027.1 | Run format test. |
+| T-PIPE-PAGES-R027.2 | PIPE-PAGES-R027.2 | Run interop test. |
+| T-PIPE-PAGES-R027.3 | PIPE-PAGES-R027.3 | Run classification test. |
+| T-PIPE-PAGES-R027.4 | PIPE-PAGES-R027.4 | Run compat test. |
+| T-PIPE-PAGES-R027.5 | PIPE-PAGES-R027.5 | Run agreement test. |
+| T-PIPE-PAGES-R027.6 | PIPE-PAGES-R027.6 | Run `test_spec_format_compat_cli`. |
+| T-PIPE-PAGES-R028.1 | PIPE-PAGES-R028.1 | Run phase test. |
+| T-PIPE-PAGES-R028.2 | PIPE-PAGES-R028.2 | Run execution test. |
+| T-PIPE-PAGES-R028.3 | PIPE-PAGES-R028.3 | Run stream test. |
+| T-PIPE-PAGES-R028.4 | PIPE-PAGES-R028.4 | Run event test. |
+| T-PIPE-PAGES-R028.5 | PIPE-PAGES-R028.5 | Run transition test. |
+| T-PIPE-PAGES-R028.6 | PIPE-PAGES-R028.6 | Run `test_release_phase_coordination_cli`. |
+| T-PIPE-PAGES-R029.1 | PIPE-PAGES-R029.1 | Run inventory test. |
+| T-PIPE-PAGES-R029.2 | PIPE-PAGES-R029.2 | Run audit test. |
+| T-PIPE-PAGES-R029.3 | PIPE-PAGES-R029.3 | Run approval test. |
+| T-PIPE-PAGES-R029.4 | PIPE-PAGES-R029.4 | Run auth test. |
+| T-PIPE-PAGES-R029.5 | PIPE-PAGES-R029.5 | Run binding test. |
+| T-PIPE-PAGES-R029.6 | PIPE-PAGES-R029.6 | Run `test_skill_dependency_audit_cli`. |
+| T-PIPE-PAGES-R030.1 | PIPE-PAGES-R030.1 | Run discovery test. |
+| T-PIPE-PAGES-R030.2 | PIPE-PAGES-R030.2 | Run comparison test. |
+| T-PIPE-PAGES-R030.3 | PIPE-PAGES-R030.3 | Run refusal test. |
+| T-PIPE-PAGES-R030.4 | PIPE-PAGES-R030.4 | Run undeclared test. |
+| T-PIPE-PAGES-R030.5 | PIPE-PAGES-R030.5 | Run gap test. |
+| T-PIPE-PAGES-R030.6 | PIPE-PAGES-R030.6 | Run `test_version_reference_discovery_cli`. |
+| T-PIPE-PAGES-R023.19 | PIPE-PAGES-R023.19 | Run `test_aggregate_skill_grade_cli`. |
+| T-PIPE-PAGES-R032.1 | PIPE-PAGES-R032.1 | Run export-import model test. |
+| T-PIPE-PAGES-R032.2 | PIPE-PAGES-R032.2 | Run round-trip behavior test. |
+| T-PIPE-PAGES-R032.3 | PIPE-PAGES-R032.3 | Run export wiring test. |
+| T-PIPE-PAGES-R032.4 | PIPE-PAGES-R032.4 | Run version refusal test. |
+| T-PIPE-PAGES-R032.5 | PIPE-PAGES-R032.5 | Run version comparison evidence test. |
+| T-PIPE-PAGES-R032.6 | PIPE-PAGES-R032.6 | Run `test_eg56_export_import_cli`. |
+| T-PIPE-PAGES-R033.1 | PIPE-PAGES-R033.1 | Run installer model test. |
+| T-PIPE-PAGES-R033.2 | PIPE-PAGES-R033.2 | Run target binding behavior test. |
+| T-PIPE-PAGES-R033.3 | PIPE-PAGES-R033.3 | Run harness wiring test. |
+| T-PIPE-PAGES-R033.4 | PIPE-PAGES-R033.4 | Run target proof refusal test. |
+| T-PIPE-PAGES-R033.5 | PIPE-PAGES-R033.5 | Run target coverage evidence test. |
+| T-PIPE-PAGES-R033.6 | PIPE-PAGES-R033.6 | Run `test_au96_target_binding_cli`. |
+| T-PIPE-PAGES-R034.1 | PIPE-PAGES-R034.1 | Run portable profile model test. |
+| T-PIPE-PAGES-R034.2 | PIPE-PAGES-R034.2 | Run dependency-free behavior test. |
+| T-PIPE-PAGES-R034.3 | PIPE-PAGES-R034.3 | Run parity matrix wiring test. |
+| T-PIPE-PAGES-R034.4 | PIPE-PAGES-R034.4 | Run parity refusal test. |
+| T-PIPE-PAGES-R034.5 | PIPE-PAGES-R034.5 | Run parity evidence test. |
+| T-PIPE-PAGES-R034.6 | PIPE-PAGES-R034.6 | Run `test_eg53_portable_deployment_cli`. |
+| T-PIPE-PAGES-R021.91 | PIPE-PAGES-R021.91 | Complete inventory lists every validation action. |
+| T-PIPE-PAGES-R021.92 | PIPE-PAGES-R021.92 | Hook adopters configure and pass both success and failure cases. |
+| T-PIPE-PAGES-R021.93 | PIPE-PAGES-R021.93 | Pre-commit configuration names every mapped behavior for all projects. |
+| T-PIPE-PAGES-R021.94 | PIPE-PAGES-R021.94 | Baseline gaps remain visible in inventory and findings. |
+| T-PIPE-PAGES-R021.95 | PIPE-PAGES-R021.95 | Baseline state appears in all hook findings. |
+| T-PIPE-PAGES-R021.96 | PIPE-PAGES-R021.96 | Test missing behavior in pre-commit configuration. |
+| T-PIPE-PAGES-R037.1 | PIPE-PAGES-R037.1 | Profile specifies doubles for database, API, client code. |
+| T-PIPE-PAGES-R037.2 | PIPE-PAGES-R037.2 | Unit runner rejects planted network and container attempts. |
+| T-PIPE-PAGES-R037.3 | PIPE-PAGES-R037.3 | Profile adoption gates must reject unmocked external dependencies. |
+| T-PIPE-PAGES-R037.4 | PIPE-PAGES-R037.4 | Runner cannot silently skip external dependency mocking. |
+| T-PIPE-PAGES-R037.5 | PIPE-PAGES-R037.5 | Evidence separates unit isolation from integration tests. |
+| T-PIPE-PAGES-R037.6 | PIPE-PAGES-R037.6 | Test planted database and API calls. |
+| T-PIPE-PAGES-R038.1 | PIPE-PAGES-R038.1 | Hook declares ontology file inputs and check outputs. |
+| T-PIPE-PAGES-R038.2 | PIPE-PAGES-R038.2 | Failed verdict causes commit refusal via hook exit. |
+| T-PIPE-PAGES-R038.3 | PIPE-PAGES-R038.3 | Hook reaches Medulla service identity and pins verdict version. |
+| T-PIPE-PAGES-R038.4 | PIPE-PAGES-R038.4 | Missing verdicts block commits rather than permit them. |
+| T-PIPE-PAGES-R038.5 | PIPE-PAGES-R038.5 | Evidence separates local execution from remote verdict authority. |
+| T-PIPE-PAGES-R038.6 | PIPE-PAGES-R038.6 | Test proves local authority cannot override Medulla. |
+| T-PIPE-PAGES-R040.1 | PIPE-PAGES-R040.1 | Proposal must carry coverage baseline and candidate measurements. |
+| T-PIPE-PAGES-R040.2 | PIPE-PAGES-R040.2 | Gate compares candidate metrics against baseline deterministically. |
+| T-PIPE-PAGES-R040.3 | PIPE-PAGES-R040.3 | Baseline and candidate evidence bind to revision. |
+| T-PIPE-PAGES-R040.4 | PIPE-PAGES-R040.4 | Unmeasured coverage proposals fail rather than pass. |
+| T-PIPE-PAGES-R040.5 | PIPE-PAGES-R040.5 | Evidence preserves graph authorization and materialization receipt. |
+| T-PIPE-PAGES-R040.6 | PIPE-PAGES-R040.6 | Test planted coverage decrease in candidate revision. |
+| T-PIPE-PAGES-R041.1 | PIPE-PAGES-R041.1 | Configuration specifies nonnegative integer limits for each. |
+| T-PIPE-PAGES-R041.2 | PIPE-PAGES-R041.2 | Every violation identifies repository-relative path and function. |
+| T-PIPE-PAGES-R041.3 | PIPE-PAGES-R041.3 | Arbora configuration pins both limits and invokes check. |
+| T-PIPE-PAGES-R041.4 | PIPE-PAGES-R041.4 | Missing limits exit 2; violations above limits exit 1. |
+| T-PIPE-PAGES-R041.5 | PIPE-PAGES-R041.5 | Evidence identifies repository-relative path and qualified function. |
+| T-PIPE-PAGES-R041.6 | PIPE-PAGES-R041.6 | Test keyword-only, variadic and nested-try function cases. |
+| T-PIPE-PAGES-R044 | PIPE-PAGES-R044 | Test: `tests/test_architecture_explorer.py::test_verified_and_delivered_counts_are_separate`. |
+| T-PIPE-PAGES-R046 | PIPE-PAGES-R046 | Test: `tests/test_architecture_explorer.py::test_section_panel_counts_own_rows_and_shares_fade`. |
+| T-PIPE-PAGES-R047 | PIPE-PAGES-R047 | Test: `tests/test_architecture_explorer.py::test_edges_carry_type_rows_and_legend`. |
+| T-PIPE-PAGES-R048 | PIPE-PAGES-R048 | `tests/test_architecture_explorer.py::test_code_view_reclusters_only_changed_items_and_links_rows`. |
