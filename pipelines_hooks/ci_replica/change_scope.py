@@ -56,7 +56,7 @@ _RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 #: The gates a spec or docs only change runs (reference/ci-standard.md, gate-to-class table).
 SPEC_GATES = frozenset(
     {
-        "spec", "spec-standard", "spec-decomposition", "spec-status", "spec-trailers", "spec-analyze",
+        "spec", "spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers", "spec-analyze",
         "spec-checklists", "spec-contracts", "constitution", "ste-staged", "ste-staleness-staged",
         "public-surface", "tracked-privacy", "no-legacy-concepts", "mermaid", "trailing-whitespace",
         "end-of-file-fixer", "mixed-line-ending", "check-merge-conflict", "check-added-large-files",
