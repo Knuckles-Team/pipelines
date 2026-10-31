@@ -14,7 +14,9 @@ from concurrent.futures import ProcessPoolExecutor
 W = sys.argv[1]
 OUT = sys.argv[2]
 sys.path.insert(0, W)
-AG = "/home/apps/workspace/agent-packages/agents"
+from pipelines_hooks.hygiene.connector_central.fleet import WORKSPACE_ROOT  # noqa: E402
+
+AG = str(WORKSPACE_ROOT / "agent-packages" / "agents")
 
 
 def run(repo):

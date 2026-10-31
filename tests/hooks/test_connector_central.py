@@ -518,6 +518,20 @@ def test_connector_pr_workflow_installs_the_identity_catalog_from_the_callers_va
     )
 
 
+@pytest.mark.spec("PIPE-GATES-R016.42")
+def test_this_repositorys_own_pr_gate_installs_the_identity_catalog_and_stays_fail_closed(tmp_path: Path) -> None:
+    ci = yaml.safe_load((WORKFLOWS / "ci.yml").read_text(encoding="utf-8"))
+    gates = ci["jobs"]["gates"]["with"]
+    assert gates["setup-command"] == "bash scripts/ci_setup.sh"
+    assert gates["skip-hooks"] == "${{ github.event.pull_request.head.repo.fork && 'tracked-privacy' || '' }}"
+    script = WORKFLOWS.parents[1] / "scripts" / "ci_setup.sh"
+    text = script.read_text(encoding="utf-8")
+    assert text.index("PROHIBITED_IDENTITY_CATALOG") < text.index("uv sync --frozen")
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "FORK_PULL_REQUEST": "false"}
+    missing = subprocess.run(["bash", str(script)], env=env, capture_output=True, text=True, check=False)
+    assert missing.returncode == 2 and "CANNOT RUN" in missing.stderr
+
+
 @pytest.mark.spec("PIPE-GATES-R016.40")
 def test_scanner_installer_installs_only_the_named_scanners(tmp_path: Path) -> None:
     fake = tmp_path / "bin"

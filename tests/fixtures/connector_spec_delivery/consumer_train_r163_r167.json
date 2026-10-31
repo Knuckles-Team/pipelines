@@ -139,23 +139,23 @@
   "repo_shards": {
     "rom-manager": {
       "path": "consumer_train_r163_r167_rom_manager.json",
-      "sha256": "2729ce12a5aa95f0143cabec9ef9f7e71fbbdc3fa1a7fad8fbc4c13a7c661db2"
+      "sha256": "63101ed01541b1faeb4c060b8bcbfb437a51719bfd287a7669fe142e876ab583"
     },
     "spark-mcp": {
       "path": "consumer_train_r163_r167_spark_mcp.json",
-      "sha256": "6fd114ccd4209a3bc526e0389a7485eb7ec8cc272a0161cf6d9a63625937817e"
+      "sha256": "0bde8afec71172f705c9c839af6557d244968cbc8b10a449874580d80db33a1b"
     },
     "sql-mcp": {
       "path": "consumer_train_r163_r167_sql_mcp.json",
-      "sha256": "17a0dc47834bb2262a30bf12f41bb4f45cb119b52eec1e0ce88b7f1115ef6a93"
+      "sha256": "f2f0a4cd2449e282172b3e8447a6d8f658d2a4e89705617e31db37473b811bc0"
     },
     "stirlingpdf-agent": {
       "path": "consumer_train_r163_r167_stirlingpdf_agent.json",
-      "sha256": "4242b73c7e834be6f28ef9beba659d2d9346bbfdefc28f4e0796d6b5dae314b5"
+      "sha256": "b721baefc7b741085a928e0c06d17cc116f61af407599f1e192ca79141c61460"
     },
     "technitium-dns-mcp": {
       "path": "consumer_train_r163_r167_technitium_dns_mcp.json",
-      "sha256": "3f75e0d3dd31605e133464fa0d28969b79ca663e25e3c15574a6ce8011360981"
+      "sha256": "5b78569105e00a7532522fc6eb4558859b956561de18ea50c79810d2c859c546"
     }
   },
   "schema_version": 1,

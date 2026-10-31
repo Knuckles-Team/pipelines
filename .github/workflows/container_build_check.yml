@@ -3,6 +3,10 @@ name: Container Build Check
 # Builds the image on a pull request so a broken Dockerfile or a file missing from the build
 # context fails before release (PIPE-RELEASE-R017). It never pushes and never logs in.
 #
+# A pull request that bumps the version pins a release that is not on PyPI yet, so the check
+# builds this branch's own wheel and serves it to every `RUN pip install` line through a bind
+# mount (`--find-links /localwheels`). Other dependencies still resolve from PyPI.
+#
 # Caller contract:
 #
 #   jobs:
@@ -39,6 +43,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up uv
+        if: hashFiles('pyproject.toml') != ''
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Build this branch's wheel
+        if: hashFiles('pyproject.toml') != ''
+        run: uv build --wheel --out-dir "$RUNNER_TEMP/localwheels"
+
       - name: Build the image without pushing
         env:
           DOCKERFILE: ${{ inputs.dockerfile }}
@@ -50,6 +62,11 @@ jobs:
             echo "No $DOCKERFILE in this repository; nothing to build."
             exit 0
           fi
-          args=(--file "$DOCKERFILE" --progress plain)
+          wheels="$RUNNER_TEMP/localwheels"
+          mkdir -p "$wheels"
+          checked="$RUNNER_TEMP/Dockerfile.pr"
+          sed -E 's#^RUN pip install #RUN --mount=type=bind,from=localwheels,target=/localwheels pip install --find-links /localwheels #' \
+            "$DOCKERFILE" > "$checked"
+          args=(--file "$checked" --build-context "localwheels=$wheels" --progress plain)
           if [[ -n "$BUILD_TARGET" ]]; then args+=(--target "$BUILD_TARGET"); fi
           docker buildx build "${args[@]}" "$BUILD_CONTEXT"
