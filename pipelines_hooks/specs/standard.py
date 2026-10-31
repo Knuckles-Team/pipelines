@@ -14,7 +14,9 @@ import re
 from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
-from pipelines_hooks.specs import narrative
+from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.specs import analysis, narrative
+from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.third_party_names import check_repository
 
@@ -107,7 +109,21 @@ def check_names(name: str, spec_id: str | None) -> list[str]:
     return out
 
 
-def check_touched_rules(spec_dir: Path, root: Path | None, touched: set[str]) -> list[str]:
+ROW_RE = narrative.ROW_TOKEN_RE
+
+
+def _fails(message: str, added: set[str], touched: set[str], spec_dir: Path, base: Path) -> bool:
+    """A row finding fails when the change adds that row; any other finding fails when its file is touched."""
+    rows = ROW_RE.findall(message)
+    if rows and ("has no task line" in message or "has no bound test" in message):
+        return bool(set(rows) & added)
+    name = message.removeprefix("analyze: ").split(":")[0].split(" ")[0]
+    return narrative.is_touched(touched, spec_dir, base, name)
+
+
+def check_touched_rules(
+    spec_dir: Path, root: Path | None, touched: set[str], bindings: dict[str, list[str]] | None = None
+) -> list[str]:
     """Narrative, task-line and status-header findings; untouched files get ``ADVISORY_TAG``."""
     texts = {n: _read(spec_dir / n) for n in ("spec.md", "plan.md", "requirements.md", "tasks.md", "test-spec.md")}
     base = root or spec_dir.parent.parent
@@ -123,16 +139,27 @@ def check_touched_rules(spec_dir: Path, root: Path | None, touched: set[str]) ->
     out += [
         m + ("" if narrative.is_touched(touched, spec_dir, base, m.split(":")[0]) else ADVISORY_TAG) for m in status
     ]
+    texts.update({n: _read(spec_dir / n) for n in ("research.md", "data-model.md", "quickstart.md")})
+    added = narrative.added_row_ids(base, spec_dir, touched, None)
+    design = [f"plan.md: {m}" for m in analysis.check_plan(texts["plan.md"])]
+    for message in [*analysis.analyze(spec_dir, texts, bindings), *analysis.check_checklists(spec_dir), *design]:
+        out.append(message if _fails(message, added, touched, spec_dir, base) else message + ADVISORY_TAG)
     return out
 
 
-def check_spec(spec_dir: Path, index: str, touched: set[str] | None = None, root: Path | None = None) -> list[str]:
+def check_spec(
+    spec_dir: Path,
+    index: str,
+    touched: set[str] | None = None,
+    root: Path | None = None,
+    bindings: dict[str, list[str]] | None = None,
+) -> list[str]:
     """Findings for one spec directory, as ``(path, message)``-joined lines."""
     spec_id, title = check_title(spec_dir)
     found = [*check_files(spec_dir), *title, *narrative.check_optional(spec_dir)]
     texts = {n: _read(spec_dir / n) for n in ("spec.md", "requirements.md")}
     found += narrative.check_markers(spec_dir, texts)
-    found += check_touched_rules(spec_dir, root, touched or set())
+    found += check_touched_rules(spec_dir, root, touched or set(), bindings)
     if spec_id:
         found += check_id(spec_dir, spec_id)
     found += check_tombstones(spec_dir)
@@ -168,7 +195,11 @@ def main(argv: list[str]) -> int:
     index = _read(root / "specs" / "README.md")
     dirs = _spec_dirs(root)
     touched = narrative.touched_paths(root, args.base)
-    found = [f for d in dirs for f in check_spec(d, index, touched, root)]
+    try:
+        bindings = test_bindings(root) if dirs else None
+    except CannotRun:
+        bindings = None
+    found = [f for d in dirs for f in check_spec(d, index, touched, root, bindings)]
     if dirs:
         found += [f"spec-standard: {m}" for m in narrative.check_constitution(root)]
     advisory = (ADVISORY_TAG, CONSTITUTION_MARK) + (() if args.tombstones else (TOMBSTONE,))

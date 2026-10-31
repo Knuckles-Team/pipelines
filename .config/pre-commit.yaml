@@ -40,6 +40,15 @@ repos:
     language: system
     pass_filenames: false
     files: ^(pages/|templates/mkdocs-theme/|scripts/sync_mkdocs_theme\.py$)
+  # --- constitution ------------------------------------------------------------
+  # The constitution renders its limits table and its gate lists from the real
+  # configs; drift in either direction fails the change that caused it.
+  - id: constitution
+    name: Constitution - generated sections match the gate configuration
+    entry: uv run --frozen --quiet python scripts/constitution.py --check
+    language: system
+    pass_filenames: false
+    files: ^(\.specify/memory/constitution\.md|scripts/constitution\.py|pyproject\.toml|\.python-version|\.pre-commit-hooks\.yaml|\.config/(kiss|validation)\.toml|pipelines_hooks/(gate_sets\.toml|complexity/__init__\.py|clones/contract\.py|ci_replica/fast_tests\.py|ste/scan\.py)|templates/workflows/ci\.yml|\.github/workflows/connector_pr_pipeline\.yml)$
   # --- secrets ---------------------------------------------------------------
   - id: secrets
     name: Secrets and identity - credentials, host/identity data, commit identities

@@ -1,36 +1,42 @@
 # Tasks — PIPE-GATES
 
-- [x] Publish the machine-readable gate partition, the fast set and the full set, beside the gate standard and bind the workflow contracts to it. Closes PIPE-GATES-R001.
-- [x] Add the partition test asserting exact membership and the complement. Closes PIPE-GATES-R001.
-- [x] Implement the post-land decision policy: default auto-revert, the 300 s fix-forward task window, the infrastructure-only re-run, and the replayable decision record. Closes PIPE-GATES-R002.
-- [x] Add the policy test covering the default decision and each threshold. Closes PIPE-GATES-R002.
-- [ ] Bind every blocking gate to the engine tree: reads by path and blob digest, no working copy, verdict equality against a materialized checkout. Closes PIPE-GATES-R003.
-- [ ] Add the tree-based contract test on a fixture tree and an identical checkout. Closes PIPE-GATES-R003.
-- [x] Regenerate `status.json` with `pipelines-hook spec-status --write`; record executed evidence before advancing any row's state.
+- [x] T001 PIPE-GATES-R001 Publish the machine-readable gate partition, the fast set and the full set, beside the gate standard and bind the workflow contracts to it.
+- [x] T002 PIPE-GATES-R001 Add the partition test asserting exact membership and the complement.
+- [x] T003 PIPE-GATES-R002 Implement the post-land decision policy: default auto-revert, the 300 s fix-forward task window, the infrastructure-only re-run, and the replayable decision record.
+- [x] T004 PIPE-GATES-R002 Add the policy test covering the default decision and each threshold.
+- [ ] T005 PIPE-GATES-R003 Bind every blocking gate to the engine tree: reads by path and blob digest, no working copy, verdict equality against a materialized checkout.
+- [ ] T006 PIPE-GATES-R003 Add the tree-based contract test on a fixture tree and an identical checkout.
+- Regenerate `status.json` with `pipelines-hook spec-status --write`; record executed evidence before advancing any row's state.
 
-- [ ] **PIPE-GATES-R004:** Gate verdicts publish to the engine (rollup).
-- [ ] **PIPE-GATES-R004.1:** Wiring.
-- [ ] **PIPE-GATES-R004.2:** Hot-path proof.
+- [ ] T007 PIPE-GATES-R004 Gate verdicts publish to the engine (rollup).
+- [ ] T008 PIPE-GATES-R004.1 Wiring.
+- [ ] T009 PIPE-GATES-R004.2 Hot-path proof.
 ## Migration waves and the product-name check (R005, R006)
 
-- [ ] **PIPE-GATES-R006:** Changeset migration waves with entry and exit criteria (rollup).
-- [ ] **PIPE-GATES-R006.1:** Wave 1: webarchiver.
-- [ ] **PIPE-GATES-R006.2:** Wave 2: small connectors.
-- [ ] **PIPE-GATES-R006.3:** Wave 3: the remaining connectors.
-- [ ] **PIPE-GATES-R006.4:** Wave 4: skills, pipelines and the user interfaces.
-- [ ] **PIPE-GATES-R006.5:** Wave 5: the Scion SDK and the harness.
-- [ ] **PIPE-GATES-R006.6:** Wave 6: arbora.
-- [ ] **PIPE-GATES-R006.7:** Wave 7: Medulla, last.
-- [ ] Bind the R006.1-.4 evaluator to the authoritative `source.land` receipt stream and verified-prerequisite roster; fixture-only parser tests do not qualify a historical migration. Closes PIPE-GATES-R006.1, PIPE-GATES-R006.2, PIPE-GATES-R006.3 and PIPE-GATES-R006.4.
-- [x] **PIPE-GATES-R005:** Spec text names no third-party product.
-- [x] Publish the canonical no-legacy-concepts migration gate and retain original detection, scope, historical exclusions, diagnostics and failure semantics. Closes PIPE-GATES-R007.
-- [x] Bind PIPE-GATES-R007 to real Git fixtures covering tracked/ignored source, foreign worktrees, ambient Git selectors and nonzero CLI exits.
-- [x] Publish the optional lock artifact mirror checker with compatible version and dependency checks. Closes PIPE-GATES-R008.
-- [x] Publish the configurable tracked static import checker without adapter exemptions. Closes PIPE-GATES-R009.
-- [x] Publish the `connector-name` gate for declared connector fleet names. Closes PIPE-GATES-R010.
-- [x] Key the hook cache on pipelines main and skip symlinks in clone snapshots. Closes PIPE-GATES-R011.
-- [x] Publish the `connector-graphql` gate, warning by default, for GraphQL declared via the Scion SDK extra. Closes PIPE-GATES-R012.
-- [x] Publish the `sdk-conformance` gate, warning by default, for connectors that reimplement a Scion SDK capability. Closes PIPE-GATES-R013.
-- [x] Publish the `connector-surface-audit` report of the five connector surfaces and the parent-ontology link. Closes PIPE-GATES-R014.
-- [x] Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes. Closes PIPE-GATES-R015.
-- [x] Add the `graph-check` subcommand to `connector-ontology-map`: whole-ecosystem ontology reachability, bridging, broken and missing edges, virtual-graph checks and competency questions. Closes PIPE-GATES-R016.
+- [ ] T010 PIPE-GATES-R006 Changeset migration waves with entry and exit criteria (rollup).
+- [ ] T011 PIPE-GATES-R006.1 Wave 1: webarchiver.
+- [ ] T012 PIPE-GATES-R006.2 Wave 2: small connectors.
+- [ ] T013 PIPE-GATES-R006.3 Wave 3: the remaining connectors.
+- [ ] T014 PIPE-GATES-R006.4 Wave 4: skills, pipelines and the user interfaces.
+- [ ] T015 PIPE-GATES-R006.5 Wave 5: the Scion SDK and the harness.
+- [ ] T016 PIPE-GATES-R006.6 Wave 6: arbora.
+- [ ] T017 PIPE-GATES-R006.7 Wave 7: Medulla, last.
+- [ ] T018 PIPE-GATES-R006.1 Bind the R006.1-.4 evaluator to the authoritative `source.land` receipt stream and verified-prerequisite roster; fixture-only parser tests do not qualify a historical migration. Closes PIPE-GATES-R006.1, PIPE-GATES-R006.2, PIPE-GATES-R006.3 and PIPE-GATES-R006.4.
+- [x] T019 PIPE-GATES-R005 Spec text names no third-party product.
+- [x] T020 PIPE-GATES-R007 Publish the canonical no-legacy-concepts migration gate and retain original detection, scope, historical exclusions, diagnostics and failure semantics.
+- [x] T021 PIPE-GATES-R007 Bind PIPE-GATES-R007 to real Git fixtures covering tracked/ignored source, foreign worktrees, ambient Git selectors and nonzero CLI exits.
+- [x] T022 PIPE-GATES-R008 Publish the optional lock artifact mirror checker with compatible version and dependency checks.
+- [x] T023 PIPE-GATES-R009 Publish the configurable tracked static import checker without adapter exemptions.
+- [x] T024 PIPE-GATES-R010 Publish the `connector-name` gate for declared connector fleet names.
+- [x] T025 PIPE-GATES-R011 Key the hook cache on pipelines main and skip symlinks in clone snapshots.
+- [x] T026 PIPE-GATES-R012 Publish the `connector-graphql` gate, warning by default, for GraphQL declared via the Scion SDK extra.
+- [x] T027 PIPE-GATES-R013 Publish the `sdk-conformance` gate, warning by default, for connectors that reimplement a Scion SDK capability.
+- [x] T028 PIPE-GATES-R014 Publish the `connector-surface-audit` report of the five connector surfaces and the parent-ontology link.
+- [x] T029 PIPE-GATES-R015 Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes.
+- [x] T030 PIPE-GATES-R016 Add the `graph-check` subcommand to `connector-ontology-map`: whole-ecosystem ontology reachability, bridging, broken and missing edges, virtual-graph checks and competency questions.
+- [x] T031 PIPE-GATES-R028 Add the plan template and the plan-section check.
+- [x] T032 PIPE-GATES-R029 Add the consistency analysis to the spec-standard gate.
+- [x] T033 PIPE-GATES-R030 Add the requirements checklist template and the unchecked-item check.
+- [x] T034 PIPE-GATES-R031 Write the organization constitution with traced articles and the test that checks them.
+- [x] T035 PIPE-GATES-R032 Add `scripts/constitution.py`, its `--check` mode and the pre-commit hook.
+- [x] T036 PIPE-GATES-R033 Make the repository constitution template inherit the organization version.
