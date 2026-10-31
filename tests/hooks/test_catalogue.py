@@ -45,6 +45,7 @@ KEPT = {
     "packaging-roles",
     "gate-set",
     "pr-test-scope",
+    "change-scope",
     "project-version-sync",
     "uv-lock-check",
     "validate",

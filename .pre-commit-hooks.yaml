@@ -391,6 +391,14 @@
   always_run: true
   stages: [manual]
 
+- id: change-scope
+  name: Change scope - sort a pull request's changed paths into gate classes
+  entry: pipelines-hook change-scope
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+
 - id: spec-bind-suggest
   name: Spec bind suggest - rank existing tests that may verify a SPECIFIED or LANDED row (read-only)
   entry: pipelines-hook spec-bind-suggest
