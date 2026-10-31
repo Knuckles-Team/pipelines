@@ -37,3 +37,6 @@
 - [x] T031 PIPE-GATES-R028 Add the plan template and the plan-section check.
 - [x] T032 PIPE-GATES-R029 Add the consistency analysis to the spec-standard gate.
 - [x] T033 PIPE-GATES-R030 Add the requirements checklist template and the unchecked-item check.
+- [x] T034 PIPE-GATES-R031 Write the organization constitution with traced articles and the test that checks them.
+- [x] T035 PIPE-GATES-R032 Add `scripts/constitution.py`, its `--check` mode and the pre-commit hook.
+- [x] T036 PIPE-GATES-R033 Make the repository constitution template inherit the organization version.

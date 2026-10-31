@@ -93,3 +93,6 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-028 | PIPE-GATES-R028 | Unit | A touched spec whose `plan.md` lacks template sections, and an untouched one. | Fails for the touched spec, advisory for the untouched one. |
 | T-029 | PIPE-GATES-R029 | Unit | A spec with a row lacking a task or a test, an orphan label and an open marker in `plan.md`. | Each is a finding; failing only when the change adds the row or touches the file. |
 | T-030 | PIPE-GATES-R030 | Unit | A checklist with an unchecked item, and one fully checked. | The first is a finding; the second is clean. |
+| T-031 | PIPE-GATES-R031 | Unit | The constitution, and a copy with a missing plan check or a cited path that does not exist. | The constitution is clean; each defect is a finding. |
+| T-032 | PIPE-GATES-R032 | Unit | A constitution whose limits table or hook list differs from the configs, and a hook ID the catalogue lacks. | `--check` exits 1 and writes nothing; the render fails on the unknown ID. |
+| T-033 | PIPE-GATES-R033 | Unit | The repository template and the organization constitution version. | The template names the same version and links the organization file. |
