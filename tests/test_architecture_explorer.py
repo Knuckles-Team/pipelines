@@ -69,7 +69,7 @@ def test_rows_land_on_the_deepest_matching_part() -> None:
     assert where["CORE-R002"] == "core.solver"
     assert where["CORE-R002.1"] == "core.solver"
     assert where["CORE-R009"] == "core.ledger"
-    assert where["CORE-R010"] == "core.unmapped"
+    assert where["CORE-R010"] == "core"
     assert where["OTHER-R001"] == "root.unmapped"
     assert sum(len(v) for v in direct.values()) == len(rows)
 
@@ -153,13 +153,12 @@ def test_sibling_family_title_and_parent_place_rows_before_unmapped() -> None:
     where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
     assert where["SIDE-R001"] == "core.misc"
     assert where["SIDE-R001.1"] == "core.misc"
-    assert where["SIDE-R002"] == "side.unmapped"
-    assert unmapped_violations(tree, direct, []) == ["core:SIDE-R002"]
-    assert unmapped_violations(tree, direct, ["core:SIDE-R002"]) == []
+    assert where["SIDE-R002"] == "side"
+    assert unmapped_violations(tree, direct, []) == []
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_a_row_on_a_container_descends_to_a_leaf_or_fails_the_gate() -> None:
+def test_a_row_on_a_container_descends_to_a_leaf_or_stays_on_the_family_node() -> None:
     model = _model()
     model["children"][0]["children"][0]["children"] = [
         {"id": "core.solver.exact", "label": "Exact", "desc": "Exact.", "kw": "certificate"}
@@ -173,7 +172,7 @@ def test_a_row_on_a_container_descends_to_a_leaf_or_fails_the_gate() -> None:
     where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
     assert where["CORE-R003"] == "core.solver.exact"
     assert where["CORE-R004"] == "core.solver"
-    assert unmapped_violations(tree, direct, []) == ["core:CORE-R004"]
+    assert unmapped_violations(tree, direct, []) == []
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -199,8 +198,8 @@ def test_vocabulary_additions_mapping_accepts_canonical_reuse_rollup() -> None:
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-def test_build_fails_on_an_unmapped_row(monkeypatch) -> None:
-    rows = [_row("EG-SCM-R999", "Nothing names this row", family="source-changesets", repo="medulla")]
+def test_build_fails_on_a_family_with_no_node(monkeypatch) -> None:
+    rows = [_row("EG-SCM-R999", "Nothing names this row", family="family-no-part-owns", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
@@ -1207,7 +1206,7 @@ def test_axil_parts_place_existing_roots_and_descendants_once_without_guessing()
     direct = Placer(tree).run(rows + unknown)
     placed = [(row["id"], nid) for nid, entries in direct.items() for row in entries]
     assert len(placed) == len(rows + unknown)
-    assert dict(placed) == {**expected, **{row["id"]: "geniusbot.unmapped" for row in unknown}}
+    assert dict(placed) == {**expected, **{row["id"]: "geniusbot" for row in unknown}}
     assert all(tree.nodes[nid]["repo"] == "axil" for nid in expected.values())
 
 
@@ -2009,3 +2008,20 @@ setTimeout(async()=>{
         + "\n"
     )
     assert match and ">PASS</output>" in match[0], result.stdout[-3000:]
+
+
+@pytest.mark.spec("PIPE-PAGES-R042")
+def test_rows_matching_no_child_stay_on_the_family_node_and_never_fail_the_build(monkeypatch) -> None:
+    """New rows of an owned family whose keywords match no child map to the family's own node."""
+    tree = Tree(_model_with_external())
+    rows = [_row(f"CORE-R{n}", "Matches no keyword anywhere") for n in range(100, 130)]
+    direct = Placer(tree).run(rows)
+    assert {nid for nid in direct} == {"core"}
+    assert not [n for n in tree.nodes if n.endswith(".unmapped")]
+    assert unmapped_violations(tree, direct, []) == []
+
+    shipped = Tree(json.loads((PKG / "model.json").read_text()))
+    new = [_row("MEDULLA-DECISION-ENGINE-R9999", "Matches no keyword zzqx", "decision-engine", "medulla")]
+    placed = Placer(shipped).run(new)
+    assert [nid for nid in placed] == ["eg.decide"]
+    assert unmapped_violations(shipped, placed, []) == []
