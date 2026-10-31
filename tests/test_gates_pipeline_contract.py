@@ -17,7 +17,7 @@ SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
     "python-version", "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
-    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "uv-cache-local-path", "docs-only-paths", "timeout-minutes", "scanners",
+    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "uv-cache-local-path", "spec-hooks", "timeout-minutes", "scanners",
 }  # fmt: skip
 
 
@@ -141,68 +141,56 @@ def test_spec_trailers_is_skipped_on_push_only() -> None:
         assert "spec-trailers" in step["run"]
 
 
-def _docs_only_step() -> dict:
-    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
-    return next(step for step in steps if step.get("id") == "scope")
+def _gates_steps() -> list[dict]:
+    return yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
 
 
-def _detect(tmp_path: Path, changed: list[str], patterns: str, event: str = "pull_request") -> str:
-    # A git hook exports GIT_DIR/GIT_INDEX_FILE; without this the fixture writes to the real repository.
-    clean = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path.parent)}
-
-    def git(*args: str) -> str:
-        return subprocess.run(
-            ["git", "-C", str(tmp_path), "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
-            env=clean,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-
-    tmp_path.mkdir()
-    git("init", "-q")
-    (tmp_path / "seed").write_text("seed", encoding="utf-8")
-    git("add", "seed")
-    git("commit", "-qm", "seed")
-    base = git("rev-parse", "HEAD")
-    for name in changed:
-        target = tmp_path / name
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(name, encoding="utf-8")
-        git("add", name)
-    git("commit", "-qm", "change")
-    output = tmp_path.parent / f"{tmp_path.name}.out"
-    output.write_text("", encoding="utf-8")
-    env = {
-        "DOCS_ONLY_PATHS": patterns,
-        "EVENT_NAME": event,
-        "PR_BASE": base,
-        "BASE_REF": "main",
-        "ALL_FILES": "false",
-        "GITHUB_OUTPUT": str(output),
-        "PATH": "/usr/bin:/bin",
-    }
-    subprocess.run(
-        ["bash", "-c", _docs_only_step()["run"]], cwd=tmp_path, env=env, check=True, capture_output=True, text=True
-    )
-    return output.read_text(encoding="utf-8").strip()
+#: Steps that build, test or scan code: a spec or docs only change never runs them.
+_CODE_ONLY_STEPS = (
+    "Fetch the scanner recipes", "Restore the scanner toolchain", "Build the pinned scanners and put them on PATH",
+    "Caller setup", "pre-commit (extra manual hooks)", "Affected tests",
+)  # fmt: skip
 
 
-DOCS = "specs/* docs/* *.md plans/* LICENSE"
+# spec: PIPE-RELEASE-R007.9
+def test_gates_workflow_routes_each_change_scope_to_its_gates() -> None:
+    steps = _gates_steps()
+    names = [step.get("name") for step in steps]
+    scope = next(step for step in steps if step.get("id") == "scope")
+    assert names.index("Install uv") < names.index("Classify the change") < names.index("Install Rust toolchain")
+    assert "pipelines-hook change-scope" in scope["run"] and "--force-full" in scope["run"]
+    assert 'EVENT_NAME" != "pull_request"' in scope["run"] and 'ALL_FILES" == "true"' in scope["run"]
+    by_name = {step.get("name"): step for step in steps}
+    for name in _CODE_ONLY_STEPS:
+        assert "steps.scope.outputs.scope != 'spec'" in by_name[name]["if"], name
+    rust = by_name["Install Rust toolchain"]["if"]
+    assert "steps.scope.outputs.scope == 'full'" in rust and "steps.scope.outputs.rust == 'true'" in rust
+    for name in ("pre-commit (commit and pre-push stages)", "CI-only gates"):
+        step = by_name[name]
+        assert "if" not in step, name
+        assert step["env"]["SCOPE_SKIP"] == "${{ steps.scope.outputs.skip-hooks }}"
+        assert 'SKIP="${SKIP:+$SKIP,}$SCOPE_SKIP"' in step["run"]
 
 
-def test_docs_only_detection_passes_a_docs_diff_and_gates_a_mixed_one(tmp_path: Path) -> None:
-    assert _detect(tmp_path / "docs", ["docs/a/b.md", "README.md", "specs/x/requirements.md"], DOCS) == "docs-only=true"
-    assert _detect(tmp_path / "mixed", ["docs/a.md", "pkg/module.py"], DOCS) == "docs-only=false"
-    assert _detect(tmp_path / "off", ["docs/a.md"], "") == "docs-only=false"
-    assert _detect(tmp_path / "push", ["docs/a.md"], DOCS, event="push") == "docs-only=false"
+# spec: PIPE-RELEASE-R007.11
+def test_docs_only_paths_is_removed_for_the_default_scope() -> None:
+    inputs = _on(GATES_WORKFLOW)["workflow_call"]["inputs"]
+    assert "docs-only-paths" not in inputs
+    assert inputs["spec-hooks"]["default"] == ""
+    assert "docs-only-paths" not in GATES_WORKFLOW.read_text(encoding="utf-8")
+    template = (Path(__file__).parents[1] / "templates/workflows/ci.yml").read_text(encoding="utf-8")
+    assert "docs-only-paths" not in template and "change_scope.yml@main" in template
+    assert 'case "$r" in failure|cancelled)' in template
+    outputs = _on(WORKFLOWS / "change_scope.yml")["workflow_call"]["outputs"]
+    assert set(outputs) == {"scope", "code", "spec", "docs", "python", "rust", "frontend", "ci", "deps"}
 
 
-def test_docs_only_guard_covers_every_later_step() -> None:
-    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
-    position = steps.index(_docs_only_step())
-    assert position == 1
-    assert all("steps.scope.outputs.docs-only != 'true'" in step["if"] for step in steps[position + 1 :])
+# spec: PIPE-RELEASE-R007.12
+def test_gates_workflow_names_each_not_applicable_gate() -> None:
+    report = next(step for step in _gates_steps() if step.get("name") == "Report gates not applicable to this change")
+    assert report["if"] == "steps.scope.outputs.scope == 'spec'"
+    for gate in ("build", "tests", "scanners"):
+        assert f"{gate}: not applicable: spec/docs-only change" in report["run"]
 
 
 def test_ci_only_gates_run_from_their_own_file_and_skip_when_absent() -> None:

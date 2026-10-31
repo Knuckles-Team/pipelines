@@ -63,6 +63,11 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R007.5 | PIPE-RELEASE-R007.5 | Run `test_fast_tests_reports_no_affected_tests` in `tests/hooks/test_fast_tests.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-RELEASE-R007.6 | PIPE-RELEASE-R007.6 | Run `test_fast_tests_runs_only_the_affected_subset` in `tests/hooks/test_fast_tests.py`. Assert the stated contract through its declared boundary. |
 | T-PIPE-RELEASE-R007.7 | PIPE-RELEASE-R007.7 | Run `test_a_release_version_bump_forces_no_crate_sweep`, `test_a_registry_dependency_bump_still_forces_the_full_sweep` and `test_a_member_manifest_change_beyond_versions_maps_to_its_crate` in `tests/hooks/test_pr_test_scope.py`. |
+| T-PIPE-RELEASE-R007.8 | PIPE-RELEASE-R007.8 | Run `test_change_scope_classifies_each_fixture_diff` and `test_change_scope_writes_step_outputs_and_the_spec_skip_list` in `tests/hooks/test_change_scope.py`. Each fixture diff maps to its classes and scope. |
+| T-PIPE-RELEASE-R007.9 | PIPE-RELEASE-R007.9 | Run `test_gates_workflow_routes_each_change_scope_to_its_gates` in `tests/test_gates_pipeline_contract.py` and `test_change_scope_keeps_every_hook_for_code_and_full_runs` in `tests/hooks/test_change_scope.py`. |
+| T-PIPE-RELEASE-R007.10 | PIPE-RELEASE-R007.10 | Run `test_change_scope_refuses_and_falls_back_conservatively` in `tests/hooks/test_change_scope.py`. Each refusal exits 2. |
+| T-PIPE-RELEASE-R007.11 | PIPE-RELEASE-R007.11 | Run `test_docs_only_paths_is_removed_for_the_default_scope` in `tests/test_gates_pipeline_contract.py`. |
+| T-PIPE-RELEASE-R007.12 | PIPE-RELEASE-R007.12 | Run `test_gates_workflow_names_each_not_applicable_gate` in `tests/test_gates_pipeline_contract.py`. |
 | T-PIPE-RELEASE-R008 | PIPE-RELEASE-R008 | Run `tests/test_python_sdist_output.py`; observe the sdist built, proven and uploaded with the wheel, the maturin sdist job covering its package, and the documented readiness rule. |
 
 ## Release records published to the engine
