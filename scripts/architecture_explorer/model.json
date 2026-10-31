@@ -1478,7 +1478,7 @@
       {
        "id": "ar.fleet.binding",
        "label": "Engine binding generator",
-       "role": "EG-direct bindings",
+       "role": "Medulla-direct bindings",
        "desc": "A generator binds engine methods directly to operations. Reviewed exclusions list the gaps.",
        "code": [
         "arbora/fleet/epistemic_adapter.py"
@@ -2020,7 +2020,7 @@
     {
      "id": "au.scm",
      "label": "Changeset Development Loop",
-     "role": "AU-SCM",
+     "role": "MERISTEM-SCM",
      "desc": "The development loop works on engine changesets, not on local trees.",
      "fam": [
       "au-scm"
@@ -4721,7 +4721,7 @@
     {
      "id": "eg.scm",
      "label": "Source Authority and Changesets",
-     "role": "authority, EG-SCM, branches",
+     "role": "authority, MEDULLA-SCM, branches",
      "desc": "This part decides which source is the authority for each concept. It stores source code as changesets inside the graph. It also branches and merges graph state.",
      "links": [
       "sdk.scm",
@@ -4752,7 +4752,7 @@
       },
       {
        "id": "eg.scm.cs",
-       "label": "Source changesets (EG-SCM)",
+       "label": "Source changesets (MEDULLA-SCM)",
        "role": "code in the graph",
        "desc": "The engine stores source code as content-addressed blobs and changeset records. Queries materialize trees. Gate verdicts and run provenance attach to changesets.",
        "fam": [
@@ -4805,7 +4805,7 @@
           "src/server/blob"
          ],
          "ids": [
-          "EG-SCM-R001"
+          "MEDULLA-SCM-R001"
          ]
         },
         {
@@ -4814,8 +4814,8 @@
          "role": "record + lock-free accept",
          "desc": "A changeset record names its parent and its file changes. The engine accepts changesets without a global lock.",
          "ids": [
-          "EG-SCM-R002",
-          "EG-SCM-R003"
+          "MEDULLA-SCM-R002",
+          "MEDULLA-SCM-R003"
          ]
         },
         {
@@ -4824,8 +4824,8 @@
          "role": "trees + history indexes",
          "desc": "A query materializes the file tree at any changeset. Derived indexes answer history questions.",
          "ids": [
-          "EG-SCM-R004",
-          "EG-SCM-R005"
+          "MEDULLA-SCM-R004",
+          "MEDULLA-SCM-R005"
          ]
         },
         {
@@ -4834,8 +4834,8 @@
          "role": "code graph follows changesets",
          "desc": "The code graph updates with each accepted changeset.",
          "ids": [
-          "EG-SCM-R006",
-          "EG-SCM-R013"
+          "MEDULLA-SCM-R006",
+          "MEDULLA-SCM-R013"
          ]
         },
         {
@@ -4844,7 +4844,7 @@
          "role": "path ACL",
          "desc": "Access control applies per path. A principal sees only the paths it may read.",
          "ids": [
-          "EG-SCM-R007"
+          "MEDULLA-SCM-R007"
          ]
         },
         {
@@ -4853,8 +4853,8 @@
          "role": "verdicts are records",
          "desc": "Gate verdicts are graph records. The engine decides bisect and revert steps from these records.",
          "ids": [
-          "EG-SCM-R008",
-          "EG-SCM-R009"
+          "MEDULLA-SCM-R008",
+          "MEDULLA-SCM-R009"
          ]
         },
         {
@@ -4863,7 +4863,7 @@
          "role": "version-control fidelity",
          "desc": "Import and export keep full fidelity with external version-control history.",
          "ids": [
-          "EG-SCM-R010"
+          "MEDULLA-SCM-R010"
          ]
         },
         {
@@ -4872,8 +4872,8 @@
          "role": "harness + run provenance",
          "desc": "A simulation harness exercises many agents at once. Agent-only principals carry run provenance.",
          "ids": [
-          "EG-SCM-R011",
-          "EG-SCM-R012"
+          "MEDULLA-SCM-R011",
+          "MEDULLA-SCM-R012"
          ]
         }
        ]
@@ -5026,7 +5026,7 @@
        "desc": "Standard clients reach the one store through wire protocols. Each listener admits its caller through the same authenticated path as the served methods and serves catalog views that outside tools read at connect.",
        "kw": "wire protocol|protocol listener|postgresql wire|one store behind|wire authentication|catalog views|sql dialect",
        "ids": [
-        "EG-ENGINE-PARITY-R008"
+        "MEDULLA-ENGINE-PARITY-R008"
        ]
       },
       {
@@ -5747,7 +5747,7 @@
        ],
        "kw": "bloom|cold tier|evict|read-through|secondary index|indexes\\b",
        "ids": [
-        "EG-ENGINE-PARITY-R013"
+        "MEDULLA-ENGINE-PARITY-R013"
        ]
       },
       {

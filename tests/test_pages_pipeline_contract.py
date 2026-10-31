@@ -283,7 +283,7 @@ def test_pages_workflow_runs_relation_steps(tmp_path, monkeypatch):
     from scripts import spec_dashboard as dashboard
     from tests.test_spec_dashboard_metadata import fixture
 
-    fixture(tmp_path, "Component: gateway\nDepends-on: AU-OTHER\n")
+    fixture(tmp_path, "Component: gateway\nDepends-on: MERISTEM-OTHER\n")
     config = tmp_path / ".config/spec-dashboard.json"
     config.parent.mkdir()
     config.write_text('{"version":1,"sources":[{"glob":"specs/*/status.json"}]}')
@@ -294,7 +294,7 @@ def test_pages_workflow_runs_relation_steps(tmp_path, monkeypatch):
     page = (tmp_path / "site/spec-delivery/index.html").read_text(encoding="utf-8")
     assert "Spec relationships" in page
     assert "depends on" in page
-    assert 'href="#spec-AU-CONTROL"' in page
+    assert 'href="#spec-MERISTEM-CONTROL"' in page
 
 
 @pytest.mark.spec("PIPE-PAGES-R015.2")

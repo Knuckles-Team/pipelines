@@ -25,14 +25,14 @@ def _row(rid: str, repo: str, status: str = "SPECIFIED", depends_on=(), family: 
     }
 
 
-CQ = "EG-CQ-ORCH-R001"
+CQ = "MEDULLA-CQ-ORCH-R001"
 
 
 def _fixture() -> list[dict]:
     return [
-        _row("EG-A-R001", "epistemic-graph"),
-        _row("AR-A-R001", "arbora", depends_on=["EG-A-R001"]),
-        _row("AR-A-R002", "arbora", depends_on=["EG-A-R001", "NOWHERE-R001"]),
+        _row("MEDULLA-A-R001", "epistemic-graph"),
+        _row("AR-A-R001", "arbora", depends_on=["MEDULLA-A-R001"]),
+        _row("AR-A-R002", "arbora", depends_on=["MEDULLA-A-R001", "NOWHERE-R001"]),
         _row("AR-A-R003", "arbora"),
         _row(CQ, "epistemic-graph", depends_on=["AR-A-R001"]),
     ]
@@ -41,9 +41,9 @@ def _fixture() -> list[dict]:
 # spec: PIPE-CONNSPEC-R016
 def test_aggregate_over_repositories() -> None:
     got = aggregate(_fixture())
-    assert got["scores"]["EG-A-R001"]["priority"] == 10 + 2 * 3
+    assert got["scores"]["MEDULLA-A-R001"]["priority"] == 10 + 2 * 3
     assert got["scores"]["AR-A-R001"]["cqs"] == [CQ]
-    assert got["frontier"][0] == "EG-A-R001" and "AR-A-R001" not in got["frontier"]
+    assert got["frontier"][0] == "MEDULLA-A-R001" and "AR-A-R001" not in got["frontier"]
     assert got["unserved"] == ["AR-A-R002", "AR-A-R003"]
     assert [q["id"] for q in got["questions"]] == [CQ]
     assert [s["repo"] for s in got["bundles"][0]["steps"]] == ["epistemic-graph", "arbora"]
@@ -68,7 +68,7 @@ def test_page_embeds_delivery_views() -> None:
     assert entry["priority"] == 10 + 2 and entry["cqs"] == [CQ]
     assert explorer.spec_entry(rows[3], delivery)["unserved"] is True
     block = explorer.page_delivery(delivery, rows)
-    assert block["next"][0]["id"] == "EG-A-R001" and block["counts"]["unserved"] == 2
+    assert block["next"][0]["id"] == "MEDULLA-A-R001" and block["counts"]["unserved"] == 2
 
 
 # spec: PIPE-CONNSPEC-R016
@@ -79,8 +79,8 @@ def test_cq_path_explanation_does_not_claim_missing_architecture_links() -> None
     assert "not linked to a CQ" not in template
     assert "Not linked to a competency question" not in template
     rows = _fixture()
-    rows.append(_row("TUI-RUNTIME-R099", "agent-terminal-ui", depends_on=[CQ]))
+    rows.append(_row("TUIG-RUNTIME-R099", "agent-terminal-ui", depends_on=[CQ]))
     delivery = aggregate(rows)
-    assert "TUI-RUNTIME-R099" in delivery["unserved"]
-    assert delivery["scores"]["TUI-RUNTIME-R099"]["cqs"] == []
+    assert "TUIG-RUNTIME-R099" in delivery["unserved"]
+    assert delivery["scores"]["TUIG-RUNTIME-R099"]["cqs"] == []
     assert delivery["scores"]["AR-A-R001"]["cqs"] == [CQ]

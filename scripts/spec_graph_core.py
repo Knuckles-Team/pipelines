@@ -14,9 +14,9 @@ from pipelines_hooks.core.repositories import REPOSITORY_ALIASES, repository_slu
 
 #: Every requirement-ID prefix observed across the five repos is a run of
 #: hyphen-separated upper-case/digit segments ending in an optional ``R`` plus
-#: digits, with an optional ``.<n>`` split suffix: ``EG-DECISION-ENGINE-R048``,
-#: ``AU-SEMANTIC-R005``, ``SDK-GOVERNED-WRITEBACK-R002``, ``IDUI-01``,
-#: ``EG-DECISION-ENGINE-R030.1``.
+#: digits, with an optional ``.<n>`` split suffix: ``MEDULLA-DECISION-ENGINE-R048``,
+#: ``MERISTEM-SEMANTIC-R005``, ``SCION-GOVERNED-WRITEBACK-R002``, ``IDUI-01``,
+#: ``MEDULLA-DECISION-ENGINE-R030.1``.
 REQ_ID = re.compile(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-R?\d+(?:\.\d+)*\b")
 
 #: Inline-code spans that look like a code root (crate, package or module
@@ -66,7 +66,7 @@ def apply_signals(req: Requirement, text: str) -> None:
 def add_edge(req: Requirement, other_ids: set[str], known: dict[str, Requirement]) -> None:
     """Only a textually-named ID that is a real, declared requirement (in
     ``known``) becomes a dependency edge -- this is what keeps a spec file's
-    own local test/case numbering scheme (for example ``EG-T-04``, which
+    own local test/case numbering scheme (for example ``MEDULLA-T-04``, which
     matches the requirement-ID shape but is never declared in any
     ``status.json``) from being mistaken for a requirement dependency."""
     req.depends_on |= (other_ids & known.keys()) - {req.id}

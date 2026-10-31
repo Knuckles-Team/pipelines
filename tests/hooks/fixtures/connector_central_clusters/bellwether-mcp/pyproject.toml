@@ -42,7 +42,7 @@ bellwether-mcp = "bellwether_mcp.ontology"
 [project.entry-points."agent_connector_sdk.prompt_providers"]
 bellwether-mcp = "bellwether_mcp.prompts"
 
-# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+# The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]
 bellwether-mcp = "bellwether_mcp"
 

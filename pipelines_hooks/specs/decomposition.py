@@ -73,7 +73,7 @@ _NUMBER_TAIL = re.compile(r"R?\d{2,3}(?:\.\d+)*$")
 
 
 def _id_prefix(rid: str) -> str:
-    """``EG-FOO-R012.3`` -> ``EG-FOO-``: the family a requirement ID belongs to."""
+    """``MEDULLA-FOO-R012.3`` -> ``MEDULLA-FOO-``: the family a requirement ID belongs to."""
     return _NUMBER_TAIL.sub("", rid)
 
 

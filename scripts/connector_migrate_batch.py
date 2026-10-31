@@ -28,7 +28,7 @@ FIXED_MESSAGE = "chore: cut the connector manifest files; declare data sources i
 REBUMP_MESSAGE = "chore: require agent-connector-sdk>=0.4.1"
 CENTRAL_MESSAGE = "chore: move the connector onto the central SDK and pipelines components (SDK 0.5.2)"
 CENTRAL_TRAILER = "Spec: none (mechanical central connector migration)\nCo-Authored-By: Claude <noreply@anthropic.com>"
-TRAILER = "Spec: SDK-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
+TRAILER = "Spec: SCION-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
 STEPS = ("worktree", "sync", "migrate", "commit", "verify", "push", "pr", "gates", "merge")
 lock = threading.Lock()
 
@@ -352,7 +352,7 @@ def migrate_repo(repo: str, a: argparse.Namespace, led: Ledger) -> None:
                         if a.rebump
                         else "Mechanical manifest-cut migration (pipelines `connector-ontology-map migrate`).\n\n"
                     )
-                    + "Spec: SDK-CONNECTOR-CONTROL-R075\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+                    + "Spec: SCION-CONNECTOR-CONTROL-R075\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
                 ],
                 wt,
             )

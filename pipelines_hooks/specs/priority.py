@@ -6,7 +6,7 @@ organization-level architecture page share them, so one formula gives one score.
 priority = (10 x competency-question rows that transitively Depends-on this row
            + 2 x open rows it transitively unblocks) x 0.5 for a non-functional row.
 
-A competency-question (CQ) row is an ordinary spec row whose ID starts with ``EG-CQ-``. A row serves a CQ
+A competency-question (CQ) row is an ordinary spec row whose ID starts with ``MEDULLA-CQ-``. A row serves a CQ
 when that CQ row reaches it through Depends-on edges. A row is *open* until it is LANDED, VERIFIED or
 RETIRED. Nothing hand-edits the score.
 """
@@ -20,7 +20,7 @@ from pipelines_hooks.core.repositories import repository_slug
 
 DONE_STATES = frozenset({"LANDED", "VERIFIED", "RETIRED"})
 CQ_WEIGHT = 10
-CQ_PREFIX = "EG-CQ-"
+CQ_PREFIX = "MEDULLA-CQ-"
 #: A row whose spec ID holds one of these words is a gate, page or documentation row, not a feature.
 NON_FUNCTIONAL_WORDS = frozenset({"GATES", "PAGES", "DOCS", "HYGIENE", "STANDARD"})
 UNBLOCK_WEIGHT = 2

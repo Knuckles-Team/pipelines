@@ -34,7 +34,7 @@ caddy-mcp = "caddy_mcp.ontology"
 [project.entry-points."agent_connector_sdk.prompt_providers"]
 caddy-mcp = "caddy_mcp.prompts"
 
-# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+# The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]
 caddy-mcp = "caddy_mcp"
 

@@ -31,13 +31,13 @@ archimate-mcp = "archimate_mcp.skills"
 [project.entry-points."agent_connector_sdk.prompt_providers"]
 archimate-mcp = "archimate_mcp.prompts"
 
-# CONCEPT:AU-KG.ontology.package-federation-migration — federate this package's OWL/RDF ontology module into the
+# CONCEPT:MERISTEM-KG.ontology.package-federation-migration — federate this package's OWL/RDF ontology module into the
 # agent-connector-sdk hub (ArchiMate elements, layers, relationships). Resolved via
 # iter_provider_dirs like the skill/prompt providers.
 [project.entry-points."agent_connector_sdk.ontology_providers"]
 archimate-mcp = "archimate_mcp.ontology"
 
-# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+# The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]
 archimate-mcp = "archimate_mcp"
 

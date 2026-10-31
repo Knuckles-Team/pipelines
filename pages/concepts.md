@@ -29,18 +29,18 @@ components (level 2, see [Components](components.md)).
 
 ## Agent Utilities
 
-- **AU-AHE**
-- **AU-ECO**
-- **AU-KG**
-- **AU-ORCH**
-- **AU-OS**
+- **MERISTEM-AHE**
+- **MERISTEM-ECO**
+- **MERISTEM-KG**
+- **MERISTEM-ORCH**
+- **MERISTEM-OS**
 - **Architecture** (5 components)
 - **Build** (6 components)
 - **Components** (10 components)
-- **EG-AHE**
-- **EG-KG**
-- **EG-ORCH**
-- **EG-OS**
+- **MEDULLA-AHE**
+- **MEDULLA-KG**
+- **MEDULLA-ORCH**
+- **MEDULLA-OS**
 - **For AI agents** (1 component)
 - **Get started** (4 components)
 - **Home** (1 component)

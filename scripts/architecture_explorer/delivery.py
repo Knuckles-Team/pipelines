@@ -21,7 +21,7 @@ def aggregate(rows: list[dict]) -> dict:
     """Return ``{questions, scores, frontier, unserved, bundles}`` for the given spec rows.
 
     ``scores`` maps each open row ID to ``{priority, unblocks, cqs}``. ``questions`` lists the competency-question
-    rows (ID prefix ``EG-CQ-``) that at least one other row reaches. ``frontier`` lists open rows with every
+    rows (ID prefix ``MEDULLA-CQ-``) that at least one other row reaches. ``frontier`` lists open rows with every
     prerequisite done, highest priority first. A prerequisite that no repository declares does not block.
     """
     nodes = {
