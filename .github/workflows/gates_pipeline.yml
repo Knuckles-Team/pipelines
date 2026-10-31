@@ -294,12 +294,62 @@ jobs:
           set -euo pipefail
           echo "sha=$(git ls-remote https://github.com/Knuckles-Team/pipelines refs/heads/main | cut -f1)" >> "$GITHUB_OUTPUT"
 
-      - name: Cache pre-commit environments
+      # A prefix restore keeps every pinned hook environment when only
+      # pipelines main moved. The stale shared-hook entry is then dropped from
+      # the pre-commit store, so only that repository reinstalls.
+      - name: Restore pre-commit environments
+        id: hook-cache
         if: steps.scope.outputs.docs-only != 'true'
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}-partial-
+            pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-
+
+      - name: Drop the stale shared-hook environment
+        if: steps.scope.outputs.docs-only != 'true' && steps.hook-cache.outputs.cache-matched-key != '' && !startsWith(steps.hook-cache.outputs.cache-matched-key, 'pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}')
+        run: |
+          set -euo pipefail
+          db="$HOME/.cache/pre-commit/db.db"
+          [[ -f "$db" ]] || exit 0
+          python3 - "$db" <<'PY'
+          import shutil, sqlite3, sys
+          con = sqlite3.connect(sys.argv[1])
+          rows = con.execute("SELECT path FROM repos WHERE repo LIKE '%Knuckles-Team/pipelines%'").fetchall()
+          for (path,) in rows:
+              shutil.rmtree(path, ignore_errors=True)
+          con.execute("DELETE FROM repos WHERE repo LIKE '%Knuckles-Team/pipelines%'")
+          con.commit()
+          PY
+
+      # Installing as its own step lets a cut-off run keep finished environments.
+      # pre-commit marks an environment ready only when it is complete.
+      - name: Install pre-commit environments
+        id: hook-install
+        if: steps.scope.outputs.docs-only != 'true'
+        env:
+          CONFIG: ${{ inputs.config }}
+          CI_CONFIG: ${{ inputs.ci-config }}
+        run: |
+          set -euo pipefail
+          uvx --from pre-commit==4.6.2 pre-commit install-hooks --config "$CONFIG"
+          if [[ -f "$CI_CONFIG" ]]; then uvx --from pre-commit==4.6.2 pre-commit install-hooks --config "$CI_CONFIG"; fi
+
+      - name: Save pre-commit environments
+        if: success() && steps.scope.outputs.docs-only != 'true' && steps.hook-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}
+
+      - name: Save partly installed pre-commit environments
+        if: (failure() || cancelled()) && steps.scope.outputs.docs-only != 'true' && steps.hook-install.outcome != 'success' && steps.hook-install.outcome != 'skipped'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}-partial-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Resolve diff range
         if: steps.scope.outputs.docs-only != 'true'
