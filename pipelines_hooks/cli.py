@@ -59,6 +59,7 @@ GATES: dict[str, str] = {
     "test-layout": "pipelines_hooks.ci_replica.test_layout",
     "spec-decomposition": "pipelines_hooks.specs.decomposition",
     "spec-standard": "pipelines_hooks.specs.standard",
+    "plan-conformance": "pipelines_hooks.specs.plan_conformance",
     "ste-staged": "pipelines_hooks.ste.staged",
     "ste-census": "pipelines_hooks.ste.census",
     "ste-staleness-staged": "pipelines_hooks.ste.staleness_staged",
@@ -79,7 +80,7 @@ GATES: dict[str, str] = {
 #: runs its member gates in order, with each member's default arguments.
 GROUPS: dict[str, tuple[str, ...]] = {
     "secrets": ("security-sanitizer", "secret-history", "tracked-privacy", "commit-identity", "commit-identity-range"),
-    "spec": ("spec-standard", "spec-decomposition", "spec-status", "spec-trailers"),
+    "spec": ("spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers"),
 }
 
 #: Group members that check a commit range. They run only when a range is

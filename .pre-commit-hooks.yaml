@@ -50,6 +50,13 @@
   always_run: true
   require_serial: true
   stages: [pre-push, manual]
+- id: plan-conformance
+  name: Plan conformance - specs/*/plan.md follows the plan template, names real rows and links real files
+  entry: pipelines-hook plan-conformance
+  language: python
+  files: ^specs/[^/]+/plan\.md$
+  pass_filenames: false
+  stages: [pre-commit, manual]
 - id: spec-templates
   name: Spec templates - .specify/templates equals the vended pipelines templates
   entry: pipelines-hook spec-templates
