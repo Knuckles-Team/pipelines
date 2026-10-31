@@ -143,7 +143,12 @@
     "PIPE-GATES-R016.116",
     "PIPE-GATES-R016.117",
     "PIPE-GATES-R016.118",
-    "PIPE-GATES-R016.119"
+    "PIPE-GATES-R016.119",
+    "PIPE-GATES-R017",
+    "PIPE-GATES-R018",
+    "PIPE-GATES-R019",
+    "PIPE-GATES-R020",
+    "PIPE-GATES-R021"
   ],
   "requirements": [
     {
@@ -2051,12 +2056,47 @@
       "title": "A local account name is contextual, not a bare word",
       "delivery_state": "VERIFIED",
       "landed_in": [
-        "150efe437b04"
+        "8e6a37a96052"
       ],
       "verified_by": [
         "tests/hooks/test_privacy_provenance.py:117",
         "tests/hooks/test_privacy_provenance.py:96"
       ]
+    },
+    {
+      "id": "PIPE-GATES-R017",
+      "title": "Required runtime manifest gate",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R018",
+      "title": "No duplicate worker policy in ingest-worker specs",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R019",
+      "title": "Hydration journey gate through the harness",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R020",
+      "title": "Nightly attached-source conformance workflow",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R021",
+      "title": "Build gate for the root library and its lint profiles",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }
