@@ -2294,6 +2294,14 @@ def _sdd_page(monkeypatch, tmp_path: Path) -> Path:
     return _build_with_details(monkeypatch, tmp_path, _sdd_snapshots())
 
 
+@pytest.mark.spec("PIPE-PAGES-R051")
+def test_every_canopy_delivery_child_row_has_a_bound_test() -> None:
+    rows = (ROOT / "specs/ecosystem-pages-parity/requirements.md").read_text()
+    children = set(re.findall(r"^\| `(PIPE-PAGES-R051\.\d+)` \|", rows, re.M))
+    bound = set(re.findall(r'spec\("(PIPE-PAGES-R051\.\d+)"\)', Path(__file__).read_text()))
+    assert children and children <= bound
+
+
 @pytest.mark.spec("PIPE-PAGES-R051.1")
 @_NEEDS_LAYOUT
 def test_family_files_carry_every_spec_document_with_an_outline(monkeypatch, tmp_path: Path) -> None:
