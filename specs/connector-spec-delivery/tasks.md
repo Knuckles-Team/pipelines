@@ -1,25 +1,121 @@
 # Tasks — PIPE-CONNSPEC
 
-- [ ] Confirm the standard rows PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005 against the core implementation.
-- [ ] Roll out the four adoption steps to each connector repository, one pull request per connector per step, in the order of `plan.md`.
-- [ ] Record each landed child in the generated status and confirm the connector's page publishes.
+- Confirm the standard rows PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005 against the core implementation.
+- Roll out the four adoption steps to each connector repository, one pull request per connector per step, in the order of `plan.md`.
+- Record each landed child in the generated status and confirm the connector's page publishes.
 
 The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work order; they are not repeated here.
 
-- [x] Limit new PIPE-CONNSPEC-R001 landing attribution to explicit declarations, with regression tests and preserved legacy receipt validation.
+- Limit new PIPE-CONNSPEC-R001 landing attribution to explicit declarations, with regression tests and preserved legacy receipt validation.
 
-- [ ] PIPE-CONNSPEC-R006: preserve moved retired IDs using shared parsing; run positive and misleading-prose regressions.
+- PIPE-CONNSPEC-R006: preserve moved retired IDs using shared parsing; run positive and misleading-prose regressions.
 
-- [x] Refuse spec-status generation with incomplete shallow history before any writes; verify legacy and current receipts survive a full-history fetch while reverted and unreachable receipts are rejected.
+- Refuse spec-status generation with incomplete shallow history before any writes; verify legacy and current receipts survive a full-history fetch while reverted and unreachable receipts are rejected.
 
-- [ ] **PIPE-CONNSPEC-R009:** Requirement state read from the engine (rollup).
-- [ ] **PIPE-CONNSPEC-R009.1:** Wiring.
-- [ ] **PIPE-CONNSPEC-R009.2:** Hot-path proof.
+- **PIPE-CONNSPEC-R009:** Requirement state read from the engine (rollup).
+- **PIPE-CONNSPEC-R009.1:** Wiring.
+- **PIPE-CONNSPEC-R009.2:** Hot-path proof.
 
-- [ ] PIPE-CONNSPEC-R011: support explicit retired standard-ID aliases with current-row validation, preserved historical evidence and unchanged unknown/unbound trailer refusal.
+- PIPE-CONNSPEC-R011: support explicit retired standard-ID aliases with current-row validation, preserved historical evidence and unchanged unknown/unbound trailer refusal.
 
-- [ ] **PIPE-CONNSPEC-R012:** Row-level Depends-on.
-- [ ] **PIPE-CONNSPEC-R013:** Priority from competency questions.
-- [ ] **PIPE-CONNSPEC-R014:** Priority, frontier, and unserved from the organization aggregate.
-- [ ] **PIPE-CONNSPEC-R015:** Derived release bundles.
-- [ ] **PIPE-CONNSPEC-R016:** Architecture page delivery views.
+- **PIPE-CONNSPEC-R012:** Row-level Depends-on.
+- **PIPE-CONNSPEC-R013:** Priority from competency questions.
+- **PIPE-CONNSPEC-R014:** Priority, frontier, and unserved from the organization aggregate.
+- **PIPE-CONNSPEC-R015:** Derived release bundles.
+- **PIPE-CONNSPEC-R016:** Architecture page delivery views.
+- [ ] T001 PIPE-CONNSPEC-R001 Generated status with three hooks and four states.
+- [ ] T002 PIPE-CONNSPEC-R001.1 Dependency-only automated commits pass the trailer check.
+- [ ] T003 PIPE-CONNSPEC-R002 Test binding forms.
+- [ ] T004 PIPE-CONNSPEC-R003 The spec-delivery page.
+- [ ] T005 PIPE-CONNSPEC-R004 Reference callers in the five core repositories.
+- [ ] T006 PIPE-CONNSPEC-R005 The lane contract in each development skill.
+- [ ] T007 PIPE-CONNSPEC-R006 Preserve retired identities across spec ownership moves.
+- [ ] T008 PIPE-CONNSPEC-R007 CI checks changed prose.
+- [ ] T009 PIPE-CONNSPEC-R175 Every repository ships one-command agent setup.
+- [ ] T010 PIPE-CONNSPEC-R176 Every repository carries the standard tool-neutral AGENTS.md section.
+- [ ] T011 PIPE-CONNSPEC-R177 The agent-contract check is warn-level first.
+- [ ] T012 PIPE-CONNSPEC-R101 Deliver `ansible-tower-mcp` adopts the standard spec-delivery method and page.
+- [ ] T013 PIPE-CONNSPEC-R102 Deliver `archimate-mcp` adopts the standard spec-delivery method and page.
+- [ ] T014 PIPE-CONNSPEC-R103 Deliver `archivebox-api` adopts the standard spec-delivery method and page.
+- [ ] T015 PIPE-CONNSPEC-R104 Deliver `aris-mcp` adopts the standard spec-delivery method and page.
+- [ ] T016 PIPE-CONNSPEC-R105 Deliver `arr-mcp` adopts the standard spec-delivery method and page.
+- [ ] T017 PIPE-CONNSPEC-R106 Deliver `atlassian-agent` adopts the standard spec-delivery method and page.
+- [ ] T018 PIPE-CONNSPEC-R107 Deliver `audio-transcriber` adopts the standard spec-delivery method and page.
+- [ ] T019 PIPE-CONNSPEC-R108 Deliver `audiobookshelf-mcp` adopts the standard spec-delivery method and page.
+- [ ] T020 PIPE-CONNSPEC-R109 Deliver `caddy-mcp` adopts the standard spec-delivery method and page.
+- [ ] T021 PIPE-CONNSPEC-R110 Deliver `camunda-mcp` adopts the standard spec-delivery method and page.
+- [ ] T022 PIPE-CONNSPEC-R111 Deliver `ciso-assistant-api` adopts the standard spec-delivery method and page.
+- [ ] T023 PIPE-CONNSPEC-R112 Deliver `clarity-api` adopts the standard spec-delivery method and page.
+- [ ] T024 PIPE-CONNSPEC-R113 Deliver `container-manager-mcp` adopts the standard spec-delivery method and page.
+- [ ] T025 PIPE-CONNSPEC-R114 Deliver `data-science-mcp` adopts the standard spec-delivery method and page.
+- [ ] T026 PIPE-CONNSPEC-R115 Deliver `dockerhub-api` adopts the standard spec-delivery method and page.
+- [ ] T027 PIPE-CONNSPEC-R116 Deliver `documentdb-mcp` adopts the standard spec-delivery method and page.
+- [ ] T028 PIPE-CONNSPEC-R117 Deliver `egeria-mcp` adopts the standard spec-delivery method and page.
+- [ ] T029 PIPE-CONNSPEC-R118 Deliver `emerald-exchange` adopts the standard spec-delivery method and page.
+- [ ] T030 PIPE-CONNSPEC-R119 Deliver `erpnext-agent` adopts the standard spec-delivery method and page.
+- [ ] T031 PIPE-CONNSPEC-R120 Deliver `fan-manager` adopts the standard spec-delivery method and page.
+- [ ] T032 PIPE-CONNSPEC-R121 Deliver `firefly-iii-mcp` adopts the standard spec-delivery method and page.
+- [ ] T033 PIPE-CONNSPEC-R122 Deliver `freshrss-agent` adopts the standard spec-delivery method and page.
+- [ ] T034 PIPE-CONNSPEC-R123 Deliver `genius-agent` adopts the standard spec-delivery method and page.
+- [ ] T035 PIPE-CONNSPEC-R124 Deliver `github-agent` adopts the standard spec-delivery method and page.
+- [ ] T036 PIPE-CONNSPEC-R125 Adopt the standard spec-delivery method and page in the source-control connector.
+- [ ] T037 PIPE-CONNSPEC-R126 Deliver `gramps-mcp` adopts the standard spec-delivery method and page.
+- [ ] T038 PIPE-CONNSPEC-R127 Deliver `hdhomerun-mcp` adopts the standard spec-delivery method and page.
+- [ ] T039 PIPE-CONNSPEC-R128 Deliver `home-assistant-agent` adopts the standard spec-delivery method and page.
+- [ ] T040 PIPE-CONNSPEC-R129 Deliver `jellyfin-mcp` adopts the standard spec-delivery method and page.
+- [ ] T041 PIPE-CONNSPEC-R130 Deliver `jena-mcp` adopts the standard spec-delivery method and page.
+- [ ] T042 PIPE-CONNSPEC-R131 Deliver `kafka-mcp` adopts the standard spec-delivery method and page.
+- [ ] T043 PIPE-CONNSPEC-R132 Deliver `keycloak-agent` adopts the standard spec-delivery method and page.
+- [ ] T044 PIPE-CONNSPEC-R133 Deliver `lakekeeper-mcp` adopts the standard spec-delivery method and page.
+- [ ] T045 PIPE-CONNSPEC-R134 Deliver `langfuse-agent` adopts the standard spec-delivery method and page.
+- [ ] T046 PIPE-CONNSPEC-R135 Deliver `leanix-agent` adopts the standard spec-delivery method and page.
+- [ ] T047 PIPE-CONNSPEC-R136 Deliver `legal-peripherals-mcp` adopts the standard spec-delivery method and page.
+- [ ] T048 PIPE-CONNSPEC-R137 Deliver `lgtm-mcp` adopts the standard spec-delivery method and page.
+- [ ] T049 PIPE-CONNSPEC-R138 Deliver `listmonk-api` adopts the standard spec-delivery method and page.
+- [ ] T050 PIPE-CONNSPEC-R139 Deliver `bellwether-mcp` adopts the standard spec-delivery method and page.
+- [ ] T051 PIPE-CONNSPEC-R140 Deliver `mattermost-mcp` adopts the standard spec-delivery method and page.
+- [ ] T052 PIPE-CONNSPEC-R141 Deliver `mealie-mcp` adopts the standard spec-delivery method and page.
+- [ ] T053 PIPE-CONNSPEC-R142 Deliver `media-downloader` adopts the standard spec-delivery method and page.
+- [ ] T054 PIPE-CONNSPEC-R143 Deliver `microsoft-agent` adopts the standard spec-delivery method and page.
+- [ ] T055 PIPE-CONNSPEC-R144 Deliver `nextcloud-agent` adopts the standard spec-delivery method and page.
+- [ ] T056 PIPE-CONNSPEC-R145 Deliver `objectstore-mcp` adopts the standard spec-delivery method and page.
+- [ ] T057 PIPE-CONNSPEC-R146 Deliver `okta-agent` adopts the standard spec-delivery method and page.
+- [ ] T058 PIPE-CONNSPEC-R147 Deliver `onetrust-api` adopts the standard spec-delivery method and page.
+- [ ] T059 PIPE-CONNSPEC-R148 Deliver `openbao-mcp` adopts the standard spec-delivery method and page.
+- [ ] T060 PIPE-CONNSPEC-R149 Deliver `opensearch-mcp` adopts the standard spec-delivery method and page.
+- [ ] T061 PIPE-CONNSPEC-R150 Deliver `owncast-agent` adopts the standard spec-delivery method and page.
+- [ ] T062 PIPE-CONNSPEC-R151 Deliver `paperless-ngx-mcp` adopts the standard spec-delivery method and page.
+- [ ] T063 PIPE-CONNSPEC-R152 Deliver `plane-agent` adopts the standard spec-delivery method and page.
+- [ ] T064 PIPE-CONNSPEC-R153 Deliver `portainer-agent` adopts the standard spec-delivery method and page.
+- [ ] T065 PIPE-CONNSPEC-R154 Deliver `postiz-agent` adopts the standard spec-delivery method and page.
+- [ ] T066 PIPE-CONNSPEC-R155 Deliver `pulselink-mcp` adopts the standard spec-delivery method and page.
+- [ ] T067 PIPE-CONNSPEC-R156 Deliver `qbittorrent-agent` adopts the standard spec-delivery method and page.
+- [ ] T068 PIPE-CONNSPEC-R157 Deliver `repository-manager` adopts the standard spec-delivery method and page.
+- [ ] T069 PIPE-CONNSPEC-R158 Deliver `rom-manager` adopts the standard spec-delivery method and page.
+- [ ] T070 PIPE-CONNSPEC-R159 Deliver `salesforce-agent` adopts the standard spec-delivery method and page.
+- [ ] T071 PIPE-CONNSPEC-R160 Deliver `scholarx` adopts the standard spec-delivery method and page.
+- [ ] T072 PIPE-CONNSPEC-R161 Deliver `searxng-mcp` adopts the standard spec-delivery method and page.
+- [ ] T073 PIPE-CONNSPEC-R162 Deliver `servicenow-api` adopts the standard spec-delivery method and page.
+- [ ] T074 PIPE-CONNSPEC-R163 Deliver `spark-mcp` adopts the standard spec-delivery method and page.
+- [ ] T075 PIPE-CONNSPEC-R164 Deliver `sql-mcp` adopts the standard spec-delivery method and page.
+- [ ] T076 PIPE-CONNSPEC-R165 Deliver `stirlingpdf-agent` adopts the standard spec-delivery method and page.
+- [ ] T077 PIPE-CONNSPEC-R166 Deliver `systems-manager` adopts the standard spec-delivery method and page.
+- [ ] T078 PIPE-CONNSPEC-R167 Deliver `technitium-dns-mcp` adopts the standard spec-delivery method and page.
+- [ ] T079 PIPE-CONNSPEC-R168 Deliver `tunnel-manager` adopts the standard spec-delivery method and page.
+- [ ] T080 PIPE-CONNSPEC-R169 Deliver `twenty-mcp` adopts the standard spec-delivery method and page.
+- [ ] T081 PIPE-CONNSPEC-R170 Deliver `uptime-kuma-agent` adopts the standard spec-delivery method and page.
+- [ ] T082 PIPE-CONNSPEC-R171 Deliver `vaultwarden-mcp` adopts the standard spec-delivery method and page.
+- [ ] T083 PIPE-CONNSPEC-R172 Deliver `vector-mcp` adopts the standard spec-delivery method and page.
+- [ ] T084 PIPE-CONNSPEC-R173 Deliver `wger-agent` adopts the standard spec-delivery method and page.
+- [ ] T085 PIPE-CONNSPEC-R174 Deliver `world-reference-mcp` adopts the standard spec-delivery method and page.
+- [ ] T086 PIPE-CONNSPEC-R008 Canonical title determines generated spec identity.
+- [ ] T087 PIPE-CONNSPEC-R009 Requirement state read from the engine (rollup).
+- [ ] T088 PIPE-CONNSPEC-R009.1 Wiring.
+- [ ] T089 PIPE-CONNSPEC-R009.2 Hot-path proof.
+- [ ] T090 PIPE-CONNSPEC-R010 Binding suggester ranks existing tests for unverified rows.
+- [ ] T091 PIPE-CONNSPEC-R011 Explicit retired standard-ID aliases.
+- [ ] T092 PIPE-CONNSPEC-R012 Row-level Depends-on.
+- [ ] T093 PIPE-CONNSPEC-R013 Priority from competency questions.
+- [ ] T094 PIPE-CONNSPEC-R014 Priority, frontier, and unserved from the organization aggregate.
+- [ ] T095 PIPE-CONNSPEC-R015 Derived release bundles.
+- [ ] T096 PIPE-CONNSPEC-R016 Architecture page delivery views.

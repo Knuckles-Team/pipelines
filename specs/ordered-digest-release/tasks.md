@@ -1,72 +1,151 @@
 # Tasks — PIPE-RELEASE
 
-- [ ] Agree public candidate schema and integrity mechanism; document deployment-owner handoff fields.
-- [ ] Implement strict candidate, digest, source, and dependency validation before publication effects.
-- [ ] Add deterministic topological order, exact-revision qualification, and stage receipts using existing actions.
-- [ ] Bind source verification and registry digests to builds; emit idempotent versioned handoff.
-- [ ] Check declared consumer manifest references without editing those manifests.
-- [ ] Add P-1–P-5 and N-1–N-6 fixture/workflow tests; run YAML, pytest, CCCC, jscpd, Dupehound, and KISS.
-- [ ] Execute reviewed release, link hosted CI/digest receipts, obtain deployment evidence, update delivery and acceptance independently.
+- Agree public candidate schema and integrity mechanism; document deployment-owner handoff fields.
+- Implement strict candidate, digest, source, and dependency validation before publication effects.
+- Add deterministic topological order, exact-revision qualification, and stage receipts using existing actions.
+- Bind source verification and registry digests to builds; emit idempotent versioned handoff.
+- Check declared consumer manifest references without editing those manifests.
+- Add P-1–P-5 and N-1–N-6 fixture/workflow tests; run YAML, pytest, CCCC, jscpd, Dupehound, and KISS.
+- Execute reviewed release, link hosted CI/digest receipts, obtain deployment evidence, update delivery and acceptance independently.
 
 No task above cites a `requirements.md` ID by name. PIPE-RELEASE-R001 (dependency-ordered digest
 publication) is closed by tasks 2-4 above (candidate validation, ordered publication, digest
 handoff). PIPE-RELEASE-R002 (release tag matches the qualified commit) is closed by task 2 above
 (candidate/source/digest validation) together with task 7 (release evidence linking the tag to its
 commit).
-- [ ] Quote and properly escape every environment value the release build job sources locally
+- Quote and properly escape every environment value the release build job sources locally
       (including compiler flags such as CFLAGS) so a multi-token value is never misinterpreted as a
       shell command, and verify the build produces byte-identical, reproducible wheels. Closes
       PIPE-RELEASE-R003, which no functional requirement or existing task above covers.
-- [ ] Add `kernels.py` with the kernel matrix, call it from `aggregate`, record `kernel_cells` in the receipt, and prove a release bundle with a missing platform wheel fails. Closes PIPE-RELEASE-R004.
-- [ ] Add `dependency_cycles.py`, call it from `dependency_findings`, emit `SC-DEP-LOOP`, and prove `pipelines-hook supply-chain` fails on a group loop. Closes PIPE-RELEASE-R005.
-- [ ] PIPE-RELEASE-R006: Deliver all six children and retain separate consistency and release authorization.
-- [x] PIPE-RELEASE-R006.1: Model: Accept a complete three-role inventory; reject unknown roles, duplicate locations and missing role coverage. Implement and bind `test_project_version_inventory` in `tests/hooks/test_project_version_sync.py`.
-- [x] PIPE-RELEASE-R006.2: Behavior: Equal values pass; independently changing metadata, source, documentation or canonical current version fails at the exact location. Implement and bind `test_project_version_values` in `tests/hooks/test_project_version_sync.py`.
-- [x] PIPE-RELEASE-R006.3: Wiring: The installed CLI and published hook select the same snapshot and fail on an inconsistent unchanged declared surface. Implement and bind `test_project_version_hook_wiring` in `tests/hooks/test_project_version_sync.py`.
-- [x] PIPE-RELEASE-R006.4: Refusal: Missing, malformed or competing configs and ambiguous extraction exit 2; mismatches exit 1 and cannot produce a passing receipt. Implement and bind `test_project_version_refusals` in `tests/hooks/test_project_version_sync.py`.
-- [x] PIPE-RELEASE-R006.5: Evidence: Evidence identifies the exact checked Git bytes and all three roles; unchecked cases have no successful verdict. Implement and bind `test_project_version_evidence` in `tests/hooks/test_project_version_sync.py`.
-- [x] PIPE-RELEASE-R006.6: Hot-path proof: Assert real dispatcher/hook exit codes, exact locations, snapshot isolation, all-surface bumping and unchanged caller files during gate checks. Implement and bind `test_project_version_sync_cli` in `tests/hooks/test_project_version_sync.py`.
-- [ ] PIPE-RELEASE-R005.7: Model. Implement this contract and bind `test_role_extra_closure_model` in `tests/hooks/test_role_extra_closure.py`.
-- [ ] PIPE-RELEASE-R005.8: Behavior. Implement this contract and bind `test_role_extra_closure_behavior` in `tests/hooks/test_role_extra_closure.py`.
-- [ ] PIPE-RELEASE-R005.9: Wiring. Implement this contract and bind `test_role_extra_closure_wiring` in `tests/hooks/test_role_extra_closure.py`.
-- [ ] PIPE-RELEASE-R005.10: Refusal. Implement this contract and bind `test_role_extra_closure_refusal` in `tests/hooks/test_role_extra_closure.py`.
-- [ ] PIPE-RELEASE-R005.11: Evidence. Implement this contract and bind `test_role_extra_closure_evidence` in `tests/hooks/test_role_extra_closure.py`.
-- [ ] PIPE-RELEASE-R005.12: Hot-path proof. Implement this contract and bind `test_role_extra_closure_cli` in `tests/hooks/test_role_extra_closure.py`.
-- [ ] PIPE-RELEASE-R001.1: Model. Implement this contract and bind `test_release_phase_progress_model` in `tests/hooks/test_release_phase_progress.py`.
-- [ ] PIPE-RELEASE-R001.2: Behavior. Implement this contract and bind `test_release_phase_progress_behavior` in `tests/hooks/test_release_phase_progress.py`.
-- [ ] PIPE-RELEASE-R001.3: Wiring. Implement this contract and bind `test_release_phase_progress_wiring` in `tests/hooks/test_release_phase_progress.py`.
-- [ ] PIPE-RELEASE-R001.4: Refusal. Implement this contract and bind `test_release_phase_progress_refusal` in `tests/hooks/test_release_phase_progress.py`.
-- [ ] PIPE-RELEASE-R001.5: Evidence. Implement this contract and bind `test_release_phase_progress_evidence` in `tests/hooks/test_release_phase_progress.py`.
-- [ ] PIPE-RELEASE-R001.6: Hot-path proof. Implement this contract and bind `test_release_phase_progress_cli` in `tests/hooks/test_release_phase_progress.py`.
-- [ ] PIPE-RELEASE-R006.7: Model. Implement this contract and bind `test_version_inventory_completeness_model` in `tests/hooks/test_version_inventory_completeness.py`.
-- [ ] PIPE-RELEASE-R006.8: Behavior. Implement this contract and bind `test_version_inventory_completeness_behavior` in `tests/hooks/test_version_inventory_completeness.py`.
-- [ ] PIPE-RELEASE-R006.9: Wiring. Implement this contract and bind `test_version_inventory_completeness_wiring` in `tests/hooks/test_version_inventory_completeness.py`.
-- [ ] PIPE-RELEASE-R006.10: Refusal. Implement this contract and bind `test_version_inventory_completeness_refusal` in `tests/hooks/test_version_inventory_completeness.py`.
-- [ ] PIPE-RELEASE-R006.11: Evidence. Implement this contract and bind `test_version_inventory_completeness_evidence` in `tests/hooks/test_version_inventory_completeness.py`.
-- [ ] PIPE-RELEASE-R006.12: Hot-path proof. Implement this contract and bind `test_version_inventory_completeness_cli` in `tests/hooks/test_version_inventory_completeness.py`.
-- [ ] PIPE-RELEASE-R001.7: Model. Implement this contract and bind `test_major_upgrade_pre_pin_model` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- [ ] PIPE-RELEASE-R001.8: Behavior. Implement this contract and bind `test_major_upgrade_pre_pin_behavior` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- [ ] PIPE-RELEASE-R001.9: Wiring. Implement this contract and bind `test_major_upgrade_pre_pin_wiring` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- [ ] PIPE-RELEASE-R001.10: Refusal. Implement this contract and bind `test_major_upgrade_pre_pin_refusal` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- [ ] PIPE-RELEASE-R001.11: Evidence. Implement this contract and bind `test_major_upgrade_pre_pin_evidence` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- [ ] PIPE-RELEASE-R001.12: Hot-path proof. Implement this contract and bind `test_major_upgrade_pre_pin_cli` in `tests/hooks/test_major_upgrade_pre_pin.py`.
-- [ ] PIPE-RELEASE-R007: Deliver all seven children; keep every new input optional.
-- [ ] PIPE-RELEASE-R007.1: Model. Implement this contract and bind `test_gates_workflow_inputs_all_default` in `tests/test_gates_pipeline_contract.py`.
-- [ ] PIPE-RELEASE-R007.2: Behavior. Implement this contract and bind `test_gates_workflow_scopes_to_the_diff_and_caps_time` in `tests/test_gates_pipeline_contract.py`.
-- [ ] PIPE-RELEASE-R007.3: Wiring. Implement this contract and bind `test_require_tag_defaults_off_and_guards_the_publish_step` in `tests/test_gates_pipeline_contract.py`.
-- [ ] PIPE-RELEASE-R007.4: Refusal. Implement this contract and bind `test_require_tag_refuses_a_branch_ref_and_names_it` in `tests/test_gates_pipeline_contract.py`.
-- [ ] PIPE-RELEASE-R007.5: Evidence. Implement this contract and bind `test_fast_tests_reports_no_affected_tests` in `tests/hooks/test_fast_tests.py`.
-- [ ] PIPE-RELEASE-R007.6: Hot-path proof. Implement this contract and bind `test_fast_tests_runs_only_the_affected_subset` in `tests/hooks/test_fast_tests.py`.
-- [ ] PIPE-RELEASE-R007.7: Release bumps. Ignore member-version-only manifest and lock changes in the Rust scope; bind the three tests in `tests/hooks/test_pr_test_scope.py`.
-- [ ] PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
+- Add `kernels.py` with the kernel matrix, call it from `aggregate`, record `kernel_cells` in the receipt, and prove a release bundle with a missing platform wheel fails. Closes PIPE-RELEASE-R004.
+- Add `dependency_cycles.py`, call it from `dependency_findings`, emit `SC-DEP-LOOP`, and prove `pipelines-hook supply-chain` fails on a group loop. Closes PIPE-RELEASE-R005.
+- PIPE-RELEASE-R006: Deliver all six children and retain separate consistency and release authorization.
+- PIPE-RELEASE-R006.1: Model: Accept a complete three-role inventory; reject unknown roles, duplicate locations and missing role coverage. Implement and bind `test_project_version_inventory` in `tests/hooks/test_project_version_sync.py`.
+- PIPE-RELEASE-R006.2: Behavior: Equal values pass; independently changing metadata, source, documentation or canonical current version fails at the exact location. Implement and bind `test_project_version_values` in `tests/hooks/test_project_version_sync.py`.
+- PIPE-RELEASE-R006.3: Wiring: The installed CLI and published hook select the same snapshot and fail on an inconsistent unchanged declared surface. Implement and bind `test_project_version_hook_wiring` in `tests/hooks/test_project_version_sync.py`.
+- PIPE-RELEASE-R006.4: Refusal: Missing, malformed or competing configs and ambiguous extraction exit 2; mismatches exit 1 and cannot produce a passing receipt. Implement and bind `test_project_version_refusals` in `tests/hooks/test_project_version_sync.py`.
+- PIPE-RELEASE-R006.5: Evidence: Evidence identifies the exact checked Git bytes and all three roles; unchecked cases have no successful verdict. Implement and bind `test_project_version_evidence` in `tests/hooks/test_project_version_sync.py`.
+- PIPE-RELEASE-R006.6: Hot-path proof: Assert real dispatcher/hook exit codes, exact locations, snapshot isolation, all-surface bumping and unchanged caller files during gate checks. Implement and bind `test_project_version_sync_cli` in `tests/hooks/test_project_version_sync.py`.
+- PIPE-RELEASE-R005.7: Model. Implement this contract and bind `test_role_extra_closure_model` in `tests/hooks/test_role_extra_closure.py`.
+- PIPE-RELEASE-R005.8: Behavior. Implement this contract and bind `test_role_extra_closure_behavior` in `tests/hooks/test_role_extra_closure.py`.
+- PIPE-RELEASE-R005.9: Wiring. Implement this contract and bind `test_role_extra_closure_wiring` in `tests/hooks/test_role_extra_closure.py`.
+- PIPE-RELEASE-R005.10: Refusal. Implement this contract and bind `test_role_extra_closure_refusal` in `tests/hooks/test_role_extra_closure.py`.
+- PIPE-RELEASE-R005.11: Evidence. Implement this contract and bind `test_role_extra_closure_evidence` in `tests/hooks/test_role_extra_closure.py`.
+- PIPE-RELEASE-R005.12: Hot-path proof. Implement this contract and bind `test_role_extra_closure_cli` in `tests/hooks/test_role_extra_closure.py`.
+- PIPE-RELEASE-R001.1: Model. Implement this contract and bind `test_release_phase_progress_model` in `tests/hooks/test_release_phase_progress.py`.
+- PIPE-RELEASE-R001.2: Behavior. Implement this contract and bind `test_release_phase_progress_behavior` in `tests/hooks/test_release_phase_progress.py`.
+- PIPE-RELEASE-R001.3: Wiring. Implement this contract and bind `test_release_phase_progress_wiring` in `tests/hooks/test_release_phase_progress.py`.
+- PIPE-RELEASE-R001.4: Refusal. Implement this contract and bind `test_release_phase_progress_refusal` in `tests/hooks/test_release_phase_progress.py`.
+- PIPE-RELEASE-R001.5: Evidence. Implement this contract and bind `test_release_phase_progress_evidence` in `tests/hooks/test_release_phase_progress.py`.
+- PIPE-RELEASE-R001.6: Hot-path proof. Implement this contract and bind `test_release_phase_progress_cli` in `tests/hooks/test_release_phase_progress.py`.
+- PIPE-RELEASE-R006.7: Model. Implement this contract and bind `test_version_inventory_completeness_model` in `tests/hooks/test_version_inventory_completeness.py`.
+- PIPE-RELEASE-R006.8: Behavior. Implement this contract and bind `test_version_inventory_completeness_behavior` in `tests/hooks/test_version_inventory_completeness.py`.
+- PIPE-RELEASE-R006.9: Wiring. Implement this contract and bind `test_version_inventory_completeness_wiring` in `tests/hooks/test_version_inventory_completeness.py`.
+- PIPE-RELEASE-R006.10: Refusal. Implement this contract and bind `test_version_inventory_completeness_refusal` in `tests/hooks/test_version_inventory_completeness.py`.
+- PIPE-RELEASE-R006.11: Evidence. Implement this contract and bind `test_version_inventory_completeness_evidence` in `tests/hooks/test_version_inventory_completeness.py`.
+- PIPE-RELEASE-R006.12: Hot-path proof. Implement this contract and bind `test_version_inventory_completeness_cli` in `tests/hooks/test_version_inventory_completeness.py`.
+- PIPE-RELEASE-R001.7: Model. Implement this contract and bind `test_major_upgrade_pre_pin_model` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- PIPE-RELEASE-R001.8: Behavior. Implement this contract and bind `test_major_upgrade_pre_pin_behavior` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- PIPE-RELEASE-R001.9: Wiring. Implement this contract and bind `test_major_upgrade_pre_pin_wiring` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- PIPE-RELEASE-R001.10: Refusal. Implement this contract and bind `test_major_upgrade_pre_pin_refusal` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- PIPE-RELEASE-R001.11: Evidence. Implement this contract and bind `test_major_upgrade_pre_pin_evidence` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- PIPE-RELEASE-R001.12: Hot-path proof. Implement this contract and bind `test_major_upgrade_pre_pin_cli` in `tests/hooks/test_major_upgrade_pre_pin.py`.
+- PIPE-RELEASE-R007: Deliver all seven children; keep every new input optional.
+- PIPE-RELEASE-R007.1: Model. Implement this contract and bind `test_gates_workflow_inputs_all_default` in `tests/test_gates_pipeline_contract.py`.
+- PIPE-RELEASE-R007.2: Behavior. Implement this contract and bind `test_gates_workflow_scopes_to_the_diff_and_caps_time` in `tests/test_gates_pipeline_contract.py`.
+- PIPE-RELEASE-R007.3: Wiring. Implement this contract and bind `test_require_tag_defaults_off_and_guards_the_publish_step` in `tests/test_gates_pipeline_contract.py`.
+- PIPE-RELEASE-R007.4: Refusal. Implement this contract and bind `test_require_tag_refuses_a_branch_ref_and_names_it` in `tests/test_gates_pipeline_contract.py`.
+- PIPE-RELEASE-R007.5: Evidence. Implement this contract and bind `test_fast_tests_reports_no_affected_tests` in `tests/hooks/test_fast_tests.py`.
+- PIPE-RELEASE-R007.6: Hot-path proof. Implement this contract and bind `test_fast_tests_runs_only_the_affected_subset` in `tests/hooks/test_fast_tests.py`.
+- PIPE-RELEASE-R007.7: Release bumps. Ignore member-version-only manifest and lock changes in the Rust scope; bind the three tests in `tests/hooks/test_pr_test_scope.py`.
+- PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
 
-- [ ] **PIPE-RELEASE-R009:** Release records publish to the engine (rollup).
-- [ ] **PIPE-RELEASE-R009.1:** Wiring.
-- [ ] **PIPE-RELEASE-R009.2:** Hot-path proof.
-- [x] PIPE-RELEASE-R010: Named per-repository source-build allowance. Bind the existing allowance tests in `tests/test_wheel_readiness.py`.
-- [ ] PIPE-RELEASE-R011: Connector pull request workflow. Bind the two tests in `tests/test_connector_release_pipeline.py`.
-- [ ] PIPE-RELEASE-R012: Post-release verification of PyPI and Docker. Bind the verification tests in `tests/test_connector_release_pipeline.py`.
-- [ ] PIPE-RELEASE-R013: Release-standard check. Bind `tests/hooks/test_release_standard.py`.
-- [ ] PIPE-RELEASE-R014: Concurrent, uncompiled runtime-profile proofs. Bind the two tests in `tests/test_wheel_readiness.py`.
-- [ ] PIPE-RELEASE-R015: Persistent BuildKit builder. Bind `tests/test_container_pipeline_contract.py::test_release_builds_use_one_persistent_builder`.
-- [ ] PIPE-RELEASE-R016: Persistent uv cache. Bind `tests/test_python_pipeline_contract.py::test_publish_action_persists_uv_cache_in_tool_cache`.
+- **PIPE-RELEASE-R009:** Release records publish to the engine (rollup).
+- **PIPE-RELEASE-R009.1:** Wiring.
+- **PIPE-RELEASE-R009.2:** Hot-path proof.
+- PIPE-RELEASE-R010: Named per-repository source-build allowance. Bind the existing allowance tests in `tests/test_wheel_readiness.py`.
+- PIPE-RELEASE-R011: Connector pull request workflow. Bind the two tests in `tests/test_connector_release_pipeline.py`.
+- PIPE-RELEASE-R012: Post-release verification of PyPI and Docker. Bind the verification tests in `tests/test_connector_release_pipeline.py`.
+- PIPE-RELEASE-R013: Release-standard check. Bind `tests/hooks/test_release_standard.py`.
+- PIPE-RELEASE-R014: Concurrent, uncompiled runtime-profile proofs. Bind the two tests in `tests/test_wheel_readiness.py`.
+- PIPE-RELEASE-R015: Persistent BuildKit builder. Bind `tests/test_container_pipeline_contract.py::test_release_builds_use_one_persistent_builder`.
+- PIPE-RELEASE-R016: Persistent uv cache. Bind `tests/test_python_pipeline_contract.py::test_publish_action_persists_uv_cache_in_tool_cache`.
+- [ ] T001 PIPE-RELEASE-R001 Pipelines publishes images in dependency order with digest pins.
+- [ ] T002 PIPE-RELEASE-R002 Release tags point to the exact qualified commit.
+- [ ] T003 PIPE-RELEASE-R003 Release build job sources environment values safely.
+- [ ] T004 PIPE-RELEASE-R004 Release gate fails when a compiled kernel wheel is missing.
+- [ ] T005 PIPE-RELEASE-R004.1 Model.
+- [ ] T006 PIPE-RELEASE-R004.2 Behavior.
+- [ ] T007 PIPE-RELEASE-R004.3 Wiring.
+- [ ] T008 PIPE-RELEASE-R004.4 Refusal.
+- [ ] T009 PIPE-RELEASE-R004.5 Evidence.
+- [ ] T010 PIPE-RELEASE-R004.6 Hot-path proof.
+- [ ] T011 PIPE-RELEASE-R005 Dependency gate blocks circular dependency loops.
+- [ ] T012 PIPE-RELEASE-R005.1 Model.
+- [ ] T013 PIPE-RELEASE-R005.2 Behavior.
+- [ ] T014 PIPE-RELEASE-R005.3 Wiring.
+- [ ] T015 PIPE-RELEASE-R005.4 Refusal.
+- [ ] T016 PIPE-RELEASE-R005.5 Evidence.
+- [ ] T017 PIPE-RELEASE-R005.6 Hot-path proof.
+- [ ] T018 PIPE-RELEASE-R006 One bump configuration keeps project versions consistent.
+- [ ] T019 PIPE-RELEASE-R006.1 Model.
+- [ ] T020 PIPE-RELEASE-R006.2 Behavior.
+- [ ] T021 PIPE-RELEASE-R006.3 Wiring.
+- [ ] T022 PIPE-RELEASE-R006.4 Refusal.
+- [ ] T023 PIPE-RELEASE-R006.5 Evidence.
+- [ ] T024 PIPE-RELEASE-R006.6 Hot-path proof.
+- [ ] T025 PIPE-RELEASE-R005.7 Model.
+- [ ] T026 PIPE-RELEASE-R005.8 Behavior.
+- [ ] T027 PIPE-RELEASE-R005.9 Wiring.
+- [ ] T028 PIPE-RELEASE-R005.10 Refusal.
+- [ ] T029 PIPE-RELEASE-R005.11 Evidence.
+- [ ] T030 PIPE-RELEASE-R005.12 Hot-path proof.
+- [ ] T031 PIPE-RELEASE-R001.1 Model.
+- [ ] T032 PIPE-RELEASE-R001.2 Behavior.
+- [ ] T033 PIPE-RELEASE-R001.3 Wiring.
+- [ ] T034 PIPE-RELEASE-R001.4 Refusal.
+- [ ] T035 PIPE-RELEASE-R001.5 Evidence.
+- [ ] T036 PIPE-RELEASE-R001.6 Hot-path proof.
+- [ ] T037 PIPE-RELEASE-R006.7 Model.
+- [ ] T038 PIPE-RELEASE-R006.8 Behavior.
+- [ ] T039 PIPE-RELEASE-R006.9 Wiring.
+- [ ] T040 PIPE-RELEASE-R006.10 Refusal.
+- [ ] T041 PIPE-RELEASE-R006.11 Evidence.
+- [ ] T042 PIPE-RELEASE-R006.12 Hot-path proof.
+- [ ] T043 PIPE-RELEASE-R001.7 Model.
+- [ ] T044 PIPE-RELEASE-R001.8 Behavior.
+- [ ] T045 PIPE-RELEASE-R001.9 Wiring.
+- [ ] T046 PIPE-RELEASE-R001.10 Refusal.
+- [ ] T047 PIPE-RELEASE-R001.11 Evidence.
+- [ ] T048 PIPE-RELEASE-R001.12 Hot-path proof.
+- [ ] T049 PIPE-RELEASE-R001.13 Versions and container files are derived.
+- [ ] T050 PIPE-RELEASE-R001.14 A new Scion SDK release rebuilds connector images.
+- [ ] T051 PIPE-RELEASE-R007 Shared gates workflow, tag-only publish guard and fast-tests hook.
+- [ ] T052 PIPE-RELEASE-R007.1 Model.
+- [ ] T053 PIPE-RELEASE-R007.2 Behavior.
+- [ ] T054 PIPE-RELEASE-R007.3 Wiring.
+- [ ] T055 PIPE-RELEASE-R007.4 Refusal.
+- [ ] T056 PIPE-RELEASE-R007.5 Evidence.
+- [ ] T057 PIPE-RELEASE-R007.6 Hot-path proof.
+- [ ] T058 PIPE-RELEASE-R007.7 Release bumps keep the Rust scope narrow.
+- [ ] T059 PIPE-RELEASE-R008 Python release publishes the wheel and the source distribution together.
+- [ ] T060 PIPE-RELEASE-R009 Release records publish to the engine (rollup).
+- [ ] T061 PIPE-RELEASE-R009.1 Wiring.
+- [ ] T062 PIPE-RELEASE-R009.2 Hot-path proof.
+- [ ] T063 PIPE-RELEASE-R010 Named per-repository source-build allowance.
+- [ ] T064 PIPE-RELEASE-R011 Connector pull request workflow.
+- [ ] T065 PIPE-RELEASE-R012 A connector release publishes PyPI and Docker, and verifies both.
+- [ ] T066 PIPE-RELEASE-R012.1 Published-wheel image preflight.
+- [ ] T067 PIPE-RELEASE-R013 Release-standard check.
+- [ ] T068 PIPE-RELEASE-R014 Release readiness proves runtime profiles concurrently and without bytecode compilation.
+- [ ] T069 PIPE-RELEASE-R015 Release image builds reuse one persistent BuildKit builder per runner pod.
+- [ ] T070 PIPE-RELEASE-R016 Release builds keep uv downloads and managed interpreters in the runner tool cache.
+- [ ] T071 PIPE-RELEASE-R017 A pull request builds the image when a container input changes.
+- [ ] T072 PIPE-RELEASE-R018 One central connector pipeline; a `v*` tag publishes.
+- [ ] T073 PIPE-RELEASE-R018.1 The image guard verifies the version the tag stamps.
+- [ ] T074 PIPE-RELEASE-R019 Connector release signs the live declaration.
+- [ ] T075 PIPE-RELEASE-R020 A release ships one delivered spec bundle.
+- [ ] T076 PIPE-RELEASE-R021 Release bundles are cross-repository spec manifests.
+- [ ] T077 PIPE-RELEASE-R022 A row is delivered only when it meets the delivered qualification.
+- [ ] T078 PIPE-RELEASE-R023 Phase P5 names the final cross-source scenario.
+- [ ] T079 PIPE-RELEASE-R024 An engine release proves the newest released SDK still imports.

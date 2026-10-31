@@ -81,3 +81,19 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R016 | PIPE-RELEASE-R016 | Run `test_publish_action_persists_uv_cache_in_tool_cache`. Assert the step precedes every uv use and writes both variables under the tool cache. |
 
 | T-PIPE-RELEASE-R012.1 | PIPE-RELEASE-R012.1 | Run `tests/test_public_wheel_guard.py` and `tests/test_container_pipeline_contract.py`; require exact committed and deterministic release-generated package inventory, bytes and public digest, stale pin refusal before network, nonconnector/custom-path refusal, and a main-release preflight before the builder/login/build while preserving the default release guard. Also require the explicit boolean repair input and original source SHA/epoch inputs to default false/empty, refuse non-dispatch/non-main/non-current-HEAD, missing or non-ancestor source, epoch mismatch, nonconnector or unpublished-wheel cases, build from the immutable source checkout, and keep PyPI verification read-only while the guarded repair may publish the container. |
+
+## Entries added for rows without a prior entry
+
+| Test ID | Requirement | Expected observation |
+|---|---|---|
+| T-PIPE-RELEASE-R003 | PIPE-RELEASE-R003 | Verified by a build run whose steps complete via the real product build path rather than aborting early from an environment-sourcing error, and whose reproducibility check confirms byte-identical wheels across independent builds. |
+| T-PIPE-RELEASE-R022 | PIPE-RELEASE-R022 | Test: `tests/test_delivered.py::test_each_failing_condition_blocks_delivered`. |
+| T-PIPE-RELEASE-R023 | PIPE-RELEASE-R023 | Test: `tests/test_release_scope.py::test_p5_names_the_cross_source_scenario`. |
+| T-PIPE-RELEASE-R024 | PIPE-RELEASE-R024 | Test: `tests/test_release_consumer_import.py::test_removed_symbol_fails_and_is_named` and `::test_missing_ceiling_is_reported`. |
+
+## Entries added for rows without a prior entry
+
+| Test ID | Requirement | Expected observation |
+|---|---|---|
+| T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: a workflow fixture run asserts the step order and that an unsigned build fails. |
+| T-PIPE-RELEASE-R020 | PIPE-RELEASE-R020 | Test: `tests/test_release_bundle_gate.py::test_bundle_with_open_rows_or_failed_scenario_stops`. |
