@@ -96,7 +96,7 @@ def add_dynamic_groups(tree: Tree, rows: list[dict]) -> None:
             continue
         groups: dict[str, set[str]] = defaultdict(set)
         for row in rows:
-            if row["repo"] == node["repo"] and row["family"] in node.get("fam", []):
+            if row["repo"] == node["repo"] and row.get("family_key", row["family"]) in node.get("fam", []):
                 root_id = row["id"].split(".")[0]
                 key = _group_key(node["dyn"], by_id.get(root_id, {}).get("title", ""))
                 if key:
@@ -139,7 +139,7 @@ class Placer:
         return ranked[0] if ranked else None
 
     def _home(self, row: dict) -> str | None:
-        return self.home.get((row["repo"], row["family"])) or self.home.get((row["repo"], "*"))
+        return self.home.get((row["repo"], row.get("family_key", row["family"]))) or self.home.get((row["repo"], "*"))
 
     def _code_match(self, row: dict, home: str) -> str | None:
         nodes = self.tree.nodes

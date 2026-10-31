@@ -140,7 +140,15 @@
     "PIPE-GATES-R016.113",
     "PIPE-GATES-R016.114",
     "PIPE-GATES-R016.115",
-    "PIPE-GATES-R016.116"
+    "PIPE-GATES-R016.116",
+    "PIPE-GATES-R016.117",
+    "PIPE-GATES-R016.118",
+    "PIPE-GATES-R016.119",
+    "PIPE-GATES-R017",
+    "PIPE-GATES-R018",
+    "PIPE-GATES-R019",
+    "PIPE-GATES-R020",
+    "PIPE-GATES-R021"
   ],
   "requirements": [
     {
@@ -535,7 +543,10 @@
         "PIPE-GATES-R016.113",
         "PIPE-GATES-R016.114",
         "PIPE-GATES-R016.115",
-        "PIPE-GATES-R016.116"
+        "PIPE-GATES-R016.116",
+        "PIPE-GATES-R016.117",
+        "PIPE-GATES-R016.118",
+        "PIPE-GATES-R016.119"
       ]
     },
     {
@@ -1027,7 +1038,7 @@
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:491",
-        "tests/hooks/test_connector_central.py:521"
+        "tests/hooks/test_connector_central.py:535"
       ]
     },
     {
@@ -1046,12 +1057,14 @@
       "title": "The connector PR gate installs the identity catalog from the caller's variable",
       "delivery_state": "VERIFIED",
       "landed_in": [
+        "3bbf915ef23c",
         "49da84faebe2",
         "89e96300d187",
         "c3769c753a53"
       ],
       "verified_by": [
         "tests/hooks/test_connector_central.py:505",
+        "tests/hooks/test_connector_central.py:521",
         "tests/hooks/test_privacy.py:122"
       ]
     },
@@ -1533,11 +1546,11 @@
         "d0a48752cbf3"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:216",
         "tests/hooks/test_connector_central_ingest.py:217",
-        "tests/hooks/test_connector_central_ingest.py:234",
-        "tests/hooks/test_connector_central_ingest.py:245",
-        "tests/hooks/test_connector_central_ingest.py:254"
+        "tests/hooks/test_connector_central_ingest.py:218",
+        "tests/hooks/test_connector_central_ingest.py:235",
+        "tests/hooks/test_connector_central_ingest.py:246",
+        "tests/hooks/test_connector_central_ingest.py:255"
       ]
     },
     {
@@ -1548,10 +1561,10 @@
         "d0a48752cbf3"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:271",
         "tests/hooks/test_connector_central_ingest.py:272",
-        "tests/hooks/test_connector_central_ingest.py:283",
-        "tests/hooks/test_connector_central_ingest.py:293"
+        "tests/hooks/test_connector_central_ingest.py:273",
+        "tests/hooks/test_connector_central_ingest.py:284",
+        "tests/hooks/test_connector_central_ingest.py:294"
       ]
     },
     {
@@ -1562,11 +1575,11 @@
         "d0a48752cbf3"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:310",
         "tests/hooks/test_connector_central_ingest.py:311",
-        "tests/hooks/test_connector_central_ingest.py:329",
-        "tests/hooks/test_connector_central_ingest.py:342",
-        "tests/hooks/test_connector_central_ingest.py:534"
+        "tests/hooks/test_connector_central_ingest.py:312",
+        "tests/hooks/test_connector_central_ingest.py:330",
+        "tests/hooks/test_connector_central_ingest.py:343",
+        "tests/hooks/test_connector_central_ingest.py:535"
       ]
     },
     {
@@ -1577,8 +1590,8 @@
         "1bd2f8fcfb6c"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:360",
-        "tests/hooks/test_connector_central_ingest.py:370"
+        "tests/hooks/test_connector_central_ingest.py:361",
+        "tests/hooks/test_connector_central_ingest.py:371"
       ]
     },
     {
@@ -1589,8 +1602,8 @@
         "1bd2f8fcfb6c"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:377",
-        "tests/hooks/test_connector_central_ingest.py:386"
+        "tests/hooks/test_connector_central_ingest.py:378",
+        "tests/hooks/test_connector_central_ingest.py:387"
       ]
     },
     {
@@ -1601,8 +1614,8 @@
         "072841d0fc31"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:411",
-        "tests/hooks/test_connector_central_ingest.py:423"
+        "tests/hooks/test_connector_central_ingest.py:412",
+        "tests/hooks/test_connector_central_ingest.py:424"
       ]
     },
     {
@@ -1613,8 +1626,8 @@
         "d0a48752cbf3"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:443",
-        "tests/hooks/test_connector_central_ingest.py:444"
+        "tests/hooks/test_connector_central_ingest.py:444",
+        "tests/hooks/test_connector_central_ingest.py:445"
       ]
     },
     {
@@ -1626,8 +1639,8 @@
         "8d8cc8f2e3ba"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:465",
-        "tests/hooks/test_connector_central_ingest.py:476"
+        "tests/hooks/test_connector_central_ingest.py:466",
+        "tests/hooks/test_connector_central_ingest.py:477"
       ]
     },
     {
@@ -1638,8 +1651,8 @@
         "1bd2f8fcfb6c"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_ingest.py:500",
-        "tests/hooks/test_connector_central_ingest.py:515"
+        "tests/hooks/test_connector_central_ingest.py:501",
+        "tests/hooks/test_connector_central_ingest.py:516"
       ]
     },
     {
@@ -1789,9 +1802,9 @@
       "verified_by": [
         "tests/hooks/test_connector_central_fixes7b.py:103",
         "tests/hooks/test_connector_central_fixes7b.py:86",
-        "tests/hooks/test_connector_central_identity.py:24",
-        "tests/hooks/test_connector_central_identity.py:296",
-        "tests/hooks/test_connector_central_identity.py:313"
+        "tests/hooks/test_connector_central_identity.py:29",
+        "tests/hooks/test_connector_central_identity.py:301",
+        "tests/hooks/test_connector_central_identity.py:318"
       ]
     },
     {
@@ -1802,7 +1815,7 @@
         "c2b8fce00aac"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:58"
+        "tests/hooks/test_connector_central_identity.py:63"
       ]
     },
     {
@@ -1828,7 +1841,7 @@
         "c2b8fce00aac"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:74"
+        "tests/hooks/test_connector_central_identity.py:79"
       ]
     },
     {
@@ -1839,7 +1852,7 @@
         "b0453687acf9"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:91"
+        "tests/hooks/test_connector_central_identity.py:96"
       ]
     },
     {
@@ -1851,8 +1864,8 @@
         "8e8272f805dd"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:109",
-        "tests/hooks/test_connector_central_identity.py:125"
+        "tests/hooks/test_connector_central_identity.py:114",
+        "tests/hooks/test_connector_central_identity.py:130"
       ]
     },
     {
@@ -1865,9 +1878,9 @@
         "eee545e082ed"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:132",
-        "tests/hooks/test_connector_central_identity.py:154",
-        "tests/hooks/test_connector_central_identity.py:255"
+        "tests/hooks/test_connector_central_identity.py:137",
+        "tests/hooks/test_connector_central_identity.py:159",
+        "tests/hooks/test_connector_central_identity.py:260"
       ]
     },
     {
@@ -1881,9 +1894,9 @@
         "fb079953f3db"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:164",
-        "tests/hooks/test_connector_central_identity.py:198",
-        "tests/hooks/test_connector_central_identity.py:275"
+        "tests/hooks/test_connector_central_identity.py:169",
+        "tests/hooks/test_connector_central_identity.py:203",
+        "tests/hooks/test_connector_central_identity.py:280"
       ]
     },
     {
@@ -1894,7 +1907,7 @@
         "c2b8fce00aac"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:219"
+        "tests/hooks/test_connector_central_identity.py:224"
       ]
     },
     {
@@ -1905,7 +1918,7 @@
         "c2b8fce00aac"
       ],
       "verified_by": [
-        "tests/hooks/test_connector_central_identity.py:239"
+        "tests/hooks/test_connector_central_identity.py:244"
       ]
     },
     {
@@ -1953,7 +1966,7 @@
         "54cb9fede351"
       ],
       "verified_by": [
-        "tests/hooks/test_privacy_hostnames.py:10"
+        "tests/hooks/test_privacy_hostnames.py:17"
       ]
     },
     {
@@ -1965,8 +1978,8 @@
         "d2ee1f62b996"
       ],
       "verified_by": [
-        "tests/hooks/test_privacy_hostnames.py:19",
-        "tests/hooks/test_privacy_hostnames.py:29"
+        "tests/hooks/test_privacy_hostnames.py:26",
+        "tests/hooks/test_privacy_hostnames.py:36"
       ]
     },
     {
@@ -1977,7 +1990,7 @@
         "d2ee1f62b996"
       ],
       "verified_by": [
-        "tests/hooks/test_privacy_hostnames.py:37"
+        "tests/hooks/test_privacy_hostnames.py:44"
       ]
     },
     {
@@ -2010,6 +2023,80 @@
         "tests/test_no_merge_workflows.py:13",
         "tests/test_no_merge_workflows.py:23"
       ]
+    },
+    {
+      "id": "PIPE-GATES-R016.117",
+      "title": "A long token is scanned in overlapping windows, not refused",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3bbf915ef23c",
+        "56c92f7e1a6a"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_identity_boundaries.py:57"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.118",
+      "title": "A requirement-row token and a repository-relative path are not machine data",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "3bbf915ef23c"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_hostnames.py:55",
+        "tests/hooks/test_privacy_hostnames.py:67",
+        "tests/test_connector_evidence_sanitize.py:20",
+        "tests/test_connector_evidence_sanitize.py:31",
+        "tests/test_connector_evidence_sanitize.py:47"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R016.119",
+      "title": "A local account name is contextual, not a bare word",
+      "delivery_state": "VERIFIED",
+      "landed_in": [
+        "8e6a37a96052"
+      ],
+      "verified_by": [
+        "tests/hooks/test_privacy_provenance.py:117",
+        "tests/hooks/test_privacy_provenance.py:96"
+      ]
+    },
+    {
+      "id": "PIPE-GATES-R017",
+      "title": "Required runtime manifest gate",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R018",
+      "title": "No duplicate worker policy in ingest-worker specs",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R019",
+      "title": "Hydration journey gate through the harness",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R020",
+      "title": "Nightly attached-source conformance workflow",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
+    },
+    {
+      "id": "PIPE-GATES-R021",
+      "title": "Build gate for the root library and its lint profiles",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }

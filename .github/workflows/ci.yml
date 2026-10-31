@@ -31,9 +31,11 @@ jobs:
       # with the verified non-AVX2 trusted pool; the central workflow still
       # forces fork events to ubuntu-latest.
       runner: ${{ vars.ARBORA_TRUSTED_CI_RUNNER == 'true' && '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","rust-1.96"]}' || '"ubuntu-latest"' }}
-      # tracked-privacy needs the operator's private identity catalog, which is
-      # not published to hosted runners; it runs wherever the catalog is installed.
-      skip-hooks: tracked-privacy
+      # tracked-privacy reads the operator's identity catalog from the
+      # PROHIBITED_IDENTITY_CATALOG Actions variable; the setup fails closed without
+      # it (PIPE-GATES-R016.42). A fork pull request cannot read the variable.
+      setup-command: bash scripts/ci_setup.sh
+      skip-hooks: ${{ github.event.pull_request.head.repo.fork && 'tracked-privacy' || '' }}
       scanners: dupehound
 
   main:

@@ -27,10 +27,8 @@ PIPELINES = HERE.parent
 FIXED_MESSAGE = "chore: cut the connector manifest files; declare data sources in code (SDK 0.4.1)"
 REBUMP_MESSAGE = "chore: require agent-connector-sdk>=0.4.1"
 CENTRAL_MESSAGE = "chore: move the connector onto the central SDK and pipelines components (SDK 0.5.2)"
-CENTRAL_TRAILER = (
-    "Spec: none (mechanical central connector migration)\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
-)
-TRAILER = "Spec: SDK-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+CENTRAL_TRAILER = "Spec: none (mechanical central connector migration)\nCo-Authored-By: Claude <noreply@anthropic.com>"
+TRAILER = "Spec: SDK-CONNECTOR-CONTROL-R075\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
 STEPS = ("worktree", "sync", "migrate", "commit", "verify", "push", "pr", "gates", "merge")
 lock = threading.Lock()
 
@@ -406,7 +404,7 @@ def regenerate_status(wt: Path, env: dict[str, str], a: argparse.Namespace, led:
             "-m",
             "chore(spec): regenerate status",
             "-m",
-            "Spec: none (generated status)\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>",
+            "Spec: none (generated status)\nCo-Authored-By: Claude <noreply@anthropic.com>",
         ],
         wt,
         env,
@@ -485,17 +483,20 @@ def wait_gates(repo: str, url: str, wt: Path, led: Ledger) -> None:
 
 
 def main() -> int:
+    sys.path.insert(0, str(PIPELINES))
+    from pipelines_hooks.hygiene.connector_central.fleet import WORKSPACE_ROOT
+
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("repos", nargs="*", help="connector repo names (default: the fleet list file)")
-    ap.add_argument("--fleet", type=Path, default=Path("/home/apps/workspace/agent-packages/agents"))
+    ap.add_argument("--fleet", type=Path, default=WORKSPACE_ROOT / "agent-packages" / "agents")
     ap.add_argument("--fleet-list", type=Path, default=None, help="file with one repo name per line")
     ap.add_argument(
         "--workspace",
         type=Path,
-        default=Path("/home/apps/workspace/workspace.yml"),
+        default=WORKSPACE_ROOT / "workspace.yml",
         help="workspace manifest; the repo set is its agents group intersected with the non-archived GitHub repos",
     )
-    ap.add_argument("--eg-repo", type=Path, default=Path("/home/apps/workspace/agent-packages/epistemic-graph"))
+    ap.add_argument("--eg-repo", type=Path, default=WORKSPACE_ROOT / "agent-packages" / "epistemic-graph")
     ap.add_argument(
         "--worktrees",
         type=Path,

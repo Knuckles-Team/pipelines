@@ -76,7 +76,8 @@
     "PIPE-RELEASE-R016",
     "PIPE-RELEASE-R017",
     "PIPE-RELEASE-R018",
-    "PIPE-RELEASE-R018.1"
+    "PIPE-RELEASE-R018.1",
+    "PIPE-RELEASE-R019"
   ],
   "requirements": [
     {
@@ -944,7 +945,8 @@
       "delivery_state": "VERIFIED",
       "landed_in": [
         "149439ae20cc",
-        "2cdfc98f4b32"
+        "2cdfc98f4b32",
+        "e248b9cf894e"
       ],
       "verified_by": [
         "tests/test_connector_release_pipeline.py:111",
@@ -983,6 +985,13 @@
       "verified_by": [
         "tests/test_public_wheel_guard.py:688"
       ]
+    },
+    {
+      "id": "PIPE-RELEASE-R019",
+      "title": "Connector release signs the live declaration",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": []
     }
   ]
 }

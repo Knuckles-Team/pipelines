@@ -168,3 +168,41 @@ def test_connector_pr_builds_the_image_only_when_a_container_input_changes(tmp_p
     git("add", "patches/a.patch")
     git("commit", "-m", "patch")
     assert run_detect() == "build=true"
+
+
+def test_container_build_check_installs_the_branch_wheel(tmp_path: Path) -> None:
+    document = yaml.safe_load((WORKFLOWS / "container_build_check.yml").read_text(encoding="utf-8"))
+    steps = document["jobs"]["build-check"]["steps"]
+    wheel = next(step for step in steps if step["name"] == "Build this branch's wheel")
+    assert wheel["if"] == "hashFiles('pyproject.toml') != ''"
+    assert 'uv build --wheel --out-dir "$RUNNER_TEMP/localwheels"' in wheel["run"]
+    build = next(step for step in steps if step["name"] == "Build the image without pushing")
+    script = build["run"]
+    assert '--build-context "localwheels=$wheels"' in script
+
+    (tmp_path / "docker").mkdir()
+    (tmp_path / "docker" / "Dockerfile").write_text(
+        "FROM python:3.14-slim AS mcp\nRUN pip install --only-binary :all: demo[mcp]==1.2.3 \\\n    && true\n"
+    )
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "docker").write_text('#!/bin/bash\necho "$@" > "$RUNNER_TEMP/args"\n')
+    (bin_dir / "docker").chmod(0o755)
+    runner_temp = tmp_path / "rt"
+    runner_temp.mkdir()
+    env = {
+        "PATH": f"{bin_dir}:/usr/bin:/bin",
+        "RUNNER_TEMP": str(runner_temp),
+        "DOCKERFILE": "docker/Dockerfile",
+        "BUILD_CONTEXT": ".",
+        "BUILD_TARGET": "",
+    }
+    subprocess.run(["bash", "-c", script], cwd=tmp_path, env=env, check=True, capture_output=True)
+    rewritten = (runner_temp / "Dockerfile.pr").read_text()
+    assert (
+        "RUN --mount=type=bind,from=localwheels,target=/localwheels pip install --find-links /localwheels "
+        "--only-binary :all: demo[mcp]==1.2.3" in rewritten
+    )
+    args = (runner_temp / "args").read_text()
+    assert f"--file {runner_temp}/Dockerfile.pr" in args
+    assert f"--build-context localwheels={runner_temp}/localwheels" in args

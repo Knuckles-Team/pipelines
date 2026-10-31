@@ -52,3 +52,22 @@ def test_catalog_identity_requires_unicode_word_boundaries(text: str, expected: 
 def test_privacy_keeps_unicode_title_matches_bounded(repo: Repo, catalog: Path, body: str, expected: int) -> None:
     repo.commit({"docs/title.md": f"{body}\n"})
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == expected
+
+
+@pytest.mark.spec("PIPE-GATES-R016.117")
+def test_overlong_group_is_scanned_in_overlapping_windows(tmp_path: Path) -> None:
+    from pipelines_hooks.privacy.identity_scan import (
+        MAX_GROUP_BYTES,
+        scan_prohibited_identities,
+    )
+
+    blob = tmp_path / "blob.json"
+    edge = MAX_GROUP_BYTES - 3
+    body = "A" * edge + "-velora-" + "B" * (3 * MAX_GROUP_BYTES)
+    blob.write_text('{"data": "' + body + '"}\n', encoding="utf-8")
+    clean = tmp_path / "clean.json"
+    clean.write_text('{"data": "' + "C" * (3 * MAX_GROUP_BYTES) + '"}\n', encoding="utf-8")
+
+    findings = scan_prohibited_identities(tmp_path, [blob, clean], (IDENTITY.encode("ascii"),))
+
+    assert {finding.path for finding in findings} == {"blob.json"}
