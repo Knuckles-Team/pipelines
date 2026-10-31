@@ -70,7 +70,7 @@ def test_the_failure_message_names_the_cause() -> None:
     assert "scion-sdk:SCION-A (e.g. scion-sdk:SCION-A-R001): 3" in text
     assert "axil:AXIL-B (e.g. axil:AXIL-B-R001): 2" in text
     assert "more" in text
-    assert text.endswith("fix: map the family in scripts/architecture_explorer/model.json or add it to unmapped_allow")
+    assert text.endswith("fix: add a node that owns the family (fam) in scripts/architecture_explorer/model.json")
     assert len(text.splitlines()) <= 30
 
 
