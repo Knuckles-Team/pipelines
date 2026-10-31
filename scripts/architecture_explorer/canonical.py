@@ -52,9 +52,9 @@ def failure_message(errors: dict[str, str], violations: list[str], limit: int = 
         for v in sorted(violations):
             first.setdefault(family(v), v)
         rows = sorted(((f"{k} (e.g. {first[k]})", n) for k, n in groups.items()), key=lambda kv: (-kv[1], kv[0]))
-        lines.append(f"unmapped rows: {len(violations)} in {len(rows)} repo:FAMILY groups:")
+        lines.append(f"rows of families with no node: {len(violations)} in {len(rows)} repo:FAMILY groups:")
         lines += [f"  {k}: {n}" for k, n in rows[:limit]]
         if len(rows) > limit:
             lines.append(f"  ... and {len(rows) - limit} more")
-        lines.append("fix: map the family in scripts/architecture_explorer/model.json or add it to unmapped_allow")
+        lines.append("fix: add a node that owns the family (fam) in scripts/architecture_explorer/model.json")
     return "\n".join(lines)
