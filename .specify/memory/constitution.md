@@ -1,9 +1,19 @@
-# Pipelines specification constitution
+# Pipelines constitution
 
-Status: PROPOSED. Version: 0.1.0. Index: [specs/README.md](../../specs/README.md).
+This repository owns the shared gates, pages, release rules and the spec standard.
 
-1. **One owner, live wiring.** Extend the reusable workflows, theme sync, readiness, and contract tests. Calling repositories own content and deployment manifests. No second policy authority or disconnected implementation.
-2. **Complete public contract.** Each feature identifies outcomes and failure behavior, architecture and interfaces, positive and negative tests, tasks, and owner boundaries in tracked files. Private drafts and local environments are never contributor prerequisites.
-3. **Portable evidence.** Inputs are public repository references and published artifacts. A source receipt states exact commits and trees. A release receipt states image digests, consumer references, and observed result. Missing evidence is not success.
-4. **Quality and simplicity.** Apply configured CCCC, jscpd, Dupehound, KISS, workflow contract tests, and YAML checks to implementation changes. Reuse existing wiring. Documentation-only contributions do not require live services or unrelated documentation gates.
-5. **Separate delivery and acceptance.** `LANDED` requires a merged revision. `ACCEPTED` requires test and consumer/release receipts. Amend this constitution through a reviewed change with impact stated.
+## Organization standards
+
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): one owning spec per capability, computed states, `Spec:` trailers.
+- [Ecosystem boundaries](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ecosystem-boundaries.md): which repository owns which requirement.
+- [Wording standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ste.md): sentences of 20 words or fewer, with `must`, `should`, or `may`.
+
+## Rules of this repository
+
+1. **One owner, live wiring.** Extend the reusable workflows, theme sync, readiness and contract tests. Calling repositories own content and deployment manifests.
+2. **Public contract.** A feature states outcomes, failure behavior, interfaces, tests and tasks in tracked files. No private draft is a contributor prerequisite.
+3. **Portable evidence.** Inputs are public repository references and published artifacts. Missing evidence is not success.
+4. **Publish the tool before the gate.** A gate that a consumer adopts must run from a published release.
+5. **Computed state.** A row is `SPECIFIED`, `LANDED`, `VERIFIED` or `RETIRED`. The generator computes it and no file writes it.
+
+Amend this file in a reviewed change. State the impact in the pull request.

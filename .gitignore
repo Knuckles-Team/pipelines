@@ -147,7 +147,8 @@ __pycache__/
 site/
 htmlcov/
 .coverage
-.specify/
+.specify/*
+!.specify/memory/
 *maturin.lock
 
 # KISS may write a working cache under .kiss/; its thresholds are tracked in .config/kiss.toml.
