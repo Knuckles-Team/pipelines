@@ -117,13 +117,30 @@ A spec directory may also hold these optional artifacts. The plan step adds each
 
 | Artifact | Content | Required when |
 |---|---|---|
-| `contracts/` | One human-written `.md` contract document per cross-repo seam: a Wire shape section, a Refusal codes section and an Owner rows section that names the row IDs on both sides. No generated contract | `plan.md` lists a seam under `## Cross-repo seams` |
+| `contracts/` | One human-written `.md` contract document per cross-repo seam: a Wire shape section, a Refusal codes section, and `Provider:` and `Consumer:` lines that name the row IDs on both sides (see "Contracts"). No generated contract | `plan.md` lists a seam under `## Cross-repo seams` |
 | `data-model.md` | Entities, fields and relations | A row adds types, ontology classes or tables |
 | `quickstart.md` | The shortest path that shows the feature working; it names the scenario or test command that runs the served proof | A row is a served behaviour row (its text says "served" or "hot-path proof") |
 | `research.md` | Findings that support a decision in `plan.md`, stated in this platform's terms | `## Phase 0` lists unknowns; the file must not exist when it says "no unknowns" |
 | `checklists/` | Requirement-quality checklists; `checklists/requirements.md` is filled before landing from `.specify/templates/checklist-template.md` | Always, for a touched spec |
 
 The `spec-verifier` skill writes its report to `checklists/analysis.md`. The check fails for a touched spec and is advisory for any other spec; a row finding fails when the change adds the row.
+
+## Contracts
+
+A contract is the boundary registry entry for one seam between two repositories. The file is `specs/<family>/contracts/<seam>.md`. An author writes it by hand. No generator writes a contract.
+
+A contract holds these lines and sections:
+
+| Part | Content |
+|---|---|
+| `Provider: <repository> <ROW-ID>` | The repository and the row that provide the seam |
+| `Consumer: <repository> <ROW-ID>` | The repository and the row that consume the seam |
+| `## Wire shape` | The request and the response, or the record, that crosses the seam |
+| `## Refusal codes` | Each code the provider returns and what it means |
+| `## Authoritative types` | Links to the code types in the owning repositories |
+| `## Test vectors` | Links to the files that hold the vectors both sides test against |
+
+A row that cites a row of another repository must be covered by a contract that names both rows. The `contract-coverage` check enforces this on touched specs. The engine ingests contracts as a seam graph, and routing uses that graph to find the owners on both sides.
 
 ## Narrative and task format
 
@@ -217,6 +234,7 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Optional artifacts | A required optional artifact is absent, or `research.md` exists without unknowns |
 | Templates | `.specify/templates/` differs from the vended templates (`spec-templates`) |
 | Index | `specs/README.md` does not list the spec |
+| Contract coverage | A touched spec's row cites another repository's row and no contract names the pair |
 | Third-party names | Authored `specs/**/*.md` text names a product or project on the denylist in `pipelines_hooks/specs/third_party_names.toml` |
 
 The clarification, file-set, title, ID, name, index and third-party checks always fail on a finding. The narrative, task-line, plan, analysis, checklist and status checks fail for a file the change touches, that is a staged file or a file that differs from the base revision, and are advisory for every other file. An advisory finding prints with the prefix `ADV` and does not change the exit code. An older spec is rewritten when it is next extended.

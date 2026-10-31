@@ -11,7 +11,7 @@ PLAN_NONE = "# X — Plan\n\n## Phase 0: Research\n\nno unknowns\n\n## Cross-rep
 PLAN_SEAM = "# X — Plan\n\n## Phase 0: Research\n\nno unknowns\n\n## Cross-repo seams\n\n- `OTHER-AREA-R004` accepts the call.\n"
 CONTRACT = (
     "# Seam\n\n## Wire shape\n\nA JSON body.\n\n## Refusal codes\n\n`denied`.\n\n"
-    "## Owner rows\n\n`X-R001` and `OTHER-AREA-R004`.\n"
+    "Provider: other `OTHER-AREA-R004`\nConsumer: this `X-R001`\n"
 )
 
 
@@ -28,7 +28,7 @@ def _check(spec: Path, plan: str, requirements: str = "| `X-R001` | **A.** B | C
 
 
 def test_a_spec_without_seams_needs_no_contracts(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R040
+    # spec: PIPE-GATES-R041
     spec = _spec(tmp_path)
     assert _check(spec, PLAN_NONE) == []
     (spec / "contracts").mkdir()
@@ -36,7 +36,7 @@ def test_a_spec_without_seams_needs_no_contracts(tmp_path: Path) -> None:
 
 
 def test_a_seam_needs_one_human_written_contract_document(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R040
+    # spec: PIPE-GATES-R041
     spec = _spec(tmp_path)
     assert any("one per seam" in f for f in _check(spec, PLAN_SEAM))
     (spec / "contracts").mkdir()
@@ -47,18 +47,17 @@ def test_a_seam_needs_one_human_written_contract_document(tmp_path: Path) -> Non
 
 
 def test_a_contract_names_wire_shape_refusals_and_both_sides(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R040
+    # spec: PIPE-GATES-R041
     spec = _spec(tmp_path)
     (spec / "contracts").mkdir()
     (spec / "contracts" / "other.md").write_text("# Seam\n\n## Wire shape\n\n`OTHER-AREA-R004`.\n")
     found = " ".join(_check(spec, PLAN_SEAM))
     assert "lacks the 'refusal codes' section" in found
-    assert "lacks the 'owner rows' section" in found
-    assert "fewer than two specs" in found
+    assert "lacks a 'Provider:" in found
 
 
 def test_a_row_adding_types_or_tables_needs_a_data_model(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R041
+    # spec: PIPE-GATES-R042
     spec = _spec(tmp_path)
     adds = "| `X-R001` | **Ontology.** The spec adds two ontology classes and one table. | T |\n"
     assert any("data-model.md is missing" in f for f in _check(spec, PLAN_NONE, adds))
@@ -68,7 +67,7 @@ def test_a_row_adding_types_or_tables_needs_a_data_model(tmp_path: Path) -> None
 
 
 def test_a_served_behaviour_row_needs_a_quickstart(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R042
+    # spec: PIPE-GATES-R043
     spec = _spec(tmp_path)
     served = "| `X-R001` | **Answer.** The service gives a served answer. | T |\n"
     assert any("quickstart.md is missing" in f for f in _check(spec, PLAN_NONE, served))
@@ -79,7 +78,7 @@ def test_a_served_behaviour_row_needs_a_quickstart(tmp_path: Path) -> None:
 
 
 def test_research_exists_only_when_the_plan_lists_unknowns(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R043
+    # spec: PIPE-GATES-R044
     spec = _spec(tmp_path)
     unknown = PLAN_NONE.replace("no unknowns", "- Does the store accept the key?")
     assert any("research.md is missing" in f for f in _check(spec, unknown))
@@ -89,14 +88,14 @@ def test_research_exists_only_when_the_plan_lists_unknowns(tmp_path: Path) -> No
 
 
 def test_a_checklist_is_required_before_landing(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R043
+    # spec: PIPE-GATES-R044
     spec = tmp_path / "specs" / "x"
     spec.mkdir(parents=True)
     assert any("checklists/requirements.md is missing" in f for f in _check(spec, PLAN_NONE))
 
 
 def test_row_findings_fail_only_for_an_added_row(tmp_path: Path) -> None:
-    # spec: PIPE-GATES-R043
+    # spec: PIPE-GATES-R044
     spec = _spec(tmp_path)
     row = "X-R001 is a served behaviour row and quickstart.md is missing"
     assert _fails(row, {"X-R001"}, set(), spec, tmp_path)

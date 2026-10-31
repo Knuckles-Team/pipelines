@@ -4,17 +4,17 @@ Use public synthetic candidate manifests and CI/registry responses. Unit and wor
 
 | ID | Requirement | Test and expected result |
 |---|---|---|
-| P-1 | FR-1 | Valid A → B → C manifest validates source/digest fields. |
-| N-1 | FR-1 | Duplicate, missing dependency, self edge, or cycle fails before publication. |
-| N-2 | FR-1 | Floating tag, malformed digest, or provenance mismatch fails closed. |
-| P-2 | FR-2 | Required exact-commit checks pass and mark only that candidate eligible. |
-| N-3 | FR-2 | Missing, skipped, failed, or wrong-commit check blocks candidate and descendants. |
-| P-3 | FR-3 | Stable order publishes A then B then C and records hosted CI. |
-| N-4 | FR-3 | Failed predecessor CI prevents next push and retains partial receipt. |
-| N-5 | FR-3 | Same-digest retry is idempotent; changed commit/digest cannot resume old receipt. |
-| P-4 | FR-4 | Digest-pinned manifest exactly matches qualified mapping. |
-| N-6 | FR-4 | Wrong or floating workload reference names workload and blocks readiness. |
-| P-5 | FR-5 | Dry-run, parser, ordering, and negative tests run without infrastructure secrets. |
+| P-1 | FR-001 | Valid A → B → C manifest validates source/digest fields. |
+| N-1 | FR-001 | Duplicate, missing dependency, self edge, or cycle fails before publication. |
+| N-2 | FR-001 | Floating tag, malformed digest, or provenance mismatch fails closed. |
+| P-2 | FR-002 | Required exact-commit checks pass and mark only that candidate eligible. |
+| N-3 | FR-002 | Missing, skipped, failed, or wrong-commit check blocks candidate and descendants. |
+| P-3 | FR-003 | Stable order publishes A then B then C and records hosted CI. |
+| N-4 | FR-003 | Failed predecessor CI prevents next push and retains partial receipt. |
+| N-5 | FR-003 | Same-digest retry is idempotent; changed commit/digest cannot resume old receipt. |
+| P-4 | FR-004 | Digest-pinned manifest exactly matches qualified mapping. |
+| N-6 | FR-004 | Wrong or floating workload reference names workload and blocks readiness. |
+| P-5 | FR-005 | Dry-run, parser, ordering, and negative tests run without infrastructure secrets. |
 
 Contract tests inspect immutable workflow/action pins, source binding, least-privilege permissions, exact CI polling, and digest handoff. Real acceptance also records registry digest, hosted run IDs, reviewed consumer manifest commit, and deployment-owner runtime evidence. Run YAML, pytest, CCCC, jscpd, Dupehound, and KISS on implementation. Mocked tests never imply a green release.
 
@@ -97,3 +97,14 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 |---|---|---|
 | T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: a workflow fixture run asserts the step order and that an unsigned build fails. |
 | T-PIPE-RELEASE-R020 | PIPE-RELEASE-R020 | Test: `tests/test_release_bundle_gate.py::test_bundle_with_open_rows_or_failed_scenario_stops`. |
+| T-PIPE-RELEASE-R025.1 | PIPE-RELEASE-R025.1 | Test: `tests/test_release_scope.py::test_closure_follows_depends_on_and_contract_edges`. |
+| T-PIPE-RELEASE-R025.2 | PIPE-RELEASE-R025.2 | Test: `tests/test_release_scope.py::test_train_order_is_topological_and_not_hard_coded`. |
+| T-PIPE-RELEASE-R025.3 | PIPE-RELEASE-R025.3 | Test: `tests/test_release_scope.py::test_cycle_across_bundles_refuses_with_bundle_cycle`. |
+| T-PIPE-RELEASE-R025.4 | PIPE-RELEASE-R025.4 | Test: `tests/test_release_plan.py::test_plan_is_deterministic_and_lists_rows_order_scenario_and_open_tasks`. |
+| T-PIPE-RELEASE-R025.5 | PIPE-RELEASE-R025.5 | Test: `tests/test_release_plan.py::test_publish_posts_bundle_facts_and_plan_and_skips_without_endpoint`. |
+| T-PIPE-RELEASE-R025.6 | PIPE-RELEASE-R025.6 | Test: `tests/test_release_bundle_gate.py::test_release_job_stops_on_bundle_cycle`. |
+| T-PIPE-RELEASE-R025.7 | PIPE-RELEASE-R025.7 | Test: `tests/test_release_plan_served.py::test_published_plan_answers_rows_per_repository_through_ask` (L3, served). |
+| T-PIPE-RELEASE-R026.1 | PIPE-RELEASE-R026.1 | Test: `tests/test_release_exit_gates.py::test_gate_table_with_a_missing_row_or_phase_fails`. |
+| T-PIPE-RELEASE-R026.2 | PIPE-RELEASE-R026.2 | Test: `tests/test_release_exit_gates.py::test_final_gate_lists_open_connector_rows_and_unready_services`. |
+| T-PIPE-RELEASE-R026.3 | PIPE-RELEASE-R026.3 | Test: `tests/test_release_exit_gates.py::test_final_gate_needs_a_passing_run_for_each_channel`. |
+| T-PIPE-RELEASE-R026.4 | PIPE-RELEASE-R026.4 | Test: `tests/test_release_exit_gates.py::test_program_exit_gates_table_resolves_against_the_workspace` (L3, served). |

@@ -12,9 +12,11 @@ import re
 from collections.abc import Mapping
 from pathlib import Path
 
-from pipelines_hooks.specs.narrative import FENCE_RE, FIRST_CELL_RE, ROW_TOKEN_RE, prose
+from pipelines_hooks.specs.narrative import FENCE_RE, FIRST_CELL_RE, ROW_TOKEN, ROW_TOKEN_RE, prose
 
-CONTRACT_SECTIONS = ("wire shape", "refusal codes", "owner rows")
+CONTRACT_SECTIONS = ("wire shape", "refusal codes")
+PROVIDER_RE = re.compile(r"^Provider: .*" + ROW_TOKEN, re.M)
+CONSUMER_RE = re.compile(r"^Consumer: .*" + ROW_TOKEN, re.M)
 #: A row adds a type, class or table when a creating verb comes shortly before the noun.
 ADDS_RE = re.compile(
     r"\b(?:adds?|introduces?|declares?|defines?|creates?)\b[^|.`]{0,60}?"
@@ -88,9 +90,10 @@ def check_contracts(spec_dir: Path, plan: str) -> list[str]:
     for name, text in docs.items():
         low = text.lower()
         out += [f"contracts/{name} lacks the '{s}' section" for s in CONTRACT_SECTIONS if s not in low]
-        owners = {i.rsplit("-R", 1)[0] for i in ROW_TOKEN_RE.findall(text)}
-        if len(owners) < 2:
-            out.append(f"contracts/{name} names owner rows of fewer than two specs; name both sides")
+        if not (PROVIDER_RE.search(text) and CONSUMER_RE.search(text)):
+            out.append(
+                f"contracts/{name} lacks a 'Provider: <repository> <ROW-ID>' or 'Consumer: <repository> <ROW-ID>' line"
+            )
     return out
 
 

@@ -12,12 +12,12 @@ FULL = (
 
 
 def test_a_complete_row_is_clean() -> None:
-    # spec: PIPE-GATES-R044
+    # spec: PIPE-GATES-R045
     assert check_complete_rows(FULL) == []
 
 
 def test_a_row_without_a_caller_chain_shape_or_test_is_a_finding() -> None:
-    # spec: PIPE-GATES-R044
+    # spec: PIPE-GATES-R045
     found = " ".join(check_complete_rows("| `X-A-R001` | **Answer.** It answers. | Looks right. |\n"))
     assert "'Caller chain:' sentence" in found
     assert "'Shape:' sentence" in found
@@ -25,18 +25,18 @@ def test_a_row_without_a_caller_chain_shape_or_test_is_a_finding() -> None:
 
 
 def test_tbd_is_a_finding() -> None:
-    # spec: PIPE-GATES-R044
+    # spec: PIPE-GATES-R045
     row = FULL.replace("Answer.", "Answer TBD.")
     assert any("says TBD" in f for f in check_complete_rows(row))
 
 
 def test_a_rollup_parent_and_a_retired_row_are_exempt() -> None:
-    # spec: PIPE-GATES-R044
+    # spec: PIPE-GATES-R045
     text = "| `X-A-R001` | **Parent.** Rollup. | Children. |\n" + FULL.replace("R001", "R001.1")
     text += "| `X-A-R002` | **RETIRED: gone.** | none |\n"
     assert check_complete_rows(text) == []
 
 
 def test_the_findings_fail_only_for_an_added_row() -> None:
-    # spec: PIPE-GATES-R044
+    # spec: PIPE-GATES-R045
     assert any(p in "X-A-R001 behaviour row lacks a test as path::name" for p in ROW_PHRASES)

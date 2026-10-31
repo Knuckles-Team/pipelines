@@ -107,7 +107,7 @@ def test_repository_template_inherits_the_current_version() -> None:
 
 
 def test_the_naming_article_is_traced_and_the_version_is_current() -> None:
-    # spec: PIPE-GATES-R039
+    # spec: PIPE-GATES-R040
     text = FILE.read_text(encoding="utf-8")
     article = dict(_bodies())["XXII. Names, titles and artifact placement"]
     assert "constitution hooks: spec-standard, spec-templates" in article
@@ -119,7 +119,7 @@ def test_the_naming_article_is_traced_and_the_version_is_current() -> None:
 
 
 def test_the_release_article_and_isolation_flow_are_stated() -> None:
-    # spec: PIPE-GATES-R039
+    # spec: PIPE-GATES-R040
     text = FILE.read_text(encoding="utf-8")
     article = dict(_bodies())["XXIII. Versioning and release"]
     assert "constitution hooks: project-version-sync, release-standard" in article
@@ -131,7 +131,7 @@ def test_the_release_article_and_isolation_flow_are_stated() -> None:
 
 
 def test_the_completeness_article_is_traced() -> None:
-    # spec: PIPE-GATES-R044
+    # spec: PIPE-GATES-R045
     article = dict(_bodies())["XXIV. Specifications are complete enough to implement without assumptions"]
     assert "constitution hooks: spec-standard" in article
     for rule in ("production caller chain", "`Shape:` sentence", 'no "TBD"', "real gate thresholds"):
