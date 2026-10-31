@@ -1031,9 +1031,7 @@ _FRONT_DOOR = "https://knuckles-team.github.io/.github/"
 
 @pytest.mark.spec("PIPE-PAGES-R042.10")
 @_NEEDS_LAYOUT
-def test_header_carries_the_agent_strip_and_the_page_has_no_footer(
-    monkeypatch, tmp_path: Path
-) -> None:
+def test_header_carries_the_agent_strip_and_the_page_has_no_footer(monkeypatch, tmp_path: Path) -> None:
     import functools
     import http.server
     import subprocess
@@ -1197,13 +1195,29 @@ def test_every_surface_uses_a_glass_level_and_layers_stay_translucent() -> None:
                 own = alpha[token.group(1).removeprefix("glass-")] * (int(mix.group(1)) / 100 if mix else 1)
                 assert own <= alpha[level] + 1e-9, f"{surface} alpha exceeds its {level} level"
     selected = re.findall(r"([^{}]*\[aria-pressed=\"true\"\][^{}]*)\{([^{}]*)\}", css)
-    assert selected and all("var(--fg)" not in re.findall(r"background:([^;]+)", b)[0] for _, b in selected if "background" in b)
+    assert selected and all(
+        "var(--fg)" not in re.findall(r"background:([^;]+)", b)[0] for _, b in selected if "background" in b
+    )
     for sel, body in selected:
         assert "var(--glass-selected)" in body or "background" not in body, sel
-    for surface in (".panel", ".results", ".fresh", ".hint", ".map-notes", "header.top", ".toolbar", ".btn", ".chip", ".badge", ".crumbs button", ".legend>span", ".search input"):
-        assert any(
-            "backdrop-filter:blur(var(--glass-" in body for sel, body in rules if surface in sel.split(",")
-        ), surface
+    for surface in (
+        ".panel",
+        ".results",
+        ".fresh",
+        ".hint",
+        ".map-notes",
+        "header.top",
+        ".toolbar",
+        ".btn",
+        ".chip",
+        ".badge",
+        ".crumbs button",
+        ".legend>span",
+        ".search input",
+    ):
+        assert any("backdrop-filter:blur(var(--glass-" in body for sel, body in rules if surface in sel.split(",")), (
+            surface
+        )
     assert not any("backdrop-filter" in body for sel, body in rules if "canvas" in sel and "cv" in sel)
 
 
@@ -1218,7 +1232,9 @@ def test_reduced_motion_disables_parallax_scale_and_pulse() -> None:
     js = html[html.index("<script>") :]
     assert "const parallaxOn = () => !reduced()" in js
     assert "if(pendingPulse&&!reduced())" in js and "if(!tintFrom||reduced()||t>=1) writeTint(tintTo)" in js
-    assert js.index("syncOcean(cam,t)") < js.index("if(t>=1){ anim=null")  # background reads the camera on the same frame
+    assert js.index("syncOcean(cam,t)") < js.index(
+        "if(t>=1){ anim=null"
+    )  # background reads the camera on the same frame
     assert 'dataset.oceanMotion==="running"' in js  # the ocean motion control stops the parallax
 
 
@@ -2192,3 +2208,54 @@ def test_release_view_lists_scope_progress_and_row_badges(tmp_path: Path) -> Non
     assert rest["releases"][1]["rows"] == 1 and rest["unscheduled"] == 0
     template = (PKG / "template.html").read_text()
     assert 'id="vrel"' in template and "Filter the map to" in template and "s.release===relF" in template
+
+
+def _wcag_ratio(fg: tuple, bg: tuple) -> float:
+    def lum(c: tuple) -> float:
+        lin = [v / 255 / 12.92 if v / 255 <= 0.03928 else ((v / 255 + 0.055) / 1.055) ** 2.4 for v in c]
+        return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+    hi, lo = sorted((lum(fg), lum(bg)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+@pytest.mark.spec("PIPE-PAGES-R049")
+def test_glass_text_contrast_is_at_least_4_5_over_the_ocean_in_both_themes() -> None:
+    import re
+
+    html = (explorer.HERE / "template.html").read_text()
+    css = html[html.index("<style>") : html.index("</style>")]
+    blocks = {
+        "light": css[css.index(":root{") : css.index("@media (prefers-color-scheme: dark)")],
+        "dark": css[css.index(':root[data-theme="dark"]{') : css.index("*{box-sizing")],
+    }
+
+    def tokens(block: str) -> dict:
+        return dict(re.findall(r"(--[\w-]+):\s*([^;}]+)", block))
+
+    def color(value: str) -> tuple:
+        value = value.strip()
+        if value.startswith("#"):
+            return (*(int(value[i : i + 2], 16) for i in (1, 3, 5)), 1.0)
+        nums = re.findall(r"[\d.]+", value)
+        return (float(nums[0]), float(nums[1]), float(nums[2]), float(nums[3]) if len(nums) > 3 else 1.0)
+
+    def over(top: tuple, below: tuple) -> tuple:
+        a = top[3]
+        return (*(top[i] * a + below[i] * (1 - a) for i in range(3)), 1.0)
+
+    for theme, block in blocks.items():
+        tok = tokens(block)
+        for ocean in ("--ocean-top", "--ocean-bottom"):
+            sea = color(tok[ocean])
+            for level in ("chrome", "control", "reading"):
+                glass = over(color(tok[f"--glass-{level}"]), sea)
+                for text in ("--fg", "--muted"):
+                    ratio = _wcag_ratio(color(tok[text])[:3], glass[:3])
+                    assert ratio >= 4.5, f"{theme} {text} on {level} over {ocean}: {ratio:.2f}"
+            # pressed and selected controls: tint on control glass on reading glass on the ocean
+            base = over(color(tok["--glass-reading"]), sea)
+            for state in ("--glass-selected", "--glass-active"):
+                pressed = over(color(tok[state]), over(color(tok["--glass-control"]), base))
+                ratio = _wcag_ratio(color(tok["--fg"])[:3], pressed[:3])
+                assert ratio >= 4.5, f"{theme} pressed {state} over {ocean}: {ratio:.2f}"

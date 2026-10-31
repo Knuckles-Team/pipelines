@@ -58,6 +58,32 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   }
   if(!frames.every(f=>f.waves.every(w=>w.tide?.playState==='running'))||!frames[2].waves.some((w,i)=>Math.abs(w.opacity-frames[0].waves[i].opacity)>.001))throw Error('Slow backdrop palette fade did not progress');
   writeFileSync(join(output,`${theme}-continuous-motion.json`),JSON.stringify({kind:'Unforced real wall-clock browser frames; no animation seeking or virtual time',frames},null,2)+'\n');
+  // Camera-synced background: one real flight, sampled on every animation frame. The ocean scene's
+  // pan and tint properties must change on the camera's frames, and must not move under reduced motion.
+  const sampleFlight=target=>evaluate(`(async()=>{
+    const a=window.__arch,scene=document.querySelector('.ocean-scene'),rows=[];
+    a.go('${target}');
+    await new Promise(done=>{const t0=performance.now();const tick=()=>{
+      const cs=getComputedStyle(scene);
+      rows.push({camX:a.cam.x,camY:a.cam.y,camK:a.cam.k,w:document.getElementById('cv').getBoundingClientRect().width,h:document.getElementById('cv').getBoundingClientRect().height,root:a.rect('root'),panX:scene.style.getPropertyValue('--ocean-pan-x'),panY:scene.style.getPropertyValue('--ocean-pan-y'),tint:scene.style.getPropertyValue('--ocean-tint'),flight:document.documentElement.dataset.oceanFlight||'',wave:getComputedStyle(document.querySelector('.ocean-wave')).translate});
+      if(performance.now()-t0>2500)done();else requestAnimationFrame(tick);};requestAnimationFrame(tick);});
+    return rows;
+  })()`);
+  const flight=await sampleFlight('root');
+  // Frame count depends on the runner; the contract is per frame: the background pan equals the pan computed
+  // from the camera of that same frame, and at least two different camera frames were observed.
+  const expected=r=>{const k=r.camK,cx=r.camX+r.w/(2*k),cy=r.camY+r.h/(2*k);return [-((cx-(r.root[0]+r.root[2]/2))/r.root[2])*120,-((cy-(r.root[1]+r.root[3]/2))/r.root[3])*60];};
+  for(const r of flight){const [ex,ey]=expected(r);if(Math.abs(parseFloat(r.panX)-ex)>.01||Math.abs(parseFloat(r.panY)-ey)>.01)throw Error('Ocean pan is not the camera of the same frame: '+JSON.stringify(r));}
+  if(new Set(flight.map(r=>r.camX)).size<2||new Set(flight.map(r=>r.panX)).size<2||new Set(flight.map(r=>r.wave)).size<2)throw Error('Ocean parallax did not change across the flight frames');
+  if(!flight.some(r=>r.flight==='on'))throw Error('Ocean flight state never started with the camera');
+  if(flight[flight.length-1].flight!=='')throw Error('Ocean flight state did not end with the camera');
+  await evaluate("window.__arch.go('webui',{instant:true});true");await delay(300);
+  await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});await delay(300);
+  const calm=await sampleFlight('root');
+  await command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});await delay(300);
+  if(new Set(calm.map(r=>r.panX)).size!==1||new Set(calm.map(r=>r.wave)).size!==1||calm.some(r=>r.flight==='on'))throw Error('Ocean moved under prefers-reduced-motion');
+  writeFileSync(join(output,`${theme}-camera-synced-background.json`),JSON.stringify({kind:'Real camera flight, per-frame ocean scene properties',flight,reduced:calm},null,2)+'\n');
+  await evaluate("window.__arch.go('webui',{instant:true});true");await delay(500);
   // Diagnostic only: sample the unchanged 48/56/64-second alternating palette
   // timelines while paused. These are actual browser pixels, NOT elapsed video.
   // The unforced wall-clock frames above remain untouched and separately labeled.
