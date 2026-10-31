@@ -63,3 +63,11 @@ Therefore `spec` is the accepted canonical replacement for the three literal
 spec hooks in the connector adoption rows; the validation test must assert this
 source mapping before binding a `.2` row. This mapping changes no consumer
 configuration or runtime behavior.
+
+## North star
+
+Deployment comes only from published package releases. Releases ship delivered cross-repository spec bundles.
+
+## Delivery phase
+
+Row `PIPE-CONNSPEC-R001.1` serves P5. It keeps automated dependency updates flowing without weakening the trailer rule.
