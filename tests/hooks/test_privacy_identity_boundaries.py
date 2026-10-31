@@ -54,6 +54,7 @@ def test_privacy_keeps_unicode_title_matches_bounded(repo: Repo, catalog: Path, 
     assert repo.run("tracked-privacy", "--identity-catalog", str(catalog)) == expected
 
 
+@pytest.mark.spec("PIPE-GATES-R016.117")
 def test_overlong_group_is_scanned_in_overlapping_windows(tmp_path: Path) -> None:
     from pipelines_hooks.privacy.identity_scan import (
         MAX_GROUP_BYTES,
