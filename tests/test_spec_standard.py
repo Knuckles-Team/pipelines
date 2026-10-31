@@ -505,6 +505,9 @@ def test_work_that_landed_on_main_after_the_fork_is_not_touched(root, capsys):
     d = _spec(root)
     _stage(root, "specs", ".specify")
     env = fixture_git_environment()
+    for who in ("AUTHOR", "COMMITTER"):
+        env[f"GIT_{who}_NAME"] = "test"
+        env[f"GIT_{who}_EMAIL"] = "test@example.invalid"
     run = lambda *a: subprocess.run(["git", "-C", str(root), *a], env=env, check=True, capture_output=True)  # noqa: E731
     run("commit", "-q", "-m", "base")
     run("branch", "-M", "main")
