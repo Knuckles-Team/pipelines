@@ -1163,7 +1163,10 @@ def test_display_brands_survive_generation_without_renaming_repositories(monkeyp
         assert (nodes[node_id]["label"], nodes[node_id]["repo"]) == (label, repo)
     assert payload["tree"]["label"] == "Arbora Ecosystem"
     assert nodes["eg"]["label"] == "Medulla"
-    assert nodes["egserver"]["label"] == "Medulla Stem"
+    assert "egserver" not in nodes
+    stem = {node["id"]: node for node in nodes["eg"]["children"]}["egserver"]
+    assert stem["label"] == "Medulla Stem"
+    assert {child["id"] for child in stem["children"]} >= {"egserver.bin", "egserver.dispatch", "egserver.wire"}
     assert nodes["arbora"]["label"] == "Arbora"
     assert nodes["geniusbot"]["role"] == "Desktop GUI"
     assert nodes["au"]["role"] == "Agent Harness"
@@ -1611,7 +1614,7 @@ setTimeout(async()=>{
    evidence.push({id,bar,counts,topLevel:topLevel.has(id),baseHeight,expectedHeight,originalBottom});
   }
   if(a.selected==='root'&&window.innerWidth>1000){
-   const headings=['People and Clients','Front Ends','Arbora Door','Agent Control Plane and Skills','Engine Core, Connectors and Sources','Serving and Delivery'].map(text=>window.__allPaint.find(p=>p.text===text));
+   const headings=['People and Clients','Front Ends','Arbora Door','Agent Control Plane and Skills','Engine Core, Connectors and Sources'].map(text=>window.__allPaint.find(p=>p.text===text));
    if(headings.some(p=>!p)||new Set(headings.map(p=>p.font)).size!==1)throw Error('Overview headings must share one complete-label font size');
    for(const [id,role] of [['sdk','Connector SDK'],['au','Agent Harness'],['skills','Agent Skills'],['webui','Browser Experience'],['tui','TUI / CLI'],['geniusbot','Desktop GUI']]){
     const r=a.rect(id),x=(r[0]-a.cam.x)*a.cam.k,y=(r[1]-a.cam.y)*a.cam.k,w=r[2]*a.cam.k,h=r[3]*a.cam.k;
