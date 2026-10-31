@@ -191,7 +191,7 @@ function richLayout(kind,view,width,measure){
       if(narrow&&parts.length>2){parts=parts.slice(0,2);let chars=typeof Intl.Segmenter==='function'?[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(parts[1])].map(x=>x.segment):Array.from(parts[1]);while(chars.length&&measure(chars.join('')+'…',11,500)>p.w)chars.pop();parts[1]=chars.join('')+'…';}
       if(parts.length>(narrow?2:4)||parts.some(t=>measure(t,11,500)>p.w))return null;
       for(const t of parts){line(t,p.x,cy,11,500);cy+=14;}
-      const short=row.id.replace(/^WEBUI-/,'').replace(/^ARBORA-/,'');
+      const short=row.id.replace(/^(?:OVERSTORY|WEBUI|ARBORA)-/,'');
       const meaning=row.rollup?(narrow?'rollup':'Rollup evidence'):row.readiness==='ready'?'Ready':row.readiness==='blocked'?'Blocked':row.status.toLowerCase();
       if(narrow){const tag=short+' · '+meaning;if(measure(tag,11,400)>p.w)return null;line(tag,p.x,p.y+33);}
       else{if(measure(short,11,400)>p.w)return null;line(short,p.x,p.y+62);line(meaning,p.x,p.y+78);}
