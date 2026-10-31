@@ -38,7 +38,8 @@ def test_ocean_materials_have_no_network_fonts_or_expensive_node_effects() -> No
     html = TEMPLATE.read_text()
     assert "fonts.googleapis.com" not in html
     assert "fonts.gstatic.com" not in html
-    assert "header.top,.toolbar,.panel{backdrop-filter:blur(16px) saturate(115%)}" in html
+    assert "header.top,.toolbar{backdrop-filter:blur(var(--glass-chrome-blur)) saturate(115%)}" in html
+    assert ".panel,.map-notes,.results{backdrop-filter:blur(var(--glass-reading-blur)) saturate(115%)}" in html
     assert "ctx.filter" not in html
     assert "ctx.shadowBlur" not in html
     assert "--font-body:Inter,ui-sans-serif,system-ui" in html
@@ -46,7 +47,7 @@ def test_ocean_materials_have_no_network_fonts_or_expensive_node_effects() -> No
     assert "ctx.clearRect(0,0,W,H)" in html
     assert "ctx.globalAlpha=alpha*(0.10-0.05*op)" not in html
     assert "ctx.strokeStyle=col" not in html
-    assert ".panel{background:var(--glass-reading)}" in html
+    assert ".panel,.map-notes,.results{background:var(--glass-reading);" in html
     assert "data:image/svg+xml," in html
     assert "/*__INTER__*/" in html
 
@@ -95,9 +96,9 @@ def test_glass_uses_bundled_overstory_inter_and_sans_canvas_labels() -> None:
 def test_glass_reading_surfaces_protect_footer_and_search_contrast() -> None:
     html = TEMPLATE.read_text()
     assert '<div class="map-notes">' in html
-    assert ".map-notes{padding:8px 12px;" in html
+    assert ".map-notes{padding:6px 12px;" in html
     assert ".search input::placeholder{color:var(--muted);opacity:1}" in html
-    assert ".map-notes,.panel .ph{background:Canvas" in html
+    assert ".map-notes,.panel .ph," in html and "{background:Canvas;backdrop-filter:none}" in html
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -112,7 +113,7 @@ def test_ocean_motion_is_shared_bounded_and_accessible() -> None:
     assert 'enabled&&!document.hidden?"running":"paused"' in html
     assert 'document.addEventListener("visibilitychange",oceanMotionState)' in html
     assert "motionPreference.matches||transparencyPreference.matches||forcedColorsPreference.matches" in html
-    assert ".ocean-wave{animation:none!important}" in html
+    assert ".ocean-wave{animation:none!important;translate:none}" in html
     assert 'button.setAttribute("aria-pressed",String(enabled))' in html
 
 
@@ -173,7 +174,7 @@ def test_node_text_status_counts_and_part_counts_contrast_over_wave_bounds() -> 
             r"--t-[\w-]+:rgba\((\d+),(\d+),(\d+),([.\d]+)\)", html.split(":root{", 1)[1].split("}", 1)[0]
         )
         assert len(tints) == 9
-        assert ".canvas{background:rgb(255 255 255 / .10)}" in html
+        assert ".canvas{background:rgb(255 255 255 / .10);" in html
         for ocean in _ocean_bounds(block):
             ocean = _blend((255, 255, 255), ocean, 0.10)
             for endpoint in ("top", "bottom"):
@@ -516,4 +517,4 @@ def test_ocean_color_variance_is_backdrop_only_slow_compositor_opacity() -> None
     assert "hue-rotate" not in source
     assert source.count("data:image/svg+xml,") == 3
     assert ':root[data-ocean-motion="running"] .ocean-wave{animation-play-state:running}' in source
-    assert ".ocean-wave{animation:none!important}" in source
+    assert ".ocean-wave{animation:none!important;translate:none}" in source

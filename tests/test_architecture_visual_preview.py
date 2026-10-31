@@ -61,7 +61,7 @@ def test_real_browser_receipt_fails_closed_for_skipped_missing_or_failed_cases(t
     names = [
         "test_a_q_deep_link_lands_on_the_owning_part_in_a_browser",
         "test_expanding_a_row_fetches_its_family_once_and_renders_it_safely",
-        "test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide",
+        "test_header_carries_the_agent_strip_and_the_page_has_no_footer",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[1440,1000]",
         "test_ocean_browser_keyboard_zoom_pan_search_and_camera_history[390,844]",
         "test_ocean_browser_motion_controls_and_composited_wave_phases",
