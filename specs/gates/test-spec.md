@@ -96,3 +96,17 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-031 | PIPE-GATES-R031 | Unit | The constitution, and a copy with a missing plan check or a cited path that does not exist. | The constitution is clean; each defect is a finding. |
 | T-032 | PIPE-GATES-R032 | Unit | A constitution whose limits table or hook list differs from the configs, and a hook ID the catalogue lacks. | `--check` exits 1 and writes nothing; the render fails on the unknown ID. |
 | T-033 | PIPE-GATES-R033 | Unit | The repository template and the organization constitution version. | The template names the same version and links the organization file. |
+
+## Graph automation mechanisms
+
+| Test ID | Requirement | Level | Setup and input | Expected observation |
+|---|---|---|---|---|
+| T-034 | PIPE-GATES-R004.3 | Unit | Fixture inputs named by the row. | `tests/hooks/test_states_publish.py::test_row_and_task_states_publish_with_the_verdict` passes and shows the observation the row states. |
+| T-035 | PIPE-GATES-R004.4 | Unit | Fixture inputs named by the row. | `tests/hooks/test_states_publish.py::test_status_main_publishes_and_skips_without_endpoint` passes and shows the observation the row states. |
+| T-036 | PIPE-GATES-R004.5 | Unit | Fixture inputs named by the row. | `tests/hooks/test_states_agree.py::test_mismatch_names_each_row_and_side` passes and shows the observation the row states. |
+| T-037 | PIPE-GATES-R004.6 | Served L3 | Fixture inputs named by the row. | `tests/hooks/test_states_publish_served.py::test_spec_hook_publishes_states_through_arbora_to_the_engine` passes and shows the observation the row states. |
+| T-038 | PIPE-GATES-R034.1 | Unit | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage.py::test_contract_without_a_required_line_or_section_is_a_finding` passes and shows the observation the row states. |
+| T-039 | PIPE-GATES-R034.2 | Unit | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage.py::test_uncovered_citation_fails_for_touched_spec_and_warns_for_untouched` passes and shows the observation the row states. |
+| T-040 | PIPE-GATES-R034.3 | Unit | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage.py::test_spec_group_runs_contract_coverage` passes and shows the observation the row states. |
+| T-041 | PIPE-GATES-R034.4 | Unit | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage.py::test_dangling_and_duplicate_contracts_are_findings` passes and shows the observation the row states. |
+| T-042 | PIPE-GATES-R034.5 | Served L3 | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage_served.py::test_hook_refuses_uncovered_seam_and_engine_reads_the_covered_one` passes and shows the observation the row states. |

@@ -40,3 +40,13 @@
 - [x] T034 PIPE-GATES-R031 Write the organization constitution with traced articles and the test that checks them.
 - [x] T035 PIPE-GATES-R032 Add `scripts/constitution.py`, its `--check` mode and the pre-commit hook.
 - [x] T036 PIPE-GATES-R033 Make the repository constitution template inherit the organization version.
+- [ ] T037 PIPE-GATES-R004.3 Computed states publish with the verdicts.
+- [ ] T038 PIPE-GATES-R004.4 Wiring: states publish from the status command.
+- [ ] T039 PIPE-GATES-R004.5 The graph and the page agree.
+- [ ] T040 PIPE-GATES-R004.6 Hot-path proof: verdicts and states reach the engine.
+- [ ] T041 PIPE-GATES-R034 A row that cites another repository's row is covered by a contract (rollup).
+- [ ] T042 PIPE-GATES-R034.1 Model: the contract file.
+- [ ] T043 PIPE-GATES-R034.2 Behavior: citation needs coverage.
+- [ ] T044 PIPE-GATES-R034.3 Wiring: the gate joins the `spec` group.
+- [ ] T045 PIPE-GATES-R034.4 Refusal: dangling and duplicate contracts.
+- [ ] T046 PIPE-GATES-R034.5 Hot-path proof: the hook refuses an uncovered seam.

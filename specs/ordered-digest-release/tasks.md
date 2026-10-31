@@ -149,3 +149,16 @@ commit).
 - [ ] T077 PIPE-RELEASE-R022 A row is delivered only when it meets the delivered qualification.
 - [ ] T078 PIPE-RELEASE-R023 Phase P5 names the final cross-source scenario.
 - [ ] T079 PIPE-RELEASE-R024 An engine release proves the newest released SDK still imports.
+- [ ] T080 PIPE-RELEASE-R025 Release planning is computed from the dependency graph (rollup).
+- [ ] T081 PIPE-RELEASE-R025.1 Bundle closure.
+- [ ] T082 PIPE-RELEASE-R025.2 Train order is derived.
+- [ ] T083 PIPE-RELEASE-R025.3 Cycle refusal.
+- [ ] T084 PIPE-RELEASE-R025.4 Bundle plan document.
+- [ ] T085 PIPE-RELEASE-R025.5 The release graph is ingested.
+- [ ] T086 PIPE-RELEASE-R025.6 Wiring: the release job uses the plan.
+- [ ] T087 PIPE-RELEASE-R025.7 Hot-path proof: the plan reaches the engine.
+- [ ] T088 PIPE-RELEASE-R026 Program exit gates are plan sections with owning rows (rollup).
+- [ ] T089 PIPE-RELEASE-R026.1 Gate table resolves.
+- [ ] T090 PIPE-RELEASE-R026.2 Connectors reach zero open rows with healthy services.
+- [ ] T091 PIPE-RELEASE-R026.3 Vision questions run through two channels.
+- [ ] T092 PIPE-RELEASE-R026.4 Hot-path proof: the plan table resolves against the specs.
