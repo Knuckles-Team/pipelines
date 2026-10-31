@@ -1095,18 +1095,31 @@ def test_contribution_path_is_in_the_header_head_and_llms_txt() -> None:
     html = (explorer.HERE / "template.html").read_text()
     block = html[html.index('<details id="contribute"') : html.index("</details>", html.index('id="contribute"'))]
     assert " open" not in block.split(">", 1)[0]
-    assert "<summary>How to contribute</summary>" in block and block.count("<li>") == 5
+    assert (
+        "<summary>How to contribute</summary>" in block and block.count("<li>") == len(explorer.CONTRIBUTE_STEPS) == 10
+    )
     assert html.index('id="agent-strip"') < html.index('id="contribute"') < html.index('<main class="work"')
     assert html.index('id="contribute"') < html.index("</header>")
-    for url in (explorer.FRONT_DOOR, explorer.CONTRIBUTING, explorer.ARBORA_DEVELOPMENT):
+    for url in (
+        explorer.FRONT_DOOR,
+        explorer.CONTRIBUTING,
+        explorer.ARBORA_DEVELOPMENT,
+        explorer.CONSTITUTION,
+        explorer.SPEC_STANDARD,
+        explorer.TEMPLATES,
+    ):
         assert url in block
+    for skill in ("spec-intake-wizard", "spec-generator", "task-planner", "spec-verifier", "sdd-implementer"):
+        assert skill in block and skill in "\n".join(explorer.CONTRIBUTE_STEPS)
     assert (explorer.FRONT_DOOR, explorer.CONTRIBUTING) == (_FRONT_DOOR, _GUIDE)
     assert explorer.EXPLORER == explorer.CANONICAL
     shape = details.detail_path("REPO", "FAM").replace("REPO", "<repo>").replace("FAM", "<family>")
     assert explorer.DETAILS_PATTERN == explorer.CANONICAL + shape
     llms = explorer.llms_txt()
     assert _FRONT_DOOR in llms and _GUIDE in llms and explorer.SKILLS in llms and explorer.DETAILS_PATTERN in llms
-    assert all(f"{i}. " in llms for i in range(1, 6))
+    assert all(f"{i}. " in llms for i in range(1, 11))
+    for url in (explorer.CONSTITUTION, explorer.SPEC_STANDARD, explorer.TEMPLATES):
+        assert url in llms
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.12")

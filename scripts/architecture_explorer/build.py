@@ -47,12 +47,22 @@ SKILLS = "https://github.com/Knuckles-Team/universal-skills/tree/main/universal_
 ARBORA_DEVELOPMENT = SKILLS + "/arbora-development"
 EXPLORER = FRONT_DOOR + "architecture/"
 DETAILS_PATTERN = EXPLORER + "spec-details/<repo>/<family>.json"
+PIPELINES = "https://github.com/Knuckles-Team/pipelines/blob/main/"
+CONSTITUTION = PIPELINES + ".specify/memory/constitution.md"
+SPEC_STANDARD = PIPELINES + "reference/spec-standard.md"
+BOUNDARIES = PIPELINES + "reference/ecosystem-boundaries.md"
+TEMPLATES = "https://github.com/Knuckles-Team/pipelines/tree/main/specs/_template"
 CONTRIBUTE_STEPS = (
-    f"Start at the front door, {FRONT_DOOR}.",
-    f"Read the contribution guide, {CONTRIBUTING}.",
-    "Pick an open (SPECIFIED) row here. Expand it to read its requirement and design, and open its specs/<family>/ folder.",
-    f"Set up with the arbora-development skill from universal-skills, {ARBORA_DEVELOPMENT}.",
-    "Build it, run the repo's gates, and open a PR whose commit carries a Spec: trailer with the row ID.",
+    f"Constitution: read {CONSTITUTION}. Every plan checks against it.",
+    f"Route: pick the owner repository with {BOUNDARIES} and the arbora-development skill, {ARBORA_DEVELOPMENT}. Choose an open (SPECIFIED) row here.",
+    "Specify: the spec-intake-wizard and spec-generator skills write specs/<id>/spec.md. It holds user stories, Given/When/Then scenarios, and FR- and SC- labels mapped to row IDs.",
+    "Clarify: resolve every [NEEDS CLARIFICATION] marker in spec.md before you plan.",
+    "Plan: spec-generator writes plan.md. Add contracts/ for cross-repository seams, data-model.md, quickstart.md, and research.md when unknowns remain.",
+    "Tasks: task-planner writes tasks.md. Each line reads - [ ] T001 [P] [US1] <ROW-ID>.",
+    "Analyze and checklist: spec-verifier checks consistency and writes checklists/requirements.md.",
+    "Implement: sdd-implementer builds each task. Run the repository gates.",
+    "Land: open a PR whose commits carry a Spec: <ROW-ID> trailer and a bound test.",
+    "Release: landed rows ship in the next release bundle.",
 )
 DESCRIPTION = f"Canopy shows the whole ecosystem, its specs and its delivery state. Front door and contribution path: {FRONT_DOOR}"
 DOC_HEAD = (
@@ -417,6 +427,9 @@ def llms_txt() -> str:
         "# Canopy: a map of every part and spec row of the ecosystem, with status.",
         f"Front door: {FRONT_DOOR}",
         f"Contribution guide: {CONTRIBUTING}",
+        f"Constitution: {CONSTITUTION}",
+        f"Spec standard: {SPEC_STANDARD}",
+        f"Spec templates: {TEMPLATES}",
         f"Skills: {SKILLS}",
         f"Spec details JSON: {DETAILS_PATTERN}",
         "",
