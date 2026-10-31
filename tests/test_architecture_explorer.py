@@ -565,11 +565,11 @@ def test_search_index_covers_every_row_and_maps_it_to_a_node(monkeypatch, tmp_pa
 @pytest.mark.spec("PIPE-PAGES-R042.1")
 @_NEEDS_LAYOUT
 def test_search_index_carries_repository_aliases(monkeypatch, tmp_path: Path) -> None:
-    html = _build_page(monkeypatch, tmp_path, _SEARCH_ROWS, aliases={"OLDSDK-": "SDK-CONNECTOR-CONTROL-"})
+    html = _build_page(monkeypatch, tmp_path, _SEARCH_ROWS, aliases={"OLDSCION-": "SCION-CONNECTOR-CONTROL-"})
     index = _payload(html)["search"]
-    assert index["aliases"] == {"OLDSDK-": "SDK-CONNECTOR-CONTROL-"}
-    (hits,) = _node_search(index, ["OLDSDK-R030.1"])
-    assert hits[0]["id"] == "SDK-CONNECTOR-CONTROL-R030.1"
+    assert index["aliases"] == {"OLDSCION-": "SCION-CONNECTOR-CONTROL-"}
+    (hits,) = _node_search(index, ["OLDSCION-R030.1"])
+    assert hits[0]["id"] == "SCION-CONNECTOR-CONTROL-R030.1"
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.2")
@@ -578,8 +578,8 @@ def test_a_capability_search_ranks_the_owning_row_first(monkeypatch, tmp_path: P
     index = _payload(_build_page(monkeypatch, tmp_path, _SEARCH_ROWS))["search"]
     (hits,) = _node_search(index, ["GraphQL client"])
     ids = [h["id"] for h in hits]
-    assert ids[0] == "SDK-CONNECTOR-CONTROL-R030.1"
-    assert {"CONN-ADGUARD-HOME-AGENT-R002", "SDK-CONNECTOR-CONTROL-R030"} <= set(ids[:4])
+    assert ids[0] == "SCION-CONNECTOR-CONTROL-R030.1"
+    assert {"CONN-ADGUARD-HOME-AGENT-R002", "SCION-CONNECTOR-CONTROL-R030"} <= set(ids[:4])
     assert hits[0]["repo"] == "scion-sdk" and hits[0]["kind"] == "row"
 
 
@@ -590,17 +590,17 @@ def test_an_id_search_is_exact(monkeypatch, tmp_path: Path) -> None:
     exact, lower, parent, prefix, nothing = _node_search(
         index,
         [
-            "SDK-CONNECTOR-CONTROL-R030.1",
+            "SCION-CONNECTOR-CONTROL-R030.1",
             "sdk-connector-control-r030.1",
-            "SDK-CONNECTOR-CONTROL-R030",
-            "SDK-CONNECTOR-CONTROL-R04",
-            "SDK-CONNECTOR-CONTROL-R999",
+            "SCION-CONNECTOR-CONTROL-R030",
+            "SCION-CONNECTOR-CONTROL-R04",
+            "SCION-CONNECTOR-CONTROL-R999",
         ],
     )
-    assert [h["id"] for h in exact] == ["SDK-CONNECTOR-CONTROL-R030.1"]
-    assert [h["id"] for h in lower] == ["SDK-CONNECTOR-CONTROL-R030.1"]
-    assert [h["id"] for h in parent] == ["SDK-CONNECTOR-CONTROL-R030", "SDK-CONNECTOR-CONTROL-R030.1"]
-    assert [h["id"] for h in prefix] == ["SDK-CONNECTOR-CONTROL-R043"]
+    assert [h["id"] for h in exact] == ["SCION-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in lower] == ["SCION-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in parent] == ["SCION-CONNECTOR-CONTROL-R030", "SCION-CONNECTOR-CONTROL-R030.1"]
+    assert [h["id"] for h in prefix] == ["SCION-CONNECTOR-CONTROL-R043"]
     assert nothing == []
 
 
@@ -685,7 +685,7 @@ def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_pa
         check=True,
     ).stdout
     _assert_browser_document(out)
-    assert re.search(r'<li data-spec="SDK-CONNECTOR-CONTROL-R030.1" class="flash"', out)
+    assert re.search(r'<li data-spec="SCION-CONNECTOR-CONTROL-R030.1" class="flash"', out)
     assert 'role="combobox"' in out and 'aria-label="Search results"' in out
     assert re.search(r'<input id="q"[^>]*>', out) and "GraphQL client" in out
 
