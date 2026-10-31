@@ -26,8 +26,11 @@ def test_job_restores_and_installs_hook_environments(steps):
     restores = [
         step
         for step in steps
-        if str(step.get("uses", "")).startswith("actions/cache") and "~/.cache/pre-commit" in str((step.get("with") or {}).get("path", ""))
+        if str(step.get("uses", "")).startswith("actions/cache")
+        and "~/.cache/pre-commit" in str((step.get("with") or {}).get("path", ""))
     ]
     assert restores, "a job that runs pre-commit must restore ~/.cache/pre-commit"
-    assert any("install-hooks" in str(step.get("run", "")) for step in steps), "a job that runs pre-commit needs its own install-hooks step"
+    assert any("install-hooks" in str(step.get("run", "")) for step in steps), (
+        "a job that runs pre-commit needs its own install-hooks step"
+    )
     assert not any("PRE_COMMIT_HOME" in str(step.get("env", "")) for step in steps), "no per-run PRE_COMMIT_HOME"
