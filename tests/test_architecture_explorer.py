@@ -270,7 +270,7 @@ def test_page_builds_offline_with_both_variants(monkeypatch, tmp_path: Path) -> 
     full, bare = page.read_text(), body.read_text()
     assert full.startswith("<!doctype html>") and full.rstrip().endswith("</html>")
     assert not bare.lstrip().lower().startswith("<!doctype") and "<body" not in bare
-    assert "<title>Arbora Architecture Explorer</title>" in bare[:8192]
+    assert "<title>Canopy — Knuckles-Team ecosystem architecture</title>" in bare[:8192]
     assert '"EG-SCM-R001"' in bare and "/*__DATA__*/" not in bare
 
 
@@ -1031,7 +1031,7 @@ _FRONT_DOOR = "https://knuckles-team.github.io/.github/"
 
 @pytest.mark.spec("PIPE-PAGES-R042.10")
 @_NEEDS_LAYOUT
-def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_the_guide(
+def test_header_carries_the_agent_strip_and_the_page_has_no_footer(
     monkeypatch, tmp_path: Path
 ) -> None:
     import functools
@@ -1046,10 +1046,14 @@ def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_
                 row["status"] = "VERIFIED"
     page = _build_with_details(monkeypatch, tmp_path, snaps)
     html = page.read_text()
-    foot = html[html.index('id="note"') : html.index('id="foot"')]
-    assert f'href="{_GUIDE}"' in foot and f'href="{_FRONT_DOOR}"' in foot and "at least every 30 minutes" in foot
     head = html[html.index("<header") : html.index("</header>")]
-    assert "CONTRIBUTING.md" not in head and _FRONT_DOOR not in head
+    strip = head[head.index('id="agent-strip"') :]
+    assert f'href="{_GUIDE}"' in strip and f'href="{_FRONT_DOOR}"' in strip and "at least every 30 minutes" in strip
+    assert "<h1>Canopy</h1>" in head and strip.rindex("<details") > strip.index("at least every 30 minutes")
+    assert "<footer" not in html and 'id="foot"' not in html and 'id="note"' not in html
+    assert html.index('id="agent-strip"') < html.index('<main class="work"')
+    assert "font:500 11px/1.4" in html
+    assert 'id="freshlist"' in html and 'f.append(el("span",{text:r+"@"' not in html
     hook = (
         "<script>setTimeout(()=>{document.querySelectorAll('button.ti').forEach(b=>b.click());},800);</script></body>"
     )
@@ -1086,15 +1090,16 @@ def test_footer_links_the_guide_and_front_door_and_only_specified_rows_point_to_
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.11")
-def test_contribution_path_is_in_the_page_head_details_and_llms_txt() -> None:
+def test_contribution_path_is_in_the_header_head_and_llms_txt() -> None:
     head = explorer.DOC_HEAD
     assert f'<link rel="help" href="{_GUIDE}">' in head and f'<link rel="start" href="{_FRONT_DOOR}">' in head
     assert '<meta name="description"' in head and _FRONT_DOOR in head[head.index('<meta name="description"') :]
     html = (explorer.HERE / "template.html").read_text()
-    block = html[html.index('<details class="contribute"') : html.index("</details>", html.index('class="contribute"'))]
+    block = html[html.index('<details id="contribute"') : html.index("</details>", html.index('id="contribute"'))]
     assert " open" not in block.split(">", 1)[0]
-    assert "How to contribute (for people and agents)" in block and block.count("<li>") == 5
-    assert html.index('id="foot"') < html.index('class="contribute"')
+    assert "<summary>How to contribute</summary>" in block and block.count("<li>") == 5
+    assert html.index('id="agent-strip"') < html.index('id="contribute"') < html.index('<main class="work"')
+    assert html.index('id="contribute"') < html.index("</header>")
     for url in (explorer.FRONT_DOOR, explorer.CONTRIBUTING, explorer.ARBORA_DEVELOPMENT):
         assert url in block
     assert (explorer.FRONT_DOOR, explorer.CONTRIBUTING) == (_FRONT_DOOR, _GUIDE)
@@ -1104,6 +1109,117 @@ def test_contribution_path_is_in_the_page_head_details_and_llms_txt() -> None:
     llms = explorer.llms_txt()
     assert _FRONT_DOOR in llms and _GUIDE in llms and explorer.SKILLS in llms and explorer.DETAILS_PATTERN in llms
     assert all(f"{i}. " in llms for i in range(1, 6))
+
+
+@pytest.mark.spec("PIPE-PAGES-R042.12")
+def test_page_title_header_and_llms_txt_name_canopy() -> None:
+    html = (explorer.HERE / "template.html").read_text()
+    assert "<title>Canopy — Knuckles-Team ecosystem architecture</title>" in html[:200]
+    assert "<h1>Canopy</h1>" in html and "Arbora Architecture Explorer" not in html
+    head = explorer.DOC_HEAD
+    desc = head[head.index('<meta name="description" content="') :].split('">', 1)[0]
+    assert "Canopy shows the whole ecosystem, its specs and its delivery state" in desc and _FRONT_DOOR in desc
+    assert explorer.llms_txt().startswith("# Canopy")
+    assert "Canopy" in explorer.REDIRECT and "Architecture Explorer" not in explorer.REDIRECT
+    theme = (Path(__file__).resolve().parents[1] / "templates/mkdocs-theme/overrides/main.html").read_text()
+    assert ">Canopy</a>" in theme and "Architecture Explorer" not in theme
+
+
+def _style_without_opaque_blocks() -> tuple[str, list[str]]:
+    import re
+
+    css = (explorer.HERE / "template.html").read_text()
+    css = re.sub(r"/\*.*?\*/", "", css[css.index("<style>") : css.index("</style>")], flags=re.S)
+    opaque = []
+    for marker in ("@media (prefers-reduced-transparency: reduce){", "@media (forced-colors: active){"):
+        start = css.index(marker)
+        depth = 0
+        for i in range(css.index("{", start), len(css)):
+            depth += css[i] == "{"
+            depth -= css[i] == "}"
+            if depth == 0:
+                break
+        opaque.append(css[start : i + 1])
+        css = css[:start] + css[i + 1 :]
+    return css, opaque
+
+
+@pytest.mark.spec("PIPE-PAGES-R049")
+def test_every_surface_uses_a_glass_level_and_layers_stay_translucent() -> None:
+    import re
+
+    css, opaque = _style_without_opaque_blocks()
+    assert all("background:" in block for block in opaque)
+    alpha = {}
+    for level in ("chrome", "control", "reading"):
+        for token in (f"--glass-{level}:", f"--glass-{level}-edge:", f"--glass-{level}-hi:", f"--glass-{level}-blur:"):
+            assert css.count(token) >= 3, token  # light root plus both dark blocks
+        alpha[level] = float(re.search(rf"--glass-{level}:rgb\([^/)]*/ \.(\d+)\)", css).group(1)) / 100
+    rules = [(sel.strip(), body) for sel, body in re.findall(r"([^{}@]+)\{([^{}]*)\}", css)]
+    listed = {
+        "header.top": "chrome",
+        ".toolbar": "chrome",
+        ".panel": "reading",
+        ".map-notes": "reading",
+        ".results": "reading",
+        ".xbody": "control",
+        ".xbody details": "control",
+        ".fresh": "control",
+        ".hint": "control",
+        ".stat div": "control",
+        ".step": "control",
+        ".zoom .btn": "control",
+        ".search input": "control",
+        ".chip": "control",
+        ".btn": "control",
+        ".kids button": "control",
+        ".links button": "control",
+        ".badge": "control",
+        ".goal": "control",
+        ".prio": "control",
+        ".crumbs button": "control",
+        ".legend>span": "control",
+    }
+    for surface, level in listed.items():
+        fills = []
+        for sel, body in rules:
+            if surface in [p.strip() for p in sel.split(",")]:
+                fills += re.findall(r"(?:^|;)\s*background:([^;]+)", body)
+        assert fills, f"{surface} has no fill"
+        for fill in fills:
+            if fill.strip() in ("none", "transparent"):
+                continue
+            assert not re.search(r"var\(--(surface|sheet|bg)\)|#[0-9a-fA-F]{3,8}\b", fill), f"opaque fill {surface}"
+            token = re.search(r"var\(--(glass-\w+)\)", fill)
+            assert token, f"{surface} fill is not a glass token: {fill}"
+            if token.group(1) not in ("glass-selected", "glass-active"):
+                mix = re.search(r"color-mix\(in srgb,\s*var\(--glass-\w+\)\s*(\d+)%", fill)
+                own = alpha[token.group(1).removeprefix("glass-")] * (int(mix.group(1)) / 100 if mix else 1)
+                assert own <= alpha[level] + 1e-9, f"{surface} alpha exceeds its {level} level"
+    selected = re.findall(r"([^{}]*\[aria-pressed=\"true\"\][^{}]*)\{([^{}]*)\}", css)
+    assert selected and all("var(--fg)" not in re.findall(r"background:([^;]+)", b)[0] for _, b in selected if "background" in b)
+    for sel, body in selected:
+        assert "var(--glass-selected)" in body or "background" not in body, sel
+    for surface in (".panel", ".results", ".fresh", ".hint", ".map-notes", "header.top", ".toolbar", ".btn", ".chip", ".badge", ".crumbs button", ".legend>span", ".search input"):
+        assert any(
+            "backdrop-filter:blur(var(--glass-" in body for sel, body in rules if surface in sel.split(",")
+        ), surface
+    assert not any("backdrop-filter" in body for sel, body in rules if "canvas" in sel and "cv" in sel)
+
+
+@pytest.mark.spec("PIPE-PAGES-R050")
+def test_reduced_motion_disables_parallax_scale_and_pulse() -> None:
+    html = (explorer.HERE / "template.html").read_text()
+    css = html[html.index("<style>") : html.index("</style>")]
+    block = css[css.index("@media (prefers-reduced-motion: reduce){") :]
+    block = block[: block.index("\n}\n")]
+    assert "translate:none" in block and "transform:none" in block
+    assert "scale(.97)" in css and "cubic-bezier(.34,1.56,.64,1)" in css and "transform 160ms" in css
+    js = html[html.index("<script>") :]
+    assert "const parallaxOn = () => !reduced()" in js
+    assert "if(pendingPulse&&!reduced())" in js and "if(!tintFrom||reduced()||t>=1) writeTint(tintTo)" in js
+    assert js.index("syncOcean(cam,t)") < js.index("if(t>=1){ anim=null")  # background reads the camera on the same frame
+    assert 'dataset.oceanMotion==="running"' in js  # the ocean motion control stops the parallax
 
 
 @pytest.mark.spec("PIPE-PAGES-R042.11")

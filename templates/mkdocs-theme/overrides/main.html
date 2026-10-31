@@ -23,8 +23,8 @@
   </details>
   {% if config.extra.architecture_explorer %}
   {% set arch_node = config.extra.architecture_nodes[config.extra.ecosystem.current] | default("") %}
-  <nav class="site-spec-delivery" aria-label="Architecture Explorer">
-    <a class="site-architecture__link" target="_self" href="{{ base_url }}/architecture/{% if arch_node %}#{{ arch_node }}{% endif %}">Architecture Explorer</a>
+  <nav class="site-spec-delivery" aria-label="Canopy">
+    <a class="site-architecture__link" target="_self" href="{{ base_url }}/architecture/{% if arch_node %}#{{ arch_node }}{% endif %}">Canopy</a>
     <span>Zoom from the ecosystem into this repository and its spec rows.</span>
   </nav>
   {% endif %}

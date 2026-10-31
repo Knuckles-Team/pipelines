@@ -1,1 +1,1 @@
-"""Arbora Architecture Explorer: spec rows placed on a zoomable architecture map."""
+"""Canopy: spec rows placed on a zoomable architecture map."""
