@@ -32,3 +32,15 @@ PIPE-CONNSPEC-R015 binds tests/hooks/test_goal_priority.py: Derived release bund
 PIPE-CONNSPEC-R016 binds tests/test_architecture_delivery.py: Architecture page delivery views.
 
 PIPE-CONNSPEC-R001 is also bound by `tests/hooks/test_spec_trailers.py::test_stale_push_base_excludes_unknown_trailer_already_in_origin_main` and `::test_stale_push_base_still_rejects_unknown_trailer_added_by_branch`. They prove current-main inherited IDs are ignored even with an older pushed-over base, while new branch trailers and current requirement bindings remain enforced.
+
+## Entries added for rows without a prior entry
+
+| Test ID | Requirement | Expected observation |
+|---|---|---|
+| T-PIPE-CONNSPEC-R001.1 | PIPE-CONNSPEC-R001.1 | Test: `tests/test_spec_trailers.py::test_dependency_only_bot_commit_passes` and `::test_bot_commit_touching_code_fails`. |
+
+## Entries added for rows without a prior entry
+
+| Test ID | Requirement | Expected observation |
+|---|---|---|
+| T-PIPE-CONNSPEC-R004 | PIPE-CONNSPEC-R004 | Each named workflow file exists in its repository and calls `Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main` with `spec_dashboard_enabled: true`. |

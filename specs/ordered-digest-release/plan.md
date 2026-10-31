@@ -1,32 +1,88 @@
 # Architecture — PIPE-RELEASE
 
-## Existing components and flow
+Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
+
+## Summary
+
+This plan serves the rows of `PIPE-RELEASE` in requirements.md. It keeps the earlier design record under Phase 1. The north star and the delivery phase of the spec close the plan.
+
+## Technical Context
+
+- **Language/Version**: Python 3.14 (floor 3.12)
+- **Primary Dependencies**: Named per row in requirements.md.
+- **Storage**: N/A. The hooks read files and git history.
+- **Testing**: pytest. Each row names the test and the proof level that it needs.
+- **Target Platform**: Linux CI runners and developer machines
+- **Project Type**: Library, command-line hooks and reusable CI workflows
+- **Performance Goals**: N/A. A row states its own budget when it has one.
+- **Constraints**: Public files stay neutral and portable. A row states any further limit.
+- **Scale/Scope**: The rows of requirements.md.
+
+## Constitution Check
+
+- **I. One owner per concept**: No departure is recorded in this plan; the rows carry the proof.
+- **II. Extend before you create**: No departure is recorded in this plan; the rows carry the proof.
+- **III. Specs describe the current state only**: No departure is recorded in this plan; the rows carry the proof.
+- **IV. Requirements are neutral and controlled**: No departure is recorded in this plan; the rows carry the proof.
+- **V. Hard cutover, no legacy path**: No departure is recorded in this plan; the rows carry the proof.
+- **VI. Names carry no version suffix**: No departure is recorded in this plan; the rows carry the proof.
+- **VII. One engine, no second database, no sync**: No departure is recorded in this plan; the rows carry the proof.
+- **VIII. Ask the graph, not a bespoke operation**: No departure is recorded in this plan; the rows carry the proof.
+- **IX. Connectors depend on the SDK and are called through arbora**: No departure is recorded in this plan; the rows carry the proof.
+- **X. Every ontology class rolls up to the core**: No departure is recorded in this plan; the rows carry the proof.
+- **XI. Code stays small, simple and unduplicated**: No departure is recorded in this plan; the rows carry the proof.
+- **XII. No ratchets and no suppressions**: No departure is recorded in this plan; the rows carry the proof.
+- **XIII. Zero flakes**: No departure is recorded in this plan; the rows carry the proof.
+- **XIV. Compile first, then review**: No departure is recorded in this plan; the rows carry the proof.
+- **XV. Python 3.14 standard, 3.12 floor**: No departure is recorded in this plan; the rows carry the proof.
+- **XVI. Install and deploy only from published releases**: No departure is recorded in this plan; the rows carry the proof.
+- **XVII. Publish the gate's tool before the gate**: No departure is recorded in this plan; the rows carry the proof.
+- **XVIII. Landed means reachable**: No departure is recorded in this plan; the rows carry the proof.
+- **XIX. A tag push publishes, with no manual approval**: No departure is recorded in this plan; the rows carry the proof.
+- **XX. Secrets are never traced or logged**: No departure is recorded in this plan; the rows carry the proof.
+- **XXI. Public files stay portable and neutral**: No departure is recorded in this plan; the rows carry the proof.
+
+## Project Structure
+
+```text
+specs/ordered-digest-release/        existing: spec.md, plan.md, requirements.md, tasks.md, test-spec.md
+```
+
+Code paths are named per row in requirements.md. This plan adds no path of its own.
+
+## Phase 0: Research
+
+No unknowns; no research.md.
+
+## Phase 1: Design
+
+### Existing components and flow
 
 `.github/workflows/container_pipeline.yml` builds caller images. `.github/actions/verify-source-commit/` binds a build to the checkout. Python, maturin, services, and Pages workflows provide existing job contracts. Workflow contract tests classify hosted gates. Extend these seams with a small release coordinator and schema; do not build another image builder or fork each workflow.
 
 Flow: candidate declaration → schema/graph validation → exact source/build/CI receipts → deterministic dependency order → stage publication → CI observation → digest mapping → consumer manifest verification → deployment-owner handoff. Inputs and outputs are versioned public artifacts with SHA-256 digests, source commits, and run URLs. `latest` is never release authority.
 
-## Candidate model
+### Candidate model
 
 Each candidate has stable repository identity, full source commit, artifact/image digest, predecessor component IDs, profile digest, API/schema compatibility range, required public CI check receipts, and consumer manifest references. Validate graph before any write. Reject unknown IDs, duplicates, self edges, cycles, malformed digests, wrong source provenance, and floating references. Keep credentials out of manifest.
 
-## Qualification and ordering
+### Qualification and ordering
 
 Use one deterministic topological sort and dependency closure. Query hosted checks for exact revisions; absent, skipped, timed-out, or failing mandatory checks block. Derive an idempotency key from candidate-set digest, commit, artifact digest, and stage. Persist progress as a public receipt so retries resume only the same immutable candidate; changed input starts a new release. Wait for predecessor CI before downstream pushes. Cancellation records partial state, never success.
 
-## Digest boundary
+### Digest boundary
 
 Reuse source verification in build workflows. Record the registry-returned immutable digest, not a generated tag. Handoff verifies declared consumer manifest references and names each mismatch. Arbora validates the trusted candidate and owns runtime topological rollout. Deployment owners apply reviewed digest-pinned manifests and publish runtime probes. No cluster login, secret lookup, or manifest mutation belongs in generic order tests.
 
-## Portable execution
+### Portable execution
 
 Provide read-only dry run over fixture artifacts. Contract tests replace hosted CI and registry responses with deterministic fixtures. Production workflow obtains scoped credentials per stage and redacts logs. Build may need self-hosted capability; parsing, ordering, source binding, and consumer-reference tests run on hosted runners. Release failure does not block unrelated source PRs.
 
-## Security, compatibility, and quality
+### Security, compatibility, and quality
 
 Use least-privilege GitHub permissions, immutable action refs, no persisted checkout credential, and explicit publication authorization. Existing floating-tag consumers migrate before readiness. Apply configured CCCC (`complexity-staged`/`complexity-census`, 10/15), `jscpd-differential` and advisory census, `dupehound-changed`, KISS staged/census, YAML validation, and workflow contract tests. Reuse existing helpers and avoid duplicate checks across workflows.
 
-## Kernel wheel completeness (PIPE-RELEASE-R004)
+### Kernel wheel completeness (PIPE-RELEASE-R004)
 
 Data flow: release bundle step → `main` (`.github/actions/wheel-readiness/readiness.py:325`) → `aggregate` (`bundle.py:98`) → `missing_cells` (new `kernels.py`) → receipt with `kernel_cells`, or `KernelCellMissing`.
 
@@ -38,7 +94,7 @@ Decision: check the archive contents rather than the filename tag, because a pur
 
 Cross-repository: the Medulla kernel wheels consume this gate, owner prefix `EG`; contract name `kernel_cells`.
 
-## Dependency loop gate (PIPE-RELEASE-R005)
+### Dependency loop gate (PIPE-RELEASE-R005)
 
 Data flow: `pipelines-hook supply-chain` → `main` (`cli.py:79`) → gate (`gate.py:71`) → `dependency_findings` (`dependencies.py:79`) → `loop_findings` (new `dependency_cycles.py`) → `SC-DEP-LOOP` findings.
 
@@ -49,7 +105,7 @@ Reused: `declared_dependencies` (`dependencies.py:32`) for group tables; the com
 Decision: build the graph per manifest at gate time. Rejected: detecting loops only at lock time, because the lock step already fails late and without member names. Search terms used: circular, cycle, include-group, strongly connected, optional-dependencies, dependency-groups.
 
 
-## Project version consistency (PIPE-RELEASE-R006)
+### Project version consistency (PIPE-RELEASE-R006)
 
 Data flow: project-version-sync CLI/shared hook -> one selected Git snapshot -> canonical bump configuration -> complete typed location inventory -> extraction and template checks -> located verdict.
 Existing code: `.config/bumpversion.cfg:2` declares current version; `.config/bumpversion.cfg:6` contains only the metadata replacement. `pipelines_hooks/core/versions_gate.py:10` verifies pinned scanner executables and provides no project synchronization. `pipelines_hooks/core/comparison.py:53` selects index versus committed input; `pipelines_hooks/core/gitenv.py:81` reads Git blobs. `pipelines_hooks/cli.py:59` supplies dispatch and typed failure handling.
@@ -64,7 +120,7 @@ Source credit: audit candidate PIPE:5 from the source document “Verify” supp
 Acceptance: implement `tests/hooks/test_project_version_sync.py`, then run `uv run --frozen python -m pytest tests/hooks/test_project_version_sync.py -q`. The fixture initializes Git and installs the published local hook entry. It checks equal versions, independent drift in all roles, canonical-version drift, missing/malformed/duplicate configuration, extraction counts that differ from the declared count and unsupported dynamic source expressions. A location declaring two matches passes only when both tokens agree with current_version; one or three matches fail. Assert index/commit isolation in both directions, no writes by the gate, and location/digest evidence. In a separate disposable fixture, invoke the real configured bump command, verify all three replacements and run the gate again. Parser-only tests do not close the CLI/hook acceptance row.
 
 
-## Shared gates workflow and tag-only publish (PIPE-RELEASE-R007)
+### Shared gates workflow and tag-only publish (PIPE-RELEASE-R007)
 
 Data flow: caller `gates` job -> `gates_pipeline.yml@main` -> pre-commit stages over the diff range -> `pr-test-scope` subset -> verdict; release caller -> `python_pipeline.yml` `require-tag` guard -> publish.
 Existing code: `.github/workflows/python_pipeline.yml` publishes and tags on whatever ref calls it; `pipelines_hooks/ci_replica/test_scope.py` maps a diff to tests; every core repository hand-writes the gates block. Reachable today: no shared gates workflow, `require-tag` or `fast-tests` exists.
@@ -73,9 +129,9 @@ Decision: additive only, every input defaulted, because every caller references 
 Acceptance: `uv run --frozen python -m pytest tests/test_gates_pipeline_contract.py tests/hooks/test_fast_tests.py -q`.
 
 
-## Amendments
+### Amendments
 
-### 2026-10-12 — PIPE-RELEASE-R003 wheel output boundary
+#### 2026-10-12 — PIPE-RELEASE-R003 wheel output boundary
 
 The Python publisher must build a wheel-only output directory. Use the build
 tool option that prevents an auxiliary `.gitignore` file. Keep `wheel_set`
@@ -86,7 +142,7 @@ access disabled and the existing build environment. It checks the valid wheel
 and injects unwanted output to prove refusal. No index proof or upload runs in
 this regression.
 
-## Role closure, phased release and version inventory
+### Role closure, phased release and version inventory
 
 These child contracts preserve the existing publication, dependency-cycle and version-consistency obligations.
 The public dispatcher remains `pipelines_hooks/cli.py:79` through `run_gate` at line 59.
@@ -94,22 +150,22 @@ New CLI registrations and modules below are proposed attachment points, not exis
 Repository-manager retains release admission and fleet ordering; Scion SDK retains package compatibility semantics.
 Existing release source-binding and artifact qualification rules remain independent prerequisites.
 
-### Role extra closure
+#### Role extra closure
 
 `PIPE-RELEASE-R005.7` through `PIPE-RELEASE-R005.12` extend `PIPE-RELEASE-R005`.
 Register role-closure at pipelines_hooks/cli.py:13 through run_gate at line 59. Proposed role_closure.main must consume the package producer artifact before release readiness aggregation at .github/actions/wheel-readiness/bundle.py:98. Reuse dependency groups from R005 and static boundaries from PIPE-PAGES-R021.7. Static import analysis alone cannot prove installed closure.
 
-### Release phase progress
+#### Release phase progress
 
 `PIPE-RELEASE-R001.1` through `PIPE-RELEASE-R001.6` extend `PIPE-RELEASE-R001`.
 Create release-phases at pipelines_hooks/cli.py:13 through run_gate at line 59. Proposed phases.main must consume repository-manager readiness and ordered candidate exports before invoking release producers. Repository-manager retains fleet-order authority. The CLI emits JSON lines to its consuming UI. Overflow disconnects that subscriber with an explicit sequence-gap record; resumption requires a fresh authoritative progress snapshot.
 
-### Version inventory completeness
+#### Version inventory completeness
 
 `PIPE-RELEASE-R006.7` through `PIPE-RELEASE-R006.12` extend `PIPE-RELEASE-R006`.
 Extend proposed project_version.main through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse R006 snapshot selection. Add a code-enhancer consumer binding: owner repository, revision, real entry-point path and function, invocation argv and inventory digest. That entry must invoke project-version-sync before admitting a version proposal. Its concrete owner call site remains unresolved; a generic CLI pass cannot prove consumer integration.
 
-### Major upgrade pre pin
+#### Major upgrade pre pin
 
 `PIPE-RELEASE-R001.7` through `PIPE-RELEASE-R001.12` extend `PIPE-RELEASE-R001`.
 Extend the proposed release-phases entry at pipelines_hooks/cli.py:13 through run_gate at line 59. Place the Scion SDK compatibility adapter before version-bump argv execution and pin writes. Repository-manager retains fleet rollout admission; Scion SDK retains compatibility semantics. Pipelines must consume those producer receipts without duplicating certification rules.
@@ -120,11 +176,11 @@ A generic CLI fixture cannot close that consumer obligation. Six child rows do n
 Delay measurement starts after predecessor qualification. Restarted runs must revalidate and wait a fresh full interval.
 Preflight refusal writes no pins. Post-admission failures retain explicit partial effects; no cross-repository atomicity is claimed.
 
-### 2026-10-12 — PIPE-RELEASE-R002 publication source binding
+#### 2026-10-12 — PIPE-RELEASE-R002 publication source binding
 
 Reuse the source verifier's frozen workflow commit and wheel readiness proof.
 
-### 2026-10-26 — PIPE-RELEASE-R004 canonical interpreter and payload proof
+#### 2026-10-26 — PIPE-RELEASE-R004 canonical interpreter and payload proof
 
 The current normative publication axis is the one already enforced by
 `.github/actions/wheel-readiness/targets.py` and
@@ -154,7 +210,7 @@ failures and the real shared action wiring using disposable Git repositories.
 No package build, index upload or live release is required by these tests.
 
 
-### Amendment — language-specific PR selection (2026-10-18)
+#### Amendment — language-specific PR selection (2026-10-18)
 
 PIPE-RELEASE-R007.2 keeps the shared scope collector neutral to language.
 Python selection filters helper modules before adding test paths; Rust selection
@@ -163,7 +219,7 @@ coverage includes mixed Python/Rust changes, duplicate crate hits, empty and
 unrelated changes, and conservative Rust fallback. This repairs omitted Rust
 checks without changing the full-suite or unavailable-diff contracts.
 
-## Amendment: caller-selected uv cache path (PIPE-RELEASE-R007.1)
+### Amendment: caller-selected uv cache path (PIPE-RELEASE-R007.1)
 
 The gates workflow accepts an optional `uv-cache-local-path` string. Its empty
 default preserves the setup action's existing cache location. A caller may set
@@ -171,6 +227,26 @@ it to an isolated path on the same filesystem as its project environment so
 uv can use filesystem links when the runner supports them. The workflow passes
 the value to `setup-uv` and keeps dependency-keyed cache restore enabled. This
 option does not change the tests, hooks, or runner trust policy.
+
+## Phase 2: Task approach
+
+tasks.md carries one numbered task line for each active row. Tasks run producer first. A task marked `[P]` may run in parallel with its neighbours.
+
+## Complexity Tracking
+
+none
+
+## Build contract
+
+Each row names its test. The repository pre-commit and pre-push hooks and the pull request gates apply. No row may use a suppression or a ratchet.
+
+## Production caller chain
+
+Each row names its entry point and caller chain in its own text. This plan adds no separate chain.
+
+## Cross-repo seams
+
+The `Depends on` lines of requirements.md name each seam by the row ID that owns it in the other repository.
 
 ## North star
 
