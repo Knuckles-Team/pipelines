@@ -31,6 +31,15 @@ repos:
   - id: ruff-format
 - repo: local
   hooks:
+  # --- pages theme ------------------------------------------------------------
+  # The tag-only Pages deploy verifies the generated theme files; check them on
+  # every change to the theme or the pages tree so drift fails the PR, not the release.
+  - id: pages-theme-sync
+    name: Shared Pages theme - generated files are in sync
+    entry: python3 scripts/sync_mkdocs_theme.py check --root . --source-root . --content-source pages
+    language: system
+    pass_filenames: false
+    files: ^(pages/|templates/mkdocs-theme/|scripts/sync_mkdocs_theme\.py$)
   # --- secrets ---------------------------------------------------------------
   - id: secrets
     name: Secrets and identity - credentials, host/identity data, commit identities

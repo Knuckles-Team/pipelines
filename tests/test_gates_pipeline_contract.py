@@ -73,6 +73,10 @@ def test_gates_workflow_scopes_to_the_diff_and_caps_time() -> None:
     assert "for stage in $STAGES" in text and '--hook-stage "$stage"' in text
     assert "pr-test-scope" in text and "fetch-depth: 0" in text
     assert "pipelines-hook" in text and "job.workflow_sha" in text
+    # The copyable caller block cancels only superseded pull request runs; a
+    # main run is never cancelled mid-build, so every landed train gets a verdict.
+    assert "cancel-in-progress: ${{ github.event_name == 'pull_request' }}" in text
+    assert "cancel-in-progress: true" not in text
 
 
 # spec: PIPE-RELEASE-R007.3

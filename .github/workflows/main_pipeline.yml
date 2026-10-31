@@ -13,7 +13,7 @@ name: Main
 #       tags: ['v*']
 #   concurrency:
 #     group: main-${{ github.workflow }}-${{ github.ref }}
-#     cancel-in-progress: true
+#     cancel-in-progress: false
 #   jobs:
 #     main:
 #       uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@main
