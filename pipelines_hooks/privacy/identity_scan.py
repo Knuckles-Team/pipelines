@@ -17,10 +17,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
 
-from pipelines_hooks.privacy.identity_catalog import IdentityPolicyError
 
 READ_SIZE = 64 * 1024
 MAX_GROUP_BYTES = 64 * 1024
+# A longer run (an embedded base64 blob) is scanned in windows that overlap by this much,
+# so an identity that straddles a window edge is still seen whole.
+GROUP_OVERLAP_BYTES = 4 * 1024
 _CAMEL_SEGMENT_RE = re.compile(r"[A-Z]+(?=[A-Z][a-z]|[0-9]|$)|[A-Z]?[a-z]+|[A-Z]+|[0-9]+")
 _SEPARATORS = frozenset("_-")
 
@@ -87,10 +89,12 @@ class _Grouper:
         if _is_group_character(value):
             self.group_line = self.group_line if self.group else self.line
             encoded = value.encode("utf-8")
+            window = None
             if len(self.group) + len(encoded) >= MAX_GROUP_BYTES:
-                raise IdentityPolicyError("tracked lexical group exceeds the size limit")
+                window = (self.group_line, bytes(self.group))
+                del self.group[:-GROUP_OVERLAP_BYTES]
             self.group.extend(encoded)
-            return None
+            return window
         completed = self.flush()
         self.line += value == "\n"
         return completed

@@ -11,8 +11,8 @@ classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MI
 requires-python = ">=3.12, <3.15"
 dependencies = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
 [[project.authors]]
-name = "Audel Rouhi"
-email = "knucklessg1@gmail.com"
+name = "Repository Maintainers"
+email = "maintainers@example.invalid"
 
 [project.license]
 text = "MIT"

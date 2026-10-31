@@ -10,6 +10,7 @@ import pytest
 
 from pipelines_hooks.hygiene.connector_central import ingest
 from pipelines_hooks.hygiene.connector_central.base import RULES, Ctx, make_ctx
+from pipelines_hooks.hygiene.connector_central.fleet import WORKSPACE_ROOT
 
 
 def _sdk_checkout() -> Path:
@@ -29,7 +30,7 @@ def _sdk_checkout() -> Path:
         for path in (
             *((Path(configured),) if configured else ()),
             *sorted(worktrees.glob("codex/pypi-rename-scion-sdk-*"), reverse=True),
-            Path("/home/apps/workspace/agent-packages/agent-connector-sdk"),
+            WORKSPACE_ROOT / "agent-packages" / "agent-connector-sdk",
             worktrees / "wave2-dryrun",
         )
     )
