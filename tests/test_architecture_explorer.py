@@ -2025,3 +2025,54 @@ def test_rows_matching_no_child_stay_on_the_family_node_and_never_fail_the_build
     placed = Placer(shipped).run(new)
     assert [nid for nid in placed] == ["eg.decide"]
     assert unmapped_violations(shipped, placed, []) == []
+
+
+@pytest.mark.spec("PIPE-PAGES-R045")
+def test_release_view_lists_scope_progress_and_row_badges(tmp_path: Path) -> None:
+    from scripts.architecture_explorer import releases
+
+    def row(rid: str, status: str, repo: str = "medulla") -> dict:
+        return {**_row(rid, rid, repo=repo), "status": status, "spec_id": rid.rsplit("-R", 1)[0]}
+
+    rows = [
+        row("M-A-R001", "VERIFIED"),
+        row("M-A-R002", "SPECIFIED"),
+        row("S-B-R001", "VERIFIED", "scion-sdk"),
+        row("O-C-R001", "LANDED"),
+    ]
+    (tmp_path / "P1.yml").write_text(
+        json.dumps(
+            {
+                "id": "P1",
+                "name": "Loop",
+                "phase": "P1",
+                "scenario": "ARBORA-ACCEPTANCE-R006.1",
+                "scope": [
+                    {"repo": "medulla", "spec": "M-A", "roots": ["M-A-R001", "M-A-R002"]},
+                    {"repo": "scion-sdk", "spec": "S-B", "roots": ["S-B-R001"]},
+                ],
+            }
+        )
+    )
+    manifests = releases.load_manifests(tmp_path)
+    view = releases.release_view(manifests, rows)
+    (p1,) = view["releases"]
+    assert (p1["phase"], p1["scenario_state"], p1["rows"], p1["verified"], p1["share"]) == ("P1", "not run", 3, 2, 67)
+    assert [(r["repo"], r["rows"], r["verified"]) for r in p1["repos"]] == [("medulla", 2, 1), ("scion-sdk", 1, 1)]
+    assert view["unscheduled"] == 1
+    (tmp_path / releases.RUNS_FILE).write_text(json.dumps({"P1": {"state": "passed"}}))
+    assert (
+        releases.release_view(manifests, rows, releases.load_runs(tmp_path))["releases"][0]["scenario_state"]
+        == "passed"
+    )
+    owner = releases.row_releases(manifests, rows)
+    delivery = {"scores": {}, "frontier_set": set(), "unserved_set": set(), "release_of": owner}
+    assert explorer.spec_entry(rows[0], delivery)["release"] == "P1"
+    assert explorer.spec_entry(rows[3], delivery)["release"] == releases.UNSCHEDULED
+    (tmp_path / "P5.yml").write_text(
+        json.dumps({"id": "P5", "name": "Rest", "phase": "P5", "scenario": "none", "scope": "all-remaining"})
+    )
+    rest = releases.release_view(releases.load_manifests(tmp_path), rows)
+    assert rest["releases"][1]["rows"] == 1 and rest["unscheduled"] == 0
+    template = (PKG / "template.html").read_text()
+    assert 'id="vrel"' in template and "Filter the map to" in template and "s.release===relF" in template

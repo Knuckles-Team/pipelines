@@ -31,10 +31,12 @@ from .details import write_details  # noqa: E402
 from .canonical import canonical_model, failure_message, merged_aliases, tag_family_keys  # noqa: E402
 from .delivery import aggregate  # noqa: E402
 from .geometry import count_crossings  # noqa: E402
+from .releases import UNSCHEDULED, load_manifests, load_runs, release_view, row_releases  # noqa: E402
 from .place import Placer, Tree, add_dynamic_groups, unmapped_violations, validate_code  # noqa: E402
 from .sources import load_all, scan_set  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
+RELEASES = HERE.parents[1] / "releases"
 NEXT_UP = 25
 CQ_BADGES = 8
 STATUSES = ("VERIFIED", "LANDED", "SPECIFIED", "RETIRED")
@@ -117,6 +119,7 @@ def spec_entry(r: dict, delivery: dict) -> dict:
     cqs = delivery["scores"].get(r["id"], {}).get("cqs", [])
     if cqs:
         entry["cqs"] = cqs[:CQ_BADGES]
+    entry["release"] = delivery.get("release_of", {}).get(r["id"], UNSCHEDULED)
     if r["id"] in delivery["frontier_set"]:
         entry["frontier"] = True
     if r["id"] in delivery["unserved_set"]:
@@ -315,8 +318,11 @@ def build_with_sources(
             layouts[nid] = node["fixed_layout"]
     delivery = aggregate(rows)
     delivery["frontier_set"], delivery["unserved_set"] = set(delivery["frontier"]), set(delivery["unserved"])
+    manifests = load_manifests(RELEASES)
+    delivery["release_of"] = row_releases(manifests, rows)
     data = emit(tree.root, direct, layouts, delivery)
     data["delivery"] = page_delivery(delivery, rows)
+    data["releases"] = release_view(manifests, rows, load_runs(RELEASES))
     unmapped = sum(len(v) for k, v in direct.items() if tree.nodes[k].get("unmapped"))
     violations = unmapped_violations(tree, direct, model.get("unmapped_allow", []))
     meta = {

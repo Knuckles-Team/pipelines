@@ -1,0 +1,64 @@
+{
+ "id": "P1",
+ "name": "Minimal closed loop on one node",
+ "phase": "P1",
+ "scenario": "ARBORA-ACCEPTANCE-R006.1",
+ "scope": [
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-DECISION-ENGINE",
+   "roots": [
+    "MEDULLA-DECISION-ENGINE-R136.3",
+    "MEDULLA-DECISION-ENGINE-R137.7",
+    "MEDULLA-DECISION-ENGINE-R137.8",
+    "MEDULLA-DECISION-ENGINE-R137.9",
+    "MEDULLA-DECISION-ENGINE-R160",
+    "MEDULLA-DECISION-ENGINE-R179.7",
+    "MEDULLA-DECISION-ENGINE-R651",
+    "MEDULLA-DECISION-ENGINE-R803.7",
+    "MEDULLA-DECISION-ENGINE-R803.8",
+    "MEDULLA-DECISION-ENGINE-R805.10",
+    "MEDULLA-DECISION-ENGINE-R805.12"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-DURABLE-KERNEL",
+   "roots": [
+    "MEDULLA-DURABLE-KERNEL-R078"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-FEDERATED-QUERY",
+   "roots": [
+    "MEDULLA-FEDERATED-QUERY-R081",
+    "MEDULLA-FEDERATED-QUERY-R650"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-ORCH-VOCAB",
+   "roots": [
+    "MEDULLA-ORCH-VOCAB-R009",
+    "MEDULLA-ORCH-VOCAB-R802.1"
+   ]
+  },
+  {
+   "repo": "meristem",
+   "spec": "MERISTEM-HARNESS-CYCLE",
+   "roots": [
+    "MERISTEM-HARNESS-CYCLE-R001",
+    "MERISTEM-HARNESS-CYCLE-R077",
+    "MERISTEM-HARNESS-CYCLE-R079"
+   ]
+  },
+  {
+   "repo": "meristem",
+   "spec": "MERISTEM-SCM",
+   "roots": [
+    "MERISTEM-SCM-R008"
+   ]
+  }
+ ]
+}

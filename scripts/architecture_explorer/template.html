@@ -304,6 +304,7 @@ header.top{padding:10px 14px;background:var(--glass-chrome);border:1px solid var
     </div>
     <button class="btn" id="vnext" type="button" aria-pressed="false" title="Open rows whose prerequisites are done, best first">Next up</button>
     <button class="btn" id="vpath" type="button" aria-pressed="false" title="Cross-repository release bundles in train order">Delivery path</button>
+    <button class="btn" id="vrel" type="button" aria-pressed="false" title="Release bundles: phase, scenario state and scoped rows">Releases</button>
     <button class="btn" id="ocean-motion" type="button" aria-pressed="true" title="Pause or resume background ocean motion">Ocean motion: on</button>
     <button class="btn" id="theme" type="button" title="Switch light or dark">Theme</button>
   </div>
@@ -660,7 +661,8 @@ document.addEventListener("keydown",e=>{ if(e.target===$("q")) return; if((e.key
 
 // ---------- panel ----------
 let scope="node", filt="ALL", limit=150, flashSpec=null, flashIds=new Set();
-let view="map", sortBy="default", goalF="", onlyUnserved=false;
+let view="map", sortBy="default", goalF="", onlyUnserved=false, relF="";
+const REL = T.releases || {releases:[],unscheduled:0};
 const DEL = T.delivery || {questions:[],next:[],bundles:[],counts:{open:0,frontier:0,unserved:0}};
 const GOALW = {}; DEL.questions.forEach(g=>GOALW[g.id]=g);
 const cssId=t=>String(t).replace(/[^A-Za-z0-9_-]/g,"_");
@@ -707,10 +709,24 @@ function statBlock(c){ const d=el("div",{class:"stat",role:"list","aria-label":"
     const label=el("span",{class:"status-label"});if(k!=="total")label.append(el("i",{class:"status-swatch","aria-hidden":"true",style:"background:var(--p-"+k.toLowerCase()+")"}));label.append(el("span",{text:l}));
     d.append(el("div",{class:cl,role:"listitem"},[label,el("b",{text:fmt(c[k]||0)})]));});
   const bar=el("div",{class:"sbar","aria-hidden":"true"}); if(c.total) ST.forEach(s=>{ if(c[s]) bar.append(el("i",{style:"width:"+(100*c[s]/c.total)+"%;background:var(--p-"+s.toLowerCase()+")"})); }); return [el("p",{class:"status-key",text:"Progress status · color key"}),d,bar]; }
-function setView(v, quiet){ view=v; $("vnext").setAttribute("aria-pressed",String(v==="next")); $("vpath").setAttribute("aria-pressed",String(v==="path")); if(!quiet) renderPanel(); }
+function setView(v, quiet){ view=v; $("vnext").setAttribute("aria-pressed",String(v==="next")); $("vpath").setAttribute("aria-pressed",String(v==="path")); $("vrel").setAttribute("aria-pressed",String(v==="rel")); if(!quiet) renderPanel(); }
 function rowLink(r){ return el("a",{class:"id",href:gh(r.repo)+"/blob/HEAD/specs/"+(r.family||"")+"/requirements.md",target:"_blank",rel:"noopener",text:r.id}); }
 function goalBadges(serves){ const w=el("span",{class:"gb"}); (serves||[]).forEach(g=>w.append(el("span",{class:"goal",title:(GOALW[g]?GOALW[g].title:"Competency question"),text:g}))); return w; }
+function renderReleases(){
+  const p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-delivery)");
+  p.append(el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Releases"}),el("span",{text:fmt(REL.releases.length)+" bundles"}),el("span",{text:fmt(REL.unscheduled)+" unscheduled"})]),el("h2",{text:"Release bundles"})]));
+  const pb=el("div",{class:"pb"}); p.append(pb);
+  pb.append(el("p",{class:"note",text:"Each release scopes rows across repositories and ends with a phase scenario. A row is delivered when it is VERIFIED. Select a release to filter the map to its scoped specs."}));
+  if(!REL.releases.length) pb.append(el("p",{class:"muted",text:"No release manifests were published."}));
+  REL.releases.forEach(r=>{ const box=el("div",{class:"bundle"},[el("h4",{},[el("span",{class:"prio",text:r.phase}),el("span",{text:r.name}),el("span",{class:"muted",text:r.verified+" of "+r.rows+" VERIFIED ("+r.share+"%)"})])]);
+    box.append(el("div",{class:"ti",text:"Scenario "+r.scenario+": "+r.scenario_state}));
+    r.repos.forEach(x=>box.append(el("div",{class:"step"},[el("b",{text:x.repo}),el("span",{class:"muted",text:" "+x.rows+" rows, "+x.verified+" VERIFIED, "+x.specs.length+" specs"})])));
+    const b=el("button",{class:"chip",type:"button","aria-pressed":String(relF===r.id),text:relF===r.id?"Filtering the map to "+r.id:"Filter the map to "+r.id});
+    b.onclick=()=>{ relF=(relF===r.id)?"":r.id; scope="tree"; filt="ALL"; limit=150; setView("map"); };
+    box.append(b); pb.append(box); });
+}
 function renderDelivery(){
+  if(view==="rel") return renderReleases();
   const p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-delivery)");
   const ph=el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Delivery"}),el("span",{text:fmt(DEL.counts.open)+" open"}),el("span",{text:fmt(DEL.counts.frontier)+" ready"}),el("span",{text:fmt(DEL.counts.unserved)+" without a CQ dependency path"})]),el("h2",{text:view==="next"?"Next up":"Delivery path"})]);
   p.append(ph); const pb=el("div",{class:"pb"}); p.append(pb);
@@ -773,10 +789,13 @@ function renderPanel(){
   const unB=el("button",{class:"chip",type:"button","aria-pressed":String(onlyUnserved),title:"No competency question reaches this open functional requirement through CQ → Depends-on → requirement edges. This does not indicate missing architecture placement or implementation links.",text:"No CQ dependency path "+fmt(all.filter(s=>s.unserved).length)}); unB.onclick=()=>{onlyUnserved=!onlyUnserved;limit=150;renderPanel();};
   const sel=el("select",{class:"sel","aria-label":"Filter by competency question"},[el("option",{value:"",text:"All competency questions"})]);
   DEL.questions.forEach(g=>sel.append(el("option",{value:g.id,text:g.id+" · "+(g.title||"").slice(0,48)}))); sel.value=goalF; sel.onchange=()=>{goalF=sel.value;limit=150;renderPanel();};
-  gc.append(sortB,unB); if(DEL.questions.length) gc.append(sel); sec.append(gc);
+  const relSel=el("select",{class:"sel","aria-label":"Filter by release"},[el("option",{value:"",text:"All releases"})]);
+  REL.releases.forEach(r=>relSel.append(el("option",{value:r.id,text:r.id+" · "+r.name}))); relSel.append(el("option",{value:"unscheduled",text:"unscheduled"})); relSel.value=relF; relSel.onchange=()=>{relF=relSel.value;limit=150;renderPanel();};
+  gc.append(sortB,unB); if(REL.releases.length) gc.append(relSel); if(DEL.questions.length) gc.append(sel); sec.append(gc);
   let rows=all.filter(s=>filt==="ALL"||s.status===filt);
   if(goalF) rows=rows.filter(s=>(s.cqs||[]).includes(goalF));
   if(onlyUnserved) rows=rows.filter(s=>s.unserved);
+  if(relF) rows=rows.filter(s=>s.release===relF);
   if(sortBy==="priority") rows=rows.slice().sort((a,b)=>(b.priority||0)-(a.priority||0)||(a.id<b.id?-1:1));
   if(!rows.length) sec.append(el("p",{class:"muted",text: n.children.length&&scope==="node" ? "No rows sit on this part itself. Choose “Include parts below” to list the rows of its parts." : "No spec rows map to this part."}));
   const ul=el("ul",{class:"plain specs"}), shown=rows.slice(0,limit), items=[];
@@ -794,7 +813,7 @@ function renderPanel(){
   shown.forEach(s=>{ const open=openRows.has(s.id), li=el("li",{"data-spec":s.id}); if(flashIds.has(s.id)||s.id===flashSpec) li.className="flash"; li.setAttribute("data-open","0");
     const tg=el("button",{class:"ti",type:"button","aria-expanded":"false","aria-controls":"x-"+cssId(s.id)},[el("span",{class:"tw",text:s.title||"(untitled)"}),el("span",{class:"cv","aria-hidden":"true",text:"\u25B8"})]);
     tg.setAttribute("aria-label","Expand "+s.id+", "+(s.title||"untitled"));
-    li.append(el("span",{class:"badge "+s.status,text:s.status}), el("a",{class:"id",href:gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md",target:"_blank",rel:"noopener",text:s.id}), tg);
+    li.append(el("span",{class:"badge "+s.status,text:s.status}), el("span",{class:"badge rel",title:"Release of this row",text:s.release||"unscheduled"}), el("a",{class:"id",href:gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/requirements.md",target:"_blank",rel:"noopener",text:s.id}), tg);
     if(s.desc) li.append(el("span",{class:"de",text:s.desc}));
     li.append(el("span",{class:"fa",text:s.repo+" · "+s.family+(s.priority!==undefined?" · priority "+s.priority:"")}));
     if((s.cqs||[]).length) li.append(goalBadges(s.cqs)); else if(s.unserved) li.append(el("span",{class:"gb"},[el("span",{class:"goal none",title:"No competency question reaches this open functional requirement through CQ → Depends-on → requirement edges. This does not indicate missing architecture placement or implementation links.",text:"without a CQ dependency path"})]));
@@ -884,7 +903,7 @@ document.addEventListener("visibilitychange",oceanMotionState);
 oceanMotionState();
 function curDark(){ const t=rootEl.getAttribute("data-theme"); if(t) return t==="dark"; return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches; }
 function themeLabel(){ $("theme").textContent=curDark()?"Light theme":"Dark theme"; }
-$("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path");
+$("vnext").onclick=()=>setView(view==="next"?"map":"next"); $("vpath").onclick=()=>setView(view==="path"?"map":"path"); $("vrel").onclick=()=>setView(view==="rel"?"map":"rel");
 $("theme").onclick=()=>{ const t=curDark()?"light":"dark"; rootEl.setAttribute("data-theme",t); store.set("arbora-arch-theme",t); themeLabel(); readColors(); };
 if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors);
 if(window.matchMedia) ["(forced-colors: active)","(prefers-reduced-transparency: reduce)"].forEach(query=>window.matchMedia(query).addEventListener("change",readColors));

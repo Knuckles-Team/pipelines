@@ -1,0 +1,30 @@
+{
+ "id": "P2",
+ "name": "Reliable and inspectable loop",
+ "phase": "P2",
+ "scenario": "ARBORA-ACCEPTANCE-R006.2",
+ "scope": [
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-DECISION-ENGINE",
+   "roots": [
+    "MEDULLA-DECISION-ENGINE-R100",
+    "MEDULLA-DECISION-ENGINE-R813"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-DURABLE-KERNEL",
+   "roots": [
+    "MEDULLA-DURABLE-KERNEL-R084"
+   ]
+  },
+  {
+   "repo": "scion-sdk",
+   "spec": "SCION-SOURCE-INGEST",
+   "roots": [
+    "SCION-SOURCE-INGEST-R001"
+   ]
+  }
+ ]
+}

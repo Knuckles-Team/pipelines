@@ -1,0 +1,36 @@
+{
+ "id": "P3",
+ "name": "Boundaries hold with several agents",
+ "phase": "P3",
+ "scenario": "ARBORA-ACCEPTANCE-R006.3",
+ "scope": [
+  {
+   "repo": "arbora",
+   "spec": "ARBORA-A2A",
+   "roots": [
+    "ARBORA-A2A-R001"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-DECISION-ENGINE",
+   "roots": [
+    "MEDULLA-DECISION-ENGINE-R652"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-IDENTITY",
+   "roots": [
+    "MEDULLA-IDENTITY-R610"
+   ]
+  },
+  {
+   "repo": "meristem",
+   "spec": "MERISTEM-BOUNDARY",
+   "roots": [
+    "MERISTEM-BOUNDARY-R038"
+   ]
+  }
+ ]
+}
