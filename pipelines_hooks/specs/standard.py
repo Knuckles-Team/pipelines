@@ -15,7 +15,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.specs import analysis, narrative, placement
+from pipelines_hooks.specs import analysis, completeness, narrative, placement
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.third_party_names import check_repository
@@ -113,7 +113,14 @@ ROW_RE = narrative.ROW_TOKEN_RE
 
 
 #: Row findings that fail only when the change adds the row.
-ROW_PHRASES = ("has no task line", "has no bound test", "adds types, classes or tables", "is a served behaviour row")
+ROW_PHRASES = (
+    "has no task line",
+    "has no bound test",
+    "adds types, classes or tables",
+    "is a served behaviour row",
+    "behaviour row lacks",
+    "behaviour row says TBD",
+)
 #: Findings about a whole-spec artifact fail when the change touches any file of the spec.
 SPEC_WIDE = ("contracts/", "checklists/")
 
@@ -150,7 +157,13 @@ def check_touched_rules(
     texts.update({n: _read(spec_dir / n) for n in ("research.md", "data-model.md", "quickstart.md")})
     added = narrative.added_row_ids(base, spec_dir, touched, None)
     design = [f"plan.md: {m}" for m in analysis.check_plan(texts["plan.md"])]
-    for message in [*analysis.analyze(spec_dir, texts, bindings), *analysis.check_checklists(spec_dir), *design]:
+    complete = [f"analyze: {m}" for m in completeness.check_complete_rows(texts["requirements.md"])]
+    for message in [
+        *analysis.analyze(spec_dir, texts, bindings),
+        *analysis.check_checklists(spec_dir),
+        *design,
+        *complete,
+    ]:
         out.append(message if _fails(message, added, touched, spec_dir, base) else message + ADVISORY_TAG)
     return out
 

@@ -51,3 +51,4 @@
 - [x] T045 PIPE-GATES-R042 Require `quickstart.md` for a `served` behaviour row.
 - [x] T046 PIPE-GATES-R043 Check `research.md` against the unknowns and require the checklist.
 - [x] T047 PIPE-GATES-R023 Require a one-page constitution in each repository that links the vended template.
+- [x] T048 PIPE-GATES-R044 Fail a touched behaviour row that lacks a caller chain, a Shape sentence or a test path::name.

@@ -558,6 +558,27 @@ Standards and tests:
 
 **Plan check:** Does the change bump versions only through the bump configuration and land in a delivered bundle?
 
+### XXIV. Specifications are complete enough to implement without assumptions
+
+Every behaviour row names the production caller chain from the entry point to the new code, the exact files to create or change, the types and fields, the refusal codes from the one refusal taxonomy, the write path, the knobs with starting values (safety and gate knobs are fixed), the `Depends on:` row IDs, each cross-repository seam by ID on both sides with a contract document, a test as `path::name` at the proof level the acceptance names, and one `Shape:` sentence that names the files, the types and the existing helper to reuse. A spec is ready only when an implementer who reasons little could deliver every row from the text alone. It holds no open `[NEEDS CLARIFICATION]` marker, no "TBD" and no undefined term, and the Build contract of its plan lists the real gate thresholds.
+
+*Rationale*: A row that leaves a choice open makes each implementer design a different structure. A complete row makes the result the same for everyone.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: spec-standard -->
+- `spec-standard`: Spec standard - names, file set, title, index
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): the Complete rows and Consistency analysis sections.
+- `pipelines_hooks/specs/completeness.py`, `tests/test_spec_completeness.py`.
+
+**Plan check:** Could an implementer with no context deliver each row from its text alone?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.

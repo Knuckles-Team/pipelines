@@ -157,6 +157,10 @@ A task line in `tasks.md` reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. 
 
 The gate also runs a cross-file analysis of each spec directory, the counterpart of the upstream analyze step. It reports an active row with no task line, a task naming no existing row, a behaviour row with neither a bound test nor a test-spec entry, an `FR-` or `SC-` label cited but not defined (or defined twice) in `spec.md`, and an open clarification marker in any design file. A rollup parent is covered by its child rows. A row finding fails when the change adds the row; the others fail when their file is touched.
 
+## Complete rows
+
+A behaviour row holds enough text to implement without an assumption. Each active row that is not a rollup parent carries a `Caller chain:` sentence (entry point to the new code), a `Shape:` sentence (files, types and the existing helper to reuse) and a served test as `path::name`. It also names, where they apply, the files, types and fields, refusal codes from the one taxonomy, the write path, the knobs with starting values, the `Depends on:` row IDs and each cross-repository seam by ID on both sides. A row never says TBD. The check fails a row the change adds and is advisory for any other row.
+
 ## Requirements checklist
 
 Before a spec lands its author fills `checklists/requirements.md` from `.specify/templates/checklist-template.md`. An unchecked item is a finding.

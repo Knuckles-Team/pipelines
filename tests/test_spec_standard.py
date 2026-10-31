@@ -91,7 +91,9 @@ def _spec(root: Path, name: str = "foo", spec_id: str = "FOO") -> Path:
     for f in FILES:
         (d / f).write_text(f'{{"spec_id": "{spec_id}"}}\n' if f.endswith(".json") else "x\n")
     (d / "spec.md").write_text(NARRATIVE.format(id=spec_id))
-    (d / "requirements.md").write_text(f"| `{spec_id}-R001` | req |\n")
+    (d / "requirements.md").write_text(
+        f"| `{spec_id}-R001` | req Caller chain: a to b. Shape: edit b. | `tests/t.py::test_a` |\n"
+    )
     (d / "tasks.md").write_text(f"- [ ] T001 {spec_id}-R001 do it\n")
     (d / "test-spec.md").write_text(f"| T-001 | {spec_id}-R001 | Unit | x | y |\n")
     (d / "plan.md").write_text(_clean_plan())
@@ -466,7 +468,9 @@ def test_analysis_marker_in_design_files(root, capsys):
 def test_analysis_rollup_parent_is_covered_by_children(root, capsys):
     # spec: PIPE-GATES-R029
     d = _spec(root)
-    (d / "requirements.md").write_text("| `FOO-R001` | parent |\n| `FOO-R001.1` | child |\n")
+    (d / "requirements.md").write_text(
+        "| `FOO-R001` | parent |\n| `FOO-R001.1` | child Caller chain: a. Shape: b. | `t.py::test_a` |\n"
+    )
     _touch(root, d, "tasks.md", "- [ ] T001 FOO-R001.1 do\n")
     _touch(root, d, "test-spec.md", "| T-001 | FOO-R001.1 | Unit | x | y |\n")
     assert _run(root, capsys)[0] == 0

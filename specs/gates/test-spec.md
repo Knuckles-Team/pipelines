@@ -106,3 +106,4 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-041 | PIPE-GATES-R041 | Unit | A row naming new classes and tables, with and without `data-model.md`. | The missing file is a finding. |
 | T-042 | PIPE-GATES-R042 | Unit | A `served` row, with and without `quickstart.md`. | The missing file is a finding; a quoted word is not. |
 | T-043 | PIPE-GATES-R043 | Unit | A plan with and without unknowns, and a spec without a checklist. | Each mismatch is a finding that fails per touch. |
+| T-044 | PIPE-GATES-R044 | Unit | Rows with and without a caller chain, a Shape sentence, a test and with TBD. | Each gap is a finding that fails only for an added row. |

@@ -128,3 +128,11 @@ def test_the_release_article_and_isolation_flow_are_stated() -> None:
     workflow = text.split("## Development Workflow", 1)[1].split("## Governance", 1)[0]
     for rule in ("one linked worktree", "Never stash", "Stage explicit paths", "Hooks always run", "auto-merge"):
         assert rule.lower() in workflow.lower()
+
+
+def test_the_completeness_article_is_traced() -> None:
+    # spec: PIPE-GATES-R044
+    article = dict(_bodies())["XXIV. Specifications are complete enough to implement without assumptions"]
+    assert "constitution hooks: spec-standard" in article
+    for rule in ("production caller chain", "`Shape:` sentence", 'no "TBD"', "real gate thresholds"):
+        assert rule in article
