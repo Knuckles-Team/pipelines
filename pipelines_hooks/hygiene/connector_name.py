@@ -2,7 +2,7 @@
 
 A connector declares its fleet name (the name arbora onboards it under and
 epistemic-graph files its pack under, for example ``searxng-mcp``) once, as
-the single entry point of the ``agent_connector_sdk.connector`` group in
+the single entry point of the ``scion_sdk.connector`` group in
 ``pyproject.toml``. This gate reads that declaration and every literal that
 also names the connector:
 
@@ -24,7 +24,7 @@ import tomllib
 from collections.abc import Iterator
 from pathlib import Path
 
-GROUP = "agent_connector_sdk.connector"
+GROUP = "scion_sdk.connector"
 _SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "build", "dist", ".pipeline-theme", "tests"}
 _CALL = re.compile(r"\b(?:ConnectorContent|IngestBinding)\s*\(")
 _CONNECTOR_KWARG = re.compile(r"""\bconnector\s*=\s*["']([^"']+)["']""")

@@ -25,14 +25,14 @@ all = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]
 test = [ "pytest>=9",]
 
 # CONCEPT: skill federation
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 demo-mcp = "demo_mcp.skills"
 
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 demo-mcp = "demo_mcp.ontology"
 
 # The one declared connector identity.
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp"
 
 [tool.setuptools.package-data]
@@ -44,9 +44,9 @@ import logging
 import sys
 from typing import Any
 
-from agent_connector_sdk.config import load_config, setting
-from agent_connector_sdk.mcp.server import create_mcp_server
-from agent_connector_sdk.mcp.tool_surface import register_tool_surface
+from scion_sdk.config import load_config, setting
+from scion_sdk.mcp.server import create_mcp_server
+from scion_sdk.mcp.tool_surface import register_tool_surface
 from fastmcp import FastMCP
 from fastmcp.utilities.logging import get_logger
 from starlette.requests import Request
@@ -126,8 +126,8 @@ SOURCES = '''"""Data sources."""
 # ruff: noqa: E501
 from __future__ import annotations
 
-from agent_connector_sdk.ingest.live_declaration import source_meta
-from agent_connector_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
+from scion_sdk.ingest.live_declaration import source_meta
+from scion_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
 
 CONNECTOR = "demo-mcp"
 
@@ -286,7 +286,7 @@ def test_g1_entry_point_names_the_connector_value(tmp_path: Path) -> None:
     root = _make(tmp_path)
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4", "w1.g1"))
-    assert tomllib.loads(_text(root, "pyproject.toml"))["project"]["entry-points"]["agent_connector_sdk.connector"] == {
+    assert tomllib.loads(_text(root, "pyproject.toml"))["project"]["entry-points"]["scion_sdk.connector"] == {
         "demo-mcp": "demo_mcp:connector"
     }
 
@@ -329,7 +329,7 @@ def test_g2_console_script_becomes_serve(tmp_path: Path) -> None:
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4", "w1.g2"))
     assert tomllib.loads(_text(root, "pyproject.toml"))["project"]["scripts"] == {
-        "demo-mcp": "agent_connector_sdk.cli:serve"
+        "demo-mcp": "scion_sdk.cli:serve"
     }
 
 
@@ -594,7 +594,7 @@ def test_g4_init_declares_the_connector(tmp_path: Path) -> None:
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4"))
     init = _text(root, "demo_mcp/__init__.py")
-    assert "from agent_connector_sdk.connector import Connector" in init
+    assert "from scion_sdk.connector import Connector" in init
     assert "from demo_mcp.api_client import Api" in init and "from demo_mcp.auth import get_client" in init
     assert 'tools="demo_mcp.mcp_server"' in init and 'instructions="Demo server."' in init
     ast.parse(init)
@@ -632,7 +632,7 @@ def test_g5_main_calls_run(tmp_path: Path) -> None:
     _run(ctx, ("w1.g3", "w1.g4", "w1.g5"))
     assert (
         _text(root, "demo_mcp/__main__.py")
-        == 'from agent_connector_sdk import run\n\nif __name__ == "__main__":\n    run()\n'
+        == 'from scion_sdk import run\n\nif __name__ == "__main__":\n    run()\n'
     )
 
 
@@ -711,7 +711,7 @@ def test_g7_three_tuple_unpack_becomes_build_server_in_a_function(tmp_path: Path
     )
     ctx, _root, after = _g7(tmp_path, body)
     assert not _notes(ctx, "w1.g7") and "w1.g7" in ctx.applied
-    assert "from agent_connector_sdk.connector import build_server" in after and "get_mcp_instance" not in after
+    assert "from scion_sdk.connector import build_server" in after and "get_mcp_instance" not in after
     assert '    _, mcp = build_server("demo_mcp", command_args=[])\n' in after
     ast.parse(after)
 
@@ -725,7 +725,7 @@ def test_g7_args_are_kept_when_read_and_the_old_tags_slot_is_dropped(tmp_path: P
     ctx, _root, after = _g7(tmp_path, body)
     assert not _notes(ctx, "w1.g7")
     assert '    args, mcp = build_server("demo_mcp", command_args=[])\n' in after
-    assert "    from agent_connector_sdk.connector import build_server\n" in after
+    assert "    from scion_sdk.connector import build_server\n" in after
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
@@ -745,7 +745,7 @@ def test_g7_other_names_in_the_import_are_kept(tmp_path: Path) -> None:
     )
     ctx, _root, after = _g7(tmp_path, body)
     assert not _notes(ctx, "w1.g7")
-    assert "from demo_mcp.mcp_server import helper\nfrom agent_connector_sdk.connector import build_server\n" in after
+    assert "from demo_mcp.mcp_server import helper\nfrom scion_sdk.connector import build_server\n" in after
 
 
 @pytest.mark.spec("PIPE-GATES-R016.56")
@@ -818,7 +818,7 @@ def test_g7_module_attribute_call_becomes_build_server_and_the_dead_import_goes(
     assert not _notes(ctx, "w1.g7")
     assert '_, mcp = build_server("demo_mcp", command_args=[])' in after
     assert "srv" not in after and "importlib" not in after and "get_mcp_instance" not in after
-    assert "from agent_connector_sdk.connector import build_server" in after
+    assert "from scion_sdk.connector import build_server" in after
     ast.parse(after)
 
 
@@ -1054,7 +1054,7 @@ def test_i1_declaration_is_deleted_and_call_sites_use_load_declaration(tmp_path:
     src = _text(root, "demo_mcp/connector_sources.py")
     assert "def declaration" not in src and "CONNECTOR" not in src and "IngestSource" not in src
     test = _text(root, "tests/test_ingest_sources.py")
-    assert "from agent_connector_sdk.ingest import load_declaration" in test
+    assert "from scion_sdk.ingest import load_declaration" in test
     assert 'load_declaration("demo_mcp").connector' in test and "declared" not in test
     ast.parse(src)
     ast.parse(test)
@@ -1071,7 +1071,7 @@ def test_i1_module_attribute_and_connector_constant_users_are_rewritten(tmp_path
     _run(ctx, ("w1.i1",))
     out = _text(root, "tests/test_mod.py")
     assert 'load_declaration("demo_mcp").connector == connector_name("demo_mcp")' in out
-    assert "connector_sources" not in out and "agent_connector_sdk.connector_identity import connector_name" in out
+    assert "connector_sources" not in out and "scion_sdk.connector_identity import connector_name" in out
 
 
 @pytest.mark.spec("PIPE-GATES-R016.62")
@@ -1109,8 +1109,8 @@ def test_i2_identical_field_dicts_become_field_sets(tmp_path: Path) -> None:
     exec(
         compile(
             src.split("def declaration")[0]
-            .replace("from agent_connector_sdk.ingest.live_declaration import source_meta", "source_meta = dict")
-            .replace("from agent_connector_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec", ""),
+            .replace("from scion_sdk.ingest.live_declaration import source_meta", "source_meta = dict")
+            .replace("from scion_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec", ""),
             "x",
             "exec",
         ),
@@ -1531,5 +1531,5 @@ def test_g2_a_script_not_named_for_the_fleet_takes_the_fleet_name_when_it_is_the
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4", "w1.g2"))
     text = pp.read_text(encoding="utf-8")
-    assert 'demo-mcp = "agent_connector_sdk.cli:serve"' in text and "demo-server" not in text
+    assert 'demo-mcp = "scion_sdk.cli:serve"' in text and "demo-server" not in text
     assert any("demo-server" in n["detail"] and not n["blocking"] for n in _notes(ctx, "w1.g2"))

@@ -84,9 +84,9 @@ def walk(root: Path) -> list[Path]:
 
 
 def package_dir(root: Path) -> Path | None:
-    """The connector package named by the ``agent_connector_sdk.connector`` entry point."""
+    """The connector package named by the ``scion_sdk.connector`` entry point."""
     data = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-    eps = data.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    eps = data.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
     for value in eps.values():
         pkg = root / str(value).split(":")[0].split(".")[0]
         if pkg.is_dir():
@@ -292,8 +292,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_connector_sdk.ingest.live_declaration import source_meta
-from agent_connector_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
+from scion_sdk.ingest.live_declaration import source_meta
+from scion_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
 
 CONNECTOR: str = {connector}
 
@@ -335,7 +335,7 @@ def render_module(content: dict[str, Any]) -> str:
     )
     if not content["entries"]:  # R016.34: no source -> no unused import and the formatter's one-line empty tuple
         text = text.replace("SOURCES: tuple[Any, ...] = (\n)", "SOURCES: tuple[Any, ...] = ()")
-        text = text.replace("from agent_connector_sdk.ingest.live_declaration import source_meta\n", "")
+        text = text.replace("from scion_sdk.ingest.live_declaration import source_meta\n", "")
     return text
 
 
@@ -546,7 +546,7 @@ _ENTITY_COMMENT = re.compile(r"(?m)^[ \t]*# id/node_type are intentionally read 
 _REQUIRED_TEXT = """def _required_text(record: dict[str, Any], key: str) -> str:
     value = record.get(key)
     if not isinstance(value, str) or not value:
-        from agent_connector_sdk.ingest import IngestError
+        from scion_sdk.ingest import IngestError
 
         raise IngestError(f"every entity needs an id and a node_type, got {key}={value!r}")
     return value
@@ -736,7 +736,7 @@ def drop_manifest_path_kw(text: str) -> str:
 
 
 _PROVIDER_TABLE = re.compile(
-    r'(?:^#[^\n]*\n)*^\[project\.entry-points\."(?:agent_connector_sdk|agent_utilities)\.source_connector_providers"\]\n(?:^(?!\[)[^\n]*\S[^\n]*\n)*\n?',
+    r'(?:^#[^\n]*\n)*^\[project\.entry-points\."(?:scion_sdk|agent_utilities)\.source_connector_providers"\]\n(?:^(?!\[)[^\n]*\S[^\n]*\n)*\n?',
     re.M,
 )
 _COMMENT_BLOCK = re.compile(r"(?:^[ \t]*#[^\n]*\n)+", re.M)
@@ -799,7 +799,7 @@ def rewrite_test(text: str, name: str, pkg: str) -> tuple[str | None, str]:
         new = _FINGERPRINT_BLOCK.sub("", new)
         new = re.sub(
             r"(?m)^((?:import|from) (?!__future__))",
-            lambda m: "from agent_connector_sdk.connector_identity import connector_name\n" + m.group(1),
+            lambda m: "from scion_sdk.connector_identity import connector_name\n" + m.group(1),
             new,
             count=1,
         )
@@ -824,7 +824,7 @@ def rewrite_test(text: str, name: str, pkg: str) -> tuple[str | None, str]:
                     new = body
     if "load_ingest_sources" in new:
         new = new.replace(
-            "from agent_connector_sdk.ingest.sources import load_ingest_sources",
+            "from scion_sdk.ingest.sources import load_ingest_sources",
             f"from {pkg}.{MODULE_NAME} import declaration as declared_sources",
         )
         new = _LOAD_CALL.sub("declared_sources()", new)
@@ -1072,7 +1072,7 @@ def migrate(
     deleted: list[str] = []
     pkg = package_dir(root)
     if pkg is None:
-        review.add("discover", "no agent_connector_sdk.connector entry point resolves to a package")
+        review.add("discover", "no scion_sdk.connector entry point resolves to a package")
         return {"changed": [], "deleted": [], "review": review.items}
     inputs = _load_inputs(root, pkg, review)
     content = build_sources(inputs, review, served)

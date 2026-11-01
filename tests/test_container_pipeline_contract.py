@@ -476,7 +476,7 @@ def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp
         ),
         (
             '[project]\nname = "demo-dist"\nversion = "1.2.3"\n'
-            '[project.entry-points."agent_connector_sdk.connector"]\n'
+            '[project.entry-points."scion_sdk.connector"]\n'
             'demo = "demo:connector"\n',
             {"connector": "true", "distribution": "demo-dist", "module": "demo"},
         ),
@@ -530,21 +530,21 @@ def test_public_wheel_identity_step_skips_nonconnector_and_derives_connector(tmp
     ("pyproject", "dockerfile", "render_connector", "tracked", "expected"),
     [
         (
-            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            '[project]\nname = "demo"\n[project.entry-points."scion_sdk.connector"]\ndemo = "demo"\n',
             "docker/Dockerfile",
             "false",
             False,
             True,
         ),
         (
-            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            '[project]\nname = "demo"\n[project.entry-points."scion_sdk.connector"]\ndemo = "demo"\n',
             "docker/Dockerfile",
             "false",
             True,
             False,
         ),
         (
-            '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+            '[project]\nname = "demo"\n[project.entry-points."scion_sdk.connector"]\ndemo = "demo"\n',
             "custom/Dockerfile",
             "false",
             False,
@@ -619,7 +619,7 @@ def test_connector_sources_identity_enables_canonical_render(tmp_path: Path) -> 
 def test_legacy_profile_keeps_a_missing_canonical_dockerfile_unrendered(tmp_path: Path) -> None:
     step = _render_needed_step()
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "demo"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n'
+        '[project]\nname = "demo"\n[project.entry-points."scion_sdk.connector"]\ndemo = "demo"\n'
     )
     output = tmp_path / "output"
     result = subprocess.run(

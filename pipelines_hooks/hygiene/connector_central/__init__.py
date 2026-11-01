@@ -190,7 +190,7 @@ def migrate_central(root: Path, options: dict[str, Any] | None = None) -> dict[s
         from pipelines_hooks.hygiene.connector_central.base import Review
 
         r = Review()
-        r.add("discover", "exactly one agent_connector_sdk.connector entry point resolving to a package is required")
+        r.add("discover", "exactly one scion_sdk.connector entry point resolving to a package is required")
         return {"changed": [], "deleted": [], "review": r.items, "applied": [], "rules": 0}
     order = rule_order()
     for rid in order:

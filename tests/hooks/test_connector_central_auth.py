@@ -12,7 +12,7 @@ from pipelines_hooks.hygiene.connector_central.base import RULES, make_ctx
 PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.0.0"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp:connector"
 """
 
@@ -32,8 +32,8 @@ HEAD = '''"""Demo auth."""
 
 import logging
 
-from agent_connector_sdk.config import setting
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
+from scion_sdk.config import setting
+from scion_sdk.tls.resolve import resolve_tls_profile
 
 from demo_mcp.api_client import Api
 

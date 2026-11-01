@@ -349,7 +349,7 @@ jobs:
               pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
           except (OSError, tomllib.TOMLDecodeError):
               sys.exit(1)
-          points = pyproject.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+          points = pyproject.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
           sources = subprocess.run(
               ["git", "ls-files", "--", "*connector_sources.py"], capture_output=True, text=True, check=False
           ).stdout.splitlines()

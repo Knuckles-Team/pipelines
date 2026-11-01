@@ -21,16 +21,16 @@ version = "1.2.3"
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:mcp_server"
 
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp"
 """
 
 HEAD = """import sys
 from typing import Any
 
-from agent_connector_sdk.config import load_config
-from agent_connector_sdk.mcp.server import create_mcp_server
-from agent_connector_sdk.mcp.tool_surface import register_tool_surface
+from scion_sdk.config import load_config
+from scion_sdk.mcp.server import create_mcp_server
+from scion_sdk.mcp.tool_surface import register_tool_surface
 from fastmcp.utilities.logging import get_logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -459,7 +459,7 @@ def test_imported_function_called_with_the_server_gets_a_registration_context_ad
     assert (
         "def _register_kg_tools(context: RegistrationContext) -> None:\n    register_kg_tools(context.server)" in init
     )
-    assert "from agent_connector_sdk.connector_hooks import RegistrationContext" in init
+    assert "from scion_sdk.connector_hooks import RegistrationContext" in init
     ast.parse(init)
 
 
@@ -653,7 +653,7 @@ def test_g3_accepts_forwarded_command_args_and_delegates_the_build_server_wrappe
     assert not _blocking(ctx)
     text = (ctx.pkg / "mcp_server.py").read_text()
     assert 'return _sdk_build_server("demo_mcp", command_args=command_args)[1]' in text
-    assert "from agent_connector_sdk.connector import build_server as _sdk_build_server" in text
+    assert "from scion_sdk.connector import build_server as _sdk_build_server" in text
     assert "get_mcp_instance" not in text
     ast.parse(text)
 
@@ -1013,7 +1013,7 @@ def test_health_route_that_probes_the_backend_becomes_readiness(tmp_path: Path) 
     assert 'return Readiness(True, {"backend": "unverified"})' in text
     assert 'return Readiness(False, {"backend": "unreachable"})' in text
     assert 'return Readiness(True, {"backend": "reachable", "topics": len(result)})' in text
-    assert "str(exc)" not in text and "from agent_connector_sdk.connector_hooks import Readiness" in text
+    assert "str(exc)" not in text and "from scion_sdk.connector_hooks import Readiness" in text
     assert any("/ready" in i["detail"] for i in ctx.review.items if not i["blocking"])
 
 
@@ -1077,7 +1077,7 @@ def test_other_custom_route_becomes_a_declared_route(tmp_path: Path) -> None:
     init = _migrate(ctx)
     assert not _blocking(ctx)
     assert 'routes=(Route("/metrics", metrics_route, methods=("GET", "HEAD"), name="metrics"),),' in init
-    assert "from agent_connector_sdk.connector_hooks import Route" in init
+    assert "from scion_sdk.connector_hooks import Route" in init
     text, _ = _texts(ctx)
     assert "\nasync def metrics_route(request: Request) -> JSONResponse:\n" in text and "custom_route" not in text
 
@@ -1111,7 +1111,7 @@ def test_local_one_parameter_registration_takes_the_registration_context(tmp_pat
     assert not _blocking(ctx)
     text, _ = _texts(ctx)
     assert 'def register_prompts(context: RegistrationContext):\n    """Prompts."""\n    mcp = context.server\n' in text
-    assert "from agent_connector_sdk.connector_hooks import RegistrationContext" in text and "FastMCP" not in text
+    assert "from scion_sdk.connector_hooks import RegistrationContext" in text and "FastMCP" not in text
     assert "extra_registrations=(register_prompts,)," in init and "_register_prompts" not in init
 
 
@@ -1170,7 +1170,7 @@ def test_registration_before_the_tool_surface_is_refused(tmp_path: Path) -> None
 
 CONTENT_HEAD = """    from pathlib import Path
 
-    from agent_connector_sdk.mcp.content import ConnectorContent
+    from scion_sdk.mcp.content import ConnectorContent
 
     package_root = Path(__file__).resolve().parent
 """

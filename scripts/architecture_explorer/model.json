@@ -3658,10 +3658,10 @@
      "role": "contracts + certification",
      "desc": "Connector control defines the contracts that every connector follows. It certifies tools and packs.",
      "code": [
-      "agent_connector_sdk/contracts.py",
-      "agent_connector_sdk/access_contract.py",
-      "agent_connector_sdk/schema_contract.py",
-      "agent_connector_sdk/current_plan.py"
+      "scion_sdk/contracts.py",
+      "scion_sdk/access_contract.py",
+      "scion_sdk/schema_contract.py",
+      "scion_sdk/current_plan.py"
      ],
      "fam": [
       "scion-connector-control"
@@ -3673,11 +3673,11 @@
        "role": "manifest, certify",
        "desc": "The SDK authors each connector pack from typed declarations. It certifies tool pins and schema fingerprints.",
        "code": [
-        "agent_connector_sdk/manifest",
-        "agent_connector_sdk/certify",
-        "agent_connector_sdk/ontology",
-        "agent_connector_sdk/_turtle.py",
-        "agent_connector_sdk/taxonomy"
+        "scion_sdk/manifest",
+        "scion_sdk/certify",
+        "scion_sdk/ontology",
+        "scion_sdk/_turtle.py",
+        "scion_sdk/taxonomy"
        ],
        "kw": "pack|certif|contract.pin|fingerprint|annotation|turtle|ontolog|manifest|seed graph|owl:imports|identifier gate|datapoint",
        "ids": [
@@ -3690,8 +3690,8 @@
        "role": "tool surface",
        "desc": "The MCP library builds one tool per API operation. It turns prompts with arguments into templates.",
        "code": [
-        "agent_connector_sdk/mcp",
-        "agent_connector_sdk/adapters/mcp_tool.py"
+        "scion_sdk/mcp",
+        "scion_sdk/adapters/mcp_tool.py"
        ],
        "kw": "tool per|one tool|one typed tool|tool contract|prompt|\\bmcp\\b|tool context|template|operation tool|split action|explicit additional registration|semantic coverage",
        "ids": [
@@ -3704,7 +3704,7 @@
        "role": "agent cards",
        "desc": "The A2A library discovers agent cards and declares A2A source contracts.",
        "code": [
-        "agent_connector_sdk/a2a"
+        "scion_sdk/a2a"
        ],
        "kw": "a2a|agent-card|agent card",
        "ids": [
@@ -3717,11 +3717,11 @@
        "role": "governed egress",
        "desc": "Transports are declared contracts per connection. The governed HTTP client controls egress and TLS.",
        "code": [
-        "agent_connector_sdk/transports",
-        "agent_connector_sdk/http",
-        "agent_connector_sdk/httpsupport",
-        "agent_connector_sdk/tls",
-        "agent_connector_sdk/streaming.py"
+        "scion_sdk/transports",
+        "scion_sdk/http",
+        "scion_sdk/httpsupport",
+        "scion_sdk/tls",
+        "scion_sdk/streaming.py"
        ],
        "kw": "transport|http|egress|tls|safe_post|graphql|message-stream|change envelope|search-grounding",
        "ids": [
@@ -3734,11 +3734,11 @@
        "role": "secrets, tokens, PKCE",
        "desc": "The SDK resolves credentials by source name. It scopes entitlements to the caller identity.",
        "code": [
-        "agent_connector_sdk/auth",
-        "agent_connector_sdk/credentials",
-        "agent_connector_sdk/identity.py",
-        "agent_connector_sdk/entitlements.py",
-        "agent_connector_sdk/signing.py"
+        "scion_sdk/auth",
+        "scion_sdk/credentials",
+        "scion_sdk/identity.py",
+        "scion_sdk/entitlements.py",
+        "scion_sdk/signing.py"
        ],
        "kw": "credential|token|secret|pkce|entitlement|vault|identity|root-bundle|acting user",
        "ids": [
@@ -3751,9 +3751,9 @@
        "role": "EG adapter",
        "desc": "The engine adapter calls engine methods with generated clients. It keeps proposals advisory.",
        "code": [
-        "agent_connector_sdk/adapters",
-        "agent_connector_sdk/compute",
-        "agent_connector_sdk/decide"
+        "scion_sdk/adapters",
+        "scion_sdk/compute",
+        "scion_sdk/decide"
        ],
        "kw": "\\beg\\b|epistemic-graph|engine|decision-service|graph-client|compute adapter|capability-to-existing|certification producer|scaling proposals",
        "ids": [
@@ -3773,9 +3773,9 @@
        "role": "settings + manifests",
        "desc": "The SDK holds connector base settings. It exports versioned environment declarations.",
        "code": [
-        "agent_connector_sdk/config.py",
-        "agent_connector_sdk/config_git.py",
-        "agent_connector_sdk/paths.py"
+        "scion_sdk/config.py",
+        "scion_sdk/config_git.py",
+        "scion_sdk/paths.py"
        ],
        "kw": "config|settings|environment|library-file|health endpoint|durability boundary|current-plan",
        "ids": [
@@ -3788,7 +3788,7 @@
        "role": "ports/",
        "desc": "Typed ports reach host services, desktop actions and sandboxes.",
        "code": [
-        "agent_connector_sdk/ports"
+        "scion_sdk/ports"
        ],
        "kw": "desktop|host os|sandbox|visual observation|\\bports?\\b|trajectory"
       },
@@ -3798,7 +3798,7 @@
        "role": "payment challenges",
        "desc": "Payment challenges run under a budget and need approval.",
        "code": [
-        "agent_connector_sdk/payments.py"
+        "scion_sdk/payments.py"
        ],
        "kw": "payment",
        "ids": [
@@ -3823,7 +3823,7 @@
      "role": "runner, extractors, sources",
      "desc": "Source ingest runs connector syncs under an engine-accepted contract. It submits SourceIngest batches.",
      "code": [
-      "agent_connector_sdk/ingest"
+      "scion_sdk/ingest"
      ],
      "fam": [
       "scion-source-ingest"
@@ -3860,7 +3860,7 @@
        "role": "runner/",
        "desc": "The runner synchronizes enterprise sources. It also runs the ingest worker command.",
        "code": [
-        "agent_connector_sdk/runner"
+        "scion_sdk/runner"
        ],
        "kw": "runner|ingest worker|ingest-worker|synchroniz|resume|stage|engine-accepted|connectorpack",
        "ids": [
@@ -3873,8 +3873,8 @@
        "role": "quarantine + pause",
        "desc": "A drift classifier quarantines incompatible schema changes. Proposed repairs pause the sync.",
        "code": [
-        "agent_connector_sdk/schema_drift.py",
-        "agent_connector_sdk/schema_repair.py"
+        "scion_sdk/schema_drift.py",
+        "scion_sdk/schema_repair.py"
        ],
        "kw": "drift|schema repair|quarantin"
       },
@@ -3884,7 +3884,7 @@
        "role": "vendor_extractors/",
        "desc": "Vendor extractors turn source records into typed graph records.",
        "code": [
-        "agent_connector_sdk/vendor_extractors"
+        "scion_sdk/vendor_extractors"
        ],
        "kw": "extractor|enrichment extraction|ports the|write-back sinks|vendor write-back",
        "ids": [
@@ -3897,9 +3897,9 @@
        "role": "documents, databases, feeds",
        "desc": "Source connectors read documents, databases, feeds and packages.",
        "code": [
-        "agent_connector_sdk/source_connectors",
-        "agent_connector_sdk/earth_observations",
-        "agent_connector_sdk/sinks"
+        "scion_sdk/source_connectors",
+        "scion_sdk/earth_observations",
+        "scion_sdk/sinks"
        ],
        "kw": "document-source|document source|database source|graphql document|mcp package|bookmark|transcript|feed|conversation|paper|occurrence|weather|taxon|fallback|sql source|chain transaction|workspace document|enterprise operations|query receiving",
        "ids": [
@@ -3912,11 +3912,11 @@
        "role": "privacy-safe kernel",
        "desc": "The data preparation kernel removes private data before ingest.",
        "code": [
-        "agent_connector_sdk/data_prep",
-        "agent_connector_sdk/privacy.py",
-        "agent_connector_sdk/privacy_pii.py",
-        "agent_connector_sdk/privacy_rules.py",
-        "agent_connector_sdk/privacy_reference.py"
+        "scion_sdk/data_prep",
+        "scion_sdk/privacy.py",
+        "scion_sdk/privacy_pii.py",
+        "scion_sdk/privacy_rules.py",
+        "scion_sdk/privacy_reference.py"
        ],
        "kw": "data preparation|privacy",
        "ids": [
@@ -3929,7 +3929,7 @@
        "role": "provenance + license",
        "desc": "A provenance manifest and a license gate guard voice models.",
        "code": [
-        "agent_connector_sdk/voice_supply_chain"
+        "scion_sdk/voice_supply_chain"
        ],
        "kw": "voice"
       },
@@ -3958,8 +3958,8 @@
      "role": "approval, idempotency, audit",
      "desc": "Write-back routes every source change through governed authorization. It needs approval, idempotency and an audit reservation.",
      "code": [
-      "agent_connector_sdk/writeback",
-      "agent_connector_sdk/writeback_sinks"
+      "scion_sdk/writeback",
+      "scion_sdk/writeback_sinks"
      ],
      "fam": [
       "scion-governed-writeback"
@@ -3985,7 +3985,7 @@
        "role": "WriteBackPort",
        "desc": "Sinks apply approved changes. A port composes a durable graph adapter.",
        "code": [
-        "agent_connector_sdk/writeback_sinks"
+        "scion_sdk/writeback_sinks"
        ],
        "kw": "sink|writebackport|adapter|test suite",
        "ids": [
@@ -4000,7 +4000,7 @@
      "role": "code + spec hydration",
      "desc": "The repository transport hydrates code and specifications from version control. It submits bounded index batches.",
      "code": [
-      "agent_connector_sdk/repository"
+      "scion_sdk/repository"
      ],
      "fam": [
       "scion-repository-transport"
@@ -4048,7 +4048,7 @@
      "role": "market + account adapters",
      "desc": "Finance adapters read market data, accounts and macro panels.",
      "code": [
-      "agent_connector_sdk/finance"
+      "scion_sdk/finance"
      ],
      "fam": [
       "scion-finance-sources"

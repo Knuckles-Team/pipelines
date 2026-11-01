@@ -29,17 +29,17 @@ gramps-mcp = "gramps_mcp.mcp_server:mcp_server"
 # Fleet contribution (CONCEPT:OS-5.52): advertise this package's skills and
 # system-prompt blueprints so agent-connector-sdk' skill-installer and KG prompt
 # library discover them without importing this package's agent code.
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 gramps-mcp = "gramps_mcp.skills"
 
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 gramps-mcp = "gramps_mcp.ontology"
 
-[project.entry-points."agent_connector_sdk.prompt_providers"]
+[project.entry-points."scion_sdk.prompt_providers"]
 gramps-mcp = "gramps_mcp.prompts"
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 gramps-mcp = "gramps_mcp"
 
 [tool.uv.workspace]

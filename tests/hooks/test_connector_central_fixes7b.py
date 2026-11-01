@@ -11,7 +11,7 @@ from pipelines_hooks.hygiene.connector_central import base, identity, wave1
 
 PYPROJECT = (
     '[project]\nname = "demo-agent"\nversion = "1.0.0"\n\n'
-    '[project.entry-points."agent_connector_sdk.connector"]\ndemo-mcp = "demo_agent:connector"\n'
+    '[project.entry-points."scion_sdk.connector"]\ndemo-mcp = "demo_agent:connector"\n'
 )
 
 
@@ -69,7 +69,7 @@ def test_k1_a_non_test_module_reading_the_version_through_an_alias_is_reviewed(t
     assert '__version__ = "2.3.6"' in (ctx.root / "demo_agent/mcp_server.py").read_text(encoding="utf-8")
 
 
-KG = """from agent_connector_sdk.ingest import IngestBinding
+KG = """from scion_sdk.ingest import IngestBinding
 
 _CONNECTOR = "demo-agent"
 _STREAM = "demo"

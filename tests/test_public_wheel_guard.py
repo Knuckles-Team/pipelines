@@ -100,7 +100,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "demo-dist"
 version = "1.2.3"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo = "demo:connector"
 
 [tool.setuptools.package-data]
@@ -191,7 +191,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "demo-dist"
 version = "1.2.3"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo = "demo:connector"
 
 [tool.setuptools.package-data]
@@ -251,7 +251,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "demo-dist"
 version = "1.2.3"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo = "demo:connector"
 
 [tool.setuptools.package-data]
@@ -358,7 +358,7 @@ def test_public_wheel_identity_skips_non_connectors_and_refuses_ambiguity(guard,
         """[project]
 name = "demo-dist"
 version = "1.2.3"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 first = "demo.first"
 second = "demo.second"
 """,
@@ -399,7 +399,7 @@ mcp = []
 demo-mcp = "demo:main"
 """
     if identity == "entry-point":
-        pyproject += '\n[project.entry-points."agent_connector_sdk.connector"]\ndemo-mcp = "demo"\n'
+        pyproject += '\n[project.entry-points."scion_sdk.connector"]\ndemo-mcp = "demo"\n'
     (tmp_path / "pyproject.toml").write_text(pyproject, encoding="utf-8")
     paths = ["demo/__init__.py", "pyproject.toml"]
     if identity == "connector-sources":
@@ -454,7 +454,7 @@ def test_public_wheel_repair_refuses_an_unpublished_version_before_container_pub
         '[build-system]\nrequires = ["setuptools>=80"]\nbuild-backend = "setuptools.build_meta"\n\n'
         '[project]\nname = "demo-dist"\nversion = "1.2.3"\n'
         '[project.scripts]\ndemo-mcp = "demo:main"\n'
-        '[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+        '[project.entry-points."scion_sdk.connector"]\ndemo = "demo"\n',
         encoding="utf-8",
     )
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
@@ -489,7 +489,7 @@ def test_public_wheel_target_extra_matches_generated_and_tracked_targets(
         'version = "1.2.3"\n'
         'dependencies = ["agent-connector-sdk[mcp]>=1"]\n\n'
         "[project.scripts]\n"
-        'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."agent_connector_sdk.connector"]\n'
+        'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."scion_sdk.connector"]\n'
         'demo = "demo:connector"\n\n'
         '[tool.setuptools.packages.find]\ninclude = ["demo*"]\n',
         encoding="utf-8",
@@ -552,7 +552,7 @@ def test_public_wheel_rejects_target_pin_mismatches_before_public_fetch(
         'version = "1.2.3"\n'
         'dependencies = ["agent-connector-sdk[mcp]>=1"]\n\n'
         "[project.scripts]\n"
-        'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."agent_connector_sdk.connector"]\n'
+        'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."scion_sdk.connector"]\n'
         'demo = "demo:connector"\n',
         encoding="utf-8",
     )
@@ -600,7 +600,7 @@ def test_public_wheel_refuses_a_missing_custom_dockerfile(guard, tmp_path, monke
         monkeypatch.delenv(name, raising=False)
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nname = "demo-dist"\nversion = "1.2.3"\n'
-        '[project.entry-points."agent_connector_sdk.connector"]\ndemo = "demo"\n',
+        '[project.entry-points."scion_sdk.connector"]\ndemo = "demo"\n',
         encoding="utf-8",
     )
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)

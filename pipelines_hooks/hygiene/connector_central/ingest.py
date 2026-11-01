@@ -41,7 +41,7 @@ ORDER: tuple[str, ...] = (
 )
 
 KG = "kg_ingest.py"
-SDK_MOD = "agent_connector_sdk.ingest"
+SDK_MOD = "scion_sdk.ingest"
 _PLAN_KEY = "_ingest_plan"
 _STD_NAMES = {"_to_entity", "_to_relationship", "_to_document", "ingest_entities", "ingest_documents"}
 _REMOVABLE_IMPORTS = {
@@ -410,7 +410,7 @@ def _best_effort_reasons(tree: ast.Module) -> list[str]:
         found.add(f"{len(calls)} IngestBinding values (document_binding)")
     exception_names = {"IngestError", "IngestUnavailableError"}
     for node in tree.body:
-        if not isinstance(node, ast.ImportFrom) or node.module != "agent_connector_sdk.ingest":
+        if not isinstance(node, ast.ImportFrom) or node.module != "scion_sdk.ingest":
             continue
         for alias in node.names:
             if alias.name in exception_names:
@@ -721,7 +721,7 @@ def _build_plan(ctx: Ctx) -> _Plan | None:  # noqa: C901 - one linear preflight,
             files[rel] = fe
 
     # stage 2: STREAM and the SDK import
-    ep = ctx.pyproject().get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    ep = ctx.pyproject().get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
     if ep.get(ctx.fleet) == f"{ctx.pkg_name}:connector":
         args = f'__package__.split(".")[0], {_quote(stream)}'
         head = "STREAM = SourceStream.for_package("
@@ -987,12 +987,12 @@ def _sdk_helper_norms(ctx: Ctx) -> dict[str, str]:
     path: Path | None = None
     sdk = ctx.options.get("sdk_path")
     if sdk:
-        for cand in (Path(sdk) / "agent_connector_sdk/ingest/mapping.py", Path(sdk) / "ingest/mapping.py"):
+        for cand in (Path(sdk) / "scion_sdk/ingest/mapping.py", Path(sdk) / "ingest/mapping.py"):
             if cand.is_file():
                 path = cand
     if path is None:
         try:
-            spec = importlib.util.find_spec("agent_connector_sdk.ingest.mapping")
+            spec = importlib.util.find_spec("scion_sdk.ingest.mapping")
         except (ImportError, ValueError):
             spec = None
         if spec and spec.origin:

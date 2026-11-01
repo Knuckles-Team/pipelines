@@ -11,7 +11,7 @@ from pipelines_hooks.hygiene import connector_name
 pytestmark = pytest.mark.spec("PIPE-GATES-R010")
 
 _DECLARED = (
-    '[project]\nname = "demo-api"\n[project.entry-points."agent_connector_sdk.connector"]\ndemo-mcp = "demo_api"\n'
+    '[project]\nname = "demo-api"\n[project.entry-points."scion_sdk.connector"]\ndemo-mcp = "demo_api"\n'
 )
 
 

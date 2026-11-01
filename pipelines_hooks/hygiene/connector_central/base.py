@@ -24,7 +24,7 @@ SDK_PIN = "agent-connector-sdk[mcp]>=0.5.4,<0.6.0"
 # (rule id, source document, one-line summary). The row number is R016.<50 + index>.
 RULE_TABLE: tuple[tuple[str, str, str], ...] = (
     ("w1.g1", "wave1", "entry point value names `<pkg>:connector`"),
-    ("w1.g2", "wave1", "console script becomes `agent_connector_sdk.cli:serve`"),
+    ("w1.g2", "wave1", "console script becomes `scion_sdk.cli:serve`"),
     ("w1.g3", "wave1", "`mcp_server.py` bootstrap is deleted and its values extracted"),
     ("w1.g4", "wave1", "package `__init__.py` declares `connector = Connector(...)`"),
     ("w1.g5", "wave1", "`__main__.py` calls `run()`"),
@@ -216,7 +216,7 @@ def spec_row(rule_id: str) -> str:
 def make_ctx(root: Path, options: dict[str, Any] | None = None) -> Ctx | None:
     """Resolve fleet name, package dir and distribution from ``pyproject.toml``; None when no connector entry point."""
     data = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-    eps = data.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    eps = data.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
     if len(eps) != 1:
         return None
     ((fleet, value),) = eps.items()

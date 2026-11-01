@@ -47,7 +47,7 @@ immich-api = "immich_api.prompts"
 immich-api = "immich_api.ontology"
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 immich = "immich_api"
 
 [tool.uv.workspace]

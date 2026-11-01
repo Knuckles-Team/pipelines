@@ -26,20 +26,20 @@ test = [
 [project.scripts]
 servicenow-mcp = "servicenow_api.mcp_server:mcp_server"
 
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 servicenow-api = "servicenow_api.skills"
 
-[project.entry-points."agent_connector_sdk.prompt_providers"]
+[project.entry-points."scion_sdk.prompt_providers"]
 servicenow-api = "servicenow_api.prompts"
 
 # CONCEPT:KG-2.320 — federate this package's OWL/RDF ontology module into the
 # agent-connector-sdk hub (incidents, changes, CMDB items). Resolved via
 # iter_provider_dirs like the skill/prompt providers.
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 servicenow-api = "servicenow_api.ontology"
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 servicenow-mcp = "servicenow_api"
 
 [tool.uv.workspace]
