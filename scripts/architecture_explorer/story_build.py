@@ -10,6 +10,7 @@ import urllib.error
 import urllib.request
 
 from .activity_probe import NoRedirect
+from .details import NESTED_LABELS, TEXT_SUFFIXES
 from .story_activity import timestamp
 from .sources import Snapshot, family_docs, load_all, read_aliases, rows_for
 from .story_chart_sources import source_chart
@@ -19,6 +20,13 @@ from pipelines_hooks.specs.generator import generate_at, render
 API = "https://api.github.com/repos/Knuckles-Team/"
 SHA = r"[0-9a-f]{40}"
 DOC = re.compile(r"specs/[^/]+/[^/]+\.md$")
+
+
+def is_source_document(path: str) -> bool:
+    """Capture exactly the documents the explorer reads: top-level markdown plus the nested checklist/contract files."""
+    parts = path.split("/")
+    nested = len(parts) == 4 and parts[0] == "specs" and parts[2] in NESTED_LABELS and path.endswith(TEXT_SUFFIXES)
+    return bool(DOC.fullmatch(path)) or nested
 
 
 def read_family_config(path):
@@ -139,7 +147,7 @@ def capture_repository(entry, request):
         )
         require(path not in paths, "duplicate source path")
         paths.append(path)
-        if not (DOC.fullmatch(path) or path == ".config/spec-aliases.toml"):
+        if not (is_source_document(path) or path == ".config/spec-aliases.toml"):
             continue
         require(item["mode"] in {"100644", "100755"}, "source document must be a regular file")
         oid = item["sha"]

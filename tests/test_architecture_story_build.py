@@ -340,3 +340,18 @@ def test_candidate_config_is_explicit_selected_families_and_closure_only():
         "overstory": ["arbora-api-consumer", "arbora-app-surface"],
         "arbora": [],
     }
+
+
+@pytest.mark.parametrize(
+    ("path", "captured"),
+    [
+        ("specs/demo/requirements.md", True),
+        ("specs/demo/checklists/requirements.md", True),
+        ("specs/demo/contracts/api.yml", True),
+        ("specs/demo/checklists/deep/requirements.md", False),
+        ("specs/demo/notes/requirements.md", False),
+        ("specs/demo/contracts/image.png", False),
+    ],
+)
+def test_capture_covers_every_document_the_explorer_reads(path, captured):
+    assert build.is_source_document(path) is captured
