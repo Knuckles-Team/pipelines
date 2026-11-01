@@ -26,7 +26,7 @@ OLD_DISTRIBUTIONS = MappingProxyType(
         SDK: "agent-connector-sdk",
         MERISTEM: "agent-utilities",
         MEDULLA: "epistemic-graph",
-        MEDULLA_STEM: "epistemic-graph-server",
+        MEDULLA_STEM: "medulla-server",
         OVERSTORY: "agent-webui",
         TUIG: "agent-terminal-ui",
         AXIL: "geniusbot",

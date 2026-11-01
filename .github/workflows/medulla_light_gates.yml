@@ -209,7 +209,7 @@ jobs:
           python -m pip install --disable-pip-version-check pytest==9.1.1
           python -m pytest --noconftest -o addopts='' tests/test_ci_change_scope.py
       - name: Server package tests
-        working-directory: packaging/epistemic-graph-server
+        working-directory: packaging/medulla-server
         run: python -m pytest -o addopts='' -p no:cacheprovider tests
 
   spec-gates:

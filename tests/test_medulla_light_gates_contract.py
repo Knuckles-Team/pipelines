@@ -68,7 +68,7 @@ def test_light_jobs_preserve_medulla_commands_without_native_execution() -> None
         "pre-commit run --config .config/pre-commit.yaml --all-files",
         "cargo fmt --all -- --check",
         "tests/test_ci_change_scope.py",
-        "packaging/epistemic-graph-server",
+        "packaging/medulla-server",
         "pipelines-hook spec-status",
         "pipelines-hook spec-decomposition",
         "pipelines-hook spec-trailers",
