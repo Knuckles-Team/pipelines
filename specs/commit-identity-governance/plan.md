@@ -1,105 +1,108 @@
-# Architecture — PIPE-IDENTITY
+# PIPE-IDENTITY — Implementation plan
 
-## Existing wiring
+Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 
-`pipelines_hooks/cli.py` is the single entry point: `pipelines-hook <gate>` resolves `gate` through
-the `GATES` dict to a module exposing `main(argv) -> int`, and `run_gate` maps a missing
-prerequisite (`Unavailable`) to a fail-closed exit in CI or a visible local skip, and any other
-unrunnable state (`CannotRun`) to exit 2. `.pre-commit-hooks.yaml` declares the hook IDs this
-repository exports to every consumer; `.config/pre-commit.yaml` is how `pipelines` runs those same
-IDs on itself, with `default_install_hook_types: [pre-commit, pre-push]` and per-hook `stages:` lists
-choosing which installed hook type(s) a gate runs under. `.github/workflows/ci.yml` runs the
-commit-stage hooks with `pre-commit run --all-files`, then re-runs the `pre-push` and `manual` stage
-hooks with `--hook-stage manual`, so CI independently repeats whatever stage a contributor's local
-hook might have skipped or bypassed. `pipelines_hooks/privacy/identity_catalog.py` and
-`pipelines_hooks/privacy/gate.py` are the closest existing precedent for this shape: a bounded,
-versioned external JSON file of identity strings, loaded by a dedicated loader that raises on a
-malformed or oversized file, consumed by a gate that fails closed in CI and skips with a remedy
-locally. `pipelines_hooks/core/gitenv.py` provides `run_git`/`git_text` with every ambient `GIT_*`
-environment variable stripped, so a gate reads the repository git itself resolved rather than an
-inherited selector. Build a new, dedicated gate on these seams; do not extend the unrelated
-tracked-content privacy scanner, whose job is finding identity strings leaked into file bodies, not
-verifying the identity a commit was made under.
+## Summary
 
-## Allowlist configuration
+This plan serves the rows of `PIPE-IDENTITY`. Two gates, `commit-identity` and `commit-identity-range`, compare the author and committer of a commit, or of every commit in a range, with a configured allowlist. Both gates run in the `secrets` group at commit and push time and in CI. The delivery platform acts under one allowlist entry, either the owner's account or a service account, and the gates give that entry no exemption. The design reuses the bounded loader pattern of the identity catalog under `pipelines_hooks/privacy/` and the sanitized git helpers of `pipelines_hooks/core/gitenv.py`.
 
-Define a bounded, versioned configuration format naming permitted identities as explicit
-`{name, email}` pairs (no wildcards, no regular expressions), modeled on the
-`{"version": ..., "identities": [...]}` shape `identity_catalog.py` already validates: a strict
-schema check, a size ceiling, and a hard rejection of anything malformed rather than a narrowed
-scan. Resolve the configuration path through `pipelines_hooks/core/settings.py`'s single
-environment-reading module, so the path a gate reads is visible alongside every other declared
-setting.
+## Technical Context
 
-`pipelines_hooks/identity/allowlist.py` resolves the path in this order: an explicit `--allowlist`
-argument; else `COMMIT_IDENTITY_ALLOWLIST`; else a repository-local `<root>/.config/commit-identity-
-allowlist.json` if one is tracked; else the fleet default packaged inside this package,
-`pipelines_hooks/identity/fleet-default-allowlist.json`, declared in
-`[tool.setuptools.package-data]` in `pyproject.toml` so it ships with every build and is present for
-every consumer without any per-repository setup. The packaged default names the fleet's five
-sanctioned commit identities (the organization's own git identity, the two assistant identities used
-for agent-authored commits, Dependabot, and the identity GitHub records as committer on a web-merged
-commit); outside contributors are not part of it and are not expected to be, since their
-contributions are exempt (see "CI re-verification" below) rather than checked against it. Because the
-packaged default always exists once the package is installed, `resolved_allowlist` can no longer
-raise `Unavailable` for the no-configuration case; it still raises `Unavailable` when an explicit
-path or `COMMIT_IDENTITY_ALLOWLIST` names a file that does not exist, and `CannotRun` for a present
-but malformed file, exactly as before.
+- **Language/Version**: Python 3.14 (floor 3.12)
+- **Primary Dependencies**: The `pipelines_hooks` package and git; no network access.
+- **Storage**: N/A. The allowlist is a JSON file: packaged default, tracked file or env-named path.
+- **Testing**: pytest under `tests/hooks/` with disposable fixture git repositories and synthetic `*.invalid` identities.
+- **Target Platform**: Developer machines and Linux CI runners
+- **Project Type**: Library and command-line hooks
+- **Performance Goals**: N/A. The commit check adds one `git var` call and the range check adds one `git log` call.
+- **Constraints**: The gates print only the failing field. No ambient `GIT_*` selector decides which repository is read. An absent or malformed allowlist never passes.
+- **Scale/Scope**: The seven child rows of `PIPE-IDENTITY-R001`.
 
-## Commit-time check
+## Constitution Check
 
-Add a `commit-identity` gate module beside the existing `pipelines_hooks/privacy` and
-`pipelines_hooks/security` packages, registered in `cli.py`'s `GATES` dict and declared in
-`.pre-commit-hooks.yaml` at the default (`pre-commit`) stage, matching how `tracked-privacy` is
-wired. Resolve the identity git itself assigned to the commit being made, not an ambient
-environment variable, using `run_git`/`git_text` so the ambient-selector class of bug `gitenv.py`
-already guards against cannot recur here. Compare the resolved author and committer name/email
-pairs against the loaded allowlist and reject with the specific failing field named, never with the
-full configured allowlist printed back.
+- **I. One owner per concept**: No departure is recorded in this plan; the rows carry the proof.
+- **II. Extend before you create**: No departure is recorded in this plan; the rows carry the proof.
+- **III. Specs describe the current state only**: No departure is recorded in this plan; the rows carry the proof.
+- **IV. Requirements are neutral and controlled**: No departure is recorded in this plan; the rows carry the proof.
+- **V. Hard cutover, no legacy path**: No departure is recorded in this plan; the rows carry the proof.
+- **VI. Names carry no version suffix**: No departure is recorded in this plan; the rows carry the proof.
+- **VII. One engine, no second database, no sync**: No departure is recorded in this plan; the rows carry the proof.
+- **VIII. Ask the graph, not a bespoke operation**: No departure is recorded in this plan; the rows carry the proof.
+- **IX. Connectors depend on the SDK and are called through arbora**: No departure is recorded in this plan; the rows carry the proof.
+- **X. Every ontology class rolls up to the core**: No departure is recorded in this plan; the rows carry the proof.
+- **XI. Code stays small, simple and unduplicated**: No departure is recorded in this plan; the rows carry the proof.
+- **XII. No ratchets and no suppressions**: No departure is recorded in this plan; the rows carry the proof.
+- **XIII. Zero flakes**: No departure is recorded in this plan; the rows carry the proof.
+- **XIV. Compile first, then review**: No departure is recorded in this plan; the rows carry the proof.
+- **XV. Python 3.14 standard, 3.12 floor**: No departure is recorded in this plan; the rows carry the proof.
+- **XVI. Install and deploy only from published releases**: No departure is recorded in this plan; the rows carry the proof.
+- **XVII. Publish the gate's tool before the gate**: No departure is recorded in this plan; the rows carry the proof.
+- **XVIII. Landed means reachable**: No departure is recorded in this plan; the rows carry the proof.
+- **XIX. A tag push publishes, with no manual approval**: No departure is recorded in this plan; the rows carry the proof.
+- **XX. Secrets are never traced or logged**: No departure is recorded in this plan; the rows carry the proof.
+- **XXI. Public files stay portable and neutral**: No departure is recorded in this plan; the rows carry the proof.
 
-## Push-time check
+## Project Structure
 
-Register the same gate module under a `stages: [pre-push, manual]` entry (the pattern the existing
-`*-census` hooks already use in `.config/pre-commit.yaml`) so pre-push re-walks every commit in the
-range about to leave the local repository — not only the tip — through the identical allowlist
-check. A commit made with a bypassed or skipped commit-time hook is still caught here, because the
-push-time stage inspects the full outgoing range independently.
+```text
+pipelines_hooks/identity/allowlist.py              existing: load, validate, resolve the allowlist
+pipelines_hooks/identity/fleet-default-allowlist.json  existing: packaged fleet default
+pipelines_hooks/identity/resolve.py                existing: pending and range identities
+pipelines_hooks/identity/commit_gate.py            existing: commit-identity
+pipelines_hooks/identity/range_gate.py             existing: commit-identity-range
+pipelines_hooks/identity/fork_exemption.py         existing: fork pull request exemption
+pipelines_hooks/cli.py                             existing: GATES table and the secrets group
+tests/hooks/test_identity_range.py                 existing: two tests added for PIPE-IDENTITY-R001.1
+```
 
-## CI re-verification
+## Phase 0: Research
 
-No separate implementation: `.github/workflows/ci.yml` already runs the commit-stage hooks across
-the whole checkout and then re-runs the `pre-push`/`manual` stage hooks with
-`pre-commit run --hook-stage manual --all-files` (no explicit hook-id list, so every hook registered
-at the manual stage is picked up automatically; registering `commit-identity-range` under
-`stages: [pre-push, manual]` in `.config/pre-commit.yaml` needs no further workflow change).
-Registering `commit-identity` at the default (commit) stage and `commit-identity-range` at both
-`pre-push` and `manual` is sufficient for CI to independently repeat the same check against the full
-incoming range, exactly as it already does for every other gate in this repository.
+No unknowns; no research.md.
 
-Outside contributions are welcome and are not subject to the allowlist: a pull request whose head
-repository differs from its base repository is an external contribution from a fork, and
-`pipelines_hooks/identity/fork_exemption.py` detects it by reading `GITHUB_EVENT_NAME`/
-`GITHUB_EVENT_PATH` (through `core/settings.py`, never `os.environ` directly) and comparing
-`pull_request.head.repo.full_name` against `pull_request.base.repo.full_name` in the event payload at
-`GITHUB_EVENT_PATH`. `range_gate.main` checks this first and, when it holds, reports the run exempt
-and returns success without loading the allowlist at all. A push, a same-repository pull request, a
-local run, or a missing/unreadable event payload is not exempt and is checked exactly as before
-(fail-closed: an indeterminate payload is treated as "not a fork", never as "exempt").
+## Phase 1: Design
 
-## Failure behavior
+### Existing wiring
 
-Follow the existing `Unavailable`/`CannotRun` contract: a missing or unreadable allowlist
-configuration raises `Unavailable` with a remedy naming the install/config command, which `cli.py`
-turns into a fail-closed exit 2 in CI and a printed local skip otherwise; a malformed configuration
-(bad schema, oversized file) raises `CannotRun`, which is always exit 2, since that is a defect in
-the input rather than an absent optional prerequisite. Reuse `pipelines_hooks/core/settings.py`'s
-`KNOWN_SETTINGS` registration for any new environment variable this gate reads, so the env-sprawl
-gate continues to hold.
+`pipelines_hooks/cli.py` is the single entry point. `pipelines-hook <gate>` resolves the gate through the `GATES` table to a module with `main(argv) -> int`. The `secrets` group in `GROUPS` runs `commit-identity` and `commit-identity-range` with the other secret checks. `run_gate` maps a missing prerequisite (`Unavailable`) to a fail-closed exit 2 in CI or a visible local skip, and any other unrunnable state (`CannotRun`) to exit 2. `.config/pre-commit.yaml` runs the `secrets` hook at the commit and push stages of this repository, and consumers get the same ids through `.pre-commit-hooks.yaml`. The range member runs only when `PRE_COMMIT_FROM_REF` is set, which the gates workflow exports for a pull request. `pipelines_hooks/privacy/identity_catalog.py` is the precedent for a bounded, versioned identity file with a strict loader. `pipelines_hooks/core/gitenv.py` strips every ambient `GIT_*` variable, so a gate reads the repository git itself resolved. The tracked-content privacy scanner is not extended: it finds identity strings in file bodies, not the identity a commit was made under.
 
-## Quality and release gates
+### Allowlist configuration
 
-Apply the repository's own configured gates to the new module and its `.pre-commit-hooks.yaml`/
-`.config/pre-commit.yaml` entries: `complexity-staged`/`complexity-census` (CCCC 10/15),
-`kiss-staged`/`kiss-census`, `dupehound-changed`, `jscpd-differential`/`jscpd-census`,
-`tracked-privacy`, `supply-chain`, and the repository's `pytest` suite. Reuse `gitenv.py` and
-`core/errors.py` rather than re-implementing git access or exit-code mapping.
+The file is `{"version": ..., "identities": [...]}` with explicit `{name, email}` pairs. It has a strict schema check, a size ceiling and a hard rejection of anything malformed. `pipelines_hooks/identity/allowlist.py` resolves the path in this order: the `--allowlist` argument, then `COMMIT_IDENTITY_ALLOWLIST`, then a tracked `<root>/.config/commit-identity-allowlist.json`, then the fleet default packaged as `pipelines_hooks/identity/fleet-default-allowlist.json` and declared in `[tool.setuptools.package-data]`. The packaged default names the sanctioned fleet identities. Outside contributors are not listed; their fork pull requests are exempt instead. The environment read goes through `pipelines_hooks/core/settings.py`. An explicit path that does not exist raises `Unavailable`; a present but malformed file raises `CannotRun`.
+
+### Commit-time check
+
+`commit_gate.main` reads the identity git assigned to the commit being made with `pending_identity`, compares author and committer with `matches`, and prints only the failing field. With nothing staged it passes.
+
+### Push-time and CI checks
+
+`range_gate.main` checks `is_fork_pull_request` first. A pull request whose head repository differs from its base repository is exempt, and the gate returns before it loads the allowlist. A push, a same-repository pull request, a local run or an unreadable event payload is checked. The gate lists every commit of the range with `range_identities` and compares each author and committer. The CI run repeats this over the incoming range, so a skipped local hook never lets an off-list identity through.
+
+### Platform identity
+
+The delivery platform commits under one allowlist entry: the owner's account or a service account. Choosing between them edits the allowlist file and no code. `matches` compares name and email exactly and treats every entry alike, and neither gate branches on which entry matched. The owner's approval on the head commit gates every merge and is enforced by the owners of `ARBORA-OPS-R896.10`; this plan adds no approval logic. Every gate stays required, which `PIPE-GATES-R016.116.2` proves for the CI workflows.
+
+### Failure behavior
+
+A missing explicit allowlist raises `Unavailable` with a remedy, which `cli.py` turns into exit 2 in CI and a printed skip locally. A malformed file raises `CannotRun` and always exits 2, because the input is defective. A new environment variable is registered in `KNOWN_SETTINGS` so the environment-sprawl gate holds.
+
+## Phase 2: Task approach
+
+tasks.md carries one numbered task line for each child row. The allowlist task comes first, then the commit-time check, the range check, the failure behavior, the wiring and the hot-path proof. The platform identity task comes last because it adds tests only. No task runs in parallel.
+
+## Complexity Tracking
+
+none
+
+## Build contract
+
+Each row names its test. The pre-commit and pre-push hooks and the pull request gates of this repository apply: `complexity-staged` and `complexity-census` (cyclomatic 10, cognitive 15), `kiss-staged` and `kiss-census`, `dupehound-changed`, `jscpd-differential`, `tracked-privacy`, `supply-chain` and the pytest suite. No row uses a suppression or a ratchet. Reuse `gitenv.py` and `core/errors.py` instead of new git access or exit-code mapping.
+
+## Production caller chain
+
+- Commit time: the `secrets` hook (`.config/pre-commit.yaml:53`) runs `run_group` (`pipelines_hooks/cli.py:121`), then `commit_gate.main` (`pipelines_hooks/identity/commit_gate.py:31`), then `resolved_allowlist` (`pipelines_hooks/identity/allowlist.py:101`).
+- Push time and CI: the same group runs `range_gate.main` (`pipelines_hooks/identity/range_gate.py:37`) when `PRE_COMMIT_FROM_REF` is set, then `range_identities` (`pipelines_hooks/identity/resolve.py:45`).
+- Platform identity: an allowlist entry read by `configured_path` (`pipelines_hooks/identity/allowlist.py:86`); no obsolete path remains to delete.
+
+## Cross-repo seams
+
+- `ARBORA-OPS-R896.10` binds the owner approval receipt to the head commit; this spec gives the platform identity no way around it.
