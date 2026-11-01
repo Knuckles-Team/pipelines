@@ -25,3 +25,11 @@ repositories: the fuzz and workflow checks write evidence that meets the contrac
 each risky workflow pattern is a finding, the contract takes license additions from `pyproject.toml`
 and refuses unknown keys, committed legacy files are findings, and API-to-MCP parity covers
 decorated tools, prefixed tools, catalog dispatch, the baseline and the skip case.
+
+| ID | Requirement | Test and expected result |
+|---|---|---|
+| T-001 | FR-001 | PIPE-VALIDATION-R001.1 to R001.5: a strict policy loads, a passive event does nothing, required failures block, deadlines end the process group and the report matches the summary. |
+| T-002 | FR-002 | PIPE-VALIDATION-R001.6: all 16 Meristem ignore patterns stay required in disposable repositories. |
+| T-003 | FR-003 | PIPE-VALIDATION-R001.7 to R001.12: a committed copy of a central file is a finding, and the shared checks run as members of the connector standard. |
+| T-004 | FR-004 | PIPE-VALIDATION-R002: a display-name-only candidate passes outside attribution and fails inside it. |
+
