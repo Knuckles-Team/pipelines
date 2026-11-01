@@ -111,7 +111,9 @@ def test_a_deletion_only_diff_adds_no_rows(tmp_path: Path) -> None:
     from pipelines_hooks.specs.narrative import added_row_ids
 
     def git(*args: str) -> None:
-        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=tmp_path, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=tmp_path, check=True, capture_output=True
+        )
 
     spec = tmp_path / "specs" / "x"
     spec.mkdir(parents=True)
