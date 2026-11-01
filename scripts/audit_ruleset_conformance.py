@@ -43,7 +43,11 @@ def github_api(token: str) -> Api:
     def get(path: str) -> object:
         req = urllib.request.Request(
             f"https://api.github.com/{path}",
-            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json", "User-Agent": "ruleset-audit"},
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "ruleset-audit",
+            },
         )
         with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 - fixed https host
             return json.loads(resp.read())

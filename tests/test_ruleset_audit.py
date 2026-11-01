@@ -28,7 +28,11 @@ def _api(repos: dict[str, dict]):
         repo = repos[name]
         if path.endswith("/rules/branches/main"):
             return repo["rules"]
-        return {"archived": repo.get("archived", False), "default_branch": "main", "allow_auto_merge": repo.get("auto", True)}
+        return {
+            "archived": repo.get("archived", False),
+            "default_branch": "main",
+            "allow_auto_merge": repo.get("auto", True),
+        }
 
     get.calls = calls  # type: ignore[attr-defined]
     return get
