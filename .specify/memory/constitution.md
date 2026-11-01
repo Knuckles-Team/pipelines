@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.2.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
+**Version**: 1.3.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
 
 ## Core Principles
 
@@ -89,8 +89,8 @@ Gates:
 
 <!-- generated:begin constitution hooks: spec-standard, ste-staged, ste-census, ste-staleness-census -->
 - `spec-standard`: Spec standard - names, file set, title, index
-- `ste-staged`: EG-STE-Lite - staged or CI docs, diff-scoped
-- `ste-census`: EG-STE-Lite census - every in-scope doc, enforced
+- `ste-staged`: STE-Lite - staged or CI docs, diff-scoped
+- `ste-census`: STE-Lite census - every in-scope doc, enforced
 - `ste-staleness-census`: Doc staleness census - every in-scope doc, enforced
 <!-- generated:end -->
 
@@ -198,7 +198,9 @@ Standards and tests:
 
 A connector reaches its external system only through the SDK. It depends on the SDK alone. It serves one tool per API operation and serves skills, prompts and resources the fastmcp way. Callers reach a connector through arbora.
 
-*Rationale*: One transport, auth and TLS implementation serves every connector. Condensed action tools hide operations from callers and from the audit.
+Every transport of a connector or server, such as stdio and HTTP, uses one wiring path. The same actor, entitlement and policy path serves each transport. The transport only supplies the credential. Running without authentication on a local loopback or stdio deployment is a supported mode. A destructive operation stays protected in that mode. When the client cannot prompt, the operation must require explicit confirmation through a documented parameter. A server never skips that check. A server never fails the connection in place of refusing the call.
+
+*Rationale*: One transport, auth and TLS implementation serves every connector. Condensed action tools hide operations from callers and from the audit. A second wiring path per transport lets policy differ between transports.
 
 **Enforced by:**
 
@@ -219,7 +221,7 @@ Standards and tests:
 - The connector scaffold of the `mcp-builder` skill in `universal-skills`: tools, sources, ontology, prompts, skills and tests.
 - `tests/hooks/test_connector_name.py`, `tests/hooks/test_connector_surface.py`, `tests/hooks/test_connector_graphql.py`, `tests/hooks/test_sdk_conformance.py`.
 
-**Plan check:** Does the connector depend on the SDK alone, serve one tool per operation, and get called only through arbora?
+**Plan check:** Does the connector depend on the SDK alone, serve one tool per operation, get called only through arbora, and give every transport one wiring path?
 
 ### X. Every ontology class rolls up to the core
 
@@ -601,6 +603,31 @@ Standards and tests:
 
 **Plan check:** Does the change keep one responsibility per unit, add no dependency cycle and compile only the units it touches and their dependents?
 
+### XXVI. Defects are reproduced, fixed at the root and proved over the real protocol
+
+A defect is reproduced first, over the real protocol. A fix counts only when a real client over the real transport demonstrates it. Simulated dependencies are allowed where needed. Reading code is not proof. An error carries its type and message, with secrets redacted. An error that hides its cause is a defect. A shared or platform defect is fixed in the shared SDK first, and then consumers raise their floors. Every fix ships a regression test over the real transport, bound to its spec row. Platform support requires a passing job on that real platform, such as a Windows runner. A monkeypatched platform test does not count.
+
+*Rationale*: A fix proved only by reading code often misses the failing path. A fix in one consumer leaves every other consumer broken.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: swallowed-errors, spec-trailers, spec-bind-suggest, tests-fast -->
+- `swallowed-errors`: Swallowed errors - no cause-dropping handler added
+- `spec-trailers`: Spec trailers - verified delivery or constrained evidence withdrawal
+- `spec-bind-suggest`: Spec bind suggest - rank existing tests that may verify a SPECIFIED or LANDED row (read-only)
+- `tests-fast`: Fast tests - only the tests the pushed diff affects (120 s cap)
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): the `Spec:` trailer and bound test rules.
+- [CI standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ci-standard.md): a platform claim needs a job on that platform.
+- `tests/hooks/test_code.py`, `tests/hooks/test_spec_trailers.py`.
+
+**Plan check:** Does the plan reproduce the defect over the real protocol, fix it in the shared SDK when shared, and bind a real-transport regression test to the row?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -662,6 +689,7 @@ Every contributor and agent works in isolation:
 - Never stash and never force-push in a shared checkout.
 - Stage explicit paths only. Never stage a whole tree.
 - Hooks always run. Never bypass them.
+- Remove every worktree and temporary checkout when the pull request or spec delivery completes. A leftover worktree is a defect.
 - One pull request per change, with auto-merge armed once the checks are green.
 
 ## Governance
@@ -673,4 +701,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.2.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-10-31
+**Version**: 1.3.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01

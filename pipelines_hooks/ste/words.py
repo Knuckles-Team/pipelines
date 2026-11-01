@@ -1,4 +1,4 @@
-"""EG-STE-Lite wordlist: the machine-readable half of the standard.
+"""STE-Lite wordlist: the machine-readable half of the standard.
 
 The TOML file next to this module is package data: it travels with the
 installed wheel, and a missing or malformed file is a broken installation

@@ -1,4 +1,4 @@
-"""ste-staged: staged docs and CLI strings bring no new EG-STE-Lite violation.
+"""ste-staged: staged docs and CLI strings bring no new STE-Lite violation.
 
 Local runs compare the staged index with HEAD; CI compares its commit range.
 Diff-scoped: findings already present at the base are not re-reported when the

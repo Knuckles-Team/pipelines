@@ -1,4 +1,4 @@
-"""ste gates: EG-STE-Lite language and staleness rules over docs and CLI strings.
+"""ste gates: STE-Lite language and staleness rules over docs and CLI strings.
 
 Each test plants the exact finding a rule names, proves the gate reports it
 (exit 1) or stays silent and advisory-only (exit 0), and proves the clean

@@ -337,16 +337,16 @@
   language: python
   pass_filenames: false
   always_run: true
-# --- documentation standard (EG-STE-Lite) ----------------------------------
+# --- documentation standard (STE-Lite) ----------------------------------
 - id: ste-staged
-  name: "DEPRECATED (ste-staged): EG-STE-Lite - staged or CI docs, diff-scoped"
+  name: "DEPRECATED (ste-staged): STE-Lite - staged or CI docs, diff-scoped"
   entry: pipelines-hook ste-staged
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: ste-census
-  name: "DEPRECATED (ste-census): EG-STE-Lite census - every in-scope doc, enforced"
+  name: "DEPRECATED (ste-census): STE-Lite census - every in-scope doc, enforced"
   entry: pipelines-hook ste-census
   language: python
   pass_filenames: false
