@@ -64,7 +64,7 @@ A requirement states what this platform must do, in this platform's terms.
 - A requirement must not define itself by comparison, such as "like X" or "parity with X".
 - A requirement may name an open protocol, format, or standard that the platform implements.
 - A connector requirement names the one external system it integrates. No other spec names that system.
-- Spec content is self-contained. A spec row must not reference third-party products, systems, papers, or repositories as inspiration, analysis, or comparator — no product or system names, no "surveyed/comparator/inspired-by" framing, no paper or arXiv citations in rows or in plan References sections. External names may appear only where the row is about integration support, interop, or use of that product's API/protocol (for example a connector for an external service, a git-compatible export, or an arXiv API source type). Comparative analysis, research grounding, and source records (with digests) live outside the repository, never in its `specs/` tree.
+- Spec content is self-contained. A spec row must not reference third-party products, systems, papers, or repositories as inspiration, analysis, or comparator — no product or system names, no "surveyed/comparator/inspired-by" framing, no paper or arXiv citations in rows or in plan References sections. External names may appear only where the row is about integration support, interop, or use of that product's API/protocol (for example a connector for an external service, a git-compatible export, or an arXiv API source type). Comparative analysis and research grounding live in the owning spec's `research.md` (see "Research"), stated as capabilities and techniques. Source records with digests live outside the repository, never in its `specs/` tree.
 - A value taken from a paper is a starting default. A measurement on this platform replaces it.
 
 A rollup must include a wiring row and a hot-path proof row. The wiring row names the production call site as `file:line`. The hot-path proof row is an integration test that enters at the real entry point and observes the effect through the wired call site. A unit test of a function that no production caller reaches does not prove a rollup.
@@ -181,6 +181,25 @@ A behaviour row holds enough text to implement without an assumption. Each activ
 ## Requirements checklist
 
 Before a spec lands its author fills `checklists/requirements.md` from `.specify/templates/checklist-template.md`. An unchecked item is a finding.
+
+## Research
+
+Research that feeds a feature goes in the owning spec's `research.md`, never in a private notes tree.
+
+- It describes capabilities and techniques only. It names no external project, product or vendor.
+- It records each decision with its rationale and the alternatives that were rejected, in this platform's terms.
+- Assessments of other systems become a capability comparison with no names.
+- Once the research lands, the spec, plan and tasks follow in the same change, wired to production. The Complete rows rules apply.
+
+*Why*: a spec-kit research file already exists for this, and a private location is invisible to the next implementer. *Gate*: `spec-standard` (Optional artifacts and Third-party names).
+
+## Commit trailers
+
+Git reads trailers only from the last paragraph of a commit message. Put `Spec: <ID>` directly above the `Co-Authored-By:` line, with no blank line between them. A blank line between them leaves no `Spec:` trailer and the `spec-trailers` gate fails. Every lane brief repeats this rule. *Gate*: `spec-trailers`.
+
+## Registries keyed on spec directories
+
+A page, explorer model, index or dashboard that maps by spec directory name changes in the same pull request that adds, renames or removes a spec directory. A new directory with no entry fails the page build after the merge and blocks later changes to that page. *Gate*: the explorer-spec-families check (`PIPE-GATES-R061`) fails when a spec directory has no node in the architecture model.
 
 ## Rows
 
