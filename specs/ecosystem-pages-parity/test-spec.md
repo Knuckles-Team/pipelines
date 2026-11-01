@@ -427,3 +427,46 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R046 | PIPE-PAGES-R046 | Test: `tests/test_architecture_explorer.py::test_section_panel_counts_own_rows_and_shares_fade`. |
 | T-PIPE-PAGES-R047 | PIPE-PAGES-R047 | Test: `tests/test_architecture_explorer.py::test_edges_carry_type_rows_and_legend`. |
 | T-PIPE-PAGES-R048 | PIPE-PAGES-R048 | `tests/test_architecture_explorer.py::test_code_view_reclusters_only_changed_items_and_links_rows`. |
+| T-PIPE-PAGES-R053 | PIPE-PAGES-R053 | The rollup is the minimum state of its children. |
+| T-PIPE-PAGES-R053.1 | PIPE-PAGES-R053.1 | Test: `tests/test_canopy_drawer.py::test_row_drawer_model_has_excerpts_tasks_checklist_and_unblocks`. Add `RowDrawer` to `scripts/architecture_explorer/details.py`. |
+| T-PIPE-PAGES-R053.2 | PIPE-PAGES-R053.2 | Test: `tests/test_canopy_drawer.py::test_excerpts_hold_only_paragraphs_that_name_the_row`. Build each excerpt from the paragraphs that name the row ID. |
+| T-PIPE-PAGES-R053.3 | PIPE-PAGES-R053.3 | Test: `tests/test_canopy_drawer.py::test_a_row_click_opens_the_drawer_and_sets_the_row_hash`. Add `renderDrawer(id)` to the page. |
+| T-PIPE-PAGES-R053.4 | PIPE-PAGES-R053.4 | Test: `tests/test_canopy_drawer.py::test_missing_row_and_failed_family_load_are_reported_in_the_drawer`. A row ID with no detail entry shows `Row not found` in the drawer and keeps the map. |
+| T-PIPE-PAGES-R053.5 | PIPE-PAGES-R053.5 | Test: `tests/test_canopy_drawer.py::test_drawer_lists_exact_paths_and_evidence_links`. The drawer shows the exact file path of each linked artifact and a link to it on the default branch. |
+| T-PIPE-PAGES-R053.6 | PIPE-PAGES-R053.6 | Test: `tests/test_canopy_drawer.py::test_the_drawer_opens_in_a_browser_with_tasks_and_unblocks`. Use entry point `build.py` `main`, then open the page in a headless browser and click a row. |
+| T-PIPE-PAGES-R054 | PIPE-PAGES-R054 | The rollup is the minimum state of its children. |
+| T-PIPE-PAGES-R054.1 | PIPE-PAGES-R054.1 | Test: `tests/test_canopy_modes.py::test_sdd_phase_enum_orders_six_phases`. Add `SddPhase` to `scripts/architecture_explorer/sdd.py`. |
+| T-PIPE-PAGES-R054.2 | PIPE-PAGES-R054.2 | Test: `tests/test_canopy_modes.py::test_each_phase_predicate_holds_only_on_its_artifacts`. Define the predicates over the family artifacts. |
+| T-PIPE-PAGES-R054.3 | PIPE-PAGES-R054.3 | Test: `tests/test_canopy_modes.py::test_mode_switch_changes_node_style_without_moving_nodes`. Add a mode switch to the toolbar: five buttons in one `role="group"` with `aria-pressed`. |
+| T-PIPE-PAGES-R054.4 | PIPE-PAGES-R054.4 | Test: `tests/test_canopy_modes.py::test_empty_nodes_stay_neutral_and_unknown_mode_falls_back`. A node with no own rows keeps the neutral style in every mode and shows `no own rows` in its label. |
+| T-PIPE-PAGES-R054.5 | PIPE-PAGES-R054.5 | Test: `tests/test_canopy_modes.py::test_dependency_edges_match_the_next_up_prerequisites`. Dependency mode draws one edge per prerequisite pair between nodes. |
+| T-PIPE-PAGES-R054.6 | PIPE-PAGES-R054.6 | Test: `tests/test_canopy_modes.py::test_sdd_mode_legend_counts_match_the_computed_phases_in_a_browser`. Use entry point `build.py` `main` on a fixture with four spec families, one per phase. |
+| T-PIPE-PAGES-R055 | PIPE-PAGES-R055 | The rollup is the minimum state of its children. |
+| T-PIPE-PAGES-R055.1 | PIPE-PAGES-R055.1 | Test: `tests/test_canopy_filters.py::test_next_step_maps_phase_and_state_to_one_chip`. Add `next_step(row, card)` to `scripts/architecture_explorer/sdd.py`. |
+| T-PIPE-PAGES-R055.2 | PIPE-PAGES-R055.2 | Test: `tests/test_canopy_filters.py::test_chip_rules_follow_the_documented_order`. Define the chips. |
+| T-PIPE-PAGES-R055.3 | PIPE-PAGES-R055.3 | Test: `tests/test_canopy_filters.py::test_chips_combine_with_status_and_release_filters`. Add a chip group `Next step` to the panel filter bar. |
+| T-PIPE-PAGES-R055.4 | PIPE-PAGES-R055.4 | Test: `tests/test_canopy_filters.py::test_empty_chips_are_disabled_and_unknown_names_are_ignored`. A chip with zero matching rows stays visible, is disabled, and shows `0`. |
+| T-PIPE-PAGES-R055.5 | PIPE-PAGES-R055.5 | Test: `tests/test_canopy_filters.py::test_chip_counts_and_export_next_step_agree`. Each chip shows its row count and a title attribute with its rule in plain words. |
+| T-PIPE-PAGES-R055.6 | PIPE-PAGES-R055.6 | Test: `tests/test_canopy_filters.py::test_the_ready_filter_lists_only_next_up_rows_in_a_browser`. Use entry point `build.py` `main` on a fixture with one row per chip. |
+| T-PIPE-PAGES-R056 | PIPE-PAGES-R056 | The rollup is the minimum state of its children. |
+| T-PIPE-PAGES-R056.1 | PIPE-PAGES-R056.1 | Test: `tests/test_canopy_releases.py::test_phase_line_in_plan_wins_over_release_phase_and_part_progress_counts`. Add `part_progress` to `release_view` in `scripts/architecture_explorer/releases.py:55`. |
+| T-PIPE-PAGES-R056.2 | PIPE-PAGES-R056.2 | Test: `tests/test_canopy_releases.py::test_selecting_a_release_dims_other_nodes_and_shows_part_progress`. Selecting a release highlights the nodes that own scoped rows and dims the others. |
+| T-PIPE-PAGES-R056.3 | PIPE-PAGES-R056.3 | Test: `tests/test_canopy_releases.py::test_github_mode_refuses_a_missing_releases_directory`. The organization workflow must check out `releases/` from the generator repository. |
+| T-PIPE-PAGES-R056.4 | PIPE-PAGES-R056.4 | Test: `tests/test_canopy_releases.py::test_empty_state_explains_manifests_and_bad_phase_fails_the_build`. When no manifest loads in a local build, the Releases view shows an empty state. |
+| T-PIPE-PAGES-R056.5 | PIPE-PAGES-R056.5 | Test: `tests/test_canopy_releases.py::test_release_card_links_manifest_and_unscheduled_count_matches_rows`. Each release card links its manifest file on the default branch and lists its scoped rows per part with progress. |
+| T-PIPE-PAGES-R056.6 | PIPE-PAGES-R056.6 | Test: `tests/test_canopy_releases.py::test_release_hash_filters_the_map_in_a_browser`. Use entry point `build.py` `main` with `--mode github` against a fixture that has two manifests. |
+| T-PIPE-PAGES-R057 | PIPE-PAGES-R057 | The rollup is the minimum state of its children. |
+| T-PIPE-PAGES-R057.1 | PIPE-PAGES-R057.1 | Test: `tests/test_canopy_export.py::test_export_row_carries_every_present_artifact_path`. Add `ExportRow` and `ViewSpec` dataclasses in new `scripts/architecture_explorer/export.py`. |
+| T-PIPE-PAGES-R057.2 | PIPE-PAGES-R057.2 | Test: `tests/test_canopy_export.py::test_hash_round_trips_row_part_mode_filter_release`. Extend `parseHash` and `hashFor` in `scripts/architecture_explorer/search.cjs:13` and `:34` with the keys `row`, `part`, `mode`, `filter` and `release`. |
+| T-PIPE-PAGES-R057.3 | PIPE-PAGES-R057.3 | Test: `tests/test_canopy_export.py::test_a_build_writes_rows_json_and_markdown_beside_the_page`. Write `export/rows.json` and `export/rows.md` beside the page for the whole row set. |
+| T-PIPE-PAGES-R057.4 | PIPE-PAGES-R057.4 | Test: `tests/test_canopy_export.py::test_unknown_view_values_are_refused_and_unsafe_paths_fail_the_build`. An unknown mode, filter or release in the hash leaves the view unchanged and says so in the live status region. |
+| T-PIPE-PAGES-R057.5 | PIPE-PAGES-R057.5 | Test: `tests/test_canopy_export.py::test_export_header_digest_is_stable_and_markdown_lists_paths`. Each export starts with a header: schema version `1`, `built_at`, the head commit of each repository, the row count, the applied view, and a sha256 digest of the row list. |
+| T-PIPE-PAGES-R057.6 | PIPE-PAGES-R057.6 | Test: `tests/test_canopy_export.py::test_a_hash_restores_the_view_and_the_export_paths_exist`. Use entry point `build.py` through `main`, then load the page with a hash in a headless browser. |
+| T-PIPE-PAGES-R057.7 | PIPE-PAGES-R057.7 | Test: `tests/test_canopy_export.py::test_page_without_scripts_lists_parts_and_links_exports`. Add a `<noscript>` block to the page template. |
+| T-PIPE-PAGES-R058 | PIPE-PAGES-R058 | The rollup is the minimum state of its children. |
+| T-PIPE-PAGES-R058.1 | PIPE-PAGES-R058.1 | Test: `tests/test_canopy_research.py::test_open_questions_find_markers_and_unchecked_research_items`. Add `open_questions(docs)` to `scripts/architecture_explorer/sdd.py`. |
+| T-PIPE-PAGES-R058.2 | PIPE-PAGES-R058.2 | Test: `tests/test_canopy_research.py::test_counts_follow_the_own_rows_rule_and_zero_shows_no_badge`. A row's count is the questions that name its ID. |
+| T-PIPE-PAGES-R058.3 | PIPE-PAGES-R058.3 | Test: `tests/test_canopy_research.py::test_badges_render_on_node_card_and_row_with_screen_reader_text`. Draw a small count badge on a node in `drawNode` at `template.html:635`. |
+| T-PIPE-PAGES-R058.4 | PIPE-PAGES-R058.4 | Test: `tests/test_canopy_research.py::test_unreadable_research_marks_the_family_without_failing_the_build`. A research file that cannot be decoded gives the family a `research unreadable` marker and counts zero. |
+| T-PIPE-PAGES-R058.5 | PIPE-PAGES-R058.5 | Test: `tests/test_canopy_research.py::test_drawer_and_export_list_the_questions_with_document_and_line`. The drawer of PIPE-PAGES-R053 lists each open question with its document, line and a link. |
+| T-PIPE-PAGES-R058.6 | PIPE-PAGES-R058.6 | Test: `tests/test_canopy_research.py::test_research_badge_and_drawer_list_in_a_browser`. Use entry point `build.py` `main` on a fixture whose `research.md` holds two open items. |

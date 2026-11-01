@@ -1,26 +1,120 @@
-# Architecture — PIPE-PAGES
+# PIPE-PAGES — Implementation plan
 
-## Existing wiring
+Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
+
+## Summary
+
+Canopy becomes the single front end for the spec-driven loop: research, specify, plan, tasks, implement, verify. The interactive diagram stays the base. This plan adds rows PIPE-PAGES-R053 to PIPE-PAGES-R058 for the row drawer, five diagram modes, next-step chips, the releases view, deep links with export, and the research overlay. It extends PIPE-PAGES-R042, PIPE-PAGES-R045, PIPE-PAGES-R051 and PIPE-PAGES-R052. The live caller is `main` in `scripts/architecture_explorer/build.py`, run by the organization site workflow in the `.github` repository. The existing owners are `sdd.py`, `details.py`, `delivery.py`, `releases.py`, `search.cjs` and `template.html`. The status bug that shows UNKNOWN is a different file in the `.github` repository and has its own rows there.
+
+## Technical Context
+
+- **Language/Version**: Python 3.14 for the build, plain browser JavaScript for the page, Node for `search.cjs` tests
+- **Primary Dependencies**: standard library, `networkx` (existing scorer), the layout engine in `package.json`
+- **Storage**: N/A. The build writes static files beside the page.
+- **Testing**: pytest with `tests/test_canopy_*.py`; headless browser tests skip when no browser exists
+- **Target Platform**: static site on GitHub Pages; modern browsers; a script-free fallback
+- **Project Type**: web, generated static site
+- **Performance Goals**: main page grows at most 10 percent per PIPE-PAGES-R051.9; drawer and exports load lazily
+- **Constraints**: no third-party script, no `innerHTML`, no product names, no internal hosts, keyboard access, 4.5 to 1 text contrast
+- **Scale/Scope**: about 9800 rows, 14 repositories, 5 release manifests
+
+## Constitution Check
+
+- I. One owner per concept: pass. `pipelines` owns the page; the `.github` repository owns publishing and the status report.
+- II. Extend before you create: pass. Each row extends a named PIPE-PAGES row; only `export.py` is a new module.
+- III. Specs describe the current state only: pass. Rows state the end state.
+- V. Hard cutover, no legacy path: pass. The `## Delivery phase` heading read is replaced by one line form, not kept beside it.
+- XI. Code stays small, simple and unduplicated: pass. One `export.py`; the drawer reuses `family_detail`.
+- XII. No ratchets and no suppressions: pass. No baseline is added.
+- XXI. Public files stay portable and neutral: pass. No host, product or private path appears.
+- XXIV. Specifications are complete enough to implement without assumptions: pass. Every task below names files, function, test and tier.
+
+## Project Structure
+
+```
+scripts/architecture_explorer/
+  export.py        new: ExportRow, ViewSpec, write_export
+  sdd.py           existing: SddPhase, sdd_phase, next_step, open_questions, phase_of
+  details.py       existing: RowDrawer excerpts in family_detail
+  delivery.py      existing: aggregate returns dependents
+  releases.py      existing: part_progress, manifest path, strict load
+  build.py         existing: wires export, deps, entry fields
+  search.cjs       existing: new hash keys
+  template.html    existing: drawer, modes, chips, badges, noscript block
+tests/test_canopy_export.py    new
+tests/test_canopy_drawer.py    new
+tests/test_canopy_modes.py     new
+tests/test_canopy_filters.py   new
+tests/test_canopy_releases.py  new
+tests/test_canopy_research.py  new
+pipelines_hooks/specs/priority.py          existing: dependents made public
+pipelines_hooks/specs/plan_conformance.py  existing after pull request 419: check_plan_text wrapper
+```
+
+## Phase 0: Research
+
+- **Script policy.** The Canopy page already needs scripts for its canvas map. PIPE-PAGES-R013.4 covers only the package diagrams of the spec-delivery pages and stays true. Resolution: the interactive layer degrades to a `<noscript>` part list and static export files (PIPE-PAGES-R057.7).
+- **Phase declaration.** PIPE-PAGES-R051.3 reads a `## Delivery phase` heading. The plan template forbids extra level-two headings. Resolution: one line `Delivery phase: P<n>` in `plan.md` (PIPE-PAGES-R056.1).
+- **Empty releases.** The published page lists no bundles because the site workflow does not check out `releases/`. Resolution: a workflow row in the `.github` repository (see Cross-repo seams).
+- **Priority edges.** Next up uses `Depends-on` edges. `aggregate` keeps only counts. Resolution: return a `dependents` map (PIPE-PAGES-R053.1).
+- **Plan check on fetched text.** `check_plan` needs a checkout. Resolution: a public text wrapper once pull request 419 merges (PIPE-PAGES-R054.2).
+
+The findings are in [research.md](research.md).
+
+## Phase 1: Design
+
+The design is four shared pieces. All other rows consume them.
+
+### View state and export
+
+A view is `mode`, `filters`, `release`, `part` and `row`. The hash grammar is `#mode=<architecture|delivery|sdd|priority|dependency>&filter=<research,plan,ready,verify>&release=<id>&part=<id>&row=<ID>`. `part` is an alias of `node`. The export writes the same view as `export/rows.json` and `export/rows.md`. Each row lists exact repository-relative paths for requirements, spec, plan, tasks, test-spec, research and checklists.
+
+### SDD phase predicates
+
+| Phase | Predicate over the family artifacts |
+|---|---|
+| specified | `spec.md` exists |
+| research-done | no open clarification marker in any family document; no unchecked item under an open-questions heading in `research.md` |
+| plan-accepted | `plan.md` passes the plan-conformance gate |
+| tasks-ready | every active non-rollup row ID appears in a `tasks.md` line |
+| implementing | tasks-ready and one row is LANDED or one task line is checked |
+| verified | every non-retired row is VERIFIED |
+
+A family has the highest phase whose predicate and all lower predicates hold. Rows inherit the family phase. The next-step chips derive from phase and row state: verify (LANDED), ready (Next up in a tasks-ready or implementing family), plan (research-done), research (specified).
+
+### Modes
+
+One dispatcher `modeStyle(n)` in `template.html` returns fill, ring and badge per mode. Node positions never change. Dependency mode draws one edge per prerequisite pair between nodes from the page key `deps`. Each mode adds a legend entry so color is never the only cue.
+
+### Drawer and overlay
+
+The drawer reads the family detail file lazily. Excerpts are the paragraphs that name the row ID, rendered through the safe subset of PIPE-PAGES-R042.8. Open questions come from `open_questions` and show as counts on nodes, cards and rows. Counts follow the own-rows rule of PIPE-PAGES-R046.
+
+Findings are in [research.md](research.md). Failure modes: an unknown hash value leaves the view unchanged and reports it in the live region. An unreadable document gives an empty excerpt and a marker. A missing releases directory fails the GitHub-mode build.
+
+### Pages parity design (kept)
+
+### Existing wiring
 
 `scripts/sync_mkdocs_theme.py` defines shared assets and check mode. `.github/workflows/pages_pipeline.yml` checks out the caller and immutable workflow revision, validates `content_source`, checks theme assets, builds MkDocs, and publishes. `scripts/check_five_repo_parity.py` and `pages/parity.md` are a snapshot implementation with five fixed names and local-worktree assumptions; migrate their comparison/rendering logic rather than adding a second checker. `tests/test_pages_pipeline_contract.py` and `tests/test_pages_readiness.py` are existing test seams.
 
-## Input and provenance
+### Input and provenance
 
 Use a tracked, schema-validated declaration of public GitHub repositories and full commit IDs. Resolve every declaration to a clean fetched tree at its exact commit, including the pipeline source revision. Fail closed on missing ref, duplicate repository, dirty or untracked overlay, missing asset, or ambiguous content source. Never silently use local `main` or a remembered worktree. Fetch credentials are read-only and scoped to public source; emit no token or machine path.
 
-## Comparison and publication
+### Comparison and publication
 
 Reuse `sync_theme(..., mode="check")` or factor shared asset enumeration used by both workflow and receipt generator. Hash exact asset bytes and record each match/mismatch. Separate deterministic verification data from generation time so repeated exact-input runs match. Publish JSON and a concise HTML/Markdown summary through the existing Pages workflow after verification. Preserve historical receipts by commit link; changing current fleet input does not upgrade old evidence.
 
-## Integration boundary
+### Integration boundary
 
 The generic workflow accepts a versioned declaration or receipt artifact; consumers opt in and pin its SHA. Tests use disposable Git fixtures or fetched public commits, never a live cluster. Only theme/navigation promotion consumes parity. The organization entrypoint may link the summary but owns its own site assembly. No new fleet runtime or parallel policy database.
 
-## Failure, compatibility, security, and quality
+### Failure, compatibility, security, and quality
 
 Fetch failure means unverified. Reject traversal, symlink escape, malformed revision, extra declaration fields, and out-of-tree asset names. Keep schema versioned; old local-worktree snapshots remain historical rather than current exact-ref proof. New consumers opt in; removal requires a reviewed declaration change. Use `complexity-staged`/`complexity-census` (CCCC 10/15), `jscpd-differential` plus advisory census, `dupehound-changed`, and `kiss-staged`/`kiss-census` with `.config/kiss.toml`; run workflow YAML and contract tests. Reuse existing parser/theme/Pages wiring to satisfy KISS.
 
-## Source mappings and architecture (PIPE-PAGES-R009, PIPE-PAGES-R012, PIPE-PAGES-R013)
+### Source mappings and architecture (PIPE-PAGES-R009, PIPE-PAGES-R012, PIPE-PAGES-R013)
 
 The production call path is `create_snapshot` -> `enrich_records` -> `read_metadata`.
 `render` -> `current_panels` wires the result to code cells, relationship tables, and component diagrams.
@@ -42,7 +136,7 @@ No generated status, delivery state, or timeline changes belong to this mapping 
 
 R012.20-.25: Source binding authority and exhaustive language/tool inventory; capability ID gate refusing missing/invalid identities.
 
-## Drill-down (PIPE-PAGES-R014)
+### Drill-down (PIPE-PAGES-R014)
 
 Levels: ecosystem (organisation profile README) -> repository (`/<repo>/spec-delivery/`) -> spec (`#spec-<ID>`) -> row (`#req-<ID>`). `ecosystem_components()` returns the R001 list; it adds no second list.
 
@@ -50,11 +144,11 @@ Levels: ecosystem (organisation profile README) -> repository (`/<repo>/spec-del
 - Link check. DECIDED. `check_drilldown_links` fails on any unresolved component link or anchor.
 - Rejected: a hand-kept component list in the README. It repeats the R001 defect.
 
-## Same generator everywhere (PIPE-PAGES-R015)
+### Same generator everywhere (PIPE-PAGES-R015)
 
 The reusable workflow `pages_pipeline.yml` (it already runs `--output site/spec-delivery`) carries all steps. Connector rows PIPE-CONNSPEC-R101 and following, and the caller pattern PIPE-CONNSPEC-R004, are linked by ID and not restated. CONFIRMED. Client repositories adopt through their own callers. DECIDED.
 
-## Spec delivery in the site navigation (PIPE-PAGES-R018)
+### Spec delivery in the site navigation (PIPE-PAGES-R018)
 
 Data flow: `spec_dashboard_enabled` -> `SPEC_DELIVERY_ENABLED` on the Build Docs step -> `extra.spec_delivery` in `templates/mkdocs-theme/base.mkdocs.yml` -> `announce` block in `templates/mkdocs-theme/overrides/main.html` -> link and list on every page.
 
@@ -63,7 +157,7 @@ Data flow: `spec_dashboard_enabled` -> `SPEC_DELIVERY_ENABLED` on the Build Docs
 - Attach point. DECIDED: the `announce` block in `templates/mkdocs-theme/overrides/main.html`, beside the site switcher. The list reuses `extra.ecosystem.sites`, the list the switcher already reads. R018.4 pins its URLs to `REPOS`.
 - Root-relative link. DECIDED: `base_url` resolves from any page depth, so the link needs no host.
 - Rejected: a JavaScript menu built from a generated JSON file. It fails without scripts and adds a second list.
-## Site navigation on the page (PIPE-PAGES-R019)
+### Site navigation on the page (PIPE-PAGES-R019)
 
 Data flow: `ecosystem_components()` (`scripts/spec_dashboard_drilldown.py:17`) feeds `site_nav`, which `render` places before the frame (`scripts/spec_dashboard_render.py:70`). The page must stay a standalone file at `site/spec-delivery/index.html`.
 
@@ -71,7 +165,7 @@ Data flow: `ecosystem_components()` (`scripts/spec_dashboard_drilldown.py:17`) f
 - Decision. The generator must render its own navigation block with relative links. The theme lane adds the matching menu entry on the documentation side. DECIDED.
 - Rejected: rendering the page through MkDocs. The workflow writes the page after the MkDocs build, and the drawing sheet needs its own layout.
 
-## Documentation claims gate (PIPE-PAGES-R020)
+### Documentation claims gate (PIPE-PAGES-R020)
 
 Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `validate` (`pipelines_hooks/docs/public_surface.py:31`) -> `claim_findings` -> findings and exit status.
 
@@ -84,7 +178,7 @@ Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:79
 - Rejected: a hand-kept list of allowed claims. It repeats the drift the gate prevents.
 - Cross-repository. Each consumer repository runs the same hook. No row restates a consumer's own docs.
 
-### Amendment: R020.1–R020.6 typed claims and policy-scoped links (2026-10-26)
+#### Amendment: R020.1–R020.6 typed claims and policy-scoped links (2026-10-26)
 
 The R020.1–R020.6 implementation keeps the claim syntax typed and explicit:
 `path`, `command`, `gate`, `count` and `diagram-node` are the complete kinds;
@@ -98,7 +192,7 @@ relative to their source document while enforcing repository containment.
 Malformed claim comments refuse with their source location; ordinary links
 remain ordinary link findings rather than becoming typed claims.
 
-### Amendment: R020.7–R020.12 located evidence (2026-10-26)
+#### Amendment: R020.7–R020.12 located evidence (2026-10-26)
 
 The R020.7–R020.12 extension adds the shared `LocatedFinding` report-boundary
 contract in `claims.py`: repository-relative source path, positive line, source
@@ -115,7 +209,7 @@ function is available for later skill-grade and test-quality producers without
 introducing a second parser or status store. These children do not claim the
 R020 rollup or unrelated future consumers.
 
-## Test quality gate (PIPE-PAGES-R021)
+### Test quality gate (PIPE-PAGES-R021)
 
 Data flow: `pipelines-hook test-quality` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `scan` in `pipelines_hooks/code/test_quality.py` -> findings, summary line, exit status.
 
@@ -129,7 +223,7 @@ Data flow: `pipelines-hook test-quality` -> `main` (`pipelines_hooks/cli.py:79`)
 
 R021.79-.84: Coverage runner and per-project inventory; closure gate refusing untested paths at any threshold.
 
-## Scheduled mutation testing (PIPE-PAGES-R022)
+### Scheduled mutation testing (PIPE-PAGES-R022)
 
 Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `survivors` in `pipelines_hooks/code/mutation_gaps.py` -> report lines and exit status.
 
@@ -141,7 +235,7 @@ Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipe
 - Rejected: running mutation tests on every commit. The cost exceeds the five-minute gate budget.
 - Cross-repository. None.
 
-## Located evidence (PIPE-PAGES-R020)
+### Located evidence (PIPE-PAGES-R020)
 
 Data flow: public-surface CLI -> validate -> claim resolvers -> located evidence validator -> report and exit status.
 Existing code: `pipelines_hooks/docs/public_surface.py:31` gathers public-surface findings; `pipelines_hooks/docs/public_surface_links.py:29` resolves local paths. `pipelines_hooks/clones/dupehound_report.py:66` validates clone locations and scores for its own format.
@@ -152,7 +246,7 @@ Cross-repository rows: `MEDULLA-ORCH-VOCAB` owns trace storage; this producer ow
 Source credit: the source document “SDD enhanced”, Meristem queue candidate 64. No research citation was supplied.
 Acceptance: implement `tests/hooks/test_public_surface_claims.py`, then run `uv run --frozen python -m pytest tests/hooks/test_public_surface_claims.py -q`. The subprocess tests enter the published CLI and assert exact exit codes and structured findings.
 
-## Component handoff evidence (PIPE-PAGES-R021)
+### Component handoff evidence (PIPE-PAGES-R021)
 
 Data flow: test-quality CLI -> component declaration -> all-static dependency traversal -> runtime boundary/reachability and separate type-only checks -> test receipts -> located findings -> verdict.
 Existing code: `pipelines_hooks/code/import_graph.py:71` builds Python eager-import edges; `pipelines_hooks/code/import_cycles.py:57` runs the current import gate. `pipelines_hooks/kiss/census.py:31` checks per-file limits; its module contract explicitly excludes orphan detection.
@@ -168,7 +262,7 @@ Acceptance: implement `tests/hooks/test_test_quality_hook.py`, then run `uv run 
 
 R021.85-.90: Graph-loaded workflow with durable hydration; Meristem consumer and independent readback acceptance.
 
-## Skill grading (PIPE-PAGES-R023)
+### Skill grading (PIPE-PAGES-R023)
 
 Data flow: skill-grade CLI -> declared skill files -> deterministic criteria -> located evidence -> grade receipt.
 Existing code: `pipelines_hooks/docs/public_surface_links.py:29` checks local link containment. `scripts/readiness/evidence.py:41` proves a skills directory exists; `scripts/skill_graph/au.py:78` extracts skill catalogue data. Neither grades skill quality.
@@ -177,11 +271,11 @@ Attach point: `pipelines_hooks/cli.py:14` and `pipelines_hooks/cli.py:59`, plus 
 Decision: grade declared inputs with a versioned policy, never a model-generated subjective score. Default frontmatter requires nonempty name and description. Description checks require purpose and use-condition fields in the policy's declared form. Body sections are Usage and Examples by default. Metadata checks UTF-8 readability, a regular file, and no escaping symlink. Each criterion is binary at its declared weight; a policy replacement must name its version and predicates.
 Link resolution: derive the base from the source document directory within the repository. Decode and normalize local destinations, resolve symlinks, then enforce repository containment. Parent-relative links may reach another repository directory. Never substitute the skill directory for the containment root or resolve all skill links from the repository root. Preserve root README/AGENTS behavior.
 Rejected: treating directory presence or catalogue extraction as quality evidence. Grade receipts bind inputs and policy, while installation and admission remain with the host.
-Cross-repository rows: `MEDULLA-TYPED-PACKS` owns skill contracts; `ARBORA-FLEET-R034` owns admission. This gate emits evidence and does not approve a skill.
+Cross-repository rows: `MEDULLA-TYPED-PACKS` owns skill contracts; the arbora fleet spec owns admission. This gate emits evidence and does not approve a skill.
 Source credit: the source document “Code enhancement skill rule”, Meristem queue candidate 63. No research citation was supplied.
 Acceptance: implement `tests/hooks/test_skill_grade_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_skill_grade_hook.py -q`. Invoke the published CLI on valid and adversarial skill fixtures and assert every criterion and exit code. `test_nested_skill_links_cli` uses `skills/demo/SKILL.md` with a sibling `guide.md` and an in-repository parent link; both pass. Missing targets, decoded traversal outside the repository and symlink escape fail with located evidence. A root README fixture retains the existing resolution behavior.
 
-## Similarity guidance (PIPE-PAGES-R024)
+### Similarity guidance (PIPE-PAGES-R024)
 
 Data flow: changed-source CLI -> pinned structural scanner -> validated clone report -> diagnostic and enforcement partitions -> reviewed-distinct register -> located guidance.
 Existing code: `pipelines_hooks/clones/dupehound.py:64` constructs the scanner command; `pipelines_hooks/clones/dupehound_report.py:66` validates findings; `pipelines_hooks/clones/dupehound_gate.py:28` enforces the reviewed register. `pipelines_hooks/clones/contract.py:14` sets 0.85 and the shared contract retains token minima and exclusions.
@@ -193,7 +287,7 @@ Cross-repository rows: none added; consumers retain the same hook ID and publish
 Source credit: `open-source-libraries/kiss/README.md`, Meristem queue candidate 66, informs the user need for similarity and extraction guidance. No arXiv citation was supplied. The design reuses this repository's existing scanner contract.
 Acceptance: implement `tests/hooks/test_similarity_guidance_hook.py`, then run `uv run --frozen python -m pytest tests/hooks/test_similarity_guidance_hook.py -q`. The integration test invokes the pinned scanner through the CLI; scanner absence cannot satisfy it. No native scanner build is required for this specification change.
 
-## Meaningful outcome assertions (PIPE-PAGES-R021)
+### Meaningful outcome assertions (PIPE-PAGES-R021)
 
 Data flow: test-quality CLI -> declared outcome contracts -> static screening -> isolated baseline/counterexample runs -> bound assertion receipts -> located findings and verdict.
 Existing code: `pipelines_hooks/code/no_stub.py:62` scans production placeholders and explicitly skips tests. `pipelines_hooks/cli.py:59` dispatches gates and maps `CannotRun` to exit 2. `.config/pre-commit.yaml:30` already runs the locked test command at pre-push/manual stages. Source searches for assertion, observed outcome, test-quality and outcome proof found no existing semantic assertion checker.
@@ -208,7 +302,7 @@ Source credit: the source document identified by audit candidate PIPE:14, “Bra
 Acceptance: implement `tests/hooks/test_test_quality_outcomes.py`, then run `uv run --frozen python -m pytest tests/hooks/test_test_quality_outcomes.py -q`. Its subprocess fixture enters `pipelines-hook test-quality`, invokes the configured real test runner and observes return/error/file-state proof. Include an ignored result, unrelated assertion, constant assertion, skipped parameter case and counterexample setup error. Assert located evidence and exit codes, not merely report-string presence.
 
 
-## Changelog claims and grammar (PIPE-PAGES-R020)
+### Changelog claims and grammar (PIPE-PAGES-R020)
 
 Data flow: changelog CLI/shared hook -> one Git snapshot -> declared changelog policy and file -> bounded Markdown grammar -> located release/category/link evidence -> verdict.
 Existing code: `pipelines_hooks/docs/public_surface.py:31` checks README/AGENTS links and quick starts; it does not parse changelog releases. `pipelines_hooks/docs/public_surface_constants.py:7` supplies heading patterns, not a release grammar. `pipelines_hooks/core/config.py:21`, `pipelines_hooks/core/comparison.py:53` and `pipelines_hooks/core/gitenv.py:81` provide configuration, snapshot and blob seams. Source searches for changelog, release notes and dated version found no checker. No current tracked changelog convention is assumed from that absence.
@@ -224,47 +318,47 @@ Cross-repository rows: none. Consumers supply their policy and opt into the shar
 Source credit: the exact ledger record for audit candidate PIPE:19 identifies source task “Brain tasks b097dc10” and the dated/categorized/linked changelog requirement. The original task document was unavailable and was not read. No research citation appears in the record. Candidate lineage and its record digest remain in the audit ledger. This plan states the complete local grammar without relying on an external guide.
 Acceptance: implement `tests/hooks/test_changelog_gate.py`, then run `uv run --frozen python -m pytest tests/hooks/test_changelog_gate.py -q`. Invoke both the installed CLI dispatcher and published hook on disposable Git fixtures. Cover valid release types, oldest-release and Unreleased links, independently malformed date/version/category/link, missing file, misplaced entries, duplicate definitions, code-fence examples and parser-limit refusal. In a fresh real Git fixture, stage a title and only an empty Unreleased section. Both CLI and installed hook must exit 2 with `missing-release-anchor` at that heading and no invented endpoints. Adding a guessed comparison URL must not repair the refusal. Stage the first valid dated release and both required links; both entry points must then exit 0. Keep network access unavailable for every step. Assert exact exit codes, line evidence, snapshot isolation and unchanged files. Network access must be unavailable throughout.
 
-## Validation synthesis across existing rollups
+### Validation synthesis across existing rollups
 
 Data flow: configured pre-commit or pipelines-hook CLI -> one declared Git snapshot and policy -> real bounded analyzer adapters -> located typed pass/fail/skip report -> deterministic grading/health summary -> exit status and optional JSON/Markdown export.
 Existing code versus missing wiring: cli.py:13/59 dispatches existing gates; core/config.py:91 currently reads worktree TOML and needs a snapshot-reader seam. docs/public_surface.py:31 checks links/quick starts, code/env_sprawl.py:scan checks literal-read placement, supply_chain/gate.py:58 gathers specific supply findings, and complexity/census.py:main invokes its scanner. None establishes the new complete inventory, combined lint/type, template provenance, external grading or shared report contracts. Preserve those existing implementations and adapt their structured measurements. New code/modules named below are proposed, not present.
 Shared decisions: run checks from a materialized disposable index or committed tree and pass its identity to every adapter; never mix unstaged policy with staged source. Strict configuration sections are added to core/config.py:21. Each new gate is published in .pre-commit-hooks.yaml, the hook catalogue and .config/pre-commit.yaml, then consumed by .github/workflows/ci.yml:86. No runtime application or release orchestrator is introduced. Required unchecked work yields exit 2 before any exit 1; a complete report with required findings exits 1, otherwise 0. Existing individual-gate behavior is preserved.
 
-### PIPE:7: env documentation (R020.19–24)
+#### PIPE:7: env documentation (R020.19–24)
 
 Runtime environment inventory: default Python support covers tracked first-party package, entrypoint and test roots explicitly declared by policy; central providers supply versioned finite manifests bound to their source digest. Resolve import aliases and wrapper adapters, and report every unresolved environment access. A dynamic name is not documented merely because one observed execution returned a known key. Example files use a declared comment schema for purpose/requiredness/default and assignment for name/value; README uses the same four columns in a declared table. Missing defaults are represented explicitly, not inferred from an empty assignment. New environment-documentation code is absent; existing env-sprawl only checks placement of literal reads. MCP/launcher JSON is a required third consumer surface whenever tracked launcher configurations are declared or discovered. Model launcher identity, applicable runtime-variable closure, JSON pointers and a pinned binding-dialect adapter. Each applicable variable needs a binding matching its safe default and required/sourced semantics. Reconcile discovered and declared launchers so omitted configuration cannot pass. Literal values and references use the dialect's explicit semantics; JSON itself is not assumed to expand shell placeholders. Unsupported dynamic substitution refuses without executing or expanding secrets. Requiredness and purpose remain contract metadata if the launcher format has no native fields; do not inject unsupported keys into MCP JSON. Evidence binds each pointer and source line to the checked consumer digest. A real staged fixture independently removes/renames a binding, changes default/requiredness, corrupts/deletes the JSON file and repairs it; both CLI and pre-commit fail then pass. An unstaged repair cannot hide drift. Deployment examples remain outside this six-input batch.
 Acceptance: implement `tests/hooks/test_env_documentation.py` and run `uv run --frozen python -m pytest tests/hooks/test_env_documentation.py -q`. Its CLI fixture uses a real Git repository and the published configured pre-commit entry, asserts exact exit status and located evidence, and denies network access. Model/parser tests alone do not close the integration row.
 
-### PIPE:13: config inventory (R020.25–30)
+#### PIPE:13: config inventory (R020.25–30)
 
 Standard configuration inventory: canonical locations are policy data, not legacy root filenames. Default roles map to .config/bumpversion.cfg, .config/pre-commit.yaml and pyproject.toml, with pytest in tool.pytest.ini_options; an explicit pytest.ini adapter is also valid. One file may satisfy metadata and pytest only if both schemas pass. Enumerate nested project roots using supported manifest discovery and reconcile with declared inventory; repository consumers invoke this once per registered repository, never silently omit a project. The bump role reuses the canonical configuration and does not duplicate PIPE-RELEASE-R006 version consistency. Rendering replaces only template-owned sections in newly created output; arbitrary existing files require review outside the gate. Source historical template paths are migration inputs, not new canonical locations.
 Acceptance: implement `tests/hooks/test_config_inventory.py` and run `uv run --frozen python -m pytest tests/hooks/test_config_inventory.py -q`. Its CLI fixture uses a real Git repository and the published configured pre-commit entry, asserts exact exit status and located evidence, and denies network access. Model/parser tests alone do not close the integration row.
 
-### AU:124: validation report (R020.31–36)
+#### AU:124: validation report (R020.31–36)
 
 Serializable reports: use a strict validated Pydantic model and add its pinned dependency through the repository lock; cross-process consumers depend on the versioned serialized schema rather than an in-memory object. A repository/category/test hierarchy retains all failure diagnostics up to declared limits; exceeding limits yields cannot-run with truncation metadata, never a complete receipt. Defaults: 10 MiB JSON, 100000 records, 64 KiB redacted diagnostics per result, positive bounded configurable caps. Canonical ordering is repository, category, analyzer/test ID, rule, path, line. JSON object key order is canonical; evidence digest excludes elapsed duration so stable measurements remain reproducible. Export only to explicit caller destinations; checking otherwise leaves the repository unchanged. Consumers plan repairs from this report but acquire no automatic mutation authority. The repository-validation producer calls the same structured lint_type.analyze runner used by lint-type and exports lint, import-order and type as explicit required report categories, including all rule IDs and reasons. JSON/Markdown round-trip acceptance observes each real phase failure through that aggregate entry point, not through a separate standalone run.
 Acceptance: implement `tests/hooks/test_validation_report.py` and run `uv run --frozen python -m pytest tests/hooks/test_validation_report.py -q`. Its CLI fixture uses a real Git repository and the published configured pre-commit entry, asserts exact exit status and located evidence, and denies network access. Model/parser tests alone do not close the integration row.
 
-### PIPE:8: lint type policy (R021.19–24)
+#### PIPE:8: lint type policy (R021.19–24)
 
 Lint/import/type policy: the default Python profile requires explicit immutable tool versions in the consumer lock and a reviewed versioned rule selection. The default Ruff lint selection is E4, E7, E9, F and W, with I for the separate import-order phase; mypy runs strict checking without ignored errors or missing-import bypass. The initial supported profile is Python, not an implicit claim of every language. Every discovered first-party source language must have a declared supported adapter or the invocation refuses. External vendored dependencies and generated outputs require provenance-bound classification outside first-party roots; a path exclusion cannot hide first-party debt. All suppression mechanisms accepted by the pinned adapter version must be inspected; an unsupported option refuses. Initial budgets are 120 seconds and 10 MiB output per phase. The no-exceptions clause remains absolute within this profile and does not rewrite the accepted prose policy or existing scanner thresholds.
 Acceptance: implement `tests/hooks/test_lint_type_policy.py` and run `uv run --frozen python -m pytest tests/hooks/test_lint_type_policy.py -q`. Its CLI fixture uses a real Git repository and the published configured pre-commit entry, asserts exact exit status and located evidence, and denies network access. Model/parser tests alone do not close the integration row.
 
-### AU:119: analyzer health (R021.25–30)
+#### AU:119: analyzer health (R021.25–30)
 
 Combined health policy: only the five health categories participate in scoring. Lint, import-order and type are additional required report categories, unscored but included in verdicts and fix priority. repository_validation.main calls lint_type.analyze once with the identical snapshot/policy; malformed or missing phase results refuse, findings fail regardless of health score. The real aggregate fixture isolates and repairs each code phase, proving exit 1 at unchanged health and exit 0 after repair with all other required checks complete. Default equal positive category weights are 1; zero or negative weights refuse. Within each category, penalty is min(100, sum of unique finding penalties), with critical/high/medium/low penalties 100/25/10/2. Priority severity order is critical, high, medium, low. Category health is 100 minus penalty; overall health is the floor of the weighted mean. A complete report with no findings scores 100. This is a declared local summary rule, not a claim to reproduce another product. A missing category leaves score null rather than renormalizing weights. Required findings still fail even at high score; optional findings remain visible with their own policy disposition. Dependency vulnerability claims require a pinned offline advisory dataset with digest and age bound; without it that coverage is unchecked. Supply-chain's existing pin/config findings are reused without relabeling them as vulnerability coverage. Adapter commands use bounded argv execution and no scanner provisioning. Aggregate acceptance must exercise real tools; deterministic adapter unit fixtures supplement but cannot replace that run.
 Acceptance: implement `tests/hooks/test_analyzer_health.py` and run `uv run --frozen python -m pytest tests/hooks/test_analyzer_health.py -q`. Its CLI fixture uses a real Git repository and the published configured pre-commit entry, asserts exact exit status and located evidence, and denies network access. Model/parser tests alone do not close the integration row.
 
-### AU:123: external grade rules (R023.7–12)
+#### AU:123: external grade rules (R023.7–12)
 
 External grading rules: the source asks for externally developed heuristics, but does not authorize wholesale copying of another product's rule book. Incorporate only explicitly declared, reviewed and appropriately credited rule definitions through bounded built-in predicate adapters. The fixture rule is an original simple heading predicate. Conflicting rule meanings require an explicit policy decision before grading; no alphabetical overwrite or last-write winner. Rule packs are immutable snapshot inputs, with no executable callbacks. Default external diagnostic findings do not alter the established 20-points-per-criterion scheme; a reviewed replacement still totals 100 and preserves mandatory hard failures.
 Acceptance: implement `tests/hooks/test_external_grade_rules.py` and run `uv run --frozen python -m pytest tests/hooks/test_external_grade_rules.py -q`. Its CLI fixture uses a real Git repository and the published configured pre-commit entry, asserts exact exit status and located evidence, and denies network access. Model/parser tests alone do not close the integration row.
 
-### Source lineage and coverage
+#### Source lineage and coverage
 
 The six original inputs were read from the authorized source workspace. Source-record digests below preserve exact audit identity; they are not hashes of the source file bytes. No arXiv research was cited by these inputs. Requirements are product-neutral and self-contained; no external product design, score, baseline or implementation is adopted. The analyzer reference contributes only the requested category/aggregation intent. Earlier source limitations for other candidates remain unchanged.
 
-| Candidate | Owning children | Original record SHA-256 |
+| Candidate | Owning children | Original record SHA 256 |
 | --- | --- | --- |
 | PIPE:7 | PIPE-PAGES-R020.19–24 | `ead5f88ba77059d5589aff450a306603c482e3096e65d386f2cc4fc8329cdad5` |
 | PIPE:13 | PIPE-PAGES-R020.25–30 | `32d96d34d089353cc2acd84c5f383aac70a0f17076c3999c87ce393c2a57f0fd` |
@@ -275,49 +369,49 @@ The six original inputs were read from the authorized source workspace. Source-r
 
 Cross-repository boundaries: consumers provide inventory, policy, adapters and rule packs. Pipelines owns checking/report contracts only. Host consumers may read reports for repair planning without acquiring execution or write authority. Implementation and real integration acceptance are future work.
 
-## Documentation contract synthesis
+### Documentation contract synthesis
 
 Data flow: owner registry/template/guide inputs at one Git snapshot -> documentation-contract adapters -> real generated artifacts and located findings -> served/browser evidence where required -> shared ValidationReport and pre-upload verdict. Extend R020 checks while preserving R002/R003/R008/R010/R011 parent requirements and existing delivery receipts. The six new groups cross-reference those existing owners rather than convert landed leaf rows into new rollups.
 Production boundary: pipelines_hooks/cli.py:13/59 is the published dispatcher; docs/public_surface.py:31 currently checks links and quick starts. New specific gates are published in .pre-commit-hooks.yaml and self-run configuration for .github/workflows/ci.yml:86. Their source checks run offline against one index/commit snapshot. Pages checks run after Build Docs at .github/workflows/pages_pipeline.yml:180 and before Upload artifact at line 244; the workflow must include the proposed gate package/adapters in its pinned contract checkout/environment. Extend its real invocation, not only a helper test. Read policy with the same snapshot seam as R020 validation synthesis. Preserve generic public-surface behavior.
 Proof boundary: new modules, hooks and browser checks below remain specified. Existing theme palettes, parity, rendering and registry extraction are reused; none is relabeled as complete coverage of the residuals. Browser/runtime acceptance runs only in appropriate configured environments. This definition batch runs no site/container/native build and performs no deployment. Required unchecked evidence is exit 2, measured failures exit 1, and verified complete checks exit 0; do not turn an unsupported pattern or unresolved claim into full coverage.
 
-### PIPE:4: tool mapping (R020.37–42; extends R010)
+#### PIPE:4: tool mapping (R020.37–42; extends R010)
 
 The source task now exists and was read; its earlier unavailability for PIPE:19 remains a historical limitation of that earlier pass. Consume each owner's pinned contract export, including inherited/nested tool methods. The existing graph corpus groups methods by domain and renders component summaries; retain that code and add a lossless schema adapter instead of calling counts full coverage. A fixture tool implements a deterministic echo method with one nested operation, a required argument, a default and a typed result; the producer exports that real registration. Rendered table links must resolve when served. This gate proves documentation parity, not deployed service correctness.
 Acceptance: implement `tests/hooks/test_tool_mapping.py`; run `uv run --frozen python -m pytest tests/hooks/test_tool_mapping.py -q`. Exercise the published CLI and configured hook on a real Git fixture, plus the actual producer/renderer/served browser path named by the hot-path row. Parser-only success does not close this acceptance.
 
-### PIPE:6: guide migration (R020.43–48; extends R002/R020)
+#### PIPE:6: guide migration (R020.43–48; extends R002/R020)
 
 Default top-level guide limit is 300 nonblank lines, with an explicit positive repository override; the goal is progressive disclosure, not truncation. Migrations bind two exact trees and preserve stable block identities across moves. Destination roots come from canonical content configuration, not the source's retired docs folder example. Reuse R009's shared HTML/CSS architecture renderer; legacy diagram syntax requires conversion and rendered evidence, not a new competing diagram format. Unknown statements are carried as assumptions with exit 2 until a supported resolver has real evidence; neither text similarity nor an approval signature proves them true. Rendering writes only a new caller-selected scratch destination, and the proposed split remains reviewable before any repository edit.
 Acceptance: implement `tests/hooks/test_guide_migration.py`; run `uv run --frozen python -m pytest tests/hooks/test_guide_migration.py -q`. Exercise the published CLI and configured hook on a real Git fixture, plus the actual producer/renderer/served browser path named by the hot-path row. Parser-only success does not close this acceptance.
 
-### PIPE:15: deployment docs (R020.49–54; extends R008/R020)
+#### PIPE:15: deployment docs (R020.49–54; extends R008/R020)
 
 Interpret the source's four options as uv-managed stdio, uv-managed local streamable HTTP, local container streamable HTTP and remote container URL connection. Docker/Podman are variants of the container pattern, not additional patterns. The remote pattern has distinct operator-side deployment and client-side URL configuration. Use published runtime owner commands and immutable package/image references, never derive an executable from project naming. Bind live-runtime receipts to the same owner version if supplied; the offline shared gate checks documents and contracts only. Real container/transport acceptance belongs to designated build/runtime environments and must not be replaced by command-string presence. Every matrix always has four rows; unsupported capability cannot be hidden by dropping a row or claiming four runnable cases.
 Acceptance: implement `tests/hooks/test_deployment_docs.py`; run `uv run --frozen python -m pytest tests/hooks/test_deployment_docs.py -q`. Exercise the published CLI and configured hook on a real Git fixture, plus the actual producer/renderer/served browser path named by the hot-path row. Parser-only success does not close this acceptance.
 
-### PIPE:16: doc inventory (R020.55–60; extends R002/R003/R020)
+#### PIPE:16: doc inventory (R020.55–60; extends R002/R003/R020)
 
 Expand the existing inventory rather than create a second authority. Documentation configuration may be a role/section in an already-declared file. Canonical content roots come from the existing consumer configuration and Pages content_source; source references to a legacy docs folder do not authorize recreating it. The renderer owns scaffolding and explicit managed sections only, while R020 changelog checks own release structure. Inventory checking is read-only; a separate explicit scratch render supplies a reviewable proposal. Browser/navigation acceptance uses the built artifact from the checked snapshot, not a synthetic page that happens to contain expected strings.
 Acceptance: implement `tests/hooks/test_doc_inventory.py`; run `uv run --frozen python -m pytest tests/hooks/test_doc_inventory.py -q`. Exercise the published CLI and configured hook on a real Git fixture, plus the actual producer/renderer/served browser path named by the hot-path row. Parser-only success does not close this acceptance.
 
-### PIPE:20: readme header (R020.61–66; extends R003/R011)
+#### PIPE:20: readme header (R020.61–66; extends R003/R011)
 
 The current REPOS already contains seven owners: Medulla, Meristem, Scion SDK, arbora, Overstory, Tuig and Axil. Correct only the stale five-owner wording in R011; keep its landed receipts and the registry as authority. This audit scope does not imply pipelines or an unrelated repository is a missing eighth consumer. The exact shared header contains title, mark, description, visible badges and the four named links; owner-specific descriptions and marks remain distinct. Status badges need safe provenance and a declared freshness bound; unavailable data is explicitly unknown. The checker verifies declared telemetry, not external monitoring truth.
 
 Provider self-run has an explicit scope result: only the versioned gate policy identity `github.com/Knuckles-Team/pipelines` is non-applicable, with structured `skip`, reason `provider-not-consumer`, exit 0 and zero consumer checks. Resolve canonical full host/namespace/repository from origin, or the sole remote when origin is absent; never use checkout basename or a caller provider flag. The existing `repository_identity.remote_owner` returns only a slug and cannot alone establish this exception. Unknown repositories and missing/ambiguous identities are CannotRun exit 2. Known consumers always validate their header. Record identity source, snapshot and policy/registry digests for the skip; no header grade or consumer coverage receipt may be emitted. This declared scope is non-applicable under R020.34, not a skipped required consumer check. Acceptance runs the actual CLI and self-run hook against provider, unknown and same-basename different-namespace Git fixtures, plus a broken known-consumer fixture attempting a provider override. CI still runs consumer renderer/browser acceptance.
 Acceptance: implement `tests/hooks/test_readme_header.py`; run `uv run --frozen python -m pytest tests/hooks/test_readme_header.py -q`. Exercise the published CLI and configured hook on a real Git fixture, plus the actual producer/renderer/served browser path named by the hot-path row. Parser-only success does not close this acceptance.
 
-### PIPE:21: image theme (R020.67–72; extends R003/R020)
+#### PIPE:21: image theme (R020.67–72; extends R003/R020)
 
 Preserve the established shared theme, repository marks and HTML/CSS architecture views. Existing SVG or raster assets remain inputs, with a theme-safe single asset or explicit light/dark alternatives. The source's misdirected connector arrow is captured as semantic source/target identity and rendered geometry, not a blanket claim that any arrow is correct. Default declared text contrast probe threshold is 4.5:1 and meaningful non-text boundary threshold 3:1; these are local policy values, not a certification claim. Intricate or photographic content requires scoped reviewed render evidence and remains unresolved when such evidence is missing. The acceptance runner uses a real browser against the built artifact in both media modes; it does not certify GitHub's live rendering by simulating a page offline. A consumer claiming host-specific rendering must supply a same-revision receipt from that host.
 Acceptance: implement `tests/hooks/test_image_theme.py`; run `uv run --frozen python -m pytest tests/hooks/test_image_theme.py -q`. Exercise the published CLI and configured hook on a real Git fixture, plus the actual producer/renderer/served browser path named by the hot-path row. Parser-only success does not close this acceptance.
 
-### Exact input lineage
+#### Exact input lineage
 
 All six original inputs were read. PIPE:4's formerly unavailable task was found and read in this batch; that does not retroactively claim source review in the earlier PIPE:19 pass. No arXiv research is cited by these inputs. The requirements are product-neutral and self-contained. Record digests identify audit inputs, not source bytes.
 
-| Candidate | New children | Record SHA-256 |
+| Candidate | New children | Record SHA 256 |
 | --- | --- | --- |
 | PIPE:4 | PIPE-PAGES-R020.37–42 | `99ed4494b88ba41edd66c3d5e8f8026da878f58a9074002a21a34e6dd6818fed` |
 | PIPE:6 | PIPE-PAGES-R020.43–48 | `cee6646cfa2fba504e29c85de9f680654d11e6b5a4345b26ccf91549232fb760` |
@@ -326,19 +420,19 @@ All six original inputs were read. PIPE:4's formerly unavailable task was found 
 | PIPE:20 | PIPE-PAGES-R020.61–66 | `df0c9df43a220ba42110e2fc9248cb7abb3fcf9a56d3a748f4e26d2f802aa6d4` |
 | PIPE:21 | PIPE-PAGES-R020.67–72 | `d1b5d8cbbdf7d8c25237002d9f3d74ec2c37aa315a1058f84214665dc6290c6a` |
 
-Source-byte SHA-256 evidence: task b097dc10 `8d1b602b340de2c617569ea065a6d0299397a69e43608332fa9f80a689b7d856`; guide splitting `12192bfe6cade66abffafe81844f9cf95847b2b94b135e13644e4b86c4005488`; environment/deployment conversation `6ea0112bca6b26c0b8f28710f31e9f5dc77994a4b3e61ee70c1b8f4164ab0dea`; four deployment options `ea28329a140f215fd655e2fb80014029f48251d874cd63f9b42ce86788e7d3be`; modernization plan `5b71bc49259e276e2e149f837cc35780c31da21d5a664ca0fd467ac476c5c1b9`; standardization task `c7c5c1545805b72cca225ce1b9ede5fabad308833217b1772212b85e49281520`; shared README request `21d96ae2690c43ccb7c076e1620afead4b731a8357fe64c4a2282eaba89560c3`.
+Source-byte SHA 256 evidence: task b097dc10 `8d1b602b340de2c617569ea065a6d0299397a69e43608332fa9f80a689b7d856`; guide splitting `12192bfe6cade66abffafe81844f9cf95847b2b94b135e13644e4b86c4005488`; environment/deployment conversation `6ea0112bca6b26c0b8f28710f31e9f5dc77994a4b3e61ee70c1b8f4164ab0dea`; four deployment options `ea28329a140f215fd655e2fb80014029f48251d874cd63f9b42ce86788e7d3be`; modernization plan `5b71bc49259e276e2e149f837cc35780c31da21d5a664ca0fd467ac476c5c1b9`; standardization task `c7c5c1545805b72cca225ce1b9ede5fabad308833217b1772212b85e49281520`; shared README request `21d96ae2690c43ccb7c076e1620afead4b731a8357fe64c4a2282eaba89560c3`.
 
 Runtime/deployment capability remains with its existing owner; pipelines owns documentation parity and evidence only. The parent rows keep their existing historical receipts; new acceptance is not claimed by those receipts.
 
 
-### Amendment — 2026-10-12: readable delivery detail panels
+#### Amendment — 2026-10-12: readable delivery detail panels
 
 R012.5, R013.4 and R014.3 retain their data semantics. Give specifications, architecture, relationships and record inventory the full sheet width. Wrap definition text within the visible area. Keep wide tables and package diagrams in local scroll containers, with package labels at readable size. Regression checks cover panel spans, bounded definitions and local overflow. Desktop and mobile visual evidence remains a separate validation step.
 
 
 R013.2 also excludes prose words in References declarations from relationship targets. Retain the full declaration and source path as unparsed evidence. Preserve explicit links, canonical identifiers and relative file references, including unresolved canonical identifiers.
 
-## Structured artifacts and shared validation contracts
+### Structured artifacts and shared validation contracts
 
 The shared CLI at `pipelines_hooks/cli.py:79` calls `run_gate` at line 59.
 The new registrations below are proposed; the current registry does not publish these checks.
@@ -348,72 +442,72 @@ Those modules remain implementation work. Their names describe required attachme
 KISS census and staged entry points already exist. Their new structural predicates require explicit measurements and consumer adoption.
 All planned test names below are future proof obligations. Documentation alone creates no runtime receipt.
 
-### Spec artifacts
+#### Spec artifacts
 
 `PIPE-PAGES-R020.73` through `PIPE-PAGES-R020.78` extend `PIPE-PAGES-R020`.
 Add a spec-artifacts entry to pipelines_hooks/cli.py:13, dispatched through run_gate at line 59. Proposed artifacts.main must validate generator-skill output before the existing specs/generator.py:93 status consumer reads rendered requirements. Generator skills must invoke this adapter with their output path; direct unvalidated output cannot receive a compatibility receipt.
 
-### Spec bundle compatibility
+#### Spec bundle compatibility
 
 `PIPE-PAGES-R012.8` through `PIPE-PAGES-R012.13` extend `PIPE-PAGES-R012`.
-Extend proposed spec-artifacts at pipelines_hooks/cli.py:13 through run_gate at line 59. Validate the bundle before specs/generator.py:93 and dashboard source ingestion. MEDULLA-ORCH-VOCAB-R012 owns graph ingestion. Its owner adapter must consume the identical bundle bytes; the Pages renderer must not invent graph compatibility.
+Extend proposed spec-artifacts at pipelines_hooks/cli.py:13 through run_gate at line 59. Validate the bundle before specs/generator.py:93 and dashboard source ingestion. the orchestration vocabulary spec owns graph ingestion. Its owner adapter must consume the identical bundle bytes; the Pages renderer must not invent graph compatibility.
 
-### Skill dependency audit
+#### Skill dependency audit
 
 `PIPE-PAGES-R021.31` through `PIPE-PAGES-R021.36` extend `PIPE-PAGES-R021`.
 Extend the planned repository-validation registration at pipelines_hooks/cli.py:13 and run_gate at line 59. Proposed repository_validation.main must pass the skill inventory to the supply-chain adapter beside supply_chain/gate.py:58. The owner connector must return a durable proposal identity before approval consumers receive it.
 
-### Aggregate skill grade
+#### Aggregate skill grade
 
 `PIPE-PAGES-R023.13` through `PIPE-PAGES-R023.18` extend `PIPE-PAGES-R023`.
 Extend planned repository_validation.main to call a structured skill_grade.grade(snapshot, policy) adapter once before its final verdict. Register through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse the standalone grader contract; neither proposed module exists on this source revision.
 
-### Capability inventory
+#### Capability inventory
 
 `PIPE-PAGES-R012.14` through `PIPE-PAGES-R012.19` extend `PIPE-PAGES-R012`.
 Create a capability-coverage registration at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Reuse specs/bindings.py test discovery and owner-exported MCP inventories. Add static source adapters before the verdict. Dashboard source declarations must consume the resulting receipt without claiming exhaustive coverage themselves.
 
-### Structural limits
+#### Structural limits
 
 `PIPE-PAGES-R021.37` through `PIPE-PAGES-R021.42` extend `PIPE-PAGES-R021`.
 Extend pipelines_hooks/kiss/census.py:31 for build enforcement and kiss/staged.py:50 for changed-source admission. Their existing callers are pipelines_hooks/cli.py:59. Arbora must configure both limits and invoke the shared check in its build. Unsupported scanner measurements require a versioned adapter, not guessed values.
 
-### Source path portability
+#### Source path portability
 
 `PIPE-PAGES-R021.43` through `PIPE-PAGES-R021.48` extend `PIPE-PAGES-R021`.
 Register source-path-portability at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Publish a shared pre-commit hook and invoke it before package builds. Inventory Git paths and declared package roots statically; artifact platform tags do not replace source-path validation.
 
-### Coverage closure
+#### Coverage closure
 
 `PIPE-PAGES-R021.49` through `PIPE-PAGES-R021.54` extend `PIPE-PAGES-R021`.
 Extend the planned test-quality registration at pipelines_hooks/cli.py:13 and run_gate at line 59 with an explicit closure mode. Proposed test_quality.main must invoke the declared runner before evaluating closure. Reuse the existing outcome runner and coverage adapters rather than adding another project registry.
 
-### Validation behavior inventory
+#### Validation behavior inventory
 
 `PIPE-PAGES-R020.79` through `PIPE-PAGES-R020.84` extend `PIPE-PAGES-R020`.
 Extend the proposed config-inventory registration at pipelines_hooks/cli.py:13 through run_gate at line 59. Reuse the existing project inventory and configured hook parser. Execute the pinned baseline and consumer hooks in disposable trees. Connector spec-hook adoption alone must not establish complete validation coverage.
 
-### Offline unit profile
+#### Offline unit profile
 
 `PIPE-PAGES-R021.55` through `PIPE-PAGES-R021.60` extend `PIPE-PAGES-R021`.
 Extend the planned test-quality registration at pipelines_hooks/cli.py:13 through run_gate at line 59. The proposed outcome runner must apply UnitProfile isolation before test collection and execution. Enforcement must cover subprocesses, not only patched Python socket calls. Consumers must select the unit profile explicitly.
 
-### Ontology governance hook
+#### Ontology governance hook
 
 `PIPE-PAGES-R020.85` through `PIPE-PAGES-R020.90` extend `PIPE-PAGES-R020`.
 Register ontology-governance at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Publish the pre-commit hook with complete ontology discovery before commit admission. The adapter must consume the generated OntologyInspect/ShaclValidate client or generated offline authority artifacts. Read-only inspection alone does not establish validation.
 
-### Test layout independence
+#### Test layout independence
 
 `PIPE-PAGES-R021.61` through `PIPE-PAGES-R021.66` extend `PIPE-PAGES-R021`.
 Extend the planned test-quality entry at pipelines_hooks/cli.py:13 through run_gate at line 59. Reuse proposed config-inventory project roots and the outcome runner. Publish the test-layout profile through the shared hook. Preserve separate real-component integration and recovery acceptance contracts.
 
-### Solution size evidence
+#### Solution size evidence
 
 `PIPE-PAGES-R021.67` through `PIPE-PAGES-R021.72` extend `PIPE-PAGES-R021`.
-Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under MEDULLA-DECISION-ENGINE-R136.4. Meristem run receipts must preserve the same source and evidence identities.
+Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under the decision-engine allocation row. Meristem run receipts must preserve the same source and evidence identities.
 
-### Graph workflow receipt
+#### Graph workflow receipt
 
 `PIPE-PAGES-R021.73` through `PIPE-PAGES-R021.78` extend `PIPE-PAGES-R021`.
 Extend the planned test-quality handoff verifier at pipelines_hooks/cli.py:13 through run_gate at line 59. Consume the owner acceptance receipt joining Meristem graph_orchestrate, execute_workflow and Medulla SourceIngest. The shared gate verifies provenance and outcomes; it must not become a runtime workflow orchestrator.
@@ -422,47 +516,47 @@ Historical validation comparison remains blocked until its former command revisi
 Solution-size evidence does not resolve the reserved shortcut-comment policy. The coordinator retains that decision.
 Coverage closure reuses the coverage and outcome owners; it does not replace their separate semantic proof contracts.
 
-## PIPE-PAGES-R032
+### PIPE-PAGES-R032
 
 R032.1-.6: Preserve export-time coordinator decision and exact version comparison preventing silent forward/backward moves.
 
-## PIPE-PAGES-R033
+### PIPE-PAGES-R033
 
 R033.1-.6: Bind installer contract to skill/command with explicit IDE/agent target/version matrix and per-target proof.
 
-## PIPE-PAGES-R034
+### PIPE-PAGES-R034
 
 R034.1-.6: Extend portable deployment with single binary/image profile and external-dependency-free capability parity.
 
-## PIPE-PAGES-R035
+### PIPE-PAGES-R035
 
 R035.1-.6: Define stable prompt JSON/Pydantic disk format with exact difference oracle retaining roundtrip coverage.
 
-## PIPE-PAGES-R021.91-.96
+### PIPE-PAGES-R021.91-.96
 
 R021.91-.96: Complete central-validate behavior inventory and require pre-commit parity across all projects.
 
-## PIPE-PAGES-R037
+### PIPE-PAGES-R037
 
 R037.1-.6: Define unit-test profile with enforced external determinism and mocked dependencies.
 
-## PIPE-PAGES-R038
+### PIPE-PAGES-R038
 
 R038.1-.6: Python-only pre-commit hook consuming Medulla-owned ontology validation with fail-closed authority.
 
-## PIPE-PAGES-R039
+### PIPE-PAGES-R039
 
 R039.1-.6: Complete project test-layout inventory with fixture isolation and order independence.
 
-## PIPE-PAGES-R040
+### PIPE-PAGES-R040
 
 R040.1-.6: Extend Meristem approval criteria to reject coverage-decreasing proposals.
 
-## PIPE-PAGES-R041
+### PIPE-PAGES-R041
 
 R041.1-.6: Configured structural limits with named-function failure reporting in shared gate.
 
-## PIPE-PAGES-R042
+### PIPE-PAGES-R042
 
 R042: `scripts/architecture_explorer/` discovers the organization repositories that have `specs/` in one paged query (`sources.org_repositories`, reconciled with `registry.json`), reads their spec rows, fits the connector fleet in `model.json` to the scan set, places the rows, precomputes layouts with the pinned layout engine (`layout.mjs`) and renders `template.html` with a build-time and head-commit stamp. The organization site workflow in Knuckles-Team/.github builds the canonical copy every 30 minutes and on `repository_dispatch: specs-changed`. `pages_pipeline.yml` gives each core repository a `/architecture/` redirect to it (`architecture_explorer: auto`, `build.py --redirect`) and `notify_org_site.yml` (called by each repository's `org-site.yml` on every version tag push) sends the dispatch with a GitHub App token when the app secrets are set. One canonical build is simpler than rebuilding eight copies on a schedule and keeps every link current.
 
@@ -470,7 +564,7 @@ R042.1 to R042.4: `build.search_index` turns the placed tree into the compact in
 
 R042 visual theme: adapt Overstory's system sans typography, rounded neutral controls and bounded translucent reading surfaces to an ocean-blue palette in `template.html`. Use a shared repo-native ocean scene behind translucent gradient glass nodes and shell surfaces, with quiet ocean layer accents and distinct restrained semantic status accents. Bundle the existing OFL-licensed Overstory Inter font, including its license, without a font CDN or runtime dependency. Use only bounded shell blur and inexpensive vector node gradients/shadows: no node blur, animated paint or new layout engine. Reduced-motion, reduced-transparency and forced-colors preferences have explicit fallbacks. This is a presentation-only change: text, model, row status/CQ classification, IDs, links, placement geometry, search, history, pan and infinite zoom remain unchanged. Understory/Studio graph conversion and repository renaming are outside this patch. The read-only PR visual job uses runner Chrome to retain desktop/mobile light/dark root and deep-link screenshots, DOM, the interactive HTML and raw-payload/candidate provenance; it runs existing detail/deep-link tests plus keyboard, zoom, pan, camera-history and search controls without a new browser dependency or deployment.
 
-## Agent-readiness and static delivery (PIPE-PAGES-R043)
+### Agent-readiness and static delivery (PIPE-PAGES-R043)
 
 This requirement explicitly assigns the existing readiness and static delivery contract to this spec.
 It introduces ownership, not a concept alias or a behavior change.
@@ -488,9 +582,9 @@ The existing validator consumes canonical manifests; this requirement adds no ge
 `tests/test_pages_pipeline_contract.py` owns opt-in workflow and strict-build wiring evidence.
 Public-site acceptance and the supported interpreter remain separate qualification obligations.
 
-## Amendments
+### Amendments
 
-### 2026-10-25 — tuig explorer naming (PIPE-PAGES-R042)
+#### 2026-10-25 — tuig explorer naming (PIPE-PAGES-R042)
 
 The source model displays the native CLI as `tuig` while retaining repository
 `agent-terminal-ui`, node `tui`, and all child IDs for existing deep links.
@@ -503,7 +597,7 @@ model through `scripts/architecture_explorer/build.py`; generated HTML is not
 edited. `test_tuig_preserves_identity_and_distinguishes_planned_runtime` checks
 the stable identity, source paths and qualified edges.
 
-### 2026-10-25 — repository title and Tuig subtitle (PIPE-PAGES-R042)
+#### 2026-10-25 — repository title and Tuig subtitle (PIPE-PAGES-R042)
 
 The main node title remains `agent-terminal-ui`. Its lower role label reads
 `Tuig TUI / CLI`, identifying Tuig as part of that repository rather than
@@ -512,7 +606,7 @@ stable IDs, repository mapping, transport and release/runtime qualification
 are unchanged. The existing identity test checks both display labels and the
 lowercase executable description.
 
-### 2026-10-25 — ecosystem display brands (PIPE-PAGES-R042)
+#### 2026-10-25 — ecosystem display brands (PIPE-PAGES-R042)
 
 This amendment supersedes the earlier terminal title/subtitle choices: the
 canonical model uses the five approved product display names documented in
@@ -525,7 +619,7 @@ The normal explorer generator consumes these labels; no generated organization
 site output is hand-edited. The display-brand regression test exercises that
 generator and checks brand labels alongside their unchanged repository IDs.
 
-### 2026-10-25 — desktop visual parts (PIPE-PAGES-R042)
+#### 2026-10-25 — desktop visual parts (PIPE-PAGES-R042)
 
 The Axil Desk node retains `geniusbot` and the `desktop-client` family home.
 Ten child parts group the existing R001–R020 requirement roots and all their
@@ -536,7 +630,7 @@ source path or delivery claim. Unknown roots stay visible as Unmapped.
 Placement and normal-generation tests protect unique placement, repository
 identity and unchanged row/status totals. Generated Pages output is not edited.
 
-### 2026-10-25 — Understory, Studio and Meristem display alignment (PIPE-PAGES-R042)
+#### 2026-10-25 — Understory, Studio and Meristem display alignment (PIPE-PAGES-R042)
 
 Name the existing dashboard authoring node Overstory Studio, describe Understory
 as the knowledge exploration surface, and correct the in-run harness display
@@ -546,7 +640,7 @@ preview retains its original payload provenance; normal generation consumes the
 new labels separately. No renderer or capability is added.
 
 
-### 2026-10-25 — Ambient ocean motion behind glass (PIPE-PAGES-R042)
+#### 2026-10-25 — Ambient ocean motion behind glass (PIPE-PAGES-R042)
 
 Adapt the user's three-wave ocean wallpaper reference as three shared SVG bands
 with slow compositor-only transforms, not a per-pixel canvas animation. Wallpaper
@@ -558,7 +652,7 @@ and pause behavior alongside existing zoom/navigation tests. Phase screenshots
 are sampled real CSS animation frames, not a video or elapsed-time benchmark.
 
 
-### 2026-10-25 — Neutral fog glass over ocean wallpaper (PIPE-PAGES-R042)
+#### 2026-10-25 — Neutral fog glass over ocean wallpaper (PIPE-PAGES-R042)
 
 Retain the approved ambient ocean wallpaper, but remove added blue pigments from
 shells, node materials and ordinary controls. Lift light glass toward neutral
@@ -568,7 +662,7 @@ text/markers and selected controls. Recheck actual alpha-composited node and
 header text surfaces; preserve data, camera, navigation and motion controls.
 
 
-### 2026-10-25 — Natural ocean wallpaper fidelity (PIPE-PAGES-R042)
+#### 2026-10-25 — Natural ocean wallpaper fidelity (PIPE-PAGES-R042)
 
 Replace abstract wave ribbons with one optimized, locally embedded generated
 seascape (sky, soft clouds, horizon, irregular wavelets and restrained foam).
@@ -580,7 +674,7 @@ not blur. Verify text against conservative black/white backdrop bounds and
 inspect actual desktop/mobile light/dark pixels before merging.
 
 
-### 2026-10-25 — Top-level title case and visible role subtitles (PIPE-PAGES-R042)
+#### 2026-10-25 — Top-level title case and visible role subtitles (PIPE-PAGES-R042)
 
 Apply the finite reviewed top-level display-label/role corrections, including
 Scion / Connector SDK, Meristem / Agent Harness and Universal Skills / Agent
@@ -590,7 +684,7 @@ with counts or parts. Keep graph geometry and camera/navigation unchanged.
 A candidate-model fixture screenshot and canvas paint evidence are explicitly
 separate from the unchanged live-payload before/after visual snapshot.
 
-### 2026-10-25 canonical repository references
+#### 2026-10-25 canonical repository references
 
 Following the six upstream repository renames, the explorer registry and model
 use canonical repository slugs while keeping node IDs, ownership kinds, local
@@ -600,7 +694,7 @@ reclassify these core/client repositories as new connectors. The regression
 canonical discovery, placement and generated spec-detail links (PIPE-PAGES-R042.9
 and PIPE-PAGES-R042.7). Package and specification aliases remain separate.
 
-### Abstract ocean motion and category-glass refinement (2026-10-25)
+#### Abstract ocean motion and category-glass refinement (2026-10-25)
 
 Follow-up to the accepted neutral-glass renderer: replace the active photographic
 wallpaper with three broad native vector ocean forms, with clearly observable
@@ -613,7 +707,7 @@ opt-out, reduced-motion/forced-colors handling and hidden-page pause. Hosted vis
 proof must include unforced real elapsed-time Chrome frames, not animation seeking
 or a virtual-time-only claim; no runtime CDN, video or new dependency is added.
 
-### Swimlane glass prototype (2026-10-25)
+#### Swimlane glass prototype (2026-10-25)
 
 Use the existing overview band bounds as shared low-opacity frosted panes with
 quiet neutral edges, a small category marker and complete gutter headings.
@@ -623,7 +717,7 @@ follow-up; it must not delay deployment of the approved abstract ocean version.
 No new blur layer, animated object or runtime dependency is introduced. Validate
 text contrast including the lane material beneath both card-gradient endpoints.
 
-### Quiet lane hierarchy and count-track separation (2026-10-26)
+#### Quiet lane hierarchy and count-track separation (2026-10-26)
 
 Supersede the glass lane panes with restrained, aligned gutter typography and
 short semantic markers. Remove lane fills, frames and decorative chevrons while
@@ -635,7 +729,7 @@ actual canvas text/bar bounds at desktop/mobile overview and nested Overstory an
 Medulla cameras; all required cases must execute without browser skips. Preserve
 canonical repository ownership, requirement/status data and deep-link semantics.
 
-### Collision-aware diagram annotations (2026-10-26)
+#### Collision-aware diagram annotations (2026-10-26)
 
 Replace the remaining zone, self-evolution loop and connector caption plates with
 one measured Inter annotation pass, shared with lane headings. Place captions only
@@ -649,7 +743,7 @@ node IDs, navigation, card hues or ocean motion. Hosted evidence must measure ac
 text paint against obstacles at default, deep-link, nested and mobile cameras,
 including the external-systems caption and self-evolution loop, without skips.
 
-### Native progressive diagram captions (2026-10-26)
+#### Native progressive diagram captions (2026-10-26)
 
 Supersede the separate annotation rail and hint link entirely. Keep captions inside
 the original zoomable diagram, using authored concise display copy and only local
@@ -662,7 +756,7 @@ proof must show deferred captions actually painted after native zoom, with no ra
 or link, unchanged world rectangles and independent collision bounds. Keep every
 existing count-track check; synchronization diagnostics are a separate test fix.
 
-### 2026-10-26 — Local frozen source chart integration proposal
+#### 2026-10-26 — Local frozen source chart integration proposal
 
 Prepare a source-only chart view for PIPE-PAGES-R042 using exact full-SHA raw
 Git captures, shared requirement alias validation and existing priority/frontier
@@ -683,7 +777,7 @@ writes without stale chart or anonymous fallback. Production activation awaits
 review, existing-token current source proof and source-rich visual checks;
 all-box mapping completeness and whole-bundle atomic promotion are not claimed.
 
-### Legible progress tracks and status summary (2026-10-26)
+#### Legible progress tracks and status summary (2026-10-26)
 
 Within the combined native graph/story delivery, increase only top-level closed
 node progress-track thickness by 65 percent. Preserve each track's bottom edge,
@@ -726,3 +820,73 @@ separate, explicitly paused native timeline diagnostics sample all three palette
 extrema across the 128-second longest alternating cycle. These diagnostics are
 actual browser pixels, not a claim of elapsed full-cycle video. Require the new
 exact-head hosted receipts and pixel review before production promotion.
+
+## Phase 2: Task approach
+
+Tasks are ordered producer first. PIPE-PAGES-R057 (deep links and export) comes first because it fixes the row identity and file paths that agents and the other rows use. PIPE-PAGES-R053 (drawer) follows. PIPE-PAGES-R054.1 and PIPE-PAGES-R054.2 (phase model and predicates) come before PIPE-PAGES-R055 (chips) because the chips consume the phase. The canvas rows of PIPE-PAGES-R054 follow, then PIPE-PAGES-R056 (releases) and PIPE-PAGES-R058 (research overlay). The status bug is task T001 of the `.github` repository and runs in parallel with all of these.
+
+Tier `standard` is the default lane. Tier `design` needs a stronger model for one design call, named in the tier cell. Each task is one child row. A standard lane implements one task in under 30 minutes with the files, function and test named here. A task marked Opus makes a design call first. Tier `design` tasks: T441 and T443. T434 waits for pull request 419 to merge. T447 waits for the releases checkout row in the `.github` repository.
+
+| Task | Row | Files to touch | Extend this | Test | Tier |
+|---|---|---|---|---|---|
+| T420 | PIPE-PAGES-R057.1 | scripts/architecture_explorer/export.py (new); tests/test_canopy_export.py (new) | dataclass pattern of `Snapshot` in sources.py | `tests/test_canopy_export.py::test_export_row_carries_every_present_artifact_path` | standard |
+| T421 | PIPE-PAGES-R057.2 | scripts/architecture_explorer/search.cjs; scripts/architecture_explorer/template.html | parseHash/hashFor in search.cjs | `tests/test_canopy_export.py::test_hash_round_trips_row_part_mode_filter_release` | standard |
+| T422 | PIPE-PAGES-R057.3 | scripts/architecture_explorer/export.py; scripts/architecture_explorer/build.py; scripts/architecture_explorer/template.html | write_details in details.py:475 | `tests/test_canopy_export.py::test_a_build_writes_rows_json_and_markdown_beside_the_page` | standard |
+| T423 | PIPE-PAGES-R057.4 | scripts/architecture_explorer/export.py; scripts/architecture_explorer/template.html | qstatus live region | `tests/test_canopy_export.py::test_unknown_view_values_are_refused_and_unsafe_paths_fail_the_build` | standard |
+| T424 | PIPE-PAGES-R057.5 | scripts/architecture_explorer/export.py | meta dict in build_with_sources | `tests/test_canopy_export.py::test_export_header_digest_is_stable_and_markdown_lists_paths` | standard |
+| T425 | PIPE-PAGES-R057.6 | tests/test_canopy_export.py | _build_page and _chrome helpers | `tests/test_canopy_export.py::test_a_hash_restores_the_view_and_the_export_paths_exist` | standard |
+| T426 | PIPE-PAGES-R057.7 | scripts/architecture_explorer/build.py; scripts/architecture_explorer/template.html | render in build.py:398 | `tests/test_canopy_export.py::test_page_without_scripts_lists_parts_and_links_exports` | standard |
+| T427 | PIPE-PAGES-R053.1 | scripts/architecture_explorer/details.py; scripts/architecture_explorer/delivery.py; pipelines_hooks/specs/priority.py | family_detail in details.py:432 and aggregate in delivery.py:19 | `tests/test_canopy_drawer.py::test_row_drawer_model_has_excerpts_tasks_checklist_and_unblocks` | standard |
+| T428 | PIPE-PAGES-R053.2 | scripts/architecture_explorer/details.py; scripts/architecture_explorer/sdd.py | matching_test_lines in details.py:328 | `tests/test_canopy_drawer.py::test_excerpts_hold_only_paragraphs_that_name_the_row` | standard |
+| T429 | PIPE-PAGES-R053.3 | scripts/architecture_explorer/template.html | loadDetail at template.html:773 and safeHtml at :771 | `tests/test_canopy_drawer.py::test_a_row_click_opens_the_drawer_and_sets_the_row_hash` | standard |
+| T430 | PIPE-PAGES-R053.4 | scripts/architecture_explorer/template.html | fillBody at template.html:796 | `tests/test_canopy_drawer.py::test_missing_row_and_failed_family_load_are_reported_in_the_drawer` | standard |
+| T431 | PIPE-PAGES-R053.5 | scripts/architecture_explorer/details.py; scripts/architecture_explorer/template.html | evidence in details.py:335 | `tests/test_canopy_drawer.py::test_drawer_lists_exact_paths_and_evidence_links` | standard |
+| T432 | PIPE-PAGES-R053.6 | tests/test_canopy_drawer.py | _build_page and _chrome helpers | `tests/test_canopy_drawer.py::test_the_drawer_opens_in_a_browser_with_tasks_and_unblocks` | standard |
+| T433 | PIPE-PAGES-R054.1 | scripts/architecture_explorer/sdd.py | family_card in sdd.py:94 | `tests/test_canopy_modes.py::test_sdd_phase_enum_orders_six_phases` | standard |
+| T434 | PIPE-PAGES-R054.2 | scripts/architecture_explorer/sdd.py; pipelines_hooks/specs/plan_conformance.py | check_plan in plan_conformance.py | `tests/test_canopy_modes.py::test_each_phase_predicate_holds_only_on_its_artifacts` | standard |
+| T435 | PIPE-PAGES-R055.1 | scripts/architecture_explorer/sdd.py; scripts/architecture_explorer/build.py | spec_entry in build.py:125 | `tests/test_canopy_filters.py::test_next_step_maps_phase_and_state_to_one_chip` | standard |
+| T436 | PIPE-PAGES-R055.2 | scripts/architecture_explorer/sdd.py | frontier_set at build.py:331 | `tests/test_canopy_filters.py::test_chip_rules_follow_the_documented_order` | standard |
+| T437 | PIPE-PAGES-R055.3 | scripts/architecture_explorer/template.html | filter line at template.html:1000 | `tests/test_canopy_filters.py::test_chips_combine_with_status_and_release_filters` | standard |
+| T438 | PIPE-PAGES-R055.4 | scripts/architecture_explorer/template.html | chip pattern at template.html:990 | `tests/test_canopy_filters.py::test_empty_chips_are_disabled_and_unknown_names_are_ignored` | standard |
+| T439 | PIPE-PAGES-R055.5 | scripts/architecture_explorer/export.py; scripts/architecture_explorer/template.html | ExportRow in export.py | `tests/test_canopy_filters.py::test_chip_counts_and_export_next_step_agree` | standard |
+| T440 | PIPE-PAGES-R055.6 | tests/test_canopy_filters.py | _build_page and _chrome helpers | `tests/test_canopy_filters.py::test_the_ready_filter_lists_only_next_up_rows_in_a_browser` | standard |
+| T441 | PIPE-PAGES-R054.3 | scripts/architecture_explorer/template.html | drawNode at template.html:635 | `tests/test_canopy_modes.py::test_mode_switch_changes_node_style_without_moving_nodes` | design: canvas dispatcher design call |
+| T442 | PIPE-PAGES-R054.4 | scripts/architecture_explorer/template.html | reduced() at template.html:432 | `tests/test_canopy_modes.py::test_empty_nodes_stay_neutral_and_unknown_mode_falls_back` | standard |
+| T443 | PIPE-PAGES-R054.5 | scripts/architecture_explorer/build.py; scripts/architecture_explorer/template.html | drawEdges at template.html:607 | `tests/test_canopy_modes.py::test_dependency_edges_match_the_next_up_prerequisites` | design: edge layering design call |
+| T444 | PIPE-PAGES-R054.6 | tests/test_canopy_modes.py | _build_page and _chrome helpers | `tests/test_canopy_modes.py::test_sdd_mode_legend_counts_match_the_computed_phases_in_a_browser` | standard |
+| T445 | PIPE-PAGES-R056.1 | scripts/architecture_explorer/releases.py; scripts/architecture_explorer/sdd.py | release_view in releases.py:55 and phase_of in sdd.py:86 | `tests/test_canopy_releases.py::test_phase_line_in_plan_wins_over_release_phase_and_part_progress_counts` | standard |
+| T446 | PIPE-PAGES-R056.2 | scripts/architecture_explorer/template.html | renderReleases at template.html:810 | `tests/test_canopy_releases.py::test_selecting_a_release_dims_other_nodes_and_shows_part_progress` | standard |
+| T447 | PIPE-PAGES-R056.3 | scripts/architecture_explorer/build.py; scripts/architecture_explorer/releases.py | load_manifests in releases.py:25 | `tests/test_canopy_releases.py::test_github_mode_refuses_a_missing_releases_directory` | standard |
+| T448 | PIPE-PAGES-R056.4 | scripts/architecture_explorer/template.html; scripts/architecture_explorer/releases.py | empty text at template.html:815 | `tests/test_canopy_releases.py::test_empty_state_explains_manifests_and_bad_phase_fails_the_build` | standard |
+| T449 | PIPE-PAGES-R056.5 | scripts/architecture_explorer/releases.py; scripts/architecture_explorer/template.html | release_view in releases.py:55 | `tests/test_canopy_releases.py::test_release_card_links_manifest_and_unscheduled_count_matches_rows` | standard |
+| T450 | PIPE-PAGES-R056.6 | tests/test_canopy_releases.py | _build_page and _chrome helpers | `tests/test_canopy_releases.py::test_release_hash_filters_the_map_in_a_browser` | standard |
+| T451 | PIPE-PAGES-R058.1 | scripts/architecture_explorer/sdd.py | section in sdd.py:37 | `tests/test_canopy_research.py::test_open_questions_find_markers_and_unchecked_research_items` | standard |
+| T452 | PIPE-PAGES-R058.2 | scripts/architecture_explorer/sdd.py; scripts/architecture_explorer/build.py | build_cards in sdd.py:113 | `tests/test_canopy_research.py::test_counts_follow_the_own_rows_rule_and_zero_shows_no_badge` | standard |
+| T453 | PIPE-PAGES-R058.3 | scripts/architecture_explorer/template.html | cardEl at template.html:871 | `tests/test_canopy_research.py::test_badges_render_on_node_card_and_row_with_screen_reader_text` | standard |
+| T454 | PIPE-PAGES-R058.4 | scripts/architecture_explorer/sdd.py | family_docs in details.py:387 | `tests/test_canopy_research.py::test_unreadable_research_marks_the_family_without_failing_the_build` | standard |
+| T455 | PIPE-PAGES-R058.5 | scripts/architecture_explorer/details.py; scripts/architecture_explorer/export.py | family_detail in details.py:432 | `tests/test_canopy_research.py::test_drawer_and_export_list_the_questions_with_document_and_line` | standard |
+| T456 | PIPE-PAGES-R058.6 | tests/test_canopy_research.py | _build_page and _chrome helpers | `tests/test_canopy_research.py::test_research_badge_and_drawer_list_in_a_browser` | standard |
+
+Parallel groups: after T420 to T426 land, the rows of PIPE-PAGES-R053, PIPE-PAGES-R056 and PIPE-PAGES-R058 touch different test files and run in parallel. Tasks that edit `template.html` run one at a time per lane, then rebase.
+
+## Complexity Tracking
+
+none
+
+## Build contract
+
+- Run `pipelines-hook spec` (standard, plan-conformance, decomposition, status, trailers) on every changed spec file.
+- Run `pytest tests/test_canopy_export.py tests/test_canopy_drawer.py tests/test_canopy_modes.py tests/test_canopy_filters.py tests/test_canopy_releases.py tests/test_canopy_research.py tests/test_architecture_explorer.py`.
+- Keep the complexity, duplication and type gates green. Add no baseline entry and no suppression.
+- Keep the page within 10 percent of its prior size (PIPE-PAGES-R051.9). Load drawer text from the family files.
+- One `export.py`; no second row-path list. The drawer, the export and the search extras read paths from the same helper.
+
+## Production caller chain
+
+- Build: the site workflow runs `scripts/architecture_explorer/build.py` `main` (line 447). `build_with_sources` (line 302) reads rows through `sources.rows_for`, scores through `delivery.aggregate`, loads manifests through `releases.load_manifests`, builds cards through `sdd.build_cards`, and writes `write_details` (line 480) and `write_export`.
+- Page: `template.html` `applyHash` (line 1121) parses the hash through `search.cjs` `parseHash`. `renderPanel` (line 959) builds rows, chips and the drawer. `drawNode` (line 635) paints modes and badges.
+- Obsolete path to delete: the `## Delivery phase` heading read in `sdd.phase_of` (line 86) once the one-line form lands.
+
+## Cross-repo seams
+
+- The organization site workflow must check out `releases/` and publish the export files: ORG-FRONT-R010.1, ORG-FRONT-R010.2 and ORG-FRONT-R010.3 in the organization repository, consumed by PIPE-PAGES-R056.3 and PIPE-PAGES-R057.3. The contract is [organization-site-publishing.md](contracts/organization-site-publishing.md).
