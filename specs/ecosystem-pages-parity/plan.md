@@ -167,7 +167,7 @@ Data flow: `ecosystem_components()` (`scripts/spec_dashboard_drilldown.py:17`) f
 
 ### Documentation claims gate (PIPE-PAGES-R020)
 
-Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `validate` (`pipelines_hooks/docs/public_surface.py:31`) -> `claim_findings` -> findings and exit status.
+Data flow: `pipelines-hook public-surface` -> `main` (`pipelines_hooks/cli.py:151`) -> `run_gate` (`pipelines_hooks/cli.py:101`) -> `validate` (`pipelines_hooks/docs/public_surface.py:31`) -> `claim_findings` -> findings and exit status.
 
 - Types. `DocClaim` holds file, line, kind and text. The kind set is closed.
 - Attach point. `validate` in `pipelines_hooks/docs/public_surface.py:31`. The `public-surface` hook at `.pre-commit-hooks.yaml:183` calls it in production.
@@ -211,7 +211,7 @@ R020 rollup or unrelated future consumers.
 
 ### Test quality gate (PIPE-PAGES-R021)
 
-Data flow: `pipelines-hook test-quality` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `scan` in `pipelines_hooks/code/test_quality.py` -> findings, summary line, exit status.
+Data flow: `pipelines-hook test-quality` -> `main` (`pipelines_hooks/cli.py:151`) -> `run_gate` (`pipelines_hooks/cli.py:101`) -> `scan` in `pipelines_hooks/code/test_quality.py` -> findings, summary line, exit status.
 
 - Types. `TestQualityFinding` holds path, line and rule. The rule set is closed.
 - Attach point. This plan creates the call site: the `GATES` entry at `pipelines_hooks/cli.py:33` and a hook beside `no-stub` at `.pre-commit-hooks.yaml:141`.
@@ -225,11 +225,11 @@ R021.79-.84: Coverage runner and per-project inventory; closure gate refusing un
 
 ### Scheduled mutation testing (PIPE-PAGES-R022)
 
-Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipelines_hooks/cli.py:79`) -> `run_gate` (`pipelines_hooks/cli.py:59`) -> `survivors` in `pipelines_hooks/code/mutation_gaps.py` -> report lines and exit status.
+Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipelines_hooks/cli.py:151`) -> `run_gate` (`pipelines_hooks/cli.py:101`) -> `survivors` in `pipelines_hooks/code/mutation_gaps.py` -> report lines and exit status.
 
 - Types. `MutationPolicy` and `SurvivingMutation`.
 - Attach point. This plan creates the call site: the `GATES` entry at `pipelines_hooks/cli.py:33` and `.github/workflows/mutation.yml`.
-- Failure. An absent runner raises `Unavailable`; `run_gate` at `pipelines_hooks/cli.py:66` fails closed in CI.
+- Failure. An absent runner raises `Unavailable`; `run_gate` at `pipelines_hooks/cli.py:101` fails closed in CI.
 - Reused. The `GATES` registry and `run_gate` error mapping. New: the runner seam and the report.
 - Decision. The run is scheduled and covers core modules only. DECIDED.
 - Rejected: running mutation tests on every commit. The cost exceeds the five-minute gate budget.
@@ -240,7 +240,7 @@ Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipe
 Data flow: public-surface CLI -> validate -> claim resolvers -> located evidence validator -> report and exit status.
 Existing code: `pipelines_hooks/docs/public_surface.py:31` gathers public-surface findings; `pipelines_hooks/docs/public_surface_links.py:29` resolves local paths. `pipelines_hooks/clones/dupehound_report.py:66` validates clone locations and scores for its own format.
 Reachable today: no. The public-surface gate runs, but `pipelines_hooks/docs/claims.py` and the shared measured-evidence validator are absent. Existing clone validation is format-specific and is not a generic code-enhancer finding validator.
-Attach point: `validate` at `pipelines_hooks/docs/public_surface.py:31`, dispatched by `run_gate` at `pipelines_hooks/cli.py:59`.
+Attach point: `validate` at `pipelines_hooks/docs/public_surface.py:31`, dispatched by `run_gate` at `pipelines_hooks/cli.py:101`.
 Decision: extend R020 with code and documentation finding provenance. Reuse containment and typed error helpers; require tree-bound measurements before exporting findings. Reject unlocated prose reports rather than guessing their evidence.
 Cross-repository rows: `MEDULLA-ORCH-VOCAB` owns trace storage; this producer owns gate evidence. A receipt does not confer host admission.
 Source credit: the source document “SDD enhanced”, Meristem queue candidate 64. No research citation was supplied.
@@ -251,7 +251,7 @@ Acceptance: implement `tests/hooks/test_public_surface_claims.py`, then run `uv 
 Data flow: test-quality CLI -> component declaration -> all-static dependency traversal -> runtime boundary/reachability and separate type-only checks -> test receipts -> located findings -> verdict.
 Existing code: `pipelines_hooks/code/import_graph.py:71` builds Python eager-import edges; `pipelines_hooks/code/import_cycles.py:57` runs the current import gate. `pipelines_hooks/kiss/census.py:31` checks per-file limits; its module contract explicitly excludes orphan detection.
 Reachable today: no. Eager-import checks run, but `pipelines_hooks/code/test_quality.py`, its CLI registration and handoff receipt checks are absent. Reuse module discovery and target resolution. The existing eager walker skips function bodies and type-checking guards; it cannot supply the runtime graph for boundary or orphan checks. Add a separate static traversal including imports in function bodies, async functions and runtime conditional branches. Keep `build_eager_graph` exclusively on the eager-cycle path.
-Attach point: the R021 gate registered at `pipelines_hooks/cli.py:14`, called by `run_gate` at `pipelines_hooks/cli.py:59` and the standard CI hook workflow.
+Attach point: the R021 gate registered at `pipelines_hooks/cli.py:14`, called by `run_gate` at `pipelines_hooks/cli.py:101` and the standard CI hook workflow.
 Decision: require interfaces and risky handoff tests in a tracked declaration. Property receipts carry seed, case count and test outcome; zero cases fail. Real-component integration evidence identifies the components and forbids replacing their handoff with mocks. Pin receipts to source and declaration digests. Unsupported languages need an explicit adapter and otherwise fail closed.
 Dependency kinds: eager-runtime and deferred-runtime edges both establish possible runtime reachability and receive the same interface checks. Proven type-only branches have separately declared permissions and never establish runtime reachability. Treat an unproven guard conservatively as a possible runtime edge. Resolve local imports to discovered modules using the existing target helpers; preserve the import location for evidence.
 Dynamic uncertainty: computed imports that cannot be resolved statically require declared dynamic entry modules and a located uncertainty record. If that uncertainty prevents a reachability verdict, return exit 2 without a clean claim or a definite orphan.
@@ -267,7 +267,7 @@ R021.85-.90: Graph-loaded workflow with durable hydration; Meristem consumer and
 Data flow: skill-grade CLI -> declared skill files -> deterministic criteria -> located evidence -> grade receipt.
 Existing code: `pipelines_hooks/docs/public_surface_links.py:29` checks local link containment. `scripts/readiness/evidence.py:41` proves a skills directory exists; `scripts/skill_graph/au.py:78` extracts skill catalogue data. Neither grades skill quality.
 Reachable today: no. A grader and its registry entry are absent. Source searches for frontmatter, skill grade, description quality and skill metadata found no grader to reuse. Add the small grader module and reuse the link parser, scheme checks and `CannotRun` mapping. The existing link helper joins targets to the repository root; calling it unchanged misresolves nested skill links. Extend its interface with a document base while keeping the containment root independent.
-Attach point: `pipelines_hooks/cli.py:14` and `pipelines_hooks/cli.py:59`, plus the published hook, catalogue and self-run configuration used by `.github/workflows/ci.yml:86`.
+Attach point: `pipelines_hooks/cli.py:14` and `pipelines_hooks/cli.py:101`, plus the published hook, catalogue and self-run configuration used by `.github/workflows/ci.yml:86`.
 Decision: grade declared inputs with a versioned policy, never a model-generated subjective score. Default frontmatter requires nonempty name and description. Description checks require purpose and use-condition fields in the policy's declared form. Body sections are Usage and Examples by default. Metadata checks UTF-8 readability, a regular file, and no escaping symlink. Each criterion is binary at its declared weight; a policy replacement must name its version and predicates.
 Link resolution: derive the base from the source document directory within the repository. Decode and normalize local destinations, resolve symlinks, then enforce repository containment. Parent-relative links may reach another repository directory. Never substitute the skill directory for the containment root or resolve all skill links from the repository root. Preserve root README/AGENTS behavior.
 Rejected: treating directory presence or catalogue extraction as quality evidence. Grade receipts bind inputs and policy, while installation and admission remain with the host.
@@ -280,7 +280,7 @@ Acceptance: implement `tests/hooks/test_skill_grade_hook.py`, then run `uv run -
 Data flow: changed-source CLI -> pinned structural scanner -> validated clone report -> diagnostic and enforcement partitions -> reviewed-distinct register -> located guidance.
 Existing code: `pipelines_hooks/clones/dupehound.py:64` constructs the scanner command; `pipelines_hooks/clones/dupehound_report.py:66` validates findings; `pipelines_hooks/clones/dupehound_gate.py:28` enforces the reviewed register. `pipelines_hooks/clones/contract.py:14` sets 0.85 and the shared contract retains token minima and exclusions.
 Reachable today: yes for detection and enforcement through `pipelines_hooks/clones/dupehound_gate.py:46`; no for the additional 0.80 diagnostic partition and extraction advice. These additions have no production caller today.
-Attach point: extend the existing command, report and verdict chain, reached through `pipelines_hooks/cli.py:59`; create no second scanner or allowlist. A diagnostic finding cannot erase a register rot failure.
+Attach point: extend the existing command, report and verdict chain, reached through `pipelines_hooks/cli.py:101`; create no second scanner or allowlist. A diagnostic finding cannot erase a register rot failure.
 Decision: preserve the reviewed 0.85 blocking threshold while flagging 0.80-and-above pairs as requested. Below 0.85, guidance is diagnostic. Defaults live in the shared contract and can only change by reviewed producer policy. Tests cover 0.799, 0.80, 0.849 and 0.85 using deterministic report fixtures, then exercise real Rust and Python scanner fixtures through the CLI. Threshold invariants require finite values with 0 <= diagnostic <= enforcement <= 1.
 Rejected: replacing the scanner or lowering every consumer's enforcement threshold from source inspiration alone. Keep existing Rust/Python support, token minima, scope rules and digest-bound distinct-pair review. Extraction advice is a review proposal with both locations, not an automatic code rewrite.
 Cross-repository rows: none added; consumers retain the same hook ID and published policy.
@@ -290,9 +290,9 @@ Acceptance: implement `tests/hooks/test_similarity_guidance_hook.py`, then run `
 ### Meaningful outcome assertions (PIPE-PAGES-R021)
 
 Data flow: test-quality CLI -> declared outcome contracts -> static screening -> isolated baseline/counterexample runs -> bound assertion receipts -> located findings and verdict.
-Existing code: `pipelines_hooks/code/no_stub.py:62` scans production placeholders and explicitly skips tests. `pipelines_hooks/cli.py:59` dispatches gates and maps `CannotRun` to exit 2. `.config/pre-commit.yaml:30` already runs the locked test command at pre-push/manual stages. Source searches for assertion, observed outcome, test-quality and outcome proof found no existing semantic assertion checker.
+Existing code: `pipelines_hooks/code/no_stub.py:62` scans production placeholders and explicitly skips tests. `pipelines_hooks/cli.py:101` dispatches gates and maps `CannotRun` to exit 2. `.config/pre-commit.yaml:30` already runs the locked test command at pre-push/manual stages. Source searches for assertion, observed outcome, test-quality and outcome proof found no existing semantic assertion checker.
 Reachable today: no. The R021 test-quality module and registration remain specified; no runner or checker for declared outcomes exists. Reuse the gate dispatcher, configuration loader, test-runner convention and R020 evidence contract. This is an extension of R021, not a new gate family.
-Attach point: add the outcome runner/checker to the R021 `main` before its final verdict, reached through `pipelines_hooks/cli.py:59`. The published `test-quality` CLI and shared hook remain the production entry. Pass commands as argument arrays, with bounded time and output, in disposable trees. Execute no caller-supplied shell string and never mutate the production checkout.
+Attach point: add the outcome runner/checker to the R021 `main` before its final verdict, reached through `pipelines_hooks/cli.py:101`. The published `test-quality` CLI and shared hook remain the production entry. Pass commands as argument arrays, with bounded time and output, in disposable trees. Execute no caller-supplied shell string and never mutate the production checkout.
 Decision: a tracked repository policy maps collected test IDs, including parameter cases, to subject entry points and applicable return, error and side-effect observables. Collect the complete declared test scope before checking contracts; an omitted collected case fails rather than disappearing from the report. Every case needs at least one applicable outcome. A category may be not applicable only with a recorded reason. The policy supplies concrete expected predicates and reviewed counterexamples; it is not inferred from arbitrary English descriptions.
 Proof: run each selected baseline against its real fixture subject. For each applicable outcome, run a bounded counterexample in an isolated copy through the same subject interface and assert failure at the designated outcome assertion. A wrong return, missing/wrong error, and missing/extra side effect exercise the matching declared predicates. A runtime assertion event or supported helper adapter must tie the failure to that outcome; a crash, collection error or unrelated failed assertion is not evidence. Record skipped and uncollected parameter cases as unchecked. Default budgets are 30 seconds per case and 120 seconds per invocation, replaceable only by a versioned repository policy.
 Static limits: syntax checks can reject a constant assertion or flag absent observable checks, but cannot establish that a test means what its author intended. Assertions through helpers or exception contexts need explicit adapters. Runtime evidence proves sensitivity only to declared counterexamples; it is not a complete proof of all program semantics. Preserve coverage, placeholder, suppression and component-handoff checks.
@@ -434,7 +434,7 @@ R013.2 also excludes prose words in References declarations from relationship ta
 
 ### Structured artifacts and shared validation contracts
 
-The shared CLI at `pipelines_hooks/cli.py:79` calls `run_gate` at line 59.
+The shared CLI at `pipelines_hooks/cli.py:151` calls `run_gate` at line 59.
 The new registrations below are proposed; the current registry does not publish these checks.
 Reuse canonical status generation at `pipelines_hooks/specs/generator.py:93`; artifact validation must precede it.
 Reuse the proposed repository-validation, test-quality, config-inventory and skill-grade adapters owned by existing rows.
@@ -445,72 +445,72 @@ All planned test names below are future proof obligations. Documentation alone c
 #### Spec artifacts
 
 `PIPE-PAGES-R020.73` through `PIPE-PAGES-R020.78` extend `PIPE-PAGES-R020`.
-Add a spec-artifacts entry to pipelines_hooks/cli.py:13, dispatched through run_gate at line 59. Proposed artifacts.main must validate generator-skill output before the existing specs/generator.py:93 status consumer reads rendered requirements. Generator skills must invoke this adapter with their output path; direct unvalidated output cannot receive a compatibility receipt.
+Add a spec-artifacts entry to pipelines_hooks/cli.py:13, dispatched through run_gate at line 101. Proposed artifacts.main must validate generator-skill output before the existing specs/generator.py:93 status consumer reads rendered requirements. Generator skills must invoke this adapter with their output path; direct unvalidated output cannot receive a compatibility receipt.
 
 #### Spec bundle compatibility
 
 `PIPE-PAGES-R012.8` through `PIPE-PAGES-R012.13` extend `PIPE-PAGES-R012`.
-Extend proposed spec-artifacts at pipelines_hooks/cli.py:13 through run_gate at line 59. Validate the bundle before specs/generator.py:93 and dashboard source ingestion. the orchestration vocabulary spec owns graph ingestion. Its owner adapter must consume the identical bundle bytes; the Pages renderer must not invent graph compatibility.
+Extend proposed spec-artifacts at pipelines_hooks/cli.py:13 through run_gate at line 101. Validate the bundle before specs/generator.py:93 and dashboard source ingestion. the orchestration vocabulary spec owns graph ingestion. Its owner adapter must consume the identical bundle bytes; the Pages renderer must not invent graph compatibility.
 
 #### Skill dependency audit
 
 `PIPE-PAGES-R021.31` through `PIPE-PAGES-R021.36` extend `PIPE-PAGES-R021`.
-Extend the planned repository-validation registration at pipelines_hooks/cli.py:13 and run_gate at line 59. Proposed repository_validation.main must pass the skill inventory to the supply-chain adapter beside supply_chain/gate.py:58. The owner connector must return a durable proposal identity before approval consumers receive it.
+Extend the planned repository-validation registration at pipelines_hooks/cli.py:13 and run_gate at line 101. Proposed repository_validation.main must pass the skill inventory to the supply-chain adapter beside supply_chain/gate.py:58. The owner connector must return a durable proposal identity before approval consumers receive it.
 
 #### Aggregate skill grade
 
 `PIPE-PAGES-R023.13` through `PIPE-PAGES-R023.18` extend `PIPE-PAGES-R023`.
-Extend planned repository_validation.main to call a structured skill_grade.grade(snapshot, policy) adapter once before its final verdict. Register through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse the standalone grader contract; neither proposed module exists on this source revision.
+Extend planned repository_validation.main to call a structured skill_grade.grade(snapshot, policy) adapter once before its final verdict. Register through pipelines_hooks/cli.py:13 and run_gate at line 101. Reuse the standalone grader contract; neither proposed module exists on this source revision.
 
 #### Capability inventory
 
 `PIPE-PAGES-R012.14` through `PIPE-PAGES-R012.19` extend `PIPE-PAGES-R012`.
-Create a capability-coverage registration at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Reuse specs/bindings.py test discovery and owner-exported MCP inventories. Add static source adapters before the verdict. Dashboard source declarations must consume the resulting receipt without claiming exhaustive coverage themselves.
+Create a capability-coverage registration at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 101. Reuse specs/bindings.py test discovery and owner-exported MCP inventories. Add static source adapters before the verdict. Dashboard source declarations must consume the resulting receipt without claiming exhaustive coverage themselves.
 
 #### Structural limits
 
 `PIPE-PAGES-R021.37` through `PIPE-PAGES-R021.42` extend `PIPE-PAGES-R021`.
-Extend pipelines_hooks/kiss/census.py:31 for build enforcement and kiss/staged.py:50 for changed-source admission. Their existing callers are pipelines_hooks/cli.py:59. Arbora must configure both limits and invoke the shared check in its build. Unsupported scanner measurements require a versioned adapter, not guessed values.
+Extend pipelines_hooks/kiss/census.py:31 for build enforcement and kiss/staged.py:50 for changed-source admission. Their existing callers are pipelines_hooks/cli.py:101. Arbora must configure both limits and invoke the shared check in its build. Unsupported scanner measurements require a versioned adapter, not guessed values.
 
 #### Source path portability
 
-`PIPE-PAGES-R021.43` through `PIPE-PAGES-R021.48` extend `PIPE-PAGES-R021`.
-Register source-path-portability at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Publish a shared pre-commit hook and invoke it before package builds. Inventory Git paths and declared package roots statically; artifact platform tags do not replace source-path validation.
+`PIPE-PAGES-R031.1` through `PIPE-PAGES-R031.6` extend `PIPE-PAGES-R031`.
+Register source-path-portability at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 101. Publish a shared pre-commit hook and invoke it before package builds. Inventory Git paths and declared package roots statically; artifact platform tags do not replace source-path validation.
 
 #### Coverage closure
 
 `PIPE-PAGES-R021.49` through `PIPE-PAGES-R021.54` extend `PIPE-PAGES-R021`.
-Extend the planned test-quality registration at pipelines_hooks/cli.py:13 and run_gate at line 59 with an explicit closure mode. Proposed test_quality.main must invoke the declared runner before evaluating closure. Reuse the existing outcome runner and coverage adapters rather than adding another project registry.
+Extend the planned test-quality registration at pipelines_hooks/cli.py:13 and run_gate at line 101 with an explicit closure mode. Proposed test_quality.main must invoke the declared runner before evaluating closure. Reuse the existing outcome runner and coverage adapters rather than adding another project registry.
 
 #### Validation behavior inventory
 
 `PIPE-PAGES-R020.79` through `PIPE-PAGES-R020.84` extend `PIPE-PAGES-R020`.
-Extend the proposed config-inventory registration at pipelines_hooks/cli.py:13 through run_gate at line 59. Reuse the existing project inventory and configured hook parser. Execute the pinned baseline and consumer hooks in disposable trees. Connector spec-hook adoption alone must not establish complete validation coverage.
+Extend the proposed config-inventory registration at pipelines_hooks/cli.py:13 through run_gate at line 101. Reuse the existing project inventory and configured hook parser. Execute the pinned baseline and consumer hooks in disposable trees. Connector spec-hook adoption alone must not establish complete validation coverage.
 
 #### Offline unit profile
 
 `PIPE-PAGES-R021.55` through `PIPE-PAGES-R021.60` extend `PIPE-PAGES-R021`.
-Extend the planned test-quality registration at pipelines_hooks/cli.py:13 through run_gate at line 59. The proposed outcome runner must apply UnitProfile isolation before test collection and execution. Enforcement must cover subprocesses, not only patched Python socket calls. Consumers must select the unit profile explicitly.
+Extend the planned test-quality registration at pipelines_hooks/cli.py:13 through run_gate at line 101. The proposed outcome runner must apply UnitProfile isolation before test collection and execution. Enforcement must cover subprocesses, not only patched Python socket calls. Consumers must select the unit profile explicitly.
 
 #### Ontology governance hook
 
 `PIPE-PAGES-R020.85` through `PIPE-PAGES-R020.90` extend `PIPE-PAGES-R020`.
-Register ontology-governance at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 59. Publish the pre-commit hook with complete ontology discovery before commit admission. The adapter must consume the generated OntologyInspect/ShaclValidate client or generated offline authority artifacts. Read-only inspection alone does not establish validation.
+Register ontology-governance at pipelines_hooks/cli.py:13 and dispatch through run_gate at line 101. Publish the pre-commit hook with complete ontology discovery before commit admission. The adapter must consume the generated OntologyInspect/ShaclValidate client or generated offline authority artifacts. Read-only inspection alone does not establish validation.
 
 #### Test layout independence
 
-`PIPE-PAGES-R021.61` through `PIPE-PAGES-R021.66` extend `PIPE-PAGES-R021`.
-Extend the planned test-quality entry at pipelines_hooks/cli.py:13 through run_gate at line 59. Reuse proposed config-inventory project roots and the outcome runner. Publish the test-layout profile through the shared hook. Preserve separate real-component integration and recovery acceptance contracts.
+`PIPE-PAGES-R039.1` through `PIPE-PAGES-R039.6` extend `PIPE-PAGES-R039`.
+Extend the planned test-quality entry at pipelines_hooks/cli.py:13 through run_gate at line 101. Reuse proposed config-inventory project roots and the outcome runner. Publish the test-layout profile through the shared hook. Preserve separate real-component integration and recovery acceptance contracts.
 
 #### Solution size evidence
 
 `PIPE-PAGES-R021.67` through `PIPE-PAGES-R021.72` extend `PIPE-PAGES-R021`.
-Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 59. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under the decision-engine allocation row. Meristem run receipts must preserve the same source and evidence identities.
+Extend planned repository_validation.main before its report export through pipelines_hooks/cli.py:13 and run_gate at line 101. Reuse source inventory and R020 report serialization. Publish measurements to the owner allocation consumer under the decision-engine allocation row. Meristem run receipts must preserve the same source and evidence identities.
 
 #### Graph workflow receipt
 
 `PIPE-PAGES-R021.73` through `PIPE-PAGES-R021.78` extend `PIPE-PAGES-R021`.
-Extend the planned test-quality handoff verifier at pipelines_hooks/cli.py:13 through run_gate at line 59. Consume the owner acceptance receipt joining Meristem graph_orchestrate, execute_workflow and Medulla SourceIngest. The shared gate verifies provenance and outcomes; it must not become a runtime workflow orchestrator.
+Extend the planned test-quality handoff verifier at pipelines_hooks/cli.py:13 through run_gate at line 101. Consume the owner acceptance receipt joining Meristem graph_orchestrate, execute_workflow and Medulla SourceIngest. The shared gate verifies provenance and outcomes; it must not become a runtime workflow orchestrator.
 
 Historical validation comparison remains blocked until its former command revision and complete behavior inventory are recovered.
 Solution-size evidence does not resolve the reserved shortcut-comment policy. The coordinator retains that decision.
@@ -520,29 +520,9 @@ Coverage closure reuses the coverage and outcome owners; it does not replace the
 
 R032.1-.6: Preserve export-time coordinator decision and exact version comparison preventing silent forward/backward moves.
 
-### PIPE-PAGES-R033
-
-R033.1-.6: Bind installer contract to skill/command with explicit IDE/agent target/version matrix and per-target proof.
-
-### PIPE-PAGES-R034
-
-R034.1-.6: Extend portable deployment with single binary/image profile and external-dependency-free capability parity.
-
 ### PIPE-PAGES-R035
 
 R035.1-.6: Define stable prompt JSON/Pydantic disk format with exact difference oracle retaining roundtrip coverage.
-
-### PIPE-PAGES-R021.91-.96
-
-R021.91-.96: Complete central-validate behavior inventory and require pre-commit parity across all projects.
-
-### PIPE-PAGES-R037
-
-R037.1-.6: Define unit-test profile with enforced external determinism and mocked dependencies.
-
-### PIPE-PAGES-R038
-
-R038.1-.6: Python-only pre-commit hook consuming Medulla-owned ontology validation with fail-closed authority.
 
 ### PIPE-PAGES-R039
 
@@ -551,10 +531,6 @@ R039.1-.6: Complete project test-layout inventory with fixture isolation and ord
 ### PIPE-PAGES-R040
 
 R040.1-.6: Extend Meristem approval criteria to reject coverage-decreasing proposals.
-
-### PIPE-PAGES-R041
-
-R041.1-.6: Configured structural limits with named-function failure reporting in shared gate.
 
 ### PIPE-PAGES-R042
 
