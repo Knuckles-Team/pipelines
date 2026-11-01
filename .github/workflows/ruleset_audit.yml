@@ -1,0 +1,30 @@
+name: Ruleset audit
+
+# Reports drift of the fleet merge settings (PIPE-GATES-R048): every non-archived registered
+# repository's main must require exactly the check `CI required`, and allow auto-merge. The run
+# fails with the list; it never changes a repository. The org-wide read needs the repository
+# secret RULESET_AUDIT_TOKEN (a read-only token with repository administration read access);
+# without it the audit reads only what the workflow token can see and reports the rest.
+
+on:
+  schedule:
+    - cron: '41 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Audit main rulesets
+        env:
+          GH_TOKEN: ${{ secrets.RULESET_AUDIT_TOKEN || github.token }}
+        run: python3 scripts/audit_ruleset_conformance.py
