@@ -9,7 +9,6 @@ def test_repository_aliases_canonicalize_bare_and_full_refs() -> None:
     assert canonical_repository("https://github.com/Knuckles-Team/agent-connector-sdk.git") == (
         "Knuckles-Team/scion-sdk"
     )
-    assert repository_slug("git@github.com:Knuckles-Team/epistemic-graph-server.git") == "medulla-stem"
 
 
 def test_repository_matches_old_and_new_refs_without_cross_owner_match() -> None:

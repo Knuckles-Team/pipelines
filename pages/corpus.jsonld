@@ -1877,7 +1877,7 @@
         "eg.architecture-gates",
         "eg.release-composition"
       ],
-      "summary": "Feature selection, process lifecycle and the gate suite. Owns the root Cargo.toml feature graph (default = graph, algorithms, metrics, full; full is an 84-entry list that INCLUDES security and the viz family), the five [[bin]] targets each behind required-features (epistemic-graph-server/server, nemesis/harness, migrate-shards, restore/redb+server, lake-fixture-export/lake), .cargo/config.toml (target-dir = target-isolated, the GGML CPU portability contract, mold, sccache), arch-lint.toml, the 60-hook .config/pre-commit.yaml and scripts/. It is therefore the owner of every architecture-gate decision: D-EG-004 (no crate-DAG gate exists), D-EG-006 (the arch-lint exclude misses target-isolated) and the sequencing half of D-EG-009."
+      "summary": "Feature selection, process lifecycle and the gate suite. Owns the root Cargo.toml feature graph (default = graph, algorithms, metrics, full; full is an 84-entry list that INCLUDES security and the viz family), the five [[bin]] targets each behind required-features (medulla-server/server, nemesis/harness, migrate-shards, restore/redb+server, lake-fixture-export/lake), .cargo/config.toml (target-dir = target-isolated, the GGML CPU portability contract, mold, sccache), arch-lint.toml, the 60-hook .config/pre-commit.yaml and scripts/. It is therefore the owner of every architecture-gate decision: D-EG-004 (no crate-DAG gate exists), D-EG-006 (the arch-lint exclude misses target-isolated) and the sequencing half of D-EG-009."
     },
     {
       "id": "component/epistemic-graph/registry/eg-cluster-replication",

@@ -23,7 +23,6 @@ class NoRedirect(HTTPRedirectHandler):
 # import, ontology, and spec identities remain stable.
 _REPOSITORY_ALIASES = {
     "epistemic-graph": "medulla",
-    "epistemic-graph-server": "medulla-stem",
     "agent-connector-sdk": "scion-sdk",
     "agent-utilities": "meristem",
     "agent-webui": "overstory",
