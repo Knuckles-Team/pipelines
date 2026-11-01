@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.3.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.4.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
 
 ## Core Principles
 
@@ -628,6 +628,30 @@ Standards and tests:
 
 **Plan check:** Does the plan reproduce the defect over the real protocol, fix it in the shared SDK when shared, and bind a real-transport regression test to the row?
 
+### XXVII. Dependencies track the latest release
+
+A dependency floor follows the latest published release. When upstream publishes a release, a repository raises the floor and refreshes its lock in an ordinary change, and an upgrade is welcome in any change. A pre-release is never a floor. A ceiling or an exact pin on a dependency needs a recorded blocker that names the dependency and the reason.
+
+*Rationale*: An old floor keeps known defects and blocks the shared platform from moving. Small steady upgrades cost less than one late migration.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: uv-lock-check, supply-chain, dependency-readiness -->
+- `uv-lock-check`: uv.lock is current (uv lock --check; never mutates)
+- `supply-chain`: Immutable workflow, container and dependency sources
+- `dependency-readiness`: RELEASE dependency readiness (repository-manager)
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Gate standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/gate-standard.md): the Python version section records a dependency that blocks a newer runtime.
+- [Python wheel release readiness](https://github.com/Knuckles-Team/pipelines/blob/main/reference/python-release-readiness.md).
+- `tests/hooks/test_dependency_readiness.py`, `tests/hooks/test_supply_chain.py`.
+
+**Plan check:** Does the change raise each dependency floor to the latest release, or record the blocker that keeps a ceiling or pin?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -701,4 +725,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.3.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.4.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
