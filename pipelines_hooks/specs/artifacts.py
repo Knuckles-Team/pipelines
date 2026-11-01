@@ -53,11 +53,36 @@ def section(plan: str, name: str) -> str:
     return "\n".join(line for _, line in unfenced("\n".join(body))).strip()
 
 
+TABLE_ROW_RE = re.compile(r"^\|.*\|$")
+TABLE_SEPARATOR_RE = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+$")
+LIST_ITEM_RE = re.compile(r"^(?:[-*+]|\d+[.)])\s+")
+
+
+def _seam_items(lines: list[str]) -> list[str]:
+    """List items and table data rows; a table header row and its separator row are not seams."""
+    items = []
+    for index, line in enumerate(lines):
+        if TABLE_ROW_RE.match(line):
+            is_header = index + 1 < len(lines) and bool(TABLE_SEPARATOR_RE.match(lines[index + 1]))
+            if not is_header and not TABLE_SEPARATOR_RE.match(line):
+                items.append(line)
+        elif LIST_ITEM_RE.match(line):
+            items.append(line)
+    return items
+
+
 def seams(plan: str) -> list[str]:
-    """One entry per line of the Cross-repo seams section, none when it says ``none``."""
+    """One entry per seam of the Cross-repo seams section, none when it says ``none``.
+
+    A seam is a table data row or a list item. The table header row, the separator row and prose
+    around a table are not seams. A section with no table and no list keeps one entry per line.
+    """
     body = section(plan, "Cross-repo seams")
     lines = [ln.strip() for ln in body.splitlines() if ln.strip()]
-    return [] if not lines or NO_UNKNOWNS_RE.match(lines[0]) else lines
+    if not lines or NO_UNKNOWNS_RE.match(lines[0]):
+        return []
+    structured = any(TABLE_ROW_RE.match(ln) or LIST_ITEM_RE.match(ln) for ln in lines)
+    return _seam_items(lines) if structured else lines
 
 
 def row_lines(requirements: str) -> list[tuple[str, str]]:
