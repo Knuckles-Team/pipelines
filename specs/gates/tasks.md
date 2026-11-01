@@ -64,3 +64,5 @@
 - [x] T058 PIPE-GATES-R045 Fail a touched behaviour row that lacks a caller chain, a Shape sentence or a test path::name.
 - [x] T059 PIPE-GATES-R046 Fail a touched plan.md that departs from the plan template, names an unknown row or has a broken link.
 - [x] T060 PIPE-GATES-R046.1 Resolve foreign row IDs in any plan section against the cross-repo ID index; fail closed without one.
+- [ ] T061 PIPE-GATES-R016.116.1 Keep owner-only merge for platform-delivered pull requests: state the rule in the CI standard and test that no workflow arms or merges.
+- [ ] T062 PIPE-GATES-R016.116.2 Test that no gate job is conditioned on the actor or the author and that the main ruleset has no bypass actor.

@@ -41,6 +41,7 @@ A spec author cites a row of another repository. A hand-written contract must na
 ### Edge Cases
 
 - A publish failure must not change a gate verdict.
+- A platform-opened pull request gets no skip, no bypass and no merge by the platform principal.
 - An unreachable engine yields an advisory finding for the state and contract checks.
 - A task opened exactly at the 300 s window edge does not open the window.
 
@@ -51,6 +52,7 @@ A spec author cites a row of another repository. A hand-written contract must na
 - **FR-003**: Every blocking gate runs against the engine tree without a local checkout. Rows: `PIPE-GATES-R003`.
 - **FR-004**: Gates publish verdicts and computed states to the engine. Rows: `PIPE-GATES-R004`, `PIPE-GATES-R004.3`, `PIPE-GATES-R004.5`.
 - **FR-005**: A row that cites another repository's row is covered by a contract. Rows: `PIPE-GATES-R034`, `PIPE-GATES-R034.2`.
+- **FR-006**: Platform-delivered pull requests keep owner-only merge and pass every gate unchanged. Rows: `PIPE-GATES-R016.116.1`, `PIPE-GATES-R016.116.2`.
 
 ## Success Criteria
 
@@ -80,3 +82,4 @@ Pipelines owns the gate-set policy and the published gate behavior. The changese
 | FR-003 | `PIPE-GATES-R003` | [Tree-based execution](plan.md#tree-based-execution) | T-004 | |
 | FR-004 | `PIPE-GATES-R004.3` | [Engine records](plan.md#engine-records-pipe-gates-r004-pipe-connspec-r009-pipe-release-r009) | T-034 | |
 | FR-005 | `PIPE-GATES-R034.2` | [Existing wiring and graph automation](plan.md#existing-wiring-and-graph-automation) | T-039 | |
+| FR-006 | `PIPE-GATES-R016.116.1` | [Quality and release gates](plan.md#quality-and-release-gates) | T-055, T-056 | |
