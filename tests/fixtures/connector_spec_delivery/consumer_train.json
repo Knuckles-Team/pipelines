@@ -18,6 +18,7 @@
     "sha": "5c1de08df84e4e67ebc4fd04210626135c336de9",
     "spec_group": [
       "spec-standard",
+      "plan-conformance",
       "spec-decomposition",
       "spec-status",
       "spec-trailers"

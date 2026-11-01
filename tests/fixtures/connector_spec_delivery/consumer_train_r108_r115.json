@@ -7,6 +7,7 @@
     "status_sha256": "1da442d782dec3f9a48146ba80027dd7e71c943d1bdfe4ead69e561f64b3b442",
     "spec_group": [
       "spec-standard",
+      "plan-conformance",
       "spec-decomposition",
       "spec-status",
       "spec-trailers"

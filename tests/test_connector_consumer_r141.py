@@ -36,6 +36,7 @@ EXPECTED_HOOKS = {
 }
 EXPECTED_SPEC_MEMBERS = {
     "spec-standard",
+    "plan-conformance",
     "spec-decomposition",
     "spec-status",
     "spec-trailers",

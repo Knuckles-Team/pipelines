@@ -27,7 +27,7 @@ EXPECTED_CONSUMER = {
 EXPECTED_ROWS = {"PIPE-CONNSPEC-R144.3", "PIPE-CONNSPEC-R144.4"}
 EXPECTED_HISTORICAL = {"PIPE-CONNSPEC-R144.1", "PIPE-CONNSPEC-R144.2"}
 EXPECTED_HOOKS = {"connector-standard", "dependency-readiness", "secrets", "spec", "tests-fast"}
-EXPECTED_SPEC_MEMBERS = {"spec-standard", "spec-decomposition", "spec-status", "spec-trailers"}
+EXPECTED_SPEC_MEMBERS = {"spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers"}
 EXPECTED_RECORDS = {
     "CONN-NEXTCLOUD-AGENT-CONNECTOR-CONTENT",
     "CONN-NEXTCLOUD-AGENT-CONNECTOR-CONTENT-R001",

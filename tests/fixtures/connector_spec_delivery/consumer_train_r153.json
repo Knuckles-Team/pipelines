@@ -48,6 +48,7 @@
       "aggregate_mapping_proven": true,
       "members": [
         "spec-standard",
+        "plan-conformance",
         "spec-decomposition",
         "spec-status",
         "spec-trailers"

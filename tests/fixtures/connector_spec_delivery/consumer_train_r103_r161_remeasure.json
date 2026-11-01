@@ -6,6 +6,7 @@
   "repo": "Knuckles-Team/pipelines",
   "spec_group": [
    "spec-standard",
+   "plan-conformance",
    "spec-decomposition",
    "spec-status",
    "spec-trailers"
