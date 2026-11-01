@@ -68,3 +68,133 @@
 - [ ] T062 PIPE-GATES-R016.116.2 Test that no gate job is conditioned on the actor or the author and that the main ruleset has no bypass actor.
 - [ ] T063 PIPE-GATES-R047 Fail a pull request whose title or body holds a CI-skip marker, in the shared gates workflow.
 - [ ] T064 PIPE-GATES-R048 Add the scheduled ruleset audit and test that a wrong or missing required check, a disabled auto-merge and a skipped repository are reported as designed.
+- [x] T065 PIPE-GATES-R008.1 No version mirror outside pyproject.toml.
+- [x] T066 PIPE-GATES-R016.1 An import bridges modules.
+- [x] T067 PIPE-GATES-R016.2 An individual's type is a reference.
+- [x] T068 PIPE-GATES-R016.3 Test-fixture ontologies are outside the corpus.
+- [x] T069 PIPE-GATES-R016.4 A pack import of Medulla is a finding, never a bridge.
+- [x] T070 PIPE-GATES-R016.5 Every pack class rolls up to Medulla core.
+- [x] T071 PIPE-GATES-R016.6 connector-ontology-map fix drops imports and stops redeclaration (R1, R2).
+- [x] T072 PIPE-GATES-R016.7 Roll-up is mechanical, the residue is reviewed (R3, R4, R5).
+- [x] T073 PIPE-GATES-R016.8 Mappings and dangling references never invent classes (R6, R7).
+- [x] T074 PIPE-GATES-R016.9 Untyped properties and the run contract (R8).
+- [x] T075 PIPE-GATES-R016.10 Declarations from the retired files (migrate a).
+- [x] T076 PIPE-GATES-R016.11 Cut files and packaging (migrate b).
+- [x] T077 PIPE-GATES-R016.12 Prompts (migrate c): extends and compose lines are removed from prompts/*.json, keeping the file format; a file that does not strip cleanly is a review item.
+- [x] T078 PIPE-GATES-R016.13 Scion SDK floor and version (migrate e).
+- [x] T079 PIPE-GATES-R016.14 Tests (migrate f): Tests that read the cut files are rewritten by fixed rules (ingest-source and schema-mapping reads go to the generated module) or deleted (manifest, fingerprint and preset tests); e.
+- [x] T080 PIPE-GATES-R016.15 Idempotent hard cutover: A second run changes nothing and equal inputs give equal output.
+- [x] T081 PIPE-GATES-R016.16 Batch driver and verify.
+- [x] T082 PIPE-GATES-R016.17 Docs (migrate g): In README and docs (.md, .rst), a line or table row that only names a cut file (a bare bullet, a tree entry with an optional comment, a table row whose first cell is the file) is rem.
+- [x] T083 PIPE-GATES-R016.18 Re-bump of a migrated repo.
+- [x] T084 PIPE-GATES-R016.19 Reference strings (migrate f).
+- [x] T085 PIPE-GATES-R016.20 Cut reads in tests (migrate f).
+- [x] T086 PIPE-GATES-R016.21 Source prose and wiring (migrate g).
+- [x] T087 PIPE-GATES-R016.22 Packaging and generator scripts (migrate b).
+- [x] T088 PIPE-GATES-R016.23 Certification and version targets (migrate b, e).
+- [x] T089 PIPE-GATES-R016.24 Action tools and list values (migrate a).
+- [x] T090 PIPE-GATES-R016.25 Driver isolation and sync.
+- [x] T091 PIPE-GATES-R016.26 Typed module and test rules.
+- [x] T092 PIPE-GATES-R016.27 Action tools resolved from the served tool list.
+- [x] T093 PIPE-GATES-R016.28 Changelog entry: A CHANGELOG.md with ## [x] headings gets one fixed entry for the bumped version (Scion SDK floor and declared sources), once; release-version tests pin it.
+- [x] T094 PIPE-GATES-R016.29 Driver commit loop and reviewed patches.
+- [x] T095 PIPE-GATES-R016.30 Mapping reads in tests.
+- [x] T096 PIPE-GATES-R016.31 Scripts that drive a deleted script.
+- [x] T097 PIPE-GATES-R016.32 Prompt key assertions: assert x["extends"] == ..., assert x["compose"] == ... and assert "extends" in x are dropped from tests, because the prompt no longer carries the stripped keys.
+- [x] T098 PIPE-GATES-R016.33 Package name from pyproject.toml.
+- [x] T099 PIPE-GATES-R016.34 Empty-source module and file endings.
+- [x] T100 PIPE-GATES-R016.35 Hooks a connector's own workflow covers.
+- [x] T101 PIPE-GATES-R016.36 Entity ids are validated strings.
+- [x] T102 PIPE-GATES-R016.37 Provider entry point under either group.
+- [x] T103 PIPE-GATES-R016.38 Illegal-instruction detection: The driver looks for the Fatal Python error: Illegal instruction header in the full pytest output, not in the 2000-character tail kept in the ledger, so a crash dump tha.
+- [x] T104 PIPE-GATES-R016.39 Ontology artifacts are generated at release, not committed.
+- [x] T105 PIPE-GATES-R016.40 The connector PR gate runs dupehound.
+- [x] T106 PIPE-GATES-R016.41 The repo-local version hook leaves the connector (migrate e).
+- [x] T107 PIPE-GATES-R016.42 The connector PR gate installs the identity catalog from the caller's variable.
+- [x] T108 PIPE-GATES-R016.43 Home paths are case-sensitive path segments.
+- [x] T109 PIPE-GATES-R016.44 The connector repository set is the workspace manifest's agents group intersected with the non-archived GitHub repositories.
+- [x] T110 PIPE-GATES-R016.50 Wave 1 (Scion SDK 0.5) rule w1.g1.
+- [x] T111 PIPE-GATES-R016.51 Wave 1 (Scion SDK 0.5) rule w1.g2.
+- [x] T112 PIPE-GATES-R016.52 Wave 1 (Scion SDK 0.5) rule w1.g3.
+- [x] T113 PIPE-GATES-R016.53 Wave 1 (Scion SDK 0.5) rule w1.g4.
+- [x] T114 PIPE-GATES-R016.54 Wave 1 (Scion SDK 0.5) rule w1.g5.
+- [x] T115 PIPE-GATES-R016.55 Wave 1 (Scion SDK 0.5) rule w1.g6.
+- [x] T116 PIPE-GATES-R016.56 Wave 1 (Scion SDK 0.5) rule w1.g7.
+- [x] T117 PIPE-GATES-R016.57 Wave 1 (Scion SDK 0.5) rule w1.h.
+- [x] T118 PIPE-GATES-R016.58 Wave 1 (Scion SDK 0.5) rule w1.k1.
+- [x] T119 PIPE-GATES-R016.59 Wave 1 (Scion SDK 0.5) rule w1.k2.
+- [x] T120 PIPE-GATES-R016.60 Wave 1 (Scion SDK 0.5) rule w1.k3.
+- [x] T121 PIPE-GATES-R016.61 Wave 1 (Scion SDK 0.5) rule w1.k4.
+- [x] T122 PIPE-GATES-R016.62 Wave 1 (Scion SDK 0.5) rule w1.i1.
+- [x] T123 PIPE-GATES-R016.63 Wave 1 (Scion SDK 0.5) rule w1.i2.
+- [x] T124 PIPE-GATES-R016.64 Wave 1 (Scion SDK 0.5) rule w1.l1.
+- [x] T125 PIPE-GATES-R016.65 Wave 1 (Scion SDK 0.5) rule w1.l2.
+- [x] T126 PIPE-GATES-R016.66 Wave 1 (Scion SDK 0.5) rule w1.l3.
+- [x] T127 PIPE-GATES-R016.67 Wave 1 (Scion SDK 0.5) rule w1.l4.
+- [x] T128 PIPE-GATES-R016.68 Auth standardization rule auth.r1.
+- [x] T129 PIPE-GATES-R016.69 Auth standardization rule auth.r2.
+- [x] T130 PIPE-GATES-R016.70 Auth standardization rule auth.r3.
+- [x] T131 PIPE-GATES-R016.71 Auth standardization rule auth.r4.
+- [x] T132 PIPE-GATES-R016.72 Auth standardization rule auth.r5.
+- [x] T133 PIPE-GATES-R016.73 Auth standardization rule auth.r6.
+- [x] T134 PIPE-GATES-R016.74 Auth standardization rule auth.r7.
+- [x] T135 PIPE-GATES-R016.75 Auth standardization rule auth.r8.
+- [x] T136 PIPE-GATES-R016.76 Auth standardization rule auth.r9.
+- [x] T137 PIPE-GATES-R016.77 Auth standardization rule auth.r10.
+- [x] T138 PIPE-GATES-R016.78 Auth standardization rule auth.r11.
+- [x] T139 PIPE-GATES-R016.79 Auth standardization rule auth.r12.
+- [x] T140 PIPE-GATES-R016.80 Auth standardization rule auth.r13.
+- [x] T141 PIPE-GATES-R016.81 Auth standardization rule auth.r14.
+- [x] T142 PIPE-GATES-R016.82 Ingest (Scion SDK 0.5.2) rule ingest.i1.
+- [x] T143 PIPE-GATES-R016.83 Ingest (Scion SDK 0.5.2) rule ingest.i2.
+- [x] T144 PIPE-GATES-R016.84 Ingest (Scion SDK 0.5.2) rule ingest.i3.
+- [x] T145 PIPE-GATES-R016.85 Ingest (Scion SDK 0.5.2) rule ingest.i4.
+- [x] T146 PIPE-GATES-R016.86 Ingest (Scion SDK 0.5.2) rule ingest.i5.
+- [x] T147 PIPE-GATES-R016.87 Ingest (Scion SDK 0.5.2) rule ingest.i6.
+- [x] T148 PIPE-GATES-R016.88 Ingest (Scion SDK 0.5.2) rule ingest.i7.
+- [x] T149 PIPE-GATES-R016.89 Ingest (Scion SDK 0.5.2) rule ingest.i8.
+- [x] T150 PIPE-GATES-R016.90 Ingest (Scion SDK 0.5.2) rule ingest.i9.
+- [x] T151 PIPE-GATES-R016.91 Pipelines-owned boilerplate rule pl.n.
+- [x] T152 PIPE-GATES-R016.92 Pipelines-owned boilerplate rule pl.o.
+- [x] T153 PIPE-GATES-R016.93 Pipelines-owned boilerplate rule pl.p.
+- [x] T154 PIPE-GATES-R016.94 Pipelines-owned boilerplate rule pl.q.
+- [x] T155 PIPE-GATES-R016.95 Pipelines-owned boilerplate rule pl.r.
+- [x] T156 PIPE-GATES-R016.96 Pipelines-owned boilerplate rule pl.s.
+- [x] T157 PIPE-GATES-R016.97 Pipelines-owned boilerplate rule pl.t.
+- [x] T158 PIPE-GATES-R016.98 Pipelines-owned boilerplate rule pl.u.
+- [x] T159 PIPE-GATES-R016.99 Pipelines-owned boilerplate rule pl.v.
+- [x] T160 PIPE-GATES-R016.100 Connector identity rule id.name.
+- [x] T161 PIPE-GATES-R016.101 Pipelines-owned boilerplate rule pl.w.
+- [x] T162 PIPE-GATES-R016.102 Pipelines-owned boilerplate rule pl.x.
+- [x] T163 PIPE-GATES-R016.103 Pipelines-owned boilerplate rule pl.y.
+- [x] T164 PIPE-GATES-R016.104 Pipelines-owned boilerplate rule pl.z.
+- [x] T165 PIPE-GATES-R016.105 Pipelines-owned boilerplate rule pl.aa.
+- [x] T166 PIPE-GATES-R016.106 Pipelines-owned boilerplate rule pl.ab.
+- [x] T167 PIPE-GATES-R016.107 Pipelines-owned boilerplate rule pl.ac.
+- [x] T168 PIPE-GATES-R016.108 Pipelines-owned boilerplate rule pl.ad.
+- [x] T169 PIPE-GATES-R016.109 Pipelines-owned boilerplate rule pl.ae.
+- [x] T170 PIPE-GATES-R016.110 Pipelines-owned boilerplate rule pl.af.
+- [x] T171 PIPE-GATES-R016.111 Central driver and verify.
+- [x] T172 PIPE-GATES-R016.112 A method call is not an internal hostname.
+- [x] T173 PIPE-GATES-R016.113 An endpoint route literal is not a home path.
+- [x] T174 PIPE-GATES-R016.114 A variable reference is not a URI credential.
+- [x] T175 PIPE-GATES-R016.115 The skill gates are a connector-standard member.
+- [x] T176 PIPE-GATES-R016.117 A long token is scanned in overlapping windows, not refused.
+- [x] T177 PIPE-GATES-R016.118 A requirement-row token and a repository-relative path are not machine data.
+- [x] T178 PIPE-GATES-R016.119 A local account name is contextual, not a bare word.
+- [ ] T179 PIPE-GATES-R017 Required runtime manifest gate.
+- [ ] T180 PIPE-GATES-R018 No duplicate worker policy in ingest-worker specs.
+- [ ] T181 PIPE-GATES-R019 Hydration journey gate through the harness.
+- [ ] T182 PIPE-GATES-R020 Nightly attached-source conformance workflow.
+- [ ] T183 PIPE-GATES-R021 Build gate for the root library and its lint profiles.
+- [x] T184 PIPE-GATES-R022 Spec directories accept the optional design artifacts.
+- [x] T185 PIPE-GATES-R024 The spec narrative uses prioritized stories and labelled criteria.
+- [x] T186 PIPE-GATES-R025 An open clarification marker blocks landing.
+- [x] T187 PIPE-GATES-R026 Tasks use the numbered task line and name a row.
+- [x] T188 PIPE-GATES-R027 State stays computed: The states SPECIFIED, LANDED, VERIFIED and RETIRED are computed from rows, trailers and bindings.
+- [ ] T189 PIPE-GATES-R049.1 Model: coverage evidence with percentage, revision and tool.
+- [ ] T190 PIPE-GATES-R049.2 Behavior: fail when the candidate percentage is below the baseline.
+- [ ] T191 PIPE-GATES-R049.3 Wiring: register the coverage-decrease hook for proposal admission.
+- [ ] T192 PIPE-GATES-R049.4 Refusal: missing or stale evidence cannot pass.
+- [ ] T193 PIPE-GATES-R049.5 Evidence: print the proposal identity with both measurements.
+- [ ] T194 PIPE-GATES-R049.6 Hot-path proof: a planted decrease is rejected through the CLI.
