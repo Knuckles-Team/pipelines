@@ -1,4 +1,4 @@
-# Architecture — PIPE-RELEASE
+# PIPE-RELEASE — Implementation plan
 
 Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 
@@ -60,7 +60,7 @@ No unknowns; no research.md.
 
 `.github/workflows/container_pipeline.yml` builds caller images. `.github/actions/verify-source-commit/` binds a build to the checkout. Python, maturin, services, and Pages workflows provide existing job contracts. Workflow contract tests classify hosted gates. Extend these seams with a small release coordinator and schema; do not build another image builder or fork each workflow.
 
-Flow: candidate declaration → schema/graph validation → exact source/build/CI receipts → deterministic dependency order → stage publication → CI observation → digest mapping → consumer manifest verification → deployment-owner handoff. Inputs and outputs are versioned public artifacts with SHA-256 digests, source commits, and run URLs. `latest` is never release authority.
+Flow: candidate declaration → schema/graph validation → exact source/build/CI receipts → deterministic dependency order → stage publication → CI observation → digest mapping → consumer manifest verification → deployment-owner handoff. Inputs and outputs are versioned public artifacts with sha256 digests, source commits, and run URLs. `latest` is never release authority.
 
 ### Candidate model
 
@@ -84,11 +84,11 @@ Use least-privilege GitHub permissions, immutable action refs, no persisted chec
 
 ### Kernel wheel completeness (PIPE-RELEASE-R004)
 
-Data flow: release bundle step → `main` (`.github/actions/wheel-readiness/readiness.py:325`) → `aggregate` (`bundle.py:98`) → `missing_cells` (new `kernels.py`) → receipt with `kernel_cells`, or `KernelCellMissing`.
+Data flow: release bundle step → `main` (`.github/actions/wheel-readiness/readiness.py:443`) → `aggregate` (`bundle.py:114`) → `missing_cells` (`kernels.py:142`) → receipt with `kernel_cells`, or `KernelCellMissing`.
 
 Types: `KernelCell(target, python_tag, wheel)` and `KernelMatrix(required, found)`. A wheel counts when its archive lists a compiled extension that matches its platform tag. The gate fails closed on a missing cell.
 
-Reused: `TARGETS` (`targets.py:7`), `wheel_set` (`readiness.py:233`), `aggregate` (`bundle.py:98`). New: the Python version axis and the binary check. Existing code: `targets.py:7`, `targets.py:30`, `bundle.py:98`, `readiness.py:233`, `readiness.py:343`. Reachable today: no, the matrix check does not exist; `aggregate` is reached.
+Reused: `TARGETS` (`targets.py:7`) and `aggregate` (`bundle.py:114`). Added in `kernels.py`: the Python version axis and the binary check. Existing code: `targets.py:7`, `bundle.py:114`, `bundle.py:132`, `kernels.py:455`, `readiness.py:443`, `readiness.py:461`. Reachable today: yes, `aggregate` calls the matrix check and `verify_snapshot` re-checks the receipt (`bundle.py:99-106`).
 
 Decision: check the archive contents rather than the filename tag, because a pure-Python wheel can carry a platform tag. Rejected: trusting the platform tag alone. Search terms used: kernel, manylinux, abi3, wheel, `.so`.
 
@@ -96,11 +96,11 @@ Cross-repository: the Medulla kernel wheels consume this gate, owner prefix `EG`
 
 ### Dependency loop gate (PIPE-RELEASE-R005)
 
-Data flow: `pipelines-hook supply-chain` → `main` (`cli.py:79`) → gate (`gate.py:71`) → `dependency_findings` (`dependencies.py:79`) → `loop_findings` (new `dependency_cycles.py`) → `SC-DEP-LOOP` findings.
+Data flow: `pipelines-hook supply-chain` → `main` (`cli.py:151`) → `run_gate` (`cli.py:101`) → gate (`gate.py:118`) → `dependency_findings` (`dependencies.py:98`) → `loop_findings` (`dependency_cycles.py:232`) → `SC-DEP-LOOP` findings.
 
 Types: `DependencyEdge(source_group, target_group, via)` and `DependencyLoop(members)`. Groups cover root, optional extras and development groups. A loop is a strongly connected component above one member, or a self-loop.
 
-Reused: `declared_dependencies` (`dependencies.py:32`) for group tables; the component search shape from `import_cycles.py:41`. Existing code: `dependencies.py:32`, `dependencies.py:79`, `gate.py:71`, `cli.py:28`, `import_cycles.py:41`. Reachable today: no, nothing builds a group graph; `dependency_findings` is reached.
+Reused: `declared_dependencies` (`dependencies.py:45`) for group tables; the component search shape from `pipelines_hooks/code/import_cycles.py:41`. Existing code: `dependencies.py:45`, `dependencies.py:98`, `gate.py:87`, `cli.py:30`, `dependency_cycles.py:210`. Reachable today: yes, `dependency_findings` calls `loop_findings` (`dependencies.py:109`).
 
 Decision: build the graph per manifest at gate time. Rejected: detecting loops only at lock time, because the lock step already fails late and without member names. Search terms used: circular, cycle, include-group, strongly connected, optional-dependencies, dependency-groups.
 
@@ -108,9 +108,9 @@ Decision: build the graph per manifest at gate time. Rejected: detecting loops o
 ### Project version consistency (PIPE-RELEASE-R006)
 
 Data flow: project-version-sync CLI/shared hook -> one selected Git snapshot -> canonical bump configuration -> complete typed location inventory -> extraction and template checks -> located verdict.
-Existing code: `.config/bumpversion.cfg:2` declares current version; `.config/bumpversion.cfg:6` contains only the metadata replacement. `pipelines_hooks/core/versions_gate.py:10` verifies pinned scanner executables and provides no project synchronization. `pipelines_hooks/core/comparison.py:53` selects index versus committed input; `pipelines_hooks/core/gitenv.py:81` reads Git blobs. `pipelines_hooks/cli.py:59` supplies dispatch and typed failure handling.
-Reachable today: no. There is no project-version-sync module or gate registration. Searches for bump, version sync, version consistency and metadata version found the bump configuration and scanner check, not an implementation. Reuse Git snapshot/error helpers and the existing bump tool's format; keep scanner-versions and release R001–R005 unchanged.
-Attach point: new `pipelines_hooks/release/project_version.py:main` is registered at `pipelines_hooks/cli.py:13`. Publish `project-version-sync` beside the existing version hook at `.pre-commit-hooks.yaml:67`, with `pass_filenames: false` and `always_run: true`. The self-run hook configuration is consumed by `.github/workflows/ci.yml:86`. This is an offline code gate, with no registry, release upload or live network prerequisite.
+Existing code: `.config/bumpversion.cfg:2` declares current version; `.config/bumpversion.cfg:6`, `:10` and `:14` hold the metadata, source and documentation replacements. `pipelines_hooks/core/versions_gate.py:10` verifies pinned scanner executables and provides no project synchronization. `pipelines_hooks/core/comparison.py:64` selects index versus committed input; `pipelines_hooks/core/gitenv.py:77` reads Git blobs. `pipelines_hooks/cli.py:101` supplies dispatch and typed failure handling.
+Reachable today: yes, for the three-role check (`project_version.main`, `pipelines_hooks/release/project_version.py:772`, registered at `cli.py:31`); the discovery of undeclared locations (`discover_version_locations`, `project_version.py:390`) is not yet called from `evaluate`. Reuse Git snapshot/error helpers and the existing bump tool's format; keep scanner-versions and release R001–R005 unchanged.
+Attach point: `pipelines_hooks/release/project_version.py:main` is registered at `pipelines_hooks/cli.py:31`. The hook `project-version-sync` is published at `.pre-commit-hooks.yaml:74`, with `pass_filenames: false` and `always_run: true`. The self-run hook configuration is `.config/pre-commit.yaml:126`. This is an offline code gate, with no registry, release upload or live network prerequisite.
 Configuration: use `.config/bumpversion.cfg` by default, with an explicit CLI locator for a reviewed alternative. The canonical bump file owns all version values and file replacement entries. A versioned adapter derives the typed inventory from that file; role/selector annotations must remain compatible with the chosen bump tool. No separate independently maintained version list is permitted. Missing role declarations or incompatible format features fail closed. Multiple effective authorities are ambiguous even if their versions happen to agree; sample documents are not effective configuration authorities.
 Extraction: metadata selectors address a declared string key, source selectors address a declared literal assignment, and documentation selectors address an explicit version marker. An adapter may support further formats only through a named schema version. Every selector has an exact positive match count, and every match must equal current_version. Extract the observed token independently of current_version so drift yields version-mismatch, not a misleading missing-selector error. Prefixes, suffixes and quoting are part of the declared templates; round-trip checks render templates against the observed token and a synthetic next token to ensure replacement changes only that token. Do not import source modules, evaluate expressions or silently normalize distinct spellings. Preserve historical changelog versions, external dependency pins and unrelated version examples.
 Snapshot boundary: the pre-commit invocation reads the index, including staged configuration, and records its tree identity. CI/range invocation uses the selected committed tree and reads its configuration from that same tree. Changed paths choose the input mode, never reduce the declared inventory. Reject missing Git objects and non-regular Git entries. Worktree dirt and untracked files cannot rescue missing or stale tracked evidence. The gate performs no bump, commit or tag operation, even if the canonical config enables those operations for the separate bump command.
@@ -123,11 +123,17 @@ Acceptance: implement `tests/hooks/test_project_version_sync.py`, then run `uv r
 ### Shared gates workflow and tag-only publish (PIPE-RELEASE-R007)
 
 Data flow: caller `gates` job -> `gates_pipeline.yml@main` -> pre-commit stages over the diff range -> `pr-test-scope` subset -> verdict; release caller -> `python_pipeline.yml` `require-tag` guard -> publish.
-Existing code: `.github/workflows/python_pipeline.yml` publishes and tags on whatever ref calls it; `pipelines_hooks/ci_replica/test_scope.py` maps a diff to tests; every core repository hand-writes the gates block. Reachable today: no shared gates workflow, `require-tag` or `fast-tests` exists.
+Existing code: `.github/workflows/gates_pipeline.yml:43` declares the shared inputs; `.github/workflows/python_pipeline.yml:33` declares `require-tag`; `pipelines_hooks/ci_replica/test_scope.py:277` maps a diff to tests; `pipelines_hooks/ci_replica/fast_tests.py:43` runs the affected subset. Reachable today: yes, the callers `templates/workflows/ci.yml:32` and `.github/workflows/ci.yml:27` use the shared workflow.
 Attach point: new `.github/workflows/gates_pipeline.yml`; `python_pipeline.yml` input `require-tag`; `templates/workflows/gates-skip.yml`; `pipelines_hooks/ci_replica/fast_tests.py` registered at `pipelines_hooks/cli.py` and `.pre-commit-hooks.yaml`; reference `reference/ci-standard.md`.
 Decision: additive only, every input defaulted, because every caller references pipelines at `@main`. Concurrency stays with the caller (a reusable workflow cannot set it). Rejected: removing tagging from `python_pipeline` now, since that would break today's push callers; callers opt in with `require-tag` when they move to tag-triggered releases.
 Acceptance: `uv run --frozen python -m pytest tests/test_gates_pipeline_contract.py tests/hooks/test_fast_tests.py -q`.
 
+
+### Release drift (PIPE-RELEASE-R027)
+
+Data flow: schedule -> `.github/workflows/release_drift.yml` step `Compare main with the package index` -> `scripts/release_drift.py:main` (`release_drift.py:101`) -> `audit` (`release_drift.py:80`) -> `main_state` (`release_drift.py:53`) and `published` (`release_drift.py:69`) -> a list of repositories whose `main` version is unpublished.
+Decision: a release is a `v*` tag on a green `main` commit and every merged version is published (constitution article XXVIII rule 4). The audit is read-only and cuts no tag; the owner cuts the tag. Rejected: publishing from a `main` push, because the publish jobs run only on a `v*` tag push.
+Acceptance: `uv run --frozen python -m pytest tests/test_release_drift.py -q`.
 
 ### Amendments
 
@@ -236,35 +242,15 @@ Decision: one classifier replaces the opt-in `docs-only-paths` skip. A spec-only
 Rejected: keeping `docs-only-paths`. It skipped the spec gates on spec changes, and the hard-cutover policy removes it in one release.
 Acceptance: `uv run --frozen python -m pytest tests/hooks/test_change_scope.py tests/test_gates_pipeline_contract.py -q`.
 
-## Phase 2: Task approach
-
-tasks.md carries one numbered task line for each active row. Tasks run producer first. A task marked `[P]` may run in parallel with its neighbours.
-
-## Complexity Tracking
-
-none
-
-## Build contract
-
-Each row names its test. The repository pre-commit and pre-push hooks and the pull request gates apply. No row may use a suppression or a ratchet.
-
-## Production caller chain
-
-Each row names its entry point and caller chain in its own text. This plan adds no separate chain.
-
-## Cross-repo seams
-
-none
-
-## North star
+### North star
 
 Deployment comes only from published package releases. Releases ship delivered cross-repository spec bundles. Delivery runs in phases P1 to P5. Concept-proof scenarios define each phase (`ARBORA-ACCEPTANCE-R006`).
 
-## Delivery phase
+### Delivery phase
 
 Rows `PIPE-RELEASE-R023` and `R024` serve P5. P5 names its scenario, and every engine release proves that the released SDK still imports.
 
-## Release planning
+### Release planning
 
 The release plan is computed from the dependency graph. It is not a list that a person maintains.
 
@@ -274,7 +260,7 @@ The release plan is computed from the dependency graph. It is not a list that a 
 - **Plan document**: `scripts/release_plan.py` renders one plan per `releases/<release-id>.yml`. It lists rows per repository, the closure, the train order, the scenario and the open tasks. The rendering is deterministic and writes no committed file (`PIPE-RELEASE-R025.4`).
 - **Graph**: the facts ReleaseBundle, inBundle and dependsOn, and the plan document, are ingested with the ontology (`MEDULLA-SDLC-R018`, `MEDULLA-SDLC-R014.7`). The spec-delivery page and the competency questions read the same data (`PIPE-RELEASE-R025.5`).
 
-## Program exit gates
+### Program exit gates
 
 The program ends when every gate below holds. Each gate names its owning rows and its phase. `PIPE-RELEASE-R026.1` checks that every row exists.
 
@@ -292,3 +278,23 @@ The program ends when every gate below holds. Each gate names its owning rows an
 | Phase P3: boundaries hold with several agents | `ARBORA-ACCEPTANCE-R006.3` | P3 | Acceptance plan, "Delivery phase" |
 | Phase P4: cross-modal bet and memory maintenance | `ARBORA-ACCEPTANCE-R006.4` | P4 | Acceptance plan, "Delivery phase" |
 | Phase P5: answers across connectors and virtual graphs | `ARBORA-ACCEPTANCE-R006.7`, `PIPE-RELEASE-R023` | P5 | Acceptance plan, "Delivery phase" |
+
+## Phase 2: Task approach
+
+tasks.md carries one numbered task line for each active row. Tasks run producer first. A task marked `[P]` may run in parallel with its neighbours.
+
+## Complexity Tracking
+
+none
+
+## Build contract
+
+Each row names its test as `path::name`; a test that is not written yet is marked planned in the row and in `test-spec.md`. The repository pre-commit and pre-push hooks and the pull request gates apply: `complexity-staged` and `complexity-census` hold no new function over cyclomatic 10 or cognitive 15, `jscpd-differential` and `dupehound-changed` hold no new clone, KISS staged and census hold, YAML validation passes, and the workflow contract tests pass. No row may use a suppression or a ratchet. A release is a `v*` tag on a green `main` commit and every merged version is published (constitution article XXVIII rule 4); the scheduled release-drift audit (`PIPE-RELEASE-R027`) enforces it, so no row here adds a publish path that runs outside a `v*` tag push.
+
+## Production caller chain
+
+Each row names its entry point and caller chain in its own `Caller chain:` sentence, with file and line read from the code, or names where the planned code will attach. This plan adds no separate chain.
+
+## Cross-repo seams
+
+none
