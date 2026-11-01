@@ -68,3 +68,12 @@
 - [ ] T062 PIPE-GATES-R016.116.2 Test that no gate job is conditioned on the actor or the author and that the main ruleset has no bypass actor.
 - [ ] T063 PIPE-GATES-R047 Fail a pull request whose title or body holds a CI-skip marker, in the shared gates workflow.
 - [ ] T064 PIPE-GATES-R048 Add the scheduled ruleset audit and test that a wrong or missing required check, a disabled auto-merge and a skipped repository are reported as designed.
+- [x] T065 PIPE-GATES-R060 A test or check step in a workflow never masks its failure.
+- [x] T066 PIPE-GATES-R061 Every spec directory has a node in the architecture model.
+- [ ] T067 PIPE-GATES-R062 A held pull request is never armed for auto-merge.
+- [ ] T068 PIPE-GATES-R063 A pull request never comes from a branch that already merged.
+- [ ] T069 PIPE-GATES-R064 Every unit of a multi-unit workspace builds and tests alone with the CI feature set.
+- [ ] T070 PIPE-GATES-R065 A test run that finds zero test suites fails.
+- [ ] T071 PIPE-GATES-R066 Each gate has a test that plants a violation in its stated universe.
+- [ ] T072 PIPE-GATES-R067 A rename of a serialized name recomputes its digests in the same commit.
+- [x] T073 PIPE-GATES-R068 The constitution links the delivery practice reference and states the new articles.
