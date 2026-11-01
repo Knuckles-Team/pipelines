@@ -55,6 +55,7 @@ KEPT = {
     "prompt-format",
     "skill-grade",
     "test-layout",
+    "workflow-step-honesty",
 }
 
 
