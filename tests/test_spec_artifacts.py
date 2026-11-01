@@ -103,3 +103,25 @@ def test_row_findings_fail_only_for_an_added_row(tmp_path: Path) -> None:
     wide = "checklists/requirements.md is missing"
     assert _fails(wide, set(), {"specs/x/plan.md"}, spec, tmp_path)
     assert not _fails(wide, set(), set(), spec, tmp_path)
+
+
+def test_a_deletion_only_diff_adds_no_rows(tmp_path: Path) -> None:
+    import subprocess
+
+    from pipelines_hooks.specs.narrative import added_row_ids
+
+    def git(*args: str) -> None:
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=tmp_path, check=True, capture_output=True)
+
+    spec = tmp_path / "specs" / "x"
+    spec.mkdir(parents=True)
+    req = spec / "requirements.md"
+    req.write_text("| `X-R001` | **A.** live | T |\n| `X-R002` | **B.** RETIRED | T |\n", encoding="utf-8")
+    git("init", "-q", "-b", "main")
+    git("add", "--", "specs/x/requirements.md")
+    git("commit", "-q", "-m", "base")
+    req.write_text("| `X-R001` | **A.** live | T |\n", encoding="utf-8")
+    new = spec / "plan.md"
+    new.write_text("| `X-R009` | new file | T |\n", encoding="utf-8")
+    touched = {"specs/x/requirements.md", "specs/x/plan.md"}
+    assert added_row_ids(tmp_path, spec, touched, base="HEAD") == {"X-R009"}

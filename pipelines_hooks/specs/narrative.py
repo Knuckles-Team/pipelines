@@ -159,14 +159,17 @@ def added_row_ids(root: Path, spec_dir: Path, touched: set[str], base: str | Non
     ids: set[str] = set()
     for path in sorted(p for p in touched if p.startswith(prefix) and p.endswith(".md")):
         text = ""
+        in_base = False
         if resolved:
             try:
+                git_text(root, ("cat-file", "-e", f"{resolved}:{path}"))
+                in_base = True
                 diff = git_text(root, ("diff", "-U0", resolved, "--", path))
             except CannotRun:
                 diff = ""
             added = (line[1:] for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++"))
             text = "\n".join(added)
-        if not text:
+        if not text and not in_base:
             try:
                 text = (root / path).read_text(encoding="utf-8")
             except (OSError, UnicodeError):
