@@ -127,3 +127,15 @@ def test_a_deletion_only_diff_adds_no_rows(tmp_path: Path) -> None:
     new.write_text("| `X-R009` | new file | T |\n", encoding="utf-8")
     touched = {"specs/x/requirements.md", "specs/x/plan.md"}
     assert added_row_ids(tmp_path, spec, touched, base="HEAD") == {"X-R009"}
+
+
+def test_a_seam_table_counts_only_its_data_rows() -> None:
+    plan = (
+        "# X — Plan\n\n## Cross-repo seams\n\n"
+        "| Seam | Contract | Counterpart |\n|---|---|---|\n"
+        "| `OTHER-AREA-R004` | call | other |\n\n"
+        "The `Depends on` lines of requirements.md name every other dependency.\n"
+    )
+    assert artifacts.seams(plan) == ["| `OTHER-AREA-R004` | call | other |"]
+    header_only = "## Cross-repo seams\n\n| Seam | Contract |\n|:--|---|\n\nProse after the table.\n"
+    assert artifacts.seams(header_only) == []
