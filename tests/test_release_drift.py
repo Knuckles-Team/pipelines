@@ -29,7 +29,9 @@ def _fake(repos: dict, index: dict):
         if url.endswith("/contents/pyproject.toml"):
             return None if r.get("pyproject") is None else r["pyproject"].encode()
         if "/commits/" in url:
-            return json.dumps({"commit": {"committer": {"date": r["when"].isoformat().replace("+00:00", "Z")}}}).encode()
+            return json.dumps(
+                {"commit": {"committer": {"date": r["when"].isoformat().replace("+00:00", "Z")}}}
+            ).encode()
         return json.dumps({"default_branch": "main", "archived": r.get("archived", False)}).encode()
 
     return get
