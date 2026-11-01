@@ -73,6 +73,6 @@ ignore_names = ["request", "config"]
 [tool.pipelines_hooks.ste]
 exempt = ["specs/*", "specs/**/*"]
 
-# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+# The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]
 adguard-home-agent = "adguard_home_agent"

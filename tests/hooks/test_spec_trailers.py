@@ -270,10 +270,10 @@ def test_a_malformed_base_revision_cannot_run(repo: Repo) -> None:
 def test_same_trailer_shorthand_inherits_prefix() -> None:
     from pipelines_hooks.specs.trailer_ids import _qualified
 
-    assert _qualified(["TUI-RUNTIME-R001.1", "R001.2", "R003..R004"]) == [
-        "TUI-RUNTIME-R001.1",
-        "TUI-RUNTIME-R001.2",
-        "TUI-RUNTIME-R003..R004",
+    assert _qualified(["TUIG-RUNTIME-R001.1", "R001.2", "R003..R004"]) == [
+        "TUIG-RUNTIME-R001.1",
+        "TUIG-RUNTIME-R001.2",
+        "TUIG-RUNTIME-R003..R004",
     ]
 
 

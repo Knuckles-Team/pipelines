@@ -48,7 +48,7 @@ MAX_PROMPT_INTEGER_BITS = int(MAX_PROMPT_NUMBER_DIGITS * math.log2(10)) + 1
 # R094.2-.7 are the graph producers/consumers named by PIPE-PAGES-R035.3.
 # Keeping the complete range here makes the dependency visible to callers and
 # prevents a serializer test from silently covering only one producer.
-R094_WIRING_REQUIREMENTS: tuple[str, ...] = tuple(f"EG-TYPED-PACKS-R094.{n}" for n in range(2, 8))
+R094_WIRING_REQUIREMENTS: tuple[str, ...] = tuple(f"MEDULLA-TYPED-PACKS-R094.{n}" for n in range(2, 8))
 
 _RETIRED_TOP_LEVEL_KEYS = frozenset({"content", "input"})
 _RETIRED_OPTIMIZER_KEYS = frozenset({"few_shot_examples", "optimized_instruction"})

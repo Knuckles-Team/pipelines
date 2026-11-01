@@ -199,7 +199,7 @@ def test_vocabulary_additions_mapping_accepts_canonical_reuse_rollup() -> None:
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_build_fails_on_a_family_with_no_node(monkeypatch) -> None:
-    rows = [_row("EG-SCM-R999", "Nothing names this row", family="family-no-part-owns", repo="medulla")]
+    rows = [_row("MEDULLA-SCM-R999", "Nothing names this row", family="family-no-part-owns", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
@@ -210,7 +210,7 @@ def test_build_fails_on_a_family_with_no_node(monkeypatch) -> None:
     monkeypatch.setattr(explorer, "load_all", fake_load)
     monkeypatch.setattr(explorer, "run_layout", lambda levels: {})
     _, meta = explorer.build("github", None)
-    assert meta["unmapped_violations"] == ["medulla:EG-SCM-R999"]
+    assert meta["unmapped_violations"] == ["medulla:MEDULLA-SCM-R999"]
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
@@ -255,7 +255,7 @@ def test_shipped_model_covers_every_registered_connector() -> None:
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 def test_page_builds_offline_with_both_variants(monkeypatch, tmp_path: Path) -> None:
-    rows = [_row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")]
+    rows = [_row("MEDULLA-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")]
 
     def fake_load(registry, mode, workspace=None, workers=12):
         return [
@@ -271,7 +271,7 @@ def test_page_builds_offline_with_both_variants(monkeypatch, tmp_path: Path) -> 
     assert full.startswith("<!doctype html>") and full.rstrip().endswith("</html>")
     assert not bare.lstrip().lower().startswith("<!doctype") and "<body" not in bare
     assert "<title>Canopy — Knuckles-Team ecosystem architecture</title>" in bare[:8192]
-    assert '"EG-SCM-R001"' in bare and "/*__DATA__*/" not in bare
+    assert '"MEDULLA-SCM-R001"' in bare and "/*__DATA__*/" not in bare
 
 
 def test_theme_link_bypasses_instant_navigation() -> None:
@@ -305,15 +305,15 @@ def _ids(node: dict) -> set[str]:
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(), reason="layout engine not installed"
 )
 def test_a_deleted_row_disappears_from_the_generated_tree(monkeypatch) -> None:
-    keep = _row("EG-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")
-    gone = _row("EG-SCM-R002", "Changeset replay", family="source-changesets", repo="medulla")
+    keep = _row("MEDULLA-SCM-R001", "Content-addressed blob store", family="source-changesets", repo="medulla")
+    gone = _row("MEDULLA-SCM-R002", "Changeset replay", family="source-changesets", repo="medulla")
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     monkeypatch.setattr(explorer, "load_all", _fake_loader({"medulla": [keep, gone]}))
     before, meta = explorer.build("github", None)
-    assert {"EG-SCM-R001", "EG-SCM-R002"} <= _ids(before)
+    assert {"MEDULLA-SCM-R001", "MEDULLA-SCM-R002"} <= _ids(before)
     monkeypatch.setattr(explorer, "load_all", _fake_loader({"medulla": [keep]}))
     after, meta = explorer.build("github", None)
-    assert "EG-SCM-R001" in _ids(after) and "EG-SCM-R002" not in _ids(after)
+    assert "MEDULLA-SCM-R001" in _ids(after) and "MEDULLA-SCM-R002" not in _ids(after)
     assert meta["rows"] == 1 and meta["heads"]["medulla"] == "h-medu"
     assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", meta["built_at"])
 
@@ -705,10 +705,10 @@ def test_the_map_fills_the_viewport_with_full_screen_and_panel_toggle() -> None:
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 def test_webui_composed_acceptance_row_places_on_its_part_not_the_allowlist() -> None:
-    """WEBUI-APPS-R050 failed every publish as unmapped; it must place on the acceptance part."""
+    """OVERSTORY-APPS-R050 failed every publish as unmapped; it must place on the acceptance part."""
     model = json.loads((PKG / "model.json").read_text())
     row = _row(
-        "WEBUI-APPS-R050",
+        "OVERSTORY-APPS-R050",
         "Composed deployment and shared-backend acceptance.",
         "arbora-app-surface",
         "overstory",
@@ -717,7 +717,7 @@ def test_webui_composed_acceptance_row_places_on_its_part_not_the_allowlist() ->
     tree = Tree(model)
     direct = Placer(tree).run([row])
     where = {r["id"]: nid for nid, rs in direct.items() for r in rs}
-    assert where["WEBUI-APPS-R050"] == "webui.apps.accept"
+    assert where["OVERSTORY-APPS-R050"] == "webui.apps.accept"
     assert unmapped_violations(tree, direct, []) == []
     assert model["unmapped_allow"] == []
 

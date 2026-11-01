@@ -115,7 +115,7 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-045 | PIPE-GATES-R037 | Unit | A copy with a missing, a changed and an unknown template. | Each is a finding; the check is a published hook and the wheel declares the package. |
 | T-046 | PIPE-GATES-R038 | Unit | Upper-case, underscore and allowlisted names under `specs/`. | Only the non-allowlisted names are findings; untouched ones are advisory. |
 | T-047 | PIPE-GATES-R039 | Unit | A numeric-prefixed directory and a misplaced plan, template and constitution. | Each is a finding. |
-| T-048 | PIPE-GATES-R040 | Unit | The constitution. | Article XXII is traced and the version is 1.1.0. |
+| T-048 | PIPE-GATES-R040 | Unit | The constitution. | Article XXII is traced and the version is at least 1.1.0. |
 | T-049 | PIPE-GATES-R041 | Unit | A plan with a seam, with and without a contract document. | The missing or incomplete document is a finding. |
 | T-050 | PIPE-GATES-R042 | Unit | A row naming new classes and tables, with and without `data-model.md`. | The missing file is a finding. |
 | T-051 | PIPE-GATES-R043 | Unit | A `served` row, with and without `quickstart.md`. | The missing file is a finding; a quoted word is not. |

@@ -102,23 +102,23 @@ is published as [`corpus.jsonld`](corpus.jsonld).
 
 ## Agent Utilities
 
-### AU-AHE
+### MERISTEM-AHE
 
 _No components._
 
-### AU-ECO
+### MERISTEM-ECO
 
 _No components._
 
-### AU-KG
+### MERISTEM-KG
 
 _No components._
 
-### AU-ORCH
+### MERISTEM-ORCH
 
 _No components._
 
-### AU-OS
+### MERISTEM-OS
 
 _No components._
 
@@ -142,29 +142,29 @@ _No components._
 ### Components
 
 - **Overview** — `components/index.md`
-- **AU-AHE** — `components/au-ahe.md`
-- **AU-ECO** — `components/au-eco.md`
-- **AU-KG** — `components/au-kg.md`
-- **AU-ORCH** — `components/au-orch.md`
-- **AU-OS** — `components/au-os.md`
-- **EG-AHE** — `components/eg-ahe.md`
-- **EG-KG** — `components/eg-kg.md`
-- **EG-ORCH** — `components/eg-orch.md`
-- **EG-OS** — `components/eg-os.md`
+- **MERISTEM-AHE** — `components/au-ahe.md`
+- **MERISTEM-ECO** — `components/au-eco.md`
+- **MERISTEM-KG** — `components/au-kg.md`
+- **MERISTEM-ORCH** — `components/au-orch.md`
+- **MERISTEM-OS** — `components/au-os.md`
+- **MEDULLA-AHE** — `components/eg-ahe.md`
+- **MEDULLA-KG** — `components/eg-kg.md`
+- **MEDULLA-ORCH** — `components/eg-orch.md`
+- **MEDULLA-OS** — `components/eg-os.md`
 
-### EG-AHE
-
-_No components._
-
-### EG-KG
+### MEDULLA-AHE
 
 _No components._
 
-### EG-ORCH
+### MEDULLA-KG
 
 _No components._
 
-### EG-OS
+### MEDULLA-ORCH
+
+_No components._
+
+### MEDULLA-OS
 
 _No components._
 

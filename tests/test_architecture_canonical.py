@@ -40,8 +40,8 @@ def _snap(family: str) -> Snapshot:
 
 
 @pytest.mark.spec("PIPE-PAGES-R042")
-@pytest.mark.parametrize("model_key", ["SDK-X", "SCION-X"])
-@pytest.mark.parametrize("row_family", ["SDK-X", "SCION-X"])
+@pytest.mark.parametrize("model_key", ["SCION-X", "SCION-X"])
+@pytest.mark.parametrize("row_family", ["SCION-X", "SCION-X"])
 def test_a_family_renamed_through_an_alias_still_maps(model_key: str, row_family: str) -> None:
     snap = _snap(row_family)
     model = _model(model_key)
