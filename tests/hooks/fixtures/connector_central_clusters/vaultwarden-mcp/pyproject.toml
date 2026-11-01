@@ -33,10 +33,10 @@ vaultwarden-mcp = "vaultwarden_mcp.mcp_server:mcp_server"
 # Fleet contribution (CONCEPT:MERISTEM-KG.ontology.federation-provider-leg): advertise this
 # package's skills, prompts, OWL/RDF ontology, and source-connector presets so
 # agent-connector-sdk discovers + federates them without importing this package's agent code.
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 vaultwarden-mcp = "vaultwarden_mcp.skills"
 
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 vaultwarden-mcp = "vaultwarden_mcp.ontology"
 
 # CONCEPT:P0.2-nested-uv-workspace-fix — self-declare this package as its own uv
@@ -52,7 +52,7 @@ vaultwarden-mcp = "vaultwarden_mcp.ontology"
 # resolve it from the local sibling checkout via a gitignored symlink, not a
 # version-range dependency.
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 vaultwarden-mcp = "vaultwarden_mcp"
 
 [tool.uv.workspace]

@@ -41,7 +41,7 @@ def _reviewed_connector_metadata(root: Path) -> tuple[dict[str, object], list[st
 
 
 def _connector_modules(document: dict[str, object], sources: list[str]) -> set[str]:
-    points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    points = document.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
     modules: set[str] = set()
     if isinstance(points, dict):
         for value in points.values():
@@ -61,7 +61,7 @@ def reviewed_identity(root: Path, distribution: str = "", module: str = "") -> d
     """Resolve a connector's distribution and package module from reviewed HEAD."""
     document, sources = _reviewed_connector_metadata(root)
     project = document.get("project", {})
-    points = project.get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    points = project.get("entry-points", {}).get("scion_sdk.connector", {})
     connector = (isinstance(points, dict) and bool(points)) or bool(sources)
     if not connector:
         return {"connector": False}
@@ -151,7 +151,7 @@ def _published_payload(root: Path, module: str, *, legacy_profile: bool = False)
     current renderer contract.
     """
     document, sources = _reviewed_connector_metadata(root)
-    points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    points = document.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
     connector = (isinstance(points, dict) and bool(points)) or bool(sources)
 
     provider_root = Path(__file__).resolve().parents[3]
@@ -272,7 +272,7 @@ def _rendered_dockerfile(root: Path, release_version: str = "") -> str:
             document = tomllib.loads(pyproject.decode("utf-8"))
         except (UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
             raise ValueError("Generated Dockerfile verification requires readable reviewed pyproject.toml") from error
-        points = document.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+        points = document.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
         tracked_sources = [
             path
             for path in subprocess.check_output(

@@ -93,14 +93,14 @@ RULES: tuple[Rule, ...] = (
     Rule(
         "R001",
         re.compile(r"^\s*(?:import\s+requests\b|from\s+requests(?:\.\w+)*\s+import\b)"),
-        "imports requests directly; use agent_connector_sdk.http.create_http_client",
+        "imports requests directly; use scion_sdk.http.create_http_client",
     ),
     Rule(
         "R001",
         re.compile(
             r"\bhttpx\.(?:Client|AsyncClient)\s*\(|\bhttpx\.(?:get|post|put|patch|delete|head|options|request|stream)\s*\("
         ),
-        "builds an httpx client or calls httpx directly; use agent_connector_sdk.http.create_http_client",
+        "builds an httpx client or calls httpx directly; use scion_sdk.http.create_http_client",
     ),
     Rule(
         "R001",
@@ -111,22 +111,22 @@ RULES: tuple[Rule, ...] = (
             r"|^\s*(?:import\s+(?:tenacity|backoff)\b|from\s+(?:tenacity|backoff)\b)"
             r"|\bfrom\s+urllib3\.util(?:\.retry)?\s+import\s+.*\bRetry\b"
         ),
-        "own retry or backoff loop; use agent_connector_sdk.http.RetryPolicy",
+        "own retry or backoff loop; use scion_sdk.http.RetryPolicy",
     ),
     Rule(
         "R008",
         re.compile(r"\bverify\s*=\s*False\b|\bcheck_hostname\s*=\s*False\b|\bCERT_NONE\b"),
-        "turns TLS verification off; use agent_connector_sdk.tls.resolve_tls_profile",
+        "turns TLS verification off; use scion_sdk.tls.resolve_tls_profile",
     ),
     Rule(
         "R008",
         re.compile(r"\bdisable_warnings\s*\(|\bInsecureRequestWarning\b"),
-        "silences the insecure-request warning; use agent_connector_sdk.tls.resolve_tls_profile",
+        "silences the insecure-request warning; use scion_sdk.tls.resolve_tls_profile",
     ),
     Rule(
         "R008",
         re.compile(r"\bssl\.(?:create_default_context|SSLContext|_create_unverified_context)\s*\("),
-        "builds its own SSL context; use agent_connector_sdk.tls.resolve_tls_profile",
+        "builds its own SSL context; use scion_sdk.tls.resolve_tls_profile",
     ),
     Rule(
         "R009",
@@ -135,12 +135,12 @@ RULES: tuple[Rule, ...] = (
             r"|=\s*r?[\"'](?:env|openbao)://[\"']"
             r"|re\.compile\s*\(\s*r?[\"'][^\"']*(?:env|openbao)://"
         ),
-        "parses an env:// or openbao:// reference itself; use agent_connector_sdk.credentials",
+        "parses an env:// or openbao:// reference itself; use scion_sdk.credentials",
     ),
     Rule(
         "R016",
         re.compile(r"^\s*(?:from\s+gql\.transport(?:\.\w+)*\s+import\b|from\s+gql\s+import\s+.*\bClient\b)"),
-        "builds its own GraphQL client; use agent_connector_sdk.transports.graphql",
+        "builds its own GraphQL client; use scion_sdk.transports.graphql",
     ),
 )
 

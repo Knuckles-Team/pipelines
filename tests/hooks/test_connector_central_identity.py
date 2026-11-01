@@ -15,7 +15,7 @@ _INTERNAL = "." + "internal"
 _ARPA = "." + "arpa"
 _CLUSTER = ".svc." + "cluster.local"
 
-PYPROJECT = '[project]\nname = "demo-agent"\nversion = "1.0.0"\n\n[project.entry-points."agent_connector_sdk.connector"]\ndemo-mcp = "demo_agent:connector"\n'
+PYPROJECT = '[project]\nname = "demo-agent"\nversion = "1.0.0"\n\n[project.entry-points."scion_sdk.connector"]\ndemo-mcp = "demo_agent:connector"\n'
 
 
 def _ctx(tmp_path: Path) -> Ctx:
@@ -303,7 +303,7 @@ def test_a_binding_constant_outside_the_kg_modules_derives_from_the_sdk_identity
     ctx = _ctx(tmp_path)
     sync = ctx.pkg / "instance_sync.py"
     sync.write_text(
-        'from agent_connector_sdk.ingest import IngestBinding\n\nCONNECTOR_ID = "demo-agent"\nOTHER = "demo-agent"\n\n\n'
+        'from scion_sdk.ingest import IngestBinding\n\nCONNECTOR_ID = "demo-agent"\nOTHER = "demo-agent"\n\n\n'
         "def b():\n    return IngestBinding(connector=CONNECTOR_ID, stream='s')\n",
         encoding="utf-8",
     )

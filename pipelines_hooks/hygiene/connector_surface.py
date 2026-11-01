@@ -7,7 +7,7 @@ a fleet directory at a git ref, and emits one JSON record per connector.
 
 Static levels, read from the checkout only:
 
-* ``entry_points``: the ``agent_connector_sdk.connector``, ``skill_providers``,
+* ``entry_points``: the ``scion_sdk.connector``, ``skill_providers``,
   ``prompt_providers``, ``ontology_providers`` and ``source_connector_providers``
   groups, and any plugin group still outside the SDK namespace;
 * ``files``: ``skills/<name>/SKILL.md``, ``prompts/<name>.json`` with an
@@ -42,7 +42,7 @@ from pathlib import Path
 from typing import Any
 
 PARENT_IRI = "http://knuckles.team/kg"
-SDK_GROUP = "agent_connector_sdk."
+SDK_GROUP = "scion_sdk."
 GROUPS = ("connector", "skill_providers", "prompt_providers", "ontology_providers", "source_connector_providers")
 _SERVED = re.compile(r"\bConnectorContent\s*\(|register_connector_content\s*\(|register_ontology_resources\s*\(")
 _SKIP_DIRS = {"tests", "test", "scripts", "docs", "examples", ".venv", "build", "dist", "__pycache__"}

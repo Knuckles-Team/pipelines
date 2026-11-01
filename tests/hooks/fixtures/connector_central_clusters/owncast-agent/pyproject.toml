@@ -26,17 +26,17 @@ test = [
 [project.scripts]
 owncast-mcp = "owncast_agent.mcp_server:mcp_server"
 
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 owncast-agent = "owncast_agent.skills"
 
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 owncast-agent = "owncast_agent.ontology"
 
-[project.entry-points."agent_connector_sdk.prompt_providers"]
+[project.entry-points."scion_sdk.prompt_providers"]
 owncast-agent = "owncast_agent.prompts"
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 owncast-mcp = "owncast_agent"
 
 [tool.uv.workspace]

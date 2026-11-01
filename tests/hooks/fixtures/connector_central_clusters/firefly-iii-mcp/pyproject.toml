@@ -29,14 +29,14 @@ firefly-iii-mcp = "firefly_iii_mcp.mcp_server:mcp_server"
 # Fleet contribution (CONCEPT:OS-5.52): advertise this package's skills and
 # system-prompt blueprints so agent-connector-sdk' skill-installer and KG prompt
 # library discover them without importing this package's agent code.
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 firefly-iii-mcp = "firefly_iii_mcp.skills"
 
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 firefly-iii-mcp = "firefly_iii_mcp.ontology"
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 firefly-iii-mcp = "firefly_iii_mcp"
 
 [tool.uv.workspace]

@@ -26,13 +26,13 @@ test = [
 [project.scripts]
 adguard-mcp = "adguard_home_agent.mcp_server:mcp_server"
 
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 adguard-home-agent = "adguard_home_agent.skills"
 
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 adguard-home-agent = "adguard_home_agent.ontology"
 
-[project.entry-points."agent_connector_sdk.prompt_providers"]
+[project.entry-points."scion_sdk.prompt_providers"]
 adguard-home-agent = "adguard_home_agent.prompts"
 
 [tool.setuptools]
@@ -74,5 +74,5 @@ ignore_names = ["request", "config"]
 exempt = ["specs/*", "specs/**/*"]
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 adguard-home-agent = "adguard_home_agent"

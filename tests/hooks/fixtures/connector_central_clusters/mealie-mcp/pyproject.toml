@@ -26,17 +26,17 @@ test = [
 [project.scripts]
 mealie-mcp = "mealie_mcp.mcp_server:mcp_server"
 
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 mealie-mcp = "mealie_mcp.skills"
 
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 mealie-mcp = "mealie_mcp.ontology"
 
-[project.entry-points."agent_connector_sdk.prompt_providers"]
+[project.entry-points."scion_sdk.prompt_providers"]
 mealie-mcp = "mealie_mcp.prompts"
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 mealie-mcp = "mealie_mcp"
 
 [tool.uv.workspace]

@@ -35,18 +35,18 @@ d:Widget a owl:Class .
 
 PYPROJECT = """[project]
 name = "demo-mcp"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp"
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 demo-mcp = "demo_mcp.skills"
-[project.entry-points."agent_connector_sdk.prompt_providers"]
+[project.entry-points."scion_sdk.prompt_providers"]
 demo-mcp = "demo_mcp.prompts"
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 demo-mcp = "demo_mcp.ontology"
 """
 
-SERVER = """from agent_connector_sdk.mcp.content import ConnectorContent
-from agent_connector_sdk.mcp.server import create_mcp_server
+SERVER = """from scion_sdk.mcp.content import ConnectorContent
+from scion_sdk.mcp.server import create_mcp_server
 create_mcp_server(name="demo", content=ConnectorContent(connector="demo-mcp", package_root=".", package_version="1"))
 """
 
