@@ -1,4 +1,4 @@
-# Architecture — PIPE-CONNSPEC
+# PIPE-CONNSPEC — Implementation plan
 
 Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 
@@ -130,20 +130,23 @@ none
 
 ## Build contract
 
-Each row names its test. The repository pre-commit and pre-push hooks and the pull request gates apply. No row may use a suppression or a ratchet.
+- Run `pipelines-hook spec` (standard, plan-conformance, decomposition, status, trailers) on every changed spec file.
+- Complexity caps: cyclomatic 10 and cognitive 15 per function (`pipelines_hooks/complexity/__init__.py:8-9`). Add no baseline entry and no suppression.
+- Run `pytest tests/hooks/test_spec_status.py tests/hooks/test_spec_trailers.py tests/test_spec_standard.py tests/test_connector_consumer_rollout.py` for the hook rows, and the matching `tests/test_connector_consumer_r*.py` file for a connector row.
+- Reuse `parse_rows`, `generate` and `test_bindings`; add no second parser, no second status writer and no duplicate implementation.
 
 ## Production caller chain
 
-Each row names its entry point and caller chain in its own text. This plan adds no separate chain.
+Each row names its entry point and caller chain in its own text, with file and line. The shared entry is the pre-push `spec` group: `main` in `pipelines_hooks/cli.py:151` calls `run_group` (line 121) over `GROUPS["spec"]` (line 84). No obsolete path is deleted by this plan.
 
 ## Cross-repo seams
 
-The `Depends on` lines of requirements.md name each seam by the row ID that owns it in the other repository.
+- `PIPE-CONNSPEC-R009.1` reads the arbora `spec.status` operation; the provider row is `MEDULLA-SDLC-R005.3`. Contract: [contracts/engine-state-read.md](contracts/engine-state-read.md).
 
-## North star
+### North star
 
 Deployment comes only from published package releases. Releases ship delivered cross-repository spec bundles.
 
-## Delivery phase
+### Delivery phase
 
 Row `PIPE-CONNSPEC-R001.1` serves P5. It keeps automated dependency updates flowing without weakening the trailer rule.
