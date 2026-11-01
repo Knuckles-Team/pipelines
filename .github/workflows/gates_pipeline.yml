@@ -35,6 +35,9 @@ name: Gates
 # Trailers belong to pull request commits: a squash merge does not carry the
 # `Spec:` trailer, so on push events the `spec-trailers` hook is added to SKIP.
 # Pull request runs always enforce it.
+#
+# A pull request title or body holding a CI-skip marker fails the `ci-skip-marker` job
+# (PIPE-GATES-R047); the caller's `CI required` aggregate then fails.
 
 on:
   workflow_call:
@@ -143,6 +146,34 @@ permissions:
   contents: read
 
 jobs:
+  # PIPE-GATES-R047: a squash merge takes its subject from the pull request title, and GitHub
+  # runs no workflow for a commit whose message holds a CI-skip marker, so a marker in the
+  # title or body would merge a commit that never deploys or releases. This job joins the
+  # caller's `CI required` aggregate through the caller's `gates` job.
+  ci-skip-marker:
+    name: ci-skip-marker
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    steps:
+      - name: Refuse a CI-skip marker in the pull request title or body
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          pattern='\[(skip ci|ci skip|no ci|skip actions|actions skip)\]|skip-checks:[[:space:]]*true|\*\*\*NO_CI\*\*\*'
+          found=0
+          for field in PR_TITLE PR_BODY; do
+            if printf '%s' "${!field}" | grep -Eiq "$pattern"; then
+              echo "::error::${field#PR_} of this pull request holds a CI-skip marker; remove it (a squash merge would publish no Pages and no release)"
+              found=1
+            fi
+          done
+          exit "$found"
+
   gates:
     name: gates
     # Keep the opt-in path direct so it creates exactly one required check. Do
