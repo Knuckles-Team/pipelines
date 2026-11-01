@@ -63,4 +63,4 @@
 - [x] T057 PIPE-GATES-R023 Require a one-page constitution in each repository that links the vended template.
 - [x] T058 PIPE-GATES-R045 Fail a touched behaviour row that lacks a caller chain, a Shape sentence or a test path::name.
 - [x] T059 PIPE-GATES-R046 Fail a touched plan.md that departs from the plan template, names an unknown row or has a broken link.
-- [x] T059A PIPE-GATES-R046.1 Resolve foreign row IDs in any plan section against the cross-repo ID index; fail closed without one.
+- [x] T060 PIPE-GATES-R046.1 Resolve foreign row IDs in any plan section against the cross-repo ID index; fail closed without one.
