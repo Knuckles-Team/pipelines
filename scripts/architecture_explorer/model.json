@@ -2147,7 +2147,7 @@
      "fam": [
       "catalog-content"
      ],
-     "desc": "The skill-graphs repository packages skill graphs as content. Each graph is served through the SDK convention, so Arbora lists and loads it like any other skill, and the graph makes no direct effects.",
+     "desc": "The skill-graphs repository distills knowledge into skills that Medulla imports natively, layering the ontology over each knowledge graph. The skill-graph-builder skill generates every graph and can source content with the web crawler and web scraper skills. Each graph is served through the SDK convention, so Arbora lists and loads it like any other skill, and the graph makes no direct effects.",
      "code": [],
      "links": [
       "sdk.control"
