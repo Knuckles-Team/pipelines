@@ -126,3 +126,4 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-055 | PIPE-GATES-R016.116.1 | Unit | Every workflow and template, and `reference/ci-standard.md`. | No file calls a merge or an auto-merge request. The CI standard states owner-only merge for platform pull requests. | |
 | T-056 | PIPE-GATES-R016.116.2 | Unit | Every workflow and template, and `scripts/apply_repo_ci_settings.sh`. | No gate job has an actor or author condition. The ruleset holds no bypass actor. | |
 | T-057 | PIPE-GATES-R047 | Unit | The job script run with each marker, a clean title and body, and the caller aggregate. | A marker in the title or body exits 1; clean text exits 0; the caller `CI required` needs `gates`. | |
+| T-058 | PIPE-GATES-R048 | Unit | Fake API responses for good, old-check, extra-check and archived repositories. | The audit lists each drift, skips archived and excluded repositories, exits 1 and only reads. | `tests/test_ruleset_audit.py` |
