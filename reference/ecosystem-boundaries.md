@@ -61,6 +61,17 @@ A `MERISTEM-` row never decides. It names the decision it receives and the owner
 | Current-plan reads and tool-task dispatch (AU #302, #303) | The plan record and the work-item lease go to EG. The authorized read and the tool-task dispatch become arbora served operations. The request and snapshot models go to the SDK. AU keeps only the run that applies the plan it receives. |
 | Web search | Web search is a source category. The searxng connector is the reference connector. arbora selects search tools through it; EG refreshes data through it as a virtual graph. |
 
+## Boundary contracts
+
+Each seam between two repositories is an interface contract in the owning spec. The routing table above names the owner; the contract holds the details.
+
+| Seam | Contract |
+|---|---|
+| meristem and arbora | [specs/run/contracts/arbora.md](https://github.com/Knuckles-Team/meristem/blob/main/specs/run/contracts/arbora.md) |
+| meristem and medulla | [specs/run/contracts/medulla.md](https://github.com/Knuckles-Team/meristem/blob/main/specs/run/contracts/medulla.md) |
+| meristem and scion-sdk | [specs/run/contracts/scion-sdk.md](https://github.com/Knuckles-Team/meristem/blob/main/specs/run/contracts/scion-sdk.md) |
+| meristem and repository-manager | [specs/run/contracts/repository-manager.md](https://github.com/Knuckles-Team/meristem/blob/main/specs/run/contracts/repository-manager.md) |
+
 ## Forbidden-import matrix
 
 This matrix is guidance for reviews and for each repository's own tests. A module prefix matches itself and its submodules. An allowed prefix stays permitted inside a forbidden prefix.
