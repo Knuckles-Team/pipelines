@@ -30,6 +30,8 @@ KNOWN_SETTINGS = {
     "USERNAME": "ambient account name (tracked-privacy)",
     "CI": "set by CI runners: a missing tool or sibling checkout fails closed (exit 2)",
     "SKIP": "pre-commit SKIP list; a grouped check skips the member gates it names",
+    "GITHUB_TOKEN": "GitHub API token that raises the rate limit of spec-id-index",
+    "PIPELINES_SPEC_ID_INDEX": "path of the cross-repo spec ID index plan-conformance resolves foreign IDs against",
     "PIPELINES_WORKSPACE_ROOT": "root of the operator's multi-repository workspace (default ~/workspace)",
 }
 

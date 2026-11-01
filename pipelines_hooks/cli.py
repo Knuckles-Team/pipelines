@@ -60,6 +60,7 @@ GATES: dict[str, str] = {
     "spec-decomposition": "pipelines_hooks.specs.decomposition",
     "spec-standard": "pipelines_hooks.specs.standard",
     "plan-conformance": "pipelines_hooks.specs.plan_conformance",
+    "spec-id-index": "pipelines_hooks.specs.id_index",
     "ste-staged": "pipelines_hooks.ste.staged",
     "ste-census": "pipelines_hooks.ste.census",
     "ste-staleness-staged": "pipelines_hooks.ste.staleness_staged",
