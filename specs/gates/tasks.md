@@ -66,3 +66,4 @@
 - [x] T060 PIPE-GATES-R046.1 Resolve foreign row IDs in any plan section against the cross-repo ID index; fail closed without one.
 - [ ] T061 PIPE-GATES-R016.116.1 Keep owner-only merge for platform-delivered pull requests: state the rule in the CI standard and test that no workflow arms or merges.
 - [ ] T062 PIPE-GATES-R016.116.2 Test that no gate job is conditioned on the actor or the author and that the main ruleset has no bypass actor.
+- [ ] T063 PIPE-GATES-R047 Fail a pull request whose title or body holds a CI-skip marker, in the shared gates workflow.
