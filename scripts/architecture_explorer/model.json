@@ -6104,7 +6104,7 @@
     {
      "id": "egserver",
      "label": "Medulla Stem",
-     "role": "Package epistemic-graph-server: The One Native Server Executable",
+     "role": "Package medulla-server: The One Native Server Executable",
      "desc": "The server package runs the engine as one native executable. It receives network calls over standard wire protocols and passes them to the engine. Its version always matches the client package.",
      "repo": "medulla",
      "layer": "server",
