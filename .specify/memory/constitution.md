@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.4.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.5.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
 
 ## Core Principles
 
@@ -652,6 +652,36 @@ Standards and tests:
 
 **Plan check:** Does the change raise each dependency floor to the latest release, or record the blocker that keeps a ceiling or pin?
 
+### XXVIII. Merges and releases are gated
+
+A change reaches `main` only through a pull request that passed `CI required`, and a merged version reaches users only through a tag on a green `main` commit. Five rules hold in every repository.
+
+1. **`main` requires the single check `CI required`.** Every repository's `main` requires exactly that one check through the org ruleset "Main integrity". Each repository emits that check from a caller job that needs the shared pipelines. *Why*: a repository without the required check merges before CI runs, and a differently named check leaves the ruleset unable to block. *Gate*: the scheduled ruleset audit fails with the list of repositories that drift, and `scripts/apply_repo_ci_settings.sh` is the only tool that applies the ruleset.
+2. **Auto-merge is the normal way to merge, and only where `CI required` is required.** The owner arms auto-merge on each pull request and GitHub merges when the check passes. Where `main` requires no check, auto-merge merges at once, so nobody arms it there. *Why*: auto-merge without a required check turns "after CI" into "now". *Gate*: the same ruleset audit lists every repository that allows auto-merge without the required check, and the agent rules in Development Workflow forbid arming it there.
+3. **A merged commit never carries a CI-skip marker.** The subject and the body of a pull request and of its merge or squash commit never contain `[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]` or `[actions skip]`. *Why*: a marker commit runs no workflow, so it deploys no Pages and a tag on it publishes nothing. *Gate*: the job `ci-skip-marker` of the shared gates workflow fails a pull request whose title or body holds a marker, and `CI required` then fails.
+4. **A release is a `v*` tag on a green `main` commit, and every merged version is published.** A version on `main` that no tag released is a defect. *Why*: an unpublished version leaves users on an old release while the specs claim the new one. *Gate*: the publish jobs run only on a `v*` tag push, and the scheduled release-drift audit fails when the version on `main` is unpublished and its head commit is more than a day old.
+5. **Only the owner account merges.** No workflow, bot or agent merges or tags, and the ruleset has no bypass actor. *Why*: one merging identity makes each merge and release attributable. *Gate*: `tests/test_no_merge_workflows.py` fails a workflow that merges or holds a merge token, and the ruleset script writes no bypass actor.
+
+*Rationale*: On 2026-11-01, auto-merge landed pull requests before CI in repositories whose `main` required no check, and squash subjects with a skip marker produced merged versions that never deployed or released. Each rule above closes one of those paths, and each is enforced by a job, so the policy cannot break silently again.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: release-standard, project-version-sync -->
+- `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+- `project-version-sync`: Project version sync - metadata, source and documentation agree with one canonical bump configuration
+<!-- generated:end -->
+
+Standards and tests:
+
+- [CI standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ci-standard.md): the Auto-merge and releases section, and the ruleset audit.
+- `.github/workflows/gates_pipeline.yml` (job `ci-skip-marker`), `.github/workflows/ruleset_audit.yml`, `.github/workflows/release_drift.yml`.
+- `scripts/apply_repo_ci_settings.sh`, `scripts/audit_ruleset_conformance.py`, `scripts/release_drift.py`.
+- `tests/test_ci_skip_marker_gate.py`, `tests/test_ruleset_audit.py`, `tests/test_release_drift.py`, `tests/test_no_merge_workflows.py`.
+
+**Plan check:** Does the change keep `CI required` as the one required check, arm auto-merge only where it is required, keep CI-skip markers out of titles, bodies and commits, and release only by a `v*` tag on a green `main` commit?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -704,7 +734,7 @@ A change follows one path from requirement to release.
 3. **Tasks.** `tasks.md` lists numbered task lines, each naming a row ID.
 4. **Implement.** Work in the owning repository only, in units of about five minutes.
 5. **Gates.** The pre-commit and pre-push hooks run the fast set. Pull request CI runs the same pre-commit file and the affected tests.
-6. **Landing.** The commit carries a `Spec: <ID>` trailer. The pull request enables auto-merge and merges once the `CI required` check passes.
+6. **Landing.** The commit carries a `Spec: <ID>` trailer. The pull request enables auto-merge, only where `main` requires `CI required`, and merges once that check passes. No title, body or commit holds a CI-skip marker.
 7. **Release bundle.** A maintainer pushes a `v*` tag. The tag publishes the package, the image and the Pages site from the published release.
 
 Every contributor and agent works in isolation:
@@ -714,7 +744,7 @@ Every contributor and agent works in isolation:
 - Stage explicit paths only. Never stage a whole tree.
 - Hooks always run. Never bypass them.
 - Remove every worktree and temporary checkout when the pull request or spec delivery completes. A leftover worktree is a defect.
-- One pull request per change, with auto-merge armed once the checks are green.
+- One pull request per change, with auto-merge armed only where `main` requires `CI required`. Where it does not, wait for green and report the repository as drift.
 
 ## Governance
 
@@ -725,4 +755,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.4.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.5.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01

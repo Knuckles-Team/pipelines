@@ -115,7 +115,7 @@ def test_the_naming_article_is_traced_and_the_version_is_current() -> None:
         assert rule in article
     assert "specs/<family>/plan.md" in article and "`.specify/templates/`" in article
     version = VERSION.search(text)
-    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 1, 0)
+    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 5, 0)
 
 
 def test_the_release_article_and_isolation_flow_are_stated() -> None:
@@ -158,3 +158,17 @@ def test_the_dependency_article_is_traced() -> None:
     assert "constitution hooks: uv-lock-check, supply-chain, dependency-readiness" in article
     for rule in ("latest published release", "refreshes its lock", "pre-release is never a floor", "recorded blocker"):
         assert rule in article
+
+
+def test_the_merge_and_release_article_is_traced() -> None:
+    # spec: PIPE-GATES-R040
+    article = dict(_bodies())["XXVIII. Merges and releases are gated"]
+    for rule in (
+        "requires the single check `CI required`",
+        "only where `CI required` is required",
+        "never carries a CI-skip marker",
+    ):
+        assert rule in article
+    for rule in ("`v*` tag on a green `main` commit", "Only the owner account merges"):
+        assert rule in article
+    assert article.count("*Why*:") == 5 and article.count("*Gate*:") == 5
