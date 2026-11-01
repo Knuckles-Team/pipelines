@@ -176,3 +176,39 @@ def test_the_index_builder_reads_row_ids_per_repository(tmp_path: Path, monkeypa
     out = tmp_path / "i.json"
     assert id_index.main(["--out", str(out)]) == 0
     assert json.loads(out.read_text()) == {"repos": {"one": ["ONE-AREA-R001"]}}
+
+
+@pytest.mark.spec("PIPE-GATES-R046.1")
+def test_the_index_includes_the_organization_front_door_repository(tmp_path: Path, monkeypatch) -> None:
+    from pipelines_hooks.specs import id_index
+
+    trees = {
+        "front": {"tree": [{"type": "blob", "path": "specs/front-door/requirements.md"}]},
+        "one": {"tree": [{"type": "blob", "path": "specs/a/requirements.md"}]},
+    }
+
+    def fake(url: str, token: str, accept: str = "") -> bytes:
+        if "/orgs/" in url:
+            return json.dumps(
+                [{"name": ".github", "default_branch": "main"}, {"name": "one", "default_branch": "main"}]
+            ).encode()
+        if "/repos/Knuckles-Team/.github/git/trees/" in url:
+            return json.dumps(trees["front"]).encode()
+        if "/git/trees/" in url:
+            return json.dumps(trees["one"]).encode()
+        if "/.github/" in url:
+            return b"# ORG-FRONT - T\n\n| `ORG-FRONT-R010` | **A.** B | C |\n| `ORG-FRONT-R010.1` | **D.** E | F |\n"
+        return b"# ONE-AREA - T\n\n| `ONE-AREA-R001` | **A.** B | C |\n"
+
+    monkeypatch.setattr(id_index, "_get", fake)
+    out = tmp_path / "i.json"
+    assert id_index.main(["--out", str(out)]) == 0
+    index = json.loads(out.read_text())["repos"]
+    assert index[".github"] == ["ORG-FRONT-R010", "ORG-FRONT-R010.1"]
+    assert index["one"] == ["ONE-AREA-R001"]
+    (tmp_path / "specs" / "demo").mkdir(parents=True)
+    plan = tmp_path / "specs" / "demo" / "plan.md"
+    plan.write_text("# X — Implementation plan\n\nSee ORG-FRONT-R010.1 for the front door.\n")
+    known = gate.foreign_ids(plan.read_text(), set())
+    assert "ORG-FRONT-R010.1" in known
+    assert gate._id_findings(plan.read_text(), set(), {k: set(v) for k, v in index.items()}) == []
