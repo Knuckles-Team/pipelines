@@ -24,7 +24,9 @@ def _run(title: str, body: str) -> subprocess.CompletedProcess[str]:
 
 
 @pytest.mark.spec("PIPE-GATES-R047")
-@pytest.mark.parametrize("marker", ["[skip ci]", "[ci skip]", "[no ci]", "[skip actions]", "[actions skip]", "[SKIP CI]"])
+@pytest.mark.parametrize(
+    "marker", ["[skip ci]", "[ci skip]", "[no ci]", "[skip actions]", "[actions skip]", "[SKIP CI]"]
+)
 def test_a_marker_in_the_title_or_body_fails(marker: str) -> None:
     assert _run(f"fix: thing {marker}", "plain body").returncode == 1
     assert _run("fix: thing", f"first line\n\nbody {marker}\n").returncode == 1
