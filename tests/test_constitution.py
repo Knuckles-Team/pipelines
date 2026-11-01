@@ -150,3 +150,11 @@ def test_transport_parity_defect_discipline_and_hygiene_are_stated() -> None:
         assert rule in defects
     assert "A leftover worktree is a defect." in text
     assert "EG-STE" not in text
+
+
+def test_the_dependency_article_is_traced() -> None:
+    # spec: PIPE-GATES-R040
+    article = dict(_bodies())["XXVII. Dependencies track the latest release"]
+    assert "constitution hooks: uv-lock-check, supply-chain, dependency-readiness" in article
+    for rule in ("latest published release", "refreshes its lock", "pre-release is never a floor", "recorded blocker"):
+        assert rule in article
