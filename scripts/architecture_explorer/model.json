@@ -2140,6 +2140,19 @@
      ]
     },
     {
+     "id": "skills.builder",
+     "label": "Skill graph builder",
+     "role": "skill-graph-builder skill",
+     "desc": "The skill-graph-builder skill distills a body of knowledge into a skill graph. It can source content through the web crawler and web scraper skills, and writes graphs into the served skills folder that the skill-graphs repository publishes.",
+     "fam": [
+      "skill-graph-builder"
+     ],
+     "links": [
+      "skills.web",
+      "skills.graphs"
+     ]
+    },
+    {
      "id": "skills.graphs",
      "label": "Skill graphs",
      "role": "packaged skill graphs",

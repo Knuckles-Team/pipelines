@@ -33,14 +33,12 @@ def _get(url: str, token: str, accept: str = "application/vnd.github+json") -> b
 
 
 def _repos(token: str) -> dict[str, str]:
-    """Non-archived organization repositories -> default branch."""
+    """Non-archived organization repositories, the ``.github`` front-door repository included -> default branch."""
     found: dict[str, str] = {}
     page = 1
     while True:
         batch = json.loads(_get(f"{API}/orgs/{OWNER}/repos?per_page=100&page={page}", token))
-        found.update(
-            {r["name"]: r["default_branch"] for r in batch if not r.get("archived") and r["name"] != ".github"}
-        )
+        found.update({r["name"]: r["default_branch"] for r in batch if not r.get("archived")})
         if len(batch) < 100:
             return found
         page += 1
