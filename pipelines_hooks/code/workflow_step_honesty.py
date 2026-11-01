@@ -43,7 +43,7 @@ def _steps(document: object) -> list[dict]:
 
 
 def scan_text(rel: str, text: str) -> list[str]:
-    findings = []
+    findings: list[str] = []
     for step in _steps(yaml.safe_load(text)):
         script = step.get("run")
         if not isinstance(script, str):
