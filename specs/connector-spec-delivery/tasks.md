@@ -119,3 +119,299 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [ ] T094 PIPE-CONNSPEC-R014 Priority, frontier, and unserved from the organization aggregate.
 - [ ] T095 PIPE-CONNSPEC-R015 Derived release bundles.
 - [ ] T096 PIPE-CONNSPEC-R016 Architecture page delivery views.
+- [ ] T097 PIPE-CONNSPEC-R101.2 Verify `ansible-tower-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T098 PIPE-CONNSPEC-R101.3 Verify `ansible-tower-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T099 PIPE-CONNSPEC-R101.4 Verify `ansible-tower-mcp` has the rapid-delivery section in its development skill.
+- [ ] T100 PIPE-CONNSPEC-R102.1 Verify `archimate-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T101 PIPE-CONNSPEC-R102.2 Verify `archimate-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T102 PIPE-CONNSPEC-R102.3 Verify `archimate-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T103 PIPE-CONNSPEC-R102.4 Verify `archimate-mcp` has the rapid-delivery section in its development skill.
+- [ ] T104 PIPE-CONNSPEC-R103.1 Verify `archivebox-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T105 PIPE-CONNSPEC-R103.2 Verify `archivebox-api` has the three spec hooks in its pre-commit config.
+- [ ] T106 PIPE-CONNSPEC-R103.3 Verify `archivebox-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T107 PIPE-CONNSPEC-R103.4 Verify `archivebox-api` has the rapid-delivery section in its development skill.
+- [ ] T108 PIPE-CONNSPEC-R104.1 Verify `aris-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T109 PIPE-CONNSPEC-R104.2 Verify `aris-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T110 PIPE-CONNSPEC-R104.3 Verify `aris-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T111 PIPE-CONNSPEC-R104.4 Verify `aris-mcp` has the rapid-delivery section in its development skill.
+- [ ] T112 PIPE-CONNSPEC-R105.1 Verify `arr-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T113 PIPE-CONNSPEC-R105.2 Verify `arr-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T114 PIPE-CONNSPEC-R105.3 Verify `arr-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T115 PIPE-CONNSPEC-R105.4 Verify `arr-mcp` has the rapid-delivery section in its development skill.
+- [ ] T116 PIPE-CONNSPEC-R106.1 Verify `atlassian-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T117 PIPE-CONNSPEC-R106.2 Verify `atlassian-agent` has the three spec hooks in its pre-commit config.
+- [ ] T118 PIPE-CONNSPEC-R106.3 Verify `atlassian-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T119 PIPE-CONNSPEC-R106.4 Verify `atlassian-agent` has the rapid-delivery section in its development skill.
+- [ ] T120 PIPE-CONNSPEC-R107.1 Verify `audio-transcriber` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T121 PIPE-CONNSPEC-R107.2 Verify `audio-transcriber` has the three spec hooks in its pre-commit config.
+- [ ] T122 PIPE-CONNSPEC-R107.3 Verify `audio-transcriber` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T123 PIPE-CONNSPEC-R107.4 Verify `audio-transcriber` has the rapid-delivery section in its development skill.
+- [ ] T124 PIPE-CONNSPEC-R108.1 Verify `audiobookshelf-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T125 PIPE-CONNSPEC-R108.2 Verify `audiobookshelf-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T126 PIPE-CONNSPEC-R108.3 Verify `audiobookshelf-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T127 PIPE-CONNSPEC-R108.4 Verify `audiobookshelf-mcp` has the rapid-delivery section in its development skill.
+- [ ] T128 PIPE-CONNSPEC-R109.1 Verify `caddy-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T129 PIPE-CONNSPEC-R109.2 Verify `caddy-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T130 PIPE-CONNSPEC-R109.3 Verify `caddy-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T131 PIPE-CONNSPEC-R109.4 Verify `caddy-mcp` has the rapid-delivery section in its development skill.
+- [ ] T132 PIPE-CONNSPEC-R110.1 Verify `camunda-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T133 PIPE-CONNSPEC-R110.2 Verify `camunda-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T134 PIPE-CONNSPEC-R110.3 Verify `camunda-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T135 PIPE-CONNSPEC-R110.4 Verify `camunda-mcp` has the rapid-delivery section in its development skill.
+- [ ] T136 PIPE-CONNSPEC-R111.1 Verify `ciso-assistant-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T137 PIPE-CONNSPEC-R111.2 Verify `ciso-assistant-api` has the three spec hooks in its pre-commit config.
+- [ ] T138 PIPE-CONNSPEC-R111.3 Verify `ciso-assistant-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T139 PIPE-CONNSPEC-R111.4 Verify `ciso-assistant-api` has the rapid-delivery section in its development skill.
+- [ ] T140 PIPE-CONNSPEC-R112.1 Verify `clarity-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T141 PIPE-CONNSPEC-R112.2 Verify `clarity-api` has the three spec hooks in its pre-commit config.
+- [ ] T142 PIPE-CONNSPEC-R112.3 Verify `clarity-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T143 PIPE-CONNSPEC-R112.4 Verify `clarity-api` has the rapid-delivery section in its development skill.
+- [ ] T144 PIPE-CONNSPEC-R113.1 Verify `container-manager-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T145 PIPE-CONNSPEC-R113.2 Verify `container-manager-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T146 PIPE-CONNSPEC-R113.3 Verify `container-manager-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T147 PIPE-CONNSPEC-R113.4 Verify `container-manager-mcp` has the rapid-delivery section in its development skill.
+- [ ] T148 PIPE-CONNSPEC-R114.1 Verify `data-science-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T149 PIPE-CONNSPEC-R114.2 Verify `data-science-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T150 PIPE-CONNSPEC-R114.3 Verify `data-science-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T151 PIPE-CONNSPEC-R114.4 Verify `data-science-mcp` has the rapid-delivery section in its development skill.
+- [ ] T152 PIPE-CONNSPEC-R115.1 Verify `dockerhub-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T153 PIPE-CONNSPEC-R115.2 Verify `dockerhub-api` has the three spec hooks in its pre-commit config.
+- [ ] T154 PIPE-CONNSPEC-R115.3 Verify `dockerhub-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T155 PIPE-CONNSPEC-R115.4 Verify `dockerhub-api` has the rapid-delivery section in its development skill.
+- [ ] T156 PIPE-CONNSPEC-R116.1 Verify `documentdb-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T157 PIPE-CONNSPEC-R116.2 Verify `documentdb-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T158 PIPE-CONNSPEC-R116.3 Verify `documentdb-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T159 PIPE-CONNSPEC-R116.4 Verify `documentdb-mcp` has the rapid-delivery section in its development skill.
+- [ ] T160 PIPE-CONNSPEC-R117.1 Verify `egeria-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T161 PIPE-CONNSPEC-R117.2 Verify `egeria-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T162 PIPE-CONNSPEC-R117.3 Verify `egeria-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T163 PIPE-CONNSPEC-R117.4 Verify `egeria-mcp` has the rapid-delivery section in its development skill.
+- [ ] T164 PIPE-CONNSPEC-R118.1 Verify `emerald-exchange` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T165 PIPE-CONNSPEC-R118.2 Verify `emerald-exchange` has the three spec hooks in its pre-commit config.
+- [ ] T166 PIPE-CONNSPEC-R118.3 Verify `emerald-exchange` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T167 PIPE-CONNSPEC-R118.4 Verify `emerald-exchange` has the rapid-delivery section in its development skill.
+- [ ] T168 PIPE-CONNSPEC-R119.1 Verify `erpnext-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T169 PIPE-CONNSPEC-R119.2 Verify `erpnext-agent` has the three spec hooks in its pre-commit config.
+- [ ] T170 PIPE-CONNSPEC-R119.3 Verify `erpnext-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T171 PIPE-CONNSPEC-R119.4 Verify `erpnext-agent` has the rapid-delivery section in its development skill.
+- [ ] T172 PIPE-CONNSPEC-R120.1 Verify `fan-manager` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T173 PIPE-CONNSPEC-R120.2 Verify `fan-manager` has the three spec hooks in its pre-commit config.
+- [ ] T174 PIPE-CONNSPEC-R120.3 Verify `fan-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T175 PIPE-CONNSPEC-R120.4 Verify `fan-manager` has the rapid-delivery section in its development skill.
+- [ ] T176 PIPE-CONNSPEC-R121.1 Verify `firefly-iii-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T177 PIPE-CONNSPEC-R121.2 Verify `firefly-iii-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T178 PIPE-CONNSPEC-R121.3 Verify `firefly-iii-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T179 PIPE-CONNSPEC-R121.4 Verify `firefly-iii-mcp` has the rapid-delivery section in its development skill.
+- [ ] T180 PIPE-CONNSPEC-R122.1 Verify `freshrss-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T181 PIPE-CONNSPEC-R122.2 Verify `freshrss-agent` has the three spec hooks in its pre-commit config.
+- [ ] T182 PIPE-CONNSPEC-R122.3 Verify `freshrss-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T183 PIPE-CONNSPEC-R122.4 Verify `freshrss-agent` has the rapid-delivery section in its development skill.
+- [ ] T184 PIPE-CONNSPEC-R123.1 Verify `genius-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T185 PIPE-CONNSPEC-R123.2 Verify `genius-agent` has the three spec hooks in its pre-commit config.
+- [ ] T186 PIPE-CONNSPEC-R123.3 Verify `genius-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T187 PIPE-CONNSPEC-R123.4 Verify `genius-agent` has the rapid-delivery section in its development skill.
+- [ ] T188 PIPE-CONNSPEC-R124.1 Verify `github-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T189 PIPE-CONNSPEC-R124.2 Verify `github-agent` has the three spec hooks in its pre-commit config.
+- [ ] T190 PIPE-CONNSPEC-R124.3 Verify `github-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T191 PIPE-CONNSPEC-R124.4 Verify `github-agent` has the rapid-delivery section in its development skill.
+- [ ] T192 PIPE-CONNSPEC-R125.1 Verify `gitlab-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T193 PIPE-CONNSPEC-R125.2 Verify `gitlab-api` has the three spec hooks in its pre-commit config.
+- [ ] T194 PIPE-CONNSPEC-R125.3 Verify `gitlab-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T195 PIPE-CONNSPEC-R125.4 Verify `gitlab-api` has the rapid-delivery section in its development skill.
+- [ ] T196 PIPE-CONNSPEC-R126.1 Verify `gramps-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T197 PIPE-CONNSPEC-R126.2 Verify `gramps-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T198 PIPE-CONNSPEC-R126.3 Verify `gramps-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T199 PIPE-CONNSPEC-R126.4 Verify `gramps-mcp` has the rapid-delivery section in its development skill.
+- [ ] T200 PIPE-CONNSPEC-R127.1 Verify `hdhomerun-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T201 PIPE-CONNSPEC-R127.2 Verify `hdhomerun-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T202 PIPE-CONNSPEC-R127.3 Verify `hdhomerun-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T203 PIPE-CONNSPEC-R127.4 Verify `hdhomerun-mcp` has the rapid-delivery section in its development skill.
+- [ ] T204 PIPE-CONNSPEC-R128.1 Verify `home-assistant-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T205 PIPE-CONNSPEC-R128.2 Verify `home-assistant-agent` has the three spec hooks in its pre-commit config.
+- [ ] T206 PIPE-CONNSPEC-R128.3 Verify `home-assistant-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T207 PIPE-CONNSPEC-R128.4 Verify `home-assistant-agent` has the rapid-delivery section in its development skill.
+- [ ] T208 PIPE-CONNSPEC-R129.1 Verify `jellyfin-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T209 PIPE-CONNSPEC-R129.2 Verify `jellyfin-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T210 PIPE-CONNSPEC-R129.3 Verify `jellyfin-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T211 PIPE-CONNSPEC-R129.4 Verify `jellyfin-mcp` has the rapid-delivery section in its development skill.
+- [ ] T212 PIPE-CONNSPEC-R130.1 Verify `jena-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T213 PIPE-CONNSPEC-R130.2 Verify `jena-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T214 PIPE-CONNSPEC-R130.3 Verify `jena-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T215 PIPE-CONNSPEC-R130.4 Verify `jena-mcp` has the rapid-delivery section in its development skill.
+- [ ] T216 PIPE-CONNSPEC-R131.1 Verify `kafka-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T217 PIPE-CONNSPEC-R131.2 Verify `kafka-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T218 PIPE-CONNSPEC-R131.3 Verify `kafka-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T219 PIPE-CONNSPEC-R131.4 Verify `kafka-mcp` has the rapid-delivery section in its development skill.
+- [ ] T220 PIPE-CONNSPEC-R132.1 Verify `keycloak-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T221 PIPE-CONNSPEC-R132.2 Verify `keycloak-agent` has the three spec hooks in its pre-commit config.
+- [ ] T222 PIPE-CONNSPEC-R132.3 Verify `keycloak-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T223 PIPE-CONNSPEC-R132.4 Verify `keycloak-agent` has the rapid-delivery section in its development skill.
+- [ ] T224 PIPE-CONNSPEC-R133.1 Verify `lakekeeper-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T225 PIPE-CONNSPEC-R133.2 Verify `lakekeeper-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T226 PIPE-CONNSPEC-R133.3 Verify `lakekeeper-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T227 PIPE-CONNSPEC-R133.4 Verify `lakekeeper-mcp` has the rapid-delivery section in its development skill.
+- [ ] T228 PIPE-CONNSPEC-R134.1 Verify `langfuse-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T229 PIPE-CONNSPEC-R134.2 Verify `langfuse-agent` has the three spec hooks in its pre-commit config.
+- [ ] T230 PIPE-CONNSPEC-R134.3 Verify `langfuse-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T231 PIPE-CONNSPEC-R134.4 Verify `langfuse-agent` has the rapid-delivery section in its development skill.
+- [ ] T232 PIPE-CONNSPEC-R135.1 Verify `leanix-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T233 PIPE-CONNSPEC-R135.2 Verify `leanix-agent` has the three spec hooks in its pre-commit config.
+- [ ] T234 PIPE-CONNSPEC-R135.3 Verify `leanix-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T235 PIPE-CONNSPEC-R135.4 Verify `leanix-agent` has the rapid-delivery section in its development skill.
+- [ ] T236 PIPE-CONNSPEC-R136.1 Verify `legal-peripherals-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T237 PIPE-CONNSPEC-R136.2 Verify `legal-peripherals-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T238 PIPE-CONNSPEC-R136.3 Verify `legal-peripherals-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T239 PIPE-CONNSPEC-R136.4 Verify `legal-peripherals-mcp` has the rapid-delivery section in its development skill.
+- [ ] T240 PIPE-CONNSPEC-R137.1 Verify `lgtm-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T241 PIPE-CONNSPEC-R137.2 Verify `lgtm-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T242 PIPE-CONNSPEC-R137.3 Verify `lgtm-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T243 PIPE-CONNSPEC-R137.4 Verify `lgtm-mcp` has the rapid-delivery section in its development skill.
+- [ ] T244 PIPE-CONNSPEC-R138.1 Verify `listmonk-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T245 PIPE-CONNSPEC-R138.2 Verify `listmonk-api` has the three spec hooks in its pre-commit config.
+- [ ] T246 PIPE-CONNSPEC-R138.3 Verify `listmonk-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T247 PIPE-CONNSPEC-R138.4 Verify `listmonk-api` has the rapid-delivery section in its development skill.
+- [ ] T248 PIPE-CONNSPEC-R139.1 Verify `bellwether-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T249 PIPE-CONNSPEC-R139.2 Verify `bellwether-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T250 PIPE-CONNSPEC-R139.3 Verify `bellwether-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T251 PIPE-CONNSPEC-R139.4 Verify `bellwether-mcp` has the rapid-delivery section in its development skill.
+- [ ] T252 PIPE-CONNSPEC-R140.1 Verify `mattermost-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T253 PIPE-CONNSPEC-R140.2 Verify `mattermost-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T254 PIPE-CONNSPEC-R140.3 Verify `mattermost-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T255 PIPE-CONNSPEC-R140.4 Verify `mattermost-mcp` has the rapid-delivery section in its development skill.
+- [ ] T256 PIPE-CONNSPEC-R141.1 Verify `mealie-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T257 PIPE-CONNSPEC-R141.2 Verify `mealie-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T258 PIPE-CONNSPEC-R141.3 Verify `mealie-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T259 PIPE-CONNSPEC-R141.4 Verify `mealie-mcp` has the rapid-delivery section in its development skill.
+- [ ] T260 PIPE-CONNSPEC-R142.1 Verify `media-downloader` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T261 PIPE-CONNSPEC-R142.2 Verify `media-downloader` has the three spec hooks in its pre-commit config.
+- [ ] T262 PIPE-CONNSPEC-R142.3 Verify `media-downloader` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T263 PIPE-CONNSPEC-R142.4 Verify `media-downloader` has the rapid-delivery section in its development skill.
+- [ ] T264 PIPE-CONNSPEC-R143.1 Verify `microsoft-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T265 PIPE-CONNSPEC-R143.2 Verify `microsoft-agent` has the three spec hooks in its pre-commit config.
+- [ ] T266 PIPE-CONNSPEC-R143.3 Verify `microsoft-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T267 PIPE-CONNSPEC-R143.4 Verify `microsoft-agent` has the rapid-delivery section in its development skill.
+- [ ] T268 PIPE-CONNSPEC-R144.1 Verify `nextcloud-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T269 PIPE-CONNSPEC-R144.2 Verify `nextcloud-agent` has the three spec hooks in its pre-commit config.
+- [ ] T270 PIPE-CONNSPEC-R144.3 Verify `nextcloud-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T271 PIPE-CONNSPEC-R144.4 Verify `nextcloud-agent` has the rapid-delivery section in its development skill.
+- [ ] T272 PIPE-CONNSPEC-R145.1 Verify `objectstore-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T273 PIPE-CONNSPEC-R145.2 Verify `objectstore-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T274 PIPE-CONNSPEC-R145.3 Verify `objectstore-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T275 PIPE-CONNSPEC-R145.4 Verify `objectstore-mcp` has the rapid-delivery section in its development skill.
+- [ ] T276 PIPE-CONNSPEC-R146.1 Verify `okta-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T277 PIPE-CONNSPEC-R146.2 Verify `okta-agent` has the three spec hooks in its pre-commit config.
+- [ ] T278 PIPE-CONNSPEC-R146.3 Verify `okta-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T279 PIPE-CONNSPEC-R146.4 Verify `okta-agent` has the rapid-delivery section in its development skill.
+- [ ] T280 PIPE-CONNSPEC-R147.1 Verify `onetrust-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T281 PIPE-CONNSPEC-R147.2 Verify `onetrust-api` has the three spec hooks in its pre-commit config.
+- [ ] T282 PIPE-CONNSPEC-R147.3 Verify `onetrust-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T283 PIPE-CONNSPEC-R147.4 Verify `onetrust-api` has the rapid-delivery section in its development skill.
+- [ ] T284 PIPE-CONNSPEC-R148.1 Verify `openbao-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T285 PIPE-CONNSPEC-R148.2 Verify `openbao-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T286 PIPE-CONNSPEC-R148.3 Verify `openbao-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T287 PIPE-CONNSPEC-R148.4 Verify `openbao-mcp` has the rapid-delivery section in its development skill.
+- [ ] T288 PIPE-CONNSPEC-R149.1 Verify `opensearch-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T289 PIPE-CONNSPEC-R149.2 Verify `opensearch-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T290 PIPE-CONNSPEC-R149.3 Verify `opensearch-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T291 PIPE-CONNSPEC-R149.4 Verify `opensearch-mcp` has the rapid-delivery section in its development skill.
+- [ ] T292 PIPE-CONNSPEC-R150.1 Verify `owncast-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T293 PIPE-CONNSPEC-R150.2 Verify `owncast-agent` has the three spec hooks in its pre-commit config.
+- [ ] T294 PIPE-CONNSPEC-R150.3 Verify `owncast-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T295 PIPE-CONNSPEC-R150.4 Verify `owncast-agent` has the rapid-delivery section in its development skill.
+- [ ] T296 PIPE-CONNSPEC-R151.1 Verify `paperless-ngx-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T297 PIPE-CONNSPEC-R151.2 Verify `paperless-ngx-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T298 PIPE-CONNSPEC-R151.3 Verify `paperless-ngx-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T299 PIPE-CONNSPEC-R151.4 Verify `paperless-ngx-mcp` has the rapid-delivery section in its development skill.
+- [ ] T300 PIPE-CONNSPEC-R152.1 Verify `plane-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T301 PIPE-CONNSPEC-R152.2 Verify `plane-agent` has the three spec hooks in its pre-commit config.
+- [ ] T302 PIPE-CONNSPEC-R152.3 Verify `plane-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T303 PIPE-CONNSPEC-R152.4 Verify `plane-agent` has the rapid-delivery section in its development skill.
+- [ ] T304 PIPE-CONNSPEC-R153.1 Verify `portainer-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T305 PIPE-CONNSPEC-R153.2 Verify `portainer-agent` has the three spec hooks in its pre-commit config.
+- [ ] T306 PIPE-CONNSPEC-R153.3 Verify `portainer-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T307 PIPE-CONNSPEC-R153.4 Verify `portainer-agent` has the rapid-delivery section in its development skill.
+- [ ] T308 PIPE-CONNSPEC-R154.1 Verify `postiz-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T309 PIPE-CONNSPEC-R154.2 Verify `postiz-agent` has the three spec hooks in its pre-commit config.
+- [ ] T310 PIPE-CONNSPEC-R154.3 Verify `postiz-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T311 PIPE-CONNSPEC-R154.4 Verify `postiz-agent` has the rapid-delivery section in its development skill.
+- [ ] T312 PIPE-CONNSPEC-R155.1 Verify `pulselink-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T313 PIPE-CONNSPEC-R155.2 Verify `pulselink-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T314 PIPE-CONNSPEC-R155.3 Verify `pulselink-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T315 PIPE-CONNSPEC-R155.4 Verify `pulselink-mcp` has the rapid-delivery section in its development skill.
+- [ ] T316 PIPE-CONNSPEC-R156.1 Verify `qbittorrent-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T317 PIPE-CONNSPEC-R156.2 Verify `qbittorrent-agent` has the three spec hooks in its pre-commit config.
+- [ ] T318 PIPE-CONNSPEC-R156.3 Verify `qbittorrent-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T319 PIPE-CONNSPEC-R156.4 Verify `qbittorrent-agent` has the rapid-delivery section in its development skill.
+- [ ] T320 PIPE-CONNSPEC-R157.1 Verify `repository-manager` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T321 PIPE-CONNSPEC-R157.2 Verify `repository-manager` has the three spec hooks in its pre-commit config.
+- [ ] T322 PIPE-CONNSPEC-R157.3 Verify `repository-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T323 PIPE-CONNSPEC-R157.4 Verify `repository-manager` has the rapid-delivery section in its development skill.
+- [ ] T324 PIPE-CONNSPEC-R158.1 Verify `rom-manager` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T325 PIPE-CONNSPEC-R158.2 Verify `rom-manager` has the three spec hooks in its pre-commit config.
+- [ ] T326 PIPE-CONNSPEC-R158.3 Verify `rom-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T327 PIPE-CONNSPEC-R158.4 Verify `rom-manager` has the rapid-delivery section in its development skill.
+- [ ] T328 PIPE-CONNSPEC-R159.1 Verify `salesforce-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T329 PIPE-CONNSPEC-R159.2 Verify `salesforce-agent` has the three spec hooks in its pre-commit config.
+- [ ] T330 PIPE-CONNSPEC-R159.3 Verify `salesforce-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T331 PIPE-CONNSPEC-R159.4 Verify `salesforce-agent` has the rapid-delivery section in its development skill.
+- [ ] T332 PIPE-CONNSPEC-R160.1 Verify `scholarx` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T333 PIPE-CONNSPEC-R160.2 Verify `scholarx` has the three spec hooks in its pre-commit config.
+- [ ] T334 PIPE-CONNSPEC-R160.3 Verify `scholarx` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T335 PIPE-CONNSPEC-R160.4 Verify `scholarx` has the rapid-delivery section in its development skill.
+- [ ] T336 PIPE-CONNSPEC-R161.1 Verify `searxng-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T337 PIPE-CONNSPEC-R161.2 Verify `searxng-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T338 PIPE-CONNSPEC-R161.3 Verify `searxng-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T339 PIPE-CONNSPEC-R161.4 Verify `searxng-mcp` has the rapid-delivery section in its development skill.
+- [ ] T340 PIPE-CONNSPEC-R162.1 Verify `servicenow-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T341 PIPE-CONNSPEC-R162.2 Verify `servicenow-api` has the three spec hooks in its pre-commit config.
+- [ ] T342 PIPE-CONNSPEC-R162.3 Verify `servicenow-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T343 PIPE-CONNSPEC-R162.4 Verify `servicenow-api` has the rapid-delivery section in its development skill.
+- [ ] T344 PIPE-CONNSPEC-R163.1 Verify `spark-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T345 PIPE-CONNSPEC-R163.2 Verify `spark-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T346 PIPE-CONNSPEC-R163.3 Verify `spark-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T347 PIPE-CONNSPEC-R163.4 Verify `spark-mcp` has the rapid-delivery section in its development skill.
+- [ ] T348 PIPE-CONNSPEC-R164.1 Verify `sql-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T349 PIPE-CONNSPEC-R164.2 Verify `sql-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T350 PIPE-CONNSPEC-R164.3 Verify `sql-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T351 PIPE-CONNSPEC-R164.4 Verify `sql-mcp` has the rapid-delivery section in its development skill.
+- [ ] T352 PIPE-CONNSPEC-R165.1 Verify `stirlingpdf-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T353 PIPE-CONNSPEC-R165.2 Verify `stirlingpdf-agent` has the three spec hooks in its pre-commit config.
+- [ ] T354 PIPE-CONNSPEC-R165.3 Verify `stirlingpdf-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T355 PIPE-CONNSPEC-R165.4 Verify `stirlingpdf-agent` has the rapid-delivery section in its development skill.
+- [ ] T356 PIPE-CONNSPEC-R166.1 Verify `systems-manager` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T357 PIPE-CONNSPEC-R166.2 Verify `systems-manager` has the three spec hooks in its pre-commit config.
+- [ ] T358 PIPE-CONNSPEC-R166.3 Verify `systems-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T359 PIPE-CONNSPEC-R166.4 Verify `systems-manager` has the rapid-delivery section in its development skill.
+- [ ] T360 PIPE-CONNSPEC-R167.1 Verify `technitium-dns-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T361 PIPE-CONNSPEC-R167.2 Verify `technitium-dns-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T362 PIPE-CONNSPEC-R167.3 Verify `technitium-dns-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T363 PIPE-CONNSPEC-R167.4 Verify `technitium-dns-mcp` has the rapid-delivery section in its development skill.
+- [ ] T364 PIPE-CONNSPEC-R168.1 Verify `tunnel-manager` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T365 PIPE-CONNSPEC-R168.2 Verify `tunnel-manager` has the three spec hooks in its pre-commit config.
+- [ ] T366 PIPE-CONNSPEC-R168.3 Verify `tunnel-manager` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T367 PIPE-CONNSPEC-R168.4 Verify `tunnel-manager` has the rapid-delivery section in its development skill.
+- [ ] T368 PIPE-CONNSPEC-R169.1 Verify `twenty-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T369 PIPE-CONNSPEC-R169.2 Verify `twenty-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T370 PIPE-CONNSPEC-R169.3 Verify `twenty-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T371 PIPE-CONNSPEC-R169.4 Verify `twenty-mcp` has the rapid-delivery section in its development skill.
+- [ ] T372 PIPE-CONNSPEC-R170.1 Verify `uptime-kuma-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T373 PIPE-CONNSPEC-R170.2 Verify `uptime-kuma-agent` has the three spec hooks in its pre-commit config.
+- [ ] T374 PIPE-CONNSPEC-R170.3 Verify `uptime-kuma-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T375 PIPE-CONNSPEC-R170.4 Verify `uptime-kuma-agent` has the rapid-delivery section in its development skill.
+- [ ] T376 PIPE-CONNSPEC-R171.1 Verify `vaultwarden-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T377 PIPE-CONNSPEC-R171.2 Verify `vaultwarden-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T378 PIPE-CONNSPEC-R171.3 Verify `vaultwarden-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T379 PIPE-CONNSPEC-R171.4 Verify `vaultwarden-mcp` has the rapid-delivery section in its development skill.
+- [ ] T380 PIPE-CONNSPEC-R172.1 Verify `vector-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T381 PIPE-CONNSPEC-R172.2 Verify `vector-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T382 PIPE-CONNSPEC-R172.3 Verify `vector-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T383 PIPE-CONNSPEC-R172.4 Verify `vector-mcp` has the rapid-delivery section in its development skill.
+- [ ] T384 PIPE-CONNSPEC-R173.1 Verify `wger-agent` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T385 PIPE-CONNSPEC-R173.2 Verify `wger-agent` has the three spec hooks in its pre-commit config.
+- [ ] T386 PIPE-CONNSPEC-R173.3 Verify `wger-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T387 PIPE-CONNSPEC-R173.4 Verify `wger-agent` has the rapid-delivery section in its development skill.
+- [ ] T388 PIPE-CONNSPEC-R174.1 Verify `world-reference-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T389 PIPE-CONNSPEC-R174.2 Verify `world-reference-mcp` has the three spec hooks in its pre-commit config.
+- [ ] T390 PIPE-CONNSPEC-R174.3 Verify `world-reference-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T391 PIPE-CONNSPEC-R174.4 Verify `world-reference-mcp` has the rapid-delivery section in its development skill.
+- [ ] T392 PIPE-CONNSPEC-R101.1 Verify `ansible-tower-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
