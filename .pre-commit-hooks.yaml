@@ -57,6 +57,13 @@
   files: ^specs/[^/]+/plan\.md$
   pass_filenames: false
   stages: [pre-commit, manual]
+- id: spec-id-index
+  name: Spec ID index - write the cross-repo row ID index plan-conformance resolves foreign IDs against
+  entry: pipelines-hook spec-id-index --out .git/spec-id-index.json
+  language: python
+  always_run: true
+  pass_filenames: false
+  stages: [manual]
 - id: spec-templates
   name: Spec templates - .specify/templates equals the vended pipelines templates
   entry: pipelines-hook spec-templates

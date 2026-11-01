@@ -2,18 +2,21 @@
 
 Checks one or more plans and prints ``path:line: message`` lines. A plan fails when its level-2
 headings differ from the template, when a template placeholder is left in, when it names a spec
-row that no ``requirements.md`` of this repository defines, or when a relative link does not
+row that no ``requirements.md`` of this repository defines, cites a foreign-prefix ID that its owner
+repository does not define (resolved against the ``--id-index`` file; the gate fails closed without one), or when a relative link does not
 resolve. The headings are read from ``.specify/templates/plan-template.md`` at run time.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.core.settings import setting
 from pipelines_hooks.docs.public_surface_links import local_link_findings
 from pipelines_hooks.specs import narrative
 from pipelines_hooks.specs.artifacts import unfenced
@@ -27,7 +30,6 @@ SPEC_TITLE_RE = re.compile(r"^# ([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*) — ")
 FIELD_RE = re.compile(r"^\s*[-*]\s+\*\*[^*]+\*\*:\s*(.*)$")
 TOKEN_SPAN_RE = re.compile(r"\[[^\]\n]{4,}\](?![(\[:])")
 PREFIX_RE = re.compile(r"-R\d+(?:\.\d+)*$")
-SEAMS = "## Cross-repo seams"
 
 
 def template_text(root: Path) -> str:
@@ -128,18 +130,51 @@ def _placeholder_findings(text: str, tokens: set[str]) -> list[tuple[int, str]]:
     return out
 
 
-def _id_findings(text: str, known: set[str]) -> list[tuple[int, str]]:
+def foreign_ids(text: str, known: set[str]) -> set[str]:
+    """IDs the plan cites whose prefix no row of this repository uses."""
     prefixes = {PREFIX_RE.sub("", i) for i in known}
+    cited = {m.group(1) for _, line in unfenced(text) for m in TOKEN_RE.finditer(line)}
+    return {i for i in cited if i not in known and PREFIX_RE.sub("", i) not in prefixes}
+
+
+def load_index(path: Path | None) -> dict[str, set[str]]:
+    """The cross-repo ID index (repository -> row IDs); fails closed when absent or unreadable."""
+    if path is None:
+        raise CannotRun(
+            "no cross-repo ID index; pass --id-index <path> or set PIPELINES_SPEC_ID_INDEX (pipelines-hook spec-id-index writes one)"
+        )
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        return {repo: set(ids) for repo, ids in doc["repos"].items()}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise CannotRun(f"no cross-repo ID index: cannot read {path}: {exc}") from exc
+
+
+def _owner(ident: str, index: dict[str, set[str]]) -> str:
+    prefix = PREFIX_RE.sub("", ident)
+    return next((r for r, ids in sorted(index.items()) if any(PREFIX_RE.sub("", i) == prefix for i in ids)), "unknown")
+
+
+def _id_findings(text: str, known: set[str], index: dict[str, set[str]] | None = None) -> list[tuple[int, str]]:
+    prefixes = {PREFIX_RE.sub("", i) for i in known}
+    resolved = set().union(*index.values()) if index else set()
     out: list[tuple[int, str]] = []
-    seams = False
     for n, line in unfenced(text):
-        if line.startswith("## "):
-            seams = line.rstrip() == SEAMS
         for match in TOKEN_RE.finditer(line):
             ident = match.group(1)
-            if ident in known or (seams and PREFIX_RE.sub("", ident) not in prefixes):
+            if ident in known:
                 continue
-            out.append((n, f"spec ID {ident} is not defined by any specs/*/requirements.md; fix the ID or add the row"))
+            if PREFIX_RE.sub("", ident) in prefixes:
+                out.append(
+                    (n, f"spec ID {ident} is not defined by any specs/*/requirements.md; fix the ID or add the row")
+                )
+            elif ident not in resolved:
+                out.append(
+                    (
+                        n,
+                        f"unknown ID {ident} (owner {_owner(ident, index or {})}); fix the ID or cite a row its owner defines",
+                    )
+                )
     return out
 
 
@@ -151,13 +186,15 @@ def _link_findings(root: Path, plan: Path, text: str) -> list[tuple[int, str]]:
     return out
 
 
-def check_plan(root: Path, plan: Path, template: str, known: set[str]) -> list[str]:
+def check_plan(
+    root: Path, plan: Path, template: str, known: set[str], index: dict[str, set[str]] | None = None
+) -> list[str]:
     """All ``path:line: message`` findings for one plan."""
     text = plan.read_text(encoding="utf-8", errors="replace")
     rel = plan.resolve().relative_to(root.resolve()).as_posix()
     found = _heading_findings(text, required_headings(template), _spec_id(plan))
     found += _empty_sections(text) + _placeholder_findings(text, placeholder_tokens(template))
-    found += _id_findings(text, known) + _link_findings(root, plan, text)
+    found += _id_findings(text, known, index) + _link_findings(root, plan, text)
     return [f"{rel}:{n}: {msg}" for n, msg in sorted(dict.fromkeys(found), key=lambda item: item[0])]
 
 
@@ -166,6 +203,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("paths", nargs="*", type=Path, help="plan.md files (default: the plans the change touches)")
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--all", action="store_true", help="check every specs/*/plan.md")
+    parser.add_argument(
+        "--id-index", type=Path, default=None, help="cross-repo ID index (default: PIPELINES_SPEC_ID_INDEX)"
+    )
     parser.add_argument("--base", default=None, help="revision the change is measured against")
     args = parser.parse_args(argv)
     root = repo_root(args.root)
@@ -177,7 +217,11 @@ def main(argv: list[str]) -> int:
         touched = narrative.touched_paths(root, args.base)
         plans = [root / t for t in sorted(touched) if re.fullmatch(r"specs/[^/]+/plan\.md", t) and (root / t).is_file()]
     template, known = template_text(root), known_ids(root)
-    findings = [f for plan in plans for f in check_plan(root, plan, template, known)]
+    index = None
+    if any(foreign_ids(plan.read_text(encoding="utf-8", errors="replace"), known) for plan in plans):
+        env = setting("PIPELINES_SPEC_ID_INDEX")
+        index = load_index(args.id_index or (Path(env) if env else None))
+    findings = [f for plan in plans for f in check_plan(root, plan, template, known, index)]
     for finding in findings:
         print(finding)
     if findings:

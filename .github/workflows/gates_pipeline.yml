@@ -370,6 +370,20 @@ jobs:
           fi
           echo "PRE_COMMIT_RANGE=${range[*]}" >> "$GITHUB_ENV"
 
+      # plan-conformance resolves foreign row IDs against this index (PIPE-GATES-R046.1); it is
+      # built only when the change touches a plan, from the default branches of the organization.
+      - name: Build the cross-repo spec ID index
+        env:
+          PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ "${PRE_COMMIT_FROM_REF:-}" != "" ]] && ! git diff --name-only "$PRE_COMMIT_FROM_REF" HEAD | grep -qE '^specs/[^/]+/plan\.md$'; then
+            echo "no plan changed; index not needed"; exit 0
+          fi
+          uvx --from "$PIPELINES_SOURCE" pipelines-hook spec-id-index --out "$RUNNER_TEMP/spec-id-index.json"
+          echo "PIPELINES_SPEC_ID_INDEX=$RUNNER_TEMP/spec-id-index.json" >> "$GITHUB_ENV"
+
       - name: pre-commit (commit and pre-push stages)
         env:
           SKIP: ${{ inputs.skip-hooks }}

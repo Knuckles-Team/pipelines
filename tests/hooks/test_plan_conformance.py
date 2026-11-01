@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
 import pytest
 
 from pipelines_hooks import cli
+from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.ci_replica.change_scope import SPEC_GATES
 from pipelines_hooks.specs import plan_conformance as gate
 
@@ -25,14 +27,14 @@ def build(*, drop=(), swap=False, extra="", ident="DEMO-AREA", body="Real conten
     return "\n".join(parts) + extra
 
 
-def run(tmp_path: Path, plan: str, capsys) -> tuple[int, str]:
+def run(tmp_path: Path, plan: str, capsys, extra=()) -> tuple[int, str]:
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     spec = tmp_path / "specs" / "demo"
     spec.mkdir(parents=True, exist_ok=True)
     (spec / "requirements.md").write_text(REQUIREMENTS)
     (spec / "notes.md").write_text("notes\n")
     (spec / "plan.md").write_text(plan)
-    code = gate.main(["--root", str(tmp_path), str(spec / "plan.md")])
+    code = gate.main(["--root", str(tmp_path), str(spec / "plan.md"), *extra])
     return code, capsys.readouterr().out
 
 
@@ -87,14 +89,46 @@ def test_each_failure_type_is_a_path_line_message(tmp_path: Path, capsys, plan: 
     assert out.rstrip().endswith("plan(s)")
 
 
-@pytest.mark.spec("PIPE-GATES-R046")
-def test_foreign_seam_ids_are_allowed_only_in_the_seams_section(tmp_path: Path, capsys) -> None:
-    plan = build().replace(
-        "## Cross-repo seams\n\nReal content.", "## Cross-repo seams\n\n- `OTHER-AREA-R004` accepts it."
-    )
-    assert run(tmp_path, plan, capsys)[0] == 0
-    elsewhere = build().replace("## Summary\n\nReal content.", "## Summary\n\nSee `OTHER-AREA-R004`.", 1)
-    assert "OTHER-AREA-R004 is not defined" in run(tmp_path, elsewhere, capsys)[1]
+def with_foreign(section: str = "## Summary") -> str:
+    return build().replace(f"{section}\n\nReal content.", f"{section}\n\nSee `OTHER-AREA-R004`.", 1)
+
+
+def write_index(tmp_path: Path, ids=("OTHER-AREA-R004",)) -> Path:
+    path = tmp_path / "index.json"
+    path.write_text(json.dumps({"repos": {"other": list(ids)}}))
+    return path
+
+
+@pytest.mark.spec("PIPE-GATES-R046.1")
+@pytest.mark.parametrize("section", ["## Summary", "## Cross-repo seams"])
+def test_a_resolvable_foreign_id_passes_in_any_section(tmp_path: Path, capsys, section: str) -> None:
+    index = write_index(tmp_path)
+    code, out = run(tmp_path, with_foreign(section), capsys, ["--id-index", str(index)])
+    assert (code, out) == (0, "plan-conformance: clean (1 plan(s) checked)\n")
+
+
+@pytest.mark.spec("PIPE-GATES-R046.1")
+def test_an_unknown_foreign_id_fails_with_its_owner(tmp_path: Path, capsys) -> None:
+    index = write_index(tmp_path, ids=("OTHER-AREA-R001",))
+    code, out = run(tmp_path, with_foreign(), capsys, ["--id-index", str(index)])
+    assert code == 1
+    assert "specs/demo/plan.md:" in out and "unknown ID OTHER-AREA-R004 (owner other)" in out
+
+
+@pytest.mark.spec("PIPE-GATES-R046.1")
+def test_a_foreign_id_without_an_index_fails_closed(tmp_path: Path, capsys, monkeypatch) -> None:
+    monkeypatch.delenv("PIPELINES_SPEC_ID_INDEX", raising=False)
+    with pytest.raises(CannotRun, match="no cross-repo ID index"):
+        run(tmp_path, with_foreign(), capsys)
+    assert cli.run_gate("plan-conformance", ["--root", str(tmp_path), str(tmp_path / "specs/demo/plan.md")]) == 2
+    monkeypatch.setenv("PIPELINES_SPEC_ID_INDEX", str(write_index(tmp_path)))
+    assert run(tmp_path, with_foreign(), capsys)[0] == 0
+
+
+@pytest.mark.spec("PIPE-GATES-R046.1")
+def test_a_plan_without_foreign_ids_runs_without_an_index(tmp_path: Path, capsys, monkeypatch) -> None:
+    monkeypatch.delenv("PIPELINES_SPEC_ID_INDEX", raising=False)
+    assert run(tmp_path, build(extra="\nSee `DEMO-AREA-R001`.\n"), capsys)[0] == 0
 
 
 @pytest.mark.spec("PIPE-GATES-R046")
@@ -109,3 +143,34 @@ def test_headings_come_from_the_template_at_run_time(tmp_path: Path, capsys) -> 
 def test_the_gate_joins_the_spec_group_and_spec_gate_set() -> None:
     assert "plan-conformance" in cli.GATES and "plan-conformance" in cli.GROUPS["spec"]
     assert "plan-conformance" in SPEC_GATES
+
+
+@pytest.mark.spec("PIPE-GATES-R046.1")
+def test_the_index_builder_is_a_registered_gate() -> None:
+    assert "spec-id-index" in cli.GATES
+
+
+@pytest.mark.spec("PIPE-GATES-R046.1")
+def test_the_index_builder_reads_row_ids_per_repository(tmp_path: Path, monkeypatch) -> None:
+    from pipelines_hooks.specs import id_index
+
+    tree = {
+        "tree": [
+            {"type": "blob", "path": "specs/a/requirements.md"},
+            {"type": "blob", "path": "specs/_x/requirements.md"},
+        ]
+    }
+
+    def fake(url: str, token: str, accept: str = "") -> bytes:
+        if "/orgs/" in url:
+            return json.dumps(
+                [{"name": "one", "default_branch": "main"}, {"name": "old", "default_branch": "main", "archived": True}]
+            ).encode()
+        if "/git/trees/" in url:
+            return json.dumps(tree).encode()
+        return b"# ONE-AREA - T\n\n| `ONE-AREA-R001` | **A.** B | C |\n"
+
+    monkeypatch.setattr(id_index, "_get", fake)
+    out = tmp_path / "i.json"
+    assert id_index.main(["--out", str(out)]) == 0
+    assert json.loads(out.read_text()) == {"repos": {"one": ["ONE-AREA-R001"]}}
