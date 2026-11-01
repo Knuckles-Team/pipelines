@@ -136,3 +136,17 @@ def test_the_completeness_article_is_traced() -> None:
     assert "constitution hooks: spec-standard" in article
     for rule in ("production caller chain", "`Shape:` sentence", 'no "TBD"', "real gate thresholds"):
         assert rule in article
+
+
+def test_transport_parity_defect_discipline_and_hygiene_are_stated() -> None:
+    # spec: PIPE-GATES-R040
+    text = FILE.read_text(encoding="utf-8")
+    bodies = dict(_bodies())
+    connectors = bodies["IX. Connectors depend on the SDK and are called through arbora"]
+    for rule in ("one wiring path", "only supplies the credential", "without authentication", "explicit confirmation"):
+        assert rule in connectors
+    defects = bodies["XXVI. Defects are reproduced, fixed at the root and proved over the real protocol"]
+    for rule in ("real client over the real transport", "shared SDK first", "regression test", "real platform"):
+        assert rule in defects
+    assert "A leftover worktree is a defect." in text
+    assert "EG-STE" not in text

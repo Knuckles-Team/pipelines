@@ -1,4 +1,4 @@
-"""EG-STE-Lite scanner: rules 1, 2, 4, 5, 6, 7 over masked prose.
+"""STE-Lite scanner: rules 1, 2, 4, 5, 6, 7 over masked prose.
 
 Rule 3 (tense) is convention, not a scanner: tense is enforced by the
 wordlist rules below plus review. Passive voice and noun chains are

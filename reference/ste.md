@@ -1,6 +1,6 @@
 # Controlled language and document currency (ste)
 
-The ste gates handle the prose side. They also check the argparse strings. One shared engine applies the EG-STE-Lite standard. It serves the four published gate IDs.
+The ste gates handle the prose side. They also check the argparse strings. One shared engine applies the STE-Lite standard. It serves the four published gate IDs.
 
 ## Gate IDs
 

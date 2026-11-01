@@ -202,7 +202,7 @@ No other state, acceptance value or status label exists. Do not write a status l
 
 ## Wording
 
-Spec prose follows the EG-STE-Lite standard in [ste.md](ste.md):
+Spec prose follows the STE-Lite standard in [ste.md](ste.md):
 
 - Keep each sentence to 20 words or fewer.
 - Use the active voice with a named actor.

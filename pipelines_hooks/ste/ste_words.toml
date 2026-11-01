@@ -1,4 +1,4 @@
-# EG-STE-Lite wordlist: the machine-readable half of the standard.
+# STE-Lite wordlist: the machine-readable half of the standard.
 #
 # Read flat by words.py. Every key except [banned] is a top-level value;
 # [banned] is the only table (term -> fix) and must stay last, since a TOML
