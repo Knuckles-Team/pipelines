@@ -39,7 +39,9 @@ def run(tmp_path: Path, plan: str, capsys, extra=()) -> tuple[int, str]:
 
 
 @pytest.fixture(autouse=True)
-def _template(tmp_path: Path) -> None:
+def _template(tmp_path: Path, monkeypatch) -> None:
+    for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"):
+        monkeypatch.delenv(name, raising=False)  # a git hook exports these; the fixture repository must stand alone
     target = tmp_path / ".specify" / "templates"
     target.mkdir(parents=True)
     (target / "plan-template.md").write_text(TEMPLATE)
