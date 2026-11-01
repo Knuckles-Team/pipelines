@@ -28,6 +28,7 @@
     "sha": "2a048eaad63c8f977ce46312d5228abad8c794f5",
     "spec_group": [
       "spec-standard",
+      "plan-conformance",
       "spec-decomposition",
       "spec-status",
       "spec-trailers"
@@ -206,6 +207,7 @@
     ],
     "literal_source_contract": [
       "spec-standard",
+      "plan-conformance",
       "spec-decomposition",
       "spec-status",
       "spec-trailers"

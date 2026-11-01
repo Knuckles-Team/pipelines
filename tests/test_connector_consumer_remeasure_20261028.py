@@ -151,7 +151,7 @@ def test_shared_spec_hook_is_the_canonical_three_hook_mapping() -> None:
     evidence = _evidence()
     provider = evidence["provider"]
     assert list(GROUPS["spec"]) == provider["spec_group"]
-    assert set(provider["spec_group"]) == {"spec-standard", *SPEC_LEAVES}
+    assert set(provider["spec_group"]) == {"spec-standard", "plan-conformance", *SPEC_LEAVES}
     assert provider["canonical_template_rev"] == "main"
 
 

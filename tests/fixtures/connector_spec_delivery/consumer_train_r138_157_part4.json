@@ -518,6 +518,7 @@
       ],
       "members": [
         "spec-standard",
+        "plan-conformance",
         "spec-decomposition",
         "spec-status",
         "spec-trailers"
@@ -1223,6 +1224,7 @@
           "evidence": {
             "aggregate_mapping": [
               "spec-standard",
+              "plan-conformance",
               "spec-decomposition",
               "spec-status",
               "spec-trailers"
@@ -1597,6 +1599,7 @@
       "precommit": {
         "aggregate_mapping": [
           "spec-standard",
+          "plan-conformance",
           "spec-decomposition",
           "spec-status",
           "spec-trailers"
@@ -1926,6 +1929,7 @@
           "evidence": {
             "aggregate_mapping": [
               "spec-standard",
+              "plan-conformance",
               "spec-decomposition",
               "spec-status",
               "spec-trailers"
@@ -2454,6 +2458,7 @@
       "precommit": {
         "aggregate_mapping": [
           "spec-standard",
+          "plan-conformance",
           "spec-decomposition",
           "spec-status",
           "spec-trailers"
@@ -2811,6 +2816,7 @@
           "evidence": {
             "aggregate_mapping": [
               "spec-standard",
+              "plan-conformance",
               "spec-decomposition",
               "spec-status",
               "spec-trailers"
@@ -3143,6 +3149,7 @@
       "precommit": {
         "aggregate_mapping": [
           "spec-standard",
+          "plan-conformance",
           "spec-decomposition",
           "spec-status",
           "spec-trailers"
@@ -3490,6 +3497,7 @@
           "evidence": {
             "aggregate_mapping": [
               "spec-standard",
+              "plan-conformance",
               "spec-decomposition",
               "spec-status",
               "spec-trailers"
@@ -3898,6 +3906,7 @@
       "precommit": {
         "aggregate_mapping": [
           "spec-standard",
+          "plan-conformance",
           "spec-decomposition",
           "spec-status",
           "spec-trailers"
@@ -5843,6 +5852,7 @@
           "evidence": {
             "aggregate_mapping": [
               "spec-standard",
+              "plan-conformance",
               "spec-decomposition",
               "spec-status",
               "spec-trailers"
@@ -6274,6 +6284,7 @@
       "precommit": {
         "aggregate_mapping": [
           "spec-standard",
+          "plan-conformance",
           "spec-decomposition",
           "spec-status",
           "spec-trailers"

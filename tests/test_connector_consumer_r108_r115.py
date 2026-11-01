@@ -28,7 +28,7 @@ EXPECTED_HOOKS = {
     "spec",
     "tests-fast",
 }
-EXPECTED_SPEC_LEAVES = {"spec-standard", "spec-decomposition", "spec-status", "spec-trailers"}
+EXPECTED_SPEC_LEAVES = {"spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers"}
 EXPECTED_ROWS = {
     "PIPE-CONNSPEC-R108.3",
     "PIPE-CONNSPEC-R108.4",

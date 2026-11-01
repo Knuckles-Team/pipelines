@@ -110,6 +110,7 @@ def test_provider_mapping_and_baseline_status_are_immutable() -> None:
     assert provider["spec_group"]["members"] == list(GROUPS["spec"])
     assert set(provider["spec_group"]["members"]) == {
         "spec-standard",
+        "plan-conformance",
         "spec-decomposition",
         "spec-status",
         "spec-trailers",

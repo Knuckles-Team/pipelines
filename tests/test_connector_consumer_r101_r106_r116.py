@@ -28,7 +28,7 @@ EXPECTED_HOOKS = {
     "spec",
     "tests-fast",
 }
-EXPECTED_SPEC_LEAVES = {"spec-standard", "spec-decomposition", "spec-status", "spec-trailers"}
+EXPECTED_SPEC_LEAVES = {"spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers"}
 EXPECTED_SOURCE_SHAS = {
     "ansible-tower-mcp": "2df4b183d7219074c1dbd95ddbbc9d7bdc18bf7e",
     "atlassian-agent": "55a2e5692fe7da9b2947d96f88112039bd93cf55",
