@@ -1,0 +1,25 @@
+name: Release drift
+
+# Reports a package whose version on main was never published (PIPE-RELEASE-R027). The run
+# fails with the list; it never tags, publishes or edits a repository.
+on:
+  schedule:
+    - cron: '41 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compare main with the package index
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/release_drift.py

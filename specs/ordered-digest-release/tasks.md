@@ -172,3 +172,4 @@ commit).
 - [ ] T095 PIPE-RELEASE-R007.10 Refusal and fallback.
 - [ ] T096 PIPE-RELEASE-R007.11 Wiring and cutover.
 - [ ] T097 PIPE-RELEASE-R007.12 Evidence.
+- [ ] T098 PIPE-RELEASE-R027 Every merged version is published.

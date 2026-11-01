@@ -129,6 +129,13 @@ action before any build. It fails with a message naming the fix when:
 Run it locally before pushing a tag:
 `python3 -I .github/actions/verify-release-version/verify_release_version.py --root . --ref refs/tags/vX.Y.Z`.
 
+### Release drift audit
+
+A scheduled job (`release_drift.yml`, `scripts/release_drift.py`) lists each registered repository whose
+`[project].version` on the default branch is not on the package index and whose head commit is older than
+24 hours. It fails the run with the list and changes nothing. The fix is a `v*` tag on a green main commit.
+An exclude map in the script names each skipped repository and its reason.
+
 ### Release procedure
 
 1. Bump the version first with the repository's own method (`bumpversion`, the

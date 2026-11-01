@@ -113,3 +113,4 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R026.2 | PIPE-RELEASE-R026.2 | Test: `tests/test_release_exit_gates.py::test_final_gate_lists_open_connector_rows_and_unready_services`. |
 | T-PIPE-RELEASE-R026.3 | PIPE-RELEASE-R026.3 | Test: `tests/test_release_exit_gates.py::test_final_gate_needs_a_passing_run_for_each_channel`. |
 | T-PIPE-RELEASE-R026.4 | PIPE-RELEASE-R026.4 | Test: `tests/test_release_exit_gates.py::test_program_exit_gates_table_resolves_against_the_workspace` (L3, served). |
+| T-PIPE-RELEASE-R027 | PIPE-RELEASE-R027 | Test: `tests/test_release_drift.py::test_an_unpublished_old_version_is_reported_with_a_normalized_name` and the three further tests of that file. |
