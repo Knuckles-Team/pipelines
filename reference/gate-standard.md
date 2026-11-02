@@ -164,7 +164,7 @@ next cleanup, not a blocked merge.
 - Security lint: `bandit`.
 - Documentation: `ste-census`, `ste-staged`, `ste-staleness-census`,
   `ste-staleness-staged`, `public-surface`, `mermaid`.
-- Code shape: `no-stub`, `stubs`, `swallowed-errors`, `event-loop-blocking`,
+- Code shape: `no-stub`, `stubs`, `swallowed-errors`, `workflow-step-honesty`, `event-loop-blocking`,
   `import-cycles`, `env-sprawl`, `stdout-writes`.
 - Repository layout: `root-hygiene`, `gitignore-convergence`, `sprawl`,
   `pre-commit-patch-safety`.

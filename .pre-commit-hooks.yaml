@@ -293,6 +293,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: workflow-step-honesty
+  name: "Workflow step honesty - no test or check step masks its failure"
+  entry: pipelines-hook workflow-step-honesty
+  language: python
+  pass_filenames: false
+  always_run: true
 - id: event-loop-blocking
   name: "DEPRECATED (event-loop-blocking): Event-loop blocking - no blocking call added in async code"
   entry: pipelines-hook event-loop-blocking
