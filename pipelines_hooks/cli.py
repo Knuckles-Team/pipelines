@@ -48,6 +48,7 @@ GATES: dict[str, str] = {
     "no-stub": "pipelines_hooks.code.no_stub",
     "stubs": "pipelines_hooks.code.stubs",
     "swallowed-errors": "pipelines_hooks.code.swallowed_gate",
+    "workflow-step-honesty": "pipelines_hooks.code.workflow_step_honesty",
     "event-loop-blocking": "pipelines_hooks.code.event_loop_gate",
     "import-cycles": "pipelines_hooks.code.import_cycles",
     "env-sprawl": "pipelines_hooks.code.env_sprawl",

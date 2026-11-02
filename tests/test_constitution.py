@@ -171,4 +171,28 @@ def test_the_merge_and_release_article_is_traced() -> None:
         assert rule in article
     for rule in ("`v*` tag on a green `main` commit", "Only the owner account merges"):
         assert rule in article
-    assert article.count("*Why*:") == 5 and article.count("*Gate*:") == 5
+    assert article.count("*Why*:") == 7 and article.count("*Gate*:") == 7
+
+
+def test_the_delivery_practice_reference_is_linked() -> None:
+    # spec: PIPE-GATES-R068
+    text = FILE.read_text(encoding="utf-8")
+    workflow = text.split("## Development Workflow", 1)[1].split("## Governance", 1)[0]
+    assert "reference/delivery-practice.md" in workflow
+    assert (ROOT / "reference/delivery-practice.md").exists()
+    for rule in ("never reuse a merged branch", "hold an order-dependent pair", "report only what ran"):
+        assert rule in workflow.lower()
+
+
+def test_the_checks_article_is_traced() -> None:
+    # spec: PIPE-GATES-R068
+    text = FILE.read_text(encoding="utf-8")
+    article = dict(_bodies())["XXIX. Checks tell the truth"]
+    assert "constitution hooks: workflow-step-honesty" in article
+    for rule in ("; true", "|| true", "zero test suites", "planted violation"):
+        assert rule in article
+    version = VERSION.search(text)
+    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 6, 0)
+    merges = dict(_bodies())["XXVIII. Merges and releases are gated"]
+    for rule in ("`hold` label", "merged branch is never reused"):
+        assert rule in merges
