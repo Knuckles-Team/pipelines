@@ -32,4 +32,3 @@ decorated tools, prefixed tools, catalog dispatch, the baseline and the skip cas
 | T-002 | FR-002 | PIPE-VALIDATION-R001.6: all 16 Meristem ignore patterns stay required in disposable repositories. |
 | T-003 | FR-003 | PIPE-VALIDATION-R001.7 to R001.12: a committed copy of a central file is a finding, and the shared checks run as members of the connector standard. |
 | T-004 | FR-004 | PIPE-VALIDATION-R002: a display-name-only candidate passes outside attribution and fails inside it. |
-
