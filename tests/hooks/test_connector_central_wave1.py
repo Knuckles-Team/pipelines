@@ -328,9 +328,7 @@ def test_g2_console_script_becomes_serve(tmp_path: Path) -> None:
     root = _make(tmp_path)
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4", "w1.g2"))
-    assert tomllib.loads(_text(root, "pyproject.toml"))["project"]["scripts"] == {
-        "demo-mcp": "scion_sdk.cli:serve"
-    }
+    assert tomllib.loads(_text(root, "pyproject.toml"))["project"]["scripts"] == {"demo-mcp": "scion_sdk.cli:serve"}
 
 
 @pytest.mark.spec("PIPE-GATES-R016.51")
@@ -630,10 +628,7 @@ def test_g5_main_calls_run(tmp_path: Path) -> None:
     root = _make(tmp_path)
     ctx = _ctx(root)
     _run(ctx, ("w1.g3", "w1.g4", "w1.g5"))
-    assert (
-        _text(root, "demo_mcp/__main__.py")
-        == 'from scion_sdk import run\n\nif __name__ == "__main__":\n    run()\n'
-    )
+    assert _text(root, "demo_mcp/__main__.py") == 'from scion_sdk import run\n\nif __name__ == "__main__":\n    run()\n'
 
 
 @pytest.mark.spec("PIPE-GATES-R016.54")
