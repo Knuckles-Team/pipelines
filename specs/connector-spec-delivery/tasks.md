@@ -214,10 +214,10 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [ ] T189 PIPE-CONNSPEC-R124.2 Verify `github-agent` has the three spec hooks in its pre-commit config.
 - [ ] T190 PIPE-CONNSPEC-R124.3 Verify `github-agent` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
 - [ ] T191 PIPE-CONNSPEC-R124.4 Verify `github-agent` has the rapid-delivery section in its development skill.
-- [ ] T192 PIPE-CONNSPEC-R125.1 Verify `gitlab-api` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
-- [ ] T193 PIPE-CONNSPEC-R125.2 Verify `gitlab-api` has the three spec hooks in its pre-commit config.
-- [ ] T194 PIPE-CONNSPEC-R125.3 Verify `gitlab-api` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
-- [ ] T195 PIPE-CONNSPEC-R125.4 Verify `gitlab-api` has the rapid-delivery section in its development skill.
+- [ ] T192 PIPE-CONNSPEC-R125.1 Verify the forge connector has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T193 PIPE-CONNSPEC-R125.2 Verify the forge connector has the three spec hooks in its pre-commit config.
+- [ ] T194 PIPE-CONNSPEC-R125.3 Verify the forge connector has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
+- [ ] T195 PIPE-CONNSPEC-R125.4 Verify the forge connector has the rapid-delivery section in its development skill.
 - [ ] T196 PIPE-CONNSPEC-R126.1 Verify `gramps-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
 - [ ] T197 PIPE-CONNSPEC-R126.2 Verify `gramps-mcp` has the three spec hooks in its pre-commit config.
 - [ ] T198 PIPE-CONNSPEC-R126.3 Verify `gramps-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
