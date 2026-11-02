@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.5.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.6.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
 
 ## Core Principles
 
@@ -130,7 +130,9 @@ Standards and tests:
 
 A component, module, class or file name never carries a version marker such as `V1`, `v2` or `_new`. The version lives in package metadata and in the wire contract.
 
-*Rationale*: A suffixed name freezes a stale generation next to the live one and invites a second implementation.
+A rename of a name that is serialized is a wire change. It moves every digest, golden vector, receipt and replay record that covers the name. The same commit recomputes them, and the tests run against the final tree.
+
+*Rationale*: A suffixed name freezes a stale generation next to the live one and invites a second implementation. A rename done only to satisfy a naming rule once changed a certificate digest, and the committed golden value was stale on arrival.
 
 **Enforced by:**
 
@@ -146,8 +148,9 @@ Standards and tests:
 
 - [Gate standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/gate-standard.md): the `sprawl` member covers versioned clones.
 - `tests/hooks/test_hygiene.py`, `tests/hooks/test_connector_name.py`, `tests/hooks/test_project_version_sync.py`.
+- Wire rename gate: the golden-vector test of the owning unit fails when a digest is stale; the `PIPE-GATES` spec files the shared check.
 
-**Plan check:** Does every new name describe intent, with no version or generation suffix?
+**Plan check:** Does every new name describe intent, with no version or generation suffix, and does a renamed serialized name recompute its digests in the same commit?
 
 ### VII. One engine, no second database, no sync
 
@@ -421,7 +424,9 @@ Standards and tests:
 
 A row is delivered only when a production caller reaches it. The plan names the entry point, the call path and the wiring site. An orphan module is not delivered.
 
-*Rationale*: Code that nothing calls proves nothing. A hot-path test proves the wiring.
+A control such as an authorization, a validation or a lifecycle rule is wired at the function that every caller reaches, not at the one entry point the author was reading. A test enters through each entry point that reaches the control.
+
+*Rationale*: Code that nothing calls proves nothing. A hot-path test proves the wiring. A control placed at one entry point leaves the other callers unprotected, and a fix there changes nothing for them.
 
 **Enforced by:**
 
@@ -439,8 +444,9 @@ Standards and tests:
 
 - [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): the wiring row and hot-path proof row rules.
 - `tests/hooks/test_kiss.py`, `tests/hooks/test_spec_decomposition.py`, `tests/hooks/test_spec_trailers.py`.
+- [Delivery practice](https://github.com/Knuckles-Team/pipelines/blob/main/reference/delivery-practice.md): the Verification section states the chokepoint rule.
 
-**Plan check:** Does the plan trace the row from a production entry point to the new code, with a hot-path test?
+**Plan check:** Does the plan trace the row from a production entry point to the new code, with a hot-path test, and does it place each control at the function every caller reaches?
 
 ### XIX. A tag push publishes, with no manual approval
 
@@ -585,7 +591,9 @@ Standards and tests:
 
 Each package, crate and module has one responsibility. The dependency graph between packages and crates is acyclic and layered downward. A pull request compiles only the units it touches and their dependents. A repository constitution may set a size limit for its units.
 
-*Rationale*: A small unit builds fast and reviews fast. A cycle or a wide unit forces every change to rebuild the world.
+Every unit of a multi-unit workspace also builds and tests alone, with the feature set that CI uses. A check that passes only in the unified build does not prove a unit. Test-only behavior of code that moves to another unit is kept through a named `test-support` feature, because the language's test-only flag applies only to the unit under test.
+
+*Rationale*: A small unit builds fast and reviews fast. A cycle or a wide unit forces every change to rebuild the world. A unit that builds only beside its neighbors, or with features that its neighbors enable, breaks for its own consumers. Splitting code across units changed the behavior of its moved tests.
 
 **Enforced by:**
 
@@ -600,8 +608,9 @@ Standards and tests:
 
 - [Ecosystem boundaries](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ecosystem-boundaries.md): the forbidden-import matrix.
 - `tests/hooks/test_kiss.py`, `tests/hooks/test_structural_limits.py`.
+- Per-unit isolation gate: the `PIPE-GATES` spec files the CI job that builds and tests each unit with `--all-features` and `-p <unit>`.
 
-**Plan check:** Does the change keep one responsibility per unit, add no dependency cycle and compile only the units it touches and their dependents?
+**Plan check:** Does the change keep one responsibility per unit, add no dependency cycle, compile only the units it touches and their dependents, and build and test each touched unit alone with the CI feature set?
 
 ### XXVI. Defects are reproduced, fixed at the root and proved over the real protocol
 
@@ -654,13 +663,15 @@ Standards and tests:
 
 ### XXVIII. Merges and releases are gated
 
-A change reaches `main` only through a pull request that passed `CI required`, and a merged version reaches users only through a tag on a green `main` commit. Five rules hold in every repository.
+A change reaches `main` only through a pull request that passed `CI required`, and a merged version reaches users only through a tag on a green `main` commit. Seven rules hold in every repository.
 
 1. **`main` requires the single check `CI required`.** Every repository's `main` requires exactly that one check through the org ruleset "Main integrity". Each repository emits that check from a caller job that needs the shared pipelines. *Why*: a repository without the required check merges before CI runs, and a differently named check leaves the ruleset unable to block. *Gate*: the scheduled ruleset audit fails with the list of repositories that drift, and `scripts/apply_repo_ci_settings.sh` is the only tool that applies the ruleset.
 2. **Auto-merge is the normal way to merge, and only where `CI required` is required.** The owner arms auto-merge on each pull request and GitHub merges when the check passes. Where `main` requires no check, auto-merge merges at once, so nobody arms it there. *Why*: auto-merge without a required check turns "after CI" into "now". *Gate*: the same ruleset audit lists every repository that allows auto-merge without the required check, and the agent rules in Development Workflow forbid arming it there.
 3. **A merged commit never carries a CI-skip marker.** The subject and the body of a pull request and of its merge or squash commit never contain `[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]` or `[actions skip]`. *Why*: a marker commit runs no workflow, so it deploys no Pages and a tag on it publishes nothing. *Gate*: the job `ci-skip-marker` of the shared gates workflow fails a pull request whose title or body holds a marker, and `CI required` then fails.
 4. **A release is a `v*` tag on a green `main` commit, and every merged version is published.** A version on `main` that no tag released is a defect. *Why*: an unpublished version leaves users on an old release while the specs claim the new one. *Gate*: the publish jobs run only on a `v*` tag push, and the scheduled release-drift audit fails when the version on `main` is unpublished and its head commit is more than a day old.
 5. **Only the owner account merges.** No workflow, bot or agent merges or tags, and the ruleset has no bypass actor. *Why*: one merging identity makes each merge and release attributable. *Gate*: `tests/test_no_merge_workflows.py` fails a workflow that merges or holds a merge token, and the ruleset script writes no bypass actor.
+6. **A pair of pull requests whose order matters is held, and automation honors the hold.** Both carry the `hold` label until the owner releases them in order. Automation that arms merges skips a held pull request and disarms one that is armed. *Why*: automation that arms every green pull request merges a dependent change before its prerequisite, and either order can break the consumer. *Gate*: the `PIPE-GATES` spec files the check that a held pull request has no armed merge, and the agent rules in `reference/delivery-practice.md` forbid arming it.
+7. **A merged branch is never reused.** The next change starts on a new branch from the default branch. *Why*: after a squash merge the old branch shares no history with `main`, so later commits on it conflict with their own earlier content. *Gate*: the `PIPE-GATES` spec files the check that fails a pull request whose head branch already merged.
 
 *Rationale*: On 2026-11-01, auto-merge landed pull requests before CI in repositories whose `main` required no check, and squash subjects with a skip marker produced merged versions that never deployed or released. Each rule above closes one of those paths, and each is enforced by a job, so the policy cannot break silently again.
 
@@ -680,7 +691,31 @@ Standards and tests:
 - `scripts/apply_repo_ci_settings.sh`, `scripts/audit_ruleset_conformance.py`, `scripts/release_drift.py`.
 - `tests/test_ci_skip_marker_gate.py`, `tests/test_ruleset_audit.py`, `tests/test_release_drift.py`, `tests/test_no_merge_workflows.py`.
 
-**Plan check:** Does the change keep `CI required` as the one required check, arm auto-merge only where it is required, keep CI-skip markers out of titles, bodies and commits, and release only by a `v*` tag on a green `main` commit?
+**Plan check:** Does the change keep `CI required` as the one required check, arm auto-merge only where it is required, keep CI-skip markers out of titles, bodies and commits, hold an order-dependent pair, start from a new branch, and release only by a `v*` tag on a green `main` commit?
+
+### XXIX. Checks tell the truth
+
+A check reports what the tool found. A test or check step in a workflow exits with the tool's real status. It never masks a failure with `; true`, `|| true`, `|| exit 0` or an ignored-failure flag. A run that discovers zero test suites is a failure, not a pass. A gate states the set of files, units and cases it covers, and a test with a planted violation proves that the gate fires on that set.
+
+*Rationale*: A masked step and an empty run both print green while they check nothing. Gates once reported success while they enforced little, because a glob missed seven of their checks and a missing tool crashed instead of failing.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: workflow-step-honesty, gate-set, tests-fast -->
+- `workflow-step-honesty`: Workflow step honesty - no test or check step masks its failure
+- `gate-set`: Gate sets - run the pre-land fast or the post-land full set against a source
+- `tests-fast`: Fast tests - only the tests the pushed diff affects (120 s cap)
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Delivery practice](https://github.com/Knuckles-Team/pipelines/blob/main/reference/delivery-practice.md): the Verification section states step exit honesty.
+- `pipelines_hooks/code/workflow_step_honesty.py`, `tests/hooks/test_workflow_step_honesty.py`.
+- Zero-suite refusal and the planted-violation proof: the `PIPE-GATES` spec files the shared checks.
+
+**Plan check:** Does every test or check step exit with the tool's real status, fail on zero suites, and have a test with a planted violation?
 
 ## Additional Constraints
 
@@ -737,10 +772,12 @@ A change follows one path from requirement to release.
 6. **Landing.** The commit carries a `Spec: <ID>` trailer. The pull request enables auto-merge, only where `main` requires `CI required`, and merges once that check passes. No title, body or commit holds a CI-skip marker.
 7. **Release bundle.** A maintainer pushes a `v*` tag. The tag publishes the package, the image and the Pages site from the published release.
 
+Agents and lanes also follow [Delivery practice](https://github.com/Knuckles-Team/pipelines/blob/main/reference/delivery-practice.md): block while work is pending, push after every green step, never reuse a merged branch, hold an order-dependent pair, verify the merged tree, and report only what ran.
+
 Every contributor and agent works in isolation:
 
-- One branch and one linked worktree per change, created from `main` with the worktree operations of the repository-manager connector or with plain `git worktree add`.
-- Never stash and never force-push in a shared checkout.
+- One new branch and one linked worktree per change, created from `main` with the worktree operations of the repository-manager connector or with plain `git worktree add`.
+- Never stash, never prune worktrees and never force-push in a shared checkout.
 - Stage explicit paths only. Never stage a whole tree.
 - Hooks always run. Never bypass them.
 - Remove every worktree and temporary checkout when the pull request or spec delivery completes. A leftover worktree is a defect.
@@ -755,4 +792,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.5.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.6.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
