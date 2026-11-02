@@ -198,3 +198,12 @@
 - [ ] T192 PIPE-GATES-R049.4 Refusal: missing or stale evidence cannot pass.
 - [ ] T193 PIPE-GATES-R049.5 Evidence: print the proposal identity with both measurements.
 - [ ] T194 PIPE-GATES-R049.6 Hot-path proof: a planted decrease is rejected through the CLI.
+- [x] T195 PIPE-GATES-R060 A test or check step in a workflow never masks its failure.
+- [x] T196 PIPE-GATES-R061 Every spec directory has a node in the architecture model.
+- [ ] T197 PIPE-GATES-R062 A held pull request is never armed for auto-merge.
+- [ ] T198 PIPE-GATES-R063 A pull request never comes from a branch that already merged.
+- [ ] T199 PIPE-GATES-R064 Every unit of a multi-unit workspace builds and tests alone with the CI feature set.
+- [ ] T200 PIPE-GATES-R065 A test run that finds zero test suites fails.
+- [ ] T201 PIPE-GATES-R066 Each gate has a test that plants a violation in its stated universe.
+- [ ] T202 PIPE-GATES-R067 A rename of a serialized name recomputes its digests in the same commit.
+- [x] T203 PIPE-GATES-R068 The constitution links the delivery practice reference and states the new articles.

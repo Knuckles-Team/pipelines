@@ -143,3 +143,12 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-067 | PIPE-GATES-R049.4 | Unit | No baseline, no candidate, and a baseline revision that is not an ancestor. | The first two exit 2 with `CANNOT RUN`; the third exits 1. |
 | T-068 | PIPE-GATES-R049.5 | Unit | The same proposal twice. | Both runs print the same bytes with both revisions and both percentages. |
 | T-069 | PIPE-GATES-R049.6 | Integration | A fixture repository whose candidate revision lowers coverage, run through `pipelines_hooks.cli.main`. | Exit 1 and the output names both percentages. |
+| T-070 | PIPE-GATES-R060 | Unit | Workflow files with masked and honest test and cleanup steps. | A masked test or check step exits 1 and names the step. Honest steps and masked cleanup exit 0. |
+| T-071 | PIPE-GATES-R061 | Unit | The real specs tree, and a temporary tree with a new directory. | The real tree has no unmapped directory. A new directory is listed and exits 1. |
+| T-072 | PIPE-GATES-R062 | Unit | Fake API responses for held and unheld pull requests, armed and unarmed. | An armed held pull request is listed. The audit exits 1 and writes nothing. |
+| T-073 | PIPE-GATES-R063 | Unit | The job script run with a head ref that has a merged pull request and with a new one. | The reused branch exits 1 and names the earlier pull request. A new branch exits 0. |
+| T-074 | PIPE-GATES-R064 | Unit | A fixture workspace manifest and the workflow definition. | Each unit has one job with `--all-features` and `-p`. One failing unit fails the aggregate. |
+| T-075 | PIPE-GATES-R065 | Unit | A fixture repository whose test command collects nothing, and one that collects a test. | Zero suites exits 1 and names the command. One suite exits 0. |
+| T-076 | PIPE-GATES-R066 | Contract | The hook catalogue and the tests directory. | Every hook has a planted-violation test, or the missing hook ids are listed and the test fails. |
+| T-077 | PIPE-GATES-R067 | Unit | A diff that renames a serialized variant, with and without a golden file change. | A stale golden file exits 1 and names the rename. A recomputed file exits 0. |
+| T-078 | PIPE-GATES-R068 | Unit | The constitution file and the template. | The link, the article, the version and the template version all hold. |
