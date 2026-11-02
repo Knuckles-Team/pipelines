@@ -230,24 +230,12 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T216 PIPE-PAGES-R012.17 Refusal. Implement this contract and bind `test_capability_inventory_refusal` in `tests/hooks/test_capability_inventory.py`.
 - [ ] T217 PIPE-PAGES-R012.18 Evidence. Implement this contract and bind `test_capability_inventory_evidence` in `tests/hooks/test_capability_inventory.py`.
 - [ ] T218 PIPE-PAGES-R012.19 Hot-path proof. Implement this contract and bind `test_capability_inventory_cli` in `tests/hooks/test_capability_inventory.py`.
-- [ ] T219 PIPE-PAGES-R012.20 Model. Implement this contract and bind `test_eg7_capability_authority_model` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] T220 PIPE-PAGES-R012.21 Behavior. Implement this contract and bind `test_eg7_complete_binding_coverage` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] T221 PIPE-PAGES-R012.22 Wiring. Implement this contract and bind `test_eg7_binding_gate_wiring` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] T222 PIPE-PAGES-R012.23 Refusal. Implement this contract and bind `test_eg7_refusal_missing_identity` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] T223 PIPE-PAGES-R012.24 Evidence. Implement this contract and bind `test_eg7_coverage_evidence` in `tests/test_spec_dashboard_metadata.py`.
-- [ ] T224 PIPE-PAGES-R012.25 Hot-path proof. Implement this contract and bind `test_eg7_identity_enforcement_cli` in `tests/test_spec_dashboard_metadata.py`.
 - [ ] T225 PIPE-PAGES-R021.37 Model. Implement this contract and bind `test_structural_limits_model` in `tests/hooks/test_structural_limits.py`.
 - [ ] T226 PIPE-PAGES-R021.38 Behavior. Implement this contract and bind `test_structural_limits_behavior` in `tests/hooks/test_structural_limits.py`.
 - [ ] T227 PIPE-PAGES-R021.39 Wiring. Implement this contract and bind `test_structural_limits_wiring` in `tests/hooks/test_structural_limits.py`.
 - [ ] T228 PIPE-PAGES-R021.40 Refusal. Implement this contract and bind `test_structural_limits_refusal` in `tests/hooks/test_structural_limits.py`.
 - [ ] T229 PIPE-PAGES-R021.41 Evidence. Implement this contract and bind `test_structural_limits_evidence` in `tests/hooks/test_structural_limits.py`.
 - [ ] T230 PIPE-PAGES-R021.42 Hot-path proof. Implement this contract and bind `test_structural_limits_cli` in `tests/hooks/test_structural_limits.py`.
-- [ ] T231 PIPE-PAGES-R021.43 Model. Implement this contract and bind `test_source_path_portability_model` in `tests/hooks/test_source_path_portability.py`.
-- [ ] T232 PIPE-PAGES-R021.44 Behavior. Implement this contract and bind `test_source_path_portability_behavior` in `tests/hooks/test_source_path_portability.py`.
-- [ ] T233 PIPE-PAGES-R021.45 Wiring. Implement this contract and bind `test_source_path_portability_wiring` in `tests/hooks/test_source_path_portability.py`.
-- [ ] T234 PIPE-PAGES-R021.46 Refusal. Implement this contract and bind `test_source_path_portability_refusal` in `tests/hooks/test_source_path_portability.py`.
-- [ ] T235 PIPE-PAGES-R021.47 Evidence. Implement this contract and bind `test_source_path_portability_evidence` in `tests/hooks/test_source_path_portability.py`.
-- [ ] T236 PIPE-PAGES-R021.48 Hot-path proof. Implement this contract and bind `test_source_path_portability_cli` in `tests/hooks/test_source_path_portability.py`.
 - [ ] T237 PIPE-PAGES-R021.49 Model. Implement this contract and bind `test_coverage_closure_model` in `tests/hooks/test_coverage_closure.py`.
 - [ ] T238 PIPE-PAGES-R021.50 Behavior. Implement this contract and bind `test_coverage_closure_behavior` in `tests/hooks/test_coverage_closure.py`.
 - [ ] T239 PIPE-PAGES-R021.51 Wiring. Implement this contract and bind `test_coverage_closure_wiring` in `tests/hooks/test_coverage_closure.py`.
@@ -272,12 +260,6 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T258 PIPE-PAGES-R020.88 Refusal. Implement this contract and bind `test_ontology_governance_hook_refusal` in `tests/hooks/test_ontology_governance_hook.py`.
 - [ ] T259 PIPE-PAGES-R020.89 Evidence. Implement this contract and bind `test_ontology_governance_hook_evidence` in `tests/hooks/test_ontology_governance_hook.py`.
 - [ ] T260 PIPE-PAGES-R020.90 Hot-path proof. Implement this contract and bind `test_ontology_governance_hook_cli` in `tests/hooks/test_ontology_governance_hook.py`.
-- [ ] T261 PIPE-PAGES-R021.61 Model. Implement this contract and bind `test_test_layout_independence_model` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] T262 PIPE-PAGES-R021.62 Behavior. Implement this contract and bind `test_test_layout_independence_behavior` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] T263 PIPE-PAGES-R021.63 Wiring. Implement this contract and bind `test_test_layout_independence_wiring` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] T264 PIPE-PAGES-R021.64 Refusal. Implement this contract and bind `test_test_layout_independence_refusal` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] T265 PIPE-PAGES-R021.65 Evidence. Implement this contract and bind `test_test_layout_independence_evidence` in `tests/hooks/test_test_layout_independence.py`.
-- [ ] T266 PIPE-PAGES-R021.66 Hot-path proof. Implement this contract and bind `test_test_layout_independence_cli` in `tests/hooks/test_test_layout_independence.py`.
 - [ ] T267 PIPE-PAGES-R021.67 Model. Implement this contract and bind `test_solution_size_evidence_model` in `tests/hooks/test_solution_size_evidence.py`.
 - [ ] T268 PIPE-PAGES-R021.68 Behavior. Implement this contract and bind `test_solution_size_evidence_behavior` in `tests/hooks/test_solution_size_evidence.py`.
 - [ ] T269 PIPE-PAGES-R021.69 Wiring. Implement this contract and bind `test_solution_size_evidence_wiring` in `tests/hooks/test_solution_size_evidence.py`.
@@ -290,60 +272,18 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T276 PIPE-PAGES-R021.76 Refusal. Implement this contract and bind `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
 - [ ] T277 PIPE-PAGES-R021.77 Evidence. Implement this contract and bind `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
 - [ ] T278 PIPE-PAGES-R021.78 Hot-path proof. Implement this contract and bind `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] T279 PIPE-PAGES-R021.79 Model. Implement this contract and bind `test_pipe9_coverage_runner_model` in `tests/hooks/test_coverage_closure.py`.
-- [ ] T280 PIPE-PAGES-R021.80 Behavior. Implement this contract and bind `test_pipe9_inventory_behavior` in `tests/hooks/test_coverage_closure.py`.
-- [ ] T281 PIPE-PAGES-R021.81 Wiring. Implement this contract and bind `test_pipe9_gate_wiring` in `tests/hooks/test_coverage_closure.py`.
-- [ ] T282 PIPE-PAGES-R021.82 Refusal. Implement this contract and bind `test_pipe9_threshold_refusal` in `tests/hooks/test_coverage_closure.py`.
-- [ ] T283 PIPE-PAGES-R021.83 Evidence. Implement this contract and bind `test_pipe9_closure_evidence` in `tests/hooks/test_coverage_closure.py`.
-- [ ] T284 PIPE-PAGES-R021.84 Hot-path proof. Implement this contract and bind `test_pipe9_closure_cli` in `tests/hooks/test_coverage_closure.py`.
-- [ ] T285 PIPE-PAGES-R021.85 Model. Implement this contract and bind `test_pipe10_workflow_model` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] T286 PIPE-PAGES-R021.86 Behavior. Implement this contract and bind `test_pipe10_readback_behavior` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] T287 PIPE-PAGES-R021.87 Wiring. Implement this contract and bind `test_pipe10_gate_wiring` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] T288 PIPE-PAGES-R021.88 Refusal. Implement this contract and bind `test_pipe10_readback_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] T289 PIPE-PAGES-R021.89 Evidence. Implement this contract and bind `test_pipe10_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] T290 PIPE-PAGES-R021.90 Hot-path proof. Implement this contract and bind `test_pipe10_cli_proof` in `tests/hooks/test_graph_workflow_receipt.py`.
 - [ ] T291 PIPE-PAGES-R032.1 Model. Implement this contract and bind `test_eg56_export_model` in export-import test.
 - [ ] T292 PIPE-PAGES-R032.2 Behavior. Implement this contract and bind `test_eg56_roundtrip_behavior` in export-import test.
 - [ ] T293 PIPE-PAGES-R032.3 Wiring. Implement this contract and bind `test_eg56_export_wiring` in export-import test.
 - [ ] T294 PIPE-PAGES-R032.4 Refusal. Implement this contract and bind `test_eg56_version_refusal` in export-import test.
 - [ ] T295 PIPE-PAGES-R032.5 Evidence. Implement this contract and bind `test_eg56_comparison_evidence` in export-import test.
 - [ ] T296 PIPE-PAGES-R032.6 Hot-path proof. Implement this contract and bind `test_eg56_export_import_cli` in export-import test.
-- [ ] T297 PIPE-PAGES-R033.1 Model. Implement this contract and bind `test_au96_installer_model` in installer test.
-- [ ] T298 PIPE-PAGES-R033.2 Behavior. Implement this contract and bind `test_au96_target_behavior` in installer test.
-- [ ] T299 PIPE-PAGES-R033.3 Wiring. Implement this contract and bind `test_au96_harness_wiring` in installer test.
-- [ ] T300 PIPE-PAGES-R033.4 Refusal. Implement this contract and bind `test_au96_target_refusal` in installer test.
-- [ ] T301 PIPE-PAGES-R033.5 Evidence. Implement this contract and bind `test_au96_coverage_evidence` in installer test.
-- [ ] T302 PIPE-PAGES-R033.6 Hot-path proof. Implement this contract and bind `test_au96_target_binding_cli` in installer test.
-- [ ] T303 PIPE-PAGES-R034.1 Model. Implement this contract and bind `test_eg53_profile_model` in deployment test.
-- [ ] T304 PIPE-PAGES-R034.2 Behavior. Implement this contract and bind `test_eg53_dependency_free_behavior` in deployment test.
-- [ ] T305 PIPE-PAGES-R034.3 Wiring. Implement this contract and bind `test_eg53_parity_wiring` in deployment test.
-- [ ] T306 PIPE-PAGES-R034.4 Refusal. Implement this contract and bind `test_eg53_parity_refusal` in deployment test.
-- [ ] T307 PIPE-PAGES-R034.5 Evidence. Implement this contract and bind `test_eg53_parity_evidence` in deployment test.
-- [ ] T308 PIPE-PAGES-R034.6 Hot-path proof. Implement this contract and bind `test_eg53_portable_deployment_cli` in deployment test.
 - [ ] T309 PIPE-PAGES-R035.1 Model. Implement this contract and bind `test_au121_prompt_model` in prompt test.
 - [ ] T310 PIPE-PAGES-R035.2 Behavior. Implement this contract and bind `test_au121_roundtrip_behavior` in prompt test.
 - [ ] T311 PIPE-PAGES-R035.3 Wiring. Implement this contract and bind `test_au121_serializer_wiring` in prompt test.
 - [ ] T312 PIPE-PAGES-R035.4 Refusal. Implement this contract and bind `test_au121_coverage_refusal` in prompt test.
 - [ ] T313 PIPE-PAGES-R035.5 Evidence. Implement this contract and bind `test_au121_oracle_evidence` in prompt test.
 - [ ] T314 PIPE-PAGES-R035.6 Hot-path proof. Implement this contract and bind `test_au121_roundtrip_cli` in prompt test.
-- [ ] T315 PIPE-PAGES-R021.91 Model. Record validate behaviors and deployment state inventory.
-- [ ] T316 PIPE-PAGES-R021.92 Behavior. Map behaviors to every supported project hook.
-- [ ] T317 PIPE-PAGES-R021.93 Wiring. Require pre-commit parity for all projects.
-- [ ] T318 PIPE-PAGES-R021.94 Refusal. Keep baseline gaps visible in inventory.
-- [ ] T319 PIPE-PAGES-R021.95 Evidence. Bind baseline to source snapshot.
-- [ ] T320 PIPE-PAGES-R021.96 Hot-path proof. Hook rejects unmapped behavior.
-- [ ] T321 PIPE-PAGES-R037.1 Model. Define unit-test profile with external dependency categories.
-- [ ] T322 PIPE-PAGES-R037.2 Behavior. Enforce deterministic doubles in unit tests.
-- [ ] T323 PIPE-PAGES-R037.3 Wiring. Wire unit profile into test-quality gate.
-- [ ] T324 PIPE-PAGES-R037.4 Refusal. Reject unmocked external dependencies.
-- [ ] T325 PIPE-PAGES-R037.5 Evidence. Record external categories and test scope.
-- [ ] T326 PIPE-PAGES-R037.6 Hot-path proof. Gate blocks unmocked network access.
-- [ ] T327 PIPE-PAGES-R038.1 Model. Define Python-only execution boundary and rules.
-- [ ] T328 PIPE-PAGES-R038.2 Behavior. Hook consumes Medulla verdicts without local authority.
-- [ ] T329 PIPE-PAGES-R038.3 Wiring. Pre-commit integrates with Medulla service.
-- [ ] T330 PIPE-PAGES-R038.4 Refusal. Unavailable Medulla service fails closed.
-- [ ] T331 PIPE-PAGES-R038.5 Evidence. Record Medulla verdict identity and version.
-- [ ] T332 PIPE-PAGES-R038.6 Hot-path proof. Planted violation blocks commit.
 - [ ] T333 PIPE-PAGES-R039.1 Model. Define project layout inventory with fixtures.
 - [ ] T334 PIPE-PAGES-R039.2 Behavior. Enforce test independence via isolation gate.
 - [ ] T335 PIPE-PAGES-R039.3 Wiring. Wire inventory check into test-quality gate.
@@ -356,12 +296,6 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T342 PIPE-PAGES-R040.4 Refusal. Missing coverage evidence causes rejection.
 - [ ] T343 PIPE-PAGES-R040.5 Evidence. Record baseline and candidate coverage.
 - [ ] T344 PIPE-PAGES-R040.6 Hot-path proof. Gate rejects coverage decrease.
-- [ ] T345 PIPE-PAGES-R041.1 Model. Define function-argument and try-block limits.
-- [ ] T346 PIPE-PAGES-R041.2 Behavior. Build fails when functions exceed limit.
-- [ ] T347 PIPE-PAGES-R041.3 Wiring. Wire limits into shared KISS gate.
-- [ ] T348 PIPE-PAGES-R041.4 Refusal. Missing limits or unsupported measurement fail.
-- [ ] T349 PIPE-PAGES-R041.5 Evidence. Record policy digest and function counts.
-- [ ] T350 PIPE-PAGES-R041.6 Hot-path proof. Build fails on excess arguments.
 - [x] T351 PIPE-PAGES-R042 Generated architecture explorer at /architecture/ on every core Pages site, linked from the shared theme.
 - [x] T352 PIPE-PAGES-R042.1 Search index. Bound to tests/test_architecture_explorer.py::test_search_index_covers_every_row_and_maps_it_to_a_node.
 - [x] T353 PIPE-PAGES-R042.2 Ranking. Bound to tests/test_architecture_explorer.py::test_a_capability_search_ranks_the_owning_row_first.
@@ -397,37 +331,6 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T382 PIPE-PAGES-R008 Correct ownership and quick start in consumer parity checks. Bind the existing implementation to its verification.
 - [ ] T383 PIPE-PAGES-R011 Present-tense home page with screenshot and repo map. Bind the existing implementation to its verification.
 - [ ] T384 PIPE-PAGES-R025.3 Wiring. Bind the existing implementation to its verification.
-- [ ] T385 PIPE-PAGES-R026.1 Model. Bind the existing implementation to its verification.
-- [ ] T386 PIPE-PAGES-R026.2 Behavior. Bind the existing implementation to its verification.
-- [ ] T387 PIPE-PAGES-R026.3 Wiring. Bind the existing implementation to its verification.
-- [ ] T388 PIPE-PAGES-R026.4 Refusal. Bind the existing implementation to its verification.
-- [ ] T389 PIPE-PAGES-R026.5 Evidence. Bind the existing implementation to its verification.
-- [ ] T390 PIPE-PAGES-R026.6 Hot-path proof. Bind the existing implementation to its verification.
-- [ ] T391 PIPE-PAGES-R027.1 Model. Bind the existing implementation to its verification.
-- [ ] T392 PIPE-PAGES-R027.2 Behavior. Bind the existing implementation to its verification.
-- [ ] T393 PIPE-PAGES-R027.3 Wiring. Bind the existing implementation to its verification.
-- [ ] T394 PIPE-PAGES-R027.4 Refusal. Bind the existing implementation to its verification.
-- [ ] T395 PIPE-PAGES-R027.5 Evidence. Bind the existing implementation to its verification.
-- [ ] T396 PIPE-PAGES-R027.6 Hot-path proof. Bind the existing implementation to its verification.
-- [ ] T397 PIPE-PAGES-R028.1 Model. Bind the existing implementation to its verification.
-- [ ] T398 PIPE-PAGES-R028.2 Behavior. Bind the existing implementation to its verification.
-- [ ] T399 PIPE-PAGES-R028.3 Wiring. Bind the existing implementation to its verification.
-- [ ] T400 PIPE-PAGES-R028.4 Refusal. Bind the existing implementation to its verification.
-- [ ] T401 PIPE-PAGES-R028.5 Evidence. Bind the existing implementation to its verification.
-- [ ] T402 PIPE-PAGES-R028.6 Hot-path proof. Bind the existing implementation to its verification.
-- [ ] T403 PIPE-PAGES-R029.1 Model. Bind the existing implementation to its verification.
-- [ ] T404 PIPE-PAGES-R029.2 Behavior. Bind the existing implementation to its verification.
-- [ ] T405 PIPE-PAGES-R029.3 Wiring. Bind the existing implementation to its verification.
-- [ ] T406 PIPE-PAGES-R029.4 Refusal. Bind the existing implementation to its verification.
-- [ ] T407 PIPE-PAGES-R029.5 Evidence. Bind the existing implementation to its verification.
-- [ ] T408 PIPE-PAGES-R029.6 Hot-path proof. Bind the existing implementation to its verification.
-- [ ] T409 PIPE-PAGES-R030.1 Model. Bind the existing implementation to its verification.
-- [ ] T410 PIPE-PAGES-R030.2 Behavior. Bind the existing implementation to its verification.
-- [ ] T411 PIPE-PAGES-R030.3 Wiring. Bind the existing implementation to its verification.
-- [ ] T412 PIPE-PAGES-R030.4 Refusal. Bind the existing implementation to its verification.
-- [ ] T413 PIPE-PAGES-R030.5 Evidence. Bind the existing implementation to its verification.
-- [ ] T414 PIPE-PAGES-R030.6 Hot-path proof. Bind the existing implementation to its verification.
-- [ ] T415 PIPE-PAGES-R023.19 Aggregate skill grader call contract and lineage preservation. Bind the existing implementation to its verification.
 - [ ] T416 PIPE-PAGES-R044 The architecture page separates verified from delivered. Bind the existing implementation to its verification.
 - [ ] T417 PIPE-PAGES-R046 Each section shows the progress of its own rows. Bind the existing implementation to its verification.
 - [ ] T418 PIPE-PAGES-R047 Connections are typed, labelled and animated. Bind the existing implementation to its verification.
@@ -472,3 +375,20 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T457 PIPE-PAGES-R009 Accessible component package diagrams. Bind the existing implementation to its verification.
 - [ ] T458 PIPE-PAGES-R045 The architecture page shows releases and their scoped specs. Bind the existing implementation to its verification.
 - [ ] T459 PIPE-PAGES-R049 Canopy uses one frosted-glass material on every surface. Bind the existing implementation to its verification.
+- [ ] T460 PIPE-PAGES-R025.1 Model. Bind the existing implementation to its verification.
+- [ ] T461 PIPE-PAGES-R025.2 Behavior. Bind the existing implementation to its verification.
+- [ ] T462 PIPE-PAGES-R025.4 Refusal. Bind the existing implementation to its verification.
+- [ ] T463 PIPE-PAGES-R025.5 Evidence. Bind the existing implementation to its verification.
+- [ ] T464 PIPE-PAGES-R025.6 Hot-path proof. Bind the existing implementation to its verification.
+- [ ] T465 PIPE-PAGES-R031.1 Model. Bind the existing implementation to its verification.
+- [ ] T466 PIPE-PAGES-R031.2 Behavior. Bind the existing implementation to its verification.
+- [ ] T467 PIPE-PAGES-R031.3 Wiring. Bind the existing implementation to its verification.
+- [ ] T468 PIPE-PAGES-R031.4 Refusal. Bind the existing implementation to its verification.
+- [ ] T469 PIPE-PAGES-R031.5 Evidence. Bind the existing implementation to its verification.
+- [ ] T470 PIPE-PAGES-R031.6 Hot-path proof. Bind the existing implementation to its verification.
+- [ ] T471 PIPE-PAGES-R042.12 The explorer is named Canopy and is the front door for learning and contributing. Bind the existing implementation to its verification.
+- [ ] T472 PIPE-PAGES-R050 Navigation motion is satisfying, and the background moves with it. Bind the existing implementation to its verification.
+- [ ] T473 PIPE-PAGES-R004 Bind the existing implementation to its verification.
+- [ ] T474 PIPE-PAGES-R005 Bind the existing implementation to its verification.
+- [ ] T475 PIPE-PAGES-R006 Bind the existing implementation to its verification.
+- [ ] T476 PIPE-PAGES-R010 Bind the existing implementation to its verification.
