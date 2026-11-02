@@ -47,7 +47,7 @@ def _names(repo: Path) -> tuple[str, str, str] | None:
         data = tomllib.loads(text)
     except tomllib.TOMLDecodeError:
         return None
-    eps = data.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    eps = data.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
     if len(eps) != 1:
         return None
     ((fleet, value),) = eps.items()

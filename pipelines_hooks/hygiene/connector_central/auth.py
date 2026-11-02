@@ -611,7 +611,7 @@ def _render(
     lines = [
         f'"""{doc}"""',
         "",
-        f"from agent_connector_sdk.auth.declare import {cls}, client_factory",
+        f"from scion_sdk.auth.declare import {cls}, client_factory",
         "",
         api_import,
         "",

@@ -18,7 +18,7 @@ name = "demo-mcp"
 version = "1.2.3"
 dependencies = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]
 
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp"
 """
 
@@ -51,8 +51,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_connector_sdk.ingest.live_declaration import source_meta
-from agent_connector_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
+from scion_sdk.ingest.live_declaration import source_meta
+from scion_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
 
 CONNECTOR: str = "demo-mcp"
 
@@ -371,5 +371,5 @@ def test_i1_nested_import_keeps_its_indentation(tmp_path: Path) -> None:
     assert not _notes(ctx, "w1.i1")
     out = _text(root, "demo_mcp/validation.py")
     ast.parse(out)
-    assert "    from agent_connector_sdk.ingest import load_declaration" in out
-    assert "    from agent_connector_sdk.connector_identity import connector_name" in out
+    assert "    from scion_sdk.ingest import load_declaration" in out
+    assert "    from scion_sdk.connector_identity import connector_name" in out

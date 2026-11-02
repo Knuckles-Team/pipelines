@@ -689,7 +689,7 @@ def _prelude(body: list[ast.stmt], i: int, info: dict[str, Any]) -> int:
         if (
             isinstance(s, ast.ImportFrom)
             and s.level == 0
-            and s.module in ("pathlib", "agent_connector_sdk.mcp.content")
+            and s.module in ("pathlib", "scion_sdk.mcp.content")
             and all(a.name in path_names and not a.asname for a in s.names)
         ):
             info["prelude_imports"].append(s)
@@ -1253,7 +1253,7 @@ def _tuple_src(names: list[str]) -> str:
     return "(" + ", ".join(names) + ("," if len(names) == 1 else "") + ")"
 
 
-_CONTEXT_IMPORT = "from agent_connector_sdk.connector_hooks import RegistrationContext"
+_CONTEXT_IMPORT = "from scion_sdk.connector_hooks import RegistrationContext"
 
 
 def _rewritable(ctx: Ctx, node: ast.FunctionDef, path: Path, kept: list[ast.stmt]) -> bool:
@@ -1502,7 +1502,7 @@ def _hoist_hooks(
             raise _Reject(f"route handler `{f.name}` does not take exactly the request")
         taken.add(f.name)
         hoisted.append("\n".join(block.split("\n")[f.lineno - 1 :]))
-        import_lines += [f"from {own} import {f.name}", "from agent_connector_sdk.connector_hooks import Route"]
+        import_lines += [f"from {own} import {f.name}", "from scion_sdk.connector_hooks import Route"]
         methods = (
             "(" + ", ".join(json.dumps(m) for m in spec["methods"]) + ("," if len(spec["methods"]) == 1 else "") + ")"
         )
@@ -1516,7 +1516,7 @@ def _hoist_hooks(
     if info["ready"] is not None:
         block, name = _readiness_block(text, info, taken)
         hoisted.append(block)
-        mcp_imports.append("from agent_connector_sdk.connector_hooks import Readiness")
+        mcp_imports.append("from scion_sdk.connector_hooks import Readiness")
         import_lines.append(f"from {own} import {name}")
         exprs["readiness"] = name
         notes.append(
@@ -2058,7 +2058,7 @@ def _g3_run(ctx: Ctx, path: Path, modname: str, wrapper: Path | None) -> None:
         prune_extra |= gone
     if wrappers:
         new = _delegate_build_server(new, ctx.pkg_name)
-        mcp_imports.append("from agent_connector_sdk.connector import build_server as _sdk_build_server")
+        mcp_imports.append("from scion_sdk.connector import build_server as _sdk_build_server")
     for line in dict.fromkeys(mcp_imports):
         new = _add_sorted_import(new, line)
     new = _prune_imports(new, candidates | prune_extra)
@@ -2440,7 +2440,7 @@ def g4(ctx: Ctx) -> None:
     head = _remove_scaffold(ctx, "w1.g4")
     base = head if head is not None else text
     exprs = stash["exprs"]
-    sdk = "from agent_connector_sdk.connector import Connector"
+    sdk = "from scion_sdk.connector import Connector"
     lines = [sdk, "", *stash["imports"]]
     kw = []
     if "api" in exprs:
@@ -2472,7 +2472,7 @@ def _tests_read_all(ctx: Ctx) -> bool:
 
 
 # --- g.5 / g.6 / g.1 / g.2 ------------------------------------------------------------------------------
-_MAIN = 'from agent_connector_sdk import run\n\nif __name__ == "__main__":\n    run()\n'
+_MAIN = 'from scion_sdk import run\n\nif __name__ == "__main__":\n    run()\n'
 
 
 @rule("w1.g5")
@@ -2588,7 +2588,7 @@ def _entry_point_assertions(ctx: Ctx) -> None:
 def g1(ctx: Ctx) -> None:
     text = ctx.read("pyproject.toml")
     lines = text.split("\n")
-    sec = _toml_section(lines, '[project.entry-points."agent_connector_sdk.connector"]')
+    sec = _toml_section(lines, '[project.entry-points."scion_sdk.connector"]')
     if sec is None:
         return
     for i in range(*sec):
@@ -2626,7 +2626,7 @@ def g2(ctx: Ctx) -> None:
     entry = re.compile(r'^(\s*[A-Za-z0-9_.-]+\s*=\s*)"([^"]*)"(.*)$')
     rows = [(i, m) for i in range(*sec) if (m := entry.match(lines[i]))]
     named = [(i, m) for i, m in rows if re.match(rf"^\s*{re.escape(ctx.fleet)}\s*=", lines[i])]
-    if any(m.group(2) == "agent_connector_sdk.cli:serve" for _, m in rows):
+    if any(m.group(2) == "scion_sdk.cli:serve" for _, m in rows):
         return
     # the script is named for the fleet, or (when it is named otherwise: `adguard-mcp`) is the bootstrap function itself
     targets = named or [(i, m) for i, m in rows if m.group(2) in bootstrap]
@@ -2641,7 +2641,7 @@ def g2(ctx: Ctx) -> None:
         key = re.match(r"^(\s*)([A-Za-z0-9_.-]+)(\s*=\s*)$", m.group(1))
         assert key is not None
         old_name = key.group(2)
-        lines[i] = f'{key.group(1)}{ctx.fleet}{key.group(3)}"agent_connector_sdk.cli:serve"{m.group(3)}'
+        lines[i] = f'{key.group(1)}{ctx.fleet}{key.group(3)}"scion_sdk.cli:serve"{m.group(3)}'
         new = "\n".join(lines)
         if _check_toml(ctx, "w1.g2", new):
             ctx.write("pyproject.toml", new, "w1.g2")
@@ -3380,9 +3380,9 @@ def _rewrite_declaration_users(ctx: Ctx) -> tuple[dict[str, str], list[str]]:
         text2 = "\n".join(lines)
         adds = []
         if need_load and "import load_declaration" not in text2:
-            adds.append("from agent_connector_sdk.ingest import load_declaration")
+            adds.append("from scion_sdk.ingest import load_declaration")
         if need_name and "import connector_name" not in text2:
-            adds.append("from agent_connector_sdk.connector_identity import connector_name")
+            adds.append("from scion_sdk.connector_identity import connector_name")
         # imports: replace the first edited statement with the new imports; delete the rest
         ind = " " * (import_cols[import_edits.index(min(import_edits))] if import_edits else 0)
         if len(set(import_cols)) > 1:
@@ -3544,9 +3544,9 @@ def i2(ctx: Ctx) -> None:
 
 # --- l: one entry point, content by convention --------------------------------------------------------------
 _PROVIDER_GROUPS = {
-    "agent_connector_sdk.skill_providers": "skills",
-    "agent_connector_sdk.ontology_providers": "ontology",
-    "agent_connector_sdk.source_connector_providers": "connectors",
+    "scion_sdk.skill_providers": "skills",
+    "scion_sdk.ontology_providers": "ontology",
+    "scion_sdk.source_connector_providers": "connectors",
 }
 
 
@@ -3945,7 +3945,7 @@ def _deleted_symbol_users(ctx: Ctx, f: Path) -> list[str]:
     return _deleted_symbol_users_in(ctx, f.read_text(encoding="utf-8"))
 
 
-_BUILD_IMPORT = "from agent_connector_sdk.connector import build_server"
+_BUILD_IMPORT = "from scion_sdk.connector import build_server"
 
 
 def _scope_of(node: ast.AST, parents: dict[ast.AST, ast.AST], tree: ast.Module) -> ast.AST:
@@ -4267,7 +4267,7 @@ def g7(ctx: Ctx) -> None:
         ctx.note(
             "w1.g7",
             f"test uses {used}: {why or 'not the rewritable shape'}. Rewrite by hand with "
-            f'agent_connector_sdk.connector.build_server("{ctx.pkg_name}", command_args=[...]) which returns (args, mcp)',
+            f'scion_sdk.connector.build_server("{ctx.pkg_name}", command_args=[...]) which returns (args, mcp)',
             ctx.rel(f),
             True,
         )

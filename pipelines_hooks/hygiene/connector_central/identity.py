@@ -18,7 +18,7 @@ from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
 from pipelines_hooks.hygiene.connector_central.pipelines import pipelines_root
 
 ORDER = ("id.name", "pl.w", "pl.y", "pl.z", "pl.aa", "pl.ab", "pl.ac", "pl.ad", "pl.ae")
-_IMPORT = "from agent_connector_sdk.connector_identity import connector_name"
+_IMPORT = "from scion_sdk.connector_identity import connector_name"
 _YAML_CONNECTOR = re.compile(r"(?m)^(connector:[ \t]*)([\"']?)([^\s\"'#]+)\2([ \t]*(?:#.*)?)$")
 _USES = re.compile(
     r"(?m)^(\s*(?:-\s*)?uses:\s*Knuckles-Team/pipelines/\.github/workflows/[\w.-]+\.ya?ml@)(?!main\b)([^\s#]+)"

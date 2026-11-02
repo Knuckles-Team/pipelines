@@ -30,7 +30,7 @@ agent = []
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:main"
 demo-agent = "demo_mcp.agent_server:main"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp"
 [tool.pipelines.container]
 port = 9000
@@ -340,7 +340,7 @@ def test_container_workflow_renders_and_tags_by_sdk_version() -> None:
     assert inputs["legacy_profile"]["default"] is False and inputs["legacy_profile"]["type"] == "boolean"
     steps = document["jobs"]["publish-docker"]["steps"]
     render_needed = next(s for s in steps if s.get("id") == "render-needed")
-    assert "agent_connector_sdk.connector" in render_needed["run"]
+    assert "scion_sdk.connector" in render_needed["run"]
     render = next(s for s in steps if s.get("id") == "render")
     assert "pipelines-connector render" in render["run"]
     assert render["if"] == "steps.render-needed.outputs.render == 'true'"

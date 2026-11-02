@@ -9,7 +9,7 @@ from tests.hooks.conftest import Repo
 
 repo = conftest.repo
 
-CONNECTOR = '[project]\nname = "x-mcp"\n[project.entry-points."agent_connector_sdk.connector"]\nx-mcp = "x_mcp"\n'
+CONNECTOR = '[project]\nname = "x-mcp"\n[project.entry-points."scion_sdk.connector"]\nx-mcp = "x_mcp"\n'
 PIPELINE = (
     "jobs:\n  publish-pypi:\n    uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main\n"
     "  publish-docker:\n    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main\n"

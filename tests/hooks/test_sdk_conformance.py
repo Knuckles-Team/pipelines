@@ -56,8 +56,8 @@ def test_each_reimplementation_cites_its_row(tmp_path: Path, row: str, source: s
 def test_sdk_usage_is_clean(tmp_path: Path) -> None:
     source = (
         "import httpx\n"
-        "from agent_connector_sdk.http import create_http_client\n"
-        "from agent_connector_sdk.tls import resolve_tls_profile\n"
+        "from scion_sdk.http import create_http_client\n"
+        "from scion_sdk.tls import resolve_tls_profile\n"
         "# import requests\n"
         "headers['Retry-After'] = str(seconds)\n"
         "response: httpx.Response\n"

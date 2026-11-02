@@ -39,7 +39,7 @@ def stage(tmp: Path, name: str, docker: tuple[str, ...] = DOCKER) -> Path:
     src = FIXTURES / name
     shutil.copy(src / "pyproject.toml", tmp / "pyproject.toml")
     data = tomllib.loads((tmp / "pyproject.toml").read_text(encoding="utf-8"))
-    ((_, value),) = data["project"]["entry-points"]["agent_connector_sdk.connector"].items()
+    ((_, value),) = data["project"]["entry-points"]["scion_sdk.connector"].items()
     (tmp / re.split(r"[:.]", str(value))[0]).mkdir()
     (tmp / re.split(r"[:.]", str(value))[0] / "__init__.py").write_text("", encoding="utf-8")
     (tmp / "docker").mkdir()
@@ -436,7 +436,7 @@ dependencies = ["agent-connector-sdk[mcp]>=0.5.4,<0.6.0"]
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:main"
 
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp:connector"
 """
 
@@ -492,7 +492,7 @@ def ontology_repo(tmp: Path, name: str) -> Path:
     src = FIXTURES / name
     shutil.copy(src / "pyproject.toml", tmp / "pyproject.toml")
     data = tomllib.loads((tmp / "pyproject.toml").read_text(encoding="utf-8"))
-    ((_, value),) = data["project"]["entry-points"]["agent_connector_sdk.connector"].items()
+    ((_, value),) = data["project"]["entry-points"]["scion_sdk.connector"].items()
     pkg = tmp / re.split(r"[:.]", str(value))[0]
     shutil.copytree(src / "ontology", pkg / "ontology")
     (pkg / "__init__.py").write_text("", encoding="utf-8")

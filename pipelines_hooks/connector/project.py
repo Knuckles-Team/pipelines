@@ -175,7 +175,7 @@ def publish_port(table: dict[str, Any], container_port: Any) -> str:
 
 def package_dir(root: Path, pyproject: dict[str, Any]) -> Path:
     """The connector package directory: the connector entry point's module, else the project name."""
-    points = pyproject.get("project", {}).get("entry-points", {}).get("agent_connector_sdk.connector", {})
+    points = pyproject.get("project", {}).get("entry-points", {}).get("scion_sdk.connector", {})
     module = next((str(value).split(":")[0].split(".")[0] for value in points.values()), "")
     module = module or str(pyproject.get("project", {}).get("name", "")).replace("-", "_")
     return root / module

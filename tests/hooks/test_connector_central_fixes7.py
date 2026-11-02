@@ -30,7 +30,7 @@ dependencies = ["agent-connector-sdk[mcp]>=0.5.4,<0.6.0"]
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:main"
 
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp:connector"
 """
 RUFF_HOOKS = """repos:

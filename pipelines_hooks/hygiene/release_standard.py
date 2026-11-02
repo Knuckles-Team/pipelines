@@ -1,7 +1,7 @@
 """release-standard: a connector release publishes both a PyPI package and a Docker image (PIPE-RELEASE-R013).
 
 Warn level (exit 0): a connector repository (one that declares the
-``agent_connector_sdk.connector`` entry point or tracks a ``connector_sources.py``) must
+``scion_sdk.connector`` entry point or tracks a ``connector_sources.py``) must
 track ``docker/Dockerfile`` or use the provider's canonical renderer, and must have a
 workflow whose job calls the shared ``container_pipeline.yml`` with the Docker publish
 enabled (the job is not switched off by a literal ``if: false``). An explicitly selected
@@ -19,7 +19,7 @@ import yaml
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.tracked import tracked_paths
 
-ENTRY_POINT_GROUP = "agent_connector_sdk.connector"
+ENTRY_POINT_GROUP = "scion_sdk.connector"
 CONTAINER = "Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml"
 
 

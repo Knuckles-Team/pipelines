@@ -470,19 +470,19 @@ _SEARCH_ROWS = {
         _row(
             "SCION-CONNECTOR-CONTROL-R030",
             "SDK provides GraphQL introspection context helpers for connector tools",
-            "SCION-CONNECTOR-CONTROL",
+            "scion-connector-control",
             "scion-sdk",
         ),
         _row(
             "SCION-CONNECTOR-CONTROL-R030.1",
             "SDK owns the one GraphQL client for connectors",
-            "SCION-CONNECTOR-CONTROL",
+            "scion-connector-control",
             "scion-sdk",
         ),
         _row(
             "SCION-CONNECTOR-CONTROL-R043",
             "SDK declares a source access contract for the engine client",
-            "SCION-CONNECTOR-CONTROL",
+            "scion-connector-control",
             "scion-sdk",
         ),
     ],

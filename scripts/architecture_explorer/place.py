@@ -15,7 +15,7 @@ import re
 from collections import defaultdict
 
 PATH_RE = re.compile(
-    r"((?:crates|src|arbora|agent_connector_sdk|agent_utilities|agent_terminal_ui|tests|scripts|native|"
+    r"((?:crates|src|arbora|scion_sdk|agent_utilities|agent_terminal_ui|tests|scripts|native|"
     r"epistemic_graph|contract|clients|docker|packaging|\.github)/[A-Za-z0-9_./\-]+)"
 )
 

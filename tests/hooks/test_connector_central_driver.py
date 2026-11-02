@@ -20,12 +20,12 @@ dependencies = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]
 [project.scripts]
 demo-mcp = "demo_agent.mcp_server:mcp_server"
 
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_agent"
 """
-MCP_SERVER = """from agent_connector_sdk.config import load_config
-from agent_connector_sdk.mcp.server import create_mcp_server
-from agent_connector_sdk.mcp.tool_surface import register_tool_surface
+MCP_SERVER = """from scion_sdk.config import load_config
+from scion_sdk.mcp.server import create_mcp_server
+from scion_sdk.mcp.tool_surface import register_tool_surface
 import sys
 
 from demo_agent.api_client import Api

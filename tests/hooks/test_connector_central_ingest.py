@@ -35,7 +35,7 @@ def _sdk_checkout() -> Path:
         )
     )
     for candidate in candidates:
-        if (candidate / "agent_connector_sdk/ingest/mapping.py").is_file():
+        if (candidate / "scion_sdk/ingest/mapping.py").is_file():
             return candidate
     return candidates[0]
 
@@ -45,7 +45,7 @@ SDK = _sdk_checkout()
 PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.0.0"
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 demo-mcp = "{value}"
 """
 
@@ -55,7 +55,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_connector_sdk.ingest import (
+from scion_sdk.ingest import (
     ChangeSet,
     Document,
     Entity,
@@ -410,7 +410,7 @@ def node_id(rec):
 
 
 @pytest.mark.spec("PIPE-GATES-R016.87")
-@pytest.mark.skipif(not (SDK / "agent_connector_sdk/ingest/mapping.py").is_file(), reason="SDK checkout absent")
+@pytest.mark.skipif(not (SDK / "scion_sdk/ingest/mapping.py").is_file(), reason="SDK checkout absent")
 def test_i6_helper_equal_to_sdk_is_replaced(tmp_path: Path) -> None:
     root = _connector(tmp_path, extra=KG_MAPPER + EXT_ID)
     ctx = _run(_ctx(root), *ingest.ORDER)
@@ -477,7 +477,7 @@ def test_i8_best_effort_wrapper_is_review_and_stops_i1(tmp_path: Path) -> None:
 @pytest.mark.spec("PIPE-GATES-R016.89")
 def test_i8_aliased_sdk_exception_wrapper_is_review_and_stops_i1(tmp_path: Path) -> None:
     extra = (
-        KG_MAPPER + "\n\nfrom agent_connector_sdk.ingest import IngestError as RetryableError\n"
+        KG_MAPPER + "\n\nfrom scion_sdk.ingest import IngestError as RetryableError\n"
         "\nasync def try_ingest(entities):\n"
         "    try:\n"
         "        return await ingest_entities(entities)\n"

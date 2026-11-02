@@ -25,18 +25,18 @@ test = [
 [project.scripts]
 leanix-mcp = "leanix_agent.mcp_server:mcp_server"
 
-[project.entry-points."agent_connector_sdk.skill_providers"]
+[project.entry-points."scion_sdk.skill_providers"]
 leanix-agent = "leanix_agent.skills"
 
 # CONCEPT:MERISTEM-KG.ontology.package-federation-migration — federate this package's OWL/RDF ontology module into the
 # agent-connector-sdk hub (fact sheets, applications, IT components). Resolved via
 # iter_provider_dirs like the skill/prompt providers.
-[project.entry-points."agent_connector_sdk.ontology_providers"]
+[project.entry-points."scion_sdk.ontology_providers"]
 leanix-agent = "leanix_agent.ontology"
 
 
 # The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
-[project.entry-points."agent_connector_sdk.connector"]
+[project.entry-points."scion_sdk.connector"]
 leanix-mcp = "leanix_agent"
 
 [tool.uv.workspace]

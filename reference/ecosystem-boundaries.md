@@ -78,7 +78,7 @@ This matrix is guidance for reviews and for each repository's own tests. A modul
 
 | Repository | Must not import | Except |
 |---|---|---|
-| medulla | `arbora`, `agent_utilities`, `agent_connector_sdk`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | |
+| medulla | `arbora`, `agent_utilities`, `scion_sdk`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | |
 | arbora | `agent_utilities`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | `agent_utilities.host_ports`, `agent_utilities.harness`, `agent_utilities.runtime`, `agent_utilities.core.paths` |
 | agent-connector-sdk | `agent_utilities`, `arbora`, `agent_webui`, `agent_terminal_ui`, `geniusbot` | |
 | agent-utilities | `arbora`, UI packages, `fastmcp`, `mcp`, `starlette`, `uvicorn`, `fastapi`, `a2a`, storage packages (`neo4j`, `falkordb`, `real_ladybug`, `kuzu`, `psycopg`, `asyncpg`, `sqlalchemy`, `redis`, `pymongo`, `qdrant_client`, `chromadb`, `lancedb`, `duckdb`, `aiosqlite`) | |
