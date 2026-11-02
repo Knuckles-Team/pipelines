@@ -127,12 +127,28 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-056 | PIPE-GATES-R016.116.2 | Unit | Every workflow and template, and `scripts/apply_repo_ci_settings.sh`. | No gate job has an actor or author condition. The ruleset holds no bypass actor. | |
 | T-057 | PIPE-GATES-R047 | Unit | The job script run with each marker, a clean title and body, and the caller aggregate. | A marker in the title or body exits 1; clean text exits 0; the caller `CI required` needs `gates`. | |
 | T-058 | PIPE-GATES-R048 | Unit | Fake API responses for good, old-check, extra-check and archived repositories. | The audit lists each drift, skips archived and excluded repositories, exits 1 and only reads. | `tests/test_ruleset_audit.py` |
-| T-059 | PIPE-GATES-R060 | Unit | Workflow files with masked and honest test and cleanup steps. | A masked test or check step exits 1 and names the step. Honest steps and masked cleanup exit 0. |
-| T-060 | PIPE-GATES-R061 | Unit | The real specs tree, and a temporary tree with a new directory. | The real tree has no unmapped directory. A new directory is listed and exits 1. |
-| T-061 | PIPE-GATES-R062 | Unit | Fake API responses for held and unheld pull requests, armed and unarmed. | An armed held pull request is listed. The audit exits 1 and writes nothing. |
-| T-062 | PIPE-GATES-R063 | Unit | The job script run with a head ref that has a merged pull request and with a new one. | The reused branch exits 1 and names the earlier pull request. A new branch exits 0. |
-| T-063 | PIPE-GATES-R064 | Unit | A fixture workspace manifest and the workflow definition. | Each unit has one job with `--all-features` and `-p`. One failing unit fails the aggregate. |
-| T-064 | PIPE-GATES-R065 | Unit | A fixture repository whose test command collects nothing, and one that collects a test. | Zero suites exits 1 and names the command. One suite exits 0. |
-| T-065 | PIPE-GATES-R066 | Contract | The hook catalogue and the tests directory. | Every hook has a planted-violation test, or the missing hook ids are listed and the test fails. |
-| T-066 | PIPE-GATES-R067 | Unit | A diff that renames a serialized variant, with and without a golden file change. | A stale golden file exits 1 and names the rename. A recomputed file exits 0. |
-| T-067 | PIPE-GATES-R068 | Unit | The constitution file and the template. | The link, the article, the version and the template version all hold. |
+
+## Reusable workflow gates and coverage refusal (PIPE-GATES-R017 to R021, R049)
+
+| Test ID | Requirement | Level | Setup and input | Expected observation |
+|---|---|---|---|---|
+| T-059 | PIPE-GATES-R017 | Integration | A manifest with one entry that selects no test and one entry whose test fails. | Both entries exit non-zero; the empty entry reports `ZERO_SELECTED_TESTS`; every selected name reaches the job summary. |
+| T-060 | PIPE-GATES-R018 | Unit | One spec text that repeats a worker policy value outside a citing row and one that cites the owning rows. | The first text fails and names the value; the second passes. |
+| T-061 | PIPE-GATES-R019 | Integration | A fixture graph-loaded workflow, then the same output with one changed byte. | The matching readback passes; the tampered output fails on the digest. |
+| T-062 | PIPE-GATES-R020 | Integration | A manifest with a failing entry and an entry with an unreviewed difference, then a clean manifest. | The first two exit non-zero; the clean manifest passes. |
+| T-063 | PIPE-GATES-R021 | Integration | A fixture crate with a compile error, one with a clippy warning and a clean crate. | The first two fail; the clean crate passes. |
+| T-064 | PIPE-GATES-R049.1 | Unit | An evidence file with percent, revision and tool, and one without a tool. | The first parses; the second is refused. |
+| T-065 | PIPE-GATES-R049.2 | Unit | Baseline 80.00 with candidates 79.99, 80.00 and 80.01. | 79.99 exits 1 and names both values; the other two exit 0. |
+| T-066 | PIPE-GATES-R049.3 | Unit | The `GATES` table and `.pre-commit-hooks.yaml`. | `coverage-decrease` is a published hook that resolves to its module. |
+| T-067 | PIPE-GATES-R049.4 | Unit | No baseline, no candidate, and a baseline revision that is not an ancestor. | The first two exit 2 with `CANNOT RUN`; the third exits 1. |
+| T-068 | PIPE-GATES-R049.5 | Unit | The same proposal twice. | Both runs print the same bytes with both revisions and both percentages. |
+| T-069 | PIPE-GATES-R049.6 | Integration | A fixture repository whose candidate revision lowers coverage, run through `pipelines_hooks.cli.main`. | Exit 1 and the output names both percentages. |
+| T-070 | PIPE-GATES-R060 | Unit | Workflow files with masked and honest test and cleanup steps. | A masked test or check step exits 1 and names the step. Honest steps and masked cleanup exit 0. |
+| T-071 | PIPE-GATES-R061 | Unit | The real specs tree, and a temporary tree with a new directory. | The real tree has no unmapped directory. A new directory is listed and exits 1. |
+| T-072 | PIPE-GATES-R062 | Unit | Fake API responses for held and unheld pull requests, armed and unarmed. | An armed held pull request is listed. The audit exits 1 and writes nothing. |
+| T-073 | PIPE-GATES-R063 | Unit | The job script run with a head ref that has a merged pull request and with a new one. | The reused branch exits 1 and names the earlier pull request. A new branch exits 0. |
+| T-074 | PIPE-GATES-R064 | Unit | A fixture workspace manifest and the workflow definition. | Each unit has one job with `--all-features` and `-p`. One failing unit fails the aggregate. |
+| T-075 | PIPE-GATES-R065 | Unit | A fixture repository whose test command collects nothing, and one that collects a test. | Zero suites exits 1 and names the command. One suite exits 0. |
+| T-076 | PIPE-GATES-R066 | Contract | The hook catalogue and the tests directory. | Every hook has a planted-violation test, or the missing hook ids are listed and the test fails. |
+| T-077 | PIPE-GATES-R067 | Unit | A diff that renames a serialized variant, with and without a golden file change. | A stale golden file exits 1 and names the rename. A recomputed file exits 0. |
+| T-078 | PIPE-GATES-R068 | Unit | The constitution file and the template. | The link, the article, the version and the template version all hold. |
