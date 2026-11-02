@@ -127,3 +127,12 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-056 | PIPE-GATES-R016.116.2 | Unit | Every workflow and template, and `scripts/apply_repo_ci_settings.sh`. | No gate job has an actor or author condition. The ruleset holds no bypass actor. | |
 | T-057 | PIPE-GATES-R047 | Unit | The job script run with each marker, a clean title and body, and the caller aggregate. | A marker in the title or body exits 1; clean text exits 0; the caller `CI required` needs `gates`. | |
 | T-058 | PIPE-GATES-R048 | Unit | Fake API responses for good, old-check, extra-check and archived repositories. | The audit lists each drift, skips archived and excluded repositories, exits 1 and only reads. | `tests/test_ruleset_audit.py` |
+| T-059 | PIPE-GATES-R060 | Unit | Workflow files with masked and honest test and cleanup steps. | A masked test or check step exits 1 and names the step. Honest steps and masked cleanup exit 0. |
+| T-060 | PIPE-GATES-R061 | Unit | The real specs tree, and a temporary tree with a new directory. | The real tree has no unmapped directory. A new directory is listed and exits 1. |
+| T-061 | PIPE-GATES-R062 | Unit | Fake API responses for held and unheld pull requests, armed and unarmed. | An armed held pull request is listed. The audit exits 1 and writes nothing. |
+| T-062 | PIPE-GATES-R063 | Unit | The job script run with a head ref that has a merged pull request and with a new one. | The reused branch exits 1 and names the earlier pull request. A new branch exits 0. |
+| T-063 | PIPE-GATES-R064 | Unit | A fixture workspace manifest and the workflow definition. | Each unit has one job with `--all-features` and `-p`. One failing unit fails the aggregate. |
+| T-064 | PIPE-GATES-R065 | Unit | A fixture repository whose test command collects nothing, and one that collects a test. | Zero suites exits 1 and names the command. One suite exits 0. |
+| T-065 | PIPE-GATES-R066 | Contract | The hook catalogue and the tests directory. | Every hook has a planted-violation test, or the missing hook ids are listed and the test fails. |
+| T-066 | PIPE-GATES-R067 | Unit | A diff that renames a serialized variant, with and without a golden file change. | A stale golden file exits 1 and names the rename. A recomputed file exits 0. |
+| T-067 | PIPE-GATES-R068 | Unit | The constitution file and the template. | The link, the article, the version and the template version all hold. |
