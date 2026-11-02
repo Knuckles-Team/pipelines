@@ -1,4 +1,4 @@
-# PIPE-GATES — Gate landing policy plan
+# PIPE-GATES — Implementation plan
 
 Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 
@@ -48,6 +48,7 @@ This plan serves the rows of `PIPE-GATES`. A landing decision costs seconds. The
 specs/gates/                              existing: spec.md, plan.md, requirements.md, tasks.md, test-spec.md
 pipelines_hooks/states_publish.py         new: publish row and task states (PIPE-GATES-R004.3)
 pipelines_hooks/specs/contracts.py        new: contract-coverage gate (PIPE-GATES-R034)
+pipelines_hooks/code/coverage_decrease.py new: coverage-decrease gate (PIPE-GATES-R049)
 pipelines_hooks/specs/status.py           existing: calls publish_states
 pipelines_hooks/cli.py                    existing: gate table and spec group
 tests/hooks/test_states_publish.py        new
@@ -89,7 +90,7 @@ The implementation runs this repository's own gates: format, hygiene, secrets, t
 - 2026-10-20: The engine tree reads arrive with the Medulla
   changeset tree (MEDULLA-SCM-R004). Until then the source provider interface
   and the disk provider serve the tree. The verdict-equality contract
-  test runs on the disk provider. The T-004 engine-tree fixture needs the
+  test runs on the disk provider. The `PIPE-GATES-R003` engine-tree fixture needs the
   engine reads. The consumer-side gates (format, hygiene, types, tests)
   run in the consumer environment. The runner fails closed on a gate the
   environment has not bound. The task window is half-open: a task opened
