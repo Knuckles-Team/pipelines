@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.6.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.7.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-03
 
 ## Core Principles
 
@@ -717,6 +717,28 @@ Standards and tests:
 
 **Plan check:** Does every test or check step exit with the tool's real status, fail on zero suites, and have a test with a planted violation?
 
+### XXX. Every release supports three operating systems on two architectures
+
+Every published artifact supports Linux, macOS and Windows. On each operating system it supports the x86_64 and arm64 architectures. A wheel, binary, container image or desktop build ships for all six targets. A release that misses a target is a defect. A dependency that blocks a target needs a recorded blocker that names the dependency, the target and the reason. Support counts only when a CI job builds and tests the artifact on that target. A cross-compiled build without a test on the target does not count.
+
+*Rationale*: Users run the ecosystem on laptops, servers and single-board hosts. A gap on one target makes users find it at install time, not in CI.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: source-path-portability -->
+- `source-path-portability`: Source path portability - tracked package paths are cross-platform legal
+<!-- generated:end -->
+
+Standards and tests:
+
+- [CI standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ci-standard.md): a platform claim needs a job on that platform.
+- `.github/workflows/maturin_pipeline.yml`, `.github/workflows/desktop_release_pipeline.yml`.
+- Six-target release matrix: the `PIPE-GATES` spec files the check that each release workflow builds and tests every target.
+
+**Plan check:** Does the change build and test on Linux, macOS and Windows, each on x86_64 and arm64, or record the blocker for a missing target?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -792,4 +814,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.6.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-01
+**Version**: 1.7.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-03

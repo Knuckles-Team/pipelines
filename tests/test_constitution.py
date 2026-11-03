@@ -196,3 +196,11 @@ def test_the_checks_article_is_traced() -> None:
     merges = dict(_bodies())["XXVIII. Merges and releases are gated"]
     for rule in ("`hold` label", "merged branch is never reused"):
         assert rule in merges
+
+
+def test_the_platform_article_is_traced() -> None:
+    # spec: PIPE-GATES-R069
+    article = dict(_bodies())["XXX. Every release supports three operating systems on two architectures"]
+    assert "constitution hooks: source-path-portability" in article
+    for rule in ("Linux, macOS and Windows", "x86_64 and arm64", "all six targets", "recorded blocker"):
+        assert rule in article

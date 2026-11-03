@@ -207,3 +207,4 @@
 - [ ] T201 PIPE-GATES-R066 Each gate has a test that plants a violation in its stated universe.
 - [ ] T202 PIPE-GATES-R067 A rename of a serialized name recomputes its digests in the same commit.
 - [x] T203 PIPE-GATES-R068 The constitution links the delivery practice reference and states the new articles.
+- [ ] T204 PIPE-GATES-R069 The constitution requires six release targets, and a shared check enforces the release matrix.
