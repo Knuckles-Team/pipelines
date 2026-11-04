@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+import time
 import tomllib
 import urllib.error
 import urllib.request
@@ -23,6 +24,10 @@ from pathlib import Path
 
 REGISTRY = Path(__file__).resolve().parent / "architecture_explorer" / "registry.json"
 GRACE = timedelta(hours=24)
+# A transient server error or timeout is retried with bounded exponential backoff.
+TRANSIENT = frozenset({500, 502, 503, 504})
+ATTEMPTS = 5
+BACKOFF = 2.0
 # Repositories that are skipped on purpose, each with the reason.
 EXCLUDED = {
     "medulla": "excluded until its 3.0.0 landing merges",
@@ -35,19 +40,26 @@ def normalize(name: str) -> str:
 
 
 def _get(url: str, token: str | None = None, raw: bool = False) -> bytes | None:
-    """GET a URL; None for a 404."""
+    """GET a URL; None for a 404; transient 5xx and timeouts retry up to ATTEMPTS times."""
     headers = {"User-Agent": "release-drift"}
     if token and "api.github.com" in url:
         headers["Authorization"] = f"Bearer {token}"
     if raw:
         headers["Accept"] = "application/vnd.github.raw"
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as resp:  # noqa: S310 - https only
-            return resp.read()
-    except urllib.error.HTTPError as exc:
-        if exc.code == 404:
-            return None
-        raise
+    for attempt in range(ATTEMPTS):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as resp:  # noqa: S310 - https only
+                return resp.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return None
+            if exc.code not in TRANSIENT or attempt == ATTEMPTS - 1:
+                raise
+        except (urllib.error.URLError, TimeoutError):
+            if attempt == ATTEMPTS - 1:
+                raise
+        time.sleep(BACKOFF * 2**attempt)
+    raise AssertionError("unreachable")
 
 
 def main_state(slug: str, owner: str, token: str | None, get=_get) -> tuple[str, str, datetime] | None:

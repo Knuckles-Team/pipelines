@@ -79,3 +79,41 @@ def test_the_workflow_is_scheduled_read_only_and_runs_the_script() -> None:
     wf = yaml.safe_load((ROOT / ".github/workflows/release_drift.yml").read_text())
     assert wf[True]["schedule"] and wf["permissions"] == {"contents": "read"}
     assert "scripts/release_drift.py" in json.dumps(wf["jobs"]["drift"]["steps"])
+
+
+def test_transient_server_errors_retry_with_bounded_backoff(monkeypatch):
+    # spec: PIPE-RELEASE-R027
+    import io
+    import urllib.error
+
+    sleeps, calls = [], {"n": 0}
+
+    class Resp(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def flaky(req, timeout=0):
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise urllib.error.HTTPError(req.full_url, 504, "Gateway Timeout", {}, None)
+        return Resp(b"ok")
+
+    monkeypatch.setattr(release_drift.urllib.request, "urlopen", flaky)
+    monkeypatch.setattr(release_drift.time, "sleep", sleeps.append)
+    assert release_drift._get("https://pypi.org/pypi/x/json") == b"ok"
+    assert sleeps == [2.0, 4.0]
+
+    def always(req, timeout=0):
+        calls["n"] += 1
+        raise urllib.error.HTTPError(req.full_url, 504, "Gateway Timeout", {}, None)
+
+    calls["n"] = 0
+    monkeypatch.setattr(release_drift.urllib.request, "urlopen", always)
+    try:
+        release_drift._get("https://pypi.org/pypi/x/json")
+    except urllib.error.HTTPError as exc:
+        assert exc.code == 504
+    assert calls["n"] == release_drift.ATTEMPTS
