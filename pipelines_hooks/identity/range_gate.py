@@ -9,6 +9,10 @@ is still caught here, and independently again when CI re-runs this same gate
 over the full incoming range. Only the failing commit and field are named; the
 configured allowlist is never echoed back.
 
+A scheduled or manually dispatched run has no incoming range: every commit on the
+checked-out branch is already published, so the range is empty (base ``HEAD``) unless
+a base is given, and published history is never re-walked.
+
 A pull request whose head repository differs from its base repository is an
 external contribution and is exempt rather than checked; see
 :mod:`pipelines_hooks.identity.fork_exemption`.
@@ -21,6 +25,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.gitenv import repo_root
+from pipelines_hooks.core.settings import setting
 from pipelines_hooks.identity.allowlist import Identity, matches, resolved_allowlist
 from pipelines_hooks.identity.fork_exemption import is_fork_pull_request
 from pipelines_hooks.identity.resolve import CommitIdentity, range_identities
@@ -34,6 +39,16 @@ def _rejected_field(commit: CommitIdentity, identities: tuple[Identity, ...]) ->
     return None
 
 
+UNRANGED_EVENTS = frozenset({"schedule", "workflow_dispatch"})
+
+
+def _base(explicit: str | None) -> str | None:
+    """The explicit base, else ``HEAD`` for a run with no incoming range."""
+    if explicit or setting("PRE_COMMIT_FROM_REF"):
+        return explicit
+    return "HEAD" if setting("GITHUB_EVENT_NAME") in UNRANGED_EVENTS else None
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="commit-identity-range", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
@@ -45,7 +60,7 @@ def main(argv: list[str]) -> int:
         print("commit-identity-range: OK: external pull request (fork) is exempt")
         return 0
     identities = resolved_allowlist(root, args.allowlist)
-    commits = range_identities(root, upstream_base(root, args.base))
+    commits = range_identities(root, upstream_base(root, _base(args.base)))
     failures = [(commit.sha[:12], _rejected_field(commit, identities)) for commit in commits]
     named = [(sha, field) for sha, field in failures if field]
     if named:
