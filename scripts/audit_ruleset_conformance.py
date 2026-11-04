@@ -25,7 +25,7 @@ REQUIRED = "CI required"
 # Repositories audited although the pages registry does not list them (front-door hub).
 EXTRA = (".github",)
 # Repository -> reason it is not audited yet. An entry is removed when its reason ends.
-EXCLUDE = {"medulla": "excluded until its 3.0.0 landing merges"}
+EXCLUDE: dict[str, str] = {}
 
 Api = Callable[[str], object]
 
@@ -75,7 +75,10 @@ def audit_repo(api: Api, owner: str, name: str) -> list[str]:
     if checks != {REQUIRED}:
         shown = ", ".join(sorted(checks)) or "no required check"
         findings.append(f"{name}: main requires [{shown}], expected exactly [{REQUIRED}]")
-    if not info.get("allow_auto_merge"):
+    if "allow_auto_merge" not in info:
+        # The API omits the field for a token without repository administration read.
+        findings.append(f"{name}: cannot read allow_auto_merge (set RULESET_AUDIT_TOKEN with administration read)")
+    elif not info["allow_auto_merge"]:
         findings.append(f"{name}: allow_auto_merge is off")
     return findings
 

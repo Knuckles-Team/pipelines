@@ -28,11 +28,10 @@ def _api(repos: dict[str, dict]):
         repo = repos[name]
         if path.endswith("/rules/branches/main"):
             return repo["rules"]
-        return {
-            "archived": repo.get("archived", False),
-            "default_branch": "main",
-            "allow_auto_merge": repo.get("auto", True),
-        }
+        info = {"archived": repo.get("archived", False), "default_branch": "main"}
+        if repo.get("auto", True) is not None:
+            info["allow_auto_merge"] = repo.get("auto", True)
+        return info
 
     get.calls = calls  # type: ignore[attr-defined]
     return get
@@ -72,7 +71,6 @@ def test_main_prints_the_list_exits_one_and_only_reads(capsys: pytest.CaptureFix
     assert audit.main(["--repo", "old"], api=api) == 1
     out = capsys.readouterr().out
     assert "DRIFT old: main requires [pytest]" in out
-    assert "medulla (excluded until its 3.0.0 landing merges)" in out
     assert all(call.startswith("repos/") for call in api.calls)  # type: ignore[attr-defined]
 
 
@@ -85,3 +83,10 @@ def test_the_registry_lists_the_fleet_and_the_workflow_is_scheduled_and_read_onl
     assert flow[True]["schedule"] and "workflow_dispatch" in flow[True]
     assert flow["permissions"] == {"contents": "read"}
     assert "audit_ruleset_conformance.py" in flow["jobs"]["audit"]["steps"][-1]["run"]
+
+
+@pytest.mark.spec("PIPE-GATES-R048")
+def test_an_unreadable_auto_merge_setting_is_reported_as_unreadable_not_off() -> None:
+    api = _api({"hidden": {"rules": _rules("CI required"), "auto": None}})
+    found = audit.audit(api, "o", ["hidden"], exclude={})
+    assert found == ["hidden: cannot read allow_auto_merge (set RULESET_AUDIT_TOKEN with administration read)"]
