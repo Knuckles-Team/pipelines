@@ -66,12 +66,12 @@ def test_a_published_version_a_fresh_head_and_a_non_python_repo_are_clean() -> N
     assert _run(repos, {"some-pkg": ["1.2.0"], "fresh": []}) == []
 
 
-def test_a_project_missing_from_the_index_is_reported_and_medulla_is_excluded() -> None:
+def test_a_project_missing_from_the_index_is_reported_and_nothing_is_excluded() -> None:
     # spec: PIPE-RELEASE-R027
-    repos = {"new": {"pyproject": _toml("new"), "when": OLD}, "medulla": {"pyproject": _toml("m"), "when": OLD}}
+    repos = {"new": {"pyproject": _toml("new"), "when": OLD}}
     out = _run(repos, {})
     assert len(out) == 1 and "(not on the index)" in out[0]
-    assert "3.0.0" in release_drift.EXCLUDED["medulla"]
+    assert release_drift.EXCLUDED == {}
 
 
 def test_the_workflow_is_scheduled_read_only_and_runs_the_script() -> None:

@@ -29,9 +29,7 @@ TRANSIENT = frozenset({500, 502, 503, 504})
 ATTEMPTS = 5
 BACKOFF = 2.0
 # Repositories that are skipped on purpose, each with the reason.
-EXCLUDED = {
-    "medulla": "excluded until its 3.0.0 landing merges",
-}
+EXCLUDED: dict[str, str] = {}
 
 
 def normalize(name: str) -> str:
