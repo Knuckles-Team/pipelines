@@ -11,9 +11,9 @@ docstring for the extraction strategy and known scope limits.
 Two independent extraction strategies feed the corpus:
 
 1. **Nav-derived** (``skill_graph/nav.py``, every repo that already opted
-   into the shared MkDocs theme: ``epistemic-graph``, ``agent-utilities``,
-   ``agent-connector-sdk``, ``arbora``, ``agent-webui``,
-   ``agent-terminal-ui``, ``geniusbot``). A repo's own ``mkdocs.yml``
+   into the shared MkDocs theme: ``medulla``, ``meristem``,
+   ``scion-sdk``, ``arbora``, ``overstory``,
+   ``tuig``, ``axil``). A repo's own ``mkdocs.yml``
    ``nav:`` tree is itself a committed, machine-readable registry of that
    repo's public documentation surface.
 2. **Registry-derived** (``skill_graph/eg.py``, ``skill_graph/au.py``,

@@ -14,8 +14,8 @@ from skill_graph.render_components_au import render_components_au
 from skill_graph.render_repo import render_repo_reference_md
 
 _COMPONENT_RENDERERS = {
-    "epistemic-graph": lambda corpus, repo_root: render_components_eg(corpus),
-    "agent-utilities": lambda corpus, repo_root: render_components_au(repo_root),
+    "medulla": lambda corpus, repo_root: render_components_eg(corpus),
+    "meristem": lambda corpus, repo_root: render_components_au(repo_root),
 }
 
 
