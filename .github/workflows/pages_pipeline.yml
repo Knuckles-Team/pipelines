@@ -201,12 +201,19 @@ jobs:
             templates/mkdocs-theme
             scripts/sync_mkdocs_theme.py
 
+      # The build vends the canonical theme files from the pinned pipelines
+      # checkout, so a theme change never strands a consumer's committed copy;
+      # the check then holds the runtime-diagram link rules on the pages.
       - name: Verify shared Pages theme assets
         if: inputs.shared_theme_enabled
         env:
           CONTENT_SOURCE: ${{ inputs.content_source }}
         run: |
           set -euo pipefail
+          python .pipeline-theme/scripts/sync_mkdocs_theme.py sync \
+            --root "$GITHUB_WORKSPACE" \
+            --source-root .pipeline-theme \
+            --content-source "$CONTENT_SOURCE"
           python .pipeline-theme/scripts/sync_mkdocs_theme.py check \
             --root "$GITHUB_WORKSPACE" \
             --source-root .pipeline-theme \

@@ -24,28 +24,41 @@ THEME_FILES = (
     ThemeFile("assets/graph-mark.svg", "assets/graph-mark.svg"),
     ThemeFile("assets/favicon.svg", "assets/favicon.svg"),
     ThemeFile(
-        "assets/brands/epistemic-graph-logo-v1.png",
-        "assets/brands/epistemic-graph-logo-v1.png",
+        "assets/brands/medulla-logo-v1.png",
+        "assets/brands/medulla-logo-v1.png",
     ),
     ThemeFile(
-        "assets/brands/agent-utilities-logo-v1.png",
-        "assets/brands/agent-utilities-logo-v1.png",
+        "assets/brands/meristem-logo-v1.png",
+        "assets/brands/meristem-logo-v1.png",
     ),
     ThemeFile("assets/brands/arbora-logo-v1.png", "assets/brands/arbora-logo-v1.png"),
     ThemeFile(
-        "assets/brands/agent-connector-sdk-logo-v1.png",
-        "assets/brands/agent-connector-sdk-logo-v1.png",
+        "assets/brands/scion-sdk-logo-v1.png",
+        "assets/brands/scion-sdk-logo-v1.png",
     ),
     ThemeFile(
-        "assets/brands/agent-webui-logo-v1.png",
-        "assets/brands/agent-webui-logo-v1.png",
+        "assets/brands/overstory-logo-v1.png",
+        "assets/brands/overstory-logo-v1.png",
     ),
-    ThemeFile("assets/brands/geniusbot-logo-v1.png", "assets/brands/geniusbot-logo-v1.png"),
+    ThemeFile("assets/brands/axil-logo-v1.png", "assets/brands/axil-logo-v1.png"),
     ThemeFile(
-        "assets/brands/agent-terminal-ui-logo-v1.png",
-        "assets/brands/agent-terminal-ui-logo-v1.png",
+        "assets/brands/tuig-logo-v1.png",
+        "assets/brands/tuig-logo-v1.png",
     ),
     ThemeFile("glossary.md", "glossary.md"),
+)
+
+# Content-relative theme files a rename retired; `sync` deletes them so no old product name lingers.
+RETIRED_THEME_FILES = tuple(
+    f"assets/brands/{old}-logo-v1.png"
+    for old in (
+        "epistemic-graph",
+        "agent-utilities",
+        "agent-connector-sdk",
+        "agent-webui",
+        "geniusbot",
+        "agent-terminal-ui",
+    )
 )
 
 
@@ -147,6 +160,14 @@ def _sync_files(source: Path, content_root: Path, repository: Path, *, mode: Lit
             continue
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(expected)
+    for retired in RETIRED_THEME_FILES:
+        stale = _contained(content_root, Path(retired), retired)
+        if not stale.is_file():
+            continue
+        if mode == "check":
+            mismatches.append(f"retired generated file is present: {stale.relative_to(repository).as_posix()}")
+        else:
+            stale.unlink()
     return mismatches
 
 
