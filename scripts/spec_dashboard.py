@@ -71,6 +71,10 @@ def public_items(batch, endpoint):
         yield {key: item[key] for key in ("number", "title", "html_url", "created_at", "updated_at")}
 
 
+# A repository without a dashboard config reads every generated spec status.
+DEFAULT_CONFIG = {"version": 1, "sources": [{"glob": "specs/*/status.json", "kind": "spec"}]}
+
+
 def argument_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
@@ -86,7 +90,8 @@ def parse_options(argv):
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", args.repository):
         parser.error("repository must be owner/name")
     root = args.root.resolve()
-    config = json.loads((root / args.config).read_text())
+    path = root / args.config
+    config = json.loads(path.read_text()) if path.is_file() else DEFAULT_CONFIG
     if config.get("version") != 1:
         parser.error("config version must be 1")
     for source in config["sources"]:

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.spec_dashboard import github_snapshot, read_records, record, render
+from scripts.spec_dashboard import DEFAULT_CONFIG, github_snapshot, parse_options, read_records, record, render
 
 
 @pytest.mark.spec("PIPE-CONNSPEC-R003")
@@ -211,3 +211,12 @@ def test_retired_record_is_not_rendered(tmp_path):
 def test_workflow_does_not_reference_history_scripts():
     text = (Path(__file__).parents[1] / ".github/workflows/pages_pipeline.yml").read_text()
     assert "spec_dashboard_history" not in text and "spec_dashboard_charts" not in text
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R003")
+def test_a_missing_dashboard_config_reads_every_spec_status(tmp_path: Path) -> None:
+    _, root, config = parse_options(
+        ["--root", str(tmp_path), "--config", ".github/spec-dashboard.json", "--repository", "o/r"]
+    )
+    assert root == tmp_path.resolve()
+    assert config == DEFAULT_CONFIG == {"version": 1, "sources": [{"glob": "specs/*/status.json", "kind": "spec"}]}
