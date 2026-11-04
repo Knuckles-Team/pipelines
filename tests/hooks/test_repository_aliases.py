@@ -1,6 +1,6 @@
 """Repository slug aliases preserve stable package and specification identities."""
 
-from pipelines_hooks.core.repositories import canonical_repository, repository_matches, repository_slug
+from pipelines_hooks.core.repositories import canonical_repository, repository_matches
 from pipelines_hooks.specs.priority import train_rank
 
 
