@@ -95,7 +95,9 @@ def test_a_malformed_base_revision_cannot_run(repo: Repo) -> None:
 
 
 @pytest.mark.parametrize("event", ["schedule", "workflow_dispatch"])
-def test_a_scheduled_run_does_not_rewalk_published_history(repo: Repo, monkeypatch: pytest.MonkeyPatch, event: str) -> None:
+def test_a_scheduled_run_does_not_rewalk_published_history(
+    repo: Repo, monkeypatch: pytest.MonkeyPatch, event: str
+) -> None:
     # spec: PIPE-IDENTITY-R001.4
     write_identity_allowlist(repo.root, [ALLOWED])
     commit_as(repo.root, name=OUTSIDE_NAME, email=OUTSIDE_EMAIL, message="published-old")
