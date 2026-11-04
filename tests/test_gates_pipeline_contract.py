@@ -5,6 +5,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 from pipelines_hooks.cli import GATES
@@ -215,3 +216,20 @@ def test_reusable_workflows_default_to_the_environment_python() -> None:
         assert inputs["python-version"]["default"] == "3.14", name
     main = _on(workflows / "main_pipeline.yml")["workflow_call"]["inputs"]
     assert main["backward-python"]["default"] == ""
+
+
+@pytest.mark.spec("PIPE-RELEASE-R007.13")
+def test_hook_cache_saves_are_bounded_and_never_fail_the_gates() -> None:
+    for workflow in (GATES_WORKFLOW, WORKFLOWS / "medulla_light_gates.yml"):
+        jobs = yaml.safe_load(workflow.read_text(encoding="utf-8"))["jobs"]
+        saves = [
+            step
+            for job in jobs.values()
+            for step in job.get("steps", [])
+            if str(step.get("uses", "")).startswith("actions/cache/save@")
+            and "pre-commit" in str(step.get("with", {}).get("path", ""))
+        ]
+        assert len(saves) == 2, workflow.name
+        for step in saves:
+            assert step["timeout-minutes"] == 3, step["name"]
+            assert step["continue-on-error"] is True, step["name"]
