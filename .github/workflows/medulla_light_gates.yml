@@ -177,6 +177,10 @@ jobs:
           pre-commit install-hooks --config .config/pre-commit.yaml
 
       - name: Save pre-commit environments
+        # A cache upload is an optimization: bound it and never let it fail or
+        # cancel the gates (PIPE-RELEASE-R007.13).
+        timeout-minutes: 3
+        continue-on-error: true
         if: success() && steps.hook-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -184,6 +188,10 @@ jobs:
           key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.config/pre-commit.yaml') }}-${{ steps.hook-rev.outputs.sha }}
 
       - name: Save partly installed pre-commit environments
+        # A cache upload is an optimization: bound it and never let it fail or
+        # cancel the gates (PIPE-RELEASE-R007.13).
+        timeout-minutes: 3
+        continue-on-error: true
         if: (failure() || cancelled()) && steps.hook-install.outcome != 'success' && steps.hook-install.outcome != 'skipped'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
