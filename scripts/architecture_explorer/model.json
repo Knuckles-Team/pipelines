@@ -4915,7 +4915,8 @@
       "crates/eg-query"
      ],
      "fam": [
-      "federated-query-and-reasoning"
+      "federated-query-and-reasoning",
+      "incremental-views"
      ],
      "edges": [
       [
