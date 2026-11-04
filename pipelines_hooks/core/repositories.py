@@ -18,7 +18,6 @@ from urllib.parse import urlsplit
 REPOSITORY_ALIASES: Mapping[str, str] = MappingProxyType(
     {
         "epistemic-graph": "medulla",
-        "epistemic-graph-server": "medulla-stem",
         "agent-connector-sdk": "scion-sdk",
         "agent-utilities": "meristem",
         "agent-webui": "overstory",

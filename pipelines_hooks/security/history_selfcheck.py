@@ -31,7 +31,7 @@ def _planted_lines() -> list[str]:
         "AWS_ACCESS_KEY_ID = '" + "AKIA" + "ABCDEFGHIJKLMNOP" + "'",
         "GITHUB_TOKEN = '" + "ghp" + "_" + "a" * 36 + "'",
         "-----BEGIN " + "RSA PRIVATE KEY" + "-----",
-        "EPISTEMIC_GRAPH_SIGNER" + '_KEYS_JSON={"agent:x": "' + "f" * 32 + '"}',
+        "MEDULLA_SIGNER" + '_KEYS_JSON={"agent:x": "' + "f" * 32 + '"}',
     ]
 
 
