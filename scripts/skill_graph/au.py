@@ -1,4 +1,4 @@
-"""Registry-derived extraction for ``agent-utilities``.
+"""Registry-derived extraction for ``meristem``.
 
 * ``docs/concepts.yaml`` -- 9 pillars over 1200+ concepts; only the pillar
   tier is surfaced as a Concept node (the full concept list stays in AU's own
@@ -17,7 +17,7 @@ import yaml
 
 from skill_graph.model import Graph, slugify
 
-_REPO = "repo/agent-utilities"
+_REPO = "repo/meristem"
 
 
 def extract_pillars(graph: Graph, repo_root: Path) -> None:
@@ -31,7 +31,7 @@ def extract_pillars(graph: Graph, repo_root: Path) -> None:
         if pillar:
             counts[pillar] = counts.get(pillar, 0) + 1
     for pillar in data.get("pillars") or []:
-        man_id = f"manpage/agent-utilities/concepts-yaml/{slugify(pillar)}"
+        man_id = f"manpage/meristem/concepts-yaml/{slugify(pillar)}"
         graph.add(
             man_id,
             "ManPage",
@@ -41,7 +41,7 @@ def extract_pillars(graph: Graph, repo_root: Path) -> None:
             partOfRepo=_REPO,
         )
         graph.add(
-            f"concept/agent-utilities/pillar/{slugify(pillar)}",
+            f"concept/meristem/pillar/{slugify(pillar)}",
             "Concept",
             label=pillar,
             partOfRepo=_REPO,
@@ -54,7 +54,7 @@ def _add_skill(graph: Graph, entry: dict[str, Any]) -> str | None:
     name = entry.get("skill")
     if not name:
         return None
-    man_id = f"manpage/agent-utilities/prebundled-skills/{slugify(name)}"
+    man_id = f"manpage/meristem/prebundled-skills/{slugify(name)}"
     graph.add(
         man_id,
         "ManPage",
@@ -63,7 +63,7 @@ def _add_skill(graph: Graph, entry: dict[str, Any]) -> str | None:
         anchor=name,
         partOfRepo=_REPO,
     )
-    comp_id = f"component/agent-utilities/skill/{slugify(name)}"
+    comp_id = f"component/meristem/skill/{slugify(name)}"
     graph.add(
         comp_id,
         "Component",
@@ -84,7 +84,7 @@ def extract_skills(graph: Graph, repo_root: Path) -> None:
         comp_id for entry in (data.get("entries") or []) if (comp_id := _add_skill(graph, entry)) is not None
     ]
     graph.add(
-        "concept/agent-utilities/prebundled-skills",
+        "concept/meristem/prebundled-skills",
         "Concept",
         label="Prebundled skills",
         partOfRepo=_REPO,

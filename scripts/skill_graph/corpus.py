@@ -31,10 +31,10 @@ def build_graph(workspace: Path) -> dict[str, Any]:
         if not repo_root.is_dir():
             continue
         extract_nav(graph, slug, repo_root)
-        if slug == "epistemic-graph":
+        if slug == "medulla":
             eg.extract_registry(graph, repo_root)
             eg.extract_contract(graph, repo_root)
-        if slug == "agent-utilities":
+        if slug == "meristem":
             au.extract_pillars(graph, repo_root)
             au.extract_skills(graph, repo_root)
     ordered = [graph.nodes[k] for k in sorted(graph.nodes)]

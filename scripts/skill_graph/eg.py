@@ -1,4 +1,4 @@
-"""Registry-derived extraction for ``epistemic-graph``.
+"""Registry-derived extraction for ``medulla``.
 
 * ``architecture/component-registry.yml`` -- component identity, layer,
   capability_ids, status, concepts.
@@ -17,14 +17,14 @@ import yaml
 
 from skill_graph.model import Graph, slugify
 
-_REPO = "repo/epistemic-graph"
+_REPO = "repo/medulla"
 
 
 def _add_component(graph: Graph, component: dict[str, Any]) -> str | None:
     component_id = component.get("component_id")
     if not component_id:
         return None
-    man_id = f"manpage/epistemic-graph/component-registry/{slugify(component_id)}"
+    man_id = f"manpage/medulla/component-registry/{slugify(component_id)}"
     graph.add(
         man_id,
         "ManPage",
@@ -33,7 +33,7 @@ def _add_component(graph: Graph, component: dict[str, Any]) -> str | None:
         anchor=component_id,
         partOfRepo=_REPO,
     )
-    comp_node_id = f"component/epistemic-graph/registry/{slugify(component_id)}"
+    comp_node_id = f"component/medulla/registry/{slugify(component_id)}"
     graph.add(
         comp_node_id,
         "Component",
@@ -44,7 +44,7 @@ def _add_component(graph: Graph, component: dict[str, Any]) -> str | None:
         status=component.get("status"),
         capabilityIds=component.get("capability_ids") or [],
         childComponent=[
-            f"component/epistemic-graph/registry/{slugify(c)}" for c in (component.get("child_component_ids") or [])
+            f"component/medulla/registry/{slugify(c)}" for c in (component.get("child_component_ids") or [])
         ],
         summary=(component.get("summary") or "").strip() or None,
     )
@@ -54,7 +54,7 @@ def _add_component(graph: Graph, component: dict[str, Any]) -> str | None:
 def _add_registry_concepts(graph: Graph, concepts_to_components: dict[str, list[str]]) -> None:
     for concept_name, comp_ids in concepts_to_components.items():
         graph.add(
-            f"concept/epistemic-graph/registry/{slugify(concept_name)}",
+            f"concept/medulla/registry/{slugify(concept_name)}",
             "Concept",
             label=concept_name,
             partOfRepo=_REPO,
@@ -85,7 +85,7 @@ def _group_methods_by_domain(methods: list[dict[str, Any]]) -> dict[str, list[st
 
 
 def _add_contract_domain(graph: Graph, domain: str, method_ids: list[str]) -> str:
-    man_id = f"manpage/epistemic-graph/contract-methods/{slugify(domain)}"
+    man_id = f"manpage/medulla/contract-methods/{slugify(domain)}"
     graph.add(
         man_id,
         "ManPage",
@@ -94,7 +94,7 @@ def _add_contract_domain(graph: Graph, domain: str, method_ids: list[str]) -> st
         anchor=domain,
         partOfRepo=_REPO,
     )
-    comp_id = f"component/epistemic-graph/contract-domain/{slugify(domain)}"
+    comp_id = f"component/medulla/contract-domain/{slugify(domain)}"
     graph.add(
         comp_id,
         "Component",
@@ -117,7 +117,7 @@ def extract_contract(graph: Graph, repo_root: Path) -> None:
         _add_contract_domain(graph, domain, method_ids) for domain, method_ids in sorted(by_domain.items())
     ]
     graph.add(
-        "concept/epistemic-graph/contract-methods",
+        "concept/medulla/contract-methods",
         "Concept",
         label="Generated contract methods",
         partOfRepo=_REPO,

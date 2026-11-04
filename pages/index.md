@@ -4,11 +4,11 @@ One progressively disclosed corpus of the Knuckles agent ecosystem's concepts, c
 
 - [Spec delivery](https://knuckles-team.github.io/pipelines/spec-delivery/) — current requirements, code references, and specification relationships.
 - [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md) — the shared rules for every repository.
-- [Concepts](concepts.md) — level 1, 243 nodes across 7 repos.
-- [Components](components.md) — level 2, 260 nodes, each documented by a man page.
-- [`corpus.jsonld`](corpus.jsonld) — the full machine corpus (269 man pages), consumable by agents directly over HTTP once this site is published; JSON-LD with `@id` IRIs under `http://knuckles.team/kg#`, the same namespace Epistemic Graph's own ontology uses.
+- [Concepts](concepts.md) — level 1, 224 nodes across 7 repos.
+- [Components](components.md) — level 2, 180 nodes, each documented by a man page.
+- [`corpus.jsonld`](corpus.jsonld) — the full machine corpus (180 man pages), consumable by agents directly over HTTP once this site is published; JSON-LD with `@id` IRIs under `http://knuckles.team/kg#`, the same namespace Medulla's own ontology uses.
 
 See [Ecosystem glossary](glossary.md) for the shared vocabulary this corpus's repo and concept names draw from.
 
 !!! note "Not the same thing as `skills/skill-graphs`"
-    `agent-utilities`' `docs/guides/skill-graph-migration.md` and the `skills/skill-graphs` repository name a **different** artifact: ~74 distilled third-party documentation knowledge-graphs (AWS, Django, Postgres, …) for Pydantic AI agents. This corpus is the documentation-architecture corpus for the ecosystem's own five core repos plus the two satellite UIs — unrelated data, coincidentally similar name.
+    `meristem`'s `docs/guides/skill-graph-migration.md` and the `skills/skill-graphs` repository name a **different** artifact: ~74 distilled third-party documentation knowledge-graphs (AWS, Django, Postgres, …) for Pydantic AI agents. This corpus is the documentation-architecture corpus for the ecosystem's own five core repos plus the two satellite UIs — unrelated data, coincidentally similar name.

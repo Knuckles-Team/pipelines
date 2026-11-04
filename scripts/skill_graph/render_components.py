@@ -3,11 +3,11 @@ the 6 top-level "layer boundary root seam" components in
 ``architecture/component-registry.yml``, each owning a set of child
 implementation components -- see ``skill_graph/eg.py``.
 
-``agent-utilities`` has a components tier too, generated from its own
+``meristem`` has a components tier too, generated from its own
 ``docs/concepts.yaml`` pillars instead -- see ``render_components_au.py``
 (its own ``architecture/component-registry.yml`` has exactly 1 component,
-too sparse to seed a tier). ``agent-connector-sdk``, ``arbora``, and
-``agent-webui`` have no comparable registry; their own docs nav already IS
+too sparse to seed a tier). ``scion-sdk``, ``arbora``, and
+``overstory`` have no comparable registry; their own docs nav already IS
 their honest component tier (nav relabeled, not generated -- see
 WRAPUP.md).
 """
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any
 
-_REGISTRY_PREFIX = "component/epistemic-graph/registry/"
+_REGISTRY_PREFIX = "component/medulla/registry/"
 
 
 def _top_level_registry_components(corpus: dict[str, Any]) -> list[dict[str, Any]]:

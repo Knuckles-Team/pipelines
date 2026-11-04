@@ -13,33 +13,33 @@ SCHEMA = "knuckles-skill-graph/v1"
 
 # slug -> (repo directory relative to --workspace, Pages URL, display name)
 REPOS: dict[str, tuple[str, str, str]] = {
-    "epistemic-graph": (
-        "epistemic-graph",
+    "medulla": (
+        "medulla",
         "https://knuckles-team.github.io/medulla/",
         "Medulla",
     ),
-    "agent-utilities": (
-        "agent-utilities",
-        "https://knuckles-team.github.io/agent-utilities/",
-        "Agent Utilities",
+    "meristem": (
+        "meristem",
+        "https://knuckles-team.github.io/meristem/",
+        "Meristem",
     ),
-    "agent-connector-sdk": (
-        "agent-connector-sdk",
-        "https://knuckles-team.github.io/agent-connector-sdk/",
-        "Agent Connector SDK",
+    "scion-sdk": (
+        "scion-sdk",
+        "https://knuckles-team.github.io/scion-sdk/",
+        "Scion SDK",
     ),
     "arbora": ("arbora", "https://knuckles-team.github.io/arbora/", "Arbora"),
-    "agent-webui": (
-        "agent-webui",
-        "https://knuckles-team.github.io/agent-webui/",
-        "Agent Web UI",
+    "overstory": (
+        "overstory",
+        "https://knuckles-team.github.io/overstory/",
+        "Overstory",
     ),
-    "agent-terminal-ui": (
-        "agent-terminal-ui",
-        "https://knuckles-team.github.io/agent-terminal-ui/",
-        "Agent Terminal UI",
+    "tuig": (
+        "tuig",
+        "https://knuckles-team.github.io/tuig/",
+        "Tuig",
     ),
-    "geniusbot": ("geniusbot", "https://knuckles-team.github.io/geniusbot/", "Geniusbot"),
+    "axil": ("axil", "https://knuckles-team.github.io/axil/", "Axil"),
 }
 
 

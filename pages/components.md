@@ -5,229 +5,15 @@ documented by a man page (level 3) pointing at the exact source file
 that generated it. The full machine corpus, with every typed link,
 is published as [`corpus.jsonld`](corpus.jsonld).
 
-## Agent Connector SDK
-
-### Architecture
-
-- **Overview** — `architecture.md`
-- **Connectors & ingestion** — `architecture/connectors-and-ingestion.md`
-- **Bidirectional ETL hub** — `architecture/etl-hub.md`
-- **Chunked async drain** — `architecture/chunked-async-drain.md`
-- **Content-aware ingestion** — `architecture/content-aware-ingestion.md`
-- **Camunda + ARIS integration** — `architecture/camunda-aris-integration.md`
-- **CISO Assistant integration** — `architecture/ciso-assistant-integration.md`
-- **Privacy-safe external ingestion** — `architecture/privacy-safe-ingestion.md`
-- **Universal external graph connectors** — `architecture/universal-graph-connectors.md`
-
-### Build your first connector
-
-- **Build your first connector** — `tutorial.md`
+## Arbora
 
 ### Capabilities
 
 - **Capabilities** — `capabilities.md`
 
-### Components
+### Glossary
 
-- **Connector servers** — `connector-servers.md`
-- **Content over MCP** — `content-over-mcp.md`
-- **Source synchronization** — `connector-sync.md`
-- **Repository ingestion** — `repository-ingestion.md`
-- **Extension ports** — `extension-ports.md`
-- **Connector certification** — `connector-certify.md`
-- **HTTP clients** — `http-clients.md`
-- **Credentials** — `credentials.md`
-
-### Home
-
-- **Home** — `index.md`
-
-### Reference
-
-- **Conformance kit** — `conformance-kit.md`
-- **Quality gates** — `quality-gates.md`
-- **Ecosystem glossary** — `glossary.md`
-- **Skill graph reference** — `reference/skill-graph.generated.md`
-
-### Status
-
-- **Status** — `status.md`
-
-## Agent Terminal UI
-
-### Agents & Workflows
-
-- **Agent View** — `agent_view.md`
-- **Goal Command** — `goal_command.md`
-- **Agents & Issues** — `agents.md`
-
-### Architecture
-
-- **Architecture** — `architecture.md`
-
-### Capabilities
-
-- **Capabilities** — `capabilities.md`
-
-### Configuration
-
-- **Configuration** — `configuration.md`
-
-### Features
-
-- **Features** — `features.md`
-
-### Home
-
-- **Home** — `index.md`
-
-### Interfaces
-
-- **Interfaces** — `interfaces.md`
-
-### Reference
-
-- **Concepts** — `concepts.md`
-- **Knowledge graph extraction** — `kg-extraction.md`
-- **Ecosystem glossary** — `glossary.md`
-- **Skill graph reference** — `reference/skill-graph.generated.md`
-
-### Sessions & State
-
-- **Session Management** — `session_management.md`
-
-### Status
-
-- **Status** — `status.md`
-
-## Agent Utilities
-
-### MERISTEM-AHE
-
-_No components._
-
-### MERISTEM-ECO
-
-_No components._
-
-### MERISTEM-KG
-
-_No components._
-
-### MERISTEM-ORCH
-
-_No components._
-
-### MERISTEM-OS
-
-_No components._
-
-### Architecture
-
-- **Overview** — `architecture/index.md`
-- **Runtime authority** — `architecture/graph-authority-convergence.md`
-- **Context boundary** — `architecture/mandatory-context-compiler.md`
-- **Observability model** — `architecture/observability.md`
-- **Improvement lifecycle** — `architecture/self-evolution-flywheel.md`
-
-### Build
-
-- **Guides overview** — `guides/index.md`
-- **Create an agent** — `guides/creating-an-agent.md`
-- **Graph-native orchestration** — `guides/kg_native_orchestration.md`
-- **Workflow skill suite** — `guides/kg-skill-suite.md`
-- **Ecosystem capability fleet** — `ecosystem-capability-fleet.md`
-- **Capability and action catalog** — `capabilities-power.md`
-
-### Components
-
-- **Overview** — `components/index.md`
-- **MERISTEM-AHE** — `components/au-ahe.md`
-- **MERISTEM-ECO** — `components/au-eco.md`
-- **MERISTEM-KG** — `components/au-kg.md`
-- **MERISTEM-ORCH** — `components/au-orch.md`
-- **MERISTEM-OS** — `components/au-os.md`
-- **MEDULLA-AHE** — `components/eg-ahe.md`
-- **MEDULLA-KG** — `components/eg-kg.md`
-- **MEDULLA-ORCH** — `components/eg-orch.md`
-- **MEDULLA-OS** — `components/eg-os.md`
-
-### MEDULLA-AHE
-
-_No components._
-
-### MEDULLA-KG
-
-_No components._
-
-### MEDULLA-ORCH
-
-_No components._
-
-### MEDULLA-OS
-
-_No components._
-
-### For AI agents
-
-- **For AI agents** — `for-ai-agents.md`
-
-### Get started
-
-- **Start here** — `start-here.md`
-- **Quick start** — `guides/quick-start.md`
-- **Installation** — `guides/installation.md`
-- **Consumption models** — `guides/consumption-models.md`
-
-### Home
-
-- **Home** — `index.md`
-
-### Operate
-
-- **Deployment configurations** — `guides/deployment-configurations.md`
-- **Production operations** — `operations/production-cell-runbook.md`
-- **Observability** — `guides/observability-usage-tracking.md`
-- **Connector certification** — `release/connector-live-certification.md`
-- **Compatibility and certification** — `release/compatibility-and-certification.md`
-
-### Prebundled skills
-
-- **agent-utilities-deployment** — `deploy/release/prebundled-skills.catalog.json#agent-utilities-deployment`
-- **agent-utilities-development** — `deploy/release/prebundled-skills.catalog.json#agent-utilities-development`
-- **agent-utilities-evolution** — `deploy/release/prebundled-skills.catalog.json#agent-utilities-evolution`
-- **agent-utilities-self-evolution** — `deploy/release/prebundled-skills.catalog.json#agent-utilities-self-evolution`
-- **agent-utilities-source-integration** — `deploy/release/prebundled-skills.catalog.json#agent-utilities-source-integration`
-- **autonomous-contribution** — `deploy/release/prebundled-skills.catalog.json#autonomous-contribution`
-- **graph-engine-and-modalities** — `deploy/release/prebundled-skills.catalog.json#graph-engine-and-modalities`
-- **graph-ingestion-and-integration** — `deploy/release/prebundled-skills.catalog.json#graph-ingestion-and-integration`
-- **graph-modeling-and-mutation** — `deploy/release/prebundled-skills.catalog.json#graph-modeling-and-mutation`
-- **graph-orchestration-and-automation** — `deploy/release/prebundled-skills.catalog.json#graph-orchestration-and-automation`
-- **graph-query-and-explanation** — `deploy/release/prebundled-skills.catalog.json#graph-query-and-explanation`
-- **graph-research-and-analysis** — `deploy/release/prebundled-skills.catalog.json#graph-research-and-analysis`
-- **graph-runtime-and-governance** — `deploy/release/prebundled-skills.catalog.json#graph-runtime-and-governance`
-
-### Reference
-
-- **API** — `reference/api.md`
-- **Runtime configuration** — `reference/runtime-configuration.md`
-- **Metrics** — `reference/metrics.md`
 - **Glossary** — `glossary.md`
-- **Documentation catalog** — `reference/documentation-catalog.md`
-- **Skill graph reference** — `reference/skill-graph.generated.md`
-
-### Status
-
-- **Status** — `status.md`
-
-## Arbora web UI
-
-### Components
-
-- **Architecture** — `architecture.md`
-- **Agents and events** — `agents.md`
-- **Atlas workspace** — `atlas.md`
-- **Capability Workbench** — `capability-workbench.md`
 
 ### Home
 
@@ -235,7 +21,47 @@ _No components._
 
 ### How it fits
 
-- **How it fits** — `ecosystem.md`
+- **How it fits** — `architecture.md`
+
+### Interfaces
+
+- **Interfaces** — `interfaces.md`
+
+### Operate
+
+- **Deployment and configuration** — `deployment.md`
+- **Release-qualification runbook** — `release-qualification-runbook.md`
+- **Identity and authentication** — `identity.md`
+- **Capability status** — `status.md`
+- **Quality gate terms** — `quality-gate-terms.md`
+
+### Specification status
+
+- **Specification status** — `spec-status.html`
+
+### Start Arbora
+
+- **Start Arbora** — `get-started.md`
+
+### Use Arbora
+
+- **MCP server** — `mcp-server.md`
+- **REST gateway** — `gateway.md`
+- **Fleet gateway** — `fleet.md`
+- **Unary A2A** — `a2a.md`
+- **Browser control** — `browser-control-service.md`
+
+## Axil
+
+### Guides
+
+- **Agents** — `agents.md`
+- **Apps** — `apps.md`
+- **Design system** — `design-system.md`
+
+### Home
+
+- **Home** — `index.md`
 
 ### Operate
 
@@ -243,18 +69,17 @@ _No components._
 
 ### Reference
 
-- **Features and APIs** — `features.md`
-- **Knowledge graph extraction** — `kg-extraction.md`
-- **Concept registry** — `concepts.md`
+- **Features** — `features.md`
+- **Knowledge extraction** — `kg-extraction.md`
+- **Concept Registry** — `concepts.md`
 - **Ecosystem glossary** — `glossary.md`
 - **Status** — `status.md`
-- **Skill graph reference** — `reference/skill-graph.generated.md`
 
 ### Start
 
 - **Start** — `start.md`
 
-## Epistemic Graph
+## Medulla
 
 ### Architecture
 
@@ -270,6 +95,7 @@ _No components._
 - **Analytics program** — `architecture/analytics_program.md`
 - **Numeric kernel** — `architecture/numeric_kernel.md`
 - **Hot-path complexity** — `architecture/hot-path-complexity.md`
+- **Market bars and trend signals** — `architecture/finance-market.md`
 - **Graph backends and mirrors** — `architecture/graph-backends.md`
 - **Service layer** — `architecture/service-layer.md`
 - **Code intelligence** — `architecture/code-intelligence.md`
@@ -282,30 +108,16 @@ _No components._
 ### Components
 
 - **Overview** — `components/index.md`
-- **eg.types** — `components/eg-types.md`
-- **eg.core** — `components/eg-core.md`
-- **eg.storage-transaction** — `components/eg-storage-transaction.md`
-- **eg.query-reasoning** — `components/eg-query-reasoning.md`
-- **eg.server-protocol** — `components/eg-server-protocol.md`
-- **eg.composition** — `components/eg-composition.md`
+- **medulla.types** — `components/medulla-types.md`
+- **medulla.core** — `components/medulla-core.md`
+- **medulla.storage-transaction** — `components/medulla-storage-transaction.md`
+- **medulla.query-reasoning** — `components/medulla-query-reasoning.md`
+- **medulla.server-protocol** — `components/medulla-server-protocol.md`
+- **medulla.composition** — `components/medulla-composition.md`
 
 ### For AI agents
 
-- **For AI agents** — `https://github.com/Knuckles-Team/epistemic-graph/blob/main/AGENTS.md`
-
-### Generated contract methods
-
-- **cluster (contract domain)** — `contract/methods.json#cluster`
-- **compute (contract domain)** — `contract/methods.json#compute`
-- **coordination (contract domain)** — `contract/methods.json#coordination`
-- **graph (contract domain)** — `contract/methods.json#graph`
-- **ingestion (contract domain)** — `contract/methods.json#ingestion`
-- **messaging (contract domain)** — `contract/methods.json#messaging`
-- **query (contract domain)** — `contract/methods.json#query`
-- **reasoning (contract domain)** — `contract/methods.json#reasoning`
-- **security (contract domain)** — `contract/methods.json#security`
-- **storage (contract domain)** — `contract/methods.json#storage`
-- **transactions (contract domain)** — `contract/methods.json#transactions`
+- **For AI agents** — `https://github.com/Knuckles-Team/medulla/blob/main/AGENTS.md`
 
 ### Home
 
@@ -337,29 +149,17 @@ _No components._
 - **Operations runbook** — `operations/runbook.md`
 - **Fault and restart certification** — `operations/exact-fault-restart-certification.md`
 - **Release campaigns** — `operations/exact-release-campaigns.md`
+- **PyPI tombstones** — `development/pypi-tombstones.md`
 - **Performance certification** — `performance_certification.md`
 
 ### Reference
 
 - **Capabilities** — `capabilities.md`
-- **Generated method ledger** — `capabilities.generated.md`
-- **API reference** — `api/index.md`
-- **Cluster API** — `api/cluster.md`
-- **Compute API** — `api/compute.md`
-- **Coordination API** — `api/coordination.md`
-- **Graph API** — `api/graph.md`
-- **Ingestion API** — `api/ingestion.md`
-- **Messaging API** — `api/messaging.md`
-- **Query API** — `api/query.md`
-- **Reasoning API** — `api/reasoning.md`
-- **Security API** — `api/security.md`
-- **Storage API** — `api/storage.md`
-- **Transactions API** — `api/transactions.md`
-- **OpenAPI / Swagger UI** — `swagger-ui.md`
 - **Concepts** — `concepts.md`
 - **Cost and capacity** — `cost_model.md`
 - **Transport benchmarks** — `benchmarks.md`
 - **Soak and chaos benchmarks** — `benchmarks-soak.md`
+- **HelixDB comparison** — `benchmarks-helix.md`
 - **Quality terms** — `quality-gate-terms.md`
 - **Ecosystem glossary** — `glossary.md`
 - **Skill graph reference** — `reference/skill-graph.generated.md`
@@ -370,796 +170,747 @@ _No components._
 - **Choose an engine mode** — `engine_modes.md`
 - **Technical overview** — `overview.md`
 
-### Status
-
-- **Status** — `status.md`
-
 ### admission
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
-- **eg.server-protocol** — `architecture/component-registry.yml#eg.server-protocol`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
+- **medulla.server-protocol** — `architecture/component-registry.yml#medulla.server-protocol`
 
 ### algorithms
 
-- **eg.compute** — `architecture/component-registry.yml#eg.compute`
+- **medulla.compute** — `architecture/component-registry.yml#medulla.compute`
 
 ### alignment
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### ann
 
-- **eg.numeric-ann** — `architecture/component-registry.yml#eg.numeric-ann`
+- **medulla.numeric-ann** — `architecture/component-registry.yml#medulla.numeric-ann`
 
 ### asof
 
-- **eg.timeseries** — `architecture/component-registry.yml#eg.timeseries`
+- **medulla.timeseries** — `architecture/component-registry.yml#medulla.timeseries`
 
 ### asr
 
-- **eg.speech-providers** — `architecture/component-registry.yml#eg.speech-providers`
+- **medulla.speech-providers** — `architecture/component-registry.yml#medulla.speech-providers`
 
 ### ast
 
-- **eg.compute** — `architecture/component-registry.yml#eg.compute`
+- **medulla.compute** — `architecture/component-registry.yml#medulla.compute`
 
 ### audio
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### audit
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
 
 ### backend
 
-- **eg.quantum** — `architecture/component-registry.yml#eg.quantum`
+- **medulla.quantum** — `architecture/component-registry.yml#medulla.quantum`
 
 ### backup
 
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
 
 ### belief
 
-- **eg.epistemic** — `architecture/component-registry.yml#eg.epistemic`
+- **medulla.epistemic** — `architecture/component-registry.yml#medulla.epistemic`
 
 ### binaries
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
 
 ### bindings
 
-- **eg.embedded-bindings** — `architecture/component-registry.yml#eg.embedded-bindings`
+- **medulla.embedded-bindings** — `architecture/component-registry.yml#medulla.embedded-bindings`
 
 ### blob
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### capability
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
 
 ### capability-ledger
 
-- **eg.wire-contracts** — `architecture/component-registry.yml#eg.wire-contracts`
+- **medulla.wire-contracts** — `architecture/component-registry.yml#medulla.wire-contracts`
 
 ### catalog
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### cdc
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### chart
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### claims
 
-- **eg.epistemic** — `architecture/component-registry.yml#eg.epistemic`
+- **medulla.epistemic** — `architecture/component-registry.yml#medulla.epistemic`
 
 ### clients
 
-- **eg.embedded-bindings** — `architecture/component-registry.yml#eg.embedded-bindings`
+- **medulla.embedded-bindings** — `architecture/component-registry.yml#medulla.embedded-bindings`
 
 ### cold-tier
 
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
 
 ### columnstore
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### composition
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
-- **eg.composition** — `architecture/component-registry.yml#eg.composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
+- **medulla.composition** — `architecture/component-registry.yml#medulla.composition`
 
 ### compute
 
-- **eg.compute** — `architecture/component-registry.yml#eg.compute`
+- **medulla.compute** — `architecture/component-registry.yml#medulla.compute`
 
 ### confidence
 
-- **eg.epistemic** — `architecture/component-registry.yml#eg.epistemic`
+- **medulla.epistemic** — `architecture/component-registry.yml#medulla.epistemic`
 
 ### consensus
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### content-addressed
 
-- **eg.kv-cache** — `architecture/component-registry.yml#eg.kv-cache`
+- **medulla.kv-cache** — `architecture/component-registry.yml#medulla.kv-cache`
 
 ### contracts
 
-- **eg.types** — `architecture/component-registry.yml#eg.types`
-- **eg.wire-contracts** — `architecture/component-registry.yml#eg.wire-contracts`
+- **medulla.types** — `architecture/component-registry.yml#medulla.types`
+- **medulla.wire-contracts** — `architecture/component-registry.yml#medulla.wire-contracts`
 
 ### contradiction
 
-- **eg.epistemic** — `architecture/component-registry.yml#eg.epistemic`
+- **medulla.epistemic** — `architecture/component-registry.yml#medulla.epistemic`
 
 ### cost
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### cross-shard
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### cypher
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### datalog
 
-- **eg.compute** — `architecture/component-registry.yml#eg.compute`
+- **medulla.compute** — `architecture/component-registry.yml#medulla.compute`
 
 ### datascience
 
-- **eg.compute** — `architecture/component-registry.yml#eg.compute`
+- **medulla.compute** — `architecture/component-registry.yml#medulla.compute`
 
 ### decode
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### delta
 
-- **eg.lake-interop** — `architecture/component-registry.yml#eg.lake-interop`
+- **medulla.lake-interop** — `architecture/component-registry.yml#medulla.lake-interop`
 
 ### deployment
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
-- **eg.composition** — `architecture/component-registry.yml#eg.composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
+- **medulla.composition** — `architecture/component-registry.yml#medulla.composition`
 
 ### dispatch
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### document
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### durability
 
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
-- **eg.storage-transaction** — `architecture/component-registry.yml#eg.storage-transaction`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
+- **medulla.storage-transaction** — `architecture/component-registry.yml#medulla.storage-transaction`
 
 ### durable
 
-- **eg.job-plane** — `architecture/component-registry.yml#eg.job-plane`
+- **medulla.job-plane** — `architecture/component-registry.yml#medulla.job-plane`
 
 ### durable-routing
 
-- **eg.wire-contracts** — `architecture/component-registry.yml#eg.wire-contracts`
+- **medulla.wire-contracts** — `architecture/component-registry.yml#medulla.wire-contracts`
 
 ### embedded
 
-- **eg.embedded-bindings** — `architecture/component-registry.yml#eg.embedded-bindings`
+- **medulla.embedded-bindings** — `architecture/component-registry.yml#medulla.embedded-bindings`
 
 ### evidence
 
-- **eg.epistemic** — `architecture/component-registry.yml#eg.epistemic`
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.epistemic** — `architecture/component-registry.yml#medulla.epistemic`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### exactness
 
-- **eg.quantum** — `architecture/component-registry.yml#eg.quantum`
+- **medulla.quantum** — `architecture/component-registry.yml#medulla.quantum`
 
 ### export
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### features
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
 
 ### federation
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### file-format
 
-- **eg.lake-interop** — `architecture/component-registry.yml#eg.lake-interop`
+- **medulla.lake-interop** — `architecture/component-registry.yml#medulla.lake-interop`
 
 ### finance
 
-- **eg.compute** — `architecture/component-registry.yml#eg.compute`
+- **medulla.compute** — `architecture/component-registry.yml#medulla.compute`
 
 ### fsm
 
-- **eg.job-plane** — `architecture/component-registry.yml#eg.job-plane`
+- **medulla.job-plane** — `architecture/component-registry.yml#medulla.job-plane`
 
 ### gap-fill
 
-- **eg.timeseries** — `architecture/component-registry.yml#eg.timeseries`
+- **medulla.timeseries** — `architecture/component-registry.yml#medulla.timeseries`
 
 ### gates
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
 
 ### geo
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### governed-program
 
-- **eg.lm-program** — `architecture/component-registry.yml#eg.lm-program`
+- **medulla.lm-program** — `architecture/component-registry.yml#medulla.lm-program`
 
 ### graph
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### graphql
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### handlers
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### iceberg
 
-- **eg.lake-interop** — `architecture/component-registry.yml#eg.lake-interop`
+- **medulla.lake-interop** — `architecture/component-registry.yml#medulla.lake-interop`
 
 ### idempotency
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### identity
 
-- **eg.types** — `architecture/component-registry.yml#eg.types`
+- **medulla.types** — `architecture/component-registry.yml#medulla.types`
 
 ### image
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### incarnation
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### interop
 
-- **eg.lake-interop** — `architecture/component-registry.yml#eg.lake-interop`
+- **medulla.lake-interop** — `architecture/component-registry.yml#medulla.lake-interop`
 
 ### invariants
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### isolation
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### ivf-pq
 
-- **eg.numeric-ann** — `architecture/component-registry.yml#eg.numeric-ann`
+- **medulla.numeric-ann** — `architecture/component-registry.yml#medulla.numeric-ann`
 
 ### javascript
 
-- **eg.embedded-bindings** — `architecture/component-registry.yml#eg.embedded-bindings`
+- **medulla.embedded-bindings** — `architecture/component-registry.yml#medulla.embedded-bindings`
 
 ### jobs
 
-- **eg.job-plane** — `architecture/component-registry.yml#eg.job-plane`
+- **medulla.job-plane** — `architecture/component-registry.yml#medulla.job-plane`
 
 ### justification
 
-- **eg.epistemic** — `architecture/component-registry.yml#eg.epistemic`
+- **medulla.epistemic** — `architecture/component-registry.yml#medulla.epistemic`
 
 ### kvcache
 
-- **eg.kv-cache** — `architecture/component-registry.yml#eg.kv-cache`
+- **medulla.kv-cache** — `architecture/component-registry.yml#medulla.kv-cache`
 
 ### lakehouse
 
-- **eg.lake-interop** — `architecture/component-registry.yml#eg.lake-interop`
+- **medulla.lake-interop** — `architecture/component-registry.yml#medulla.lake-interop`
 
 ### lease
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
-- **eg.job-plane** — `architecture/component-registry.yml#eg.job-plane`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
+- **medulla.job-plane** — `architecture/component-registry.yml#medulla.job-plane`
 
 ### ledger
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### lifecycle
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
-- **eg.composition** — `architecture/component-registry.yml#eg.composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
+- **medulla.composition** — `architecture/component-registry.yml#medulla.composition`
 
 ### linalg
 
-- **eg.numeric-ann** — `architecture/component-registry.yml#eg.numeric-ann`
+- **medulla.numeric-ann** — `architecture/component-registry.yml#medulla.numeric-ann`
 
 ### lm-program
 
-- **eg.lm-program** — `architecture/component-registry.yml#eg.lm-program`
+- **medulla.lm-program** — `architecture/component-registry.yml#medulla.lm-program`
 
 ### lod
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### lttb
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### m4
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### membership
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### metrics
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
 
 ### modality
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### mutation
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### mutation-batch
 
-- **eg.wire-contracts** — `architecture/component-registry.yml#eg.wire-contracts`
+- **medulla.wire-contracts** — `architecture/component-registry.yml#medulla.wire-contracts`
 
 ### numeric
 
-- **eg.numeric-ann** — `architecture/component-registry.yml#eg.numeric-ann`
+- **medulla.numeric-ann** — `architecture/component-registry.yml#medulla.numeric-ann`
 
 ### obda
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### observability
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
 
 ### occ
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### ohlc
 
-- **eg.timeseries** — `architecture/component-registry.yml#eg.timeseries`
+- **medulla.timeseries** — `architecture/component-registry.yml#medulla.timeseries`
 
 ### ontology
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### opq
 
-- **eg.numeric-ann** — `architecture/component-registry.yml#eg.numeric-ann`
+- **medulla.numeric-ann** — `architecture/component-registry.yml#medulla.numeric-ann`
 
 ### optimization
 
-- **eg.lm-program** — `architecture/component-registry.yml#eg.lm-program`
+- **medulla.lm-program** — `architecture/component-registry.yml#medulla.lm-program`
 
 ### otel
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
 
 ### oxrdf
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### paging
 
-- **eg.kv-cache** — `architecture/component-registry.yml#eg.kv-cache`
+- **medulla.kv-cache** — `architecture/component-registry.yml#medulla.kv-cache`
 
 ### parquet
 
-- **eg.lake-interop** — `architecture/component-registry.yml#eg.lake-interop`
+- **medulla.lake-interop** — `architecture/component-registry.yml#medulla.lake-interop`
 
 ### persistence
 
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
 
 ### physical-state-authority
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### piper
 
-- **eg.speech-providers** — `architecture/component-registry.yml#eg.speech-providers`
+- **medulla.speech-providers** — `architecture/component-registry.yml#medulla.speech-providers`
 
 ### placement
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### planner
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### policy-lease-consumer
 
-- **eg.server-protocol** — `architecture/component-registry.yml#eg.server-protocol`
+- **medulla.server-protocol** — `architecture/component-registry.yml#medulla.server-protocol`
 
 ### pre-commit
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
 
 ### pregel
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### private-payload
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### promql
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
 
 ### protocol
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
-- **eg.server-protocol** — `architecture/component-registry.yml#eg.server-protocol`
-- **eg.types** — `architecture/component-registry.yml#eg.types`
-- **eg.wire-contracts** — `architecture/component-registry.yml#eg.wire-contracts`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
+- **medulla.server-protocol** — `architecture/component-registry.yml#medulla.server-protocol`
+- **medulla.types** — `architecture/component-registry.yml#medulla.types`
+- **medulla.wire-contracts** — `architecture/component-registry.yml#medulla.wire-contracts`
 
 ### provider
 
-- **eg.speech-providers** — `architecture/component-registry.yml#eg.speech-providers`
+- **medulla.speech-providers** — `architecture/component-registry.yml#medulla.speech-providers`
 
 ### pyo3
 
-- **eg.embedded-bindings** — `architecture/component-registry.yml#eg.embedded-bindings`
+- **medulla.embedded-bindings** — `architecture/component-registry.yml#medulla.embedded-bindings`
 
 ### python
 
-- **eg.embedded-bindings** — `architecture/component-registry.yml#eg.embedded-bindings`
+- **medulla.embedded-bindings** — `architecture/component-registry.yml#medulla.embedded-bindings`
 
 ### qaoa
 
-- **eg.quantum** — `architecture/component-registry.yml#eg.quantum`
+- **medulla.quantum** — `architecture/component-registry.yml#medulla.quantum`
 
 ### quantum
 
-- **eg.quantum** — `architecture/component-registry.yml#eg.quantum`
+- **medulla.quantum** — `architecture/component-registry.yml#medulla.quantum`
 
 ### query
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
-- **eg.query-reasoning** — `architecture/component-registry.yml#eg.query-reasoning`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
+- **medulla.query-reasoning** — `architecture/component-registry.yml#medulla.query-reasoning`
 
 ### raft
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### rbac
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### rdf
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### reasoning
 
-- **eg.query-reasoning** — `architecture/component-registry.yml#eg.query-reasoning`
+- **medulla.query-reasoning** — `architecture/component-registry.yml#medulla.query-reasoning`
 
 ### redb
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
 
 ### release
 
-- **eg.binary-composition** — `architecture/component-registry.yml#eg.binary-composition`
+- **medulla.binary-composition** — `architecture/component-registry.yml#medulla.binary-composition`
 
 ### replication
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### resource
 
-- **eg.wire-contracts** — `architecture/component-registry.yml#eg.wire-contracts`
+- **medulla.wire-contracts** — `architecture/component-registry.yml#medulla.wire-contracts`
 
 ### restore
 
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
 
 ### rls-cache
 
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### rollup
 
-- **eg.timeseries** — `architecture/component-registry.yml#eg.timeseries`
+- **medulla.timeseries** — `architecture/component-registry.yml#medulla.timeseries`
 
 ### row-visibility
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### rowset
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### s3
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### scheduler
 
-- **eg.job-plane** — `architecture/component-registry.yml#eg.job-plane`
+- **medulla.job-plane** — `architecture/component-registry.yml#medulla.job-plane`
 
 ### scope-binding
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### self-improvement
 
-- **eg.lm-program** — `architecture/component-registry.yml#eg.lm-program`
+- **medulla.lm-program** — `architecture/component-registry.yml#medulla.lm-program`
 
 ### semantic-indexing
 
-- **eg.query-reasoning** — `architecture/component-registry.yml#eg.query-reasoning`
+- **medulla.query-reasoning** — `architecture/component-registry.yml#medulla.query-reasoning`
 
 ### semantic-store
 
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### server
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
-- **eg.server-protocol** — `architecture/component-registry.yml#eg.server-protocol`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
+- **medulla.server-protocol** — `architecture/component-registry.yml#medulla.server-protocol`
 
 ### shacl
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### sharding
 
-- **eg.cluster-replication** — `architecture/component-registry.yml#eg.cluster-replication`
+- **medulla.cluster-replication** — `architecture/component-registry.yml#medulla.cluster-replication`
 
 ### shards
 
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
 
 ### shex
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### slow-query
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
 
 ### sparql
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### speech
 
-- **eg.speech-providers** — `architecture/component-registry.yml#eg.speech-providers`
+- **medulla.speech-providers** — `architecture/component-registry.yml#medulla.speech-providers`
 
 ### sql
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### sqlite
 
-- **eg.lake-interop** — `architecture/component-registry.yml#eg.lake-interop`
+- **medulla.lake-interop** — `architecture/component-registry.yml#medulla.lake-interop`
 
 ### stabilizer
 
-- **eg.quantum** — `architecture/component-registry.yml#eg.quantum`
+- **medulla.quantum** — `architecture/component-registry.yml#medulla.quantum`
 
 ### statechart
 
-- **eg.job-plane** — `architecture/component-registry.yml#eg.job-plane`
+- **medulla.job-plane** — `architecture/component-registry.yml#medulla.job-plane`
 
 ### statevector
 
-- **eg.quantum** — `architecture/component-registry.yml#eg.quantum`
+- **medulla.quantum** — `architecture/component-registry.yml#medulla.quantum`
 
 ### storage
 
-- **eg.storage-transaction** — `architecture/component-registry.yml#eg.storage-transaction`
+- **medulla.storage-transaction** — `architecture/component-registry.yml#medulla.storage-transaction`
 
 ### stream
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### tenancy
 
-- **eg.core** — `architecture/component-registry.yml#eg.core`
-- **eg.graph-core** — `architecture/component-registry.yml#eg.graph-core`
+- **medulla.core** — `architecture/component-registry.yml#medulla.core`
+- **medulla.graph-core** — `architecture/component-registry.yml#medulla.graph-core`
 
 ### tensor
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### text
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### tiered-cache
 
-- **eg.kv-cache** — `architecture/component-registry.yml#eg.kv-cache`
+- **medulla.kv-cache** — `architecture/component-registry.yml#medulla.kv-cache`
 
 ### tiles
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### time-bucket
 
-- **eg.timeseries** — `architecture/component-registry.yml#eg.timeseries`
+- **medulla.timeseries** — `architecture/component-registry.yml#medulla.timeseries`
 
 ### timeseries
 
-- **eg.timeseries** — `architecture/component-registry.yml#eg.timeseries`
+- **medulla.timeseries** — `architecture/component-registry.yml#medulla.timeseries`
 
 ### tms
 
-- **eg.epistemic** — `architecture/component-registry.yml#eg.epistemic`
+- **medulla.epistemic** — `architecture/component-registry.yml#medulla.epistemic`
 
 ### tracing
 
-- **eg.observability** — `architecture/component-registry.yml#eg.observability`
+- **medulla.observability** — `architecture/component-registry.yml#medulla.observability`
 
 ### transaction
 
-- **eg.persistence** — `architecture/component-registry.yml#eg.persistence`
-- **eg.storage-transaction** — `architecture/component-registry.yml#eg.storage-transaction`
+- **medulla.persistence** — `architecture/component-registry.yml#medulla.persistence`
+- **medulla.storage-transaction** — `architecture/component-registry.yml#medulla.storage-transaction`
 
 ### transaction-kernel
 
-- **eg.mutation-store** — `architecture/component-registry.yml#eg.mutation-store`
+- **medulla.mutation-store** — `architecture/component-registry.yml#medulla.mutation-store`
 
 ### transport
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
 
 ### tree-sitter
 
-- **eg.compute** — `architecture/component-registry.yml#eg.compute`
+- **medulla.compute** — `architecture/component-registry.yml#medulla.compute`
 
 ### tsdb
 
-- **eg.timeseries** — `architecture/component-registry.yml#eg.timeseries`
+- **medulla.timeseries** — `architecture/component-registry.yml#medulla.timeseries`
 
 ### tts
 
-- **eg.speech-providers** — `architecture/component-registry.yml#eg.speech-providers`
+- **medulla.speech-providers** — `architecture/component-registry.yml#medulla.speech-providers`
 
 ### udf
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### validation
 
-- **eg.rdf-semantics** — `architecture/component-registry.yml#eg.rdf-semantics`
+- **medulla.rdf-semantics** — `architecture/component-registry.yml#medulla.rdf-semantics`
 
 ### vector-index
 
-- **eg.numeric-ann** — `architecture/component-registry.yml#eg.numeric-ann`
+- **medulla.numeric-ann** — `architecture/component-registry.yml#medulla.numeric-ann`
 
 ### video
 
-- **eg.modality** — `architecture/component-registry.yml#eg.modality`
+- **medulla.modality** — `architecture/component-registry.yml#medulla.modality`
 
 ### viewspec
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### viz
 
-- **eg.viz** — `architecture/component-registry.yml#eg.viz`
+- **medulla.viz** — `architecture/component-registry.yml#medulla.viz`
 
 ### wasm
 
-- **eg.query-plan** — `architecture/component-registry.yml#eg.query-plan`
+- **medulla.query-plan** — `architecture/component-registry.yml#medulla.query-plan`
 
 ### whisper
 
-- **eg.speech-providers** — `architecture/component-registry.yml#eg.speech-providers`
+- **medulla.speech-providers** — `architecture/component-registry.yml#medulla.speech-providers`
 
 ### wire
 
-- **eg.server-dispatch** — `architecture/component-registry.yml#eg.server-dispatch`
-- **eg.wire-contracts** — `architecture/component-registry.yml#eg.wire-contracts`
+- **medulla.server-dispatch** — `architecture/component-registry.yml#medulla.server-dispatch`
+- **medulla.wire-contracts** — `architecture/component-registry.yml#medulla.wire-contracts`
 
 ### work-item
 
-- **eg.job-plane** — `architecture/component-registry.yml#eg.job-plane`
+- **medulla.job-plane** — `architecture/component-registry.yml#medulla.job-plane`
 
-## Geniusbot
-
-### Architecture
-
-- **Architecture** — `overview.md`
-
-### Capabilities
-
-- **Capabilities** — `capabilities.md`
+## Meristem
 
 ### Home
 
 - **Home** — `index.md`
 
-### Interfaces
+## Overstory
 
-- **Interfaces** — `interfaces.md`
+### Guides
 
-### Reference
-
-- **Concepts** — `concepts.md`
-- **Knowledge graph extraction** — `kg-extraction.md`
-- **Ecosystem glossary** — `glossary.md`
-- **Skill graph reference** — `reference/skill-graph.generated.md`
-
-### Status
-
-- **Status** — `status.md`
-
-## Arbora
-
-### Architecture
-
-- **Agent bus** — `architecture/agent-bus.md`
-- **Atlas source catalog** — `architecture/atlas-source-catalog.md`
-- **Engine sharding** — `architecture/engine-sharding.md`
-- **Fleet autonomy** — `architecture/fleet-autonomy.md`
-- **Fleet scale authority** — `architecture/fleet-scale-authority.md`
-- **Gateway daemon** — `architecture/gateway-daemon.md`
-- **Gateway scaling** — `architecture/gateway-scaling.md`
-- **Self-hosting cutover** — `architecture/arbora-self-hosting.md`
-- **Identity inheritance** — `architecture/identity-inheritance.md`
-- **MCP 2026-07-28 protocol surface** — `architecture/mcp-2026-protocol-surface.md`
-- **MCP fleet authentication** — `architecture/mcp-auth.md`
-- **Embedded fleet gateway** — `architecture/fleet-gateway.md`
-- **Multi-tenant streamable HTTP** — `architecture/multi-tenant-streamable-http.md`
-
-### Capabilities
-
-- **Capabilities** — `capabilities.md`
-
-### Components
-
-- **MCP server** — `mcp-server.md`
-- **REST gateway** — `gateway.md`
-- **Fleet gateway** — `fleet.md`
-- **Unary A2A** — `a2a.md`
-- **Browser control** — `browser-control-service.md`
-
-### Glossary
-
-- **Glossary** — `glossary.md`
+- **Architecture** — `architecture.md`
+- **Agents and events** — `agents.md`
+- **Understory workspace** — `atlas.md`
+- **Apps and Markets** — `apps.md`
+- **Capability Workbench** — `capability-workbench.md`
+- **Design system** — `design-system.md`
+- **Refresh screenshots** — `screenshots.md`
 
 ### Home
 
@@ -1167,22 +918,125 @@ _No components._
 
 ### How it fits
 
-- **How it fits** — `architecture.md`
-
-### Interfaces
-
-- **Interfaces** — `interfaces.md`
+- **How it fits** — `ecosystem.md`
 
 ### Operate
 
-- **Deployment and configuration** — `deployment.md`
-- **Capability status** — `status.md`
-- **Quality gate terms** — `quality-gate-terms.md`
+- **Operate** — `deployment.md`
 
 ### Reference
 
+- **Features and APIs** — `features.md`
+- **Knowledge extraction** — `kg-extraction.md`
+- **Concept registry** — `concepts.md`
+- **Ecosystem glossary** — `glossary.md`
+- **Status** — `status.md`
+
+### Start
+
+- **Start** — `start.md`
+
+## Scion SDK
+
+### Architecture
+
+- **Overview** — `architecture.md`
+- **Connectors & ingestion** — `architecture/connectors-and-ingestion.md`
+- **Bidirectional ETL hub** — `architecture/etl-hub.md`
+- **Chunked async drain** — `architecture/chunked-async-drain.md`
+- **Content-aware ingestion** — `architecture/content-aware-ingestion.md`
+- **Camunda + ARIS integration** — `architecture/camunda-aris-integration.md`
+- **CISO Assistant integration** — `architecture/ciso-assistant-integration.md`
+- **Privacy-safe external ingestion** — `architecture/privacy-safe-ingestion.md`
+- **Universal external graph connectors** — `architecture/universal-graph-connectors.md`
+
+### Build your first connector
+
+- **Build your first connector** — `tutorial.md`
+
+### Capabilities
+
+- **Capabilities** — `capabilities.md`
+
+### Components
+
+- **Connector servers** — `connector-servers.md`
+- **Content over MCP** — `content-over-mcp.md`
+- **Schema disclosure** — `schema-disclosure.md`
+- **Source synchronization** — `connector-sync.md`
+- **Repository ingestion** — `repository-ingestion.md`
+- **Extension ports** — `extension-ports.md`
+- **Connector certification** — `connector-certify.md`
+- **HTTP clients** — `http-clients.md`
+- **Credentials** — `credentials.md`
+
+### Home
+
+- **Home** — `index.md`
+
+### Reference
+
+- **Conformance kit** — `conformance-kit.md`
+- **Quality gates** — `quality-gates.md`
+- **Ecosystem glossary** — `glossary.md`
 - **Skill graph reference** — `reference/skill-graph.generated.md`
 
-### Start Arbora
+### Status
 
-- **Start Arbora** — `get-started.md`
+- **Status** — `status.md`
+
+## Tuig
+
+### Agents & Workflows
+
+- **Agent View** — `agent_view.md`
+- **Goal Command** — `goal_command.md`
+- **Agents & Issues** — `agents.md`
+
+### Architecture
+
+- **Architecture** — `architecture.md`
+
+### Configuration
+
+- **Configuration** — `configuration.md`
+
+### Deployment
+
+- **Deployment** — `deployment.md`
+
+### Design system
+
+- **Design system** — `design-system.md`
+
+### Development
+
+- **Development** — `development.md`
+
+### Features
+
+- **Features** — `features.md`
+
+### Home
+
+- **Home** — `index.md`
+
+### Reference
+
+- **Concepts** — `concepts.md`
+
+### Screenshots
+
+- **Screenshots** — `screenshots.md`
+
+### Sessions & State
+
+- **Session Management** — `session_management.md`
+
+### Start
+
+- **Start** — `start.md`
+
+### Status
+
+- **Status** — `status.md`
