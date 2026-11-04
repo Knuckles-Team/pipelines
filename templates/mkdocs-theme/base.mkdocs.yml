@@ -56,18 +56,18 @@ extra:
   architecture_explorer: !ENV [ARCHITECTURE_EXPLORER_ENABLED, false]
   # The explorer node each site opens at (deep link /architecture/#<node>).
   architecture_nodes:
-    epistemic-graph: eg
+    medulla: eg
     arbora: arbora
-    agent-connector-sdk: sdk
-    agent-utilities: au
-    agent-terminal-ui: tui
-    agent-webui: webui
+    scion-sdk: sdk
+    meristem: au
+    tuig: tui
+    overstory: webui
     pipelines: pipelines
     universal-skills: skills
   ecosystem:
     current: ""
     sites:
-      - slug: agent-webui
+      - slug: overstory
         name: Overstory
         role: operator experience
         url: https://knuckles-team.github.io/overstory/
@@ -77,21 +77,31 @@ extra:
         role: public runtime gateway
         url: https://knuckles-team.github.io/arbora/
         repository: https://github.com/Knuckles-Team/arbora
-      - slug: agent-utilities
+      - slug: meristem
         name: Meristem
         role: agent control plane
         url: https://knuckles-team.github.io/meristem/
         repository: https://github.com/Knuckles-Team/meristem
-      - slug: epistemic-graph
+      - slug: medulla
         name: Medulla
         role: durable multimodal knowledge and reasoning engine
         url: https://knuckles-team.github.io/medulla/
         repository: https://github.com/Knuckles-Team/medulla
-      - slug: agent-connector-sdk
+      - slug: scion-sdk
         name: Scion SDK
         role: governed source integration boundary
         url: https://knuckles-team.github.io/scion-sdk/
         repository: https://github.com/Knuckles-Team/scion-sdk
+      - slug: tuig
+        name: Tuig
+        role: terminal and headless client
+        url: https://knuckles-team.github.io/tuig/
+        repository: https://github.com/Knuckles-Team/tuig
+      - slug: axil
+        name: Axil
+        role: desktop cockpit
+        url: https://knuckles-team.github.io/axil/
+        repository: https://github.com/Knuckles-Team/axil
       - slug: pipelines
         name: Skill Graph
         role: cross-repo concept, component and man-page corpus

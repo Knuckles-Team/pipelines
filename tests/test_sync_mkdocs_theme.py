@@ -84,13 +84,13 @@ def test_theme_components_use_accessible_native_controls() -> None:
 def test_all_seven_product_logo_assets_remain_canonical() -> None:
     logos = ROOT / "templates/mkdocs-theme/assets/brands"
     expected = {
-        "agent-terminal-ui-logo-v1.png",
-        "agent-connector-sdk-logo-v1.png",
-        "epistemic-graph-logo-v1.png",
-        "agent-webui-logo-v1.png",
-        "geniusbot-logo-v1.png",
+        "tuig-logo-v1.png",
+        "scion-sdk-logo-v1.png",
+        "medulla-logo-v1.png",
+        "overstory-logo-v1.png",
+        "axil-logo-v1.png",
         "arbora-logo-v1.png",
-        "agent-utilities-logo-v1.png",
+        "meristem-logo-v1.png",
     }
 
     expected_sources = {f"assets/brands/{name}" for name in expected}
@@ -145,6 +145,7 @@ def test_check_requires_the_diagram_to_link_the_explorer(tmp_path: Path) -> None
     ]
 
 
+@pytest.mark.spec("PIPE-PAGES-R001")
 def test_shared_ecosystem_links_use_canonical_repository_urls() -> None:
     base = (Path(__file__).parents[1] / "templates/mkdocs-theme/base.mkdocs.yml").read_text()
     for old, new, name in (
@@ -157,5 +158,18 @@ def test_shared_ecosystem_links_use_canonical_repository_urls() -> None:
         assert f"https://github.com/Knuckles-Team/{new}" in base
         assert f"https://knuckles-team.github.io/{old}/" not in base
         assert f"https://github.com/Knuckles-Team/{old}" not in base
-        # Selector keys remain compatible with existing pinned consumers.
-        assert f"slug: {old}\n        name: {name}" in base
+        # Consumers select their entry by the current repository slug.
+        assert f"slug: {new}\n        name: {name}" in base
+        assert f"slug: {old}\n" not in base
+
+
+@pytest.mark.spec("PIPE-GATES-R016.105")
+def test_sync_deletes_retired_brand_files_and_check_reports_them(tmp_path: Path) -> None:
+    retired = tmp_path / "docs/assets/brands/epistemic-graph-logo-v1.png"
+    retired.parent.mkdir(parents=True)
+    retired.write_bytes(b"old")
+    assert sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode="sync") == []
+    assert not retired.exists()
+    retired.write_bytes(b"old")
+    mismatches = sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode="check")
+    assert mismatches == ["retired generated file is present: docs/assets/brands/epistemic-graph-logo-v1.png"]

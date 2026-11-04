@@ -235,7 +235,11 @@ def theme_files(ctx: Ctx) -> None:
     except (OSError, mod.ThemeSyncError) as exc:
         ctx.note("pl.aa", f"theme check cannot run: {exc}", docs, blocking=True)
         return
-    stale = [m for m in mismatches if m.startswith(("missing generated file", "generated file differs"))]
+    stale = [
+        m
+        for m in mismatches
+        if m.startswith(("missing generated file", "generated file differs", "retired generated file is present"))
+    ]
     for other in mismatches:
         if other not in stale:
             ctx.note("pl.aa", other, docs, blocking=False)
