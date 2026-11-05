@@ -158,3 +158,19 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-082 | PIPE-GATES-R073 | Unit | A fake runtime adapter with one held slot and a second host that fails an install. | Down without force exits 1 naming the slot. Forced down marks all disabled and empties the caches. Upgrade installs on each host and names the failing host. |
 | T-083 | PIPE-GATES-R074 | Unit | Workflow fixtures with fork routing and a release secret on a warm-slot job, and a target directory over its budget. | The violating workflows exit 1 naming the job. A compliant workflow exits 0. The over-budget target shrinks below the budget. |
 | T-084 | PIPE-GATES-R075 | Unit | Recorded timing fixtures just under and just over each limit. | Under-limit timings exit 0. Each over-limit timing exits 1 and names the measurement. |
+
+## Gates moved from the repository governance spec (PIPE-GATES-R076 to R084)
+
+Each row names its served test in `requirements.md`. The rows marked planned add the test beside the existing hook tests.
+
+| Test ID | Requirement | Level | Setup and input | Expected observation |
+|---|---|---|---|---|
+| T-085 | PIPE-GATES-R076 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-086 | PIPE-GATES-R077 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-087 | PIPE-GATES-R078 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-088 | PIPE-GATES-R079 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-089 | PIPE-GATES-R080 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-090 | PIPE-GATES-R081 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-091 | PIPE-GATES-R082 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-092 | PIPE-GATES-R083 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+| T-093 | PIPE-GATES-R084 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |

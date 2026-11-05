@@ -214,3 +214,12 @@
 - [ ] T208 PIPE-GATES-R073 Slot down and upgrade commands.
 - [ ] T209 PIPE-GATES-R074 Pull request routing, cache budget and credential isolation.
 - [ ] T210 PIPE-GATES-R075 Warm slot timing budgets.
+- [ ] T211 PIPE-GATES-R076 Add the readme-deploy-block hook and prove it runs from a linked worktree.
+- [ ] T212 PIPE-GATES-R077 The complexity gate scores exhaustive-dispatch functions by their real structure.
+- [ ] T213 PIPE-GATES-R078 The clone gate enforces zero new pairs against the merge base.
+- [ ] T214 PIPE-GATES-R079 The clone gate fails closed on a change it cannot evaluate.
+- [ ] T215 PIPE-GATES-R080 The clone gate does not count a move as new duplication.
+- [ ] T216 PIPE-GATES-R081 Reviewed-distinct structural clones live in a digest-pinned register.
+- [ ] T217 PIPE-GATES-R082 The staged KISS hook resolves a test module declaration to its file.
+- [ ] T218 PIPE-GATES-R083 A historical secret match is handled by a digest-pinned exception with a self-check.
+- [ ] T219 PIPE-GATES-R084 A tree without a working copy is verified by content digest, never by Git.

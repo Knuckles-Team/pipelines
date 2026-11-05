@@ -54,6 +54,7 @@ A spec author cites a row of another repository. A hand-written contract must na
 - **FR-005**: A row that cites another repository's row is covered by a contract. Rows: `PIPE-GATES-R034`, `PIPE-GATES-R034.2`.
 - **FR-006**: Platform-delivered pull requests keep owner-only merge and pass every gate unchanged. Rows: `PIPE-GATES-R016.116.1`, `PIPE-GATES-R016.116.2`.
 - **FR-007**: Heavy Rust CI and agent build lanes run on warm build slots that deploy from one configuration on Kubernetes, Docker Compose, Podman and SSH hosts. Rows: `PIPE-GATES-R070`, `PIPE-GATES-R071`, `PIPE-GATES-R072`, `PIPE-GATES-R073`, `PIPE-GATES-R074`, `PIPE-GATES-R075`.
+- **FR-008**: The shared gates hold the local-gate behaviors that repository-manager does not run itself: hook root resolution in a linked worktree, exhaustive-dispatch complexity scoring, clone gating against the merge base with fail-closed evaluation, the distinct-pair register, test module resolution in the KISS hook, digest-pinned secret-history exceptions and digest verification of a tree without a working copy. Rows: `PIPE-GATES-R076`, `PIPE-GATES-R077`, `PIPE-GATES-R078`, `PIPE-GATES-R079`, `PIPE-GATES-R080`, `PIPE-GATES-R081`, `PIPE-GATES-R082`, `PIPE-GATES-R083`, `PIPE-GATES-R084`.
 
 ## Success Criteria
 

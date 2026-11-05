@@ -134,6 +134,10 @@ The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines
 
 One image per repository pin set and one configuration file render to four runtimes through one function per runtime. The cache sits on local solid-state storage outside the checkout. Lifecycle commands share the runtime adapters. Routing and credential isolation are workflow checks, so a fork pull request cannot reach a slot.
 
+### Gates moved from repository governance (PIPE-GATES-R076 to R084)
+
+Each row extends the live hook it names; the planned rows add a test or a small module beside the same call path. The clone rows share `enforce` in `pipelines_hooks/clones/jscpd_gate.py`: `R078` fixes the merge-base measurement, `R079` makes an unevaluable change fail closed and `R080` keeps a move from counting. The distinct-pair register stays in `pipelines_hooks/clones/ledger.py`. Digest verification of a tree extends the `FileProvider` contract of `PIPE-GATES-R003` and never calls Git.
+
 ## Phase 2: Task approach
 
 tasks.md carries one numbered task line for each new row. Tasks run producer first. A task marked `[P]` may run in parallel with its neighbours.
