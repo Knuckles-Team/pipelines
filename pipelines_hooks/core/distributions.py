@@ -16,7 +16,6 @@ from types import MappingProxyType
 SDK = "sdk"
 MERISTEM = "meristem"
 MEDULLA = "medulla"
-MEDULLA_STEM = "medulla-stem"
 OVERSTORY = "overstory"
 TUIG = "tuig"
 AXIL = "axil"
@@ -26,7 +25,6 @@ OLD_DISTRIBUTIONS = MappingProxyType(
         SDK: "agent-connector-sdk",
         MERISTEM: "agent-utilities",
         MEDULLA: "epistemic-graph",
-        MEDULLA_STEM: "medulla-server",
         OVERSTORY: "agent-webui",
         TUIG: "agent-terminal-ui",
         AXIL: "geniusbot",
@@ -37,7 +35,6 @@ NEW_DISTRIBUTIONS = MappingProxyType(
         SDK: "scion-sdk",
         MERISTEM: "meristem",
         MEDULLA: "medulla",
-        MEDULLA_STEM: "medulla-stem",
         OVERSTORY: "overstory",
         TUIG: "tuig",
         AXIL: "axil",

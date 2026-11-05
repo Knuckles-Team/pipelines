@@ -7,7 +7,6 @@ import pytest
 from pipelines_hooks.core.distributions import (
     AXIL,
     MEDULLA,
-    MEDULLA_STEM,
     MERISTEM,
     NEW_DISTRIBUTIONS,
     OLD_DISTRIBUTIONS,
@@ -22,7 +21,7 @@ from pipelines_hooks.core.distributions import (
 pytestmark = pytest.mark.spec("PIPE-RELEASE-R012")
 
 
-@pytest.mark.parametrize("role", (SDK, MERISTEM, MEDULLA, MEDULLA_STEM, OVERSTORY, TUIG, AXIL))
+@pytest.mark.parametrize("role", (SDK, MERISTEM, MEDULLA, OVERSTORY, TUIG, AXIL))
 def test_each_role_accepts_old_and_new_distribution_names(role: str) -> None:
     assert is_distribution(OLD_DISTRIBUTIONS[role], role)
     assert is_distribution(NEW_DISTRIBUTIONS[role], role)
