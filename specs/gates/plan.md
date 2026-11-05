@@ -57,7 +57,7 @@ tests/hooks/test_contract_coverage.py     new
 
 ## Phase 0: Research
 
-No unknowns; no research.md.
+One unknown: where the build cache must live to meet the timing budgets. Its resolution is in [research.md](research.md).
 
 ## Phase 1: Design
 
@@ -129,6 +129,10 @@ The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines
   read-only modes and unknown fields. Central migration accepts the existing
   short named-volume form and the canonical long form only when the
   top-level declaration matches the service mount.
+
+### Warm build slots (PIPE-GATES-R070 to R075)
+
+One image per repository pin set and one configuration file render to four runtimes through one function per runtime. The cache sits on local solid-state storage outside the checkout. Lifecycle commands share the runtime adapters. Routing and credential isolation are workflow checks, so a fork pull request cannot reach a slot.
 
 ## Phase 2: Task approach
 
