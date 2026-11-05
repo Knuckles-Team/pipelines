@@ -272,12 +272,12 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T276 PIPE-PAGES-R021.76 Refusal. Implement this contract and bind `test_graph_workflow_receipt_refusal` in `tests/hooks/test_graph_workflow_receipt.py`.
 - [ ] T277 PIPE-PAGES-R021.77 Evidence. Implement this contract and bind `test_graph_workflow_receipt_evidence` in `tests/hooks/test_graph_workflow_receipt.py`.
 - [ ] T278 PIPE-PAGES-R021.78 Hot-path proof. Implement this contract and bind `test_graph_workflow_receipt_cli` in `tests/hooks/test_graph_workflow_receipt.py`.
-- [ ] T291 PIPE-PAGES-R032.1 Model. Implement this contract and bind `test_eg56_export_model` in export-import test.
-- [ ] T292 PIPE-PAGES-R032.2 Behavior. Implement this contract and bind `test_eg56_roundtrip_behavior` in export-import test.
-- [ ] T293 PIPE-PAGES-R032.3 Wiring. Implement this contract and bind `test_eg56_export_wiring` in export-import test.
-- [ ] T294 PIPE-PAGES-R032.4 Refusal. Implement this contract and bind `test_eg56_version_refusal` in export-import test.
-- [ ] T295 PIPE-PAGES-R032.5 Evidence. Implement this contract and bind `test_eg56_comparison_evidence` in export-import test.
-- [ ] T296 PIPE-PAGES-R032.6 Hot-path proof. Implement this contract and bind `test_eg56_export_import_cli` in export-import test.
+- [ ] T291 PIPE-PAGES-R032.1 Model. Implement this contract and bind `tests/test_export_version.py::test_export_header_carries_version_and_decision_condition`.
+- [ ] T292 PIPE-PAGES-R032.2 Behavior. Implement this contract and bind `tests/test_export_version.py::test_roundtrip_keeps_decision_condition_and_compares_exactly`.
+- [ ] T293 PIPE-PAGES-R032.3 Wiring. Implement this contract and bind `tests/test_export_version.py::test_gate_is_registered_in_the_cli`.
+- [ ] T294 PIPE-PAGES-R032.4 Refusal. Implement this contract and bind `tests/test_export_version.py::test_version_move_and_lost_condition_refuse_the_import`.
+- [ ] T295 PIPE-PAGES-R032.5 Evidence. Implement this contract and bind `tests/test_export_version.py::test_each_roundtrip_prints_its_comparison_evidence`.
+- [ ] T296 PIPE-PAGES-R032.6 Hot-path proof. Implement this contract and bind `tests/test_export_version.py::test_export_import_cli_equal_older_and_newer`.
 - [ ] T309 PIPE-PAGES-R035.1 Model. Implement this contract and bind `test_au121_prompt_model` in prompt test.
 - [ ] T310 PIPE-PAGES-R035.2 Behavior. Implement this contract and bind `test_au121_roundtrip_behavior` in prompt test.
 - [ ] T311 PIPE-PAGES-R035.3 Wiring. Implement this contract and bind `test_au121_serializer_wiring` in prompt test.

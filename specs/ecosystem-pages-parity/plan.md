@@ -140,7 +140,7 @@ R012.20-.25: Source binding authority and exhaustive language/tool inventory; ca
 
 Levels: ecosystem (organisation profile README) -> repository (`/<repo>/spec-delivery/`) -> spec (`#spec-<ID>`) -> row (`#req-<ID>`). `ecosystem_components()` returns the R001 list; it adds no second list.
 
-- Profile README. CONFIRMED to live in `Knuckles-Team/.github` (`profile/README.md`, five core projects in HTML table cells). Owner: `Knuckles-Team/.github`. BLOCKED: that repository has no `specs/` tree for the edit row. R014.5 names the owner; the producer script stays in this repository.
+- Profile README. CONFIRMED to live in `Knuckles-Team/.github` (`profile/README.md`, five core projects in HTML table cells). Owner: the `.github` repository, whose `specs/organization-front-door` now holds the front-door rows. R014.5 is the seam row; the producer script stays in this repository.
 - Link check. DECIDED. `check_drilldown_links` fails on any unresolved component link or anchor.
 - Rejected: a hand-kept component list in the README. It repeats the R001 defect.
 
@@ -866,3 +866,5 @@ none
 ## Cross-repo seams
 
 - The organization site workflow must check out `releases/` and publish the export files: ORG-FRONT-R010.1, ORG-FRONT-R010.2 and ORG-FRONT-R010.3 in the organization repository, consumed by PIPE-PAGES-R056.3 and PIPE-PAGES-R057.3. The contract is [organization-site-publishing.md](contracts/organization-site-publishing.md).
+- Profile component links: PIPE-PAGES-R014.5 produces the level-1 links that ORG-FRONT-R002.2 in the organization repository writes into its profile. The contract is [profile-links.md](contracts/profile-links.md).
+- Coverage evidence for proposal admission: PIPE-PAGES-R040.2 judges the evidence that MERISTEM-HARNESS-CYCLE-R001.13 admits proposals on. The contract is [coverage-admission.md](contracts/coverage-admission.md).
