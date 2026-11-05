@@ -31,7 +31,6 @@ _DISTRIBUTION_ALIASES = {
     "sdk": frozenset({"agent-connector-sdk", "scion-sdk"}),
     "meristem": frozenset({"agent-utilities", "meristem"}),
     "medulla": frozenset({"epistemic-graph", "medulla"}),
-    "medulla-stem": frozenset({"medulla-server", "medulla-stem"}),
     "overstory": frozenset({"agent-webui", "overstory"}),
     "tuig": frozenset({"agent-terminal-ui", "tuig"}),
     "axil": frozenset({"geniusbot", "axil"}),
