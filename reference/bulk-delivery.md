@@ -67,6 +67,42 @@ A writer never makes an open design choice. It records the question. The orchest
 - The guard treats a cache as idle when no file in it changed recently, prunes the largest idle caches first, and removes stale run directories, logs, tool caches and journals.
 - At the end of every wave, remove finished worktrees. Never prune shared repositories. Push local-only commits to a backup branch first, and clear per-run scratch files and per-agent caches.
 
+## Ramp up and ramp down
+
+All pipeline state lives in files: queue, claims, results and decisions. A session can stop at any point and the next one resumes from those files.
+Keep one ramp-up script and one ramp-down script, both driven by a single private config. The config lists the hosts, slot counts, validation loops and timers.
+
+### Ramp down (end of a session, maintenance, or a hardware change)
+
+1. Stop spawning agents. Tell running agents to finish their current item, then commit, push and enqueue it. Anything unfinished goes to a work-in-progress branch, and its claim is released.
+2. Stop restarters and watchers first, then timers, then the stages. A restarter left running brings back whatever you stop.
+3. Return in-flight builds to the queue. If the queue holds a newer commit for the same item, the newer one wins.
+4. Stop builds that the stopped loops left running on build hosts. Match them by their build-slot directory, not by a process-name pattern, and leave CI jobs alone.
+5. Write the state into the handoff: queue depth, red results, held items, worktrees kept, and anything still running.
+
+Optional clean, before a toolchain bump, a hardware change, or when disks are tight:
+- Drop build-slot caches and the compile cache.
+- Drop CI caches that no running job is writing.
+- Drop per-agent tool caches. Keep the shared base the copies are made from.
+- Delete session logs.
+- Remove worktrees that are clean, counting untracked files, and whose head is on the remote. List dirty or unpushed worktrees in the handoff instead.
+- Keep the run logs that open fixes still need.
+
+### Ramp up
+
+1. **Preflight.** Confirm the installed tools match their tracked source and repository hooks are installed. Confirm each build host's load is below its core count and its disks are below the guard threshold.
+2. **Warm.** Prime every build slot from main with one compile of the canonical build profile, in parallel across hosts, so the first validation run needs only incremental work. Never prime the development host.
+3. **Start the stages in dependency order:** compile pre-check, validation loops, landing, supervisor, periodic snapshots.
+4. **Staff.** Read the status file. Spawn fixers for red results before any writers. Then add writers until validation stays about one batch ahead, re-checking load after each addition.
+
+### Sizing on any hardware
+
+- **Build slots per host:** the smaller of (cores ÷ jobs per build) and (memory ÷ peak memory of one build). Each build gets cores ÷ slots jobs.
+- **Validation loops:** one per host, plus one for every two further slots. Keep one slot free for fixes and one-off builds.
+- **Pre-check:** small hosts run the compile-only pre-check. They never run validation loops.
+- **CI runners:** count them against the same core budget as the build slots.
+- **Writers:** match writers to validation throughput, so that writers × rows per hour ≈ rows validated per hour. More writers only lengthen the queue.
+
 ## Throughput levers, in order
 
 1. Item sizing
