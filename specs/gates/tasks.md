@@ -208,3 +208,9 @@
 - [ ] T202 PIPE-GATES-R067 A rename of a serialized name recomputes its digests in the same commit.
 - [x] T203 PIPE-GATES-R068 The constitution links the delivery practice reference and states the new articles.
 - [ ] T204 PIPE-GATES-R069 The constitution requires six release targets, and a shared check enforces the release matrix.
+- [ ] T205 PIPE-GATES-R070 Warm slot image and local cache volume.
+- [ ] T206 PIPE-GATES-R071 One slot configuration drives every runtime.
+- [ ] T207 PIPE-GATES-R072 Slot status and up commands.
+- [ ] T208 PIPE-GATES-R073 Slot down and upgrade commands.
+- [ ] T209 PIPE-GATES-R074 Pull request routing, cache budget and credential isolation.
+- [ ] T210 PIPE-GATES-R075 Warm slot timing budgets.

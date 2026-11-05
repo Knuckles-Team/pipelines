@@ -53,12 +53,14 @@ A spec author cites a row of another repository. A hand-written contract must na
 - **FR-004**: Gates publish verdicts and computed states to the engine. Rows: `PIPE-GATES-R004`, `PIPE-GATES-R004.3`, `PIPE-GATES-R004.5`.
 - **FR-005**: A row that cites another repository's row is covered by a contract. Rows: `PIPE-GATES-R034`, `PIPE-GATES-R034.2`.
 - **FR-006**: Platform-delivered pull requests keep owner-only merge and pass every gate unchanged. Rows: `PIPE-GATES-R016.116.1`, `PIPE-GATES-R016.116.2`.
+- **FR-007**: Heavy Rust CI and agent build lanes run on warm build slots that deploy from one configuration on Kubernetes, Docker Compose, Podman and SSH hosts. Rows: `PIPE-GATES-R070`, `PIPE-GATES-R071`, `PIPE-GATES-R072`, `PIPE-GATES-R073`, `PIPE-GATES-R074`, `PIPE-GATES-R075`.
 
 ## Success Criteria
 
 - **SC-001**: A landing decision completes in seconds from the changeset tree. Rows: `PIPE-GATES-R001`.
 - **SC-002**: Engine states equal the generator states for every row and task of a revision. Rows: `PIPE-GATES-R004.6`.
 - **SC-003**: An uncovered cross-repository citation in a touched spec never lands. Rows: `PIPE-GATES-R034.5`.
+- **SC-004**: A warm one-file-change check takes under 60 seconds and a cold prime under 15 minutes on an 8-job slot. Rows: `PIPE-GATES-R075`.
 
 ## Assumptions
 
@@ -83,3 +85,4 @@ Pipelines owns the gate-set policy and the published gate behavior. The changese
 | FR-004 | `PIPE-GATES-R004.3` | [Engine records](plan.md#engine-records-pipe-gates-r004-pipe-connspec-r009-pipe-release-r009) | T-034 | |
 | FR-005 | `PIPE-GATES-R034.2` | [Existing wiring and graph automation](plan.md#existing-wiring-and-graph-automation) | T-039 | |
 | FR-006 | `PIPE-GATES-R016.116.1` | [Quality and release gates](plan.md#quality-and-release-gates) | T-055, T-056 | |
+| FR-007 | `PIPE-GATES-R070` | [Warm build slots](plan.md#warm-build-slots-pipe-gates-r070-to-r075) | T-079, T-080, T-081, T-082, T-083, T-084 | |
