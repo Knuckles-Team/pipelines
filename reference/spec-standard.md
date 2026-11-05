@@ -295,6 +295,17 @@ Relationships and code mappings must not change delivery states, recorded histor
 
 References declarations accept explicit links, canonical spec or requirement identifiers, and relative file paths. Other prose remains unparsed source evidence; its words do not become relationship targets. Unknown canonical identifiers remain unresolved references.
 
+## Implementation-ready rows
+
+A row is implementation-ready when a writer can deliver it without a design decision. Authors follow these rules; the stages that deliver rows are in the [bulk delivery standard](bulk-delivery.md).
+
+- `Depends on:` lists every prerequisite row, including rows of other specs and of other repositories. Inline prose citations do not count.
+- No row leaves a design choice open. It names the storage home (table, key and value type), the wire fields (name, type, bounds), the refusal codes, the served method that owns the behaviour, the generated files, and the knob home.
+- A row's chain respects crate layering and never implies a dependency cycle.
+- Paths cited in Verification and Shape exist, or are marked planned at the exact post-layout path, and do not contradict each other.
+- A performance cap names the gate that enforces it, and that gate supports the metric (p50 or p99).
+- A row verified by another row's test names that test's `path::name` and binds to it.
+
 ## Priority from competency questions
 
 A competency question is an ordinary spec row whose ID starts with `MEDULLA-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:

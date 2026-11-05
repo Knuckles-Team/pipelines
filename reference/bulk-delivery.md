@@ -1,0 +1,77 @@
+# Bulk delivery (bulk-delivery)
+
+This standard governs how many spec rows are implemented at a high rate. It extends the [spec standard](spec-standard.md): every item below delivers rows that already exist in a repository's `specs/` tree.
+
+## Separate the stages
+
+Writing, validation and fixing are separate stages run by different workers.
+
+1. Writers implement items and push branches. Writers never wait on builds, tests or CI.
+2. Validation workers build branches in batches.
+3. Fixers take only red results.
+4. Merges happen automatically on green.
+
+## Writer items
+
+- An item is one served-method slice: every row whose caller chain enters through the same served method or handler, or one library crate's family.
+- An item holds at most 8 rows from one spec, ordered bottom-up so the row that creates the method or type comes first.
+- Slices chain: a later chunk builds on the earlier chunk's branch.
+- An item is ready when the items it depends on are written (pushed), not merged. It is stacked on their unmerged branches.
+- A dependency counts as done only when its re-queued remainders are written too.
+
+## Writer rules
+
+- Read only the item's extracted packet: its rows, their test-spec and task lines, the caller chain and the cited contracts. Never read whole spec files.
+- Format with the build tool's formatter for each crate. Do not build or test locally.
+- Run both hook stages before committing, and keep each writer's hook cache private.
+- Only rows implemented completely, as their text says and with their bound test, go in the `Spec:` trailer.
+- Partial or unwritten rows are re-queued as new items, not dropped.
+- An item blocked by an unwritten prerequisite is released with that prerequisite named. The queue holds it until the prerequisite is written.
+- Never share a worktree.
+- Use short polling waits, never long blocking ones.
+
+## Conventions every writer follows
+
+- A new refusal is a registered, typed error code, never a detail string.
+- A new served method regenerates the generated client and contract files with the repository generator, never by hand.
+- An engine knob is a typed server-config field read from the command line or the environment, bounds-checked at startup.
+- Writes go through the single mutation gateway.
+- Tests live in the crate that owns the code. No visibility is widened for a test.
+
+## Validation
+
+- One batched build covers a group of branches: the format check, the linter on exactly the crate set PR CI would select (same lint config), then the bound tests.
+- Each failure is attributed to the branch that touched the file. Unattributable failures are bisected.
+- A green result is recorded as a commit status on the exact head SHA it proved.
+- PR CI then skips its own build and test for that SHA. The required check stays an Actions job.
+- Forks and pushes to main always run in full.
+
+## PR size
+
+One PR per green item or per green train. Aim for 20 to 100 rows per PR via trains.
+
+## Decisions
+
+A writer never makes an open design choice. It records the question. The orchestrator decides, using industry practice and the ecosystem north star: hard cutover, typed closed contracts, reuse, layering, one store. The decision is written into the owning spec row as current-state text before the row is implemented.
+
+## Capacity hygiene
+
+- Size each build host's concurrent work (build slots, validation loops, CI runners) to its cores.
+- Above about 1.3 times the core count, add nothing and shed load.
+- A writer never consumes build capacity.
+- Periodically stop orphaned or duplicate build runs, remove failed pods, and scale CI runners down only when idle.
+
+## Disk hygiene
+
+- Every build host runs a guard that keeps each volume below its threshold.
+- The guard treats a cache as idle when no file in it changed recently, prunes the largest idle caches first, and removes stale run directories, logs, tool caches and journals.
+- At the end of every wave, remove finished worktrees. Never prune shared repositories. Push local-only commits to a backup branch first, and clear per-run scratch files and per-agent caches.
+
+## Throughput levers, in order
+
+1. Item sizing
+2. Dependency stacking
+3. Decision latency
+4. Hook latency
+5. Build-slot capacity
+6. PR-CI deduplication
