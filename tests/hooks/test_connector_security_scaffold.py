@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from pipelines_hooks.cli import GATES, run_gate
+from pipelines_hooks.connector.served_tools import MARKER
 from pipelines_hooks.connector import api_parity, files, security
 from pipelines_hooks.connector import cli as connector_cli
 from pipelines_hooks.core.errors import CannotRun
@@ -242,6 +243,26 @@ def test_parity_fails_below_the_pyproject_baseline_and_lists_unmapped_methods(
     assert "FAILED" in capsys.readouterr().out
     default = _parity_repo(tmp_path / "default")
     assert api_parity.main(["--root", str(default)]) == 0
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.12.1")
+def test_parity_counts_the_tools_the_built_server_registers(tmp_path: Path, monkeypatch, capsys) -> None:
+    root = _repo(
+        tmp_path, PYPROJECT + '[project.entry-points."scion_sdk.connector"]\ndemo-mcp = "demo_mcp:connector"\n'
+    )
+    _write(root, "demo_mcp/api_client.py", CLIENT)  # no mcp_server.py: every tool is SDK-derived
+    assert api_parity.measure(root, ()) is None
+    served = ["demo_get_a", "demo_get_b", "demo_get_c", "get_d"]
+    result = api_parity.measure(root, (), served)
+    assert result is not None and result["coverage"] == 100.0 and result["served"] == 4
+    probe = tmp_path / "fake-python"
+    payload = json.dumps([{"name": n, "properties": []} for n in served[:2]])
+    probe.write_text(f"#!/bin/sh\necho '{MARKER}{payload}'\n")
+    probe.chmod(0o755)
+    monkeypatch.setenv("PIPELINES_CONNECTOR_PYTHON", str(probe))
+    assert api_parity.main(["--root", str(root)]) == 0
+    out = capsys.readouterr().out
+    assert "2/4 API methods reach a tool: 50.0%" in out and "served tools: 2" in out and "get_c" in out
 
 
 @pytest.mark.spec("PIPE-VALIDATION-R001.12")

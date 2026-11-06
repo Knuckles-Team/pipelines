@@ -90,6 +90,7 @@ pipelines-hook connector-surface-audit --fleet DIR --ref origin/main --markdown 
 ```
 
 - It reads the checkout only. It imports no connector and writes no file.
+- In a connector repository the `surface` member, and `connector-api-parity`, build the server in the connector's own interpreter and count the tools it registers, so SDK-derived tools count. A server that does not build fails closed in CI. The interpreter is `$PIPELINES_CONNECTOR_PYTHON`, else `.venv`, else `uv run --frozen python`. The fleet census reads source only, so its tool names are a static estimate.
 - `--fleet` reads each repository at the ref through `git archive`, so shared checkouts stay unchanged.
 - Each gap starts with its part name, for example `contracts:` or `prompts:`. Per-tool gaps list every tool name.
 - `--markdown` prints totals, a per-part count and one fix checklist per failing connector.

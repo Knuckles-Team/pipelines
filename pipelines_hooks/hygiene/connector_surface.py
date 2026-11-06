@@ -343,8 +343,12 @@ def _linked_prompts(declared: contracts.Declared) -> set[str]:
     return named
 
 
-def audit_connector(root: Path, parents: set[str] | None = None) -> dict[str, Any]:
-    """The static surface record of the connector checkout at ``root``."""
+def audit_connector(root: Path, parents: set[str] | None = None, served: list[Any] | None = None) -> dict[str, Any]:
+    """The surface record of the connector checkout at ``root``.
+
+    ``served`` holds the tools the built server registers (``served_tools``); when given they replace the
+    static tool read, so SDK-derived tools count and an ``action`` input property marks a routed tool.
+    """
     parents = parents or set()
     pyproject = root / "pyproject.toml"
     project = tomllib.loads(pyproject.read_text(encoding="utf-8")) if pyproject.is_file() else {}
@@ -354,9 +358,15 @@ def audit_connector(root: Path, parents: set[str] | None = None) -> dict[str, An
     pkg = package if package is not None and package.is_dir() else None
     content = _Content.read(root, pkg)
     sources = list(_python_sources(pkg)) if pkg else []
-    served = any(_SERVED.search(p.read_text(encoding="utf-8", errors="replace")) for p in sources)
+    content_served = any(_SERVED.search(p.read_text(encoding="utf-8", errors="replace")) for p in sources)
     surface = tools.scan(sources, root)
     tool_names = tools.tool_names(surface, connector)
+    if served is not None:
+        tool_names = sorted(t.name for t in served)
+        surface.decorated_tools, surface.derived_tools = tool_names, bool(tool_names)
+        surface.routed_tools = sorted(
+            f"{t.name} (served)" for t in served if set(t.properties) & tools.ROUTING_PARAMETERS
+        )
     reports = [ontology_report(p, root, parents) for p in content.ontologies]
     declared = _declared(pkg, reports)
     counts = content.counts()
@@ -373,7 +383,7 @@ def audit_connector(root: Path, parents: set[str] | None = None) -> dict[str, An
         *entry_gaps,
         *tools.tool_gaps(surface),
         *tools.resource_gaps(surface),
-        *_content_gaps(content, counts, served),
+        *_content_gaps(content, counts, content_served),
         *prompt_gaps,
         *_ontology_gaps(reports),
         *contracts.contract_gaps(declared),
@@ -396,6 +406,7 @@ def audit_connector(root: Path, parents: set[str] | None = None) -> dict[str, An
             "decorated": len(surface.decorated_tools),
             "derived": surface.derived_tools,
             "routed": surface.routed_tools,
+            "source": "served" if served is not None else "static",
         },
         "resources": surface.resources,
         "prompts": agents,
@@ -408,7 +419,7 @@ def audit_connector(root: Path, parents: set[str] | None = None) -> dict[str, An
             "sources": sorted(set(declared.sources)),
         },
         "stray_skills": content.stray_skills,
-        "served": served,
+        "served": content_served,
         "ontology": reports,
         "parent_linked": bool(reports) and not any(r["orphans"] or r["imports_parent"] for r in reports),
         "missing": sorted({gap.split(":", 1)[0] for gap in gaps}, key=PARTS.index),

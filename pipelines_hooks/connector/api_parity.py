@@ -11,7 +11,11 @@ Per-repository values live in ``[tool.pipelines.api_integration]``:
 * ``baseline`` (float, default 0.0): coverage below it fails; coverage below 100 always prints the unmapped methods;
 * ``tool_prefixes`` (list of strings, default empty): function-name prefixes that mark an undecorated tool.
 
-A repository with no ``api_client*.py`` or no ``mcp_server.py`` passes silently.
+It also counts the tools the built server actually registers (``served_tools``): the Scion SDK derives one
+tool per client method that no source function calls, so a method is mapped when a served tool is named after it
+(``<method>`` or ``<prefix>_<method>``). A server that cannot be built is reported, never counted as zero.
+
+A repository with no ``api_client*.py`` passes silently; without ``mcp_server.py`` only the served tools count.
 """
 
 from __future__ import annotations
@@ -22,6 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from pipelines_hooks.connector import project
+from pipelines_hooks.connector.served_tools import covers, served_tools
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
 
@@ -136,22 +141,30 @@ def _runtime(root: Path, pattern: str) -> list[Path]:
     return sorted(out)
 
 
-def measure(root: Path, prefixes: tuple[str, ...]) -> dict[str, Any] | None:
-    """Coverage of the API client by the MCP tools, or None when the repository has no client or no server."""
+def measure(root: Path, prefixes: tuple[str, ...], served: list[str] | None = None) -> dict[str, Any] | None:
+    """Coverage of the API client by the MCP tools, or None when the repository has no client or no tool source.
+
+    ``served`` names the tools the built server registers; each covers the method it is named after.
+    """
     clients = _runtime(root, "**/api_client*.py")
     servers = _runtime(root, "**/mcp_server.py")
-    if not clients or not servers:
+    if not clients or (not servers and served is None):
         return None
-    registrars = sorted((servers[0].parent / "mcp").glob("*.py"))
     methods = api_methods(clients)
     if not methods:
         return None
-    mapped = mapped_methods([servers[0], *registrars], methods, prefixes)
+    mapped: set[str] = set()
+    if servers:
+        registrars = sorted((servers[0].parent / "mcp").glob("*.py"))
+        mapped = mapped_methods([servers[0], *registrars], methods, prefixes)
+    live = {m for m in methods if any(covers(tool, m) for tool in served or ())}
+    mapped |= live
     return {
         "total": len(methods),
         "covered": len(mapped),
         "coverage": len(mapped) / len(methods) * 100,
         "unmapped": sorted(methods - mapped),
+        "served": None if served is None else len(served),
     }
 
 
@@ -160,13 +173,14 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     root = repo_root(parser.parse_args(argv).root)
     config = table(project.load(root))
-    result = measure(root, config["tool_prefixes"])
+    tools = served_tools(root)
+    result = measure(root, config["tool_prefixes"], None if tools is None else [t.name for t in tools])
     if result is None:
         print("connector-api-parity: OK: no api_client*.py with an mcp_server.py here, nothing to compare")
         return 0
     print(
         f"connector-api-parity: {result['covered']}/{result['total']} API methods reach a tool: "
-        f"{result['coverage']:.1f}% (baseline {config['baseline']:.1f}%)"
+        f"{result['coverage']:.1f}% (baseline {config['baseline']:.1f}%; served tools: {result['served']})"
     )
     failed = result["coverage"] < config["baseline"] - TOLERANCE
     if failed or result["coverage"] < 100:

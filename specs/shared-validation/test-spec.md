@@ -20,7 +20,7 @@ Product references pass only for Git-display-name-only candidates.
 Attribution, independent strict sources, same-line leaks and prohibited catalog matches fail.
 Existing privacy tests retain missing and malformed catalog refusal coverage.
 
-R001.10 to R001.12 use `tests/hooks/test_connector_security_scaffold.py` with disposable Git
+R001.10 to R001.12.1 use `tests/hooks/test_connector_security_scaffold.py` with disposable Git
 repositories: the fuzz and workflow checks write evidence that meets the contract thresholds,
 each risky workflow pattern is a finding, the contract takes license additions from `pyproject.toml`
 and refuses unknown keys, committed legacy files are findings, and API-to-MCP parity covers

@@ -12,4 +12,5 @@
 - [x] T010 PIPE-VALIDATION-R001.10 The security scaffold is provided.
 - [x] T011 PIPE-VALIDATION-R001.11 scripts/bootstrap.sh is not provided.
 - [x] T012 PIPE-VALIDATION-R001.12 API-to-MCP parity is a shared check.
+- [x] T014 PIPE-VALIDATION-R001.12.1 Count the tools the built server registers in API parity.
 - [x] T013 PIPE-VALIDATION-R002 Privacy identity provenance.
