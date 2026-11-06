@@ -213,6 +213,30 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
 
+  # PIPE-RELEASE-R012.2: a connector that has ever published an image is deployed as a
+  # container, so a tag must publish one. container-enabled: false on such a connector
+  # would release green with no image; this job fails that tag instead.
+  image-required:
+    name: image-required
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !inputs.container-enabled
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Refuse a release without an image for a container-deployed connector
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -o /dev/null -w '%{http_code}' "https://hub.docker.com/v2/repositories/${DOCKER_USER}/${REPO_NAME}/")"
+          case "$code" in
+            404) echo "No image repository ${DOCKER_USER}/${REPO_NAME}: this connector ships no container." ;;
+            200) echo "::error::${DOCKER_USER}/${REPO_NAME} is a published container image, but container-enabled is false: this release would publish no image. Remove container-enabled: false from the caller."; exit 1 ;;
+            *) echo "::error::Docker Hub answered ${code}; cannot prove this connector ships no container."; exit 1 ;;
+          esac
+
   publish-pages:
     name: publish-pages
     needs: release-gate
@@ -251,7 +275,7 @@ jobs:
   ci-required:
     name: CI required
     if: always()
-    needs: [pr, org-site, main, release-gate, publish-pypi, publish-docker, publish-pages, sdk-rebuild]
+    needs: [pr, org-site, main, release-gate, publish-pypi, publish-docker, image-required, publish-pages, sdk-rebuild]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

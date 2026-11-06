@@ -59,13 +59,24 @@ def _verify_script() -> str:
     return step["run"]
 
 
-def _run_verify(tmp_path: Path, missing: str) -> subprocess.CompletedProcess[str]:
-    """Run the step with a fake curl that fails for URLs containing ``missing``."""
+DIGEST = "sha256:" + "a" * 64
+
+
+def _run_verify(tmp_path: Path, missing: str, **overrides: str) -> subprocess.CompletedProcess[str]:
+    """Run the step with a fake curl that fails for URLs containing ``missing``.
+
+    Registry URLs answer with the tag JSON carrying ``REGISTRY_DIGEST``; every
+    requested URL is logged to ``urls.log``.
+    """
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     curl = bin_dir / "curl"
     curl.write_text(
-        f'#!/bin/bash\nfor a in "$@"; do [[ -n "{missing}" && "$a" == *"{missing}"* ]] && exit 22; done\nexit 0\n'
+        "#!/bin/bash\n"
+        f'for a in "$@"; do [[ -n "{missing}" && "$a" == *"{missing}"* ]] && exit 22; done\n'
+        f'for a in "$@"; do case "$a" in https://*) echo "$a" >> "{tmp_path}/urls.log";; esac; done\n'
+        'for a in "$@"; do [[ "$a" == *hub.docker.com* ]] && printf \'{"digest": "%s"}\' "$REGISTRY_DIGEST"; done\n'
+        "exit 0\n"
     )
     curl.chmod(0o755)
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "demo-mcp"\nversion = "1.2.3"\n')
@@ -73,7 +84,9 @@ def _run_verify(tmp_path: Path, missing: str) -> subprocess.CompletedProcess[str
         "PATH": f"{bin_dir}:/usr/bin:/bin",
         "VERSION": "1.2.3", "BUILD_CONTEXT": ".", "DOCKER_USER": "knucklessg1",
         "REPO_NAME": "demo-mcp", "VERIFY_ATTEMPTS": "1", "VERIFY_DELAY": "0",
+        "PUSHED_DIGEST": DIGEST, "REGISTRY_DIGEST": DIGEST, "SDK_VERSION": "", "SDK_DISTRIBUTION": "",
     }  # fmt: skip
+    env.update(overrides)
     return subprocess.run(
         ["bash", "-c", _verify_script()], cwd=tmp_path, env=env, capture_output=True, text=True, check=False
     )
@@ -82,7 +95,9 @@ def _run_verify(tmp_path: Path, missing: str) -> subprocess.CompletedProcess[str
 # spec: PIPE-RELEASE-R012
 @pytest.mark.spec("PIPE-RELEASE-R012")
 def test_verification_passes_when_both_artifacts_exist(tmp_path: Path) -> None:
-    assert _run_verify(tmp_path, "").returncode == 0
+    result = _run_verify(tmp_path, "")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert f"knucklessg1/demo-mcp:1.2.3@{DIGEST} is published" in result.stdout
 
 
 # spec: PIPE-RELEASE-R012
@@ -95,6 +110,51 @@ def test_verification_fails_naming_the_missing_artifact(tmp_path: Path, missing:
     result = _run_verify(tmp_path, missing)
     assert result.returncode == 1
     assert message in result.stdout + result.stderr
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.2")
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"PUSHED_DIGEST": ""}, "did not push an image"),
+        ({"VERSION": ""}, "No version was resolved"),
+        ({"REGISTRY_DIGEST": "sha256:" + "b" * 64}, "not the pushed " + DIGEST),
+    ],
+)
+def test_a_green_publish_that_published_nothing_fails(tmp_path: Path, overrides: dict, message: str) -> None:
+    result = _run_verify(tmp_path, "", **overrides)
+    assert result.returncode == 1
+    assert message in result.stdout + result.stderr
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.2")
+def test_sdk_rebuild_verifies_its_sdk_tag(tmp_path: Path) -> None:
+    result = _run_verify(tmp_path, "", SDK_VERSION="0.8.2", SDK_DISTRIBUTION="scion-sdk")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "/tags/1.2.3-sdk-scion-sdk-0.8.2" in (tmp_path / "urls.log").read_text()
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.2")
+def test_every_publishing_run_builds_pushes_and_verifies() -> None:
+    document = yaml.safe_load((WORKFLOWS / "container_pipeline.yml").read_text(encoding="utf-8"))
+    steps = {s.get("name"): s for s in document["jobs"]["publish-docker"]["steps"]}
+    verify = steps["Verify the release artifacts"]
+    # The verification runs on every publishing event, never conditioned on the build having run.
+    assert "steps." not in verify["if"]
+    for event in ("refs/tags/v", "refs/heads/main", "inputs.release_repair == true", "inputs.sdk_version != ''"):
+        assert event in verify["if"]
+    assert "inputs.sdk_version != ''" in steps["Build and push Docker image (attempt 1)"]["with"]["push"]
+    target = steps["Detect build target"]["run"]
+    assert "skipping this leg" not in target and 'exists=false\' >> "$GITHUB_OUTPUT"\n          fi' not in target
+    assert "refusing to publish without building an image" in target
+    assert "PUBLISHING" in steps["Resolve package version"]["env"]
+    action = yaml.safe_load(
+        (WORKFLOWS.parent / "actions/publish-python-package/action.yml").read_text(encoding="utf-8")
+    )
+    names = [s.get("name") for s in action["runs"]["steps"]]
+    assert names.index("Verify the PyPI release") == names.index("Publish package") + 1
+    check = action["runs"]["steps"][names.index("Verify the PyPI release")]["run"]
+    assert "https://pypi.org/pypi/${name}/${BUILD_VERSION}/json" in check and "exit 1" in check
 
 
 @pytest.mark.spec("PIPE-GATES-R016.35")

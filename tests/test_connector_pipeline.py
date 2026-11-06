@@ -176,3 +176,15 @@ def test_publish_stamps_the_tag_version_before_any_release_check() -> None:
         assert names.index("Stamp the tag version") < names.index(anchor)
         assert "startsWith(github.ref, 'refs/tags/v')" in stamp["if"]
         assert 'pipelines-connector version --root . set "$version"' in stamp["run"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.2")
+def test_a_container_deployed_connector_cannot_release_without_an_image() -> None:
+    jobs = _jobs()
+    guard = jobs["image-required"]
+    assert guard["if"] == TAG + " && !inputs.container-enabled"
+    assert jobs["publish-docker"]["if"].endswith("&& inputs.container-enabled")
+    run = guard["steps"][0]["run"]
+    assert "hub.docker.com/v2/repositories/${DOCKER_USER}/${REPO_NAME}/" in run
+    assert "200)" in run and "exit 1" in run
+    assert "image-required" in jobs["ci-required"]["needs"]

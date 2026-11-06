@@ -142,6 +142,7 @@ commit).
 - [ ] T064 PIPE-RELEASE-R011 Connector pull request workflow.
 - [ ] T065 PIPE-RELEASE-R012 A connector release publishes PyPI and Docker, and verifies both.
 - [ ] T066 PIPE-RELEASE-R012.1 Published-wheel image preflight.
+- [ ] T101 PIPE-RELEASE-R012.2 A publish that publishes nothing fails.
 - [ ] T067 PIPE-RELEASE-R013 Release-standard check.
 - [ ] T068 PIPE-RELEASE-R014 Release readiness proves runtime profiles concurrently and without bytecode compilation.
 - [ ] T069 PIPE-RELEASE-R015 Release image builds reuse one persistent BuildKit builder per runner pod.

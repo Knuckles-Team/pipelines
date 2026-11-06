@@ -47,7 +47,9 @@ def test_workflow_contract_and_legacy_publication_controls() -> None:
         "${{ steps.runtime.outputs.build-args }}\n${{ steps.render.outputs.build-args }}\n"
     )
     assert builds[0]["with"]["target"] == "${{ steps.target.outputs.target }}"
-    assert builds[0]["with"]["push"] == "${{ github.event_name == 'push' || inputs.release_repair == true }}"
+    assert builds[0]["with"]["push"] == (
+        "${{ github.event_name == 'push' || inputs.release_repair == true || inputs.sdk_version != '' }}"
+    )
     assert steps.index(next(step for step in steps if step.get("id") == "runtime")) < steps.index(builds[0])
     assert steps.index(_render_needed_step()) < steps.index(next(step for step in steps if step.get("id") == "render"))
     assert steps.index(next(step for step in steps if step.get("id") == "render")) < steps.index(
@@ -672,7 +674,7 @@ def test_legacy_profile_missing_canonical_dockerfile_fails_before_target_scan(tm
 @pytest.mark.parametrize(
     ("requested", "leg", "dockerfile", "expected"),
     [
-        ("", "mcp", "FROM base AS agent\n", (False, None, False)),
+        ("", "mcp", "FROM base AS agent\n", (False, None, True)),
         ("", "mcp", "from base as mcp\n", (True, "mcp", False)),
         ("mcp", "mcp", "FROM base AS mcp\r\n", (True, "mcp", False)),
         ("default", "mcp", "FROM base\n", (True, "", False)),
