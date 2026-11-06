@@ -397,3 +397,24 @@ def test_output_is_deterministic(tmp_path: Path, capsys) -> None:
     first = capsys.readouterr().out
     assert audit.main(["--root", str(root)]) == 0
     assert capsys.readouterr().out == first
+
+
+@pytest.mark.spec("PIPE-GATES-R014.10")
+def test_the_published_standard_names_every_checked_part() -> None:
+    text = (Path(__file__).resolve().parents[2] / "reference" / "connector-surface.md").read_text(encoding="utf-8")
+    for part in (
+        "Entry point",
+        "Tools",
+        "Resources",
+        "Skills",
+        "Prompts",
+        "Served",
+        "Ontology",
+        "Tool-use contracts",
+        "Links",
+        "Data locations",
+        "Business roles",
+    ):
+        assert f"| {part} |" in text
+    for field in ("kind", "business_role", "tools", "skills", "data.reads", "guardrails.never", "outputs"):
+        assert f"`{field}`" in text
