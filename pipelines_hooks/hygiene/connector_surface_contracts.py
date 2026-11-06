@@ -21,6 +21,8 @@ from typing import Any
 
 CONTRACT_NS = "https://knuckles-team.github.io/scion-sdk/contract#"
 CONTRACTS_MODULE = "connector_contracts.py"
+#: A skill whose name ends with this suffix guides contributors, not an agent at work; it serves no task.
+CONTRIBUTOR_SKILL_SUFFIX = "-development"
 _RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
 #: Builder name -> positional field order (the SDK dataclass field order).
@@ -206,7 +208,10 @@ def link_gaps(declared: Declared, prompts: list[str], skills: list[str]) -> list
         if "names" not in link and not _strings(link.get("tools")):
             gaps.append(f"links: link {index} names no tool")
     gaps.extend(f"links: prompt {name} is linked to no task" for name in prompts if not _linked(name, "prompt", named))
-    gaps.extend(f"links: skill {name} is linked to no task" for name in skills if not _linked(name, "skill", named))
+    task_skills = [name for name in skills if not name.endswith(CONTRIBUTOR_SKILL_SUFFIX)]
+    gaps.extend(
+        f"links: skill {name} is linked to no task" for name in task_skills if not _linked(name, "skill", named)
+    )
     return gaps
 
 

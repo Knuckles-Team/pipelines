@@ -16,7 +16,7 @@ The Scion SDK owns the shared machinery (`SCION-CONNECTOR-CONTROL-R916`). A conn
 | Served | The package hands its content to the SDK, which serves skills, prompts, ontology and shapes over MCP. | `Connector(...)` |
 | Ontology | Packaged Turtle with at least one class. Every class reaches a core class (`http://knuckles.team/kg#`) through `rdfs:subClassOf`. No `owl:imports` of the core ontology. | `<package>/ontology/*.ttl` |
 | Tool-use contracts | At least one contract. Each contract names a task and its ordered steps. Each step names its tool, params and result fields. The steps declare at least one refusal shape. Every tool is called by a contract step. | `CONTRACTS` in `<package>/connector_contracts.py` |
-| Links | Every prompt and skill is linked to the task it serves and the tools it uses. Every tool is named by a link. | `LINKS` |
+| Links | Every prompt and skill is linked to the task it serves and the tools it uses. A contributor skill (`<name>-development`) is exempt. Every tool is named by a link that carries a prompt or skill. | `LINKS` |
 | Data locations | At least one location. Each names the classes it holds, the instance or store that holds them, and the tool that reads them. A route parameter and a federation key name how a request reaches that instance. | `LOCATIONS` |
 | Business roles | At least one business role the connector serves. | `ROLES` |
 
