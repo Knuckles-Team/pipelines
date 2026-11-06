@@ -7,11 +7,15 @@ name: Connector pipeline
 #   pull_request                      -> pr (connector_pr_pipeline.yml: gates, affected tests, image check)
 #   push to main                      -> org-site (spec updates reach the architecture page) + main
 #                                        (main_pipeline.yml, backward Python); never publishes
-#   push of a v* tag                  -> publish-pypi, then publish-docker, and publish-pages
+#   push of a v* tag                  -> release-gate (main_pipeline.yml on the tagged commit), then
+#                                        publish-pypi, then publish-docker, and publish-pages
 #   schedule / repository_dispatch /
 #   workflow_dispatch                 -> sdk-rebuild (connector_sdk_rebuild_pipeline.yml)
 #
-# A v* tag push is what publishes: nothing publishes from a main push. Write scopes sit on the
+# A v* tag push is what publishes: nothing publishes from a main push. PIPE-RELEASE-R018.2: every
+# publishing job needs release-gate, the full main suite (tests, backward Python, supply-chain
+# audit) run on the tagged commit in the same run, so a tag on a red commit fails before any
+# PyPI, Docker or Pages publish. Write scopes sit on the
 # publishing jobs only; the workflow level is read-only. The caller passes secrets explicitly
 # (SC-GHA-006 forbids blanket secret inheritance) and carries the job-scoped permissions the
 # publishing jobs need (contents: write, pages: write, id-token: write). No workflow holds a
@@ -164,8 +168,21 @@ jobs:
       backward-python: ${{ inputs.backward-python }}
       setup-command: uv sync --frozen ${{ inputs.sync-args }}
 
+  release-gate:
+    name: release-gate
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/main_pipeline.yml@main
+    with:
+      runner: ${{ inputs.runner }}
+      test-scope: ${{ inputs.test-scope }}
+      backward-python: ${{ inputs.backward-python }}
+      setup-command: uv sync --frozen ${{ inputs.sync-args }}
+
   publish-pypi:
     name: publish-pypi
+    needs: release-gate
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -198,6 +215,7 @@ jobs:
 
   publish-pages:
     name: publish-pages
+    needs: release-gate
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && inputs.pages-enabled
     permissions:
       contents: read
@@ -233,7 +251,7 @@ jobs:
   ci-required:
     name: CI required
     if: always()
-    needs: [pr, org-site, main, publish-pypi, publish-docker, publish-pages, sdk-rebuild]
+    needs: [pr, org-site, main, release-gate, publish-pypi, publish-docker, publish-pages, sdk-rebuild]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

@@ -60,6 +60,35 @@ def test_nothing_publishes_on_a_main_push_and_a_v_tag_publishes() -> None:
         assert jobs[name]["uses"].split("/")[-1].split("@")[0] not in {f"{w}.yml" for w in publishers.values()}
 
 
+def _ancestors(jobs: dict, name: str) -> set[str]:
+    needs = jobs[name].get("needs", [])
+    needs = [needs] if isinstance(needs, str) else list(needs)
+    found = set(needs)
+    for parent in needs:
+        found |= _ancestors(jobs, parent)
+    return found
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018.2")
+def test_every_publish_needs_the_full_gate_on_the_tagged_commit() -> None:
+    jobs = _jobs()
+    gate = jobs["release-gate"]
+    assert gate["if"] == TAG
+    assert gate["uses"].endswith("/main_pipeline.yml@main")
+    assert gate["with"] == jobs["main"]["with"]
+    assert not any(scope == "write" for scope in gate["permissions"].values())
+    publishers = {name for name in jobs if name.startswith("publish-")}
+    assert publishers == {"publish-pypi", "publish-docker", "publish-pages"}
+    for name in publishers:
+        assert "release-gate" in _ancestors(jobs, name), name
+        # A publish never runs past a failed gate: no always()/failure() override in its condition.
+        assert "always()" not in jobs[name]["if"] and "failure()" not in jobs[name]["if"], name
+    main_tests = _load(ROOT / ".github/workflows/main_pipeline.yml")["jobs"]
+    assert {"tests", "backward", "supply-chain"} <= set(main_tests)
+    for job in main_tests.values():
+        assert "refs/tags" not in str(job.get("if", "")), "the main suite runs on the tag too"
+
+
 @pytest.mark.spec("PIPE-RELEASE-R018")
 def test_container_pipeline_publishes_on_main_or_a_v_tag_ref() -> None:
     text = (ROOT / ".github/workflows/container_pipeline.yml").read_text(encoding="utf-8")
