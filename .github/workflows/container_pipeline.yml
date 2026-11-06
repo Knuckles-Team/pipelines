@@ -391,10 +391,10 @@ jobs:
             printf 'build-args<<EOF\nSDK_VERSION=%s\nEOF\n' "$SDK_VERSION" >> "$GITHUB_OUTPUT"
           fi
 
-      # Single-surface packages ship only one stage (e.g. an agent-only or mcp-only
-      # package). If this leg's target stage isn't in the Dockerfile, skip the build
-      # so the missing leg is a clean no-op instead of failing the run. A genuinely
-      # broken build of a stage that DOES exist still fails (below).
+      # PIPE-RELEASE-R012.2: the one image is built from the target stage. A Dockerfile
+      # that is absent or has no such stage fails the job: a publish that builds
+      # nothing must never end green. A connector that ships no image sets
+      # container-enabled: false instead.
       - name: Detect build target
         id: target
         env:
@@ -440,12 +440,12 @@ jobs:
           elif awk -v target="$target" '{sub(/\r$/, "", $0)} toupper($1)=="FROM" {for(i=2;i<NF;i++) if(toupper($i)=="AS" && $(i+1)==target) found=1} END {exit !found}' "$dockerfile"; then
             echo "target=$target" >> "$GITHUB_OUTPUT"
             echo 'exists=true' >> "$GITHUB_OUTPUT"
-          elif [[ -n "$REQUESTED_TARGET" ]]; then
-            echo '::error::Requested stage is absent from the Dockerfile.'
+          elif [[ ! -f "$dockerfile" ]]; then
+            echo "::error::$DOCKERFILE is absent; refusing to publish without building an image."
             exit 1
           else
-            echo 'exists=false' >> "$GITHUB_OUTPUT"
-            echo "::notice::Dockerfile has no '$target' stage — skipping this leg (single-surface package)."
+            echo "::error::$DOCKERFILE has no '$target' stage; refusing to publish without building an image."
+            exit 1
           fi
 
       - name: Validate pipeline checkout destination
@@ -607,6 +607,7 @@ jobs:
         if: steps.target.outputs.exists == 'true'
         env:
           BUILD_CONTEXT: ${{ steps.build-context.outputs.path }}
+          PUBLISHING: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true || inputs.sdk_version != '' }}
         run: |
           set -euo pipefail
           read_version() {
@@ -654,6 +655,10 @@ jobs:
           done
           version="${version#v}"
           version="${version//+/-}"
+          if [[ -z "$version" && "${PUBLISHING:-false}" == true ]]; then
+            echo '::error::No package version found; a published image must carry its version tag.'
+            exit 1
+          fi
           if [[ -z "$version" ]]; then
             echo '::notice::No static package version found; skipping version tags.'
             echo 'version=' >> "$GITHUB_OUTPUT"
@@ -712,7 +717,7 @@ jobs:
           build-args: |
             ${{ steps.runtime.outputs.build-args }}
             ${{ steps.render.outputs.build-args }}
-          push: ${{ github.event_name == 'push' || inputs.release_repair == true }}
+          push: ${{ github.event_name == 'push' || inputs.release_repair == true || inputs.sdk_version != '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: false
@@ -735,6 +740,7 @@ jobs:
         run: sleep 60
 
       - name: Build and push Docker image (final attempt)
+        id: buildx3
         if: steps.buildx1.outcome == 'failure' && steps.buildx2.outcome == 'failure'
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with: *docker_build_push_with
@@ -747,13 +753,18 @@ jobs:
           BUILDER_NAME: ${{ steps.builder.outputs.name }}
         run: docker buildx prune --builder "$BUILDER_NAME" --force --keep-storage 30gb > /dev/null 2>&1 || true
 
-      # Post-release verification (PIPE-RELEASE-R012): a release publishes both the
-      # PyPI version and the <version> image. This step fails the run when either
-      # is missing after the publish, so a skipped or blocked leg is never silent.
+      # Post-release verification (PIPE-RELEASE-R012, R012.2): every publishing run
+      # (main push, v* tag, release repair, SDK rebuild) proves the artifact it was
+      # meant to publish exists: the registry tag resolves to the digest this run
+      # pushed, and a release's PyPI version exists. It runs even when an earlier step
+      # was skipped, so a publish that pushed nothing fails instead of ending green.
       - name: Verify the release artifacts
-        if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) || inputs.release_repair == true) && steps.target.outputs.exists == 'true' && steps.version.outputs.version != ''
+        if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || inputs.release_repair == true || inputs.sdk_version != ''
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          SDK_VERSION: ${{ inputs.sdk_version }}
+          SDK_DISTRIBUTION: ${{ inputs.sdk_distribution }}
+          PUSHED_DIGEST: ${{ steps.buildx1.outputs.digest || steps.buildx2.outputs.digest || steps.buildx3.outputs.digest }}
           BUILD_CONTEXT: ${{ steps.build-context.outputs.path }}
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           REPO_NAME: ${{ github.event.repository.name }}
@@ -761,19 +772,41 @@ jobs:
           VERIFY_DELAY: '20'
         run: |
           set -euo pipefail
-          exists() {
+          fetch() {
             local i
             for ((i = 1; i <= VERIFY_ATTEMPTS; i++)); do
-              if curl -fsS -o /dev/null "$1"; then return 0; fi
+              if curl -fsS "$1"; then return 0; fi
               sleep "$VERIFY_DELAY"
             done
             return 1
           }
+          if [[ -z "$VERSION" ]]; then
+            echo '::error::No version was resolved, so no versioned image was published.'
+            exit 1
+          fi
+          if [[ -z "$PUSHED_DIGEST" ]]; then
+            echo '::error::No image digest: the build-and-push step did not push an image.'
+            exit 1
+          fi
+          tag="$VERSION"
+          if [[ -n "$SDK_VERSION" && "$SDK_DISTRIBUTION" == scion-sdk ]]; then
+            tag="${VERSION}-sdk-${SDK_DISTRIBUTION}-${SDK_VERSION}"
+          elif [[ -n "$SDK_VERSION" ]]; then
+            tag="${VERSION}-sdk${SDK_VERSION}"
+          fi
           status=0
-          tag="${VERSION}"
-          if ! exists "https://hub.docker.com/v2/repositories/${DOCKER_USER}/${REPO_NAME}/tags/${tag}"; then
-            echo "::error::Docker image ${DOCKER_USER}/${REPO_NAME}:${tag} is missing after the release."
+          image="${DOCKER_USER}/${REPO_NAME}:${tag}"
+          if ! body="$(fetch "https://hub.docker.com/v2/repositories/${DOCKER_USER}/${REPO_NAME}/tags/${tag}")"; then
+            echo "::error::Docker image ${image} is missing after the publish."
             status=1
+          else
+            registry_digest="$(printf '%s' "$body" | python3 -c 'import json,sys;print(json.load(sys.stdin).get("digest") or "")')"
+            if [[ "$registry_digest" != "$PUSHED_DIGEST" ]]; then
+              echo "::error::Docker image ${image} resolves to ${registry_digest:-no digest}, not the pushed ${PUSHED_DIGEST}."
+              status=1
+            else
+              echo "Docker image ${image}@${registry_digest} is published."
+            fi
           fi
           name=''
           for dir in "$BUILD_CONTEXT" .; do
@@ -781,8 +814,8 @@ jobs:
               name="$(python3 -c 'import sys,tomllib;print(tomllib.load(open(sys.argv[1],"rb")).get("project",{}).get("name",""))' "$dir/pyproject.toml")"
             fi
           done
-          if [[ -n "$name" ]] && ! exists "https://pypi.org/pypi/${name}/${VERSION}/json"; then
-            echo "::error::PyPI release ${name}==${VERSION} is missing after the release."
+          if [[ -n "$name" ]] && ! fetch "https://pypi.org/pypi/${name}/${VERSION}/json" >/dev/null; then
+            echo "::error::PyPI release ${name}==${VERSION} is missing after the publish."
             status=1
           fi
           exit "$status"

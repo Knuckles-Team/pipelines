@@ -153,6 +153,27 @@ runs:
         [ "${#sdists[@]}" -eq 1 ] && [ -f "${sdists[0]}" ] || { echo "the source distribution does not carry release $BUILD_VERSION" >&2; exit 1; }
         .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ dist/*.whl dist-sdist/*.tar.gz --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
 
+    # PIPE-RELEASE-R012.2: the upload is proven, not assumed. The release fails unless
+    # PyPI serves this exact version with the wheel and sdist this run built.
+    - name: Verify the PyPI release
+      shell: bash
+      run: |
+        set -euo pipefail
+        name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
+        expected="$(cd dist && ls *.whl; cd ../dist-sdist && ls *.tar.gz)"
+        for attempt in 1 2 3 4 5 6 7 8 9 10; do
+          if body="$(curl -fsS "https://pypi.org/pypi/${name}/${BUILD_VERSION}/json")"; then
+            missing="$(printf '%s' "$body" | python3 -c 'import json,sys;served={u["filename"] for u in json.load(sys.stdin)["urls"]};print(" ".join(f for f in sys.argv[1:] if f not in served))' $expected)"
+            if [[ -z "$missing" ]]; then
+              echo "PyPI serves ${name}==${BUILD_VERSION}: $(echo $expected)"
+              exit 0
+            fi
+          fi
+          sleep 15
+        done
+        echo "::error::PyPI does not serve ${name}==${BUILD_VERSION} with ${missing:-its files} after the upload."
+        exit 1
+
     - name: Create Release
       uses: ./.pipeline-contract/.github/actions/create-version-release
       with:
