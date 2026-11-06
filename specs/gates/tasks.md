@@ -235,4 +235,10 @@
 - [ ] T218 PIPE-GATES-R083 A historical secret match is handled by a digest-pinned exception with a self-check.
 - [ ] T219 PIPE-GATES-R084 A tree without a working copy is verified by content digest, never by Git.
 - [x] T220 PIPE-GATES-R085 The constitution requires explicit state machines.
-- [ ] T221 PIPE-GATES-R086 A shared check reports an implicit state machine.
+- [ ] T221 PIPE-GATES-R086 A shared check reports an implicit state machine (rollup).
+- [ ] T222 PIPE-GATES-R086.1 The shared rule set and the finding codes.
+- [ ] T223 PIPE-GATES-R086.2 The Python reader.
+- [ ] T224 PIPE-GATES-R086.3 The Rust reader.
+- [ ] T225 PIPE-GATES-R086.4 The test-binding rule for a declared machine.
+- [ ] T226 PIPE-GATES-R086.5 The two hooks, the modes and the exit codes.
+- [ ] T227 PIPE-GATES-R086.6 The ontology half: a state class must roll up to the core.
