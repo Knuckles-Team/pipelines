@@ -38,12 +38,23 @@ A spec author cites a row of another repository. A hand-written contract must na
 1. **Given** a touched spec that cites another repository's row, **When** no contract covers the pair, **Then** the gate fails with a finding.
 2. **Given** a covering contract, **When** the gate runs again, **Then** it passes.
 
+### User Story 4 - A connector accounts for its whole surface (Priority: P1)
+
+The platform builds agents, plans and routes from each connector's MCP surface. A fix lane needs the exact missing items of each connector. The gate checks the connector surface standard from the package and prints one checklist per connector.
+
+**Acceptance Scenarios**:
+
+1. **Given** a connector with typed tools, a data resource, agent prompts, skills and a core-rolled ontology with contracts, links and locations, **When** the gate runs, **Then** it reports no gap.
+2. **Given** a connector with an action-routed tool, an unlinked prompt or a tool no contract calls, **When** the gate runs in strict mode, **Then** it exits 1 and names each item.
+3. **Given** a fleet directory, **When** the census runs, **Then** each repository is read at the ref and no worktree changes.
+
 ### Edge Cases
 
 - A publish failure must not change a gate verdict.
 - A platform-opened pull request gets no skip, no bypass and no merge by the platform principal.
 - An unreachable engine yields an advisory finding for the state and contract checks.
 - A task opened exactly at the 300 s window edge does not open the window.
+- A connector that names a tool the static read cannot derive is checked live by the SDK self-check.
 
 ## Requirements
 
@@ -56,12 +67,16 @@ A spec author cites a row of another repository. A hand-written contract must na
 - **FR-007**: Heavy Rust CI and agent build lanes run on warm build slots that deploy from one configuration on Kubernetes, Docker Compose, Podman and SSH hosts. Rows: `PIPE-GATES-R070`, `PIPE-GATES-R071`, `PIPE-GATES-R072`, `PIPE-GATES-R073`, `PIPE-GATES-R074`, `PIPE-GATES-R075`.
 - **FR-008**: The shared gates hold the local-gate behaviors that repository-manager does not run itself: hook root resolution in a linked worktree, exhaustive-dispatch complexity scoring, clone gating against the merge base with fail-closed evaluation, the distinct-pair register, test module resolution in the KISS hook, digest-pinned secret-history exceptions and digest verification of a tree without a working copy. Rows: `PIPE-GATES-R076`, `PIPE-GATES-R077`, `PIPE-GATES-R078`, `PIPE-GATES-R079`, `PIPE-GATES-R080`, `PIPE-GATES-R081`, `PIPE-GATES-R082`, `PIPE-GATES-R083`, `PIPE-GATES-R084`.
 
+- **FR-009**: Every connector accounts for its tools, resources, prompts, skills and ontology parts, and every connector repository runs the check. Rows: `PIPE-GATES-R014`, `PIPE-GATES-R014.8`.
+
 ## Success Criteria
 
 - **SC-001**: A landing decision completes in seconds from the changeset tree. Rows: `PIPE-GATES-R001`.
 - **SC-002**: Engine states equal the generator states for every row and task of a revision. Rows: `PIPE-GATES-R004.6`.
 - **SC-003**: An uncovered cross-repository citation in a touched spec never lands. Rows: `PIPE-GATES-R034.5`.
 - **SC-004**: A warm one-file-change check takes under 60 seconds and a cold prime under 15 minutes on an 8-job slot. Rows: `PIPE-GATES-R075`.
+
+- **SC-005**: The fleet census lists every missing item of every connector and changes no checkout. Rows: `PIPE-GATES-R014.9`.
 
 ## Assumptions
 

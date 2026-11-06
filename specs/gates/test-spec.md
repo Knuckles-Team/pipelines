@@ -68,7 +68,20 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 
 ## Connector surface audit (PIPE-GATES-R014)
 
-`tests/hooks/test_connector_surface.py` builds fixture connectors and a fixture parent ontology in a temporary directory. It checks a complete connector, an orphan vocabulary, unserved content, a plugin group outside the Scion SDK namespace, the Turtle reader on IRIs and literals, deterministic output and `--strict`.
+`tests/hooks/test_connector_surface.py` builds fixture connectors, a fixture core ontology and a two-repository fleet in a temporary directory.
+
+| Row | Test |
+|---|---|
+| `PIPE-GATES-R014.1` | `tests/hooks/test_connector_surface.py::test_complete_connector_has_no_gaps` |
+| `PIPE-GATES-R014.2` | `tests/hooks/test_connector_surface.py::test_action_routed_tools_and_action_dispatch_are_gaps`, `tests/hooks/test_connector_surface.py::test_no_tools_and_no_resources_are_gaps` |
+| `PIPE-GATES-R014.3` | `tests/hooks/test_connector_surface.py::test_prompts_must_be_complete_agent_definitions`, `tests/hooks/test_connector_surface.py::test_a_connector_needs_an_operator_prompt`, `tests/hooks/test_connector_surface.py::test_every_business_role_needs_a_business_role_prompt` |
+| `PIPE-GATES-R014.4` | `tests/hooks/test_connector_surface.py::test_orphans_and_imports_of_core_are_ontology_gaps`, `tests/hooks/test_connector_surface.py::test_without_parent_files_the_core_namespace_is_the_parent` |
+| `PIPE-GATES-R014.5` | `tests/hooks/test_connector_surface.py::test_missing_contract_parts_are_gaps`, `tests/hooks/test_connector_surface.py::test_no_declarations_lists_every_missing_part_and_tool` |
+| `PIPE-GATES-R014.6` | `tests/hooks/test_connector_surface.py::test_unlinked_prompt_skill_and_tool_are_link_gaps`, `tests/hooks/test_connector_surface.py::test_contracts_declared_as_turtle_count` |
+| `PIPE-GATES-R014.7` | `tests/hooks/test_connector_surface.py::test_incomplete_data_location_is_a_gap` |
+| `PIPE-GATES-R014.8` | `tests/hooks/test_connector_surface.py::test_connector_standard_runs_the_surface_member` |
+| `PIPE-GATES-R014.9` | `tests/hooks/test_connector_surface.py::test_fleet_census_reads_refs_without_touching_worktrees` |
+| `PIPE-GATES-R014.10` | `tests/hooks/test_connector_surface.py::test_output_is_deterministic` |
 
 ## Hook cache and symlink snapshots (PIPE-GATES-R011)
 
