@@ -138,4 +138,5 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R017 | PIPE-RELEASE-R017 | Run `tests/test_connector_release_pipeline.py::test_connector_pr_builds_the_image_only_when_a_container_input_changes`. The image check runs only for a container input change. |
 | T-PIPE-RELEASE-R018 | PIPE-RELEASE-R018 | Run `tests/test_connector_pipeline.py::test_nothing_publishes_on_a_main_push_and_a_v_tag_publishes`. A main push never publishes and a `v*` tag does. |
 | T-PIPE-RELEASE-R018.1 | PIPE-RELEASE-R018.1 | Run `tests/test_public_wheel_guard.py::test_public_wheel_verifies_the_tag_version_the_build_stamps`. The guard checks the version the tag stamps. |
+| T-PIPE-RELEASE-R018.2 | PIPE-RELEASE-R018.2 | Run `tests/test_connector_pipeline.py::test_every_publish_needs_the_full_gate_on_the_tagged_commit`. Every publish job has `release-gate` among its needs and the gate runs the full main suite on the tag. |
 | T-PIPE-RELEASE-R021 | PIPE-RELEASE-R021 | Run `tests/test_release_scope.py::test_scope_closure_and_single_release_per_row`. Each row is in one release and the closure holds its dependencies. |
