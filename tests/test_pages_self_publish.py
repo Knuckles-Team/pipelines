@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).parents[1]
@@ -39,3 +40,13 @@ def test_provider_retains_one_pages_publisher_and_discovery_link():
     url = "https://knuckles-team.github.io/pipelines/spec-delivery/"
     assert url in (ROOT / "mkdocs.yml").read_text()
     assert url in (ROOT / "pages/index.md").read_text()
+
+
+@pytest.mark.spec("PIPE-PAGES-R059")
+def test_a_rerun_deploy_uploads_and_deploys_its_own_attempt_artifact():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/pages_pipeline.yml").read_text())
+    steps = [step for job in workflow["jobs"].values() for step in job.get("steps", [])]
+    upload = next(s for s in steps if "actions/upload-pages-artifact@" in s.get("uses", ""))
+    deploy = next(s for s in steps if "actions/deploy-pages@" in s.get("uses", ""))
+    assert upload["with"]["name"] == "github-pages-${{ github.run_attempt }}"
+    assert deploy["with"]["artifact_name"] == upload["with"]["name"]

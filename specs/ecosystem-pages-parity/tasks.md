@@ -372,6 +372,7 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T454 PIPE-PAGES-R058.4 Refusal. A research file that cannot be decoded gives the family a `research unreadable` marker and counts zero. Bound to tests/test_canopy_research.py::test_unreadable_research_marks_the_family_without_failing_the_build.
 - [ ] T455 PIPE-PAGES-R058.5 Evidence. The drawer of PIPE-PAGES-R053 lists each open question with its document, line and a link. Bound to tests/test_canopy_research.py::test_drawer_and_export_list_the_questions_with_document_and_line.
 - [ ] T456 PIPE-PAGES-R058.6 Hot-path proof. Use entry point `build.py` `main` on a fixture whose `research.md` holds two open items. Bound to tests/test_canopy_research.py::test_research_badge_and_drawer_list_in_a_browser.
+- [ ] T477 PIPE-PAGES-R059 A re-run Pages deploy uses its own artifact.
 - [ ] T457 PIPE-PAGES-R009 Accessible component package diagrams. Bind the existing implementation to its verification.
 - [ ] T458 PIPE-PAGES-R045 The architecture page shows releases and their scoped specs. Bind the existing implementation to its verification.
 - [ ] T459 PIPE-PAGES-R049 Canopy uses one frosted-glass material on every surface. Bind the existing implementation to its verification.
