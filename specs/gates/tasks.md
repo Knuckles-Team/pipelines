@@ -42,6 +42,7 @@
 - [x] T227 PIPE-GATES-R014.8 Run the surface check as the `surface` member of `connector-standard`.
 - [x] T228 PIPE-GATES-R014.9 Compute the fleet census through `git archive` and print the markdown checklists.
 - [x] T229 PIPE-GATES-R014.10 Publish `reference/connector-surface.md`.
+- [x] T230 PIPE-GATES-R014.11 Count the tools the built server serves in the `surface` member.
 - [x] T029 PIPE-GATES-R015 Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes.
 - [x] T030 PIPE-GATES-R016 Add the `graph-check` subcommand to `connector-ontology-map`: whole-ecosystem ontology reachability, bridging, broken and missing edges, virtual-graph checks and competency questions.
 - [x] T031 PIPE-GATES-R028 Add the plan template and the plan-section check.

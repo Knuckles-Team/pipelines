@@ -8,7 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from pipelines_hooks.connector import standard, surface
+from pipelines_hooks.connector import served_tools, standard, surface
+from pipelines_hooks.core.errors import Unavailable
 from pipelines_hooks.hygiene import connector_surface as audit
 
 pytestmark = pytest.mark.spec("PIPE-GATES-R014")
@@ -312,14 +313,60 @@ def test_incomplete_data_location_is_a_gap(tmp_path: Path) -> None:
     ]
 
 
+def fake_python(tmp_path: Path, tools: list[dict]) -> Path:
+    """An interpreter stand-in that answers the served-tools probe with ``tools``."""
+    script = tmp_path / "fake-python"
+    script.write_text(f"#!/bin/sh\necho '{served_tools.MARKER}{json.dumps(tools)}'\n")
+    script.chmod(0o755)
+    return script
+
+
+SERVED = [
+    {"name": "demo_close_incident", "properties": ["incident_id"]},
+    {"name": "demo_list_incidents", "properties": ["status"]},
+]
+
+
 @pytest.mark.spec("PIPE-GATES-R014.8")
 def test_connector_standard_runs_the_surface_member(tmp_path: Path, monkeypatch, capsys) -> None:
     assert standard.MEMBERS["surface"] is surface
+    monkeypatch.setenv("PIPELINES_CONNECTOR_PYTHON", str(fake_python(tmp_path, SERVED)))
     monkeypatch.chdir(_connector(tmp_path / "ok" / "demo-mcp"))
     assert surface.main([]) == 0
     monkeypatch.chdir(_connector(tmp_path / "bad" / "demo-mcp", contracts=None))
     assert surface.main([]) == 1
     assert "- [ ] **contracts**: no tool-use contract" in capsys.readouterr().out
+
+
+@pytest.mark.spec("PIPE-GATES-R014.11")
+def test_the_surface_member_checks_the_served_tool_list(tmp_path: Path, monkeypatch) -> None:
+    served = [
+        *SERVED,
+        {"name": "demo_export", "properties": ["format"]},
+        {"name": "demo_route", "properties": ["action"]},
+    ]
+    monkeypatch.setenv("PIPELINES_CONNECTOR_PYTHON", str(fake_python(tmp_path, served)))
+    root = _connector(tmp_path / "demo-mcp")
+    record = audit.audit_connector(root, served=served_tools.served_tools(root))
+    assert record["tools"]["source"] == "served"
+    assert record["tools"]["names"] == ["demo_close_incident", "demo_export", "demo_list_incidents", "demo_route"]
+    assert "tools: action-routed tool demo_route (served)" in record["gaps"]
+    assert "contracts: 2 tool(s) with no tool-use contract: demo_export, demo_route" in record["gaps"]
+
+
+@pytest.mark.spec("PIPE-GATES-R014.11")
+def test_a_server_that_does_not_build_is_unavailable_not_empty(tmp_path: Path, monkeypatch) -> None:
+    broken = tmp_path / "broken-python"
+    broken.write_text("#!/bin/sh\necho 'ImportError: no scion_sdk' >&2\nexit 1\n")
+    broken.chmod(0o755)
+    monkeypatch.setenv("PIPELINES_CONNECTOR_PYTHON", str(broken))
+    with pytest.raises(Unavailable, match="did not build: ImportError: no scion_sdk"):
+        served_tools.served_tools(_connector(tmp_path / "demo-mcp"))
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.chdir(tmp_path / "demo-mcp")
+    assert standard._run("surface", surface, []) == 0
+    monkeypatch.setenv("CI", "true")
+    assert standard._run("surface", surface, []) == 2
 
 
 @pytest.mark.spec("PIPE-GATES-R014.9")
