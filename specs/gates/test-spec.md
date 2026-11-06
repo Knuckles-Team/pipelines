@@ -194,4 +194,10 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | Test ID | Requirement | Level | Setup and input | Expected observation |
 |---|---|---|---|---|
 | T-094 | PIPE-GATES-R085 | Unit | The organization constitution and the vended template. | Article XXXI states each rule, carries one plan check, and both files name version 1.8.0 or later. |
-| T-095 | PIPE-GATES-R086 | Integration | Rust and Python fixture modules: a status assigned from two functions, a status string compare with no enum, two lifecycle booleans beside a status, a declared machine with no refusal test, and a declared machine with full tests. | Each violating fixture exits 1 naming file, line, type and rule; the compliant fixture exits 0. |
+| T-095 | PIPE-GATES-R086 | Integration | The fixture corpora, Rust and Python: two assigners, a string compare, lifecycle flags, a machine without refusal tests, and a compliant machine. | Each violating fixture exits 1 naming file, line, type, code and rule; the compliant fixture exits 0. |
+| T-096 | PIPE-GATES-R086.1 | Unit | Hand-built `Machine` records, one per rule and one compliant. | Each rule yields its code; the compliant record yields none. |
+| T-097 | PIPE-GATES-R086.2 | Unit | Python source snippets for each declared form and each assignment form. | The reader builds the expected `Machine` fields. |
+| T-098 | PIPE-GATES-R086.3 | Unit | Rust source snippets for each declared form and each assignment form. | The reader builds the expected `Machine` fields; a parse error exits 2. |
+| T-099 | PIPE-GATES-R086.4 | Unit | A declared machine and test files with and without a test for each edge. | A missing edge or refusal test yields a finding that names it. |
+| T-100 | PIPE-GATES-R086.5 | Integration | A git index with staged and unstaged fixture files, and the hook file. | Staged mode reports only touched types; census reports the whole tree; exit codes are 0, 1 and 2. |
+| T-101 | PIPE-GATES-R086.6 | Unit | A pack with a state class that extends the core class, and one that does not. | The unrolled class is reported with `SM-ONTOLOGY-NOT-CORE-ROLLED`; the rolled class passes. |

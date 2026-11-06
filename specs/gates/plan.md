@@ -140,7 +140,17 @@ Each row extends the live hook it names; the planned rows add a test or a small 
 
 ### Explicit state machines (PIPE-GATES-R085 to R086)
 
-Article XXXI states the rule; `R085` keeps it whole with a constitution test. `R086` adds one staged hook and one census hook in `pipelines_hooks/code/state_machine.py`, beside the other staged-code hooks. A Rust reader and a Python reader each build one `Machine` record per type, and one shared rule set turns a record into findings, so the two languages never drift. The ontology rule reuses `connector-ontology-map graph-check` rather than a second ontology reader. The census runs with no baseline: the ecosystem audit lists the machines it will find first, and each owner repository carries the rows that fix them.
+Article XXXI states the rule; `R085` keeps it whole with a constitution test. `R086` adds one staged hook and one census hook that share one rule set, so the two languages never drift.
+
+Design. `.pre-commit-hooks.yaml` gains `state-machine-shape` (stages pre-commit and pre-push) and `state-machine-census` (stage manual) after the `no-stub` entry. Both run `pipelines-hook`, which `pipelines_hooks/cli.py:48` maps to `pipelines_hooks/code/state_machine.py::main`. `main` lists the files, calls `read_python` (`state_machine_py.py`, the `ast` module) or `read_rust` (`state_machine_rs.py`, a tree-sitter syntax tree), calls `bind_tests` (`state_machine_tests.py`) for each declared machine, and calls `findings` (`state_machine_rules.py`) for each `Machine`. The `Machine` and `Finding` records live in `state_machine_model.py`. The split keeps each file within the ten-function limit.
+
+Detection. A type is a Python class or a Rust `struct` or `enum`. A status field is named `status`, `state`, `phase`, `stage` or `lifecycle`. An implicit machine is a type with a status field, lifecycle flags or lifecycle timestamps and no declared table or function. A declared machine has a constant named `LEGAL`, `TRANSITIONS` or `EDGES`, or a function named `transition`, `apply` or `step` that returns or raises a type ending in `Refused`. Test code is skipped. Receiver resolution is by `self`, then by field name within the package or crate.
+
+Finding codes. Rule 1 `SM-MULTI-ASSIGN`. Rule 2 `SM-STRING-STATUS`. Rule 3 `SM-LIFECYCLE-FLAGS`. Rule 4 `SM-UNTESTED-EDGE` and `SM-NO-REFUSAL-TEST`. Rule 5 `SM-NO-DECLARATION`. The ontology rule `SM-ONTOLOGY-NOT-CORE-ROLLED` comes from `connector-ontology-map graph-check` (R086.6). Output is `<file>:<line> <type> <code> rule <n>`. Exit 0 is clean, 1 is findings, 2 is a gate that could not run.
+
+Fixtures. `tests/hooks/fixtures/state_machine/py/` and `.../rs/` each hold five directories: `two_assigners`, `string_compare`, `lifecycle_flags`, `no_refusal_tests` and `compliant`. The compliant directory holds a full table, one test per edge and a refusal test.
+
+Order and sizing. R086.1 first, then R086.2 to R086.4 in parallel, then R086.5 and R086.6. The rollup is delivered last. Its census is red until the consumer machine rows are verified, so those rows land first. Each child scores 6 or less: one to three modules, one repository, and no more than two roots. R086.5 and R086.6 own the registration and the ontology wiring.
 
 ### Connector surface standard (PIPE-GATES-R014)
 
