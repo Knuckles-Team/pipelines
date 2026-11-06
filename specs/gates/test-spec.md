@@ -188,3 +188,10 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | T-091 | PIPE-GATES-R082 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
 | T-092 | PIPE-GATES-R083 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
 | T-093 | PIPE-GATES-R084 | Integration | The fixture named in the row's test. | The gate verdict and exit code match the row. |
+
+## Explicit state machines (PIPE-GATES-R085 to R086)
+
+| Test ID | Requirement | Level | Setup and input | Expected observation |
+|---|---|---|---|---|
+| T-094 | PIPE-GATES-R085 | Unit | The organization constitution and the vended template. | Article XXXI states each rule, carries one plan check, and both files name version 1.8.0 or later. |
+| T-095 | PIPE-GATES-R086 | Integration | Rust and Python fixture modules: a status assigned from two functions, a status string compare with no enum, two lifecycle booleans beside a status, a declared machine with no refusal test, and a declared machine with full tests. | Each violating fixture exits 1 naming file, line, type and rule; the compliant fixture exits 0. |

@@ -234,3 +234,5 @@
 - [ ] T217 PIPE-GATES-R082 The staged KISS hook resolves a test module declaration to its file.
 - [ ] T218 PIPE-GATES-R083 A historical secret match is handled by a digest-pinned exception with a self-check.
 - [ ] T219 PIPE-GATES-R084 A tree without a working copy is verified by content digest, never by Git.
+- [x] T220 PIPE-GATES-R085 The constitution requires explicit state machines.
+- [ ] T221 PIPE-GATES-R086 A shared check reports an implicit state machine.

@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.7.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-03
+**Version**: 1.8.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-06
 
 ## Core Principles
 
@@ -739,6 +739,27 @@ Standards and tests:
 
 **Plan check:** Does the change build and test on Linux, macOS and Windows, each on x86_64 and arm64, or record the blocker for a missing target?
 
+### XXXI. Lifecycle is an explicit state machine
+
+Every lifecycle or status behaviour is modelled as an explicit state machine. The machine declares a closed set of states and a closed set of transitions. Each transition names the event that fires it and the guard that must hold. One transition function per machine applies every change; no other code writes the state. An illegal transition is refused with a typed error that names the machine, the current state and the event. The state is persisted as one field of data. It is never inferred from scattered booleans, nullable timestamps or string flags; a timestamp records when a transition happened, never which state holds. The machine is described in the ontology: its states and transitions are classes that roll up to the core state-machine classes, so the engine and the door can reason about it. Tests cover every legal transition and the refusal of each illegal one.
+
+*Rationale*: An implied machine has states nobody named. Two flags drift apart, a retry starts from a terminal state, and a recovery path is missing because no one listed it. A declared machine makes every state reachable on purpose and every exit tested.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: connector-ontology-map -->
+- `connector-ontology-map`: Propose and apply parent classes for orphan connector ontology classes (manual)
+<!-- generated:end -->
+
+Standards and tests:
+
+- `tests/test_constitution.py::test_the_state_machine_article_is_traced` keeps this article whole.
+- State-machine shape check: the `PIPE-GATES` spec files the check that reports a status field written outside its transition function, a lifecycle inferred from booleans or nullable timestamps, and a machine without transition and refusal tests.
+
+**Plan check:** Does each new or changed lifecycle declare its states, events, guards and one transition function, refuse illegal transitions with a typed error, persist the state as one field, describe the machine in the ontology and test every transition and refusal?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -814,4 +835,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.7.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-03
+**Version**: 1.8.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-06
