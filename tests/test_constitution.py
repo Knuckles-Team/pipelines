@@ -204,3 +204,22 @@ def test_the_platform_article_is_traced() -> None:
     assert "constitution hooks: source-path-portability" in article
     for rule in ("Linux, macOS and Windows", "x86_64 and arm64", "all six targets", "recorded blocker"):
         assert rule in article
+
+
+def test_the_state_machine_article_is_traced() -> None:
+    # spec: PIPE-GATES-R085
+    text = FILE.read_text(encoding="utf-8")
+    article = dict(_bodies())["XXXI. Lifecycle is an explicit state machine"]
+    for rule in (
+        "closed set of states",
+        "One transition function per machine",
+        "typed error",
+        "persisted as one field",
+        "nullable timestamps",
+        "roll up to the core",
+        "refusal of each illegal one",
+    ):
+        assert rule in article
+    version = VERSION.search(text)
+    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 8, 0)
+    assert "version 1.8.0" in TEMPLATE.read_text(encoding="utf-8")
