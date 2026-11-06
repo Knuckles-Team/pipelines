@@ -138,6 +138,10 @@ One image per repository pin set and one configuration file render to four runti
 
 Each row extends the live hook it names; the planned rows add a test or a small module beside the same call path. The clone rows share `enforce` in `pipelines_hooks/clones/jscpd_gate.py`: `R078` fixes the merge-base measurement, `R079` makes an unevaluable change fail closed and `R080` keeps a move from counting. The distinct-pair register stays in `pipelines_hooks/clones/ledger.py`. Digest verification of a tree extends the `FileProvider` contract of `PIPE-GATES-R003` and never calls Git.
 
+### Connector surface standard (PIPE-GATES-R014)
+
+`reference/connector-surface.md` is the standard. `connector-surface-audit` reads one checkout and assembles one record in `audit_connector`. Three modules keep each check small. `connector_surface_tools` reads tools and resources with an AST walk. `connector_surface_contracts` reads the SDK builder calls of `connector_contracts.py`, or Turtle typed with the SDK contract vocabulary. `connector_surface_prompts` checks each prompt as an agent definition. The static tool list derives `<prefix>_<method>` from the declared client class; the SDK self-check (`SCION-CONNECTOR-CONTROL-R916.4`) proves the live list. The `surface` member of `connector-standard` runs the audit in every connector repository. The fleet census reads each repository through `git archive`, so shared checkouts keep their worktrees. Earlier text required an `owl:imports` of the core ontology and the provider entry-point groups; both are now gaps, because packs extend core classes and the SDK finds content by convention.
+
 ## Phase 2: Task approach
 
 tasks.md carries one numbered task line for each new row. Tasks run producer first. A task marked `[P]` may run in parallel with its neighbours.
@@ -154,6 +158,7 @@ Each row names its test. The repository pre-commit and pre-push hooks and the pu
 
 - Verdicts: `run_gate_on` at `pipelines_hooks/gate_runner.py:62` calls `publish_verdict` (`PIPE-GATES-R004.1`).
 - States: `main` at `pipelines_hooks/specs/status.py:110` calls `publish_states` (`PIPE-GATES-R004.4`).
+- Connector surface: hook `connector-standard` runs `standard.main`, whose `surface` member (`pipelines_hooks/connector/standard.py:15`) calls `audit_connector` at `pipelines_hooks/hygiene/connector_surface.py:346` (`PIPE-GATES-R014.8`).
 - Contracts: hook `spec` at `.pre-commit-hooks.yaml:45` reaches the group at `pipelines_hooks/cli.py:80`, which runs `contract-coverage` (`PIPE-GATES-R034.3`).
 
 ## Cross-repo seams
@@ -161,3 +166,6 @@ Each row names its test. The repository pre-commit and pre-push hooks and the pu
 - `MEDULLA-SDLC-R005.7` consumes the published states.
 - `MEDULLA-SDLC-R014.4` ingests the contracts as a seam graph.
 - `ARBORA-OPS-R853` serves the `spec.status` read.
+- `SCION-CONNECTOR-CONTROL-R916.2` provides the declaration builders the surface gate reads (`PIPE-GATES-R014.5`); contract `contracts/connector-surface-declarations.md`.
+- `SCION-CONNECTOR-CONTROL-R916.8` provides the prompt agent-definition fields (`PIPE-GATES-R014.3`).
+- `MEDULLA-SRC-AUTH-R001` resolves routing from the data locations (`PIPE-GATES-R014.7`).

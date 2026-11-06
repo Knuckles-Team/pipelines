@@ -31,7 +31,17 @@
 - [x] T025 PIPE-GATES-R011 Key the hook cache on pipelines main and skip symlinks in clone snapshots.
 - [x] T026 PIPE-GATES-R012 Publish the `connector-graphql` gate, warning by default, for GraphQL declared via the Scion SDK extra.
 - [x] T027 PIPE-GATES-R013 Publish the `sdk-conformance` gate, warning by default, for connectors that reimplement a Scion SDK capability.
-- [x] T028 PIPE-GATES-R014 Publish the `connector-surface-audit` report of the five connector surfaces and the parent-ontology link.
+- [x] T028 PIPE-GATES-R014 Publish `connector-surface-audit` against the connector surface standard, by part.
+- [x] T220 PIPE-GATES-R014.1 Check the one connector entry point and the served content.
+- [x] T221 PIPE-GATES-R014.2 Flag action-routed tools and `action_dispatch=True`; require a declared data resource; list tool names statically.
+- [x] T222 PIPE-GATES-R014.3 Check each prompt as a complete agent definition, the operator prompt and one prompt per business role.
+- [x] T223 PIPE-GATES-R014.4 Require core roll-up of every class and flag `owl:imports` of the core ontology.
+- [x] T224 PIPE-GATES-R014.5 Read tool-use contracts from `connector_contracts.py` or Turtle; list tools no contract calls.
+- [x] T225 PIPE-GATES-R014.6 Require links for every prompt, skill and tool; list tools no skill or prompt names.
+- [x] T226 PIPE-GATES-R014.7 Require data locations with held classes, instance and read tool.
+- [x] T227 PIPE-GATES-R014.8 Run the surface check as the `surface` member of `connector-standard`.
+- [x] T228 PIPE-GATES-R014.9 Compute the fleet census through `git archive` and print the markdown checklists.
+- [x] T229 PIPE-GATES-R014.10 Publish `reference/connector-surface.md`.
 - [x] T029 PIPE-GATES-R015 Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes.
 - [x] T030 PIPE-GATES-R016 Add the `graph-check` subcommand to `connector-ontology-map`: whole-ecosystem ontology reachability, bridging, broken and missing edges, virtual-graph checks and competency questions.
 - [x] T031 PIPE-GATES-R028 Add the plan template and the plan-section check.

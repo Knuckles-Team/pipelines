@@ -19,7 +19,7 @@ Gates:
 <!-- generated:begin constitution hooks: coupling, sdk-conformance, connector-standard, spec-standard -->
 - `coupling`: coupling
 - `sdk-conformance`: Connector uses SDK capabilities instead of its own copies (warns)
-- `connector-standard`: Connector standard - no committed central files, shared codespell, security checks, API parity
+- `connector-standard`: Connector standard - no committed central files, shared codespell, security checks, API parity, skills, connector surface
 - `spec-standard`: Spec standard - names, file set, title, index
 <!-- generated:end -->
 
@@ -187,7 +187,7 @@ Gates:
 
 <!-- generated:begin constitution hooks: connector-ontology-map, connector-surface-audit -->
 - `connector-ontology-map`: Propose and apply parent classes for orphan connector ontology classes (manual)
-- `connector-surface-audit`: Connector ships and serves tools, prompts, skills, resources and a parent-linked ontology (reports)
+- `connector-surface-audit`: Connector accounts for its MCP surface: typed tools, resources, agent prompts, skills, core-rolled ontology with contracts, links and data locations (reports)
 <!-- generated:end -->
 
 Standards and tests:
@@ -210,11 +210,11 @@ Every transport of a connector or server, such as stdio and HTTP, uses one wirin
 Gates:
 
 <!-- generated:begin constitution hooks: connector-standard, connector-name, connector-graphql, sdk-conformance, connector-surface-audit, release-standard -->
-- `connector-standard`: Connector standard - no committed central files, shared codespell, security checks, API parity
+- `connector-standard`: Connector standard - no committed central files, shared codespell, security checks, API parity, skills, connector surface
 - `connector-name`: Connector names agree with the declared fleet name
 - `connector-graphql`: Connector GraphQL is declared via the SDK graphql extra (warns)
 - `sdk-conformance`: Connector uses SDK capabilities instead of its own copies (warns)
-- `connector-surface-audit`: Connector ships and serves tools, prompts, skills, resources and a parent-linked ontology (reports)
+- `connector-surface-audit`: Connector accounts for its MCP surface: typed tools, resources, agent prompts, skills, core-rolled ontology with contracts, links and data locations (reports)
 - `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
 <!-- generated:end -->
 

@@ -1,12 +1,19 @@
-"""connector-standard: no standard file is committed; codespell, the shared security checks, API parity and the skill gates hold."""
+"""connector-standard: no standard file is committed; codespell, the shared security checks, API parity, the skill gates and the connector surface standard hold."""
 
 from __future__ import annotations
 
 import sys
 
-from pipelines_hooks.connector import api_parity, codespell, files, security, skills
+from pipelines_hooks.connector import api_parity, codespell, files, security, skills, surface
 
-MEMBERS = {"files": files, "codespell": codespell, "security": security, "api-parity": api_parity, "skills": skills}
+MEMBERS = {
+    "files": files,
+    "codespell": codespell,
+    "security": security,
+    "api-parity": api_parity,
+    "skills": skills,
+    "surface": surface,
+}
 
 
 def main(argv: list[str]) -> int:
