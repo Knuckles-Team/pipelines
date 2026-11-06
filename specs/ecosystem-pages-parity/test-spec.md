@@ -373,3 +373,4 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R058.4 | PIPE-PAGES-R058.4 | Run `tests/test_canopy_research.py::test_unreadable_research_marks_the_family_without_failing_the_build`. |
 | T-PIPE-PAGES-R058.5 | PIPE-PAGES-R058.5 | Run `tests/test_canopy_research.py::test_drawer_and_export_list_the_questions_with_document_and_line`. |
 | T-PIPE-PAGES-R058.6 | PIPE-PAGES-R058.6 | Run `tests/test_canopy_research.py::test_research_badge_and_drawer_list_in_a_browser`. |
+| T-PIPE-PAGES-R059 | PIPE-PAGES-R059 | Run `tests/test_pages_self_publish.py::test_a_rerun_deploy_uploads_and_deploys_its_own_attempt_artifact`. Upload and deploy use the same per-attempt artifact name. |
