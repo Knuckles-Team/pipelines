@@ -77,7 +77,7 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 | `PIPE-GATES-R014.3` | `tests/hooks/test_connector_surface.py::test_prompts_must_be_complete_agent_definitions`, `tests/hooks/test_connector_surface.py::test_a_connector_needs_an_operator_prompt`, `tests/hooks/test_connector_surface.py::test_every_business_role_needs_a_business_role_prompt` |
 | `PIPE-GATES-R014.4` | `tests/hooks/test_connector_surface.py::test_orphans_and_imports_of_core_are_ontology_gaps`, `tests/hooks/test_connector_surface.py::test_without_parent_files_the_core_namespace_is_the_parent` |
 | `PIPE-GATES-R014.5` | `tests/hooks/test_connector_surface.py::test_missing_contract_parts_are_gaps`, `tests/hooks/test_connector_surface.py::test_no_declarations_lists_every_missing_part_and_tool` |
-| `PIPE-GATES-R014.6` | `tests/hooks/test_connector_surface.py::test_unlinked_prompt_skill_and_tool_are_link_gaps`, `tests/hooks/test_connector_surface.py::test_contracts_declared_as_turtle_count` |
+| `PIPE-GATES-R014.6` | `tests/hooks/test_connector_surface.py::test_unlinked_prompt_skill_and_tool_are_link_gaps`, `tests/hooks/test_connector_surface.py::test_a_contributor_skill_needs_no_link`, `tests/hooks/test_connector_surface.py::test_contracts_declared_as_turtle_count` |
 | `PIPE-GATES-R014.7` | `tests/hooks/test_connector_surface.py::test_incomplete_data_location_is_a_gap` |
 | `PIPE-GATES-R014.8` | `tests/hooks/test_connector_surface.py::test_connector_standard_runs_the_surface_member` |
 | `PIPE-GATES-R014.9` | `tests/hooks/test_connector_surface.py::test_fleet_census_reads_refs_without_touching_worktrees` |

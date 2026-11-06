@@ -274,6 +274,16 @@ def test_unlinked_prompt_skill_and_tool_are_link_gaps(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-GATES-R014.6")
+def test_a_contributor_skill_needs_no_link(tmp_path: Path) -> None:
+    root = _connector(tmp_path / "demo-mcp")
+    (root / "demo_mcp" / "skills" / "demo-mcp-development").mkdir()
+    (root / "demo_mcp" / "skills" / "demo-mcp-development" / "SKILL.md").write_text(
+        "---\nname: demo-mcp-development\n---\n"
+    )
+    assert audit.audit_connector(root, _parents(tmp_path))["gaps"] == []
+
+
+@pytest.mark.spec("PIPE-GATES-R014.6")
 def test_contracts_declared_as_turtle_count(tmp_path: Path) -> None:
     turtle = (
         LINKED
