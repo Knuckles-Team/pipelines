@@ -10,27 +10,23 @@ package. Test files are skipped.
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass
 from pathlib import PurePosixPath
 
-from pipelines_hooks.code.state_machine_model import LIFECYCLE_TIMESTAMPS, STATUS_FIELDS, Edge, Machine, Site
+from pipelines_hooks.code.state_machine_model import (
+    LIFECYCLE_TIMESTAMPS,
+    STATUS_FIELDS,
+    Edge,
+    Machine,
+    Site,
+    Use,
+    attach,
+)
 
 TABLE_NAMES = frozenset({"LEGAL", "TRANSITIONS", "EDGES", "edges"})
 FUNCTION_NAMES = frozenset({"transition", "apply", "step"})
 STRING_TYPES = frozenset({"str", "int", "Literal"})
 ENUM_BASES = frozenset({"Enum", "StrEnum", "IntEnum", "Flag", "IntFlag"})
 ENUM_SUFFIXES = ("Status", "State", "Phase", "Stage", "Lifecycle")
-
-
-@dataclass(frozen=True)
-class Use:
-    """An assignment or string compare of a status field through a receiver."""
-
-    field: str
-    kind: str
-    site: Site
-    receiver: str | None
-    module_names: frozenset[str]
 
 
 def is_test_file(path: str) -> bool:
@@ -66,14 +62,6 @@ def read_python(path: str, tree: ast.Module) -> list[Machine]:
 def loose_sites(path: str, tree: ast.Module) -> list[Use]:
     """The uses whose receiver is not ``self``: the hook matches them package-wide."""
     return [] if is_test_file(path) else [use for use in _uses(path, tree) if use.receiver is None]
-
-
-def attach(machine: Machine, use: Use) -> None:
-    """Record one use on a machine; a compare in a module naming the enum is fine."""
-    if use.kind == "assign":
-        machine.assigners.append(use.site)
-    elif machine.status_kind != "enum" or machine.status_type not in use.module_names:
-        machine.string_compares.append(use.site)
 
 
 def _enum_members(tree: ast.Module) -> dict[str, tuple[str, ...]]:
