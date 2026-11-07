@@ -12,3 +12,11 @@
 - Unknown: whether separate definitions per runtime stay in step.
 - Finding: separate definitions drift in toolchain pins and cache budgets.
 - Decision: one image and one configuration file render to Kubernetes, Docker Compose and rootless Podman, beside the existing SSH host mode.
+
+## State-machine tables as sparse matrices
+
+- Unknown: whether a declared transition table is well formed beyond having a test per edge.
+- Finding: a table with states as rows and events as columns is a sparse matrix. Reachability is the closure from the initial state, and a dead end is an empty row.
+- Finding: a terminal state is absorbing when its row is empty. A terminal state with an outgoing cell is a lifecycle that can reopen.
+- Finding: determinism means each cell holds at most one target. A missing cell is the refusal, so the complement of the table is a finite list of refusals to test.
+- Decision: PIPE-GATES-R086.9 runs five static checks, linear in table size, and proves well-formedness only, not semantics.

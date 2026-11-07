@@ -146,9 +146,23 @@ Design. `.pre-commit-hooks.yaml` gains `state-machine-shape` (stages pre-commit 
 
 Detection. A type is a Python class or a Rust `struct` or `enum`. A status field is named `status`, `state`, `phase`, `stage` or `lifecycle`. An implicit machine is a type with a status field, lifecycle flags or lifecycle timestamps and no declared table or function. A declared machine has a constant named `LEGAL`, `TRANSITIONS` or `EDGES`, or a function named `transition`, `apply` or `step` that returns or raises a type ending in `Refused`. Test code is skipped. Receiver resolution is by `self`, then by field name within the package or crate.
 
-Finding codes. Rule 1 `SM-MULTI-ASSIGN`. Rule 2 `SM-STRING-STATUS`. Rule 3 `SM-LIFECYCLE-FLAGS`. Rule 4 `SM-UNTESTED-EDGE` and `SM-NO-REFUSAL-TEST`. Rule 5 `SM-NO-DECLARATION`. The ontology rule `SM-ONTOLOGY-NOT-CORE-ROLLED` comes from `connector-ontology-map graph-check` (R086.6). Output is `<file>:<line> <type> <code> rule <n>`. Exit 0 is clean, 1 is findings, 2 is a gate that could not run.
+Finding codes. Rule 1 `SM-MULTI-ASSIGN`. Rule 2 `SM-STRING-STATUS`. Rule 3 `SM-LIFECYCLE-FLAGS`. Rule 4 `SM-UNTESTED-EDGE` and `SM-NO-REFUSAL-TEST`. Rule 5 `SM-NO-DECLARATION`. Rule 6 `SM-UNREACHABLE`, `SM-DEAD-END`, `SM-TERMINAL-NOT-ABSORBING`, `SM-NONDETERMINISTIC`, `SM-UNTESTED-REFUSAL` and `SM-NO-INITIAL` (R086.9). The ontology rule `SM-ONTOLOGY-NOT-CORE-ROLLED` comes from `connector-ontology-map graph-check` (R086.6). Output is `<file>:<line> <type> <code> rule <n>`. Exit 0 is clean, 1 is findings, 2 is a gate that could not run.
 
 Fixtures. `tests/hooks/fixtures/state_machine/py/` and `.../rs/` each hold five directories: `two_assigners`, `string_compare`, `lifecycle_flags`, `no_refusal_tests` and `compliant`. The compliant directory holds a full table, one test per edge and a refusal test.
+
+Algebraic checks (PIPE-GATES-R086.9, R086.10). A declared table is a sparse matrix of states by events, and a missing cell is a refusal. `algebra_findings` runs five checks over `Machine.edges`: reachability from `INITIAL`, no non-terminal dead end, absorbing terminal states, at most one target per cell, and a refusal test for every missing cell. Research notes are in `specs/gates/research.md`.
+
+Pre-untangled design for these rows, one line per answer.
+
+- Owner. This repository, unit `pipelines_hooks/code/state_machine_algebra.py`. Consumers declare only `INITIAL` and `TERMINAL` beside their table.
+- Cohesion. The five checks read one `Machine` and share one edge index, so they sit in one module. The readers only record fields; they hold no graph logic.
+- Dependency direction. `state_machine_algebra.py` imports `state_machine_model.py` only. `state_machine_rules.py` imports it. No import points upward.
+- Interface depth. One public function, `algebra_findings`. The edge index and the five checks stay private.
+- Special cases. None per language. The Python and Rust readers fill the same `Machine` fields, so no branch tests the language.
+- State. A hook run has no lifecycle. The machine under test is data, and the checks hold no state.
+- Environment. No new setting. The checks apply to every declared table.
+
+Two call sites. `algebra_findings` is reached from `main` through `findings` in the staged mode and in the census mode, for both readers. Each path has a fixture in R086.10.
 
 Order and sizing. R086.1 first, then R086.2 to R086.4 in parallel, then R086.5 and R086.6. The rollup is delivered last. Its census is red until the consumer machine rows are verified, so those rows land first. Each child scores 6 or less: one to three modules, one repository, and no more than two roots. R086.5 and R086.6 own the registration and the ontology wiring.
 
