@@ -234,17 +234,17 @@
 - [ ] T217 PIPE-GATES-R082 The staged KISS hook resolves a test module declaration to its file.
 - [ ] T218 PIPE-GATES-R083 A historical secret match is handled by a digest-pinned exception with a self-check.
 - [ ] T219 PIPE-GATES-R084 A tree without a working copy is verified by content digest, never by Git.
-- [x] T220 PIPE-GATES-R085 The constitution requires explicit state machines.
-- [ ] T221 PIPE-GATES-R086 A shared check reports an implicit state machine (rollup).
-- [ ] T222 PIPE-GATES-R086.1 The shared rule set and the finding codes.
-- [ ] T223 PIPE-GATES-R086.2 The Python reader.
-- [ ] T224 PIPE-GATES-R086.3 The Rust reader.
-- [ ] T225 PIPE-GATES-R086.4 The test-binding rule for a declared machine.
-- [ ] T226 PIPE-GATES-R086.5 The two hooks, the modes and the exit codes.
-- [ ] T227 PIPE-GATES-R086.6 The ontology half: a state class must roll up to the core.
-- [ ] T228 PIPE-GATES-R087 The constitution states the design principles of a simple unit.
-- [x] T229 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
-- [x] T230 PIPE-GATES-R089 An environment repository holds no custom code.
+- [x] T245 PIPE-GATES-R085 The constitution requires explicit state machines.
+- [ ] T248 PIPE-GATES-R086 A shared check reports an implicit state machine (rollup).
+- [ ] T249 PIPE-GATES-R086.1 The shared rule set and the finding codes.
+- [ ] T250 PIPE-GATES-R086.2 The Python reader.
+- [ ] T251 PIPE-GATES-R086.3 The Rust reader.
+- [ ] T252 PIPE-GATES-R086.4 The test-binding rule for a declared machine.
+- [ ] T253 PIPE-GATES-R086.5 The two hooks, the modes and the exit codes.
+- [ ] T254 PIPE-GATES-R086.6 The ontology half: a state class must roll up to the core.
+- [ ] T255 PIPE-GATES-R087 The constitution states the design principles of a simple unit.
+- [x] T246 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
+- [x] T247 PIPE-GATES-R089 An environment repository holds no custom code.
 - [ ] T231 PIPE-GATES-R090 The spec standard requires a pre-untangled design.
 - [ ] T232 PIPE-GATES-R088.1 Layer entry shape and policy faults. Size: S, 1 PR, 2 hours.
 - [ ] T233 PIPE-GATES-R088.2 Cargo crate layers in the coupling gate. Size: M, 1 PR, 4 hours.
@@ -253,9 +253,9 @@
 - [ ] T236 PIPE-GATES-R086.8 Census adoption order and expected baselines. Size: M, 5 PRs (one per consumer), 1 hour each.
 - [ ] T237 PIPE-GATES-R086.9 Algebraic checks over a declared transition table. Size: S, 1 PR, 3 hours.
 - [ ] T238 PIPE-GATES-R086.10 Algebraic checks: fixtures and hot-path proof. Size: S, 1 PR, 2 hours.
-- [ ] T232 PIPE-GATES-R091 A Rust dependency is never resolved from outside crates.io.
-- [ ] T233 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
-- [ ] T234 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.
+- [ ] T242 PIPE-GATES-R091 A Rust dependency is never resolved from outside crates.io.
+- [ ] T243 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
+- [ ] T244 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.
 - [ ] T239 PIPE-GATES-R094 The consistency analysis checks that a spec row names an existing path or marks it planned.
 - [ ] T240 PIPE-GATES-R095 The consistency analysis checks the Phase 1 design answers and the two-call-site rule.
 - [ ] T241 PIPE-GATES-R096 A branch that merged main is measured from the main fork point.
