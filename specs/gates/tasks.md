@@ -243,6 +243,7 @@
 - [ ] T253 PIPE-GATES-R086.5 The two hooks, the modes and the exit codes.
 - [ ] T254 PIPE-GATES-R086.6 The ontology half: a state class must roll up to the core.
 - [ ] T255 PIPE-GATES-R087 The constitution states the design principles of a simple unit.
+- [ ] T256 PIPE-GATES-R097 The secret-fields gate: response models, schemas, served outputs and recorded outputs carry no credential material.
 - [x] T246 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
 - [x] T247 PIPE-GATES-R089 An environment repository holds no custom code.
 - [ ] T231 PIPE-GATES-R090 The spec standard requires a pre-untangled design.

@@ -29,6 +29,7 @@ SECTIONS: dict[str, frozenset[str]] = {
     "coupling": frozenset({"forbidden", "allowed", "layers"}),
     "environment_config_only": frozenset({"declared"}),
     "stubs": frozenset({"declared_seams"}),
+    "secret_fields": frozenset({"mode", "exclude"}),
     "state_machine": frozenset({"paths", "exclude", "languages", "mode"}),
     "rustfmt_scope": frozenset({"guard_files", "skip_prefixes"}),
     "cargo_advisories": frozenset({"deny_config", "ledger", "cargo_deny_version", "max_acceptance_days"}),
