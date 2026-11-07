@@ -161,5 +161,26 @@ No adapter file exemption applies. Module prefixes match at dot boundaries;
 Missing configuration, package source, invalid Python or Git errors refuse with
 exit two; prohibited static imports fail with exit one. The scanner uses the
 consumer's own tracked index, ignores untracked build output, and does not
-claim dynamic import or runtime isolation coverage. Both hooks are opt-in and
+claim dynamic import or runtime isolation coverage.
+
+An optional ordered `layers` list, most stable first, adds the import-direction
+check (`PIPE-GATES-R088`). Each entry is a unit (`<package>.<first segment>`),
+or a list of peer units that share a rank; name the package itself to layer its
+root `__init__`. Relative imports are resolved. An import from an earlier layer
+to a later one, an import of a private module (a leading-underscore segment) of
+another unit, a unit named in no layer, and an import cycle among units are
+located findings; duplicate or malformed entries refuse with exit two. With
+`layers` set, `forbidden` is optional.
+
+```toml
+[tool.pipelines_hooks.coupling]
+layers = ["pkg.types", ["pkg.core", "pkg.store"], "pkg.api", "pkg"]
+```
+
+`pipelines-hook environment-config-only --root ROOT` (`PIPE-GATES-R089`) is
+opt-in for repositories that declare `[tool.pipelines_hooks.environment_config_only]
+declared = true`. A tracked script (executable bit or shebang, outside `tests`)
+must be a thin wrapper: at most 12 code lines, no loop, conditional, function
+or short-circuit. Anything else is a finding naming the file; there is no
+allowance list. Both hooks are opt-in and
 do not alter the eight-gate landing partition.
