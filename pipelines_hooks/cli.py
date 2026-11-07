@@ -46,6 +46,8 @@ GATES: dict[str, str] = {
     "release-standard": "pipelines_hooks.hygiene.release_standard",
     "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
     "no-stub": "pipelines_hooks.code.no_stub",
+    "state-machine-shape": "pipelines_hooks.code.state_machine",
+    "state-machine-census": "pipelines_hooks.code.state_machine_census",
     "stubs": "pipelines_hooks.code.stubs",
     "swallowed-errors": "pipelines_hooks.code.swallowed_gate",
     "workflow-step-honesty": "pipelines_hooks.code.workflow_step_honesty",

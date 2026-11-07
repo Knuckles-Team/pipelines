@@ -32,6 +32,8 @@ KEPT = {
     "connector-standard",
     "connector-name",
     "coupling",
+    "state-machine-shape",
+    "state-machine-census",
     "crates-io-only",
     "rustfmt-scope",
     "cargo-advisories",
