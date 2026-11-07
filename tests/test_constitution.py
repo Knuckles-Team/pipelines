@@ -223,3 +223,21 @@ def test_the_state_machine_article_is_traced() -> None:
     version = VERSION.search(text)
     assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 8, 0)
     assert "version 1.8.0" in TEMPLATE.read_text(encoding="utf-8")
+
+
+def test_the_design_principles_are_in_articles_xi_and_xxv() -> None:
+    # spec: PIPE-GATES-R087
+    bodies = dict(_bodies())
+    simple = bodies["XI. Code stays small, simple and unduplicated"]
+    for rule in (
+        "changes together lives together",
+        "Interfaces are deep",
+        "no hidden global state",
+        "speculative generality",
+        "special cases",
+    ):
+        assert rule in simple
+    modular = bodies["XXV. Small, modular units"]
+    for rule in ("toward the code that changes less", "never on its internals"):
+        assert rule in modular
+    assert "configuration only" in dict(_bodies())["I. One owner per concept"]
