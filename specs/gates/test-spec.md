@@ -210,3 +210,4 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | T-108 | PIPE-GATES-R088.3 | Unit | A consumer fixture with the SDK-shaped policy. | The hook exits 0. |
 | T-109 | PIPE-GATES-R086.7 | Unit | Policy tables: missing, staged, blocking, with exclude globs. | Missing exits 2; staged exits 0 with findings; blocking exits 1. |
 | T-110 | PIPE-GATES-R086.8 | Integration | Fixture corpora of R086.5 with a consumer policy. | Census output matches the fixture finding list. |
+| T-111 | PIPE-GATES-R093 | Unit | Spec fixtures: an existing path, a missing path, a missing path in a planned row, a continuation line, a changed row and an untouched row. | Existing and planned pass; a missing path yields a finding naming file, line, row and path; it fails when the row is added and is advisory otherwise. |
