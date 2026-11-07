@@ -77,6 +77,7 @@ Every repository gives a cold agent the same setup and the same orientation (PIP
 - A repository whose shared hooks are pinned by SHA in CI omits the revision and stale-drop steps.
 - The job that runs on `main` must save the cache, so pull requests restore it; two jobs that run the same config use the identical key.
 - No job sets a per-run `PRE_COMMIT_HOME`: a unique store is never reused.
+- A self-hosted runner may mount a persistent host directory and name it in `CI_CACHE_ROOT`. `gates_pipeline.yml` then keeps the hook store and the uv cache there and skips the cache actions (PIPE-RELEASE-R007.15). The runner deployment owns the mount.
 - `tests/test_precommit_cache_contract.py` fails a workflow job that runs `pre-commit run` without a `~/.cache/pre-commit` restore and an `install-hooks` step. Reusable-workflow callers are exempt.
 
 ## Auto-merge and releases (keep it simple)

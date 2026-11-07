@@ -214,17 +214,38 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      # PIPE-RELEASE-R007.15: a self-hosted runner whose host mounts a persistent cache
+      # directory (CI_CACHE_ROOT) keeps the pre-commit store and the uv cache there, so no
+      # job downloads them (a 1.1 GB hook store at runner bandwidth outlasted the job).
+      # Hosted runners, and self-hosted ones without the mount, keep actions/cache.
+      - name: Use the runner's persistent caches
+        id: persist
+        if: runner.environment == 'self-hosted'
+        run: |
+          set -euo pipefail
+          root="${CI_CACHE_ROOT:-}"
+          if [[ -z "$root" || ! -d "$root" || ! -w "$root" ]]; then
+            echo "no writable CI_CACHE_ROOT on this runner; the job uses actions/cache"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p "$root/pre-commit" "$root/uv"
+          echo "PRE_COMMIT_HOME=$root/pre-commit" >> "$GITHUB_ENV"
+          echo "UV_CACHE_DIR=$root/uv" >> "$GITHUB_ENV"
+          { echo "enabled=true"; echo "uv-cache=$root/uv"; } >> "$GITHUB_OUTPUT"
+          echo "persistent caches under $root"
+
       - name: Install uv
         id: uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           python-version: ${{ inputs.python-version }}
-          enable-cache: true
+          enable-cache: ${{ steps.persist.outputs.enabled != 'true' }}
           # The action's own post-step upload has no time limit; the bounded
           # "Save the uv cache" step at the end of the job replaces it
           # (PIPE-RELEASE-R007.14).
           save-cache: false
-          cache-local-path: ${{ inputs.uv-cache-local-path }}
+          cache-local-path: ${{ steps.persist.outputs.uv-cache || inputs.uv-cache-local-path }}
           cache-dependency-glob: |
             uv.lock
             ${{ inputs.config }}
@@ -335,6 +356,7 @@ jobs:
         id: hook-cache
         # A slow or failed download must not cost the gates their budget: on a
         # miss the hooks install from scratch (PIPE-RELEASE-R007.13).
+        if: steps.persist.outputs.enabled != 'true'
         timeout-minutes: 3
         continue-on-error: true
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -361,6 +383,36 @@ jobs:
           con.commit()
           PY
 
+      # The persistent store outlives a pipelines main move: drop the shared-hook rows of an
+      # older main so only that repository reinstalls. Their directories are removed one
+      # refresh later, so a job still running the previous hooks keeps them (PIPE-RELEASE-R007.15).
+      - name: Refresh the shared hooks in the persistent store
+        if: steps.persist.outputs.enabled == 'true'
+        env:
+          PIPELINES_MAIN: ${{ steps.hook-rev.outputs.sha }}
+        run: |
+          set -euo pipefail
+          store="$PRE_COMMIT_HOME"
+          exec 9>"$store/.refresh.lock"
+          flock -w 300 9
+          [[ "$(cat "$store/.pipelines-main" 2>/dev/null || true)" != "$PIPELINES_MAIN" ]] || exit 0
+          if [[ -f "$store/db.db" ]]; then
+            python3 - "$store" <<'PY'
+          import shutil, sqlite3, sys
+          from pathlib import Path
+          store = Path(sys.argv[1])
+          old = store / ".stale"
+          for line in (old.read_text().splitlines() if old.exists() else []):
+              shutil.rmtree(line, ignore_errors=True)
+          con = sqlite3.connect(store / "db.db", timeout=120)
+          rows = con.execute("SELECT path FROM repos WHERE repo LIKE '%Knuckles-Team/pipelines%'").fetchall()
+          con.execute("DELETE FROM repos WHERE repo LIKE '%Knuckles-Team/pipelines%'")
+          con.commit()
+          old.write_text("".join(f"{path}\n" for (path,) in rows))
+          PY
+          fi
+          echo "$PIPELINES_MAIN" > "$store/.pipelines-main"
+
       # Installing as its own step lets a cut-off run keep finished environments.
       # pre-commit marks an environment ready only when it is complete.
       - name: Install pre-commit environments
@@ -380,7 +432,7 @@ jobs:
         # (PIPE-RELEASE-R007.13).
         timeout-minutes: 3
         continue-on-error: true
-        if: success() && steps.hook-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: steps.persist.outputs.enabled != 'true' && success() && steps.hook-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
@@ -393,7 +445,7 @@ jobs:
         # (PIPE-RELEASE-R007.13).
         timeout-minutes: 3
         continue-on-error: true
-        if: (failure() || cancelled()) && steps.hook-install.outcome != 'success' && steps.hook-install.outcome != 'skipped' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: steps.persist.outputs.enabled != 'true' && (failure() || cancelled()) && steps.hook-install.outcome != 'success' && steps.hook-install.outcome != 'skipped' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
@@ -519,7 +571,7 @@ jobs:
         # bounded, and never failing or cancelling the gates (PIPE-RELEASE-R007.14).
         timeout-minutes: 3
         continue-on-error: true
-        if: success() && steps.uv.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: steps.persist.outputs.enabled != 'true' && success() && steps.uv.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.UV_CACHE_DIR }}

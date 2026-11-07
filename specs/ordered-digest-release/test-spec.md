@@ -146,3 +146,4 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R028.2 | PIPE-RELEASE-R028.2 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundles_gate.py::test_tracked_bundle_fails_and_a_declared_catalog_passes`. |
 | T-PIPE-RELEASE-R028.3 | PIPE-RELEASE-R028.3 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_catalog_entries_must_be_command_or_pinned_package_sources`. |
 | T-PIPE-RELEASE-R028.4 | PIPE-RELEASE-R028.4 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_release_job_runs_the_proof_before_publish` (L3). |
+| T-PIPE-RELEASE-R007.15 | PIPE-RELEASE-R007.15 | Run `tests/test_gates_pipeline_contract.py::test_self_hosted_runner_keeps_hook_and_uv_caches_on_the_host`. A self-hosted runner with `CI_CACHE_ROOT` uses the host caches and skips the cache actions. |
