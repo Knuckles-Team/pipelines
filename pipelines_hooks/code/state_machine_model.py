@@ -50,6 +50,12 @@ CODES: dict[str, Rule] = {
     "SM-UNTESTED-EDGE": Rule.TESTS,
     "SM-NO-REFUSAL-TEST": Rule.TESTS,
     "SM-NO-DECLARATION": Rule.NO_DECLARATION,
+    "SM-UNREACHABLE": Rule.ALGEBRA,
+    "SM-DEAD-END": Rule.ALGEBRA,
+    "SM-TERMINAL-NOT-ABSORBING": Rule.ALGEBRA,
+    "SM-NONDETERMINISTIC": Rule.ALGEBRA,
+    "SM-UNTESTED-REFUSAL": Rule.ALGEBRA,
+    "SM-NO-INITIAL": Rule.ALGEBRA,
 }
 
 
@@ -101,6 +107,9 @@ class Machine:
     states: tuple[str, ...] = ()
     table: str | None = None
     edges: tuple[Edge, ...] = ()
+    #: The ``INITIAL`` and ``TERMINAL``/``TERMINALS`` constants beside the table.
+    initial: str | None = None
+    terminals: tuple[str, ...] = ()
     #: The one transition function and the refusal type it raises or returns.
     function: str | None = None
     refusal: str | None = None
@@ -113,6 +122,15 @@ class Machine:
     bound: bool = False
     untested_edges: list[tuple[str, str]] = field(default_factory=list)
     refusal_tested: bool = False
+    #: Missing cells ``(state, event)`` a refusal test names, and whether one
+    #: refusal test iterates the whole state-by-event product of the table.
+    refused_cells: set[tuple[str, str]] = field(default_factory=set)
+    product_refusal_test: bool = False
+
+    def all_states(self) -> list[str]:
+        """Declared states, then table states, then terminal states, without repeats."""
+        edge_states = (state for source, _, target in self.edges for state in (source, target))
+        return list(dict.fromkeys([*self.states, *edge_states, *self.terminals]))
 
     @property
     def declared(self) -> bool:

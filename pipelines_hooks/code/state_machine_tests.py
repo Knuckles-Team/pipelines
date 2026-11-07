@@ -89,5 +89,20 @@ def bind_tests(machine: Machine, test_files: Sequence[tuple[str, str]]) -> None:
         for source, event, _ in machine.edges
         if not any(names_edge(case, source, event) for case in cases)
     ]
-    machine.refusal_tested = any(is_refusal_test(case, machine.refusal) for case in cases)
+    refusals = [case for case in cases if is_refusal_test(case, machine.refusal)]
+    machine.refusal_tested = bool(refusals)
+    machine.refused_cells = {
+        (state, event)
+        for case in refusals
+        for state in machine.all_states()
+        for event in {event for _, event, _ in machine.edges}
+        if names_edge(case, state, event)
+    }
+    machine.product_refusal_test = any(iterates_product(case, machine.table) for case in refusals)
     machine.bound = True
+
+
+def iterates_product(case: Case, table: str | None) -> bool:
+    """A refusal test whose body loops over the table constant's state-by-event product."""
+    body = case.body
+    return table is not None and table in body and ("product(" in body or body.count("for ") >= 2)

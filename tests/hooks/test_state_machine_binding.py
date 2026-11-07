@@ -53,7 +53,7 @@ def test_in_progress_finish_is_done():
 """
     )
     assert machine.bound and machine.untested_edges == [] and machine.refusal_tested
-    assert findings(machine) == []
+    assert [f for f in findings(machine) if f.rule == 4] == []
     partial = _bind(REFUSAL + "def test_queued_start_runs():\n    pass\n")
     assert partial.untested_edges == [("InProgress", "finish")]
 
