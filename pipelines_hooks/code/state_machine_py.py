@@ -46,7 +46,7 @@ def read_python(path: str, tree: ast.Module) -> list[Machine]:
         machine
         for node in tree.body
         if isinstance(node, ast.ClassDef) and node.name not in enums
-        for machine in [_machine(path, node, enums, module_tables, module_function)]
+        for machine in [_machine(path, node, enums, module_tables, module_function, _constants(tree.body))]
         if machine is not None
     ]
     for use in _uses(path, tree):
@@ -130,6 +130,7 @@ def _machine(
     enums: dict[str, tuple[str, ...]],
     module_tables: list[tuple[str, tuple[Edge, ...]]],
     module_function: tuple[str, str] | None,
+    module_constants: tuple[str | None, tuple[str, ...]],
 ) -> Machine | None:
     fields = _fields(node)
     status = next((stmt for stmt in fields if _name(stmt.target) in STATUS_FIELDS), None)
@@ -144,10 +145,30 @@ def _machine(
         if tables:
             machine.table, machine.edges = tables[0]
         function = _transition(node.body, node.name) or module_function
+        own = _constants(node.body)
+        constants = (own[0] or module_constants[0], own[1] or module_constants[1])
         if function is not None:
             machine.function, machine.refusal = function
         machine.states = enums.get(machine.status_type or "", ()) or _edge_states(machine.edges)
+        machine.initial, machine.terminals = constants
     return machine
+
+
+def _constants(body: list[ast.stmt]) -> tuple[str | None, tuple[str, ...]]:
+    """The ``INITIAL`` state and the ``TERMINAL``/``TERMINALS`` states declared in ``body``."""
+    initial: str | None = None
+    terminals: tuple[str, ...] = ()
+    for stmt in body:
+        target = stmt.targets[0] if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1 else None
+        target = stmt.target if isinstance(stmt, ast.AnnAssign) else target
+        value = stmt.value if isinstance(stmt, (ast.Assign, ast.AnnAssign)) else None
+        name = target.id if isinstance(target, ast.Name) else ""
+        if name == "INITIAL" and value is not None:
+            initial = _name(value)
+        elif name in {"TERMINAL", "TERMINALS"} and value is not None:
+            items = value.elts if isinstance(value, (ast.Set, ast.List, ast.Tuple)) else [value]
+            terminals = tuple(_name(item) for item in items)
+    return initial, terminals
 
 
 def _edge_states(edges: tuple[Edge, ...]) -> tuple[str, ...]:

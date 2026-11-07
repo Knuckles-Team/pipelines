@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import pytest
 
 from pipelines_hooks.code.state_machine_model import Machine, Site
+from pipelines_hooks.code import state_machine
 from pipelines_hooks.code.state_machine_rules import findings
+from tests.hooks.state_machine_repo import fixture_repo
 
 
 def _machine(**fields: Any) -> Machine:
@@ -97,3 +100,43 @@ def test_an_enum_status_without_a_declared_machine_is_reported() -> None:
 @pytest.mark.spec("PIPE-GATES-R086.1")
 def test_a_declared_machine_with_full_tests_passes() -> None:
     assert findings(_declared()) == []
+
+
+#: Fixture directory -> the codes its census run must report (both languages).
+RULE_CASES = {
+    "compliant": set(),
+    "two_assigners": {"SM-MULTI-ASSIGN"},
+    "string_compare": {"SM-STRING-STATUS"},
+    "lifecycle_flags": {"SM-LIFECYCLE-FLAGS"},
+    "no_refusal_tests": {"SM-NO-REFUSAL-TEST", "SM-UNTESTED-REFUSAL"},
+}
+ALGEBRA_CASES = {
+    "compliant_algebra": set(),
+    "unreachable_state": {"SM-UNREACHABLE"},
+    "dead_end": {"SM-DEAD-END"},
+    "terminal_exits": {"SM-TERMINAL-NOT-ABSORBING"},
+    "nondeterministic": {"SM-NONDETERMINISTIC"},
+    "untested_refusal": {"SM-UNTESTED-REFUSAL"},
+}
+
+
+def _census_codes(tmp_path: Path, case: str) -> set[str]:
+    root = fixture_repo(tmp_path / case.replace("/", "-"), case)
+    return {finding.code for finding in state_machine.run(root, census=True)}
+
+
+def _check_cases(tmp_path: Path, cases: dict[str, set[str]]) -> None:
+    for language in ("py", "rs"):
+        for case, expected in cases.items():
+            assert _census_codes(tmp_path, f"{language}/{case}") == expected, f"{language}/{case}"
+
+
+@pytest.mark.spec("PIPE-GATES-R086")
+@pytest.mark.spec("PIPE-GATES-R086.8")
+def test_the_census_reports_every_fixture_violation_and_passes_the_compliant_tree(tmp_path: Path) -> None:
+    _check_cases(tmp_path, RULE_CASES)
+
+
+@pytest.mark.spec("PIPE-GATES-R086.10")
+def test_the_census_reports_every_algebraic_violation_and_passes_the_compliant_tree(tmp_path: Path) -> None:
+    _check_cases(tmp_path, ALGEBRA_CASES)

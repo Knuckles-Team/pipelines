@@ -186,3 +186,20 @@ must be a thin wrapper: at most 12 code lines, no loop, conditional, function
 or short-circuit. Anything else is a finding naming the file; there is no
 allowance list. Both hooks are opt-in and
 do not alter the eight-gate landing partition.
+
+`pipelines-hook state-machine-shape` (pre-commit and pre-push) and
+`pipelines-hook state-machine-census` (manual) report implicit state machines
+in Python and Rust: a status assigned outside the one transition function, a
+string status, lifecycle flags, a declared table without edge and refusal
+tests, an enum status with no declared machine, and a table whose
+states-by-events matrix fails a reachability, dead-end, absorbing, determinism
+or refusal-test check. Each finding is `<file>:<line> <type> <code> rule <n>`.
+The consumer declares its sources:
+
+```toml
+[tool.pipelines_hooks.state_machine]
+paths = ["src"]
+exclude = ["**/fixtures/**"]
+languages = ["python", "rust"]
+mode = "staged"  # print findings and exit 0; "blocking" exits 1
+```

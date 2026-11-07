@@ -282,6 +282,20 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: state-machine-shape
+  name: "State machines - a changed type has an explicit, tested transition table"
+  entry: pipelines-hook state-machine-shape
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit, pre-push]
+- id: state-machine-census
+  name: "State machines - every implicit state machine in the tree (census)"
+  entry: pipelines-hook state-machine-census
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
 - id: stubs
   name: "DEPRECATED (stubs): No stub bodies and no deferred-work comments"
   entry: pipelines-hook stubs
