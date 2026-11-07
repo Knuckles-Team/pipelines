@@ -246,3 +246,4 @@
 - [ ] T229 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
 - [ ] T230 PIPE-GATES-R089 An environment repository holds no custom code.
 - [ ] T231 PIPE-GATES-R090 The spec standard requires a pre-untangled design.
+- [ ] T232 PIPE-GATES-R091 The consistency analysis checks the Phase 1 design answers and the two-call-site rule.

@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.8.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-06
+**Version**: 1.8.1 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
 
 ## Core Principles
 
@@ -253,7 +253,7 @@ Standards and tests:
 
 Functions, files and classes stay inside the KISS limits. Complexity stays inside the cyclomatic and cognitive caps. New clones of existing code are refused. The numbers are in the thresholds table.
 
-Simple also means designed, not patched. Code that changes together lives together, and code that changes for different reasons is not tied together, so a change lands in one place. Interfaces are deep: a small surface hides a lot of behaviour, and a wrapper that only forwards a call is removed. Dependencies and call order are explicit: no hidden global state and no unstated sequence. Dead code, unused parameters and speculative generality are deleted, not kept for later. A defect is fixed by redesigning the cause; a special-case branch that patches one symptom is a sign the design is wrong, and the count of special cases is the measure of progress. Tests assert behaviour through the public surface and fail only on a regression, never on a refactor. The redesign procedure is the `codebase-untangle` skill in universal-skills.
+Simple also means designed, not patched. Code that changes together lives together, and code that changes for different reasons is not tied together, so a change lands in one place. Interfaces are deep: a small surface hides a lot of behaviour, and a wrapper that only forwards a call is removed. Dependencies and call order are explicit: no hidden global state and no unstated sequence. Dead code, unused parameters and speculative generality are deleted, not kept for later. A new abstraction (an interface, trait, protocol, base class, port, factory, wrapper or option parameter) is added only when two call sites need it today. One caller gets the concrete code; the abstraction is extracted when the second caller lands, in that change. A defect is fixed by redesigning the cause; a special-case branch that patches one symptom is a sign the design is wrong, and the count of special cases is the measure of progress. Tests assert behaviour through the public surface and fail only on a regression, never on a refactor. The redesign procedure is the `codebase-untangle` skill in universal-skills.
 
 *Rationale*: Small units are testable and reviewable. Duplicates drift apart. One tool measures each property.
 
@@ -277,7 +277,7 @@ Standards and tests:
 - [Gate standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/gate-standard.md): the Advisory checks section lists the clone and complexity gates.
 - `tests/hooks/test_kiss.py`, `tests/hooks/test_complexity.py`, `tests/hooks/test_clones.py`, `tests/hooks/test_structural_limits.py`.
 
-**Plan check:** Do all new and changed units stay inside the limits in the thresholds table, with no copy of existing code, no dead or pass-through code, no hidden state, and no special case that a redesign would remove?
+**Plan check:** Do all new and changed units stay inside the limits in the thresholds table, with no copy of existing code, no dead or pass-through code, no hidden state, no special case that a redesign would remove, and no new abstraction with fewer than two current call sites?
 
 ### XII. No ratchets and no suppressions
 
@@ -840,4 +840,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.8.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-06
+**Version**: 1.8.1 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07

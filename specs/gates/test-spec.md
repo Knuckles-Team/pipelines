@@ -205,3 +205,4 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | T-102 | PIPE-GATES-R088 | Integration | A git repository fixture with a layers policy and imports that go downward, upward, into a private module, from an unlayered unit and around a cycle. | The downward import passes; each other case exits 1 naming file, line and rule. |
 | T-104 | PIPE-GATES-R089 | Integration | A fixture environment repository with a thin wrapper, a behaviour-encoding script and a data file. | Only the behaviour-encoding script exits 1, naming the file. |
 | T-105 | PIPE-GATES-R090 | Unit | The spec standard file. | The section names all seven design answers and the analysis finding. |
+| T-106 | PIPE-GATES-R091 | Unit | Plan fixtures with all answers, a missing item, one call site, two call sites and a `none` reason. | Complete and two-site and `none` plans pass; a missing item and a one-site abstraction each yield a finding naming it. |
