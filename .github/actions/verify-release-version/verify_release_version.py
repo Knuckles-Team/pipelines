@@ -1,12 +1,20 @@
-"""Early release guard: the tag, the package version and PyPI must agree before any build (PIPE-RELEASE-R002)."""
+"""Early release guard: the tag, the package version and PyPI must agree before any build (PIPE-RELEASE-R002).
+
+A version already on PyPI is refused, except on a tag whose commit is older than the version's first upload:
+a maintainer published that exact commit from an attested local build (PIPE-RELEASE-R029.3). The guard then
+writes ``published=true`` to ``$GITHUB_OUTPUT`` and the hosted build and upload steps skip.
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import subprocess
 import sys
 import tomllib
+from datetime import datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -19,6 +27,10 @@ PYPI = "https://pypi.org"
 
 class GuardError(ValueError):
     """A release identity disagreement; the message names the fix."""
+
+
+class AlreadyPublished(GuardError):
+    """The tagged commit's version was published after that commit: a local release, not a stale tag."""
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -67,12 +79,15 @@ def bumpversion_current(root: Path) -> tuple[str, str] | None:
     return None
 
 
-def pypi_has_version(name: str, version: str, base: str = PYPI) -> bool:
+def pypi_has_version(name: str, version: str, base: str = PYPI) -> bool | str:
+    """False when the version is absent; else its earliest file upload time (ISO 8601), or True with no files."""
     url = f"{base.rstrip('/')}/pypi/{quote(name.lower(), safe='')}/{quote(version, safe='')}/json"
     try:
         with build_opener(NoRedirect()).open(Request(url), timeout=20) as response:
-            json.loads(response.read(4 * 1024 * 1024))
-        return True
+            document = json.loads(response.read(4 * 1024 * 1024))
+        times = sorted(str(f.get("upload_time_iso_8601") or "") for f in document.get("urls") or [])
+        times = [t for t in times if t]
+        return times[0] if times else True
     except HTTPError as error:
         if error.code == 404:
             return False
@@ -81,7 +96,25 @@ def pypi_has_version(name: str, version: str, base: str = PYPI) -> bool:
         raise GuardError(f"PyPI lookup failed ({error}); refusing to release unverified") from error
 
 
-def verify(root: Path, ref: str, pypi_base: str = PYPI, *, lookup=pypi_has_version) -> str:
+def instant(text: str) -> datetime | None:
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def commit_time(root: Path) -> str:
+    """The checked-out commit's committer time, ISO 8601; empty when git cannot say."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "log", "-1", "--format=%cI", "HEAD"], capture_output=True, text=True, check=False
+        )
+    except OSError:
+        return ""
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def verify(root: Path, ref: str, pypi_base: str = PYPI, *, lookup=None, committed: str = "") -> str:
     name, version, where = package_identity(root)
     if VERSION.fullmatch(version) is None:
         raise GuardError(f"{where} is {version!r}, not a release version")
@@ -98,7 +131,15 @@ def verify(root: Path, ref: str, pypi_base: str = PYPI, *, lookup=pypi_has_versi
             f"{bump[0]} current_version {bump[1]} differs from package version {version} ({where}); "
             f"bump both together with the repository's bump command."
         )
-    if lookup(name, version, pypi_base):
+    found = (lookup or pypi_has_version)(name, version, pypi_base)
+    if found:
+        uploaded = instant(found) if isinstance(found, str) else None
+        made = instant(committed) if committed else None
+        if ref.startswith("refs/tags/") and uploaded and made and uploaded >= made:
+            raise AlreadyPublished(
+                f"{name} {version} was published at {found}, after this commit ({committed}): "
+                f"a maintainer released this commit from an attested local build; the hosted upload skips."
+            )
         raise GuardError(
             f"{name} {version} is already on PyPI; PyPI never accepts a version twice. "
             f"Bump to the next version, merge it, and tag that commit."
@@ -114,13 +155,27 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--pypi", default=PYPI)
     arguments = parser.parse_args(argv)
+    root = Path(arguments.root)
+    committed = commit_time(root) if arguments.ref.startswith("refs/tags/") else ""
     try:
-        version = verify(Path(arguments.root), arguments.ref, arguments.pypi)
+        version = verify(root, arguments.ref, arguments.pypi, committed=committed)
+    except AlreadyPublished as error:
+        print(f"::notice::Release already published: {error}")
+        write_output("published", "true")
+        return 0
     except GuardError as error:
         print(f"::error::Release version blocked: {error}", file=sys.stderr)
         return 1
     print(f"Release version verified: {version} (tag, package, bumpversion agree; not on PyPI)")
+    write_output("published", "false")
     return 0
+
+
+def write_output(key: str, value: str) -> None:
+    target = os.environ.get("GITHUB_OUTPUT")
+    if target:
+        with open(target, "a", encoding="utf-8") as handle:
+            handle.write(f"{key}={value}\n")
 
 
 if __name__ == "__main__":

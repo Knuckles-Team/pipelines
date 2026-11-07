@@ -17,8 +17,14 @@ permissions:
 
 jobs:
   # ── Version guard (PIPE-RELEASE-R002) ──────────────────────────
+  # A version a maintainer already published from this commit (local release of the
+  # Linux wheels, PIPE-RELEASE-R029.3) passes with published=true. Every job still runs,
+  # so the hosted-only macOS and Windows wheels publish; the publish job drops the files
+  # PyPI already serves before the upload.
   version-guard:
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.version.outputs.published }}
     steps:
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,7 +41,8 @@ jobs:
           path: .pipeline-contract
           persist-credentials: false
 
-      - uses: ./.pipeline-contract/.github/actions/verify-release-version
+      - id: version
+        uses: ./.pipeline-contract/.github/actions/verify-release-version
 
   # ── Linux Wheels ───────────────────────────────────────────────
   linux:
@@ -203,6 +210,26 @@ jobs:
         env:
           RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
         run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"'
+
+      # PIPE-RELEASE-R029.3: the version guard job let an already-published version through only
+      # for a local release of this commit (its Linux wheels). Drop the named files PyPI already
+      # serves, so the upload carries only the hosted platforms. A new version drops nothing.
+      - name: Drop the files a local release already published
+        run: |
+          set -euo pipefail
+          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
+          code="$(curl -sS -o served.json -w '%{http_code}' "https://pypi.org/pypi/${name}/${BUILD_VERSION}/json")"
+          case "$code" in
+            404) echo "${name} ${BUILD_VERSION} is new on PyPI: uploading every file"; exit 0 ;;
+            200) ;;
+            *) echo "::error::PyPI answered ${code}; cannot tell which files are published"; exit 1 ;;
+          esac
+          python3 -c 'import json;print("\n".join(u["filename"] for u in json.load(open("served.json"))["urls"]))' > served.txt
+          while IFS= read -r file; do
+            if [[ -n "$file" && -f "dist/$file" ]]; then echo "already on PyPI: $file"; rm -f "dist/$file"; fi
+          done < served.txt
+          rm -f served.json served.txt
+          ls -la dist/
 
       - name: Verify release tag before publication
         uses: ./.pipeline-contract/.github/actions/verify-release-source

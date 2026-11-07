@@ -188,3 +188,7 @@ commit).
 - [ ] T105 PIPE-RELEASE-R028.3 A declared catalog holds only command sources.
 - [ ] T106 PIPE-RELEASE-R028.4 Hot-path proof: the release job runs the proof before publish.
 - [ ] T107 PIPE-RELEASE-R028 Coding harness bundles are proven at release and never committed (rollup).
+- [ ] T108 PIPE-RELEASE-R029.1 An attested local gate counts as CI.
+- [ ] T109 PIPE-RELEASE-R029.2 A local release publishes only a commit with green CI.
+- [ ] T110 PIPE-RELEASE-R029.3 The hosted release skips a version the local release published.
+- [ ] T111 PIPE-RELEASE-R029 An attested local gate and a local release count as CI and release (rollup).

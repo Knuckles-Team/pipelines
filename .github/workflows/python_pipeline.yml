@@ -112,22 +112,24 @@ jobs:
           uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root . set "$version"
 
       # PIPE-RELEASE-R002: refuse a stale-version tag, a bumpversion mismatch or an
-      # already-published version before any build time is spent.
+      # already-published version before any build time is spent. A version a maintainer
+      # already published from this commit (local release, PIPE-RELEASE-R029.3) skips the rest.
       - name: Verify release version
+        id: version
         uses: ./.pipeline-contract/.github/actions/verify-release-version
 
       - name: Setup Node.js
-        if: inputs.web-assets && hashFiles('package.json') != ''
+        if: steps.version.outputs.published != 'true' && (inputs.web-assets && hashFiles('package.json') != '')
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
 
       - name: Install pnpm
-        if: inputs.web-assets && hashFiles('pnpm-lock.yaml') != ''
+        if: steps.version.outputs.published != 'true' && (inputs.web-assets && hashFiles('pnpm-lock.yaml') != '')
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
       - name: Install Frontend Dependencies
-        if: inputs.web-assets && hashFiles('package.json') != ''
+        if: steps.version.outputs.published != 'true' && (inputs.web-assets && hashFiles('package.json') != '')
         run: |
           if [ -f pnpm-lock.yaml ]; then
             pnpm install --frozen-lockfile
@@ -138,7 +140,7 @@ jobs:
           fi
 
       - name: Build Frontend
-        if: inputs.web-assets && hashFiles('package.json') != ''
+        if: steps.version.outputs.published != 'true' && (inputs.web-assets && hashFiles('package.json') != '')
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: |
@@ -149,7 +151,7 @@ jobs:
           fi
 
       - name: Generate the connector ontology artifacts
-        if: inputs.connector
+        if: steps.version.outputs.published != 'true' && (inputs.connector)
         env:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
@@ -159,6 +161,7 @@ jobs:
           uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector generate --root .
 
       - name: Build, publish and release
+        if: steps.version.outputs.published != 'true'
         uses: ./.pipeline-contract/.github/actions/publish-python-package
         with:
           pypi-token: ${{ secrets.PYPI_API_TOKEN }}

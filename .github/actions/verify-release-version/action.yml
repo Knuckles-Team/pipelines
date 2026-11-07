@@ -2,6 +2,8 @@ name: Verify release version
 description: >-
   Fail before any build when the pushed release tag vX.Y.Z differs from the package version the
   build will stamp, when .bumpversion.cfg disagrees, or when that version is already on PyPI.
+  A tag whose commit predates the version's first PyPI upload was released from an attested local
+  build: output published=true and the caller skips its build and upload (PIPE-RELEASE-R029.3).
   Explicit published-wheel mode instead verifies an existing public pure-Python wheel against
   the reviewed package payload and Dockerfile pin before container publication.
 inputs:
@@ -35,10 +37,15 @@ inputs:
     description: Directory holding the package pyproject.toml.
     required: false
     default: '.'
+outputs:
+  published:
+    description: true when this tag's version is already on PyPI from this commit (a local release); the caller skips its upload.
+    value: ${{ steps.unpublished.outputs.published }}
 runs:
   using: composite
   steps:
     - name: Verify tag, package version and PyPI
+      id: unpublished
       if: inputs.mode == 'unpublished'
       shell: bash
       env:

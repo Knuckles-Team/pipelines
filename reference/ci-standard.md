@@ -80,6 +80,21 @@ Every repository gives a cold agent the same setup and the same orientation (PIP
 - A self-hosted runner may mount a persistent host directory and name it in `CI_CACHE_ROOT`. `gates_pipeline.yml` then keeps the hook store and the uv cache there and skips the cache actions (PIPE-RELEASE-R007.15). The runner deployment owns the mount.
 - `tests/test_precommit_cache_contract.py` fails a workflow job that runs `pre-commit run` without a `~/.cache/pre-commit` restore and an `install-hooks` step. Reusable-workflow callers are exempt.
 
+## Attested local gate
+
+The owner may validate a pull request on its own build hosts instead of waiting for hosted runners (PIPE-RELEASE-R029.1).
+
+- The local run reads the repository's own CI shape and runs all of it on the exact commit: the pre-commit configs and stages, the CI-only config, the full test suite, the type checks and the Cargo checks.
+- A pull request run tests the merge of the head with the base, as a hosted pull request run does.
+- A failing test counts as environment noise only when the same test also fails on the base commit. Any other failure is red.
+- A green run posts the commit status `CI required` with state `success` on the head commit. Its description summarises the evidence.
+- The run comments the full evidence on the pull request: each check, its result, its time and every noise failure.
+- The owner account then merges with `gh pr merge <n> --squash --admin --match-head-commit <head>` and cancels the hosted runs of that pull request.
+- The owner account holds a pull-request bypass on each repository's main integrity ruleset. So the merge lands even when a hosted `CI required` check has already failed: a success status does not override a failed check run. A direct push to main still needs the status. Deletion and non-fast-forward stay blocked.
+- Cancel the hosted runs only after the merge. A cancelled run makes the aggregate `CI required` job conclude failure.
+- Status and comment text name no host, private domain or local path. The host map stays in the private operations overlay.
+- Main still runs the full hosted CI after the merge. A red main is fixed forward.
+
 ## Auto-merge and releases (keep it simple)
 
 - Each repository allows auto-merge, and its main ruleset requires a pull request plus the single check `CI required`, and blocks force-push and deletion.
@@ -87,3 +102,4 @@ Every repository gives a cold agent the same setup and the same orientation (PIP
 - A pull request title or body never holds a CI-skip marker (`[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, `[actions skip]`). The shared `gates_pipeline.yml` job `ci-skip-marker` fails the pull request, so `CI required` fails. A squash merge takes its subject from the title, and a marker commit runs no workflow: no Pages deploy and no release.
 - `scripts/audit_ruleset_conformance.py` (workflow `ruleset_audit.yml`, daily) lists every registered, non-archived repository whose main does not require exactly `CI required` or whose auto-merge is off. It fails the run with the list and never changes a repository. `EXCLUDE` holds a skipped repository and its reason.
 - A release is a `v*` tag pushed by a maintainer. The tag runs the publish jobs (PyPI, Docker, Pages). Main pushes run CI and the org-site notify only.
+- Nothing publishes on red CI. An attested local gate on the exact commit, with its evidence recorded, counts as that commit's green CI. A maintainer may then publish it from a local build ([local release](python-release-readiness.md#local-release), PIPE-RELEASE-R029.2).
