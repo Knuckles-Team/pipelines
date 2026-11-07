@@ -136,3 +136,22 @@ class Machine:
     def declared(self) -> bool:
         """A declared machine has a transition table or a transition function."""
         return self.table is not None or self.function is not None
+
+
+@dataclass(frozen=True)
+class Use:
+    """An assignment or string compare of a status field through a receiver."""
+
+    field: str
+    kind: str
+    site: Site
+    receiver: str | None
+    module_names: frozenset[str]
+
+
+def attach(machine: Machine, use: Use) -> None:
+    """Record one use on a machine; a compare in a module naming the enum is fine."""
+    if use.kind == "assign":
+        machine.assigners.append(use.site)
+    elif machine.status_kind != "enum" or machine.status_type not in use.module_names:
+        machine.string_compares.append(use.site)
