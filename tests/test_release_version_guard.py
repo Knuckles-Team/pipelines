@@ -161,7 +161,10 @@ def test_a_tag_published_after_its_commit_is_a_local_release(guard, tmp_path):
     root = package(tmp_path, bump="0.5.1")
     with pytest.raises(guard.AlreadyPublished, match="attested local build"):
         guard.verify(
-            root, "refs/tags/v0.5.1", lookup=uploaded_at("2026-11-07T12:05:00.000000Z"), committed="2026-11-07T12:00:00+00:00"
+            root,
+            "refs/tags/v0.5.1",
+            lookup=uploaded_at("2026-11-07T12:05:00.000000Z"),
+            committed="2026-11-07T12:00:00+00:00",
         )
 
 
@@ -206,7 +209,10 @@ def test_hosted_release_skips_the_upload_of_a_locally_published_version():
     action = yaml.safe_load((ACTION / "action.yml").read_text())
     assert action["outputs"]["published"]["value"] == "${{ steps.unpublished.outputs.published }}"
     publish = (ROOT / ".github/actions/publish-python-package/action.yml").read_text()
-    assert "twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ --skip-existing" in publish
+    assert (
+        "twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ --skip-existing"
+        in publish
+    )
     native = yaml.safe_load((ROOT / ".github/workflows/maturin_pipeline.yml").read_text())["jobs"]
     assert native["version-guard"]["outputs"]["published"] == "${{ steps.version.outputs.published }}"
     upload = next(s for s in native["publish"]["steps"] if s.get("name") == "Publish to PyPI")
