@@ -39,7 +39,10 @@ def upstream_base(root: Path, explicit: str | None) -> str | None:
     """The widest honest "not yet published" base, or ``None`` for all history.
 
     An explicit ref, then the remote revision pre-commit is pushing over, then
-    ``origin/main`` (an explicit ref or ``origin/main`` resolves to its merge base with ``HEAD``). With none of them the whole history is unpublished, and
+    ``origin/main`` (an explicit ref or ``origin/main`` resolves to its merge base with ``HEAD``).
+    When the ``origin/main`` merge base is not contained in the pushed-over
+    revision, the branch merged main since its last push and the merge base is
+    the base: main merged into the branch is not part of the change. With none of them the whole history is unpublished, and
     ``None`` tells the caller to scan all of it rather than guess a range.
     """
     if explicit:
@@ -48,10 +51,17 @@ def upstream_base(root: Path, explicit: str | None) -> str | None:
             raise CannotRun(f"base ref {explicit!r} does not resolve to a commit")
         return _fork_point(root, resolved)
     pushed = _pushed_from(root)
-    if pushed:
-        return pushed
     main = commit(root, "origin/main")
-    return _fork_point(root, main) if main else None
+    fork = _fork_point(root, main) if main else None
+    if pushed:
+        # A branch that merged main since its last push: the merged-in main
+        # work is published, so the change is measured from the main fork point.
+        return fork if fork and not _is_ancestor(root, fork, pushed) else pushed
+    return fork
+
+
+def _is_ancestor(root: Path, older: str, newer: str) -> bool:
+    return run_git(root, ("merge-base", "--is-ancestor", older, newer)).returncode == 0
 
 
 def change_base(root: Path, explicit: str | None) -> str | None:

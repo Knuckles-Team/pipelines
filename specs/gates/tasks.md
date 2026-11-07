@@ -243,8 +243,8 @@
 - [ ] T226 PIPE-GATES-R086.5 The two hooks, the modes and the exit codes.
 - [ ] T227 PIPE-GATES-R086.6 The ontology half: a state class must roll up to the core.
 - [ ] T228 PIPE-GATES-R087 The constitution states the design principles of a simple unit.
-- [ ] T229 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
-- [ ] T230 PIPE-GATES-R089 An environment repository holds no custom code.
+- [x] T229 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
+- [x] T230 PIPE-GATES-R089 An environment repository holds no custom code.
 - [ ] T231 PIPE-GATES-R090 The spec standard requires a pre-untangled design.
 - [ ] T232 PIPE-GATES-R088.1 Layer entry shape and policy faults. Size: S, 1 PR, 2 hours.
 - [ ] T233 PIPE-GATES-R088.2 Cargo crate layers in the coupling gate. Size: M, 1 PR, 4 hours.
@@ -257,3 +257,4 @@
 - [ ] T233 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
 - [ ] T234 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.
 - [ ] T240 PIPE-GATES-R095 The consistency analysis checks the Phase 1 design answers and the two-call-site rule.
+- [ ] T241 PIPE-GATES-R096 A branch that merged main is measured from the main fork point.
