@@ -211,27 +211,32 @@ jobs:
           RUNTIME_PROFILES: ${{ inputs.runtime-profiles }}
         run: '"$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"'
 
+      # PIPE-RELEASE-R029.3: the version guard job let an already-published version through only
+      # for a local release of this commit (its Linux wheels). Drop the named files PyPI already
+      # serves, so the upload carries only the hosted platforms. A new version drops nothing.
+      - name: Drop the files a local release already published
+        run: |
+          set -euo pipefail
+          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
+          code="$(curl -sS -o served.json -w '%{http_code}' "https://pypi.org/pypi/${name}/${BUILD_VERSION}/json")"
+          case "$code" in
+            404) echo "${name} ${BUILD_VERSION} is new on PyPI: uploading every file"; exit 0 ;;
+            200) ;;
+            *) echo "::error::PyPI answered ${code}; cannot tell which files are published"; exit 1 ;;
+          esac
+          python3 -c 'import json;print("\n".join(u["filename"] for u in json.load(open("served.json"))["urls"]))' > served.txt
+          while IFS= read -r file; do
+            if [[ -n "$file" && -f "dist/$file" ]]; then echo "already on PyPI: $file"; rm -f "dist/$file"; fi
+          done < served.txt
+          rm -f served.json served.txt
+          ls -la dist/
+
       - name: Verify release tag before publication
         uses: ./.pipeline-contract/.github/actions/verify-release-source
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # PIPE-RELEASE-R029.3: after a local release of the Linux wheels, upload only the files
-      # PyPI does not serve yet (the hosted-only platforms). Named files, never a blanket skip.
-      - name: Drop the files a local release already published
-        id: remaining
-        if: needs.version-guard.outputs.published == 'true'
-        run: |
-          set -euo pipefail
-          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
-          served="$(curl -fsS "https://pypi.org/pypi/${name}/${BUILD_VERSION}/json" | python3 -c 'import json,sys;print("\n".join(u["filename"] for u in json.load(sys.stdin)["urls"]))')"
-          while IFS= read -r file; do
-            [[ -n "$file" && -f "dist/$file" ]] && { echo "already on PyPI: $file"; rm -f "dist/$file"; }
-          done <<< "$served"
-          echo "count=$(find dist -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) | wc -l)" >> "$GITHUB_OUTPUT"
-
       - name: Publish to PyPI
-        if: steps.remaining.outputs.count != '0'
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: dist/

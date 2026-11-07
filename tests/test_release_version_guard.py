@@ -213,11 +213,9 @@ def test_hosted_release_skips_the_upload_of_a_locally_published_version():
     steps = native["publish"]["steps"]
     names = [s.get("name") for s in steps]
     drop = steps[names.index("Drop the files a local release already published")]
-    upload = steps[names.index("Publish to PyPI")]
-    assert names.index(drop["name"]) < names.index("Publish to PyPI")
-    assert drop["if"] == "needs.version-guard.outputs.published == 'true'"
-    assert 'rm -f "dist/$file"' in drop["run"] and "count=" in drop["run"]
-    assert upload["if"] == "steps.remaining.outputs.count != '0'"
+    assert names.index("Reverify exact upload bytes") < names.index(drop["name"]) < names.index("Publish to PyPI")
+    assert "if" not in drop and 'rm -f "dist/$file"' in drop["run"]
+    assert "404) echo" in drop["run"] and "cannot tell which files are published" in drop["run"]
     assert "skip-existing" not in str(steps)
     # The hosted-only platform wheels still build after a local Linux release.
     for job in ("macos", "windows"):
