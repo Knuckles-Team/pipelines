@@ -251,3 +251,6 @@
 - [ ] T234 PIPE-GATES-R088.3 Consumer adoption of the coupling layers. Size: S, 1 PR per consumer, 1 hour each.
 - [ ] T235 PIPE-GATES-R086.7 Consumer policy for the state-machine hooks. Size: S, 1 PR, 2 hours.
 - [ ] T236 PIPE-GATES-R086.8 Census adoption order and expected baselines. Size: M, 5 PRs (one per consumer), 1 hour each.
+- [ ] T232 PIPE-GATES-R091 A Rust dependency is never resolved from outside crates.io.
+- [ ] T233 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
+- [ ] T234 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.
