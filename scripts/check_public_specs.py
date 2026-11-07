@@ -17,7 +17,7 @@ render = import_module("pipelines_hooks.specs.generator").render
 requirement_errors = import_module("scripts.public_spec_requirements").requirement_errors
 
 FILES = ("spec.md", "plan.md", "test-spec.md", "tasks.md")
-PRIVATE = re.compile(r"plans/|gitlab|homelab|(?:file://|/(?:home|Users|tmp|workspace)/)|\.arpa\b", re.I)
+PRIVATE = import_module("pipelines_hooks.hygiene.pr_text").PRIVATE
 LINK = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
 
 

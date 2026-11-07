@@ -136,6 +136,13 @@ on:
         required: false
         type: string
         default: ''
+      pr-text-strict:
+        description: >-
+          Make a finding of the pr-text job (an internal reference, jargon or a bare row ID in
+          the pull request title or body) fail the job. The default reports warnings only.
+        required: false
+        type: boolean
+        default: false
       timeout-minutes:
         description: Wall-clock cap for the gates job (15 for pull requests, 60 for main).
         required: false
@@ -173,6 +180,32 @@ jobs:
             fi
           done
           exit "$found"
+
+  # PIPE-GATES-R099: the pull request title and body are self-evident to an outside reader.
+  # Staged: the job reports findings as warnings and passes. A caller sets `pr-text-strict`
+  # to make a finding fail the job, and so the caller's `CI required` aggregate.
+  pr-text:
+    name: pr-text
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          enable-cache: false
+
+      - name: Lint the pull request title and body for internal references
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_TEXT_STRICT: ${{ inputs.pr-text-strict }}
+          PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          uvx --from "$PIPELINES_SOURCE" pipelines-hook pr-text
 
   gates:
     name: gates

@@ -59,6 +59,19 @@ A shared checkout keeps some state in a common directory that every linked workt
 9. **Wire a control at the chokepoint.** Put an authorization, validation or lifecycle control in the function that every caller reaches. A test enters through each entry point.
 10. **Fix a flake, do not retry it.** A run that failed and then passed is a defect to fix. Re-run only an infrastructure failure, and say so in the report.
 
+## Pull requests, comments and commit messages
+
+Constitution Article XXXII sets the rule: every pull request title and description, review comment, issue comment and commit message is self-evident to an outside reader or a fresh agent with no other context.
+
+1. **Say what, why, impact and proof.** The text states what changed, why, the behaviour impact (what a user or caller sees differently, or that nothing does) and how it was verified. Plain words, short sentences, no private context.
+2. **No internal reference.** The text never names a hostname, a private domain, a local filesystem path, an internal tool or script, a private repository, or a private handoff document. It never uses internal workflow jargon such as lane, ledger, feeder, train or wave. Describe the thing in public terms instead: "the merge queue", "the batch of changes", "the shared test run".
+3. **A row ID carries its meaning.** Write `PIPE-GATES-R099 (pull request text is self-evident)`, never the bare ID. The `Spec:` trailer of a commit is the one place a bare ID stands, because tooling reads it.
+4. **Say what was run.** Name the checks in plain words ("the unit tests of the changed package, 412 passed"). A check that was not run is listed as not run.
+5. **Explain a repeated failure.** A test that "fails identically on main" is a test that was already failing before this change. Say that, name the test, and say the change neither caused nor fixes it.
+6. **Evidence comments follow the same rule.** The comment a local run posts on a pull request is read by someone with no access to the machine. It lists what was run and the result, and it holds no host name or role.
+
+*Gate*: the `pr-text` job of the shared gates workflow lints the pull request title and body, and the `pr-text` hook lints a commit message at the `commit-msg` stage. Both report warnings (exit 0) until `pr-text-strict` or `--strict` is set, then findings block. They flag the internal-reference patterns the public-spec check uses, hostnames and machine roles, internal tool names, workflow jargon, handoff-document names, and a bare row ID. A private repository name is passed with `--private-repo`. Review and issue comments are reviewed by people; the same rule applies.
+
 ## Registries keyed on spec directories
 
 A page, explorer or index that maps by spec directory name must change in the same pull request that adds, renames or removes a spec directory. A new family without a node fails the page build after the merge, which blocks every later change to the page.

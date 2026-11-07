@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.9.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
+**Version**: 1.10.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
 
 ## Core Principles
 
@@ -773,6 +773,28 @@ Standards and tests:
 
 **Plan check:** Does each new or changed lifecycle declare its states, events, guards and one transition function, refuse illegal transitions with a typed error, persist the state as one field, describe the machine in the ontology and test every transition and refusal?
 
+### XXXII. Written text is self-evident
+
+Every pull request title and description, review comment, issue comment and commit message is self-evident to an outside reader or a fresh agent with no other context. It states what changed, why, the behaviour impact and how it was verified, in plain words. It never holds an internal reference: a hostname, a private domain, a local filesystem path, an internal tool or script name, a private repository name, internal workflow jargon (such as lane, ledger, feeder, train or wave) or a pointer to a private handoff document. A spec row ID always appears together with its one-line meaning. A test that fails the same way on the default branch is described as already failing before the change, and the text says what was run in plain words.
+
+*Rationale*: Text that needs the author's private context cannot be reviewed, searched or audited by anyone else, and it leaks internal names into a public record. A reader should learn the change, the reason and the evidence from the text alone.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: pr-text -->
+- `pr-text`: pr-text (commit message holds no internal reference, jargon or bare row ID; warns)
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Delivery practice](https://github.com/Knuckles-Team/pipelines/blob/main/reference/delivery-practice.md), section "Pull requests, comments and commit messages".
+- The `pr-text` job of `.github/workflows/gates_pipeline.yml` lints the pull request title and body. It reports warnings until a caller sets `pr-text-strict`.
+- `tests/test_constitution.py::test_the_written_text_article_requires_self_evident_text` keeps this article whole.
+
+**Plan check:** Does every pull request, comment and commit message of the change state what changed, why, the behaviour impact and how it was verified, with no internal reference, no jargon and no bare row ID?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -848,4 +870,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.9.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
+**Version**: 1.10.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07

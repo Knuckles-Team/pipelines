@@ -18,7 +18,7 @@ SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
     "python-version", "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
-    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "uv-cache-local-path", "spec-hooks", "timeout-minutes", "scanners",
+    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "uv-cache-local-path", "spec-hooks", "timeout-minutes", "scanners", "pr-text-strict",
 }  # fmt: skip
 
 
