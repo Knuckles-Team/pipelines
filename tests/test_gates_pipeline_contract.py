@@ -281,11 +281,17 @@ def test_self_hosted_runner_keeps_hook_and_uv_caches_on_the_host() -> None:
     names = [step.get("name") for step in steps]
     assert names.index("Use the runner's persistent caches") < names.index("Install uv")
     # Every actions/cache transfer of the hook store or the uv cache is off on a persistent runner.
-    transfers = [s for s in steps if str(s.get("uses", "")).startswith("actions/cache") and s.get("id") != "scanner-cache"]
+    transfers = [
+        s for s in steps if str(s.get("uses", "")).startswith("actions/cache") and s.get("id") != "scanner-cache"
+    ]
     assert len(transfers) == 4
     for step in transfers:
         assert step["if"].startswith("steps.persist.outputs.enabled != 'true'"), step["name"]
     refresh = by_name["Refresh the shared hooks in the persistent store"]
     assert refresh["if"] == "steps.persist.outputs.enabled == 'true'"
     assert "flock" in refresh["run"] and ".pipelines-main" in refresh["run"] and ".stale" in refresh["run"]
-    assert names.index("Resolve the shared hook revision") < names.index(refresh["name"]) < names.index("Install pre-commit environments")
+    assert (
+        names.index("Resolve the shared hook revision")
+        < names.index(refresh["name"])
+        < names.index("Install pre-commit environments")
+    )
