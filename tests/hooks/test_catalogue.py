@@ -32,6 +32,7 @@ KEPT = {
     "connector-standard",
     "connector-name",
     "coupling",
+    "environment-config-only",
     "state-machine-shape",
     "state-machine-census",
     "crates-io-only",

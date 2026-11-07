@@ -544,6 +544,14 @@
   always_run: true
   stages: [pre-commit, pre-push, manual]
 
+- id: environment-config-only
+  name: environment-config-only
+  entry: pipelines-hook environment-config-only
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit, pre-push, manual]
+
 - id: crates-io-only
   name: crates-io-only
   entry: pipelines-hook crates-io-only
