@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -41,10 +42,21 @@ def test_change_scope_output_is_preserved_for_native_caller_jobs() -> None:
     changes = document["jobs"]["changes"]
     assert changes["outputs"] == {"code": "${{ steps.scope.outputs.code }}"}
     scope = next(step for step in changes["steps"] if step.get("id") == "scope")
-    assert "scripts/ci_change_scope.py" in scope["run"]
-    assert '--event "$EVENT"' in scope["run"]
-    assert '--base "$BASE"' in scope["run"]
-    assert '--head "$HEAD"' in scope["run"]
+    assert 'echo "code=$code" >> "$GITHUB_OUTPUT"' in scope["run"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R007.16")
+def test_change_scope_uses_the_shared_classifier_not_a_caller_script() -> None:
+    changes = _workflow()["jobs"]["changes"]
+    names = [str(step.get("uses", "")) for step in changes["steps"]]
+    assert any(name.startswith("astral-sh/setup-uv@") for name in names)
+    scope = next(step for step in changes["steps"] if step.get("id") == "scope")
+    run = scope["run"]
+    assert "scripts/" not in run
+    assert 'env -u GITHUB_OUTPUT uvx --from "$PIPELINES_SOURCE" pipelines-hook change-scope "${args[@]}"' in run
+    assert scope["env"]["PIPELINES_SOURCE"].endswith("@${{ job.workflow_sha }}")
+    assert 'args=(--base-ref "$BASE")' in run and "args=(--force-full)" in run
+    assert 'if [[ "$scope" == "spec" ]]; then code=false; else code=true; fi' in run
 
 
 def test_each_job_uses_full_caller_checkout_and_central_fork_safe_runner() -> None:

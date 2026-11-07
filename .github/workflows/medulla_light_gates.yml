@@ -63,12 +63,27 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          enable-cache: false
+      # The generic classifier (pipelines-hook change-scope, PIPE-RELEASE-R007.8)
+      # replaces the caller's removed scripts/ci_change_scope.py: `code` is true
+      # unless the diff is spec/docs only; a push is always a full run.
       - id: scope
         env:
           EVENT: ${{ github.event_name }}
           BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
-        run: python3 scripts/ci_change_scope.py --event "$EVENT" --base "$BASE" --head "$HEAD" >> "$GITHUB_OUTPUT"
+          PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT" == "pull_request" ]]; then args=(--base-ref "$BASE"); else args=(--force-full); fi
+          # The classifier's own outputs stay out of GITHUB_OUTPUT: this job
+          # publishes exactly one key, `code`, derived from the scope.
+          scope="$(env -u GITHUB_OUTPUT uvx --from "$PIPELINES_SOURCE" pipelines-hook change-scope "${args[@]}" | sed -n 's/^scope=//p')"
+          if [[ "$scope" == "spec" ]]; then code=false; else code=true; fi
+          echo "change scope: $scope (code=$code)"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
 
   lint-and-architecture:
     timeout-minutes: ${{ github.event_name == 'pull_request' && 20 || 60 }}
