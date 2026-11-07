@@ -256,3 +256,4 @@
 - [ ] T232 PIPE-GATES-R091 A Rust dependency is never resolved from outside crates.io.
 - [ ] T233 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
 - [ ] T234 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.
+- [ ] T241 PIPE-GATES-R096 A branch that merged main is measured from the main fork point.
