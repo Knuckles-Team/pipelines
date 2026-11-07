@@ -529,3 +529,26 @@
   pass_filenames: false
   always_run: true
   stages: [pre-commit, pre-push, manual]
+
+- id: crates-io-only
+  name: crates-io-only
+  entry: pipelines-hook crates-io-only
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit, pre-push, manual]
+
+- id: rustfmt-scope
+  name: rustfmt-scope
+  entry: pipelines-hook rustfmt-scope
+  language: python
+  files: '(^|/)(Cargo\.toml|rust-toolchain\.toml|rustfmt\.toml)$|\.rs$'
+  stages: [pre-commit, pre-push, manual]
+
+- id: cargo-advisories
+  name: cargo-advisories
+  entry: pipelines-hook cargo-advisories
+  language: python
+  pass_filenames: false
+  files: '(^|/)(Cargo\.lock|Cargo\.toml|deny\.toml|cargo-audit-allow\.txt)$'
+  stages: [pre-push, manual]
