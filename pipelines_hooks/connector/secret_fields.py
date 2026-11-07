@@ -8,7 +8,9 @@ Three checks, one report (``reference/connector-surface.md``, constitution Artic
 2. JSON schemas tracked in the package, and with ``--probe`` the output schema
    of every tool the built server registers (the served-tools probe of
    ``served_tools``): a secret-named property carries ``x-redacted``,
-   ``x-secret-bearing`` or ``writeOnly``.
+   ``x-secret-bearing`` or ``writeOnly``; a field a tool's SDK-derived
+   annotation ``returnsSecret`` lists in ``secretFields`` is a minted secret
+   that tool returns once and passes.
 3. Recorded tool outputs (tracked ``.json``/``.yaml``/``.yml`` under ``tests/``):
    no credential-shaped value and no filled secret-named key.
 
@@ -43,7 +45,13 @@ import json, sys
 from scion_sdk.connector import build_server
 from scion_sdk.mcp.tool_surface import registered_tools
 _, mcp = build_server(sys.argv[1], command_args=["--transport", "stdio"])
-out = {name: (getattr(tool, "output_schema", None) or {}) for name, tool in sorted(registered_tools(mcp).items())}
+def annotations(tool):
+    value = getattr(tool, "annotations", None)
+    return value.model_dump(exclude_none=True) if hasattr(value, "model_dump") else dict(value or {})
+out = {
+    name: {"schema": getattr(tool, "output_schema", None) or {}, "annotations": annotations(tool)}
+    for name, tool in sorted(registered_tools(mcp).items())
+}
 print("%s" + json.dumps(out))
 """
     % MARKER
@@ -102,12 +110,20 @@ def served_output_leaks(root: Path, package: str) -> list[Leak]:
     if done.returncode or not lines:
         reason = (done.stderr.strip().splitlines() or ["no output"])[-1][:300]
         raise Unavailable(f"secret-fields: the server of {package} did not build: {reason}")
-    schemas = json.loads(lines[-1][len(MARKER) :])
+    tools = json.loads(lines[-1][len(MARKER) :])
     return [
         Leak(f"tool:{name}", 1, "SF-SERVED-OUTPUT-FIELD", leak.detail)
-        for name, schema in schemas.items()
-        for leak in secret_scan.schema_leaks(name, schema)
+        for name, tool in tools.items()
+        for leak in secret_scan.schema_leaks(name, tool.get("schema") or {})
+        if not _declared_secret(tool.get("annotations") or {}, leak.detail)
     ]
+
+
+def _declared_secret(annotations: dict[str, object], trail: str) -> bool:
+    """A minting tool's SDK-derived ``returnsSecret`` annotation names the field it returns once."""
+    fields = annotations.get("secretFields") or []
+    named = isinstance(fields, list) and (trail in fields or trail.rsplit(".", 1)[-1] in fields)
+    return annotations.get("returnsSecret") is True and named
 
 
 def main(argv: list[str]) -> int:

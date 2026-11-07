@@ -134,7 +134,17 @@ def test_the_probe_checks_the_output_schema_of_every_served_tool(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     root = _connector(tmp_path)
-    schemas = {"gitlab_get_projects": {"properties": {"runners_token": {"type": "string"}}}, "ok": {}}
+    leaky = {"properties": {"runners_token": {"type": "string"}}}
+    minted = {"properties": {"token": {"type": "string"}}}
+    schemas = {
+        "gitlab_get_projects": {"schema": leaky, "annotations": {"readOnlyHint": True}},
+        "gitlab_create_deploy_token": {
+            "schema": minted,
+            "annotations": {"returnsSecret": True, "secretFields": ["token"]},
+        },
+        "gitlab_get_deploy_token": {"schema": minted, "annotations": {}},
+        "ok": {"schema": {}, "annotations": {}},
+    }
     fake = tmp_path / "fake-python"
     fake.write_text(
         textwrap.dedent(
@@ -148,4 +158,7 @@ def test_the_probe_checks_the_output_schema_of_every_served_tool(
     fake.chmod(0o755)
     monkeypatch.setenv("PIPELINES_CONNECTOR_PYTHON", str(fake))
     assert secret_fields.main(["--root", str(root), "--probe"]) == 0
-    assert "tool:gitlab_get_projects:1 SF-SERVED-OUTPUT-FIELD runners_token" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "tool:gitlab_get_projects:1 SF-SERVED-OUTPUT-FIELD runners_token" in out
+    assert "tool:gitlab_get_deploy_token:1 SF-SERVED-OUTPUT-FIELD token" in out
+    assert "gitlab_create_deploy_token" not in out
