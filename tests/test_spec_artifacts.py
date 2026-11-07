@@ -108,11 +108,18 @@ def test_row_findings_fail_only_for_an_added_row(tmp_path: Path) -> None:
 def test_a_deletion_only_diff_adds_no_rows(tmp_path: Path) -> None:
     import subprocess
 
+    from pipelines_hooks.core.gitenv import sanitized_env
     from pipelines_hooks.specs.narrative import added_row_ids
 
     def git(*args: str) -> None:
+        # A git hook exports GIT_DIR and GIT_INDEX_FILE; without the sanitized
+        # environment this throwaway repository would write into the caller's index.
         subprocess.run(
-            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=tmp_path, check=True, capture_output=True
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+            env=sanitized_env(),
         )
 
     spec = tmp_path / "specs" / "x"

@@ -32,6 +32,7 @@ KEPT = {
     "connector-standard",
     "connector-name",
     "coupling",
+    "environment-config-only",
     "crates-io-only",
     "rustfmt-scope",
     "cargo-advisories",

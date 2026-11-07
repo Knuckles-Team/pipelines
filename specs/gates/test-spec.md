@@ -208,6 +208,7 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | T-106 | PIPE-GATES-R091 | Integration | A git fixture with a registry-only tree, a git dependency, an escaping path dependency and a git+ lock source. | The registry-only tree passes; each other case exits 1. |
 | T-107 | PIPE-GATES-R092 | Integration | A git fixture with a non-Rust change, escaping and absolute paths and a floating toolchain channel. | The non-Rust change exits 0; the paths and the floating channel exit 2. |
 | T-108 | PIPE-GATES-R093 | Unit | A deny configuration and ledger with a matched, an unledgered and a stale entry, plus expired, unjustified and far-horizon lines. | Each mismatch is a finding; the unreadable lines are rejected; a missing version pin exits 2. |
+| T-115 | PIPE-GATES-R096 | Unit | A git fixture: a branch pushed, main moved and merged into it; and a branch with no main merge. | The merged branch resolves to the origin/main fork point; the other keeps the pushed-over revision. |
 | T-106 | PIPE-GATES-R088.1 | Unit | Policy fixtures: valid array, bare string list, duplicate name, unit in two entries. | Valid passes; each fault exits 2 naming the entry. |
 | T-107 | PIPE-GATES-R088.2 | Unit | A Cargo workspace fixture with an upward, a renamed, a target-only, a build and a dev dependency. | Only the non-dev upward edges are reported; a dev edge passes. |
 | T-108 | PIPE-GATES-R088.3 | Unit | A consumer fixture with the SDK-shaped policy. | The hook exits 0. |
@@ -215,3 +216,4 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | T-110 | PIPE-GATES-R086.8 | Integration | Fixture corpora of R086.5 with a consumer policy. | Census output matches the fixture finding list. |
 | T-111 | PIPE-GATES-R086.9 | Unit | Hand-built `Machine` records with a table: one unreachable state, one dead end, one absorbing violation, one double target, one untested refusal cell, one without `INITIAL`, and one function machine. | Each record yields its code; the function machine yields none. |
 | T-112 | PIPE-GATES-R086.10 | Integration | The twelve algebra fixture directories. | The census output lists each violating directory with its code and passes the compliant tree. |
+| T-113 | PIPE-GATES-R094 | Unit | Spec fixtures: an existing path, a missing path, a missing path in a planned row, a continuation line, a changed row and an untouched row. | Existing and planned pass; a missing path yields a finding naming file, line, row and path; it fails when the row is added and is advisory otherwise. |
