@@ -248,3 +248,21 @@ def test_uv_cache_save_is_bounded_and_runs_last() -> None:
     assert save["continue-on-error"] is True
     assert "steps.uv.outputs.cache-hit != 'true'" in save["if"]
     assert save["with"] == {"path": "${{ env.UV_CACHE_DIR }}", "key": "${{ steps.uv.outputs.cache-key }}"}
+
+
+DEFAULT_BRANCH_PUSH = (
+    "github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)"
+)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R007.13")
+def test_hook_cache_saves_run_only_on_the_default_branch_and_restore_is_bounded() -> None:
+    for workflow in (GATES_WORKFLOW, WORKFLOWS / "medulla_light_gates.yml"):
+        jobs = yaml.safe_load(workflow.read_text(encoding="utf-8"))["jobs"]
+        steps = [step for job in jobs.values() for step in job.get("steps", [])]
+        saves = [s for s in steps if str(s.get("uses", "")).startswith("actions/cache/save@")]
+        assert saves, workflow.name
+        for step in saves:
+            assert step["if"].endswith(f"&& {DEFAULT_BRANCH_PUSH}"), (workflow.name, step["name"])
+        (restore,) = [s for s in steps if s.get("name") == "Restore pre-commit environments"]
+        assert restore["timeout-minutes"] == 3 and restore["continue-on-error"] is True, workflow.name
