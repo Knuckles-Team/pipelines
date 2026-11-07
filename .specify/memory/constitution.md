@@ -10,6 +10,8 @@ This constitution states the principles that every repository of the ecosystem f
 
 Each concept, fact, decision and operation has exactly one owning repository. Other repositories reference the owner by stable ID and never keep a copy.
 
+An environment (a deployment repository for one site) holds configuration only, with zero custom code. Its needs are met by configuring standard, specified ecosystem features. A bespoke script that encodes behaviour there, such as one that defines an identity-provider client, is a gap in the owning repository: file it as a feature row in that owner's `specs/` and replace the script with configuration.
+
 *Rationale*: Two owners drift apart. A second planner, store or policy table for an owned capability is a defect, not a convenience.
 
 **Enforced by:**
@@ -29,7 +31,7 @@ Standards and tests:
 - [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): the Ownership boundaries section.
 - `tests/hooks/test_coupling.py`, `tests/hooks/test_sdk_conformance.py`.
 
-**Plan check:** Does the plan name one owning repository per part and file each part in that owner's `specs/`?
+**Plan check:** Does the plan name one owning repository per part, file each part in that owner's `specs/`, and leave environment repositories with configuration only?
 
 ### II. Extend before you create
 
@@ -251,6 +253,8 @@ Standards and tests:
 
 Functions, files and classes stay inside the KISS limits. Complexity stays inside the cyclomatic and cognitive caps. New clones of existing code are refused. The numbers are in the thresholds table.
 
+Simple also means designed, not patched. Code that changes together lives together, and code that changes for different reasons is not tied together, so a change lands in one place. Interfaces are deep: a small surface hides a lot of behaviour, and a wrapper that only forwards a call is removed. Dependencies and call order are explicit: no hidden global state and no unstated sequence. Dead code, unused parameters and speculative generality are deleted, not kept for later. A defect is fixed by redesigning the cause; a special-case branch that patches one symptom is a sign the design is wrong, and the count of special cases is the measure of progress. Tests assert behaviour through the public surface and fail only on a regression, never on a refactor. The redesign procedure is the `codebase-untangle` skill in universal-skills.
+
 *Rationale*: Small units are testable and reviewable. Duplicates drift apart. One tool measures each property.
 
 **Enforced by:**
@@ -273,7 +277,7 @@ Standards and tests:
 - [Gate standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/gate-standard.md): the Advisory checks section lists the clone and complexity gates.
 - `tests/hooks/test_kiss.py`, `tests/hooks/test_complexity.py`, `tests/hooks/test_clones.py`, `tests/hooks/test_structural_limits.py`.
 
-**Plan check:** Do all new and changed units stay inside the limits in the thresholds table, with no copy of existing code?
+**Plan check:** Do all new and changed units stay inside the limits in the thresholds table, with no copy of existing code, no dead or pass-through code, no hidden state, and no special case that a redesign would remove?
 
 ### XII. No ratchets and no suppressions
 
@@ -589,7 +593,7 @@ Standards and tests:
 
 ### XXV. Small, modular units
 
-Each package, crate and module has one responsibility. The dependency graph between packages and crates is acyclic and layered downward. A pull request compiles only the units it touches and their dependents. A repository constitution may set a size limit for its units.
+Each package, crate and module has one responsibility. The dependency graph between packages and crates is acyclic and layered downward. Dependencies point toward the code that changes less, so the stable core never imports a volatile edge. A caller depends on a unit's public interface and never on its internals; a reach into another unit's private module is a defect. A pull request compiles only the units it touches and their dependents. A repository constitution may set a size limit for its units.
 
 Every unit of a multi-unit workspace also builds and tests alone, with the feature set that CI uses. A check that passes only in the unified build does not prove a unit. Test-only behavior of code that moves to another unit is kept through a named `test-support` feature, because the language's test-only flag applies only to the unit under test.
 
@@ -608,9 +612,10 @@ Standards and tests:
 
 - [Ecosystem boundaries](https://github.com/Knuckles-Team/pipelines/blob/main/reference/ecosystem-boundaries.md): the forbidden-import matrix.
 - `tests/hooks/test_kiss.py`, `tests/hooks/test_structural_limits.py`.
+- Import-direction check: the `PIPE-GATES` spec files the layer-order extension of the `coupling` gate.
 - Per-unit isolation gate: the `PIPE-GATES` spec files the CI job that builds and tests each unit with `--all-features` and `-p <unit>`.
 
-**Plan check:** Does the change keep one responsibility per unit, add no dependency cycle, compile only the units it touches and their dependents, and build and test each touched unit alone with the CI feature set?
+**Plan check:** Does the change keep one responsibility per unit, point every new dependency toward the more stable unit, reach no internal of another unit, add no dependency cycle, compile only the units it touches and their dependents, and build and test each touched unit alone with the CI feature set?
 
 ### XXVI. Defects are reproduced, fixed at the root and proved over the real protocol
 
