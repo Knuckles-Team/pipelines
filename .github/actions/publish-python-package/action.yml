@@ -151,9 +151,7 @@ runs:
         "$READINESS_PYTHON" -I .pipeline-contract/.github/actions/wheel-readiness/readiness.py verify --release-version "$BUILD_VERSION"
         sdists=(dist-sdist/*-"$BUILD_VERSION".tar.gz)
         [ "${#sdists[@]}" -eq 1 ] && [ -f "${sdists[0]}" ] || { echo "the source distribution does not carry release $BUILD_VERSION" >&2; exit 1; }
-        # --skip-existing: a maintainer's local release of this commit may land first (PIPE-RELEASE-R029.3);
-        # the next step still proves PyPI serves every file this run built.
-        .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ --skip-existing dist/*.whl dist-sdist/*.tar.gz --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
+        .venv/bin/twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ dist/*.whl dist-sdist/*.tar.gz --verbose -u "__token__" -p "${{ inputs.pypi-token }}"
 
     # PIPE-RELEASE-R012.2: the upload is proven, not assumed. The release fails unless
     # PyPI serves this exact version with the wheel and sdist this run built.

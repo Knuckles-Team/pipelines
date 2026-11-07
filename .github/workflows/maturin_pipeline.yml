@@ -19,7 +19,8 @@ jobs:
   # ── Version guard (PIPE-RELEASE-R002) ──────────────────────────
   # A version a maintainer already published from this commit (local release of the
   # Linux wheels, PIPE-RELEASE-R029.3) passes with published=true. Every job still runs,
-  # so the hosted-only macOS and Windows wheels publish; the upload skips existing files.
+  # so the hosted-only macOS and Windows wheels publish; the publish job drops the files
+  # PyPI already serves before the upload.
   version-guard:
     runs-on: ubuntu-latest
     outputs:
@@ -215,12 +216,25 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # PIPE-RELEASE-R029.3: after a local release of the Linux wheels, upload only the files
+      # PyPI does not serve yet (the hosted-only platforms). Named files, never a blanket skip.
+      - name: Drop the files a local release already published
+        id: remaining
+        if: needs.version-guard.outputs.published == 'true'
+        run: |
+          set -euo pipefail
+          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
+          served="$(curl -fsS "https://pypi.org/pypi/${name}/${BUILD_VERSION}/json" | python3 -c 'import json,sys;print("\n".join(u["filename"] for u in json.load(sys.stdin)["urls"]))')"
+          while IFS= read -r file; do
+            [[ -n "$file" && -f "dist/$file" ]] && { echo "already on PyPI: $file"; rm -f "dist/$file"; }
+          done <<< "$served"
+          echo "count=$(find dist -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) | wc -l)" >> "$GITHUB_OUTPUT"
+
       - name: Publish to PyPI
+        if: steps.remaining.outputs.count != '0'
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: dist/
-          # A maintainer's local release of this commit may land first (PIPE-RELEASE-R029.3).
-          skip-existing: true
           password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create Release

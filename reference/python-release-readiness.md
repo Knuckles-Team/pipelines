@@ -158,13 +158,14 @@ A maintainer may build and publish a release on its own hosts (PIPE-RELEASE-R029
 1. The exact commit must carry a green `CI required` status. A hosted run or an attested local gate counts, with its evidence recorded.
 2. Build the sdist and the wheel locally. A native package builds its Linux wheels locally.
 3. Run the release readiness checks locally: the release version guard above and the wheel readiness proof.
-4. Create the tag `vX.Y.Z` on that commit and push the tag.
-5. Upload the files with the maintainer's index token and skip files that already exist.
-6. Create the GitHub release for the tag with the built files.
-7. Install the published version into a fresh virtual environment and import the package.
+4. Create the tag `vX.Y.Z` on that commit.
+5. Upload the files with the maintainer's index token.
+6. Push the tag. The upload comes first, so the hosted release always sees the published version.
+7. Create the GitHub release for the tag with the built files.
+8. Install the published version into a fresh virtual environment and import the package.
 
 macOS and Windows wheels stay on the hosted release, and are optional where the package's release rules allow it.
-The tag push still runs the hosted release. Its guard sees a version uploaded after the tagged commit. It skips the pure-Python upload, and a native release uploads only the missing platform files (PIPE-RELEASE-R029.3).
+The tag push still runs the hosted release. Its guard sees a version uploaded after the tagged commit. It skips the pure-Python upload. A native release drops the files PyPI already serves and uploads only the hosted platforms (PIPE-RELEASE-R029.3).
 
 ## Evidence and isolation
 

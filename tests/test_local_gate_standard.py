@@ -50,8 +50,9 @@ def test_release_readiness_states_the_local_release_order() -> None:
         "green `CI required` status",
         "Build the sdist and the wheel locally",
         "release readiness checks locally",
-        "push the tag",
-        "skip files that already exist",
+        "Create the tag",
+        "Upload the files",
+        "Push the tag",
         "Create the GitHub release",
         "fresh virtual environment and import",
     ]
