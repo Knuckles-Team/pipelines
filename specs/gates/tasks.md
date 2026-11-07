@@ -246,3 +246,8 @@
 - [ ] T229 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
 - [ ] T230 PIPE-GATES-R089 An environment repository holds no custom code.
 - [ ] T231 PIPE-GATES-R090 The spec standard requires a pre-untangled design.
+- [ ] T232 PIPE-GATES-R088.1 Layer entry shape and policy faults. Size: S, 1 PR, 2 hours.
+- [ ] T233 PIPE-GATES-R088.2 Cargo crate layers in the coupling gate. Size: M, 1 PR, 4 hours.
+- [ ] T234 PIPE-GATES-R088.3 Consumer adoption of the coupling layers. Size: S, 1 PR per consumer, 1 hour each.
+- [ ] T235 PIPE-GATES-R086.7 Consumer policy for the state-machine hooks. Size: S, 1 PR, 2 hours.
+- [ ] T236 PIPE-GATES-R086.8 Census adoption order and expected baselines. Size: M, 5 PRs (one per consumer), 1 hour each.

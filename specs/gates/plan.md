@@ -152,6 +152,20 @@ Fixtures. `tests/hooks/fixtures/state_machine/py/` and `.../rs/` each hold five 
 
 Order and sizing. R086.1 first, then R086.2 to R086.4 in parallel, then R086.5 and R086.6. The rollup is delivered last. Its census is red until the consumer machine rows are verified, so those rows land first. Each child scores 6 or less: one to three modules, one repository, and no more than two roots. R086.5 and R086.6 own the registration and the ontology wiring.
 
+### Layers policy and census adoption (PIPE-GATES-R086.7, R086.8, R088.1 to R088.3)
+
+Pre-untangled design for these rows, one line per answer.
+
+- Owner. This repository, units `pipelines_hooks/code/coupling.py`, `coupling_cargo.py` and `state_machine.py`. Consumers own only their policy tables.
+- Cohesion. The policy reader sits beside the scan that uses it. The Cargo reader is a separate module, because it changes with Cargo and not with Python imports.
+- Dependency direction. `coupling_cargo.py` imports `coupling.py` for `Layer` and the printer; `coupling.py` imports nothing from it. No import points upward.
+- Interface depth. Two public entry points, `coupling` and `state-machine-census`. Readers, loaders and rule sets stay private to the package.
+- Special cases. None. A Python unit and a Cargo package use the same entry shape and the same findings, so no branch handles one repository by name.
+- State. A hook run has no lifecycle. The `mode` key is configuration with two values, `staged` and `blocking`, and the change between them is a reviewed edit.
+- Environment. A consumer varies only its `pyproject.toml` table. No script lives in a consumer for this purpose.
+
+Sequence. `.1` first (the shape that scion-sdk and arbora already use), then `.2` (medulla), then `.3` per consumer after the tagged release. `R086.7` then `R086.8` follow the readers. Each row scores 6 or less: one module, one repository.
+
 ### Connector surface standard (PIPE-GATES-R014)
 
 `reference/connector-surface.md` is the standard. `connector-surface-audit` reads one checkout and assembles one record in `audit_connector`. Three modules keep each check small. `connector_surface_tools` reads tools and resources with an AST walk. `connector_surface_contracts` reads the SDK builder calls of `connector_contracts.py`, or Turtle typed with the SDK contract vocabulary. `connector_surface_prompts` checks each prompt as an agent definition. The static tool list derives `<prefix>_<method>` from the declared client class; the SDK self-check (`SCION-CONNECTOR-CONTROL-R916.4`) proves the live list. The `surface` member of `connector-standard` runs the audit in every connector repository. The fleet census reads each repository through `git archive`, so shared checkouts keep their worktrees. Earlier text required an `owl:imports` of the core ontology and the provider entry-point groups; both are now gaps, because packs extend core classes and the SDK finds content by convention.
