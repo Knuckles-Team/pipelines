@@ -33,6 +33,9 @@ def test_ci_standard_states_the_attested_local_gate() -> None:
         "comments the full evidence",
         "--match-head-commit",
         "name no host, private domain or local path",
+        "pull-request bypass",
+        "A direct push to main still needs the status",
+        "only after the merge",
     ):
         assert required in text, required
     releases = section("reference/ci-standard.md", "## Auto-merge and releases (keep it simple)")

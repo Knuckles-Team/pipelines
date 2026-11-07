@@ -90,6 +90,8 @@ The owner may validate a pull request on its own build hosts instead of waiting 
 - A green run posts the commit status `CI required` with state `success` on the head commit. Its description summarises the evidence.
 - The run comments the full evidence on the pull request: each check, its result, its time and every noise failure.
 - The owner account then merges with `gh pr merge <n> --squash --admin --match-head-commit <head>` and cancels the hosted runs of that pull request.
+- The owner account holds a pull-request bypass on each repository's main integrity ruleset. So the merge lands even when a hosted `CI required` check has already failed: a success status does not override a failed check run. A direct push to main still needs the status. Deletion and non-fast-forward stay blocked.
+- Cancel the hosted runs only after the merge. A cancelled run makes the aggregate `CI required` job conclude failure.
 - Status and comment text name no host, private domain or local path. The host map stays in the private operations overlay.
 - Main still runs the full hosted CI after the merge. A red main is fixed forward.
 
