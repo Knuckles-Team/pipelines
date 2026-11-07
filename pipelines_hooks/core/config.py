@@ -29,6 +29,8 @@ SECTIONS: dict[str, frozenset[str]] = {
     "coupling": frozenset({"forbidden", "allowed", "layers"}),
     "environment_config_only": frozenset({"declared"}),
     "stubs": frozenset({"declared_seams"}),
+    "rustfmt_scope": frozenset({"guard_files", "skip_prefixes"}),
+    "cargo_advisories": frozenset({"deny_config", "ledger", "cargo_deny_version", "max_acceptance_days"}),
     # Retired with the ci-gate-replica hooks (CI runs pre-commit directly);
     # still accepted, and ignored, so a consumer can drop the table at its own pace.
     "ci_replica": frozenset({"workflows", "build_affecting"}),

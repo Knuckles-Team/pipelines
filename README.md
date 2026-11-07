@@ -136,6 +136,8 @@ The original historical exclusions remain: `check_no_legacy_markers.py`, `CHANGE
 
 ### Optional consumer metadata and import checks
 
+`pipelines-hook crates-io-only` fails a Rust dependency that does not come from crates.io. `pipelines-hook rustfmt-scope [--base REF] [PATH...]` runs a check-only rustfmt on the changed Rust files with the pinned toolchain (`[tool.pipelines_hooks.rustfmt_scope]`). `pipelines-hook cargo-advisories` cross-checks the cargo-deny ignore list with a dated acceptance ledger and runs the pinned `cargo deny check advisories` (`[tool.pipelines_hooks.cargo_advisories]`).
+
 `pipelines-hook lockfile-version-mirrors --root ROOT` checks the self-package
 version in `uv.lock` and direct dependency pins/ranges in `requirements.txt`
 against `pyproject.toml`. Missing artifacts and editable self entries without a

@@ -49,6 +49,17 @@ Route a feature before any code or spec text.
 
 A `MERISTEM-` row never decides. It names the decision it receives and the owner prefix that produces it. A threshold in an `MERISTEM-` row is a received value, with a fallback default. If no part is left for the harness, write no `MERISTEM-` row.
 
+## Consumers of a decision
+
+A decision is a choice (see the routing questions above), so Medulla owns it. Every other repository that needs one is a consumer. The rule covers the SDK, connectors and arbora.
+
+- A consumer asks Medulla through the SDK adapter. The adapter is the transport, the runner that calls `Decide`, and the reading of the outcome.
+- A consumer holds one thing: the call-site fallback, a received default that answers when Medulla is absent, unbound, abstains, fails or names an option the caller did not offer.
+- A consumer never holds a decision-point catalog (question ids with their kind, safety class, log mode or feature schema), candidate or option heuristics, scoring, ranking, or a threshold that decides an outcome. These live in Medulla's `Decide` rows.
+- A consumer never obeys an advisory score. The answer is a proposal; authorization stays deterministic in its own owner.
+- A new question is filed as a row in Medulla first. The consumer then passes the published question id.
+
+
 ## Worked examples
 
 | Feature | Split and owners |
@@ -88,3 +99,4 @@ This matrix is guidance for reviews and for each repository's own tests. A modul
 | universal-skills | `epistemic_graph`, `arbora`, `agent_utilities`, UI packages | `arbora.client` |
 
 No repository declares a `[tool.uv.sources]` git, path or URL entry for `epistemic-graph`.
+| Connector decision points (SDK `scion_sdk/decide`) | The SDK keeps the transport, the runner that calls `Decide`, the outcome reading and call-site helpers that take the caller's fallback. The point catalog (`connector.tool`, `connector.triage`, `connector.writeback`, `connector.path_preference`), the option heuristics and the choice of the winning option are Medulla's. |
