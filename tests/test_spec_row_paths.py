@@ -19,6 +19,7 @@ def _check(tmp_path: Path, text: str) -> list[str]:
 
 
 def test_a_missing_path_is_a_finding(tmp_path: Path) -> None:
+    # spec: PIPE-GATES-R093
     found = _check(tmp_path, "| `FOO-R001` | uses `src/gone.rs:12` | x |")
     assert len(found) == 1
     assert "FOO-R001" in found[0] and "src/gone.rs" in found[0] and "requirements.md:1" in found[0]
