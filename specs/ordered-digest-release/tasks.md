@@ -179,3 +179,8 @@ commit).
 - [ ] T099 PIPE-RELEASE-R007.13 Hook-cache save bound.
 - [ ] T102 PIPE-RELEASE-R007.14 uv cache save bound.
 - [ ] T098 PIPE-RELEASE-R027 Every merged version is published.
+- [ ] T103 PIPE-RELEASE-R028.1 Release proof of each declared bundle.
+- [ ] T104 PIPE-RELEASE-R028.2 No committed generated bundle.
+- [ ] T105 PIPE-RELEASE-R028.3 A declared catalog holds only command sources.
+- [ ] T106 PIPE-RELEASE-R028.4 Hot-path proof: the release job runs the proof before publish.
+- [ ] T107 PIPE-RELEASE-R028 Coding harness bundles are proven at release and never committed (rollup).
