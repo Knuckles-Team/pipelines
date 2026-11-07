@@ -245,3 +245,4 @@
 - [ ] T228 PIPE-GATES-R087 The constitution states the design principles of a simple unit.
 - [ ] T229 PIPE-GATES-R088 Import direction follows stability: layer order and private-module reach in the coupling gate.
 - [ ] T230 PIPE-GATES-R089 An environment repository holds no custom code.
+- [ ] T231 PIPE-GATES-R090 The spec standard requires a pre-untangled design.

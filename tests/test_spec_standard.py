@@ -520,3 +520,20 @@ def test_work_that_landed_on_main_after_the_fork_is_not_touched(root, capsys):
     run("switch", "-q", "work")
     code, out = _run(root, capsys)
     assert code == 0 and "No tasks" not in out and "tasks.md has no task line" not in out
+
+
+def test_the_standard_requires_a_pre_untangled_design():
+    # spec: PIPE-GATES-R090
+    text = (Path(__file__).resolve().parent.parent / "reference" / "spec-standard.md").read_text()
+    body = text.split("## Pre-untangled design", 1)[1].split("\n## ", 1)[0].lower()
+    for item in (
+        "owner",
+        "cohesion",
+        "dependency direction",
+        "interface depth",
+        "special cases",
+        "state machine",
+        "environment",
+        "implies a tangle",
+    ):
+        assert item in body, item
