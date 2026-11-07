@@ -186,7 +186,7 @@ An answer may be `none` with its reason. The consistency analysis reports a plan
 
 ## Consistency analysis
 
-The gate also runs a cross-file analysis of each spec directory, the counterpart of the upstream analyze step. It reports an active row with no task line, a task naming no existing row, a behaviour row with neither a bound test nor a test-spec entry, an `FR-` or `SC-` label cited but not defined (or defined twice) in `spec.md`, an open clarification marker in any design file, and a plan whose Phase 1 design answers are missing or name a new abstraction with fewer than two call sites (see Pre-untangled design). A rollup parent is covered by its child rows. A row finding fails when the change adds the row; the others fail when their file is touched.
+The gate also runs a cross-file analysis of each spec directory, the counterpart of the upstream analyze step. It reports an active row with no task line, a task naming no existing row, a behaviour row with neither a bound test nor a test-spec entry, an `FR-` or `SC-` label cited but not defined (or defined twice) in `spec.md`, an open clarification marker in any design file, and a plan whose Phase 1 design answers are missing or name a new abstraction with fewer than two call sites (see Pre-untangled design). A backticked repository path in a row must exist unless its bullet or table row says it is planned (`(planned`, `(new`, `does not exist yet`, `owning change adds`). A rollup parent is covered by its child rows. A row finding fails when the change adds the row; the others fail when their file is touched.
 
 ## Complete rows
 
