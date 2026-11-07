@@ -17,8 +17,13 @@ permissions:
 
 jobs:
   # ── Version guard (PIPE-RELEASE-R002) ──────────────────────────
+  # A version a maintainer already published from this commit (local release of the
+  # Linux wheels, PIPE-RELEASE-R029.3) passes with published=true. Every job still runs,
+  # so the hosted-only macOS and Windows wheels publish; the upload skips existing files.
   version-guard:
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.version.outputs.published }}
     steps:
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,7 +40,8 @@ jobs:
           path: .pipeline-contract
           persist-credentials: false
 
-      - uses: ./.pipeline-contract/.github/actions/verify-release-version
+      - id: version
+        uses: ./.pipeline-contract/.github/actions/verify-release-version
 
   # ── Linux Wheels ───────────────────────────────────────────────
   linux:
@@ -213,6 +219,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: dist/
+          # A maintainer's local release of this commit may land first (PIPE-RELEASE-R029.3).
+          skip-existing: true
           password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Create Release

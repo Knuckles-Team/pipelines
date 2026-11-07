@@ -147,3 +147,70 @@ def test_every_shared_release_path_runs_the_guard_before_building():
         assert "version-guard" in native[job]["needs"]
     action = yaml.safe_load((ACTION / "action.yml").read_text())
     assert "verify_release_version.py" in action["runs"]["steps"][0]["run"]
+
+
+def uploaded_at(stamp):
+    def lookup(name, version, base):
+        return stamp
+
+    return lookup
+
+
+@pytest.mark.spec("PIPE-RELEASE-R029.3")
+def test_a_tag_published_after_its_commit_is_a_local_release(guard, tmp_path):
+    root = package(tmp_path, bump="0.5.1")
+    with pytest.raises(guard.AlreadyPublished, match="attested local build"):
+        guard.verify(
+            root, "refs/tags/v0.5.1", lookup=uploaded_at("2026-11-07T12:05:00.000000Z"), committed="2026-11-07T12:00:00+00:00"
+        )
+
+
+@pytest.mark.spec("PIPE-RELEASE-R029.3")
+def test_a_version_published_before_the_commit_is_still_a_stale_tag(guard, tmp_path):
+    root = package(tmp_path)
+    late_commit = "2026-11-08T09:00:00+00:00"
+    with pytest.raises(guard.GuardError, match="already on PyPI") as caught:
+        guard.verify(root, "refs/tags/v0.5.1", lookup=uploaded_at("2026-11-07T12:05:00Z"), committed=late_commit)
+    assert not isinstance(caught.value, guard.AlreadyPublished)
+    # A branch ref or an unknown commit time never counts as a local release.
+    with pytest.raises(guard.GuardError, match="already on PyPI"):
+        guard.verify(root, "refs/heads/main", lookup=uploaded_at("2026-11-09T00:00:00Z"), committed=late_commit)
+    with pytest.raises(guard.GuardError, match="already on PyPI"):
+        guard.verify(root, "refs/tags/v0.5.1", lookup=present, committed=late_commit)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R029.3")
+def test_main_writes_published_for_a_local_release(guard, tmp_path, monkeypatch, capsys):
+    package(tmp_path, bump="0.5.1")
+    output = tmp_path / "github_output"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(output))
+    monkeypatch.setattr(guard, "commit_time", lambda root: "2026-11-07T12:00:00+00:00")
+    monkeypatch.setattr(guard, "pypi_has_version", uploaded_at("2026-11-07T12:01:00Z"))
+    assert guard.main(["--root", str(tmp_path), "--ref", "refs/tags/v0.5.1"]) == 0
+    assert output.read_text() == "published=true\n"
+    assert "Release already published" in capsys.readouterr().out
+    monkeypatch.setattr(guard, "pypi_has_version", absent)
+    output.unlink()
+    assert guard.main(["--root", str(tmp_path), "--ref", "refs/tags/v0.5.1"]) == 0
+    assert output.read_text() == "published=false\n"
+
+
+@pytest.mark.spec("PIPE-RELEASE-R029.3")
+def test_hosted_release_skips_the_upload_of_a_locally_published_version():
+    python = yaml.safe_load((ROOT / ".github/workflows/python_pipeline.yml").read_text())
+    steps = python["jobs"]["publish-pypi"]["steps"]
+    guard_at = next(i for i, s in enumerate(steps) if s.get("uses") == REFERENCE)
+    assert steps[guard_at]["id"] == "version"
+    for step in steps[guard_at + 1 :]:
+        assert step["if"].startswith("steps.version.outputs.published != 'true'"), step["name"]
+    action = yaml.safe_load((ACTION / "action.yml").read_text())
+    assert action["outputs"]["published"]["value"] == "${{ steps.unpublished.outputs.published }}"
+    publish = (ROOT / ".github/actions/publish-python-package/action.yml").read_text()
+    assert "twine upload --config-file /dev/null --repository-url https://upload.pypi.org/legacy/ --skip-existing" in publish
+    native = yaml.safe_load((ROOT / ".github/workflows/maturin_pipeline.yml").read_text())["jobs"]
+    assert native["version-guard"]["outputs"]["published"] == "${{ steps.version.outputs.published }}"
+    upload = next(s for s in native["publish"]["steps"] if s.get("name") == "Publish to PyPI")
+    assert upload["with"]["skip-existing"] is True
+    # The hosted-only platform wheels still build after a local Linux release.
+    for job in ("macos", "windows"):
+        assert "if" not in native[job]
