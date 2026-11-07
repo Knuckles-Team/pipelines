@@ -213,3 +213,5 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | T-108 | PIPE-GATES-R088.3 | Unit | A consumer fixture with the SDK-shaped policy. | The hook exits 0. |
 | T-109 | PIPE-GATES-R086.7 | Unit | Policy tables: missing, staged, blocking, with exclude globs. | Missing exits 2; staged exits 0 with findings; blocking exits 1. |
 | T-110 | PIPE-GATES-R086.8 | Integration | Fixture corpora of R086.5 with a consumer policy. | Census output matches the fixture finding list. |
+| T-111 | PIPE-GATES-R086.9 | Unit | Hand-built `Machine` records with a table: one unreachable state, one dead end, one absorbing violation, one double target, one untested refusal cell, one without `INITIAL`, and one function machine. | Each record yields its code; the function machine yields none. |
+| T-112 | PIPE-GATES-R086.10 | Integration | The twelve algebra fixture directories. | The census output lists each violating directory with its code and passes the compliant tree. |
