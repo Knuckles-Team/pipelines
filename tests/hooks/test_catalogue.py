@@ -32,6 +32,7 @@ KEPT = {
     "connector-standard",
     "connector-name",
     "coupling",
+    "environment-config-only",
     "lockfile-version-mirrors",
     "plan-conformance",
     "sdk-conformance",

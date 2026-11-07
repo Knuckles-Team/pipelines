@@ -36,6 +36,7 @@ GATES: dict[str, str] = {
     "mermaid": "pipelines_hooks.hygiene.mermaid",
     "lockfile-version-mirrors": "pipelines_hooks.hygiene.lockfile_version_mirrors",
     "coupling": "pipelines_hooks.code.coupling",
+    "environment-config-only": "pipelines_hooks.code.environment_config_only",
     "uv-lock-check": "pipelines_hooks.hygiene.uv_lock",
     "connector-name": "pipelines_hooks.hygiene.connector_name",
     "connector-graphql": "pipelines_hooks.hygiene.connector_graphql",
