@@ -45,15 +45,19 @@ def _skipped(path: str) -> bool:
     return bool({"tests", "target"} & set(PurePosixPath(path).parts[:-1]))
 
 
-def parse(path: str, data: bytes) -> Tree:
-    """The syntax tree of ``data``.
+def parse(path: str, data: bytes, *, strict: bool = True) -> Tree:
+    """The syntax tree of ``data``; a parse error cannot run unless ``strict`` is off.
+
+    With ``strict`` off the error-recovered tree is read as it is: the grammar
+    lags the compiler (attributes on struct-pattern fields, for one), and a
+    file outside the change must not stop the census.
 
     ``Node.text`` reads the parsed buffer without owning it, so the caller holds
     ``data`` (and the tree) for as long as it reads nodes; a temporary buffer is
     freed under the nodes and a large file segfaults.
     """
     tree = _PARSER.parse(data)
-    if tree.root_node.has_error:
+    if strict and tree.root_node.has_error:
         raise CannotRun(f"{path}: Rust source does not parse")
     return tree
 
@@ -75,12 +79,12 @@ def _items(node: Node) -> Iterator[Node]:
             yield from _items(body)
 
 
-def read_rust(path: str, source: str) -> list[Machine]:
+def read_rust(path: str, source: str, *, strict: bool = True) -> list[Machine]:
     """One ``Machine`` per struct with a status field or lifecycle flag."""
     if _skipped(path):
         return []
     data = source.encode("utf-8")
-    tree = parse(path, data)
+    tree = parse(path, data, strict=strict)
     items = list(_items(tree.root_node))
     enums = {
         _text(i.child_by_field_name("name")): tuple(
@@ -105,12 +109,12 @@ def read_rust(path: str, source: str) -> list[Machine]:
     return machines
 
 
-def loose_sites(path: str, source: str) -> list[Use]:
+def loose_sites(path: str, source: str, *, strict: bool = True) -> list[Use]:
     """The uses whose receiver is not ``self``: the hook matches them crate-wide."""
     if _skipped(path):
         return []
     data = source.encode("utf-8")
-    tree = parse(path, data)
+    tree = parse(path, data, strict=strict)
     items = list(_items(tree.root_node))
     return [use for use in _uses(path, items, frozenset(re.findall(r"\w+", source))) if use.receiver is None]
 
