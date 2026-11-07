@@ -26,7 +26,8 @@ SECTIONS: dict[str, frozenset[str]] = {
     "ste": frozenset({"paths", "exempt", "code_paths", "staleness"}),
     # No longer read (the public-surface gate needs no identity); still accepted.
     "public_surface": frozenset({"repository", "distribution", "pages_url", "mcp_server"}),
-    "coupling": frozenset({"forbidden", "allowed"}),
+    "coupling": frozenset({"forbidden", "allowed", "layers"}),
+    "environment_config_only": frozenset({"declared"}),
     "stubs": frozenset({"declared_seams"}),
     "rustfmt_scope": frozenset({"guard_files", "skip_prefixes"}),
     "cargo_advisories": frozenset({"deny_config", "ledger", "cargo_deny_version", "max_acceptance_days"}),
