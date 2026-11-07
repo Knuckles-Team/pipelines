@@ -205,3 +205,8 @@ Each row names its served test in `requirements.md`. The rows marked planned add
 | T-102 | PIPE-GATES-R088 | Integration | A git repository fixture with a layers policy and imports that go downward, upward, into a private module, from an unlayered unit and around a cycle. | The downward import passes; each other case exits 1 naming file, line and rule. |
 | T-104 | PIPE-GATES-R089 | Integration | A fixture environment repository with a thin wrapper, a behaviour-encoding script and a data file. | Only the behaviour-encoding script exits 1, naming the file. |
 | T-105 | PIPE-GATES-R090 | Unit | The spec standard file. | The section names all seven design answers and the analysis finding. |
+| T-106 | PIPE-GATES-R088.1 | Unit | Policy fixtures: valid array, bare string list, duplicate name, unit in two entries. | Valid passes; each fault exits 2 naming the entry. |
+| T-107 | PIPE-GATES-R088.2 | Unit | A Cargo workspace fixture with an upward, a renamed, a target-only, a build and a dev dependency. | Only the non-dev upward edges are reported; a dev edge passes. |
+| T-108 | PIPE-GATES-R088.3 | Unit | A consumer fixture with the SDK-shaped policy. | The hook exits 0. |
+| T-109 | PIPE-GATES-R086.7 | Unit | Policy tables: missing, staged, blocking, with exclude globs. | Missing exits 2; staged exits 0 with findings; blocking exits 1. |
+| T-110 | PIPE-GATES-R086.8 | Integration | Fixture corpora of R086.5 with a consumer policy. | Census output matches the fixture finding list. |
