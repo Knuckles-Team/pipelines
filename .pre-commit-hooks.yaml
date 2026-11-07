@@ -477,6 +477,13 @@
   files: (^|/)(AGENTS\.md|scripts/bootstrap\.sh)$
   stages: [pre-push]
 
+# Commit text is self-evident to an outside reader (PIPE-GATES-R099); staged: warns, `--strict` blocks.
+- id: pr-text
+  name: pr-text (commit message holds no internal reference, jargon or bare row ID; warns)
+  entry: pipelines-hook pr-text
+  language: python
+  stages: [commit-msg]
+
 # A connector release publishes PyPI and Docker (PIPE-RELEASE-R013); warn level.
 - id: release-standard
   name: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)

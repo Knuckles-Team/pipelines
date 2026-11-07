@@ -222,7 +222,7 @@ def test_the_state_machine_article_is_traced() -> None:
         assert rule in article
     version = VERSION.search(text)
     assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 8, 0)
-    assert "version 1.8.1" in TEMPLATE.read_text(encoding="utf-8")
+    assert "version 1.10.0" in TEMPLATE.read_text(encoding="utf-8")
 
 
 def test_the_design_principles_are_in_articles_xi_and_xxv() -> None:
@@ -241,3 +241,21 @@ def test_the_design_principles_are_in_articles_xi_and_xxv() -> None:
     for rule in ("toward the code that changes less", "never on its internals"):
         assert rule in modular
     assert "configuration only" in dict(_bodies())["I. One owner per concept"]
+
+
+def test_the_written_text_article_requires_self_evident_text() -> None:
+    # spec: PIPE-GATES-R099
+    text = FILE.read_text(encoding="utf-8")
+    article = dict(_bodies())["XXXII. Written text is self-evident"]
+    for rule in (
+        "outside reader or a fresh agent",
+        "what changed, why, the behaviour impact and how it was verified",
+        "hostname",
+        "local filesystem path",
+        "private handoff document",
+        "one-line meaning",
+        "already failing before the change",
+    ):
+        assert rule in article
+    version = VERSION.search(text)
+    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 10, 0)
