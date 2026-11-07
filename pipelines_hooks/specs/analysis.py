@@ -166,6 +166,61 @@ def check_plan(plan: str) -> list[str]:
     return out
 
 
+DESIGN_ITEMS = (
+    "Owner",
+    "Cohesion",
+    "Dependency direction",
+    "Interface depth",
+    "Special cases",
+    "State",
+    "Environment",
+)
+_ITEM_RES = {
+    name: re.compile(rf"^\s*(?:[-*]\s+|\d+\.\s+)?(?:#+\s+)?(?:\*\*{name}[.:]?\*\*|{name}\s*:)\s*(.*)$", re.I)
+    for name in DESIGN_ITEMS
+}
+ABSTRACTION_RE = re.compile(
+    r"\bnew\s+(?:abstraction|interface|trait|protocol|base class|port|factory|wrapper|option parameter)",
+    re.I,
+)
+FILE_RE = re.compile(r"[\w.-]+(?:/[\w.-]+)+|[\w-]+\.(?:py|rs|ts|tsx|js|go|md|yml|yaml|toml|sh)\b")
+
+
+def _design_answers(plan: str) -> dict[str, str] | None:
+    """Item name -> answer text of ``## Phase 1: Design``; ``None`` when the plan has no such section."""
+    unfenced = re.sub(r"^(```|~~~).*?^\1.*?$", "", plan, flags=re.M | re.S)  # keep inline code: call sites sit in it
+    body = _section(unfenced, "Phase 1")
+    if body is None:
+        return None
+    answers: dict[str, list[str]] = {}
+    current = None
+    for line in body.splitlines():
+        hit = next(((n, m) for n, r in _ITEM_RES.items() if (m := r.match(line))), None)
+        if hit:
+            current = hit[0]
+            answers[current] = [hit[1].group(1)]
+        elif line.startswith("#"):
+            current = None
+        elif current:
+            answers[current].append(line)
+    return {k: " ".join(v).strip() for k, v in answers.items()}
+
+
+def check_design(plan: str) -> list[str]:
+    """Phase 1 answers all seven design items; a new abstraction names two current call-site files."""
+    answers = _design_answers(plan)
+    if answers is None:
+        return []
+    out = [f"plan.md Phase 1: Design lacks an answer for '{n}'" for n in DESIGN_ITEMS if not answers.get(n)]
+    depth = answers.get("Interface depth", "")
+    if depth and not depth.lstrip("*` ").lower().startswith("none") and ABSTRACTION_RE.search(depth):
+        if len(set(FILE_RE.findall(depth))) < 2:
+            out.append(
+                "plan.md Phase 1: Design declares a new abstraction with fewer than two call sites named by file"
+            )
+    return out
+
+
 def check_checklists(spec_dir: Path) -> list[str]:
     """An unchecked item in a requirements-quality checklist blocks landing."""
     out = []
@@ -189,5 +244,6 @@ def analyze(spec_dir: Path, texts: Mapping[str, str], bindings: Mapping[str, obj
     found += check_rows_have_tests(rows, spec_md, texts.get("test-spec.md", ""), bindings)
     found += check_labels(spec_md, cited)
     found += check_open_markers(texts)
+    found += check_design(texts.get("plan.md", ""))
     found += check_artifacts(spec_dir, texts)
     return [f"analyze: {m}" for m in found]
