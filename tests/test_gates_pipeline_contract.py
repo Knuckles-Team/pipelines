@@ -58,8 +58,8 @@ def test_gates_workflow_forwards_optional_uv_cache_path() -> None:
     assert cache_input["type"] == "string" and cache_input["default"] == ""
     steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
     install = next(step for step in steps if step.get("name") == "Install uv")
-    assert install["with"]["cache-local-path"] == "${{ inputs.uv-cache-local-path }}"
-    assert install["with"]["enable-cache"] is True
+    assert install["with"]["cache-local-path"] == "${{ steps.persist.outputs.uv-cache || inputs.uv-cache-local-path }}"
+    assert install["with"]["enable-cache"] == "${{ steps.persist.outputs.enabled != 'true' }}"
     assert "uv.lock" in install["with"]["cache-dependency-glob"]
 
 
@@ -266,3 +266,32 @@ def test_hook_cache_saves_run_only_on_the_default_branch_and_restore_is_bounded(
             assert step["if"].endswith(f"&& {DEFAULT_BRANCH_PUSH}"), (workflow.name, step["name"])
         (restore,) = [s for s in steps if s.get("name") == "Restore pre-commit environments"]
         assert restore["timeout-minutes"] == 3 and restore["continue-on-error"] is True, workflow.name
+
+
+@pytest.mark.spec("PIPE-RELEASE-R007.15")
+def test_self_hosted_runner_keeps_hook_and_uv_caches_on_the_host() -> None:
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    by_name = {step.get("name"): step for step in steps}
+    persist = by_name["Use the runner's persistent caches"]
+    assert persist["id"] == "persist"
+    assert persist["if"] == "runner.environment == 'self-hosted'"
+    assert 'root="${CI_CACHE_ROOT:-}"' in persist["run"]
+    for line in ("PRE_COMMIT_HOME=$root/pre-commit", "UV_CACHE_DIR=$root/uv", "enabled=false", "enabled=true"):
+        assert line in persist["run"], line
+    names = [step.get("name") for step in steps]
+    assert names.index("Use the runner's persistent caches") < names.index("Install uv")
+    # Every actions/cache transfer of the hook store or the uv cache is off on a persistent runner.
+    transfers = [
+        s for s in steps if str(s.get("uses", "")).startswith("actions/cache") and s.get("id") != "scanner-cache"
+    ]
+    assert len(transfers) == 4
+    for step in transfers:
+        assert step["if"].startswith("steps.persist.outputs.enabled != 'true'"), step["name"]
+    refresh = by_name["Refresh the shared hooks in the persistent store"]
+    assert refresh["if"] == "steps.persist.outputs.enabled == 'true'"
+    assert "flock" in refresh["run"] and ".pipelines-main" in refresh["run"] and ".stale" in refresh["run"]
+    assert (
+        names.index("Resolve the shared hook revision")
+        < names.index(refresh["name"])
+        < names.index("Install pre-commit environments")
+    )
