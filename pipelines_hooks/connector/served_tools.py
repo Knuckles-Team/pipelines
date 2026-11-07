@@ -65,7 +65,7 @@ def connector_package(root: Path) -> str | None:
     return str(next(iter(group.values()))).split(":", 1)[0].split(".", 1)[0].strip()
 
 
-def _interpreter(root: Path) -> list[str]:
+def interpreter(root: Path) -> list[str]:
     explicit = os.environ.get("PIPELINES_CONNECTOR_PYTHON")
     if explicit:
         return [explicit]
@@ -83,7 +83,7 @@ def served_tools(root: Path) -> list[ServedTool] | None:
     package = connector_package(root)
     if package is None:
         return None
-    command = [*_interpreter(root), "-c", PROBE, package]
+    command = [*interpreter(root), "-c", PROBE, package]
     try:
         done = subprocess.run(command, cwd=root, capture_output=True, text=True, timeout=TIMEOUT_SECONDS, check=False)
     except (OSError, subprocess.SubprocessError) as exc:

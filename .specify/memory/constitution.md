@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.8.1 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
+**Version**: 1.9.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
 
 ## Core Principles
 
@@ -480,16 +480,23 @@ Standards and tests:
 
 A credential never appears in a trace, a log, a command echo, a commit or a tracked file.
 
-*Rationale*: A leaked credential must be rotated everywhere. Prevention is cheaper than rotation.
+- **No credential in a served response.** A served response never carries credential material. Secret-bearing fields (tokens, secrets, passwords, keys, registration tokens, webhook secrets, connection strings that hold credentials) are removed or redacted at the connector's model layer, by default, through the shared SDK redaction capability. A connector never passes a remote response through unredacted.
+- **A minted secret is returned once.** A tool that must return a newly minted secret returns it once, in a field annotated as secret-bearing (`x-secret-bearing`), and never again on a read.
+- **No secret value in logs, traces, errors or evidence.** Logs, traces, error messages and evidence files carry the name of a credential, never its value. A test builds a credential-shaped value at run time; no fixture holds one.
+- **Never print an environment or a secret store.** An agent or a script never prints an environment, a pod's environment, a secret manifest or a secret store. It reads the one value it needs by name and uses it without echoing it.
+- **A leaked secret is rotated.** A credential that reached a response, a log, a trace, a terminal or a tracked file is rotated at its issuer and its consumers move to the new value. Deleting the copy is not a fix.
+
+*Rationale*: A leaked credential must be rotated everywhere. Prevention is cheaper than rotation. A served response is the widest leak: every caller, trace and evidence file of the call receives it.
 
 **Enforced by:**
 
 Gates:
 
-<!-- generated:begin constitution hooks: secrets, security-sanitizer, secret-history, stdout-writes, env-sprawl -->
+<!-- generated:begin constitution hooks: secrets, security-sanitizer, secret-history, secret-fields, stdout-writes, env-sprawl -->
 - `secrets`: Secrets and identity - credentials, host/identity data, commit identities
 - `security-sanitizer`: Security and garbage sanitizer
 - `secret-history`: Credential-shaped content in the unpublished commit range
+- `secret-fields`: Secret fields - no served response, schema or recorded output carries credential material
 - `stdout-writes`: Stdio JSON-RPC purity (no stdout writes in the served surface)
 - `env-sprawl`: Configuration - environment read only in the declared module
 <!-- generated:end -->
@@ -497,9 +504,10 @@ Gates:
 Standards and tests:
 
 - [Gate standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/gate-standard.md): the `secrets` group members.
-- `tests/hooks/test_security.py`, `tests/hooks/test_code.py`.
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md): "Secret-bearing data".
+- `tests/hooks/test_security.py`, `tests/hooks/test_code.py`, `tests/hooks/test_secret_fields.py`.
 
-**Plan check:** Does the plan keep every credential out of logs, traces, commands and tracked files?
+**Plan check:** Does the plan keep every credential out of served responses, logs, traces, errors, evidence, commands and tracked files, return a minted secret once, and rotate any leaked one?
 
 ### XXI. Public files stay portable and neutral
 
@@ -840,4 +848,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.8.1 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
+**Version**: 1.9.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07

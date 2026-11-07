@@ -30,6 +30,7 @@ KEPT = {
     "agent-contract",
     "connector-graphql",
     "connector-standard",
+    "secret-fields",
     "connector-name",
     "coupling",
     "environment-config-only",
