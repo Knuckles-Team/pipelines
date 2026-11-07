@@ -20,7 +20,7 @@ dependencies = [
     "platformdirs==4.11.8",
     "PyYAML==6.0.3",
     "pydantic==2.14.1",
-    "tree-sitter==0.26.0",
+    "tree-sitter==0.25.2",
     "tree-sitter-rust==0.24.2",
 ]
 
