@@ -177,16 +177,16 @@ A new or amended row describes the untangled design, so the code that follows ne
 1. **Owner.** The one repository and unit that owns the behaviour, by the [ecosystem boundaries](ecosystem-boundaries.md) table. A row split across owners is filed as one row per owner.
 2. **Cohesion.** What changes together with this behaviour and lives beside it, and what changes for another reason and stays apart.
 3. **Dependency direction.** Every new import or call points toward code that changes less. A row that needs an upward dependency or a cycle states the interface that reverses it.
-4. **Interface depth.** The small public surface that hides the work, and the internals no caller reaches.
+4. **Interface depth.** The small public surface that hides the work, and the internals no caller reaches. A new abstraction names its two current call sites by file, or the answer is `none`; with one call site the design uses concrete code.
 5. **Special cases.** The cases the design avoids by treating them uniformly. A branch that patches one symptom is not a design.
 6. **State.** A lifecycle is an explicit state machine with named states, events and legal transitions, never a flag, a string or a nullable timestamp.
 7. **Environment.** Anything a deployment must vary is configuration of a specified feature. A script in an environment repository is a row in the owning repository.
 
-An answer may be `none` with its reason. The consistency analysis reports a spec whose design implies a tangle: no owner or two owners, an upward or cyclic dependency, a caller of an internal, a special-case branch, a status held outside a state machine, or custom code in an environment. The finding is advisory for an existing row and fails a row the change adds (Article XI, Article XXV, Article I).
+An answer may be `none` with its reason. The consistency analysis reports a plan with a `## Phase 1: Design` section that lacks an answer for any of the seven items, or whose interface depth answer declares a new abstraction but names fewer than two call-site files. The finding fails when the change touches `plan.md` and is advisory otherwise. An upward or cyclic dependency is enforced by the `coupling` gate, and custom code in an environment repository by the `environment-config-only` gate (Article XI, Article XXV, Article I).
 
 ## Consistency analysis
 
-The gate also runs a cross-file analysis of each spec directory, the counterpart of the upstream analyze step. It reports an active row with no task line, a task naming no existing row, a behaviour row with neither a bound test nor a test-spec entry, an `FR-` or `SC-` label cited but not defined (or defined twice) in `spec.md`, an open clarification marker in any design file, and a design that implies a tangle (see Pre-untangled design). A backticked repository path in a row must exist unless its bullet or table row says it is planned (`(planned`, `(new`, `does not exist yet`, `owning change adds`). A rollup parent is covered by its child rows. A row finding fails when the change adds the row; the others fail when their file is touched.
+The gate also runs a cross-file analysis of each spec directory, the counterpart of the upstream analyze step. It reports an active row with no task line, a task naming no existing row, a behaviour row with neither a bound test nor a test-spec entry, an `FR-` or `SC-` label cited but not defined (or defined twice) in `spec.md`, an open clarification marker in any design file, and a plan whose Phase 1 design answers are missing or name a new abstraction with fewer than two call sites (see Pre-untangled design). A backticked repository path in a row must exist unless its bullet or table row says it is planned (`(planned`, `(new`, `does not exist yet`, `owning change adds`). A rollup parent is covered by its child rows. A row finding fails when the change adds the row; the others fail when their file is touched.
 
 ## Complete rows
 

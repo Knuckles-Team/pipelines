@@ -76,8 +76,22 @@ PLAN = (
 
 def _clean_plan() -> str:
     """The plan with no unknowns and no seams, so no optional artifact is required."""
-    return PLAN.replace("## Phase 0: Research\n\nx", "## Phase 0: Research\n\nno unknowns").replace(
-        "## Cross-repo seams\n\nx", "## Cross-repo seams\n\nnone"
+    design = "".join(
+        f"- **{n}.** none, with its reason.\n"
+        for n in (
+            "Owner",
+            "Cohesion",
+            "Dependency direction",
+            "Interface depth",
+            "Special cases",
+            "State",
+            "Environment",
+        )
+    )
+    return (
+        PLAN.replace("## Phase 0: Research\n\nx", "## Phase 0: Research\n\nno unknowns")
+        .replace("## Phase 1: Design\n\nx", f"## Phase 1: Design\n\n{design}")
+        .replace("## Cross-repo seams\n\nx", "## Cross-repo seams\n\nnone")
     )
 
 
@@ -534,6 +548,8 @@ def test_the_standard_requires_a_pre_untangled_design():
         "special cases",
         "state machine",
         "environment",
-        "implies a tangle",
+        "two current call sites by file",
+        "coupling",
+        "environment-config-only",
     ):
         assert item in body, item
