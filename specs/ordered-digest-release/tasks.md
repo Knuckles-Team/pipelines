@@ -64,6 +64,7 @@ commit).
 - PIPE-RELEASE-R007.11: Wiring and cutover. Remove `docs-only-paths`, add `change_scope.yml`; bind the cutover test.
 - PIPE-RELEASE-R007.12: Evidence. Log each not-applicable gate; bind the evidence test.
 - PIPE-RELEASE-R007.13: Hook-cache save bound. Give each pre-commit cache save step `timeout-minutes: 3` and `continue-on-error: true`; bind the contract test.
+- PIPE-RELEASE-R007.14: uv cache save bound. Disable the setup-uv post save and add a bounded last save step; bind the contract test.
 - PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
 
 - **PIPE-RELEASE-R009:** Release records publish to the engine (rollup).
@@ -176,4 +177,5 @@ commit).
 - [ ] T096 PIPE-RELEASE-R007.11 Wiring and cutover.
 - [ ] T097 PIPE-RELEASE-R007.12 Evidence.
 - [ ] T099 PIPE-RELEASE-R007.13 Hook-cache save bound.
+- [ ] T102 PIPE-RELEASE-R007.14 uv cache save bound.
 - [ ] T098 PIPE-RELEASE-R027 Every merged version is published.
