@@ -141,3 +141,8 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R018.1 | PIPE-RELEASE-R018.1 | Run `tests/test_public_wheel_guard.py::test_public_wheel_verifies_the_tag_version_the_build_stamps`. The guard checks the version the tag stamps. |
 | T-PIPE-RELEASE-R018.2 | PIPE-RELEASE-R018.2 | Run `tests/test_connector_pipeline.py::test_every_publish_needs_the_full_gate_on_the_tagged_commit`. Every publish job has `release-gate` among its needs and the gate runs the full main suite on the tag. |
 | T-PIPE-RELEASE-R021 | PIPE-RELEASE-R021 | Run `tests/test_release_scope.py::test_scope_closure_and_single_release_per_row`. Each row is in one release and the closure holds its dependencies. |
+| T-PIPE-RELEASE-R028 | PIPE-RELEASE-R028 | Every child row. |
+| T-PIPE-RELEASE-R028.1 | PIPE-RELEASE-R028.1 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_each_declared_profile_is_built_validated_and_deleted`. |
+| T-PIPE-RELEASE-R028.2 | PIPE-RELEASE-R028.2 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundles_gate.py::test_tracked_bundle_fails_and_a_declared_catalog_passes`. |
+| T-PIPE-RELEASE-R028.3 | PIPE-RELEASE-R028.3 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_catalog_entries_must_be_command_or_pinned_package_sources`. |
+| T-PIPE-RELEASE-R028.4 | PIPE-RELEASE-R028.4 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_release_job_runs_the_proof_before_publish` (L3). |
