@@ -333,6 +333,10 @@ jobs:
       # the pre-commit store, so only that repository reinstalls.
       - name: Restore pre-commit environments
         id: hook-cache
+        # A slow or failed download must not cost the gates their budget: on a
+        # miss the hooks install from scratch (PIPE-RELEASE-R007.13).
+        timeout-minutes: 3
+        continue-on-error: true
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
@@ -370,22 +374,26 @@ jobs:
           if [[ -f "$CI_CONFIG" ]]; then uvx --from pre-commit==4.6.2 pre-commit install-hooks --config "$CI_CONFIG"; fi
 
       - name: Save pre-commit environments
-        # A cache upload is an optimization: bound it and never let it fail or
-        # cancel the gates (PIPE-RELEASE-R007.13).
+        # A cache upload is an optimization: it runs only on a default-branch
+        # push (a PR branch never saves, so its upload cannot eat the job
+        # budget), bounded, and never fails or cancels the gates
+        # (PIPE-RELEASE-R007.13).
         timeout-minutes: 3
         continue-on-error: true
-        if: success() && steps.hook-cache.outputs.cache-hit != 'true'
+        if: success() && steps.hook-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.config, inputs.ci-config) }}-${{ steps.hook-rev.outputs.sha }}
 
       - name: Save partly installed pre-commit environments
-        # A cache upload is an optimization: bound it and never let it fail or
-        # cancel the gates (PIPE-RELEASE-R007.13).
+        # A cache upload is an optimization: it runs only on a default-branch
+        # push (a PR branch never saves, so its upload cannot eat the job
+        # budget), bounded, and never fails or cancels the gates
+        # (PIPE-RELEASE-R007.13).
         timeout-minutes: 3
         continue-on-error: true
-        if: (failure() || cancelled()) && steps.hook-install.outcome != 'success' && steps.hook-install.outcome != 'skipped'
+        if: (failure() || cancelled()) && steps.hook-install.outcome != 'success' && steps.hook-install.outcome != 'skipped' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
@@ -507,11 +515,11 @@ jobs:
           esac
 
       - name: Save the uv cache
-        # A cache upload is an optimization: bound it and never let it fail or
-        # cancel the gates (PIPE-RELEASE-R007.14).
+        # A cache upload is an optimization: only on a default-branch push,
+        # bounded, and never failing or cancelling the gates (PIPE-RELEASE-R007.14).
         timeout-minutes: 3
         continue-on-error: true
-        if: success() && steps.uv.outputs.cache-hit != 'true'
+        if: success() && steps.uv.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.UV_CACHE_DIR }}
