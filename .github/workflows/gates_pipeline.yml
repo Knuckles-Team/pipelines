@@ -215,10 +215,15 @@ jobs:
           fetch-depth: 0
 
       - name: Install uv
+        id: uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           python-version: ${{ inputs.python-version }}
           enable-cache: true
+          # The action's own post-step upload has no time limit; the bounded
+          # "Save the uv cache" step at the end of the job replaces it
+          # (PIPE-RELEASE-R007.14).
+          save-cache: false
           cache-local-path: ${{ inputs.uv-cache-local-path }}
           cache-dependency-glob: |
             uv.lock
@@ -500,3 +505,14 @@ jobs:
             FULL) "${run[@]}" pytest -q "$TEST_SCOPE" ;;
             *) mapfile -t tests <<<"$scope"; "${run[@]}" pytest -q "${tests[@]}" ;;
           esac
+
+      - name: Save the uv cache
+        # A cache upload is an optimization: bound it and never let it fail or
+        # cancel the gates (PIPE-RELEASE-R007.14).
+        timeout-minutes: 3
+        continue-on-error: true
+        if: success() && steps.uv.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: ${{ steps.uv.outputs.cache-key }}

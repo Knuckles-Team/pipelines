@@ -233,3 +233,18 @@ def test_hook_cache_saves_are_bounded_and_never_fail_the_gates() -> None:
         for step in saves:
             assert step["timeout-minutes"] == 3, step["name"]
             assert step["continue-on-error"] is True, step["name"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R007.14")
+def test_uv_cache_save_is_bounded_and_runs_last() -> None:
+    steps = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))["jobs"]["gates"]["steps"]
+    setup = next(step for step in steps if str(step.get("uses", "")).startswith("astral-sh/setup-uv@"))
+    assert setup["id"] == "uv"
+    assert setup["with"]["save-cache"] is False
+    save = steps[-1]
+    assert save["name"] == "Save the uv cache"
+    assert str(save["uses"]).startswith("actions/cache/save@")
+    assert save["timeout-minutes"] == 3
+    assert save["continue-on-error"] is True
+    assert "steps.uv.outputs.cache-hit != 'true'" in save["if"]
+    assert save["with"] == {"path": "${{ env.UV_CACHE_DIR }}", "key": "${{ steps.uv.outputs.cache-key }}"}
