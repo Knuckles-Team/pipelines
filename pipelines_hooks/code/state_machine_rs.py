@@ -15,7 +15,7 @@ from collections.abc import Iterator
 from pathlib import PurePosixPath
 
 import tree_sitter_rust
-from tree_sitter import Language, Node, Parser
+from tree_sitter import Language, Node, Parser, Tree
 
 from pipelines_hooks.code.state_machine_model import (
     LIFECYCLE_TIMESTAMPS,
@@ -45,11 +45,17 @@ def _skipped(path: str) -> bool:
     return bool({"tests", "target"} & set(PurePosixPath(path).parts[:-1]))
 
 
-def parse(path: str, source: str) -> Node:
-    tree = _PARSER.parse(source.encode("utf-8"))
+def parse(path: str, data: bytes) -> Tree:
+    """The syntax tree of ``data``.
+
+    ``Node.text`` reads the parsed buffer without owning it, so the caller holds
+    ``data`` (and the tree) for as long as it reads nodes; a temporary buffer is
+    freed under the nodes and a large file segfaults.
+    """
+    tree = _PARSER.parse(data)
     if tree.root_node.has_error:
         raise CannotRun(f"{path}: Rust source does not parse")
-    return tree.root_node
+    return tree
 
 
 def _items(node: Node) -> Iterator[Node]:
@@ -73,7 +79,9 @@ def read_rust(path: str, source: str) -> list[Machine]:
     """One ``Machine`` per struct with a status field or lifecycle flag."""
     if _skipped(path):
         return []
-    items = list(_items(parse(path, source)))
+    data = source.encode("utf-8")
+    tree = parse(path, data)
+    items = list(_items(tree.root_node))
     enums = {
         _text(i.child_by_field_name("name")): tuple(
             _text(v.child_by_field_name("name"))
@@ -101,7 +109,9 @@ def loose_sites(path: str, source: str) -> list[Use]:
     """The uses whose receiver is not ``self``: the hook matches them crate-wide."""
     if _skipped(path):
         return []
-    items = list(_items(parse(path, source)))
+    data = source.encode("utf-8")
+    tree = parse(path, data)
+    items = list(_items(tree.root_node))
     return [use for use in _uses(path, items, frozenset(re.findall(r"\w+", source))) if use.receiver is None]
 
 

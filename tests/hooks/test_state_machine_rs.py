@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 import textwrap
 
 import pytest
@@ -117,3 +119,36 @@ def test_rust_cfg_test_module_is_skipped() -> None:
 def test_rust_parse_error_exits_two() -> None:
     with pytest.raises(CannotRun, match="does not parse"):
         read_rust("crates/jobs/src/job.rs", "pub struct Job { status: ")
+
+
+#: A large file: hundreds of struct, impl and cfg(test) items, as in a big crate module.
+_LARGE = "pub enum JobStatus { Queued, Running, Done }\\nfor i in range(400):\\n    pass\\n"
+
+
+@pytest.mark.spec("PIPE-GATES-R086.3")
+def test_rust_reader_survives_a_large_file_in_a_fresh_process() -> None:
+    """The process exits cleanly after reading a large file (tree-sitter 0.26.0 crashed at collection)."""
+    script = textwrap.dedent(
+        """
+        import gc
+        from pipelines_hooks.code.state_machine_rs import read_rust
+
+        parts = ["pub enum JobStatus { Queued, Running, Done }\\n"]
+        for i in range(400):
+            parts.append(
+                f"#[derive(Debug, Clone)]\\n#[serde(rename_all = \\"snake_case\\")]\\n"
+                f"pub struct Job{i} {{ status: JobStatus, started_at: Option<u64>, finished_at: Option<u64> }}\\n"
+                f"impl Job{i} {{\\n pub fn apply(&mut self) -> Result<(), TransitionRefused> "
+                f"{{ self.status = JobStatus::Running; Ok(()) }}\\n"
+                f" fn reset(&mut self) {{ if self.status == \\"done\\" {{ self.status = JobStatus::Queued; }} }}\\n}}\\n"
+            )
+        tests = "".join(f"    #[test]\\n    fn t{i}() {{ assert_eq!({i}, {i}); }}\\n" for i in range(400))
+        parts.append("#[cfg(test)]\\nmod tests {\\n" + tests + "}\\n")
+        machines = read_rust("crates/x/src/lib.rs", "".join(parts))
+        gc.collect()
+        print(len(machines))
+        """
+    )
+    done = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, timeout=120, check=False)
+    assert done.returncode == 0, done.stderr[-2000:]
+    assert done.stdout.strip() == "400"
