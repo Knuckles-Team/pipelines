@@ -92,9 +92,10 @@ def _unit(root: Path, path: str) -> str:
     return found
 
 
-def _parse(path: str, source: str) -> tuple[list[Machine], list[Use]]:
+def _parse(path: str, source: str, *, strict: bool = True) -> tuple[list[Machine], list[Use]]:
     if path.endswith(".rs"):
-        return state_machine_rs.read_rust(path, source), state_machine_rs.loose_sites(path, source)
+        machines = state_machine_rs.read_rust(path, source, strict=strict)
+        return machines, state_machine_rs.loose_sites(path, source, strict=strict)
     try:
         tree = ast.parse(source, filename=path)
     except SyntaxError as exc:
@@ -102,17 +103,35 @@ def _parse(path: str, source: str) -> tuple[list[Machine], list[Use]]:
     return state_machine_py.read_python(path, tree), state_machine_py.loose_sites(path, tree)
 
 
-def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool]) -> list[Machine]:
-    """Read every source; attach each loose use to the same-unit types that declare its field."""
+@dataclass(frozen=True)
+class Report:
+    """The findings of one run, and the Rust files read from an error-recovered tree."""
+
+    findings: list[Finding]
+    partial: list[str]
+
+
+def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool]) -> tuple[list[Machine], list[str]]:
+    """Read every source; attach each loose use to the same-unit types that declare its field.
+
+    A file ``must_parse`` names cannot run on a parse error. Any other Rust file
+    is read from its error-recovered tree and listed as partial; any other
+    Python file with a syntax error is skipped.
+    """
     machines: list[Machine] = []
     loose: list[Use] = []
+    partial: list[str] = []
     for path in sources:
+        source = _read(root, path)
         try:
-            found, uses = _parse(path, _read(root, path))
+            found, uses = _parse(path, source)
         except CannotRun:
             if must_parse(path):
                 raise
-            continue
+            if not path.endswith(".rs"):
+                continue
+            found, uses = _parse(path, source, strict=False)
+            partial.append(path)
         machines += found
         loose += uses
     for use in loose:
@@ -120,7 +139,7 @@ def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool])
             same_unit = _unit(root, use.site.file) == _unit(root, machine.file)
             if use.site.file != machine.file and same_unit and use.field == machine.status_field:
                 attach(machine, use)
-    return machines
+    return machines, partial
 
 
 def _changed(root: Path) -> set[str]:
@@ -136,17 +155,22 @@ def _touches(machine: Machine, changed: set[str]) -> bool:
     return machine.file in changed or any(site.file in changed for site in machine.assigners)
 
 
-def run(root: Path, *, census: bool) -> list[Finding]:
+def _must_parse_in_census(path: str) -> bool:
+    """The census reads every file: Python must parse, Rust may be partial."""
+    return not path.endswith(".rs")
+
+
+def run(root: Path, *, census: bool) -> Report:
     """Every finding of the census, or the findings of the types the change touches."""
     policy = _load_policy(root)
     sources, tests = _files(root, policy)
     changed = set() if census else _changed(root)
-    machines = _machines(root, sources, (lambda _path: True) if census else changed.__contains__)
+    machines, partial = _machines(root, sources, _must_parse_in_census if census else changed.__contains__)
     test_files = [(path, _read(root, path)) for path in tests]
     for machine in machines:
         bind_tests(machine, test_files)
     kept = machines if census else [machine for machine in machines if _touches(machine, changed)]
-    return [finding for machine in kept for finding in findings(machine)]
+    return Report([finding for machine in kept for finding in findings(machine)], partial)
 
 
 def main(argv: list[str]) -> int:
@@ -155,9 +179,11 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--census", action="store_true", help="report the whole tree (state-machine-census)")
     args = parser.parse_args(argv)
     root = repo_root(args.root)
-    found = run(root, census=args.census)
-    for finding in found:
+    report = run(root, census=args.census)
+    for finding in report.findings:
         print(finding.render())
     name = "state-machine-census" if args.census else "state-machine-shape"
-    print(f"{name}: {len(found)} finding(s)")
-    return 1 if found and _load_policy(root).mode == "blocking" else 0
+    for path in report.partial:
+        print(f"{name}: {path}: partial parse (the Rust grammar could not parse part of this file)")
+    print(f"{name}: {len(report.findings)} finding(s), {len(report.partial)} partially parsed file(s)")
+    return 1 if report.findings and _load_policy(root).mode == "blocking" else 0

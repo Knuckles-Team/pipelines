@@ -47,9 +47,32 @@ def test_census_mode_reports_the_whole_tree_with_no_baseline(
 def test_exit_codes_are_zero_one_and_two(tmp_path: Path) -> None:
     assert cli.main(["state-machine-census", "--root", str(fixture_repo(tmp_path / "a", "py/compliant"))]) == 0
     assert cli.main(["state-machine-census", "--root", str(fixture_repo(tmp_path / "b", "py/two_assigners"))]) == 1
-    broken = fixture_repo(tmp_path / "c", "rs/compliant")
-    (broken / "src/job.rs").write_text("pub struct Job { status: ", encoding="utf-8")
+    broken = fixture_repo(tmp_path / "c", "py/compliant")
+    (broken / "pkg/job.py").write_text("class Job(:\n", encoding="utf-8")
     assert cli.main(["state-machine-census", "--root", str(broken)]) == 2
+
+
+@pytest.mark.spec("PIPE-GATES-R086.5")
+def test_an_unparseable_rust_file_stops_only_a_change_that_touches_it(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = fixture_repo(tmp_path, "rs/two_assigners")
+    job = root / "src/job.rs"
+    # A grammar gap: an attribute on a struct-pattern field parses for rustc, not for the grammar.
+    job.write_text(
+        job.read_text(encoding="utf-8")
+        + '\npub fn fields(job: Job) {\n    let Job {\n        #[cfg(feature = "x")]\n        status,\n    } = job;\n}\n',
+        encoding="utf-8",
+    )
+    git(root, "commit", "-q", "-am", "grammar gap")
+    monkeypatch.delenv("PRE_COMMIT_FROM_REF", raising=False)
+    assert cli.main(["state-machine-census", "--root", str(root)]) == 1
+    out = capsys.readouterr().out
+    assert "SM-MULTI-ASSIGN" in out
+    assert "src/job.rs: partial parse" in out and "1 partially parsed file(s)" in out
+    job.write_text(job.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    git(root, "add", "src/job.rs")
+    assert cli.main(["state-machine-shape", "--root", str(root)]) == 2
 
 
 @pytest.mark.spec("PIPE-GATES-R086.5")

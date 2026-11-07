@@ -122,7 +122,7 @@ ALGEBRA_CASES = {
 
 def _census_codes(tmp_path: Path, case: str) -> set[str]:
     root = fixture_repo(tmp_path / case.replace("/", "-"), case)
-    return {finding.code for finding in state_machine.run(root, census=True)}
+    return {finding.code for finding in state_machine.run(root, census=True).findings}
 
 
 def _check_cases(tmp_path: Path, cases: dict[str, set[str]]) -> None:
