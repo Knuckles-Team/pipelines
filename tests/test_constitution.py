@@ -222,7 +222,7 @@ def test_the_state_machine_article_is_traced() -> None:
         assert rule in article
     version = VERSION.search(text)
     assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 8, 0)
-    assert "version 1.8.1" in TEMPLATE.read_text(encoding="utf-8")
+    assert "version 1.9.0" in TEMPLATE.read_text(encoding="utf-8")
 
 
 def test_the_design_principles_are_in_articles_xi_and_xxv() -> None:
@@ -241,3 +241,21 @@ def test_the_design_principles_are_in_articles_xi_and_xxv() -> None:
     for rule in ("toward the code that changes less", "never on its internals"):
         assert rule in modular
     assert "configuration only" in dict(_bodies())["I. One owner per concept"]
+
+
+def test_the_secret_article_forbids_secrets_in_served_responses() -> None:
+    # spec: PIPE-GATES-R098
+    text = FILE.read_text(encoding="utf-8")
+    article = dict(_bodies())["XX. Secrets are never traced or logged"]
+    assert "constitution hooks: secrets, security-sanitizer, secret-history, secret-fields" in article
+    for rule in (
+        "A served response never carries credential material",
+        "redacted at the connector's model layer, by default",
+        "returns it once, in a field annotated as secret-bearing",
+        "Logs, traces, error messages and evidence files",
+        "never prints an environment",
+        "is rotated at its issuer",
+    ):
+        assert rule in article, rule
+    version = VERSION.search(text)
+    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 9, 0)
