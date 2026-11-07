@@ -42,6 +42,13 @@
   always_run: true
   require_serial: true
   stages: [pre-commit, pre-push]
+- id: secret-fields
+  name: Secret fields - no served response, schema or recorded output carries credential material
+  entry: pipelines-hook secret-fields
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-push, manual]
 - id: spec
   name: Spec - standard, decomposition, computed status (never tracked) and Spec trailers
   entry: pipelines-hook spec

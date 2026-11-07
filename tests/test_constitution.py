@@ -243,6 +243,24 @@ def test_the_design_principles_are_in_articles_xi_and_xxv() -> None:
     assert "configuration only" in dict(_bodies())["I. One owner per concept"]
 
 
+def test_the_secret_article_forbids_secrets_in_served_responses() -> None:
+    # spec: PIPE-GATES-R098
+    text = FILE.read_text(encoding="utf-8")
+    article = dict(_bodies())["XX. Secrets are never traced or logged"]
+    assert "constitution hooks: secrets, security-sanitizer, secret-history, secret-fields" in article
+    for rule in (
+        "A served response never carries credential material",
+        "redacted at the connector's model layer, by default",
+        "returns it once, in a field annotated as secret-bearing",
+        "Logs, traces, error messages and evidence files",
+        "never prints an environment",
+        "is rotated at its issuer",
+    ):
+        assert rule in article, rule
+    version = VERSION.search(text)
+    assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 9, 0)
+
+
 def test_the_written_text_article_requires_self_evident_text() -> None:
     # spec: PIPE-GATES-R099
     text = FILE.read_text(encoding="utf-8")

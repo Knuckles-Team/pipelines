@@ -553,3 +553,17 @@ def test_the_standard_requires_a_pre_untangled_design():
         "environment-config-only",
     ):
         assert item in body, item
+
+
+def test_the_standard_keeps_secret_bearing_data_out_of_rows_and_responses():
+    # spec: PIPE-GATES-R097
+    text = (Path(__file__).resolve().parent.parent / "reference" / "spec-standard.md").read_text()
+    body = text.split("## Secret-bearing data", 1)[1].split("\n## ", 1)[0]
+    for item in (
+        "Article XX",
+        "redacts them by default",
+        "returns the secret once",
+        "`x-secret-bearing`",
+        "`secret-fields`",
+    ):
+        assert item in body, item

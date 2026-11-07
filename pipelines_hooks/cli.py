@@ -80,6 +80,7 @@ GATES: dict[str, str] = {
     "spec-templates": "pipelines_hooks.specs.templates_sync",
     "gate-set": "pipelines_hooks.gate_runner",
     "connector-standard": "pipelines_hooks.connector.standard",
+    "secret-fields": "pipelines_hooks.connector.secret_fields",
     "crates-io-only": "pipelines_hooks.rust.crates_io_only",
     "rustfmt-scope": "pipelines_hooks.rust.rustfmt_scope",
     "cargo-advisories": "pipelines_hooks.rust.cargo_advisories",

@@ -203,3 +203,12 @@ exclude = ["**/fixtures/**"]
 languages = ["python", "rust"]
 mode = "staged"  # print findings and exit 0; "blocking" exits 1
 ```
+
+`pipelines-hook secret-fields [--probe]` (pre-push, manual) checks that a
+connector serves no credential material: unmarked secret-named fields of
+response models and package schemas, the output schemas of the served tools
+(`--probe` builds the server), and credential-shaped values in recorded outputs
+under `tests/`. A field is marked with `SecretStr`, `Field(exclude=True)`,
+`x-redacted`, `writeOnly`, or `x-secret-bearing` for a newly minted secret that
+a tool returns once. `[tool.pipelines_hooks.secret_fields] mode` is `staged`
+(print, exit 0) or `blocking`.
