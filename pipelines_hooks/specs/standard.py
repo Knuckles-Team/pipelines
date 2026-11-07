@@ -15,7 +15,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.specs import analysis, completeness, narrative, placement
+from pipelines_hooks.specs import analysis, completeness, narrative, placement, row_paths
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.third_party_names import check_repository
@@ -120,6 +120,7 @@ ROW_PHRASES = (
     "is a served behaviour row",
     "behaviour row lacks",
     "behaviour row says TBD",
+    "names missing file",
 )
 #: Findings about a whole-spec artifact fail when the change touches any file of the spec.
 SPEC_WIDE = ("contracts/", "checklists/")
@@ -163,6 +164,7 @@ def check_touched_rules(
         *analysis.check_checklists(spec_dir),
         *design,
         *complete,
+        *[f"analyze: {m}" for m in row_paths.check_row_paths(base, texts)],
     ]:
         out.append(message if _fails(message, added, touched, spec_dir, base) else message + ADVISORY_TAG)
     return out
