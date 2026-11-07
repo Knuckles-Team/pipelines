@@ -1,22 +1,25 @@
 """The shared rule set of the state-machine hooks: ``findings(machine)``.
 
 Pure functions over ``Machine``; no file reads. Rules 1 to 5 are in plan.md
-("Explicit state machines"); rule 6, the algebraic checks, is ``.9``.
+("Explicit state machines"); rule 6, the algebraic checks, is
+``state_machine_algebra.algebra_findings``.
 """
 
 from __future__ import annotations
 
+from pipelines_hooks.code.state_machine_algebra import algebra_findings
 from pipelines_hooks.code.state_machine_model import Finding, Machine, Site
 
 
 def findings(machine: Machine) -> list[Finding]:
-    """Every finding of rules 1 to 5 for one machine."""
+    """Every finding of rules 1 to 6 for one machine."""
     return [
         *_multi_assign(machine),
         *_string_status(machine),
         *_lifecycle_flags(machine),
         *_untested(machine),
         *_no_declaration(machine),
+        *algebra_findings(machine),
     ]
 
 
