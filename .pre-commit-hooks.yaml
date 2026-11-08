@@ -364,16 +364,16 @@
   language: python
   pass_filenames: false
   always_run: true
-# --- documentation standard (STE-Lite) ----------------------------------
+# --- documentation standard (MEDULLA-STE-Lite) ----------------------------------
 - id: ste-staged
-  name: "DEPRECATED (ste-staged): STE-Lite - staged or CI docs, diff-scoped"
+  name: "DEPRECATED (ste-staged): MEDULLA-STE-Lite - staged or CI docs, diff-scoped"
   entry: pipelines-hook ste-staged
   language: python
   pass_filenames: false
   always_run: true
   require_serial: true
 - id: ste-census
-  name: "DEPRECATED (ste-census): STE-Lite census - every in-scope doc, enforced"
+  name: "DEPRECATED (ste-census): MEDULLA-STE-Lite census - every in-scope doc, enforced"
   entry: pipelines-hook ste-census
   language: python
   pass_filenames: false

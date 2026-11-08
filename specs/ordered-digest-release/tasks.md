@@ -192,3 +192,6 @@ commit).
 - [ ] T109 PIPE-RELEASE-R029.2 A local release publishes only a commit with green CI.
 - [ ] T110 PIPE-RELEASE-R029.3 The hosted release skips a version the local release published.
 - [ ] T111 PIPE-RELEASE-R029 An attested local gate and a local release count as CI and release (rollup).
+- [ ] T112 PIPE-RELEASE-R030 A release stays blocked until stored data upgrades from the last production release.
+- [ ] T113 PIPE-RELEASE-R031 Each consumer's tests pass against a release candidate before the producer tags.
+- [ ] T114 PIPE-RELEASE-R032 A release candidate passes a sandbox smoke pass, then publishes exactly those artifacts.
