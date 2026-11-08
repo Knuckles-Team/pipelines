@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.10.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
+**Version**: 1.11.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-08
 
 ## Core Principles
 
@@ -107,7 +107,9 @@ Standards and tests:
 
 A change that replaces a path removes the old path in the same release. The repository holds no fallback, shim, alias, compatibility layer or "remove later" row.
 
-*Rationale*: A kept legacy path doubles the surface to test and never gets removed. The operator upgrades; the code does not carry the past.
+Hard cutover applies to code, not to stored data. Data written by the last production release still opens under the next release. That covers a store, a journal, a signed record and a persisted or signed wire identifier. The next release carries a one-way migration for that data. A release-blocking test writes the data with the published previous release and opens it with the new one.
+
+*Rationale*: A kept legacy path doubles the surface to test and never gets removed. The operator upgrades; the code does not carry the past. An operator cannot upgrade a store that the new release refuses to open, so stored data always has a migration path.
 
 **Enforced by:**
 
@@ -126,7 +128,7 @@ Standards and tests:
 - [Gate standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/gate-standard.md): the Rules section deletes a duplicate hook rather than keeping it.
 - `tests/hooks/test_no_legacy_concepts.py`, `tests/hooks/test_hygiene.py`, `tests/hooks/test_code.py`.
 
-**Plan check:** Does the plan delete the old path, with its callers, in the same release, and add no shim or alias?
+**Plan check:** Does the plan delete the old path, with its callers, in the same release, and add no shim or alias? Does data written by the last production release migrate and open, proved by a release-blocking upgrade test?
 
 ### VI. Names carry no version suffix
 
@@ -560,7 +562,9 @@ Standards and tests:
 
 One canonical bump configuration per repository, `.bumpversion.cfg` read by bump2version, is the only way a version changes. Nobody hand-edits a version field. The `project-version-sync` gate checks that metadata, source and documentation agree, and `check-bumpversion` checks the configuration where a repository carries it. A `v*` tag push publishes the package, the image and the pages with no manual approval. A release ships only delivered cross-repository spec bundles (the PIPE-RELEASE bundle rows), in dependency order.
 
-*Rationale*: One path for a version keeps every copy equal. A tag that publishes without a hand step leaves nothing to forget. A bundle ships whole, so a consumer never sees half a change.
+A contract change ships with its consumers. A change is a contract change when it renames or removes anything that another ecosystem repository imports, calls, stores or signs. Its bundle carries the matching change to every ecosystem consumer. The producer tags only after each consumer passes its tests against the new release candidate. A consumer never adds a ceiling to escape a producer's break.
+
+*Rationale*: One path for a version keeps every copy equal. A tag that publishes without a hand step leaves nothing to forget. A bundle ships whole, so a consumer never sees half a change. A producer that tags before its consumers pass leaves every consumer broken or pinned behind.
 
 **Enforced by:**
 
@@ -576,7 +580,7 @@ Standards and tests:
 - [Python release readiness](https://github.com/Knuckles-Team/pipelines/blob/main/reference/python-release-readiness.md).
 - `tests/hooks/test_project_version_sync.py`, `tests/hooks/test_release_standard.py`, `tests/test_release_bundle.py`, `tests/test_no_merge_workflows.py`.
 
-**Plan check:** Does the change bump versions only through the bump configuration and land in a delivered bundle?
+**Plan check:** Does the change bump versions only through the bump configuration and land in a delivered bundle? If it renames or removes anything another ecosystem repository imports, calls, stores or signs, does the bundle migrate every consumer, and does each consumer pass against the release candidate before the tag?
 
 ### XXIV. Specifications are complete enough to implement without assumptions
 
@@ -870,4 +874,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.10.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-07
+**Version**: 1.11.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-08
