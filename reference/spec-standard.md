@@ -237,9 +237,19 @@ A spec's state is the lowest state of its rows.
 
 No other state, acceptance value or status label exists. Do not write a status line in `spec.md`, `plan.md`, `tasks.md` or `test-spec.md`; the generator owns the state.
 
+## Vocabulary and ontology alignment
+
+A spec is data before it is a page. Each repository keeps one glossary, and every domain term in its specs comes from that glossary.
+
+- **One glossary per repository.** The glossary defines each term once. Each entry maps to a class of the medulla spec-driven-development ontology. A spec must not define a term the glossary lacks, and must not use a second name for a glossary term.
+- **Typed graph data.** Spec rows, their `Depends on:` links, cross-repository seams, bound tests and refusal codes are typed graph data. Each has a class and a stable ID, so a spec ingests into the knowledge graph without a custom parser.
+- **Row, commit, test.** Each landed row links to the commits that carry its `Spec:` trailer, by commit hash, and to its bound test. The graph then holds the chain row, commit, test.
+- **Validation.** SHACL shapes validate the ingested specs. The existing Python gates stay the enforcement until those shapes ship. The shapes and the ingest are tracked as MEDULLA-SDD rows (filed in medulla).
+- **Gate.** `PIPE-GATES-R100` checks a repository's specs against its glossary and the ontology mapping.
+
 ## Wording
 
-Spec prose follows the STE-Lite standard in [ste.md](ste.md):
+Spec prose follows the MEDULLA-STE-Lite standard in [ste.md](ste.md):
 
 - Keep each sentence to 20 words or fewer.
 - Use the active voice with a named actor.

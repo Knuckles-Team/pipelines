@@ -91,8 +91,8 @@ Gates:
 
 <!-- generated:begin constitution hooks: spec-standard, ste-staged, ste-census, ste-staleness-census -->
 - `spec-standard`: Spec standard - names, file set, title, index
-- `ste-staged`: STE-Lite - staged or CI docs, diff-scoped
-- `ste-census`: STE-Lite census - every in-scope doc, enforced
+- `ste-staged`: MEDULLA-STE-Lite - staged or CI docs, diff-scoped
+- `ste-census`: MEDULLA-STE-Lite census - every in-scope doc, enforced
 - `ste-staleness-census`: Doc staleness census - every in-scope doc, enforced
 <!-- generated:end -->
 

@@ -1,6 +1,6 @@
 # Controlled language and document currency (ste)
 
-The ste gates handle the prose side. They also check the argparse strings. One shared engine applies the STE-Lite standard. It serves the four published gate IDs.
+The ste gates handle the prose side. They also check the argparse strings. One shared engine applies the MEDULLA-STE-Lite standard. It serves the four published gate IDs.
 
 ## Gate IDs
 
@@ -46,6 +46,24 @@ The standard sets seven rules on prose lines:
 7. Drop idioms. Drop first and second person.
 
 Rules 2, 4, 5, 6, and 7 run through the wordlist tiers below. Rule 3 runs through the modal tiers plus review. Passive voice and long noun chains report as advisory findings. Advisory findings never fail a gate.
+
+## Relation to ASD-STE100
+
+MEDULLA-STE-Lite deliberately adopts most of ASD-STE100, roughly 80% as a guide and not a measured target. Full STE100 is too strict for specs, reference pages and CLI help. This standard keeps the rule groups that remove ambiguity and relaxes the groups that need a controlled dictionary or full-text grammar parsing.
+
+| STE100 rule group | MEDULLA-STE-Lite | What the scanner enforces |
+|---|---|---|
+| Sentence length | Adopted, with a 20-word cap | Enforced: a longer sentence fails. |
+| Active voice | Adopted | Advisory: passive participles report and never fail. |
+| Present and past tense | Adopted | Convention and review. Only the modal rules run as code. |
+| Modal verbs | Adopted | Enforced: `must`, `should` and `may` only; hedges fail. |
+| One word per concept | Adopted in part | Enforced for the listed term clusters, not for the whole language. |
+| Vague quantities | Adopted | Enforced: fuzzy quantities need a value or `measured: ~N`. |
+| Idioms and person forms | Adopted | Enforced: idioms, first person and second person fail. |
+| Banned filler words | Adopted in part | Enforced for a short banned table, each with a replacement. |
+| Approved dictionary and word classes | Relaxed | Not checked. Any word outside the banned and cluster lists is allowed. |
+| Noun-cluster limit | Relaxed | Advisory: long noun chains report and never fail. |
+| Paragraph length and procedure layout | Relaxed | Not checked. |
 
 ## Wordlist tiers
 
