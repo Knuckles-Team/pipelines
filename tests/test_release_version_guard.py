@@ -106,6 +106,22 @@ def test_maturin_dynamic_version_reads_the_manifest(guard, tmp_path):
 
 
 @pytest.mark.spec("PIPE-RELEASE-R002")
+def test_setuptools_attr_version_is_read_without_importing(guard, tmp_path):
+    (tmp_path / "demo").mkdir()
+    (tmp_path / "demo/version.py").write_text('raise SystemExit("imported")\n__version__ = "0.1.8"\n')
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo"\ndynamic = ["version"]\n'
+        '[tool.setuptools.dynamic]\nversion = { attr = "demo.version.__version__" }\n'
+    )
+    assert guard.verify(tmp_path, "refs/tags/v0.1.8", lookup=absent) == "0.1.8"
+    with pytest.raises(guard.GuardError, match="does not match package version 0.1.8"):
+        guard.verify(tmp_path, "refs/tags/v0.1.9", lookup=absent)
+    (tmp_path / "demo/version.py").write_text("__version__ = compute()\n")
+    with pytest.raises(guard.GuardError, match="literal string assignment"):
+        guard.verify(tmp_path, "refs/tags/v0.1.8", lookup=absent)
+
+
+@pytest.mark.spec("PIPE-RELEASE-R002")
 def test_unresolvable_version_is_refused(guard, tmp_path):
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n')
     with pytest.raises(guard.GuardError, match="neither a static nor a dynamic"):

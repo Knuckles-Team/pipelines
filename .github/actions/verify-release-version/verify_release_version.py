@@ -8,6 +8,7 @@ writes ``published=true`` to ``$GITHUB_OUTPUT`` and the hosted build and upload 
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import os
 import re
@@ -45,6 +46,32 @@ def read_toml(path: Path) -> dict:
         raise GuardError(f"cannot read {path}: {error}") from error
 
 
+def attr_version(root: Path, document: dict, attr: str) -> str:
+    """Read a setuptools ``attr`` version (``pkg.mod.__version__``) from the module source, never importing it."""
+    module, _, variable = attr.rpartition(".")
+    if not module or not variable:
+        raise GuardError(f"setuptools version attr {attr!r} is not module.name")
+    where = document.get("tool", {}).get("setuptools", {}).get("package-dir", {}).get("", "")
+    base = root / where
+    relative = Path(*module.split("."))
+    path = next((c for c in (base / relative.with_suffix(".py"), base / relative / "__init__.py") if c.is_file()), None)
+    if path is None:
+        raise GuardError(f"setuptools version attr {attr!r}: no module source under {base}")
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError) as error:
+        raise GuardError(f"cannot read {path}: {error}") from error
+    for node in tree.body:
+        targets = (
+            node.targets if isinstance(node, ast.Assign) else [node.target] if isinstance(node, ast.AnnAssign) else []
+        )
+        if any(isinstance(t, ast.Name) and t.id == variable for t in targets):
+            value = node.value
+            if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                return value.value
+    raise GuardError(f"setuptools version attr {attr!r} needs a literal string assignment in {path}")
+
+
 def package_identity(root: Path) -> tuple[str, str, str]:
     """Return (name, version, where) as the build will stamp them.
 
@@ -61,6 +88,9 @@ def package_identity(root: Path) -> tuple[str, str, str]:
         return name, version, "pyproject.toml [project].version"
     if "version" not in project.get("dynamic", []):
         raise GuardError("pyproject.toml has neither a static nor a dynamic [project].version")
+    attr = document.get("tool", {}).get("setuptools", {}).get("dynamic", {}).get("version", {}).get("attr")
+    if isinstance(attr, str):
+        return name, attr_version(root, document, attr), f"{attr} (setuptools dynamic attr)"
     manifest = document.get("tool", {}).get("maturin", {}).get("manifest-path", "Cargo.toml")
     cargo = read_toml(root / manifest).get("package", {}).get("version")
     if not isinstance(cargo, str):
