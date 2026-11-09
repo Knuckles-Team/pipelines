@@ -1224,6 +1224,16 @@
         "arbora/mcp_server/legacy_action_mapping.py"
        ],
        "kw": "retired mcp action|legacy"
+      },
+      {
+       "id": "ar.mcp.plugins",
+       "label": "Harness plugin bundles",
+       "role": "one bundle per harness",
+       "desc": "Arbora composes one plugin bundle for each coding harness from its registry. The bundle holds the door MCP entry, the door skills and the hooks. Each harness profile renders the same bundle deterministically.",
+       "kw": "plugin|bundle|harness|profile|renderer",
+       "fam": [
+        "harness-plugins"
+       ]
       }
      ]
     },
