@@ -79,7 +79,7 @@ def test_missing_changed_and_unknown_files_are_findings(tmp_path: Path) -> None:
     assert any("extra.md is not a vended template" in f for f in found)
 
 
-def test_the_gate_is_a_published_hook_that_fails_on_drift(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_the_gate_is_a_published_hook_that_reports_drift(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
     # spec: PIPE-GATES-R037
     hooks = yaml.safe_load((ROOT / ".pre-commit-hooks.yaml").read_text())
     assert {h["id"]: h["entry"] for h in hooks}["spec-templates"] == "pipelines-hook spec-templates"
@@ -88,8 +88,8 @@ def test_the_gate_is_a_published_hook_that_fails_on_drift(repo: Path, capsys: py
     assert "spec-templates" in local
     consumer = yaml.safe_load((ROOT / "templates" / "pre-commit.yaml").read_text())
     assert "spec-templates" in {h["id"] for r in consumer["repos"] for h in r.get("hooks", [])}
-    assert cli_main(["spec-templates", "--root", str(repo)]) == 1
-    assert "spec-templates: FAIL" in capsys.readouterr().err
+    assert cli_main(["spec-templates", "--root", str(repo)]) == 0
+    assert "spec-templates: ADVISORY" in capsys.readouterr().err
 
 
 def test_the_wheel_ships_the_templates_and_every_package() -> None:

@@ -63,6 +63,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--source", type=Path, default=None, help="vended templates (default: this pipelines install)")
     parser.add_argument("--write", action="store_true", help="copy the vended templates instead of checking")
+    parser.add_argument("--strict", action="store_true", help="exit 1 on drift (the sync script's --check)")
     args = parser.parse_args(argv)
     root = repo_root(args.root)
     source = args.source or vended_source()
@@ -74,11 +75,16 @@ def main(argv: list[str]) -> int:
     found = mismatches(source, destination)
     for finding in found:
         print(f"spec-templates: {finding}", file=sys.stderr)
+    if found and args.strict:
+        print("spec-templates: FAIL: the copy differs from the vended templates", file=sys.stderr)
+        return 1
     if found:
+        # A vended copy is not the repository's own change, so drift never fails a
+        # pull request or a scheduled run. The report says how to refresh it.
         print(
-            "spec-templates: FAIL: run `python scripts/sync_spec_templates.py` from a pipelines checkout",
+            "spec-templates: ADVISORY: refresh with `python scripts/sync_spec_templates.py` from a pipelines checkout",
             file=sys.stderr,
         )
-        return 1
+        return 0
     print("spec-templates: clean")
     return 0

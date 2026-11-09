@@ -2,7 +2,7 @@
 
 ``python scripts/sync_spec_templates.py --root <repo>`` copies ``.specify/templates/`` into the
 consumer. ``--check`` writes nothing and exits 1 when the consumer's copy differs, like
-``scripts/sync_mkdocs_theme.py check``. The consumer's ``spec`` hook runs the same check.
+``scripts/sync_mkdocs_theme.py check``. The consumer's hook runs the same comparison but only reports drift.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     forwarded = ["--root", str(args.root), "--source", str(args.source_root / templates_sync.TEMPLATES)]
     try:
-        return templates_sync.main(forwarded if args.check else [*forwarded, "--write"])
+        return templates_sync.main([*forwarded, "--strict"] if args.check else [*forwarded, "--write"])
     except CannotRun as exc:
         print(f"spec templates: CANNOT RUN: {exc}", file=sys.stderr)
         return 2
