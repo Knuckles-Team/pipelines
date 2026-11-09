@@ -126,7 +126,7 @@ The ontology codemod (`connector-ontology-map fix`, PIPE-GATES-R016.6 to R016.9)
 | T-042 | PIPE-GATES-R034.5 | Served L3 | Fixture inputs named by the row. | `tests/hooks/test_contract_coverage_served.py::test_hook_refuses_uncovered_seam_and_engine_reads_the_covered_one` passes and shows the observation the row states. |
 | T-043 | PIPE-GATES-R035 | Unit | The repository tree, and a tree with `specs/_template/`. | The seven templates exist; the directory is a finding. |
 | T-044 | PIPE-GATES-R036 | Unit | An empty repository, then the sync script, then a drifted copy. | Check fails, write succeeds, check passes, drift fails without writing. |
-| T-045 | PIPE-GATES-R037 | Unit | A copy with a missing, a changed and an unknown template. | Each is a finding; the check is a published hook and the wheel declares the package. |
+| T-045 | PIPE-GATES-R037 | Unit | A copy with a missing, a changed and an unknown template. | Each is an advisory finding (exit 0); the check is a published hook and the wheel declares the package. |
 | T-046 | PIPE-GATES-R038 | Unit | Upper-case, underscore and allowlisted names under `specs/`. | Only the non-allowlisted names are findings; untouched ones are advisory. |
 | T-047 | PIPE-GATES-R039 | Unit | A numeric-prefixed directory and a misplaced plan, template and constitution. | Each is a finding. |
 | T-048 | PIPE-GATES-R040 | Unit | The constitution. | Article XXII is traced and the version is at least 1.1.0. |
