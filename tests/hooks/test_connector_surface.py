@@ -431,3 +431,63 @@ def test_the_published_standard_names_every_checked_part() -> None:
         assert f"| {part} |" in text
     for field in ("kind", "business_role", "tools", "skills", "data.reads", "guardrails.never", "outputs"):
         assert f"`{field}`" in text
+
+
+PROXY_INIT = "from scion_sdk.connector import Connector\nconnector = Connector(upstreams=())\n"
+UPSTREAM_TOOLS = """
+from scion_sdk.surface_contracts import UpstreamTool
+
+UPSTREAM_TOOLS = (
+    UpstreamTool("demo", "list_incidents", "List incidents.", {"type": "object", "properties": {"status": {}}}),
+    UpstreamTool("demo", "close_incident", "Close one incident.", {"type": "object", "properties": {}}, True),
+)
+"""
+
+
+def _proxy(root: Path, declarations: str = UPSTREAM_TOOLS) -> Path:
+    _connector(root, contracts=CONTRACTS + declarations)
+    (root / "demo_mcp" / "__init__.py").write_text(PROXY_INIT)
+    return root
+
+
+@pytest.mark.spec("PIPE-GATES-R014.12")
+def test_declared_upstream_tools_count_as_registered_tools(tmp_path: Path) -> None:
+    root = _proxy(tmp_path / "demo-mcp")
+    (root / "demo_mcp" / "api_client.py").unlink()
+    record = audit.audit_connector(root, _parents(tmp_path))
+    assert record["tools"]["names"] == ["demo_close_incident", "demo_list_incidents"]
+    assert record["tools"]["upstream"] == ["demo_close_incident", "demo_list_incidents"]
+    assert _gaps(record, "tools") == []
+    assert record["gaps"] == []
+
+
+@pytest.mark.spec("PIPE-GATES-R014.12")
+def test_declared_upstream_tools_are_validated_like_registered_ones(tmp_path: Path) -> None:
+    bad = """
+from scion_sdk.surface_contracts import UpstreamTool
+
+UPSTREAM_TOOLS = (
+    UpstreamTool("demo", "list_incidents", "", {"type": "array"}, True),
+    UpstreamTool("demo", "list_incidents", "Twice.", {"type": "object"}, False),
+    UpstreamTool("demo", "close_incident", "Routes.", {"type": "object", "properties": {"action": {}}}, "yes"),
+)
+"""
+    root = _proxy(tmp_path / "demo-mcp", bad)
+    (root / "demo_mcp" / "api_client.py").unlink()
+    gaps = _gaps(audit.audit_connector(root, _parents(tmp_path)), "tools")
+    for expected in (
+        "tools: upstream tool demo_list_incidents has no description",
+        "tools: upstream tool demo_list_incidents has no object input schema",
+        "tools: upstream tool demo_list_incidents is declared twice",
+        "tools: upstream tool demo_close_incident has no boolean destructive annotation",
+        "tools: action-routed tool demo_close_incident (declared)",
+    ):
+        assert expected in gaps
+
+
+@pytest.mark.spec("PIPE-GATES-R014.12")
+def test_an_undeclared_proxy_connector_still_has_no_tool(tmp_path: Path) -> None:
+    root = _proxy(tmp_path / "demo-mcp", "")
+    (root / "demo_mcp" / "api_client.py").unlink()
+    record = audit.audit_connector(root, _parents(tmp_path))
+    assert _gaps(record, "tools")[0].startswith("tools: no tool registered")

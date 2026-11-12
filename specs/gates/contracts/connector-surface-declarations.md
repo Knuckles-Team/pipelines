@@ -2,6 +2,8 @@
 
 Provider: scion-sdk SCION-CONNECTOR-CONTROL-R916.2
 Consumer: pipelines PIPE-GATES-R014.5
+Provider: scion-sdk SCION-CONNECTOR-CONTROL-R916.9
+Consumer: pipelines PIPE-GATES-R014.12
 
 The same declarations feed `PIPE-GATES-R014.6` and `PIPE-GATES-R014.7`, the SDK rollup `SCION-CONNECTOR-CONTROL-R916` and the scaffold row `US-MCP-BUILDER-R011.15`.
 
@@ -17,6 +19,9 @@ A connector module `<package>/connector_contracts.py` holds the module-level nam
 | `SurfaceLink` | `task`, `tools`, `prompts`, `skills` |
 | `DataLocation` | `name`, `holds`, `instance`, `read_tool`, `store`, `route_param`, `federation_key` |
 | `BusinessRole` | `name`, `tasks`, `description` |
+| `UpstreamTool` | `upstream`, `tool`, `description`, `input_schema`, `destructive` |
+
+A proxy connector binds `UPSTREAM_TOOLS` to `UpstreamTool` calls (`SCION-CONNECTOR-CONTROL-R916.9`). `input_schema` is a dict literal and `destructive` a literal boolean; a non-literal reads as absent. The served name is `<upstream>_<tool>`.
 
 The SDK serves the rendered Turtle as `ontology://<connector>/contracts.ttl` in the namespace `https://knuckles-team.github.io/ontology/surface-contract#`. Individuals use the IRI `urn:scion:<connector>:<kind>:<name>`.
 

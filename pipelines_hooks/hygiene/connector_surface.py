@@ -345,6 +345,15 @@ def _linked_prompts(declared: contracts.Declared) -> set[str]:
     return named
 
 
+def _routes_action(declared: contracts.Declared, name: str) -> bool:
+    for entry in declared.upstream_tools:
+        schema = entry.get("input_schema")
+        if contracts.upstream_name(entry) == name and isinstance(schema, dict):
+            props = schema.get("properties")
+            return isinstance(props, dict) and bool(set(props) & tools.ROUTING_PARAMETERS)
+    return False
+
+
 def audit_connector(root: Path, parents: set[str] | None = None, served: list[Any] | None = None) -> dict[str, Any]:
     """The surface record of the connector checkout at ``root``.
 
@@ -371,6 +380,14 @@ def audit_connector(root: Path, parents: set[str] | None = None, served: list[An
         )
     reports = [ontology_report(p, root, parents) for p in content.ontologies]
     declared = _declared(pkg, reports)
+    upstream = contracts.upstream_names(declared)
+    registered = set(tool_names)
+    # A proxy connector registers no tool offline: its declared upstream tools count as served.
+    tool_names = sorted(set(tool_names) | set(upstream))
+    surface.decorated_tools = sorted(set(surface.decorated_tools) | set(upstream))
+    surface.routed_tools = sorted(
+        {*surface.routed_tools, *(f"{n} (declared)" for n in upstream if _routes_action(declared, n))}
+    )
     counts = content.counts()
     skill_names = [p.parent.name for p in content.skills]
     known = prompts.Known(
@@ -384,6 +401,7 @@ def audit_connector(root: Path, parents: set[str] | None = None, served: list[An
     gaps = [
         *entry_gaps,
         *tools.tool_gaps(surface),
+        *contracts.upstream_gaps(declared, registered),
         *tools.resource_gaps(surface),
         *_content_gaps(content, counts, content_served),
         *prompt_gaps,
@@ -409,6 +427,7 @@ def audit_connector(root: Path, parents: set[str] | None = None, served: list[An
             "derived": surface.derived_tools,
             "routed": surface.routed_tools,
             "source": "served" if served is not None else "static",
+            "upstream": upstream,
         },
         "resources": surface.resources,
         "prompts": agents,
