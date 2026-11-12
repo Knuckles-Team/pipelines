@@ -653,13 +653,17 @@ def test_row_without_a_depends_line_is_an_error_after_the_cutover():
     assert all("warning" in m for _, m in check_dependencies({"foo": text}, today=date(2026, 11, 12)))
 
 
-def test_the_older_depends_spelling_still_resolves_but_does_not_satisfy_the_gate():
+def test_an_older_depends_spelling_is_not_read():
     # spec: PIPE-GATES-R102
     from pipelines_hooks.specs.dependencies import check_dependencies
+    from pipelines_hooks.specs.requirements_doc import parse_rows
 
-    text = "| `FOO-R001` | req Depends on: FOO-R009. | t |\n"
-    found = [m for _, m in check_dependencies({"foo": text})]
-    assert any("depends on FOO-R009" in m for m in found) and any("no 'Depends:' line" in m for m in found)
+    for spelling in ("Depends on:", "Depends-on:", "Depends on"):
+        text = f"| `FOO-R001` | req {spelling} FOO-R009. | t |\n"
+        assert parse_rows(text)[0].depends_on == ()
+        assert [m for _, m in check_dependencies({"foo": text})] == [
+            "1 row(s) have no 'Depends:' line (FOO-R001) (warning: error from 2027-01-01)"
+        ]
 
 
 def test_the_standard_and_the_constitution_require_a_depends_clause():

@@ -10,8 +10,8 @@ from pipelines_hooks.specs.ids import ID, ROW_RE
 _TITLE_RE = re.compile(r"\*\*(.+?)\*\*")
 _RETIRED_RE = re.compile(r"RETIRED:?\s*(.*)")
 _RELATIVE = r"R\d{2,3}(?:\.\d+)*|\.\d+(?:\.\d+)*"
-#: "Depends:", "Depends on" and "Depends-on:" take backticked or bare full IDs. "Requires" and "After" take backticked IDs only.
-_DEPENDS_RE = re.compile(r"\b(?:[Dd]epends(?:[ -]on:?|:))\s*(?P<run>[^|]*?)(?:\.(?=\s|\||$)|\||$)")
+#: "Depends:" takes backticked or bare full IDs. "Requires" and "After" take backticked IDs only.
+_DEPENDS_RE = re.compile(r"\b(?:Depends:)\s*(?P<run>[^|]*?)(?:\.(?=\s|\||$)|\||$)")
 _NEEDS_RE = re.compile(r"\b(?:Requires|After)\s+(?P<run>`[^|]*?)(?:\.(?=\s|\||$)|\||$)")
 _TICKED_RE = re.compile(r"`([^`]+)`")
 
@@ -52,7 +52,7 @@ def _resolve(token: str, row_id: str) -> str | None:
 
 
 def _declared_ids(body: str, row_id: str) -> tuple[str, ...]:
-    """Prerequisite IDs named by ``Depends on``, ``Depends-on:``, ``Requires`` or ``After`` in one row."""
+    """Prerequisite IDs named by ``Depends:``, ``Requires`` or ``After`` in one row."""
     found: list[str] = []
     for pattern, bare in ((_DEPENDS_RE, True), (_NEEDS_RE, False)):
         for match in pattern.finditer(body):

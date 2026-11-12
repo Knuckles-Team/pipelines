@@ -37,7 +37,7 @@ def repo(tmp_path: Path) -> Path:
     _write(
         tmp_path,
         f"specs/{_SDK}CONNECTOR-CONTROL/requirements.md",
-        f"| `{_SDK}CONNECTOR-CONTROL-R001` | Row. Depends-on: {_EG}STORE-R002.1, {_AU}RUN-R003, {_FINUI}CHARTS-R004. |\n",
+        f"| `{_SDK}CONNECTOR-CONTROL-R001` | Row. Depends: {_EG}STORE-R002.1, {_AU}RUN-R003, {_FINUI}CHARTS-R004. |\n",
     )
     _write(tmp_path, f"specs/{_SDK}CONNECTOR-CONTROL/status.json", f'{{"spec_id": "{_SDK}CONNECTOR-CONTROL"}}\n')
     _write(
