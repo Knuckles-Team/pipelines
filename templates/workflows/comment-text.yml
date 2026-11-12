@@ -1,0 +1,16 @@
+name: Comment text
+
+# Lint new issue, pull request and review comments for internal references, workflow jargon
+# and bare row IDs (the comment half of the pr-text gate). Staged by default.
+on:
+  issue_comment:
+    types: [created, edited]
+  pull_request_review_comment:
+    types: [created, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  comment-text:
+    uses: Knuckles-Team/pipelines/.github/workflows/comment_text_pipeline.yml@main

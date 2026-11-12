@@ -261,5 +261,5 @@
 - [ ] T239 PIPE-GATES-R094 The consistency analysis checks that a spec row names an existing path or marks it planned.
 - [ ] T240 PIPE-GATES-R095 The consistency analysis checks the Phase 1 design answers and the two-call-site rule.
 - [ ] T241 PIPE-GATES-R096 A branch that merged main is measured from the main fork point.
-- [ ] T258 PIPE-GATES-R099 Pull request, comment and commit text is self-evident, and the pr-text gate reports it.
+- [ ] T258 PIPE-GATES-R099 Pull request, comment and commit text is self-evident, and the pr-text gate reports it (title, body, commit messages and new comments).
 - [ ] T259 PIPE-GATES-R100 A repository's specs use its glossary and the ontology mapping.
