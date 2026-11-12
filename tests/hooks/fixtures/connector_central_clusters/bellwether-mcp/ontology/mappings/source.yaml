@@ -1,6 +1,6 @@
 schema_version: '1'
 connector: bellwether-mcp
-ontology_source: bellwether-mcp
+ontology_source: bellwether
 sync:
 - preset: crypto_global_metrics_cmc
   server: bellwether-mcp

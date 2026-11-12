@@ -13,6 +13,8 @@ from tests.hooks.conftest import Repo
 # Retired namespaces are assembled so this tracked test does not itself break the gate.
 OLD_HTTP = "http://" + "knuckles.team/kg#"
 OLD_HOST = "http://" + "medulla/owl#"
+OTHER = "https://" + "other-vendor.dev/"
+OLD_PAGES = "https://knuckles-team.github.io/" + "scion-sdk/stream#"
 NAMES = frozenset(CORE_PRODUCT_NAMES)
 
 
@@ -38,8 +40,8 @@ def test_an_http_custom_namespace_fails(repo: Repo, capsys: pytest.CaptureFixtur
 def test_a_custom_https_namespace_outside_the_base_fails(repo: Repo) -> None:
     repo.stage(
         {
-            "o.ttl": "PREFIX x: <https://example-corp.dev/vocab#>\n",
-            "b.ttl": "@prefix y: <https://knuckles-team.github.io/scion-sdk/stream#> .\n",
+            "o.ttl": "PREFIX x: <" + OTHER + "vocab#>\n",
+            "b.ttl": "@prefix y: <" + OLD_PAGES + "> .\n",
         }
     )
     assert _kinds(repo) == ["outside-base", "outside-base"]
@@ -99,7 +101,7 @@ def test_namespace_constants_and_legacy_hosts_in_code_are_found(repo: Repo) -> N
     repo.stage(
         {
             "a.rs": f'pub const OWL_NAMESPACE: &str = "{OLD_HOST}";\n',
-            "b.py": 'ONTOLOGY_BASE = "https://other.example.dev/onto#"\n',
+            "b.py": 'ONTOLOGY_BASE = "' + OTHER + 'onto#"\n',
             "c.py": f'q = "SELECT * WHERE {{ ?s a <{OLD_HTTP}Agent> }}"\n',
             "d.py": 'DOC = "https://github.com/org/repo/blob/main/x.md"\nPLAIN = "https://api.service.dev/v1/things"\n',
         }
@@ -119,10 +121,10 @@ def test_the_repository_name_is_a_product_name(repo: Repo, capsys: pytest.Captur
 def test_workspace_manifest_repository_names_are_read(tmp_path: Path) -> None:
     manifest = tmp_path / "workspace.yml"
     manifest.write_text(
-        "repositories:\n- url: https://github.com/Org/leanix-agent.git\n  description: x\n- url: https://example.invalid/x/Plain\n",
+        "repositories:\n- url: https://github.com/Org/leanix-agent.git\n  description: x\n- url: ${ORIGIN}/containers/images/qbittorrent.git\n",
         encoding="utf-8",
     )
-    assert workspace_names(manifest) == frozenset({"leanix-agent", "plain"})
+    assert workspace_names(manifest) == frozenset({"leanix-agent"})
     assert workspace_names(None) == frozenset()
 
 
@@ -134,3 +136,28 @@ def test_every_workspace_repository_name_is_rejected_as_a_segment() -> None:
     names = workspace_names(manifest)
     assert names
     assert all(judge(f"{BASE}{name}#", names, example_ok=False) == "product-name-segment" for name in names)
+
+
+# spec: PIPE-GATES-R101
+@pytest.mark.parametrize("fragment", ["AU/KG/memory", "EG.KG.memory", "KG/au/memory"])
+def test_product_abbreviation_tokens_fail(fragment: str) -> None:
+    assert judge(f"{BASE}concept#{fragment}", NAMES, example_ok=False) == "product-abbreviation-token"
+    assert judge(f"{BASE}concept#KG/memory", NAMES, example_ok=False) is None
+
+
+# spec: PIPE-GATES-R101
+@pytest.mark.parametrize(
+    "module", ["au", "connector/eg", "connector/bellwether-mcp-shapes", "medulla-core", "x/arbora_state"]
+)
+def test_abbreviations_and_hyphenated_product_tokens_fail_in_the_path(module: str) -> None:
+    names = NAMES | {"bellwether-mcp"}
+    assert judge(f"{BASE}{module}#", names, example_ok=False) == "product-name-segment"
+
+
+# spec: PIPE-GATES-R101
+def test_hook_mode_scans_only_the_changed_files(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo.commit({"old.ttl": f"@prefix kg: <{OLD_HTTP}> .\n", "new.ttl": f"@prefix : <{BASE}core#> .\n"})
+    monkeypatch.chdir(repo.root)
+    assert main(["ontology-iri", "new.ttl"]) == 0
+    assert main(["ontology-iri", "old.ttl"]) == 1
+    assert main(["ontology-iri", "--root", str(repo.root)]) == 1

@@ -525,6 +525,6 @@ def test_the_ttl_key_changes_nothing_when_it_is_absent(tmp_path: Path) -> None:
 
     root = ontology_repo(tmp_path, "bellwether-mcp")
     pkg = root / "bellwether_mcp" / "ontology"
-    shutil.move(pkg / "market_data.ttl", pkg / "bellwether-mcp.ttl")
+    shutil.move(pkg / "market_data.ttl", pkg / "bellwether.ttl")
     shapes = {p.name: t for p, t in generate.generate(root).items()}
-    assert json.loads(shapes["certification.json"])["artifacts"].get("bellwether_mcp/ontology/bellwether-mcp.ttl")
+    assert json.loads(shapes["certification.json"])["artifacts"].get("bellwether_mcp/ontology/bellwether.ttl")

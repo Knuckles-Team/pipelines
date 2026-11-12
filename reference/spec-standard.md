@@ -257,7 +257,7 @@ Constitution Article XXXIII sets the rule; `PIPE-GATES-R101` checks it. A spec t
 - **Defined once.** The base is the core ontology constant of the engine. Packs and connectors derive their namespaces from it through the connector SDK's ontology generation. No spec, test or source file types the base by hand.
 - **Collisions.** Before two namespaces merge into one module, compare their local names. If one name means two things, keep two modules.
 - **Standard vocabularies stay.** W3C, Dublin Core, schema.org, FIBO, OGC and similar namespaces are used as published.
-- **Gate.** `ontology-iri` fails a custom namespace outside the base, an `http://` custom namespace, a path segment equal to a product or repository name, and a versioned namespace.
+- **Gate.** `ontology-iri` fails a custom namespace outside the base, an `http://` custom namespace, a path segment or fragment token equal to a product or repository name or abbreviation, and a versioned namespace. It checks the changed files of a change.
 
 ## Wording
 

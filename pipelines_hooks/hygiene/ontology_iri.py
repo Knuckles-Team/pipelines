@@ -42,6 +42,8 @@ CORE_PRODUCT_NAMES = frozenset(
         "craft-suite", "craft-suite-api", "artcraft", "agent-packages",
     }
 )  # fmt: skip
+#: Product abbreviations that never appear as a path or fragment token.
+PRODUCT_ABBREVIATIONS = frozenset({"au", "eg"})
 #: A segment ending in one of these is a connector package name.
 PACKAGE_SUFFIXES = ("-mcp", "-agent", "-api", "-sdk")
 
@@ -113,12 +115,16 @@ class Finding:
 
 
 def workspace_names(workspace: Path | None) -> frozenset[str]:
-    """Repository names from a workspace manifest (the basename of each repository URL)."""
+    """Product repository names from a workspace manifest: the basename of each GitHub repository URL.
+
+    Service and image repositories on the private host are named after the upstream system they
+    package (the very system a ``connector/<system>`` module names), so they are not product names.
+    """
     if workspace is None or not workspace.is_file():
         return frozenset()
     names = set()
     for line in workspace.read_text(encoding="utf-8").splitlines():
-        match = re.search(r"url:\s*\S*/([^/\s]+?)(?:\.git)?\s*$", line)
+        match = re.search(r"url:\s*https://github\.com/[^/\s]+/([^/\s]+?)(?:\.git)?\s*$", line)
         if match:
             names.add(match.group(1).lower())
     return frozenset(names)
@@ -137,8 +143,15 @@ def find_workspace(start: Path, explicit: Path | None) -> Path | None:
 
 
 def _product_segment(segment: str, names: frozenset[str]) -> bool:
+    """A segment is a product when it, or any run of its hyphen tokens, is a product name or abbreviation."""
     lowered = segment.lower()
-    return lowered in names or lowered.endswith(PACKAGE_SUFFIXES)
+    if lowered in names or lowered in PRODUCT_ABBREVIATIONS or lowered.endswith(PACKAGE_SUFFIXES):
+        return True
+    tokens = re.split(r"[-_.]", lowered)
+    if any(token in PRODUCT_ABBREVIATIONS for token in tokens):
+        return True
+    runs = {"-".join(tokens[i:j]) for i in range(len(tokens)) for j in range(i + 1, len(tokens) + 1)}
+    return bool(runs & names)
 
 
 def judge(iri: str, names: frozenset[str], *, example_ok: bool, versioned_ok: bool = False) -> str | None:
@@ -157,6 +170,9 @@ def judge(iri: str, names: frozenset[str], *, example_ok: bool, versioned_ok: bo
     segments = [part for part in path[len("/ontology/") :].split("/") if part]
     if not segments:
         return "outside-base"
+    fragment = iri.partition("#")[2]
+    if any(part.lower() in PRODUCT_ABBREVIATIONS for part in re.split(r"[/.]", fragment)):
+        return "product-abbreviation-token"
     for segment in segments:
         if _product_segment(segment, names):
             return "product-name-segment"
@@ -193,11 +209,14 @@ def _is_test_path(relative: str) -> bool:
     )
 
 
-def scan(root: Path, names: frozenset[str]) -> list[Finding]:
+def scan(root: Path, names: frozenset[str], only: frozenset[str] | None = None) -> list[Finding]:
+    """Scan the tracked files under ``root``; ``only`` limits it to those repository-relative paths."""
     root = root.resolve()
     repository = repo_root(root)
     findings: list[Finding] = []
     for relative in tracked_paths(repository, preserve_index=False):
+        if only is not None and relative not in only:
+            continue
         path = repository / relative
         if not path.is_relative_to(root) or path.suffix not in TEXT_SUFFIXES or path.name in SKIP_FILES:
             continue
@@ -221,16 +240,25 @@ def scan(root: Path, names: frozenset[str]) -> list[Finding]:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("roots", nargs="*", type=Path)
+    parser.add_argument("roots", nargs="*", type=Path, help="files (scan only those) or directories (scan all tracked)")
     parser.add_argument("--root", type=Path, help="repository or subtree to scan")
     parser.add_argument("--workspace", type=Path, help="workspace manifest naming every repository")
     args = parser.parse_args(argv)
-    roots = ([args.root] if args.root else []) + args.roots or [Path.cwd()]
+    files = [path for path in args.roots if path.is_file()]
+    dirs = ([args.root] if args.root else []) + [path for path in args.roots if not path.is_file()]
     findings: list[Finding] = []
-    for root in roots:
+    if files and not dirs:
+        # Hook mode: pre-commit passes the changed files, so unrelated files never fail a change.
+        base = Path.cwd().resolve()
+        repository = repo_root(base)
+        only = frozenset(path.resolve().relative_to(repository).as_posix() for path in files)
+        dirs = [repository]
+    else:
+        only = None
+    for root in dirs or [Path.cwd()]:
         names = set(CORE_PRODUCT_NAMES) | workspace_names(find_workspace(root.resolve(), args.workspace))
         names.add(repo_root(root.resolve()).name.lower())
-        findings += scan(root, frozenset(names))
+        findings += scan(root, frozenset(names), only)
     if findings:
         print(f"FAIL: {len(findings)} ontology IRI(s) break the standard (base {BASE}<module>#):")
         for finding in findings[:80]:

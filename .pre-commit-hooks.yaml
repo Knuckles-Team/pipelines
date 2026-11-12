@@ -496,8 +496,7 @@
   name: ontology-iri (custom ontology IRIs sit under the one https base, no product names, no versions)
   entry: pipelines-hook ontology-iri
   language: python
-  pass_filenames: false
-  always_run: true
+  files: \.(ttl|trig|nt|nq|n3|owl|rdf|jsonld|rq|sparql|shacl|py|rs|go|ts|tsx|js|json|ya?ml|toml|md|txt|xml|sql|java)$
   stages: [pre-push]
 
 # A connector release publishes PyPI and Docker (PIPE-RELEASE-R013); warn level.
