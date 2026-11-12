@@ -3,7 +3,7 @@
 A connector declares its tool-use contracts, its prompt/skill/tool links and
 its data locations once, in ``<package>/connector_contracts.py``, with the
 Scion SDK builders (``ToolUseContract``, ``ToolStep``, ``Refusal``,
-``SurfaceLink``, ``DataLocation``). The SDK renders them as the served
+``SurfaceLink``, ``DataLocation``, ``UpstreamTool``). The SDK renders them as the served
 ``ontology://<connector>/contracts.ttl`` resource. This module reads the same
 declarations statically: the call names and their literal arguments, by keyword
 or by the builders' positional field order. A packaged Turtle file that types
@@ -17,6 +17,7 @@ from __future__ import annotations
 from pipelines_hooks.core.ontology_base import CONTRACT_NS
 
 import ast
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,7 @@ FIELDS: dict[str, tuple[str, ...]] = {
     "SurfaceLink": ("task", "tools", "prompts", "skills"),
     "DataLocation": ("name", "holds", "instance", "read_tool", "store", "route_param", "federation_key"),
     "BusinessRole": ("name", "tasks", "description"),
+    "UpstreamTool": ("upstream", "tool", "description", "input_schema", "destructive"),
 }
 
 
@@ -45,6 +47,7 @@ class Declared:
     links: list[dict[str, Any]] = field(default_factory=list)
     locations: list[dict[str, Any]] = field(default_factory=list)
     roles: list[dict[str, Any]] = field(default_factory=list)
+    upstream_tools: list[dict[str, Any]] = field(default_factory=list)
     sources: list[str] = field(default_factory=list)
 
 
@@ -54,6 +57,12 @@ def _literal(node: ast.AST) -> Any:
         return node.value
     if isinstance(node, (ast.Tuple, ast.List, ast.Set)):
         return [_literal(item) for item in node.elts]
+    if isinstance(node, ast.Dict):
+        return {
+            key.value: _literal(value)
+            for key, value in zip(node.keys, node.values, strict=True)
+            if isinstance(key, ast.Constant) and isinstance(key.value, str)
+        }
     if isinstance(node, ast.Call):
         return _call(node)
     return None
@@ -114,6 +123,8 @@ def read_module(path: Path, declared: Declared) -> None:
             declared.locations.append(value)
         elif kind == "BusinessRole":
             declared.roles.append(value)
+        elif kind == "UpstreamTool":
+            declared.upstream_tools.append(value)
     declared.sources.append(path.name)
 
 
@@ -260,6 +271,45 @@ def location_names(declared: Declared) -> set[str]:
 
 def role_names(declared: Declared) -> list[str]:
     return sorted({name for role in declared.roles for name in _strings(role.get("name"))})
+
+
+def upstream_name(entry: dict[str, Any]) -> str:
+    """The served name ``<upstream>_<tool>`` of one declared upstream tool."""
+    upstream, tool = _strings(entry.get("upstream")), _strings(entry.get("tool"))
+    return f"{upstream[0]}_{tool[0]}" if upstream and tool else ""
+
+
+def upstream_names(declared: Declared) -> list[str]:
+    """Served names of every declared upstream tool, sorted and unique."""
+    return sorted({name for entry in declared.upstream_tools if (name := upstream_name(entry))})
+
+
+def upstream_gaps(declared: Declared, local: Iterable[str] = ()) -> list[str]:
+    """Declared upstream tools are validated like registered ones: name, description, schema, annotation."""
+    gaps: list[str] = []
+    seen: set[str] = set()
+    taken = set(local)
+    for index, entry in enumerate(declared.upstream_tools, start=1):
+        name = upstream_name(entry)
+        label = name or f"#{index}"
+        if not name:
+            gaps.append(f"tools: upstream tool {label} names no upstream or no tool")
+            continue
+        if name in seen:
+            gaps.append(f"tools: upstream tool {name} is declared twice")
+        seen.add(name)
+        if name in taken:
+            gaps.append(f"tools: upstream tool {name} collides with a registered tool")
+        if not _strings(entry.get("description")):
+            gaps.append(f"tools: upstream tool {name} has no description")
+        schema = entry.get("input_schema")
+        if not isinstance(schema, dict) or schema.get("type") != "object":
+            gaps.append(f"tools: upstream tool {name} has no object input schema")
+        elif not isinstance(schema.get("properties", {}), dict):
+            gaps.append(f"tools: upstream tool {name} has a malformed input schema")
+        if "destructive" in entry and not isinstance(entry["destructive"], bool):
+            gaps.append(f"tools: upstream tool {name} has no boolean destructive annotation")
+    return gaps
 
 
 def tool_coverage_gaps(declared: Declared, served_tools: list[str]) -> list[str]:
