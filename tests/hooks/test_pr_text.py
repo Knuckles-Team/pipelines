@@ -26,6 +26,11 @@ CLEAN = (
         ("see host.example." + "arpa", "private reference"),
         ("saved to /home/user/x", "private reference"),
         ("run on R820", "hostname or local path"),
+        ("built on GR1080", "hostname or local path"),
+        ("see keycloak.heavenhomestead.com", "hostname or local path"),
+        ("ran local-release", "internal tool or script name"),
+        ("ran trunk-gate and localgate.sh", "internal tool or script name"),
+        ("held a medulla-cargo-slot", "internal tool or script name"),
         ("ran local-ci", "internal tool or script name"),
         ("the merge train", "internal workflow jargon"),
         ("see the HANDOFF note", "private handoff document"),
@@ -40,6 +45,11 @@ def test_internal_references_jargon_and_bare_row_ids_are_findings(text: str, kin
 def test_a_private_repository_name_is_a_finding_only_when_given() -> None:
     assert not findings("body", "touches secret-repo")
     assert findings("body", "touches secret-repo", ("secret-repo",))
+
+
+@pytest.mark.spec("PIPE-GATES-R099")
+def test_a_short_row_number_is_not_a_hostname() -> None:
+    assert not any("hostname" in item for item in findings("body", "rows R001 and R1080 land"))
 
 
 @pytest.mark.spec("PIPE-GATES-R099")
@@ -66,3 +76,9 @@ def test_the_workflow_job_is_staged_by_default() -> None:
     job = workflow["jobs"]["pr-text"]
     assert job["if"] == "github.event_name == 'pull_request'"
     assert "pipelines-hook pr-text" in job["steps"][-1]["run"]
+
+
+@pytest.mark.spec("PIPE-GATES-R099")
+def test_a_comment_is_linted_like_a_body() -> None:
+    assert main(["--comment", "queued on the train", "--strict"]) == 1
+    assert main(["--comment", "The importer now skips empty rows; unit tests pass.", "--strict"]) == 0
