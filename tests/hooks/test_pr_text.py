@@ -82,3 +82,24 @@ def test_the_workflow_job_is_staged_by_default() -> None:
 def test_a_comment_is_linted_like_a_body() -> None:
     assert main(["--comment", "queued on the train", "--strict"]) == 1
     assert main(["--comment", "The importer now skips empty rows; unit tests pass.", "--strict"]) == 0
+
+
+COMMENT_WORKFLOW = Path(__file__).parents[2] / ".github/workflows/comment_text_pipeline.yml"
+COMMENT_TEMPLATE = Path(__file__).parents[2] / "templates/workflows/comment-text.yml"
+
+
+@pytest.mark.spec("PIPE-GATES-R099")
+def test_the_comment_workflow_lints_comment_events_staged_by_default() -> None:
+    workflow = yaml.safe_load(COMMENT_WORKFLOW.read_text(encoding="utf-8"))
+    assert workflow[True]["workflow_call"]["inputs"]["pr-text-strict"]["default"] is False
+    job = workflow["jobs"]["comment-text"]
+    assert "issue_comment" in job["if"]
+    assert "pull_request_review_comment" in job["if"]
+    last = job["steps"][-1]
+    # The comment text travels in the environment, never interpolated into the script.
+    assert last["env"]["COMMENT_BODY"] == "${{ github.event.comment.body }}"
+    assert "github.event" not in last["run"]
+    assert 'pipelines-hook pr-text --comment "$COMMENT_BODY"' in last["run"]
+    caller = yaml.safe_load(COMMENT_TEMPLATE.read_text(encoding="utf-8"))
+    assert set(caller[True]) == {"issue_comment", "pull_request_review_comment"}
+    assert caller["jobs"]["comment-text"]["uses"].endswith("comment_text_pipeline.yml@main")
