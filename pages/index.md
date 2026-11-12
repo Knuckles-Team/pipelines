@@ -6,7 +6,7 @@ One progressively disclosed corpus of the Knuckles agent ecosystem's concepts, c
 - [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md) — the shared rules for every repository.
 - [Concepts](concepts.md) — level 1, 224 nodes across 7 repos.
 - [Components](components.md) — level 2, 180 nodes, each documented by a man page.
-- [`corpus.jsonld`](corpus.jsonld) — the full machine corpus (180 man pages), consumable by agents directly over HTTP once this site is published; JSON-LD with `@id` IRIs under `http://knuckles.team/kg#`, the same namespace Medulla's own ontology uses.
+- [`corpus.jsonld`](corpus.jsonld) — the full machine corpus (180 man pages), consumable by agents directly over HTTP once this site is published; JSON-LD with `@id` IRIs under `https://knuckles-team.github.io/ontology/core#`, the same namespace Medulla's own ontology uses.
 
 See [Ecosystem glossary](glossary.md) for the shared vocabulary this corpus's repo and concept names draw from.
 

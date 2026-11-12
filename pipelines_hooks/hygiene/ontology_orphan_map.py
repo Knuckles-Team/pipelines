@@ -27,11 +27,13 @@ sorted keys, no timestamps.
 
 ``apply`` reads a decisions file ``{"<ClassIRI>": "<ParentIRI>"}`` and writes the
 ``rdfs:subClassOf`` triple into the connector's ``.ttl`` text, plus
-``owl:imports <http://knuckles.team/kg>`` where the header lacks it. Formatting
+``owl:imports <https://knuckles-team.github.io/ontology/core>`` where the header lacks it. Formatting
 and comments elsewhere in the file are untouched.
 """
 
 from __future__ import annotations
+
+from pipelines_hooks.core.ontology_base import CORE_ONTOLOGY
 
 import argparse
 import json
@@ -42,7 +44,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-PARENT_IRI = "http://knuckles.team/kg"
+PARENT_IRI = CORE_ONTOLOGY
 _RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 _OWL = "http://www.w3.org/2002/07/owl#"
 _RDFS = "http://www.w3.org/2000/01/rdf-schema#"
@@ -616,7 +618,7 @@ import pytest
 
 pytestmark = pytest.mark.spec("{spec_id}")
 
-PARENT_IRI = "http://knuckles.team/kg"
+PARENT_IRI = "{parent_iri}"
 ONTOLOGIES = sorted((Path(__file__).resolve().parents[1] / "{package}" / "ontology").glob("*.ttl"))
 OWL = "http://www.w3.org/2002/07/owl#"
 RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -717,7 +719,9 @@ def scaffold_test(
         return "\n".join(f'        "{iri}",' for iri in sorted(items)) or ""
 
     pending_literal = "frozenset(\n    (\n" + block(pend) + "\n    )\n)" if pend else "frozenset()"
-    text = _TEST_TEMPLATE.format(spec_id=spec_id, package=package, parents=block(used), pending=pending_literal)
+    text = _TEST_TEMPLATE.format(
+        parent_iri=CORE_ONTOLOGY, spec_id=spec_id, package=package, parents=block(used), pending=pending_literal
+    )
     out = root / "tests" / "test_ontology_parent_link.py"
     out.parent.mkdir(exist_ok=True)
     out.write_text(text, encoding="utf-8")

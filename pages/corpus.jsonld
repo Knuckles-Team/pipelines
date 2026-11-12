@@ -1,6 +1,6 @@
 {
   "@context": {
-    "@vocab": "http://knuckles.team/kg#",
+    "@vocab": "https://knuckles-team.github.io/ontology/core#",
     "id": "@id",
     "type": "@type",
     "hasComponent": {

@@ -263,3 +263,4 @@
 - [ ] T241 PIPE-GATES-R096 A branch that merged main is measured from the main fork point.
 - [ ] T258 PIPE-GATES-R099 Pull request, comment and commit text is self-evident, and the pr-text gate reports it.
 - [ ] T259 PIPE-GATES-R100 A repository's specs use its glossary and the ontology mapping.
+- [ ] T260 PIPE-GATES-R101 Every custom ontology IRI lives under one HTTPS base, and the ontology-iri gate fails any that does not.

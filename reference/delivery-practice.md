@@ -72,6 +72,15 @@ Constitution Article XXXII sets the rule: every pull request title and descripti
 
 *Gate*: the `pr-text` job of the shared gates workflow lints the pull request title and body, and the `pr-text` hook lints a commit message at the `commit-msg` stage. Both report warnings (exit 0) until `pr-text-strict` or `--strict` is set, then findings block. They flag the internal-reference patterns the public-spec check uses, hostnames and machine roles, internal tool names, workflow jargon, handoff-document names, and a bare row ID. A private repository name is passed with `--private-repo`. Review and issue comments are reviewed by people; the same rule applies.
 
+## Ontology IRIs
+
+Constitution Article XXXIII and the section "Ontology IRIs" of the spec standard set the rule. In delivery:
+
+1. **Mint under the base only.** A new class, property, individual or ontology header gets an IRI under `https://knuckles-team.github.io/ontology/<module>#`, in a module named for its domain.
+2. **Derive, never retype.** Source code, tests and generated packs take the base from its single definition (the core ontology constant, or the connector SDK's ontology generation). A pull request that types the base into a second place is sent back.
+3. **A rename moves no data.** Because no module is named for a product, a product rename changes no stored IRI. A change that has to rewrite stored IRIs is a defect in the module name.
+4. **Check before a push.** The `ontology-iri` hook runs at `pre-push` and in the gates workflow. It is blocking: fix the IRI, never add an exception.
+
 ## Registries keyed on spec directories
 
 A page, explorer or index that maps by spec directory name must change in the same pull request that adds, renames or removes a spec directory. A new family without a node fails the page build after the merge, which blocks every later change to the page.

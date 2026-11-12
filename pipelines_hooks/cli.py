@@ -45,6 +45,7 @@ GATES: dict[str, str] = {
     "connector-ontology-map": "pipelines_hooks.hygiene.ontology_orphan_map",
     "agent-contract": "pipelines_hooks.hygiene.agent_contract",
     "pr-text": "pipelines_hooks.hygiene.pr_text",
+    "ontology-iri": "pipelines_hooks.hygiene.ontology_iri",
     "release-standard": "pipelines_hooks.hygiene.release_standard",
     "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
     "no-stub": "pipelines_hooks.code.no_stub",

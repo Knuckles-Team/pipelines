@@ -18,7 +18,7 @@ A connector module `<package>/connector_contracts.py` holds the module-level nam
 | `DataLocation` | `name`, `holds`, `instance`, `read_tool`, `store`, `route_param`, `federation_key` |
 | `BusinessRole` | `name`, `tasks`, `description` |
 
-The SDK serves the rendered Turtle as `ontology://<connector>/contracts.ttl` in the namespace `https://knuckles-team.github.io/scion-sdk/contract#`. Individuals use the IRI `urn:scion:<connector>:<kind>:<name>`.
+The SDK serves the rendered Turtle as `ontology://<connector>/contracts.ttl` in the namespace `https://knuckles-team.github.io/ontology/surface-contract#`. Individuals use the IRI `urn:scion:<connector>:<kind>:<name>`.
 
 ## Refusal codes
 

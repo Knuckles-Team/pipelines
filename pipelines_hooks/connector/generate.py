@@ -32,6 +32,7 @@ from typing import Any
 
 from pipelines_hooks.connector import project
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.ontology_base import BASE, CORE_NS
 from pipelines_hooks.core.gitenv import repo_root, run_git
 
 SHAPE_PROPERTIES = ("sourceRecordRef", "tenantReference", "accessPolicyReference", "provenanceReference")
@@ -61,8 +62,8 @@ def _domain(package: Path) -> str:
 
 def shacl(domain: str, classes: list[str]) -> str:
     head = (
-        "@prefix : <http://knuckles.team/kg#> .\n"
-        f"@prefix shape: <http://knuckles.team/kg/{domain}/shape#> .\n"
+        f"@prefix : <{CORE_NS}> .\n"
+        f"@prefix shape: <{BASE}connector/{domain}-shapes#> .\n"
         "@prefix sh: <http://www.w3.org/ns/shacl#> .\n"
         "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n"
     )
