@@ -109,10 +109,36 @@ jobs:
       sdk_version: ${{ steps.sdk.outputs.sdk_version }}
       sdk_distribution: ${{ steps.sdk.outputs.sdk_distribution }}
       stale: ${{ steps.sdk.outputs.stale }}
+      source_ref: ${{ steps.sdk-context.outputs.source_ref }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      # Main may carry a version bump that is not released yet, and no image or wheel
+      # exists for it. Outside a release repair the rebuild targets the latest released
+      # version: the newest v* tag.
+      - name: Find the latest released tag
+        id: latest-tag
+        if: inputs.release_repair != true
+        run: |
+          set -euo pipefail
+          tag="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+          if [[ -z "$tag" ]]; then
+            echo '::notice::No v* release tag exists yet; nothing to rebuild.'
+          fi
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout latest released tag
+        if: inputs.release_repair != true && steps.latest-tag.outputs.tag != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: refs/tags/${{ steps.latest-tag.outputs.tag }}
+          path: .latest-release
           persist-credentials: false
 
       - name: Validate release source checkout destination
@@ -139,13 +165,19 @@ jobs:
         env:
           RELEASE_REPAIR: ${{ inputs.release_repair }}
           LEGACY_PROFILE: ${{ inputs.legacy_profile }}
+          LATEST_TAG: ${{ steps.latest-tag.outputs.tag }}
         run: |
           set -euo pipefail
           context=.
+          source_ref=''
           if [[ "${RELEASE_REPAIR,,}" == true && "${LEGACY_PROFILE,,}" != true ]]; then
             context=.release-source
+          elif [[ "${RELEASE_REPAIR,,}" != true && -n "$LATEST_TAG" ]]; then
+            context=.latest-release
+            source_ref="refs/tags/$LATEST_TAG"
           fi
           printf 'path=%s\n' "$context" >> "$GITHUB_OUTPUT"
+          printf 'source_ref=%s\n' "$source_ref" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Docker registry
         if: inputs.release_repair != true
@@ -167,8 +199,14 @@ jobs:
           IMAGE: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
           RELEASE_REPAIR: ${{ inputs.release_repair }}
           SDK_CONTEXT: ${{ steps.sdk-context.outputs.path }}
+          SOURCE_REF: ${{ steps.sdk-context.outputs.source_ref }}
         run: |
           set -euo pipefail
+          if [[ "${RELEASE_REPAIR,,}" != true && -z "$SOURCE_REF" ]]; then
+            echo '::notice::No v* release tag exists yet; skipping the SDK rebuild.'
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           sdk_distribution="${INPUT_SDK_DISTRIBUTION:-${PAYLOAD_SDK_DISTRIBUTION:-}}"
           if [[ -z "$sdk_distribution" ]]; then
             sdk_distribution="$(python3 - <<'PY'
@@ -230,6 +268,7 @@ jobs:
       release_source_epoch: ${{ inputs.release_source_epoch }}
       sdk_version: ${{ needs.resolve.outputs.sdk_version }}
       sdk_distribution: ${{ needs.resolve.outputs.sdk_distribution }}
+      source_ref: ${{ needs.resolve.outputs.source_ref }}
     secrets:
       DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}

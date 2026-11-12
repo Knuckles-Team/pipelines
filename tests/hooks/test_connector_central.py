@@ -381,7 +381,23 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
         "release_source_epoch": "${{ inputs.release_source_epoch }}",
         "sdk_version": "${{ needs.resolve.outputs.sdk_version }}",
         "sdk_distribution": "${{ needs.resolve.outputs.sdk_distribution }}",
+        "source_ref": "${{ needs.resolve.outputs.source_ref }}",
     }
+    # A version bump on main that is not released yet must never be rebuilt: the context is the latest v* tag.
+    checkout = next(step for step in resolve["steps"] if step.get("name") == "Checkout code")
+    assert checkout["with"]["fetch-depth"] == 0 and checkout["with"]["fetch-tags"] is True
+    tag = next(step for step in resolve["steps"] if step.get("id") == "latest-tag")
+    assert "git describe --tags --abbrev=0 --match 'v*'" in tag["run"]
+    released = next(step for step in resolve["steps"] if step.get("name") == "Checkout latest released tag")
+    assert released["with"]["ref"] == "refs/tags/${{ steps.latest-tag.outputs.tag }}"
+    assert released["with"]["path"] == ".latest-release"
+    context = next(s for s in resolve["steps"] if s.get("id") == "sdk-context")["run"]
+    assert "context=.latest-release" in context and 'source_ref="refs/tags/$LATEST_TAG"' in context
+    assert "stale=false" in script and "No v* release tag exists yet" in script
+    container = yaml.safe_load((WORKFLOWS / "container_pipeline.yml").read_text(encoding="utf-8"))
+    build_steps = next(iter(container["jobs"].values()))["steps"]
+    assert build_steps[0]["with"]["ref"] == "${{ inputs.source_ref || github.sha }}"
+    assert container[True]["workflow_call"]["inputs"]["source_ref"]["default"] == ""
 
 
 # --- generated ontology artifacts ------------------------------------------------------------------------------

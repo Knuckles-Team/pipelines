@@ -67,6 +67,11 @@ on:
         required: false
         type: string
         default: ''
+      source_ref:
+        description: Git ref to build instead of the triggering commit; the SDK rebuild passes the latest release tag so an unreleased version bump on main is never built.
+        required: false
+        type: string
+        default: ''
       sdk_version:
         description: >-
           SDK version this build re-resolves inside the wheel's supported range
@@ -150,7 +155,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ github.sha }}
+          ref: ${{ inputs.source_ref || github.sha }}
 
       # PIPE-RELEASE-R018: the tag carries the version. Main's pyproject lags until the sync
       # pull request merges, so the build workspace takes the tag's version before anything reads it.
