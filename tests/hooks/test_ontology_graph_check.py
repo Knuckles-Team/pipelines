@@ -14,7 +14,7 @@ from pipelines_hooks.hygiene import ontology_orphan_map as omap
 
 pytestmark = pytest.mark.spec("PIPE-GATES-R016")
 
-HEAD = """@prefix : <http://knuckles.team/kg#> .
+HEAD = """@prefix : <https://knuckles-team.github.io/ontology/core#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -31,13 +31,13 @@ CORE = (
 :blank a owl:ObjectProperty .
 :EgStray a owl:Class ; rdfs:subClassOf :EgStray2 .
 :EgStray2 a owl:Class .
-<http://knuckles.team/kg> a owl:Ontology .
+<https://knuckles-team.github.io/ontology/core> a owl:Ontology .
 """
 )
 PACK_A = (
     HEAD
     + """
-<http://x/packa> a owl:Ontology ; owl:imports <http://knuckles.team/kg> .
+<http://x/packa> a owl:Ontology ; owl:imports <https://knuckles-team.github.io/ontology/core> .
 :Issue a owl:Class ; rdfs:label "Issue" .
 :Bug a owl:Class ; rdfs:subClassOf :Ticket , :Ghost .
 :Server a owl:Class ; rdfs:subClassOf :Concept , :Thing2 .
@@ -302,8 +302,14 @@ def test_fixture_dirs_are_excluded(tmp_path: Path) -> None:
 
 @pytest.mark.spec("PIPE-GATES-R016.4")
 def test_pack_import_of_eg_is_finding_and_not_a_bridge() -> None:
-    core = HEAD + "<http://knuckles.team/kg> a owl:Ontology .\n:A a owl:Class ; rdfs:subClassOf owl:Thing ."
-    pack = HEAD + "<http://x/p> a owl:Ontology ; owl:imports <http://knuckles.team/kg> .\n:P a owl:Class ."
+    core = (
+        HEAD
+        + "<https://knuckles-team.github.io/ontology/core> a owl:Ontology .\n:A a owl:Class ; rdfs:subClassOf owl:Thing ."
+    )
+    pack = (
+        HEAD
+        + "<http://x/p> a owl:Ontology ; owl:imports <https://knuckles-team.github.io/ontology/core> .\n:P a owl:Class ."
+    )
     srcs = [ogc.Source("eg:core", "eg", "a/core.ttl", core), ogc.Source("pk", "pack", "pk/ontology/p.ttl", pack)]
     assert _components(srcs) == 2
     out = ogc.run(srcs, [], with_plan=False)

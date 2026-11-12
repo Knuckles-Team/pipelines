@@ -26,6 +26,8 @@ census table instead of JSON.
 
 from __future__ import annotations
 
+from pipelines_hooks.core.ontology_base import CORE_ONTOLOGY
+
 import argparse
 import json
 import re
@@ -41,7 +43,7 @@ from pipelines_hooks.hygiene import connector_surface_contracts as contracts
 from pipelines_hooks.hygiene import connector_surface_prompts as prompts
 from pipelines_hooks.hygiene import connector_surface_tools as tools
 
-PARENT_IRI = "http://knuckles.team/kg"
+PARENT_IRI = CORE_ONTOLOGY
 CORE_NAMESPACE = PARENT_IRI + "#"
 SDK_GROUP = "scion_sdk."
 CONNECTOR_GROUP = SDK_GROUP + "connector"

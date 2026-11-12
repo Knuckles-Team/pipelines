@@ -29,6 +29,7 @@ STANDARD = {"secrets", "spec", "tests-fast"}
 KEPT = {
     "agent-contract",
     "pr-text",
+    "ontology-iri",
     "connector-graphql",
     "connector-standard",
     "secret-fields",

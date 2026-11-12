@@ -11,7 +11,7 @@ from pipelines_hooks.hygiene import ontology_codemod as oc
 from pipelines_hooks.hygiene import ontology_graph_check as ogc
 from pipelines_hooks.hygiene import ontology_orphan_map as omap
 
-HEAD = """@prefix : <http://knuckles.team/kg#> .
+HEAD = """@prefix : <https://knuckles-team.github.io/ontology/core#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -19,7 +19,7 @@ HEAD = """@prefix : <http://knuckles.team/kg#> .
 """
 EG = (
     HEAD
-    + """<http://knuckles.team/kg> a owl:Ontology .
+    + """<https://knuckles-team.github.io/ontology/core> a owl:Ontology .
 :Thing0 a owl:Class ; rdfs:subClassOf owl:Thing .
 :File a owl:Class ; rdfs:subClassOf :Thing0 ; rdfs:label "File" .
 :Person a owl:Class ; rdfs:subClassOf :Thing0 .
@@ -31,7 +31,7 @@ PACK = (
     HEAD
     + """<http://x/p> a owl:Ontology ;
     rdfs:label "pack" ;
-    owl:imports <http://knuckles.team/kg> , <http://other/ont> .
+    owl:imports <https://knuckles-team.github.io/ontology/core> , <http://other/ont> .
 # keep this comment
 :Server a owl:Class ;
     rdfs:subClassOf :Thing0 ;
@@ -79,7 +79,9 @@ def queue(plan: oc.Plan, rule: str) -> dict[str, dict]:
 @pytest.mark.spec("PIPE-GATES-R016.6")
 def test_r1_drops_only_the_eg_import() -> None:
     text = patched()[0]["p/ontology/p.ttl"]
-    assert "http://knuckles.team/kg>" not in text.replace("http://knuckles.team/kg#", "")
+    assert "https://knuckles-team.github.io/ontology/core>" not in text.replace(
+        "https://knuckles-team.github.io/ontology/core#", ""
+    )
     assert "http://other/ont" in text and "# keep this comment" in text
 
 
@@ -87,7 +89,7 @@ def test_r1_drops_only_the_eg_import() -> None:
 def test_r2_removes_redeclared_parent_label_comment_keeps_rest() -> None:
     g = ogc.Graph()
     g.parse(data=patched()[0]["p/ontology/p.ttl"], format="turtle")
-    server = ogc.URIRef("http://knuckles.team/kg#Server")
+    server = ogc.URIRef("https://knuckles-team.github.io/ontology/core#Server")
     preds = {str(p) for p in g.predicates(server, None)}
     assert not preds & {str(ogc.RDFS.subClassOf), str(ogc.RDFS.label), str(ogc.RDFS.comment)}
     assert "http://www.w3.org/2004/02/skos/core#altLabel" in preds
@@ -100,13 +102,13 @@ def test_r3_exact_name_singularized_and_r4_override_and_r5_proposal() -> None:
     g.parse(data=text["p/ontology/p.ttl"], format="turtle")
 
     def parents(n: str) -> set[str]:
-        node = ogc.URIRef(f"http://knuckles.team/kg#{n}")
+        node = ogc.URIRef(f"https://knuckles-team.github.io/ontology/core#{n}")
         return {ogc.local(str(o)) for o in g.objects(node, ogc.RDFS.subClassOf)}
 
     assert parents("Persons") == {"Person"}
     assert parents("Genre") == {"Category"}
     assert parents("TorrentFile") == set()  # R5 is a proposal only
-    assert queue(plan, "R5")["TorrentFile"]["candidates"] == [ogc.KG_NS + "kg#File"]
+    assert queue(plan, "R5")["TorrentFile"]["candidates"] == [ogc.CORE_NS + "File"]
     assert "Lonely" in queue(plan, "R4") and "audited" in queue(plan, "R4")["Lonely"]["reason"]
 
 
@@ -136,7 +138,7 @@ def test_r8_infers_only_a_single_candidate() -> None:
     text, plan = patched()
     g = ogc.Graph()
     g.parse(data=text["p/ontology/p.ttl"], format="turtle")
-    owns = ogc.URIRef("http://knuckles.team/kg#owns")
+    owns = ogc.URIRef("https://knuckles-team.github.io/ontology/core#owns")
     assert [ogc.local(str(o)) for o in g.objects(owns, ogc.RDFS.domain)] == ["Person"]
     assert "links" in queue(plan, "R8")
 
@@ -166,12 +168,15 @@ def test_cli_dry_run_writes_patch_summary_and_queue(tmp_path: Path, monkeypatch:
     assert (pack / "p" / "ontology" / "p.ttl").read_text() == PACK  # dry run changes nothing
     assert json.loads((out / "review-queue.json").read_text())["p"]
     assert omap.main(["fix", "--pack", str(pack), "--eg-repo", str(tmp_path), "--out", str(out)]) == 0
-    assert "owl:imports <http://knuckles.team/kg>" not in (pack / "p" / "ontology" / "p.ttl").read_text()
+    assert (
+        "owl:imports <https://knuckles-team.github.io/ontology/core>"
+        not in (pack / "p" / "ontology" / "p.ttl").read_text()
+    )
 
 
 EG_ALIAS = (
     HEAD
-    + """<http://knuckles.team/kg> a owl:Ontology .
+    + """<https://knuckles-team.github.io/ontology/core> a owl:Ontology .
 :Thing0 a owl:Class ; rdfs:subClassOf owl:Thing .
 :BroadcastChannel a owl:Class ; rdfs:subClassOf :Thing0 ; rdfs:label "Broadcast Channel" ; skos:altLabel "Tuner Station" , "Feed" .
 :Subscription a owl:Class ; rdfs:subClassOf :Thing0 ; skos:altLabel "Feed" .
@@ -194,12 +199,15 @@ def test_r3_matches_eg_alt_label_and_sends_shared_alias_to_review() -> None:
     g.parse(data=new[1].text, format="turtle")
 
     def parents(n: str) -> set[str]:
-        return {ogc.local(str(o)) for o in g.objects(ogc.URIRef(f"http://knuckles.team/kg#{n}"), ogc.RDFS.subClassOf)}
+        return {
+            ogc.local(str(o))
+            for o in g.objects(ogc.URIRef(f"https://knuckles-team.github.io/ontology/core#{n}"), ogc.RDFS.subClassOf)
+        }
 
     assert parents("TunerStations") == {"BroadcastChannel"}  # altLabel, case-insensitive and singularized
     assert parents("Feed") == set()  # alias shared by two EG classes: no choice made
     q = queue(plan, "R3")["Feed"]
-    assert q["candidates"] == sorted([ogc.KG_NS + "kg#BroadcastChannel", ogc.KG_NS + "kg#Subscription"])
+    assert q["candidates"] == sorted([ogc.CORE_NS + "BroadcastChannel", ogc.CORE_NS + "Subscription"])
 
 
 @pytest.mark.spec("PIPE-GATES-R016.7")
@@ -218,7 +226,7 @@ def test_overrides_map_the_domain_module_classes() -> None:
             assert any(per.get(name) == target for key, per in table.items() if repo in key), (repo, name)
 
 
-SCHEMA_PACK = """@prefix : <http://knuckles.team/kg#> .
+SCHEMA_PACK = """@prefix : <https://knuckles-team.github.io/ontology/core#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema: <http://schema.org/> .
@@ -238,7 +246,7 @@ def test_drop_triples_keeps_schema_org_prefix_and_reparses() -> None:
     assert n == 1 and "schema1" not in text
     g = ogc.Graph()
     g.parse(data=text, format="turtle")
-    server = ogc.URIRef("http://knuckles.team/kg#Server")
+    server = ogc.URIRef("https://knuckles-team.github.io/ontology/core#Server")
     assert (server, ogc.URIRef("http://schema.org/name"), None) in g
     assert (server, ogc.RDFS.seeAlso, ogc.URIRef("http://schema.org/Server")) in g
     assert (server, ogc.RDFS.label, None) not in g

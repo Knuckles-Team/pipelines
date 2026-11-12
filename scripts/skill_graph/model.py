@@ -8,7 +8,9 @@ from typing import Any
 
 import yaml
 
-VOCAB = "http://knuckles.team/kg#"
+from pipelines_hooks.core.ontology_base import CORE_NS
+
+VOCAB = CORE_NS
 SCHEMA = "knuckles-skill-graph/v1"
 
 # slug -> (repo directory relative to --workspace, Pages URL, display name)

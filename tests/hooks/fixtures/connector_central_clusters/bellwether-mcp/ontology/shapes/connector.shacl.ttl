@@ -1,5 +1,5 @@
-@prefix : <http://knuckles.team/kg#> .
-@prefix shape: <http://knuckles.team/kg/bellwether-mcp/shape#> .
+@prefix : <https://knuckles-team.github.io/ontology/core#> .
+@prefix shape: <https://knuckles-team.github.io/ontology/connector/bellwether-shapes#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 

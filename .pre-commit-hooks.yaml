@@ -491,6 +491,14 @@
   language: python
   stages: [commit-msg]
 
+# Every custom ontology IRI lives under the one ontology base (PIPE-GATES-R101); blocking.
+- id: ontology-iri
+  name: ontology-iri (custom ontology IRIs sit under the one https base, no product names, no versions)
+  entry: pipelines-hook ontology-iri
+  language: python
+  files: \.(ttl|trig|nt|nq|n3|owl|rdf|jsonld|rq|sparql|shacl|py|rs|go|ts|tsx|js|json|ya?ml|toml|md|txt|xml|sql|java)$
+  stages: [pre-push]
+
 # A connector release publishes PyPI and Docker (PIPE-RELEASE-R013); warn level.
 - id: release-standard
   name: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)

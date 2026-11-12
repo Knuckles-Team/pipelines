@@ -1,7 +1,7 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix dc: <http://purl.org/dc/terms/> .
-@prefix : <http://knuckles.team/kg#> .
+@prefix : <https://knuckles-team.github.io/ontology/core#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -31,7 +31,7 @@
     rdfs:domain :MarketDataSyncRun ;
     rdfs:range xsd:string .
 
-<http://knuckles.team/kg/bellwether-mcp> a owl:Ontology ;
+<https://knuckles-team.github.io/ontology/connector/bellwether> a owl:Ontology ;
     rdfs:label "Market Data Connector Ontology" ;
     rdfs:comment """bellwether-mcp's own sync-lifecycle bookkeeping,
     federated into the agent-utilities knowledge-graph hub. The finance-v1

@@ -413,7 +413,10 @@ def test_generate_is_deterministic_and_derives_shapes_from_declared_classes(tmp_
     text = shapes.read_text(encoding="utf-8")
     assert "shape:AuthorGovernanceShape a sh:NodeShape" in text and "shape:BookGovernanceShape" in text
     assert text.index("AuthorGovernance") < text.index("BookGovernance")
-    assert "<http://knuckles.team/kg/media/shape#>" in text and text.count("sh:path :provenanceReference") == 2
+    assert (
+        "<https://knuckles-team.github.io/ontology/connector/media-shapes#>" in text
+        and text.count("sh:path :provenanceReference") == 2
+    )
     record = json.loads(cert.read_text(encoding="utf-8"))
     assert record["validated_at"] == "2023-11-14T22:13:20Z" and record["connector"] == "demo-mcp"
     digest = hashlib.sha256(shapes.read_bytes()).hexdigest()

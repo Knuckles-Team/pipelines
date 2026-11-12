@@ -14,12 +14,13 @@ It imports no ecosystem package, so pipelines can run it on any checkout.
 
 from __future__ import annotations
 
+from pipelines_hooks.core.ontology_base import CONTRACT_NS
+
 import ast
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-CONTRACT_NS = "https://knuckles-team.github.io/scion-sdk/contract#"
 CONTRACTS_MODULE = "connector_contracts.py"
 #: A skill whose name ends with this suffix guides contributors, not an agent at work; it serves no task.
 CONTRIBUTOR_SKILL_SUFFIX = "-development"

@@ -23,6 +23,8 @@ The result is deterministic: sorted findings, no timestamps.
 
 from __future__ import annotations
 
+from pipelines_hooks.core.ontology_base import BASE, CORE_NS, CORE_ONTOLOGY
+
 import ast
 import os
 import re
@@ -36,7 +38,7 @@ from rdflib import BNode, Graph, Literal, URIRef
 from rdflib.collection import Collection
 from rdflib.namespace import OWL, RDF, RDFS
 
-KG_NS = "http://knuckles.team/"
+KG_NS = BASE
 SH = "http://www.w3.org/ns/shacl#"
 BFO_ROOT = "http://purl.obolibrary.org/obo/BFO_0000001"
 ROOTS = {str(OWL.Thing), BFO_ROOT, str(RDFS.Resource)}
@@ -91,7 +93,7 @@ CODES = (
     "PACK_IMPORTS_CORE",
     "NOT_ROLLED_UP_TO_CORE",
 )
-EG_CATALOG_IRI = "http://knuckles.team/kg"
+EG_CATALOG_IRI = CORE_ONTOLOGY
 DEFAULT_CQ = Path(__file__).with_name("ontology_cqs.json")
 
 
@@ -563,7 +565,7 @@ def check_dangling(m: Model) -> None:
                             pack,
                             DECLARATION,
                             0,
-                            KG_NS + "kg#" + tgt,
+                            CORE_NS + tgt,
                             {"role": "class", "source": "manifest_relation", "owner_type": res.get("name")},
                         )
                     )
@@ -576,7 +578,7 @@ def check_dangling(m: Model) -> None:
                             pack,
                             DECLARATION,
                             0,
-                            KG_NS + "kg#" + rel["name"],
+                            CORE_NS + rel["name"],
                             {
                                 "role": "property",
                                 "source": "manifest_relation",
@@ -789,7 +791,7 @@ def check_virtual(m: Model) -> None:
                         pack,
                         DECLARATION,
                         0,
-                        KG_NS + "kg#" + rt,
+                        CORE_NS + rt,
                         {"source_id": src.get("source_id"), "record_type": rt},
                     )
                 )
@@ -829,7 +831,7 @@ def check_virtual(m: Model) -> None:
                         pack,
                         DECLARATION,
                         0,
-                        KG_NS + "kg#" + str(tgt) if tgt else "",
+                        CORE_NS + str(tgt) if tgt else "",
                         {"type": typ, "ontology_class": tgt},
                     )
                 )
@@ -1299,7 +1301,7 @@ def render_markdown(result: dict[str, Any], title: str = "Ontology graph check")
             "",
             "## Fix plan by owning repo",
             "",
-            "Prefixes: `@prefix : <http://knuckles.team/kg#> .` plus owl, rdfs, xsd. `fallback` parents need a reviewer.",
+            "Prefixes: `@prefix : <https://knuckles-team.github.io/ontology/core#> .` plus owl, rdfs, xsd. `fallback` parents need a reviewer.",
         ]
         for owner, items in plan.items():
             lines += ["", f"### {owner} ({len(items)} items)", ""]

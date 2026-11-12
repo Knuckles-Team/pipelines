@@ -14,15 +14,15 @@ from pipelines_hooks.hygiene import connector_surface as audit
 
 pytestmark = pytest.mark.spec("PIPE-GATES-R014")
 
-PARENT = """@prefix : <http://knuckles.team/kg#> .
+PARENT = """@prefix : <https://knuckles-team.github.io/ontology/core#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-<http://knuckles.team/kg/core> a owl:Ontology ; rdfs:comment "parent # not a comment ." .
+<https://knuckles-team.github.io/ontology/core> a owl:Ontology ; rdfs:comment "parent # not a comment ." .
 :Document a owl:Class ; rdfs:label "Document" .
 :Ticket a owl:Class .
 """
 
-LINKED = """@prefix : <http://knuckles.team/kg#> .
+LINKED = """@prefix : <https://knuckles-team.github.io/ontology/core#> .
 @prefix d: <http://example.org/demo#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -34,7 +34,7 @@ d:MajorIncident a owl:Class ; rdfs:subClassOf d:Incident .
 
 IMPORTS_CORE = LINKED.replace(
     "<http://example.org/demo> a owl:Ontology .",
-    "<http://example.org/demo> a owl:Ontology ; owl:imports <http://knuckles.team/kg> .",
+    "<http://example.org/demo> a owl:Ontology ; owl:imports <https://knuckles-team.github.io/ontology/core> .",
 )
 
 ORPHAN = """@prefix d: <http://example.org/demo#> .
@@ -143,7 +143,10 @@ def _gaps(record: dict, part: str) -> list[str]:
 
 
 def test_parser_keeps_hash_iris_and_ignores_literals(tmp_path: Path) -> None:
-    assert _parents(tmp_path) == {"http://knuckles.team/kg#Document", "http://knuckles.team/kg#Ticket"}
+    assert _parents(tmp_path) == {
+        "https://knuckles-team.github.io/ontology/core#Document",
+        "https://knuckles-team.github.io/ontology/core#Ticket",
+    }
 
 
 @pytest.mark.spec("PIPE-GATES-R014.1")
@@ -287,7 +290,7 @@ def test_a_contributor_skill_needs_no_link(tmp_path: Path) -> None:
 def test_contracts_declared_as_turtle_count(tmp_path: Path) -> None:
     turtle = (
         LINKED
-        + """@prefix sc: <https://knuckles-team.github.io/scion-sdk/contract#> .
+        + """@prefix sc: <https://knuckles-team.github.io/ontology/surface-contract#> .
 <urn:scion:demo-mcp:contract:close> a sc:ToolUseContract ; sc:forTask <urn:scion:demo-mcp:task:close> ;
     :hasStep <urn:scion:demo-mcp:step:1> , <urn:scion:demo-mcp:step:2> .
 <urn:scion:demo-mcp:step:1> a sc:ToolStep ; sc:callsTool <urn:scion:demo-mcp:tool:demo_list_incidents> ; sc:resultField "id" .

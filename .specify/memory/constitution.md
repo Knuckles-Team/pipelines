@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.11.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-08
+**Version**: 1.12.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
 
 ## Core Principles
 
@@ -799,6 +799,28 @@ Standards and tests:
 
 **Plan check:** Does every pull request, comment and commit message of the change state what changed, why, the behaviour impact and how it was verified, with no internal reference, no jargon and no bare row ID?
 
+### XXXIII. Ontology IRIs live under one base
+
+Every ontology IRI the ecosystem mints lives under one base: `https://knuckles-team.github.io/ontology/<module>#`. A module is named for the domain its vocabulary covers (for example `core`, `harness`, `decision`, `orchestration`, `architecture`, `safety`, `connector/<system>`), never for a product, repository or package, so a rename never changes stored data. The namespace is HTTPS and carries no version; a version appears only in `owl:versionIRI`, as `https://knuckles-team.github.io/ontology/<module>/<version>`. The base is defined once, as the core ontology constant of the engine, and packs and connectors derive their namespaces from it through the connector SDK's ontology generation; no other file types it by hand. Standard vocabularies (W3C, Dublin Core, schema.org, FIBO, OGC and similar) keep their own namespaces. A module of the same local name as a core term that means something different stays a separate module; two namespaces merge only when no local name collides.
+
+*Rationale*: An IRI that names a product breaks the day the product is renamed, and every stored triple breaks with it. One domain-named, versionless HTTPS base makes identifiers outlive renames, resolves from one place, and lets one gate prove no stray namespace exists.
+
+**Enforced by:**
+
+Gates:
+
+<!-- generated:begin constitution hooks: ontology-iri -->
+- `ontology-iri`: ontology-iri (custom ontology IRIs sit under the one https base, no product names, no versions)
+<!-- generated:end -->
+
+Standards and tests:
+
+- [Spec standard](https://github.com/Knuckles-Team/pipelines/blob/main/reference/spec-standard.md), section "Ontology IRIs", and [delivery practice](https://github.com/Knuckles-Team/pipelines/blob/main/reference/delivery-practice.md), section "Ontology IRIs".
+- `tests/hooks/test_ontology_iri.py` plants each violation (http namespace, namespace outside the base, product-name segment, versioned namespace) and proves the gate fails it and passes the clean case.
+- `tests/test_constitution.py::test_the_ontology_iri_article_is_traced` keeps this article whole.
+
+**Plan check:** Does every ontology IRI the change adds or touches sit under the one HTTPS base in a domain-named, versionless module, with versions only in `owl:versionIRI`, and is the base derived from its single definition rather than typed again?
+
 ## Additional Constraints
 
 The limits below are rendered from the gate configuration by `scripts/constitution.py`. A change to a limit changes the configuration, and the table follows. `python scripts/constitution.py --check` fails when the table is out of date.
@@ -874,4 +896,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.11.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-08
+**Version**: 1.12.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12

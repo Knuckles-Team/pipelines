@@ -11,7 +11,7 @@ from pipelines_hooks.hygiene import ontology_orphan_map as omap
 
 pytestmark = pytest.mark.spec("PIPE-GATES-R015")  # binds reviewed parent mapping and apply behavior
 
-HEAD = """@prefix : <http://knuckles.team/kg#> .
+HEAD = """@prefix : <https://knuckles-team.github.io/ontology/core#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
@@ -19,7 +19,7 @@ HEAD = """@prefix : <http://knuckles.team/kg#> .
 
 PARENT = (
     HEAD
-    + """<http://knuckles.team/kg/core> a owl:Ontology .
+    + """<https://knuckles-team.github.io/ontology/core> a owl:Ontology .
 :WorkItem a owl:Class ; rdfs:label "Work Item" .
 :Document a owl:Class ; rdfs:label "Document" ; skos:altLabel "Paper" .
 :Resource a owl:Class .
@@ -29,7 +29,7 @@ PARENT = (
 
 CONNECTOR = (
     HEAD
-    + """<http://knuckles.team/kg/demo> a owl:Ontology .
+    + """<https://knuckles-team.github.io/ontology/demo> a owl:Ontology .
 :Issue a owl:Class ; rdfs:label "Issue" ; rdfs:comment "A tracked defect." .
 :Paper a owl:Class ; rdfs:label "Paper" .
 :GitLabDocument a owl:Class ; rdfs:label "GitLab Document" .
@@ -66,7 +66,7 @@ def test_signals_and_confidence(parent: omap.Parent) -> None:
 def test_a_subclass_of_an_orphan_is_resolved_by_its_root(parent: omap.Parent) -> None:
     found = _by_class(omap.propose_file(CONNECTOR, parent))
     assert "SubGadget" not in found
-    assert found["Gadget"]["subclasses_resolved"] == ["http://knuckles.team/kg#SubGadget"]
+    assert found["Gadget"]["subclasses_resolved"] == ["https://knuckles-team.github.io/ontology/core#SubGadget"]
 
 
 def test_no_signal_is_a_new_parent_candidate_and_nothing_is_invented(parent: omap.Parent) -> None:
@@ -87,12 +87,15 @@ def test_decide_accepts_overrides_and_rejects_an_invented_parent(parent: omap.Pa
     record = {"repository": "demo", "files": {"demo/ontology/d.ttl": omap.propose_file(CONNECTOR, parent)}}
     decided = omap.decide(record, {"Gadget": "Server", "Wrapper": None}, parent)
     links = decided["links"]["demo/ontology/d.ttl"]
-    assert links["http://knuckles.team/kg#Gadget"] == "http://knuckles.team/kg#Server"
-    assert "http://knuckles.team/kg#Wrapper" not in links
+    assert (
+        links["https://knuckles-team.github.io/ontology/core#Gadget"]
+        == "https://knuckles-team.github.io/ontology/core#Server"
+    )
+    assert "https://knuckles-team.github.io/ontology/core#Wrapper" not in links
     assert [c["class"] for c in decided["new_parent_candidates"]] == [
-        "http://knuckles.team/kg#GitLabDocument",
-        "http://knuckles.team/kg#Issue",
-        "http://knuckles.team/kg#Wrapper",
+        "https://knuckles-team.github.io/ontology/core#GitLabDocument",
+        "https://knuckles-team.github.io/ontology/core#Issue",
+        "https://knuckles-team.github.io/ontology/core#Wrapper",
     ]
     with pytest.raises(ValueError, match="not in the parent ontology"):
         omap.decide(record, {"Gadget": "Widget"}, parent)
@@ -103,7 +106,7 @@ def test_non_exact_and_generic_proposals_need_explicit_review(parent: omap.Paren
     rejected = omap.decide(record, {}, parent)
     assert rejected["links"] == {
         "demo/ontology/d.ttl": {
-            "http://knuckles.team/kg#Paper": "http://knuckles.team/kg#Document",
+            "https://knuckles-team.github.io/ontology/core#Paper": "https://knuckles-team.github.io/ontology/core#Document",
         }
     }
 
@@ -113,9 +116,9 @@ def test_non_exact_and_generic_proposals_need_explicit_review(parent: omap.Paren
         parent,
     )
     links = reviewed["links"]["demo/ontology/d.ttl"]
-    assert links["http://knuckles.team/kg#GitLabDocument"].endswith("#Document")
-    assert links["http://knuckles.team/kg#Issue"].endswith("#WorkItem")
-    assert links["http://knuckles.team/kg#Wrapper"].endswith("#Document")
+    assert links["https://knuckles-team.github.io/ontology/core#GitLabDocument"].endswith("#Document")
+    assert links["https://knuckles-team.github.io/ontology/core#Issue"].endswith("#WorkItem")
+    assert links["https://knuckles-team.github.io/ontology/core#Wrapper"].endswith("#Document")
 
     generic_text = HEAD + "@prefix d: <http://example.org/d#> .\nd:Resource a owl:Class .\n"
     generic_record = {"repository": "demo", "files": {"demo/ontology/d.ttl": omap.propose_file(generic_text, parent)}}
@@ -141,19 +144,23 @@ def test_bfo_exact_proposal_needs_explicit_review(parent: omap.Parent) -> None:
 def test_apply_writes_links_and_the_import_and_nothing_else() -> None:
     text = (
         HEAD
-        + '<http://knuckles.team/kg/demo> a owl:Ontology ; rdfs:label "Demo" .\n\n# keep me\n:Gadget a owl:Class ;\n    rdfs:label "Gadget" .\n:Plain a owl:Class .\n'
+        + '<https://knuckles-team.github.io/ontology/demo> a owl:Ontology ; rdfs:label "Demo" .\n\n# keep me\n:Gadget a owl:Class ;\n    rdfs:label "Gadget" .\n:Plain a owl:Class .\n'
     )
     new, problems = omap.apply_links(
         text,
         {
-            "http://knuckles.team/kg#Gadget": "http://knuckles.team/kg#Server",
-            "http://knuckles.team/kg#Plain": "http://knuckles.team/kg#Server",
+            "https://knuckles-team.github.io/ontology/core#Gadget": "https://knuckles-team.github.io/ontology/core#Server",
+            "https://knuckles-team.github.io/ontology/core#Plain": "https://knuckles-team.github.io/ontology/core#Server",
         },
     )
     assert problems == []
     doc = omap.parse(new)
-    assert doc.objects("http://knuckles.team/kg#Gadget", omap._SUBCLASS) == {"http://knuckles.team/kg#Server"}
-    assert doc.objects("http://knuckles.team/kg#Plain", omap._SUBCLASS) == {"http://knuckles.team/kg#Server"}
+    assert doc.objects("https://knuckles-team.github.io/ontology/core#Gadget", omap._SUBCLASS) == {
+        "https://knuckles-team.github.io/ontology/core#Server"
+    }
+    assert doc.objects("https://knuckles-team.github.io/ontology/core#Plain", omap._SUBCLASS) == {
+        "https://knuckles-team.github.io/ontology/core#Server"
+    }
     assert doc.objects(None, omap._OWL + "imports") == {omap.PARENT_IRI}
     assert "# keep me" in new and 'rdfs:label "Demo"' in new
     again, _ = omap.apply_links(new, {})
@@ -162,7 +169,8 @@ def test_apply_writes_links_and_the_import_and_nothing_else() -> None:
 
 def test_apply_reports_a_class_it_cannot_find() -> None:
     _, problems = omap.apply_links(
-        HEAD + "<http://x/o> a owl:Ontology .\n", {"http://knuckles.team/kg#Nope": "http://knuckles.team/kg#Server"}
+        HEAD + "<http://x/o> a owl:Ontology .\n",
+        {"https://knuckles-team.github.io/ontology/core#Nope": "https://knuckles-team.github.io/ontology/core#Server"},
     )
     assert any("Nope" in p for p in problems)
 
@@ -202,11 +210,19 @@ def test_scaffold_writes_a_test_that_passes_and_names_pending_classes(tmp_path: 
     ontology = root / "demo_mcp" / "ontology"
     ontology.mkdir(parents=True)
     linked, problems = omap.apply_links(
-        CONNECTOR, {"http://knuckles.team/kg#Issue": "http://knuckles.team/kg#WorkItem"}
+        CONNECTOR,
+        {
+            "https://knuckles-team.github.io/ontology/core#Issue": "https://knuckles-team.github.io/ontology/core#WorkItem"
+        },
     )
     assert problems == []
     (ontology / "demo.ttl").write_text(linked)
-    pending = {"demo_mcp/ontology/demo.ttl": ["http://knuckles.team/kg#Gadget", "http://knuckles.team/kg#SubGadget"]}
+    pending = {
+        "demo_mcp/ontology/demo.ttl": [
+            "https://knuckles-team.github.io/ontology/core#Gadget",
+            "https://knuckles-team.github.io/ontology/core#SubGadget",
+        ]
+    }
     written = omap.scaffold_test(root, "CONN-DEMO-R002", {}, pending, parent)
     source = written.read_text()
     namespace: dict = {"__file__": str(written), "__name__": "scaffolded"}
@@ -216,8 +232,11 @@ def test_scaffold_writes_a_test_that_passes_and_names_pending_classes(tmp_path: 
         namespace,
     )
     assert namespace["PENDING_NEW_PARENT"] == frozenset(
-        {"http://knuckles.team/kg#Gadget", "http://knuckles.team/kg#SubGadget"}
+        {
+            "https://knuckles-team.github.io/ontology/core#Gadget",
+            "https://knuckles-team.github.io/ontology/core#SubGadget",
+        }
     )
     triples = namespace["_triples"](linked)
     # Paper, GitLabDocument and Wrapper remain orphans here, so the generated test would fail on this file.
-    assert "http://knuckles.team/kg#Paper" in namespace["_orphans"](triples)
+    assert "https://knuckles-team.github.io/ontology/core#Paper" in namespace["_orphans"](triples)

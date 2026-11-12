@@ -146,6 +146,12 @@ repos:
     pass_filenames: false
     always_run: true
     stages: [manual]
+  - id: ontology-iri
+    name: ontology-iri (custom ontology IRIs sit under the one https base, no product names, no versions)
+    entry: uv run --frozen --quiet pipelines-hook ontology-iri
+    language: system
+    files: \.(ttl|trig|nt|nq|n3|owl|rdf|jsonld|rq|sparql|shacl|py|rs|go|ts|tsx|js|json|ya?ml|toml|md|txt|xml|sql|java)$
+    stages: [pre-push]
   - id: lockfile-version-mirrors
     name: Lock artifact version mirrors
     entry: uv run --frozen --quiet pipelines-hook lockfile-version-mirrors
