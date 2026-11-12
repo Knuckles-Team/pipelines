@@ -9,7 +9,7 @@ import textwrap
 import pytest
 
 from pipelines_hooks.code.state_machine_model import Machine
-from pipelines_hooks.code.state_machine_rs import loose_sites, read_rust
+from pipelines_hooks.code.state_machine_rs import loose_sites, parse, read_rust
 from pipelines_hooks.core.errors import CannotRun
 
 ENUM = """
@@ -119,6 +119,33 @@ def test_rust_cfg_test_module_is_skipped() -> None:
 def test_rust_parse_error_exits_two() -> None:
     with pytest.raises(CannotRun, match="does not parse"):
         read_rust("crates/jobs/src/job.rs", "pub struct Job { status: ")
+
+
+@pytest.mark.spec("PIPE-GATES-R086.3")
+def test_rust_grammar_gaps_are_read_not_skipped() -> None:
+    """Constructs the grammar lacks parse after a same-length rewrite; line numbers hold."""
+    source = textwrap.dedent(
+        """
+        pub struct Job { status: String }
+        fn pick(legs: Legs, f: Op) {
+            let Legs {
+                #[cfg(feature = "tsdb")]
+                scope,
+                ..
+            } = legs;
+            let ops = [(|m: &mut Job| m.n = 1) as fn(&mut _), |m| m.n = 2];
+            let g: fn(&_, &mut _) = h;
+        }
+        """
+    )
+    assert [m.type_name for m in read_rust("crates/jobs/src/job.rs", source)] == ["Job"]
+    assert not parse("crates/jobs/src/job.rs", source.encode()).root_node.has_error
+
+
+@pytest.mark.spec("PIPE-GATES-R086.3")
+def test_rust_error_outside_the_known_gaps_still_exits_two() -> None:
+    with pytest.raises(CannotRun, match="does not parse"):
+        read_rust("crates/jobs/src/job.rs", "fn f() { let S { #[cfg(a)] x, } = ; }")
 
 
 #: A large file: hundreds of struct, impl and cfg(test) items, as in a big crate module.

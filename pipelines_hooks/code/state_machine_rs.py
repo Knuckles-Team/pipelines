@@ -45,11 +45,23 @@ def _skipped(path: str) -> bool:
     return bool({"tests", "target"} & set(PurePosixPath(path).parts[:-1]))
 
 
+#: ``#[cfg(..)] field,`` inside a struct pattern or definition (the grammar takes no attribute there).
+_FIELD_ATTRIBUTE = re.compile(rb"#\[[^\]]*\](?=\s*(?:ref\s+|mut\s+)?\w+\s*[,}:])")
+#: ``&_`` or ``&mut _`` as a fn-pointer parameter type (the grammar reads it as a pattern).
+_REFERENCE_HOLE = re.compile(rb"(&\s*(?:mut\s+)?)_(?=\s*[,)>])")
+
+
+def _normalise(data: bytes) -> bytes:
+    """``data`` with field attributes blanked and ``&_`` named, byte for byte the same length."""
+    blanked = _FIELD_ATTRIBUTE.sub(lambda m: re.sub(rb"[^\n]", b" ", m.group(0)), data)
+    return _REFERENCE_HOLE.sub(rb"\1X", blanked)
+
+
 def parse(path: str, data: bytes, *, strict: bool = True) -> Tree:
     """The syntax tree of ``data``; a parse error cannot run unless ``strict`` is off.
 
     With ``strict`` off the error-recovered tree is read as it is: the grammar
-    lags the compiler (attributes on struct-pattern fields, for one), and a
+    lags the compiler (``_normalise`` covers the known gaps), and a
     file outside the change must not stop the census.
 
     ``Node.text`` reads the parsed buffer without owning it, so the caller holds
@@ -57,6 +69,11 @@ def parse(path: str, data: bytes, *, strict: bool = True) -> Tree:
     freed under the nodes and a large file segfaults.
     """
     tree = _PARSER.parse(data)
+    if tree.root_node.has_error:
+        # Retry once with same-length rewrites of the constructs the grammar lacks.
+        # Offsets, and so line numbers, are unchanged; a file that still fails is not read.
+        data = _normalise(data)
+        tree = _PARSER.parse(data)
     if strict and tree.root_node.has_error:
         raise CannotRun(f"{path}: Rust source does not parse")
     return tree

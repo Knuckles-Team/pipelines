@@ -58,13 +58,12 @@ def test_an_unparseable_rust_file_stops_only_a_change_that_touches_it(
 ) -> None:
     root = fixture_repo(tmp_path, "rs/two_assigners")
     job = root / "src/job.rs"
-    # A grammar gap: an attribute on a struct-pattern field parses for rustc, not for the grammar.
+    # Source the grammar cannot read and the reader does not rewrite.
     job.write_text(
-        job.read_text(encoding="utf-8")
-        + '\npub fn fields(job: Job) {\n    let Job {\n        #[cfg(feature = "x")]\n        status,\n    } = job;\n}\n',
+        job.read_text(encoding="utf-8") + "\npub fn fields(job: Job) {\n    let Job { status: ; } = job;\n}\n",
         encoding="utf-8",
     )
-    git(root, "commit", "-q", "-am", "grammar gap")
+    git(root, "commit", "-q", "-am", "broken source")
     monkeypatch.delenv("PRE_COMMIT_FROM_REF", raising=False)
     assert cli.main(["state-machine-census", "--root", str(root)]) == 1
     out = capsys.readouterr().out
