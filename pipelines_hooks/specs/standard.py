@@ -147,7 +147,11 @@ def _fails(message: str, added: set[str], touched: set[str], spec_dir: Path, bas
 
 
 def check_touched_rules(
-    spec_dir: Path, root: Path | None, touched: set[str], bindings: dict[str, list[str]] | None = None
+    spec_dir: Path,
+    root: Path | None,
+    touched: set[str],
+    bindings: dict[str, list[str]] | None = None,
+    base_ref: str | None = None,
 ) -> list[str]:
     """Narrative, task-line and status-header findings; untouched files get ``ADVISORY_TAG``."""
     texts = {n: _read(spec_dir / n) for n in ("spec.md", "plan.md", "requirements.md", "tasks.md", "test-spec.md")}
@@ -165,7 +169,7 @@ def check_touched_rules(
         m + ("" if narrative.is_touched(touched, spec_dir, base, m.split(":")[0]) else ADVISORY_TAG) for m in status
     ]
     texts.update({n: _read(spec_dir / n) for n in ("research.md", "data-model.md", "quickstart.md")})
-    added = narrative.added_row_ids(base, spec_dir, touched, None)
+    added = narrative.added_row_ids(base, spec_dir, touched, base_ref)
     design = [f"plan.md: {m}" for m in analysis.check_plan(texts["plan.md"])]
     complete = [f"analyze: {m}" for m in completeness.check_complete_rows(texts["requirements.md"])]
     for message in [
@@ -185,13 +189,14 @@ def check_spec(
     touched: set[str] | None = None,
     root: Path | None = None,
     bindings: dict[str, list[str]] | None = None,
+    base_ref: str | None = None,
 ) -> list[str]:
     """Findings for one spec directory, as ``(path, message)``-joined lines."""
     spec_id, title = check_title(spec_dir)
     found = [*check_files(spec_dir), *title, *narrative.check_optional(spec_dir)]
     texts = {n: _read(spec_dir / n) for n in ("spec.md", "requirements.md")}
     found += narrative.check_markers(spec_dir, texts)
-    found += check_touched_rules(spec_dir, root, touched or set(), bindings)
+    found += check_touched_rules(spec_dir, root, touched or set(), bindings, base_ref)
     if spec_id:
         found += check_id(spec_dir, spec_id)
     found += check_tombstones(spec_dir)
@@ -252,7 +257,7 @@ def main(argv: list[str]) -> int:
         bindings = test_bindings(root) if dirs else None
     except CannotRun:
         bindings = None
-    found = [f for d in dirs for f in check_spec(d, index, touched, root, bindings)]
+    found = [f for d in dirs for f in check_spec(d, index, touched, root, bindings, args.base)]
     found += check_placement(root, touched)
     found += [
         f"spec-standard: specs/{name}: {m}"

@@ -149,6 +149,37 @@ def is_touched(touched: set[str], spec_dir: Path, root: Path, name: str) -> bool
     return any(p == prefix + name or (name == "" and p.startswith(prefix)) for p in touched)
 
 
+_CLAUSE_RE = re.compile(r"\bDepends(?: on:?|-on:|:)[^|]*?(?:\.(?=\s|\|)|(?=\|))")
+
+
+def _without_clause(line: str) -> str:
+    """A row line with its prerequisite clause removed, so a change to the clause alone compares equal."""
+    return " ".join(_CLAUSE_RE.sub("", line).split())
+
+
+def _substantive_lines(root: Path, base: str, path: str, added: list[str]) -> list[str]:
+    """Added row lines minus those whose only difference from the base row is the ``Depends:`` clause.
+
+    A row whose clause alone changed is judged on its new clause only: its other findings stay advisory.
+    """
+    try:
+        before = git_text(root, ("show", f"{base}:{path}"))
+    except CannotRun:
+        return added
+    old: dict[str, str] = {}
+    for line in before.splitlines():
+        match = ROW_TOKEN_RE.search(line)
+        if match and match.group(1) not in old:
+            old[match.group(1)] = _without_clause(line)
+    out = []
+    for line in added:
+        match = ROW_TOKEN_RE.search(line)
+        if match and old.get(match.group(1)) == _without_clause(line):
+            continue
+        out.append(line)
+    return out
+
+
 def added_row_ids(root: Path, spec_dir: Path, touched: set[str], base: str | None = None) -> set[str]:
     """Row IDs on lines the change adds to this spec directory (a whole file when it is new or has no base)."""
     prefix = spec_dir.resolve().relative_to(root.resolve()).as_posix() + "/"
@@ -167,7 +198,9 @@ def added_row_ids(root: Path, spec_dir: Path, touched: set[str], base: str | Non
                 diff = git_text(root, ("diff", "-U0", resolved, "--", path))
             except CannotRun:
                 diff = ""
-            added = (line[1:] for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++"))
+            added = [line[1:] for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++")]
+            if path.endswith("/requirements.md"):
+                added = _substantive_lines(root, resolved, path, added)
             text = "\n".join(added)
         if not text and not in_base:
             try:

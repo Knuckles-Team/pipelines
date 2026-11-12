@@ -674,3 +674,56 @@ def test_the_standard_and_the_constitution_require_a_depends_clause():
         assert item in body, item
     constitution = (root / ".specify" / "memory" / "constitution.md").read_text()
     assert "`Depends: none`" in constitution and "gets its own row first" in constitution
+
+
+def _committed_spec_with_old_findings(root):
+    """A spec whose two rows both lack a Shape sentence, committed as the base revision."""
+    d = _spec(root)
+    row = "| `FOO-R00{n}` | req Caller chain: a to b. Depends on: none. | `tests/t.py::test_a` |\n"
+    (d / "requirements.md").write_text(row.format(n=1) + row.format(n=2))
+    (d / "tasks.md").write_text("- [ ] T001 FOO-R001 do it\n- [ ] T002 FOO-R002 do it\n")
+    env = fixture_git_environment()
+    git = ["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@example.com"]
+    subprocess.run([*git, "add", "--", "."], env=env, check=True)
+    subprocess.run([*git, "commit", "-q", "-m", "base"], env=env, check=True)
+    return d
+
+
+def test_a_row_changed_only_in_its_depends_clause_keeps_its_old_findings_advisory(root, capsys):
+    # spec: PIPE-GATES-R102
+    d = _committed_spec_with_old_findings(root)
+    text = (d / "requirements.md").read_text().replace("Depends on: none.", "Depends: none.")
+    (d / "requirements.md").write_text(text)
+    code = main(["--root", str(root), "--base", "HEAD"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "FOO-R001 behaviour row lacks a 'Shape:' sentence" in out and "ADV" in out
+
+
+def test_a_row_changed_in_its_text_fails_on_its_findings_and_untouched_rows_stay_advisory(root, capsys):
+    # spec: PIPE-GATES-R102
+    d = _committed_spec_with_old_findings(root)
+    text = (d / "requirements.md").read_text().replace("Depends on: none.", "Depends: none.")
+    (d / "requirements.md").write_text(
+        text.replace(
+            "req Caller chain: a to b. Depends: none. | `tests/t.py::test_a` |\n",
+            "changed Caller chain: a to b. Depends: none. | `tests/t.py::test_a` |\n",
+            1,
+        )
+    )
+    code = main(["--root", str(root), "--base", "HEAD"])
+    out = capsys.readouterr().out
+    assert code == 1
+    failing = [line for line in out.splitlines() if "Shape" in line and not line.startswith("ADV")]
+    assert len(failing) == 1 and "FOO-R001" in failing[0]
+    assert any("FOO-R002" in line and line.startswith("ADV") for line in out.splitlines())
+
+
+def test_a_clause_only_change_is_still_judged_on_the_new_clause(root, capsys):
+    # spec: PIPE-GATES-R102
+    d = _committed_spec_with_old_findings(root)
+    text = (d / "requirements.md").read_text().replace("Depends on: none.", "Depends: FOO-R009.", 1)
+    (d / "requirements.md").write_text(text)
+    code = main(["--root", str(root), "--base", "HEAD"])
+    out = capsys.readouterr().out
+    assert code == 1 and "FOO-R001 depends on FOO-R009, which no row defines" in out
