@@ -24,11 +24,11 @@ from pathlib import Path
 PRIVATE = re.compile(r"plans/|gitlab|homelab|(?:file://|/(?:home|Users|tmp|workspace)/)|\.arpa\b", re.I)
 #: Hostnames, private domains, machine roles and local paths the public pattern does not cover.
 HOSTS = re.compile(
-    r"\b[\w-]+\.(?:lan|local|internal|home|corp)\b|(?<![-\w.])(?:R[WX]?\d{3,4}|GB10)\b|/(?:srv|mnt|var/tmp|opt)/|~/\.(?:local|config|claude)\b"
+    r"\b[\w-]+\.(?:lan|local|internal|home|corp)\b|(?<![-\w.])(?:GR1080|R[WX]?(?:820|710|510|720|620)|GB10)\b|heavenhomestead|/(?:srv|mnt|var/tmp|opt)/|~/\.(?:local|config|claude)\b"
 )
 #: Internal tool, script and private-repository names.
 TOOLS = re.compile(
-    r"\b(?:local-ci|eg-bulk-merge|rm_gates|rm_worktree|medulla-lane-run|py-remote-run|medulla-land-gate"
+    r"\b(?:local-ci|local-release|trunk-gate|localgate\.sh|medulla-cargo-slot|eg-bulk-merge|rm_gates|rm_worktree|medulla-lane-run|py-remote-run|medulla-land-gate"
     r"|gh-preflight|core_bare_watchdog|inventory/operations)\b"
 )
 #: Workflow jargon an outside reader cannot decode.
@@ -72,12 +72,14 @@ def main(argv: list[str]) -> int:
     parser.add_argument("files", nargs="*", type=Path, help="commit message files (commit-msg stage)")
     parser.add_argument("--title", default=os.environ.get("PR_TITLE", ""))
     parser.add_argument("--body", default=os.environ.get("PR_BODY", ""))
+    parser.add_argument("--comment", action="append", default=[], help="review or issue comment text to lint")
     parser.add_argument("--private-repo", action="append", default=[], help="private repository name to refuse")
     parser.add_argument("--strict", action="store_true", help="fail on findings instead of warning")
     arguments = parser.parse_args(argv)
     strict = arguments.strict or os.environ.get("PR_TEXT_STRICT", "").lower() == "true"
     repos = tuple(arguments.private_repo)
     texts = [("title", arguments.title), ("body", arguments.body)]
+    texts += [(f"comment{n}", text) for n, text in enumerate(arguments.comment, 1)]
     texts += [(str(path), path.read_text(encoding="utf-8")) for path in arguments.files]
     found = [item for label, text in texts for item in findings(label, text, repos)]
     if not found:
