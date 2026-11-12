@@ -1,24 +1,23 @@
-"""Repository slug aliases preserve stable package and specification identities."""
+"""Repository refs are compared by their current slug; retired slugs are not translated."""
 
 from pipelines_hooks.core.repositories import canonical_repository, repository_matches
 from pipelines_hooks.specs.priority import train_rank
 
 
-def test_repository_aliases_canonicalize_bare_and_full_refs() -> None:
-    assert canonical_repository("agent-utilities") == "meristem"
-    assert canonical_repository("https://github.com/Knuckles-Team/agent-connector-sdk.git") == (
-        "Knuckles-Team/scion-sdk"
-    )
+def test_canonical_repository_normalizes_refs_without_renaming_slugs() -> None:
+    assert canonical_repository("https://github.com/Knuckles-Team/scion-sdk.git") == "Knuckles-Team/scion-sdk"
+    assert canonical_repository("agent-utilities") == "agent-utilities"
 
 
-def test_repository_matches_old_and_new_refs_without_cross_owner_match() -> None:
-    assert repository_matches("Knuckles-Team/agent-webui", "Knuckles-Team/overstory")
-    assert repository_matches("agent-terminal-ui", "tuig")
-    assert not repository_matches("Other-Team/agent-webui", "Knuckles-Team/overstory")
+def test_repository_matches_current_refs_without_cross_owner_match() -> None:
+    assert repository_matches("Knuckles-Team/overstory", "overstory")
+    assert not repository_matches("agent-webui", "overstory")
+    assert not repository_matches("Other-Team/overstory", "Knuckles-Team/overstory")
 
 
-def test_priority_accepts_retired_and_canonical_first_party_slugs() -> None:
-    assert train_rank("epistemic-graph") == train_rank("medulla") == 0
-    assert train_rank("agent-connector-sdk") == train_rank("scion-sdk") == 1
-    assert train_rank("agent-utilities") == train_rank("meristem") == 2
-    assert train_rank("agent-webui") == train_rank("overstory") == 4
+def test_priority_ranks_current_slugs_only() -> None:
+    assert train_rank("medulla") == 0
+    assert train_rank("scion-sdk") == 1
+    assert train_rank("meristem") == 2
+    assert train_rank("overstory") == 4
+    assert train_rank("epistemic-graph") == train_rank("not-a-repository")

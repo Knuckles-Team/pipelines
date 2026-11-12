@@ -161,15 +161,3 @@ def test_shared_ecosystem_links_use_canonical_repository_urls() -> None:
         # Consumers select their entry by the current repository slug.
         assert f"slug: {new}\n        name: {name}" in base
         assert f"slug: {old}\n" not in base
-
-
-@pytest.mark.spec("PIPE-GATES-R016.105")
-def test_sync_deletes_retired_brand_files_and_check_reports_them(tmp_path: Path) -> None:
-    retired = tmp_path / "docs/assets/brands/epistemic-graph-logo-v1.png"
-    retired.parent.mkdir(parents=True)
-    retired.write_bytes(b"old")
-    assert sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode="sync") == []
-    assert not retired.exists()
-    retired.write_bytes(b"old")
-    mismatches = sync_theme(source_root=ROOT, repository_root=tmp_path, content_source="docs", mode="check")
-    assert mismatches == ["retired generated file is present: docs/assets/brands/epistemic-graph-logo-v1.png"]

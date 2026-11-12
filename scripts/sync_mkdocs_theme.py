@@ -48,19 +48,6 @@ THEME_FILES = (
     ThemeFile("glossary.md", "glossary.md"),
 )
 
-# Content-relative theme files a rename retired; `sync` deletes them so no old product name lingers.
-RETIRED_THEME_FILES = tuple(
-    f"assets/brands/{old}-logo-v1.png"
-    for old in (
-        "epistemic-graph",
-        "agent-utilities",
-        "agent-connector-sdk",
-        "agent-webui",
-        "geniusbot",
-        "agent-terminal-ui",
-    )
-)
-
 
 RUNTIME_DIAGRAM_URL = (
     "https://raw.githubusercontent.com/Knuckles-Team/medulla/main/docs/assets/runtime-architecture.svg"
@@ -160,14 +147,6 @@ def _sync_files(source: Path, content_root: Path, repository: Path, *, mode: Lit
             continue
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(expected)
-    for retired in RETIRED_THEME_FILES:
-        stale = _contained(content_root, Path(retired), retired)
-        if not stale.is_file():
-            continue
-        if mode == "check":
-            mismatches.append(f"retired generated file is present: {stale.relative_to(repository).as_posix()}")
-        else:
-            stale.unlink()
     return mismatches
 
 

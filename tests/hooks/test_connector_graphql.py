@@ -23,7 +23,7 @@ def _repo(root: Path, *, dependencies: str, extras: str = "", source: str = "fro
 
 
 def test_sdk_graphql_extra_passes(tmp_path: Path) -> None:
-    root = _repo(tmp_path, dependencies='"agent-connector-sdk[mcp,graphql]>=0.3.12,<1"')
+    root = _repo(tmp_path, dependencies='"scion-sdk[mcp,graphql]>=0.3.12,<1"')
     assert connector_graphql.findings(root) == []
     assert connector_graphql.main(["--root", str(root), "--strict"]) == 0
 
@@ -34,7 +34,7 @@ def test_branded_sdk_graphql_extra_passes(tmp_path: Path) -> None:
 
 
 def test_missing_extra_warns_by_default_and_fails_strict(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    root = _repo(tmp_path, dependencies='"agent-connector-sdk[mcp]>=0.3.8"', source="from graphql import parse\n")
+    root = _repo(tmp_path, dependencies='"scion-sdk[mcp]>=0.3.8"', source="from graphql import parse\n")
     assert connector_graphql.main(["--root", str(root)]) == 0
     assert "WARN" in capsys.readouterr().out
     assert connector_graphql.main(["--root", str(root), "--strict"]) == 1
@@ -44,7 +44,7 @@ def test_missing_extra_warns_by_default_and_fails_strict(tmp_path: Path, capsys:
 def test_direct_gql_declarations_are_reported(tmp_path: Path) -> None:
     root = _repo(
         tmp_path,
-        dependencies='"agent-connector-sdk[mcp,graphql]>=0.3.12", "gql[requests]>=4.4.0"',
+        dependencies='"scion-sdk[mcp,graphql]>=0.3.12", "gql[requests]>=4.4.0"',
         extras='gql = ["gql>=4.4.0"]\nall = ["graphql-core>=3.2"]',
     )
     problems = connector_graphql.findings(root)
@@ -65,6 +65,6 @@ def test_sdk_and_non_python_repositories_pass(tmp_path: Path) -> None:
     assert connector_graphql.findings(tmp_path) == []
     sdk = tmp_path / "sdk"
     sdk.mkdir()
-    (sdk / "pyproject.toml").write_text('[project]\nname = "agent-connector-sdk"\n', encoding="utf-8")
+    (sdk / "pyproject.toml").write_text('[project]\nname = "scion-sdk"\n', encoding="utf-8")
     (sdk / "client.py").write_text("import gql\n", encoding="utf-8")
     assert connector_graphql.findings(sdk) == []

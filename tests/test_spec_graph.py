@@ -134,23 +134,23 @@ def test_tasks_md_bold_id_names_a_dependency_and_counts_unchecked_lines(
 
 
 def test_cross_repo_heading_section_creates_a_cross_repo_edge(tmp_path: Path) -> None:
-    producer_status = _status("MEDULLA-DEMO", "epistemic-graph", [_entry("MEDULLA-DEMO-R010")])
+    producer_status = _status("MEDULLA-DEMO", "medulla", [_entry("MEDULLA-DEMO-R010")])
     producer_spec_md = (
         "# MEDULLA-DEMO\n\n"
         "## Acceptance boundary\n\n"
         "### Shared facts (MEDULLA-DEMO-R010)\n\n"
-        "The consumer contract is MERISTEM-DEMO-R001 in agent-utilities.\n"
+        "The consumer contract is MERISTEM-DEMO-R001 in meristem.\n"
     )
-    consumer_status = _status("MERISTEM-DEMO", "agent-utilities", [_entry("MERISTEM-DEMO-R001")])
+    consumer_status = _status("MERISTEM-DEMO", "meristem", [_entry("MERISTEM-DEMO-R001")])
     _write_spec(
         tmp_path,
-        "epistemic-graph",
+        "medulla",
         "eg-demo",
         status=producer_status,
         spec_md=producer_spec_md,
     )
-    _write_spec(tmp_path, "agent-utilities", "au-demo", status=consumer_status)
-    reqs = load_repos([tmp_path / "epistemic-graph", tmp_path / "agent-utilities"])
+    _write_spec(tmp_path, "meristem", "au-demo", status=consumer_status)
+    reqs = load_repos([tmp_path / "medulla", tmp_path / "meristem"])
     assert reqs["MEDULLA-DEMO-R010"].depends_on == {"MERISTEM-DEMO-R001"}
     edges = dependency_edges(reqs)
     assert ("MEDULLA-DEMO-R010", "MERISTEM-DEMO-R001") in edges
@@ -197,7 +197,7 @@ def test_size_score_matches_the_published_point_table(tmp_path: Path) -> None:
     requirements_md = (
         "| ID | Requirement | Verification |\n"
         "|---|---|---|\n"
-        "| `X-DEMO-R001` | Uses `pkg/a` and `pkg/b` and agent-webui, needs `X-DEMO-R002`."
+        "| `X-DEMO-R001` | Uses `pkg/a` and `pkg/b` and overstory, needs `X-DEMO-R002`."
         " | First clause. Second clause. |\n"
         "| `X-DEMO-R002` | Other. | Check. |\n"
     )
@@ -215,7 +215,7 @@ def test_size_score_matches_the_published_point_table(tmp_path: Path) -> None:
     delivery_states = {rid: r.delivery_state for rid, r in reqs.items()}
     # 2 unchecked tasks (+2) + 2 verification clauses (+2)
     # + 1 extra code root beyond the first (2 roots -> (2-1)*2 = +2)
-    # + 1 other repo named (agent-webui) (+3)
+    # + 1 other repo named (overstory) (+3)
     # + 1 unresolved dependency, X-DEMO-R002 is SPECIFIED not LANDED (+2)
     # = 11
     assert size_score(req, delivery_states) == 11
@@ -233,7 +233,7 @@ def test_split_basis_prefers_code_roots_then_repo_then_fallback(tmp_path: Path) 
         "|---|---|---|\n"
         "| `X-DEMO-R001` | Uses `pkg/a`, `pkg/b` and `pkg/c`, one clause, two,"
         " three, four, five, six, seven. | Check. |\n"
-        "| `X-DEMO-R002` | Cross-repo with agent-webui, one clause, two,"
+        "| `X-DEMO-R002` | Cross-repo with overstory, one clause, two,"
         " three, four, five, six, seven. | Check. |\n"
         "| `X-DEMO-R003` | No code root or other repo named."
         " | one. two. three. four. five. six. seven. |\n"
@@ -260,7 +260,7 @@ def test_split_basis_prefers_code_roots_then_repo_then_fallback(tmp_path: Path) 
     assert splits["X-DEMO-R002"]["basis"] == "repo"
     assert [c["scope"] for c in splits["X-DEMO-R002"]["children"]] == [
         "demo",
-        "agent-webui",
+        "overstory",
     ]
     assert splits["X-DEMO-R003"]["basis"] == "fallback"
     assert [c["id"] for c in splits["X-DEMO-R003"]["children"]] == [

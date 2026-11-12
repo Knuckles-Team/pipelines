@@ -18,29 +18,15 @@ class NoRedirect(HTTPRedirectHandler):
         raise ValueError("GitHub API redirect refused")
 
 
-# This action runs from a caller checkout, so it cannot depend on the
-# pipelines package. Repository slugs are allowed to move while package,
-# import, ontology, and spec identities remain stable.
-_REPOSITORY_ALIASES = {
-    "epistemic-graph": "medulla",
-    "agent-connector-sdk": "scion-sdk",
-    "agent-utilities": "meristem",
-    "agent-webui": "overstory",
-    "agent-terminal-ui": "tuig",
-    "geniusbot": "axil",
-}
-
-
 def _canonical_repository(value: str) -> str:
     """Canonicalize a GitHub ``owner/slug`` without changing its owner."""
     parts = value.strip().rstrip("/").split("/")
     owner, slug = parts[-2:] if len(parts) >= 2 else ("", parts[-1] if parts else "")
-    slug = _REPOSITORY_ALIASES.get(slug.casefold(), slug)
     return f"{owner}/{slug}" if owner else slug
 
 
 def _repository_matches(left: object, right: object) -> bool:
-    """Compare metadata and requested refs using old/new slug equivalence."""
+    """Compare metadata and requested refs case-insensitively."""
     return _canonical_repository(str(left)).casefold() == _canonical_repository(str(right)).casefold()
 
 

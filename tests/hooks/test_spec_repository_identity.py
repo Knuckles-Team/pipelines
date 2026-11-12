@@ -29,7 +29,7 @@ def test_new_owner_comes_from_remote(repo: Repo, remote: str) -> None:
 
 def test_renamed_first_party_remote_uses_canonical_owner(repo: Repo) -> None:
     # spec: PIPE-CONNSPEC-R001
-    repo.git("remote", "add", "origin", "https://github.com/Knuckles-Team/agent-utilities.git")
+    repo.git("remote", "add", "origin", "https://github.com/Knuckles-Team/meristem.git")
     repo.commit({"specs/demo/requirements.md": _ROWS}, "add spec")
     assert repo.run("spec-status", "--write") == 0
     assert json.loads((repo.root / _STATUS).read_text())["owner_repo"] == "meristem"
@@ -38,9 +38,9 @@ def test_renamed_first_party_remote_uses_canonical_owner(repo: Repo) -> None:
 def test_declared_repository_is_stable_across_worktree_names(repo: Repo) -> None:
     # spec: PIPE-CONNSPEC-R001
     pyproject = (
-        '[project]\nname = "epistemic-graph"\nversion = "0"\n\n'
+        '[project]\nname = "medulla"\nversion = "0"\n\n'
         '[tool.pipelines_hooks]\npackages = ["pkg"]\n\n'
-        '[tool.pipelines_hooks.public_surface]\nrepository = "Knuckles-Team/epistemic-graph"\n'
+        '[tool.pipelines_hooks.public_surface]\nrepository = "Knuckles-Team/medulla"\n'
     )
     repo.commit(
         {"pyproject.toml": pyproject, "specs/demo/requirements.md": _ROWS},

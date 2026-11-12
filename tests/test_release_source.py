@@ -147,7 +147,7 @@ def test_existing_tag_is_compared_to_frozen_source(guard, case, monkeypatch, ann
 
 
 def test_renamed_repository_reference_uses_canonical_metadata_endpoint(guard, case, monkeypatch):
-    case["RELEASE_REPOSITORY"] = "Knuckles-Team/agent-utilities"
+    case["RELEASE_REPOSITORY"] = "Knuckles-Team/meristem"
     responses = {
         "/repos/Knuckles-Team/meristem": {"full_name": "Knuckles-Team/meristem"},
         "/repos/Knuckles-Team/meristem/git/ref/tags/v1.2.3": 404,

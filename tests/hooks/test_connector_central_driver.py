@@ -15,7 +15,7 @@ from pipelines_hooks.hygiene import connector_migrate as cm
 PYPROJECT = """[project]
 name = "demo-agent"
 version = "1.0.4"
-dependencies = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]
+dependencies = [ "scion-sdk[mcp]>=0.4.3,<1.0.0",]
 
 [project.scripts]
 demo-mcp = "demo_agent.mcp_server:mcp_server"

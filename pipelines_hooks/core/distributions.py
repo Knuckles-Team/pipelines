@@ -1,10 +1,7 @@
 """Distribution identities shared by release and connector gates.
 
-The ecosystem is changing a handful of *distribution* names while keeping
-Python import paths, repository identities, and ontology identifiers stable.
-During the transition every gate must accept both spellings.  The old spelling
-remains the default so an existing consumer is never rewritten accidentally;
-callers that are deliberately migrating can request the new spelling.
+Each logical ecosystem role has exactly one accepted distribution name.
+Retired spellings are not recognised anywhere.
 """
 
 from __future__ import annotations
@@ -20,17 +17,7 @@ OVERSTORY = "overstory"
 TUIG = "tuig"
 AXIL = "axil"
 
-OLD_DISTRIBUTIONS = MappingProxyType(
-    {
-        SDK: "agent-connector-sdk",
-        MERISTEM: "agent-utilities",
-        MEDULLA: "epistemic-graph",
-        OVERSTORY: "agent-webui",
-        TUIG: "agent-terminal-ui",
-        AXIL: "geniusbot",
-    }
-)
-NEW_DISTRIBUTIONS = MappingProxyType(
+DISTRIBUTIONS = MappingProxyType(
     {
         SDK: "scion-sdk",
         MERISTEM: "meristem",
@@ -39,9 +26,6 @@ NEW_DISTRIBUTIONS = MappingProxyType(
         TUIG: "tuig",
         AXIL: "axil",
     }
-)
-DISTRIBUTION_ALIASES: Mapping[str, frozenset[str]] = MappingProxyType(
-    {role: frozenset((old, NEW_DISTRIBUTIONS[role])) for role, old in OLD_DISTRIBUTIONS.items()}
 )
 
 _REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
@@ -58,34 +42,29 @@ def requirement_name(value: str) -> str:
     return normalized(match.group(1)) if match else ""
 
 
-def aliases(role: str) -> frozenset[str]:
-    """Return the accepted old/new names for a logical ecosystem role."""
+def distribution(role: str) -> str:
+    """Return the one accepted distribution name for a logical ecosystem role."""
     try:
-        return DISTRIBUTION_ALIASES[role]
+        return DISTRIBUTIONS[role]
     except KeyError as exc:
         raise ValueError(f"unknown distribution role: {role}") from exc
 
 
 def is_distribution(value: str, role: str) -> bool:
-    """Whether ``value`` is either accepted spelling for ``role``."""
-    return normalized(value) in aliases(role)
+    """Whether ``value`` is the current distribution name for ``role``."""
+    return normalized(value) == distribution(role)
 
 
 def distribution_for(requirements: Iterable[str], role: str, *, default: str | None = None) -> str:
-    """Find the first role distribution in ``requirements``.
+    """Return the role's distribution name when ``requirements`` declare it.
 
-    The returned spelling is normalized but preserves whether the caller used
-    the old or new alias.  This is the behavior generic codemods need when
-    raising a version floor without performing a name migration.
+    Only the current name is recognised; ``default`` is returned when absent.
     """
-    accepted = aliases(role)
+    current = distribution(role)
     for requirement in requirements:
-        name = requirement_name(str(requirement))
-        if name in accepted:
-            return name
-    if default is not None:
-        return normalized(default)
-    return OLD_DISTRIBUTIONS[role]
+        if requirement_name(str(requirement)) == current:
+            return current
+    return normalized(default) if default is not None else current
 
 
 def project_distribution(project: Mapping[str, object], role: str, *, default: str | None = None) -> str:
@@ -100,11 +79,3 @@ def project_distribution(project: Mapping[str, object], role: str, *, default: s
             if isinstance(entries, list | tuple):
                 values.extend(str(value) for value in entries)
     return distribution_for(values, role, default=default)
-
-
-def migration_distribution(role: str) -> str:
-    """Return the new spelling used by an explicitly requested migration."""
-    try:
-        return NEW_DISTRIBUTIONS[role]
-    except KeyError as exc:
-        raise ValueError(f"unknown distribution role: {role}") from exc

@@ -16,7 +16,7 @@ from pipelines_hooks.hygiene.connector_central import base, wave1
 PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.2.3"
-dependencies = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]
+dependencies = [ "scion-sdk[mcp]>=0.4.3,<1.0.0",]
 
 [project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_mcp"

@@ -70,7 +70,7 @@ def runtime_artifact(download: Path, name: str, *, source: str = "") -> dict:
 def runtime_profile(name: str) -> dict:
     if name == "arbora":
         return {
-            "caller": "agent-utilities",
+            "caller": "meristem",
             "stage": "default",
             "root_index": 1,
             "extras": ["messaging-mattermost", "messaging-telegram", "webui"],
@@ -87,9 +87,7 @@ def runtime_lock_entry(item: dict, root: dict) -> str:
 
 def runtime_manifest(download: Path, source: str, *, profile: str = "arbora") -> dict:
     selected = runtime_profile(profile)
-    artifacts = [
-        runtime_artifact(download, name, source=source) for name in (selected["caller"], "arbora", "epistemic-graph")
-    ]
+    artifacts = [runtime_artifact(download, name, source=source) for name in (selected["caller"], "arbora", "medulla")]
     artifacts.append(runtime_artifact(download, "dependency"))
     first_party = [
         {

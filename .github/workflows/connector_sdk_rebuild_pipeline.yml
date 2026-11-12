@@ -2,10 +2,9 @@ name: Connector SDK rebuild
 
 # PIPE-RELEASE-R001.14: a new SDK release reaches running connector images
 # with no commit in any connector. The caller triggers this workflow on a repository_dispatch
-# from the SDK release (type sdk-release, client_payload.sdk_version and
-# client_payload.sdk_distribution) and on a daily schedule
+# from the SDK release (type sdk-release, client_payload.sdk_version) and on a daily schedule
 # (the scheduled check). It resolves the SDK version, skips when the registry already holds
-# the image tagged <version>-sdk<sdk> and otherwise rebuilds both images through
+# the image tagged <version>-sdk-scion-sdk-<sdk> and otherwise rebuilds both images through
 # container_pipeline.yml with the files rendered from pyproject.toml.
 #
 # Caller contract (copy):
@@ -59,11 +58,6 @@ on:
         required: false
         type: string
         default: ''
-      sdk_distribution:
-        description: SDK distribution to resolve and pass to the connector renderer; empty detects the project dependency.
-        required: false
-        type: string
-        default: ''
       release_repair:
         description: >-
           Explicit reviewed release repair. Only a workflow_dispatch on the current main HEAD
@@ -107,7 +101,6 @@ jobs:
     runs-on: self-hosted
     outputs:
       sdk_version: ${{ steps.sdk.outputs.sdk_version }}
-      sdk_distribution: ${{ steps.sdk.outputs.sdk_distribution }}
       stale: ${{ steps.sdk.outputs.stale }}
       source_ref: ${{ steps.sdk-context.outputs.source_ref }}
     steps:
@@ -191,9 +184,7 @@ jobs:
         id: sdk
         env:
           INPUT_SDK: ${{ inputs.sdk_version }}
-          INPUT_SDK_DISTRIBUTION: ${{ inputs.sdk_distribution }}
           PAYLOAD_SDK: ${{ github.event.client_payload.sdk_version }}
-          PAYLOAD_SDK_DISTRIBUTION: ${{ github.event.client_payload.sdk_distribution }}
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
           IMAGE: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
@@ -207,30 +198,7 @@ jobs:
             echo "stale=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          sdk_distribution="${INPUT_SDK_DISTRIBUTION:-${PAYLOAD_SDK_DISTRIBUTION:-}}"
-          if [[ -z "$sdk_distribution" ]]; then
-            sdk_distribution="$(python3 - <<'PY'
-          import os
-          import tomllib
-
-          project = tomllib.load(open(os.path.join(os.environ["SDK_CONTEXT"], "pyproject.toml"), "rb")).get("project", {})
-          values = list(project.get("dependencies", []))
-          for entries in project.get("optional-dependencies", {}).values():
-              values.extend(entries)
-          names = set()
-          for value in values:
-              name = str(value).strip()
-              for marker in ("[", " ", "<", ">", "=", "!", "~", ";"):
-                  name = name.split(marker, 1)[0]
-              names.add(name.lower().replace("_", "-").replace(".", "-"))
-          print("scion-sdk" if "scion-sdk" in names else "agent-connector-sdk")
-          PY
-            )"
-          fi
-          case "$sdk_distribution" in
-            agent-connector-sdk|scion-sdk) ;;
-            *) echo "::error::Unsupported SDK distribution: $sdk_distribution"; exit 1 ;;
-          esac
+          sdk_distribution=scion-sdk
           sdk="${INPUT_SDK:-${PAYLOAD_SDK:-}}"
           if [[ -z "$sdk" ]]; then
             sdk="$(python3 -c 'import json,sys,urllib.request as u;print(json.load(u.urlopen("https://pypi.org/pypi/" + sys.argv[1] + "/json"))["info"]["version"])' "$sdk_distribution")"
@@ -241,16 +209,12 @@ jobs:
           fi
           python3 -m pip install --quiet uv
           version="$(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root "$SDK_CONTEXT" read)"
-          sdk_tag="${version}-sdk${sdk}"
-          if [[ "$sdk_distribution" == "scion-sdk" ]]; then
-            sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"
-          fi
+          sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"
           stale=true
           if [[ "${RELEASE_REPAIR,,}" != true ]] && docker buildx imagetools inspect "${IMAGE}:${sdk_tag}" > /dev/null 2>&1; then
             stale=false
           fi
           echo "sdk_version=$sdk" >> "$GITHUB_OUTPUT"
-          echo "sdk_distribution=$sdk_distribution" >> "$GITHUB_OUTPUT"
           echo "stale=$stale" >> "$GITHUB_OUTPUT"
 
   rebuild:
@@ -267,7 +231,6 @@ jobs:
       release_source_sha: ${{ inputs.release_source_sha }}
       release_source_epoch: ${{ inputs.release_source_epoch }}
       sdk_version: ${{ needs.resolve.outputs.sdk_version }}
-      sdk_distribution: ${{ needs.resolve.outputs.sdk_distribution }}
       source_ref: ${{ needs.resolve.outputs.source_ref }}
     secrets:
       DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}

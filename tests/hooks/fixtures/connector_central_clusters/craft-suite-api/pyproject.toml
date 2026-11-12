@@ -9,7 +9,7 @@ description = "Craft suite API connector and MCP server; current ArtCraft backen
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "rfc3986-validator>=0.1.1,<0.2", "rfc3339-validator>=0.1.4,<0.2", "jsonschema>=4.26.0,<5", "regex>=2026.9.29", "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+dependencies = [ "rfc3986-validator>=0.1.1,<0.2", "rfc3339-validator>=0.1.4,<0.2", "jsonschema>=4.26.0,<5", "regex>=2026.9.29", "scion-sdk[mcp]>=0.4.1,<1.0.0",]
 [[project.authors]]
 name = "Repository Maintainers"
 
@@ -17,8 +17,8 @@ name = "Repository Maintainers"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
-all = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+mcp = [ "scion-sdk[mcp]>=0.4.1,<1.0.0",]
+all = [ "scion-sdk[mcp]>=0.4.1,<1.0.0",]
 test = [
     "pytest-xdist>=3.8.0", "pytest", "pytest-asyncio", "pytest-cov",]
 

@@ -17,7 +17,7 @@ scan can see. Every finding cites the row it breaks:
   a package that an SDK extra carries.
 
 The scan covers non-test Python and ``pyproject.toml``. It applies to a
-repository that depends on ``agent-connector-sdk``; the SDK itself is exempt.
+repository that depends on ``scion-sdk``; the SDK itself is exempt.
 A hit is evidence for review. A miss is not proof of conformance.
 
 The direct ``gql``/``graphql-core`` declaration belongs to ``connector-graphql``
@@ -40,7 +40,7 @@ from pathlib import Path
 from pipelines_hooks.core.distributions import SDK as SDK_ROLE
 from pipelines_hooks.core.distributions import is_distribution, project_distribution, requirement_name
 
-SDK = "agent-connector-sdk"  # legacy display/default spelling during the transition
+SDK = "scion-sdk"
 ROW = "SCION-CENTRALIZED-CAPABILITIES-"
 _SKIP_DIRS = {
     ".git",
@@ -59,7 +59,7 @@ _SKIP_DIRS = {
 _REQUIREMENT = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:\[([^\]]*)\])?")
 
 # The packages each SDK extra carries, by normalized name. The table mirrors
-# ``[project.optional-dependencies]`` of agent-connector-sdk at its latest
+# ``[project.optional-dependencies]`` of scion-sdk at its latest
 # release. Update it in the same change that adds an SDK extra.
 SDK_EXTRAS: dict[str, str] = {
     "rdflib": "integrity",

@@ -92,7 +92,7 @@ def test_render_is_deterministic_and_driven_by_the_table(tmp_path: Path) -> None
     docker = first["Dockerfile"]
     assert "demo-mcp[mcp]==1.2.3" in docker and "demo-mcp[agent]==1.2.3" in docker
     assert "ARG PORT=9000" in docker and "ffmpeg" in docker and "ARG SDK_VERSION=" in docker
-    assert "--upgrade-package agent-connector-sdk" in docker and "COPY . " not in docker
+    assert "--upgrade-package scion-sdk" in docker and "COPY . " not in docker
     assert 'CMD ["demo-mcp"]' in docker and 'CMD ["demo-agent"]' in docker
     assert "@@" not in "".join(first.values())
     assert 'CMD ["demo-mcp"]' in first["debug.Dockerfile"] and "COPY . /app" in first["debug.Dockerfile"]
@@ -301,13 +301,13 @@ def test_render_refuses_the_retired_publish_host_alias(tmp_path: Path) -> None:
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
-def test_render_refreshes_the_detected_branded_sdk_distribution(tmp_path: Path) -> None:
+def test_render_refreshes_the_scion_sdk_distribution(tmp_path: Path) -> None:
     pyproject = PYPROJECT.replace(
         "[project.optional-dependencies]", 'dependencies = ["scion-sdk[mcp]>=1.0"]\n[project.optional-dependencies]'
     )
     docker = container.render(_repo(tmp_path, pyproject))["Dockerfile"]
     assert "--upgrade-package scion-sdk" in docker
-    assert "--upgrade-package agent-connector-sdk" not in docker
+    assert "agent-connector-sdk" not in docker
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.13")
@@ -345,9 +345,9 @@ def test_container_workflow_renders_and_tags_by_sdk_version() -> None:
     assert "pipelines-connector render" in render["run"]
     assert render["if"] == "steps.render-needed.outputs.render == 'true'"
     meta = next(s for s in steps if s.get("id") == "meta")
-    assert "-sdk${{ inputs.sdk_version }}" in meta["with"]["tags"]
-    assert "-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }}" in meta["with"]["tags"]
-    assert "inputs.sdk_distribution == 'scion-sdk'" in meta["with"]["tags"]
+    assert "-sdk-scion-sdk-${{ inputs.sdk_version }}" in meta["with"]["tags"]
+    assert "-sdk${{ inputs.sdk_version }}" not in meta["with"]["tags"]
+    assert "sdk_distribution" not in meta["with"]["tags"]
 
 
 @pytest.mark.spec("PIPE-RELEASE-R001.14")
@@ -366,9 +366,9 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
     assert source["with"]["ref"] == "${{ inputs.release_source_sha }}"
     assert source["with"]["fetch-depth"] == 0
     script = next(s for s in resolve["steps"] if s.get("id") == "sdk")["run"]
-    assert "imagetools inspect" in script and "-sdk${sdk}" in script and "pypi.org/pypi/" in script
-    assert "sdk_distribution" in script and "scion-sdk" in script
-    assert "PAYLOAD_SDK_DISTRIBUTION" in script and "INPUT_SDK_DISTRIBUTION:-${PAYLOAD_SDK_DISTRIBUTION:-}" in script
+    assert "imagetools inspect" in script and "pypi.org/pypi/" in script
+    assert "agent-connector-sdk" not in script and "PAYLOAD_SDK_DISTRIBUTION" not in script
+    assert "sdk_distribution" not in inputs
     assert 'sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"' in script
     assert 'RELEASE_REPAIR,,}" != true' in script
     assert rebuild["needs"] == "resolve" and rebuild["if"] == "needs.resolve.outputs.stale == 'true'"
@@ -380,7 +380,6 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
         "release_source_sha": "${{ inputs.release_source_sha }}",
         "release_source_epoch": "${{ inputs.release_source_epoch }}",
         "sdk_version": "${{ needs.resolve.outputs.sdk_version }}",
-        "sdk_distribution": "${{ needs.resolve.outputs.sdk_distribution }}",
         "source_ref": "${{ needs.resolve.outputs.source_ref }}",
     }
     # A version bump on main that is not released yet must never be rebuilt: the context is the latest v* tag.

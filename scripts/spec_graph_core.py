@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from pipelines_hooks.core.repositories import REPOSITORY_ALIASES, repository_slug
+from pipelines_hooks.core.repositories import repository_slug
 
 #: Every requirement-ID prefix observed across the five repos is a run of
 #: hyphen-separated upper-case/digit segments ending in an optional ``R`` plus
@@ -24,8 +24,12 @@ REQ_ID = re.compile(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-R?\d+(?:\.\d+)*\b")
 CODE_ROOT = re.compile(r"`([\w.-]+(?:/[\w.-]+)+)`")
 
 KNOWN_REPOS = (
-    *REPOSITORY_ALIASES,
-    *REPOSITORY_ALIASES.values(),
+    "medulla",
+    "scion-sdk",
+    "meristem",
+    "overstory",
+    "tuig",
+    "axil",
     "arbora",
     "pipelines",
 )
