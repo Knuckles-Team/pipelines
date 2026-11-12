@@ -106,7 +106,7 @@ def _spec(root: Path, name: str = "foo", spec_id: str = "FOO") -> Path:
         (d / f).write_text(f'{{"spec_id": "{spec_id}"}}\n' if f.endswith(".json") else "x\n")
     (d / "spec.md").write_text(NARRATIVE.format(id=spec_id))
     (d / "requirements.md").write_text(
-        f"| `{spec_id}-R001` | req Caller chain: a to b. Shape: edit b. | `tests/t.py::test_a` |\n"
+        f"| `{spec_id}-R001` | req Caller chain: a to b. Shape: edit b. Depends: none. | `tests/t.py::test_a` |\n"
     )
     (d / "tasks.md").write_text(f"- [ ] T001 {spec_id}-R001 do it\n")
     (d / "test-spec.md").write_text(f"| T-001 | {spec_id}-R001 | Unit | x | y |\n")
@@ -567,3 +567,163 @@ def test_the_standard_keeps_secret_bearing_data_out_of_rows_and_responses():
         "`secret-fields`",
     ):
         assert item in body, item
+
+
+def _rows(root: Path, name: str, spec_id: str, *rows: str) -> None:
+    d = root / "specs" / name
+    (d / "requirements.md").write_text(
+        "".join(
+            f"| `{spec_id}-{r}` | req Caller chain: a to b. Shape: edit b. {dep} | `tests/t.py::test_a` |\n"
+            for r, dep in rows
+        )
+    )
+
+
+def test_depends_ids_that_resolve_are_clean(root, capsys):
+    # spec: PIPE-GATES-R102
+    d = _spec(root)
+    _rows(
+        root,
+        "foo",
+        "FOO",
+        ("R001", "Depends: none."),
+        ("R002", "Depends: FOO-R001."),
+        ("R003", "Depends: `R001`, `R002`."),
+    )
+    (d / "tasks.md").write_text("".join(f"- [ ] T00{i} FOO-R00{i} do it\n" for i in (1, 2, 3)))
+    code, out = _run(root, capsys)
+    assert code == 0 and "Depends" not in out
+
+
+def test_depends_id_that_names_no_row_is_an_error(root, capsys):
+    # spec: PIPE-GATES-R102
+    _spec(root)
+    _rows(root, "foo", "FOO", ("R001", "Depends: FOO-R009."))
+    code, out = _run(root, capsys)
+    assert code == 1
+    assert "FOO-R001 depends on FOO-R009, which no row defines" in out
+
+
+def test_depends_id_of_another_repository_is_checked_against_the_index(root, capsys, monkeypatch):
+    # spec: PIPE-GATES-R102
+    _spec(root)
+    _rows(root, "foo", "FOO", ("R001", "Depends: BAR-R017."))
+    assert _run(root, capsys)[0] == 0
+    index = root / "index.json"
+    index.write_text('{"repos": {"bar": ["BAR-R018"]}}')
+    monkeypatch.setenv("PIPELINES_SPEC_ID_INDEX", str(index))
+    code, out = _run(root, capsys)
+    assert code == 1 and "FOO-R001 depends on BAR-R017, which no row defines" in out
+
+
+def test_dependency_cycle_is_an_error(root, capsys):
+    # spec: PIPE-GATES-R102
+    _spec(root)
+    _rows(
+        root,
+        "foo",
+        "FOO",
+        ("R001", "Depends: FOO-R002."),
+        ("R002", "Depends: FOO-R003."),
+        ("R003", "Depends: FOO-R001."),
+    )
+    code, out = _run(root, capsys)
+    assert code == 1
+    assert "dependency cycle: FOO-R001 -> FOO-R002 -> FOO-R003 -> FOO-R001" in out
+
+
+def test_row_without_a_depends_line_is_a_warning_before_the_cutover(root, capsys):
+    # spec: PIPE-GATES-R102
+    _spec(root)
+    _rows(root, "foo", "FOO", ("R001", ""))
+    code, out = _run(root, capsys)
+    assert code == 0
+    assert "ADV spec-standard: specs/foo: 1 row(s) have no 'Depends:' line (FOO-R001)" in out
+
+
+def test_row_without_a_depends_line_is_an_error_after_the_cutover():
+    # spec: PIPE-GATES-R102
+    from datetime import date
+
+    from pipelines_hooks.specs.dependencies import REQUIRED_FROM, check_dependencies
+
+    text = "| `FOO-R001` | req Depends: none. | t |\n| `FOO-R002` | req | t |\n"
+    found = check_dependencies({"foo": text}, today=REQUIRED_FROM)
+    assert found == [("foo", "FOO-R002 has no 'Depends:' line; list prerequisite row IDs or 'Depends: none'")]
+    assert all("warning" in m for _, m in check_dependencies({"foo": text}, today=date(2026, 11, 12)))
+
+
+def test_an_older_depends_spelling_is_not_read():
+    # spec: PIPE-GATES-R102
+    from pipelines_hooks.specs.dependencies import check_dependencies
+    from pipelines_hooks.specs.requirements_doc import parse_rows
+
+    for spelling in ("Depends on:", "Depends-on:", "Depends on"):
+        text = f"| `FOO-R001` | req {spelling} FOO-R009. | t |\n"
+        assert parse_rows(text)[0].depends_on == ()
+        assert [m for _, m in check_dependencies({"foo": text})] == [
+            "1 row(s) have no 'Depends:' line (FOO-R001) (warning: error from 2027-01-01)"
+        ]
+
+
+def test_the_standard_and_the_constitution_require_a_depends_clause():
+    # spec: PIPE-GATES-R102
+    root = Path(__file__).resolve().parent.parent
+    body = (root / "reference" / "spec-standard.md").read_text().split("## Row dependencies", 1)[1].split("\n## ", 1)[0]
+    for item in ("Depends: none", "its own row first", "not a dependency", "research.md", "cycle", "2027-01-01"):
+        assert item in body, item
+    constitution = (root / ".specify" / "memory" / "constitution.md").read_text()
+    assert "`Depends: none`" in constitution and "gets its own row first" in constitution
+
+
+def _committed_spec_with_old_findings(root):
+    """A spec whose two rows both lack a Shape sentence, committed as the base revision."""
+    d = _spec(root)
+    row = "| `FOO-R00{n}` | req Caller chain: a to b. Depends on: none. | `tests/t.py::test_a` |\n"
+    (d / "requirements.md").write_text(row.format(n=1) + row.format(n=2))
+    (d / "tasks.md").write_text("- [ ] T001 FOO-R001 do it\n- [ ] T002 FOO-R002 do it\n")
+    env = fixture_git_environment()
+    git = ["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@example.com"]
+    subprocess.run([*git, "add", "--", "."], env=env, check=True)
+    subprocess.run([*git, "commit", "-q", "-m", "base"], env=env, check=True)
+    return d
+
+
+def test_a_row_changed_only_in_its_depends_clause_keeps_its_old_findings_advisory(root, capsys):
+    # spec: PIPE-GATES-R102
+    d = _committed_spec_with_old_findings(root)
+    text = (d / "requirements.md").read_text().replace("Depends on: none.", "Depends: none.")
+    (d / "requirements.md").write_text(text)
+    code = main(["--root", str(root), "--base", "HEAD"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "FOO-R001 behaviour row lacks a 'Shape:' sentence" in out and "ADV" in out
+
+
+def test_a_row_changed_in_its_text_fails_on_its_findings_and_untouched_rows_stay_advisory(root, capsys):
+    # spec: PIPE-GATES-R102
+    d = _committed_spec_with_old_findings(root)
+    text = (d / "requirements.md").read_text().replace("Depends on: none.", "Depends: none.")
+    (d / "requirements.md").write_text(
+        text.replace(
+            "req Caller chain: a to b. Depends: none. | `tests/t.py::test_a` |\n",
+            "changed Caller chain: a to b. Depends: none. | `tests/t.py::test_a` |\n",
+            1,
+        )
+    )
+    code = main(["--root", str(root), "--base", "HEAD"])
+    out = capsys.readouterr().out
+    assert code == 1
+    failing = [line for line in out.splitlines() if "Shape" in line and not line.startswith("ADV")]
+    assert len(failing) == 1 and "FOO-R001" in failing[0]
+    assert any("FOO-R002" in line and line.startswith("ADV") for line in out.splitlines())
+
+
+def test_a_clause_only_change_is_still_judged_on_the_new_clause(root, capsys):
+    # spec: PIPE-GATES-R102
+    d = _committed_spec_with_old_findings(root)
+    text = (d / "requirements.md").read_text().replace("Depends on: none.", "Depends: FOO-R009.", 1)
+    (d / "requirements.md").write_text(text)
+    code = main(["--root", str(root), "--base", "HEAD"])
+    out = capsys.readouterr().out
+    assert code == 1 and "FOO-R001 depends on FOO-R009, which no row defines" in out

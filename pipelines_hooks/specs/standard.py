@@ -10,12 +10,21 @@ for an untouched one. No baseline and no suppression.
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import re
 from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.specs import analysis, completeness, narrative, placement, row_paths
+from pipelines_hooks.specs import (
+    analysis,
+    completeness,
+    dependencies,
+    narrative,
+    placement,
+    row_paths,
+)
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.third_party_names import check_repository
@@ -138,7 +147,11 @@ def _fails(message: str, added: set[str], touched: set[str], spec_dir: Path, bas
 
 
 def check_touched_rules(
-    spec_dir: Path, root: Path | None, touched: set[str], bindings: dict[str, list[str]] | None = None
+    spec_dir: Path,
+    root: Path | None,
+    touched: set[str],
+    bindings: dict[str, list[str]] | None = None,
+    base_ref: str | None = None,
 ) -> list[str]:
     """Narrative, task-line and status-header findings; untouched files get ``ADVISORY_TAG``."""
     texts = {n: _read(spec_dir / n) for n in ("spec.md", "plan.md", "requirements.md", "tasks.md", "test-spec.md")}
@@ -156,7 +169,7 @@ def check_touched_rules(
         m + ("" if narrative.is_touched(touched, spec_dir, base, m.split(":")[0]) else ADVISORY_TAG) for m in status
     ]
     texts.update({n: _read(spec_dir / n) for n in ("research.md", "data-model.md", "quickstart.md")})
-    added = narrative.added_row_ids(base, spec_dir, touched, None)
+    added = narrative.added_row_ids(base, spec_dir, touched, base_ref)
     design = [f"plan.md: {m}" for m in analysis.check_plan(texts["plan.md"])]
     complete = [f"analyze: {m}" for m in completeness.check_complete_rows(texts["requirements.md"])]
     for message in [
@@ -176,13 +189,14 @@ def check_spec(
     touched: set[str] | None = None,
     root: Path | None = None,
     bindings: dict[str, list[str]] | None = None,
+    base_ref: str | None = None,
 ) -> list[str]:
     """Findings for one spec directory, as ``(path, message)``-joined lines."""
     spec_id, title = check_title(spec_dir)
     found = [*check_files(spec_dir), *title, *narrative.check_optional(spec_dir)]
     texts = {n: _read(spec_dir / n) for n in ("spec.md", "requirements.md")}
     found += narrative.check_markers(spec_dir, texts)
-    found += check_touched_rules(spec_dir, root, touched or set(), bindings)
+    found += check_touched_rules(spec_dir, root, touched or set(), bindings, base_ref)
     if spec_id:
         found += check_id(spec_dir, spec_id)
     found += check_tombstones(spec_dir)
@@ -199,6 +213,18 @@ def check_placement(root: Path, touched: set[str]) -> list[str]:
         hit = path in touched or any(t.startswith(path + "/") for t in touched)
         out.append(f"spec-standard: {finding}" + ("" if hit else ADVISORY_TAG))
     return out
+
+
+def _foreign_ids() -> set[str] | None:
+    """Row IDs of the other repositories, from the cross-repo index named by ``PIPELINES_SPEC_ID_INDEX``, if any."""
+    path = os.environ.get("PIPELINES_SPEC_ID_INDEX")
+    if not path:
+        return None
+    try:
+        doc = json.loads(Path(path).read_text(encoding="utf-8"))
+        return {i for ids in doc["repos"].values() for i in ids}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise CannotRun(f"no cross-repo ID index: cannot read {path}: {exc}") from exc
 
 
 def _spec_dirs(root: Path) -> list[Path]:
@@ -231,11 +257,17 @@ def main(argv: list[str]) -> int:
         bindings = test_bindings(root) if dirs else None
     except CannotRun:
         bindings = None
-    found = [f for d in dirs for f in check_spec(d, index, touched, root, bindings)]
+    found = [f for d in dirs for f in check_spec(d, index, touched, root, bindings, args.base)]
     found += check_placement(root, touched)
+    found += [
+        f"spec-standard: specs/{name}: {m}"
+        for name, m in dependencies.check_dependencies(
+            {d.name: _read(d / "requirements.md") for d in dirs}, foreign=_foreign_ids()
+        )
+    ]
     if dirs:
         found += [f"spec-standard: {m}" for m in narrative.check_constitution(root)]
-    advisory = (ADVISORY_TAG, CONSTITUTION_MARK) + (() if args.tombstones else (TOMBSTONE,))
+    advisory = (ADVISORY_TAG, CONSTITUTION_MARK, dependencies.WARNING_MARK) + (() if args.tombstones else (TOMBSTONE,))
     findings = [f for f in found if not any(mark in f for mark in advisory)]
     if (root / "specs").is_dir():
         named = check_repository(root)

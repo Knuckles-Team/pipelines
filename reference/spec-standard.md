@@ -194,7 +194,22 @@ The gate also runs a cross-file analysis of each spec directory, the counterpart
 
 ## Complete rows
 
-A behaviour row holds enough text to implement without an assumption. Each active row that is not a rollup parent carries a `Caller chain:` sentence (entry point to the new code), a `Shape:` sentence (files, types and the existing helper to reuse) and a served test as `path::name`. It also names, where they apply, the files, types and fields, refusal codes from the one taxonomy, the write path, the knobs with starting values, the `Depends on:` row IDs and each cross-repository seam by ID on both sides. A row never says TBD. The check fails a row the change adds and is advisory for any other row.
+A behaviour row holds enough text to implement without an assumption. Each active row that is not a rollup parent carries a `Caller chain:` sentence (entry point to the new code), a `Shape:` sentence (files, types and the existing helper to reuse) and a served test as `path::name`. It also names, where they apply, the files, types and fields, refusal codes from the one taxonomy, the write path, the knobs with starting values, the `Depends:` clause (see Row dependencies) and each cross-repository seam by ID on both sides. A row never says TBD. The check fails a row the change adds and is advisory for any other row.
+
+## Row dependencies
+
+Every requirement row carries a `Depends:` clause in its Requirement cell, after the `Shape:` sentence, because a row is one table line. The clause lists the row IDs the row needs before it can be delivered, in the same repository or another, or says `Depends: none`.
+
+```markdown
+| `FOO-R004` | **Cache reads.** The reader serves repeats from memory. Caller chain: ... Shape: ... Depends: FOO-R002, BAR-R017.1. | `tests/t.py::test_a` |
+| `FOO-R005` | **Name the cache.** ... Depends: none. | `tests/t.py::test_b` |
+```
+
+- A prerequisite that no row defines, such as a type, method, table or contract nobody has specified, gets its own row first. The dependent row then lists that row. A row never depends on prose.
+- A design question is not a dependency. Decide it from the constitution and record the decision in `research.md` or `plan.md`; a row that waits on an open question carries a `[NEEDS CLARIFICATION: ...]` marker instead.
+- A rollup parent lists its children or `none`. A child lists the siblings it needs, not its parent.
+- `Depends:` is the only spelling. Delivery tooling and the gate read no other.
+- *Gate*: `spec-standard` fails a `Depends:` ID that names no active row and any dependency cycle among a repository's rows. It checks an ID of another repository against the cross-repository index when `PIPELINES_SPEC_ID_INDEX` names one, and accepts it otherwise. A row with no `Depends:` clause is a warning (`ADV`, one line per spec) until 2027-01-01. From that date it is an error for every active row.
 
 ## Requirements checklist
 
@@ -242,7 +257,7 @@ No other state, acceptance value or status label exists. Do not write a status l
 A spec is data before it is a page. Each repository keeps one glossary, and every domain term in its specs comes from that glossary.
 
 - **One glossary per repository.** The glossary defines each term once. Each entry maps to a class of the medulla spec-driven-development ontology. A spec must not define a term the glossary lacks, and must not use a second name for a glossary term.
-- **Typed graph data.** Spec rows, their `Depends on:` links, cross-repository seams, bound tests and refusal codes are typed graph data. Each has a class and a stable ID, so a spec ingests into the knowledge graph without a custom parser.
+- **Typed graph data.** Spec rows, their `Depends:` links, cross-repository seams, bound tests and refusal codes are typed graph data. Each has a class and a stable ID, so a spec ingests into the knowledge graph without a custom parser.
 - **Row, commit, test.** Each landed row links to the commits that carry its `Spec:` trailer, by commit hash, and to its bound test. The graph then holds the chain row, commit, test.
 - **Validation.** SHACL shapes validate the ingested specs. The existing Python gates stay the enforcement until those shapes ship. The shapes and the ingest are tracked as MEDULLA-SDD rows (filed in medulla).
 - **Gate.** `PIPE-GATES-R100` checks a repository's specs against its glossary and the ontology mapping.
@@ -282,6 +297,7 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Narrative | `spec.md` lacks prioritized stories, Given/When/Then scenarios, Edge Cases or Assumptions, or an `FR-` or `SC-` label names no existing row |
 | Task line | A `tasks.md` task does not match the numbered task line or names no existing row |
 | Plan | `plan.md` lacks a template section or a Technical Context field |
+| Dependencies | A `Depends:` ID names no active row, or the rows form a cycle. A row with no `Depends:` clause warns until 2027-01-01, then fails |
 | Analysis | A row has no task line or no test, a task names no row, a label is orphaned, or a design file holds an open marker |
 | Checklist | A `checklists/*.md` file holds an unchecked item |
 | Status | A spec file writes a `Status:` line |
@@ -339,7 +355,7 @@ References declarations accept explicit links, canonical spec or requirement ide
 
 A row is implementation-ready when a writer can deliver it without a design decision. Authors follow these rules; the stages that deliver rows are in the [bulk delivery standard](bulk-delivery.md).
 
-- `Depends on:` lists every prerequisite row, including rows of other specs and of other repositories. Inline prose citations do not count.
+- `Depends:` lists every prerequisite row, or says `none`, including rows of other specs and of other repositories. Inline prose citations do not count.
 - No row leaves a design choice open. It names the storage home (table, key and value type), the wire fields (name, type, bounds), the refusal codes, the served method that owns the behaviour, the generated files, and the knob home.
 - A row's chain respects crate layering and never implies a dependency cycle.
 - Paths cited in Verification and Shape exist, or are marked planned at the exact post-layout path, and do not contradict each other.
@@ -348,10 +364,10 @@ A row is implementation-ready when a writer can deliver it without a design deci
 
 ## Priority from competency questions
 
-A competency question is an ordinary spec row whose ID starts with `MEDULLA-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:
+A competency question is an ordinary spec row whose ID starts with `MEDULLA-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends:` edges, including edges across repositories. List prerequisites in the requirement cell:
 
 ```markdown
-| `X-R001` | **Title.** Text. Depends-on: MEDULLA-FOO-R004, SCION-BAR-R002. | Verification |
+| `X-R001` | **Title.** Text. Depends: MEDULLA-FOO-R004, SCION-BAR-R002. | Verification |
 ```
 
 The organization architecture page computes `priority` for each open row. No `status.json` carries it and a person never edits it.

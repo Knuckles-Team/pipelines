@@ -141,7 +141,7 @@ def test_a_seam_table_counts_only_its_data_rows() -> None:
         "# X — Plan\n\n## Cross-repo seams\n\n"
         "| Seam | Contract | Counterpart |\n|---|---|---|\n"
         "| `OTHER-AREA-R004` | call | other |\n\n"
-        "The `Depends on` lines of requirements.md name every other dependency.\n"
+        "The `Depends:` clauses of requirements.md name every other dependency.\n"
     )
     assert artifacts.seams(plan) == ["| `OTHER-AREA-R004` | call | other |"]
     header_only = "## Cross-repo seams\n\n| Seam | Contract |\n|:--|---|\n\nProse after the table.\n"

@@ -1,7 +1,7 @@
 """Derive release bundle manifests from the phase scenarios (PIPE-RELEASE-R021).
 
 Each phase scenario row (``ARBORA-ACCEPTANCE-R006.1`` to ``.4``) names the requirement rows it exercises. A phase's
-scope is those rows plus the transitive closure of their ``Depends on`` rows across every registered repository. A
+scope is those rows plus the transitive closure of their ``Depends:`` rows across every registered repository. A
 row belongs to the earliest phase that reaches it. Phase P5 takes every remaining row.
 
 Manifests are written to ``releases/<id>.yml`` as JSON, which is valid YAML, so no YAML library is needed.

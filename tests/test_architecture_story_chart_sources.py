@@ -22,7 +22,7 @@ A, B = "PIPE-DEMO-R001", "PIPE-DEMO-R002"
 
 def inputs():
     docs = {
-        "specs/demo/requirements.md": f"| `{A}` | **First**. | tests |\n| `{B}` | **Second**. Depends-on: `{A}`. | tests |\n",
+        "specs/demo/requirements.md": f"| `{A}` | **First**. | tests |\n| `{B}` | **Second**. Depends: `{A}`. | tests |\n",
         "specs/demo/status.json": json.dumps(
             {
                 "schema_version": 2,
@@ -74,7 +74,7 @@ def test_cycle_preserves_shared_frontier():
     data = inputs()
     docs = data["captures"][0]["documents"]
     docs["specs/demo/requirements.md"] = docs["specs/demo/requirements.md"].replace(
-        "**First**.", f"**First**. Depends-on: `{B}`."
+        "**First**.", f"**First**. Depends: `{B}`."
     )
     result = source_chart(**data)
     assert result["dependencyCycles"] == [["R_1:" + A, "R_1:" + B]]
@@ -87,7 +87,7 @@ def alias_input(alias='"PIPE-DEMO-R009" = "PIPE-DEMO-R001"'):
     capture["tree"]["paths"].append(".config/spec-aliases.toml")
     capture["documents"][".config/spec-aliases.toml"] = alias
     capture["documents"]["specs/demo/requirements.md"] = capture["documents"]["specs/demo/requirements.md"].replace(
-        f"Depends-on: `{A}`", "Depends-on: `PIPE-DEMO-R009`"
+        f"Depends: `{A}`", "Depends: `PIPE-DEMO-R009`"
     )
     return data
 
@@ -117,7 +117,7 @@ def test_exact_alias_does_not_map_children():
     data = alias_input()
     data["captures"][0]["documents"]["specs/demo/requirements.md"] = data["captures"][0]["documents"][
         "specs/demo/requirements.md"
-    ].replace("Depends-on: `PIPE-DEMO-R009`", "Depends-on: `PIPE-DEMO-R009.1`")
+    ].replace("Depends: `PIPE-DEMO-R009`", "Depends: `PIPE-DEMO-R009.1`")
     with pytest.raises(ContractError, match="unresolved"):
         source_chart(**data)
 
@@ -139,7 +139,7 @@ def test_incomplete_evidence_refused(mutation):
         capture["tree"]["paths"].append(".config/spec-aliases.toml")
     elif mutation == "missing_target":
         capture["documents"]["specs/demo/requirements.md"] = capture["documents"]["specs/demo/requirements.md"].replace(
-            f"Depends-on: `{A}`", "Depends-on: `OTHER-R001`"
+            f"Depends: `{A}`", "Depends: `OTHER-R001`"
         )
     elif mutation == "duplicate_repo":
         data["repositories"].append(REPO)
@@ -184,7 +184,7 @@ def test_family_view_keeps_complete_score_denominator_and_closure():
     data = inputs()
     capture = data["captures"][0]
     rid = "PIPE-OTHER-R001"
-    capture["documents"]["specs/other/requirements.md"] = f"| `{rid}` | **Third**. Depends-on: `{B}`. | tests |\n"
+    capture["documents"]["specs/other/requirements.md"] = f"| `{rid}` | **Third**. Depends: `{B}`. | tests |\n"
     capture["documents"]["specs/other/status.json"] = json.dumps(
         {
             "schema_version": 2,
@@ -261,7 +261,7 @@ def test_no_inferred_interface_or_prose_edges():
     data = inputs()
     docs = data["captures"][0]["documents"]
     docs["specs/demo/requirements.md"] = docs["specs/demo/requirements.md"].replace(
-        f"Depends-on: `{A}`.", "Depends-on: `scion-sdk` or another package."
+        f"Depends: `{A}`.", "Depends: `scion-sdk` or another package."
     )
     result = source_chart(**data)
     row = result["rows"]["R_1:" + B]
@@ -275,7 +275,7 @@ def with_outside_gap():
     capture = data["captures"][0]
     rid = "PIPE-OUTSIDE-R001"
     capture["documents"]["specs/outside/requirements.md"] = (
-        f"| `{rid}` | **Outside**. Depends-on: `MISSING-R001`. | tests |"
+        f"| `{rid}` | **Outside**. Depends: `MISSING-R001`. | tests |"
     )
     capture["documents"]["specs/outside/status.json"] = json.dumps(
         {
@@ -303,14 +303,14 @@ def test_explicit_family_scope_preserves_excluded_gaps_not_auto_fallback():
     gaps = result["scope"]["excludedDependencyGaps"]
     assert gaps[0]["declaredId"] == "MISSING-R001"
     assert gaps[0]["provenance"]["commit"] == SHA
-    assert gaps[0]["context"][0]["text"] == "Depends-on: `MISSING-R001`."
+    assert gaps[0]["context"][0]["text"] == "Depends: `MISSING-R001`."
 
 
 def test_selected_scope_cannot_hide_a_gap_in_transitive_closure():
     data = with_outside_gap()
     docs = data["captures"][0]["documents"]
     docs["specs/demo/requirements.md"] = docs["specs/demo/requirements.md"].replace(
-        "**First**.", "**First**. Depends-on: `PIPE-OUTSIDE-R001`."
+        "**First**.", "**First**. Depends: `PIPE-OUTSIDE-R001`."
     )
     with pytest.raises(ContractError, match="MISSING-R001"):
         source_chart(**data, score_scope="selected-family-prerequisite-closure")
@@ -341,7 +341,7 @@ def test_foreign_rollup_members_are_evidence_only_not_silent_score_expansion():
     docs = capture["documents"]
     parent, child = "PIPE-OTHER-R001", "PIPE-OTHER-R001.1"
     docs["specs/demo/requirements.md"] = docs["specs/demo/requirements.md"].replace(
-        "**First**.", f"**First**. Depends-on: `{parent}`."
+        "**First**.", f"**First**. Depends: `{parent}`."
     )
     docs["specs/other/requirements.md"] = f"| `{parent}` | **Rollup**. | tests |\n| `{child}` | **Child**. | tests |\n"
     docs["specs/other/status.json"] = json.dumps(

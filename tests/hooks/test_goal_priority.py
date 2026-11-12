@@ -1,4 +1,4 @@
-"""Competency-question priority: Depends-on parsing, formula, frontier, unserved, release bundles."""
+"""Competency-question priority: Depends parsing, formula, frontier, unserved, release bundles."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from tests.hooks.conftest import Repo
 
 # spec: PIPE-CONNSPEC-R012
 def test_row_depends_on_parses() -> None:
-    text = "| `A-R001` | **T.** Text. Depends-on: B-R002, C-R003.1. More text | v |\n"
+    text = "| `A-R001` | **T.** Text. Depends: B-R002, C-R003.1. More text | v |\n"
     (row,) = parse_rows(text)
     assert row.depends_on == ("B-R002", "C-R003.1")
     assert parse_rows("| `A-R002` | **T.** no declaration | v |\n")[0].depends_on == ()
@@ -20,10 +20,10 @@ def test_row_depends_on_parses() -> None:
 # spec: PIPE-CONNSPEC-R012
 def test_prose_dependency_forms_resolve_relative_and_full_ids() -> None:
     text = (
-        "| `EG-SUPPLY-VOCAB-R001.4` | **T.** Depends on `R001.1`, `.2` and `EG-OTHER-R005`. Requires `R002`. "
+        "| `EG-SUPPLY-VOCAB-R001.4` | **T.** Depends: `R001.1`, `.2` and `EG-OTHER-R005`. Requires `R002`. "
         "After a while. After `ARB-X-R010.3`. | v |\n"
-        "| `EG-SUPPLY-VOCAB-R002` | **T.** Depends on EG-FOO-R004 and ARB-BAR-R009.2. Requires linking a to b. | v |\n"
-        "| `EG-SUPPLY-VOCAB-R003` | **T.** Depends on `.1`. | v |\n"
+        "| `EG-SUPPLY-VOCAB-R002` | **T.** Depends: EG-FOO-R004 and ARB-BAR-R009.2. Requires linking a to b. | v |\n"
+        "| `EG-SUPPLY-VOCAB-R003` | **T.** Depends: `.1`. | v |\n"
     )
     rows = {r.id: r.depends_on for r in parse_rows(text)}
     assert rows["EG-SUPPLY-VOCAB-R001.4"] == (
@@ -90,7 +90,7 @@ def test_generator_leaves_status_shape_unchanged(repo: Repo) -> None:
     rows = (
         "# demo\n\n| ID | Requirement |\n|---|---|\n"
         "| `TEST-R001` | **First.** |\n"
-        "| `TEST-R002` | **Second.** Depends on `R001`. |\n"
+        "| `TEST-R002` | **Second.** Depends: `R001`. |\n"
     )
     repo.commit({"specs/demo/requirements.md": rows}, "add spec")
     assert repo.run("spec-status", "--write") == 0
