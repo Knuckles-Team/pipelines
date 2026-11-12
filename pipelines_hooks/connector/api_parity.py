@@ -54,19 +54,38 @@ def _parse(path: Path) -> ast.Module:
     return ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
 
 
+def _is_client_name(name: str) -> bool:
+    return "api" in name.lower() or "client" in name.lower()
+
+
+def _base_name(base: ast.expr) -> str:
+    if isinstance(base, ast.Name):
+        return base.id
+    return base.attr if isinstance(base, ast.Attribute) else ""
+
+
 def api_methods(paths: list[Path]) -> set[str]:
-    """Public methods of every ``*api*`` / ``*client*`` class, minus ``authenticate``."""
+    """Public methods of every ``*api*`` / ``*client*`` class and of each class extending one, minus ``authenticate``."""
     methods: set[str] = set()
-    for path in sorted(paths):
-        for node in ast.walk(_parse(path)):
-            if isinstance(node, ast.ClassDef) and ("api" in node.name.lower() or "client" in node.name.lower()):
-                methods.update(
-                    item.name
-                    for item in node.body
-                    if isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef)
-                    and not item.name.startswith("_")
-                    and item.name != "authenticate"
-                )
+    classes = [n for path in sorted(paths) for n in ast.walk(_parse(path)) if isinstance(n, ast.ClassDef)]
+    names = {c.name for c in classes if _is_client_name(c.name)}
+    # A domain client that extends a client class (``class Files(BaseApiClient)``, in any client file) is a client too.
+    grew = True
+    while grew:
+        grew = False
+        for c in classes:
+            if c.name not in names and any(_base_name(b) in names for b in c.bases):
+                names.add(c.name)
+                grew = True
+    for node in classes:
+        if node.name in names:
+            methods.update(
+                item.name
+                for item in node.body
+                if isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef)
+                and not item.name.startswith("_")
+                and item.name != "authenticate"
+            )
     return methods
 
 

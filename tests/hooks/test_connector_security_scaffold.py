@@ -220,6 +220,14 @@ def test_parity_counts_decorated_tools_and_catalog_dispatch_and_prefixed_tools_o
 
 
 @pytest.mark.spec("PIPE-VALIDATION-R001.12")
+def test_parity_counts_domain_clients_that_extend_a_client_class(tmp_path: Path) -> None:
+    root = _parity_repo(tmp_path)
+    _write(root, "demo_mcp/api_client_files.py", "class Files(DemoApi):\n    def list_files(self): ...\n")
+    result = api_parity.measure(root, ())
+    assert result is not None and result["total"] == 5 and "list_files" in result["unmapped"]
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.12")
 def test_parity_scans_sibling_mcp_registrars(tmp_path: Path) -> None:
     root = _parity_repo(tmp_path)
     _write(
