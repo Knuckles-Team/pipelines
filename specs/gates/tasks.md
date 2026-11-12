@@ -43,7 +43,6 @@
 - [x] T228 PIPE-GATES-R014.9 Compute the fleet census through `git archive` and print the markdown checklists.
 - [x] T229 PIPE-GATES-R014.10 Publish `reference/connector-surface.md`.
 - [x] T230 PIPE-GATES-R014.11 Count the tools the built server serves in the `surface` member.
-- [x] T230A PIPE-GATES-R014.12 Count the upstream tools a proxy connector declares in `connector_contracts.py`.
 - [x] T029 PIPE-GATES-R015 Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes.
 - [x] T030 PIPE-GATES-R016 Add the `graph-check` subcommand to `connector-ontology-map`: whole-ecosystem ontology reachability, bridging, broken and missing edges, virtual-graph checks and competency questions.
 - [x] T031 PIPE-GATES-R028 Add the plan template and the plan-section check.
@@ -265,3 +264,4 @@
 - [ ] T258 PIPE-GATES-R099 Pull request, comment and commit text is self-evident, and the pr-text gate reports it (title, body, commit messages and new comments).
 - [ ] T259 PIPE-GATES-R100 A repository's specs use its glossary and the ontology mapping.
 - [ ] T260 PIPE-GATES-R101 Every custom ontology IRI lives under one HTTPS base, and the ontology-iri gate fails any that does not.
+- [x] T261 PIPE-GATES-R014.12 Count the upstream tools a proxy connector declares in `connector_contracts.py`.
