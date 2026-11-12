@@ -10,12 +10,21 @@ for an untouched one. No baseline and no suppression.
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import re
 from pathlib import Path
 
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.specs import analysis, completeness, narrative, placement, row_paths
+from pipelines_hooks.specs import (
+    analysis,
+    completeness,
+    dependencies,
+    narrative,
+    placement,
+    row_paths,
+)
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.requirements_doc import parse_rows
 from pipelines_hooks.specs.third_party_names import check_repository
@@ -201,6 +210,18 @@ def check_placement(root: Path, touched: set[str]) -> list[str]:
     return out
 
 
+def _foreign_ids() -> set[str] | None:
+    """Row IDs of the other repositories, from the cross-repo index named by ``PIPELINES_SPEC_ID_INDEX``, if any."""
+    path = os.environ.get("PIPELINES_SPEC_ID_INDEX")
+    if not path:
+        return None
+    try:
+        doc = json.loads(Path(path).read_text(encoding="utf-8"))
+        return {i for ids in doc["repos"].values() for i in ids}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise CannotRun(f"no cross-repo ID index: cannot read {path}: {exc}") from exc
+
+
 def _spec_dirs(root: Path) -> list[Path]:
     return [
         d
@@ -233,9 +254,15 @@ def main(argv: list[str]) -> int:
         bindings = None
     found = [f for d in dirs for f in check_spec(d, index, touched, root, bindings)]
     found += check_placement(root, touched)
+    found += [
+        f"spec-standard: specs/{name}: {m}"
+        for name, m in dependencies.check_dependencies(
+            {d.name: _read(d / "requirements.md") for d in dirs}, foreign=_foreign_ids()
+        )
+    ]
     if dirs:
         found += [f"spec-standard: {m}" for m in narrative.check_constitution(root)]
-    advisory = (ADVISORY_TAG, CONSTITUTION_MARK) + (() if args.tombstones else (TOMBSTONE,))
+    advisory = (ADVISORY_TAG, CONSTITUTION_MARK, dependencies.WARNING_MARK) + (() if args.tombstones else (TOMBSTONE,))
     findings = [f for f in found if not any(mark in f for mark in advisory)]
     if (root / "specs").is_dir():
         named = check_repository(root)

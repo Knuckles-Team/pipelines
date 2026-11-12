@@ -10,8 +10,8 @@ from pipelines_hooks.specs.ids import ID, ROW_RE
 _TITLE_RE = re.compile(r"\*\*(.+?)\*\*")
 _RETIRED_RE = re.compile(r"RETIRED:?\s*(.*)")
 _RELATIVE = r"R\d{2,3}(?:\.\d+)*|\.\d+(?:\.\d+)*"
-#: "Depends on" and "Depends-on:" take backticked or bare full IDs. "Requires" and "After" take backticked IDs only.
-_DEPENDS_RE = re.compile(r"\b(?:[Dd]epends[ -]on:?)\s*(?P<run>[^|]*?)(?:\.(?=\s|\||$)|\||$)")
+#: "Depends:", "Depends on" and "Depends-on:" take backticked or bare full IDs. "Requires" and "After" take backticked IDs only.
+_DEPENDS_RE = re.compile(r"\b(?:[Dd]epends(?:[ -]on:?|:))\s*(?P<run>[^|]*?)(?:\.(?=\s|\||$)|\||$)")
 _NEEDS_RE = re.compile(r"\b(?:Requires|After)\s+(?P<run>`[^|]*?)(?:\.(?=\s|\||$)|\||$)")
 _TICKED_RE = re.compile(r"`([^`]+)`")
 

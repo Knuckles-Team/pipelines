@@ -265,3 +265,4 @@
 - [ ] T259 PIPE-GATES-R100 A repository's specs use its glossary and the ontology mapping.
 - [ ] T260 PIPE-GATES-R101 Every custom ontology IRI lives under one HTTPS base, and the ontology-iri gate fails any that does not.
 - [x] T261 PIPE-GATES-R014.12 Count the upstream tools a proxy connector declares in `connector_contracts.py`.
+- [ ] T262 PIPE-GATES-R102 Every requirement row states its prerequisites with a Depends: clause, and the spec-standard gate checks it.

@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.12.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
+**Version**: 1.13.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
 
 ## Core Principles
 
@@ -584,7 +584,9 @@ Standards and tests:
 
 ### XXIV. Specifications are complete enough to implement without assumptions
 
-Every behaviour row names the production caller chain from the entry point to the new code, the exact files to create or change, the types and fields, the refusal codes from the one refusal taxonomy, the write path, the knobs with starting values (safety and gate knobs are fixed), the `Depends on:` row IDs, each cross-repository seam by ID on both sides with a contract document, a test as `path::name` at the proof level the acceptance names, and one `Shape:` sentence that names the files, the types and the existing helper to reuse. A spec is ready only when an implementer who reasons little could deliver every row from the text alone. It holds no open `[NEEDS CLARIFICATION]` marker, no "TBD" and no undefined term, and the Build contract of its plan lists the real gate thresholds.
+Every behaviour row names the production caller chain from the entry point to the new code, the exact files to create or change, the types and fields, the refusal codes from the one refusal taxonomy, the write path, the knobs with starting values (safety and gate knobs are fixed), the `Depends:` row IDs, each cross-repository seam by ID on both sides with a contract document, a test as `path::name` at the proof level the acceptance names, and one `Shape:` sentence that names the files, the types and the existing helper to reuse. Every requirement row also states its prerequisites in a `Depends:` clause that lists prerequisite row IDs (same or other repository) or says `Depends: none`. A prerequisite that no row defines, such as a type or method nobody has specified, gets its own row first. A design question is not a dependency: it is decided from this constitution and recorded in `research.md` or `plan.md`. The `spec-standard` gate fails a `Depends:` ID that resolves to no row and any dependency cycle, and warns on a row with no `Depends:` clause until the date the spec standard names.
+
+A spec is ready only when an implementer who reasons little could deliver every row from the text alone. It holds no open `[NEEDS CLARIFICATION]` marker, no "TBD" and no undefined term, and the Build contract of its plan lists the real gate thresholds.
 
 *Rationale*: A row that leaves a choice open makes each implementer design a different structure. A complete row makes the result the same for everyone.
 
@@ -896,4 +898,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.12.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
+**Version**: 1.13.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
