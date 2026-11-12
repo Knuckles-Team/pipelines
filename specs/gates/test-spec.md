@@ -83,6 +83,7 @@ These checks prove static AST behavior, not dynamic runtime isolation.
 | `PIPE-GATES-R014.9` | `tests/hooks/test_connector_surface.py::test_fleet_census_reads_refs_without_touching_worktrees` |
 | `PIPE-GATES-R014.10` | `tests/hooks/test_connector_surface.py::test_the_published_standard_names_every_checked_part` |
 | `PIPE-GATES-R014.11` | `tests/hooks/test_connector_surface.py::test_the_surface_member_checks_the_served_tool_list`, `tests/hooks/test_connector_surface.py::test_a_server_that_does_not_build_is_unavailable_not_empty` |
+| `PIPE-GATES-R014.12` | `tests/hooks/test_connector_surface.py::test_undeclared_destructive_tool_and_own_guard_knob_are_gaps` |
 
 ## Hook cache and symlink snapshots (PIPE-GATES-R011)
 

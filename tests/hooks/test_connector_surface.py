@@ -428,3 +428,23 @@ def test_the_published_standard_names_every_checked_part() -> None:
         assert f"| {part} |" in text
     for field in ("kind", "business_role", "tools", "skills", "data.reads", "guardrails.never", "outputs"):
         assert f"`{field}`" in text
+
+
+@pytest.mark.spec("PIPE-GATES-R014.12")
+def test_undeclared_destructive_tool_and_own_guard_knob_are_gaps(tmp_path: Path) -> None:
+    server = (
+        "@mcp.tool(tags={'x'})\nasync def demo_revoke_token(token_id: str, allow_destructive: bool = False): ...\n"
+        "@mcp.tool(annotations=ToolAnnotations(destructive_hint=True))\nasync def demo_purge_cache(): ...\n"
+        "@destructive_operation\n@mcp.tool()\nasync def demo_wipe_disk(): ...\n"
+        "LIMIT = 'DEMO_ALLOW_DESTRUCTIVE'\nOK = 'SCION_ALLOW_DESTRUCTIVE'\n"
+    )
+    record = audit.audit_connector(_connector(tmp_path / "demo-mcp", mcp_server__py=server), _parents(tmp_path))
+    tools = _gaps(record, "tools")
+    assert "tools: destructive tool not declared destructive: demo_revoke_token (demo_mcp/mcp_server.py)" in tools
+    assert not any("demo_purge_cache" in g or "demo_wipe_disk" in g for g in tools)
+    assert (
+        "tools: own destructive guard knob: parameter allow_destructive of demo_revoke_token (demo_mcp/mcp_server.py)"
+        in tools
+    )
+    assert "tools: own destructive guard knob: setting DEMO_ALLOW_DESTRUCTIVE (demo_mcp/mcp_server.py)" in tools
+    assert not any("SCION_ALLOW_DESTRUCTIVE" in g for g in tools)
