@@ -383,6 +383,7 @@ def audit_connector(root: Path, parents: set[str] | None = None, served: list[An
         *entry_gaps,
         *tools.tool_gaps(surface),
         *tools.resource_gaps(surface),
+        *tools.destructive_gaps(surface),
         *_content_gaps(content, counts, content_served),
         *prompt_gaps,
         *_ontology_gaps(reports),

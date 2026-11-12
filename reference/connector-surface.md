@@ -82,6 +82,15 @@ ROLES = (BusinessRole("dispatcher", tasks=("close-incident",)),)
 
 The SDK renders the declarations as the served resource `ontology://<connector>/contracts.ttl`. Its classes extend core classes. The engine imports them with the connector pack. It answers "how do I execute task X" from the contracts and resolves routing from the data locations. A packaged Turtle file that types individuals with the same vocabulary also counts.
 
+## Destructive operations
+
+A connector declares which operations are destructive, once, and defines no guard of its own.
+
+- A client method the SDK derives as a tool is destructive when its HTTP verb is `DELETE` or its name holds a destructive word (`delete`, `destroy`, `drop`, `purge`, `remove`, `deactivate`, `revoke`, `terminate`, `wipe`, `erase`, `truncate`, `kill`, `prune`, `uninstall`, `unassign`). Any other destructive method carries `@destructive_operation`.
+- A tool registered by hand declares itself with `destructive_operation`, `destructive_actions` or `destructive_hint=True`.
+- The declaration becomes the MCP `destructiveHint` annotation. The gateway reads it and decides whether the principal may make the call; the SDK refuses the call without a live confirmation.
+- The one per-call argument is `confirm`. The one operator setting is `SCION_ALLOW_DESTRUCTIVE`. A parameter such as `allow_destructive` or a setting such as `<NAME>_ALLOW_DESTRUCTIVE` or `<NAME>_ALLOW_DELETE` is a gap (`PIPE-GATES-R014.12`).
+
 ## The gate
 
 ```bash
