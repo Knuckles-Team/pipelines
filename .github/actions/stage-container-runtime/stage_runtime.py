@@ -27,31 +27,18 @@ def normalized(value: str) -> str:
     return re.sub(r"[-_.]+", "-", value).lower()
 
 
-_DISTRIBUTION_ALIASES = {
-    "sdk": frozenset({"agent-connector-sdk", "scion-sdk"}),
-    "meristem": frozenset({"agent-utilities", "meristem"}),
-    "medulla": frozenset({"epistemic-graph", "medulla"}),
-    "overstory": frozenset({"agent-webui", "overstory"}),
-    "tuig": frozenset({"agent-terminal-ui", "tuig"}),
-    "axil": frozenset({"geniusbot", "axil"}),
-}
-
-# The action is copied into caller repositories and therefore cannot import the
-# pipelines package. Keep this small compatibility table beside the standalone
-# action. It applies only to repository provenance; distribution aliases remain
-# governed by ``_DISTRIBUTION_ALIASES`` above.
-_REPOSITORY_ALIASES = {
-    "epistemic-graph": "medulla",
-    "agent-connector-sdk": "scion-sdk",
-    "agent-utilities": "meristem",
-    "agent-webui": "overstory",
-    "agent-terminal-ui": "tuig",
-    "geniusbot": "axil",
+_DISTRIBUTIONS = {
+    "sdk": "scion-sdk",
+    "meristem": "meristem",
+    "medulla": "medulla",
+    "overstory": "overstory",
+    "tuig": "tuig",
+    "axil": "axil",
 }
 
 
 def _repository_keys(value: object) -> frozenset[str]:
-    """Return comparable old/new repository keys for a source receipt."""
+    """Return comparable repository keys for a source receipt."""
     text = str(value).strip()
     if "://" in text:
         text = urlsplit(text).path
@@ -63,7 +50,7 @@ def _repository_keys(value: object) -> frozenset[str]:
     parts = [part for part in text.split("/") if part]
     if not parts:
         return frozenset()
-    slug = _REPOSITORY_ALIASES.get(parts[-1].casefold(), parts[-1]).casefold()
+    slug = parts[-1].casefold()
     keys = {slug}
     if len(parts) >= 2:
         keys.add(f"{parts[-2].casefold()}/{slug}")
@@ -71,17 +58,13 @@ def _repository_keys(value: object) -> frozenset[str]:
 
 
 def is_distribution(value: str, role: str) -> bool:
-    """Accept old and branded distribution names in standalone action code."""
-    return normalized(value) in _DISTRIBUTION_ALIASES[role]
+    """Accept only the current distribution name for the role."""
+    return normalized(value) == _DISTRIBUTIONS[role]
 
 
 def matches_distribution(value: str, expected: str) -> bool:
-    """Compare a profile name, using aliases only for a known ecosystem package."""
-    expected = normalized(expected)
-    for role, accepted in _DISTRIBUTION_ALIASES.items():
-        if expected in accepted:
-            return normalized(value) in accepted
-    return normalized(value) == expected
+    """Compare a profile name with the expected distribution name."""
+    return normalized(value) == normalized(expected)
 
 
 def selection(value: str) -> tuple[str, str]:
@@ -175,7 +158,7 @@ class Runtime:
         require(graph == self.inputs["arbora-revision"], "Arbora source mismatch")
         profile = self.inputs["profile"]
         require(profile != "arbora" or graph, "Arbora profile requires arbora")
-        caller_distribution = "agent-utilities" if profile == "arbora" else selection(profile)[0]
+        caller_distribution = "meristem" if profile == "arbora" else selection(profile)[0]
         require(
             matches_distribution(matches[0]["distribution"], caller_distribution),
             "Profile must match caller distribution",

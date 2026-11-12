@@ -2,13 +2,13 @@
 
 The connector SDK owns the GraphQL transport. Its ``graphql`` extra installs
 the protocol client and the query-language core, so a connector declares
-GraphQL in one place: ``agent-connector-sdk[graphql]`` (with any other extras)
+GraphQL in one place: ``scion-sdk[graphql]`` (with any other extras)
 in ``[project].dependencies``.
 
 This gate applies to a repository whose non-test Python imports ``gql`` or
 ``graphql``. It reports two findings:
 
-* no core dependency on ``agent-connector-sdk`` with the ``graphql`` extra;
+* no core dependency on ``scion-sdk`` with the ``graphql`` extra;
 * a direct ``gql`` or ``graphql-core`` requirement in the core dependencies or
   any optional extra, which duplicates the SDK extra.
 
@@ -29,7 +29,7 @@ from pathlib import Path
 from pipelines_hooks.core.distributions import SDK as SDK_ROLE
 from pipelines_hooks.core.distributions import is_distribution, project_distribution, requirement_name
 
-SDK = "agent-connector-sdk"  # legacy display/default spelling during the transition
+SDK = "scion-sdk"
 MODULES = frozenset({"gql", "graphql"})
 DIRECT = frozenset({"gql", "graphql-core"})
 _SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "build", "dist", ".pipeline-theme", "tests", "test"}

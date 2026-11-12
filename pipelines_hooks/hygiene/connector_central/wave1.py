@@ -3737,7 +3737,7 @@ def _is_connector(n: ast.stmt) -> bool:
     return isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "connector" for t in n.targets)
 
 
-_SDK_NAMES = r"(?:agent-connector-sdk|scion-sdk)"
+_SDK_NAMES = r"scion-sdk"
 _DEP = re.compile(rf'"({_SDK_NAMES})(\[[^\]]*\])?([^"]*)"')
 
 
@@ -3761,7 +3761,7 @@ def l4(ctx: Ctx) -> None:
         for k in ("mcp", "all")
         if k in opt and len(opt[k]) == 1 and is_distribution(requirement_name(str(opt[k][0])), SDK_ROLE)
     ]
-    # the SDK extras of a dropped one-element extra (`mcp = ["agent-connector-sdk[mcp,stream]>=..."]`) move to the pin
+    # the SDK extras of a dropped one-element extra (`mcp = ["scion-sdk[mcp,stream]>=..."]`) move to the pin
     dropped_extras: set[str] = set()
     for key in drop:
         dm = re.match(rf"^{_SDK_NAMES}\s*\[([^\]]*)\]", str(opt[key][0]).strip())

@@ -390,7 +390,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "demo-dist"
 version = "1.2.3"
-dependencies = ["agent-connector-sdk>=1"]
+dependencies = ["scion-sdk>=1"]
 
 [project.optional-dependencies]
 mcp = []
@@ -487,7 +487,7 @@ def test_public_wheel_target_extra_matches_generated_and_tracked_targets(
         "[project]\n"
         'name = "demo-dist"\n'
         'version = "1.2.3"\n'
-        'dependencies = ["agent-connector-sdk[mcp]>=1"]\n\n'
+        'dependencies = ["scion-sdk[mcp]>=1"]\n\n'
         "[project.scripts]\n"
         'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."scion_sdk.connector"]\n'
         'demo = "demo:connector"\n\n'
@@ -550,7 +550,7 @@ def test_public_wheel_rejects_target_pin_mismatches_before_public_fetch(
         "[project]\n"
         'name = "demo-dist"\n'
         'version = "1.2.3"\n'
-        'dependencies = ["agent-connector-sdk[mcp]>=1"]\n\n'
+        'dependencies = ["scion-sdk[mcp]>=1"]\n\n'
         "[project.scripts]\n"
         'demo-mcp = "demo:main"\n\n' + optional + '[project.entry-points."scion_sdk.connector"]\n'
         'demo = "demo:connector"\n',

@@ -14,7 +14,7 @@ dependencies = [
     "rfc3339-validator>=0.1.4,<0.2",
     "jsonschema>=4.23,<5",
     "regex>=2026.9.29",
-    "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",
+    "scion-sdk[mcp]>=0.4.1,<1.0.0",
 ]
 [[project.authors]]
 name = "Repository Maintainers"
@@ -23,9 +23,9 @@ name = "Repository Maintainers"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+mcp = [ "scion-sdk[mcp]>=0.4.1,<1.0.0",]
 all = [
-    "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",
+    "scion-sdk[mcp]>=0.4.1,<1.0.0",
 ]
 test = [
     "pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov",]

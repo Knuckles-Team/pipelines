@@ -15,7 +15,7 @@ from pathlib import Path
 WT = Path.home() / ".local/state/repository-worktrees"
 VERIFY = Path(__file__).resolve().parent / "connector_verify.py"
 VERIFY_PREV = Path(__file__).resolve().parent / "connector_prev_tools.py"
-SDK_DISTRIBUTIONS = ("scion-sdk", "agent-connector-sdk")
+SDK_DISTRIBUTIONS = ("scion-sdk",)
 
 
 def sh(cmd, **kw):

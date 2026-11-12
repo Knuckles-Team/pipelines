@@ -48,18 +48,18 @@ def test_variable_fleet_without_code_change(fleet):
     assert len(verify(declaration, root)["consumers"]) == 2
 
 
-def test_pages_call_accepts_renamed_pipeline_repository_slug():
-    uses = "Knuckles-Team/agent-utilities/.github/workflows/pages_pipeline.yml@" + "a" * 40
+def test_pages_call_matches_the_pipeline_repository_slug():
+    uses = "Knuckles-Team/meristem/.github/workflows/pages_pipeline.yml@" + "a" * 40
     assert is_pages_call(uses, "Knuckles-Team/meristem")
 
 
-def test_fleet_rejects_old_and_new_aliases_as_duplicate_consumers():
+def test_fleet_rejects_a_repository_listed_twice_as_duplicate_consumers():
     declaration = {
         "schema_version": 1,
         "pipeline": {"repository": "example/pipelines", "revision": "a" * 40},
         "consumers": [
             {
-                "repository": "Knuckles-Team/agent-utilities",
+                "repository": "Knuckles-Team/meristem",
                 "revision": "b" * 40,
                 "content_source": "docs",
                 "shared_theme_enabled": True,

@@ -84,7 +84,7 @@ def _run_verify(tmp_path: Path, missing: str, **overrides: str) -> subprocess.Co
         "PATH": f"{bin_dir}:/usr/bin:/bin",
         "VERSION": "1.2.3", "BUILD_CONTEXT": ".", "DOCKER_USER": "knucklessg1",
         "REPO_NAME": "demo-mcp", "VERIFY_ATTEMPTS": "1", "VERIFY_DELAY": "0",
-        "PUSHED_DIGEST": DIGEST, "REGISTRY_DIGEST": DIGEST, "SDK_VERSION": "", "SDK_DISTRIBUTION": "",
+        "PUSHED_DIGEST": DIGEST, "REGISTRY_DIGEST": DIGEST, "SDK_VERSION": "",
     }  # fmt: skip
     env.update(overrides)
     return subprocess.run(
@@ -129,7 +129,7 @@ def test_a_green_publish_that_published_nothing_fails(tmp_path: Path, overrides:
 
 @pytest.mark.spec("PIPE-RELEASE-R012.2")
 def test_sdk_rebuild_verifies_its_sdk_tag(tmp_path: Path) -> None:
-    result = _run_verify(tmp_path, "", SDK_VERSION="0.8.2", SDK_DISTRIBUTION="scion-sdk")
+    result = _run_verify(tmp_path, "", SDK_VERSION="0.8.2")
     assert result.returncode == 0, result.stdout + result.stderr
     assert "/tags/1.2.3-sdk-scion-sdk-0.8.2" in (tmp_path / "urls.log").read_text()
 

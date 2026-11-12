@@ -9,7 +9,7 @@ readme = "README.md"
 description = "GitHub Agent for MCP"
 requires-python = ">=3.12"
 classifiers = [ "Development Status :: 5 - Production/Stable", "License :: Public Domain", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
-dependencies = [ "requests>=2.34.2", "agent-connector-sdk[mcp,graphql]>=0.4.1,<1.0.0",]
+dependencies = [ "requests>=2.34.2", "scion-sdk[mcp,graphql]>=0.4.1,<1.0.0",]
 [[project.authors]]
 name = "Repository Maintainers"
 email = "maintainers@example.invalid"

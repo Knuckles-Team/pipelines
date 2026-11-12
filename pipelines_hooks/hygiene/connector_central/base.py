@@ -16,10 +16,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from pipelines_hooks.core.distributions import SDK, distribution_for, is_distribution, project_distribution
+from pipelines_hooks.core.distributions import SDK, distribution
 
 SDK_FLOOR = "0.5.4"
-SDK_PIN = "agent-connector-sdk[mcp]>=0.5.4,<0.6.0"
+SDK_PIN = "scion-sdk[mcp]>=0.5.6,<1.0.0"
 
 # (rule id, source document, one-line summary). The row number is R016.<50 + index>.
 RULE_TABLE: tuple[tuple[str, str, str], ...] = (
@@ -168,19 +168,8 @@ class Ctx:
 
     @property
     def sdk_distribution(self) -> str:
-        """The SDK spelling this migration should retain or explicitly emit.
-
-        A migration may set ``options["sdk_distribution"]`` to the new name
-        after that distribution is published.  Until then, an existing
-        project keeps the spelling already present in its requirements.
-        """
-        requested = self.options.get("sdk_distribution")
-        project = self.pyproject().get("project", {})
-        if requested:
-            if not is_distribution(str(requested), SDK):
-                raise ValueError(f"unsupported SDK distribution: {requested}")
-            return distribution_for([str(requested)], SDK)
-        return project_distribution(project, SDK)
+        """The one SDK distribution a migration requires."""
+        return distribution(SDK)
 
     def note(self, rule_id: str, detail: str, path: str = "", blocking: bool = False) -> None:
         self.review.add(rule_id, detail, path, blocking)

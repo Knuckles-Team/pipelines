@@ -14,14 +14,14 @@ from pipelines_hooks.hygiene.connector_central.wave1 import ORDER, ORDER_LAST
 PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.2.3"
-dependencies = [ "agent-connector-sdk[mcp,graphql]>=0.4.3,<1.0.0", "requests>=2.0",]
+dependencies = [ "scion-sdk[mcp,graphql]>=0.4.3,<1.0.0", "requests>=2.0",]
 
 [project.scripts]
 demo-mcp = "demo_mcp.mcp_server:mcp_server"
 
 [project.optional-dependencies]
-mcp = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]
-all = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]
+mcp = [ "scion-sdk[mcp]>=0.4.3,<1.0.0",]
+all = [ "scion-sdk[mcp]>=0.4.3,<1.0.0",]
 test = [ "pytest>=9",]
 
 # CONCEPT: skill federation
@@ -1257,9 +1257,9 @@ def test_l4_sdk_floor_merged_extras_and_dropped_one_element_extras(tmp_path: Pat
     ctx = _ctx(root)
     _run(ctx, ("w1.l4",))
     data = tomllib.loads(_text(root, "pyproject.toml"))["project"]
-    assert data["dependencies"] == ["agent-connector-sdk[graphql,mcp]>=0.5.4,<0.6.0", "requests>=2.0"]
+    assert data["dependencies"] == ["scion-sdk[graphql,mcp]>=0.5.6,<1.0.0", "requests>=2.0"]
     assert data["optional-dependencies"] == {"test": ["pytest>=9"]}
-    assert ctx.pkg_name and base.SDK_PIN.startswith("agent-connector-sdk[mcp]>=0.5.4")
+    assert ctx.pkg_name and base.SDK_PIN.startswith("scion-sdk[mcp]>=0.5.6")
 
 
 @pytest.mark.spec("PIPE-GATES-R016.67")
@@ -1273,25 +1273,18 @@ def test_l4_pin_uses_base_sdk_pin_for_the_plain_mcp_extra(tmp_path: Path) -> Non
 
 
 @pytest.mark.spec("PIPE-GATES-R016.67")
-def test_l4_preserves_or_emits_the_selected_branded_sdk_distribution(tmp_path: Path) -> None:
+def test_l4_pins_the_scion_sdk_distribution(tmp_path: Path) -> None:
     root = _make(tmp_path)
-    text = _text(root, "pyproject.toml").replace("agent-connector-sdk", "scion-sdk")
-    (root / "pyproject.toml").write_text(text, encoding="utf-8")
     ctx = _ctx(root)
     _run(ctx, ("w1.l4",))
-    assert '"scion-sdk[graphql,mcp]>=0.5.4,<0.6.0"' in _text(root, "pyproject.toml")
-
-    root2 = _make(tmp_path / "explicit")
-    ctx2 = _ctx(root2, sdk_distribution="scion-sdk")
-    _run(ctx2, ("w1.l4",))
-    assert '"scion-sdk[graphql,mcp]>=0.5.4,<0.6.0"' in _text(root2, "pyproject.toml")
+    assert '"scion-sdk[graphql,mcp]>=0.5.6,<1.0.0"' in _text(root, "pyproject.toml")
 
 
 @pytest.mark.spec("PIPE-GATES-R016.67")
 def test_l4_multi_element_extra_stays_and_missing_dependency_is_reviewed(tmp_path: Path) -> None:
     root = _make(tmp_path)
     text = _text(root, "pyproject.toml").replace(
-        'all = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]', 'all = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0", "x",]'
+        'all = [ "scion-sdk[mcp]>=0.4.3,<1.0.0",]', 'all = [ "scion-sdk[mcp]>=0.4.3,<1.0.0", "x",]'
     )
     (root / "pyproject.toml").write_text(text, encoding="utf-8")
     ctx = _ctx(root)
@@ -1299,7 +1292,7 @@ def test_l4_multi_element_extra_stays_and_missing_dependency_is_reviewed(tmp_pat
     assert "all" in tomllib.loads(_text(root, "pyproject.toml"))["project"]["optional-dependencies"]
     root2 = _make(tmp_path / "b")
     (root2 / "pyproject.toml").write_text(
-        _text(root2, "pyproject.toml").replace("agent-connector-sdk", "agent-sdk-other"), encoding="utf-8"
+        _text(root2, "pyproject.toml").replace("scion-sdk", "agent-sdk-other"), encoding="utf-8"
     )
     ctx2 = _ctx(root2)
     _run(ctx2, ("w1.l4",))
@@ -1432,7 +1425,7 @@ def test_l4_an_all_extra_naming_the_deleted_mcp_extra_is_dropped_with_it(tmp_pat
     root = _make(tmp_path)
     pp = root / "pyproject.toml"
     text = pp.read_text(encoding="utf-8")
-    text = text.replace('all = [ "agent-connector-sdk[mcp]>=0.4.3,<1.0.0",]', 'all = [ "demo-mcp[mcp]>=2.0.1",]')
+    text = text.replace('all = [ "scion-sdk[mcp]>=0.4.3,<1.0.0",]', 'all = [ "demo-mcp[mcp]>=2.0.1",]')
     pp.write_text(text, encoding="utf-8")
     ctx = _ctx(root)
     _run(ctx, ("w1.l4",))
@@ -1482,18 +1475,14 @@ def test_l4_a_test_asserting_the_old_sdk_requirement_follows_the_new_pin(tmp_pat
     root = _make(tmp_path)
     pp = root / "pyproject.toml"
     old = [
-        d
-        for d in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["dependencies"]
-        if d.startswith("agent-connector-sdk")
+        d for d in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["dependencies"] if d.startswith("scion-sdk")
     ][0]
     t = root / "tests" / "test_floor.py"
     t.write_text(f'def test_floor(project):\n    assert "{old}" in project["dependencies"]\n', encoding="utf-8")
     ctx = _ctx(root)
     _run(ctx, ("w1.l4",))
     new = [
-        d
-        for d in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["dependencies"]
-        if d.startswith("agent-connector-sdk")
+        d for d in tomllib.loads(pp.read_text(encoding="utf-8"))["project"]["dependencies"] if d.startswith("scion-sdk")
     ][0]
     assert new != old and f'"{new}" in project' in t.read_text(encoding="utf-8")
     ctx.applied.clear()

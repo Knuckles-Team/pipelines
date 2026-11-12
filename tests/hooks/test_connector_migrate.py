@@ -13,7 +13,7 @@ from pipelines_hooks.hygiene import connector_migrate as cm
 PYPROJECT = """[project]
 name = "demo-agent"
 version = "1.0.4"
-dependencies = [ "agent-connector-sdk[mcp]>=0.3.18,<1.0.0", "requests",]
+dependencies = [ "scion-sdk[mcp]>=0.3.18,<1.0.0", "requests",]
 
 [project.entry-points."scion_sdk.connector"]
 demo-mcp = "demo_agent"
@@ -187,7 +187,7 @@ def test_sdk_floor_and_patch_bump_follow_the_repo_bump_config(tmp_path: Path) ->
     root = make(tmp_path)
     run(root)
     py = (root / "pyproject.toml").read_text(encoding="utf-8")
-    assert "agent-connector-sdk[mcp]>=0.4.1,<1.0.0" in py and 'version = "1.0.5"' in py
+    assert "scion-sdk[mcp]>=0.4.1,<1.0.0" in py and 'version = "1.0.5"' in py
     assert "current_version = 1.0.5" in (root / ".bumpversion.cfg").read_text(encoding="utf-8")
     assert "==1.0.5" in (root / "docker" / "Dockerfile").read_text(encoding="utf-8")
 
@@ -555,7 +555,7 @@ def test_refs(request, relation_refs) -> None:
     assert record.mapping_reference.endswith("schema_mappings/Project")
     assert x == rel.relation_reference.rsplit("/relations/", 1)[-1]
     return f"manifest:{connector}#schema_mappings/{node_type}", f"manifest:{c}#resources/{t}/relations/{r}"
-    assert "agent-connector-sdk[mcp]>=0.3.18,<1.0.0" in deps
+    assert "scion-sdk[mcp]>=0.3.18,<1.0.0" in deps
 """
 
 
@@ -567,25 +567,22 @@ def test_reference_strings_follow_the_live_layout_and_sdk_literals_follow_the_fl
     assert 'endswith("mappings/Project")' in new and 'rsplit("/", 1)[-1]' in new
     assert 'f"connector:{connector}#mappings/{node_type}"' in new
     assert 'f"connector:{c}#relations/{t}/{r}"' in new
-    assert "agent-connector-sdk[mcp]>=0.4.1,<1.0.0" in new
+    assert "scion-sdk[mcp]>=0.4.1,<1.0.0" in new
     assert cm.rewrite_references(new) == new
 
 
 @pytest.mark.spec("PIPE-GATES-R016.28")
-def test_sdk_codmod_preserves_detected_alias_until_an_explicit_migration(tmp_path: Path) -> None:
-    branded = make(tmp_path / "branded")
-    branded_pyproject = (
-        (branded / "pyproject.toml").read_text(encoding="utf-8").replace("agent-connector-sdk", "scion-sdk")
-    )
-    (branded / "pyproject.toml").write_text(branded_pyproject, encoding="utf-8")
+def test_sdk_codmod_raises_floors_on_the_scion_sdk_distribution_only(tmp_path: Path) -> None:
+    current = make(tmp_path / "current")
     changed: list[str] = []
-    assert cm.bump_sdk_floor(branded, changed)
-    assert "scion-sdk[mcp]>=0.4.1" in (branded / "pyproject.toml").read_text(encoding="utf-8")
+    assert cm.bump_sdk_floor(current, changed)
+    assert "scion-sdk[mcp]>=0.4.1" in (current / "pyproject.toml").read_text(encoding="utf-8")
 
-    explicit = make(tmp_path / "explicit")
-    changed = []
-    assert cm.bump_sdk_floor(explicit, changed, "scion-sdk")
-    assert "scion-sdk[mcp]>=0.4.1" in (explicit / "pyproject.toml").read_text(encoding="utf-8")
+    retired = make(tmp_path / "retired")
+    text = (retired / "pyproject.toml").read_text(encoding="utf-8").replace("scion-sdk", "agent-connector-sdk")
+    (retired / "pyproject.toml").write_text(text, encoding="utf-8")
+    assert not cm.bump_sdk_floor(retired, [])
+    assert "agent-connector-sdk[mcp]" in (retired / "pyproject.toml").read_text(encoding="utf-8")
 
 
 CUT_READS = """import json
@@ -1033,7 +1030,7 @@ def test_scripts_driving_a_deleted_script_go_to_a_fixed_point_and_tests_importin
 def test_assertions_on_the_stripped_prompt_keys_are_dropped() -> None:
     text = (
         'def test_p():\n    data = load()\n    assert data["type"] == "prompt"\n'
-        '    assert data[\'extends\'] == "agent-connector-sdk:base"\n    assert data["compose"] == "append"\n'
+        '    assert data[\'extends\'] == "scion-sdk:base"\n    assert data["compose"] == "append"\n'
         '    assert "extends" in data\n    assert data["identity"]["role"]\n'
     )
     new = cm.drop_prompt_key_assertions(text)

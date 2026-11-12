@@ -30,11 +30,11 @@ CQ = "MEDULLA-CQ-ORCH-R001"
 
 def _fixture() -> list[dict]:
     return [
-        _row("MEDULLA-A-R001", "epistemic-graph"),
+        _row("MEDULLA-A-R001", "medulla"),
         _row("AR-A-R001", "arbora", depends_on=["MEDULLA-A-R001"]),
         _row("AR-A-R002", "arbora", depends_on=["MEDULLA-A-R001", "NOWHERE-R001"]),
         _row("AR-A-R003", "arbora"),
-        _row(CQ, "epistemic-graph", depends_on=["AR-A-R001"]),
+        _row(CQ, "medulla", depends_on=["AR-A-R001"]),
     ]
 
 
@@ -46,7 +46,7 @@ def test_aggregate_over_repositories() -> None:
     assert got["frontier"][0] == "MEDULLA-A-R001" and "AR-A-R001" not in got["frontier"]
     assert got["unserved"] == ["AR-A-R002", "AR-A-R003"]
     assert [q["id"] for q in got["questions"]] == [CQ]
-    assert [s["repo"] for s in got["bundles"][0]["steps"]] == ["epistemic-graph", "arbora"]
+    assert [s["repo"] for s in got["bundles"][0]["steps"]] == ["medulla", "arbora"]
 
 
 # spec: PIPE-CONNSPEC-R016
@@ -79,7 +79,7 @@ def test_cq_path_explanation_does_not_claim_missing_architecture_links() -> None
     assert "not linked to a CQ" not in template
     assert "Not linked to a competency question" not in template
     rows = _fixture()
-    rows.append(_row("TUIG-RUNTIME-R099", "agent-terminal-ui", depends_on=[CQ]))
+    rows.append(_row("TUIG-RUNTIME-R099", "tuig", depends_on=[CQ]))
     delivery = aggregate(rows)
     assert "TUIG-RUNTIME-R099" in delivery["unserved"]
     assert delivery["scores"]["TUIG-RUNTIME-R099"]["cqs"] == []

@@ -12,7 +12,7 @@ pytestmark = pytest.mark.spec("PIPE-GATES-R013")
 
 _PYPROJECT = """[project]
 name = "demo-api"
-dependencies = ["agent-connector-sdk[mcp]>=0.3.11", "pymongo>=4.19.0"]
+dependencies = ["scion-sdk[mcp]>=0.3.11", "pymongo>=4.19.0"]
 [project.optional-dependencies]
 all = ["pymongo>=4.19.0", "gql[requests]>=4.4.0"]
 """
@@ -62,7 +62,7 @@ def test_sdk_usage_is_clean(tmp_path: Path) -> None:
         "headers['Retry-After'] = str(seconds)\n"
         "response: httpx.Response\n"
     )
-    pyproject = '[project]\nname = "demo-api"\ndependencies = ["agent-connector-sdk[db]>=0.3.11"]\n'
+    pyproject = '[project]\nname = "demo-api"\ndependencies = ["scion-sdk[db]>=0.3.11"]\n'
     assert sdk_conformance.findings(_connector(tmp_path, source, pyproject=pyproject)) == []
 
 
@@ -83,7 +83,7 @@ def test_extra_pins_are_one_finding_per_package_and_skip_graphql(tmp_path: Path)
     assert len(found) == 1
     assert "[project.dependencies]" in found[0].location
     assert "[project.optional-dependencies.all]" in found[0].location
-    assert "agent-connector-sdk[db]" in found[0].message
+    assert "scion-sdk[db]" in found[0].message
 
 
 def test_tests_scripts_and_non_connectors_are_skipped(tmp_path: Path) -> None:
@@ -101,7 +101,7 @@ def test_tests_scripts_and_non_connectors_are_skipped(tmp_path: Path) -> None:
 
     sdk = tmp_path / "sdk"
     sdk.mkdir()
-    _connector(sdk, "import requests\n", pyproject='[project]\nname = "agent-connector-sdk"\ndependencies = []\n')
+    _connector(sdk, "import requests\n", pyproject='[project]\nname = "scion-sdk"\ndependencies = []\n')
     assert sdk_conformance.findings(sdk) == []
 
 

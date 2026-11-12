@@ -854,43 +854,14 @@ def test_verified_context_stages_from_external_caller(tmp_path: Path, profile: s
         assert (f"{argument}={case['inputs'][key]}\n" in output) == bool(case["inputs"][key])
 
 
-def test_verified_context_accepts_branded_meristem_and_medulla_wheels(tmp_path: Path) -> None:
-    case = runtime_case(tmp_path, ROOT, profile="arbora")
-    manifest = case["manifest"]
-    for item in manifest["profile"]["first_party"]:
-        if item["distribution"] == "agent-utilities":
-            item["distribution"] = "meristem"
-        elif item["distribution"] == "epistemic-graph":
-            item["distribution"] = "medulla"
-    for item in manifest["artifacts"]:
-        if item["distribution"] == "agent-utilities":
-            item["distribution"] = "meristem"
-        elif item["distribution"] == "epistemic-graph":
-            item["distribution"] = "medulla"
-    manifest["profile"]["root_requirement"] = manifest["profile"]["root_requirement"].replace(
-        "agent-utilities", "meristem"
-    )
-    lock = case["download"] / "requirements.lock"
-    lock.write_text(
-        lock.read_text().replace("agent-utilities", "meristem").replace("epistemic-graph", "medulla"), encoding="utf-8"
-    )
-    manifest["requirements_lock"]["sha256"] = case["inputs"]["lock-sha256"] = hashlib.sha256(
-        lock.read_bytes()
-    ).hexdigest()
-    freeze_runtime(case)
-    assert run_runtime_helper(case, "prepare").returncode == 0
-    result = run_runtime_helper(case)
-    assert result.returncode == 0, result.stderr
-
-
-def test_verified_context_accepts_old_repository_receipt_for_renamed_caller(tmp_path: Path) -> None:
+def test_verified_context_refuses_a_retired_repository_receipt_for_a_renamed_caller(tmp_path: Path) -> None:
     case = runtime_case(tmp_path, ROOT, profile="arbora")
     case["environment"]["CALLER_REPOSITORY"] = "Example/meristem"
     case["manifest"]["artifacts"][0]["source"]["repository"] = "Example/agent-utilities"
     case["manifest"]["profile"]["first_party"][0]["repository"] = "Example/agent-utilities"
     freeze_runtime(case)
     result = run_runtime_helper(case)
-    assert result.returncode == 0, result.stderr
+    assert result.returncode != 0
 
 
 @pytest.mark.parametrize("profile", ["arbora", "connector/gitlab-api/mcp", "connector/gitlab-api/agent"])
@@ -1155,10 +1126,8 @@ def test_version_tags_keep_existing_tags_and_publish_from_main_only() -> None:
         "type=sha",
         f"type=raw,value=latest,enable=${{{{ {on_main} }}}}",
         f"type=raw,value=${{{{ steps.version.outputs.version }}}},enable=${{{{ {on_main_version} }}}}",
-        "type=raw,value=${{ steps.version.outputs.version }}-sdk${{ inputs.sdk_version }},"
-        "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution != 'scion-sdk' }}",
-        "type=raw,value=${{ steps.version.outputs.version }}-sdk-${{ inputs.sdk_distribution }}-${{ inputs.sdk_version }},"
-        "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' && inputs.sdk_distribution == 'scion-sdk' }}",
+        "type=raw,value=${{ steps.version.outputs.version }}-sdk-scion-sdk-${{ inputs.sdk_version }},"
+        "enable=${{ inputs.sdk_version != '' && steps.version.outputs.version != '' }}",
     ]
 
 

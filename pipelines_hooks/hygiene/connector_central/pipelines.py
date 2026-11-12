@@ -27,7 +27,7 @@ import yaml
 import pipelines_hooks
 from pipelines_hooks.connector import api_parity, codespell, container, generate, project, security
 from pipelines_hooks.core.distributions import SDK as SDK_ROLE
-from pipelines_hooks.core.distributions import aliases
+from pipelines_hooks.core.distributions import distribution
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.hygiene.connector_central import container_generations as generations
 from pipelines_hooks.hygiene.connector_central.base import Ctx, rule
@@ -686,8 +686,7 @@ def _normalise_dockerfile(text: str, new: bool) -> str:
         if new and ln == "ARG SDK_VERSION=":
             continue
         if new:
-            for sdk in aliases(SDK_ROLE):
-                ln = ln.replace(f" --upgrade-package {sdk}", "")
+            ln = ln.replace(f" --upgrade-package {distribution(SDK_ROLE)}", "")
         out.append(ln)
     return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip("\n") + "\n"
 

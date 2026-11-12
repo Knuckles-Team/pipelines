@@ -28,7 +28,7 @@ NON_FUNCTIONAL_FACTOR = 0.5
 
 #: First-party release tiers: a bundle's steps run in this order. Repositories
 #: outside it (connectors) go last. The canonical slugs are GitHub identities;
-#: :func:`train_rank` accepts their retired aliases as well.
+#: :func:`train_rank` ranks only these slugs.
 FIRST_PARTY_TIERS = (
     ("medulla",),
     ("scion-sdk",),
@@ -36,9 +36,6 @@ FIRST_PARTY_TIERS = (
     ("arbora", "graph-os"),
     ("overstory", "tuig", "axil"),
 )
-# Compatibility name for callers that still import the original release-train
-# constant. It intentionally points at the canonical first-party tiers.
-TRAIN = FIRST_PARTY_TIERS
 
 
 class Node(NamedTuple):

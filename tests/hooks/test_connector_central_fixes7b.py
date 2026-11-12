@@ -109,18 +109,18 @@ def test_two_constants_of_the_same_name_are_reviewed_not_guessed(tmp_path: Path)
 
 @pytest.mark.spec("PIPE-GATES-R016.67")
 def test_l4_extras_of_a_dropped_one_element_extra_move_to_the_pin(tmp_path: Path) -> None:
-    """audio-transcriber: `mcp = ["agent-connector-sdk[mcp,stream]>=0.4.1"]` carried `stream` (websockets) for the client."""
+    """audio-transcriber: `mcp = ["scion-sdk[mcp,stream]>=0.4.1"]` carried `stream` (websockets) for the client."""
     pyproject = PYPROJECT.replace(
         'version = "1.0.0"\n',
-        'version = "1.0.0"\ndependencies = ["agent-connector-sdk[mcp]>=0.4.1,<1.0.0", "faster-whisper>=1.2"]\n\n'
-        '[project.optional-dependencies]\nmcp = ["agent-connector-sdk[mcp,stream]>=0.4.1,<1.0.0"]\ntest = ["pytest>=9"]\n',
+        'version = "1.0.0"\ndependencies = ["scion-sdk[mcp]>=0.4.1,<1.0.0", "faster-whisper>=1.2"]\n\n'
+        '[project.optional-dependencies]\nmcp = ["scion-sdk[mcp,stream]>=0.4.1,<1.0.0"]\ntest = ["pytest>=9"]\n',
     )
     ctx = _repo(tmp_path, {"pyproject.toml": pyproject})
     wave1.l4(ctx)
     import tomllib
 
     data = tomllib.loads((ctx.root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-    assert data["dependencies"][0].startswith("agent-connector-sdk[mcp,stream]>=0.5.4")
+    assert data["dependencies"][0].startswith("scion-sdk[mcp,stream]>=0.5.6")
     assert "mcp" not in data["optional-dependencies"]
 
 

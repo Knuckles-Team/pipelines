@@ -19,7 +19,7 @@ PYPROJECT = """[project]
 name = "demo-mcp"
 version = "1.2.3"
 description = "demo"
-dependencies = ["agent-connector-sdk[mcp]>=0.5.4,<0.6.0"]
+dependencies = ["scion-sdk[mcp]>=0.5.4,<0.6.0"]
 
 [project.optional-dependencies]
 mcp = []
@@ -71,7 +71,7 @@ def old_docker(root: Path) -> None:
     """Commit the container files as the pre-migration generator wrote them (no SDK pin lines, old header)."""
     (root / "docker").mkdir(exist_ok=True)
     for name, text in container.render(root).items():
-        text = text.replace("ARG SDK_VERSION=\n", "").replace(" --upgrade-package agent-connector-sdk", "")
+        text = text.replace("ARG SDK_VERSION=\n", "").replace(" --upgrade-package scion-sdk", "")
         text = text.replace("# GENERATED at build time", "# GENERATED from the old script")
         (root / "docker" / name).write_text(text, encoding="utf-8")
 

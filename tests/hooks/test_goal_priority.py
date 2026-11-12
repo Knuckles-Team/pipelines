@@ -43,10 +43,10 @@ def test_prose_dependency_forms_resolve_relative_and_full_ids() -> None:
 def _graph() -> dict[str, Node]:
     cq1, cq2 = "MEDULLA-CQ-ORCH-R001", "MEDULLA-CQ-ORCH-R002"
     return {
-        cq1: Node(cq1, "epistemic-graph", "SPECIFIED", ("ARB-R1",)),
-        cq2: Node(cq2, "epistemic-graph", "VERIFIED", ("SDK-R1",)),
-        "EG-R1": Node("EG-R1", "epistemic-graph", "SPECIFIED", ()),
-        "SDK-R1": Node("SDK-R1", "agent-connector-sdk", "SPECIFIED", ("EG-R1",)),
+        cq1: Node(cq1, "medulla", "SPECIFIED", ("ARB-R1",)),
+        cq2: Node(cq2, "medulla", "VERIFIED", ("SDK-R1",)),
+        "EG-R1": Node("EG-R1", "medulla", "SPECIFIED", ()),
+        "SDK-R1": Node("SDK-R1", "scion-sdk", "SPECIFIED", ("EG-R1",)),
         "ARB-R1": Node("ARB-R1", "arbora", "SPECIFIED", ("SDK-R1", "EG-R1")),
         "DONE-R1": Node("DONE-R1", "arbora", "VERIFIED", ()),
         "GATE-R1": Node("GATE-R1", "pipelines", "SPECIFIED", ("DONE-R1",), functional=False),
@@ -107,6 +107,6 @@ def test_bundle_orders_steps_by_release_train() -> None:
     assert len(got) == 1  # GATE-R1 and BARE-R1 have no cross-repository edge
     bundle = got[0]
     assert bundle["priority"] == 28
-    assert [s["repo"] for s in bundle["steps"]] == ["epistemic-graph", "agent-connector-sdk", "arbora", "gitlab-api"]
+    assert [s["repo"] for s in bundle["steps"]] == ["medulla", "scion-sdk", "arbora", "gitlab-api"]
     first = bundle["steps"][0]["rows"][0]
     assert first["id"] == "EG-R1" and first["unblocks"] == ["ARB-R1", "CONN-R1", "MEDULLA-CQ-ORCH-R001", "SDK-R1"]

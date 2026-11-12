@@ -9,22 +9,7 @@ canonical new slug without rewriting stable IDs or persisted references.
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
-from types import MappingProxyType
 from urllib.parse import urlsplit
-
-# Old repository slug -> canonical GitHub slug.  The keys are compatibility
-# inputs only; stable ontology and specification prefixes remain unchanged.
-REPOSITORY_ALIASES: Mapping[str, str] = MappingProxyType(
-    {
-        "epistemic-graph": "medulla",
-        "agent-connector-sdk": "scion-sdk",
-        "agent-utilities": "meristem",
-        "agent-webui": "overstory",
-        "agent-terminal-ui": "tuig",
-        "geniusbot": "axil",
-    }
-)
 
 _SLUG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 
@@ -46,11 +31,11 @@ def _parts(value: object) -> tuple[str, ...]:
 
 
 def canonical_repository(value: object) -> str:
-    """Canonicalize a repository slug while preserving a namespace when given."""
+    """Normalize a repository ref to ``owner/slug`` (or the bare slug)."""
     parts = _parts(value)
     if not parts:
         return ""
-    slug = REPOSITORY_ALIASES.get(parts[-1].casefold(), parts[-1])
+    slug = parts[-1]
     if len(parts) >= 2:
         return f"{parts[-2]}/{slug}"
     return slug
@@ -63,7 +48,7 @@ def repository_slug(value: object) -> str:
 
 
 def repository_matches(left: object, right: object) -> bool:
-    """Compare repository refs with old/new aliases and case differences."""
+    """Compare repository refs ignoring case differences."""
     left_parts = canonical_repository(left).casefold().split("/")
     right_parts = canonical_repository(right).casefold().split("/")
     if not left_parts or not right_parts:

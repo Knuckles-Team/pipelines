@@ -9,7 +9,7 @@ description = "Agent package for communicating with LeanIX Enterprise Architectu
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12"
-dependencies = [ "agent-connector-sdk[mcp,graphql]>=0.4.1,<1.0.0", "epistemic-graph>=2.27.1,<3", "requests>=2.34.2",]
+dependencies = [ "scion-sdk[mcp,graphql]>=0.4.1,<1.0.0", "epistemic-graph>=2.27.1,<3", "requests>=2.34.2",]
 license = "MIT"
 license-files = ["LICENSE"]
 
