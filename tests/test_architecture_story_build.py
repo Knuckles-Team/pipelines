@@ -41,7 +41,7 @@ def computed_status(monkeypatch):
 
 def fake_api():
     docs = {
-        "specs/demo/requirements.md": f"| `{A}` | **First**. | tests |\n| `{B}` | **Second**. Depends-on: `{A}`. | tests |\n",
+        "specs/demo/requirements.md": f"| `{A}` | **First**. | tests |\n| `{B}` | **Second**. Depends: `{A}`. | tests |\n",
         "specs/demo/plan.md": "# Exact frozen plan",
     }
     base = build.API + "pipelines"

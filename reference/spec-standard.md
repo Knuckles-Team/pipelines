@@ -208,7 +208,7 @@ Every requirement row carries a `Depends:` clause in its Requirement cell, after
 - A prerequisite that no row defines, such as a type, method, table or contract nobody has specified, gets its own row first. The dependent row then lists that row. A row never depends on prose.
 - A design question is not a dependency. Decide it from the constitution and record the decision in `research.md` or `plan.md`; a row that waits on an open question carries a `[NEEDS CLARIFICATION: ...]` marker instead.
 - A rollup parent lists its children or `none`. A child lists the siblings it needs, not its parent.
-- The `Depends:` clause replaces the older `Depends on:` and `Depends-on:` spellings. Delivery tooling still reads the older spellings, but only `Depends:` satisfies the gate; rewrite an older row when it is next touched.
+- `Depends:` is the only spelling. Delivery tooling and the gate read no other.
 - *Gate*: `spec-standard` fails a `Depends:` ID that names no active row and any dependency cycle among a repository's rows. It checks an ID of another repository against the cross-repository index when `PIPELINES_SPEC_ID_INDEX` names one, and accepts it otherwise. A row with no `Depends:` clause is a warning (`ADV`, one line per spec) until 2027-01-01. From that date it is an error for every active row.
 
 ## Requirements checklist
@@ -364,10 +364,10 @@ A row is implementation-ready when a writer can deliver it without a design deci
 
 ## Priority from competency questions
 
-A competency question is an ordinary spec row whose ID starts with `MEDULLA-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends-on` edges, including edges across repositories. List prerequisites in the requirement cell:
+A competency question is an ordinary spec row whose ID starts with `MEDULLA-CQ-`. No registry, goal type, or `Serves:` field exists. A row serves a competency question when that question row reaches it through `Depends:` edges, including edges across repositories. List prerequisites in the requirement cell:
 
 ```markdown
-| `X-R001` | **Title.** Text. Depends-on: MEDULLA-FOO-R004, SCION-BAR-R002. | Verification |
+| `X-R001` | **Title.** Text. Depends: MEDULLA-FOO-R004, SCION-BAR-R002. | Verification |
 ```
 
 The organization architecture page computes `priority` for each open row. No `status.json` carries it and a person never edits it.
