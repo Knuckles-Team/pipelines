@@ -193,10 +193,10 @@
 - [x] T176 PIPE-GATES-R016.117 A long token is scanned in overlapping windows, not refused.
 - [x] T177 PIPE-GATES-R016.118 A requirement-row token and a repository-relative path are not machine data.
 - [x] T178 PIPE-GATES-R016.119 A local account name is contextual, not a bare word.
-- [ ] T179 PIPE-GATES-R017 Required runtime manifest gate.
+- [x] T179 PIPE-GATES-R017 Required runtime manifest gate.
 - [ ] T180 PIPE-GATES-R018 No duplicate worker policy in ingest-worker specs.
 - [ ] T181 PIPE-GATES-R019 Hydration journey gate through the harness.
-- [ ] T182 PIPE-GATES-R020 Nightly attached-source conformance workflow.
+- [x] T182 PIPE-GATES-R020 Nightly attached-source conformance workflow.
 - [ ] T183 PIPE-GATES-R021 Build gate for the root library and its lint profiles.
 - [x] T184 PIPE-GATES-R022 Spec directories accept the optional design artifacts.
 - [x] T185 PIPE-GATES-R024 The spec narrative uses prioritized stories and labelled criteria.
