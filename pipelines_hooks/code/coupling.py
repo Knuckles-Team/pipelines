@@ -11,12 +11,17 @@ import argparse
 import ast
 import re
 from pathlib import Path
+from typing import NamedTuple
 
 from pipelines_hooks.core.config import load_config, string_tuple
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.paths import relative_to_root, under_any
 from pipelines_hooks.core.tracked import tracked_paths
+
+
+#: A Cargo package name.
+CRATE = r"[A-Za-z0-9][A-Za-z0-9_-]*"
 
 
 def _prefixes(value: object, label: str) -> tuple[str, ...]:
@@ -51,6 +56,40 @@ def _layers(value: object) -> list[tuple[str, ...]]:
     if len(set(flat)) != len(flat):
         raise CannotRun("coupling.layers names a unit twice")
     return layers
+
+
+class Layer(NamedTuple):
+    """One stability layer: a name and the units it holds."""
+
+    name: str
+    units: tuple[str, ...]
+
+
+def load_layer_entries(value: object, label: str, unit_pattern: str) -> tuple[Layer, ...]:
+    """An array of ``{name, units}`` tables, most stable first; any other shape is a policy fault."""
+    if not isinstance(value, list) or not value:
+        raise CannotRun(f"{label} must be a non-empty array of tables with name and units")
+    layers: list[Layer] = []
+    seen: dict[str, int] = {}
+    for number, entry in enumerate(value):
+        where = f"{label}[{number}]"
+        if not isinstance(entry, dict) or set(entry) != {"name", "units"}:
+            raise CannotRun(f"{where}: an entry must be a table with exactly the keys name and units")
+        name, units = entry["name"], entry["units"]
+        if not isinstance(name, str) or not re.fullmatch(r"[a-z][a-z0-9-]*", name):
+            raise CannotRun(f"{where}: name must match ^[a-z][a-z0-9-]*$")
+        if any(layer.name == name for layer in layers):
+            raise CannotRun(f"{where}: duplicate name {name}")
+        if not isinstance(units, list) or not units:
+            raise CannotRun(f"{where}: units must be a non-empty array")
+        for unit in units:
+            if not isinstance(unit, str) or not re.fullmatch(unit_pattern, unit):
+                raise CannotRun(f"{where}: invalid unit name {unit!r}")
+            if unit in seen:
+                raise CannotRun(f"{where}: unit {unit} is already in entry {seen[unit]}")
+            seen[unit] = number
+        layers.append(Layer(name, tuple(units)))
+    return tuple(layers)
 
 
 def _unit_name(module: str, depth: int) -> str:
@@ -182,6 +221,14 @@ def scan(root: Path) -> list[str]:
     denied = _prefixes(section.get("forbidden", []), "coupling.forbidden")
     allowed = _prefixes(section.get("allowed", []), "coupling.allowed")
     layers = _layers(section["layers"]) if "layers" in section else []
+    if "cargo_layers" in section:
+        from pipelines_hooks.code.coupling_cargo import cargo_layer_findings
+
+        cargo = cargo_layer_findings(root, load_layer_entries(section["cargo_layers"], "coupling.cargo_layers", CRATE))
+        if not denied and not layers:
+            return cargo
+    else:
+        cargo = []
     if not denied and not layers:
         raise CannotRun("coupling.forbidden must declare the consumer boundary")
     if any(not _matches(prefix, denied) or prefix in denied for prefix in allowed):
@@ -221,7 +268,7 @@ def scan(root: Path) -> list[str]:
         for package in packages:
             members = [item for item in parsed if under_any(item[0], (package,))]
             findings.extend(_layer_findings(members, layers, 1))
-    return findings
+    return findings + cargo
 
 
 def main(argv: list[str]) -> int:

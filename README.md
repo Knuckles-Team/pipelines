@@ -179,6 +179,24 @@ located findings; duplicate or malformed entries refuse with exit two. With
 layers = ["pkg.types", ["pkg.core", "pkg.store"], "pkg.api", "pkg"]
 ```
 
+A Cargo workspace layers its crates with `cargo_layers` (`PIPE-GATES-R088.2`):
+an array of `{name, units}` tables, most stable first, where units are package
+names. The gate reads `[dependencies]` and `[build-dependencies]` of every
+workspace member, plain and per target, and follows renamed dependencies to
+their package; `[dev-dependencies]` are not layered. An upward dependency is
+`COUPLING-UPWARD-CRATE`, a member in no entry `COUPLING-UNLAYERED-CRATE`, and a
+cycle `COUPLING-CRATE-CYCLE`. A malformed entry or a unit in two entries
+refuses with exit two. With only `cargo_layers` set, no Python package is scanned.
+
+```toml
+[[tool.pipelines_hooks.coupling.cargo_layers]]
+name = "core"
+units = ["my-types"]
+[[tool.pipelines_hooks.coupling.cargo_layers]]
+name = "engine"
+units = ["my-engine", "my-store"]
+```
+
 `pipelines-hook environment-config-only --root ROOT` (`PIPE-GATES-R089`) is
 opt-in for repositories that declare `[tool.pipelines_hooks.environment_config_only]
 declared = true`. A tracked script (executable bit or shebang, outside `tests`)
