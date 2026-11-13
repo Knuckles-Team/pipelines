@@ -38,9 +38,13 @@ def _first_sites(sites: list[Site]) -> dict[tuple[str, str], Site]:
 
 
 def _multi_assign(machine: Machine) -> list[Finding]:
-    """Rule 1: the status is assigned outside the one transition function."""
+    """Rule 1: the status is assigned outside the one transition function.
+
+    A holder whose enum owns the machine commits the enum's result in one
+    function of its own; a second assigning function is the finding.
+    """
     first = _first_sites(machine.assigners)
-    if machine.function is not None:
+    if machine.function is not None and not machine.via_enum:
         stray = [site for (_, function), site in first.items() if function != machine.function]
     else:
         stray = list(first.values()) if len(first) >= 2 else []
