@@ -2,7 +2,7 @@
 
 Governing spec: [spec.md](spec.md).
 
-Each row is one requirement. A child row `.n` is one five-minute unit of work. A row names the file it touches, its caller chain, its Shape sentence and the test that proves it as `path::name`, and its `Depends:` clause. The generator sets each row's state in `status.json`.
+Each row is one requirement. A child row `.n` is one verifiable part of its parent row. A row names the file it touches, its caller chain, its Shape sentence and the test that proves it as `path::name`, and its `Depends:` clause. The generator sets each row's state in `status.json`.
 
 | ID | Requirement | Acceptance |
 |---|---|---|

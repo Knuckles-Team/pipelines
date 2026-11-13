@@ -232,7 +232,7 @@ Data flow: scheduled workflow -> `pipelines-hook mutation-gaps` -> `main` (`pipe
 - Failure. An absent runner raises `Unavailable`; `run_gate` at `pipelines_hooks/cli.py:101` fails closed in CI.
 - Reused. The `GATES` registry and `run_gate` error mapping. New: the runner seam and the report.
 - Decision. The run is scheduled and covers core modules only. DECIDED.
-- Rejected: running mutation tests on every commit. The cost exceeds the five-minute gate budget.
+- Rejected: running mutation tests on every commit. The cost exceeds the fast-gate budget.
 - Cross-repository. None.
 
 ### Located evidence (PIPE-PAGES-R020)

@@ -6,7 +6,7 @@ A maintainer of any connector or agent package sees the same spec-delivery metho
 
 ### User Story 1 - Connector maintainer adopts the method (Priority: P1)
 
-A connector maintainer wants the generated status, the three spec hooks, the Pages caller and the rapid-delivery skill section, so that the connector is checked and published like a core repository.
+A connector maintainer wants the generated status, the three spec hooks, the Pages caller and the delivery-contract skill section, so that the connector is checked and published like a core repository.
 
 **Acceptance Scenarios**:
 
@@ -31,7 +31,7 @@ A lane agent wants the gate hooks and the trailer rules to behave the same in ev
 ## Functional requirements
 
 - **FR-1 — One standard.** PIPE-CONNSPEC-R001 to PIPE-CONNSPEC-R005 state the standard by pointing at the core implementation: generated status and hooks, test bindings, the page, the reference callers, and the lane contract.
-- **FR-2 — Per-connector adoption.** PIPE-CONNSPEC-R101 to PIPE-CONNSPEC-R174 each cover one of the 74 connector repositories listed under the agents section of the workspace manifest, with four children: a generated `specs/` tree, the three hooks, the Pages caller, and the rapid-delivery skill section.
+- **FR-2 — Per-connector adoption.** PIPE-CONNSPEC-R101 to PIPE-CONNSPEC-R174 each cover one of the 74 connector repositories listed under the agents section of the workspace manifest, with four children: a generated `specs/` tree, the three hooks, the Pages caller, and the delivery-contract skill section.
 
 ## Assumptions
 

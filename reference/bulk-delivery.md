@@ -1,25 +1,27 @@
 # Bulk delivery (bulk-delivery)
 
-This standard governs how many spec rows are implemented at a high rate. It extends the [spec standard](spec-standard.md): every item below delivers rows that already exist in a repository's `specs/` tree.
+This reference recommends how to deliver many spec rows at a high rate. It extends the [spec standard](spec-standard.md): every item below delivers rows that already exist in a repository's `specs/` tree.
 
-## Separate the stages
+**Status of this document.** The only requirement on a delivery is the "Delivered means" section of the spec standard: behaviour fully implemented, wired to its production entry point, every named test level passing, bound to the row, verified by the gates. Everything about grouping, staging, item size, who delivers and in what order is a recommendation, and a team may deliver differently. Only the "Capacity hygiene" and "Disk hygiene" sections state resource rules for protecting hardware.
 
-Writing, validation and fixing are separate stages run by different workers.
+## Recommended: separate the stages
 
-1. Writers implement items and push branches. Writers never wait on builds, tests or CI.
+Writing, validation and fixing can be separate stages run by different workers.
+
+1. Writers implement items and push branches. Writers need not wait on builds, tests or CI; a later stage reports them.
 2. Validation workers build branches in batches.
 3. Fixers take only red results.
 4. Merges happen automatically on green.
 
-## Writer items
+## Writer items (recommended)
 
 - An item is one served-method slice: every row whose caller chain enters through the same served method or handler, or one library crate's family.
-- An item holds at most 8 rows from one spec, ordered bottom-up so the row that creates the method or type comes first.
+- An item can hold up to about 8 rows from one spec, ordered bottom-up so the row that creates the method or type comes first.
 - Slices chain: a later chunk builds on the earlier chunk's branch.
 - An item is ready when the items it depends on are written (pushed), not merged. It is stacked on their unmerged branches.
 - A dependency counts as done only when its re-queued remainders are written too.
 
-## Writer rules
+## Writer practice (recommended)
 
 - Read only the item's extracted packet: its rows, their test-spec and task lines, the caller chain and the cited contracts. Never read whole spec files.
 - Format with the build tool's formatter for each crate. Do not build or test locally.
@@ -28,7 +30,6 @@ Writing, validation and fixing are separate stages run by different workers.
 - Partial or unwritten rows are re-queued as new items, not dropped.
 - An item blocked by an unwritten prerequisite is released with that prerequisite named. The queue holds it until the prerequisite is written.
 - Never share a worktree.
-- Use short polling waits, never long blocking ones.
 
 ## Conventions every writer follows
 
@@ -48,7 +49,7 @@ Writing, validation and fixing are separate stages run by different workers.
 
 ## PR size
 
-One PR per green item or per green train. Aim for 20 to 100 rows per PR via trains.
+One PR per green item or per green train. A train can carry 20 to 100 rows per PR; this is a recommendation.
 
 ## Decisions
 

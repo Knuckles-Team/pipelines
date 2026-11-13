@@ -196,6 +196,18 @@ The gate also runs a cross-file analysis of each spec directory, the counterpart
 
 A behaviour row holds enough text to implement without an assumption. Each active row that is not a rollup parent carries a `Caller chain:` sentence (entry point to the new code), a `Shape:` sentence (files, types and the existing helper to reuse) and a served test as `path::name`. It also names, where they apply, the files, types and fields, refusal codes from the one taxonomy, the write path, the knobs with starting values, the `Depends:` clause (see Row dependencies) and each cross-repository seam by ID on both sides. A row never says TBD. The check fails a row the change adds and is advisory for any other row.
 
+## Delivered means
+
+The standard is opinionated about what a delivery must satisfy, not about how long it takes or who does it. A row is delivered when all of these hold:
+
+1. The row's behaviour is fully implemented, as its text says.
+2. It is wired to its production entry point, and a search finds a production caller outside the new code and its tests.
+3. Every test level the row's test-spec names passes.
+4. The tests are bound to the row.
+5. The gates verify it.
+
+There is no time limit, no unit-of-work size, and no rule about how many agents deliver a row or how they are scheduled. *Recommendation, not a rule:* group rows that share an entry point into one bundle, and deliver bundles in dependency order, producer first (see [bulk delivery](bulk-delivery.md)). Resource rules (build-host placement, no builds on the development host, concurrency caps that protect hardware) are separate and stay in force.
+
 ## Row dependencies
 
 Every requirement row carries a `Depends:` clause in its Requirement cell, after the `Shape:` sentence, because a row is one table line. The clause lists the row IDs the row needs before it can be delivered, in the same repository or another, or says `Depends: none`.
@@ -236,7 +248,7 @@ A page, explorer model, index or dashboard that maps by spec directory name chan
 
 ## Rows
 
-- One requirement per row. One row is one five-minute unit of work, or a rollup of such rows.
+- One requirement per row. One row is one verifiable behaviour, or a rollup of such rows. A row has no time or effort size.
 - A row names the file it touches and the test that proves it.
 - A cross-repository prerequisite is a row in the owning repository. The dependent row links it by ID.
 

@@ -2,7 +2,7 @@
 
 This constitution states the principles that every repository of the ecosystem follows. Each principle traces to a gate, a standard or a test that enforces it today. A `plan.md` Constitution Check answers the "Plan check" question of each article.
 
-**Version**: 1.13.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
+**Version**: 1.13.1 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
 
 ## Core Principles
 
@@ -873,7 +873,7 @@ A change follows one path from requirement to release.
 1. **Spec.** Search for the owner, then extend the `requirements.md` of that spec. Each row states one outcome and names the test that proves it.
 2. **Plan.** `plan.md` traces the row to the live call path and answers the Plan check of every article. It adds `contracts/`, `data-model.md`, `quickstart.md` and `research.md` only where they carry content (see the spec standard).
 3. **Tasks.** `tasks.md` lists numbered task lines, each naming a row ID.
-4. **Implement.** Work in the owning repository only, in units of about five minutes.
+4. **Implement.** Work in the owning repository only. A row is delivered when its behaviour is fully implemented, wired to its production entry point, passing every test level its test-spec names, bound to the row, and verified by the gates. How rows are grouped and ordered is a recommendation (see the [bulk delivery recommendations](https://github.com/Knuckles-Team/pipelines/blob/main/reference/bulk-delivery.md)), never a rule.
 5. **Gates.** The pre-commit and pre-push hooks run the fast set. Pull request CI runs the same pre-commit file and the affected tests.
 6. **Landing.** The commit carries a `Spec: <ID>` trailer. The pull request enables auto-merge, only where `main` requires `CI required`, and merges once that check passes. No title, body or commit holds a CI-skip marker.
 7. **Release bundle.** A maintainer pushes a `v*` tag. The tag publishes the package, the image and the Pages site from the published release.
@@ -898,4 +898,4 @@ Every contributor and agent works in isolation:
 - **Inheritance.** Each repository keeps `.specify/memory/constitution.md`, which states the organization version it inherits and links this file.
 - **Compliance.** A plan that cannot answer yes to a Plan check records the deviation. It records it in the section "Risks, alternatives, and decisions" with an owner.
 
-**Version**: 1.13.0 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
+**Version**: 1.13.1 | **Ratified**: 2026-10-31 | **Last amended**: 2026-11-12
