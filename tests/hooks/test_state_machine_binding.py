@@ -95,3 +95,34 @@ def test_a_missing_edge_test_names_the_edge() -> None:
         "pkg/job.py:5 Job SM-UNTESTED-EDGE rule 4: from=QUEUED event=start",
         "pkg/job.py:5 Job SM-UNTESTED-EDGE rule 4: from=InProgress event=finish",
     ]
+
+
+def test_rust_file_without_tests_yields_no_cases():
+    from pipelines_hooks.code.state_machine_tests import read_cases
+
+    assert read_cases("tests/helpers.rs", "pub fn helper() -> u8 { 1 }\n") == []
+    assert read_cases("tests/empty.rs", "") == []
+    machine = _machine()
+    bind_tests(machine, [("tests/helpers.rs", "pub fn helper() {}\n")])
+    assert machine.untested_edges == [("QUEUED", "start"), ("InProgress", "finish")]
+
+
+def test_rust_file_with_tests_pairs_each_body():
+    from pipelines_hooks.code.state_machine_tests import read_cases
+
+    source = "#[test]\nfn queued_start_runs() { a(); }\n#[test]\nfn in_progress_finish() { b(); }\n"
+    cases = read_cases("tests/job.rs", source)
+    assert [c.name for c in cases] == ["queued_start_runs", "in_progress_finish"]
+    assert "a()" in cases[0].body and "b()" not in cases[0].body
+    assert "b()" in cases[1].body
+
+
+def test_rust_tests_inside_mod_tests_with_attributes():
+    from pipelines_hooks.code.state_machine_tests import read_cases
+
+    source = (
+        "pub fn f() {}\n#[cfg(test)]\n#[allow(clippy::unwrap_used)]\nmod tests {\n    use super::*;\n"
+        "    #[test]\n    fn queued_start_runs() { f(); }\n"
+        "    #[tokio::test]\n    async fn in_progress_finish() { f(); }\n}\n"
+    )
+    assert [c.name for c in read_cases("src/job.rs", source)] == ["queued_start_runs", "in_progress_finish"]

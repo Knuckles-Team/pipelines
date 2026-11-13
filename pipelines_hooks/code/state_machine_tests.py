@@ -64,8 +64,11 @@ def _ids(node: ast.FunctionDef | ast.AsyncFunctionDef) -> tuple[str, ...]:
 
 def _rust_cases(source: str) -> list[Case]:
     matches = list(_RUST_TEST.finditer(source))
-    ends = [m.start() for m in matches[1:]] + [len(source)]
-    return [Case(m.group(1), (), source[m.start() : end]) for m, end in zip(matches, ends, strict=True)]
+    # Each case runs from its own attribute to the next one's; the last runs to the end.
+    # No matches means no cases (the ends list must pair one-to-one with the matches).
+    starts = [m.start() for m in matches]
+    ends = [*starts[1:], len(source)] if matches else []
+    return [Case(m.group(1), (), source[start:end]) for m, start, end in zip(matches, starts, ends, strict=True)]
 
 
 def names_edge(case: Case, source: str, event: str) -> bool:
