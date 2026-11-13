@@ -53,5 +53,5 @@ These rows have no bound test yet. Each names the test that will prove it.
 |---|---|
 | `PIPE-CONNSPEC-R001.1` | `tests/hooks/test_spec_trailers.py::test_dependency_only_bot_commit_passes` and `::test_bot_commit_touching_code_fails` |
 | `PIPE-CONNSPEC-R004` | `tests/test_core_reference_callers.py::test_core_callers_enable_spec_dashboard` |
-| `PIPE-CONNSPEC-R005` | `tests/test_core_reference_callers.py::test_core_development_skills_carry_rapid_delivery_section` |
+| `PIPE-CONNSPEC-R005` | `tests/test_core_reference_callers.py::test_core_development_skills_carry_delivery_contract_section`. This test is planned. |
 | `PIPE-CONNSPEC-R157.2` | `tests/test_connector_consumer_remeasure_20261028.py::test_repository_manager_hook_row_qualifies`, once the consumer lists all three hooks |
