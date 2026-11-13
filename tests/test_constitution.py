@@ -222,7 +222,7 @@ def test_the_state_machine_article_is_traced() -> None:
         assert rule in article
     version = VERSION.search(text)
     assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 8, 0)
-    assert "version 1.13.0" in TEMPLATE.read_text(encoding="utf-8")
+    assert "version 1.13.1" in TEMPLATE.read_text(encoding="utf-8")
 
 
 def test_the_design_principles_are_in_articles_xi_and_xxv() -> None:
@@ -295,4 +295,4 @@ def test_the_ontology_iri_article_is_traced() -> None:
         assert rule in article
     version = VERSION.search(text)
     assert version is not None and tuple(map(int, version.group(1).split("."))) >= (1, 12, 0)
-    assert "version 1.13.0" in TEMPLATE.read_text(encoding="utf-8")
+    assert "version 1.13.1" in TEMPLATE.read_text(encoding="utf-8")
