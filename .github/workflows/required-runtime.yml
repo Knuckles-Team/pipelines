@@ -1,0 +1,49 @@
+name: Required runtime
+
+# PIPE-GATES-R017. A consumer's pull-request workflow calls this with the path of
+# its own manifest of [[entry]] {crate, filter, features} tables. Each entry must
+# select at least one test (ZERO_SELECTED_TESTS otherwise) and every selected
+# test must pass; the selected names go to the job summary.
+#
+#   jobs:
+#     required-runtime:
+#       uses: Knuckles-Team/pipelines/.github/workflows/required-runtime.yml@main
+#       with:
+#         manifest: ci/required-runtime.toml
+
+on:
+  workflow_call:
+    inputs:
+      manifest:
+        description: Path of the caller's required-runtime manifest.
+        required: true
+        type: string
+      runner:
+        description: Runner label.
+        required: false
+        type: string
+        default: ubuntu-latest
+
+permissions:
+  contents: read
+
+jobs:
+  required-runtime:
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the gate script
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/pipelines-src"
+          git init -q "$src"
+          git -C "$src" fetch -q --depth 1 "https://github.com/$PIPELINES_REPOSITORY" "$PIPELINES_SHA"
+          git -C "$src" checkout -q FETCH_HEAD
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run the required runtime tests
+        env:
+          MANIFEST: ${{ inputs.manifest }}
+        run: python3 "$RUNNER_TEMP/pipelines-src/scripts/required_runtime.py" --manifest "$MANIFEST"
