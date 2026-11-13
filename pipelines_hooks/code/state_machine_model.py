@@ -113,6 +113,9 @@ class Machine:
     #: The one transition function and the refusal type it raises or returns.
     function: str | None = None
     refusal: str | None = None
+    #: True when the declaration was resolved from the status enum, which lives
+    #: in another file: the holder type then has one commit function of its own.
+    via_enum: bool = False
     assigners: list[Site] = field(default_factory=list)
     string_compares: list[Site] = field(default_factory=list)
     #: Lifecycle booleans and nullable lifecycle timestamps on the type.

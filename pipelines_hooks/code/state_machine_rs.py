@@ -126,6 +126,42 @@ def read_rust(path: str, source: str, *, strict: bool = True) -> list[Machine]:
     return machines
 
 
+def enum_declarations(path: str, source: str, *, strict: bool = True) -> dict[str, Machine]:
+    """Enum name -> a declaration-only ``Machine`` for each enum of this file that owns a machine.
+
+    The enum owns one when an ``impl`` of it has the transition function, or the
+    file has a ``LEGAL``/``TRANSITIONS``/``EDGES`` table beside it. The hook
+    copies the declaration onto every type, in any file, that holds the enum as
+    its status.
+    """
+    if _skipped(path):
+        return {}
+    tree = parse(path, source.encode("utf-8"), strict=strict)
+    items = list(_items(tree.root_node))
+    enums = {
+        _text(i.child_by_field_name("name")): tuple(
+            _text(v.child_by_field_name("name"))
+            for v in i.named_children[-1].named_children
+            if v.type == "enum_variant"
+        )
+        for i in items
+        if i.type == "enum_item"
+    }
+    consts = {
+        _text(i.child_by_field_name("name")): i.child_by_field_name("value")
+        for i in items
+        if i.type in {"const_item", "static_item"}
+    }
+    function = _transition(items)
+    found: dict[str, Machine] = {}
+    for name in enums:
+        machine = Machine("rust", path, 0, name, status_field="", status_type=name, status_kind="enum")
+        _declare(machine, consts, function.get(name), enums)
+        if machine.declared:
+            found[name] = machine
+    return found
+
+
 def loose_sites(path: str, source: str, *, strict: bool = True) -> list[Use]:
     """The uses whose receiver is not ``self``: the hook matches them crate-wide."""
     if _skipped(path):

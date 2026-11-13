@@ -111,6 +111,27 @@ class Report:
     partial: list[str]
 
 
+def _resolve_enum_machines(machines: list[Machine], declared: dict[str, Machine]) -> None:
+    """Give a type whose status enum owns the machine elsewhere that declaration.
+
+    The enum is matched by name across every scanned source (the holder and the
+    machine often sit in different modules or crates). A type that declares a
+    machine itself, or whose enum has none anywhere, is left as it is.
+    """
+    for machine in machines:
+        owner = declared.get(machine.status_type or "") if machine.status_kind == "enum" else None
+        if owner is None or machine.declared or machine.language != owner.language:
+            continue
+        machine.table, machine.edges, machine.function, machine.refusal = (
+            owner.table,
+            owner.edges,
+            owner.function,
+            owner.refusal,
+        )
+        machine.initial, machine.terminals, machine.states = owner.initial, owner.terminals, owner.states
+        machine.via_enum = True
+
+
 def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool]) -> tuple[list[Machine], list[str]]:
     """Read every source; attach each loose use to the same-unit types that declare its field.
 
@@ -121,6 +142,7 @@ def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool])
     machines: list[Machine] = []
     loose: list[Use] = []
     partial: list[str] = []
+    declared: dict[str, Machine] = {}
     for path in sources:
         source = _read(root, path)
         try:
@@ -134,12 +156,22 @@ def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool])
             partial.append(path)
         machines += found
         loose += uses
+        if path.endswith(".rs"):
+            declared |= _enum_declarations(path, source)
+    _resolve_enum_machines(machines, declared)
     for use in loose:
         for machine in machines:
             same_unit = _unit(root, use.site.file) == _unit(root, machine.file)
             if use.site.file != machine.file and same_unit and use.field == machine.status_field:
                 attach(machine, use)
     return machines, partial
+
+
+def _enum_declarations(path: str, source: str) -> dict[str, Machine]:
+    try:
+        return state_machine_rs.enum_declarations(path, source)
+    except CannotRun:
+        return state_machine_rs.enum_declarations(path, source, strict=False)
 
 
 def _changed(root: Path) -> set[str]:
