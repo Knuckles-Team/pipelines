@@ -1517,7 +1517,8 @@
       "arbora/host_bindings.py"
      ],
      "fam": [
-      "host-composition-boundary"
+      "host-composition-boundary",
+      "harness-plugins"
      ],
      "children": [
       {
