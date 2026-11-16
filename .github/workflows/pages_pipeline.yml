@@ -101,6 +101,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    # Every vendored contract script may import pipelines_hooks (skill_graph/model.py does), so the vendored
+    # contract is on the import path for the whole job, not per step.
+    env:
+      PYTHONPATH: ${{ github.workspace }}/.pipeline-contract
     steps:
       # Spec status is computed from Git history (Spec: trailers), so the checkout is full.
       - name: Checkout Repository
@@ -279,8 +283,6 @@ jobs:
       # status.json is never committed: compute it into the workspace for the readers below.
       - name: Compute spec status
         if: inputs.spec_dashboard_enabled || steps.explorer.outputs.enabled == 'true'
-        env:
-          PYTHONPATH: ${{ github.workspace }}/.pipeline-contract
         run: |
           set -euo pipefail
           python -c 'import sys; from pathlib import Path; from pipelines_hooks.specs.generator import generate, render; [p.write_text(render(d), encoding="utf-8") for p, d in generate(Path.cwd(), "HEAD").items()]'
