@@ -33,6 +33,9 @@ inputs:
       Release tag (vX.Y.Z) whose version the build stamps (PIPE-RELEASE-R018.1). Empty verifies the
       version committed in the reviewed pyproject.toml.
     default: ''
+  ref:
+    description: Release ref (refs/tags/vX.Y.Z) to verify in place of github.ref; empty uses github.ref (PIPE-RELEASE-R018.3).
+    default: ''
   root:
     description: Directory holding the package pyproject.toml.
     required: false
@@ -49,7 +52,7 @@ runs:
       if: inputs.mode == 'unpublished'
       shell: bash
       env:
-        RELEASE_REF: ${{ github.ref }}
+        RELEASE_REF: ${{ inputs.ref || github.ref }}
         RELEASE_ROOT: ${{ inputs.root }}
       run: python3 -I "${{ github.action_path }}/verify_release_version.py" --root "$RELEASE_ROOT" --ref "$RELEASE_REF"
     - name: Set up uv for published wheel verification
