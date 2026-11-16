@@ -44,10 +44,10 @@ jobs:
       - name: Compile Standalone Linux Binary
         run: |
           . .venv/bin/activate
-          pyinstaller --name geniusbot \
+          pyinstaller --name axil \
             --onefile --windowed \
-            --paths "./geniusbot" \
-            ./geniusbot/geniusbot.py
+            --paths "." \
+            ./axil/axil.py
 
       - name: Build Debian (.deb) Package
         run: |
@@ -64,17 +64,17 @@ jobs:
           # internal Version field) reflect the release tag — not the hardcoded default.
           cp packaging/linux/control pkg/DEBIAN/control
           sed -i "s/^Version:.*/Version: ${VERSION}/" pkg/DEBIAN/control
-          cp dist/geniusbot pkg/usr/bin/geniusbot
-          cp packaging/linux/geniusbot.desktop pkg/usr/share/applications/geniusbot.desktop
+          cp dist/axil pkg/usr/bin/axil
+          cp packaging/linux/axil.desktop pkg/usr/share/applications/axil.desktop
 
           # Use default icon if present, otherwise generic
-          if [ -f geniusbot/img/geniusbot.png ]; then
-            cp geniusbot/img/geniusbot.png pkg/usr/share/pixmaps/geniusbot.png
+          if [ -f axil/img/axil.png ]; then
+            cp axil/img/axil.png pkg/usr/share/pixmaps/axil.png
           else
-            touch pkg/usr/share/pixmaps/geniusbot.png
+            touch pkg/usr/share/pixmaps/axil.png
           fi
 
-          dpkg-deb --build pkg "dist/geniusbot_${VERSION}_amd64.deb"
+          dpkg-deb --build pkg "dist/axil_${VERSION}_amd64.deb"
 
       - name: Convert to RedHat (.rpm) Package
         run: |
@@ -82,7 +82,7 @@ jobs:
           sudo apt-get install -y alien
           # Convert deb to rpm using alien (dynamic version)
           VERSION=$(grep -m1 -E '^version' pyproject.toml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-          sudo alien --to-rpm --scripts "dist/geniusbot_${VERSION}_amd64.deb"
+          sudo alien --to-rpm --scripts "dist/axil_${VERSION}_amd64.deb"
           # Move generated rpm to dist
           mv *.rpm dist/
 
@@ -91,7 +91,7 @@ jobs:
         with:
           name: linux-artifacts
           path: |
-            dist/geniusbot
+            dist/axil
             dist/*.deb
             dist/*.rpm
 
@@ -116,11 +116,11 @@ jobs:
       - name: Compile Standalone Windows Binary
         run: |
           .venv\Scripts\activate
-          pyinstaller --name geniusbot `
+          pyinstaller --name axil `
             --onefile --windowed `
-            --paths "./geniusbot" `
-            --icon="./geniusbot/img/geniusbot.ico" `
-            ./geniusbot/geniusbot.py
+            --paths "." `
+            --icon="./axil/img/axil.ico" `
+            ./axil/axil.py
 
       - name: Compile Windows Installer (Inno Setup)
         run: |
@@ -138,8 +138,8 @@ jobs:
         with:
           name: windows-artifacts
           path: |
-            dist/geniusbot.exe
-            dist/geniusbot-setup-x64.exe
+            dist/axil.exe
+            dist/axil-setup-x64.exe
 
   publish-release:
     name: Publish Production Release
