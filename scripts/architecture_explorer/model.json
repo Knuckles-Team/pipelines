@@ -6229,6 +6229,24 @@
        ]
       }
      ]
+    },
+    {
+     "id": "eg.observe",
+     "label": "Engine Observability",
+     "role": "tasks, readiness, traces",
+     "desc": "Runtime introspection: the background-task registry, runtime state machines, progress proofs, readiness and startup reports, trace correlation and on-demand profiling.",
+     "fam": [
+      "engine-observability"
+     ]
+    },
+    {
+     "id": "eg.cluster",
+     "label": "Clustering Kernel",
+     "role": "centroid clustering",
+     "desc": "Centroid clustering of numeric vectors: seeding, training, assignment, run state, knobs and online centroid refresh. Training progress reports through the task registry.",
+     "fam": [
+      "clustering-kernel"
+     ]
     }
    ],
    "band": 4,
