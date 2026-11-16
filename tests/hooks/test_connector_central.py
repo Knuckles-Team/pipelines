@@ -381,12 +381,19 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
         "release_source_epoch": "${{ inputs.release_source_epoch }}",
         "sdk_version": "${{ needs.resolve.outputs.sdk_version }}",
         "source_ref": "${{ needs.resolve.outputs.source_ref }}",
+        "release_tag": "${{ needs.resolve.outputs.release_tag }}",
+        "stamp_version_from_tag": "${{ needs.resolve.outputs.release_tag != '' }}",
     }
-    # A version bump on main that is not released yet must never be rebuilt: the context is the latest v* tag.
+    # Main's version is never rebuilt: the context is the newest tag the package index serves,
+    # and the image takes that tag's version even when the tagged pyproject.toml lags it.
     checkout = next(step for step in resolve["steps"] if step.get("name") == "Checkout code")
     assert checkout["with"]["fetch-depth"] == 0 and checkout["with"]["fetch-tags"] is True
     tag = next(step for step in resolve["steps"] if step.get("id") == "latest-tag")
-    assert "git describe --tags --abbrev=0 --match 'v*'" in tag["run"]
+    assert "git describe" not in tag["run"]
+    assert "git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname" in tag["run"]
+    assert '"https://pypi.org/pypi/" + name + "/json"' in tag["run"] and 'grep -qxF -- "${candidate#v}"' in tag["run"]
+    assert resolve["outputs"]["release_tag"] == "${{ steps.latest-tag.outputs.tag }}"
+    assert 'version="${LATEST_TAG#v}"' in script
     released = next(step for step in resolve["steps"] if step.get("name") == "Checkout latest released tag")
     assert released["with"]["ref"] == "refs/tags/${{ steps.latest-tag.outputs.tag }}"
     assert released["with"]["path"] == ".latest-release"
@@ -397,6 +404,10 @@ def test_sdk_rebuild_workflow_skips_a_built_tag_and_rebuilds_through_the_contain
     build_steps = next(iter(container["jobs"].values()))["steps"]
     assert build_steps[0]["with"]["ref"] == "${{ inputs.source_ref || github.sha }}"
     assert container[True]["workflow_call"]["inputs"]["source_ref"]["default"] == ""
+    assert container[True]["workflow_call"]["inputs"]["release_tag"]["default"] == ""
+    stamp = next(step for step in build_steps if step.get("name") == "Stamp the tag version")
+    assert "inputs.release_tag != ''" in stamp["if"]
+    assert stamp["env"]["REF_NAME"] == "${{ inputs.release_tag || github.ref_name }}"
 
 
 # --- generated ontology artifacts ------------------------------------------------------------------------------

@@ -3,9 +3,10 @@ name: Connector SDK rebuild
 # PIPE-RELEASE-R001.14: a new SDK release reaches running connector images
 # with no commit in any connector. The caller triggers this workflow on a repository_dispatch
 # from the SDK release (type sdk-release, client_payload.sdk_version) and on a daily schedule
-# (the scheduled check). It resolves the SDK version, skips when the registry already holds
-# the image tagged <version>-sdk-scion-sdk-<sdk> and otherwise rebuilds both images through
-# container_pipeline.yml with the files rendered from pyproject.toml.
+# (the scheduled check). It resolves the SDK version and the newest published release (the newest
+# vMAJOR.MINOR.PATCH tag whose version the package index serves), skips when the registry already
+# holds the image tagged <version>-sdk-scion-sdk-<sdk> and otherwise rebuilds that release through
+# container_pipeline.yml, stamping the tag's version, with the files rendered from pyproject.toml.
 #
 # Caller contract (copy):
 #
@@ -103,6 +104,7 @@ jobs:
       sdk_version: ${{ steps.sdk.outputs.sdk_version }}
       stale: ${{ steps.sdk.outputs.stale }}
       source_ref: ${{ steps.sdk-context.outputs.source_ref }}
+      release_tag: ${{ steps.latest-tag.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,17 +113,36 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      # Main may carry a version bump that is not released yet, and no image or wheel
-      # exists for it. Outside a release repair the rebuild targets the latest released
-      # version: the newest v* tag.
-      - name: Find the latest released tag
+      # Main may carry a version bump that is not released yet, and a release tag may sit
+      # ahead of its own pyproject.toml (the tag carries the version). Outside a release repair
+      # the rebuild targets the newest published release: the newest vMAJOR.MINOR.PATCH tag
+      # whose version the package index serves (PIPE-RELEASE-R001.14).
+      - name: Find the newest published release tag
         id: latest-tag
         if: inputs.release_repair != true
         run: |
           set -euo pipefail
-          tag="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+          name="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["name"])')"
+          published="$(python3 -c '
+          import json, re, sys, urllib.error, urllib.request
+          name = re.sub(r"[-_.]+", "-", sys.argv[1]).lower()
+          try:
+              body = urllib.request.urlopen("https://pypi.org/pypi/" + name + "/json", timeout=60).read()
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise
+              body = b"{\"releases\": {}}"
+          print("\n".join(json.loads(body)["releases"]))
+          ' "$name")"
+          tag=''
+          while IFS= read -r candidate; do
+            if grep -qxF -- "${candidate#v}" <<< "$published"; then
+              tag="$candidate"
+              break
+            fi
+          done < <(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)
           if [[ -z "$tag" ]]; then
-            echo '::notice::No v* release tag exists yet; nothing to rebuild.'
+            echo "::notice::No v* release tag of ${name} is published on the package index yet; nothing to rebuild."
           fi
           printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
 
@@ -191,6 +212,7 @@ jobs:
           RELEASE_REPAIR: ${{ inputs.release_repair }}
           SDK_CONTEXT: ${{ steps.sdk-context.outputs.path }}
           SOURCE_REF: ${{ steps.sdk-context.outputs.source_ref }}
+          LATEST_TAG: ${{ steps.latest-tag.outputs.tag }}
         run: |
           set -euo pipefail
           if [[ "${RELEASE_REPAIR,,}" != true && -z "$SOURCE_REF" ]]; then
@@ -208,7 +230,12 @@ jobs:
             exit 1
           fi
           python3 -m pip install --quiet uv
-          version="$(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root "$SDK_CONTEXT" read)"
+          if [[ "${RELEASE_REPAIR,,}" != true ]]; then
+            # The release tag carries the version; its pyproject.toml may lag it.
+            version="${LATEST_TAG#v}"
+          else
+            version="$(uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root "$SDK_CONTEXT" read)"
+          fi
           sdk_tag="${version}-sdk-${sdk_distribution}-${sdk}"
           stale=true
           if [[ "${RELEASE_REPAIR,,}" != true ]] && docker buildx imagetools inspect "${IMAGE}:${sdk_tag}" > /dev/null 2>&1; then
@@ -232,6 +259,8 @@ jobs:
       release_source_epoch: ${{ inputs.release_source_epoch }}
       sdk_version: ${{ needs.resolve.outputs.sdk_version }}
       source_ref: ${{ needs.resolve.outputs.source_ref }}
+      release_tag: ${{ needs.resolve.outputs.release_tag }}
+      stamp_version_from_tag: ${{ needs.resolve.outputs.release_tag != '' }}
     secrets:
       DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
