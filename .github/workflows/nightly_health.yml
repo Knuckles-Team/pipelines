@@ -1,0 +1,37 @@
+name: nightly-health
+
+# PIPE-GATES-R103: a red scheduled run anywhere in the organization becomes one issue in its
+# repository (`Nightly <workflow> failing`, label nightly-red) with the run link, the failing
+# jobs and the first error lines; a green run closes it. One summary goes to the job summary.
+# It runs after the nightly schedules. It reads and writes other repositories with the
+# repository secret RULESET_AUDIT_TOKEN that the ruleset audit already uses (it needs issues
+# write on the organization's repositories); without it the workflow token reaches only this
+# repository, and the run fails listing every repository it could not read or write.
+on:
+  schedule:
+    - cron: '7 15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: nightly-health
+  cancel-in-progress: false
+
+jobs:
+  health:
+    name: health
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Report red scheduled runs as issues
+        env:
+          GH_TOKEN: ${{ secrets.RULESET_AUDIT_TOKEN || github.token }}
+          ORG: ${{ github.repository_owner }}
+        run: python3 -I scripts/nightly_health.py --org "$ORG"
