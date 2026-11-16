@@ -154,6 +154,7 @@ commit).
 - [ ] T072 PIPE-RELEASE-R018 One central connector pipeline; a `v*` tag publishes.
 - [ ] T073 PIPE-RELEASE-R018.1 The image guard verifies the version the tag stamps.
 - [ ] T100 PIPE-RELEASE-R018.2 A tag publishes only on a green gate for that commit.
+- [ ] T115 PIPE-RELEASE-R018.3 A green version bump on main tags and publishes itself.
 - [ ] T074 PIPE-RELEASE-R019 Connector release signs the live declaration.
 - [ ] T075 PIPE-RELEASE-R020 A release ships one delivered spec bundle.
 - [ ] T076 PIPE-RELEASE-R021 Release bundles are cross-repository spec manifests.

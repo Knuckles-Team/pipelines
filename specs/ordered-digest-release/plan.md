@@ -132,10 +132,26 @@ Acceptance: `uv run --frozen python -m pytest tests/test_gates_pipeline_contract
 ### Release drift (PIPE-RELEASE-R027)
 
 Data flow: schedule -> `.github/workflows/release_drift.yml` step `Compare main with the package index` -> `scripts/release_drift.py:main` (`release_drift.py:101`) -> `audit` (`release_drift.py:80`) -> `main_state` (`release_drift.py:53`) and `published` (`release_drift.py:69`) -> a list of repositories whose `main` version is unpublished.
-Decision: a release is a `v*` tag on a green `main` commit and every merged version is published (constitution article XXVIII rule 4). The audit is read-only and cuts no tag; the owner cuts the tag. Rejected: publishing from a `main` push, because the publish jobs run only on a `v*` tag push.
+Decision: a release is a `v*` tag on a green `main` commit and every merged version is published (constitution article XXVIII rule 4). The audit is read-only and cuts no tag; the connector pipeline tags a green new version on `main` (R018.3), and the owner tags the rest.
 Acceptance: `uv run --frozen python -m pytest tests/test_release_drift.py -q`.
 
 ### Amendments
+
+#### 2026-11-16 — PIPE-RELEASE-R018.3 and R001.14: the green head tags itself; the rebuild builds what was published
+
+Data flow: main push -> `connector_pipeline.yml` job `main` (full suite on the pushed commit) -> job `auto-tag` -> `scripts/release_autotag.py:main` -> `decide` -> `create_tag` (annotated tag through the API) -> output `tag` -> `publish-pypi` (`release-tag`) -> `publish-docker` (`release_tag`), and `publish-pages`.
+Decision: the run that proved the commit green publishes it. A tag created with the run's own token starts no new workflow run, so the same run publishes through inputs that take the place of the tag ref; no push or merge token enters the pipeline. A version that is not newer than every released version is never tagged, because tagging it would move `latest` back to an older release.
+Decision: the scheduled SDK rebuild builds the newest tag whose version the package index serves and stamps that tag's version, because a release tag carries its version while the tagged `pyproject.toml` may lag it.
+Rejected: a push token in every connector caller. It would put a write credential back into the fleet callers that R018 removed.
+
+- **Owner.** This repository: `scripts/release_autotag.py` and the connector, Python, container and SDK rebuild workflows. Connector callers change nothing.
+- **Cohesion.** `release_autotag.py` holds only the tag decision and the two API writes; publishing stays in the existing publish workflows.
+- **Dependency direction.** The workflows call the script from a checkout of this repository at the workflow commit; the script imports only the standard library.
+- **Interface depth.** One command, `release_autotag.py --root --repository --sha`, with one output, `tag`. The workflows add one optional tag input each.
+- **Special cases.** None per repository. An empty tag input keeps every existing tag-push and SDK rebuild path unchanged.
+- **State.** None held. The tag on the remote is the only state, and an existing tag ends the decision.
+- **Environment.** No new secret or setting: the run's own token, with the `contents: write` the caller already grants.
+
 
 #### 2026-10-12 — PIPE-RELEASE-R003 wheel output boundary
 

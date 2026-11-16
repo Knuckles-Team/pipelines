@@ -45,6 +45,14 @@ on:
         required: false
         type: boolean
         default: false
+      release-tag:
+        description: >-
+          A v* tag this run created on the triggering commit (PIPE-RELEASE-R018.3). It stands in
+          for github.ref, which a tag created with the run's own token never triggers. Empty uses
+          the triggering ref.
+        required: false
+        type: string
+        default: ''
     secrets:
       PYPI_API_TOKEN:
         required: true
@@ -67,7 +75,7 @@ jobs:
       - name: Require a release tag
         if: inputs.require-tag
         env:
-          REF: ${{ github.ref }}
+          REF: ${{ inputs.release-tag != '' && format('refs/tags/{0}', inputs.release-tag) || github.ref }}
         run: |
           if [[ ! "$REF" =~ ^refs/tags/v ]]; then
             echo "::error::require-tag is set and $REF is not a v* tag; publish only from a release tag."
@@ -100,9 +108,9 @@ jobs:
       # PIPE-RELEASE-R018: the tag carries the version. Main's pyproject lags until the sync
       # pull request merges, so the build workspace takes the tag's version before anything reads it.
       - name: Stamp the tag version
-        if: inputs.stamp-version-from-tag && startsWith(github.ref, 'refs/tags/v')
+        if: inputs.stamp-version-from-tag && (startsWith(github.ref, 'refs/tags/v') || inputs.release-tag != '')
         env:
-          REF_NAME: ${{ github.ref_name }}
+          REF_NAME: ${{ inputs.release-tag || github.ref_name }}
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
         run: |
@@ -117,6 +125,8 @@ jobs:
       - name: Verify release version
         id: version
         uses: ./.pipeline-contract/.github/actions/verify-release-version
+        with:
+          ref: ${{ inputs.release-tag != '' && format('refs/tags/{0}', inputs.release-tag) || '' }}
 
       - name: Setup Node.js
         if: steps.version.outputs.published != 'true' && (inputs.web-assets && hashFiles('package.json') != '')

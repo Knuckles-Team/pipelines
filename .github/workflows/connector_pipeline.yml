@@ -6,20 +6,24 @@ name: Connector pipeline
 #
 #   pull_request                      -> pr (connector_pr_pipeline.yml: gates, affected tests, image check)
 #   push to main                      -> org-site (spec updates reach the architecture page) + main
-#                                        (main_pipeline.yml, backward Python); never publishes
+#                                        (main_pipeline.yml, backward Python), then auto-tag: a new
+#                                        version on the green commit is tagged and published in
+#                                        this run (PIPE-RELEASE-R018.3)
 #   push of a v* tag                  -> release-gate (main_pipeline.yml on the tagged commit), then
 #                                        publish-pypi, then publish-docker, and publish-pages
 #   schedule / repository_dispatch /
 #   workflow_dispatch                 -> sdk-rebuild (connector_sdk_rebuild_pipeline.yml)
 #
-# A v* tag push is what publishes: nothing publishes from a main push. PIPE-RELEASE-R018.2: every
-# publishing job needs release-gate, the full main suite (tests, backward Python, supply-chain
-# audit) run on the tagged commit in the same run, so a tag on a red commit fails before any
-# PyPI, Docker or Pages publish. Write scopes sit on the
+# A v* tag is what publishes. PIPE-RELEASE-R018.2: on a pushed tag every publishing job needs
+# release-gate, the full main suite (tests, backward Python, supply-chain audit) run on the
+# tagged commit in the same run, so a tag on a red commit fails before any PyPI, Docker or Pages
+# publish. PIPE-RELEASE-R018.3: on a main push, auto-tag runs only after that same suite passed
+# (job main) and tags a new version with the run's own token. Such a tag starts no new run, so
+# this run publishes it, passing the tag where a pushed tag would supply github.ref. Write scopes sit on the
 # publishing jobs only; the workflow level is read-only. The caller passes secrets explicitly
 # (SC-GHA-006 forbids blanket secret inheritance) and carries the job-scoped permissions the
 # publishing jobs need (contents: write, pages: write, id-token: write). No workflow holds a
-# merge or push token: the owner arms merges and cuts releases with gh (scripts/release_connector.sh).
+# merge or push token: the owner arms merges with gh, and auto-tag holds contents: write for the tag only.
 
 on:
   workflow_call:
@@ -168,6 +172,42 @@ jobs:
       backward-python: ${{ inputs.backward-python }}
       setup-command: uv sync --frozen ${{ inputs.sync-args }}
 
+  # PIPE-RELEASE-R018.3: tag the green pushed commit when it carries a new version.
+  auto-tag:
+    name: auto-tag
+    needs: main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Checkout the pushed commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Checkout the tag script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /scripts/release_autotag.py
+          path: .pipeline-contract
+          persist-credentials: false
+
+      - name: Tag a new green version
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: python3 -I .pipeline-contract/scripts/release_autotag.py --root . --repository "$REPO" --sha "$SHA"
+
   release-gate:
     name: release-gate
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
@@ -182,8 +222,8 @@ jobs:
 
   publish-pypi:
     name: publish-pypi
-    needs: release-gate
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [release-gate, auto-tag]
+    if: (!cancelled() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && needs.release-gate.result == 'success') || (!cancelled() && needs.auto-tag.result == 'success' && needs.auto-tag.outputs.tag != '')
     permissions:
       contents: write
     uses: Knuckles-Team/pipelines/.github/workflows/python_pipeline.yml@main
@@ -191,6 +231,7 @@ jobs:
       connector: ${{ inputs.python-connector }}
       require-tag: true
       stamp-version-from-tag: true
+      release-tag: ${{ needs.auto-tag.outputs.tag }}
       runtime-profiles: ${{ inputs.runtime-profiles }}
       role-contract: ${{ inputs.role-contract }}
       web-assets: ${{ inputs.web-assets }}
@@ -199,14 +240,15 @@ jobs:
 
   publish-docker:
     name: publish-docker
-    needs: publish-pypi
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && inputs.container-enabled
+    needs: [publish-pypi, auto-tag]
+    if: ${{ !cancelled() && needs.publish-pypi.result == 'success' && inputs.container-enabled && (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || needs.auto-tag.outputs.tag != '') }}
     permissions:
       contents: read
     uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
     with:
       render_connector: ${{ inputs.render-connector }}
       stamp_version_from_tag: true
+      release_tag: ${{ needs.auto-tag.outputs.tag }}
     secrets:
       DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -218,7 +260,8 @@ jobs:
   # would release green with no image; this job fails that tag instead.
   image-required:
     name: image-required
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !inputs.container-enabled
+    needs: auto-tag
+    if: ${{ !cancelled() && !inputs.container-enabled && (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || needs.auto-tag.outputs.tag != '') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -239,8 +282,8 @@ jobs:
 
   publish-pages:
     name: publish-pages
-    needs: release-gate
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && inputs.pages-enabled
+    needs: [release-gate, auto-tag]
+    if: (!cancelled() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && needs.release-gate.result == 'success' && inputs.pages-enabled) || (!cancelled() && needs.auto-tag.result == 'success' && needs.auto-tag.outputs.tag != '' && inputs.pages-enabled)
     permissions:
       contents: read
       pages: write
@@ -275,7 +318,7 @@ jobs:
   ci-required:
     name: CI required
     if: always()
-    needs: [pr, org-site, main, release-gate, publish-pypi, publish-docker, image-required, publish-pages, sdk-rebuild]
+    needs: [pr, org-site, main, auto-tag, release-gate, publish-pypi, publish-docker, image-required, publish-pages, sdk-rebuild]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

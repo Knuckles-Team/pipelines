@@ -43,7 +43,7 @@ def test_central_pipeline_routes_each_event_to_its_jobs() -> None:
 
 
 @pytest.mark.spec("PIPE-RELEASE-R018")
-def test_nothing_publishes_on_a_main_push_and_a_v_tag_publishes() -> None:
+def test_a_main_push_publishes_only_through_the_auto_tag_and_a_v_tag_publishes() -> None:
     jobs = _jobs()
     publishers = {
         "publish-pypi": "python_pipeline",
@@ -52,10 +52,14 @@ def test_nothing_publishes_on_a_main_push_and_a_v_tag_publishes() -> None:
     }
     for name, workflow in publishers.items():
         assert jobs[name]["uses"].endswith(f"/{workflow}.yml@main")
-        assert jobs[name]["if"].startswith(TAG), name
-        assert "refs/heads/main" not in jobs[name]["if"]
+        condition = jobs[name]["if"]
+        assert TAG in condition, name
+        # The only other route is a tag the green main run created.
+        assert "refs/heads/main" not in condition
+        assert "needs.auto-tag.outputs.tag != ''" in condition, name
     assert jobs["publish-pypi"]["with"]["require-tag"] is True
-    assert jobs["publish-docker"]["needs"] == "publish-pypi"
+    assert jobs["publish-docker"]["needs"] == ["publish-pypi", "auto-tag"]
+    assert "needs.publish-pypi.result == 'success'" in jobs["publish-docker"]["if"]
     for name in ("pr", "org-site", "main", "sdk-rebuild"):
         assert jobs[name]["uses"].split("/")[-1].split("@")[0] not in {f"{w}.yml" for w in publishers.values()}
 
@@ -80,9 +84,13 @@ def test_every_publish_needs_the_full_gate_on_the_tagged_commit() -> None:
     publishers = {name for name in jobs if name.startswith("publish-")}
     assert publishers == {"publish-pypi", "publish-docker", "publish-pages"}
     for name in publishers:
-        assert "release-gate" in _ancestors(jobs, name), name
+        assert {"release-gate", "auto-tag", "main"} <= _ancestors(jobs, name), name
         # A publish never runs past a failed gate: no always()/failure() override in its condition.
         assert "always()" not in jobs[name]["if"] and "failure()" not in jobs[name]["if"], name
+    for name in ("publish-pypi", "publish-pages"):
+        condition = jobs[name]["if"]
+        assert f"{TAG} && needs.release-gate.result == 'success'" in condition, name
+        assert "needs.auto-tag.result == 'success'" in condition, name
     main_tests = _load(ROOT / ".github/workflows/main_pipeline.yml")["jobs"]
     assert {"tests", "backward", "supply-chain"} <= set(main_tests)
     for job in main_tests.values():
@@ -110,7 +118,8 @@ def test_central_pipeline_has_ci_required_and_read_only_workflow_permissions() -
         for name, job in document["jobs"].items()
         if any(scope == "write" for scope in job.get("permissions", {}).values())
     }
-    assert writers == {"publish-pypi", "publish-pages"}
+    assert writers == {"publish-pypi", "publish-pages", "auto-tag"}
+    assert document["jobs"]["auto-tag"]["permissions"] == {"contents": "write"}
     text = CENTRAL.read_text(encoding="utf-8")
     assert "pull_request_target" not in text and "secrets: inherit" not in text
 
@@ -182,9 +191,40 @@ def test_publish_stamps_the_tag_version_before_any_release_check() -> None:
 def test_a_container_deployed_connector_cannot_release_without_an_image() -> None:
     jobs = _jobs()
     guard = jobs["image-required"]
-    assert guard["if"] == TAG + " && !inputs.container-enabled"
-    assert jobs["publish-docker"]["if"].endswith("&& inputs.container-enabled")
+    assert (
+        guard["if"]
+        == f"${{{{ !cancelled() && !inputs.container-enabled && ({TAG} || needs.auto-tag.outputs.tag != '') }}}}"
+    )
+    assert "&& inputs.container-enabled &&" in jobs["publish-docker"]["if"]
     run = guard["steps"][0]["run"]
     assert "hub.docker.com/v2/repositories/${DOCKER_USER}/${REPO_NAME}/" in run
     assert "200)" in run and "exit 1" in run
     assert "image-required" in jobs["ci-required"]["needs"]
+
+
+@pytest.mark.spec("PIPE-RELEASE-R018.3")
+def test_a_green_version_bump_tags_and_publishes_in_the_same_run() -> None:
+    jobs = _jobs()
+    tag = jobs["auto-tag"]
+    # Only a main push, only after the full main suite passed on that exact commit.
+    assert tag["if"] == MAIN and tag["needs"] == "main"
+    assert tag["permissions"] == {"contents": "write"}
+    assert tag["outputs"]["tag"] == "${{ steps.tag.outputs.tag }}"
+    steps = {step["name"]: step for step in tag["steps"]}
+    assert steps["Checkout the pushed commit"]["with"]["ref"] == "${{ github.sha }}"
+    assert steps["Checkout the tag script"]["with"]["ref"] == "${{ job.workflow_sha }}"
+    run = steps["Tag a new green version"]
+    assert run["env"]["GH_TOKEN"] == "${{ github.token }}" and run["env"]["SHA"] == "${{ github.sha }}"
+    assert "scripts/release_autotag.py" in run["run"]
+    # The run publishes the tag it created: the tag stands in for github.ref downstream.
+    assert jobs["publish-pypi"]["with"]["release-tag"] == "${{ needs.auto-tag.outputs.tag }}"
+    assert jobs["publish-docker"]["with"]["release_tag"] == "${{ needs.auto-tag.outputs.tag }}"
+    python = _load(ROOT / ".github/workflows/python_pipeline.yml")
+    assert _on(python)["workflow_call"]["inputs"]["release-tag"]["default"] == ""
+    steps = {step.get("name"): step for step in python["jobs"]["publish-pypi"]["steps"]}
+    assert "inputs.release-tag" in steps["Require a release tag"]["env"]["REF"]
+    assert steps["Stamp the tag version"]["env"]["REF_NAME"] == "${{ inputs.release-tag || github.ref_name }}"
+    assert "inputs.release-tag" in steps["Verify release version"]["with"]["ref"]
+    action = _load(ROOT / ".github/actions/verify-release-version/action.yml")
+    assert action["inputs"]["ref"]["default"] == ""
+    assert action["runs"]["steps"][0]["env"]["RELEASE_REF"] == "${{ inputs.ref || github.ref }}"
