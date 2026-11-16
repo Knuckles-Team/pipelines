@@ -108,3 +108,11 @@ def test_sanitizer_fires_on_a_secret_and_root_garbage_and_passes_placeholders(re
     assert scan_repository(repo.root) == []
     repo.write("notes.txt", "scratch\n")
     assert repo.run("security-sanitizer") == 1
+
+
+def test_a_trusted_binary_extension_is_not_content_inspected(repo: Repo) -> None:
+    # spec: PIPE-GATES-R104
+    (repo.root / "pkg/rider.glb").write_bytes(b"glTF" + b"\x02\x00" + b"\xff\xfe" + b"\x00" * 16)
+    assert repo.run("security-sanitizer") == 0
+    (repo.root / "pkg/rider.blob").write_bytes(b"\xff\xfe" + b"\x00" * 16)
+    assert repo.run("security-sanitizer") == 1

@@ -60,7 +60,7 @@ EXCLUDED_DIRS = frozenset(
 )
 EXCLUDED_EXTENSIONS = frozenset(
     ".png .jpg .jpeg .gif .webp .ico .pyc .db .kuzu .sqlite .sqlite3 .zip .tar.gz .tgz .bz2 .xz "
-    ".pdf .bin .exe .dll .so .dylib .woff .woff2 .eot .ttf .mp4 .mp3 .wav .lock .svg".split()
+    ".pdf .bin .exe .dll .so .dylib .woff .woff2 .eot .ttf .mp4 .mp3 .wav .lock .svg .glb".split()
 )
 PLACEHOLDER_VALUES = frozenset(
     {
