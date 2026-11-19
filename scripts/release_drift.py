@@ -1,11 +1,14 @@
 """Report a package whose version on main was never published (PIPE-RELEASE-R027).
 
 ``python scripts/release_drift.py`` reads the organization registry the architecture explorer
-uses. For each registered repository it compares the ``[project].version`` in ``pyproject.toml``
-on the default branch with the releases on the package index. A repository drifts when that
-version is unpublished and the head commit of the default branch is older than the grace
-period. The report lists each drift; the exit code is 1. The script never tags, publishes or
-edits anything.
+uses. For each registered repository that publishes to the package index it compares the
+``[project].version`` in ``pyproject.toml`` on the default branch with the releases on the index.
+A repository publishes when the index has its project or when one of its own workflows runs a
+publish (a call of a shared publishing workflow or a direct upload step). A repository that does
+neither, such as a tool repository consumers install from git, is out of scope. A repository
+drifts when its version is unpublished and the head commit of the default branch is older than
+the grace period. The report lists each drift; the exit code is 1. The script never tags,
+publishes or edits anything.
 """
 
 from __future__ import annotations
@@ -28,8 +31,13 @@ GRACE = timedelta(hours=24)
 TRANSIENT = frozenset({500, 502, 503, 504})
 ATTEMPTS = 5
 BACKOFF = 2.0
-# Repositories that are skipped on purpose, each with the reason.
-EXCLUDED: dict[str, str] = {}
+# A workflow publishes when it calls a shared publishing workflow by reference or uploads itself.
+# A reusable definition (``workflow_call``) is not a publish of the repository that defines it.
+PUBLISHES = re.compile(
+    r"uses:\s*\S+/\.github/workflows/(?:python|connector|maturin)_pipeline\.ya?ml@"
+    r"|pypa/gh-action-pypi-publish|\btwine\s+upload\b|\buv\s+publish\b|\bmaturin\s+publish\b"
+)
+REUSABLE = re.compile(r"(?m)^\s*workflow_call\s*:")
 
 
 def normalize(name: str) -> str:
@@ -82,6 +90,19 @@ def published(name: str, get=_get) -> set[str] | None:
     return None if body is None else set(json.loads(body)["releases"])
 
 
+def has_publish_workflow(slug: str, owner: str, token: str | None, get=_get) -> bool:
+    """True when a workflow of the repository itself publishes to the package index."""
+    api = f"https://api.github.com/repos/{owner}/{slug}/contents/.github/workflows"
+    listing = get(api, token)
+    for item in json.loads(listing) if listing else []:
+        if not item["name"].endswith((".yml", ".yaml")):
+            continue
+        text = (get(f"{api}/{item['name']}", token, True) or b"").decode()
+        if PUBLISHES.search(text) and not REUSABLE.search(text):
+            return True
+    return False
+
+
 def is_archived(slug: str, owner: str, token: str | None, get=_get) -> bool:
     meta = get(f"https://api.github.com/repos/{owner}/{slug}", token)
     return meta is None or bool(json.loads(meta).get("archived"))
@@ -92,13 +113,15 @@ def audit(registry: dict, now: datetime, token: str | None = None, get=_get, gra
     owner, findings = registry["owner"], []
     for entry in registry["repositories"]:
         slug = entry["slug"]
-        if slug in EXCLUDED or is_archived(slug, owner, token, get):
+        if is_archived(slug, owner, token, get):
             continue
         state = main_state(slug, owner, token, get)
         if state is None:
             continue
         name, version, when = state
         versions = published(name, get)
+        if versions is None and not has_publish_workflow(slug, owner, token, get):
+            continue
         if versions is not None and version in versions:
             continue
         if now - when <= grace:
@@ -114,8 +137,6 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     registry = json.loads(args.registry.read_text(encoding="utf-8"))
     findings = audit(registry, datetime.now(UTC), os.environ.get("GITHUB_TOKEN"))
-    for slug, reason in EXCLUDED.items():
-        print(f"excluded {slug}: {reason}")
     for line in findings:
         print(f"DRIFT {line}")
     print(f"release drift: {len(findings)} repositories with an unpublished version on main")

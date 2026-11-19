@@ -1,10 +1,5 @@
 # pipelines
 
-![PyPI - Version](https://img.shields.io/pypi/v/pipelines-hooks)
-![PyPI - Downloads](https://img.shields.io/pypi/dd/pipelines-hooks)
-![PyPI - License](https://img.shields.io/pypi/l/pipelines-hooks)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/pipelines-hooks)
-![PyPI - Implementation](https://img.shields.io/pypi/implementation/pipelines-hooks)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Knuckles-Team/pipelines)
 ![GitHub forks](https://img.shields.io/github/forks/Knuckles-Team/pipelines)
 ![GitHub contributors](https://img.shields.io/github/contributors/Knuckles-Team/pipelines)
@@ -18,13 +13,11 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/pipelines)
 ![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/pipelines)
 
-Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The package centralizes shared hook and release policy. Consumers supply immutable references and repository-specific inputs.
-
-<!-- project-version: 2.1.1 -->
+Shared quality gates and reusable GitHub Actions for the Knuckles-Team agent ecosystem. The repository centralizes shared hook and release policy. Consumers supply immutable references and repository-specific inputs.
 
 ## Overview
 
-`pipelines-hooks` is a small Python package with the `pipelines-hook` command. It publishes repository-agnostic pre-commit gates. The reusable workflows supply tested building blocks for Python, native, container, service, desktop, and Pages delivery.
+This repository is a git-referenced tool repository, not a published package. It carries the `pipelines-hook` command and the repository-agnostic pre-commit gates. Consumers install it from git; it is never released to a package index. The reusable workflows supply tested building blocks for Python, native, container, service, desktop, and Pages delivery.
 
 The [spec dashboard template](pages/spec-dashboard.md) adds a source-backed delivery snapshot to existing Pages publishing.
 
@@ -53,11 +46,10 @@ Reusable workflows are called by another repository's own GitHub Actions workflo
 
 ## Quick start
 
-Install the hook package, then run the public-surface check from a repository:
+Run the public-surface check from a repository with the command installed from git:
 
 ```bash
-python -m pip install pipelines-hooks
-pipelines-hook public-surface
+uvx --from git+https://github.com/Knuckles-Team/pipelines@main pipelines-hook public-surface
 ```
 
 For the shared gates, add the `secrets`, `tests-fast` and `spec` hooks to `.config/pre-commit.yaml` with `rev: main` (see [the gate standard](reference/gate-standard.md)), and run:
