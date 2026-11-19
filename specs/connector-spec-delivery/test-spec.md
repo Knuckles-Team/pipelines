@@ -38,6 +38,7 @@ PIPE-CONNSPEC-R001 is also bound by `tests/hooks/test_spec_trailers.py::test_sta
 | Test ID | Requirement | Expected observation |
 |---|---|---|
 | T-PIPE-CONNSPEC-R001.1 | PIPE-CONNSPEC-R001.1 | Test: `tests/test_spec_trailers.py::test_dependency_only_bot_commit_passes` and `::test_bot_commit_touching_code_fails`. |
+| T-PIPE-CONNSPEC-R001.2 | PIPE-CONNSPEC-R001.2 | `tests/hooks/test_spec_withdrawal.py`: a plan-only or task-reopening withdrawal of an ID unbound at the merge base and HEAD passes after code commits in the range; a binding at HEAD or the merge base, a missing plan reason, a checked or missing task, or any other path in the declaring commit fails with its own message; the binding-removal case is unchanged. |
 
 ## Entries added for rows without a prior entry
 

@@ -64,6 +64,16 @@ Each connector copies the reference callers named in PIPE-CONNSPEC-R004 and the 
 
 Land the specs tree and hooks first, then the Pages caller, then the skill section, so each connector's dashboard shows real states from its first publish.
 
+### Design answers
+
+- **Owner:** `pipelines_hooks/specs/` owns the spec hooks; the evidence withdrawal lives in `withdrawal.py`, with Git reads in `withdrawal_git.py` and Rust comment parsing in `withdrawal_source.py`.
+- **Cohesion:** each spec hook reads Git and spec files and decides one gate; withdrawal rules stay in the withdrawal modules and are called only from `trailers.py`.
+- **Dependency direction:** `trailers.py` depends on `withdrawal.py`, which depends on `withdrawal_git.py`, `withdrawal_source.py`, `narrative.py` and `core/gitenv.py`; nothing in `core/` depends on the spec hooks.
+- **Interface depth:** none new. `withdrawals` gains a `bound_at` callable, and `changes` gains a head revision; both are called from existing sites.
+- **Special cases:** an ID never bound at the merge base or HEAD is checked per declaring commit; an ID bound at the merge base keeps the whole-range removal rule.
+- **State:** none stored. Status stays generated, and every decision is recomputed from Git history and the tree.
+- **Environment:** Git runs with ambient `GIT_*` variables removed, so a hook reads the repository Git resolved; a missing base fails closed.
+
 ### Landing attribution compatibility
 
 The generator uses Git trailer parsing in the existing single history scan, with historical Spec subjects, ranges and shorthand retained. Existing merged_head and landed_in receipts remain supported: they do not preserve enough provenance to distinguish valid migrations from old parser mistakes. Correct known false receipts through targeted review rather than global invalidation.
@@ -93,6 +103,14 @@ Only actual Rust comment bindings may be removed, with owning plan additions, ta
 Every withdrawn ID must lose an existing binding and retain its reason in the owning plan.
 Unknown IDs, missing reasons, altered code, requirements, modes, workflow or build configuration fail closed.
 Other IDs still require ordinary acceptance bindings. Status remains generated from the corrected evidence.
+
+### Amendment: never-bound evidence withdrawal (2026-11-19)
+
+PIPE-CONNSPEC-R001.2 covers a delivery trailer whose proving change was reverted before landing, so the ID was never bound.
+There is no binding to remove, so the whole-range removal rule cannot apply. A merge-train range also carries unrelated code.
+The rule therefore checks only the declaring commit against its parent: owning plan additions, task reopening and `status.json`.
+The ID must be unbound at the merge base and at HEAD, keep its exact reason in the owning plan, and keep its task unchecked.
+IDs bound at the merge base keep the whole-range removal contract. Scoping that path per commit would let other range commits rewrite the bound test.
 
 ### Amendment: exact standard-ID renumbering (2026-10-23)
 

@@ -25,6 +25,7 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - **PIPE-CONNSPEC-R016:** Architecture page delivery views.
 - [ ] T001 PIPE-CONNSPEC-R001 Generated status with three hooks and four states.
 - [ ] T002 PIPE-CONNSPEC-R001.1 Dependency-only automated commits pass the trailer check.
+- [ ] T393 PIPE-CONNSPEC-R001.2 Never-bound evidence withdrawal.
 - [ ] T003 PIPE-CONNSPEC-R002 Test binding forms.
 - [ ] T004 PIPE-CONNSPEC-R003 The spec-delivery page.
 - [ ] T005 PIPE-CONNSPEC-R004 Reference callers in the five core repositories.
