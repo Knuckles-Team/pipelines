@@ -44,6 +44,8 @@
 - [x] T229 PIPE-GATES-R014.10 Publish `reference/connector-surface.md`.
 - [x] T230 PIPE-GATES-R014.11 Count the tools the built server serves in the `surface` member.
 - [ ] T263 PIPE-GATES-R014.13 Declare destructive tools once and refuse a connector's own guard knob.
+- [x] T265 PIPE-GATES-R014.14 Read the connector declaration and audit a content-only connector without the tool surface.
+- [x] T266 PIPE-GATES-R014.15 Leave declared vendored paths and skill-folder files out of the content checks.
 - [x] T029 PIPE-GATES-R015 Publish the `connector-ontology-map` tool that proposes, reviews and applies parent classes for orphan connector classes.
 - [x] T030 PIPE-GATES-R016 Add the `graph-check` subcommand to `connector-ontology-map`: whole-ecosystem ontology reachability, bridging, broken and missing edges, virtual-graph checks and competency questions.
 - [x] T031 PIPE-GATES-R028 Add the plan template and the plan-section check.
@@ -81,6 +83,7 @@
 - [ ] T063 PIPE-GATES-R047 Fail a pull request whose title or body holds a CI-skip marker, in the shared gates workflow.
 - [ ] T064 PIPE-GATES-R048 Add the scheduled ruleset audit and test that a wrong or missing required check, a disabled auto-merge and a skipped repository are reported as designed.
 - [x] T065 PIPE-GATES-R008.1 No version mirror outside pyproject.toml.
+- [x] T267 PIPE-GATES-R008.2 Report a bumpversion file only when it rewrites pyproject.toml alone.
 - [x] T066 PIPE-GATES-R016.1 An import bridges modules.
 - [x] T067 PIPE-GATES-R016.2 An individual's type is a reference.
 - [x] T068 PIPE-GATES-R016.3 Test-fixture ontologies are outside the corpus.
@@ -267,5 +270,6 @@
 - [ ] T260 PIPE-GATES-R101 Every custom ontology IRI lives under one HTTPS base, and the ontology-iri gate fails any that does not.
 - [x] T261 PIPE-GATES-R014.12 Count the upstream tools a proxy connector declares in `connector_contracts.py`.
 - [ ] T262 PIPE-GATES-R102 Every requirement row states its prerequisites with a Depends: clause, and the spec-standard gate checks it.
+- [x] T268 PIPE-GATES-R102.1 Fail an alternative or malformed prerequisite with the reader the spec pages use.
 - [ ] T263 PIPE-GATES-R104 The security-sanitizer trusts a fixed list of uninspectable binary extensions, including the binary glTF container.
 - [ ] T264 PIPE-GATES-R103 A red nightly opens an issue in its repository, and a green one closes it.

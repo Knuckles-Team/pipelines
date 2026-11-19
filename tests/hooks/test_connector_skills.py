@@ -78,3 +78,24 @@ def test_a_long_path_fails_unless_its_directory_is_excluded(tmp_path: Path, monk
 @pytest.mark.spec("PIPE-GATES-R016.115")
 def test_connector_standard_runs_the_skills_member() -> None:
     assert standard.MEMBERS["skills"] is skills
+
+
+@pytest.mark.spec("PIPE-GATES-R014.15")
+def test_vendored_paths_leave_the_path_check_and_codespell(tmp_path: Path, monkeypatch, capsys) -> None:
+    from pipelines_hooks.connector import codespell
+
+    vendored = tmp_path / "demo_mcp" / "upstream" / ("v" * 120)
+    vendored.mkdir(parents=True)
+    (vendored / "x.md").write_text("x\n", encoding="utf-8")
+    root = _repo(tmp_path)
+    monkeypatch.chdir(root)
+    assert skills.main([]) == 1
+    capsys.readouterr()
+    (root / "pyproject.toml").write_text(
+        (root / "pyproject.toml").read_text(encoding="utf-8")
+        + '[tool.pipelines.connector]\nvendored = ["demo_mcp/upstream"]\n',
+        encoding="utf-8",
+    )
+    assert skills.main([]) == 0
+    assert codespell.extra_excludes(root) == ["demo_mcp/upstream"]
+    assert codespell.excluded("demo_mcp/upstream/" + "v" * 120 + "/x.md", codespell.extra_excludes(root))
