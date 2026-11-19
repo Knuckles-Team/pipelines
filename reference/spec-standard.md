@@ -221,7 +221,8 @@ Every requirement row carries a `Depends:` clause in its Requirement cell, after
 - A design question is not a dependency. Decide it from the constitution and record the decision in `research.md` or `plan.md`; a row that waits on an open question carries a `[NEEDS CLARIFICATION: ...]` marker instead.
 - A rollup parent lists its children or `none`. A child lists the siblings it needs, not its parent.
 - `Depends:` is the only spelling. Delivery tooling and the gate read no other.
-- *Gate*: `spec-standard` fails a `Depends:` ID that names no active row and any dependency cycle among a repository's rows. It checks an ID of another repository against the cross-repository index when `PIPELINES_SPEC_ID_INDEX` names one, and accepts it otherwise. A row with no `Depends:` clause is a warning (`ADV`, one line per spec) until 2027-01-01. From that date it is an error for every active row.
+- The list is conjunctive: the row needs every listed row. Never write alternatives (`X or Y`) or a conditional prerequisite in prose next to row IDs; decide the alternative, or give the open prerequisite its own row and list it. Name a row by its full ID (`FOO-R002`) or a relative one (`R002`, `.1`); a token that looks like a row ID but is none (`FOO-REPO-INGEST`) is refused.
+- *Gate*: `spec-standard` fails a `Depends:` ID that names no active row and any dependency cycle among a repository's rows. It checks an ID of another repository against the cross-repository index when `PIPELINES_SPEC_ID_INDEX` names one, and accepts it otherwise. It fails a clause whose prerequisites hold an `or` alternative or a malformed row-like token, with the same reader and the same messages the spec pages use, so such a row fails in its own repository before a page refuses it. A row with no `Depends:` clause is a warning (`ADV`, one line per spec) until 2027-01-01. From that date it is an error for every active row.
 
 ## Requirements checklist
 
@@ -309,7 +310,7 @@ New and changed spec text must pass `ste-staged`. A repository opts in by adding
 | Narrative | `spec.md` lacks prioritized stories, Given/When/Then scenarios, Edge Cases or Assumptions, or an `FR-` or `SC-` label names no existing row |
 | Task line | A `tasks.md` task does not match the numbered task line or names no existing row |
 | Plan | `plan.md` lacks a template section or a Technical Context field |
-| Dependencies | A `Depends:` ID names no active row, or the rows form a cycle. A row with no `Depends:` clause warns until 2027-01-01, then fails |
+| Dependencies | A `Depends:` ID names no active row, the rows form a cycle, or a clause holds an `or` alternative or a malformed row-like token. A row with no `Depends:` clause warns until 2027-01-01, then fails |
 | Analysis | A row has no task line or no test, a task names no row, a label is orphaned, or a design file holds an open marker |
 | Checklist | A `checklists/*.md` file holds an unchecked item |
 | Status | A spec file writes a `Status:` line |

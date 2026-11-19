@@ -12,7 +12,9 @@ content. These are rendered, generated or provided centrally and are findings wh
   still tracks ``scripts/security_contract.py``, whose validator reads that file;
 * ``scripts/bootstrap.sh`` (dead: ``uv sync --locked`` installs Python and the environment, ``pre-commit install`` the hooks);
 * ``scripts/verify_api_integration.py`` (the ``connector-api-parity`` member with ``[tool.pipelines.api_integration]``);
-* ``.bumpversion.cfg`` (the version is ``pyproject.toml`` alone; ``connector-version`` bumps it);
+* a ``.bumpversion.cfg`` that rewrites ``pyproject.toml`` and nothing else (``pipelines-connector version bump``
+  does that); a configuration that also keeps a version field of other tracked files in step is release
+  configuration and stays;
 * a ``__version__ = "<project version>"`` literal in a tracked Python file (read package metadata).
 """
 
@@ -37,8 +39,14 @@ CENTRAL = {
     "scripts/bootstrap.sh": "dead: uv sync --locked sets up Python and the environment; pre-commit install sets up the hooks",
     "scripts/verify_api_integration.py": "provided by connector-api-parity; the baseline is [tool.pipelines.api_integration] baseline",
     "tests/test_verify_api_integration.py": "tests the removed script; pipelines owns the check and its fixtures",
-    ".bumpversion.cfg": "not needed: pyproject.toml holds the only version (pipelines-connector version bump)",
 }
+BUMPVERSION = ".bumpversion.cfg"
+_BUMP_FILE = re.compile(r"^\[bumpversion:file(?:\([^)]*\))?:(?P<path>[^\]]+)\]\s*$", re.M)
+
+
+def bumpversion_redundant(text: str) -> bool:
+    """True when a ``.bumpversion.cfg`` rewrites no file but ``pyproject.toml`` (its version line alone)."""
+    return {m.group("path").strip() for m in _BUMP_FILE.finditer(text)} <= {"pyproject.toml"}
 
 
 def tracked(root: Path) -> list[str]:
@@ -57,6 +65,14 @@ def findings(root: Path) -> list[str]:
     if "scripts/security_contract.py" not in files:
         central[".security/security-contract.json"] = "provided by pipelines-connector security contract"
     out = [f"{name} is committed: {why}" for name, why in central.items() if name in files]
+    if (
+        BUMPVERSION in files
+        and (root / BUMPVERSION).is_file()
+        and bumpversion_redundant((root / BUMPVERSION).read_text("utf-8", "replace"))
+    ):
+        out.append(
+            f"{BUMPVERSION} is committed: it rewrites only pyproject.toml, which pipelines-connector version bump does"
+        )
     version = str(pyproject.get("project", {}).get("version", ""))
     literal = re.compile(r"""^\s*__version__\s*=\s*['"]""" + re.escape(version) + r"""['"]""", re.M)
     if version:

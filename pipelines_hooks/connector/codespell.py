@@ -9,7 +9,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from pipelines_hooks.connector import project
+from pipelines_hooks.connector import declaration, project
 from pipelines_hooks.connector.files import tracked
 from pipelines_hooks.core.errors import Unavailable
 from pipelines_hooks.core.gitenv import repo_root, sanitized_env
@@ -24,8 +24,9 @@ def _table(root: Path) -> dict[str, object]:
 
 
 def extra_excludes(root: Path) -> list[str]:
-    """The connector's own ``[tool.pipelines.codespell] exclude`` paths (a file or a directory prefix)."""
-    return [str(p).rstrip("/") for p in _table(root).get("exclude", [])]  # type: ignore[attr-defined]
+    """The connector's own ``[tool.pipelines.codespell] exclude`` paths plus its declared ``vendored`` paths."""
+    own = [str(p).rstrip("/") for p in _table(root).get("exclude", [])]  # type: ignore[attr-defined]
+    return [*own, *declaration.for_root(root).vendored]
 
 
 def excluded(path: str, extra: list[str]) -> bool:

@@ -511,3 +511,107 @@ def test_undeclared_destructive_tool_and_own_guard_knob_are_gaps(tmp_path: Path)
     )
     assert "tools: own destructive guard knob: setting DEMO_ALLOW_DESTRUCTIVE (demo_mcp/mcp_server.py)" in tools
     assert not any("SCION_ALLOW_DESTRUCTIVE" in g for g in tools)
+
+
+CONTENT_ONLY_PYPROJECT = """[project]
+name = "demo-skills"
+[project.entry-points."scion_sdk.connector"]
+demo-skills = "demo_skills"
+[tool.pipelines.connector]
+profile = "content-only"
+"""
+
+SHAPES = """@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix d: <http://example.org/demo#> .
+d:IncidentShape a sh:NodeShape ; sh:targetClass d:Incident .
+"""
+
+
+def _content_only(root: Path, *, pyproject: str = CONTENT_ONLY_PYPROJECT, shapes: bool = True) -> Path:
+    pkg = root / "demo_skills"
+    (pkg / "skills" / "demo-read").mkdir(parents=True)
+    (pkg / "skills" / "demo-read" / "SKILL.md").write_text(SKILL)
+    (pkg / "ontology" / "shapes").mkdir(parents=True)
+    (pkg / "ontology" / "demo.ttl").write_text(LINKED)
+    if shapes:
+        (pkg / "ontology" / "shapes" / "demo.ttl").write_text(SHAPES)
+    (pkg / "__init__.py").write_text("")
+    (root / "pyproject.toml").write_text(pyproject)
+    return root
+
+
+@pytest.mark.spec("PIPE-GATES-R014.14")
+def test_a_content_only_connector_needs_skills_ontology_and_shapes_but_no_tool_surface(tmp_path: Path) -> None:
+    root, parents = _content_only(tmp_path / "demo-skills"), _parents(tmp_path)
+    record = audit.audit_connector(root, parents, served=[])
+    assert record["gaps"] == [] and record["complete"]
+    assert record["profile"] == "content-only" and record["skills"] == ["demo-read"]
+    (root / "demo_skills" / "ontology" / "shapes" / "demo.ttl").unlink()
+    (root / "demo_skills" / "skills" / "demo-read" / "SKILL.md").unlink()
+    (root / "demo_skills" / "ontology" / "demo.ttl").write_text(ORPHAN)
+    record = audit.audit_connector(root, parents, served=[])
+    assert _gaps(record, "skills") == ["skills: no packaged skill (<package>/skills/<name>/SKILL.md)"]
+    ontology = _gaps(record, "ontology")
+    assert any("do not roll up to a core class: Widget" in g for g in ontology)
+    assert any(g.startswith("ontology: no SHACL shapes") for g in ontology)
+    assert not {"tools", "resources", "prompts", "contracts", "links", "locations"} & set(record["missing"])
+
+
+@pytest.mark.spec("PIPE-GATES-R014.14")
+def test_a_content_only_connector_that_serves_a_tool_is_a_gap(tmp_path: Path) -> None:
+    root = _content_only(tmp_path / "demo-skills")
+    served = [served_tools.ServedTool("demo_list_incidents", ())]
+    record = audit.audit_connector(root, _parents(tmp_path), served=served)
+    assert _gaps(record, "tools") == [
+        "tools: the content-only profile serves no tool, but 1 are registered: demo_list_incidents"
+    ]
+
+
+@pytest.mark.spec("PIPE-GATES-R014.14")
+def test_a_refused_connector_declaration_is_a_gap_and_the_full_profile_applies(tmp_path: Path) -> None:
+    bad = CONTENT_ONLY_PYPROJECT.replace('"content-only"', '"skills"') + 'colour = "red"\n'
+    record = audit.audit_connector(_content_only(tmp_path / "demo-skills", pyproject=bad), _parents(tmp_path))
+    assert record["profile"] == "full"
+    assert _gaps(record, "declaration") == [
+        "declaration: [tool.pipelines.connector] has unknown keys: colour",
+        "declaration: [tool.pipelines.connector] profile 'skills' is not one of: full, content-only",
+    ]
+    assert _gaps(record, "tools") and _gaps(record, "contracts")
+
+
+@pytest.mark.spec("PIPE-GATES-R014.15")
+def test_vendored_paths_and_skill_folder_files_are_not_stray_skills(tmp_path: Path) -> None:
+    root = _content_only(tmp_path / "demo-skills")
+    upstream = root / "demo_skills" / "upstream" / "kit" / "skills" / "kit-read"
+    upstream.mkdir(parents=True)
+    (upstream / "SKILL.md").write_text(SKILL)
+    template = root / "demo_skills" / "skills" / "demo-read" / "assets" / "scaffold" / "skills" / "x"
+    template.mkdir(parents=True)
+    (template / "SKILL.md").write_text(SKILL)
+    parents = _parents(tmp_path)
+    record = audit.audit_connector(root, parents, served=[])
+    assert record["stray_skills"] == ["demo_skills/upstream/kit/skills/kit-read/SKILL.md"]
+    vendored = CONTENT_ONLY_PYPROJECT + 'vendored = ["demo_skills/upstream/"]\n'
+    (root / "pyproject.toml").write_text(vendored)
+    record = audit.audit_connector(root, parents, served=[])
+    assert record["stray_skills"] == [] and record["vendored"] == ["demo_skills/upstream"] and record["complete"]
+
+
+@pytest.mark.spec("PIPE-GATES-R014.15")
+def test_a_vendored_path_must_exist_stay_inside_and_leave_the_package_checked(tmp_path: Path) -> None:
+    from pipelines_hooks.connector import declaration
+
+    root = _content_only(tmp_path / "demo-skills")
+    table = {"tool": {"pipelines": {"connector": {"vendored": ["demo_skills", "../x", "/abs", "missing", "."]}}}}
+    found = declaration.read(table, root, "demo_skills")
+    assert found.vendored == ()
+    assert [e.split(" vendored path ", 1)[1] for e in found.errors] == [
+        "'demo_skills' covers the package 'demo_skills'; name the vendored folder",
+        "'../x' must be a relative path inside the repository",
+        "'/abs' must be a relative path inside the repository",
+        "'missing' does not exist",
+        "'.' must be a relative path inside the repository",
+    ]
+    assert declaration.read({"tool": {"pipelines": {"connector": {"vendored": "x"}}}}, root).errors == (
+        "[tool.pipelines.connector] vendored must be a list of repository paths",
+    )

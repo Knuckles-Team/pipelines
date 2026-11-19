@@ -11,7 +11,7 @@ The Scion SDK owns the shared machinery (`SCION-CONNECTOR-CONTROL-R916`). A conn
 | Entry point | Exactly one `scion_sdk.connector` entry point. No `skill_providers`, `ontology_providers` or `source_connector_providers` group, and no plugin group outside the SDK namespace. | `pyproject.toml` |
 | Tools | One typed tool per upstream operation. No tool takes an `action` argument that routes to several operations. No registration passes `action_dispatch=True`. | `Connector(api=...)` client methods, or `@<server>.tool` |
 | Resources | At least one declared data resource. | `source_meta(...)` in `<package>/connector_sources.py`, or `@<server>.resource` |
-| Skills | At least one skill. Every tool is named by a packaged skill or prompt. No `SKILL.md` outside the package skills directory. | `<package>/skills/<name>/SKILL.md` |
+| Skills | At least one skill. Every tool is named by a packaged skill or prompt. No `SKILL.md` outside the package skills directory; one inside a packaged skill folder is a file of that skill. | `<package>/skills/<name>/SKILL.md` |
 | Prompts | At least one operator-agent prompt, and one business-role prompt per declared business role. Each prompt is a complete agent definition (below). | `<package>/prompts/<name>.json` |
 | Served | The package hands its content to the SDK, which serves skills, prompts, ontology and shapes over MCP. | `Connector(...)` |
 | Ontology | Packaged Turtle with at least one class. Every class reaches a core class (`https://knuckles-team.github.io/ontology/core#`) through `rdfs:subClassOf`. No `owl:imports` of the core ontology. | `<package>/ontology/*.ttl` |
@@ -19,6 +19,20 @@ The Scion SDK owns the shared machinery (`SCION-CONNECTOR-CONTROL-R916`). A conn
 | Links | Every prompt and skill is linked to the task it serves and the tools it uses. A contributor skill (`<name>-development`) is exempt. Every tool is named by a link that carries a prompt or skill. | `LINKS` |
 | Data locations | At least one location. Each names the classes it holds, the instance or store that holds them, and the tool that reads them. A route parameter and a federation key name how a request reaches that instance. | `LOCATIONS` |
 | Business roles | At least one business role the connector serves. | `ROLES` |
+
+## Connector declaration
+
+A connector states its profile and its vendored content in `pyproject.toml`. Both keys are optional; an unknown key, an unknown profile or a refused path is a `declaration` gap, and the full profile then applies.
+
+```toml
+[tool.pipelines.connector]
+profile = "content-only"              # "full" (default) or "content-only"
+vendored = ["<package>/upstream"]     # third-party content kept byte-identical to its source
+```
+
+- **Full** (the default) needs every part in the table above.
+- **Content-only** is for a connector that serves packaged skills and skill files and no tool. It needs the entry point, at least one packaged skill and no stray `SKILL.md`, an ontology that rolls up to core, SHACL shapes under `<package>/ontology/shapes/*.ttl`, and a server that builds and registers no tool, so the engine attaches its pack. It needs no tools, resources, prompts, tool-use contracts, links, data locations or business roles; a packaged prompt must still carry `instructions.core_directive`. A registered tool is a `tools` gap. The other `connector-standard` members, the spec, docs and release gates apply unchanged.
+- **Vendored** paths (a file or a directory, relative to the root) hold verbatim third-party content. The codespell member, the skill path check and the stray-skill count leave them out; the security and secret checks do not. A path must exist, stay inside the repository and not cover the package itself.
 
 ## Prompts are agent definitions
 

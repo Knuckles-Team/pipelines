@@ -729,3 +729,34 @@ def test_a_clause_only_change_is_still_judged_on_the_new_clause(root, capsys):
     code = main(["--root", str(root), "--base", "HEAD"])
     out = capsys.readouterr().out
     assert code == 1 and "FOO-R001 depends on FOO-R009, which no row defines" in out
+
+
+def test_an_alternative_or_malformed_prerequisite_fails_like_the_architecture_explorer():
+    # spec: PIPE-GATES-R102.1
+    from pipelines_hooks.specs.dependencies import check_dependencies
+
+    text = (
+        "| `FOO-R001` | **A.** Depends: none. | t |\n"
+        "| `FOO-R002` | **B.** Depends: `FOO-R001`, and an engine row that exempts or resets the counter. | t |\n"
+        "| `FOO-R003` | **C.** Depends: FOO-R001, `FOO-REPO-INGEST`. | t |\n"
+        "| `FOO-R004` | **D.** Depends: FOO-R001 and FOO-R002. Shape: one or two files. | t |\n"
+    )
+    assert [m for _, m in check_dependencies({"foo": text})] == [
+        "FOO-R002: ambiguous alternative requirement prerequisites; list each prerequisite row ID, all of them required",
+        "FOO-R003: malformed requirement-like dependency token 'FOO-REPO-INGEST'; list each prerequisite row ID, "
+        "all of them required",
+    ]
+
+
+def test_the_spec_gate_and_the_architecture_explorer_read_one_dependency_grammar():
+    # spec: PIPE-GATES-R102.1
+    from pipelines_hooks.specs import requirements_doc
+    from scripts.architecture_explorer import story_sources
+
+    body = " **B.** Depends: `FOO-R001` or `FOO-R003`. "
+    with pytest.raises(requirements_doc.DependencyGap) as shared:
+        requirements_doc.dependency_evidence(body, "FOO-R002")
+    with pytest.raises(story_sources.SourceGap) as page:
+        story_sources.dependency_evidence(body, "FOO-R002")
+    assert str(page.value) == str(shared.value) == "FOO-R002: ambiguous alternative requirement prerequisites"
+    assert story_sources.dependency_evidence(" Depends: FOO-R001. ", "FOO-R002")[0] == ["FOO-R001"]

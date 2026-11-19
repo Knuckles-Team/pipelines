@@ -64,6 +64,68 @@ def _declared_ids(body: str, row_id: str) -> tuple[str, ...]:
     return tuple(dict.fromkeys(i for i in found if i != row_id))
 
 
+class DependencyGap(ValueError):
+    """A ``Depends:``/``Requires``/``After`` clause whose prerequisites cannot be read without guessing."""
+
+
+def dependency_evidence(body: str, row_id: str) -> tuple[list[str], list[dict], list[str]]:
+    """Follow the shared grammar; retain package/prose/self/repeated context.
+
+    Canonical prerequisite lists are conjunctive. Alternative requirement meaning
+    and malformed requirement-like tokens need review, not invented AND edges, so
+    both raise :class:`DependencyGap`. The spec-standard gate and the architecture
+    explorer read rows through this one function.
+    """
+    effective: list[str] = []
+    contexts: list[dict] = []
+    occurrences: list[str] = []
+    for pattern, bare in ((_DEPENDS_RE, True), (_NEEDS_RE, False)):
+        for match in pattern.finditer(body):
+            run = match.group("run")
+            tokens = _TICKED_RE.findall(run)
+            residue = _TICKED_RE.sub(" ", run)
+            if bare:
+                tokens += re.findall(rf"(?<![`\w-])({ID})(?![\w`])", residue)
+            resolved = []
+            for token in tokens:
+                target = _resolve(token, row_id)
+                if target is None and "-R" in token.upper():
+                    raise DependencyGap(f"{row_id}: malformed requirement-like dependency token {token!r}")
+                if target is not None:
+                    resolved.append(target)
+            if bare and re.search(r"[A-Za-z0-9-]+-R[A-Za-z0-9.]+", residue):
+                for token in re.findall(r"[A-Za-z0-9-]+-R[A-Za-z0-9.]+", residue):
+                    if _resolve(token, row_id) is None:
+                        raise DependencyGap(f"{row_id}: malformed requirement-like dependency token {token!r}")
+            if bool(set(resolved) - {row_id}) and re.search(r"\bor\b", residue, re.I):
+                raise DependencyGap(f"{row_id}: ambiguous alternative requirement prerequisites")
+            kind = "requirement_prerequisites" if resolved else "non_requirement_context"
+            contexts.append({"kind": kind, "text": match.group(0), "tokens": list(tokens)})
+            for target in resolved:
+                occurrences.append(target)
+                if target == row_id:
+                    contexts.append({"kind": "ignored_self_reference", "text": match.group(0), "tokens": [target]})
+                elif target in effective:
+                    contexts.append({"kind": "repeated_reference", "text": match.group(0), "tokens": [target]})
+                else:
+                    effective.append(target)
+    return effective, contexts, occurrences
+
+
+def dependency_gaps(text: str) -> list[str]:
+    """One message per requirement row of ``text`` whose dependency clause :func:`dependency_evidence` refuses."""
+    out: list[str] = []
+    for line in text.splitlines():
+        match = ROW_RE.match(line)
+        if not match:
+            continue
+        try:
+            dependency_evidence(match.group(2), match.group(1))
+        except DependencyGap as exc:
+            out.append(str(exc))
+    return out
+
+
 def parse_rows(text: str) -> list[Row]:
     """Every distinct requirement row, in document order (first occurrence wins)."""
     seen: set[str] = set()

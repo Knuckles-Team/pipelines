@@ -29,43 +29,11 @@ def _unique_object(pairs):
 
 
 def dependency_evidence(body: str, row_id: str) -> tuple[list[str], list[dict], list[str]]:
-    """Follow the shared grammar; retain package/prose/self/repeated context.
-
-    Canonical prerequisite lists are conjunctive. Alternative requirement meaning
-    and malformed requirement-like tokens need review, not invented AND edges.
-    """
-    effective, contexts, occurrences = [], [], []
-    for pattern, bare in ((requirements._DEPENDS_RE, True), (requirements._NEEDS_RE, False)):
-        for match in pattern.finditer(body):
-            run = match.group("run")
-            tokens = requirements._TICKED_RE.findall(run)
-            residue = requirements._TICKED_RE.sub(" ", run)
-            if bare:
-                tokens += re.findall(rf"(?<![`\w-])({requirements.ID})(?![\w`])", residue)
-            resolved = []
-            for token in tokens:
-                target = requirements._resolve(token, row_id)
-                if target is None and "-R" in token.upper():
-                    raise SourceGap(f"{row_id}: malformed requirement-like dependency token {token!r}")
-                if target is not None:
-                    resolved.append(target)
-            if bare and re.search(r"[A-Za-z0-9-]+-R[A-Za-z0-9.]+", residue):
-                for token in re.findall(r"[A-Za-z0-9-]+-R[A-Za-z0-9.]+", residue):
-                    if requirements._resolve(token, row_id) is None:
-                        raise SourceGap(f"{row_id}: malformed requirement-like dependency token {token!r}")
-            if bool(set(resolved) - {row_id}) and re.search(r"\bor\b", residue, re.I):
-                raise SourceGap(f"{row_id}: ambiguous alternative requirement prerequisites")
-            kind = "requirement_prerequisites" if resolved else "non_requirement_context"
-            contexts.append({"kind": kind, "text": match.group(0), "tokens": list(tokens)})
-            for target in resolved:
-                occurrences.append(target)
-                if target == row_id:
-                    contexts.append({"kind": "ignored_self_reference", "text": match.group(0), "tokens": [target]})
-                elif target in effective:
-                    contexts.append({"kind": "repeated_reference", "text": match.group(0), "tokens": [target]})
-                else:
-                    effective.append(target)
-    return effective, contexts, occurrences
+    """The shared dependency grammar of ``requirements_doc``; a refused clause is a source gap."""
+    try:
+        return requirements.dependency_evidence(body, row_id)
+    except requirements.DependencyGap as exc:
+        raise SourceGap(str(exc)) from exc
 
 
 def declared_dependencies(body: str, row_id: str) -> list[str]:

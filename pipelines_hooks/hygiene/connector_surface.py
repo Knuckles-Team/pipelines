@@ -12,12 +12,20 @@ Each record lists its gaps under the part they belong to:
   the SDK replaced by convention and no plugin group outside the SDK namespace;
 * ``tools``: one typed tool per upstream operation, none routed by ``action``;
 * ``resources``: at least one declared data resource;
-* ``prompts`` and ``skills``: packaged where the SDK serves them;
+* ``prompts`` and ``skills``: packaged where the SDK serves them (a ``SKILL.md``
+  inside a packaged skill folder is a file of that skill, not a stray skill);
 * ``served``: the package hands its content to the SDK;
 * ``ontology``: packaged Turtle whose every class rolls up to a core class,
   with no ``owl:imports`` of the core ontology;
 * ``contracts``, ``links`` and ``locations``: the three ontology parts, declared
   in ``<package>/connector_contracts.py`` (or typed in packaged Turtle).
+
+A connector that declares ``[tool.pipelines.connector] profile = "content-only"``
+(``pipelines_hooks.connector.declaration``) serves packaged skills only: it must
+register no tool and still needs the entry point, packaged skills, the rolled-up
+ontology and SHACL shapes; the tool-shaped parts are not required. Paths it lists
+in ``vendored`` are left out of the stray-skill count. A refused declaration is a
+``declaration`` gap.
 
 The output is deterministic: sorted keys, sorted lists, no timestamps.
 ``--strict`` exits 1 when any connector has a gap; ``--markdown`` prints the
@@ -39,6 +47,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from pipelines_hooks.connector import declaration as connector_declaration
 from pipelines_hooks.hygiene import connector_surface_contracts as contracts
 from pipelines_hooks.hygiene import connector_surface_prompts as prompts
 from pipelines_hooks.hygiene import connector_surface_tools as tools
@@ -59,6 +68,7 @@ _OWL = "http://www.w3.org/2002/07/owl#"
 _SUBCLASS = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
 _CLASS_TYPES = {_OWL + "Class", "http://www.w3.org/2000/01/rdf-schema#Class"}
 PARTS = (
+    "declaration",
     "entry-points",
     "tools",
     "resources",
@@ -257,15 +267,19 @@ class _Content:
     stray_skills: list[str] = field(default_factory=list)
 
     @classmethod
-    def read(cls, root: Path, pkg: Path | None) -> _Content:
+    def read(cls, root: Path, pkg: Path | None, vendored: connector_declaration.Declaration) -> _Content:
         def files(sub: str, pattern: str) -> list[Path]:
             return sorted((pkg / sub).glob(pattern)) if pkg else []
 
         skills = files("skills", "*/SKILL.md")
+        folders = {s.parent for s in skills}
         stray = sorted(
             p.relative_to(root).as_posix()
             for p in root.rglob("SKILL.md")
-            if not _SKIP_DIRS.intersection(p.relative_to(root).parts) and p not in skills
+            if not _SKIP_DIRS.intersection(p.relative_to(root).parts)
+            and p not in skills
+            and not folders.intersection(p.parents)
+            and not vendored.is_vendored(p.relative_to(root).as_posix())
         )
         return cls(
             skills=skills,
@@ -300,6 +314,31 @@ def _content_gaps(content: _Content, counts: dict[str, int], served: bool) -> li
     if not served:
         gaps.append(
             "served: the package does not hand its content to the SDK (no Connector(...) or content registration)"
+        )
+    return gaps
+
+
+def _content_only_gaps(content: _Content, counts: dict[str, int], pkg: Path | None, tool_names: list[str]) -> list[str]:
+    """The gaps of a ``content-only`` connector: content, a package to serve it and shapes; never a tool."""
+    gaps = []
+    if tool_names:
+        gaps.append(
+            f"tools: the content-only profile serves no tool, but {len(tool_names)} are registered: "
+            + ", ".join(tool_names)
+        )
+    if counts["prompts_valid"] < counts["prompts"]:
+        gaps.append(
+            f"prompts: {counts['prompts'] - counts['prompts_valid']} prompt file(s) without instructions.core_directive"
+        )
+    if not counts["skills"]:
+        gaps.append("skills: no packaged skill (<package>/skills/<name>/SKILL.md)")
+    if content.stray_skills:
+        gaps.append(f"skills: {len(content.stray_skills)} SKILL.md outside <package>/skills (never served)")
+    if pkg is None:
+        gaps.append("served: the connector entry point names no package directory, so no pack is built")
+    if not counts["shapes"]:
+        gaps.append(
+            "ontology: no SHACL shapes (<package>/ontology/shapes/*.ttl); the engine attaches no pack without them"
         )
     return gaps
 
@@ -367,7 +406,8 @@ def audit_connector(root: Path, parents: set[str] | None = None, served: list[An
     connector = (sorted(points.get(CONNECTOR_GROUP, {})) or [root.name])[0]
     package = _package_root(root, points)
     pkg = package if package is not None and package.is_dir() else None
-    content = _Content.read(root, pkg)
+    declared_profile = connector_declaration.read(project, root, pkg.relative_to(root).as_posix() if pkg else None)
+    content = _Content.read(root, pkg, declared_profile)
     sources = list(_python_sources(pkg)) if pkg else []
     content_served = any(_SERVED.search(p.read_text(encoding="utf-8", errors="replace")) for p in sources)
     surface = tools.scan(sources, root)
@@ -398,25 +438,37 @@ def audit_connector(root: Path, parents: set[str] | None = None, served: list[An
     )
     prompt_gaps, agents = prompts.prompt_gaps(content.prompts, contracts.role_names(declared), known)
     entry_gaps, foreign = _entry_point_gaps(points)
-    gaps = [
-        *entry_gaps,
-        *tools.tool_gaps(surface),
-        *contracts.upstream_gaps(declared, registered),
-        *tools.resource_gaps(surface),
-        *tools.destructive_gaps(surface),
-        *_content_gaps(content, counts, content_served),
-        *prompt_gaps,
-        *_ontology_gaps(reports),
-        *contracts.contract_gaps(declared),
-        *contracts.link_gaps(declared, [p.stem for p in content.prompts], skill_names),
-        *contracts.location_gaps(declared),
-        *contracts.tool_coverage_gaps(declared, tool_names),
-        *_unmentioned(tool_names, content),
-    ]
+    declaration_gaps = [f"declaration: {error}" for error in declared_profile.errors]
+    if declared_profile.content_only:
+        gaps = [
+            *declaration_gaps,
+            *entry_gaps,
+            *_content_only_gaps(content, counts, pkg, tool_names),
+            *_ontology_gaps(reports),
+        ]
+    else:
+        gaps = [
+            *declaration_gaps,
+            *entry_gaps,
+            *tools.tool_gaps(surface),
+            *contracts.upstream_gaps(declared, registered),
+            *tools.resource_gaps(surface),
+            *tools.destructive_gaps(surface),
+            *_content_gaps(content, counts, content_served),
+            *prompt_gaps,
+            *_ontology_gaps(reports),
+            *contracts.contract_gaps(declared),
+            *contracts.link_gaps(declared, [p.stem for p in content.prompts], skill_names),
+            *contracts.location_gaps(declared),
+            *contracts.tool_coverage_gaps(declared, tool_names),
+            *_unmentioned(tool_names, content),
+        ]
     for report in reports:
         del report["triples"]
     return {
         "connector": connector,
+        "profile": declared_profile.profile,
+        "vendored": list(declared_profile.vendored),
         "repository": root.name,
         "package": pkg.relative_to(root).as_posix() if pkg else None,
         "entry_points": {g: sorted(v) for g, v in points.items() if g.startswith(SDK_GROUP)},

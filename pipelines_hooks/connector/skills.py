@@ -4,7 +4,8 @@ Atomicity (atomic skills, dual-mode workflows), cross-agent frontmatter portabil
 run over the connector's package ``skills`` directory (the first directory named ``skills`` within two levels). The gate
 logic is the universal-skills checks, ported under ``skill_checks``; a connector adds no hook and no wrapper script.
 A connector without skills passes. ``[tool.pipelines.skills] path_exclude`` lists directories (relative to the root) the path check
-leaves out (generated reference content whose upstream names are long).
+leaves out (generated reference content whose upstream names are long); the ``vendored`` paths of
+``[tool.pipelines.connector]`` are left out the same way.
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ import io
 import sys
 from pathlib import Path
 
-from pipelines_hooks.connector import project
+from pipelines_hooks.connector import declaration, project
 from pipelines_hooks.connector.skill_checks import atomicity, frontmatter, paths
 
 MAX_PATH, MAX_NAME = 200, 100
@@ -47,6 +48,7 @@ def main(argv: list[str]) -> int:
         print("connector-skills: OK: no skills directory")
         return 0
     exclude = [str(x).strip("/") for x in _table(root).get("path_exclude", [])]  # type: ignore[attr-defined]
+    exclude += declaration.for_root(root).vendored
     excluded = [arg for e in exclude for arg in ("--exclude", e)]
     checks = (
         ("atomicity", atomicity.main, ["--root", str(skills)]),

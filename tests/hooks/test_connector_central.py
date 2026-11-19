@@ -589,3 +589,20 @@ def test_pipelines_connector_command_dispatches_and_refuses_unknown(tmp_path: Pa
     assert capsys.readouterr().out.strip() == "1.2.3"
     assert connector_cli.main(["nope"]) == 2
     assert connector_cli.main(["render", "--root", str(tmp_path / "missing")]) == 2
+
+
+@pytest.mark.spec("PIPE-GATES-R008.2")
+def test_a_bumpversion_config_that_keeps_other_files_in_step_is_release_config(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    redundant = "[bumpversion]\ncurrent_version = 1.2.3\n\n[bumpversion:file:pyproject.toml]\n"
+    (root / ".bumpversion.cfg").write_text(redundant, encoding="utf-8")
+    _commit_all(root, ".bumpversion.cfg")
+    assert files.findings(root) == [
+        ".bumpversion.cfg is committed: it rewrites only pyproject.toml, which pipelines-connector version bump does"
+    ]
+    release = redundant + "\n[bumpversion:file:demo_mcp/skills/demo/SKILL.md]\nsearch = version: '{current_version}'\n"
+    (root / ".bumpversion.cfg").write_text(release, encoding="utf-8")
+    assert files.findings(root) == []
+    assert files.bumpversion_redundant("[bumpversion]\n") and not files.bumpversion_redundant(
+        "[bumpversion:file(readme):README.md]\n"
+    )

@@ -1,7 +1,9 @@
 """spec-standard: every requirement row states its prerequisites with a ``Depends:`` line.
 
 A row carries ``Depends: <row ID>, <row ID>.`` or ``Depends: none.``. A listed ID must resolve to a row, and the
-rows of one repository must not depend on each other in a cycle. A row without the line is a warning until
+rows of one repository must not depend on each other in a cycle. A clause that ``dependency_evidence`` refuses
+(an ``or`` alternative among requirement prerequisites, or a malformed requirement-like token) is an error, so a
+row the spec pages cannot read fails in its own repository. A row without the line is a warning until
 ``REQUIRED_FROM``, then an error. See reference/spec-standard.md "Row dependencies".
 """
 
@@ -10,7 +12,7 @@ from __future__ import annotations
 import re
 from datetime import date
 
-from pipelines_hooks.specs.requirements_doc import parse_rows
+from pipelines_hooks.specs.requirements_doc import dependency_gaps, parse_rows
 
 #: From this date a row without a ``Depends:`` line is an error instead of a warning.
 REQUIRED_FROM = date(2027, 1, 1)
@@ -84,6 +86,8 @@ def check_dependencies(
                 local = _spec_prefix(dep) in local_prefixes
                 if dep not in active and (local or foreign is not None and dep not in foreign):
                     out.append((name, f"{row.id} depends on {dep}, which no row defines; give it a row first"))
+    for name, text in specs.items():
+        out += [(name, f"{gap}; list each prerequisite row ID, all of them required") for gap in dependency_gaps(text)]
     for cycle in _cycles({k: tuple(d for d in v if d in graph) for k, v in graph.items()}):
         out.append((owner[cycle[0]], "dependency cycle: " + " -> ".join(cycle)))
     for name, text in specs.items():
