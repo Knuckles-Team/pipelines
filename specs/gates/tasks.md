@@ -176,7 +176,7 @@
 - [x] T155 PIPE-GATES-R016.95 Pipelines-owned boilerplate rule pl.r.
 - [x] T156 PIPE-GATES-R016.96 Pipelines-owned boilerplate rule pl.s.
 - [x] T157 PIPE-GATES-R016.97 Pipelines-owned boilerplate rule pl.t.
-- [x] T158 PIPE-GATES-R016.98 Pipelines-owned boilerplate rule pl.u.
+- [x] T158 PIPE-GATES-R016.98 Pipelines-owned boilerplate rule pl.u (keeps scripts/bootstrap.sh).
 - [x] T159 PIPE-GATES-R016.99 Pipelines-owned boilerplate rule pl.v.
 - [x] T160 PIPE-GATES-R016.100 Connector identity rule id.name.
 - [x] T161 PIPE-GATES-R016.101 Pipelines-owned boilerplate rule pl.w.

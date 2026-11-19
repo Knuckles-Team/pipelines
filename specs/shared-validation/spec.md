@@ -27,7 +27,7 @@ A connector maintainer keeps no copy of the shared files. The `connector-standar
 
 **Acceptance Scenarios**:
 
-1. **Given** a connector that tracks `scripts/bootstrap.sh`, **When** `connector-standard` runs, **Then** it reports a finding that names the replacement.
+1. **Given** a connector that tracks the CI-standard `scripts/bootstrap.sh`, **When** `connector-standard` runs, **Then** the committed-files check reports nothing for it.
 2. **Given** a client method that no MCP tool calls, **When** `connector-api-parity` runs, **Then** it lists the unmapped method and fails below the declared baseline.
 
 ### Edge Cases

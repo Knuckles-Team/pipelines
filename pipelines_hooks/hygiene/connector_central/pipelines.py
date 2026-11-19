@@ -1479,36 +1479,12 @@ def rule_t(ctx: Ctx) -> None:
     _doc_mentions(ctx, "pl.t", (".security/", "security-results/"))
 
 
-# --- pl.u: scripts/bootstrap.sh ----------------------------------------------------------------------------------------
-SETUP = (
-    "- **Setup:** run `uv sync --locked`, then `uvx pre-commit install --hook-type pre-commit --hook-type pre-push`."
-)
-
-
+# --- pl.u: scripts/bootstrap.sh is kept ---------------------------------------------------------------------------------
 @rule("pl.u")
 def rule_u(ctx: Ctx) -> None:
+    """The CI standard requires ``scripts/bootstrap.sh``; the migration never deletes it and says when it is missing."""
     if not ctx.exists("scripts/bootstrap.sh"):
-        return
-    ctx.delete("scripts/bootstrap.sh", "pl.u")
-    for name in ("AGENTS.md", "README.md", "CONTRIBUTING.md", "CLAUDE.md"):
-        if not ctx.exists(name):
-            continue
-        out: list[str] = []
-        for no, ln in enumerate(ctx.read(name).splitlines(keepends=True), 1):
-            if re.match(r"^- \*\*Setup:\*\* run `scripts/bootstrap\.sh`", ln):
-                out.append(SETUP + "\n")
-            elif "bootstrap.sh" in ln or "BOOTSTRAP_SKIP_HOOKS" in ln:
-                if (
-                    re.match(r"^\s*(?:[-*]\s+)?.*BOOTSTRAP_SKIP_HOOKS.*$", ln)
-                    and "bootstrap.sh" not in ln
-                    and ln.lstrip().startswith(("-", "*"))
-                ):
-                    continue
-                ctx.note("pl.u", f"line {no} mentions scripts/bootstrap.sh: {ln.strip()[:160]}", name, False)
-                out.append(ln)
-            else:
-                out.append(ln)
-        ctx.write(name, "".join(out), "pl.u")
+        ctx.note("pl.u", "scripts/bootstrap.sh is missing; the CI standard requires it in every repository", "", False)
 
 
 def _literal_baselines(source: str) -> dict[str, float] | None:
