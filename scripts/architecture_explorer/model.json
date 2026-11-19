@@ -6240,6 +6240,15 @@
      ]
     },
     {
+     "id": "eg.worldview",
+     "label": "World-View Ontology",
+     "role": "spatial vocabulary, city layout",
+     "desc": "Spatial vocabulary under the shared ontology base (districts, buildings, rooms, streets and how they relate), the city layout derived from the connector catalog with reasoned manual overrides, and the one served spatial query.",
+     "fam": [
+      "world-view-ontology"
+     ]
+    },
+    {
      "id": "eg.cluster",
      "label": "Clustering Kernel",
      "role": "centroid clustering",
