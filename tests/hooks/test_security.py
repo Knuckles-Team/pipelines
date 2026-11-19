@@ -116,3 +116,11 @@ def test_a_trusted_binary_extension_is_not_content_inspected(repo: Repo) -> None
     assert repo.run("security-sanitizer") == 0
     (repo.root / "pkg/rider.blob").write_bytes(b"\xff\xfe" + b"\x00" * 16)
     assert repo.run("security-sanitizer") == 1
+
+
+def test_a_gzip_tarball_is_a_trusted_binary_extension(repo: Repo) -> None:
+    # spec: PIPE-GATES-R104.1
+    (repo.root / "pkg/assets.tar.gz").write_bytes(b"\x1f\x8b" + b"\xff\xfe" + b"\x00" * 16)
+    assert repo.run("security-sanitizer") == 0
+    (repo.root / "pkg/assets.gz.blob").write_bytes(b"\xff\xfe" + b"\x00" * 16)
+    assert repo.run("security-sanitizer") == 1

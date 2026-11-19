@@ -272,4 +272,5 @@
 - [ ] T262 PIPE-GATES-R102 Every requirement row states its prerequisites with a Depends: clause, and the spec-standard gate checks it.
 - [x] T268 PIPE-GATES-R102.1 Fail an alternative or malformed prerequisite with the reader the spec pages use.
 - [ ] T263 PIPE-GATES-R104 The security-sanitizer trusts a fixed list of uninspectable binary extensions, including the binary glTF container.
+- [ ] T269 PIPE-GATES-R104.1 A gzip archive is a trusted binary, whatever its compound name.
 - [ ] T264 PIPE-GATES-R103 A red nightly opens an issue in its repository, and a green one closes it.
