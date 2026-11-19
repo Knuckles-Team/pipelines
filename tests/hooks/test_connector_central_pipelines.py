@@ -715,25 +715,21 @@ def test_t_keeps_contract_when_validator_is_tracked(repo: Path) -> None:
 
 
 # --- pl.u -------------------------------------------------------------------------------------------------------
-# spec: PIPE-GATES-R016.98 — reviewed existing assertion binding
 @pytest.mark.spec("PIPE-GATES-R016.98")
-def test_u_deletes_bootstrap_and_rewrites_setup_line(repo: Path) -> None:
+def test_u_keeps_bootstrap_and_the_docs_that_name_it(repo: Path) -> None:
     (repo / "scripts").mkdir()
     (repo / "scripts" / "bootstrap.sh").write_text("#!/bin/sh\n", encoding="utf-8")
-    (repo / "AGENTS.md").write_text("- **Setup:** run `scripts/bootstrap.sh`. It is idempotent.\n- **Gates:** x\n")
+    doc = "- **Setup:** run `scripts/bootstrap.sh`. It is idempotent.\n- **Gates:** x\n"
+    (repo / "AGENTS.md").write_text(doc, encoding="utf-8")
     ctx = run(repo, "pl.u")
-    assert not (repo / "scripts" / "bootstrap.sh").exists()
-    assert (repo / "AGENTS.md").read_text() == f"{P.SETUP}\n- **Gates:** x\n"
-    assert not ctx.review.items
+    assert (repo / "scripts" / "bootstrap.sh").exists()
+    assert (repo / "AGENTS.md").read_text() == doc
+    assert not ctx.review.items and not ctx.deleted
 
 
 @pytest.mark.spec("PIPE-GATES-R016.98")
-def test_u_other_mention_goes_to_review(repo: Path) -> None:
-    (repo / "scripts").mkdir()
-    (repo / "scripts" / "bootstrap.sh").write_text("#!/bin/sh\n", encoding="utf-8")
-    (repo / "README.md").write_text("Run ./scripts/bootstrap.sh then work.\n", encoding="utf-8")
+def test_u_missing_bootstrap_is_a_non_blocking_review_item(repo: Path) -> None:
     ctx = run(repo, "pl.u")
-    assert (repo / "README.md").read_text() == "Run ./scripts/bootstrap.sh then work.\n"
     assert ctx.review.items and not blocking(ctx, "pl.u")
 
 

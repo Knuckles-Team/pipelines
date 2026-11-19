@@ -159,14 +159,16 @@ def test_committed_security_files_are_findings_unless_a_legacy_validator_reads_t
     assert len(found) == 2 and not any("security-contract.json" in line for line in found)
 
 
-# --- PIPE-VALIDATION-R001.11: bootstrap.sh is dead -----------------------------------------------------------
+# --- PIPE-VALIDATION-R001.11: bootstrap.sh is the CI standard's setup script ------------------------------------
+BOOTSTRAP = (Path(__file__).resolve().parents[2] / "scripts" / "bootstrap.sh").read_text(encoding="utf-8")
+
+
 @pytest.mark.spec("PIPE-VALIDATION-R001.11")
-def test_committed_bootstrap_script_is_a_finding_that_names_what_replaces_it(tmp_path: Path) -> None:
+def test_committed_bootstrap_script_is_not_a_central_file(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     _write(root, "scripts/bootstrap.sh", "#!/usr/bin/env bash\n")
     _git(root, "add", "--", "scripts/bootstrap.sh")
-    (line,) = files.findings(root)
-    assert "scripts/bootstrap.sh" in line and "uv sync --locked" in line and "pre-commit install" in line
+    assert files.findings(root) == []
 
 
 @pytest.mark.spec("PIPE-VALIDATION-R001.11")
@@ -174,6 +176,21 @@ def test_untracked_bootstrap_script_is_not_reported_as_a_central_file(tmp_path: 
     root = _repo(tmp_path)
     _write(root, "scripts/bootstrap.sh", "#!/usr/bin/env bash\n")
     assert not any("scripts/bootstrap.sh" in line for line in files.findings(root))
+
+
+@pytest.mark.spec("PIPE-VALIDATION-R001.11.1")
+def test_connector_with_the_ci_standard_bootstrap_passes_the_committed_files_check(tmp_path: Path) -> None:
+    from pipelines_hooks.hygiene import agent_contract
+
+    root = _repo(tmp_path)
+    _write(root, "scripts/bootstrap.sh", BOOTSTRAP)
+    _write(root, "tests/test_demo.py", "def test_x():\n    pass\n")
+    _git(root, "add", "--", "scripts/bootstrap.sh", "tests/test_demo.py")
+    assert files.findings(root) == []
+    assert files.main(["--root", str(root)]) == 0
+    assert not [
+        f for f in agent_contract.inspect(root, ["scripts/bootstrap.sh"]) if f.startswith("scripts/bootstrap.sh")
+    ]
 
 
 # --- PIPE-VALIDATION-R001.12: API-to-MCP parity -----------------------------------------------------------------

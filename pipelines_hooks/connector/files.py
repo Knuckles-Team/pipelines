@@ -1,5 +1,8 @@
 """connector-files: standard connector files are provided by pipelines, never committed.
 
+``scripts/bootstrap.sh`` is not among them: the CI standard requires it in every repository and the
+``agent-contract`` hook checks it, so a connector commits it.
+
 A connector commits its own version in ``pyproject.toml``, its code, tests, specs and
 content. These are rendered, generated or provided centrally and are findings when tracked:
 
@@ -10,7 +13,6 @@ content. These are rendered, generated or provided centrally and are findings wh
 * ``.security/{repository_fuzz.py,authenticated_negative.py}`` (``pipelines-connector security``), and
   ``.security/security-contract.json`` (the shared contract plus ``[tool.pipelines.security]``) unless the repository
   still tracks ``scripts/security_contract.py``, whose validator reads that file;
-* ``scripts/bootstrap.sh`` (dead: ``uv sync --locked`` installs Python and the environment, ``pre-commit install`` the hooks);
 * ``scripts/verify_api_integration.py`` (the ``connector-api-parity`` member with ``[tool.pipelines.api_integration]``);
 * a ``.bumpversion.cfg`` that rewrites ``pyproject.toml`` and nothing else (``pipelines-connector version bump``
   does that); a configuration that also keeps a version field of other tracked files in step is release
@@ -36,7 +38,6 @@ CENTRAL = {
     ".codespellignore": "provided as the shared default; extra words go in [tool.pipelines.codespell] ignore_words",
     ".security/repository_fuzz.py": "provided by pipelines-connector security fuzz",
     ".security/authenticated_negative.py": "provided by pipelines-connector security authenticated-negative",
-    "scripts/bootstrap.sh": "dead: uv sync --locked sets up Python and the environment; pre-commit install sets up the hooks",
     "scripts/verify_api_integration.py": "provided by connector-api-parity; the baseline is [tool.pipelines.api_integration] baseline",
     "tests/test_verify_api_integration.py": "tests the removed script; pipelines owns the check and its fixtures",
 }

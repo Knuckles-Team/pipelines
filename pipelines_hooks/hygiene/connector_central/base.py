@@ -71,7 +71,7 @@ RULE_TABLE: tuple[tuple[str, str, str], ...] = (
     ("pl.r", "pipelines", "`security_sanitizer.py` and `.codespellignore` are provided"),
     ("pl.s", "pipelines", "workflow flags: skip-hooks, bump2version, render and rebuild callers"),
     ("pl.t", "pipelines", "`.security/*` is provided"),
-    ("pl.u", "pipelines", "`scripts/bootstrap.sh` is deleted"),
+    ("pl.u", "pipelines", "`scripts/bootstrap.sh` is kept (the CI standard requires it)"),
     ("pl.v", "pipelines", "`verify_api_integration.py` becomes `connector-api-parity`"),
     (
         "id.name",

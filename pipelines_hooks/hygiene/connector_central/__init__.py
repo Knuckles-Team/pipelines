@@ -6,7 +6,7 @@ Applies four rule sets in a fixed order, deterministic and idempotent, per conne
 2. auth: ``client_factory`` declarations (exact shapes only; otherwise a review item carrying the proposed declaration);
 3. ingest (SDK 0.5.2): ``kg_ingest`` plumbing becomes ``SourceStream`` and mappers;
 4. wave 1 tests (scaffold tests by fingerprint), then the pipelines-owned rules (version, rendered containers,
-   generated ontology artifacts, shared pre-commit config, security scaffold, bootstrap, API parity), and last the
+   generated ontology artifacts, shared pre-commit config, security scaffold, API parity), and last the
    spelling rule (safe typo fixes, identifier words to ``ignore_words``) before the final codespell scan.
 
 A rule rewrites exactly or records a review item and leaves the files alone. The patch version is bumped once, only when

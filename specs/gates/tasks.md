@@ -176,7 +176,7 @@
 - [x] T155 PIPE-GATES-R016.95 Pipelines-owned boilerplate rule pl.r.
 - [x] T156 PIPE-GATES-R016.96 Pipelines-owned boilerplate rule pl.s.
 - [x] T157 PIPE-GATES-R016.97 Pipelines-owned boilerplate rule pl.t.
-- [x] T158 PIPE-GATES-R016.98 Pipelines-owned boilerplate rule pl.u.
+- [x] T158 PIPE-GATES-R016.98 Pipelines-owned boilerplate rule pl.u (keeps scripts/bootstrap.sh).
 - [x] T159 PIPE-GATES-R016.99 Pipelines-owned boilerplate rule pl.v.
 - [x] T160 PIPE-GATES-R016.100 Connector identity rule id.name.
 - [x] T161 PIPE-GATES-R016.101 Pipelines-owned boilerplate rule pl.w.
@@ -272,4 +272,5 @@
 - [ ] T262 PIPE-GATES-R102 Every requirement row states its prerequisites with a Depends: clause, and the spec-standard gate checks it.
 - [x] T268 PIPE-GATES-R102.1 Fail an alternative or malformed prerequisite with the reader the spec pages use.
 - [ ] T263 PIPE-GATES-R104 The security-sanitizer trusts a fixed list of uninspectable binary extensions, including the binary glTF container.
+- [ ] T269 PIPE-GATES-R104.1 A gzip archive is a trusted binary, whatever its compound name.
 - [ ] T264 PIPE-GATES-R103 A red nightly opens an issue in its repository, and a green one closes it.
