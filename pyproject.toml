@@ -2,9 +2,13 @@
 requires = ["setuptools>=80"]
 build-backend = "setuptools.build_meta"
 
+# pipelines is a git-referenced tool repository, never published to a package index.
+# Consumers install `pipelines-hook` from git: pre-commit `rev: main`, `uvx --from git+...`,
+# or a `pipelines-hooks @ git+...` direct reference. The fixed version only satisfies the
+# build backend; it is not a release and is never bumped.
 [project]
 name = "pipelines-hooks"
-version = "2.1.1"
+version = "0.0.0"
 description = "Shared, repository-agnostic pre-commit quality gates for the Knuckles-Team fleet"
 readme = "README.md"
 requires-python = ">=3.12"

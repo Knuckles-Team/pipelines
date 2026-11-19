@@ -125,11 +125,16 @@ def test_this_repository_runs_its_hooks_with_the_published_entries() -> None:
         assert hook["entry"].endswith(catalogue[hook_id]["entry"]), hook_id
 
 
-def test_new_quality_hooks_are_self_run() -> None:
+def test_the_tool_repository_publishes_the_version_hook_but_carries_no_release_version() -> None:
+    # pipelines is installed from git and never released: consumers get the published
+    # project-version-sync hook, while this repository has no version to keep in sync.
+    assert _catalogue()["project-version-sync"]["entry"] == "pipelines-hook project-version-sync"
     config = yaml.safe_load((HOOK_REPOSITORY / ".config" / "pre-commit.yaml").read_text(encoding="utf-8"))
-    local = {hook["id"]: hook for repo in config["repos"] if repo["repo"] == "local" for hook in repo["hooks"]}
-    assert "project-version-sync" in local
-    assert local["project-version-sync"]["entry"].endswith("pipelines-hook project-version-sync")
+    local = {hook["id"] for repo in config["repos"] if repo["repo"] == "local" for hook in repo["hooks"]}
+    assert "project-version-sync" not in local
+    assert not (HOOK_REPOSITORY / ".config" / "bumpversion.cfg").exists()
+    assert not (HOOK_REPOSITORY / ".bumpversion.cfg").exists()
+    assert "__version__" not in (HOOK_REPOSITORY / "pipelines_hooks" / "__init__.py").read_text(encoding="utf-8")
 
 
 def test_ste_census_hooks_run_only_at_push_or_manual() -> None:

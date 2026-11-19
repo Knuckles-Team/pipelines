@@ -28,6 +28,11 @@ def _fake(repos: dict, index: dict):
             return None
         if url.endswith("/contents/pyproject.toml"):
             return None if r.get("pyproject") is None else r["pyproject"].encode()
+        if "/contents/.github/workflows" in url:
+            flows = r.get("workflows")
+            if url.endswith("/workflows"):
+                return None if flows is None else json.dumps([{"name": n} for n in flows]).encode()
+            return flows[url.rsplit("/", 1)[1]].encode()
         if "/commits/" in url:
             return json.dumps(
                 {"commit": {"committer": {"date": r["when"].isoformat().replace("+00:00", "Z")}}}
@@ -66,12 +71,30 @@ def test_a_published_version_a_fresh_head_and_a_non_python_repo_are_clean() -> N
     assert _run(repos, {"some-pkg": ["1.2.0"], "fresh": []}) == []
 
 
-def test_a_project_missing_from_the_index_is_reported_and_nothing_is_excluded() -> None:
+CALLER = "on:\n  push:\njobs:\n  pipeline:\n    uses: Org/pipelines/.github/workflows/python_pipeline.yml@main\n"
+UPLOAD = "on:\n  push:\njobs:\n  up:\n    steps:\n      - uses: pypa/gh-action-pypi-publish@abc\n"
+REUSABLE = "on:\n  workflow_call:\njobs:\n  up:\n    steps:\n      - run: twine upload dist/*\n"
+GATES = "on:\n  pull_request:\njobs:\n  gates:\n    uses: Org/pipelines/.github/workflows/gates_pipeline.yml@main\n"
+
+
+def test_a_publishing_repo_missing_from_the_index_is_reported_and_nothing_is_excluded() -> None:
     # spec: PIPE-RELEASE-R027
-    repos = {"new": {"pyproject": _toml("new"), "when": OLD}}
+    repos = {
+        "new": {"pyproject": _toml("new"), "when": OLD, "workflows": {"release.yml": CALLER}},
+        "own": {"pyproject": _toml("own"), "when": OLD, "workflows": {"ci.yml": GATES, "pypi.yaml": UPLOAD}},
+    }
     out = _run(repos, {})
-    assert len(out) == 1 and "(not on the index)" in out[0]
-    assert release_drift.EXCLUDED == {}
+    assert len(out) == 2 and all("(not on the index)" in line for line in out)
+    assert not hasattr(release_drift, "EXCLUDED")
+
+
+def test_a_git_only_tool_repo_is_out_of_scope_by_detection() -> None:
+    # spec: PIPE-RELEASE-R027
+    repos = {
+        "tool": {"pyproject": _toml("tool"), "when": OLD, "workflows": {"ci.yml": GATES, "py.yml": REUSABLE}},
+        "bare": {"pyproject": _toml("bare"), "when": OLD},
+    }
+    assert _run(repos, {}) == []
 
 
 def test_the_workflow_is_scheduled_read_only_and_runs_the_script() -> None:

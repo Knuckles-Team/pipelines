@@ -606,6 +606,8 @@ def test_depends_id_that_names_no_row_is_an_error(root, capsys):
 
 def test_depends_id_of_another_repository_is_checked_against_the_index(root, capsys, monkeypatch):
     # spec: PIPE-GATES-R102
+    # The gate workflow exports a real index; this case starts with none.
+    monkeypatch.delenv("PIPELINES_SPEC_ID_INDEX", raising=False)
     _spec(root)
     _rows(root, "foo", "FOO", ("R001", "Depends: BAR-R017."))
     assert _run(root, capsys)[0] == 0
