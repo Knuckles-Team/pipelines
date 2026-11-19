@@ -256,9 +256,9 @@ def _unknown_id_failures(named: list[str], known: set[str]) -> list[str]:
     return [f"spec-trailers: FAIL: unknown requirement id(s), no requirements.md row: {', '.join(unknown)}"]
 
 
-def _bound_ids(root: Path, aliases: Aliases | None = None) -> set[str]:
-    """Every requirement ID found on a bound-test line, via the one allowed grep call."""
-    result = run_git(root, ("grep", "-n", "-I", "-E", _BOUND_TEST_PATTERN))
+def _bound_ids(root: Path, aliases: Aliases | None = None, revision: str | None = None) -> set[str]:
+    """Every requirement ID on a bound-test line of the tree, or of ``revision``, via one grep call."""
+    result = run_git(root, ("grep", "-n", "-I", "-E", _BOUND_TEST_PATTERN, *((revision,) if revision else ())))
     if result.returncode not in (0, 1):
         detail = (result.stderr or "").strip()[:400]
         raise CannotRun(f"git grep failed: {detail}")
@@ -294,7 +294,12 @@ def main(argv: list[str]) -> int:
     failures = _missing_trailer_failures(commits)
     failures += _unknown_id_failures(named, known)
     withdrawn, withdrawal_errors = withdrawals(
-        root, base, named=set(named), known=known, bound=_bound_ids(root, aliases)
+        root,
+        base,
+        named=set(named),
+        known=known,
+        bound=_bound_ids(root, aliases),
+        bound_at=lambda revision: _bound_ids(root, aliases, revision),
     )
     failures += withdrawal_errors
     failures += _unbound_id_failures([rid for rid in named if rid not in withdrawn], known, root, aliases=aliases)

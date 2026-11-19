@@ -410,7 +410,7 @@ Spec-Withdrawal-Reason: Refusal tests do not prove the required successful query
 The reason must contain at least 20 characters. Repeat it exactly in the owning `plan.md`, with each withdrawn ID.
 The declaration applies to the entire PR range from its merge base.
 It may follow earlier correction commits; history need not be rewritten.
-Every withdrawn ID must be known, remain in a `Spec:` trailer, and lose an existing Rust comment binding.
+Every withdrawn ID must be known, remain in a `Spec:` trailer, and lose an existing Rust comment binding, unless it was never bound (below).
 No acceptance binding for that ID may remain in the current tree.
 
 Allowed changes are deliberately narrow:
@@ -429,3 +429,26 @@ Missing reasons, unknown IDs, absent old bindings, retained bindings, and mixed 
 Unsupported binding languages remain subject to the ordinary rule.
 Other named IDs still need bound tests. The independent canonical status gate remains mandatory.
 This mechanism withdraws verification evidence; it does not waive acceptance requirements or prove implementation completion.
+
+### Withdrawing an ID that was never bound
+
+Sometimes a range delivers under `Spec: ID`, but the change that would prove the ID was reverted before landing.
+The ID then has no binding to remove. Withdraw it in one commit of its own, with the same three trailers:
+
+```text
+Spec: DEMO-R002
+Spec-Withdraw: DEMO-R002
+Spec-Withdrawal-Reason: The proving change was reverted from the batch; acceptance stays open.
+```
+
+The never-bound form applies only when every one of these holds:
+
+- No binding (`mark.spec("ID")`, `// spec: ID` or `# spec: ID`) names the ID at the merge base or at HEAD.
+- The owning `plan.md` at HEAD contains the ID and the exact reason text.
+- The owning `tasks.md` at HEAD has a task line for the ID, and every such line is unchecked (`- [ ]`).
+- The declaring commit, compared with its parent, changes only files in the owning spec directory.
+  It may add lines to `plan.md`, uncheck the ID's task lines in `tasks.md`, and change `status.json`.
+  Any other path fails, including any `.rs` file. Files must already exist, and modes must stay the same.
+
+Only the declaring commit is restricted. Earlier commits in the range may change code, and every other named ID still needs a bound test.
+An ID bound at the merge base always follows the removal rules above for the whole range.

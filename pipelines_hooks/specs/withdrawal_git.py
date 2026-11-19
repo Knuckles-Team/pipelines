@@ -13,15 +13,20 @@ _RECORD = "\x01"
 _FIELD = "\x02"
 
 
-def declarations(root: Path, base: str | None) -> list[tuple[set[str], str]]:
-    fmt = "%x01%(trailers:key=Spec-Withdraw,valueonly,separator=,)%x02%(trailers:key=Spec-Withdrawal-Reason,valueonly,separator= )"
+def declarations(root: Path, base: str | None) -> list[tuple[str, set[str], str]]:
+    """Each declaring commit's SHA, withdrawn IDs and reason, newest first."""
+    fmt = (
+        "%x01%H%x02%(trailers:key=Spec-Withdraw,valueonly,separator=,)"
+        "%x02%(trailers:key=Spec-Withdrawal-Reason,valueonly,separator= )"
+    )
     rev_range = f"{base}..HEAD" if base else "HEAD"
     raw = git_text(root, ("log", "--no-merges", f"--format={fmt}", rev_range))
     result = []
     for record in raw.split(_RECORD):
-        ids, _, reason = record.strip().partition(_FIELD)
-        if ids or reason:
-            result.append((set(named_ids([ids])), reason.strip()))
+        sha, _, rest = record.strip().partition(_FIELD)
+        ids, _, reason = rest.partition(_FIELD)
+        if ids.strip() or reason.strip():
+            result.append((sha, set(named_ids([ids])), reason.strip()))
     return result
 
 
@@ -40,8 +45,9 @@ def blob(root: Path, revision: str, path: str) -> str:
         raise CannotRun(f"cannot read withdrawal blob {revision}:{path}: {exc}") from exc
 
 
-def changes(root: Path, base: str) -> list[tuple[str, str, str]]:
-    raw = git_text(root, ("diff", "--raw", "--no-renames", "-z", base, "HEAD"))
+def changes(root: Path, base: str, head: str = "HEAD") -> list[tuple[str, str, str]]:
+    """Every changed path between two revisions with its exact old and new text."""
+    raw = git_text(root, ("diff", "--raw", "--no-renames", "-z", base, head))
     parts = raw.split("\0")
     changes = []
     for index in range(0, len(parts) - 1, 2):
@@ -50,6 +56,6 @@ def changes(root: Path, base: str) -> list[tuple[str, str, str]]:
         if fields[0] != ":100644" or fields[1] != "100644" or fields[4] != "M":
             raise ValueError("withdrawal requires existing regular files with unchanged modes")
         before = blob(root, base, path)
-        after = blob(root, "HEAD", path)
+        after = blob(root, head, path)
         changes.append((path, before, after))
     return changes
