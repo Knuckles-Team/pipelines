@@ -100,7 +100,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     # Every vendored contract script may import pipelines_hooks (skill_graph/model.py does), so the vendored
     # contract is on the import path for the whole job, not per step.
     env:
@@ -328,8 +328,23 @@ jobs:
           path: './site'
           name: github-pages-${{ github.run_attempt }}
 
+      # PIPE-PAGES-R060: deploy-pages can look the artifact up before it is visible
+      # ("Found 0 artifact(s)"). The first attempt may fail; one retry after a short
+      # wait decides the job, so only a failing retry fails it.
       - name: Deploy to GitHub Pages
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+
+      - name: Wait for the artifact to become visible
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 20
+
+      - name: Retry the Pages deploy
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
         with:
           artifact_name: github-pages-${{ github.run_attempt }}

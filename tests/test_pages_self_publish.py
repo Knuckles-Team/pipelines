@@ -50,3 +50,26 @@ def test_a_rerun_deploy_uploads_and_deploys_its_own_attempt_artifact():
     deploy = next(s for s in steps if "actions/deploy-pages@" in s.get("uses", ""))
     assert upload["with"]["name"] == "github-pages-${{ github.run_attempt }}"
     assert deploy["with"]["artifact_name"] == upload["with"]["name"]
+
+
+@pytest.mark.spec("PIPE-PAGES-R060")
+def test_the_deploy_retries_once_and_fails_only_when_the_retry_fails():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/pages_pipeline.yml").read_text())
+    job = next(j for j in workflow["jobs"].values() if any("deploy-pages@" in s.get("uses", "") for s in j.get("steps", [])))
+    steps = job["steps"]
+    deploys = [s for s in steps if "actions/deploy-pages@" in s.get("uses", "")]
+    assert len(deploys) == 2
+    first, retry = deploys
+    # The first attempt may fail; the retry decides the job.
+    assert first["continue-on-error"] is True
+    assert "continue-on-error" not in retry
+    assert retry["if"] == f"steps.{first['id']}.outcome == 'failure'"
+    assert retry["with"] == first["with"]
+    # The wait sits between them and runs only after a failure.
+    wait = next(s for s in steps if s.get("run") == "sleep 20")
+    assert steps.index(first) < steps.index(wait) < steps.index(retry)
+    assert wait["if"] == retry["if"]
+    # The environment URL reads whichever step deployed.
+    url = job["environment"]["url"]
+    assert f"steps.{first['id']}.outputs.page_url" in url
+    assert f"steps.{retry['id']}.outputs.page_url" in url
