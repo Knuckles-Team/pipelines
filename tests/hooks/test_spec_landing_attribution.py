@@ -93,3 +93,79 @@ Co-authored-by: Codex <codex@example.invalid>
     sha = repo.commit({"pkg/lineage.py": "lineage = True\n"}, message)
 
     assert mentioned_tokens(landing_commits(repo.root, "HEAD")) == {"TEST-R001": {sha}}
+
+
+_ATTR_SPEC = "| ID | Requirement |\n|---|---|\n| TEST-R001 | Delivered. |\n"
+_ATTR_FILE = ".config/spec-landing-attributions.json"
+
+
+def _attribution_repo(repo: Repo, product: dict[str, str] | None = None) -> str:
+    """A repo whose marker commit carries no trailer; returns that commit's sha."""
+    repo.commit({"specs/demo/requirements.md": _ATTR_SPEC}, "spec")
+    return repo.commit(product or {"tests/test_a.py": "# spec: TEST-R001\ndef test_a():\n    pass\n"}, "add test")
+
+
+def _attribute(repo: Repo, sha: str, rid: str = "TEST-R001") -> int:
+    repo.write(_ATTR_FILE, json.dumps({rid: sha}))
+    return repo.run("spec-status", "--write")
+
+
+def _state(repo: Repo) -> dict:
+    return json.loads((repo.root / "specs/demo/status.json").read_text())["requirements"][0]
+
+
+def test_attribution_credits_the_commit_that_added_the_marker(repo: Repo) -> None:
+    # spec: PIPE-CONNSPEC-R017
+    sha = _attribution_repo(repo)
+    assert _attribute(repo, sha) == 0
+    assert _state(repo)["delivery_state"] == "VERIFIED"
+    assert _state(repo)["landed_in"] == [sha[:12]]
+
+
+def test_without_attribution_the_row_stays_specified(repo: Repo) -> None:
+    # spec: PIPE-CONNSPEC-R017
+    _attribution_repo(repo)
+    assert repo.run("spec-status", "--write") == 0
+    assert _state(repo)["delivery_state"] == "SPECIFIED"
+
+
+@pytest.mark.parametrize(
+    ("case", "reason"),
+    [
+        ("not-hex", "not a 40-hex sha"),
+        ("unknown", "is not reachable"),
+        ("no-marker", "does not add a spec marker for TEST-R001"),
+        ("docs-only", "touches no product path"),
+        ("marker-removed", "no marker for TEST-R001 remains"),
+        ("reverted", "is reverted"),
+    ],
+)
+def test_an_invalid_attribution_is_refused_by_name(
+    repo: Repo, capsys: pytest.CaptureFixture[str], case, reason
+) -> None:
+    # spec: PIPE-CONNSPEC-R017
+    sha = _attribution_repo(repo)
+    if case == "not-hex":
+        sha = "xyz"
+    elif case == "unknown":
+        sha = "a" * 40
+    elif case == "no-marker":
+        sha = repo.commit({"pkg/b.py": "x = 1\n"}, "other")
+    elif case == "docs-only":
+        sha = repo.commit({"docs/a.md": "# spec: TEST-R001\n"}, "docs")
+    elif case == "marker-removed":
+        repo.commit({"tests/test_a.py": "def test_a():\n    pass\n"}, "drop marker")
+    elif case == "reverted":
+        repo.git("revert", "--no-edit", sha)
+    assert _attribute(repo, sha) == 1
+    out = capsys.readouterr().out
+    assert "TEST-R001: " in out and reason in out
+    assert _state(repo)["delivery_state"] == "SPECIFIED"
+
+
+def test_an_attribution_only_adds_to_a_trailer_landing(repo: Repo) -> None:
+    # spec: PIPE-CONNSPEC-R017
+    sha = _attribution_repo(repo)
+    trailer = repo.commit({"pkg/f.py": "x = 1\n"}, "feature\n\nSpec: TEST-R001")
+    assert _attribute(repo, sha) == 0
+    assert set(_state(repo)["landed_in"]) == {sha[:12], trailer[:12]}

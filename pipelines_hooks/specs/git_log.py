@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from typing import NamedTuple
 
 from pipelines_hooks.core.gitenv import git_text, run_git
-from pipelines_hooks.specs.ids import expand_ranges, is_product_path
+from pipelines_hooks.specs.bindings import ids_in_match
+from pipelines_hooks.specs.ids import BIND_RE, expand_ranges, is_product_path
 from pipelines_hooks.specs.trailer_ids import NONE_EXEMPTION
 
 _RECORD_SEP = "\x1e"
@@ -107,3 +109,69 @@ def reverted_shas(root: Path, head: str) -> set[str]:
 def reachable_shas(root: Path, head: str) -> set[str]:
     """Every commit SHA reachable from ``head`` (for legacy evidence validation)."""
     return set(git_text(root, ("rev-list", head)).split())
+
+
+ATTRIBUTION_FILE = ".config/spec-landing-attributions.json"
+_SHA_RE = re.compile(r"[0-9a-f]{40}")
+
+
+def _added_marker_ids(root: Path, sha: str) -> tuple[bool, set[str]]:
+    """(touches a product path, requirement IDs whose marker the commit's diff adds in a product file)."""
+    diff = git_text(root, ("show", "--no-ext-diff", "--format=", "-U0", sha))
+    touches = False
+    path = ""
+    ids: set[str] = set()
+    for line in diff.splitlines():
+        if line.startswith("+++ "):
+            path = line[6:] if line.startswith("+++ b/") else ""
+            touches = touches or is_product_path(path)
+        elif line.startswith("+") and path and is_product_path(path):
+            for match in BIND_RE.finditer(line[1:]):
+                ids |= set(ids_in_match(match))
+    return touches, ids
+
+
+def _attribution_refusal(
+    root: Path, head: str, rid: str, sha: object, bound: dict[str, list[str]], gone: set[str]
+) -> str | None:
+    if not isinstance(sha, str) or not _SHA_RE.fullmatch(sha):
+        return "the value is not a 40-hex sha"
+    if run_git(root, ("merge-base", "--is-ancestor", sha, head)).returncode != 0:
+        return f"{sha[:12]} is not reachable from {head}"
+    if sha in gone:
+        return f"{sha[:12]} is reverted"
+    touches, ids = _added_marker_ids(root, sha)
+    if not touches:
+        return f"{sha[:12]} touches no product path"
+    if rid not in ids:
+        return f"{sha[:12]} does not add a spec marker for {rid} in a product file"
+    if not bound.get(rid):
+        return f"no marker for {rid} remains at {head} in a bound test"
+    return None
+
+
+def checked_attributions(root: Path, head: str, bound: dict[str, list[str]]) -> tuple[dict[str, str], list[str]]:
+    """Attributions of ``.config/spec-landing-attributions.json`` that pass every proof, and the refusals.
+
+    Accepted: ``{requirement id: sha}``. Refused: one ``<id>: <reason>`` line each. Attributions only add
+    to trailer landings; they never override them.
+    """
+    path = root / ATTRIBUTION_FILE
+    if not path.exists():
+        return {}, []
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return {}, [f"{ATTRIBUTION_FILE}: not valid JSON ({exc})"]
+    if not isinstance(loaded, dict):
+        return {}, [f"{ATTRIBUTION_FILE}: not a JSON object of id to sha"]
+    gone = reverted_shas(root, head)
+    accepted: dict[str, str] = {}
+    refused: list[str] = []
+    for rid, sha in sorted(loaded.items()):
+        reason = _attribution_refusal(root, head, rid, sha, bound, gone)
+        if reason:
+            refused.append(f"{rid}: {reason}")
+        else:
+            accepted[rid] = str(sha)
+    return accepted, refused

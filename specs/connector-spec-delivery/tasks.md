@@ -23,6 +23,7 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - **PIPE-CONNSPEC-R014:** Priority, frontier, and unserved from the organization aggregate.
 - **PIPE-CONNSPEC-R015:** Derived release bundles.
 - **PIPE-CONNSPEC-R016:** Architecture page delivery views.
+- **PIPE-CONNSPEC-R017:** Credit the real landing commit of a delivered row.
 - [ ] T001 PIPE-CONNSPEC-R001 Generated status with three hooks and four states.
 - [ ] T002 PIPE-CONNSPEC-R001.1 Dependency-only automated commits pass the trailer check.
 - [ ] T393 PIPE-CONNSPEC-R001.2 Never-bound evidence withdrawal.
@@ -416,3 +417,4 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [ ] T390 PIPE-CONNSPEC-R174.3 Verify `world-reference-mcp` has a caller of the reusable Pages workflow with the dashboard enabled and Pages turned on.
 - [ ] T391 PIPE-CONNSPEC-R174.4 Verify `world-reference-mcp` has the rapid-delivery section in its development skill.
 - [ ] T392 PIPE-CONNSPEC-R101.1 Verify `ansible-tower-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
+- [ ] T393 PIPE-CONNSPEC-R017 Credit the real landing commit of a delivered row through a proved attribution.

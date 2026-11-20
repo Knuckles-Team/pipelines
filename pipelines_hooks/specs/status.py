@@ -24,6 +24,8 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git, sanitized_env
+from pipelines_hooks.specs.bindings import test_bindings
+from pipelines_hooks.specs.git_log import checked_attributions
 from pipelines_hooks.specs.generator import freeze_legacy, generate, render
 
 DEFAULT_HEAD = "HEAD"
@@ -115,6 +117,11 @@ def main(argv: list[str]) -> int:
         count = freeze_legacy(root, head)
         print(f"{root.name}: froze {count} legacy landing(s) into .config/spec-legacy-landings.json")
         return 0
+    refused = checked_attributions(root, head, test_bindings(root))[1]
+    if refused:
+        print("FAIL: spec-landing-attributions refused (these rows do not count as landed):")
+        for line in refused:
+            print(f"    {line}")
     generated = generate(root, head)
     if arguments.write:
         for path, document in generated.items():
@@ -126,4 +133,4 @@ def main(argv: list[str]) -> int:
         for tracked_path in tracked:
             print(f"    {tracked_path}")
         return 1
-    return 0
+    return 1 if refused else 0
