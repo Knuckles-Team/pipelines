@@ -393,3 +393,4 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T474 PIPE-PAGES-R005 Bind the existing implementation to its verification.
 - [ ] T475 PIPE-PAGES-R006 Bind the existing implementation to its verification.
 - [ ] T476 PIPE-PAGES-R010 Bind the existing implementation to its verification.
+- [x] T478 PIPE-PAGES-R060 The Pages deploy retries once on the artifact-lookup race.

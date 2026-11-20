@@ -374,3 +374,4 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R058.5 | PIPE-PAGES-R058.5 | Run `tests/test_canopy_research.py::test_drawer_and_export_list_the_questions_with_document_and_line`. |
 | T-PIPE-PAGES-R058.6 | PIPE-PAGES-R058.6 | Run `tests/test_canopy_research.py::test_research_badge_and_drawer_list_in_a_browser`. |
 | T-PIPE-PAGES-R059 | PIPE-PAGES-R059 | Run `tests/test_pages_self_publish.py::test_a_rerun_deploy_uploads_and_deploys_its_own_attempt_artifact`. Upload and deploy use the same per-attempt artifact name. |
+| T-PIPE-PAGES-R060 | PIPE-PAGES-R060 | Run `tests/test_pages_self_publish.py::test_the_deploy_retries_once_and_fails_only_when_the_retry_fails`. The first deploy tolerates failure, the retry runs only after it failed, and the environment URL reads either step. |
