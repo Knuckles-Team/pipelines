@@ -55,7 +55,9 @@ def test_a_rerun_deploy_uploads_and_deploys_its_own_attempt_artifact():
 @pytest.mark.spec("PIPE-PAGES-R060")
 def test_the_deploy_retries_once_and_fails_only_when_the_retry_fails():
     workflow = yaml.safe_load((ROOT / ".github/workflows/pages_pipeline.yml").read_text())
-    job = next(j for j in workflow["jobs"].values() if any("deploy-pages@" in s.get("uses", "") for s in j.get("steps", [])))
+    job = next(
+        j for j in workflow["jobs"].values() if any("deploy-pages@" in s.get("uses", "") for s in j.get("steps", []))
+    )
     steps = job["steps"]
     deploys = [s for s in steps if "actions/deploy-pages@" in s.get("uses", "")]
     assert len(deploys) == 2
