@@ -30,7 +30,7 @@ def _grep_bindings(root: Path) -> str:
     return result.stdout
 
 
-def _ids_in_match(match: re.Match[str]) -> list[str]:
+def ids_in_match(match: re.Match[str]) -> list[str]:
     body = match.group(1) or match.group(2) or ""
     return re.findall(ID, body)
 
@@ -44,6 +44,6 @@ def test_bindings(root: Path) -> dict[str, list[str]]:
             continue
         path, lineno, text = parts
         for match in BIND_RE.finditer(text):
-            for rid in _ids_in_match(match):
+            for rid in ids_in_match(match):
                 found[rid].append(f"{path}:{lineno}")
     return found

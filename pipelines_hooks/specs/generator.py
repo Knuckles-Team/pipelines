@@ -16,7 +16,7 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text
 from pipelines_hooks.specs.aliases import canonical_lists, canonical_sets, load_aliases
 from pipelines_hooks.specs.bindings import test_bindings
-from pipelines_hooks.specs.git_log import landing_commits, reachable_shas, reverted_shas
+from pipelines_hooks.specs.git_log import checked_attributions, landing_commits, reachable_shas, reverted_shas
 from pipelines_hooks.specs.legacy import legacy_landings
 from pipelines_hooks.specs.records import build_record, mentioned_tokens
 from pipelines_hooks.specs.repository_identity import canonical_owner, repository_owner
@@ -98,8 +98,11 @@ def _history_evidence(
     repo: Path, head: str, aliases: dict[str, str]
 ) -> tuple[dict[str, set[str]], dict[str, list[str]]]:
     """Trailer landings and test bindings, keyed by canonical requirement ID."""
-    landed_by = canonical_sets(mentioned_tokens(landing_commits(repo, head)), aliases)
-    return landed_by, canonical_lists(test_bindings(repo), aliases)
+    landed = mentioned_tokens(landing_commits(repo, head))
+    bound = test_bindings(repo)
+    for rid, sha in checked_attributions(repo, head, bound)[0].items():
+        landed.setdefault(rid, set()).add(sha)
+    return canonical_sets(landed, aliases), canonical_lists(bound, aliases)
 
 
 _CACHE: dict[tuple[str, str], dict[Path, dict]] = {}
