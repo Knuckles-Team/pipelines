@@ -367,6 +367,20 @@
      "fam": [
       "agent-dashboards"
      ]
+    },
+    {
+     "id": "webui.city",
+     "label": "Arbora City",
+     "role": "the platform as a living city",
+     "desc": "A hosted app renders the knowledge graph as a city: graph content maps to places, relationships to roads and activity to traffic, through one declared mapping registry. Growth is seeded and deterministic, and user edits are a layer the regrowth never overwrites.",
+     "code": [
+      "src/apps/city",
+      "agent/overstory/apps/city"
+     ],
+     "fam": [
+      "arbora-city"
+     ],
+     "kw": "city|mapping registry|roads|traffic|hall of records|growth|seed|edit layer|budget"
     }
    ],
    "band": 1
