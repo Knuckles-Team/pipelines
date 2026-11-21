@@ -4368,6 +4368,19 @@
      ]
     },
     {
+     "id": "eg.bizops",
+     "label": "Business operations",
+     "role": "business operations pack and rule evaluation",
+     "desc": "The business operations pack holds an organization's facts with provenance and evaluates stored rules deterministically: due dates, thresholds, matches and reorder points. The caller supplies the as-of time. The engine never schedules a run or executes an action.",
+     "fam": [
+      "business-operations"
+     ],
+     "links": [
+      "eg.decide",
+      "eg.packs"
+     ]
+    },
+    {
      "id": "eg.evo",
      "label": "Self-Evolution",
      "role": "versioned harness + optimizer",
