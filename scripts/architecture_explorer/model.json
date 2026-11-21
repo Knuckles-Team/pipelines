@@ -2177,6 +2177,19 @@
      ]
     },
     {
+     "id": "skills.roles",
+     "label": "Business role skills",
+     "role": "business-roles skills",
+     "desc": "Business role skills run a routine duty for any business. Each reads the business profile from the knowledge graph, composes atomic connector skills, and stops for a person at each gated step.",
+     "fam": [
+      "business-roles"
+     ],
+     "links": [
+      "ar.fleet.skills",
+      "connectors"
+     ]
+    },
+    {
      "id": "skills.graphs",
      "label": "Skill graphs",
      "role": "packaged skill graphs",
@@ -4352,6 +4365,19 @@
        "desc": "Decisions cover the agent lifecycle, team coordination and delegation. The engine selects the smallest tool set that fits the context budget.",
        "kw": "capability designation|designation|agent lifecycle|team|delegation|workflow registration|skill document|lazy engine|tool necessity|tool subset|tool-choice|load set|capability card|continuation|checker feedback|quota|trace fact|guard pipeline|write-back proposal|disclosure|field shielding|declared-input|topology|swarm|capacity|subagent|allowance"
       }
+     ]
+    },
+    {
+     "id": "eg.bizops",
+     "label": "Business operations",
+     "role": "business operations pack and rule evaluation",
+     "desc": "The business operations pack holds an organization's facts with provenance and evaluates stored rules deterministically: due dates, thresholds, matches and reorder points. The caller supplies the as-of time. The engine never schedules a run or executes an action.",
+     "fam": [
+      "business-operations"
+     ],
+     "links": [
+      "eg.decide",
+      "eg.packs"
      ]
     },
     {
