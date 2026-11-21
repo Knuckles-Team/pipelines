@@ -2177,6 +2177,19 @@
      ]
     },
     {
+     "id": "skills.roles",
+     "label": "Business role skills",
+     "role": "business-roles skills",
+     "desc": "Business role skills run a routine duty for any business. Each reads the business profile from the knowledge graph, composes atomic connector skills, and stops for a person at each gated step.",
+     "fam": [
+      "business-roles"
+     ],
+     "links": [
+      "ar.fleet.skills",
+      "connectors"
+     ]
+    },
+    {
      "id": "skills.graphs",
      "label": "Skill graphs",
      "role": "packaged skill graphs",
