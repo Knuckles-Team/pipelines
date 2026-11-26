@@ -174,7 +174,7 @@ def test_guide_migration_wiring(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[2]
     assert "entry: pipelines-hook guide-migration --check" in (root / ".pre-commit-hooks.yaml").read_text()
     workflow = (root / ".github/workflows/pages_pipeline.yml").read_text()
-    assert workflow.index("guide-migration") < workflow.index("Upload artifact")
+    assert workflow.index("docs.guide_migration") < workflow.index("Upload artifact")
     assert gm.RESOLVERS is claims.RESOLVERS
     repo = build(tmp_path)
     assert run_gate("guide-migration", ["--root", str(repo.root), "--check"]) == 0 == repo.run("guide-migration")

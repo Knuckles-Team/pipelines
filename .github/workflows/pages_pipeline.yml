@@ -183,6 +183,10 @@ jobs:
             pipelines_hooks/core
             pipelines_hooks/specs
             pipelines_hooks/docs
+            pipelines_hooks/hygiene/__init__.py
+            pipelines_hooks/hygiene/config_inventory.py
+            pipelines_hooks/hygiene/config_inventory_docs.py
+            pipelines_hooks/hygiene/mermaid_rules.py
 
       - name: Validate declared content source
         if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
@@ -322,15 +326,20 @@ jobs:
       - name: Documentation gates
         env:
           DOCUMENTATION_GATES: >-
-            tool-mapping:.config/tool-mapping.json
-            deployment-docs:.config/deployment-docs.json
-            guide-migration:.config/guide-migration.json
+            pipelines_hooks.docs.tool_mapping:.config/tool-mapping.json
+            pipelines_hooks.docs.deployment_docs:.config/deployment-docs.json
+            pipelines_hooks.docs.guide_migration:.config/guide-migration.json
+            pipelines_hooks.docs.readme_header:.config/readme-header.json
+            pipelines_hooks.hygiene.config_inventory:.config/project-config.toml
         run: |
           set -euo pipefail
           for pair in $DOCUMENTATION_GATES; do
-            gate="${pair%%:*}"
+            module="${pair%%:*}"
             if [ -f "${pair#*:}" ]; then
-              python -m "pipelines_hooks.docs.${gate//-/_}" --root "$GITHUB_WORKSPACE"
+              case "$module" in
+                *config_inventory) python -m "$module" --check --scope documentation --root "$GITHUB_WORKSPACE" ;;
+                *) python -m "$module" --root "$GITHUB_WORKSPACE" ;;
+              esac
             fi
           done
 

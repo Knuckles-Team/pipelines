@@ -152,3 +152,10 @@ repos:
     pass_filenames: false
     always_run: true
     stages: [manual]
+  - id: readme-header
+    name: README and documentation home open with the shared project header
+    entry: uv run --frozen --quiet pipelines-hook readme-header
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-commit, pre-push]

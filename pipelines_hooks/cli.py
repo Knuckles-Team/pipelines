@@ -59,6 +59,7 @@ GATES: dict[str, str] = {
     "config-inventory": "pipelines_hooks.hygiene.config_inventory",
     "env-documentation": "pipelines_hooks.docs.env_documentation",
     "tool-mapping": "pipelines_hooks.docs.tool_mapping",
+    "readme-header": "pipelines_hooks.docs.readme_header",
     "guide-migration": "pipelines_hooks.docs.guide_migration",
     "deployment-docs": "pipelines_hooks.docs.deployment_docs",
     "spec-artifact-schema": "pipelines_hooks.specs.artifact_schema",
