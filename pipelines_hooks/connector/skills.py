@@ -1,6 +1,6 @@
 """connector-standard member: the packaged skills pass the universal-skills gates.
 
-Atomicity (atomic skills, dual-mode workflows), cross-agent frontmatter portability and cross-platform path portability,
+Atomicity (atomic skills, dual-mode workflows), the step and recovery check, the size budgets, cross-agent frontmatter portability and cross-platform path portability,
 run over the connector's package ``skills`` directory (the first directory named ``skills`` within two levels). The gate
 logic is the universal-skills checks, ported under ``skill_checks``; a connector adds no hook and no wrapper script.
 A connector without skills passes. ``[tool.pipelines.skills] path_exclude`` lists directories (relative to the root) the path check
@@ -16,7 +16,14 @@ import sys
 from pathlib import Path
 
 from pipelines_hooks.connector import declaration, project
-from pipelines_hooks.connector.skill_checks import atomicity, frontmatter, paths
+from pipelines_hooks.connector.skill_checks import (
+    atomicity,
+    budgets,
+    compile as skill_compile,
+    frontmatter,
+    paths,
+    steps,
+)
 
 MAX_PATH, MAX_NAME = 200, 100
 
@@ -53,6 +60,9 @@ def main(argv: list[str]) -> int:
     checks = (
         ("atomicity", atomicity.main, ["--root", str(skills)]),
         ("frontmatter-portability", frontmatter.main, [str(skills), "--max-violations", "0"]),
+        ("skill-steps", steps.main, ["--root", str(skills)]),
+        ("skill-budgets", budgets.main, ["--root", str(skills)]),
+        ("skill-compile", skill_compile.main, ["--root", str(skills)]),
         (
             "path-portability",
             paths.main,
@@ -68,5 +78,5 @@ def main(argv: list[str]) -> int:
     if failed:
         print(f"connector-skills: FAILED checks: {', '.join(failed)}", file=sys.stderr)
         return 1
-    print("connector-skills: OK: atomicity, frontmatter portability and path portability hold")
+    print("connector-skills: OK: atomicity, frontmatter, steps, budgets and path portability hold")
     return 0
