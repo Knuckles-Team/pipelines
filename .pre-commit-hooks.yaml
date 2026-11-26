@@ -151,6 +151,29 @@
   always_run: true
   require_serial: true
   stages: [pre-commit, pre-push]
+- id: config-inventory
+  name: Project configuration inventory - four standard roles per declared project
+  entry: pipelines-hook config-inventory --check
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: env-documentation
+  name: Runtime environment reads match the example file, README and launcher bindings
+  entry: pipelines-hook env-documentation
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: spec-artifact-schema
+  name: Generator-skill spec artifacts validate against schema version 1
+  entry: pipelines-hook spec-artifact-schema
+  language: python
+  pass_filenames: false
+  require_serial: true
+  stages: [manual]
 - id: mutation-gaps
   name: Scheduled mutation testing - surviving mutants reported as test gaps
   entry: pipelines-hook mutation-gaps
