@@ -78,6 +78,20 @@
   always_run: true
   pass_filenames: false
   stages: [manual]
+- id: spec-artifacts
+  name: Spec artifacts - admit a spec-bundle/1 of one capability's spec files unchanged
+  entry: pipelines-hook spec-artifacts
+  language: python
+  files: ^specs/[^/]+/spec-bundle\.json$
+  pass_filenames: false
+  stages: [pre-commit, manual]
+- id: capability-coverage
+  name: Capability coverage - every function, test and MCP tool names the capability it serves
+  entry: pipelines-hook capability-coverage
+  language: python
+  always_run: true
+  pass_filenames: false
+  stages: [manual]
 - id: coverage-decrease
   name: Coverage decrease - a proposal whose measured coverage falls below its baseline fails
   entry: pipelines-hook coverage-decrease
@@ -160,6 +174,14 @@
   pass_filenames: false
   always_run: false
   stages: [manual]
+- id: changelog
+  name: Changelog - dated, categorized releases with resolved comparison links
+  entry: pipelines-hook changelog
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
 - id: test-layout
   name: Test layout independence - isolated order and fixture inventory
   entry: pipelines-hook test-layout
@@ -463,6 +485,14 @@
 - id: dependency-readiness
   name: RELEASE dependency readiness (repository-manager)
   entry: pipelines-hook dependency-readiness
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
+- id: release-phases
+  name: RELEASE ordered phases with delays and major-upgrade admission
+  entry: pipelines-hook release-phases
   language: python
   pass_filenames: false
   always_run: true

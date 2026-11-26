@@ -728,10 +728,8 @@ def _path_present(root: Path, path: str, *, index: bool, ref: str | None) -> boo
     return bool([row for row in result.stdout.splitlines() if row])
 
 
-def evaluate(
-    root: Path, *, config_path: str, base_ref: str | None = None
-) -> tuple[ProjectVersionInventory, tuple[VersionCheck, ...]]:
-    """Evaluate the selected Git snapshot and return inventory plus observations."""
+def select_snapshot(root: Path, base_ref: str | None) -> tuple[Path, bool, str | None, str]:
+    """Select the Git snapshot to check: (root, uses the index, commit, snapshot identity)."""
     try:
         root = repo_root(root)
         _changed, _before, after = comparison(root, explicit=base_ref)
@@ -741,15 +739,24 @@ def evaluate(
         raise CannotRun(f"snapshot-unavailable: could not select a Git snapshot ({exc})") from exc
     index = after == ""
     selected_ref = None if index else (after or "HEAD")
-    snapshot = _snapshot(root, index=index, ref=selected_ref)
+    return root, index, selected_ref, _snapshot(root, index=index, ref=selected_ref)
+
+
+def selected_inventory(
+    root: Path, *, config_path: str, index: bool, ref: str | None, snapshot: str
+) -> ProjectVersionInventory:
+    """Read and parse the one canonical configuration of the selected snapshot."""
     config_path = _safe_relative_path(config_path, what="configuration")
-    config_text, config_digest, _ = _selected_configuration(root, config_path, index=index, ref=selected_ref)
-    inventory = parse_inventory(
-        config_text,
-        config_path=config_path,
-        config_digest=config_digest,
-        snapshot=snapshot,
-    )
+    config_text, config_digest, _ = _selected_configuration(root, config_path, index=index, ref=ref)
+    return parse_inventory(config_text, config_path=config_path, config_digest=config_digest, snapshot=snapshot)
+
+
+def evaluate(
+    root: Path, *, config_path: str, base_ref: str | None = None
+) -> tuple[ProjectVersionInventory, tuple[VersionCheck, ...]]:
+    """Evaluate the selected Git snapshot and return inventory plus observations."""
+    root, index, selected_ref, snapshot = select_snapshot(root, base_ref)
+    inventory = selected_inventory(root, config_path=config_path, index=index, ref=selected_ref, snapshot=snapshot)
     contents: dict[str, str] = {}
     digests: dict[str, str] = {}
     for location in inventory.locations:
@@ -779,7 +786,25 @@ def main(argv: list[str]) -> int:
         help="repository-relative canonical bumpversion configuration",
     )
     parser.add_argument("--base-ref", default=None, help="committed base/ref selection for CI or range checks")
+    parser.add_argument(
+        "--completeness",
+        action="store_true",
+        help="also discover every project-version location in the snapshot and refuse any the config does not map",
+    )
+    parser.add_argument(
+        "--first-party-root",
+        action="append",
+        default=None,
+        help="first-party Python source root searched for __version__ (repeatable; default src)",
+    )
+    parser.add_argument("--consumer-binding", help="JSON binding of the code-enhancer entry that must call this gate")
+    parser.add_argument("--owner-root", help="checkout of the repository that owns the bound consumer entry")
+    parser.add_argument("--evidence", help="write the completeness evidence JSON to this path")
     args = parser.parse_args(argv)
+    if args.completeness or args.consumer_binding:
+        from pipelines_hooks.release.version_completeness import run_completeness
+
+        return run_completeness(args)
     inventory, checks = evaluate(args.root, config_path=args.config, base_ref=args.base_ref)
     mismatches = [check for check in checks if check.status != "pass"]
     for check in checks:
