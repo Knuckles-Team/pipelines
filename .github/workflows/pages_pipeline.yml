@@ -182,6 +182,7 @@ jobs:
             pipelines_hooks/__init__.py
             pipelines_hooks/core
             pipelines_hooks/specs
+            pipelines_hooks/docs
 
       - name: Validate declared content source
         if: inputs.shared_theme_enabled || inputs.agent_readiness_enabled
@@ -315,6 +316,23 @@ jobs:
           python .pipeline-contract/scripts/architecture_explorer/build.py --mode github \
             --source-families .pipeline-contract/scripts/architecture_explorer/source-families.json \
             --page site/architecture/index.html
+
+      # PIPE-PAGES-R020.39: a repository that declares a documentation mapping is checked
+      # against its registry before anything is published; one that declares none is untouched.
+      - name: Documentation gates
+        env:
+          DOCUMENTATION_GATES: >-
+            tool-mapping:.config/tool-mapping.json
+            deployment-docs:.config/deployment-docs.json
+            guide-migration:.config/guide-migration.json
+        run: |
+          set -euo pipefail
+          for pair in $DOCUMENTATION_GATES; do
+            gate="${pair%%:*}"
+            if [ -f "${pair#*:}" ]; then
+              python -m "pipelines_hooks.docs.${gate//-/_}" --root "$GITHUB_WORKSPACE"
+            fi
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

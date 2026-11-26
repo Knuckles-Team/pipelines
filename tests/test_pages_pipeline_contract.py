@@ -124,7 +124,7 @@ def test_readiness_is_explicit_opt_in_with_bounded_paths() -> None:
 def test_actions_are_immutable_and_permissions_are_least_privilege() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     refs = re.findall(r"uses:\s+[^\s@]+@([0-9a-f]{40})(?:\s|$|#)", text)
-    assert len(refs) == 7
+    assert len(refs) == 8
     assert "python-version: 3.14.7" in text
     assert "mkdocs-material==9.7.6" in text
     assert "mkdocs-awesome-pages-plugin==2.10.1" in text
@@ -208,6 +208,7 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "pipelines_hooks/__init__.py",
         "pipelines_hooks/core",
         "pipelines_hooks/specs",
+        "pipelines_hooks/docs",
     ]
 
 

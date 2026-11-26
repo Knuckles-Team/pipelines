@@ -167,6 +167,27 @@
   always_run: true
   require_serial: true
   stages: [pre-commit, pre-push]
+- id: tool-mapping
+  name: Published tool and method inventory equals the documentation rows
+  entry: pipelines-hook tool-mapping
+  language: python
+  pass_filenames: false
+  require_serial: true
+  stages: [manual]
+- id: deployment-docs
+  name: Four deployment patterns are documented, configured and launchable as the owner exports
+  entry: pipelines-hook deployment-docs
+  language: python
+  pass_filenames: false
+  require_serial: true
+  stages: [manual]
+- id: guide-migration
+  name: A split guide accounts for every source block and verifies the claims it moved
+  entry: pipelines-hook guide-migration --check
+  language: python
+  pass_filenames: false
+  require_serial: true
+  stages: [manual]
 - id: spec-artifact-schema
   name: Generator-skill spec artifacts validate against schema version 1
   entry: pipelines-hook spec-artifact-schema
