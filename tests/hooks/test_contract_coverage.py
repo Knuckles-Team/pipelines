@@ -59,6 +59,14 @@ def test_contract_without_a_required_line_or_section_is_a_finding(repo: Repo, ca
     _spec(repo, CONTRACT)
     repo.stage({"specs/other/requirements.md": OTHER})
     assert repo.run("contract-coverage", "--base", "HEAD") == 0
+    # A broken contract the change does not touch is advisory.
+    repo.commit({"specs/demo/contracts/seam.md": CONTRACT.replace("## Test vectors\n\n`tests/test_seam.py`.\n", "")})
+    capsys.readouterr()
+    assert repo.run("contract-coverage", "--base", "HEAD") == 0
+    assert (
+        "ADV contract-coverage: specs/demo/contracts/seam.md: lacks the 'Test vectors' section"
+        in capsys.readouterr().out
+    )
 
 
 # spec: PIPE-GATES-R034.2

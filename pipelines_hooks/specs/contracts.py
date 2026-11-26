@@ -5,7 +5,8 @@ A contract is the hand-written file ``specs/<family>/contracts/<seam>.md``. It h
 Wire shape, Refusal codes, Authoritative types and Test vectors. A row that names a row ID whose
 prefix no row of this repository uses is covered when a contract names both the citing row and
 the cited row. A citation the change adds fails; an older citation is advisory. A contract that
-names a row its owner does not define, or the same pair as another contract, fails.
+names a row its owner does not define, or the same pair as another contract, fails. A contract file
+the change does not touch is advisory, so a repository with older contracts is not blocked by them.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root
 from pipelines_hooks.core.settings import setting
+from pipelines_hooks.specs import narrative
 from pipelines_hooks.specs.narrative import ROW_TOKEN_RE
 from pipelines_hooks.specs.artifacts import section
 from pipelines_hooks.specs.ids import ROW_RE
@@ -181,6 +183,8 @@ def main(argv: list[str]) -> int:
     found = check_shape(contracts) + check_dangling_and_duplicates(contracts, rows)
     for spec_dir in sorted(d for d in (root / "specs").glob("*/") if (d / "requirements.md").is_file()):
         found += check_citations(spec_dir, contracts, local, root=root, base=args.base)
+    touched = narrative.touched_paths(root, args.base)
+    found = [f if f.split(":")[0] in touched or "/contracts/" not in f.split(":")[0] else f + ADVISORY for f in found]
     failing = [f for f in found if not f.endswith(ADVISORY)]
     for finding in found:
         print(f"contract-coverage: {finding}" if finding in failing else f"ADV contract-coverage: {finding}")
