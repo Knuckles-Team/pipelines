@@ -66,11 +66,11 @@ def test_publish_posts_bundle_facts_and_plan_and_skips_without_endpoint() -> Non
     assert facts["ReleaseBundle"] == [{"id": "P1", "scenario": "ARBORA-ACCEPTANCE-R006.1"}]
     assert {"row": "Q-B-R001", "bundle": "P1"} in facts["inBundle"]
     assert facts["dependsOn"] == [{"row": "P-A-R002", "on": "P-A-R001"}, {"row": "Q-B-R001", "on": "P-A-R002"}]
-    posted: list[tuple[str, dict]] = []
+    posted: list[tuple[str, str, dict]] = []
     message = rp.publish_plan(
-        facts, plan, "http://127.0.0.1:1/ops", lambda url, body: posted.append((url, body)) or 200
+        facts, plan, "http://127.0.0.1:1", lambda endpoint, op, params: posted.append((endpoint, op, params))
     )
-    assert message == "published P1 (HTTP 200)"
-    url, body = posted[0]
-    assert body["op"].startswith("source.") and body["params"] == {"facts": facts, "plan": plan}
+    assert message == "published P1"
+    _, operation, params = posted[0]
+    assert operation.startswith("source.") and params == {"facts": facts, "plan": plan}
     assert rp.publish_plan(facts, plan, "", lambda *_: 1 / 0) == "publish skipped: no endpoint set"

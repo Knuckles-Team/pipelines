@@ -465,12 +465,42 @@ def template_with_stories(data: dict, meta: dict) -> str:
     return template_source().replace("/*__STORY_SCRIPT__*/", render_story(data, meta))
 
 
+def noscript_block(data: dict, meta: dict) -> str:
+    """Return the script-free listing of parts and export links (PIPE-PAGES-R057.7), every value escaped."""
+    owner = html.escape(str(meta.get("owner", "")), quote=True)
+    slugs = meta.get("slugs", {})
+    rows = []
+    for node in _walk(data):
+        if node["id"] == "root" or not node.get("specs"):
+            continue
+        families: dict[tuple[str, str], int] = {}
+        for spec in node["specs"]:
+            key = (spec["repo"], spec["family"])
+            families[key] = families.get(key, 0) + 1
+        links = []
+        for (repo, family), count in sorted(families.items()):
+            slug = slugs.get(repo, repo)
+            url = f"https://github.com/{owner}/{html.escape(slug, quote=True)}/blob/HEAD/specs/{html.escape(family, quote=True)}/spec.md"
+            links.append(f'<a href="{url}">{html.escape(family)}</a> ({count})')
+        label = html.escape(node["label"])
+        rows.append(f'<tr><th scope="row">{label}</th><td>{len(node["specs"])}</td><td>{", ".join(links)}</td></tr>')
+    return (
+        '<noscript><section id="noscript-parts" aria-label="Parts and spec rows without scripts">'
+        "<h2>Parts and spec rows</h2>"
+        "<p>This page draws its map with scripts. Without them, each part lists its own spec rows and spec files. "
+        'The same rows are in <a href="export/rows.json">export/rows.json</a> and '
+        '<a href="export/rows.md">export/rows.md</a>.</p>'
+        '<table><thead><tr><th scope="col">Part</th><th scope="col">Own rows</th><th scope="col">Spec files</th></tr></thead>'
+        "<tbody>" + "".join(rows) + "</tbody></table></section></noscript>"
+    )
+
+
 def render(data: dict, meta: dict) -> str:
     aliases = meta.get("aliases", {})
     meta = {k: v for k, v in meta.items() if k != "aliases"}
     index = search_index(data, aliases)
     payload = json.dumps({"tree": data, "meta": meta, "search": index}, separators=(",", ":")).replace("</", "<\\/")
-    page = template_with_stories(data, meta)
+    page = template_with_stories(data, meta).replace("<!--__NOSCRIPT__-->", noscript_block(data, meta))
     return page.replace("/*__DATA__*/null", payload)
 
 

@@ -2687,3 +2687,34 @@ def test_verified_and_delivered_counts_are_separate(tmp_path: Path) -> None:
     assert "verified 3" in text and "delivered 2" in text
     template = (PKG / "template.html").read_text()
     assert "metricsBlock" in template and "Provenance coverage of claims" in template
+
+
+@pytest.mark.spec("PIPE-PAGES-R046")
+def test_section_panel_counts_own_rows_and_shares_fade(monkeypatch, tmp_path: Path) -> None:
+    """The progress panel counts a part's own rows only, and fades with the same timing as the canvas."""
+    from canopy_browser import NEEDS_BROWSER, PREFIX, build_site, drive, node_of, serve
+
+    html = (PKG / "template.html").read_text()
+    assert ".pstack{" in html and ".canvas canvas{" in html
+    fade = "transition:opacity .18s ease"
+    assert fade in html[html.index(".pstack{") :][:200] and fade in html[html.index(".canvas canvas{") :][:200]
+    if NEEDS_BROWSER.args[0]:
+        pytest.skip("the layout engine or a headless Chromium is not installed")
+    site = build_site(monkeypatch, tmp_path)
+    node = node_of(site, f"{PREFIX}-R030")
+    with serve(site) as url:
+        out = drive(
+            tmp_path,
+            url,
+            """
+const wait=(ms)=>new Promise(r=>setTimeout(r,ms));
+const read=()=>Object.fromEntries(Array.from(document.querySelectorAll("#ownprog .pcounts span")).map(s=>[s.dataset.k,+s.textContent.split(" ").pop()]));
+window.__arch.go("root",{instant:true}); await wait(500); const root=read();
+window.__arch.go(%r,{hit:true,open:true,instant:true}); await wait(700);
+return {root, part:read(), bar:document.querySelectorAll("#ownprog .pstack i").length};
+"""
+            % node,
+        )
+    assert out["part"] == {"specified": 1, "landed": 0, "verified": 0, "delivered": 0}  # R030 alone sits on its part
+    assert out["root"] == {"specified": 0, "landed": 0, "verified": 0, "delivered": 0}  # never its descendants
+    assert out["bar"] == 1  # one segment per state present
