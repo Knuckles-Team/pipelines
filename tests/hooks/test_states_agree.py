@@ -1,7 +1,7 @@
 """The graph and the page agree (PIPE-GATES-R004.5).
 
-The row stays unbound: arbora does not serve ``spec.status`` yet, so these
-tests run against a loopback engine and pin the unavailable state.
+These tests run against a loopback arbora endpoint backed by a loopback engine
+that serves ``spec.status`` and pin the unavailable state.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ def _publish(repo: Repo, revision: str, engine: Loopback, *, tamper: dict[str, s
     assert publish_states(records, engine.endpoint, "")
 
 
+# spec: PIPE-GATES-R004.5
 def test_mismatch_names_each_row_and_side(repo: Repo, monkeypatch, capsys) -> None:
     revision = _repo(repo)
     with serving(Loopback()) as engine:

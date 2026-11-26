@@ -1,6 +1,7 @@
 """Verdicts and states reach the engine through a served endpoint (PIPE-GATES-R004.6).
 
-The row stays unbound until arbora serves ``spec.status`` and the verdict and state\nrecording operations; this journey runs against a loopback engine.
+This journey runs the ``spec`` group against a loopback arbora endpoint backed by a
+loopback engine, as the row's hot-path proof names.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ _REQUIREMENTS = "# demo\n\n| ID | Requirement |\n|---|---|\n| `TEST-R001` | **On
 _TASKS = "# Tasks\n\n- [x] T001 TEST-R001 First\n- [ ] T002 TEST-R002 Second\n"
 
 
+# spec: PIPE-GATES-R004.6
 def test_spec_hook_publishes_states_through_arbora_to_the_engine(repo: Repo, monkeypatch) -> None:
     repo.commit({"specs/demo/requirements.md": _REQUIREMENTS, "specs/demo/tasks.md": _TASKS}, "add spec")
     repo.commit({"pkg/feature.py": "# implements TEST-R001\n"}, "Spec: TEST-R001")
