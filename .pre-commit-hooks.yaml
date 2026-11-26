@@ -109,6 +109,14 @@
   always_run: true
   require_serial: true
   stages: [pre-commit, pre-push]
+- id: changelog
+  name: Changelog - dated, categorized releases with resolved comparison links
+  entry: pipelines-hook changelog
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
 - id: test-layout
   name: Test layout independence - isolated order and fixture inventory
   entry: pipelines-hook test-layout
