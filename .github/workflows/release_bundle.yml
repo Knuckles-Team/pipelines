@@ -1,0 +1,58 @@
+name: Release bundle gate
+
+# PIPE-RELEASE-R020, R025.6: a release names one delivered spec bundle. The job validates the committed manifests,
+# derives the bundle plan (a repository cycle refuses with BUNDLE_CYCLE) and stops with BUNDLE_NOT_DELIVERED while a
+# scoped row is not delivered or the phase scenario has no passing run.
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: Release bundle ID, the manifest name under releases/ (P1 to P5).
+        required: true
+        type: string
+      workspace:
+        description: Path of the workspace checkout that holds every registered repository.
+        required: true
+        type: string
+      scenario-runs:
+        description: Path of the JSON file of the latest recorded scenario runs.
+        required: true
+        type: string
+      reach:
+        description: Path of the JSON file of per-row production reachability.
+        required: true
+        type: string
+      endpoint:
+        description: Arbora source operations endpoint; empty skips publishing the release graph.
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout pipelines
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/pipelines
+          ref: main
+          persist-credentials: false
+
+      - name: Check the committed manifests
+        run: python3 scripts/release_scope.py --workspace "${{ inputs.workspace }}" --check
+
+      - name: Plan the bundle and stop on a cycle or an open row
+        env:
+          RELEASE: ${{ inputs.release }}
+          ENDPOINT: ${{ inputs.endpoint }}
+        run: |
+          set -euo pipefail
+          publish=()
+          if [ -n "$ENDPOINT" ]; then publish=(--publish --endpoint "$ENDPOINT"); fi
+          python3 scripts/release_scope.py --workspace "${{ inputs.workspace }}" --plan "$RELEASE" --gate \
+            --scenario-runs "${{ inputs.scenario-runs }}" --reach "${{ inputs.reach }}" "${publish[@]}"
