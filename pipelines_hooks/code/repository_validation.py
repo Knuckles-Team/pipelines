@@ -15,14 +15,18 @@ an optional category that cannot run is recorded as a visible skip.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import sys
 import tomllib
-from pathlib import Path
+from dataclasses import dataclass, field, replace
+from datetime import date
+from pathlib import Path, PurePosixPath
 
 from pipelines_hooks.code import lint_type, repository_health, solution_size
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.core.gitenv import blob_bytes, repo_root
+from pipelines_hooks.core.gitenv import blob_bytes, blob_text, git_text, nul_split, repo_root
 from pipelines_hooks.core.validation_report import (
     CheckRecord,
     Counts,
@@ -103,6 +107,184 @@ def skill_inventory(root: Path, roots: tuple[Path, ...] | None, policy_path: Pat
     return SkillInventory(roots=relative_roots, results=tuple(results)), snapshot.identity
 
 
+# --- skill dependency audit (PIPE-PAGES-R021.31 to R021.36) -----------------------------------------
+# A skill declares its dependencies in ``requirements.txt`` beside its ``SKILL.md``: one ``name==version``
+# per line, grouped by ``# group: <name>`` headings. The audit reads the Git bytes, joins them with a pinned
+# advisory snapshot and files one update proposal per vulnerable dependency with the owner's proposal store.
+# It never installs, never edits a lock and never applies a proposal; approval is a separate, later consumer.
+
+_PIN = re.compile(r"^([A-Za-z0-9_.-]+)==([A-Za-z0-9_.+!-]+)$")
+_GROUP = re.compile(r"^#\s*group:\s*(\S+)\s*$")
+ADVISORY_MAX_AGE_DAYS = 7
+
+
+def _digest(value: object) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+@dataclass(frozen=True)
+class SkillDependencyAudit:
+    """One skill's declared dependencies, the advisories that hit them and the proposals filed for them."""
+
+    skill_path: str
+    skill_digest: str
+    inventory_digest: str
+    groups: dict[str, tuple[tuple[str, str], ...]]
+    advisory_digest: str
+    findings: tuple[dict, ...] = ()
+    proposals: tuple[dict, ...] = field(default=())
+    receipts: tuple[dict, ...] = field(default=())
+    approval_state: str = "unapproved"  # kept apart from the audit result; a consumer changes it, never the audit
+    installation_effects: int = 0  # the audit path installs nothing, so a suggestion is never applied remediation
+
+    def evidence(self) -> dict:
+        return {
+            "gate": "repository-validation",
+            "audit": "skill-dependencies",
+            "skill": self.skill_path,
+            "skill_digest": self.skill_digest,
+            "inventory_digest": self.inventory_digest,
+            "advisory_digest": self.advisory_digest,
+            "findings": list(self.findings),
+            "proposals": [p["identity"] for p in self.proposals],
+            "receipts": list(self.receipts),
+            "approval_state": self.approval_state,
+            "installation_effects": self.installation_effects,
+        }
+
+
+def parse_declaration(skill_path: str, text: str | None) -> dict[str, tuple[tuple[str, str], ...]]:
+    """The dependency groups of one declaration; a missing declaration or an unpinned line cannot be audited."""
+    if text is None:
+        raise CannotRun(f"repository-validation: {skill_path} has no dependency declaration (requirements.txt)")
+    groups: dict[str, list[tuple[str, str]]] = {}
+    group = "default"
+    for number, raw in enumerate(text.splitlines(), 1):
+        line = raw.strip()
+        heading = _GROUP.match(line)
+        if heading:
+            group = heading.group(1)
+        elif line and not line.startswith("#"):
+            pin = _PIN.match(line)
+            if pin is None:
+                raise CannotRun(f"repository-validation: {skill_path}:{number} version is unresolved: {line!r}")
+            groups.setdefault(group, []).append((pin.group(1).lower(), pin.group(2)))
+    return {g: tuple(sorted(pins)) for g, pins in sorted(groups.items())}
+
+
+def read_advisories(path: Path, as_of: date) -> tuple[list[dict], str]:
+    """The pinned advisory snapshot and its digest; evidence older than the allowed age cannot be trusted."""
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+        captured = date.fromisoformat(document["captured_at"])
+        advisories = list(document["advisories"])
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise CannotRun(f"repository-validation: advisory snapshot {path} is unreadable: {exc}") from exc
+    if (as_of - captured).days > ADVISORY_MAX_AGE_DAYS:
+        raise CannotRun(f"repository-validation: advisory snapshot is stale (captured {captured}, as of {as_of})")
+    return advisories, _digest(document)
+
+
+def _hits(groups: dict, advisories: list[dict]) -> list[dict]:
+    hits = []
+    for group, pins in groups.items():
+        for name, version in pins:
+            for advisory in advisories:
+                if advisory["package"].lower() == name and version in advisory["affected"]:
+                    hits.append(
+                        {
+                            "advisory": advisory["id"],
+                            "group": group,
+                            "package": name,
+                            "version": version,
+                            "target": advisory["fixed"],
+                        }
+                    )
+    return hits
+
+
+class ProposalStore:
+    """The owner's proposal storage as a directory of identity-keyed records (the served adapter has this shape)."""
+
+    def __init__(self, directory: Path) -> None:
+        self.directory = directory
+
+    def put(self, proposal: dict) -> dict:
+        try:
+            self.directory.mkdir(parents=True, exist_ok=True)
+            (self.directory / f"{proposal['identity']}.json").write_text(json.dumps(proposal, sort_keys=True))
+        except OSError as exc:
+            raise CannotRun(f"repository-validation: owner proposal storage is unavailable: {exc}") from exc
+        return {"identity": proposal["identity"], "stored": True}
+
+    def get(self, identity: str) -> dict | None:
+        path = self.directory / f"{identity}.json"
+        return json.loads(path.read_text()) if path.is_file() else None
+
+
+def audit_skill(
+    skill_path: str, text: str | None, advisories: list[dict], advisory_digest: str, store: ProposalStore | None
+):
+    """Audit one skill: findings always, proposals only through the store, storage failure after the findings."""
+    groups = parse_declaration(skill_path, text)
+    skill_digest = _digest(text)
+    inventory_digest = _digest({g: [list(p) for p in pins] for g, pins in groups.items()})
+    findings = tuple(_hits(groups, advisories))
+    proposals = tuple(
+        {
+            "identity": _digest([skill_path, skill_digest, hit["advisory"], hit["package"], hit["target"]]),
+            "skill": skill_path,
+            "old": hit["version"],
+            "target": hit["target"],
+            "finding": hit["advisory"],
+            "package": hit["package"],
+            "provenance": {
+                "skill_digest": skill_digest,
+                "inventory_digest": inventory_digest,
+                "advisory": advisory_digest,
+            },
+            "artifact_digest": skill_digest,
+        }
+        for hit in findings
+    )
+    audit = SkillDependencyAudit(
+        skill_path, skill_digest, inventory_digest, groups, advisory_digest, findings, proposals
+    )
+    if not proposals:
+        return audit
+    if store is None:
+        raise CannotRun("repository-validation: owner proposal storage is unavailable (no --proposal-store)")
+    try:
+        receipts = tuple(store.put(p) for p in proposals)
+        if any(store.get(p["identity"]) != p for p in proposals):  # independent readback
+            raise CannotRun("repository-validation: stored proposal differs on readback")
+    except CannotRun:
+        print(json.dumps(audit.evidence(), sort_keys=True))  # the vulnerability stays a finding
+        raise
+    return replace(audit, receipts=receipts)
+
+
+def bind_approval(store: ProposalStore, identity: str, artifact_digest: str) -> dict:
+    """The separate consumer's check: an approval binds one stored proposal and its exact artifact digest."""
+    proposal = store.get(identity)
+    if proposal is None or proposal["artifact_digest"] != artifact_digest:
+        raise CannotRun("repository-validation: the approval is stale or names no stored proposal")
+    return {"identity": identity, "artifact_digest": artifact_digest, "approval_state": "approved"}
+
+
+def audit_skill_dependencies(root: Path, advisory_path: Path, store: ProposalStore | None, as_of: date) -> int:
+    """Audit every skill of the snapshot; exit 1 when any dependency is vulnerable."""
+    advisories, advisory_digest = read_advisories(advisory_path, as_of)
+    skills = [p for p in nul_split(git_text(root, ("ls-files", "-z", "--", "*SKILL.md"), preserve_index=True))]
+    status = 0
+    for skill in sorted(skills):
+        declaration = blob_text(root, f":{PurePosixPath(skill).parent.as_posix()}/requirements.txt")
+        audit = audit_skill(skill, declaration, advisories, advisory_digest, store)
+        print(json.dumps(audit.evidence(), sort_keys=True))
+        status = 1 if audit.findings else status
+    return status
+
+
 def collect(
     root: Path,
     roots: tuple[Path, ...] | None = None,
@@ -161,12 +343,23 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--size-scope", action="append", default=[], help="source directory inside each snapshot")
     parser.add_argument("--adequacy", type=Path, help="adequacy receipts JSON: {receipts: [{id, snapshot, behavior}]}")
     parser.add_argument("--size-report", type=Path)
+    parser.add_argument("--audit-skill-dependencies", type=Path, metavar="ADVISORIES", help="pinned advisory snapshot")
+    parser.add_argument("--proposal-store", type=Path, help="owner proposal storage directory")
+    parser.add_argument("--as-of", type=date.fromisoformat, default=None, help="date the advisory age is judged at")
+    parser.add_argument("--install", action="store_true", help="refused: the audit path never installs")
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
     args = parser.parse_args(argv)
     if args.size_baseline or args.size_candidate:
         return size_comparison(args)
     root = repo_root(args.root)
+    if args.install:
+        raise CannotRun(
+            "repository-validation: the audit path never installs packages, edits locks or applies a proposal"
+        )
+    if args.audit_skill_dependencies:
+        store = ProposalStore(args.proposal_store) if args.proposal_store else None
+        return audit_skill_dependencies(root, args.audit_skill_dependencies, store, args.as_of or date.today())
     report = collect(
         root,
         tuple(args.skills_root) or None,
