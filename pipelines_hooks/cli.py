@@ -38,6 +38,8 @@ GATES: dict[str, str] = {
     "mermaid": "pipelines_hooks.hygiene.mermaid",
     "lockfile-version-mirrors": "pipelines_hooks.hygiene.lockfile_version_mirrors",
     "coupling": "pipelines_hooks.code.coupling",
+    "coverage-decrease": "pipelines_hooks.code.coverage_decrease",
+    "wire-rename": "pipelines_hooks.code.wire_rename",
     "environment-config-only": "pipelines_hooks.code.environment_config_only",
     "uv-lock-check": "pipelines_hooks.hygiene.uv_lock",
     "connector-name": "pipelines_hooks.hygiene.connector_name",
@@ -69,6 +71,7 @@ GATES: dict[str, str] = {
     "test-layout": "pipelines_hooks.ci_replica.test_layout",
     "spec-decomposition": "pipelines_hooks.specs.decomposition",
     "spec-standard": "pipelines_hooks.specs.standard",
+    "ingest-worker-policy": "pipelines_hooks.specs.worker_policy",
     "plan-conformance": "pipelines_hooks.specs.plan_conformance",
     "spec-id-index": "pipelines_hooks.specs.id_index",
     "ste-staged": "pipelines_hooks.ste.staged",
@@ -95,7 +98,14 @@ GATES: dict[str, str] = {
 #: runs its member gates in order, with each member's default arguments.
 GROUPS: dict[str, tuple[str, ...]] = {
     "secrets": ("security-sanitizer", "secret-history", "tracked-privacy", "commit-identity", "commit-identity-range"),
-    "spec": ("spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers"),
+    "spec": (
+        "spec-standard",
+        "ingest-worker-policy",
+        "plan-conformance",
+        "spec-decomposition",
+        "spec-status",
+        "spec-trailers",
+    ),
 }
 
 #: Group members that check a commit range. They run only when a range is

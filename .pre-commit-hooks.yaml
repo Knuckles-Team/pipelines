@@ -71,6 +71,27 @@
   always_run: true
   pass_filenames: false
   stages: [manual]
+- id: coverage-decrease
+  name: Coverage decrease - a proposal whose measured coverage falls below its baseline fails
+  entry: pipelines-hook coverage-decrease
+  language: python
+  always_run: true
+  pass_filenames: false
+  stages: [manual]
+- id: wire-rename
+  name: Wire rename - a renamed serialized name recomputes the golden, receipt and digest files that cover it
+  entry: pipelines-hook wire-rename
+  language: python
+  always_run: true
+  pass_filenames: false
+  stages: [pre-push, manual]
+- id: ingest-worker-policy
+  name: Ingest-worker policy - specs/ingest-worker restates no worker policy value outside a row citing its owner
+  entry: pipelines-hook ingest-worker-policy
+  language: python
+  always_run: true
+  pass_filenames: false
+  stages: [manual]
 - id: spec-templates
   name: Spec templates - .specify/templates equals the vended pipelines templates
   entry: pipelines-hook spec-templates

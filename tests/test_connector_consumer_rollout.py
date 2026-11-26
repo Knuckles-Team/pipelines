@@ -17,7 +17,7 @@ import pytest
 
 from pipelines_hooks.cli import GROUPS
 from scripts.spec_dashboard_sources import read_records
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train.json"
 EXPECTED_PROVIDER = "5c1de08df84e4e67ebc4fd04210626135c336de9"
@@ -89,7 +89,7 @@ def test_consumer_aggregate_hooks_match_canonical_template():
     assert expected["rev"] == "main"
     assert set(expected["hooks"]) == EXPECTED_HOOKS
     assert evidence["provider"]["spec_group_source"] == "pipelines_hooks/cli.py:73"
-    assert evidence["provider"]["spec_group"] == list(GROUPS["spec"])
+    assert evidence["provider"]["spec_group"] == list(HISTORICAL_SPEC_GROUP)
     assert set(evidence["provider"]["spec_leaf_hooks"]) <= set(GROUPS["spec"])
     for name, row in evidence["repos"].items():
         hooks = row["precommit"]
