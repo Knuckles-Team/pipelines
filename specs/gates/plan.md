@@ -130,6 +130,16 @@ The `spec-standard` check scans authored `specs/**/*.md` text against `pipelines
   short named-volume form and the canonical long form only when the
   top-level declaration matches the service mount.
 
+### Design answers (publish, engine tree, warm slots)
+
+- **Owner:** this repository: `pipelines_hooks/verdict_publish.py`, `states_publish.py`, `source_provider.py` and the `pipelines_hooks/ci/warm_slots/` package. The engine and arbora own the operations these call.
+- **Cohesion:** one HTTP helper (`post_operation` in `pipelines_hooks/verdict_publish.py`) serves verdicts, states, the `states-agree` read and the engine tree reads; each warm-slot module has one job (definition, config, render, lifecycle, routing, budgets).
+- **Dependency direction:** the gates call arbora over plain HTTP; nothing imports an ecosystem package. `config.py` imports `definition.py` and `budgets.py`; `definition.py` reaches `config.py` only under type checking.
+- **Interface depth:** none beyond the existing `FileProvider` contract: `EngineTreeProvider` is a second implementation of it, and `SlotRuntime` is the one injection point of the lifecycle, with `SshHostRuntime` and the test double as callers in `pipelines_hooks/ci/warm_slots/cli.py` and `tests/hooks/test_warm_slot_lifecycle.py`.
+- **Special cases:** a gate that could not run is recorded as a failed verdict; an absent endpoint skips the publish with a log line; an unserved operation is an advisory finding in `states-agree` and a cannot-run in the engine tree read.
+- **State:** the engine holds every record; the timings file of a slot pool is the only local state and is appended through `record_timing`.
+- **Environment:** `PIPELINES_ARBORA_ENDPOINT` and `PIPELINES_ARBORA_TOKEN` (declared in `pipelines_hooks/core/settings.py`) and the CI repository and revision variables; the warm-slot knobs live in the one `.config/warm-slots.toml` file.
+
 ### Warm build slots (PIPE-GATES-R070 to R075)
 
 One image per repository pin set and one configuration file render to four runtimes through one function per runtime. The cache sits on local solid-state storage outside the checkout. Lifecycle commands share the runtime adapters. Routing and credential isolation are workflow checks, so a fork pull request cannot reach a slot.
@@ -198,7 +208,7 @@ Each row names its test. The repository pre-commit and pre-push hooks and the pu
 
 ## Production caller chain
 
-- Verdicts: `run_gate_on` at `pipelines_hooks/gate_runner.py:62` calls `publish_verdict` (`PIPE-GATES-R004.1`).
+- Verdicts: `run_gate_on` at `pipelines_hooks/gate_runner.py:64` calls `publish_verdict` (`PIPE-GATES-R004.1`).
 - States: `main` at `pipelines_hooks/specs/status.py:110` calls `publish_states` (`PIPE-GATES-R004.4`).
 - Connector surface: hook `connector-standard` runs `standard.main`, whose `surface` member (`pipelines_hooks/connector/standard.py:15`) calls `audit_connector` at `pipelines_hooks/hygiene/connector_surface.py:346` (`PIPE-GATES-R014.8`).
 - Contracts: hook `spec` at `.pre-commit-hooks.yaml:45` reaches the group at `pipelines_hooks/cli.py:80`, which runs `contract-coverage` (`PIPE-GATES-R034.3`).
