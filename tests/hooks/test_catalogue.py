@@ -64,6 +64,9 @@ KEPT = {
     "source-path-portability",
     "prompt-format",
     "skill-grade",
+    "mutation-gaps",
+    "export-version",
+    "test-quality",
     "test-layout",
     "workflow-step-honesty",
 }

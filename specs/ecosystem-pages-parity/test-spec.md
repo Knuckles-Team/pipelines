@@ -314,12 +314,12 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R008 | PIPE-PAGES-R008 | Run `tests/test_pages_fleet_parity.py::test_six_exact_refs_stable_receipts_and_no_mutation`. A multi-page render, link, and accessibility audit plus a changed-file build check confirm ownership statements, the quick start, and accessible navigation on the consumer site. |
 | T-PIPE-PAGES-R011 | PIPE-PAGES-R011 | Run `tests/test_sync_mkdocs_theme.py::test_shared_ecosystem_links_use_canonical_repository_urls`. Strict MkDocs render, accessibility, theme, and privacy gates, together with the documentation build run, confirm the home page's content and that it passes without regressions. |
 | T-PIPE-PAGES-R025.3 | PIPE-PAGES-R025.3 | Run `tests/hooks/test_packaging_roles.py::test_packaging_role_closure_cli`. |
-| T-PIPE-PAGES-R032.1 | PIPE-PAGES-R032.1 | Planned `tests/test_export_version.py::test_export_header_carries_version_and_decision_condition`. |
-| T-PIPE-PAGES-R032.2 | PIPE-PAGES-R032.2 | Planned `tests/test_export_version.py::test_roundtrip_keeps_decision_condition_and_compares_exactly`. |
-| T-PIPE-PAGES-R032.3 | PIPE-PAGES-R032.3 | Planned `tests/test_export_version.py::test_gate_is_registered_in_the_cli`. |
-| T-PIPE-PAGES-R032.4 | PIPE-PAGES-R032.4 | Planned `tests/test_export_version.py::test_version_move_and_lost_condition_refuse_the_import`. |
-| T-PIPE-PAGES-R032.5 | PIPE-PAGES-R032.5 | Planned `tests/test_export_version.py::test_each_roundtrip_prints_its_comparison_evidence`. |
-| T-PIPE-PAGES-R032.6 | PIPE-PAGES-R032.6 | Planned `tests/test_export_version.py::test_export_import_cli_equal_older_and_newer`. |
+| T-PIPE-PAGES-R032.1 | PIPE-PAGES-R032.1 | Planned `tests/hooks/test_export_version.py::test_export_header_carries_version_and_decision_condition`. |
+| T-PIPE-PAGES-R032.2 | PIPE-PAGES-R032.2 | Planned `tests/hooks/test_export_version.py::test_roundtrip_keeps_decision_condition_and_compares_exactly`. |
+| T-PIPE-PAGES-R032.3 | PIPE-PAGES-R032.3 | Planned `tests/hooks/test_export_version.py::test_gate_is_registered_in_the_cli`. |
+| T-PIPE-PAGES-R032.4 | PIPE-PAGES-R032.4 | Planned `tests/hooks/test_export_version.py::test_version_move_and_lost_condition_refuse_the_import`. |
+| T-PIPE-PAGES-R032.5 | PIPE-PAGES-R032.5 | Planned `tests/hooks/test_export_version.py::test_each_roundtrip_prints_its_comparison_evidence`. |
+| T-PIPE-PAGES-R032.6 | PIPE-PAGES-R032.6 | Planned `tests/hooks/test_export_version.py::test_export_import_cli_equal_older_and_newer`. |
 | T-PIPE-PAGES-R040.1 | PIPE-PAGES-R040.1 | Planned `tests/test_coverage_baseline.py::test_evidence_carries_baseline_candidate_and_revision`. |
 | T-PIPE-PAGES-R040.2 | PIPE-PAGES-R040.2 | Planned `tests/test_coverage_baseline.py::test_decrease_is_rejected_deterministically`. |
 | T-PIPE-PAGES-R040.3 | PIPE-PAGES-R040.3 | Planned `tests/test_coverage_baseline.py::test_gate_is_registered_and_binds_the_revision`. |
