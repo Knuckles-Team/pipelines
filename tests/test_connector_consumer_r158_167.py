@@ -16,7 +16,7 @@ import pytest
 
 from pipelines_hooks.cli import GROUPS
 from scripts.spec_dashboard_sources import read_records
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r158_167.json"
 EXPECTED_PROVIDER = "753086e0fd9783732ecd53eef0e08be8f6dd27c9"
@@ -60,7 +60,7 @@ def test_consumer_status_sources_are_readable(tmp_path: Path):
     evidence = _evidence()
     provider = evidence["provider"]
     assert provider["sha"] == EXPECTED_PROVIDER
-    assert provider["spec_group"] == list(GROUPS["spec"])
+    assert provider["spec_group"] == list(HISTORICAL_SPEC_GROUP)
     assert provider["spec_group_source"] == "pipelines_hooks/cli.py:71-74"
     for name, row in evidence["repos"].items():
         spec_id = f"{row['row']}.1"

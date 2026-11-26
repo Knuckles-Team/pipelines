@@ -23,8 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from pipelines_hooks.cli import GROUPS
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r103_r161_remeasure.json"
 SKILL_HEADING = "Rapid delivery: the 5-minute contract"
@@ -150,7 +149,7 @@ def test_shared_spec_hook_is_the_canonical_three_hook_mapping() -> None:
     """A `.2` row may only be bound when the shared aggregate equals the three leaves."""
     evidence = _evidence()
     provider = evidence["provider"]
-    assert list(GROUPS["spec"]) == provider["spec_group"]
+    assert list(HISTORICAL_SPEC_GROUP) == provider["spec_group"]
     assert set(provider["spec_group"]) == {"spec-standard", "plan-conformance", *SPEC_LEAVES}
     assert provider["canonical_template_rev"] == "main"
 

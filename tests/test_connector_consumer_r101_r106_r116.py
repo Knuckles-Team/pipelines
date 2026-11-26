@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from pipelines_hooks.cli import GROUPS
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r101_r106_r116.json"
 EXPECTED_PROVIDER = "2a048eaad63c8f977ce46312d5228abad8c794f5"
@@ -93,7 +93,7 @@ def test_provider_mapping_and_baseline_status_are_immutable() -> None:
     provider = evidence["provider"]
     assert provider["requirements_sha256"] == EXPECTED_PROVIDER_REQUIREMENTS
     assert provider["status_sha256"] == EXPECTED_PROVIDER_STATUS
-    assert provider["spec_group"] == list(GROUPS["spec"])
+    assert provider["spec_group"] == list(HISTORICAL_SPEC_GROUP)
     assert set(provider["spec_group"]) == EXPECTED_SPEC_LEAVES
     assert provider["canonical_template"]["rev"] == "main"
     assert set(provider["canonical_template"]["hooks"]) == EXPECTED_HOOKS
