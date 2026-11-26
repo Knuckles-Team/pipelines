@@ -186,6 +186,14 @@ def _link_findings(root: Path, plan: Path, text: str) -> list[tuple[int, str]]:
     return out
 
 
+def check_plan_text(text: str, template: str, known: set[str]) -> list[str]:
+    """All ``line: message`` findings for plan text, without reading the file system (links are not checked)."""
+    found = _heading_findings(text, required_headings(template), None)
+    found += _empty_sections(text) + _placeholder_findings(text, placeholder_tokens(template))
+    found += _id_findings(text, known)
+    return [f"{n}: {msg}" for n, msg in sorted(dict.fromkeys(found), key=lambda item: item[0])]
+
+
 def check_plan(
     root: Path, plan: Path, template: str, known: set[str], index: dict[str, set[str]] | None = None
 ) -> list[str]:

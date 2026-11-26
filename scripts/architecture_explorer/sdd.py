@@ -8,13 +8,16 @@ Rendering to HTML stays in ``details``; this module only parses markdown for cou
 
 from __future__ import annotations
 
+import enum
 import re
 from collections import Counter
+from collections.abc import Callable
+from dataclasses import dataclass
 
 # Document kinds a card links to. The page holds the same list; a card stores the present kinds as a bit set.
 KINDS = ("spec", "plan", "tasks", "test-spec", "checklists", "research", "data-model", "quickstart", "contracts")
 TASK_RE = re.compile(r"^[ \t]*[-*][ \t]+\[([ xX])\][ \t]+(\S.*)$", re.M)
-PHASE_RE = re.compile(r"\bP([1-5])\b")
+PHASE_LINE_RE = re.compile(r"^Delivery phase:\s*P([1-5])\b", re.M)
 VERSION_RE = re.compile(r"\*\*Version\*\*:\s*([0-9][^\s|]*)")
 FAIL_RE = re.compile(r"(?:[:|—–-]|\*\*)\s*\**fail\b", re.I)
 H2_RE = re.compile(r"^##[ \t]+(.+?)[ \t]*#*[ \t]*$", re.M)
@@ -84,15 +87,147 @@ def kinds_bits(names) -> int:
 
 
 def phase_of(plan: str, release_phases: list[str]) -> str:
-    """Return ``P1`` to ``P5``: the phase the plan's Delivery phase section names, else the most common release phase."""
-    found = PHASE_RE.findall(section(plan, "Delivery phase"))
+    """Return ``P1`` to ``P5``: the plan's ``Delivery phase: P<n>`` line, else the most common release phase."""
+    found = PHASE_LINE_RE.search(plan)
     if found:
-        return "P" + Counter(found).most_common(1)[0][0]
+        return "P" + found.group(1)
     return Counter(release_phases).most_common(1)[0][0] if release_phases else ""
 
 
-def family_card(docs: dict[str, str], files: set[str], family: str, release_phases: list[str]) -> dict:
-    """Return the compact card of one spec family: title, phase, ``[done, open]`` tasks, document bits and warnings."""
+# ------------------------------------------------------------ SDD phase of a family (PIPE-PAGES-R054)
+
+RESEARCH = "research.md"
+CLARIFY_MARK = "NEEDS CLARIFICATION"
+OPEN_HEADING_RE = re.compile(r"open questions|unresolved", re.I)
+ROW_ID_RE = re.compile(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-R\d+(?:\.\d+)*\b")
+UNCHECKED_RE = re.compile(r"^[ \t]*[-*][ \t]+\[ \][ \t]+(\S.*)$")
+HEADING_LINE_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$")
+
+
+class SddPhase(enum.IntEnum):
+    """The spec-driven phases of a family, lowest first."""
+
+    SPECIFIED = 1
+    RESEARCH_DONE = 2
+    PLAN_ACCEPTED = 3
+    TASKS_READY = 4
+    IMPLEMENTING = 5
+    VERIFIED = 6
+
+    @property
+    def label(self) -> str:
+        return self.name.lower().replace("_", "-")
+
+
+@dataclass(frozen=True)
+class PhaseFacts:
+    """What the phase predicates read: family documents, the family's rows, and the plan findings."""
+
+    docs: dict[str, str]
+    rows: tuple[dict, ...]
+    plan_findings: tuple[str, ...] | None  # None when the plan was not checked
+
+
+def active_rows(rows) -> list[dict]:
+    """Rows that count toward phases: not retired and not a rollup."""
+    return [r for r in rows if r.get("status") != "RETIRED" and not r.get("rollup")]
+
+
+def _has_spec(f: PhaseFacts) -> bool:
+    return bool(f.docs.get(SPEC, "").strip())
+
+
+def _research_done(f: PhaseFacts) -> bool:
+    if any(CLARIFY_MARK in text for text in f.docs.values()):
+        return False
+    return not any(q["kind"] == "open" for q in open_questions(f.docs))
+
+
+def _plan_accepted(f: PhaseFacts) -> bool:
+    return bool(f.docs.get(PLAN, "").strip()) and f.plan_findings == ()
+
+
+def _tasks_ready(f: PhaseFacts) -> bool:
+    full = f.docs.get(TASKS, "")
+    tasks = " ".join(m.group(2) for m in TASK_RE.finditer(full))
+    rows = active_rows(f.rows)
+    return bool(rows) and all(r["id"] in tasks for r in rows)
+
+
+def _implementing(f: PhaseFacts) -> bool:
+    return any(r.get("status") in ("LANDED", "VERIFIED") for r in f.rows) or any(
+        d for d, _ in tasks_of(f.docs.get(TASKS, ""))
+    )
+
+
+def _verified(f: PhaseFacts) -> bool:
+    rows = [r for r in f.rows if r.get("status") != "RETIRED"]
+    return bool(rows) and all(r.get("status") == "VERIFIED" for r in rows)
+
+
+PHASE_PREDICATES: dict[SddPhase, Callable[[PhaseFacts], bool]] = {
+    SddPhase.SPECIFIED: _has_spec,
+    SddPhase.RESEARCH_DONE: _research_done,
+    SddPhase.PLAN_ACCEPTED: _plan_accepted,
+    SddPhase.TASKS_READY: _tasks_ready,
+    SddPhase.IMPLEMENTING: _implementing,
+    SddPhase.VERIFIED: _verified,
+}
+
+
+def sdd_phase(docs: dict[str, str], rows, plan_findings: list[str] | None = None) -> SddPhase | None:
+    """Return the highest phase whose predicate holds when every lower predicate holds, or ``None``."""
+    facts = PhaseFacts(docs, tuple(rows), None if plan_findings is None else tuple(plan_findings))
+    reached = None
+    for phase in SddPhase:
+        if not PHASE_PREDICATES[phase](facts):
+            break
+        reached = phase
+    return reached
+
+
+def open_questions(docs: dict[str, str], files: set[str] | None = None, family: str = "") -> list[dict]:
+    """Return ``{kind, text, doc, line, row}`` for each open question of a family (PIPE-PAGES-R058.1).
+
+    ``marker`` is a ``NEEDS CLARIFICATION`` marker in any document; ``open`` is an unchecked item under a heading of
+    ``research.md`` that names open questions; ``unreadable`` marks a research file that could not be decoded.
+    """
+    found = []
+    if files and f"specs/{family}/{RESEARCH}" in files and not docs.get(RESEARCH, "").strip():
+        found.append({"kind": "unreadable", "text": "research unreadable", "doc": RESEARCH, "line": 0, "row": ""})
+    for name in sorted(docs):
+        text = docs[name]
+        lines = text.splitlines()
+        under_open = False
+        for number, line in enumerate(lines, 1):
+            head = HEADING_LINE_RE.match(line)
+            if head:
+                under_open = bool(OPEN_HEADING_RE.search(head.group(2)))
+            ids = ROW_ID_RE.search(line)
+            row = ids.group(0) if ids else ""
+            if CLARIFY_MARK in line:
+                found.append(
+                    {"kind": "marker", "text": line.strip()[:TASK_MAX], "doc": name, "line": number, "row": row}
+                )
+            elif name == RESEARCH and under_open and UNCHECKED_RE.match(line):
+                item = UNCHECKED_RE.match(line).group(1).strip()
+                found.append({"kind": "open", "text": item[:TASK_MAX], "doc": name, "line": number, "row": row})
+    return found
+
+
+def family_card(
+    docs: dict[str, str],
+    files: set[str],
+    family: str,
+    release_phases: list[str],
+    rows=(),
+    plan_check: Callable[[str], list[str]] | None = None,
+) -> dict:
+    """Return the compact card of one family: title, phase, tasks, document bits, SDD phase and open questions.
+
+    ``s`` is the SDD phase number (0 when the family has no ``spec.md``); ``q`` is the count of open questions that
+    name no row, and appears only when above zero. ``plan_check`` returns the plan-conformance findings of a plan text.
+    """
     plan = docs.get(PLAN, "")
     tasks = tasks_of(docs.get(TASKS, ""))
     done = sum(1 for d, _ in tasks if d)
@@ -104,23 +239,55 @@ def family_card(docs: dict[str, str], files: set[str], family: str, release_phas
         "k": [done, len(tasks) - done],
         "d": kinds_bits(present),
     }
+    findings = plan_check(plan) if plan_check and plan.strip() else None
+    phase = sdd_phase(docs, rows, findings)
+    card["s"] = int(phase) if phase else 0
+    asked = [q for q in open_questions(docs, files, family) if q["kind"] != "unreadable"]
+    if asked:
+        card["q"] = len(asked)
+    if any(q["kind"] == "unreadable" for q in open_questions(docs, files, family)):
+        card["u"] = "research unreadable"
     warn = failing_principles(plan)
     if warn:
         card["w"] = warn
     return card
 
 
-def build_cards(snaps: list, release_of: dict[str, str], release_phase: dict[str, str]) -> dict[str, dict[str, dict]]:
+def next_step(row: dict, phase: int, frontier: bool) -> str:
+    """Return the Next-step chip of a row: ``verify``, ``ready``, ``plan``, ``research`` or empty (PIPE-PAGES-R055).
+
+    Rules apply in that order. ``verify``: the row is LANDED. ``ready``: the row is in Next up and the family phase is
+    tasks-ready or implementing. ``plan``: the phase is research-done. ``research``: the phase is specified.
+    """
+    if row.get("status") == "LANDED":
+        return "verify"
+    if frontier and phase in (SddPhase.TASKS_READY, SddPhase.IMPLEMENTING):
+        return "ready"
+    if phase == SddPhase.RESEARCH_DONE:
+        return "plan"
+    if phase == SddPhase.SPECIFIED:
+        return "research"
+    return ""
+
+
+def build_cards(
+    snaps: list,
+    release_of: dict[str, str],
+    release_phase: dict[str, str],
+    plan_check: Callable[[str], list[str]] | None = None,
+) -> dict[str, dict[str, dict]]:
     """Return ``{repo: {family: card}}`` for every family that has spec rows."""
     cards: dict[str, dict[str, dict]] = {}
     for snap in snaps:
-        by_family: dict[str, list[str]] = {}
+        by_family: dict[str, list[dict]] = {}
         for row in snap.rows:
-            phase = release_phase.get(release_of.get(row["id"], ""), "")
-            by_family.setdefault(row["family"], []).append(phase)
-        for family, phases in by_family.items():
+            by_family.setdefault(row["family"], []).append(row)
+        for family, rows in by_family.items():
+            phases = [release_phase.get(release_of.get(r["id"], ""), "") for r in rows]
             docs = snap.docs.get(family, {})
-            cards.setdefault(snap.repo, {})[family] = family_card(docs, snap.files, family, [p for p in phases if p])
+            cards.setdefault(snap.repo, {})[family] = family_card(
+                docs, snap.files, family, [p for p in phases if p], rows, plan_check
+            )
     return cards
 
 
