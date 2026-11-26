@@ -15,6 +15,7 @@ GATES: dict[str, str] = {
     "export-version": "pipelines_hooks.validation.export_version",
     "dependency-readiness": "pipelines_hooks.release.dependency_readiness",
     "packaging-roles": "pipelines_hooks.release.packaging_roles",
+    "release-phases": "pipelines_hooks.release.phases",
     "harness-bundles-untracked": "pipelines_hooks.release.harness_bundles",
     "upgrade-test": "pipelines_hooks.release.upgrade_test",
     "consumer-gate": "pipelines_hooks.release.consumer_gate",

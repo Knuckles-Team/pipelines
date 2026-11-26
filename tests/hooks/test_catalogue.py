@@ -59,6 +59,7 @@ KEPT = {
     "release-standard",
     "dependency-readiness",
     "packaging-roles",
+    "release-phases",
     "harness-bundles-untracked",
     "upgrade-test",
     "consumer-gate",

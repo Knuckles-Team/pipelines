@@ -477,6 +477,14 @@
   always_run: true
   require_serial: true
   stages: [manual]
+- id: release-phases
+  name: RELEASE ordered phases with delays and major-upgrade admission
+  entry: pipelines-hook release-phases
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
 - id: packaging-roles
   name: Packaging role/extra closure (explicit contract and evidence paths)
   entry: pipelines-hook packaging-roles
