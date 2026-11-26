@@ -15,14 +15,22 @@ an optional category that cannot run is recorded as a visible skip.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import tomllib
 from pathlib import Path
 
-from pipelines_hooks.code import lint_type
+from pipelines_hooks.code import lint_type, repository_health, solution_size
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import blob_bytes, repo_root
-from pipelines_hooks.core.validation_report import CheckRecord, Evidence, SkillInventory, SkillResult, ValidationReport
+from pipelines_hooks.core.validation_report import (
+    CheckRecord,
+    Counts,
+    Evidence,
+    SkillInventory,
+    SkillResult,
+    ValidationReport,
+)
 from pipelines_hooks.docs import skill_grade
 
 CATEGORIES = (*lint_type.PHASES, "skill")
@@ -95,7 +103,13 @@ def skill_inventory(root: Path, roots: tuple[Path, ...] | None, policy_path: Pat
     return SkillInventory(roots=relative_roots, results=tuple(results)), snapshot.identity
 
 
-def collect(root: Path, roots: tuple[Path, ...] | None = None, policy_path: Path | None = None) -> ValidationReport:
+def collect(
+    root: Path,
+    roots: tuple[Path, ...] | None = None,
+    policy_path: Path | None = None,
+    health_policy: Path | None = None,
+) -> ValidationReport:
+    policy = repository_health.load_policy(health_policy) if health_policy is not None else None
     required = required_categories(root)
     checks = code_checks(root, required) if required & set(lint_type.PHASES) else []
     try:
@@ -105,7 +119,35 @@ def collect(root: Path, roots: tuple[Path, ...] | None = None, policy_path: Path
             raise
         skills = SkillInventory(applicable=False, reason=f"skill grading unavailable: {exc}")
         identity = "index"
-    return ValidationReport.build(repository=root.name, snapshot=identity, checks=checks, skills=skills)
+    summary = None
+    if policy is not None:
+        phase_counts = {
+            c.category: Counts(
+                passed=sum(r.outcome == "pass" for r in c.rules),
+                failed=sum(r.outcome == "fail" for r in c.rules),
+                skipped=int(c.status == "cannot-run"),
+            )
+            for c in checks
+        }
+        scored, summary = repository_health.evaluate(root, policy, identity, phase_counts)
+        checks = [*checks, *scored]
+    return ValidationReport.build(repository=root.name, snapshot=identity, checks=checks, skills=skills, health=summary)
+
+
+def size_comparison(args: argparse.Namespace) -> int:
+    if not (args.size_baseline and args.size_candidate and args.adequacy and args.size_scope):
+        raise CannotRun("repository-validation: size comparison needs baseline, candidate, scope and adequacy receipts")
+    scope = tuple(args.size_scope)
+    result = solution_size.compare(
+        solution_size.measure(args.size_baseline, scope),
+        solution_size.measure(args.size_candidate, scope),
+        solution_size.load_receipts(args.adequacy),
+    )
+    if args.size_report:
+        args.size_report.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    delta = result["delta"]
+    print(f"repository-validation: size eligible={str(result['eligible']).lower()} delta={delta}")  # type: ignore[index]
+    return 0 if result["eligible"] else 1
 
 
 def main(argv: list[str]) -> int:
@@ -113,11 +155,24 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--skills-root", type=Path, action="append", default=[])
     parser.add_argument("--skill-policy", type=Path)
+    parser.add_argument("--health-policy", type=Path, help="score the measured analyzer receipts under this policy")
+    parser.add_argument("--size-baseline", type=Path, help="baseline snapshot directory for the size comparison")
+    parser.add_argument("--size-candidate", type=Path, help="candidate snapshot directory for the size comparison")
+    parser.add_argument("--size-scope", action="append", default=[], help="source directory inside each snapshot")
+    parser.add_argument("--adequacy", type=Path, help="adequacy receipts JSON: {receipts: [{id, snapshot, behavior}]}")
+    parser.add_argument("--size-report", type=Path)
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
     args = parser.parse_args(argv)
+    if args.size_baseline or args.size_candidate:
+        return size_comparison(args)
     root = repo_root(args.root)
-    report = collect(root, tuple(args.skills_root) or None, args.skill_policy)
+    report = collect(
+        root,
+        tuple(args.skills_root) or None,
+        args.skill_policy,
+        root / args.health_policy if args.health_policy else None,
+    )
     if args.report_json:
         args.report_json.write_text(report.to_json() + "\n", encoding="utf-8")
     if args.report_markdown:
@@ -131,6 +186,13 @@ def main(argv: list[str]) -> int:
         for rule in check.rules:
             for item in rule.evidence if rule.outcome == "fail" else ():
                 print(f"  {check.category}: {item.path}:{item.line} {rule.rule} {item.detail}")
+    if report.health is not None:
+        health = report.health
+        print(
+            f"  health: score={health.score if health.score_available else 'unavailable'} coverage={health.coverage:g}"
+        )
+        for fix in health.fixes:
+            print(f"  fix {fix.rank}: {fix.category} {fix.rule} {fix.path}:{fix.line or 1} {fix.severity}")
     if report.skills is not None:
         if not report.skills.applicable:
             print(
