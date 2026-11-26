@@ -157,18 +157,29 @@ exit two; prohibited static imports fail with exit one. The scanner uses the
 consumer's own tracked index, ignores untracked build output, and does not
 claim dynamic import or runtime isolation coverage.
 
-An optional ordered `layers` list, most stable first, adds the import-direction
-check (`PIPE-GATES-R088`). Each entry is a unit (`<package>.<first segment>`),
-or a list of peer units that share a rank; name the package itself to layer its
-root `__init__`. Relative imports are resolved. An import from an earlier layer
-to a later one, an import of a private module (a leading-underscore segment) of
-another unit, a unit named in no layer, and an import cycle among units are
-located findings; duplicate or malformed entries refuse with exit two. With
-`layers` set, `forbidden` is optional.
+An optional ordered `layers` array of tables, most stable first, adds the
+import-direction check (`PIPE-GATES-R088`, `PIPE-GATES-R088.1`). Each entry is
+a table with exactly `name` (`^[a-z][a-z0-9-]*$`, unique) and a non-empty
+`units` list. A unit is the first path segment under the package root with no
+dots, slashes or `.py` suffix (`pkg/core/x.py` belongs to `core`); the unit
+`__init__` stands for the package root only. A unit appears in one entry. Relative
+imports are resolved. An import from an earlier layer to a later one, an import
+of a private module (a leading-underscore segment) of another unit, a unit
+named in no layer, and an import cycle among units are located findings; a bare
+list, a missing or extra key, a duplicate name, a unit in two entries or any
+other `coupling` key refuses with exit two. With `layers` set, `forbidden` is
+optional.
 
 ```toml
-[tool.pipelines_hooks.coupling]
-layers = ["pkg.types", ["pkg.core", "pkg.store"], "pkg.api", "pkg"]
+[[tool.pipelines_hooks.coupling.layers]]
+name = "foundation"
+units = ["types"]
+[[tool.pipelines_hooks.coupling.layers]]
+name = "services"
+units = ["core", "store"]
+[[tool.pipelines_hooks.coupling.layers]]
+name = "host"
+units = ["api", "__init__"]
 ```
 
 A Cargo workspace layers its crates with `cargo_layers` (`PIPE-GATES-R088.2`):

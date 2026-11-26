@@ -66,7 +66,7 @@ def test_the_pull_request_itself_is_not_an_earlier_merge(tmp_path: Path) -> None
 def test_the_job_runs_inside_the_shared_gates_workflow() -> None:
     job = _job()
     assert job["if"] == "github.event_name == 'pull_request'"
-    assert job["permissions"] == {"contents": "read", "pull-requests": "read"}
+    assert job["permissions"] == {"contents": "read"}
     template = yaml.safe_load(CI_TEMPLATE.read_text(encoding="utf-8"))["jobs"]
     assert template["gates"]["uses"].endswith("/gates_pipeline.yml@main")
     assert "gates" in template["ci-required"]["needs"]

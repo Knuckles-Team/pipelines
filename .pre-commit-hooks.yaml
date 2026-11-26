@@ -50,7 +50,7 @@
   always_run: true
   stages: [pre-push, manual]
 - id: spec
-  name: Spec - standard, decomposition, computed status (never tracked) and Spec trailers
+  name: Spec - standard, contract coverage, decomposition, computed status (never tracked) and Spec trailers
   entry: pipelines-hook spec
   language: python
   pass_filenames: false
@@ -62,6 +62,13 @@
   entry: pipelines-hook plan-conformance
   language: python
   files: ^specs/[^/]+/plan\.md$
+  pass_filenames: false
+  stages: [pre-commit, manual]
+- id: spec-glossary
+  name: Spec glossary - specs use the repository glossary, its ontology classes and the typed row fields
+  entry: pipelines-hook spec-glossary
+  language: python
+  files: ^specs/
   pass_filenames: false
   stages: [pre-commit, manual]
 - id: spec-id-index
@@ -190,7 +197,7 @@
 # published until every repository has dropped it; a final cleanup PR deletes
 # them. `secrets` replaces secret-history, security-sanitizer, tracked-privacy,
 # commit-identity and commit-identity-range; `spec` replaces spec-standard,
-# spec-decomposition, spec-status and spec-trailers; `tests-fast` replaces
+# contract-coverage, spec-decomposition, spec-status and spec-trailers; `tests-fast` replaces
 # fast-tests. Every other deprecated id is advisory (weekly report) or deleted.
 
 # --- complexity (cccc 1.6.0) ------------------------------------------------
@@ -427,6 +434,12 @@
 - id: spec-decomposition
   name: "DEPRECATED (spec-decomposition): Spec decomposition - requirements/tasks/test-spec/status.json IDs agree"
   entry: pipelines-hook spec-decomposition
+  language: python
+  pass_filenames: false
+  always_run: true
+- id: contract-coverage
+  name: "DEPRECATED (contract-coverage): Contract coverage - a row citing another repository's row has a contract"
+  entry: pipelines-hook contract-coverage
   language: python
   pass_filenames: false
   always_run: true

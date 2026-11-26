@@ -36,7 +36,8 @@ group of existing gates, so each check is one hook id and one line of output.
   in CI through `--from-ref`. A hosted runner without the private identity catalog skips
   `tracked-privacy` with `SKIP=tracked-privacy`; the group honours `SKIP` per
   member.
-- `spec`: `spec-standard` (names, file set, index), `spec-decomposition`
+- `spec`: `spec-standard` (names, file set, index), `contract-coverage` (a row that cites another
+  repository's row has a contract), `spec-decomposition`
   (requirement, task, test-spec and status IDs agree), `spec-status` (status
   computes from requirements, history and bindings, and no `status.json` is tracked) and `spec-trailers` (`Spec:` trailers on
   the pull request commits, a range member like the two above). `gates_pipeline.yml` adds `spec-trailers` to

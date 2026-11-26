@@ -18,3 +18,11 @@ Provider: .github ORG-FRONT-R010.3
 - `export-row-missing`: a scanned row has no export entry. The build exits 1.
 - `release-manifest-invalid`: a manifest has a malformed phase. The build exits 1.
 - A missing `releases/` directory fails a GitHub-mode build.
+
+## Authoritative types
+
+`ExportRow` of the architecture explorer export, in `scripts/architecture_explorer`. The `.github` repository keeps no second row type.
+
+## Test vectors
+
+`tests/test_architecture_explorer.py` holds the vectors on the pipelines side: an unsafe path, a missing export entry and a malformed release manifest. The organization site workflow of `ORG-FRONT-R010.1` checks the written `rows.json` against the same fields.
