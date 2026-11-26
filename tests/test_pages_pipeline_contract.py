@@ -209,6 +209,10 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "pipelines_hooks/core",
         "pipelines_hooks/specs",
         "pipelines_hooks/docs",
+        "pipelines_hooks/hygiene/__init__.py",
+        "pipelines_hooks/hygiene/config_inventory.py",
+        "pipelines_hooks/hygiene/config_inventory_docs.py",
+        "pipelines_hooks/hygiene/mermaid_rules.py",
     ]
 
 

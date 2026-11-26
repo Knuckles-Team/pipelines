@@ -27,6 +27,7 @@ import yaml
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import blob_bytes, repo_root
 from pipelines_hooks.core.tracked import tracked_paths
+from pipelines_hooks.hygiene import config_inventory_docs as docs
 
 DECLARATION = ".config/project-config.toml"
 TEMPLATE_VERSION = "1"
@@ -78,6 +79,8 @@ replace = version = "{new_version}"
 """,
 }
 PARAMETERS = ("name", "python")
+#: Evidence lines of the last documentation check (printed by ``main``).
+_DOC_LINES: list[str] = []
 _BLOCK = r"# pipelines:managed role={role} template=(?P<template>\S+)\n(?P<body>.*?)# pipelines:end role={role}\n"
 
 
@@ -109,6 +112,7 @@ class ProjectConfigInventory:
 
     template: str
     projects: dict[str, dict[str, str]]
+    documentation: docs.DocPolicy | None = None
 
     def __post_init__(self) -> None:
         if self.template != TEMPLATE_VERSION:
@@ -143,7 +147,7 @@ def load_inventory(root: Path) -> ProjectConfigInventory:
         data = tomllib.loads(raw.decode("utf-8"))
     except (UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise CannotRun(f"config-inventory: {DECLARATION} is unreadable: {exc}") from exc
-    if set(data) - {"schema", "template", "project"} or data.get("schema") != 1:
+    if set(data) - {"schema", "template", "project", "documentation"} or data.get("schema") != 1:
         raise CannotRun("config-inventory: unsupported schema or unknown top-level fields")
     projects: dict[str, dict[str, str]] = {}
     for entry in data.get("project", []):
@@ -153,7 +157,8 @@ def load_inventory(root: Path) -> ProjectConfigInventory:
         if path in projects:
             raise CannotRun(f"config-inventory: duplicate authority for project {path!r}")
         projects[path] = dict(entry.get("parameters", {}))
-    return ProjectConfigInventory(str(data.get("template", "")), projects)
+    policy = docs.parse_policy(data["documentation"]) if "documentation" in data else None
+    return ProjectConfigInventory(str(data.get("template", "")), projects, policy)
 
 
 def _template(role: str) -> str:
@@ -192,9 +197,17 @@ def _required_ok(role: str, parsed: object) -> bool:
     return isinstance(parsed, configparser.ConfigParser) and parsed.has_option("bumpversion", "current_version")
 
 
-def check(root: Path, inventory: ProjectConfigInventory) -> tuple[list[str], list[TemplateReceipt]]:
+def check(
+    root: Path, inventory: ProjectConfigInventory, *, scope: str = "all"
+) -> tuple[list[str], list[TemplateReceipt]]:
     """Findings (exit 1) and one receipt per project role; every declared project is validated."""
     findings: list[str] = []
+    if scope == "documentation":
+        if inventory.documentation is None:
+            return findings, []
+        findings, lines = docs.check_docs(root, inventory.projects, inventory.documentation)
+        _DOC_LINES[:] = lines
+        return findings, []
     receipts: list[TemplateReceipt] = []
     for project in inventory.projects:
         pdigest = inventory.params_digest(project)
@@ -235,6 +248,10 @@ def check(root: Path, inventory: ProjectConfigInventory) -> tuple[list[str], lis
                 findings.append(
                     f"{path}:{line}: project {project!r} role {role}: required fields of {section} are absent"
                 )
+    if inventory.documentation is not None:
+        doc_findings, lines = docs.check_docs(root, inventory.projects, inventory.documentation)
+        findings.extend(doc_findings)
+        _DOC_LINES[:] = lines
     declared = set(inventory.projects)
     for found_root in discovered_projects(root):
         if found_root not in declared:
@@ -262,6 +279,18 @@ def render(inventory: ProjectConfigInventory, dest: Path) -> list[Path]:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(render_file(inventory, project, role), encoding="utf-8")
             written.append(target)
+    if inventory.documentation is not None:
+        for project, params in inventory.projects.items():
+            content = inventory.documentation.content or "pages"
+            files = {
+                docs.doc_file(project, role, content): docs.render_role(role, params, content) for role in docs.ROLES
+            }
+            files.update({docs._join(project, rel): text for rel, text in docs.render_pages(params, content).items()})
+            for rel, text in files.items():
+                target = dest / rel
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(text, encoding="utf-8")
+                written.append(target)
     return written
 
 
@@ -271,6 +300,9 @@ def main(argv: list[str]) -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="validate the staged snapshot (default)")
     mode.add_argument("--render", type=Path, metavar="DEST", help="render templates into a new directory")
+    parser.add_argument(
+        "--scope", choices=("all", "documentation"), default="all", help="documentation: only the documentation roles"
+    )
     args = parser.parse_args(argv)
     root = repo_root(args.root)
     inventory = load_inventory(root)
@@ -278,10 +310,12 @@ def main(argv: list[str]) -> int:
         for path in render(inventory, args.render):
             print(f"rendered {path}")
         return 0
-    findings, receipts = check(root, inventory)
+    findings, receipts = check(root, inventory, scope=args.scope)
     print(f"projects: declared={sorted(inventory.projects)} discovered={discovered_projects(root)}")
     for receipt in receipts:
         print(receipt.line())
+    for line in _DOC_LINES:
+        print(line)
     if not findings:
         print("config inventory: clean")
         return 0

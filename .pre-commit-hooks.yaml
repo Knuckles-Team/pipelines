@@ -188,6 +188,14 @@
   pass_filenames: false
   require_serial: true
   stages: [manual]
+- id: readme-header
+  name: README and documentation home open with the shared project header
+  entry: pipelines-hook readme-header
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
 - id: spec-artifact-schema
   name: Generator-skill spec artifacts validate against schema version 1
   entry: pipelines-hook spec-artifact-schema

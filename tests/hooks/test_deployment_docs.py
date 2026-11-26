@@ -199,7 +199,7 @@ def test_deployment_docs_wiring(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[2]
     assert "entry: pipelines-hook deployment-docs" in (root / ".pre-commit-hooks.yaml").read_text()
     workflow = (root / ".github/workflows/pages_pipeline.yml").read_text()
-    assert workflow.index("deployment-docs") < workflow.index("Upload artifact")
+    assert workflow.index("docs.deployment_docs") < workflow.index("Upload artifact")
     repo = build(tmp_path)
     assert run_gate("deployment-docs", ["--root", str(repo.root)]) == 0 == repo.run("deployment-docs")
 

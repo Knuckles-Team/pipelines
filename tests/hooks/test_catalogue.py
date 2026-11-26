@@ -84,6 +84,7 @@ KEPT = {
     "spec-artifact-schema",
     "env-documentation",
     "tool-mapping",
+    "readme-header",
     "guide-migration",
     "deployment-docs",
     "config-inventory",

@@ -1,0 +1,17 @@
+{#- The shared project header: the same order as the README header (readme-header gate). -#}
+{% set header = config.extra.project_header %}
+{% if header %}
+<header class="project-header">
+  <h1>{{ header.title }}</h1>
+  <img src="{{ header.mark.path | url }}" alt="{{ header.mark.alt }}">
+  <p>{{ header.description }}</p>
+  <nav aria-label="Project">
+    {% for name in ["Documentation", "Capabilities", "Interfaces", "Status"] %}
+    <a data-nav="{{ name }}" href="{{ header.links[name] | url }}">{{ name }}</a>
+    {% endfor %}
+  </nav>
+  <p class="project-header__badges">
+    {% for badge in header.badges %}<img src="{{ badge.src }}" alt="{{ badge.label }}">{% endfor %}
+  </p>
+</header>
+{% endif %}

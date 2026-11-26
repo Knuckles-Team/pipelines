@@ -127,7 +127,7 @@ def test_tool_mapping_wiring(tmp_path: Path) -> None:
     hooks = Path(__file__).resolve().parents[2] / ".pre-commit-hooks.yaml"
     assert "entry: pipelines-hook tool-mapping" in hooks.read_text()
     workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/pages_pipeline.yml").read_text()
-    assert workflow.index("tool-mapping") < workflow.index("Upload artifact")
+    assert workflow.index("docs.tool_mapping") < workflow.index("Upload artifact")
     repo = build(tmp_path)
     assert run_gate("tool-mapping", ["--root", str(repo.root)]) == 0 == repo.run("tool-mapping")
 
