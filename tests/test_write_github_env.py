@@ -43,6 +43,7 @@ def _run_sourced(tmp_path: Path, *, print_var: str, set_github_env: bool) -> tup
 
 
 def test_a_multi_token_value_is_exported_intact_not_run_as_a_command(tmp_path: Path) -> None:
+    # spec: PIPE-RELEASE-R003
     result, _ = _run_sourced(tmp_path, print_var="CFLAGS", set_github_env=True)
     assert result.returncode == 0, result.stderr
     assert "command not found" not in result.stderr

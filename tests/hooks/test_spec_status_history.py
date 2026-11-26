@@ -82,3 +82,23 @@ def test_shallow_repository_without_specs_is_a_clean_pass(repo: Repo, tmp_path: 
     repo.git("clone", "-q", "--depth=1", repo.root.as_uri(), str(shallow.root))
     assert shallow.run("spec-status", "--write") == 0
     assert not (shallow.root / "specs").exists()
+
+
+def test_stale_shallow_boundary_on_another_branch_does_not_hide_rows(
+    repo: Repo, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # spec: PIPE-CONNSPEC-R001
+    _history_with_receipts(repo, 2)
+    shallow = Repo(tmp_path / "stale")
+    repo.git("clone", "-q", "--depth=1", repo.root.as_uri(), str(shallow.root))
+    shallow.git("fetch", "-q", "--unshallow")
+    trunk = shallow.git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    shallow.git("checkout", "-q", "-b", "other")
+    side = shallow.commit({"pkg/side.py": "# side\n"}, "side commit")
+    shallow.git("checkout", "-q", trunk)
+    # A boundary recorded for a commit that the checked-out history does not contain.
+    (shallow.root / ".git" / "shallow").write_text(side + "\n", encoding="utf-8")
+    assert shallow.git("rev-parse", "--is-shallow-repository").strip() == "true"
+    assert shallow.run("spec-status", "--write") == 0
+    rows = json.loads((shallow.root / "specs/demo/status.json").read_text(encoding="utf-8"))["requirements"]
+    assert len(rows) == 3

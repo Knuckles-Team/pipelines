@@ -18,6 +18,7 @@ from scripts.release.reproducibility import build_wheel_twice, compare_wheels
 
 
 def test_building_the_same_source_twice_with_one_source_date_epoch_is_byte_identical(tmp_path: Path) -> None:
+    # spec: PIPE-RELEASE-R003
     source = write_reproducible_fixture(tmp_path / "source")
     wheel_a, wheel_b = build_wheel_twice(source, tmp_path / "out-a", tmp_path / "out-b", source_date_epoch="1700000000")
     result = compare_wheels(wheel_a, wheel_b)

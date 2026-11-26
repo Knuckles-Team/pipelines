@@ -24,7 +24,7 @@ A lane agent wants the gate hooks and the trailer rules to behave the same in ev
 
 ### Edge Cases
 
-- A shallow clone refuses `spec-status` with exit 2 and a full-history remedy, and writes nothing.
+- A clone whose current history is cut by a shallow boundary refuses `spec-status` with exit 2 and a full-history remedy, and writes nothing. Shallow-boundary entries that lie only on other branches do not cut the history being computed, so the repository computes normally.
 - A connector that lists fewer than the three spec hooks stays SPECIFIED for that child row, and its rollup stays at the minimum state of its children.
 - A retired historical ID passes the standard gate; an active row that only mentions retirement fails.
 

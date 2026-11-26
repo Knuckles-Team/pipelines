@@ -82,6 +82,7 @@ def test_theme_components_use_accessible_native_controls() -> None:
 
 
 def test_all_seven_product_logo_assets_remain_canonical() -> None:
+    # spec: PIPE-PAGES-R007
     logos = ROOT / "templates/mkdocs-theme/assets/brands"
     expected = {
         "tuig-logo-v1.png",
@@ -147,6 +148,7 @@ def test_check_requires_the_diagram_to_link_the_explorer(tmp_path: Path) -> None
 
 @pytest.mark.spec("PIPE-PAGES-R001")
 def test_shared_ecosystem_links_use_canonical_repository_urls() -> None:
+    # spec: PIPE-PAGES-R011
     base = (Path(__file__).parents[1] / "templates/mkdocs-theme/base.mkdocs.yml").read_text()
     for old, new, name in (
         ("epistemic-graph", "medulla", "Medulla"),
