@@ -36,10 +36,14 @@ Execute = Callable[[Sequence[str]], tuple[int, str]]
 
 def latest_production_tag(root: Path) -> str:
     """The highest ``vX.Y.Z`` tag (a release candidate or pre-release tag never counts)."""
-    tags = [t for t in git_text(root, ["tag", "--list", "v*"]).split() if _RELEASE_TAG.match(t)]
-    if not tags:
+    versions = {}
+    for tag in git_text(root, ["tag", "--list", "v*"]).split():
+        match = _RELEASE_TAG.match(tag)
+        if match:
+            versions[tuple(int(n) for n in match.groups())] = tag
+    if not versions:
         raise CannotRun("no production release tag exists to upgrade from")
-    return max(tags, key=lambda t: tuple(int(n) for n in _RELEASE_TAG.match(t).groups())).removeprefix("v")
+    return versions[max(versions)].removeprefix("v")
 
 
 def run(declaration: dict, from_version: str, candidate: str, install: Install, execute: Execute) -> list[str]:
