@@ -106,3 +106,32 @@ def test_a_scheduled_run_does_not_rewalk_published_history(
     assert repo.run("commit-identity-range") == 0
     monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
     assert repo.run("commit-identity-range") == 1
+
+
+SERVICE = {"name": "Example Delivery Service", "email": "delivery-service@example.invalid"}
+
+
+@pytest.mark.spec("PIPE-IDENTITY-R001.1")
+def test_a_service_identity_on_the_allowlist_is_checked_like_the_owner(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    write_identity_allowlist(repo.root, [ALLOWED, SERVICE])
+    commit_as(repo.root, name=SERVICE["name"], email=SERVICE["email"], message="service")
+    commit_as(repo.root, name=ALLOWED["name"], email=ALLOWED["email"], message="owner")
+    assert repo.run("commit-identity-range", "--base", base) == 0
+    # The same entry set decides both identities: removing the service entry
+    # refuses the very commit that passed above, and the owner's still passes.
+    write_identity_allowlist(repo.root, [ALLOWED])
+    assert repo.run("commit-identity-range", "--base", base) == 1
+
+
+@pytest.mark.spec("PIPE-IDENTITY-R001.1")
+def test_a_service_identity_off_the_allowlist_is_refused_in_ci(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    write_identity_allowlist(repo.root, [ALLOWED])
+    commit_as(repo.root, name=SERVICE["name"], email=SERVICE["email"], message="service")
+    monkeypatch.setenv("CI", "true")
+    assert repo.run("commit-identity-range", "--base", base) == 1
+    # The owner is refused the same way when absent from the allowlist.
+    write_identity_allowlist(repo.root, [SERVICE])
+    commit_as(repo.root, name=ALLOWED["name"], email=ALLOWED["email"], message="owner")
+    assert repo.run("commit-identity-range", "--base", base) == 1
