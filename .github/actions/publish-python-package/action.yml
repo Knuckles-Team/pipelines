@@ -20,6 +20,12 @@ inputs:
       a supplied path runs packaging-roles against the built wheel and readiness receipt.
     required: false
     default: ''
+  candidate-digests:
+    description: >-
+      Path of the digests the candidate sandbox recorded (PIPE-RELEASE-R032). When set, the publish step
+      refuses any artifact whose digest differs from the recorded one. Empty publishes without that check.
+    required: false
+    default: ''
 runs:
   using: composite
   steps:
@@ -142,6 +148,15 @@ runs:
       uses: ./.pipeline-contract/.github/actions/verify-release-source
       with:
         github-token: ${{ inputs.github-token }}
+
+    - name: Verify the artifacts match the candidate digests
+      if: inputs.candidate-digests != ''
+      shell: bash
+      env:
+        CANDIDATE_DIGESTS: ${{ inputs.candidate-digests }}
+      run: |
+        uvx --from "git+https://${{ job.workflow_repository }}@${{ job.workflow_sha }}" pipelines-hook candidate-sandbox verify \
+          --digests "$CANDIDATE_DIGESTS"
 
     - name: Publish package
       env:

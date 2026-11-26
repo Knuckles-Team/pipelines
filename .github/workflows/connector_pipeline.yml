@@ -235,6 +235,7 @@ jobs:
       runtime-profiles: ${{ inputs.runtime-profiles }}
       role-contract: ${{ inputs.role-contract }}
       web-assets: ${{ inputs.web-assets }}
+      release-signing-key: ${{ vars.RELEASE_SIGNING_KEY }}
     secrets:
       PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
