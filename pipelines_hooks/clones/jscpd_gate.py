@@ -47,12 +47,15 @@ def _require_evaluated(executable: str, changed: list[str], snapshot: Path | Non
     """
     only = scratch / "changed"
     only.mkdir(parents=True)
-    present = [path for path in changed if snapshot is not None and (snapshot / path).is_file()]
-    for path in present:
-        target = only / path
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes((snapshot / path).read_bytes())
-    sources = jscpd_run.run(executable, only)["statistics"]["total"]["sources"] if present else 0
+    sources = 0
+    if snapshot is not None:
+        present = [path for path in changed if (snapshot / path).is_file()]
+        for path in present:
+            target = only / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((snapshot / path).read_bytes())
+        if present:
+            sources = jscpd_run.run(executable, only)["statistics"]["total"]["sources"]
     if sources == 0:
         raise CannotRun(
             f"the scanner read no code of the {len(changed)} changed in-scope path(s) "
