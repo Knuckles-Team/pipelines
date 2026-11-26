@@ -18,7 +18,7 @@ SKIP_TEMPLATE = Path(__file__).parents[1] / "templates/workflows/gates-skip.yml"
 
 EXPECTED_INPUTS = {
     "python-version", "config", "ci-config", "test-scope", "src-root", "runner", "rust", "all-files",
-    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "uv-cache-local-path", "spec-hooks", "timeout-minutes", "scanners", "pr-text-strict",
+    "extra-manual-hooks", "stages", "skip-hooks", "setup-command", "uv-cache-local-path", "spec-hooks", "timeout-minutes", "scanners", "pr-text-strict", "test-shards",
 }  # fmt: skip
 
 
@@ -295,3 +295,21 @@ def test_self_hosted_runner_keeps_hook_and_uv_caches_on_the_host() -> None:
         < names.index(refresh["name"])
         < names.index("Install pre-commit environments")
     )
+
+
+# spec: PIPE-RELEASE-R007.17
+def test_full_suite_shards_run_every_shard_under_the_caller_grants() -> None:
+    document = yaml.safe_load(GATES_WORKFLOW.read_text(encoding="utf-8"))
+    shards = _on(GATES_WORKFLOW)["workflow_call"]["inputs"]["test-shards"]
+    assert shards["required"] is False and shards["default"] == 1
+    job = document["jobs"]["tests"]
+    assert job["needs"] == "gates" and job["permissions"] == {"contents": "read"}
+    assert job["timeout-minutes"] == "${{ inputs.timeout-minutes }}"
+    assert job["strategy"]["fail-fast"] is False
+    assert job["strategy"]["matrix"]["shard"] == "${{ fromJSON(needs.gates.outputs.shard-matrix) }}"
+    assert document["jobs"]["gates"]["outputs"]["shard-matrix"] == "${{ steps.affected.outputs.shard-matrix }}"
+    run = next(step for step in job["steps"] if step.get("name") == "Test shard")["run"]
+    assert '--shards "$TEST_SHARDS" --shard "$SHARD"' in run and 'pytest -q "${tests[@]}"' in run
+    affected = next(step for step in document["jobs"]["gates"]["steps"] if step.get("id") == "affected")["run"]
+    assert "TEST_SHARDS > 1" in affected and 'pytest -q "$TEST_SCOPE"' in affected
+    assert 'pytest -q "${tests[@]}"' in affected  # a subset of affected tests still runs inside gates

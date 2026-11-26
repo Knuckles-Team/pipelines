@@ -148,6 +148,7 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R028.3 | PIPE-RELEASE-R028.3 | Test: `tests/test_harness_bundle_proof.py::test_catalog_entries_must_be_command_or_pinned_package_sources`. |
 | T-PIPE-RELEASE-R028.4 | PIPE-RELEASE-R028.4 | Test: `tests/test_harness_bundle_proof.py::test_release_job_runs_the_proof_before_publish` (L3). |
 | T-PIPE-RELEASE-R007.15 | PIPE-RELEASE-R007.15 | Run `tests/test_gates_pipeline_contract.py::test_self_hosted_runner_keeps_hook_and_uv_caches_on_the_host`. A self-hosted runner with `CI_CACHE_ROOT` uses the host caches and skips the cache actions. |
+| T-PIPE-RELEASE-R007.17 | PIPE-RELEASE-R007.17 | Run `tests/hooks/test_pr_test_scope.py::test_shards_partition_the_full_test_file_set_exactly` and `tests/test_gates_pipeline_contract.py::test_full_suite_shards_run_every_shard_under_the_caller_grants`. The shards partition the test files exactly and job `tests` stays within the caller grants. |
 | T-PIPE-RELEASE-R029 | PIPE-RELEASE-R029 | Every child row. |
 | T-PIPE-RELEASE-R029.1 | PIPE-RELEASE-R029.1 | Run `tests/test_local_gate_standard.py::test_ci_standard_states_the_attested_local_gate`. The CI standard states the checks, the merge ref, the noise rule, the evidence and the privacy rule. |
 | T-PIPE-RELEASE-R029.2 | PIPE-RELEASE-R029.2 | Run `tests/test_local_gate_standard.py::test_release_readiness_states_the_local_release_order`. The release reference states the precondition, the order and the hosted-only platforms. |

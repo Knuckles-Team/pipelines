@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from pipelines_hooks.ci_replica.test_scope import shard_files, collect_test_files
 from tests.hooks.conftest import Repo
 
 
@@ -210,3 +211,47 @@ def test_a_member_manifest_change_beyond_versions_maps_to_its_crate(
     repo.commit({"crates/a/Cargo.toml": manifest}, "new dependency")
     assert repo.run("pr-test-scope", "--base-ref", base, "--lang", "rust") == 0
     assert capsys.readouterr().out.splitlines() == ["eg-transaction"]
+
+
+_SHARD_TREE = {
+    "tests/test_a.py": "",
+    "tests/sub/test_b.py": "",
+    "tests/sub/deep/test_c.py": "",
+    "tests/zeta_test.py": "",
+    "tests/test_d.py": "",
+    "tests/conftest.py": "",
+    "tests/helpers.py": "",
+    "tests/test_e.py": "",
+    "tests/sub/test_f.py": "",
+}
+
+
+# spec: PIPE-RELEASE-R007.17
+@pytest.mark.parametrize("shards", [1, 2, 3, 4, 5, 20])
+def test_shards_partition_the_full_test_file_set_exactly(
+    repo: Repo, capsys: pytest.CaptureFixture[str], shards: int
+) -> None:
+    repo.commit(_SHARD_TREE, "tree")
+    every = collect_test_files(repo.root, "tests")
+    assert every == [
+        "tests/sub/deep/test_c.py", "tests/sub/test_b.py", "tests/sub/test_f.py",
+        "tests/test_a.py", "tests/test_d.py", "tests/test_e.py", "tests/zeta_test.py",
+    ]  # fmt: skip
+    printed: list[list[str]] = []
+    for index in range(shards):
+        capsys.readouterr()
+        assert repo.run("pr-test-scope", "--tests-root", "tests", "--shards", str(shards), "--shard", str(index)) == 0
+        printed.append([line for line in capsys.readouterr().out.splitlines() if line])
+    flat = [path for shard in printed for path in shard]
+    assert sorted(flat) == every  # the union is every file
+    assert len(flat) == len(set(flat))  # and no file is in two shards
+    assert printed == [shard_files(every, shards, index) for index in range(shards)]  # deterministic
+    assert shard_files(list(reversed(every)), shards, 0) == printed[0]  # independent of input order
+
+
+# spec: PIPE-RELEASE-R007.17
+def test_a_shard_index_outside_the_shard_count_is_refused(repo: Repo) -> None:
+    repo.commit(_SHARD_TREE, "tree")
+    with pytest.raises(SystemExit) as refused:
+        repo.run("pr-test-scope", "--tests-root", "tests", "--shards", "3", "--shard", "3")
+    assert refused.value.code == 2
