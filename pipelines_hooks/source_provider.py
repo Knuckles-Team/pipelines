@@ -5,19 +5,23 @@ questions: which files exist under a prefix, with each blob's digest and
 size, and what one blob's bytes are. The digest binds the bytes to the
 path, so a gate never inspects content the source did not declare. The
 disk provider serves one directory tree; the engine tree provider serves
-an epistemic-graph revision the same way once its tree reads ship
-(MEDULLA-SCM-R004).
+one engine repository ref through the arbora ``source.tree`` and
+``source.blob`` operations the same way (PIPE-GATES-R003), so a blocking
+gate lands a changeset without a working copy.
 """
 
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.verdict_publish import post_operation
 from pipelines_hooks.core.gitenv import EXTRACTED_TREE_MARKER
 
 #: Directory names that are checkout metadata, not tree content.
@@ -89,6 +93,101 @@ class DiskProvider:
         blob = (self._root / path).read_bytes()
         if blob_digest(blob) != entry.digest:
             raise CannotRun(f"source provider: {path} no longer matches its declared digest {entry.digest}")
+        return blob
+
+
+def tree_digest(source: Path) -> str:
+    """The digest of one tree's canonical listing: every path with its blob digest, in path order."""
+    listing = "".join(f"{entry.path}\0{entry.digest}\n" for entry in DiskProvider(source).list_files())
+    return blob_digest(listing.encode("utf-8"))
+
+
+#: One served-operation call: ``(operation, params) -> result``.
+OperationCall = Callable[[str, Mapping[str, Any]], Any]
+
+#: The size a tree listing cannot declare; the blob read reports the real one.
+UNDECLARED_SIZE = -1
+
+
+class EngineTreeProvider:
+    """Serves one engine repository ref by path and blob digest; no checkout, no git.
+
+    The tree is listed once through ``source.tree`` (directories are walked
+    breadth first; the engine projection stores no directory nodes) and each
+    blob is read through ``source.blob``. A blob whose bytes do not match the
+    digest the listing declared, or whose digest is not a ``sha256:`` blob
+    digest, fails closed: a gate never inspects content the engine did not
+    declare.
+    """
+
+    def __init__(
+        self,
+        endpoint: str,
+        token: str,
+        repository: str,
+        ref: str,
+        *,
+        call: OperationCall | None = None,
+    ) -> None:
+        if not endpoint:
+            raise CannotRun("engine tree provider: no arbora endpoint is configured")
+        self._identity = {"repository": repository, "ref": ref}
+        self._call: OperationCall = call or (
+            lambda operation, params: post_operation(endpoint, token, operation, params)
+        )
+        self._entries: dict[str, FileEntry] = {entry.path: entry for entry in self._list()}
+
+    def _invoke(self, operation: str, params: Mapping[str, Any]) -> Mapping[str, Any]:
+        try:
+            outcome = self._call(operation, {**self._identity, **params})
+        except OSError as exc:
+            raise CannotRun(f"engine tree provider: {exc}") from None
+        if not isinstance(outcome, Mapping) or outcome.get("found") is not True:
+            reason = outcome.get("reason") if isinstance(outcome, Mapping) else None
+            raise CannotRun(f"engine tree provider: {operation} found nothing ({reason or 'no reason given'})")
+        return outcome
+
+    def _list(self) -> list[FileEntry]:
+        found: list[FileEntry] = []
+        pending, seen = [""], set()
+        while pending:
+            directory = pending.pop(0)
+            if directory in seen:
+                continue
+            seen.add(directory)
+            for raw in self._invoke("source.tree", {"path": directory}).get("entries", ()):
+                path, kind = str(raw.get("path", "")), raw.get("kind")
+                if not path or path.startswith("/") or ".." in path.split("/"):
+                    raise CannotRun(f"engine tree provider: unsafe tree path {path!r}")
+                if kind == "directory":
+                    pending.append(path)
+                elif kind == "file":
+                    found.append(
+                        FileEntry(path=path, digest=str(raw.get("content_digest") or ""), size=UNDECLARED_SIZE)
+                    )
+        return sorted(found, key=lambda entry: entry.path)
+
+    def list_files(self, prefix: str = "") -> tuple[FileEntry, ...]:
+        """The declared files under one prefix; ``""`` is the whole tree."""
+        wanted = f"{prefix}/" if prefix else ""
+        return tuple(entry for entry in self._entries.values() if entry.path.startswith(wanted))
+
+    def read(self, path: str) -> bytes:
+        entry = self._entries.get(path)
+        if entry is None:
+            raise CannotRun(f"source provider: {path} is not a declared file")
+        outcome = self._invoke("source.blob", {"path": path})
+        content = outcome.get("content", "")
+        try:
+            blob = (
+                base64.b64decode(content, validate=True)
+                if outcome.get("content_encoding") == "base64"
+                else str(content).encode("utf-8")
+            )
+        except (binascii.Error, ValueError):
+            raise CannotRun(f"source provider: {path} came back undecodable") from None
+        if not entry.digest.startswith("sha256:") or blob_digest(blob) != entry.digest:
+            raise CannotRun(f"source provider: {path} does not match its declared digest {entry.digest or '(none)'}")
         return blob
 
 
