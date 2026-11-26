@@ -243,6 +243,7 @@ def test_check_repo_mode_fails_closed_on_contract_drift(tmp_path: Path, capsys) 
 @pytest.mark.spec("PIPE-PAGES-R004")
 def test_all_public_skill_graph_tiers_project_one_corpus(tmp_path: Path) -> None:
     """Concepts, components, and reference pages must share one corpus snapshot."""
+    # spec: PIPE-PAGES-R002
     repo_root = _seed_eg_repo(tmp_path)
     (repo_root / "mkdocs.yml").write_text(
         "nav:\n"

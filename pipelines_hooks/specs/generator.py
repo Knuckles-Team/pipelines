@@ -116,12 +116,31 @@ def computed(repo: Path, head: str = "HEAD") -> dict[Path, dict]:
     return _CACHE[key]
 
 
+def _history_is_cut(repo: Path, head: str) -> bool:
+    """True when a shallow boundary lies in ``head``'s own history.
+
+    A shallow repository whose recorded boundaries sit only on other branches (stale
+    entries left by earlier depth-limited fetches) still has complete history for
+    ``head``; refusing it would hide every row of a repository that is in fact whole.
+    """
+    if git_text(repo, ("rev-parse", "--is-shallow-repository")).strip() != "true":
+        return False
+    shallow_file = git_text(repo, ("rev-parse", "--git-path", "shallow")).strip()
+    path = Path(shallow_file) if Path(shallow_file).is_absolute() else repo / shallow_file
+    try:
+        boundaries = path.read_text(encoding="utf-8").split()
+    except OSError:
+        return True
+    reachable = set(git_text(repo, ("rev-list", head)).split())
+    return any(sha in reachable for sha in boundaries)
+
+
 def generate(repo: Path, head: str) -> dict[Path, dict]:
     """``specs/<dir>/status.json`` path -> computed document for every authored spec."""
     requirements_paths = sorted(repo.glob("specs/*/requirements.md"))
     if not requirements_paths:
         return {}
-    if git_text(repo, ("rev-parse", "--is-shallow-repository")).strip() == "true":
+    if _history_is_cut(repo, head):
         raise CannotRun(
             "spec-status needs complete Git history to validate landing receipts; "
             "fetch full history (git fetch --unshallow or checkout fetch-depth: 0)"
