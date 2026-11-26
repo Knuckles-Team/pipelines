@@ -87,7 +87,14 @@ def check(root: Path, policy_path: Path) -> ClosureResult:
             except (OSError, ValueError, KeyError) as exc:
                 raise CannotRun(f"project {name}: runner produced no coverage.py JSON report: {exc!r}") from exc
         reported = {Path(k).as_posix(): v for k, v in files.items()}
-        entry: dict[str, object] = {"project": name, "policy_digest": policy_digest, "files": {}, "zero_line": []}
+        zero_line: list[str] = []
+        file_records: dict[str, dict[str, object]] = {}
+        entry: dict[str, object] = {
+            "project": name,
+            "policy_digest": policy_digest,
+            "files": file_records,
+            "zero_line": zero_line,
+        }
         digest = hashlib.sha256()
         for source in sorted(sources):
             for path in sorted((base / source).rglob("*.py")):
@@ -98,15 +105,15 @@ def check(root: Path, policy_path: Path) -> ClosureResult:
                 text = path.read_text(encoding="utf-8")
                 digest.update(text.encode())
                 if not _executable(text):
-                    entry["zero_line"].append(rel)  # type: ignore[union-attr]
+                    zero_line.append(rel)
                     continue
                 record = reported.get(rel_project) or reported.get(rel)
                 if record is None:
                     result.findings.append((rel, 1, "coverage-below-threshold"))
-                    entry["files"][rel] = {"reported": False}  # type: ignore[index]
+                    file_records[rel] = {"reported": False}
                     continue
                 missing = sorted(record.get("missing_lines", []))
-                entry["files"][rel] = {  # type: ignore[index]
+                file_records[rel] = {
                     "executed": len(record.get("executed_lines", [])),
                     "uncovered": missing,
                 }
