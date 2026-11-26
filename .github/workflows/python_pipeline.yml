@@ -142,6 +142,61 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build the candidate wheel
+        run: |
+          set -euo pipefail
+          uv build --wheel --out-dir candidate-dist
+
+      - name: Run upgrade-test
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          wheel=$(ls candidate-dist/*.whl)
+          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-hook upgrade-test --candidate "$wheel"
+
+  consumer-gate:
+    if: inputs.consumer-gate
+    runs-on: self-hosted
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Build the candidate wheel
+        run: |
+          set -euo pipefail
+          uv build --wheel --out-dir candidate-dist
+
+      - name: Run consumer-gate
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+          CONTRACT_CHANGE: ${{ inputs.contract-change }}
+        run: |
+          set -euo pipefail
+          wheel=$(ls candidate-dist/*.whl)
+          flag=""
+          if [ "$CONTRACT_CHANGE" = "true" ]; then flag="--contract-change"; fi
+          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-hook consumer-gate --candidate "$wheel" $flag
+
+  candidate-sandbox:
+    if: inputs.candidate-sandbox
+    runs-on: self-hosted
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
       - name: Run candidate-sandbox
         env:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
