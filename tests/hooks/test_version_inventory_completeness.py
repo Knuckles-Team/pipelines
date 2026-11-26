@@ -186,7 +186,7 @@ def _digest(repo: Repo) -> str:
     return _sha256((repo.root / ".config/bumpversion.cfg").read_text(encoding="utf-8"))
 
 
-# R006.9 stays unbound: the owner's real consumer entry is not served yet.
+# spec: PIPE-RELEASE-R006.9
 def test_version_inventory_completeness_wiring(repo: Repo, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert GATES["project-version-sync"] == "pipelines_hooks.release.project_version"
     repo.commit(FILES, "fixture")
@@ -199,7 +199,7 @@ def test_version_inventory_completeness_wiring(repo: Repo, tmp_path: Path, capsy
     assert repo.run("project-version-sync", *ARGS, "--consumer-binding", binding, "--owner-root", str(owner.root)) == 0
     assert "verified" in capsys.readouterr().out
 
-    # the real consumer entry is not served: an owner whose entry never calls the gate is refused
+    # an owner checkout whose entry never calls the gate is refused
     bare_owner = Repo(tmp_path / "bare")
     bare_owner.root.mkdir()
     bare_owner.git("init", "-q", "-b", "main")
@@ -287,7 +287,7 @@ def test_version_inventory_completeness_evidence(
     assert "within the stated grammar only" in passing["scope"]
 
 
-# R006.12 stays unbound: the owner's real code-enhancer entry is not served yet.
+# spec: PIPE-RELEASE-R006.12
 def test_version_inventory_completeness_cli(repo: Repo, tmp_path: Path) -> None:
     repo.commit(FILES, "fixture")
     history = "Released 9.9.9 before the current project version.\n"

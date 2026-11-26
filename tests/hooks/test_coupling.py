@@ -256,7 +256,7 @@ def test_import_direction_follows_layers(repo, capsys):
     assert "app/types/m.py:1:" in capsys.readouterr().out
 
 
-# R088.3 stays unbound: consumer adoption is delivered in each consumer repository.
+# spec: PIPE-GATES-R088.3
 def test_consumer_fixture_with_sdk_shaped_policy_passes(repo, capsys):
     """A consumer-shaped policy (foundation, transport, ports, domain) on a clean tree exits 0."""
     policy = _policy(
