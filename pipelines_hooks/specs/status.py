@@ -9,6 +9,8 @@ the same spec never conflict on it.
   ``specs/*/status.json`` is tracked by Git.
 * ``--write``: also write each computed document to ``specs/<dir>/status.json``
   (gitignored) for local readers and CI page builders.
+* ``--engine-endpoint`` (or ``PIPELINES_SPEC_STATUS_ENDPOINT``): after generation, read
+  the engine's served state over HTTP and fail naming each row whose state differs.
 * ``--freeze-legacy``: one-time cutover: record the landing SHAs a tracked
   status.json carries that trailers do not, in ``.config/spec-legacy-landings.json``.
 
@@ -24,7 +26,9 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git, sanitized_env
+from pipelines_hooks.core.settings import setting
 from pipelines_hooks.specs.bindings import test_bindings
+from pipelines_hooks.specs.engine_state import compare_engine_state
 from pipelines_hooks.specs.git_log import checked_attributions
 from pipelines_hooks.specs.generator import freeze_legacy, generate, render
 
@@ -50,6 +54,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--head", default=None)
     parser.add_argument("--write", action="store_true", help="write computed status.json files (untracked)")
+    parser.add_argument("--engine-endpoint", default=None, help="served spec.status URL to compare against")
     parser.add_argument("--freeze-legacy", action="store_true", help="cutover: freeze legacy landings")
     return parser.parse_args(argv)
 
@@ -133,4 +138,10 @@ def main(argv: list[str]) -> int:
         for tracked_path in tracked:
             print(f"    {tracked_path}")
         return 1
-    return 1 if refused else 0
+    endpoint = arguments.engine_endpoint or setting("PIPELINES_SPEC_STATUS_ENDPOINT")
+    differing = compare_engine_state(generated, endpoint) if endpoint else []
+    if differing:
+        print("FAIL: generated spec status differs from the engine's served state for these rows:")
+        for row_id in differing:
+            print(f"    {row_id}")
+    return 1 if refused or differing else 0

@@ -53,7 +53,7 @@ These rows have no bound test yet. Each names the test that will prove it.
 | Row | Planned test |
 |---|---|
 | `PIPE-CONNSPEC-R001.1` | `tests/hooks/test_spec_trailers.py::test_dependency_only_bot_commit_passes` and `::test_bot_commit_touching_code_fails` |
-| `PIPE-CONNSPEC-R004` | `tests/test_core_reference_callers.py::test_core_callers_enable_spec_dashboard` |
+| `PIPE-CONNSPEC-R004` | `tests/test_core_reference_callers_pages.py::test_core_callers_enable_spec_dashboard` |
 | `PIPE-CONNSPEC-R005` | `tests/test_core_reference_callers.py::test_core_development_skills_carry_delivery_contract_section`. This test is planned. |
-| `PIPE-CONNSPEC-R157.2` | `tests/test_connector_consumer_remeasure_20261028.py::test_repository_manager_hook_row_qualifies`, once the consumer lists all three hooks |
+| `PIPE-CONNSPEC-R157.2` | `tests/test_connector_consumer_remeasure_20261028.py::test_repository_manager_hook_row_qualifies` |
 PIPE-CONNSPEC-R017 binds tests/hooks/test_spec_landing_attribution.py: a proved attribution lands and verifies the row; each refusal (non-hex, unreachable, no marker added, docs-only, marker removed, reverted) names the row and leaves it SPECIFIED; a trailer landing is kept beside an attribution.
