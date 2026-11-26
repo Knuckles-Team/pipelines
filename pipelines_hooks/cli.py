@@ -62,6 +62,7 @@ GATES: dict[str, str] = {
     "readme-header": "pipelines_hooks.docs.readme_header",
     "guide-migration": "pipelines_hooks.docs.guide_migration",
     "deployment-docs": "pipelines_hooks.docs.deployment_docs",
+    "ontology-governance": "pipelines_hooks.docs.ontology_governance",
     "spec-artifact-schema": "pipelines_hooks.specs.artifact_schema",
     "lint-type": "pipelines_hooks.code.lint_type",
     "repository-validation": "pipelines_hooks.code.repository_validation",

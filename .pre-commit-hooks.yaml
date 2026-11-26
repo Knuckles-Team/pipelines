@@ -196,6 +196,14 @@
   always_run: true
   require_serial: true
   stages: [pre-commit, pre-push]
+- id: ontology-governance
+  name: Every staged ontology file carries the authority's verdict for each required rule class
+  entry: pipelines-hook ontology-governance
+  language: python
+  files: \.(ttl|owl|rdf|nt|jsonld)$|^\.config/ontology-(governance|authority)\.json$
+  pass_filenames: false
+  require_serial: true
+  stages: [pre-commit]
 - id: spec-artifact-schema
   name: Generator-skill spec artifacts validate against schema version 1
   entry: pipelines-hook spec-artifact-schema
