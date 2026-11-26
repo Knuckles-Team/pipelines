@@ -1,7 +1,105 @@
 {
  "id": "P5",
- "name": "Every other family",
+ "name": "Answers across connectors and virtual graphs",
  "phase": "P5",
- "scenario": "none",
- "scope": "all-remaining"
+ "scenario": "ARBORA-ACCEPTANCE-R006.7",
+ "scope": [
+  {
+   "repo": "arbora",
+   "spec": "ARBORA-ACCEPTANCE",
+   "roots": [
+    "ARBORA-ACCEPTANCE-R006.6"
+   ]
+  },
+  {
+   "repo": "erpnext-agent",
+   "spec": "CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT",
+   "roots": [
+    "CONN-ERPNEXT-AGENT-CONNECTOR-CONTENT-R002"
+   ]
+  },
+  {
+   "repo": "immich-api",
+   "spec": "CONN-IMMICH-API",
+   "roots": [
+    "CONN-IMMICH-API-R001"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-CQ-XSRC",
+   "roots": [
+    "MEDULLA-CQ-XSRC-R002",
+    "MEDULLA-CQ-XSRC-R002.7",
+    "MEDULLA-CQ-XSRC-R004.3",
+    "MEDULLA-CQ-XSRC-R004.4",
+    "MEDULLA-CQ-XSRC-R004.5",
+    "MEDULLA-CQ-XSRC-R012.1",
+    "MEDULLA-CQ-XSRC-R012.2"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-FEDERATED-QUERY",
+   "roots": [
+    "MEDULLA-FEDERATED-QUERY-R073"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-ORCH-VOCAB",
+   "roots": [
+    "MEDULLA-ORCH-VOCAB-R012"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-REPO-INGEST",
+   "roots": [
+    "MEDULLA-REPO-INGEST-R009",
+    "MEDULLA-REPO-INGEST-R009.1"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-SDLC",
+   "roots": [
+    "MEDULLA-SDLC-R001",
+    "MEDULLA-SDLC-R005",
+    "MEDULLA-SDLC-R012.2",
+    "MEDULLA-SDLC-R013"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-SUPPLY-VOCAB",
+   "roots": [
+    "MEDULLA-SUPPLY-VOCAB-R007.1"
+   ]
+  },
+  {
+   "repo": "medulla",
+   "spec": "MEDULLA-UNIFIED-DATA-PLANE",
+   "roots": [
+    "MEDULLA-UNIFIED-DATA-PLANE-R030.1",
+    "MEDULLA-UNIFIED-DATA-PLANE-R030.3",
+    "MEDULLA-UNIFIED-DATA-PLANE-R037"
+   ]
+  },
+  {
+   "repo": "pipelines",
+   "spec": "PIPE-RELEASE",
+   "roots": [
+    "PIPE-RELEASE-R023"
+   ]
+  },
+  {
+   "repo": "scion-sdk",
+   "spec": "SCION-CONNECTOR-CONTROL",
+   "roots": [
+    "SCION-CONNECTOR-CONTROL-R069"
+   ]
+  }
+ ],
+ "rest": "all-remaining"
 }

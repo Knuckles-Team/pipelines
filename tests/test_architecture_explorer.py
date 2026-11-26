@@ -618,12 +618,15 @@ def test_deep_links_parse() -> None:
         ["node", "-e", script], cwd=PKG, capture_output=True, text=True, check=True
     ).stdout.splitlines()
     assert json.loads(lines[0]) == [
-        {"node": "", "q": "GraphQL client"},
-        {"node": "sdk.control.transport", "q": "GraphQL client"},
-        {"node": "conn.infra.x", "q": ""},
-        {"node": "sdk.control.transport", "q": ""},
-        {"node": "", "q": ""},
-        {"node": "", "q": "%E0%A4%A"},
+        {**d, "row": "", "mode": "", "filter": [], "release": ""}  # the Canopy view keys (PIPE-PAGES-R057.2)
+        for d in (
+            {"node": "", "q": "GraphQL client"},
+            {"node": "sdk.control.transport", "q": "GraphQL client"},
+            {"node": "conn.infra.x", "q": ""},
+            {"node": "sdk.control.transport", "q": ""},
+            {"node": "", "q": ""},
+            {"node": "", "q": "%E0%A4%A"},
+        )
     ]
     assert lines[1] == "#node=sdk.control.transport&q=GraphQL%20client "
 
@@ -2279,7 +2282,7 @@ def test_glass_text_contrast_is_at_least_4_5_over_the_ocean_in_both_themes() -> 
 SDD_PLAN = (
     "# Plan: Fam\n\n## Summary\n\nSum.\n\n## Constitution Check\n\n- **I. One owner**: pass, no copy.\n"
     "- **IV. Neutral names**: FAIL - a product name appears.\n\n## Cross-repo seams\n\n"
-    "- FAM-R002 hands the result to FAM-R001.\n\n## Delivery phase\n\nRows serve P3.\n\n## Repeat\n\nA.\n\n## Repeat\n\nB.\n"
+    "- FAM-R002 hands the result to FAM-R001.\n\n## Delivery phase\n\nDelivery phase: P3.\n\n## Repeat\n\nA.\n\n## Repeat\n\nB.\n"
 )
 SDD_TASKS = "# Tasks\n\n- [x] Done thing FAM-R001\n- [ ] Open thing Zq-TASK-MARKER\n- [ ] Third thing\n"
 SDD_CONSTITUTION = "# Constitution\n\n**Version**: 1.2.0 | **Ratified**: 2026-10-31\n\n## Core Principles\n\n### I. One owner\n\nText.\n"
@@ -2405,8 +2408,11 @@ def test_doc_deep_links_parse_and_round_trip() -> None:
         ["node", "-e", script], cwd=PKG, capture_output=True, text=True, check=True
     ).stdout.splitlines()
     assert json.loads(lines[0]) == [
-        {"node": "a.b", "q": "", "doc": "fam/plan.md", "sec": "constitution-check", "repo": "r"},
-        {"node": "a", "q": "", "doc": "fam/checklists/x.md"},
+        {**d, "row": "", "mode": "", "filter": [], "release": ""}
+        for d in (
+            {"node": "a.b", "q": "", "doc": "fam/plan.md", "sec": "constitution-check", "repo": "r"},
+            {"node": "a", "q": "", "doc": "fam/checklists/x.md"},
+        )
     ]
     assert lines[1] == "#node=a.b&doc=fam/plan.md&sec=summary&repo=r #node=a"
 
@@ -2610,3 +2616,74 @@ def test_canopy_is_a_part_inside_pipelines_and_owns_its_rows() -> None:
     assert {where[i] for i in owned} == {"pipe.canopy"}
     assert all(where[i] != "pipe.canopy" for i in kept)
     assert unmapped_violations(tree, direct, model["unmapped_allow"]) == []
+
+
+# ------------------------------------------------- verified versus delivered, section panel and typed edges (R044, R046, R047)
+
+
+def _template_function(name: str, end: str) -> str:
+    """Return the template source from ``function <name>`` up to (not including) the marker ``end``."""
+    html = (PKG / "template.html").read_text()
+    start = html.index(f"function {name}(")
+    return html[start : html.index(end, start)]
+
+
+@pytest.mark.spec("PIPE-PAGES-R044")
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_verified_and_delivered_counts_are_separate(tmp_path: Path) -> None:
+    import subprocess
+
+    from scripts.architecture_explorer import releases
+
+    manifests = [
+        {
+            "id": "P1",
+            "name": "A",
+            "phase": "P1",
+            "scenario": "S1",
+            "scope": [{"repo": "r", "spec": "F", "roots": ["F-R001", "F-R002"]}],
+        },
+        {
+            "id": "P2",
+            "name": "B",
+            "phase": "P2",
+            "scenario": "S2",
+            "scope": [{"repo": "r", "spec": "F", "roots": ["F-R003"]}],
+        },
+    ]
+    rows = [
+        {"id": f"F-R00{i}", "status": s, "repo": "r", "family": "f", "spec_id": "F", "title": "t"}
+        for i, s in enumerate(("VERIFIED", "VERIFIED", "VERIFIED", "LANDED"), 1)
+    ]
+    runs = {
+        "P1": {
+            "state": "passed",
+            "metrics": {"provenance_coverage": 0.97, "conflict_rate": 0.01, "contradictions": 2, "decay_events": 5},
+        },
+        "P2": {"state": "failed"},
+    }
+    view = releases.release_view(manifests, rows, runs)
+    assert [r["scenario_state"] for r in view["releases"]] == ["passed", "failed"]
+    assert view["metrics"]["provenance_coverage"] == {"P1": 0.97} and view["metrics"]["decay_events"] == {"P1": 5}
+    assert releases.release_view(manifests, rows)["metrics"]["contradictions"] == {}  # no run, no number
+    # Run the page's own tally over the rows: VERIFIED counts all three, delivered only the two whose scenario passed.
+    release_of = releases.row_releases(manifests, rows)
+    page_rows = [{"status": r["status"], "release": release_of.get(r["id"], "unscheduled")} for r in rows]
+    source = (
+        _template_function("tally", "const countText")
+        + "const countText"
+        + _template_function("tally", "const taskPct").split("const countText", 1)[1]
+    )
+    script = (
+        f"const PASSED=new Set({json.dumps([r['id'] for r in view['releases'] if r['scenario_state'] == 'passed'])});\n"
+        + source
+        + f"\nconst t=tally({json.dumps(page_rows)});console.log(JSON.stringify(t),countText(t));"
+    )
+    probe = tmp_path / "tally.cjs"
+    probe.write_text(script)
+    out = subprocess.run(["node", str(probe)], capture_output=True, text=True, check=True).stdout
+    counts, _, text = out.partition("} ")
+    assert json.loads(counts + "}") == {"SPECIFIED": 0, "LANDED": 1, "VERIFIED": 3, "delivered": 2}
+    assert "verified 3" in text and "delivered 2" in text
+    template = (PKG / "template.html").read_text()
+    assert "metricsBlock" in template and "Provenance coverage of claims" in template

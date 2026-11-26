@@ -60,6 +60,7 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
             "/pipelines_hooks/connector/project.py\n"
             "/pipelines_hooks/core/__init__.py\n"
             "/pipelines_hooks/core/errors.py\n"
+            "/scripts/release_record.py\n"
         ),
         "sparse-checkout-cone-mode": False,
         "path": ".pipeline-contract",
@@ -137,3 +138,31 @@ def test_publish_action_persists_uv_cache_in_tool_cache() -> None:
     assert 'echo "UV_CACHE_DIR=$root/uv-cache"' in cache["run"]
     assert 'echo "UV_PYTHON_INSTALL_DIR=$root/uv-python"' in cache["run"]
     assert "RUNNER_TOOL_CACHE" in cache["run"]
+
+
+def test_connector_release_signs_before_the_wheel_build(tmp_path: Path) -> None:
+    # spec: PIPE-RELEASE-R019
+    document = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    steps = document["jobs"]["publish-pypi"]["steps"]
+    names = [step.get("name") for step in steps]
+    sign = steps[names.index("Sign the live declaration")]
+    assert names.index("Sign the live declaration") < names.index("Verify release version")
+    assert names.index("Verify release version") < names.index("Build, publish and release")
+    assert sign["if"] == "inputs.connector"
+    trigger = document.get("on", document.get(True))
+    assert trigger["workflow_call"]["inputs"]["release-signing-key"]["default"] == ""
+
+    def run(key: str, exit_code: int) -> subprocess.CompletedProcess[str]:
+        bin_dir = tmp_path / f"bin{exit_code}{bool(key)}"
+        bin_dir.mkdir()
+        stub = bin_dir / "uv"
+        stub.write_text(f'#!/bin/sh\necho "$@" > "{bin_dir}/args"\nexit {exit_code}\n')
+        stub.chmod(0o755)
+        env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "RELEASE_SIGNING_KEY": key}
+        return subprocess.run(["bash", "-c", sign["run"]], env=env, capture_output=True, text=True, check=False)
+
+    assert run("kv://signer#3", 0).returncode == 0
+    assert run("kv://signer#3", 2).returncode != 0  # the signing command failed: the release fails
+    unsigned = run("", 0)  # no key reference: an unsigned build fails before the wheel is built
+    assert unsigned.returncode != 0 and "must be signed" in unsigned.stdout
+    assert "--key-ref kv://signer#3" in (tmp_path / "bin0True" / "args").read_text()

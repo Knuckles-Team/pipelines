@@ -9,33 +9,43 @@ const ArchSearch = (function () {
   const words = s => String(s).toLowerCase().match(/[a-z0-9]+/g) || [];
   const idLike = /^[a-z][a-z0-9]*(?:-[a-z0-9.]+)+$/;
 
-  // "#q=GraphQL%20client", "#node=conn.x", "#node=a&q=b" and the older "#<node>" anchor.
+  // "#q=GraphQL%20client", "#node=conn.x", "#node=a&q=b" and the older "#<node>" anchor. Canopy view keys
+  // (PIPE-PAGES-R057.2): row, part (an alias of node that wins over it), mode, filter (comma list) and release.
   function parseHash(hash) {
-    const out = { node: "", q: "" };
+    const out = { node: "", q: "", row: "", mode: "", filter: [], release: "" };
     let h = String(hash || "").replace(/^#/, "");
     if (!h) return out;
     if (h.indexOf("=") < 0) {
       try { out.node = decodeURIComponent(h); } catch (_) { out.node = h; }
       return out;
     }
-    h.split("&").forEach(part => {
-      const i = part.indexOf("=");
+    let part = "";
+    h.split("&").forEach(pair => {
+      const i = pair.indexOf("=");
       if (i < 0) return;
-      const key = part.slice(0, i);
-      let val = part.slice(i + 1).replace(/\+/g, " ");
+      const key = pair.slice(0, i);
+      let val = pair.slice(i + 1).replace(/\+/g, " ");
       try { val = decodeURIComponent(val); } catch (_) { /* keep raw */ }
       if (key === "q") out.q = val; else if (key === "node") out.node = val;
-      else if (key === "doc" || key === "sec" || key === "repo") out[key] = val;
+      else if (key === "part") part = val;
+      else if (key === "filter") out.filter = val.split(",").filter(Boolean);
+      else if (key === "doc" || key === "sec" || key === "repo" || key === "row" || key === "mode" || key === "release") out[key] = val;
     });
+    if (part) out.node = part;
     return out;
   }
 
-  // `ref` optionally names an open document: { doc: "<family>/<file>", sec: "<heading slug>", repo: "<repository>" }.
+  // `ref` optionally names an open document: { doc: "<family>/<file>", sec: "<heading slug>", repo: "<repository>" }
+  // and the Canopy view: { row, mode, filter: [names], release }.
   function hashFor(node, q, ref) {
     const parts = [];
     if (node && node !== "root") parts.push("node=" + encodeURIComponent(node));
     if (q) parts.push("q=" + encodeURIComponent(q));
     if (ref && ref.doc) ["doc", "sec", "repo"].forEach(k => { if (ref[k]) parts.push(k + "=" + encodeURIComponent(ref[k]).replace(/%2F/g, "/")); });
+    if (ref) {
+      ["row", "mode", "release"].forEach(k => { if (ref[k]) parts.push(k + "=" + encodeURIComponent(ref[k])); });
+      if (ref.filter && ref.filter.length) parts.push("filter=" + ref.filter.map(encodeURIComponent).join(","));
+    }
     return parts.length ? "#" + parts.join("&") : "";
   }
 
