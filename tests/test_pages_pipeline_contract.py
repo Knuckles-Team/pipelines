@@ -208,6 +208,7 @@ def test_pipeline_checkout_includes_the_split_readiness_package() -> None:
         "pipelines_hooks/__init__.py",
         "pipelines_hooks/core",
         "pipelines_hooks/specs",
+        "pipelines_hooks/docs",
     ]
 
 
