@@ -109,6 +109,29 @@
   always_run: true
   require_serial: true
   stages: [pre-commit, pre-push]
+- id: mutation-gaps
+  name: Scheduled mutation testing - surviving mutants reported as test gaps
+  entry: pipelines-hook mutation-gaps
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
+- id: test-quality
+  name: Test quality - placeholder tests, unjustified suppressions and a measured coverage floor
+  entry: pipelines-hook test-quality
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
+- id: export-version
+  name: Workflow export import - exact version comparison and a kept decision condition
+  entry: pipelines-hook export-version
+  language: python
+  pass_filenames: false
+  always_run: false
+  stages: [manual]
 - id: changelog
   name: Changelog - dated, categorized releases with resolved comparison links
   entry: pipelines-hook changelog
@@ -416,6 +439,14 @@
 - id: packaging-roles
   name: Packaging role/extra closure (explicit contract and evidence paths)
   entry: pipelines-hook packaging-roles
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
+- id: role-closure
+  name: Role closure (install each supported role from its frozen closure and measure imports)
+  entry: pipelines-hook role-closure
   language: python
   pass_filenames: false
   always_run: true

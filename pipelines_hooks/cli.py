@@ -12,8 +12,10 @@ from pipelines_hooks.core.settings import setting
 #: Hook id -> module exposing ``main(argv: list[str]) -> int``.
 GATES: dict[str, str] = {
     "validate": "pipelines_hooks.validation.cli",
+    "export-version": "pipelines_hooks.validation.export_version",
     "dependency-readiness": "pipelines_hooks.release.dependency_readiness",
     "packaging-roles": "pipelines_hooks.release.packaging_roles",
+    "role-closure": "pipelines_hooks.release.role_closure",
     "complexity-staged": "pipelines_hooks.complexity.staged",
     "complexity-census": "pipelines_hooks.complexity.census",
     "kiss-staged": "pipelines_hooks.kiss.staged",
@@ -58,6 +60,8 @@ GATES: dict[str, str] = {
     "import-cycles": "pipelines_hooks.code.import_cycles",
     "env-sprawl": "pipelines_hooks.code.env_sprawl",
     "stdout-writes": "pipelines_hooks.code.stdout_writes",
+    "mutation-gaps": "pipelines_hooks.code.mutation_gaps",
+    "test-quality": "pipelines_hooks.code.test_quality",
     "public-surface": "pipelines_hooks.docs.public_surface",
     "changelog": "pipelines_hooks.docs.changelog",
     "skill-grade": "pipelines_hooks.docs.skill_grade",

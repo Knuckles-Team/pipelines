@@ -54,6 +54,7 @@ KEPT = {
     "release-standard",
     "dependency-readiness",
     "packaging-roles",
+    "role-closure",
     "gate-set",
     "pr-test-scope",
     "change-scope",
@@ -64,6 +65,9 @@ KEPT = {
     "prompt-format",
     "skill-grade",
     "changelog",
+    "mutation-gaps",
+    "export-version",
+    "test-quality",
     "test-layout",
     "workflow-step-honesty",
 }
