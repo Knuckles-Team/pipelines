@@ -449,7 +449,7 @@ def test_generate_honours_the_shape_classes_override_and_refuses_a_missing_sourc
 def test_python_release_workflow_generates_before_the_build() -> None:
     document = yaml.safe_load((WORKFLOWS / "python_pipeline.yml").read_text(encoding="utf-8"))
     assert document[True]["workflow_call"]["inputs"]["connector"]["default"] is False
-    steps = [s["name"] for s in next(iter(document["jobs"].values()))["steps"]]
+    steps = [s["name"] for s in document["jobs"]["publish-pypi"]["steps"]]
     assert steps.index("Generate the connector ontology artifacts") < steps.index("Build, publish and release")
 
 

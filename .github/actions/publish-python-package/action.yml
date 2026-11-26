@@ -144,11 +144,6 @@ runs:
           dist-sdist/*.tar.gz
         if-no-files-found: error
 
-    - name: Verify release tag before publication
-      uses: ./.pipeline-contract/.github/actions/verify-release-source
-      with:
-        github-token: ${{ inputs.github-token }}
-
     - name: Verify the artifacts match the candidate digests
       if: inputs.candidate-digests != ''
       shell: bash
@@ -157,6 +152,11 @@ runs:
       run: |
         uvx --from "git+https://${{ job.workflow_repository }}@${{ job.workflow_sha }}" pipelines-hook candidate-sandbox verify \
           --digests "$CANDIDATE_DIGESTS"
+
+    - name: Verify release tag before publication
+      uses: ./.pipeline-contract/.github/actions/verify-release-source
+      with:
+        github-token: ${{ inputs.github-token }}
 
     - name: Publish package
       env:
