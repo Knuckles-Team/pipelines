@@ -104,7 +104,7 @@ none
 
 ## Build contract
 
-Each row names its test. The repository pre-commit and pre-push hooks and the pull request gates apply: `complexity` (cyclomatic 10, cognitive 15), `kiss-staged`, `dupehound-changed`, `jscpd-differential` and the pytest suite. No row uses a suppression or a ratchet.
+Each row names its test. The repository pre-commit and pre-push hooks and the pull request gates apply: `complexity-staged` and `complexity-census` (cyclomatic 10, cognitive 15), `kiss-staged`, `dupehound-changed`, `jscpd-differential` and the pytest suite. No row uses a suppression or a ratchet.
 
 ## Production caller chain
 
