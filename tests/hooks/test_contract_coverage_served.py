@@ -35,10 +35,12 @@ class LoopbackSeamEngine:
 
 # spec: PIPE-GATES-R034.5
 def test_hook_refuses_uncovered_seam_and_engine_reads_the_covered_one(repo: Repo, capsys) -> None:
-    repo.stage({"specs/demo/requirements.md": OWN, "specs/other/requirements.md": OTHER})
+    plain = "| ID | Requirement |\n|---|---|\n| `DEMO-R001` | **Uses the engine reply.** |\n"
+    repo.commit({"specs/demo/requirements.md": plain}, "base")
+    repo.stage({"specs/demo/requirements.md": OWN})  # the change adds a citation of another repository's row
     assert repo.run("contract-coverage", "--base", "HEAD") == 1
     assert "DEMO-R001 cites ENG-DEMO-R001 without a contract" in capsys.readouterr().out
-    repo.stage({"specs/demo/contracts/seam.md": CONTRACT})
+    repo.stage({"specs/demo/contracts/seam.md": CONTRACT, "specs/other/requirements.md": OTHER})
     assert repo.run("contract-coverage", "--base", "HEAD") == 0
     engine = LoopbackSeamEngine()
     assert engine.ask("DEMO-R001") == []  # nothing is read before the ingest
