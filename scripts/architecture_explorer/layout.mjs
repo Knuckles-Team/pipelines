@@ -134,7 +134,7 @@ function edgeList(out, level) {
       pts.push([s.endPoint.x, s.endPoint.y]);
     }
     const lab = (e.labels || [])[0];
-    return { from: src.from, to: src.to, label: src.label || "", pts, lp: lab ? [lab.x + lab.width / 2, lab.y + lab.height / 2] : null };
+    return { from: src.from, to: src.to, label: src.label || "", type: src.type, rows: src.rows || [], pts, lp: lab ? [lab.x + lab.width / 2, lab.y + lab.height / 2] : null };
   });
 }
 

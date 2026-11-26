@@ -133,6 +133,9 @@ main.work.prog .canvas{visibility:hidden}
 .fresh{position:absolute;left:10px;top:10px;z-index:2;font:500 11px var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:calc(100% - 70px)}
 .fresh summary{cursor:pointer}
 .fresh ul{margin:6px 0 0;padding:0;list-style:none;max-height:40vh;overflow:auto;columns:2;column-gap:14px}
+.edgetip{position:absolute;left:10px;bottom:44px;font:500 11px var(--font-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 8px;pointer-events:none;max-width:calc(100% - 70px)}
+.edgelegend{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-body);color:var(--muted)}
+.edgelegend svg{width:34px;height:8px;vertical-align:middle;margin-right:4px}
 .hint{position:absolute;left:10px;bottom:10px;font:500 11px var(--font-body);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px;pointer-events:none;max-width:calc(100% - 70px)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-body);color:var(--muted)}
 .legend>span{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px}
@@ -422,6 +425,7 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
         <button class="btn" id="zpanel" type="button" aria-label="Hide the side panel" aria-pressed="false" title="Hide or show the side panel">&#x25E7;</button>
       </div>
       <details class="fresh" id="fresh"><summary id="freshsum">Built</summary><ul id="freshlist"></ul></details>
+      <div class="edgetip" id="edgetip" role="status" aria-live="polite" hidden></div>
       <div class="hint" id="hint">Click a part to zoom in. Scroll or pinch to zoom. Drag to pan. Esc zooms out.</div>
     </div>
     <section class="panel program" id="program" aria-label="Delivery program" hidden></section>
@@ -431,6 +435,7 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
   </main>
   <div class="map-notes">
   <div class="legend" id="legend" aria-label="Layer colors"></div>
+  <div class="edgelegend" id="edgelegend" aria-label="Connection types"></div>
   <div class="modelegend" id="modelegend" role="status" aria-live="polite"></div>
   </div>
 </div>
@@ -629,15 +634,25 @@ function drawZones(n, alpha){ const L=n.layout, t=LT[n.id]; (L.zones||[]).forEac
         context:nodes[lp.around]?.label||n.label});
     } }
   ctx.globalAlpha=1; }
-function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.8, Math.min(2.2, 2*t.s*cam.k)); const fs=Math.min(12.5, 11.5*t.s*cam.k);
+// PIPE-PAGES-R047: four edge types, one stroke style each; the names are the engine predicates read in plain words.
+const EDGE_STYLE={dependsOn:{name:"depends on",dash:[7,4]},serves:{name:"serves",dash:[]},consumes:{name:"consumes",dash:[2,4]},proves:{name:"proves",dash:[10,4,2,4]}};
+const EDGE_FADE_MS=300; let edgeSel="root", edgeSelAt=0, edgeSegs=[];
+function edgeEmphasis(){ // 0 = nothing selected, rises to 1 within EDGE_FADE_MS; reduced motion jumps straight to 1
+  if(selected!==edgeSel){ edgeSel=selected; edgeSelAt=performance.now(); }
+  if(edgeSel==="root") return 0;
+  const k=reduced()?1:Math.min(1,(performance.now()-edgeSelAt)/EDGE_FADE_MS); if(k<1) dirty=true; return k; }
+function edgeTouches(e){ return e.from===edgeSel||e.to===edgeSel; }
+function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const emph=edgeEmphasis(); const lw=Math.max(0.8, Math.min(2.2, 2*t.s*cam.k)); const fs=Math.min(12.5, 11.5*t.s*cam.k);
   ctx.globalAlpha=alpha; ctx.strokeStyle=C.edge; ctx.fillStyle=C.edge; ctx.lineWidth=lw;
   L.edges.forEach(e=>{ if(!e.pts||e.pts.length<2) return; const p=e.pts.map(q=>toS(t.ox+q[0]*t.s, t.oy+q[1]*t.s));
-    for(let i=1;i<p.length;i++)annotationSegments.push([p[i-1],p[i]]);
+    for(let i=1;i<p.length;i++){annotationSegments.push([p[i-1],p[i]]); edgeSegs.push([p[i-1],p[i],e]);}
+    const hot=emph>0&&edgeTouches(e); ctx.globalAlpha=alpha*(emph>0&&!hot?1-0.75*emph:1); ctx.setLineDash(((EDGE_STYLE[e.type]||EDGE_STYLE.serves).dash).map(d=>d*Math.max(1,lw)));
     const tip=p[p.length-1],tipPad=Math.max(5,lw*4);annotationRects.push([tip[0]-tipPad,tip[1]-tipPad,tipPad*2,tipPad*2]);
     ctx.beginPath(); ctx.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i++) ctx.lineTo(p[i][0],p[i][1]);
     if(!C.opaque){ctx.strokeStyle=C.edgeHalo;ctx.lineWidth=lw+2;ctx.stroke();}
-    ctx.strokeStyle=C.edge;ctx.lineWidth=lw;ctx.stroke();
+    ctx.strokeStyle=C.edge;ctx.lineWidth=hot?lw*1.6:lw;ctx.stroke(); ctx.setLineDash([]);
     const a=p[p.length-2], b=p[p.length-1]; arrow(a[0],a[1],b[0],b[1],Math.max(5,lw*4)); });
+  ctx.globalAlpha=alpha;
   L.edges.forEach(e=>{ if(!e.label||!e.pts?.length) return;
     const anchor=e.lp||e.pts[Math.floor(e.pts.length/2)];
     const [x,y]=toS(t.ox+anchor[0]*t.s,t.oy+anchor[1]*t.s);
@@ -725,7 +740,7 @@ function frame(now){
   if(!!anim!==flightOn){ flightOn=!!anim; if(flightOn) rootEl.dataset.oceanFlight="on"; else { delete rootEl.dataset.oceanFlight;
     if(pendingPulse&&!reduced()){ pulse={id:pendingPulse,t0:now}; } pendingPulse=null; } }
   if(pulse){ pulseP=(now-pulse.t0)/700; if(pulseP>=1){ pulse=null; pulseP=0; } dirty=true; }
-  if(dirty){ dirty=false; hitList=[]; annotations=[]; annotationRects=[]; annotationSegments=[]; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H); if(C.opaque){ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);} drawInner(T,1); if(mode==="dependency") drawDeps();
+  if(dirty){ dirty=false; hitList=[]; edgeSegs=[]; annotations=[]; annotationRects=[]; annotationSegments=[]; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H); if(C.opaque){ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);} drawInner(T,1); if(mode==="dependency") drawDeps();
     // DOM chrome is also an obstacle; no caption may sit under the zoom controls or build/hint text.
     const origin=cv.getBoundingClientRect();
     for(const e of [document.querySelector(".zoom"),$("fresh"),$("hint")]){const r=e.getBoundingClientRect();annotationRects.push([r.left-origin.left,r.top-origin.top,r.width,r.height]);}
@@ -928,6 +943,16 @@ function drawDeps(){ depSegs=[]; ctx.save(); ctx.strokeStyle=C.accent; ctx.fillS
 cv.addEventListener("pointermove",e=>{ if(mode!=="dependency"||!depSegs.length) return; const x=e.offsetX, y=e.offsetY; let best=null, bd=7;
   depSegs.forEach(([p,t,d])=>{ const dx=t[0]-p[0], dy=t[1]-p[1], l2=dx*dx+dy*dy||1, u=Math.max(0,Math.min(1,((x-p[0])*dx+(y-p[1])*dy)/l2)), dist=Math.hypot(x-(p[0]+u*dx),y-(p[1]+u*dy)); if(dist<bd){ bd=dist; best=d; } });
   if(best) qstat.textContent="Edge "+best[0]+" to "+best[1]+": "+best[3].map(pr=>pr[0]+" unblocks "+pr[1]).join("; "); });
+cv.addEventListener("pointermove",e=>{ if(ptrs.size||!edgeSegs.length) return; const x=e.offsetX, y=e.offsetY; let best=null, bd=6;
+  edgeSegs.forEach(([p,q,edge])=>{ const dx=q[0]-p[0], dy=q[1]-p[1], l2=dx*dx+dy*dy||1, u=Math.max(0,Math.min(1,((x-p[0])*dx+(y-p[1])*dy)/l2)), dist=Math.hypot(x-(p[0]+u*dx),y-(p[1]+u*dy)); if(dist<bd){ bd=dist; best=edge; } });
+  const tip=$("edgetip"); if(!best){ tip.hidden=true; return; }
+  const rows=best.rows||[], style=EDGE_STYLE[best.type]||EDGE_STYLE.serves;
+  tip.textContent=(nodes[best.from]?.label||best.from)+" "+style.name+" "+(nodes[best.to]?.label||best.to)+(best.label?" ("+best.label+")":"")+". "+(rows.length?"Spec rows: "+rows.join(", "):"No spec rows are recorded for this connection.");
+  tip.hidden=false; });
+cv.addEventListener("pointerleave",()=>{ $("edgetip").hidden=true; });
+(function edgeLegend(){ const lg=$("edgelegend"); Object.keys(EDGE_STYLE).forEach(k=>{ const st=EDGE_STYLE[k], ns="http://www.w3.org/2000/svg", svg=document.createElementNS(ns,"svg"), ln=document.createElementNS(ns,"line");
+  svg.setAttribute("viewBox","0 0 34 8"); svg.setAttribute("aria-hidden","true"); ln.setAttribute("x1","1"); ln.setAttribute("x2","33"); ln.setAttribute("y1","4"); ln.setAttribute("y2","4"); ln.setAttribute("stroke","currentColor"); ln.setAttribute("stroke-width","2"); ln.setAttribute("stroke-dasharray",st.dash.join(" ")); svg.append(ln);
+  lg.append(el("span",{"data-edge-type":k},[svg,document.createTextNode(st.name)])); }); })();
 const ROWOBJ={}; Object.values(nodes).forEach(n=>n.specs.forEach(r=>{ ROWOBJ[r.id]=r; }));
 function drawerMissing(body,h,id,why){ h.textContent="Row not found"; body.textContent=""; body.append(el("p",{class:"muted",role:"status",text:"Row not found: "+id+". "+why+" The map is unchanged."})); }
 function openDrawer(id,quiet){ const d=$("drawer"); drawerRow=id; d.hidden=false; d.textContent="";

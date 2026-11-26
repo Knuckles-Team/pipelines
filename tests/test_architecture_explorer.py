@@ -2718,3 +2718,99 @@ return {root, part:read(), bar:document.querySelectorAll("#ownprog .pstack i").l
     assert out["part"] == {"specified": 1, "landed": 0, "verified": 0, "delivered": 0}  # R030 alone sits on its part
     assert out["root"] == {"specified": 0, "landed": 0, "verified": 0, "delivered": 0}  # never its descendants
     assert out["bar"] == 1  # one segment per state present
+
+
+def _model_edges(node: dict):
+    yield from node.get("edges", [])
+    for child in node.get("children", []):
+        yield from _model_edges(child)
+
+
+@pytest.mark.spec("PIPE-PAGES-R047")
+def test_edges_carry_type_rows_and_legend() -> None:
+    model = json.loads((PKG / "model.json").read_text())
+    edges = list(_model_edges(model))
+    assert edges and {e[3] for e in edges} == set(explorer.EDGE_TYPES)  # every edge typed, all four types used
+    assert all(len(e) in (4, 5) for e in edges)
+    typed = explorer.typed_edge(["pipelines", "eg", "gates + release", "proves", ["PIPE-GATES-R001"]])
+    assert typed == {
+        "from": "pipelines",
+        "to": "eg",
+        "label": "gates + release",
+        "type": "proves",
+        "rows": ["PIPE-GATES-R001"],
+    }
+    assert explorer.typed_edge(["a", "b", "x", "serves"])["rows"] == []
+    with pytest.raises(SystemExit):
+        explorer.typed_edge(["a", "b", "x", "uses"])
+    with pytest.raises(SystemExit):
+        explorer.typed_edge(["a", "b", "x"])
+    html = (PKG / "template.html").read_text()
+    layout = (PKG / "layout.mjs").read_text()
+    assert "type: src.type" in layout and "rows: src.rows" in layout  # the type and rows survive layout
+    for name, dash in (("dependsOn", "[7,4]"), ("serves", "[]"), ("consumes", "[2,4]"), ("proves", "[10,4,2,4]")):
+        assert f"{name}:{{name:" in html and f"dash:{dash}" in html
+    assert 'id="edgelegend"' in html and "edgeLegend" in html  # the legend lists each style
+    assert "EDGE_FADE_MS=300" in html and "edgeTouches" in html  # selecting dims the other edges within 300 ms
+    assert "reduced()?1:" in html  # reduced motion jumps to the final state without animation
+    assert "Spec rows: " in html and 'id="edgetip"' in html  # hovering an edge lists its rows
+    owned = {
+        m.group(1)
+        for p in (ROOT / "specs").glob("*/requirements.md")
+        for m in re.finditer(r"`(PIPE-[A-Z]+-R\d+(?:\.\d+)*)`", p.read_text())
+    }
+    assert all(row in owned for e in edges if len(e) == 5 for row in e[4])  # every row an edge cites exists
+
+
+def _code_snapshot(changed: tuple[str, ...] = ()) -> dict:
+    groups = {g: [f"{g}{n}" for n in range(6)] for g in "abc"}
+    items = [
+        {
+            "id": i,
+            "digest": f"{i}-{'v2' if i in changed else 'v1'}",
+            "path": f"src/{g}.py" if g != "c" else "tests/test_c.py",
+        }
+        for g, ids in groups.items()
+        for i in ids
+    ]
+    edges = [[x, y] for ids in groups.values() for k, x in enumerate(ids) for y in ids[k + 1 :]]
+    edges += [["a0", "b0"], ["b1", "c1"]]
+    return {"repo": "demo", "items": items, "edges": edges}
+
+
+@pytest.mark.spec("PIPE-PAGES-R048")
+def test_code_view_reclusters_only_changed_items_and_links_rows(tmp_path: Path) -> None:
+    from types import SimpleNamespace
+
+    from scripts.architecture_explorer import code_view
+
+    assert code_view.FULL_RECLUSTER_SHARE == 0.2
+    assert code_view.build_view(None, [], None) == (None, None)  # no snapshot: no code view and no error
+    assert code_view.read_snapshot(tmp_path, "demo") is None
+    rows = [{"id": "X-R001", "verified_by": ["tests/test_c.py:12"]}, {"id": "X-R002", "paths": ["src/a.py"]}]
+    first, state = code_view.build_view(_code_snapshot(), rows, None)
+    again, _ = code_view.build_view(_code_snapshot(), rows, None)
+    assert first == again and first["recluster"]["mode"] == "full"  # a fixed seed: equal input, equal output
+    assert len(first["communities"]) == 3
+    assert first["links"]["row_items"]["X-R001"] == [f"c{n}" for n in range(6)]  # the row reaches its test's items
+    assert first["links"]["item_rows"]["a0"] == ["X-R002"]  # each item links back to its rows
+    # One changed item of 18 is under the share: only it and its neighbours are re-clustered.
+    view, next_state = code_view.build_view(_code_snapshot(("c3",)), rows, state)
+    assert view["recluster"] == {"mode": "incremental", "reclustered": 6, "changed": 1}
+    untouched = [i for i in state["assignment"] if i[0] != "c"]
+    assert all(next_state["assignment"][i] == state["assignment"][i] for i in untouched)
+    # Above the share every item is re-clustered.
+    wide, _ = code_view.build_view(_code_snapshot(tuple(f"a{n}" for n in range(6))), rows, state)
+    assert wide["recluster"]["mode"] == "full" and wide["recluster"]["reclustered"] == 18
+    assert code_view.build_view(_code_snapshot(("c3",)), rows, state, share=0.01)[0]["recluster"]["mode"] == "full"
+    # The build reads one snapshot per repository from a directory, keeps state and sets the code view on the snapshot.
+    (tmp_path / "demo.json").write_text(json.dumps(_code_snapshot()))
+    snap = SimpleNamespace(repo="demo", rows=rows, code_view=None)
+    summary = code_view.attach([snap, SimpleNamespace(repo="other", rows=[], code_view=None)], tmp_path)
+    assert summary == {"demo": {"items": 18, "communities": 3}} and snap.code_view["links"] == first["links"]
+    assert (tmp_path / ".state" / "demo.json").is_file()
+    doc = details.family_detail(
+        "demo", "o/demo", "x", [_row("X-R001", "t", repo="demo")], {}, set(), None, snap.code_view
+    )
+    assert doc["rows"]["X-R001"]["code_items"] == [f"c{n}" for n in range(6)]
+    assert doc["code_view"]["item_rows"]["c0"] == ["X-R001"] and len(doc["code_view"]["communities"]) == 3

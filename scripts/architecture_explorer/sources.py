@@ -39,6 +39,7 @@ class Snapshot:
     constitution: str = ""
     contracts: list[tuple[str, str]] = field(default_factory=list)
     error: str = ""
+    code_view: dict | None = None
 
 
 class GitReader:
