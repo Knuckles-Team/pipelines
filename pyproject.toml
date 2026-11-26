@@ -84,7 +84,8 @@ addopts = "-p no:cacheprovider"
 [tool.pipelines_hooks]
 packages = ["pipelines_hooks"]
 
-[tool.pipelines_hooks.complexity]
+[tool.complexity]
+census = true
 census_paths = ["pipelines_hooks", "scripts", "tests"]
 
 [tool.pipelines_hooks.kiss]

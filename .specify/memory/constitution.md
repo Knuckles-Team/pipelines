@@ -263,11 +263,10 @@ Simple also means designed, not patched. Code that changes together lives togeth
 
 Gates:
 
-<!-- generated:begin constitution hooks: kiss-staged, kiss-census, complexity-staged, complexity-census, dupehound-changed, jscpd-differential, jscpd-census, scanner-versions -->
+<!-- generated:begin constitution hooks: kiss-staged, kiss-census, complexity, dupehound-changed, jscpd-differential, jscpd-census, scanner-versions -->
 - `kiss-staged`: KISS - staged Python/Rust, diff-scoped
 - `kiss-census`: KISS census - every tracked file plus orphan modules, enforced
-- `complexity-staged`: Complexity (cccc) - no new or worsened function over cyclomatic 10 / cognitive 15
-- `complexity-census`: Complexity census (cccc) - absolute zero outside the terms of acceptance
+- `complexity`: Complexity (cccc) - no new or worsened function over the caps; census when [tool.complexity] asks
 - `dupehound-changed`: Clone gate - changed functions (dupehound)
 - `jscpd-differential`: Clone gate - new blocks (jscpd, merged-tree differential)
 - `jscpd-census`: Clone census - tracked tree (jscpd, advisory)
@@ -291,11 +290,11 @@ A finding is fixed at its cause. A threshold is never raised to fit what passes,
 
 Gates:
 
-<!-- generated:begin constitution hooks: swallowed-errors, event-loop-blocking, kiss-census, complexity-census, pre-commit-patch-safety -->
+<!-- generated:begin constitution hooks: swallowed-errors, event-loop-blocking, kiss-census, complexity, pre-commit-patch-safety -->
 - `swallowed-errors`: Swallowed errors - no cause-dropping handler added
 - `event-loop-blocking`: Event-loop blocking - no blocking call added in async code
 - `kiss-census`: KISS census - every tracked file plus orphan modules, enforced
-- `complexity-census`: Complexity census (cccc) - absolute zero outside the terms of acceptance
+- `complexity`: Complexity (cccc) - no new or worsened function over the caps; census when [tool.complexity] asks
 - `pre-commit-patch-safety`: No live uncommitted work parked in the pre-commit patch cache
 <!-- generated:end -->
 

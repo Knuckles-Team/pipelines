@@ -24,7 +24,7 @@ on:
         required: false
         type: string
         default: >-
-          complexity-census kiss-census jscpd-census ste-census ste-staleness-census
+          complexity kiss-census jscpd-census ste-census ste-staleness-census
           no-stub swallowed-errors event-loop-blocking import-cycles env-sprawl stdout-writes
           public-surface supply-chain root-hygiene gitignore-convergence sprawl
       python-tools:

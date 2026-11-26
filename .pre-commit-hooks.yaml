@@ -268,6 +268,18 @@
   require_serial: true
   stages: [pre-push, manual]
 
+# complexity (cccc 1.6.0): one hook, configured by [tool.complexity] in pyproject.toml.
+# Staged: no new or worsened function over cyclomatic 10 / cognitive 15. With
+# `census = true` it also fails while any function under `census_paths` is over a cap
+# outside the terms of acceptance. The caps are fixed; an unknown key is refused.
+- id: complexity
+  name: "Complexity (cccc) - no new or worsened function over the caps; census when [tool.complexity] asks"
+  entry: pipelines-hook complexity
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+
 # ============================ DEPRECATED ======================================
 # Superseded by the gate standard. Do not add new references. Each id stays
 # published until every repository has dropped it; a final cleanup PR deletes
@@ -276,21 +288,6 @@
 # contract-coverage, spec-decomposition, spec-status and spec-trailers; `tests-fast` replaces
 # fast-tests. Every other deprecated id is advisory (weekly report) or deleted.
 
-# --- complexity (cccc 1.6.0) ------------------------------------------------
-- id: complexity-staged
-  name: "DEPRECATED (complexity-staged): Complexity (cccc) - no new or worsened function over cyclomatic 10 / cognitive 15"
-  entry: pipelines-hook complexity-staged
-  language: python
-  pass_filenames: false
-  always_run: true
-  require_serial: true
-- id: complexity-census
-  name: "DEPRECATED (complexity-census): Complexity census (cccc) - absolute zero outside the terms of acceptance"
-  entry: pipelines-hook complexity-census
-  language: python
-  pass_filenames: false
-  always_run: true
-  require_serial: true
 # --- KISS (0.4.12 fork build Knucklessg1/kiss; see core/kiss_fork.py) --------
 - id: kiss-staged
   name: "DEPRECATED (kiss-staged): KISS - staged Python/Rust, diff-scoped"

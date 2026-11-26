@@ -277,3 +277,4 @@
 - [ ] T270 PIPE-GATES-R016.120 The skill step, recovery and budget checks are `connector-standard` members.
 - [ ] T271 PIPE-GATES-R016.121 The compiled-skill freshness check is a `connector-standard` member.
 - [ ] T272 PIPE-GATES-R105 A shared workflow starts in every caller: no dangling needs, no withheld permission.
+- [ ] T273 PIPE-GATES-R106 One shared `complexity` hook reads `[tool.complexity]`; the two old ids are retired.

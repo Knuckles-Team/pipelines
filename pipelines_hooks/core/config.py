@@ -19,7 +19,6 @@ from pipelines_hooks.core.errors import CannotRun
 
 #: Every section a gate may read, and the keys it accepts.
 SECTIONS: dict[str, frozenset[str]] = {
-    "complexity": frozenset({"census_paths"}),
     "kiss": frozenset({"paths", "structural"}),
     "env_sprawl": frozenset({"allow_files"}),
     "stdout_writes": frozenset({"served_paths"}),

@@ -95,7 +95,7 @@ none
 
 ## Build contract
 
-Each row names its test. The pre-commit and pre-push hooks and the pull request gates of this repository apply: `complexity-staged` and `complexity-census` (cyclomatic 10, cognitive 15), `kiss-staged` and `kiss-census`, `dupehound-changed`, `jscpd-differential`, `tracked-privacy`, `supply-chain` and the pytest suite. No row uses a suppression or a ratchet. Reuse `gitenv.py` and `core/errors.py` instead of new git access or exit-code mapping.
+Each row names its test. The pre-commit and pre-push hooks and the pull request gates of this repository apply: `complexity` (cyclomatic 10, cognitive 15), `kiss-staged` and `kiss-census`, `dupehound-changed`, `jscpd-differential`, `tracked-privacy`, `supply-chain` and the pytest suite. No row uses a suppression or a ratchet. Reuse `gitenv.py` and `core/errors.py` instead of new git access or exit-code mapping.
 
 ## Production caller chain
 

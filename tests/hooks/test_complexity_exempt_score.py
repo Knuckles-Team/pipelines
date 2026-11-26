@@ -8,7 +8,7 @@ value, and was reported WORSE. Simplifying a function until it no longer
 needed the exemption was the one thing the gate could not tell from making it
 worse.
 
-Every case here runs the real ``complexity-staged`` gate, the real pinned
+Every case here runs the real ``complexity`` gate, the real pinned
 ``cccc``, and the real exhaustive-dispatch rule against a real git repository
 (the shared ``repo``/``Repo`` fixtures from ``tests/hooks/conftest.py``) --
 nothing here is mocked.
@@ -107,13 +107,13 @@ def _dispatch(arms: int, extra: str = "") -> str:
 def test_exempt_over_cap_to_non_exempt_under_cap_passes(repo: Repo) -> None:
     repo.commit({"pkg/rdf.rs": HANDLE_SHEX_VALIDATE_BASE})
     repo.stage({"pkg/rdf.rs": HANDLE_SHEX_VALIDATE_SIMPLIFIED})
-    assert repo.run("complexity-staged") == 0
+    assert repo.run("complexity") == 0
 
 
 def test_non_exempt_under_cap_to_over_cap_fails(repo: Repo) -> None:
     repo.commit({"pkg/classify.py": branchy("classify", 6)})
     repo.stage({"pkg/classify.py": branchy("classify", 11)})
-    assert repo.run("complexity-staged") == 1
+    assert repo.run("complexity") == 1
 
 
 # spec: PIPE-GATES-R077
@@ -128,7 +128,7 @@ def test_exempt_function_growing_non_arm_complexity_fails(repo: Repo) -> None:
         extra="\n            if flag {\n                if other {\n                    return 9;\n                }\n            }",
     )
     repo.stage({"pkg/dispatch.rs": grown})
-    assert repo.run("complexity-staged") == 1
+    assert repo.run("complexity") == 1
 
 
 def test_exempt_function_adding_exhaustive_arms_passes(repo: Repo) -> None:
@@ -137,12 +137,12 @@ def test_exempt_function_adding_exhaustive_arms_passes(repo: Repo) -> None:
     # not, because the growth is purely added match arms.
     repo.commit({"pkg/dispatch.rs": _dispatch(11)})
     repo.stage({"pkg/dispatch.rs": _dispatch(13)})
-    assert repo.run("complexity-staged") == 0
+    assert repo.run("complexity") == 0
 
 
 def test_new_over_cap_function_fails(repo: Repo) -> None:
     repo.stage({"pkg/classify.py": branchy("classify", 11)})
-    assert repo.run("complexity-staged") == 1
+    assert repo.run("complexity") == 1
 
 
 # spec: PIPE-GATES-R077
@@ -156,4 +156,4 @@ def test_exempt_function_losing_exhaustiveness_still_fails(repo: Repo) -> None:
         "        Kind::V0 => 0,\n", "        Kind::V0 => 0,\n        other => other as u8,\n"
     )
     repo.stage({"pkg/dispatch.rs": broken})
-    assert repo.run("complexity-staged") == 1
+    assert repo.run("complexity") == 1

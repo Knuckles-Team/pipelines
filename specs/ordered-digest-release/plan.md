@@ -80,7 +80,7 @@ Provide read-only dry run over fixture artifacts. Contract tests replace hosted 
 
 ### Security, compatibility, and quality
 
-Use least-privilege GitHub permissions, immutable action refs, no persisted checkout credential, and explicit publication authorization. Existing floating-tag consumers migrate before readiness. Apply configured CCCC (`complexity-staged`/`complexity-census`, 10/15), `jscpd-differential` and advisory census, `dupehound-changed`, KISS staged/census, YAML validation, and workflow contract tests. Reuse existing helpers and avoid duplicate checks across workflows.
+Use least-privilege GitHub permissions, immutable action refs, no persisted checkout credential, and explicit publication authorization. Existing floating-tag consumers migrate before readiness. Apply configured CCCC (`complexity`, 10/15), `jscpd-differential` and advisory census, `dupehound-changed`, KISS staged/census, YAML validation, and workflow contract tests. Reuse existing helpers and avoid duplicate checks across workflows.
 
 ### Kernel wheel completeness (PIPE-RELEASE-R004)
 
@@ -305,7 +305,7 @@ none
 
 ## Build contract
 
-Each row names its test as `path::name`; a test that is not written yet is marked planned in the row and in `test-spec.md`. The repository pre-commit and pre-push hooks and the pull request gates apply: `complexity-staged` and `complexity-census` hold no new function over cyclomatic 10 or cognitive 15, `jscpd-differential` and `dupehound-changed` hold no new clone, KISS staged and census hold, YAML validation passes, and the workflow contract tests pass. No row may use a suppression or a ratchet. A release is a `v*` tag on a green `main` commit and every merged version is published (constitution article XXVIII rule 4); the scheduled release-drift audit (`PIPE-RELEASE-R027`) enforces it, so no row here adds a publish path that runs outside a `v*` tag push.
+Each row names its test as `path::name`; a test that is not written yet is marked planned in the row and in `test-spec.md`. The repository pre-commit and pre-push hooks and the pull request gates apply: `complexity` hold no new function over cyclomatic 10 or cognitive 15, `jscpd-differential` and `dupehound-changed` hold no new clone, KISS staged and census hold, YAML validation passes, and the workflow contract tests pass. No row may use a suppression or a ratchet. A release is a `v*` tag on a green `main` commit and every merged version is published (constitution article XXVIII rule 4); the scheduled release-drift audit (`PIPE-RELEASE-R027`) enforces it, so no row here adds a publish path that runs outside a `v*` tag push.
 
 ## Production caller chain
 
