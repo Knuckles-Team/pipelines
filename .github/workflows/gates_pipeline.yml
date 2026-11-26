@@ -190,9 +190,11 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    # Only contents: read. A nested job may not request a permission its caller did not grant,
+    # and callers grant pull-requests: none, so asking for pull-requests: read failed every
+    # calling run at startup. Pull requests of a public repository read without that permission.
     permissions:
       contents: read
-      pull-requests: read
     steps:
       - name: Refuse a head branch that an earlier pull request already merged
         env:
