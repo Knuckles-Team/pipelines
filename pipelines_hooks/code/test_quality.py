@@ -23,7 +23,19 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import repo_root
 from pipelines_hooks.core.tracked import tracked_or_walked
 
-RULES = ("placeholder-test", "unjustified-suppression", "coverage-below-threshold")
+RULES = (
+    "placeholder-test",
+    "unjustified-suppression",
+    "coverage-below-threshold",
+    "interface-violation",
+    "missing-property-proof",
+    "missing-integration-proof",
+    "orphan-module",
+    "outcome-not-observed",
+    "isolation-violation",
+)
+DEFAULT_COMPONENTS = ".pipelines/components.toml"
+DEFAULT_OUTCOMES = ".pipelines/outcomes.toml"
 DEFAULT_THRESHOLD = 80.0
 MIN_REASON = 10
 DEFAULT_REPORT = "coverage.json"
@@ -40,13 +52,14 @@ class TestQualityFinding:
     path: str
     line: int
     rule: str
+    detail: str = ""
 
     def __post_init__(self) -> None:
         if self.rule not in RULES:
             raise ValueError(f"unknown test-quality rule {self.rule!r}; expected one of {', '.join(RULES)}")
 
     def render(self) -> str:
-        return f"{self.path}:{self.line} {self.rule}"
+        return f"{self.path}:{self.line} {self.rule}" + (f" -- {self.detail}" if self.detail else "")
 
 
 @dataclass(frozen=True)
@@ -147,13 +160,59 @@ def measured_coverage(root: Path, report: str = DEFAULT_REPORT) -> float:
     return float(percent)
 
 
+def extension_findings(root: Path, args: argparse.Namespace) -> tuple[list[TestQualityFinding], dict[str, object]]:
+    """Boundary, outcome, closure and unit-profile passes; each runs only when declared or selected."""
+    from pipelines_hooks.code import boundaries, coverage_closure, outcomes, unit_profile
+
+    found: list[TestQualityFinding] = []
+    evidence: dict[str, object] = {}
+    components = args.components or (root / DEFAULT_COMPONENTS if (root / DEFAULT_COMPONENTS).is_file() else None)
+    if components:
+        boundary = boundaries.check(root, root / components)
+        found += [TestQualityFinding(f.path, f.line, f.rule, f.detail) for f in boundary.findings]
+        evidence["boundaries"] = boundary.evidence
+    contract = args.outcomes or (root / DEFAULT_OUTCOMES if (root / DEFAULT_OUTCOMES).is_file() else None)
+    if contract:
+        proof = outcomes.check(root, root / contract)
+        found += [TestQualityFinding(*t) for t in proof.findings]
+        evidence["outcomes"] = proof.evidence
+    if args.closure:
+        closure = coverage_closure.check(root, root / args.closure)
+        found += [TestQualityFinding(*t) for t in closure.findings]
+        evidence["closure"] = closure.projects
+    if args.unit_profile:
+        unit = unit_profile.check(root, root / args.unit_profile)
+        found += [TestQualityFinding(*t) for t in unit.findings]
+        evidence["unit_profile"] = unit.evidence
+    return found, evidence
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="test-quality", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument("--coverage-report", default=DEFAULT_REPORT)
+    parser.add_argument("--components", type=Path, help=f"component declaration (default {DEFAULT_COMPONENTS})")
+    parser.add_argument("--outcomes", type=Path, help=f"outcome contract (default {DEFAULT_OUTCOMES})")
+    parser.add_argument("--closure", type=Path, help="coverage closure policy: zero uncovered executable lines")
+    parser.add_argument("--unit-profile", type=Path, help="hermetic unit profile policy")
+    parser.add_argument(
+        "--require-declared",
+        action="store_true",
+        help="a consumer without a component declaration and an outcome contract is exit 2, never a pass",
+    )
+    parser.add_argument("--evidence", type=Path, help="write the structured evidence JSON here")
     args = parser.parse_args(argv)
     root = repo_root(args.root)
+    if args.require_declared:
+        for given, default, what in (
+            (args.components, DEFAULT_COMPONENTS, "component declaration"),
+            (args.outcomes, DEFAULT_OUTCOMES, "outcome contract"),
+        ):
+            if not (root / (given or default)).is_file():
+                raise CannotRun(
+                    f"test-quality: {root.name} has no {what} at {given or default}; --require-declared refuses"
+                )
     result = scan(root, args.threshold, coverage_report=args.coverage_report)
     percent = measured_coverage(root, args.coverage_report)
     placeholders = sum(1 for finding in result.findings if finding.rule == "placeholder-test")
@@ -161,6 +220,10 @@ def main(argv: list[str]) -> int:
         f"test-quality: files {result.files}, placeholders {placeholders}, "
         f"coverage {percent:g}%, threshold {args.threshold:g}%"
     )
-    for finding in result.findings:
+    extra, evidence = extension_findings(root, args)
+    findings = sorted([*result.findings, *extra], key=lambda f: (f.path, f.line, f.rule))
+    for finding in findings:
         print(f"  {finding.render()}")
-    return 1 if result.findings else 0
+    if args.evidence:
+        args.evidence.write_text(json.dumps(evidence, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    return 1 if findings else 0
