@@ -17,6 +17,14 @@ skill_type: skill
 # Demo skill
 
 Reads one record.
+
+## Steps
+
+1. Read the record with `demo get <id>`. Verify the output names the record.
+
+| Failure | Cause | Recovery |
+|---|---|---|
+| Not found | Wrong id | Run `demo list` and pick an id from it |
 """
 
 
@@ -99,3 +107,65 @@ def test_vendored_paths_leave_the_path_check_and_codespell(tmp_path: Path, monke
     assert skills.main([]) == 0
     assert codespell.extra_excludes(root) == ["demo_mcp/upstream"]
     assert codespell.excluded("demo_mcp/upstream/" + "v" * 120 + "/x.md", codespell.extra_excludes(root))
+
+
+def _skill_with(body: str) -> str:
+    return SKILL.split("## Steps")[0] + body
+
+
+@pytest.mark.spec("PIPE-GATES-R016.120")
+@pytest.mark.parametrize(
+    ("body", "code"),
+    [
+        (
+            "## Steps\n\n1. Read the record and then delete it with `demo rm`. Verify it is gone.\n",
+            "STEP_MULTI_OBJECTIVE",
+        ),
+        ("## Steps\n\n1. Read the record. Verify the output.\n", "STEP_NO_COMMAND"),
+        ("## Steps\n\n1. Read the record with `demo get`.\n", "STEP_NO_VERIFY"),
+        ("## Steps\n\n1. Read the record with `demo get`. Verify it.\n", "RECOVERY_TABLE_MISSING"),
+        (
+            "## Steps\n\n1. Read with `demo get`. Verify it.\n\n| Failure | Cause | Recovery |\n|---|---|---|\n| x | y | Try again |\n",
+            "RECOVERY_VAGUE",
+        ),
+    ],
+)
+def test_a_skill_without_a_verified_step_fails_and_is_named(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], body: str, code: str
+) -> None:
+    monkeypatch.chdir(_repo(tmp_path, skill=_skill_with(body)))
+    assert skills.main([]) == 1
+    assert code in capsys.readouterr().out
+
+
+@pytest.mark.spec("PIPE-GATES-R016.120")
+@pytest.mark.parametrize(
+    ("edit", "code"),
+    [
+        (
+            lambda s: s.replace("Look up one demo record.", "Look up one demo record. " + "x" * 400),
+            "DESCRIPTION_TOO_LONG",
+        ),
+        (lambda s: s + "line\n" * 501, "BODY_TOO_LONG"),
+        (lambda s: s + "\nSee [notes](NOTES.md).\n", "REFERENCE_NOT_STAGED"),
+    ],
+)
+def test_each_budget_code_fires(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], edit, code: str
+) -> None:
+    root = _repo(tmp_path, skill=edit(SKILL))
+    (root / "demo_mcp" / "skills" / "demo-skill" / "NOTES.md").write_text("n\n", encoding="utf-8")
+    monkeypatch.chdir(root)
+    assert skills.main([]) == 1
+    assert code in capsys.readouterr().out
+
+
+@pytest.mark.spec("PIPE-GATES-R016.120")
+def test_a_connector_file_in_a_skill_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = _repo(tmp_path)
+    (root / "demo_mcp" / "skills" / "demo-skill" / ".mcp.json").write_text("{}", encoding="utf-8")
+    monkeypatch.chdir(root)
+    assert skills.main([]) == 1
+    assert "SKILL_HAS_CONNECTOR_FILE" in capsys.readouterr().out
