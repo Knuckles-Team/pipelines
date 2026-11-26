@@ -75,8 +75,8 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | Row | Proving test |
 |---|---|
 | `PIPE-RELEASE-R009` | See each child. |
-| `PIPE-RELEASE-R009.1` | Planned test (the file does not exist yet): `tests/test_release_record_step.py::test_workflow_has_record_step_after_publish` |
-| `PIPE-RELEASE-R009.2` | Planned test (the file does not exist yet): `tests/test_release_record_step.py::test_step_posts_release_with_digests` |
+| `PIPE-RELEASE-R009.1` | Test: `tests/test_release_record_step.py::test_workflow_has_record_step_after_publish` |
+| `PIPE-RELEASE-R009.2` | Test: `tests/test_release_record_step.py::test_step_posts_release_with_digests` |
 | T-PIPE-RELEASE-R010 | PIPE-RELEASE-R010 | Run the `test_source_build_allowance_*` and `test_published_package_cannot_be_its_own_source_build` tests in `tests/test_wheel_readiness.py`; observe the empty default, the named list, the refusals and the recorded receipt list. |
 | T-PIPE-RELEASE-R011 | PIPE-RELEASE-R011 | Run `tests/test_connector_release_pipeline.py::test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes`. Assert the commit-stage-only, 10-minute, no-publish contract. |
 | T-PIPE-RELEASE-R012 | PIPE-RELEASE-R012 | Run `tests/test_connector_release_pipeline.py::test_verification_fails_naming_the_missing_artifact`. Assert the step fails naming the missing tag or version. |
@@ -93,27 +93,27 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | Test ID | Requirement | Expected observation |
 |---|---|---|
 | T-PIPE-RELEASE-R003 | PIPE-RELEASE-R003 | Verified by a build run whose steps complete via the real product build path rather than aborting early from an environment-sourcing error, and whose reproducibility check confirms byte-identical wheels across independent builds. |
-| T-PIPE-RELEASE-R022 | PIPE-RELEASE-R022 | Planned test (the file does not exist yet): Test: `tests/test_delivered.py::test_each_failing_condition_blocks_delivered`. |
-| T-PIPE-RELEASE-R023 | PIPE-RELEASE-R023 | Planned test (the file exists, the test does not yet): Test: `tests/test_release_scope.py::test_p5_names_the_cross_source_scenario`. |
-| T-PIPE-RELEASE-R024 | PIPE-RELEASE-R024 | Planned test (the file does not exist yet): Test: `tests/test_release_consumer_import.py::test_removed_symbol_fails_and_is_named` and `::test_missing_ceiling_is_reported`. |
+| T-PIPE-RELEASE-R022 | PIPE-RELEASE-R022 | Test: `tests/test_delivered.py::test_each_failing_condition_blocks_delivered`. |
+| T-PIPE-RELEASE-R023 | PIPE-RELEASE-R023 | Test: `tests/test_release_scope.py::test_p5_names_the_cross_source_scenario`. |
+| T-PIPE-RELEASE-R024 | PIPE-RELEASE-R024 | Test: `tests/test_release_consumer_import.py::test_removed_symbol_fails_and_is_named` and `::test_missing_ceiling_is_reported`. |
 
 ## Entries added for rows without a prior entry
 
 | Test ID | Requirement | Expected observation |
 |---|---|---|
-| T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: a workflow fixture run asserts the step order and that an unsigned build fails. |
-| T-PIPE-RELEASE-R020 | PIPE-RELEASE-R020 | Planned test (the file does not exist yet): Test: `tests/test_release_bundle_gate.py::test_bundle_with_open_rows_or_failed_scenario_stops`. |
-| T-PIPE-RELEASE-R025.1 | PIPE-RELEASE-R025.1 | Planned test (the file exists, the test does not yet): Test: `tests/test_release_scope.py::test_closure_follows_depends_on_and_contract_edges`. |
-| T-PIPE-RELEASE-R025.2 | PIPE-RELEASE-R025.2 | Planned test (the file exists, the test does not yet): Test: `tests/test_release_scope.py::test_train_order_is_topological_and_not_hard_coded`. |
-| T-PIPE-RELEASE-R025.3 | PIPE-RELEASE-R025.3 | Planned test (the file exists, the test does not yet): Test: `tests/test_release_scope.py::test_cycle_across_bundles_refuses_with_bundle_cycle`. |
-| T-PIPE-RELEASE-R025.4 | PIPE-RELEASE-R025.4 | Planned test (the file does not exist yet): Test: `tests/test_release_plan.py::test_plan_is_deterministic_and_lists_rows_order_scenario_and_open_tasks`. |
-| T-PIPE-RELEASE-R025.5 | PIPE-RELEASE-R025.5 | Planned test (the file does not exist yet): Test: `tests/test_release_plan.py::test_publish_posts_bundle_facts_and_plan_and_skips_without_endpoint`. |
-| T-PIPE-RELEASE-R025.6 | PIPE-RELEASE-R025.6 | Planned test (the file does not exist yet): Test: `tests/test_release_bundle_gate.py::test_release_job_stops_on_bundle_cycle`. |
+| T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: `tests/test_python_pipeline_contract.py::test_connector_release_signs_before_the_wheel_build` asserts the step order and that an unsigned build fails. |
+| T-PIPE-RELEASE-R020 | PIPE-RELEASE-R020 | Test: `tests/test_release_bundle_gate.py::test_bundle_with_open_rows_or_failed_scenario_stops`. |
+| T-PIPE-RELEASE-R025.1 | PIPE-RELEASE-R025.1 | Test: `tests/test_release_scope.py::test_closure_follows_depends_on_and_contract_edges`. |
+| T-PIPE-RELEASE-R025.2 | PIPE-RELEASE-R025.2 | Test: `tests/test_release_scope.py::test_train_order_is_topological_and_not_hard_coded`. |
+| T-PIPE-RELEASE-R025.3 | PIPE-RELEASE-R025.3 | Test: `tests/test_release_scope.py::test_cycle_across_bundles_refuses_with_bundle_cycle`. |
+| T-PIPE-RELEASE-R025.4 | PIPE-RELEASE-R025.4 | Test: `tests/test_release_plan.py::test_plan_is_deterministic_and_lists_rows_order_scenario_and_open_tasks`. |
+| T-PIPE-RELEASE-R025.5 | PIPE-RELEASE-R025.5 | Test: `tests/test_release_plan.py::test_publish_posts_bundle_facts_and_plan_and_skips_without_endpoint`. |
+| T-PIPE-RELEASE-R025.6 | PIPE-RELEASE-R025.6 | Test: `tests/test_release_bundle_gate.py::test_release_job_stops_on_bundle_cycle`. |
 | T-PIPE-RELEASE-R025.7 | PIPE-RELEASE-R025.7 | Planned test (the file does not exist yet): Test: `tests/test_release_plan_served.py::test_published_plan_answers_rows_per_repository_through_ask` (L3, served). |
-| T-PIPE-RELEASE-R026.1 | PIPE-RELEASE-R026.1 | Planned test (the file does not exist yet): Test: `tests/test_release_exit_gates.py::test_gate_table_with_a_missing_row_or_phase_fails`. |
-| T-PIPE-RELEASE-R026.2 | PIPE-RELEASE-R026.2 | Planned test (the file does not exist yet): Test: `tests/test_release_exit_gates.py::test_final_gate_lists_open_connector_rows_and_unready_services`. |
-| T-PIPE-RELEASE-R026.3 | PIPE-RELEASE-R026.3 | Planned test (the file does not exist yet): Test: `tests/test_release_exit_gates.py::test_final_gate_needs_a_passing_run_for_each_channel`. |
-| T-PIPE-RELEASE-R026.4 | PIPE-RELEASE-R026.4 | Planned test (the file does not exist yet): Test: `tests/test_release_exit_gates.py::test_program_exit_gates_table_resolves_against_the_workspace` (L3, served). |
+| T-PIPE-RELEASE-R026.1 | PIPE-RELEASE-R026.1 | Test: `tests/test_release_exit_gates.py::test_gate_table_with_a_missing_row_or_phase_fails`. |
+| T-PIPE-RELEASE-R026.2 | PIPE-RELEASE-R026.2 | Test: `tests/test_release_exit_gates.py::test_final_gate_lists_open_connector_rows_and_unready_services`. |
+| T-PIPE-RELEASE-R026.3 | PIPE-RELEASE-R026.3 | Test: `tests/test_release_exit_gates.py::test_final_gate_needs_a_passing_run_for_each_channel`. |
+| T-PIPE-RELEASE-R026.4 | PIPE-RELEASE-R026.4 | Test: `tests/test_release_exit_gates.py::test_program_exit_gates_table_resolves_against_the_workspace` (L3, served). |
 | T-PIPE-RELEASE-R027 | PIPE-RELEASE-R027 | Test: `tests/test_release_drift.py::test_an_unpublished_old_version_is_reported_with_a_normalized_name` and the five further tests of that file. |
 
 ## Entries added for rows without an entry
@@ -143,15 +143,15 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 | T-PIPE-RELEASE-R018.3 | PIPE-RELEASE-R018.3 | Run `tests/test_release_autotag.py` and `tests/test_connector_pipeline.py::test_a_green_version_bump_tags_and_publishes_in_the_same_run`. A new green version is tagged on the pushed commit and published in the same run; an existing tag, a published version, a lagging main and a concurrent tag are no-ops. |
 | T-PIPE-RELEASE-R021 | PIPE-RELEASE-R021 | Run `tests/test_release_scope.py::test_scope_closure_and_single_release_per_row`. Each row is in one release and the closure holds its dependencies. |
 | T-PIPE-RELEASE-R028 | PIPE-RELEASE-R028 | Every child row. |
-| T-PIPE-RELEASE-R028.1 | PIPE-RELEASE-R028.1 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_each_declared_profile_is_built_validated_and_deleted`. |
-| T-PIPE-RELEASE-R028.2 | PIPE-RELEASE-R028.2 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundles_gate.py::test_tracked_bundle_fails_and_a_declared_catalog_passes`. |
-| T-PIPE-RELEASE-R028.3 | PIPE-RELEASE-R028.3 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_catalog_entries_must_be_command_or_pinned_package_sources`. |
-| T-PIPE-RELEASE-R028.4 | PIPE-RELEASE-R028.4 | Planned test (the file does not exist yet): Test: `tests/test_harness_bundle_proof.py::test_release_job_runs_the_proof_before_publish` (L3). |
+| T-PIPE-RELEASE-R028.1 | PIPE-RELEASE-R028.1 | Test: `tests/test_harness_bundle_proof.py::test_each_declared_profile_is_built_validated_and_deleted`. |
+| T-PIPE-RELEASE-R028.2 | PIPE-RELEASE-R028.2 | Test: `tests/test_harness_bundles_gate.py::test_tracked_bundle_fails_and_a_declared_catalog_passes`. |
+| T-PIPE-RELEASE-R028.3 | PIPE-RELEASE-R028.3 | Test: `tests/test_harness_bundle_proof.py::test_catalog_entries_must_be_command_or_pinned_package_sources`. |
+| T-PIPE-RELEASE-R028.4 | PIPE-RELEASE-R028.4 | Test: `tests/test_harness_bundle_proof.py::test_release_job_runs_the_proof_before_publish` (L3). |
 | T-PIPE-RELEASE-R007.15 | PIPE-RELEASE-R007.15 | Run `tests/test_gates_pipeline_contract.py::test_self_hosted_runner_keeps_hook_and_uv_caches_on_the_host`. A self-hosted runner with `CI_CACHE_ROOT` uses the host caches and skips the cache actions. |
 | T-PIPE-RELEASE-R029 | PIPE-RELEASE-R029 | Every child row. |
 | T-PIPE-RELEASE-R029.1 | PIPE-RELEASE-R029.1 | Run `tests/test_local_gate_standard.py::test_ci_standard_states_the_attested_local_gate`. The CI standard states the checks, the merge ref, the noise rule, the evidence and the privacy rule. |
 | T-PIPE-RELEASE-R029.2 | PIPE-RELEASE-R029.2 | Run `tests/test_local_gate_standard.py::test_release_readiness_states_the_local_release_order`. The release reference states the precondition, the order and the hosted-only platforms. |
 | T-PIPE-RELEASE-R029.3 | PIPE-RELEASE-R029.3 | Run `tests/test_release_version_guard.py::test_a_tag_published_after_its_commit_is_a_local_release` and its three sibling tests. A local release passes with `published=true`; a stale tag still fails; the hosted upload skips. |
-| T-PIPE-RELEASE-R030 | PIPE-RELEASE-R030 | Run `tests/hooks/test_upgrade_test.py::test_a_failed_read_after_upgrade_blocks_the_release`. This test is planned. A failed read after upgrade exits 1 and a clean upgrade passes. |
-| T-PIPE-RELEASE-R031 | PIPE-RELEASE-R031 | Run `tests/hooks/test_consumer_gate.py::test_a_failing_consumer_blocks_the_tag`. This test is planned. A failing consumer exits 1; all green passes. |
-| T-PIPE-RELEASE-R032 | PIPE-RELEASE-R032 | Run `tests/hooks/test_candidate_sandbox.py::test_a_failed_smoke_step_blocks_publish`. This test is planned. A failed step exits 1; a digest mismatch exits 1. |
+| T-PIPE-RELEASE-R030 | PIPE-RELEASE-R030 | Run `tests/hooks/test_upgrade_test.py::test_a_failed_read_after_upgrade_blocks_the_release`. A failed read after upgrade exits 1 and a clean upgrade passes. |
+| T-PIPE-RELEASE-R031 | PIPE-RELEASE-R031 | Run `tests/hooks/test_consumer_gate.py::test_a_failing_consumer_blocks_the_tag`. A failing consumer exits 1; all green passes. |
+| T-PIPE-RELEASE-R032 | PIPE-RELEASE-R032 | Run `tests/hooks/test_candidate_sandbox.py::test_a_failed_smoke_step_blocks_publish`. A failed step exits 1; a digest mismatch exits 1. |
