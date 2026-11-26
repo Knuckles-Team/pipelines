@@ -52,6 +52,8 @@ KEPT = {
     "spec-bind-suggest",
     "spec-prefix-rename",
     "spec-id-index",
+    "spec-artifacts",
+    "capability-coverage",
     "spec-templates",
     "no-legacy-concepts",
     "release-standard",

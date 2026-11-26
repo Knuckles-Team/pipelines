@@ -75,6 +75,8 @@ GATES: dict[str, str] = {
     "ingest-worker-policy": "pipelines_hooks.specs.worker_policy",
     "plan-conformance": "pipelines_hooks.specs.plan_conformance",
     "spec-id-index": "pipelines_hooks.specs.id_index",
+    "spec-artifacts": "pipelines_hooks.specs.spec_bundle",
+    "capability-coverage": "pipelines_hooks.specs.capability_inventory",
     "ste-staged": "pipelines_hooks.ste.staged",
     "ste-census": "pipelines_hooks.ste.census",
     "ste-staleness-staged": "pipelines_hooks.ste.staleness_staged",
