@@ -13,8 +13,8 @@ import json
 from pathlib import Path
 
 import pytest
-from tests.spec_group_history import HISTORIC_SPEC_GROUP
 
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures/connector_spec_delivery"
 FIXTURES = sorted(FIXTURE_DIR.glob("consumer_train_r168_177_part*.json"))
@@ -58,7 +58,7 @@ def test_consumer_status_and_source_proof():
     assert set(provider["canonical_template"]["hooks"]) == EXPECTED_HOOKS
     assert provider["spec_group"]["aggregate_mapping_accepted"] is True
     assert provider["spec_group"]["aggregate_mapping_proven"] is True
-    assert provider["spec_group"]["members"] == HISTORIC_SPEC_GROUP
+    assert provider["spec_group"]["members"] == list(HISTORICAL_SPEC_GROUP)
     assert set(provider["spec_group"]["literal_requirement_hooks"]) == EXPECTED_SPEC_LEAVES
     assert set(evidence["repos"]) == {f"R{i}" for i in range(168, 178)}
 
@@ -109,7 +109,7 @@ def test_consumer_aggregate_hooks_match_canonical_template():
         hooks = row["precommit"]
         assert hooks["ready"] is True, row["row"]
         assert hooks["aggregate_mapping_accepted"] is True, row["row"]
-        assert hooks["aggregate_mapping"] == HISTORIC_SPEC_GROUP, row["row"]
+        assert hooks["aggregate_mapping"] == list(HISTORICAL_SPEC_GROUP), row["row"]
         assert hooks["aggregate_spec_present"] is True, row["row"]
         assert hooks["missing_template_hooks"] == [], row["row"]
         assert hooks["validate_config"]["rc"] == 0, row["row"]

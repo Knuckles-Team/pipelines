@@ -37,6 +37,7 @@ class Snapshot:
     aliases: dict[str, str] = field(default_factory=dict)
     docs: dict[str, dict[str, str]] = field(default_factory=dict)
     constitution: str = ""
+    contracts: list[tuple[str, str]] = field(default_factory=list)
     error: str = ""
 
 
@@ -134,6 +135,11 @@ def requirement_text(markdown: str) -> dict[str, str]:
     return out
 
 
+def requirement_lines(markdown: str) -> dict[str, int]:
+    """Map each requirement ID in a requirements.md table to its 1-based line number."""
+    return {m.group(1): n for n, ln in enumerate(markdown.splitlines(), 1) if (m := ROW_RE.match(ln))}
+
+
 def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
     """Read every spec row of one repository."""
     rows = []
@@ -142,6 +148,7 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
         status = statuses.get(f"specs/{family}/status.json", {})
         markdown = reader.read(f"specs/{family}/requirements.md")
         text = requirement_text(markdown)
+        lines = requirement_lines(markdown)
         # Read from the row text, not status.json: a repository's status.json carries depends_on only after it regenerates.
         depends = {row.id: list(row.depends_on) for row in parse_rows(markdown)}
         for req in status.get("requirements", []):
@@ -159,6 +166,7 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
                     "repo": repo,
                     "family": family,
                     "text": body,
+                    "line": lines.get(req["id"], 0),
                     "req": body.split("|")[0],
                     "spec_id": status.get("spec_id", ""),
                     "depends_on": depends.get(req["id"], []),
@@ -166,6 +174,22 @@ def rows_for(reader, repo: str, files: set[str]) -> list[dict]:
                 }
             )
     return rows
+
+
+CONTRACT_LINE_RE = re.compile(r"^(Provider|Consumer):\s+\S+\s+(\S+)\s*$", re.M)
+
+
+def contract_edges(docs: dict[str, dict[str, str]]) -> list[tuple[str, str]]:
+    """``(provider row, consumer row)`` of every contract file in the family documents (PIPE-GATES-R034.1)."""
+    edges = []
+    for family_docs_ in docs.values():
+        for name, text in sorted(family_docs_.items()):
+            if not name.startswith("contracts/"):
+                continue
+            lines = {kind: row for kind, row in CONTRACT_LINE_RE.findall(text)}
+            if "Provider" in lines and "Consumer" in lines:
+                edges.append((lines["Provider"], lines["Consumer"]))
+    return edges
 
 
 ALIAS_FILE = ".config/spec-aliases.toml"
@@ -194,6 +218,7 @@ def snapshot(entry: dict, mode: str, workspace: Path | None, token: str | None) 
         snap.files = reader.files()
         snap.rows = rows_for(reader, entry["name"], snap.files)
         snap.docs = {f: family_docs(reader, snap.files, f) for f in {r["family"] for r in snap.rows}}
+        snap.contracts = contract_edges(snap.docs)
         snap.aliases = read_aliases(reader, snap.files)
         snap.constitution = reader.read(CONSTITUTION_PATH) if CONSTITUTION_PATH in snap.files else ""
     except (OSError, KeyError, ValueError, urllib.error.URLError) as exc:

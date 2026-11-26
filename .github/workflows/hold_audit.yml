@@ -1,0 +1,30 @@
+name: Hold audit
+
+# Reports every open pull request that carries the `hold` label and has auto-merge armed
+# (PIPE-GATES-R062). The run fails with the list; it only reads and never disarms a merge.
+# The org-wide read uses the repository secret RULESET_AUDIT_TOKEN that the ruleset audit
+# already uses (it needs pull requests read); without it the audit reads only what the
+# workflow token can see and reports the rest.
+
+on:
+  schedule:
+    - cron: '53 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Audit held pull requests
+        env:
+          GH_TOKEN: ${{ secrets.RULESET_AUDIT_TOKEN || github.token }}
+        run: python3 scripts/audit_held_pull_requests.py

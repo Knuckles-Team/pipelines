@@ -15,6 +15,7 @@ from pathlib import Path
 from pipelines_hooks.core.bounded_json import read_bounded_json
 
 from .candidate import candidate_set_errors, parse_candidate_set
+from .consumer_import import check_consumer_import
 from .digest_handoff import verify_consumer_manifest
 from .errors import ReleaseError
 from .models import CheckResult, ReleaseRun, StageOutcome
@@ -102,12 +103,22 @@ def _main_check_reproducible_build(args: argparse.Namespace) -> int:
     return 0
 
 
+def _main_check_consumer_import(args: argparse.Namespace) -> int:
+    findings = check_consumer_import(args.engine, args.sdk, args.package)
+    if findings:
+        print("\n".join(findings), file=sys.stderr)
+        return 1
+    print(f"{args.package} imports against {args.engine}")
+    return 0
+
+
 _COMMANDS = {
     "validate": (_main_validate, ("manifest",)),
     "plan": (_main_plan, ("manifest", "checks")),
     "publish": (_main_publish, ("manifest", "checks", "plan", "receipts")),
     "verify-consumers": (_main_verify_consumers, ("plan", "consumers")),
     "check-reproducible-build": (_main_check_reproducible_build, ("source", "epoch")),
+    "check-consumer-import": (_main_check_consumer_import, ("engine", "sdk", "package")),
 }
 
 

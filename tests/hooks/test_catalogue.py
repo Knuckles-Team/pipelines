@@ -36,6 +36,9 @@ KEPT = {
     "connector-name",
     "coupling",
     "environment-config-only",
+    "coverage-decrease",
+    "wire-rename",
+    "ingest-worker-policy",
     "state-machine-shape",
     "state-machine-census",
     "crates-io-only",
@@ -55,6 +58,11 @@ KEPT = {
     "release-standard",
     "dependency-readiness",
     "packaging-roles",
+    "harness-bundles-untracked",
+    "upgrade-test",
+    "consumer-gate",
+    "candidate-sandbox",
+    "role-closure",
     "gate-set",
     "pr-test-scope",
     "change-scope",
@@ -63,7 +71,11 @@ KEPT = {
     "validate",
     "source-path-portability",
     "prompt-format",
+    "readme-deploy-block",
     "skill-grade",
+    "mutation-gaps",
+    "export-version",
+    "test-quality",
     "test-layout",
     "workflow-step-honesty",
 }
@@ -90,7 +102,14 @@ def test_a_group_honours_skip_and_reports_the_worst_status(monkeypatch, capsys) 
     monkeypatch.setenv("PRE_COMMIT_FROM_REF", "HEAD")
     monkeypatch.setenv("SKIP", "spec-trailers,unrelated")
     assert main(["spec"]) == 1
-    assert calls == ["spec-standard", "plan-conformance", "contract-coverage", "spec-decomposition", "spec-status"]
+    assert calls == [
+        "spec-standard",
+        "ingest-worker-policy",
+        "plan-conformance",
+        "contract-coverage",
+        "spec-decomposition",
+        "spec-status",
+    ]
     assert "spec-trailers skipped (SKIP)" in capsys.readouterr().out
     assert main(["spec", "--root", "."]) == 2
 

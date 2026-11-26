@@ -12,8 +12,11 @@ plus a high-entropy sweep (informational):
 Commits already on a remote are not rescanned one by one: they are published,
 and blocking a merge cannot unpublish them, so a per-commit scan of them only
 makes a permanent false block. Their content still counts through the net diff.
-There is no allowlist file; the only exemption is the justified inline marker
-(:mod:`pipelines_hooks.security.marker`).
+The exemptions are the justified inline marker (:mod:`pipelines_hooks.security.marker`)
+and, for a historical commit that still matches a shape-based pattern, one
+digest-pinned entry per occurrence in ``.config/secret-history-exceptions.toml``
+(:mod:`pipelines_hooks.security.history_exceptions`); ``--self-check`` proves each
+entry still matches only its pinned occurrence.
 
 The base is ``--base``, then the remote revision pre-commit is pushing over,
 then ``origin/main``. Without any of them the whole history is unpublished and
@@ -30,6 +33,7 @@ from pathlib import Path
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text
+from pipelines_hooks.security.history_exceptions import exemptions
 from pipelines_hooks.security.history_scan import COMMIT_MARK, scan_credentials, scan_entropy, scan_text_for_credentials
 
 REMEDY = (
@@ -66,7 +70,7 @@ def _merge_hits(*groups: list[dict[str, str]]) -> list[dict[str, str]]:
 
 def _full_history_scan(root: Path) -> tuple[list[str], list[dict[str, str]], dict[str, object]]:
     patch = git_text(root, ("log", "-p", "--format=%x00COMMIT%x00%H", "HEAD")).splitlines()
-    return patch, scan_credentials(patch), {"range": "full history (no published base)"}
+    return patch, scan_credentials(patch, exemptions(root)), {"range": "full history (no published base)"}
 
 
 def _ranged_scan(root: Path, base: str) -> tuple[list[str], list[dict[str, str]], dict[str, object]]:
@@ -80,7 +84,9 @@ def _ranged_scan(root: Path, base: str) -> tuple[list[str], list[dict[str, str]]
         "unpublishedCommitsScanned": scanned,
         "publishedCommitsNotRescanned": total - scanned,
     }
-    return [*net, *unpublished], _merge_hits(scan_credentials(net), scan_credentials(unpublished)), scope
+    exempt = exemptions(root)
+    hits = _merge_hits(scan_credentials(net, exempt), scan_credentials(unpublished, exempt))
+    return [*net, *unpublished], hits, scope
 
 
 def check(root: Path, base: str | None) -> tuple[int, dict[str, object]]:
@@ -119,7 +125,7 @@ def main(argv: list[str]) -> int:
     if args.self_check:
         from pipelines_hooks.security.history_selfcheck import self_check
 
-        rc, result = self_check()
+        rc, result = self_check(args.root.resolve())
     elif args.text_file is not None:
         rc, result = _text_mode(args.text_file)
     else:

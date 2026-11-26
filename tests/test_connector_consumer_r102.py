@@ -15,8 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.spec_group_history import HISTORIC_SPEC_GROUP
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r102.json"
 EXPECTED_PROVIDER = "3b62e92a7f574944f91adc0c4312154f9ca3dcb5"
@@ -107,7 +106,7 @@ def test_provider_mapping_and_baseline_status_are_immutable() -> None:
     }
     assert provider["spec_group"]["aggregate_mapping_accepted"] is True
     assert provider["spec_group"]["aggregate_mapping_proven"] is True
-    assert provider["spec_group"]["members"] == HISTORIC_SPEC_GROUP
+    assert provider["spec_group"]["members"] == list(HISTORICAL_SPEC_GROUP)
     assert set(provider["spec_group"]["members"]) == {
         "spec-standard",
         "plan-conformance",

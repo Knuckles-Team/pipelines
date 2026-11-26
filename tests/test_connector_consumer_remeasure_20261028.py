@@ -23,8 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.spec_group_history import HISTORIC_SPEC_GROUP
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r103_r161_remeasure.json"
 SKILL_HEADING = "Rapid delivery: the 5-minute contract"
@@ -150,7 +149,7 @@ def test_shared_spec_hook_is_the_canonical_three_hook_mapping() -> None:
     """A `.2` row may only be bound when the shared aggregate equals the three leaves."""
     evidence = _evidence()
     provider = evidence["provider"]
-    assert HISTORIC_SPEC_GROUP == provider["spec_group"]
+    assert list(HISTORICAL_SPEC_GROUP) == provider["spec_group"]
     assert set(provider["spec_group"]) == {"spec-standard", "plan-conformance", *SPEC_LEAVES}
     assert provider["canonical_template_rev"] == "main"
 
@@ -264,15 +263,28 @@ def test_only_measured_rows_are_claimed_and_all_were_specified_before() -> None:
             assert f"{row['row']}.2" not in row["leaves"], repo
 
 
-def test_repository_manager_hook_row_stays_unqualified() -> None:
-    """`repository-manager` pins the provider and lists one hook, so R157.2 is not delivered."""
+@pytest.mark.spec("PIPE-CONNSPEC-R157.2")
+def test_repository_manager_hook_row_qualifies() -> None:
+    """`repository-manager` now pins the provider at `main` and runs the shared `spec` aggregate."""
+    evidence = _evidence()
+    row = evidence["qualified_later"]["repository-manager"]
+    assert row["row"] == "PIPE-CONNSPEC-R157"
+    assert row["leaves"] == ["PIPE-CONNSPEC-R157.2"]
+    assert SHA.match(row["main_sha"])
+    for path, item in _files(row).items():
+        assert item["bytes"] == len(item["content"].encode())
+        assert item["sha256"] == hashlib.sha256(item["content"].encode()).hexdigest()
+        assert SHA.match(item["last_commit"]), path
+    text = _files(row)[_precommit(row)]["content"]
+    proven, why = _hook_evidence(text)
+    assert proven, why
+    assert "rev: main" in _pipelines_block(text)
+
+
+def test_repository_manager_unqualified_state_is_refused() -> None:
+    """The recorded earlier state (one hook, pinned rev) must not satisfy the row predicate."""
     evidence = _evidence()
     row = evidence["held"]["repository-manager"]
     assert row["leaves"] == []
-    assert row["row"] == "PIPE-CONNSPEC-R157"
-    block = _pipelines_block(_files(row)[_precommit(row)]["content"])
-    assert "rev: main" not in block
-    assert AGGREGATE_HOOK.search(block) is None
-    assert "id: spec-status" in block
-    for hook in ("spec-decomposition", "spec-trailers"):
-        assert f"id: {hook}" not in block
+    proven, _ = _hook_evidence(_files(row)[_precommit(row)]["content"])
+    assert not proven

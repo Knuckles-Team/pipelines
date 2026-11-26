@@ -384,6 +384,8 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
     <button class="btn" id="vnext" type="button" aria-pressed="false" title="Open rows whose prerequisites are done, best first">Next up</button>
     <button class="btn" id="vpath" type="button" aria-pressed="false" title="Cross-repository release bundles in train order">Delivery path</button>
     <button class="btn" id="vprog" type="button" aria-pressed="false" title="Delivery program: phases P1 to P5 with their specs and concept-proof scenarios">Delivery</button>
+    <button class="btn" id="xjson" type="button" title="Download the rows of this view with their artifact paths as JSON">Export JSON</button>
+    <button class="btn" id="xmd" type="button" title="Download the rows of this view with their artifact paths as Markdown">Export Markdown</button>
     <button class="btn" id="vrel" type="button" aria-pressed="false" title="Release bundles: phase, scenario state and scoped rows">Releases</button>
     <button class="btn" id="ocean-motion" type="button" aria-pressed="true" title="Pause or resume background ocean motion">Ocean motion: on</button>
     <button class="btn" id="theme" type="button" title="Switch light or dark">Theme</button>
@@ -757,6 +759,16 @@ document.addEventListener("keydown",e=>{ if(e.target===$("q")) return; if((e.key
 // ---------- panel ----------
 let scope="node", filt="ALL", limit=150, flashSpec=null, flashIds=new Set();
 let view="map", sortBy="default", goalF="", onlyUnserved=false, relF="";
+const nextF=new Set(); let lastRows=[];
+const NEXT_RULES={research:"Needs research: the spec family is still at the specified phase.",plan:"Needs plan: research is done and the plan is not accepted.",ready:"Ready to implement: the row is in Next up and its tasks are ready.",verify:"Needs verification: the row is LANDED."};
+// Download the rows of the current view with their artifact paths, read from the export written beside the page (PIPE-PAGES-R057.3).
+async function exportView(kind){ const ids=new Set(lastRows.map(r=>r.id));
+  try{ const res=await fetch("export/rows.json"); if(!res.ok) throw new Error(res.status); const doc=await res.json();
+    const rows=doc.rows.filter(r=>ids.has(r.id)), view={mode:"architecture",filters:[...nextF],release:relF,row:""};
+    const body=kind==="json"?JSON.stringify({...doc,view,row_count:rows.length,rows},null,1):rows.map(r=>"- ["+r.id+"]("+gh(r.repo)+"/blob/HEAD/specs/"+r.family+"/requirements.md) "+r.state+" - "+Object.values(r.files).flat().join(", ")).join("\n")+"\n";
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([body],{type:kind==="json"?"application/json":"text/markdown"})); a.download="rows."+(kind==="json"?"json":"md"); a.textContent="download"; document.body.append(a); a.click(); a.remove();
+    qstat.textContent="Exported "+rows.length+" rows."; }
+  catch(e){ qstat.textContent="The export is not available on this page."; } }
 const REL = T.releases || {releases:[],unscheduled:0};
 const DEL = T.delivery || {questions:[],next:[],bundles:[],counts:{open:0,frontier:0,unserved:0}};
 const GOALW = {}; DEL.questions.forEach(g=>GOALW[g.id]=g);
@@ -807,15 +819,22 @@ function statBlock(c){ const d=el("div",{class:"stat",role:"list","aria-label":"
 function setView(v, quiet){ view=v; $("vprog").setAttribute("aria-pressed",String(v==="prog")); $("program").hidden=v!=="prog"; workEl.classList.toggle("prog",v==="prog"); if(v==="prog") renderProgram(); $("vnext").setAttribute("aria-pressed",String(v==="next")); $("vpath").setAttribute("aria-pressed",String(v==="path")); $("vrel").setAttribute("aria-pressed",String(v==="rel")); if(!quiet) renderPanel(); }
 function rowLink(r){ return el("a",{class:"id",href:gh(r.repo)+"/blob/HEAD/specs/"+(r.family||"")+"/requirements.md",target:"_blank",rel:"noopener",text:r.id}); }
 function goalBadges(serves){ const w=el("span",{class:"gb"}); (serves||[]).forEach(g=>w.append(el("span",{class:"goal",title:(GOALW[g]?GOALW[g].title:"Competency question"),text:g}))); return w; }
+// The four engine metrics of the latest scenario runs (PIPE-PAGES-R044); a metric no run reports says so.
+const METRIC_LABELS = [["provenance_coverage","Provenance coverage of claims"],["conflict_rate","Concurrent-write conflict rate"],["contradictions","Contradiction records"],["decay_events","Decay or consolidation events"]];
+function metricsBlock(){ const box=el("section",{class:"metrics","aria-label":"Engine metrics from the latest scenario runs"},[el("h3",{text:"Engine metrics from the latest scenario runs"})]); const m=REL.metrics||{};
+  METRIC_LABELS.forEach(([k,l])=>{ const v=m[k]||{}, ks=Object.keys(v).sort(); box.append(el("div",{class:"step","data-metric":k},[el("b",{text:l}),el("span",{class:"muted",text:ks.length?ks.map(p=>p+": "+v[p]).join(" · "):" no scenario run reports it"})])); }); return box; }
 function renderReleases(){
   const p=$("panel"); p.textContent=""; p.style.setProperty("--lc","var(--l-delivery)");
   p.append(el("div",{class:"ph"},[el("div",{class:"eyebrow"},[el("span",{text:"Releases"}),el("span",{text:fmt(REL.releases.length)+" bundles"}),el("span",{text:fmt(REL.unscheduled)+" unscheduled"})]),el("h2",{text:"Release bundles"})]));
   const pb=el("div",{class:"pb"}); p.append(pb);
   pb.append(el("p",{class:"note",text:"Each release scopes rows across repositories and ends with a phase scenario. A row is delivered when it is VERIFIED. Select a release to filter the map to its scoped specs."}));
-  if(!REL.releases.length) pb.append(el("p",{class:"muted",text:"No release manifests were published."}));
+  if(!REL.releases.length) pb.append(el("p",{class:"muted"},[el("span",{text:"No release bundle is declared. A bundle is a file releases/<id>.yml with the keys id, name, phase, scenario and scope. "}),el("a",{href:gh("pipelines")+"/blob/HEAD/releases/README.md",target:"_blank",rel:"noopener",text:"releases/README.md"})]));
+  pb.append(metricsBlock());
   REL.releases.forEach(r=>{ const box=el("div",{class:"bundle"},[el("h4",{},[el("span",{class:"prio",text:r.phase}),el("span",{text:r.name}),el("span",{class:"muted",text:r.verified+" of "+r.rows+" VERIFIED ("+r.share+"%)"})])]);
     box.append(el("div",{class:"ti",text:"Scenario "+r.scenario+": "+r.scenario_state}));
     r.repos.forEach(x=>box.append(el("div",{class:"step"},[el("b",{text:x.repo}),el("span",{class:"muted",text:" "+x.rows+" rows, "+x.verified+" VERIFIED, "+x.specs.length+" specs"})])));
+    (r.progress||[]).forEach(x=>box.append(el("div",{class:"step"},[el("b",{text:(nodes[x.node]||{label:x.node}).label}),el("span",{class:"muted",text:" "+x.verified+" of "+x.rows+" verified"})])));
+    if(r.manifest) box.append(el("a",{class:"src",href:gh("pipelines")+"/blob/HEAD/"+r.manifest,target:"_blank",rel:"noopener",text:r.manifest}));
     const b=el("button",{class:"chip",type:"button","aria-pressed":String(relF===r.id),text:relF===r.id?"Filtering the map to "+r.id:"Filter the map to "+r.id});
     b.onclick=()=>{ relF=(relF===r.id)?"":r.id; scope="tree"; filt="ALL"; limit=150; setView("map"); };
     box.append(b); pb.append(box); });
@@ -1001,6 +1020,10 @@ function renderPanel(){
   if(goalF) rows=rows.filter(s=>(s.cqs||[]).includes(goalF));
   if(onlyUnserved) rows=rows.filter(s=>s.unserved);
   if(relF) rows=rows.filter(s=>s.release===relF);
+  const nextCount=k=>rows.filter(s=>s.n===k).length, nc=el("div",{class:"chips",role:"group","aria-label":"Next step"});
+  Object.keys(NEXT_RULES).forEach(k=>{ const c=nextCount(k), b=el("button",{class:"chip",type:"button","aria-pressed":String(nextF.has(k)),title:NEXT_RULES[k],text:({research:"Needs research",plan:"Needs plan",ready:"Ready to implement",verify:"Needs verification"})[k]+" "+fmt(c)}); b.disabled=!c&&!nextF.has(k); b.onclick=()=>{ nextF.has(k)?nextF.delete(k):nextF.add(k); limit=150; renderPanel(); }; nc.append(b); }); sec.append(nc);
+  if(nextF.size) rows=rows.filter(s=>nextF.has(s.n));
+  lastRows=rows;
   if(sortBy==="priority") rows=rows.slice().sort((a,b)=>(b.priority||0)-(a.priority||0)||(a.id<b.id?-1:1));
   if(!rows.length) sec.append(el("p",{class:"muted",text: n.children.length&&scope==="node" ? "No rows sit on this part itself. Choose “Include parts below” to list the rows of its parts." : "No spec rows map to this part."}));
   const ul=el("ul",{class:"plain specs"}), shown=rows.slice(0,limit), items=[];
@@ -1118,7 +1141,22 @@ if(window.matchMedia) ["(forced-colors: active)","(prefers-reduced-transparency:
 themeLabel(); readColors(); setTint("root",true); resize();
 new ResizeObserver(()=>{ const c=[cam.x+W/(2*cam.k), cam.y+H/(2*cam.k)]; resize(); cam={x:c[0]-W/(2*cam.k), y:c[1]-H/(2*cam.k), k:cam.k}; dirty=true; }).observe(cv);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{dirty=true;});
+const VIEW_MODES=["architecture","delivery","sdd","priority","dependency"], VIEW_FILTERS=["research","plan","ready","verify"];
+// Unknown view values leave the view unchanged and are reported in the live status region (PIPE-PAGES-R057.4).
+$("xjson").onclick=()=>exportView("json"); $("xmd").onclick=()=>exportView("md");
+function checkViewHash(h){ const bad=[];
+  if(h.mode&&!VIEW_MODES.includes(h.mode)) bad.push("mode "+h.mode);
+  (h.filter||[]).forEach(f=>{ if(!VIEW_FILTERS.includes(f)) bad.push("filter "+f); });
+  if(h.release&&!REL.releases.some(r=>r.id===h.release)) bad.push("release "+h.release);
+  if(h.row&&!ROWNODE[h.row]) bad.push("row "+h.row);
+  if(!h.q&&h.node&&!nodes[h.node]) bad.push("part "+h.node);
+  if(bad.length) qstat.textContent="Unknown view value ignored: "+bad.join(", ")+". The view is unchanged.";
+  return bad.length===0; }
 function applyHash(instant){ const h=ArchSearch.parseHash(location.hash);
+  if(!checkViewHash(h)) return;
+  nextF.clear(); (h.filter||[]).forEach(f=>nextF.add(f));
+  if(h.release){ relF=h.release; scope="tree"; filt="ALL"; setView("map",true); }
+  if(h.row&&ROWNODE[h.row]&&!h.node) h.node=ROWNODE[h.row];
   if(h.q){ q.value=h.q; doSearch(); if(hits.length){ activeQ=h.q; const top=hits[0]; go(top.node,{hit:true,keepSpecs:true,open:true,instant}); showMatches(top); renderPanel(); } }
   if(h.node&&nodes[h.node]){ go(h.node,{hit:true,open:true,instant}); if(h.q&&hits.length){ const mine=hits.find(x=>x.node===h.node); if(mine){ showMatches(mine); renderPanel(); } } }
   showResults(!!(h.q&&hits.length));

@@ -48,3 +48,34 @@ def test_spec_prefix_rename_hook_refuses_a_bad_pair_and_renames_with_a_good_one(
     assert repo.run("spec-prefix-rename", "--map", "OLD=NEW", "--dry-run") == 2
     assert repo.run("spec-prefix-rename", "--map", "OLD-=NEW-", "--dry-run") == 0
     assert "(dry run)" in capsys.readouterr().out
+
+
+def test_readme_deploy_block_hook_refuses_a_missing_block_and_passes_a_well_formed_one(repo: Repo) -> None:
+    begin = "<!-- BEGIN GENERATED: additional-deployment-options -->"
+    end = "<!-- END GENERATED: additional-deployment-options -->"
+    repo.stage({"README.md": "# fixture\n"})
+    assert repo.run("readme-deploy-block") == 1
+    repo.stage({"README.md": f"# fixture\n{begin}\nimage: registry/app:1.2.3\n{end}\n"})
+    assert repo.run("readme-deploy-block") == 0
+
+
+def test_harness_bundles_untracked_hook_refuses_a_tracked_bundle_and_passes_a_clean_tree(repo: Repo) -> None:
+    pyproject = (
+        '[project]\nname = "x"\nversion = "1"\n\n[tool.pipelines.harness_bundles]\n'
+        'command = "x"\noutput = "out"\ncatalog = ".codex-plugin/catalog.json"\n'
+    )
+    repo.stage({"pyproject.toml": pyproject, ".claude-plugin/plugin.json": "{}"})
+    assert repo.run("harness-bundles-untracked") == 1
+    repo.git("rm", "-q", "-f", "--", ".claude-plugin/plugin.json")
+    assert repo.run("harness-bundles-untracked") == 0
+
+
+def test_ingest_worker_policy_hook_refuses_a_duplicated_value_and_passes_a_citing_row(repo: Repo) -> None:
+    cited = (
+        "| `X-R1` | The floor is 0.36 of memory, 3 GiB, the reserved floor. Owner: MEDULLA-DURABLE-KERNEL-R075. | t |\n"
+    )
+    bare = "| `X-R2` | The worker keeps a reserved floor of 3 GiB and admits 0.36 of cores. | t |\n"
+    repo.stage({"specs/ingest-worker/requirements.md": cited + bare})
+    assert repo.run("ingest-worker-policy") == 1
+    repo.stage({"specs/ingest-worker/requirements.md": cited})
+    assert repo.run("ingest-worker-policy") == 0

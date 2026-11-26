@@ -16,8 +16,7 @@ from pathlib import Path
 import pytest
 
 from pipelines_hooks.cli import GROUPS
-from tests.spec_group_history import HISTORIC_SPEC_GROUP
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r159_r169.json"
 EXPECTED_PROVIDER = "80dbc06b47dd63a95e9bfe1c2f6b477acc332318"
@@ -131,7 +130,7 @@ def test_provider_mapping_and_baseline_status_are_immutable() -> None:
         hashlib.sha256(_bytes(provider["source_files"]["pre-commit-template.yaml"])).hexdigest()
         == provider["canonical_template"]["sha256"]
     )
-    assert provider["spec_group"] == HISTORIC_SPEC_GROUP
+    assert provider["spec_group"] == list(HISTORICAL_SPEC_GROUP)
     assert set(provider["spec_group"]) == EXPECTED_SPEC_MEMBERS
     assert provider["canonical_template"]["rev"] == "main"
     assert set(provider["canonical_template"]["hooks"]) == EXPECTED_HOOKS
@@ -209,7 +208,7 @@ def test_consumer_aggregate_hooks_match_provider_and_use_literal_aggregate() -> 
         assert actual_hooks == provider_hooks, (repo, actual_hooks)
         assert "- id: spec\n" in body, repo
         assert not any(f"- id: {member}" in body for member in EXPECTED_SPEC_MEMBERS), repo
-        assert HISTORIC_SPEC_GROUP == evidence["provider"]["spec_group"]
+        assert list(HISTORICAL_SPEC_GROUP) == evidence["provider"]["spec_group"]
 
 
 def test_consumer_pages_are_exact_source_published() -> None:

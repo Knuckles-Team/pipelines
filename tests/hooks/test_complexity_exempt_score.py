@@ -103,6 +103,7 @@ def _dispatch(arms: int, extra: str = "") -> str:
     return f"pub fn dispatch_kind(kind: Kind, flag: bool, other: bool) -> u8 {{\n    match kind {{\n{first}{rest}    }}\n}}\n"
 
 
+# spec: PIPE-GATES-R077
 def test_exempt_over_cap_to_non_exempt_under_cap_passes(repo: Repo) -> None:
     repo.commit({"pkg/rdf.rs": HANDLE_SHEX_VALIDATE_BASE})
     repo.stage({"pkg/rdf.rs": HANDLE_SHEX_VALIDATE_SIMPLIFIED})
@@ -115,6 +116,7 @@ def test_non_exempt_under_cap_to_over_cap_fails(repo: Repo) -> None:
     assert repo.run("complexity-staged") == 1
 
 
+# spec: PIPE-GATES-R077
 def test_exempt_function_growing_non_arm_complexity_fails(repo: Repo) -> None:
     # 11 flat arms (cyclomatic 12, residual 1) -> same 11 arms but the first
     # arm's body grows real (non-dispatch) branching (cyclomatic 14, residual
@@ -143,6 +145,7 @@ def test_new_over_cap_function_fails(repo: Repo) -> None:
     assert repo.run("complexity-staged") == 1
 
 
+# spec: PIPE-GATES-R077
 def test_exempt_function_losing_exhaustiveness_still_fails(repo: Repo) -> None:
     """Not one of the five required cases, but the scenario the old scheme's
     zero-vs-raw jump happened to catch: an exempt dispatcher that grows a

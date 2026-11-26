@@ -28,7 +28,15 @@ if __package__ in (None, ""):
     __package__ = "scripts.architecture_explorer"
 
 from .details import write_details  # noqa: E402
-from .sdd import build_cards, constitutions, family_nodes, search_extra  # noqa: E402
+from .export import ExportRefused, write_export  # noqa: E402
+from .sdd import (  # noqa: E402
+    build_cards,
+    constitutions,
+    family_nodes,
+    next_step,
+    open_questions,
+    search_extra,
+)
 from .canonical import canonical_model, failure_message, merged_aliases, tag_family_keys  # noqa: E402
 from .delivery import aggregate  # noqa: E402
 from .geometry import count_crossings  # noqa: E402
@@ -131,6 +139,12 @@ def spec_entry(r: dict, delivery: dict) -> dict:
     if cqs:
         entry["cqs"] = cqs[:CQ_BADGES]
     entry["release"] = delivery.get("release_of", {}).get(r["id"], UNSCHEDULED)
+    step = delivery.get("row_next", {}).get(r["id"], "")
+    if step:
+        entry["n"] = step
+    count = delivery.get("row_questions", {}).get(r["id"], 0)
+    if count:
+        entry["q"] = count
     if r["id"] in delivery["frontier_set"]:
         entry["frontier"] = True
     if r["id"] in delivery["unserved_set"]:
@@ -299,8 +313,55 @@ def build(mode: str, workspace: Path | None) -> tuple[dict, dict]:
     return data, meta
 
 
+def plan_checker(rows: list[dict]):
+    """Return the plan-conformance check of the SDD phase: plan text to its findings (PIPE-PAGES-R054.2)."""
+    from pipelines_hooks.specs.plan_conformance import check_plan_text, template_text
+
+    template, known = template_text(HERE.parents[1]), {r["id"] for r in rows}
+    return lambda text: check_plan_text(text, template, known)
+
+
+def row_facts(snaps: list, cards: dict, frontier: set) -> tuple[dict, dict]:
+    """Return ``(row_next, row_questions)``: the Next-step chip and the open-question count of each row."""
+    row_next, row_questions = {}, {}
+    for snap in snaps:
+        by_family: dict[str, list[dict]] = {}
+        for r in snap.rows:
+            by_family.setdefault(r["family"], []).append(r)
+        for family, fam_rows in by_family.items():
+            phase = cards.get(snap.repo, {}).get(family, {}).get("s", 0)
+            asked = [
+                q for q in open_questions(snap.docs.get(family, {}), snap.files, family) if q["kind"] != "unreadable"
+            ]
+            named = {}
+            for q in asked:
+                if q["row"]:
+                    named[q["row"]] = named.get(q["row"], 0) + 1
+            for r in fam_rows:
+                step = next_step(r, phase, r["id"] in frontier)
+                if step:
+                    row_next[r["id"]] = step
+                if named.get(r["id"]):
+                    row_questions[r["id"]] = named[r["id"]]
+    return row_next, row_questions
+
+
+def dependency_edges(delivery: dict, row_node: dict[str, str], pair_cap: int = 20) -> list[list]:
+    """Return ``[fromNode, toNode, count, pairs]`` for each pair of nodes with a prerequisite row between them."""
+    edges: dict[tuple[str, str], list[list[str]]] = {}
+    for prerequisite, unblocked in delivery.get("depends_pairs", []):
+        a, b = row_node.get(prerequisite), row_node.get(unblocked)
+        if a and b and a != b:
+            edges.setdefault((a, b), []).append([prerequisite, unblocked])
+    return [[a, b, len(pairs), pairs[:pair_cap]] for (a, b), pairs in sorted(edges.items())]
+
+
 def build_with_sources(
-    mode: str, workspace: Path | None, *, source_families: dict | None = None
+    mode: str,
+    workspace: Path | None,
+    *,
+    source_families: dict | None = None,
+    delivery_out: dict | None = None,
 ) -> tuple[dict, dict, list]:
     model = json.loads((HERE / "model.json").read_text())
     registry = json.loads((HERE / "registry.json").read_text())
@@ -329,12 +390,21 @@ def build_with_sources(
             layouts[nid] = node["fixed_layout"]
     delivery = aggregate(rows)
     delivery["frontier_set"], delivery["unserved_set"] = set(delivery["frontier"]), set(delivery["unserved"])
-    manifests = load_manifests(RELEASES)
+    manifests = load_manifests(RELEASES, required=mode == "github")
     delivery["release_of"] = row_releases(manifests, rows)
+    delivery["depends_pairs"] = [[d, r["id"]] for r in rows for d in r.get("depends_on", ())]
+    cards = build_cards(snaps, delivery["release_of"], {m["id"]: m["phase"] for m in manifests}, plan_checker(rows))
+    delivery["cards"] = cards
+    delivery["row_next"], delivery["row_questions"] = row_facts(snaps, cards, delivery["frontier_set"])
     data = emit(tree.root, direct, layouts, delivery)
+    row_node = {s["id"]: n["id"] for n in _walk(data) for s in n["specs"]}
+    delivery["row_node"] = row_node
+    if delivery_out is not None:
+        delivery_out.update(delivery)
     data["delivery"] = page_delivery(delivery, rows)
-    data["releases"] = release_view(manifests, rows, load_runs(RELEASES))
-    data["cards"] = build_cards(snaps, delivery["release_of"], {m["id"]: m["phase"] for m in manifests})
+    data["releases"] = release_view(manifests, rows, load_runs(RELEASES), row_node)
+    data["cards"] = cards
+    data["deps"] = dependency_edges(delivery, row_node)
     unmapped = sum(len(v) for k, v in direct.items() if tree.nodes[k].get("unmapped"))
     violations = unmapped_violations(tree, direct, model.get("unmapped_allow", []))
     meta = {
@@ -466,18 +536,27 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.mode == "local" and not args.workspace:
         parser.error("--workspace is required in local mode")
+    full: dict = {}
     if args.source_families:
         from .story_build import read_family_config
 
         families = read_family_config(args.source_families)
-        data, meta, snaps = build_with_sources(args.mode, args.workspace, source_families=families)
+        data, meta, snaps = build_with_sources(args.mode, args.workspace, source_families=families, delivery_out=full)
     else:
-        data, meta, snaps = build_with_sources(args.mode, args.workspace)
+        data, meta, snaps = build_with_sources(args.mode, args.workspace, delivery_out=full)
     body = render(data, meta)
     target = args.page or args.artifact
     if target:
         extra = search_extra(snaps, family_nodes(list(_walk(data))))
-        meta["detail_files"] = len(write_details(target.parent, snaps, extra))
+        meta["detail_files"] = len(write_details(target.parent, snaps, extra, full))
+        try:
+            meta["export_files"] = [
+                p.relative_to(target.parent).as_posix()
+                for p in write_export(target.parent, snaps, [r for s in snaps for r in s.rows], full)
+            ]
+        except ExportRefused as refused:
+            print(f"export refused: {refused}", file=sys.stderr)
+            return 1
     for path, text in ((args.artifact, body), (args.page, DOC_HEAD + body + DOC_TAIL)):
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)

@@ -32,6 +32,7 @@ KNOWN_SETTINGS = {
     "SKIP": "pre-commit SKIP list; a grouped check skips the member gates it names",
     "GITHUB_TOKEN": "GitHub API token that raises the rate limit of spec-id-index",
     "PIPELINES_SPEC_ID_INDEX": "path of the cross-repo spec ID index plan-conformance resolves foreign IDs against",
+    "PIPELINES_SPEC_STATUS_ENDPOINT": "URL of the served spec.status answer spec-status compares generated state with (unset: no comparison)",
     "PIPELINES_WORKSPACE_ROOT": "root of the operator's multi-repository workspace (default ~/workspace)",
 }
 

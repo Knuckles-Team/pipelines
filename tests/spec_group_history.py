@@ -1,13 +1,10 @@
-"""The ``spec`` group as the recorded consumer evidence saw it.
+"""The members of the ``spec`` grouped check that the frozen consumer evidence recorded.
 
-The immutable consumer-train fixtures record the members of the group when they were taken.
-``contract-coverage`` joined the group afterwards (PIPE-GATES-R034.3), so a test that compares
-recorded evidence with the group compares it with the group of that time, not the live tuple.
+The consumer-train evidence files are historical measurements. They recorded the group before
+``ingest-worker-policy`` joined it (PIPE-GATES-R018), so they compare against this constant, not
+against the live group.
 """
 
 from __future__ import annotations
 
-from pipelines_hooks.cli import GROUPS
-
-LATER_MEMBERS = frozenset({"contract-coverage"})
-HISTORIC_SPEC_GROUP = [member for member in GROUPS["spec"] if member not in LATER_MEMBERS]
+HISTORICAL_SPEC_GROUP = ("spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers")

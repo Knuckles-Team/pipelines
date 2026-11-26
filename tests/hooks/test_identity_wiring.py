@@ -14,6 +14,7 @@ from tests.hooks.conftest import Repo, set_local_identity, stage_file, write_ide
 ALLOWED = {"name": "Example Author", "email": "author@example.invalid"}
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.5")
 def test_n5_an_explicitly_configured_missing_allowlist_fails_closed_in_ci(
     repo: Repo, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -26,6 +27,7 @@ def test_n5_an_explicitly_configured_missing_allowlist_fails_closed_in_ci(
     assert repo.run("commit-identity-range") == 2
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.5")
 def test_n5_an_explicitly_configured_missing_allowlist_is_a_visible_local_skip_naming_the_remedy(
     repo: Repo, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -50,6 +52,7 @@ def test_with_no_configuration_at_all_the_packaged_fleet_default_is_used(
     assert repo.run("commit-identity-range") == 1
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.5")
 def test_n5_a_malformed_allowlist_always_fails_regardless_of_ci(repo: Repo, monkeypatch: pytest.MonkeyPatch) -> None:
     write_identity_allowlist(repo.root, [])
     monkeypatch.setenv("CI", "false")
@@ -58,6 +61,7 @@ def test_n5_a_malformed_allowlist_always_fails_regardless_of_ci(repo: Repo, monk
     assert repo.run("commit-identity-range") == 2
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.6")
 def test_both_gates_are_registered_in_the_cli() -> None:
     assert GATES["commit-identity"] == "pipelines_hooks.identity.commit_gate"
     assert GATES["commit-identity-range"] == "pipelines_hooks.identity.range_gate"
@@ -69,6 +73,7 @@ def test_commit_identity_is_invocable_through_the_cli_entrypoint(repo: Repo, mon
     assert cli_main(["commit-identity"]) == 0  # nothing staged: proves the id resolves and runs
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.7")
 def test_commit_identity_range_is_invocable_through_the_cli_entrypoint(
     repo: Repo, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -78,6 +83,7 @@ def test_commit_identity_range_is_invocable_through_the_cli_entrypoint(
     assert cli_main(["commit-identity-range", "--base", "HEAD"]) == 0
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.7")
 def test_commit_identity_rejection_uses_the_published_cli_path(
     repo: Repo, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
