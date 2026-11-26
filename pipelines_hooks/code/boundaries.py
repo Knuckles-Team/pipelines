@@ -151,17 +151,20 @@ def check_receipts(root: Path, declaration: Declaration) -> tuple[list[Located],
             ("integration", handoff.integration_test, "missing-integration-proof"),
         ):
             receipt = receipts.get(test_id)
-            if receipt is not None and receipt.get("outcome") == "skipped":
+            if receipt is None:
+                findings.append(Located(declaration.receipts, 1, rule, f"{handoff.id}: {test_id}"))
+                continue
+            if receipt.get("outcome") == "skipped":
                 raise CannotRun(f"{declaration.receipts}: {test_id} was skipped; a skipped test proves nothing")
-            ok = receipt is not None and receipt.get("outcome") == "passed" and receipt.get("kind") == kind
+            ok = receipt.get("outcome") == "passed" and receipt.get("kind") == kind
             if ok and kind == "integration":
                 ok = sorted(receipt.get("components", [])) == sorted(handoff.components)
             if ok and kind == "property":
                 ok = isinstance(receipt.get("seed"), int)
-            if not ok:
-                findings.append(Located(declaration.receipts, 1, rule, f"{handoff.id}: {test_id}"))
-            elif receipt is not None:
+            if ok:
                 used.append({"handoff": handoff.id, **receipt})
+            else:
+                findings.append(Located(declaration.receipts, 1, rule, f"{handoff.id}: {test_id}"))
     return findings, used
 
 
