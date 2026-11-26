@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.gitenv import run_git, sanitized_env
 from pipelines_hooks.release.phases import load_json
 
 REPORT_VERSION = 1
@@ -83,12 +84,7 @@ def parse_candidate(raw: Mapping[str, Any], owner_inventory: Mapping[str, Any]) 
 
 
 def _head(root: Path, consumer: ConsumerPackage) -> str:
-    result = subprocess.run(  # noqa: S603
-        ["git", "-C", str(root / consumer.repository), "rev-parse", "HEAD"],  # noqa: S607
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_git(root / consumer.repository, ("rev-parse", "HEAD"))
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
@@ -183,7 +179,9 @@ def _apply_one(consumer: ConsumerPackage, root: Path, entry: dict[str, Any]) -> 
     path.write_text(text.replace(consumer.prior_pin, consumer.target_pin), encoding="utf-8")
     entry["status"] = "applied"
     if consumer.after_update_argv:
-        done = subprocess.run(consumer.after_update_argv, cwd=root / consumer.repository, check=False)  # noqa: S603
+        done = subprocess.run(
+            consumer.after_update_argv, cwd=root / consumer.repository, env=sanitized_env(), check=False
+        )  # noqa: S603
         if done.returncode:
             entry.update(status="failed", reason=f"after-update command exited {done.returncode}")
     return entry["status"] == "applied"

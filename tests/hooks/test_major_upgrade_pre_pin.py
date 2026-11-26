@@ -12,10 +12,11 @@ from typing import Any
 import pytest
 
 from pipelines_hooks.core.errors import CannotRun
+from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.release.major_upgrade import parse_candidate, preflight
 
 ENV = {
-    **os.environ,
+    **sanitized_env(),
     "GIT_AUTHOR_NAME": "Fixture",
     "GIT_AUTHOR_EMAIL": "fixture@example.invalid",
     "GIT_COMMITTER_NAME": "Fixture",
@@ -261,8 +262,8 @@ def test_major_upgrade_pre_pin_cli(tmp_path: Path) -> None:
 
     fixture = Fixture(_mk(tmp_path, "race"))
     move = (
-        "import subprocess, sys; subprocess.run(['git', '-C', sys.argv[1], 'commit', '-q', '--allow-empty',"
-        " '-m', 'concurrent'], check=True)"
+        "import subprocess, sys; subprocess.run(['git', '-c', 'user.name=x', '-c', 'user.email=x@example.invalid', '-C', sys.argv[1],"
+        " 'commit', '-q', '--allow-empty', '-m', 'concurrent'], check=True)"
     )
     fixture.consumers[0]["after_update_argv"] = [sys.executable, "-c", move, str(fixture.root / PACKAGES[1])]
     arguments = fixture.write()
