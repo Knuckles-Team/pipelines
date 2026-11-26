@@ -1,4 +1,4 @@
-"""complexity-staged: no NEW or WORSENED function over cyclomatic 10 / cognitive 15.
+"""The staged half of the ``complexity`` gate: no NEW or WORSENED function over cyclomatic 10 / cognitive 15.
 
 Compares the INDEX (``git show :path``) against HEAD, never the working tree,
 so an unstaged edit can neither hide a violation nor invent one. Every staged

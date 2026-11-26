@@ -39,7 +39,7 @@ statements_per_file        = 200
 lines_per_file             = 300
 functions_per_file         = 10
 interface_types_per_file   = 1
-# OFF, owned by another gate: cccc (complexity-staged / complexity-census) owns
+# OFF, owned by another gate: cccc (the complexity gate) owns
 # branching; one metric, one tool.
 branches_per_function      = 999999
 # OFF: keyword-only signatures are the remedy positional_args asks for.

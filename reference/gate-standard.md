@@ -158,7 +158,7 @@ its exit status and the tail of its output. A finding is information for the
 next cleanup, not a blocked merge.
 
 - Clone detection: `jscpd-census`, `jscpd-differential`, `dupehound-changed`.
-- Complexity: `complexity-census`, `complexity-staged`, `kiss-census`,
+- Complexity: `complexity`, `kiss-census`,
   `kiss-staged`, and the scanner version proof `scanner-versions`.
 - Dead code: `vulture`.
 - Spelling: `codespell`.

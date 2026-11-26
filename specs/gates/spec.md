@@ -67,7 +67,7 @@ The platform builds agents, plans and routes from each connector's MCP surface. 
 - **FR-007**: Heavy Rust CI and agent build lanes run on warm build slots that deploy from one configuration on Kubernetes, Docker Compose, Podman and SSH hosts. Rows: `PIPE-GATES-R070`, `PIPE-GATES-R071`, `PIPE-GATES-R072`, `PIPE-GATES-R073`, `PIPE-GATES-R074`, `PIPE-GATES-R075`.
 - **FR-008**: The shared gates hold the local-gate behaviors that repository-manager does not run itself: hook root resolution in a linked worktree, exhaustive-dispatch complexity scoring, clone gating against the merge base with fail-closed evaluation, the distinct-pair register, test module resolution in the KISS hook, digest-pinned secret-history exceptions and digest verification of a tree without a working copy. Rows: `PIPE-GATES-R076`, `PIPE-GATES-R077`, `PIPE-GATES-R078`, `PIPE-GATES-R079`, `PIPE-GATES-R080`, `PIPE-GATES-R081`, `PIPE-GATES-R082`, `PIPE-GATES-R083`, `PIPE-GATES-R084`.
 
-- **FR-009**: Every connector accounts for its tools, resources, prompts, skills and ontology parts, and every connector repository runs the check. Rows: `PIPE-GATES-R014`, `PIPE-GATES-R014.8`.
+- **FR-009**: Every connector accounts for its tools, resources, prompts, skills and ontology parts, and every connector repository runs the check. Rows: `PIPE-GATES-R014`, `PIPE-GATES-R014.8`, `PIPE-GATES-R106`.
 
 ## Success Criteria
 
