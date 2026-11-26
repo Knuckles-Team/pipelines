@@ -33,6 +33,7 @@ RULES = (
     "orphan-module",
     "outcome-not-observed",
     "isolation-violation",
+    "handoff-receipt-invalid",
 )
 DEFAULT_COMPONENTS = ".pipelines/components.toml"
 DEFAULT_OUTCOMES = ".pipelines/outcomes.toml"
@@ -162,7 +163,7 @@ def measured_coverage(root: Path, report: str = DEFAULT_REPORT) -> float:
 
 def extension_findings(root: Path, args: argparse.Namespace) -> tuple[list[TestQualityFinding], dict[str, object]]:
     """Boundary, outcome, closure and unit-profile passes; each runs only when declared or selected."""
-    from pipelines_hooks.code import boundaries, coverage_closure, outcomes, unit_profile
+    from pipelines_hooks.code import boundaries, coverage_closure, graph_workflow_receipt, outcomes, unit_profile
 
     found: list[TestQualityFinding] = []
     evidence: dict[str, object] = {}
@@ -184,7 +185,18 @@ def extension_findings(root: Path, args: argparse.Namespace) -> tuple[list[TestQ
         unit = unit_profile.check(root, root / args.unit_profile)
         found += [TestQualityFinding(*t) for t in unit.findings]
         evidence["unit_profile"] = unit.evidence
+    if args.graph_workflow_receipt:
+        handoff = graph_workflow_receipt.check(args.graph_workflow_receipt, dict(args.expect_revision or []))
+        found += [TestQualityFinding(*t[:2], "handoff-receipt-invalid", t[2]) for t in handoff.findings]
+        evidence["graph_workflow"] = handoff.evidence
     return found, evidence
+
+
+def _revision(text: str) -> tuple[str, str]:
+    name, _, revision = text.partition("=")
+    if not name or not revision:
+        raise argparse.ArgumentTypeError("expected producer=revision")
+    return name, revision
 
 
 def main(argv: list[str]) -> int:
@@ -196,6 +208,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--outcomes", type=Path, help=f"outcome contract (default {DEFAULT_OUTCOMES})")
     parser.add_argument("--closure", type=Path, help="coverage closure policy: zero uncovered executable lines")
     parser.add_argument("--unit-profile", type=Path, help="hermetic unit profile policy")
+    parser.add_argument(
+        "--graph-workflow-receipt", type=Path, help="owner acceptance receipt of a graph-to-ingestion run"
+    )
+    parser.add_argument(
+        "--expect-revision", type=_revision, action="append", help="producer=revision the receipt binds"
+    )
     parser.add_argument(
         "--require-declared",
         action="store_true",
