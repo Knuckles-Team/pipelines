@@ -1,8 +1,9 @@
 """Content-addressed identity of a jscpd clone pair.
 
 A pair is keyed by its format, the fragment digest, its two paths and its
-ordinal among the pairs sharing those three. Line numbers are never part of the
-key: a line shift elsewhere in either file (or before/after living in different
+ordinal among the pairs sharing those three; the gate compares pairs by format
+and fragment digest only (:func:`new_pairs`), so a move is not a new pair. Line
+numbers are never part of the key: a line shift elsewhere in either file (or before/after living in different
 snapshot directories) does not read as a NEW pair. The ordinal still separates
 repeated occurrences, so a third copy of a block inside one file, or a second
 copied block between the same two files, is NEW.
@@ -65,6 +66,28 @@ def keys(document: dict[str, Any], root: Path) -> Pairs:
         ordinals[identity] = ordinals.get(identity, -1) + 1
         pairs[(*identity, ordinals[identity])] = spans
     return pairs
+
+
+def new_pairs(before: Pairs, after: Pairs) -> list[PairKey]:
+    """Pairs of ``after`` beyond the count the base already held for the same fragment.
+
+    A pair is identified by its format and fragment digest, never by the paths
+    that hold it: a fragment that moved to another file, or a file that was
+    split without copying content, leaves each fragment's pair count unchanged
+    and is not new duplication (PIPE-GATES-R080). Only a fragment with more
+    pairs than the base is NEW, so a further copy of an old block still fails.
+    """
+    held: dict[tuple[str, str], int] = {}
+    for format_name, digest, _paths, _ordinal in before:
+        held[(format_name, digest)] = held.get((format_name, digest), 0) + 1
+    fresh: list[PairKey] = []
+    for key in sorted(after):
+        fragment = (key[0], key[1])
+        if held.get(fragment, 0) > 0:
+            held[fragment] -= 1
+        else:
+            fresh.append(key)
+    return fresh
 
 
 def render_pair(key: PairKey, spans: tuple[Span, Span]) -> str:

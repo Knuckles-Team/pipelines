@@ -65,6 +65,7 @@ GATES: dict[str, str] = {
     "mutation-gaps": "pipelines_hooks.code.mutation_gaps",
     "test-quality": "pipelines_hooks.code.test_quality",
     "public-surface": "pipelines_hooks.docs.public_surface",
+    "readme-deploy-block": "pipelines_hooks.docs.readme_deploy",
     "skill-grade": "pipelines_hooks.docs.skill_grade",
     "source-path-portability": "pipelines_hooks.hygiene.path_portability",
     "prompt-format": "pipelines_hooks.prompt_format",

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 
 from pipelines_hooks.security.credential_patterns import CREDENTIAL_PATTERNS
 from pipelines_hooks.security.entropy import high_entropy_tokens, is_lockfile
@@ -32,12 +32,19 @@ def added_lines(patch_lines: list[str]) -> Iterator[tuple[str, str, str]]:
             yield commit, file, line[1:]
 
 
-def scan_credentials(patch_lines: list[str]) -> list[dict[str, str]]:
-    """One hit per (commit, file, pattern); a justified marker exempts its own line."""
+def scan_credentials(
+    patch_lines: list[str], exempt: Callable[[str, str, str], bool] | None = None
+) -> list[dict[str, str]]:
+    """One hit per (commit, file, pattern); a justified marker exempts its own line.
+
+    ``exempt(commit, file, content)`` is the digest-pinned history exception
+    (:mod:`pipelines_hooks.security.history_exceptions`): it exempts one pinned
+    occurrence and nothing else.
+    """
     hits: list[dict[str, str]] = []
     seen: set[tuple[str, str, str]] = set()
     for commit, file, content in added_lines(patch_lines):
-        if is_exempt(content):
+        if is_exempt(content) or (exempt is not None and exempt(commit, file, content)):
             continue
         for name in CREDENTIAL_PATTERNS:
             if _hit(name, content) and (commit, file, name) not in seen:

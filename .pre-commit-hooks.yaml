@@ -395,6 +395,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: readme-deploy-block
+  name: "readme-deploy-block: README carries one well-formed generated deployment block"
+  entry: pipelines-hook readme-deploy-block
+  language: python
+  pass_filenames: false
+  files: ^README\.md$
 # --- spec decomposition -----------------------------------------------------
 - id: spec-decomposition
   name: "DEPRECATED (spec-decomposition): Spec decomposition - requirements/tasks/test-spec/status.json IDs agree"

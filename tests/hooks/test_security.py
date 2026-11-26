@@ -95,6 +95,7 @@ def test_secret_history_skips_a_documented_placeholder_uri_but_not_a_real_passwo
     assert "db_url_with_password" in {hit["pattern"] for hit in scan_text_for_credentials(real)}
 
 
+# spec: PIPE-GATES-R083
 def test_secret_history_self_check_passes() -> None:
     from pipelines_hooks.cli import run_gate
 
@@ -124,3 +125,63 @@ def test_a_gzip_tarball_is_a_trusted_binary_extension(repo: Repo) -> None:
     assert repo.run("security-sanitizer") == 0
     (repo.root / "pkg/assets.gz.blob").write_bytes(b"\xff\xfe" + b"\x00" * 16)
     assert repo.run("security-sanitizer") == 1
+
+
+def _exception_entry(commit: str, path: str, line: str, **overrides: str) -> str:
+    from pipelines_hooks.security.history_exceptions import line_digest
+
+    fields = {
+        "commit": commit,
+        "file": path,
+        "line_digest": line_digest(line),
+        "reason": "shape based match on a synthetic fixture line that was never a live credential at all",
+        "reviewed_on": "2026-11-26",
+        **overrides,
+    }
+    return "[[exception]]\n" + "".join(f'{key} = "{value}"\n' for key, value in fields.items())
+
+
+# spec: PIPE-GATES-R083
+def test_secret_history_digest_pinned_exception_matches_only_the_pinned_occurrence(repo: Repo) -> None:
+    import pytest
+
+    from pipelines_hooks.core.errors import CannotRun
+    from pipelines_hooks.security.history_exceptions import EXCEPTIONS, line_digest, load_exceptions, pin_problem
+
+    base = repo.git("rev-parse", "HEAD").strip()
+    line = f"KEY = '{AWS_KEY}'"
+    pinned = repo.commit({"pkg/pinned.py": line + "\n"})
+    repo.commit({"pkg/other.py": line + "\n"})  # the same line, another commit and file
+    repo.commit({"pkg/pinned_too.py": line + " + 1\n"})  # a different line
+    assert check(repo.root, base)[0] == 1
+    repo.write(EXCEPTIONS, _exception_entry(pinned, "pkg/pinned.py", line))
+    _, result = check(repo.root, base)
+    leaked = {hit["file"].removeprefix("b/") for hit in result["credentialHits"]}
+    assert leaked == {"pkg/other.py", "pkg/pinned_too.py"}
+    assert pin_problem(repo.root, load_exceptions(repo.root)[0]) is None
+    # a wrong pin (file, digest or commit) exempts nothing and fails the self-check
+    for override in ({"file": "pkg/other.py"}, {"line_digest": line_digest("something else")}):
+        repo.write(EXCEPTIONS, _exception_entry(pinned, "pkg/pinned.py", line, **override))
+        assert {h["file"].removeprefix("b/") for h in check(repo.root, base)[1]["credentialHits"]} >= {"pkg/pinned.py"}
+        assert pin_problem(repo.root, load_exceptions(repo.root)[0]) is not None
+    # an abbreviated commit or a short reason is refused, not guessed
+    repo.write(EXCEPTIONS, _exception_entry(pinned[:12], "pkg/pinned.py", line))
+    with pytest.raises(CannotRun, match="full commit digest"):
+        check(repo.root, base)
+    repo.write(EXCEPTIONS, _exception_entry(pinned, "pkg/pinned.py", line, reason="too short"))
+    with pytest.raises(CannotRun, match="justification"):
+        check(repo.root, base)
+
+
+# spec: PIPE-GATES-R083
+def test_secret_history_self_check_fails_for_a_stale_repository_entry(repo: Repo, capsys) -> None:
+    from pipelines_hooks.cli import run_gate
+    from pipelines_hooks.security.history_exceptions import EXCEPTIONS
+
+    line = f"KEY = '{AWS_KEY}'"
+    pinned = repo.commit({"pkg/pinned.py": line + "\n"})
+    repo.write(EXCEPTIONS, _exception_entry(pinned, "pkg/pinned.py", line))
+    assert run_gate("secret-history", ["--self-check", "--root", str(repo.root)]) == 0
+    repo.write(EXCEPTIONS, _exception_entry(pinned, "pkg/missing.py", line))
+    assert run_gate("secret-history", ["--self-check", "--root", str(repo.root)]) == 1
+    assert "does not add the pinned line to pkg/missing.py" in capsys.readouterr().err

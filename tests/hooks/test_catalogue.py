@@ -66,6 +66,7 @@ KEPT = {
     "validate",
     "source-path-portability",
     "prompt-format",
+    "readme-deploy-block",
     "skill-grade",
     "mutation-gaps",
     "export-version",
