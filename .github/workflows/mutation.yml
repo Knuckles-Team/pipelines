@@ -1,0 +1,23 @@
+name: Mutation
+
+# Weekly mutation run (never blocks a pull request): each surviving mutant of
+# the declared core modules is a test gap, reported with its module and line.
+on:
+  schedule:
+    - cron: '41 5 * * 3'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  mutation-gaps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - run: uv sync --frozen
+      - run: uv run --frozen pipelines-hook mutation-gaps

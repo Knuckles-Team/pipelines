@@ -10,6 +10,7 @@ can consume the receipt without treating it as admission or deployment approval.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import posixpath
@@ -250,7 +251,9 @@ def _snapshot(root: Path) -> SkillGradeSnapshot:
     return _git_snapshot(root) or _filesystem_snapshot(root)
 
 
-def _policy_values(schema_version: str, weights: Mapping[str, object], minimum_grade: object) -> dict[str, object]:
+def _policy_values(
+    schema_version: str, weights: Mapping[str, object], minimum_grade: object, external_total: int = 0
+) -> dict[str, object]:
     if schema_version != SCHEMA_VERSION:
         raise CannotRun(f"skill-grade: unsupported policy schema {schema_version!r}")
     if any(not isinstance(key, str) for key in weights):
@@ -270,11 +273,110 @@ def _policy_values(schema_version: str, weights: Mapping[str, object], minimum_g
         if isinstance(value, bool) or not isinstance(value, int) or value < 0:
             raise CannotRun(f"skill-grade: weight for {criterion} must be a non-negative integer")
         checked[criterion] = value
-    if sum(checked.values()) != 100:
-        raise CannotRun("skill-grade: criterion weights must total 100")
+    if sum(checked.values()) + external_total != 100:
+        raise CannotRun("skill-grade: criterion weights plus external rule weights must total 100")
     if isinstance(minimum_grade, bool) or not isinstance(minimum_grade, int) or not 0 <= minimum_grade <= 100:
         raise CannotRun("skill-grade: minimum_grade must be an integer from 0 through 100")
     return {"schema_version": schema_version, "criterion_weights": checked, "minimum_grade": minimum_grade}
+
+
+#: Deterministic predicate adapters an external rule may name. Rule content is data.
+RULE_ADAPTERS = ("forbidden-heading", "required-heading", "max-body-lines", "required-frontmatter-key")
+_SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
+@dataclass(frozen=True)
+class ExternalRule:
+    """One declared external rule: its mapping to a local criterion, weight and hard flag."""
+
+    rule_id: str
+    criterion: str = "structure"
+    weight: int = 0
+    hard: bool = False
+
+
+@dataclass(frozen=True)
+class RulePack:
+    """One pinned external rule pack in the policy inventory."""
+
+    pack_id: str
+    version: str
+    path: str
+    digest: str
+    credit: str
+    target_scope: str
+    rules: tuple[ExternalRule, ...]
+
+    def as_dict(self) -> dict[str, object]:
+        return {
+            "pack_id": self.pack_id,
+            "version": self.version,
+            "path": self.path,
+            "digest": self.digest,
+            "credit": self.credit,
+            "target_scope": self.target_scope,
+            "rules": [
+                {"rule_id": r.rule_id, "criterion": r.criterion, "weight": r.weight, "hard": r.hard} for r in self.rules
+            ],
+        }
+
+
+def _text_field(raw: Mapping[str, object], key: str, label: str) -> str:
+    value = raw.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise CannotRun(f"skill-grade: rule pack {label} needs a non-empty {key} (provenance and pinning are required)")
+    return value
+
+
+def _rule_pack(raw: object) -> RulePack:
+    if not isinstance(raw, Mapping):
+        raise CannotRun("skill-grade: each rule pack must be a mapping")
+    allowed = {"pack_id", "version", "path", "digest", "credit", "target_scope", "rules"}
+    if unknown := sorted(str(key) for key in set(raw) - allowed):
+        raise CannotRun(f"skill-grade: rule pack has unknown field(s): {', '.join(unknown)}")
+    label = str(raw.get("pack_id", "?"))
+    digest = _text_field(raw, "digest", label)
+    if not _SHA256_RE.match(digest):
+        raise CannotRun(f"skill-grade: rule pack {label} digest must be sha256:<64 hex> (unpinned pack)")
+    rules_raw = raw.get("rules")
+    if not isinstance(rules_raw, list) or not rules_raw:
+        raise CannotRun(f"skill-grade: rule pack {label} must list its rules")
+    rules: list[ExternalRule] = []
+    for item in rules_raw:
+        if not isinstance(item, Mapping) or set(item) - {"rule_id", "criterion", "weight", "hard"}:
+            raise CannotRun(f"skill-grade: rule pack {label} has a malformed rule entry")
+        weight, hard, criterion = item.get("weight", 0), item.get("hard", False), item.get("criterion", "structure")
+        if isinstance(weight, bool) or not isinstance(weight, int) or weight < 0:
+            raise CannotRun(f"skill-grade: rule pack {label} weight must be a non-negative integer")
+        if not isinstance(hard, bool) or criterion not in CRITERIA:
+            raise CannotRun(f"skill-grade: rule pack {label} rule needs boolean hard and a local criterion")
+        rules.append(ExternalRule(_text_field(item, "rule_id", label), criterion, weight, hard))
+    return RulePack(
+        _text_field(raw, "pack_id", label),
+        _text_field(raw, "version", label),
+        _safe_relative(_text_field(raw, "path", label)),
+        digest,
+        _text_field(raw, "credit", label),
+        _text_field(raw, "target_scope", label),
+        tuple(rules),
+    )
+
+
+def _check_pack_inventory(packs: tuple[RulePack, ...]) -> int:
+    """Reject duplicate IDs; return the total external weight."""
+    seen_packs: set[str] = set()
+    seen_rules: set[str] = set()
+    total = 0
+    for pack in packs:
+        if pack.pack_id in seen_packs:
+            raise CannotRun(f"skill-grade: duplicate rule pack {pack.pack_id}")
+        seen_packs.add(pack.pack_id)
+        for rule in pack.rules:
+            if rule.rule_id in seen_rules:
+                raise CannotRun(f"skill-grade: duplicate rule ID {rule.rule_id} across rule packs")
+            seen_rules.add(rule.rule_id)
+            total += rule.weight
+    return total
 
 
 @dataclass(frozen=True)
@@ -284,17 +386,23 @@ class SkillGradePolicy:
     schema_version: str = SCHEMA_VERSION
     criterion_weights: Mapping[str, int] = field(default_factory=lambda: dict(DEFAULT_CRITERION_WEIGHTS))
     minimum_grade: int = DEFAULT_MINIMUM_GRADE
+    rule_packs: tuple[RulePack, ...] = ()
 
     def __post_init__(self) -> None:
-        _policy_values(self.schema_version, self.criterion_weights, self.minimum_grade)
+        _policy_values(
+            self.schema_version, self.criterion_weights, self.minimum_grade, _check_pack_inventory(self.rule_packs)
+        )
         object.__setattr__(self, "criterion_weights", dict(self.criterion_weights))
 
     def as_dict(self) -> dict[str, object]:
-        return {
+        result: dict[str, object] = {
             "schema_version": self.schema_version,
             "criterion_weights": dict(self.criterion_weights),
             "minimum_grade": self.minimum_grade,
         }
+        if self.rule_packs:
+            result["rule_packs"] = [pack.as_dict() for pack in self.rule_packs]
+        return result
 
     @property
     def digest(self) -> str:
@@ -314,6 +422,8 @@ class SkillGradeFinding:
     refusal: str | None = None
     disposition: str | None = None
     blocking: bool = True
+    pack: str | None = None
+    rule: str | None = None
 
     def as_dict(self) -> dict[str, object]:
         result: dict[str, object] = {
@@ -331,6 +441,9 @@ class SkillGradeFinding:
         if self.disposition is not None:
             result["disposition"] = self.disposition
         result["blocking"] = self.blocking
+        if self.pack is not None:
+            result["pack"] = self.pack
+            result["rule"] = self.rule
         return result
 
 
@@ -352,6 +465,7 @@ class SkillGradeReport:
     applicable: bool = True
     snapshot: Mapping[str, object] = field(default_factory=dict)
     policy_source_digest: str = ""
+    external_rules: tuple[Mapping[str, object], ...] = ()
 
     @property
     def document_path(self) -> str:
@@ -395,6 +509,7 @@ class SkillGradeReport:
             "status": self.status,
             "hard_failure": self.hard_failure,
             "applicable": self.applicable,
+            **({"external_rules": [dict(item) for item in self.external_rules]} if self.external_rules else {}),
         }
 
 
@@ -406,9 +521,10 @@ def policy_from_mapping(value: object) -> SkillGradePolicy:
     if not isinstance(value, Mapping):
         raise CannotRun("skill-grade: policy must be a mapping")
     expected = {"schema_version", "criterion_weights", "minimum_grade"}
+    optional = {"rule_packs"}
     if any(not isinstance(key, str) for key in value):
         raise CannotRun("skill-grade: policy keys must be strings")
-    unknown = sorted(set(value) - expected)
+    unknown = sorted(set(value) - expected - optional)
     missing = sorted(expected - set(value))
     if unknown or missing:
         detail = []
@@ -422,8 +538,14 @@ def policy_from_mapping(value: object) -> SkillGradePolicy:
     minimum_grade = value["minimum_grade"]
     if not isinstance(schema_version, str) or not isinstance(weights, Mapping):
         raise CannotRun("skill-grade: malformed policy field types")
-    _policy_values(schema_version, weights, minimum_grade)
-    return SkillGradePolicy(schema_version, {str(key): int(item) for key, item in weights.items()}, int(minimum_grade))
+    packs_raw = value.get("rule_packs", [])
+    if not isinstance(packs_raw, list):
+        raise CannotRun("skill-grade: rule_packs must be a list")
+    packs = tuple(_rule_pack(item) for item in packs_raw)
+    _policy_values(schema_version, weights, minimum_grade, _check_pack_inventory(packs))
+    return SkillGradePolicy(
+        schema_version, {str(key): int(item) for key, item in weights.items()}, int(minimum_grade), packs
+    )
 
 
 def _policy_from_bytes(raw: bytes, label: str) -> SkillGradePolicy:
@@ -729,6 +851,122 @@ def _link_findings(
     return findings, any(finding.blocking for finding in findings)
 
 
+def _pack_definitions(
+    policy: SkillGradePolicy, snapshot: SkillGradeSnapshot
+) -> dict[str, dict[str, Mapping[str, Any]]]:
+    """Load each pinned pack from the snapshot, verifying digest, adapters and rule IDs."""
+    loaded: dict[str, dict[str, Mapping[str, Any]]] = {}
+    for pack in policy.rule_packs:
+        if snapshot.kind(pack.path) != "regular":
+            raise CannotRun(f"skill-grade: rule pack {pack.pack_id} is absent or not regular: {pack.path}")
+        raw = snapshot.read_bytes(pack.path)
+        if raw is None:
+            raise CannotRun(f"skill-grade: cannot read rule pack {pack.pack_id}: {pack.path}")
+        if _sha256(raw) != pack.digest:
+            raise CannotRun(f"skill-grade: rule pack {pack.pack_id} digest mismatch (tampered or unpinned bytes)")
+        try:
+            data = yaml.safe_load(raw.decode("utf-8"))
+        except (UnicodeDecodeError, yaml.YAMLError) as exc:
+            raise CannotRun(f"skill-grade: rule pack {pack.pack_id} is not valid data: {exc}") from exc
+        rules = data.get("rules") if isinstance(data, Mapping) else None
+        if not isinstance(rules, Mapping):
+            raise CannotRun(f"skill-grade: rule pack {pack.pack_id} has no rules mapping")
+        loaded[pack.pack_id] = {}
+        for rule in pack.rules:
+            definition = rules.get(rule.rule_id)
+            if not isinstance(definition, Mapping):
+                raise CannotRun(f"skill-grade: unknown rule {rule.rule_id} in pack {pack.pack_id}")
+            if definition.get("adapter") not in RULE_ADAPTERS:
+                raise CannotRun(
+                    f"skill-grade: rule {rule.rule_id} needs a supported predicate adapter, not prose "
+                    f"(got {definition.get('adapter')!r})"
+                )
+            loaded[pack.pack_id][rule.rule_id] = definition
+    return loaded
+
+
+def _predicate(
+    adapter: str, params: Mapping[str, Any], frontmatter: Mapping[str, Any], body: str
+) -> tuple[bool, int | None, str]:
+    """Evaluate one deterministic adapter: ``(satisfied, line, measurement)``."""
+    headings = _heading_names(body)
+    if adapter in {"forbidden-heading", "required-heading"}:
+        name = str(params.get("heading", "")).strip().casefold()
+        if not name:
+            raise CannotRun(f"skill-grade: adapter {adapter} needs a heading parameter")
+        present = name in headings
+        line = next(
+            (i for i, text in enumerate(body.splitlines(), 1) if text.lstrip("# ").strip().casefold() == name), None
+        )
+        return (present if adapter == "required-heading" else not present), line, f"heading {name!r} present={present}"
+    if adapter == "max-body-lines":
+        limit, count = params.get("max"), len(body.splitlines())
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+            raise CannotRun("skill-grade: adapter max-body-lines needs a positive integer max")
+        return count <= limit, None, f"body lines {count} (max {limit})"
+    key = str(params.get("key", ""))
+    if not key:
+        raise CannotRun("skill-grade: adapter required-frontmatter-key needs a key parameter")
+    return key in frontmatter, 1, f"frontmatter key {key!r} present={key in frontmatter}"
+
+
+def _external_results(
+    policy: SkillGradePolicy,
+    snapshot: SkillGradeSnapshot,
+    skill_path: str,
+    frontmatter: Mapping[str, Any],
+    body: str,
+) -> tuple[list[SkillGradeFinding], list[dict[str, object]], int, bool]:
+    """Apply declared rules to one document: findings, lineage, earned points, hard failure."""
+    findings: list[SkillGradeFinding] = []
+    lineage: list[dict[str, object]] = []
+    earned, hard_failure = 0, False
+    definitions = _pack_definitions(policy, snapshot) if policy.rule_packs else {}
+    for pack in policy.rule_packs:
+        in_scope = fnmatch.fnmatchcase(skill_path, pack.target_scope)
+        for rule in pack.rules:
+            record: dict[str, object] = {
+                "pack_id": pack.pack_id,
+                "pack_version": pack.version,
+                "pack_digest": pack.digest,
+                "credit": pack.credit,
+                "rule_id": rule.rule_id,
+                "criterion": rule.criterion,
+                "weight": rule.weight,
+                "hard": rule.hard,
+            }
+            if not in_scope:
+                lineage.append({**record, "disposition": "skipped", "reason": f"out of scope {pack.target_scope}"})
+                continue
+            definition = definitions[pack.pack_id][rule.rule_id]
+            ok, line, measurement = _predicate(
+                str(definition["adapter"]), definition.get("params") or {}, frontmatter, body
+            )
+            record.update(measurement=measurement, line=line)
+            if ok:
+                earned += rule.weight
+                lineage.append({**record, "disposition": "pass", "contribution": rule.weight})
+                continue
+            blocking = rule.hard
+            hard_failure = hard_failure or rule.hard
+            disposition = "hard-failure" if rule.hard else ("deduction" if rule.weight else "diagnostic")
+            lineage.append({**record, "disposition": disposition, "contribution": 0})
+            findings.append(
+                SkillGradeFinding(
+                    rule.criterion,
+                    "external-rule",
+                    f"{pack.pack_id}:{rule.rule_id} violated ({measurement})",
+                    skill_path,
+                    line,
+                    disposition=disposition,
+                    blocking=blocking,
+                    pack=pack.pack_id,
+                    rule=rule.rule_id,
+                )
+            )
+    return findings, lineage, earned, hard_failure
+
+
 def grade_document(
     root: Path,
     document: Path,
@@ -913,8 +1151,12 @@ def grade_document(
         "links": policy.criterion_weights["links"] if not link_hard else 0,
         "file_metadata": policy.criterion_weights["file_metadata"] if not metadata_hard else 0,
     }
-    total = sum(scores.values())
-    hard_failure = frontmatter_hard or metadata_hard or link_hard
+    external_findings, lineage, external_points, external_hard = _external_results(
+        policy, selected, skill_path, frontmatter, body
+    )
+    findings.extend(external_findings)
+    total = sum(scores.values()) + external_points
+    hard_failure = frontmatter_hard or metadata_hard or link_hard or external_hard
     status = "pass" if not hard_failure and total >= policy.minimum_grade else "fail"
     return SkillGradeReport(
         schema_version=policy.schema_version,
@@ -930,6 +1172,7 @@ def grade_document(
         hard_failure=hard_failure,
         snapshot=selected.as_dict(),
         policy_source_digest=policy_source_digest or policy.digest,
+        external_rules=tuple(lineage),
     )
 
 
@@ -989,6 +1232,11 @@ def _text_report(
         )
         for criterion in CRITERIA:
             lines.append(f"- {criterion}: {report.scores[criterion]}/{report.criterion_weights[criterion]}")
+        for entry in report.external_rules:
+            lines.append(
+                f"  - external {entry['pack_id']}@{entry['pack_version']} ({entry['pack_digest']}, "
+                f"credit {entry['credit']}) rule {entry['rule_id']} -> {entry['criterion']}: {entry['disposition']}"
+            )
         for finding in report.findings:
             location = f":{finding.line}" if finding.line is not None else ""
             target = f" -> `{finding.target}`" if finding.target else ""

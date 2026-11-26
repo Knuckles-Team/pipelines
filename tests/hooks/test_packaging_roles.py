@@ -174,6 +174,7 @@ def test_role_gate_evidence_digest_is_bound_to_verified_resolver_report(tmp_path
     assert result["evidence"][0]["evidence_digest"] == expected
 
 
+@pytest.mark.spec("PIPE-PAGES-R025.3")
 @pytest.mark.spec("PIPE-PAGES-R025.6")
 def test_packaging_role_closure_cli(tmp_path: Path) -> None:
     """The published dispatcher reaches the role closure gate with real files."""

@@ -58,6 +58,7 @@ KEPT = {
     "upgrade-test",
     "consumer-gate",
     "candidate-sandbox",
+    "role-closure",
     "gate-set",
     "pr-test-scope",
     "change-scope",
@@ -67,6 +68,9 @@ KEPT = {
     "source-path-portability",
     "prompt-format",
     "skill-grade",
+    "mutation-gaps",
+    "export-version",
+    "test-quality",
     "test-layout",
     "workflow-step-honesty",
 }
