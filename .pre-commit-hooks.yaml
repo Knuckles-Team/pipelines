@@ -413,6 +413,14 @@
   always_run: true
   require_serial: true
   stages: [manual]
+- id: role-closure
+  name: Role closure (install each supported role from its frozen closure and measure imports)
+  entry: pipelines-hook role-closure
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
 
 # --- spec lifecycle (SPEC-STATUS-LIFECYCLE.md) ------------------------------
 - id: spec-status
