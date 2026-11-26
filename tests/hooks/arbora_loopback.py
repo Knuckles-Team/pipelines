@@ -3,7 +3,7 @@
 It answers the ``POST /ops/<operation>`` shape of the arbora HTTP API with
 the ``{"ok": true, "result": ...}`` envelope. Recording operations append to
 ``records``; ``spec.status`` answers from the states recorded so far, as the
-engine does; ``source.tree`` and ``source.blob`` serve one directory.
+engine does; ``release.rows`` answers the rows of one repository from the published release plans; ``source.tree`` and ``source.blob`` serve one directory.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ class Loopback:
         self.calls: list[tuple[str, dict[str, Any], str]] = []
         self.verdicts: list[dict[str, Any]] = []
         self.states: list[dict[str, Any]] = []
+        self.release_plans: list[dict[str, Any]] = []
         self.endpoint = ""
 
     def answer(self, operation: str, params: dict[str, Any]) -> Any:
@@ -37,6 +38,15 @@ class Loopback:
         if operation == "source.spec_state":
             self.states.extend(params["records"])
             return {"recorded": len(params["records"])}
+        if operation == "source.release_graph":
+            self.release_plans.append(params["plan"])
+            return {"recorded": len(params["facts"]["inBundle"])}
+        if operation == "release.rows":
+            return {
+                "rows": [
+                    rid for plan in self.release_plans for rid in plan["rows_by_repo"].get(params["repository"], [])
+                ]
+            }
         if operation == "spec.status":
             return {"rows": [{"id": r["id"], "state": r["state"]} for r in self.states if r["kind"] == "row"]}
         if operation == "source.tree" and self.tree is not None:

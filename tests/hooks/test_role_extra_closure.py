@@ -1,7 +1,6 @@
-"""Role closure against the package owner's role export (PIPE-RELEASE-R005.7 to R005.12 are built but left unbound).
+"""Role closure against the package owner's role export (PIPE-RELEASE-R005.7 to R005.12).
 
-The owner export is not published yet (an open dependency on the meristem package-owner export), so the
-rows stay unbound: these tests build against the row shape and assert the refusal while the export is absent.
+Each test builds a fixture owner export and real wheels, and asserts the refusal while the export is absent.
 """
 
 from __future__ import annotations
@@ -98,6 +97,7 @@ def installing_prober(importable: dict[str, set[str]]):
     return probe
 
 
+# spec: PIPE-RELEASE-R005.7
 def test_role_extra_closure_model() -> None:
     manifest = parse_export(make_export())
     assert (manifest.repository, manifest.revision) == ("Knuckles-Team/example", "a" * 40)
@@ -114,6 +114,7 @@ def test_role_extra_closure_model() -> None:
         role_closure.check_role_set(manifest, ["base", "mcp", "ui"])
 
 
+# spec: PIPE-RELEASE-R005.8
 def test_role_extra_closure_behavior(workdir: Path) -> None:
     manifest = parse_export(make_export())
     base, mcp = manifest.roles
@@ -135,6 +136,7 @@ def _wheels(work: Path) -> Path:
     return work / "wheels"
 
 
+# spec: PIPE-RELEASE-R005.9
 def test_role_extra_closure_wiring() -> None:
     assert GATES["role-closure"] == "pipelines_hooks.release.role_closure"
     hooks = (ROOT / ".pre-commit-hooks.yaml").read_text(encoding="utf-8")
@@ -142,6 +144,7 @@ def test_role_extra_closure_wiring() -> None:
     assert callable(role_closure.main)
 
 
+# spec: PIPE-RELEASE-R005.10
 def test_role_extra_closure_refusal(workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
     _wheels(workdir)
     # The package owner has not published its export: exit 2, never a pass.
@@ -188,6 +191,7 @@ def _with(change):
     return roles
 
 
+# spec: PIPE-RELEASE-R005.11
 def test_role_extra_closure_evidence(workdir: Path) -> None:
     _wheels(workdir)
     manifest = parse_export(make_export())
@@ -205,6 +209,7 @@ def test_role_extra_closure_evidence(workdir: Path) -> None:
     assert not any(item.startswith("base/") for item in report["limitations"])
 
 
+# spec: PIPE-RELEASE-R005.12
 def test_role_extra_closure_cli(workdir: Path) -> None:
     for name, modules in (("medulla", ["medulla_pkg"]), ("shared-dep", ["shared_dep"]), ("mcp-extra", ["mcp_extra"])):
         make_wheel(workdir / "wheels", name, modules)

@@ -1,53 +1,51 @@
-"""The published plan reaches the engine: refusal while arbora does not serve the release graph (PIPE-RELEASE-R025.7).
-
-Row R025.7 stays unbound: it needs an arbora ``source.*`` operation that ingests the release graph, and no served
-operation does that yet (see the gap note). This test holds the unavailable state against a loopback endpoint that
-answers like arbora does for an operation it does not serve.
-"""
+"""The release plan reaches the engine through a served endpoint (PIPE-RELEASE-R025.7)."""
 
 from __future__ import annotations
 
 import json
 import sys
-import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from urllib.error import HTTPError
+from unittest import mock
 
 import pytest
 
 ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 
-from scripts import release_plan as rp  # noqa: E402
+from pipelines_hooks.verdict_publish import post_operation  # noqa: E402
 from scripts import release_scope as rs  # noqa: E402
+from tests.hooks.arbora_loopback import Loopback, serving  # noqa: E402
 from tests.test_release_plan import two_project_rows  # noqa: E402
 
 
-class _Refusing(BaseHTTPRequestHandler):
-    seen: list[str] = []
-
-    def do_POST(self) -> None:  # noqa: N802
-        body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        type(self).seen.append(body["op"])
-        self.send_response(404)
-        self.end_headers()
-        self.wfile.write(b'{"code": "OPERATION_UNKNOWN"}')
-
-    def log_message(self, *args: object) -> None:
-        return
-
-
-def test_publish_to_an_endpoint_that_does_not_serve_the_release_graph_is_refused() -> None:
+# spec: PIPE-RELEASE-R025.7
+def test_published_plan_answers_rows_per_repository_through_ask(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     rows = two_project_rows()
-    plan = rp.render_plan(rs.manifest("P1", ["Q-B-R001"], rows), rows)
-    server = HTTPServer(("127.0.0.1", 0), _Refusing)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        with pytest.raises(HTTPError) as refused:
-            rp.publish_plan(rp.facts_of(plan, rows), plan, f"http://127.0.0.1:{server.server_port}/ops")
-    finally:
-        server.shutdown()
-        thread.join()
-    assert refused.value.code == 404 and _Refusing.seen == [rp.OPERATION]
+    releases = tmp_path / "releases"
+    releases.mkdir()
+    (releases / "P1.yml").write_text(json.dumps(rs.manifest("P1", ["Q-B-R001"], rows)))
+    with serving(Loopback()) as engine, mock.patch.object(rs, "all_rows", return_value=rows):
+        code = rs.main(
+            [
+                "--workspace",
+                str(tmp_path),
+                "--releases",
+                str(releases),
+                "--plan",
+                "P1",
+                "--publish",
+                "--endpoint",
+                engine.endpoint,
+            ]
+        )
+        engine_rows = post_operation(engine.endpoint, "", "release.rows", {"repository": "engine"})
+        door_rows = post_operation(engine.endpoint, "", "release.rows", {"repository": "door"})
+        unknown = post_operation(engine.endpoint, "", "release.rows", {"repository": "absent"})
+    assert code == 0
+    assert "published P1" in capsys.readouterr().err
+    assert [op for op, _, _ in engine.calls][0] == "source.release_graph"
+    assert engine_rows == {"rows": ["P-A-R001", "P-A-R002"]}
+    assert door_rows == {"rows": ["Q-B-R001"]}
+    assert unknown == {"rows": []}
