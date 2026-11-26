@@ -8,18 +8,44 @@ VERIFIED (PIPE-PAGES-R044).
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 UNSCHEDULED = "unscheduled"
 NOT_RUN = "not run"
 RUNS_FILE = "scenario-runs.json"
+PHASE_RE = re.compile(r"P[1-5]")
+MANIFEST_DIR = "releases"
+PASSED = "passed"
+METRICS = ("provenance_coverage", "conflict_rate", "contradictions", "decay_events")
 
 
-def load_manifests(directory: Path) -> list[dict]:
-    """Every ``*.yml`` manifest (JSON syntax) in the directory, ordered by release ID."""
+class ReleaseManifestInvalid(Exception):
+    """A release manifest that cannot be read or names a phase outside P1 to P5 (``release-manifest-invalid``)."""
+
+    code = "release-manifest-invalid"
+
+
+def load_manifests(directory: Path, *, required: bool = False) -> list[dict]:
+    """Every ``*.yml`` manifest (JSON syntax) in the directory, ordered by release ID.
+
+    A missing directory is an empty list, or an error when ``required`` (a published build must carry its bundles).
+    A manifest that does not parse or names a malformed phase raises ``ReleaseManifestInvalid``.
+    """
     if not directory.is_dir():
+        if required:
+            raise ReleaseManifestInvalid(f"release manifest directory {directory.name}/ is missing")
         return []
-    return [json.loads(p.read_text()) for p in sorted(directory.glob("*.yml"))]
+    out = []
+    for path in sorted(directory.glob("*.yml")):
+        try:
+            doc = json.loads(path.read_text())
+        except ValueError as exc:
+            raise ReleaseManifestInvalid(f"{path.name}: not readable: {exc}") from exc
+        if not isinstance(doc, dict) or not PHASE_RE.fullmatch(str(doc.get("phase", ""))):
+            raise ReleaseManifestInvalid(f"{path.name}: phase must be one of P1 to P5")
+        out.append(doc)
+    return out
 
 
 def load_runs(directory: Path) -> dict[str, dict]:
@@ -47,11 +73,40 @@ def row_releases(manifests: list[dict], rows: list[dict]) -> dict[str, str]:
     return out
 
 
-def release_view(manifests: list[dict], rows: list[dict], runs: dict[str, dict] | None = None) -> dict:
-    """The release block embedded in the page: one entry per release, plus the count of unscheduled rows."""
+def part_progress(manifests: list[dict], rows: list[dict], node_of: dict[str, str]) -> dict[str, list[dict]]:
+    """Release ID -> ``[{node, rows, verified}]``: the scoped rows each part owns, ordered by node ID."""
+    by_id = {r["id"]: r for r in rows}
+    out: dict[str, dict[str, dict]] = {doc["id"]: {} for doc in manifests}
+    for rid, rel in row_releases(manifests, rows).items():
+        node = node_of.get(rid)
+        if node is None:
+            continue
+        entry = out[rel].setdefault(node, {"node": node, "rows": 0, "verified": 0})
+        entry["rows"] += 1
+        entry["verified"] += by_id[rid]["status"] == "VERIFIED"
+    return {rel: [parts[k] for k in sorted(parts)] for rel, parts in out.items()}
+
+
+def engine_metrics(runs: dict[str, dict]) -> dict:
+    """The four engine metrics of the latest scenario runs, one value per metric or ``None`` when no run reports it."""
+    out: dict = {}
+    for name in METRICS:
+        values = {p: run["metrics"][name] for p, run in sorted(runs.items()) if name in (run.get("metrics") or {})}
+        out[name] = values
+    return out
+
+
+def release_view(
+    manifests: list[dict],
+    rows: list[dict],
+    runs: dict[str, dict] | None = None,
+    node_of: dict[str, str] | None = None,
+) -> dict:
+    """The release block embedded in the page: one entry per release, the unscheduled count and the engine metrics."""
     runs = runs or {}
     by_id = {r["id"]: r for r in rows}
     owner = row_releases(manifests, rows)
+    progress = part_progress(manifests, rows, node_of or {})
     releases = []
     for doc in manifests:
         scoped = [by_id[rid] for rid, rel in owner.items() if rel == doc["id"]]
@@ -73,7 +128,13 @@ def release_view(manifests: list[dict], rows: list[dict], runs: dict[str, dict] 
                 "rows": len(scoped),
                 "verified": verified,
                 "share": round(100 * verified / len(scoped)) if scoped else 0,
+                "manifest": f"{MANIFEST_DIR}/{doc['id']}.yml",
+                "progress": progress[doc["id"]],
                 "repos": [{**e, "specs": sorted(e["specs"])} for _, e in sorted(repos.items())],
             }
         )
-    return {"releases": releases, "unscheduled": sum(1 for rid in by_id if rid not in owner)}
+    return {
+        "releases": releases,
+        "unscheduled": sum(1 for rid in by_id if rid not in owner),
+        "metrics": engine_metrics(runs),
+    }

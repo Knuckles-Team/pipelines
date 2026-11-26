@@ -14,8 +14,10 @@ import json
 import posixpath
 import re
 import shutil
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from .sdd import TASK_RE, open_questions
 from .sdd import slug as anchor_slug
 
 OWNER = "Knuckles-Team"
@@ -332,6 +334,87 @@ def matching_test_lines(test_spec: str, row_id: str) -> list[str]:
     return found[:TEST_LINES_MAX]
 
 
+EXCERPT_MAX = 1200
+EXCERPT_KINDS = ("spec", "plan", "test-spec", "checklists")
+
+
+def _id_pattern(row_id: str) -> re.Pattern:
+    return re.compile(r"(?<![\w.\-])" + re.escape(row_id) + r"(?![\w\-]|\.\d)")
+
+
+@dataclass
+class RowDrawer:
+    """What the row drawer shows for one row (PIPE-PAGES-R053.1)."""
+
+    excerpts: dict[str, str] = field(default_factory=dict)
+    none: list[str] = field(default_factory=list)
+    tasks: list[dict] = field(default_factory=list)
+    progress: list[int] = field(default_factory=lambda: [0, 0])
+    checklist: list[dict] = field(default_factory=list)
+    unblocks: list[str] = field(default_factory=list)
+    cqs: list[str] = field(default_factory=list)
+    priority: int | float | None = None
+    questions: list[dict] = field(default_factory=list)
+
+
+def _task_lines(markdown: str, pattern: re.Pattern) -> list[dict]:
+    """Checkbox lines whose full text names the row, each cut at 240 characters."""
+    return [
+        {"done": m.group(1) != " ", "text": m.group(2).strip()[:240]}
+        for m in TASK_RE.finditer(markdown)
+        if pattern.search(m.group(2))
+    ]
+
+
+def _fit(paragraphs: list[str], ctx: Ctx) -> str:
+    """Render the paragraphs, dropping from the end (then cutting the first) until the HTML fits EXCERPT_MAX."""
+    keep = list(paragraphs)
+    while keep:
+        markup = render_markdown("\n\n".join(keep), ctx)
+        if len(markup) <= EXCERPT_MAX:
+            return markup
+        if len(keep) == 1:
+            keep[0] = keep[0][: max(1, len(keep[0]) // 2)]
+        else:
+            keep.pop()
+    return ""
+
+
+def row_excerpts(docs: dict[str, str], row_id: str, ctx: Ctx) -> tuple[dict[str, str], list[str]]:
+    """Return ``(excerpts, none)``: per document kind the HTML of the paragraphs that name the row, and the kinds without one."""
+    pattern = _id_pattern(row_id)
+    out: dict[str, str] = {}
+    for kind in EXCERPT_KINDS:
+        names = sorted(n for n in docs if n == f"{kind}.md" or n.startswith(kind + "/"))
+        paras = [
+            p.strip()
+            for n in names
+            for p in re.split(r"\n\s*\n", docs[n].replace("\r\n", "\n"))
+            if p.strip() and pattern.search(p)
+        ]
+        out[kind] = _fit(paras, ctx)
+    return out, [k for k, v in out.items() if not v]
+
+
+def row_drawer(
+    docs: dict[str, str], row_id: str, ctx: Ctx, delivery: dict | None, files: set[str], family: str
+) -> dict:
+    """Return the drawer record of one row as a plain dict."""
+    delivery = delivery or {}
+    pattern = _id_pattern(row_id)
+    drawer = RowDrawer()
+    drawer.excerpts, drawer.none = row_excerpts(docs, row_id, ctx)
+    drawer.tasks = _task_lines(docs.get("tasks.md", ""), pattern)
+    drawer.progress = [sum(1 for t in drawer.tasks if t["done"]), len(drawer.tasks)]
+    for name in sorted(n for n in docs if n.startswith("checklists/")):
+        drawer.checklist += _task_lines(docs[name], pattern)
+    drawer.unblocks = list(delivery.get("dependents", {}).get(row_id, []))
+    score = delivery.get("scores", {}).get(row_id, {})
+    drawer.cqs, drawer.priority = list(score.get("cqs", [])), score.get("priority")
+    drawer.questions = [q for q in open_questions(docs, files, family) if q["row"] == row_id]
+    return asdict(drawer)
+
+
 def evidence(slug: str, row: dict) -> dict:
     """Return a row's delivery evidence with each commit and test line linked on the default branch."""
     commits = [
@@ -429,7 +512,15 @@ def constitution_detail(repo: str, slug: str, text: str) -> dict:
     return {"v": 1, "repo": repo, "family": "_constitution", "files": [], "rows": {}, "docs": [entry]}
 
 
-def family_detail(repo: str, slug: str, family: str, rows: list[dict], docs: dict[str, str], files: set[str]) -> dict:
+def family_detail(
+    repo: str,
+    slug: str,
+    family: str,
+    rows: list[dict],
+    docs: dict[str, str],
+    files: set[str],
+    delivery: dict | None = None,
+) -> dict:
     """Return the JSON document of one family: per-row full text and evidence plus the design documents."""
     ctx = Ctx(slug, family)
     test_spec = docs.get("test-spec.md", "")
@@ -437,6 +528,7 @@ def family_detail(repo: str, slug: str, family: str, rows: list[dict], docs: dic
     for row in rows:
         req, acc = row_parts(row.get("text", ""))
         entry = {"status": row.get("status", ""), "req": render_markdown(req, ctx), **evidence(slug, row)}
+        entry["drawer"] = row_drawer(docs, row["id"], ctx, delivery, files, family)
         if acc.strip():
             entry["acc"] = render_markdown(acc, ctx)
         tests = matching_test_lines(test_spec, row["id"])
@@ -458,6 +550,7 @@ def family_detail(repo: str, slug: str, family: str, rows: list[dict], docs: dic
         "family": family,
         "files": [{"name": n, "url": _gh(slug, "blob", base + n)} for n in (names or ["requirements.md"])],
         "rows": out_rows,
+        "questions": open_questions(docs, files, family),
         "docs": [
             doc_entry(slug, base, n, t, ctx)
             for n, t in sorted(docs.items(), key=lambda kv: (kv[0] != "plan.md", kv[0] == "test-spec.md", kv[0]))
@@ -472,7 +565,7 @@ def write_json(path: Path, doc: dict) -> Path:
     return path
 
 
-def write_details(page_dir: Path, snaps: list, extra: dict | None = None) -> list[Path]:
+def write_details(page_dir: Path, snaps: list, extra: dict | None = None, delivery: dict | None = None) -> list[Path]:
     """Write one JSON file per repository family and constitution under ``<page_dir>/spec-details``.
 
     An earlier build's files are replaced. ``extra`` (the lazy search extras) is written to ``search-extra.json``.
@@ -486,7 +579,7 @@ def write_details(page_dir: Path, snaps: list, extra: dict | None = None) -> lis
         for row in snap.rows:
             by_family.setdefault(row["family"], []).append(row)
         for family, rows in by_family.items():
-            doc = family_detail(snap.repo, snap.slug, family, rows, snap.docs.get(family, {}), snap.files)
+            doc = family_detail(snap.repo, snap.slug, family, rows, snap.docs.get(family, {}), snap.files, delivery)
             written.append(write_json(page_dir / detail_path(snap.repo, family), doc))
         if snap.constitution:
             doc = constitution_detail(snap.repo, snap.slug, snap.constitution)
