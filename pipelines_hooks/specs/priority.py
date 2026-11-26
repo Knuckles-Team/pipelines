@@ -66,7 +66,7 @@ def _tidy(value: float) -> int | float:
     return int(value) if value == int(value) else round(value, 1)
 
 
-def _dependents(nodes: dict[str, Node]) -> dict[str, set[str]]:
+def dependents(nodes: dict[str, Node]) -> dict[str, set[str]]:
     reverse: dict[str, set[str]] = defaultdict(set)
     for node in nodes.values():
         for dep in node.depends_on:
@@ -109,7 +109,7 @@ def score(nodes: dict[str, Node]) -> dict[str, dict[str, Any]]:
 
     ``cqs`` lists the CQ rows (open or done) that reach the row through Depends-on.
     """
-    reverse = _dependents(nodes)
+    reverse = dependents(nodes)
     out: dict[str, dict[str, Any]] = {}
     for rid, node in nodes.items():
         if not is_open(node):
@@ -172,7 +172,7 @@ def bundles(nodes: dict[str, Node], priorities: dict[str, dict[str, Any]]) -> li
     groups: dict[str, list[str]] = defaultdict(list)
     for rid in sorted(linked):
         groups[find(rid)].append(rid)
-    reverse = _dependents(live)
+    reverse = dependents(live)
     out = []
     for members in groups.values():
         inside = set(members)

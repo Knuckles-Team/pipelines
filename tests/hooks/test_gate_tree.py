@@ -20,7 +20,7 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.core.settings import process_environment
 from pipelines_hooks.gate_runner import evidence_digest
-from pipelines_hooks.source_provider import DiskProvider
+from pipelines_hooks.source_provider import DiskProvider, blob_digest
 
 CLEAN = {
     "README.md": "# Fixture\n",
@@ -169,3 +169,41 @@ def test_a_mutated_blob_fails_its_declared_digest(tmp_path) -> None:
     (tree / "pkg" / "config.py").write_text("changed\n", encoding="utf-8")
     with pytest.raises(CannotRun, match="declared digest"):
         provider.read("pkg/config.py")
+
+
+def _receipt(files: dict[str, str]) -> dict[str, str]:
+    return {path: blob_digest(text.encode("utf-8")) for path, text in files.items()}
+
+
+# spec: PIPE-GATES-R084
+def test_content_digest_detects_a_change_where_git_diff_reports_none(tmp_path) -> None:
+    from pipelines_hooks.core.gitenv import EXTRACTED_TREE_MARKER, run_git
+    from pipelines_hooks.source_provider import verify_tree
+
+    tree = tmp_path / "tree"
+    _write_tree(tree, CLEAN)
+    receipt = _receipt(CLEAN)
+    (tree / EXTRACTED_TREE_MARKER).write_text("{}", encoding="utf-8")
+    assert verify_tree(DiskProvider(tree), receipt) == []
+    (tree / "pkg" / "config.py").write_text("setting = 'other'\n", encoding="utf-8")
+    (tree / "extra.py").write_text("x = 1\n", encoding="utf-8")
+    (tree / "README.md").unlink()
+    findings = verify_tree(DiskProvider(tree), receipt)
+    assert any(f.startswith("pkg/config.py: digest differs") for f in findings)
+    assert any(f.startswith("extra.py: undeclared") for f in findings)
+    assert any(f.startswith("README.md: missing") for f in findings)
+    # Git has no working copy to ask here: the call is refused, never answered "no change".
+    with pytest.raises(CannotRun, match="extracted tree"):
+        run_git(tree, ("diff", "--stat"))
+    with pytest.raises(CannotRun, match="extracted tree"):
+        run_git(tree / "pkg", ("status", "--short"))
+
+
+# spec: PIPE-GATES-R084
+def test_a_working_copy_still_runs_git_beside_an_extracted_marker(tmp_path) -> None:
+    from pipelines_hooks.core.gitenv import EXTRACTED_TREE_MARKER, run_git
+
+    checkout = tmp_path / "checkout"
+    _checkout(checkout, CLEAN)
+    (checkout / EXTRACTED_TREE_MARKER).write_text("{}", encoding="utf-8")
+    assert run_git(checkout, ("status", "--short")).returncode == 0

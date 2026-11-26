@@ -68,6 +68,7 @@ def test_sync_rejects_path_escape_and_check_does_not_create_files(tmp_path: Path
     assert not (tmp_path / "pages").exists()
 
 
+@pytest.mark.spec("PIPE-PAGES-R003")
 def test_theme_components_use_accessible_native_controls() -> None:
     template = (ROOT / "templates/mkdocs-theme/overrides/main.html").read_text(encoding="utf-8")
     css = (ROOT / "templates/mkdocs-theme/extra.css").read_text(encoding="utf-8")
