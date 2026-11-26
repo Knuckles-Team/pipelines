@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from pipelines_hooks.cli import GROUPS
+from tests.spec_group_history import HISTORIC_SPEC_GROUP
 
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r102.json"
@@ -107,7 +107,7 @@ def test_provider_mapping_and_baseline_status_are_immutable() -> None:
     }
     assert provider["spec_group"]["aggregate_mapping_accepted"] is True
     assert provider["spec_group"]["aggregate_mapping_proven"] is True
-    assert provider["spec_group"]["members"] == list(GROUPS["spec"])
+    assert provider["spec_group"]["members"] == HISTORIC_SPEC_GROUP
     assert set(provider["spec_group"]["members"]) == {
         "spec-standard",
         "plan-conformance",

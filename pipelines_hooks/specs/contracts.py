@@ -127,7 +127,8 @@ def check_dangling_and_duplicates(contracts: list[Contract], owner_rows: dict[st
     ``owner_rows`` maps a row-ID prefix to the IDs its owner defines; a prefix with no entry is an
     unreachable owner and yields an advisory finding.
     """
-    out, seen = [], {}
+    out: list[str] = []
+    seen: dict[tuple[str, str], str] = {}
     for c in contracts:
         for repo, row in (*c.provider, *c.consumer):
             rows = owner_rows.get(_prefix(row))

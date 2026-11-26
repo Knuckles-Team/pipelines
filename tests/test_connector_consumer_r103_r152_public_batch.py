@@ -19,6 +19,7 @@ import pytest
 import yaml
 
 from pipelines_hooks.cli import GROUPS
+from tests.spec_group_history import HISTORIC_SPEC_GROUP
 from scripts.spec_dashboard_sources import read_records
 
 
@@ -165,7 +166,7 @@ def test_source_and_status_snapshots_are_immutable_and_historical_leaves_remain(
     assert evidence["provider"]["sha"] == EXPECTED_PROVIDER
     assert evidence["provider"]["canonical_template"]["rev"] == "main"
     assert set(evidence["provider"]["canonical_template"]["hooks"]) == EXPECTED_HOOKS
-    assert evidence["provider"]["spec_group"] == list(GROUPS["spec"])
+    assert evidence["provider"]["spec_group"] == HISTORIC_SPEC_GROUP
     for name, row in evidence["repos"].items():
         assert row["sha"] == row["candidate_sha"]
         for relative, source in row["source_files"].items():

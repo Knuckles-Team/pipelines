@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from pipelines_hooks.cli import GROUPS
+from tests.spec_group_history import HISTORIC_SPEC_GROUP
 from scripts.spec_dashboard_sources import read_records
 
 
@@ -82,7 +83,7 @@ def test_consumer_status_sources_are_readable(tmp_path: Path):
     provider = evidence["provider"]
     assert provider["sha"] == EXPECTED_PROVIDER
     assert provider["spec_group_source"] == "pipelines_hooks/cli.py:71-74"
-    assert provider["spec_group"] == list(GROUPS["spec"])
+    assert provider["spec_group"] == HISTORIC_SPEC_GROUP
     for name, row in evidence["repos"].items():
         spec_id = f"{row['row']}.1"
         assert row["strict_leaves"][spec_id] is True, name
@@ -119,7 +120,7 @@ def test_consumer_aggregate_hooks_match_canonical_template():
     expected = provider["canonical_template"]
     assert expected["rev"] == "main"
     assert set(expected["hooks"]) == EXPECTED_HOOKS
-    assert provider["spec_group"] == list(GROUPS["spec"])
+    assert provider["spec_group"] == HISTORIC_SPEC_GROUP
     assert EXPECTED_SPEC_LEAVES <= set(GROUPS["spec"])
     qualified = {f"{row['row']}.2" for row in evidence["repos"].values() if row["strict_leaves"].get(f"{row['row']}.2")}
     assert qualified == READY_SPEC_2

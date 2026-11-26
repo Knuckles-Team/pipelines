@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 
 from pipelines_hooks.cli import GROUPS
+from tests.spec_group_history import HISTORIC_SPEC_GROUP
 from scripts.spec_dashboard_sources import read_records
 
 
@@ -60,7 +61,7 @@ def test_consumer_status_sources_are_readable(tmp_path: Path):
     evidence = _evidence()
     provider = evidence["provider"]
     assert provider["sha"] == EXPECTED_PROVIDER
-    assert provider["spec_group"] == list(GROUPS["spec"])
+    assert provider["spec_group"] == HISTORIC_SPEC_GROUP
     assert provider["spec_group_source"] == "pipelines_hooks/cli.py:71-74"
     for name, row in evidence["repos"].items():
         spec_id = f"{row['row']}.1"

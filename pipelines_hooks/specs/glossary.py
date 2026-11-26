@@ -57,7 +57,8 @@ def read_glossary(path: Path) -> tuple[list[tuple[int, str, str, tuple[str, ...]
         text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         raise CannotRun(f"cannot read the glossary {path}: {exc}") from exc
-    name, entries, found, seen = path.name, [], [], {}
+    name, entries, found = path.name, [], []
+    seen: dict[str, int] = {}
     for number, line in enumerate(text.splitlines(), 1):
         cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.strip().startswith("|") else []
         if not cells or cells[0].lower() == "term" or set("".join(cells)) <= set("-: "):
@@ -81,13 +82,14 @@ def synonym_findings(spec: str, text: str, entries, base: int = 0) -> list[str]:
     """A defined-term synonym used in a row line, outside code spans."""
     out = []
     for number, line in enumerate(text.splitlines(), 1):
-        if not ROW_RE.match(line):
+        match = ROW_RE.match(line)
+        if not match:
             continue
         prose = _CODE.sub(" ", line)
+        row = match.group(1)
         for _, term, _, synonyms in entries:
             for word in synonyms:
                 if re.search(rf"(?<![\w-]){re.escape(word)}(?![\w-])", prose, re.I):
-                    row = ROW_RE.match(line).group(1)
                     out.append(f"{spec}:{number}: row {row} uses '{word}', a synonym of the defined term '{term}'")
     return out
 

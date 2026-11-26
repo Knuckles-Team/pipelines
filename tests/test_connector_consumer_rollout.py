@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from pipelines_hooks.cli import GROUPS
+from tests.spec_group_history import HISTORIC_SPEC_GROUP
 from scripts.spec_dashboard_sources import read_records
 
 
@@ -89,7 +90,7 @@ def test_consumer_aggregate_hooks_match_canonical_template():
     assert expected["rev"] == "main"
     assert set(expected["hooks"]) == EXPECTED_HOOKS
     assert evidence["provider"]["spec_group_source"] == "pipelines_hooks/cli.py:73"
-    assert evidence["provider"]["spec_group"] == list(GROUPS["spec"])
+    assert evidence["provider"]["spec_group"] == HISTORIC_SPEC_GROUP
     assert set(evidence["provider"]["spec_leaf_hooks"]) <= set(GROUPS["spec"])
     for name, row in evidence["repos"].items():
         hooks = row["precommit"]

@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from pipelines_hooks.cli import GROUPS
+from tests.spec_group_history import HISTORIC_SPEC_GROUP
 
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r166.json"
@@ -106,7 +106,7 @@ def test_provider_mapping_and_baseline_status_are_immutable() -> None:
     assert set(provider["canonical_template"]["hooks"]) == EXPECTED_HOOKS
     assert provider["spec_group"]["aggregate_mapping_accepted"] is True
     assert provider["spec_group"]["aggregate_mapping_proven"] is True
-    assert provider["spec_group"]["members"] == list(GROUPS["spec"])
+    assert provider["spec_group"]["members"] == HISTORIC_SPEC_GROUP
     assert set(provider["spec_group"]["members"]) == EXPECTED_SPEC_MEMBERS
     baseline = {row["id"]: row for row in provider_status["requirements"]}
     assert evidence["central_requirements"] == {
@@ -155,7 +155,7 @@ def test_aggregate_hook_and_pages_source_contracts() -> None:
     hooks = row["precommit"]
     assert hooks["ready"] is True
     assert hooks["aggregate_mapping_accepted"] is True
-    assert hooks["aggregate_mapping"] == list(GROUPS["spec"])
+    assert hooks["aggregate_mapping"] == HISTORIC_SPEC_GROUP
     assert hooks["aggregate_spec_present"] is True
     assert hooks["missing_template_hooks"] == []
     assert hooks["validate_config"]["rc"] == 0
