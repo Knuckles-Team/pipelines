@@ -11,7 +11,6 @@ import json
 import sys
 from collections.abc import Callable
 from pathlib import Path
-from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -56,20 +55,20 @@ def facts_of(plan: dict, rows: dict[str, dict]) -> dict:
     }
 
 
-def _post(url: str, body: dict) -> int:
-    request = Request(
-        url, data=json.dumps(body, sort_keys=True).encode(), headers={"Content-Type": "application/json"}, method="POST"
-    )
-    with urlopen(request, timeout=30) as response:  # noqa: S310 - the endpoint is operator configuration
-        return response.status
+def _post(endpoint: str, operation: str, params: dict) -> object:
+    """Call one served operation through the shared arbora client; ``OSError`` on any refusal."""
+    from pipelines_hooks.core.settings import setting
+    from pipelines_hooks.verdict_publish import post_operation
+
+    return post_operation(endpoint, setting("PIPELINES_ARBORA_TOKEN"), operation, params)
 
 
-def publish_plan(facts: dict, plan: dict, endpoint: str, post: Callable[[str, dict], int] = _post) -> str:
-    """Post the facts and the plan. With no endpoint it skips and says so; a refusal raises."""
+def publish_plan(facts: dict, plan: dict, endpoint: str, post: Callable[[str, str, dict], object] = _post) -> str:
+    """Post the facts and the plan as the served ``source.release_graph`` operation; a refusal raises ``OSError``."""
     if not endpoint:
         return "publish skipped: no endpoint set"
-    status = post(endpoint, {"op": OPERATION, "params": {"facts": facts, "plan": plan}})
-    return f"published {plan['release']} (HTTP {status})"
+    post(endpoint, OPERATION, {"facts": facts, "plan": plan})
+    return f"published {plan['release']}"
 
 
 def main(argv: list[str] | None = None) -> int:
