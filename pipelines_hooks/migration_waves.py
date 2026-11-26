@@ -1,4 +1,4 @@
-"""Evaluate the ordered changeset migration waves (PIPE-GATES-R006.1-.4).
+"""Evaluate the ordered changeset migration waves (PIPE-GATES-R006.1-.7).
 
 The evaluator consumes a receipt ledger, rather than treating a status flag as
 evidence.  A wave-one receipt contains twenty ``source.land`` changesets, and
@@ -20,8 +20,14 @@ The ledger shape is deliberately small and serialisable::
         "connectors": [{"name": "small", "wave": 2, "source_lines": 42,
                         ...wave-one fields..., "release_tree_hash": "..."}],
         "repositories": [{"name": "pipelines", "wave": 4,
-                           ...wave-one fields...}]
+                           ...wave-one fields...}],
+        "restores": [{"source": "git_mirror", "result": "passed"}]
     }
+
+Wave 6 adds a ``release_deploy`` receipt to its repository record
+(``{"source": "changeset_tree", "tree_hash": ...}``; the hash is one of the
+repository's changeset tree hashes). Wave 7 needs one passed ``restores``
+receipt before it starts and a second to exit.
 
 The module does not fetch repositories or infer historical migration claims;
 callers must supply the receipts produced by the migration system.
@@ -35,7 +41,7 @@ from dataclasses import dataclass
 
 from pipelines_hooks.core.errors import CannotRun
 
-_WAVES = frozenset({"1", "2", "3", "4"})
+_WAVES = frozenset({"1", "2", "3", "4", "5", "6", "7"})
 _CHANGESETS_PER_EXIT = 20
 _MIN_NO_DIVERGENCE_DAYS = 7
 _TREE_HASH = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})\Z")
@@ -54,6 +60,7 @@ _WAVE_ONE_ENTRY = frozenset(
     }
 )
 _WAVE_FOUR_REPOSITORIES = ("universal-skills", "pipelines", "Overstory", "Tuig", "Axil")
+_WAVE_FIVE_REPOSITORIES = ("scion-sdk", "meristem")
 
 
 @dataclass(frozen=True)
@@ -179,6 +186,58 @@ def _records(ledger: Mapping[str, object], key: str, findings: list[str]) -> lis
     return result
 
 
+def _named_repositories(
+    ledger: Mapping[str, object], wave: int, names: Sequence[str], findings: list[str]
+) -> list[Mapping[str, object]]:
+    """Each named repository has exactly one receipt of ``wave`` that meets the wave-one exit contract."""
+    repositories = [item for item in _records(ledger, "repositories", findings) if item.get("wave") == wave]
+    by_name: dict[str, list[Mapping[str, object]]] = {}
+    for item in repositories:
+        name = item.get("name")
+        if isinstance(name, str):
+            by_name.setdefault(name, []).append(item)
+    met: list[Mapping[str, object]] = []
+    for name in names:
+        rows = by_name.get(name, [])
+        if len(rows) != 1:
+            findings.append(f"wave {wave} exit: expected one receipt for {name!r}, got {len(rows)}")
+        for index, repository in enumerate(rows):
+            findings.extend(_wave_one_exit(repository, f"repositories[{name!r}][{index}]"))
+            met.append(repository)
+    return met
+
+
+def _release_deploy(repository: Mapping[str, object]) -> list[str]:
+    """One release deployed from a changeset tree: the receipt names one of the repository's own tree hashes."""
+    findings: list[str] = []
+    receipt = _mapping(repository.get("release_deploy"), "release_deploy", findings)
+    if receipt is None:
+        return findings
+    if receipt.get("source") != "changeset_tree":
+        findings.append("release_deploy.source: expected 'changeset_tree'")
+    tree_hash = _hash(receipt.get("tree_hash"), "release_deploy.tree_hash", findings)
+    changesets = repository.get("changesets")
+    known = (
+        {item.get("tree_hash") for item in changesets if isinstance(item, Mapping)}
+        if isinstance(changesets, list)
+        else set()
+    )
+    if tree_hash is not None and tree_hash not in known:
+        findings.append("release_deploy.tree_hash: not the tree hash of any receipted changeset")
+    return findings
+
+
+def _restores(ledger: Mapping[str, object], needed: int, label: str, findings: list[str]) -> None:
+    """At least ``needed`` passed restores of the engine source from the git mirror."""
+    passed = [
+        item
+        for item in _records(ledger, "restores", findings)
+        if item.get("source") == "git_mirror" and item.get("result") == "passed"
+    ]
+    if len(passed) < needed:
+        findings.append(f"{label}: expected {needed} passed restore(s) from the git mirror, got {len(passed)}")
+
+
 def _entry_result(ledger: Mapping[str, object], wave: str) -> list[str]:
     """Evaluate all preceding wave exits needed before ``wave`` can start."""
 
@@ -189,7 +248,7 @@ def _entry_result(ledger: Mapping[str, object], wave: str) -> list[str]:
 
 
 def evaluate_wave(wave: str, ledger: Mapping[str, object]) -> WaveResult:
-    """Evaluate one of the first four ordered migration waves.
+    """Evaluate one of the seven ordered migration waves.
 
     The result is a refusal when a prerequisite receipt is absent or any
     receipt contradicts the wave contract.  ``wave`` is a string because it
@@ -197,7 +256,7 @@ def evaluate_wave(wave: str, ledger: Mapping[str, object]) -> WaveResult:
     """
 
     if wave not in _WAVES:
-        raise CannotRun(f"migration waves: unsupported wave {wave!r}; supported waves are 1, 2, 3 and 4")
+        raise CannotRun(f"migration waves: unsupported wave {wave!r}; supported waves are 1 to 7")
     if not isinstance(ledger, Mapping):
         raise CannotRun("migration waves: ledger must be an object")
 
@@ -230,20 +289,21 @@ def evaluate_wave(wave: str, ledger: Mapping[str, object]) -> WaveResult:
             mirror_hash = _hash(connector.get("mirror_tree_hash"), f"{label}.mirror_tree_hash", findings)
             if release_hash is not None and mirror_hash is not None and release_hash != mirror_hash:
                 findings.append(f"{label}: release tree differs from mirror tree")
-    else:
+    elif wave == "4":
         _require_specs(ledger, {"PIPE-GATES-R003"}, "wave 4 entry", findings)
-        repositories = [item for item in _records(ledger, "repositories", findings) if item.get("wave") == 4]
-        by_name: dict[str, list[Mapping[str, object]]] = {}
-        for item in repositories:
-            name = item.get("name")
-            if isinstance(name, str):
-                by_name.setdefault(name, []).append(item)
-        for name in _WAVE_FOUR_REPOSITORIES:
-            rows = by_name.get(name, [])
-            if len(rows) != 1:
-                findings.append(f"wave 4 exit: expected one receipt for {name!r}, got {len(rows)}")
-            for index, repository in enumerate(rows):
-                findings.extend(_wave_one_exit(repository, f"repositories[{name!r}][{index}]"))
+        _named_repositories(ledger, 4, _WAVE_FOUR_REPOSITORIES, findings)
+    elif wave == "5":
+        _require_specs(ledger, {"SCION-SCM-R002", "MERISTEM-SCM-R001"}, "wave 5 entry", findings)
+        _named_repositories(ledger, 5, _WAVE_FIVE_REPOSITORIES, findings)
+    elif wave == "6":
+        _require_specs(ledger, {"ARBORA-OPS-R850", "ARBORA-OPS-R851"}, "wave 6 entry", findings)
+        for repository in _named_repositories(ledger, 6, ("arbora",), findings):
+            findings.extend(_release_deploy(repository))
+    else:
+        _require_specs(ledger, {"MEDULLA-SCM-R009"}, "wave 7 entry", findings)
+        _restores(ledger, 1, "wave 7 entry", findings)
+        _named_repositories(ledger, 7, ("medulla",), findings)
+        _restores(ledger, 2, "wave 7 exit", findings)
 
     return WaveResult(wave=wave, findings=tuple(findings))
 

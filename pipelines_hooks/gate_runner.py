@@ -22,8 +22,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
-from pipelines_hooks.core.settings import process_environment
+from pipelines_hooks.core.settings import process_environment, setting
 from pipelines_hooks.gate_sets import GateSets, load_gate_sets, published_sets
+from pipelines_hooks.source_provider import tree_digest
+from pipelines_hooks.verdict_publish import publish_verdict, target_from_environment
 
 #: One gate's execution: run it against ``source`` and report its exit
 #: status with the output it produced.
@@ -59,16 +61,30 @@ def evidence_digest(output: str) -> str:
     return "sha256:" + hashlib.sha256(output.encode("utf-8", "replace")).hexdigest()
 
 
-def run_gate_on(gate: str, source: Path, executor: Executor) -> GateVerdict:
-    """One gate through its binding, with the evidence captured and digested."""
+def run_gate_on(gate: str, source: Path, executor: Executor, *, input_digest: str | None = None) -> GateVerdict:
+    """One gate through its binding, with the evidence captured and digested.
+
+    The verdict then publishes to the engine (PIPE-GATES-R004.1) when the CI
+    environment names an arbora endpoint; a publish failure never changes it.
+    """
     started = time.monotonic()
     status, output = executor(source)
-    return GateVerdict(
+    verdict = GateVerdict(
         gate=gate,
         status=int(status),
         evidence_digest=evidence_digest(output),
         seconds=round(time.monotonic() - started, 3),
     )
+    target = target_from_environment()
+    publish_verdict(
+        verdict,
+        target.endpoint if target else "",
+        target.token if target else "",
+        repository=setting("GITHUB_REPOSITORY") or source.resolve().name,
+        revision=setting("GITHUB_SHA"),
+        input_digest=(input_digest or tree_digest(source)) if target else "",
+    )
+    return verdict
 
 
 def run_set(set_name: str, source: Path, executors: Mapping[str, Executor], sets: GateSets | None = None) -> GateSetRun:
@@ -84,7 +100,8 @@ def run_set(set_name: str, source: Path, executors: Mapping[str, Executor], sets
         raise CannotRun(
             f"gate-set: no execution binding for {', '.join(unbound)}; bind every gate of the set before it decides a landing"
         )
-    verdicts = [run_gate_on(gate, source, executors[gate]) for gate in gates]
+    digest = tree_digest(source) if target_from_environment() else None
+    verdicts = [run_gate_on(gate, source, executors[gate], input_digest=digest) for gate in gates]
     return GateSetRun(set_name=set_name, source=str(source), verdicts=tuple(verdicts))
 
 

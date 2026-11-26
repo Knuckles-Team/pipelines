@@ -24,9 +24,12 @@ from pathlib import Path
 
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root, run_git, sanitized_env
+from pipelines_hooks.core.settings import setting
 from pipelines_hooks.specs.bindings import test_bindings
 from pipelines_hooks.specs.git_log import checked_attributions
 from pipelines_hooks.specs.generator import freeze_legacy, generate, render
+from pipelines_hooks.states_publish import collect_states, publish_states
+from pipelines_hooks.verdict_publish import target_from_environment
 
 DEFAULT_HEAD = "HEAD"
 
@@ -109,6 +112,17 @@ def _pending_merge_context(root: Path) -> str | None:
     return result.stdout.strip()
 
 
+def _publish(root: Path, head: str, generated: dict[Path, dict]) -> None:
+    """Publish the computed states to the engine (PIPE-GATES-R004.4); never changes the verdict."""
+    target = target_from_environment()
+    if target is None:
+        publish_states([], "", "")
+        return
+    revision = git_text(root, ("rev-parse", "--verify", f"{head}^{{commit}}")).strip()
+    records = collect_states(generated, repository=setting("GITHUB_REPOSITORY") or root.name, revision=revision)
+    publish_states(records, target.endpoint, target.token)
+
+
 def main(argv: list[str]) -> int:
     arguments = _parse_args(argv)
     root = repo_root(arguments.root)
@@ -127,6 +141,7 @@ def main(argv: list[str]) -> int:
         for path, document in generated.items():
             path.write_text(render(document), encoding="utf-8")
     print(f"{root.name}: leaf rows {_leaf_tally(generated)}; {len(generated)} spec(s) computed")
+    _publish(root, head, generated)
     tracked = tracked_status_files(root)
     if tracked:
         print("FAIL: status.json is generated, never committed; untrack it (git rm --cached) and gitignore it:")

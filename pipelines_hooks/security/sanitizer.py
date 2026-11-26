@@ -16,7 +16,8 @@ from pathlib import Path
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import nul_split, run_git
 from pipelines_hooks.security.marker import is_exempt
-from pipelines_hooks.source_provider import DiskProvider, FileProvider
+from pipelines_hooks.core.settings import setting
+from pipelines_hooks.source_provider import DiskProvider, EngineTreeProvider, FileProvider
 from pipelines_hooks.security.sanitizer_rules import (
     ALLOWED_TXT_NAMES,
     EXCLUDED_DIRS,
@@ -143,8 +144,20 @@ def main(argv: list[str]) -> int:
         default=None,
         help="a tree source directory, read by path and blob digest with no checkout; wins over --root",
     )
+    parser.add_argument(
+        "--engine",
+        metavar="REPOSITORY@REF",
+        default=None,
+        help="an engine repository ref read through the arbora endpoint of the CI environment; no checkout at all",
+    )
     args = parser.parse_args(argv)
-    if args.tree is not None:
+    if args.engine is not None:
+        repository, _, ref = args.engine.partition("@")
+        if not repository or not ref:
+            raise CannotRun("security-sanitizer: --engine takes REPOSITORY@REF")
+        endpoint = setting("PIPELINES_ARBORA_ENDPOINT")
+        violations = scan_provider(EngineTreeProvider(endpoint, setting("PIPELINES_ARBORA_TOKEN"), repository, ref))
+    elif args.tree is not None:
         violations = scan_provider(DiskProvider(args.tree.resolve()))
     else:
         violations = scan_repository(args.root.resolve())

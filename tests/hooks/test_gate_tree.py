@@ -20,7 +20,9 @@ from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import sanitized_env
 from pipelines_hooks.core.settings import process_environment
 from pipelines_hooks.gate_runner import evidence_digest
-from pipelines_hooks.source_provider import DiskProvider
+from pipelines_hooks.source_provider import DiskProvider, EngineTreeProvider
+
+from tests.hooks.arbora_loopback import Loopback, serving
 
 CLEAN = {
     "README.md": "# Fixture\n",
@@ -76,6 +78,7 @@ def _run_sanitizer(args: list[str]) -> tuple[int, str]:
     return result.returncode, result.stdout + result.stderr
 
 
+@pytest.mark.spec("PIPE-GATES-R003")
 def test_the_tree_and_checkout_runs_agree_on_a_clean_tree(tmp_path) -> None:
     tree, checkout = tmp_path / "tree", tmp_path / "checkout"
     _write_tree(tree, CLEAN)
@@ -98,6 +101,7 @@ def test_the_tree_and_checkout_runs_agree_on_a_dirty_tree(tmp_path) -> None:
     assert "AWS access key" in tree_output
 
 
+@pytest.mark.spec("PIPE-GATES-R003")
 def test_the_tree_run_needs_no_checkout_at_all(tmp_path) -> None:
     tree = tmp_path / "tree"
     _write_tree(tree, CLEAN)
@@ -155,6 +159,7 @@ def test_reading_a_path_returns_the_declared_blob(tmp_path) -> None:
     assert DiskProvider(tree).read("pkg/config.py") == CLEAN["pkg/config.py"].encode("utf-8")
 
 
+@pytest.mark.spec("PIPE-GATES-R003")
 def test_reading_an_undeclared_path_fails_closed(tmp_path) -> None:
     tree = tmp_path / "tree"
     _write_tree(tree, CLEAN)
@@ -169,3 +174,54 @@ def test_a_mutated_blob_fails_its_declared_digest(tmp_path) -> None:
     (tree / "pkg" / "config.py").write_text("changed\n", encoding="utf-8")
     with pytest.raises(CannotRun, match="declared digest"):
         provider.read("pkg/config.py")
+
+
+def _run_engine_sanitizer(endpoint: str, ref: str = "demo@main") -> tuple[int, str]:
+    environment = process_environment()
+    environment["PIPELINES_ARBORA_ENDPOINT"] = endpoint
+    result = subprocess.run(
+        [sys.executable, "-m", "pipelines_hooks", "security-sanitizer", "--engine", ref],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode, result.stdout + result.stderr
+
+
+@pytest.mark.spec("PIPE-GATES-R003")
+@pytest.mark.parametrize("files", [CLEAN, DIRTY], ids=["clean", "dirty"])
+def test_the_engine_tree_and_checkout_runs_agree(tmp_path, files) -> None:
+    tree, checkout = tmp_path / "tree", tmp_path / "checkout"
+    _write_tree(tree, files)
+    _checkout(checkout, files)
+    with serving(Loopback(tree)) as engine:
+        engine_status, engine_output = _run_engine_sanitizer(engine.endpoint)
+    checkout_status, checkout_output = _run_sanitizer(["--root", str(checkout)])
+    assert engine_status == checkout_status == (0 if files is CLEAN else 1)
+    assert evidence_digest(engine_output) == evidence_digest(checkout_output)
+    assert not (tmp_path / "tree" / ".git").exists()
+    assert {call[0] for call in engine.calls} == {"source.tree", "source.blob"}
+
+
+def test_an_engine_blob_that_misses_its_declared_digest_fails_closed(tmp_path) -> None:
+    tree = tmp_path / "tree"
+    _write_tree(tree, CLEAN)
+    state = Loopback(tree)
+    with serving(state) as engine:
+        provider = EngineTreeProvider(engine.endpoint, "", "demo", "main")
+        (tree / "pkg" / "config.py").write_text("changed\n", encoding="utf-8")
+        with pytest.raises(CannotRun, match="declared digest"):
+            provider.read("pkg/config.py")
+        assert provider.read("README.md") == CLEAN["README.md"].encode("utf-8")
+        with pytest.raises(CannotRun, match="not a declared file"):
+            provider.read("nope.py")
+
+
+def test_an_unreachable_engine_fails_the_tree_run_closed(tmp_path) -> None:
+    with serving(Loopback(tmp_path, fail=True)) as engine:
+        status, output = _run_engine_sanitizer(engine.endpoint)
+    assert status == 2
+    assert "engine tree provider" in output
+    status, output = _run_engine_sanitizer("")
+    assert status == 2

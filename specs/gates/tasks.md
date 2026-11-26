@@ -4,24 +4,24 @@
 - [x] T002 PIPE-GATES-R001 Add the partition test asserting exact membership and the complement.
 - [x] T003 PIPE-GATES-R002 Implement the post-land decision policy: default auto-revert, the 300 s fix-forward task window, the infrastructure-only re-run, and the replayable decision record.
 - [x] T004 PIPE-GATES-R002 Add the policy test covering the default decision and each threshold.
-- [ ] T005 PIPE-GATES-R003 Bind every blocking gate to the engine tree: reads by path and blob digest, no working copy, verdict equality against a materialized checkout.
-- [ ] T006 PIPE-GATES-R003 Add the tree-based contract test on a fixture tree and an identical checkout.
+- [x] T005 PIPE-GATES-R003 Bind every blocking gate to the engine tree: reads by path and blob digest, no working copy, verdict equality against a materialized checkout.
+- [x] T006 PIPE-GATES-R003 Add the tree-based contract test on a fixture tree and an identical checkout.
 - Regenerate `status.json` with `pipelines-hook spec-status --write`; record executed evidence before advancing any row's state.
 
 - [ ] T007 PIPE-GATES-R004 Gate verdicts publish to the engine (rollup).
-- [ ] T008 PIPE-GATES-R004.1 Wiring.
-- [ ] T009 PIPE-GATES-R004.2 Hot-path proof.
+- [x] T008 PIPE-GATES-R004.1 Wiring.
+- [x] T009 PIPE-GATES-R004.2 Hot-path proof.
 ## Migration waves and the product-name check (R005, R006)
 
 - [ ] T010 PIPE-GATES-R006 Changeset migration waves with entry and exit criteria (rollup).
-- [ ] T011 PIPE-GATES-R006.1 Wave 1: webarchiver.
-- [ ] T012 PIPE-GATES-R006.2 Wave 2: small connectors.
-- [ ] T013 PIPE-GATES-R006.3 Wave 3: the remaining connectors.
-- [ ] T014 PIPE-GATES-R006.4 Wave 4: skills, pipelines and the user interfaces.
-- [ ] T015 PIPE-GATES-R006.5 Wave 5: the Scion SDK and the harness.
-- [ ] T016 PIPE-GATES-R006.6 Wave 6: arbora.
-- [ ] T017 PIPE-GATES-R006.7 Wave 7: Medulla, last.
-- [ ] T018 PIPE-GATES-R006.1 Bind the R006.1-.4 evaluator to the authoritative `source.land` receipt stream and verified-prerequisite roster; fixture-only parser tests do not qualify a historical migration. Closes PIPE-GATES-R006.1, PIPE-GATES-R006.2, PIPE-GATES-R006.3 and PIPE-GATES-R006.4.
+- [x] T011 PIPE-GATES-R006.1 Wave 1: webarchiver.
+- [x] T012 PIPE-GATES-R006.2 Wave 2: small connectors.
+- [x] T013 PIPE-GATES-R006.3 Wave 3: the remaining connectors.
+- [x] T014 PIPE-GATES-R006.4 Wave 4: skills, pipelines and the user interfaces.
+- [x] T015 PIPE-GATES-R006.5 Wave 5: the Scion SDK and the harness.
+- [x] T016 PIPE-GATES-R006.6 Wave 6: arbora.
+- [x] T017 PIPE-GATES-R006.7 Wave 7: Medulla, last.
+- [x] T018 PIPE-GATES-R006.1 Bind the R006.1-.4 evaluator to the authoritative `source.land` receipt stream and verified-prerequisite roster; fixture-only parser tests do not qualify a historical migration. Closes PIPE-GATES-R006.1, PIPE-GATES-R006.2, PIPE-GATES-R006.3 and PIPE-GATES-R006.4.
 - [x] T019 PIPE-GATES-R005 Spec text names no third-party product.
 - [x] T020 PIPE-GATES-R007 Publish the canonical no-legacy-concepts migration gate and retain original detection, scope, historical exclusions, diagnostics and failure semantics.
 - [x] T021 PIPE-GATES-R007 Bind PIPE-GATES-R007 to real Git fixtures covering tracked/ignored source, foreign worktrees, ambient Git selectors and nonzero CLI exits.
@@ -54,8 +54,8 @@
 - [x] T034 PIPE-GATES-R031 Write the organization constitution with traced articles and the test that checks them.
 - [x] T035 PIPE-GATES-R032 Add `scripts/constitution.py`, its `--check` mode and the pre-commit hook.
 - [x] T036 PIPE-GATES-R033 Make the repository constitution template inherit the organization version.
-- [ ] T037 PIPE-GATES-R004.3 Computed states publish with the verdicts.
-- [ ] T038 PIPE-GATES-R004.4 Wiring: states publish from the status command.
+- [x] T037 PIPE-GATES-R004.3 Computed states publish with the verdicts.
+- [x] T038 PIPE-GATES-R004.4 Wiring: states publish from the status command.
 - [ ] T039 PIPE-GATES-R004.5 The graph and the page agree.
 - [ ] T040 PIPE-GATES-R004.6 Hot-path proof: verdicts and states reach the engine.
 - [ ] T041 PIPE-GATES-R034 A row that cites another repository's row is covered by a contract (rollup).
@@ -199,7 +199,7 @@
 - [x] T178 PIPE-GATES-R016.119 A local account name is contextual, not a bare word.
 - [x] T179 PIPE-GATES-R017 Required runtime manifest gate.
 - [ ] T180 PIPE-GATES-R018 No duplicate worker policy in ingest-worker specs.
-- [ ] T181 PIPE-GATES-R019 Hydration journey gate through the harness.
+- [x] T181 PIPE-GATES-R019 Hydration journey gate through the harness.
 - [x] T182 PIPE-GATES-R020 Nightly attached-source conformance workflow.
 - [ ] T183 PIPE-GATES-R021 Build gate for the root library and its lint profiles.
 - [x] T184 PIPE-GATES-R022 Spec directories accept the optional design artifacts.
@@ -223,12 +223,12 @@
 - [ ] T202 PIPE-GATES-R067 A rename of a serialized name recomputes its digests in the same commit.
 - [x] T203 PIPE-GATES-R068 The constitution links the delivery practice reference and states the new articles.
 - [ ] T204 PIPE-GATES-R069 The constitution requires six release targets, and a shared check enforces the release matrix.
-- [ ] T205 PIPE-GATES-R070 Warm slot image and local cache volume.
-- [ ] T206 PIPE-GATES-R071 One slot configuration drives every runtime.
-- [ ] T207 PIPE-GATES-R072 Slot status and up commands.
-- [ ] T208 PIPE-GATES-R073 Slot down and upgrade commands.
-- [ ] T209 PIPE-GATES-R074 Pull request routing, cache budget and credential isolation.
-- [ ] T210 PIPE-GATES-R075 Warm slot timing budgets.
+- [x] T205 PIPE-GATES-R070 Warm slot image and local cache volume.
+- [x] T206 PIPE-GATES-R071 One slot configuration drives every runtime.
+- [x] T207 PIPE-GATES-R072 Slot status and up commands.
+- [x] T208 PIPE-GATES-R073 Slot down and upgrade commands.
+- [x] T209 PIPE-GATES-R074 Pull request routing, cache budget and credential isolation.
+- [x] T210 PIPE-GATES-R075 Warm slot timing budgets.
 - [ ] T211 PIPE-GATES-R076 Add the readme-deploy-block hook and prove it runs from a linked worktree.
 - [ ] T212 PIPE-GATES-R077 The complexity gate scores exhaustive-dispatch functions by their real structure.
 - [ ] T213 PIPE-GATES-R078 The clone gate enforces zero new pairs against the merge base.

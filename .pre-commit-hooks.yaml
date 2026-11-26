@@ -549,6 +549,37 @@
   require_serial: true
   stages: [manual]
 
+# Warm build slots (PIPE-GATES-R070 to R075). On demand: a consumer with a
+# slot configuration runs these; without one they report nothing to check.
+- id: warm-slot-definition
+  name: Warm slot definition - the slot image matches the repository pins and the cache is local
+  entry: pipelines-hook warm-slot-definition
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+- id: warm-slot-routing
+  name: Warm slot routing - no fork pull request and no release secret reaches a warm slot
+  entry: pipelines-hook warm-slot-routing
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+- id: warm-slots
+  name: Warm slots - render, status, up, down, upgrade and budgets over the slot configuration
+  entry: pipelines-hook warm-slots
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+- id: states-agree
+  name: States agree - the engine's spec states of a revision equal the generator's
+  entry: pipelines-hook states-agree
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+
 # Opt-in migration invariant; not a ninth gate in the landing partition.
 - id: no-legacy-concepts
   name: No legacy numeric-pillar concept markers

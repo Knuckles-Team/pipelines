@@ -32,6 +32,10 @@ KNOWN_SETTINGS = {
     "SKIP": "pre-commit SKIP list; a grouped check skips the member gates it names",
     "GITHUB_TOKEN": "GitHub API token that raises the rate limit of spec-id-index",
     "PIPELINES_SPEC_ID_INDEX": "path of the cross-repo spec ID index plan-conformance resolves foreign IDs against",
+    "PIPELINES_ARBORA_ENDPOINT": "base URL of the arbora HTTP API that verdicts and states publish to; empty skips the publish",
+    "PIPELINES_ARBORA_TOKEN": "bearer token for the arbora HTTP API (never logged)",
+    "GITHUB_REPOSITORY": "GitHub Actions repository name, the repository of published records",
+    "GITHUB_SHA": "GitHub Actions commit, the revision of published records",
     "PIPELINES_WORKSPACE_ROOT": "root of the operator's multi-repository workspace (default ~/workspace)",
 }
 
