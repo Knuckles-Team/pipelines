@@ -190,9 +190,10 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    # Read-only on contents only: a called workflow cannot hold more than its caller grants, and the
+    # shared callers grant `contents: read`. Listing pull requests is public for a public repository.
     permissions:
       contents: read
-      pull-requests: read
     steps:
       - name: Refuse a head branch that an earlier pull request already merged
         env:
