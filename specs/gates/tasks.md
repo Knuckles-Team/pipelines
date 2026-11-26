@@ -274,3 +274,5 @@
 - [ ] T263 PIPE-GATES-R104 The security-sanitizer trusts a fixed list of uninspectable binary extensions, including the binary glTF container.
 - [ ] T269 PIPE-GATES-R104.1 A gzip archive is a trusted binary, whatever its compound name.
 - [ ] T264 PIPE-GATES-R103 A red nightly opens an issue in its repository, and a green one closes it.
+- [ ] T270 PIPE-GATES-R016.120 The skill step, recovery and budget checks are `connector-standard` members.
+- [ ] T271 PIPE-GATES-R016.121 The compiled-skill freshness check is a `connector-standard` member.
