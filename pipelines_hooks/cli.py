@@ -59,6 +59,8 @@ GATES: dict[str, str] = {
     "config-inventory": "pipelines_hooks.hygiene.config_inventory",
     "env-documentation": "pipelines_hooks.docs.env_documentation",
     "spec-artifact-schema": "pipelines_hooks.specs.artifact_schema",
+    "lint-type": "pipelines_hooks.code.lint_type",
+    "repository-validation": "pipelines_hooks.code.repository_validation",
     "no-legacy-concepts": "pipelines_hooks.code.no_legacy_concepts",
     "no-stub": "pipelines_hooks.code.no_stub",
     "state-machine-shape": "pipelines_hooks.code.state_machine",

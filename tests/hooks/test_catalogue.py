@@ -80,6 +80,8 @@ KEPT = {
     "spec-artifact-schema",
     "env-documentation",
     "config-inventory",
+    "lint-type",
+    "repository-validation",
     "mutation-gaps",
     "export-version",
     "test-quality",

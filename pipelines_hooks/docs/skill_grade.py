@@ -251,6 +251,9 @@ def _snapshot(root: Path) -> SkillGradeSnapshot:
     return _git_snapshot(root) or _filesystem_snapshot(root)
 
 
+select_snapshot = _snapshot
+
+
 def _policy_values(
     schema_version: str, weights: Mapping[str, object], minimum_grade: object, external_total: int = 0
 ) -> dict[str, object]:
