@@ -87,6 +87,7 @@ KEPT = {
     "readme-header",
     "guide-migration",
     "deployment-docs",
+    "ontology-governance",
     "config-inventory",
     "lint-type",
     "repository-validation",
