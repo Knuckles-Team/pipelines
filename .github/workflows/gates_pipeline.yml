@@ -181,6 +181,37 @@ jobs:
           done
           exit "$found"
 
+  # PIPE-GATES-R063: a pull request never comes from a head branch that already merged. A reused
+  # branch carries the merged history and its stale review state. The job lists the closed pull
+  # requests of the same head branch and fails when one of them merged. It joins the caller's
+  # `CI required` aggregate through the caller's `gates` job.
+  branch-reuse:
+    name: branch-reuse
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Refuse a head branch that an earlier pull request already merged
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          merged=$(gh api --paginate -X GET "repos/${REPOSITORY}/pulls" \
+            -f state=closed -f head="${HEAD_OWNER}:${HEAD_REF}" -f per_page=100 \
+            --jq '.[] | select(.merged_at != null) | .number')
+          earlier=$(printf '%s\n' "$merged" | { grep -vx -e "$PR_NUMBER" -e '' || true; } | head -n 1)
+          if [[ -n "$earlier" ]]; then
+            echo "::error::pull request #${earlier} already merged from the branch ${HEAD_REF}; start a new branch from the default branch and open this change from it"
+            exit 1
+          fi
+
   # PIPE-GATES-R099: the pull request title and body are self-evident to an outside reader.
   # Staged: the job reports findings as warnings and passes. A caller sets `pr-text-strict`
   # to make a finding fail the job, and so the caller's `CI required` aggregate.
