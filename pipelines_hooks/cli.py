@@ -14,6 +14,7 @@ GATES: dict[str, str] = {
     "validate": "pipelines_hooks.validation.cli",
     "dependency-readiness": "pipelines_hooks.release.dependency_readiness",
     "packaging-roles": "pipelines_hooks.release.packaging_roles",
+    "release-phases": "pipelines_hooks.release.phases",
     "complexity-staged": "pipelines_hooks.complexity.staged",
     "complexity-census": "pipelines_hooks.complexity.census",
     "kiss-staged": "pipelines_hooks.kiss.staged",

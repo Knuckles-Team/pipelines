@@ -54,6 +54,7 @@ KEPT = {
     "release-standard",
     "dependency-readiness",
     "packaging-roles",
+    "release-phases",
     "gate-set",
     "pr-test-scope",
     "change-scope",
