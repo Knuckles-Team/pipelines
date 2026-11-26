@@ -27,6 +27,7 @@ import yaml
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import blob_bytes, repo_root
 from pipelines_hooks.core.tracked import tracked_paths
+from pipelines_hooks.hygiene import config_inventory_behavior as behavior
 from pipelines_hooks.hygiene import config_inventory_docs as docs
 
 DECLARATION = ".config/project-config.toml"
@@ -81,6 +82,8 @@ replace = version = "{new_version}"
 PARAMETERS = ("name", "python")
 #: Evidence lines of the last documentation check (printed by ``main``).
 _DOC_LINES: list[str] = []
+#: Evidence lines of the last validation behavior check.
+_BEHAVIOR_LINES: list[str] = []
 _BLOCK = r"# pipelines:managed role={role} template=(?P<template>\S+)\n(?P<body>.*?)# pipelines:end role={role}\n"
 
 
@@ -113,6 +116,7 @@ class ProjectConfigInventory:
     template: str
     projects: dict[str, dict[str, str]]
     documentation: docs.DocPolicy | None = None
+    validation: behavior.ValidationPolicy | None = None
 
     def __post_init__(self) -> None:
         if self.template != TEMPLATE_VERSION:
@@ -147,7 +151,7 @@ def load_inventory(root: Path) -> ProjectConfigInventory:
         data = tomllib.loads(raw.decode("utf-8"))
     except (UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise CannotRun(f"config-inventory: {DECLARATION} is unreadable: {exc}") from exc
-    if set(data) - {"schema", "template", "project", "documentation"} or data.get("schema") != 1:
+    if set(data) - {"schema", "template", "project", "documentation", "validation"} or data.get("schema") != 1:
         raise CannotRun("config-inventory: unsupported schema or unknown top-level fields")
     projects: dict[str, dict[str, str]] = {}
     for entry in data.get("project", []):
@@ -158,7 +162,8 @@ def load_inventory(root: Path) -> ProjectConfigInventory:
             raise CannotRun(f"config-inventory: duplicate authority for project {path!r}")
         projects[path] = dict(entry.get("parameters", {}))
     policy = docs.parse_policy(data["documentation"]) if "documentation" in data else None
-    return ProjectConfigInventory(str(data.get("template", "")), projects, policy)
+    validation = behavior.parse_policy(data["validation"]) if "validation" in data else None
+    return ProjectConfigInventory(str(data.get("template", "")), projects, policy, validation)
 
 
 def _template(role: str) -> str:
@@ -202,6 +207,10 @@ def check(
 ) -> tuple[list[str], list[TemplateReceipt]]:
     """Findings (exit 1) and one receipt per project role; every declared project is validated."""
     findings: list[str] = []
+    if scope == "validation":
+        if inventory.validation is None:
+            raise CannotRun(f"config-inventory: {DECLARATION} declares no [validation] baseline; migration unproved")
+        return _behaviors(root, inventory), []
     if scope == "documentation":
         if inventory.documentation is None:
             return findings, []
@@ -252,11 +261,21 @@ def check(
         doc_findings, lines = docs.check_docs(root, inventory.projects, inventory.documentation)
         findings.extend(doc_findings)
         _DOC_LINES[:] = lines
+    if inventory.validation is not None:
+        findings.extend(_behaviors(root, inventory))
     declared = set(inventory.projects)
     for found_root in discovered_projects(root):
         if found_root not in declared:
             findings.append(f"{found_root}: project root is not in the declared inventory")
     return findings, receipts
+
+
+def _behaviors(root: Path, inventory: ProjectConfigInventory) -> list[str]:
+    assert inventory.validation is not None
+    configs = {project: inventory.file_of(project, "pre-commit") for project in inventory.projects}
+    findings, manifest = behavior.check_behaviors(root, configs, inventory.validation)
+    _BEHAVIOR_LINES[:] = manifest.lines
+    return findings
 
 
 def discovered_projects(root: Path) -> list[str]:
@@ -301,7 +320,10 @@ def main(argv: list[str]) -> int:
     mode.add_argument("--check", action="store_true", help="validate the staged snapshot (default)")
     mode.add_argument("--render", type=Path, metavar="DEST", help="render templates into a new directory")
     parser.add_argument(
-        "--scope", choices=("all", "documentation"), default="all", help="documentation: only the documentation roles"
+        "--scope",
+        choices=("all", "documentation", "validation"),
+        default="all",
+        help="documentation or validation: only that part of the inventory",
     )
     args = parser.parse_args(argv)
     root = repo_root(args.root)
@@ -314,7 +336,7 @@ def main(argv: list[str]) -> int:
     print(f"projects: declared={sorted(inventory.projects)} discovered={discovered_projects(root)}")
     for receipt in receipts:
         print(receipt.line())
-    for line in _DOC_LINES:
+    for line in _DOC_LINES + _BEHAVIOR_LINES:
         print(line)
     if not findings:
         print("config inventory: clean")
