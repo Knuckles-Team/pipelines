@@ -27,6 +27,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     __package__ = "scripts.architecture_explorer"
 
+from .code_view import FULL_RECLUSTER_SHARE, attach  # noqa: E402
 from .details import write_details  # noqa: E402
 from .export import ExportRefused, write_export  # noqa: E402
 from .sdd import (  # noqa: E402
@@ -84,6 +85,24 @@ DOC_HEAD = (
 DOC_TAIL = "\n</body>\n</html>\n"
 
 
+# PIPE-PAGES-R047: an edge is one of four types, each named by an existing engine predicate
+# (sdd-spec `dependsOn`, software `serves`, sdd-spec `crossesSeam`, sdd `verifiedBy`); the page shows the plain word.
+EDGE_TYPES = {
+    "dependsOn": "depends on",
+    "serves": "serves",
+    "consumes": "consumes",  # engine predicate: crossesSeam (the consumer side of a contract)
+    "proves": "proves",  # engine predicate: verifiedBy, read from the proving side
+}
+
+
+def typed_edge(edge: list) -> dict:
+    """One model edge `[from, to, label, type, rows?]` as a level edge; an unknown type is refused."""
+    if len(edge) < 4 or edge[3] not in EDGE_TYPES:
+        raise SystemExit(f"architecture model: edge {edge[:3]} needs a type from {sorted(EDGE_TYPES)}")
+    rows = edge[4] if len(edge) > 4 else []
+    return {"from": edge[0], "to": edge[1], "label": edge[2], "type": edge[3], "rows": rows}
+
+
 def natkey(text: str) -> list:
     import re
 
@@ -108,9 +127,7 @@ def levels_for_layout(tree: Tree) -> list[dict]:
                     {"id": c["id"], "band": c.get("band"), "scale": c.get("scale"), "unmapped": bool(c.get("unmapped"))}
                     for c in node["children"]
                 ],
-                "edges": [
-                    {"from": a, "to": b, "label": lab} for a, b, lab in node.get("edges", []) if a in ids and b in ids
-                ],
+                "edges": [typed_edge(edge) for edge in node.get("edges", []) if edge[0] in ids and edge[1] in ids],
             }
         )
     return out
@@ -362,6 +379,8 @@ def build_with_sources(
     *,
     source_families: dict | None = None,
     delivery_out: dict | None = None,
+    code_graph: Path | None = None,
+    full_recluster_share: float = FULL_RECLUSTER_SHARE,
 ) -> tuple[dict, dict, list]:
     model = json.loads((HERE / "model.json").read_text())
     registry = json.loads((HERE / "registry.json").read_text())
@@ -397,6 +416,10 @@ def build_with_sources(
     delivery["cards"] = cards
     delivery["row_next"], delivery["row_questions"] = row_facts(snaps, cards, delivery["frontier_set"])
     data = emit(tree.root, direct, layouts, delivery)
+    for repo, summary in attach(snaps, code_graph, full_recluster_share).items():
+        for node in _walk(data):
+            if node.get("repo") == repo and not node.get("children"):
+                node["code_view"] = summary
     row_node = {s["id"]: n["id"] for n in _walk(data) for s in n["specs"]}
     delivery["row_node"] = row_node
     if delivery_out is not None:
@@ -554,6 +577,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--source-families", type=Path, help="opt-in same-build strict source-family chart configuration"
     )
+    parser.add_argument("--code-graph", type=Path, help="directory of per-repository Medulla code-graph snapshots")
+    parser.add_argument(
+        "--full-recluster-share",
+        type=float,
+        default=FULL_RECLUSTER_SHARE,
+        help="canopy.code_view.full_recluster_share: changed share above which every item is re-clustered",
+    )
     parser.add_argument("--redirect", action="store_true", help="write a page that redirects to the canonical explorer")
     args = parser.parse_args(argv)
     if args.redirect:
@@ -571,9 +601,22 @@ def main(argv: list[str] | None = None) -> int:
         from .story_build import read_family_config
 
         families = read_family_config(args.source_families)
-        data, meta, snaps = build_with_sources(args.mode, args.workspace, source_families=families, delivery_out=full)
+        data, meta, snaps = build_with_sources(
+            args.mode,
+            args.workspace,
+            source_families=families,
+            delivery_out=full,
+            code_graph=args.code_graph,
+            full_recluster_share=args.full_recluster_share,
+        )
     else:
-        data, meta, snaps = build_with_sources(args.mode, args.workspace, delivery_out=full)
+        data, meta, snaps = build_with_sources(
+            args.mode,
+            args.workspace,
+            delivery_out=full,
+            code_graph=args.code_graph,
+            full_recluster_share=args.full_recluster_share,
+        )
     body = render(data, meta)
     target = args.page or args.artifact
     if target:

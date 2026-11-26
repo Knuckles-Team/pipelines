@@ -8,87 +8,108 @@
   [
    "people",
    "webui",
-   "asks"
+   "asks",
+   "serves"
   ],
   [
    "people",
    "tui",
-   "commands"
+   "commands",
+   "serves"
   ],
   [
    "people",
    "geniusbot",
-   "operates"
+   "operates",
+   "serves"
   ],
   [
    "people",
    "messaging",
-   "chats"
+   "chats",
+   "serves"
   ],
   [
    "clients",
    "arbora",
-   "MCP / REST / A2A"
+   "MCP / REST / A2A",
+   "serves"
   ],
   [
    "webui",
    "arbora",
-   "typed operations"
+   "typed operations",
+   "serves"
   ],
   [
    "tui",
    "arbora",
-   "A2A / REST"
+   "A2A / REST",
+   "serves"
   ],
   [
    "geniusbot",
    "arbora",
-   "operations"
+   "operations",
+   "serves"
   ],
   [
    "messaging",
    "arbora",
-   "messages"
+   "messages",
+   "serves"
   ],
   [
    "arbora",
    "au",
-   "run plans"
+   "run plans",
+   "serves"
   ],
   [
    "arbora",
    "connectors",
-   "multiplexer tool calls"
+   "multiplexer tool calls",
+   "serves"
   ],
   [
    "arbora",
    "skills",
-   "find / load"
+   "find / load",
+   "serves"
   ],
   [
    "au",
    "eg",
-   "facts, decisions"
+   "facts, decisions",
+   "serves"
   ],
   [
    "sources",
    "connectors",
-   "records"
+   "records",
+   "consumes"
   ],
   [
    "connectors",
    "sdk",
-   "built on"
+   "built on",
+   "dependsOn"
   ],
   [
    "sdk",
    "eg",
-   "SourceIngest"
+   "SourceIngest",
+   "serves"
   ],
   [
    "pipelines",
    "eg",
-   "gates + release"
+   "gates + release",
+   "proves",
+   [
+    "PIPE-GATES-R001",
+    "PIPE-GATES-R034"
+   ]
   ]
  ],
  "children": [
@@ -126,27 +147,32 @@
     [
      "webui.apps",
      "webui.api",
-     "typed calls"
+     "typed calls",
+     "serves"
     ],
     [
      "webui.decide",
      "webui.api",
-     "decide reads"
+     "decide reads",
+     "serves"
     ],
     [
      "webui.fin",
      "webui.api",
-     "market reads"
+     "market reads",
+     "serves"
     ],
     [
      "webui.id",
      "webui.api",
-     "identity ops"
+     "identity ops",
+     "serves"
     ],
     [
      "webui.design",
      "webui.apps",
-     "components"
+     "components",
+     "dependsOn"
     ]
    ],
    "children": [
@@ -402,22 +428,26 @@
     [
      "tui.screens",
      "tui.client",
-     "commands"
+     "commands",
+     "serves"
     ],
     [
      "tui.chat",
      "tui.client",
-     "turns"
+     "turns",
+     "serves"
     ],
     [
      "tui.coding",
      "tui.client",
-     "planned operations"
+     "planned operations",
+     "serves"
     ],
     [
      "tui.tasks",
      "tui.client",
-     "runs"
+     "runs",
+     "serves"
     ]
    ],
    "children": [
@@ -628,22 +658,26 @@
     [
      "msg.adapters",
      "msg.gateway",
-     "inbound"
+     "inbound",
+     "serves"
     ],
     [
      "msg.supervise",
      "msg.adapters",
-     "start/stop"
+     "start/stop",
+     "dependsOn"
     ],
     [
      "msg.alerts",
      "msg.gateway",
-     "alerts"
+     "alerts",
+     "consumes"
     ],
     [
      "msg.gateway",
      "msg.send",
-     "outbound"
+     "outbound",
+     "serves"
     ]
    ],
    "children": [
@@ -722,57 +756,68 @@
     [
      "ar.door",
      "ar.ops",
-     "admitted"
+     "admitted",
+     "serves"
     ],
     [
      "ar.mcp",
      "ar.door",
-     "MCP calls"
+     "MCP calls",
+     "serves"
     ],
     [
      "ar.a2a",
      "ar.door",
-     "A2A tasks"
+     "A2A tasks",
+     "serves"
     ],
     [
      "ar.acp",
      "ar.door",
-     "sessions"
+     "sessions",
+     "serves"
     ],
     [
      "ar.ops",
      "ar.fleet",
-     "fleet calls"
+     "fleet calls",
+     "serves"
     ],
     [
      "ar.mcp",
      "ar.fleet",
-     "load/call"
+     "load/call",
+     "serves"
     ],
     [
      "ar.host",
      "ar.ops",
-     "hosted"
+     "hosted",
+     "serves"
     ],
     [
      "ar.gateway",
      "ar.ops",
-     "widgets"
+     "widgets",
+     "serves"
     ],
     [
      "ar.ingest",
      "ar.ops",
-     "sources"
+     "sources",
+     "serves"
     ],
     [
      "ar.control",
      "ar.ops",
-     "projections"
+     "projections",
+     "serves"
     ],
     [
      "ar.deploy",
      "ar.host",
-     "deploys"
+     "deploys",
+     "serves"
     ]
    ],
    "children": [
@@ -793,22 +838,26 @@
       [
        "ar.door.signin",
        "ar.door.admit",
-       "principal"
+       "principal",
+       "consumes"
       ],
       [
        "ar.door.mfa",
        "ar.door.signin",
-       "second factor"
+       "second factor",
+       "consumes"
       ],
       [
        "ar.door.elev",
        "ar.door.admit",
-       "scopes"
+       "scopes",
+       "consumes"
       ],
       [
        "ar.door.scim",
        "ar.door.signin",
-       "accounts"
+       "accounts",
+       "consumes"
       ]
      ],
      "children": [
@@ -931,17 +980,20 @@
       [
        "ar.ops.http",
        "ar.ops.invoke",
-       "request"
+       "request",
+       "serves"
       ],
       [
        "ar.ops.invoke",
        "ar.ops.registry",
-       "lookup"
+       "lookup",
+       "serves"
       ],
       [
        "ar.ops.invoke",
        "ar.ops.dom",
-       "dispatch"
+       "dispatch",
+       "serves"
       ]
      ],
      "children": [
@@ -1164,17 +1216,20 @@
       [
        "ar.mcp.intent",
        "ar.mcp.mux",
-       "fleet calls"
+       "fleet calls",
+       "serves"
       ],
       [
        "ar.mcp.intent",
        "ar.mcp.backing",
-       "engine calls"
+       "engine calls",
+       "serves"
       ],
       [
        "ar.mcp.resources",
        "ar.mcp.intent",
-       "gated resources"
+       "gated resources",
+       "serves"
       ]
      ],
      "children": [
@@ -1266,22 +1321,26 @@
       [
        "ar.a2a.admit",
        "ar.a2a.route",
-       "admitted"
+       "admitted",
+       "serves"
       ],
       [
        "ar.a2a.route",
        "ar.a2a.tasks",
-       "task"
+       "task",
+       "serves"
       ],
       [
        "ar.a2a.card",
        "ar.a2a.admit",
-       "discovery"
+       "discovery",
+       "serves"
       ],
       [
        "ar.a2a.conv",
        "ar.a2a.tasks",
-       "turns"
+       "turns",
+       "serves"
       ]
      ],
      "children": [
@@ -1376,32 +1435,38 @@
       [
        "ar.fleet.onboard",
        "ar.fleet.catalog",
-       "servers"
+       "servers",
+       "consumes"
       ],
       [
        "ar.fleet.catalog",
        "ar.fleet.authority",
-       "items"
+       "items",
+       "consumes"
       ],
       [
        "ar.fleet.authority",
        "ar.fleet.loads",
-       "allowed tools"
+       "allowed tools",
+       "consumes"
       ],
       [
        "ar.fleet.capacity",
        "ar.fleet.onboard",
-       "scale"
+       "scale",
+       "dependsOn"
       ],
       [
        "ar.fleet.feeds",
        "ar.fleet.catalog",
-       "events"
+       "events",
+       "consumes"
       ],
       [
        "ar.fleet.skills",
        "ar.fleet.loads",
-       "skills"
+       "skills",
+       "consumes"
       ]
      ],
      "children": [
@@ -1852,22 +1917,26 @@
     [
      "au.loop",
      "au.graph",
-     "step graph"
+     "step graph",
+     "consumes"
     ],
     [
      "au.graph",
      "au.runtime",
-     "actions"
+     "actions",
+     "consumes"
     ],
     [
      "au.loop",
      "au.rlm",
-     "large inputs"
+     "large inputs",
+     "consumes"
     ],
     [
      "au.scm",
      "au.loop",
-     "changesets"
+     "changesets",
+     "consumes"
     ]
    ],
    "children": [
@@ -1901,22 +1970,26 @@
         [
          "au.loop.cycle.propose",
          "au.loop.cycle.probe",
-         "proposals"
+         "proposals",
+         "consumes"
         ],
         [
          "au.loop.cycle.probe",
          "au.loop.cycle.compose",
-         "rollouts"
+         "rollouts",
+         "consumes"
         ],
         [
          "au.loop.cycle.compose",
          "au.loop.cycle.persist",
-         "candidate"
+         "candidate",
+         "consumes"
         ],
         [
          "au.loop.cycle.persist",
          "au.loop.cycle.reflect",
-         "receipts"
+         "receipts",
+         "proves"
         ]
        ],
        "children": [
@@ -3660,32 +3733,38 @@
     [
      "sdk.ingest",
      "sdk.control",
-     "contracts"
+     "contracts",
+     "dependsOn"
     ],
     [
      "sdk.wb",
      "sdk.control",
-     "contracts"
+     "contracts",
+     "dependsOn"
     ],
     [
      "sdk.repo",
      "sdk.ingest",
-     "index batches"
+     "index batches",
+     "consumes"
     ],
     [
      "sdk.scm",
      "sdk.control",
-     "engine adapter"
+     "engine adapter",
+     "dependsOn"
     ],
     [
      "sdk.fin",
      "sdk.ingest",
-     "market rows"
+     "market rows",
+     "consumes"
     ],
     [
      "sdk.feeds",
      "sdk.ingest",
-     "events"
+     "events",
+     "consumes"
     ]
    ],
    "children": [
@@ -3872,22 +3951,26 @@
       [
        "sdk.ingest.sources",
        "sdk.ingest.runner",
-       "records"
+       "records",
+       "consumes"
       ],
       [
        "sdk.ingest.runner",
        "sdk.ingest.drift",
-       "schemas"
+       "schemas",
+       "proves"
       ],
       [
        "sdk.ingest.extract",
        "sdk.ingest.runner",
-       "typed records"
+       "typed records",
+       "consumes"
       ],
       [
        "sdk.ingest.prep",
        "sdk.ingest.runner",
-       "clean rows"
+       "clean rows",
+       "consumes"
       ]
      ],
      "children": [
@@ -4136,72 +4219,86 @@
     [
      "eg.ingest",
      "eg.durable",
-     "admitted batches"
+     "admitted batches",
+     "consumes"
     ],
     [
      "eg.durable",
      "eg.storage",
-     "commits"
+     "commits",
+     "consumes"
     ],
     [
      "eg.query",
      "eg.storage",
-     "scans"
+     "scans",
+     "consumes"
     ],
     [
      "eg.decide",
      "eg.query",
-     "facts"
+     "facts",
+     "consumes"
     ],
     [
      "eg.evo",
      "eg.decide",
-     "HarnessConfig"
+     "HarnessConfig",
+     "dependsOn"
     ],
     [
      "eg.packs",
      "eg.ingest",
-     "pack contracts"
+     "pack contracts",
+     "dependsOn"
     ],
     [
      "eg.scm",
      "eg.ingest",
-     "changesets"
+     "changesets",
+     "consumes"
     ],
     [
      "eg.compute",
      "eg.query",
-     "algorithms"
+     "algorithms",
+     "consumes"
     ],
     [
      "eg.udp",
      "eg.query",
-     "attached sources"
+     "attached sources",
+     "consumes"
     ],
     [
      "eg.identity",
      "eg.query",
-     "scope"
+     "scope",
+     "dependsOn"
     ],
     [
      "eg.place",
      "eg.ingest",
-     "worker grants"
+     "worker grants",
+     "dependsOn"
     ],
     [
      "eg.contract",
      "eg.decide",
-     "typed calls"
+     "typed calls",
+     "serves"
     ],
     [
      "eg.evo",
      "eg.packs",
-     "adopted components"
+     "adopted components",
+     "dependsOn"
     ],
     [
      "eg.contract",
      "egserver",
-     "version-matched server"
+     "version-matched server",
+     "dependsOn"
     ]
    ],
    "children": [
@@ -4224,37 +4321,44 @@
       [
        "eg.decide.route",
        "eg.decide.ladder",
-       "typed question"
+       "typed question",
+       "serves"
       ],
       [
        "eg.decide.ladder",
        "eg.decide.solve",
-       "legal set"
+       "legal set",
+       "serves"
       ],
       [
        "eg.decide.ladder",
        "eg.decide.heads",
-       "rank or abstain"
+       "rank or abstain",
+       "serves"
       ],
       [
        "eg.decide.heads",
        "eg.decide.ope",
-       "estimates"
+       "estimates",
+       "consumes"
       ],
       [
        "eg.decide.ope",
        "eg.decide.fit",
-       "eval receipt"
+       "eval receipt",
+       "proves"
       ],
       [
        "eg.decide.solve",
        "eg.decide.commit",
-       "certificate"
+       "certificate",
+       "proves"
       ],
       [
        "eg.decide.nl",
        "eg.decide.ladder",
-       "template"
+       "template",
+       "dependsOn"
       ]
      ],
      "children": [
@@ -4396,42 +4500,50 @@
       [
        "eg.evo.traj",
        "eg.evo.eval",
-       "failures"
+       "failures",
+       "consumes"
       ],
       [
        "eg.evo.loop",
        "eg.evo.program",
-       "optimize offer"
+       "optimize offer",
+       "serves"
       ],
       [
        "eg.evo.program",
        "eg.evo.eval",
-       "candidate"
+       "candidate",
+       "consumes"
       ],
       [
        "eg.evo.components",
        "eg.evo.eval",
-       "candidate"
+       "candidate",
+       "consumes"
       ],
       [
        "eg.evo.eval",
        "eg.evo.promote",
-       "receipts"
+       "receipts",
+       "proves"
       ],
       [
        "eg.evo.promote",
        "eg.evo.components",
-       "adopt / rollback"
+       "adopt / rollback",
+       "consumes"
       ],
       [
        "eg.evo.policy",
        "eg.evo.eval",
-       "held-out eval"
+       "held-out eval",
+       "proves"
       ],
       [
        "eg.evo.config",
        "eg.evo.loop",
-       "run settings"
+       "run settings",
+       "dependsOn"
       ]
      ],
      "children": [
@@ -4449,17 +4561,20 @@
         [
          "eg.evo.program.sig",
          "eg.evo.program.opt",
-         "signature + corpus"
+         "signature + corpus",
+         "dependsOn"
         ],
         [
          "eg.evo.program.job",
          "eg.evo.program.opt",
-         "runs"
+         "runs",
+         "serves"
         ],
         [
          "eg.evo.program.opt",
          "eg.evo.program.commit",
-         "candidate revision"
+         "candidate revision",
+         "consumes"
         ]
        ],
        "children": [
@@ -4608,27 +4723,32 @@
       [
        "eg.ingest.source",
        "eg.ingest.worker",
-       "enrich jobs"
+       "enrich jobs",
+       "consumes"
       ],
       [
        "eg.ingest.repo",
        "eg.ingest.source",
-       "index batches"
+       "index batches",
+       "consumes"
       ],
       [
        "eg.ingest.worker",
        "eg.ingest.docs",
-       "documents"
+       "documents",
+       "consumes"
       ],
       [
        "eg.ingest.worker",
        "eg.ingest.media",
-       "media"
+       "media",
+       "consumes"
       ],
       [
        "eg.ingest.worker",
        "eg.ingest.enrich",
-       "derived records"
+       "derived records",
+       "consumes"
       ]
      ],
      "children": [
@@ -4674,12 +4794,14 @@
         [
          "eg.ingest.worker.queue",
          "eg.ingest.worker.extract",
-         "job"
+         "job",
+         "consumes"
         ],
         [
          "eg.ingest.worker.queue",
          "eg.ingest.worker.induct",
-         "job"
+         "job",
+         "consumes"
         ]
        ],
        "children": [
@@ -4798,12 +4920,14 @@
       [
        "eg.scm.auth",
        "eg.scm.cs",
-       "authority premise"
+       "authority premise",
+       "proves"
       ],
       [
        "eg.scm.branch",
        "eg.scm.cs",
-       "merge base"
+       "merge base",
+       "dependsOn"
       ]
      ],
      "children": [
@@ -4828,37 +4952,44 @@
         [
          "eg.scm.cs.blob",
          "eg.scm.cs.record",
-         "digests"
+         "digests",
+         "proves"
         ],
         [
          "eg.scm.cs.record",
          "eg.scm.cs.tree",
-         "parents"
+         "parents",
+         "dependsOn"
         ],
         [
          "eg.scm.cs.record",
          "eg.scm.cs.codegraph",
-         "accepted"
+         "accepted",
+         "proves"
         ],
         [
          "eg.scm.cs.gates",
          "eg.scm.cs.record",
-         "verdicts"
+         "verdicts",
+         "proves"
         ],
         [
          "eg.scm.cs.git",
          "eg.scm.cs.record",
-         "import"
+         "import",
+         "dependsOn"
         ],
         [
          "eg.scm.cs.acl",
          "eg.scm.cs.tree",
-         "path filter"
+         "path filter",
+         "dependsOn"
         ],
         [
          "eg.scm.cs.sim",
          "eg.scm.cs.record",
-         "agent changesets"
+         "agent changesets",
+         "consumes"
         ]
        ],
        "children": [
@@ -4972,32 +5103,38 @@
       [
        "eg.query.nl",
        "eg.query.uql",
-       "typed UQL"
+       "typed UQL",
+       "serves"
       ],
       [
        "eg.query.lang",
        "eg.query.uql",
-       "parse"
+       "parse",
+       "dependsOn"
       ],
       [
        "eg.query.uql",
        "eg.query.fed",
-       "pushdown"
+       "pushdown",
+       "serves"
       ],
       [
        "eg.query.uql",
        "eg.query.reason",
-       "closure"
+       "closure",
+       "proves"
       ],
       [
        "eg.query.uql",
        "eg.query.retrieve",
-       "rank"
+       "rank",
+       "serves"
       ],
       [
        "eg.query.reason",
        "eg.query.shapes",
-       "validate"
+       "validate",
+       "proves"
       ]
      ],
      "children": [
@@ -5286,22 +5423,26 @@
       [
        "eg.packs.contract",
        "eg.packs.catalog",
-       "admitted"
+       "admitted",
+       "serves"
       ],
       [
        "eg.packs.domain",
        "eg.packs.vocab",
-       "installs"
+       "installs",
+       "consumes"
       ],
       [
        "eg.packs.vocab",
        "eg.packs.cq",
-       "answers"
+       "answers",
+       "proves"
       ],
       [
        "eg.packs.model",
        "eg.packs.vocab",
-       "object model"
+       "object model",
+       "dependsOn"
       ]
      ],
      "children": [
@@ -5493,27 +5634,32 @@
       [
        "eg.durable.txn",
        "eg.durable.outbox",
-       "committed"
+       "committed",
+       "consumes"
       ],
       [
        "eg.durable.outbox",
        "eg.durable.mirror",
-       "events"
+       "events",
+       "consumes"
       ],
       [
        "eg.durable.outbox",
        "eg.durable.change",
-       "envelopes"
+       "envelopes",
+       "consumes"
       ],
       [
        "eg.durable.jobs",
        "eg.durable.txn",
-       "results"
+       "results",
+       "consumes"
       ],
       [
        "eg.durable.chart",
        "eg.durable.jobs",
-       "steps"
+       "steps",
+       "consumes"
       ]
      ],
      "children": [
@@ -5699,22 +5845,26 @@
       [
        "eg.storage.hot",
        "eg.storage.lake",
-       "snapshots"
+       "snapshots",
+       "consumes"
       ],
       [
        "eg.storage.core",
        "eg.storage.hot",
-       "persist"
+       "persist",
+       "dependsOn"
       ],
       [
        "eg.storage.hot",
        "eg.storage.obj",
-       "shared root"
+       "shared root",
+       "dependsOn"
       ],
       [
        "eg.storage.ann",
        "eg.storage.hot",
-       "index state"
+       "index state",
+       "dependsOn"
       ]
      ],
      "children": [
@@ -5840,17 +5990,20 @@
       [
        "eg.udp.attach",
        "eg.udp.cdc",
-       "changes"
+       "changes",
+       "consumes"
       ],
       [
        "eg.udp.cdc",
        "eg.udp.restore",
-       "log"
+       "log",
+       "consumes"
       ],
       [
        "eg.udp.conform",
        "eg.udp.attach",
-       "checks"
+       "checks",
+       "proves"
       ]
      ],
      "children": [
@@ -6163,22 +6316,26 @@
       [
        "egserver.wire",
        "egserver.dispatch",
-       "calls"
+       "calls",
+       "serves"
       ],
       [
        "egserver.bin",
        "egserver.dispatch",
+       "serves",
        "serves"
       ],
       [
        "egserver.dispatch",
        "egserver.raft",
-       "writes"
+       "writes",
+       "serves"
       ],
       [
        "egserver.dispatch",
        "egserver.obs",
-       "spans"
+       "spans",
+       "serves"
       ]
      ],
      "children": [
@@ -6451,11 +6608,13 @@
     [
      "pipe.site",
      "pipe.canopy",
+     "serves",
      "serves"
     ],
     [
      "pipe.canopy",
      "pipe.release",
+     "consumes",
      "consumes"
     ]
    ]

@@ -520,6 +520,7 @@ def family_detail(
     docs: dict[str, str],
     files: set[str],
     delivery: dict | None = None,
+    code_view: dict | None = None,
 ) -> dict:
     """Return the JSON document of one family: per-row full text and evidence plus the design documents."""
     ctx = Ctx(slug, family)
@@ -536,6 +537,8 @@ def family_detail(
             entry["tests"] = [
                 inline(" — ".join(c for c in split_cells(t) if c) if t.startswith("|") else t, ctx) for t in tests
             ]
+        if code_view:
+            entry["code_items"] = code_view["links"]["row_items"].get(row["id"], [])
         out_rows[row["id"]] = entry
     base = f"specs/{family}/"
     names = [
@@ -544,7 +547,7 @@ def family_detail(
         if base + n in files
     ]
     names += [n for n in docs if n not in names]
-    return {
+    doc = {
         "v": 1,
         "repo": repo,
         "family": family,
@@ -556,6 +559,17 @@ def family_detail(
             for n, t in sorted(docs.items(), key=lambda kv: (kv[0] != "plan.md", kv[0] == "test-spec.md", kv[0]))
         ],
     }
+    if code_view:
+        own = set(out_rows)
+        doc["code_view"] = {
+            "communities": code_view["communities"],
+            "item_rows": {
+                item: [r for r in rows_of if r in own]
+                for item, rows_of in code_view["links"]["item_rows"].items()
+                if any(r in own for r in rows_of)
+            },
+        }
+    return doc
 
 
 def write_json(path: Path, doc: dict) -> Path:
@@ -579,7 +593,9 @@ def write_details(page_dir: Path, snaps: list, extra: dict | None = None, delive
         for row in snap.rows:
             by_family.setdefault(row["family"], []).append(row)
         for family, rows in by_family.items():
-            doc = family_detail(snap.repo, snap.slug, family, rows, snap.docs.get(family, {}), snap.files, delivery)
+            doc = family_detail(
+                snap.repo, snap.slug, family, rows, snap.docs.get(family, {}), snap.files, delivery, snap.code_view
+            )
             written.append(write_json(page_dir / detail_path(snap.repo, family), doc))
         if snap.constitution:
             doc = constitution_detail(snap.repo, snap.slug, snap.constitution)
