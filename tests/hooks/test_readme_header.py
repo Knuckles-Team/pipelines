@@ -221,7 +221,7 @@ def test_readme_header_cli(tmp_path: Path) -> None:
             "document.body.setAttribute('data-probe',JSON.stringify({nav:[...document.querySelectorAll('[data-nav]')].map(a=>a.dataset.nav),"
             "mark:{alt:m.alt,loaded:m.complete&&m.naturalWidth>0},badges:[...document.querySelectorAll('.b img')].map(x=>({alt:x.alt,visible:v(x),loaded:x.complete&&x.naturalWidth>0}))}))});</script>"
         )
-        return f'<!doctype html><html><body><header><h1>Medulla</h1><img src="{mark}" alt="Medulla mark"><p>A graph engine for facts.</p><nav>{nav}</nav><p class="b">{badge}</p></header>{probe}</body></html>'
+        return f'<!doctype html><html><body><header><h1>Medulla</h1><img src="{mark}" alt="Medulla mark"><p>A graph engine for facts.</p><nav>{nav}</nav><div class="b">{badge}</div></header>{probe}</body></html>'
 
     def served() -> dict:
         with serve(site) as base:
