@@ -135,8 +135,8 @@ def load_registry(root: Path) -> tuple[ToolDocMapping, str, str]:
         raise CannotRun(
             f"{GATE}: stale registry export {decl['registry']}: digest {digest} != declared {decl['registry_digest']}"
         )
-    methods = []
-    tools = []
+    methods: list[Method] = []
+    tools: list[str] = []
     for i, tool in enumerate(data.get("tools", [])):
         t = strict_keys(GATE, f"/tools/{i}", tool, {"id", "methods"}, {"id", "methods"})
         tools.append(t["id"])
