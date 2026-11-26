@@ -345,3 +345,50 @@ def test_stale_push_base_still_rejects_unknown_trailer_added_by_branch(
     output = capsys.readouterr().out
     assert "BRANCH-R998" in output
     assert "CONNECTOR-COMPETENCY-R999" not in output
+
+
+BOT = ("example-bot[bot]", "bot@example.invalid")
+
+
+def _bot_commit(repo: Repo, files: dict[str, str], message: str) -> None:
+    for rel, text in files.items():
+        repo.write(rel, text)
+    repo.git("add", "--", *files)
+    repo.git("commit", "-q", "-m", message, f"--author={BOT[0]} <{BOT[1]}>")
+
+
+def _configure_bot(repo: Repo) -> None:
+    repo.write(".config/spec-bots.toml", f'[[dependency_bot]]\nname = "{BOT[0]}"\nemail = "{BOT[1]}"\n')
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001.1")
+def test_dependency_only_bot_commit_passes(repo: Repo) -> None:
+    _configure_bot(repo)
+    base = repo.git("rev-parse", "HEAD").strip()
+    _bot_commit(repo, {"uv.lock": "lock = 2\n", "pyproject.toml": "[project]\nname = 'x'\n"}, "bump deps")
+    assert repo.run("spec-trailers", "--base-ref", base) == 0
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001.1")
+def test_bot_commit_touching_code_fails(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    _configure_bot(repo)
+    base = repo.git("rev-parse", "HEAD").strip()
+    _bot_commit(repo, {"uv.lock": "lock = 3\n", "pkg/util.py": "x = 3\n"}, "bump deps and code")
+    assert repo.run("spec-trailers", "--base-ref", base) == 1
+    assert "no commit in the" in capsys.readouterr().out
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001.1")
+def test_unconfigured_identity_gets_no_dependency_exemption(repo: Repo) -> None:
+    base = repo.git("rev-parse", "HEAD").strip()
+    _bot_commit(repo, {"uv.lock": "lock = 4\n"}, "bump deps")
+    assert repo.run("spec-trailers", "--base-ref", base) == 1
+
+
+@pytest.mark.spec("PIPE-CONNSPEC-R001.1")
+def test_a_bot_exemption_does_not_cover_a_human_code_commit(repo: Repo) -> None:
+    _configure_bot(repo)
+    base = repo.git("rev-parse", "HEAD").strip()
+    _bot_commit(repo, {"uv.lock": "lock = 5\n"}, "bump deps")
+    repo.commit({"pkg/util.py": "x = 5\n"}, "human change without trailer")
+    assert repo.run("spec-trailers", "--base-ref", base) == 1

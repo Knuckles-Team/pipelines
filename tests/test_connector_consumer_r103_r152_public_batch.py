@@ -20,7 +20,7 @@ import yaml
 
 from pipelines_hooks.cli import GROUPS
 from scripts.spec_dashboard_sources import read_records
-
+from tests.spec_group_history import HISTORICAL_SPEC_GROUP
 
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r103_r152_public_batch.json"
 EXPECTED_PROVIDER = "6ce28b9347c97c317937a6012d409183c314cbd5"
@@ -165,7 +165,7 @@ def test_source_and_status_snapshots_are_immutable_and_historical_leaves_remain(
     assert evidence["provider"]["sha"] == EXPECTED_PROVIDER
     assert evidence["provider"]["canonical_template"]["rev"] == "main"
     assert set(evidence["provider"]["canonical_template"]["hooks"]) == EXPECTED_HOOKS
-    assert evidence["provider"]["spec_group"] == list(GROUPS["spec"])
+    assert evidence["provider"]["spec_group"] == list(HISTORICAL_SPEC_GROUP)
     for name, row in evidence["repos"].items():
         assert row["sha"] == row["candidate_sha"]
         for relative, source in row["source_files"].items():

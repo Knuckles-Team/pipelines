@@ -12,9 +12,11 @@ from pipelines_hooks.core.settings import setting
 #: Hook id -> module exposing ``main(argv: list[str]) -> int``.
 GATES: dict[str, str] = {
     "validate": "pipelines_hooks.validation.cli",
+    "export-version": "pipelines_hooks.validation.export_version",
     "dependency-readiness": "pipelines_hooks.release.dependency_readiness",
     "packaging-roles": "pipelines_hooks.release.packaging_roles",
     "release-phases": "pipelines_hooks.release.phases",
+    "role-closure": "pipelines_hooks.release.role_closure",
     "complexity-staged": "pipelines_hooks.complexity.staged",
     "complexity-census": "pipelines_hooks.complexity.census",
     "kiss-staged": "pipelines_hooks.kiss.staged",
@@ -37,6 +39,8 @@ GATES: dict[str, str] = {
     "mermaid": "pipelines_hooks.hygiene.mermaid",
     "lockfile-version-mirrors": "pipelines_hooks.hygiene.lockfile_version_mirrors",
     "coupling": "pipelines_hooks.code.coupling",
+    "coverage-decrease": "pipelines_hooks.code.coverage_decrease",
+    "wire-rename": "pipelines_hooks.code.wire_rename",
     "environment-config-only": "pipelines_hooks.code.environment_config_only",
     "uv-lock-check": "pipelines_hooks.hygiene.uv_lock",
     "connector-name": "pipelines_hooks.hygiene.connector_name",
@@ -59,13 +63,17 @@ GATES: dict[str, str] = {
     "import-cycles": "pipelines_hooks.code.import_cycles",
     "env-sprawl": "pipelines_hooks.code.env_sprawl",
     "stdout-writes": "pipelines_hooks.code.stdout_writes",
+    "mutation-gaps": "pipelines_hooks.code.mutation_gaps",
+    "test-quality": "pipelines_hooks.code.test_quality",
     "public-surface": "pipelines_hooks.docs.public_surface",
+    "readme-deploy-block": "pipelines_hooks.docs.readme_deploy",
     "skill-grade": "pipelines_hooks.docs.skill_grade",
     "source-path-portability": "pipelines_hooks.hygiene.path_portability",
     "prompt-format": "pipelines_hooks.prompt_format",
     "test-layout": "pipelines_hooks.ci_replica.test_layout",
     "spec-decomposition": "pipelines_hooks.specs.decomposition",
     "spec-standard": "pipelines_hooks.specs.standard",
+    "ingest-worker-policy": "pipelines_hooks.specs.worker_policy",
     "plan-conformance": "pipelines_hooks.specs.plan_conformance",
     "spec-id-index": "pipelines_hooks.specs.id_index",
     "ste-staged": "pipelines_hooks.ste.staged",
@@ -92,7 +100,14 @@ GATES: dict[str, str] = {
 #: runs its member gates in order, with each member's default arguments.
 GROUPS: dict[str, tuple[str, ...]] = {
     "secrets": ("security-sanitizer", "secret-history", "tracked-privacy", "commit-identity", "commit-identity-range"),
-    "spec": ("spec-standard", "plan-conformance", "spec-decomposition", "spec-status", "spec-trailers"),
+    "spec": (
+        "spec-standard",
+        "ingest-worker-policy",
+        "plan-conformance",
+        "spec-decomposition",
+        "spec-status",
+        "spec-trailers",
+    ),
 }
 
 #: Group members that check a commit range. They run only when a range is

@@ -11,7 +11,6 @@ import yaml
 
 from scripts.spec_dashboard_sources import read_records
 
-
 FIXTURE = Path(__file__).parent / "fixtures/connector_spec_delivery/consumer_train_r107_r155_public_batch.json"
 EXPECTED_PROVIDER = "40fe75b242094ccfaf3c3406df0852deffcee57e"
 STATUS_CONFIG = {"sources": [{"glob": "specs/*/status.json", "kind": "spec"}]}

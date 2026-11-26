@@ -14,7 +14,7 @@ from pathlib import Path
 
 from pipelines_hooks.core.gitenv import blob_text, repo_root, staged_paths
 from pipelines_hooks.core.tools import verified
-from pipelines_hooks.kiss import runner
+from pipelines_hooks.kiss import modules, runner
 from pipelines_hooks.kiss.report import (
     Violation,
     attributable,
@@ -50,6 +50,9 @@ def staged_findings(root: Path, scope: tuple[str, ...], paths: list[str]) -> lis
         kiss = verified("kiss")
         runner.reject_symlinks(staged_tree, scope)
         head_tree = runner.materialize_head(root, Path(raw) / "head")
+        for path in paths:
+            if modules.is_test_target_root(staged_tree, path) and (staged_tree / path).is_file():
+                modules.resolve_children(staged_tree, path)
         return [f for path in paths for f in _file_findings(kiss, (staged_tree, head_tree), path)]
 
 
