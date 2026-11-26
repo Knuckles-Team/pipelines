@@ -11,7 +11,7 @@ ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.architecture_explorer import sdd  # noqa: E402
 from scripts.architecture_explorer.sdd import SddPhase  # noqa: E402
-from canopy_browser import ADGUARD, NEEDS_BROWSER, PKG, PREFIX, build_site, drive, node_of, payload, serve  # noqa: E402
+from canopy_browser import ADGUARD, NEEDS_BROWSER, NEEDS_LAYOUT, PKG, PREFIX, build_site, drive, node_of, payload, serve  # noqa: E402
 
 SPEC = "# FAM - Fam\n\n## Purpose\n\nWhy.\n"
 TASKS_OPEN = "# Tasks\n\n- [ ] T001 FAM-R001 do it\n- [ ] T002 FAM-R002 do it\n"
@@ -148,6 +148,7 @@ return {empty, mode:window.__arch.mode, status:document.getElementById("qstatus"
 
 
 @pytest.mark.spec("PIPE-PAGES-R054.5")
+@NEEDS_LAYOUT
 def test_dependency_edges_match_the_next_up_prerequisites(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)
     tree = payload(site)["tree"]

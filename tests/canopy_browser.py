@@ -20,6 +20,10 @@ from scripts.architecture_explorer.sources import Snapshot
 FAMILY = "scion-connector-control"
 PREFIX = "SCION-CONNECTOR-CONTROL"
 DRIVER = Path(__file__).parent / "canopy_drive.cjs"
+NEEDS_LAYOUT = pytest.mark.skipif(
+    shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists(),
+    reason="the layout engine is not installed",
+)
 NEEDS_BROWSER = pytest.mark.skipif(
     shutil.which("node") is None or not (PKG / "node_modules/elkjs").exists() or _chrome() is None,
     reason="the layout engine or a headless Chromium is not installed",
