@@ -59,7 +59,9 @@ def renamed_identifiers(diff: str) -> list[tuple[str, str, str]]:
     a pair renames an identifier when both lines tokenize alike except for one identifier.
     """
     found: list[tuple[str, str, str]] = []
-    path, removed, added = "", [], []
+    path = ""
+    removed: list[str] = []
+    added: list[str] = []
 
     def close() -> None:
         for old_line, new_line in zip(removed, added, strict=False):
@@ -106,7 +108,7 @@ def stale_golden_files(root: Path, base: str, patterns: list[re.Pattern[str]], d
         p for p in nul_split(git_text(root, ("ls-tree", "-r", "-z", "--name-only", base))) if matches(p, patterns)
     ]
     texts = {path: blob_text(root, f"{base}:{path}") or "" for path in golden}
-    findings = []
+    findings: list[str] = []
     for path, old, new in renamed_identifiers(diff):
         if matches(path, patterns):
             continue
