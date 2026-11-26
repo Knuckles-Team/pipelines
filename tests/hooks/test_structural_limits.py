@@ -96,6 +96,7 @@ def over_args(first, second, third, *rest, keyword, **options):
     }
 
 
+@pytest.mark.spec("PIPE-PAGES-R021.39")
 def test_structural_limits_wiring(repo: Repo) -> None:
     repo.commit(
         {
@@ -113,6 +114,7 @@ def test_structural_limits_wiring(repo: Repo) -> None:
     assert report.violations[0].kind == "function-arguments"
 
 
+@pytest.mark.spec("PIPE-PAGES-R021.40")
 def test_structural_limits_refusal(repo: Repo) -> None:
     repo.commit({"pyproject.toml": _adopted_pyproject()}, "opt in without policy")
     with pytest.raises(CannotRun, match=r"requires a \[structural\] table"):
@@ -126,6 +128,7 @@ def test_structural_limits_refusal(repo: Repo) -> None:
         )
 
 
+@pytest.mark.spec("PIPE-PAGES-R021.41")
 def test_structural_limits_evidence() -> None:
     report = structural.inspect_sources(
         {"pkg/source.py": "def work(value):\n    return value\n"},
@@ -146,6 +149,7 @@ def test_structural_limits_evidence() -> None:
     assert any("source_snapshot=fixture-revision" in line for line in structural.render(report))
 
 
+@pytest.mark.spec("PIPE-PAGES-R021.42")
 @pytest.mark.scanner("kiss")
 def test_structural_limits_cli(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
     repo.commit(
@@ -174,3 +178,10 @@ def test_structural_limits_cli(repo: Repo, capsys: pytest.CaptureFixture[str]) -
     assert "STRUCTURAL VIOLATION try-body-statements pkg/source.py" in output
     repo.stage({"pkg/source.py": "def repaired(value):\n    return value\n"})
     assert repo.run("kiss-staged") == 0
+    exact = "def exact(first, second, third, *, fourth, fifth):\n    try:\n        one = first\n        two = second\n    except Exception:\n        return first\n    return one + two\n"
+    repo.stage({"pkg/source.py": exact})  # exactly 5 arguments and 2 try statements: equality passes
+    assert repo.run("kiss-staged") == 0
+    nested = "def nested(first):\n    try:\n        try:\n            one = first\n            two = first\n            three = first\n        except Exception:\n            return first\n    except Exception:\n        return first\n    return one + two + three\n"
+    repo.stage({"pkg/source.py": nested})  # the inner body has 3 statements; the outer has 1
+    assert repo.run("kiss-staged") == 1
+    assert "try-body-statements pkg/source.py" in capsys.readouterr().out
