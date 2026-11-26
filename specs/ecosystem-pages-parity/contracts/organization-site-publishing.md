@@ -21,7 +21,7 @@ Provider: .github ORG-FRONT-R010.3
 
 ## Authoritative types
 
-`ExportRow` of `PIPE-PAGES-R057.1` in `scripts/architecture_explorer`. The `.github` repository keeps no second row type.
+`ExportRow` of the architecture explorer export, in `scripts/architecture_explorer`. The `.github` repository keeps no second row type.
 
 ## Test vectors
 
