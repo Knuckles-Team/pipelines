@@ -19,6 +19,7 @@ def fleet(tmp_path):
     return tmp_path, fleet_fixture(tmp_path)
 
 
+# spec: PIPE-PAGES-R008
 def test_six_exact_refs_stable_receipts_and_no_mutation(fleet):
     root, declaration = fleet
     before = {str(path): path.read_bytes() for path in root.rglob("*") if path.is_file()}
@@ -35,11 +36,37 @@ def test_six_exact_refs_stable_receipts_and_no_mutation(fleet):
         assert len(row["assets"]) == len(THEME_FILES)
         assert all(asset["expected_sha256"] == asset["actual_sha256"] for asset in row["assets"])
         assert row["assets"][0]["expected_sha256"] == digest(b"canonical extra.css\n")
+        assert row["content"]["ownership"] == {"process": True, "front-door": True}
+        assert row["content"]["quick_start"] is True and row["content"]["status"] == "pass"
     assert before == {str(path): path.read_bytes() for path in root.rglob("*") if path.is_file()}
     frozen = receipt(first, generated_at="2026-01-01T00:00:00Z")
     assert canonical(frozen) == canonical(receipt(second, generated_at="2026-01-01T00:00:00Z"))
     assert "2026-01-01" in render_receipt(frozen)
     assert "https://github.com/example/consumer-5/commit/" in render_receipt(frozen)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        '# C\n\nThe front door is owned by the organization hub.\n\n## Quick start\n\n```json\n{"transport": "stdio"}\n```\n',
+        "# C\n\nThe delivery process is owned by pipelines. The front door is owned by .github.\n\n## Quick start\n\n```bash\npip install x\n```\n",
+        "# C\n\nThe delivery process is owned by pipelines. The front door is owned by .github.\n\nstdio is mentioned here only.\n",
+    ],
+)
+def test_ownership_or_stdio_quick_start_missing_is_a_mismatch(fleet, text):
+    root, declaration = fleet
+    changed = revise(root, declaration, lambda path: (path / "docs/index.md").write_text(text))
+    result = verify(changed, root)
+    assert result["status"] == "mismatch"
+    assert result["consumers"][0]["content"]["reason"] == "ownership-or-quick-start-missing"
+    assert all(asset["status"] == "pass" for asset in result["consumers"][0]["assets"])
+
+
+def test_missing_index_page_is_unverified(fleet):
+    root, declaration = fleet
+    changed = revise(root, declaration, lambda path: (path / "docs/index.md").unlink())
+    row = verify(changed, root)["consumers"][0]
+    assert row["status"] == "unverified" and row["content"]["status"] == "unverified"
 
 
 def test_variable_fleet_without_code_change(fleet):

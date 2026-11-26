@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from scripts.pages_fleet_declaration import ParityError, canonical, digest, validate
@@ -36,6 +37,36 @@ def compare_asset(source: ExactTree, target: ExactTree, *, item, content: str) -
     result["status"] = "pass" if result["expected_sha256"] == result["actual_sha256"] else "mismatch"
     if result["status"] == "mismatch":
         result["reason"] = "digest-mismatch"
+    return result
+
+
+#: Ownership a consumer site must state (PIPE-PAGES-R008): the process and the front door each name their owner.
+OWNERSHIP = {
+    "process": re.compile(r"\bprocess\b[^\n.]*\bowned by\b[^\n.]*\bpipelines\b", re.I),
+    "front-door": re.compile(r"\bfront door\b[^\n.]*\bowned by\b[^\n.]*(?:organization|\.github)", re.I),
+}
+QUICK_START = re.compile(r"^#{1,6}\s+quick\s*start\b[^\n]*\n(?P<body>.*?)(?=^#{1,6}\s|\Z)", re.I | re.M | re.S)
+STDIO_BLOCK = re.compile(r"```[^\n]*\n[^`]*\bstdio\b[^`]*```", re.I)
+
+
+def check_content(target: ExactTree, content: str) -> dict:
+    """The consumer's index page states process and front-door ownership and shows a stdio quick start."""
+    path = f"{content}/index.md"
+    result = {"path": path, "ownership": {}, "quick_start": None, "status": "unverified", "reason": None}
+    try:
+        text = target.read(path).decode("utf-8")
+    except UNVERIFIED_ERRORS as exc:
+        result["reason"] = reason(exc)
+        return result
+    except UnicodeError:
+        result["reason"] = "content-not-utf-8"
+        return result
+    result["ownership"] = {name: bool(pattern.search(text)) for name, pattern in OWNERSHIP.items()}
+    section = QUICK_START.search(text)
+    result["quick_start"] = bool(section and STDIO_BLOCK.search(section.group("body")))
+    ok = all(result["ownership"].values()) and result["quick_start"]
+    result["status"] = "pass" if ok else "mismatch"
+    result["reason"] = None if ok else "ownership-or-quick-start-missing"
     return result
 
 
@@ -89,8 +120,9 @@ def populate_consumer(result: dict, root: Path, consumer: dict, *, source: Exact
     result["assets"] = [
         compare_asset(source, target, item=item, content=consumer["content_source"]) for item in THEME_FILES
     ]
+    result["content"] = check_content(target, consumer["content_source"])
     target.clean()
-    result["status"] = verdict(result["assets"])
+    result["status"] = verdict([*result["assets"], result["content"]])
 
 
 def populate_fleet(result: dict, fixtures: Path, fleet: dict) -> None:
@@ -115,4 +147,5 @@ def consumer_record(consumer: dict) -> dict:
         "status": "unverified",
         "reason": None,
         "assets": [],
+        "content": None,
     }

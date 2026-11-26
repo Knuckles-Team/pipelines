@@ -40,7 +40,7 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T027 PIPE-PAGES-R014.2 Define the URL form in `scripts/spec_dashboard_sources.py`: level 1 `https://knuckles-team.github.io/<repo>/spec-delivery/`, level 2 `.../spec-delivery/#spec-<ID>`, level 3 row `.../spec-delivery/#req-<ID>`.
 - [ ] T028 PIPE-PAGES-R014.3 Emit the anchors in `spec_row` (`scripts/spec_dashboard_panels.py`): each spec section gets `id="spec-<ID>"` and lists its rows, state, code references, and bound tests; each row gets `id="req-<ID>"`..
 - [ ] T029 PIPE-PAGES-R014.4 Link each box in `relation_view` (`scripts/spec_dashboard_panels.py`) to `#spec-<ID>` of its own page, or to the other repository's page for a cross-repository node..
-- [ ] T030 PIPE-PAGES-R014.5 Cross-repository row, owner `Knuckles-Team/.github` (BLOCKED until that repository carries a spec tree): link each component in `profile/README.md` to `ecosystem_components()` URLs at level 1.
+- [x] T030 PIPE-PAGES-R014.5 Cross-repository row, owner `Knuckles-Team/.github`: link each component in `profile/README.md` to `ecosystem_components()` URLs at level 1.
 - [ ] T031 PIPE-PAGES-R014.6 Add `check_drilldown_links(readme, site_index)` to `scripts/spec_dashboard_sources.py`.
 - [ ] T032 PIPE-PAGES-R015 One generator for connectors and client repositories. Producer first; children below.
 - [ ] T033 PIPE-PAGES-R015.1 The reusable workflow `.github/workflows/pages_pipeline.yml` must run the R012 to R014 steps for every caller.
@@ -206,11 +206,11 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T192 PIPE-PAGES-R020.76 Refusal. Implement this contract and bind `test_spec_artifacts_refusal` in `tests/hooks/test_spec_artifacts.py`.
 - [ ] T193 PIPE-PAGES-R020.77 Evidence. Implement this contract and bind `test_spec_artifacts_evidence` in `tests/hooks/test_spec_artifacts.py`.
 - [ ] T194 PIPE-PAGES-R020.78 Hot-path proof. Implement this contract and bind `test_spec_artifacts_cli` in `tests/hooks/test_spec_artifacts.py`.
-- [ ] T195 PIPE-PAGES-R012.8 Model. Implement this contract and bind `test_spec_bundle_compatibility_model` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] T196 PIPE-PAGES-R012.9 Behavior. Implement this contract and bind `test_spec_bundle_compatibility_behavior` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] T197 PIPE-PAGES-R012.10 Wiring. Implement this contract and bind `test_spec_bundle_compatibility_wiring` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] T198 PIPE-PAGES-R012.11 Refusal. Implement this contract and bind `test_spec_bundle_compatibility_refusal` in `tests/hooks/test_spec_bundle_compatibility.py`.
-- [ ] T199 PIPE-PAGES-R012.12 Evidence. Implement this contract and bind `test_spec_bundle_compatibility_evidence` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [x] T195 PIPE-PAGES-R012.8 Model. Implement this contract and bind `test_spec_bundle_compatibility_model` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [x] T196 PIPE-PAGES-R012.9 Behavior. Implement this contract and bind `test_spec_bundle_compatibility_behavior` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [x] T197 PIPE-PAGES-R012.10 Wiring. Implement this contract and bind `test_spec_bundle_compatibility_wiring` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [x] T198 PIPE-PAGES-R012.11 Refusal. Implement this contract and bind `test_spec_bundle_compatibility_refusal` in `tests/hooks/test_spec_bundle_compatibility.py`.
+- [x] T199 PIPE-PAGES-R012.12 Evidence. Implement this contract and bind `test_spec_bundle_compatibility_evidence` in `tests/hooks/test_spec_bundle_compatibility.py`.
 - [ ] T200 PIPE-PAGES-R012.13 Hot-path proof. Implement this contract and bind `test_spec_bundle_compatibility_cli` in `tests/hooks/test_spec_bundle_compatibility.py`.
 - [ ] T201 PIPE-PAGES-R021.31 Model. Implement this contract and bind `test_skill_dependency_audit_model` in `tests/hooks/test_skill_dependency_audit.py`.
 - [ ] T202 PIPE-PAGES-R021.32 Behavior. Implement this contract and bind `test_skill_dependency_audit_behavior` in `tests/hooks/test_skill_dependency_audit.py`.
@@ -224,12 +224,12 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T210 PIPE-PAGES-R023.16 Refusal. Implement this contract and bind `test_aggregate_skill_grade_refusal` in `tests/hooks/test_aggregate_skill_grade.py`.
 - [ ] T211 PIPE-PAGES-R023.17 Evidence. Implement this contract and bind `test_aggregate_skill_grade_evidence` in `tests/hooks/test_aggregate_skill_grade.py`.
 - [ ] T212 PIPE-PAGES-R023.18 Hot-path proof. Implement this contract and bind `test_aggregate_skill_grade_cli` in `tests/hooks/test_aggregate_skill_grade.py`.
-- [ ] T213 PIPE-PAGES-R012.14 Model. Implement this contract and bind `test_capability_inventory_model` in `tests/hooks/test_capability_inventory.py`.
-- [ ] T214 PIPE-PAGES-R012.15 Behavior. Implement this contract and bind `test_capability_inventory_behavior` in `tests/hooks/test_capability_inventory.py`.
-- [ ] T215 PIPE-PAGES-R012.16 Wiring. Implement this contract and bind `test_capability_inventory_wiring` in `tests/hooks/test_capability_inventory.py`.
-- [ ] T216 PIPE-PAGES-R012.17 Refusal. Implement this contract and bind `test_capability_inventory_refusal` in `tests/hooks/test_capability_inventory.py`.
-- [ ] T217 PIPE-PAGES-R012.18 Evidence. Implement this contract and bind `test_capability_inventory_evidence` in `tests/hooks/test_capability_inventory.py`.
-- [ ] T218 PIPE-PAGES-R012.19 Hot-path proof. Implement this contract and bind `test_capability_inventory_cli` in `tests/hooks/test_capability_inventory.py`.
+- [x] T213 PIPE-PAGES-R012.14 Model. Implement this contract and bind `test_capability_inventory_model` in `tests/hooks/test_capability_inventory.py`.
+- [x] T214 PIPE-PAGES-R012.15 Behavior. Implement this contract and bind `test_capability_inventory_behavior` in `tests/hooks/test_capability_inventory.py`.
+- [x] T215 PIPE-PAGES-R012.16 Wiring. Implement this contract and bind `test_capability_inventory_wiring` in `tests/hooks/test_capability_inventory.py`.
+- [x] T216 PIPE-PAGES-R012.17 Refusal. Implement this contract and bind `test_capability_inventory_refusal` in `tests/hooks/test_capability_inventory.py`.
+- [x] T217 PIPE-PAGES-R012.18 Evidence. Implement this contract and bind `test_capability_inventory_evidence` in `tests/hooks/test_capability_inventory.py`.
+- [x] T218 PIPE-PAGES-R012.19 Hot-path proof. Implement this contract and bind `test_capability_inventory_cli` in `tests/hooks/test_capability_inventory.py`.
 - [ ] T225 PIPE-PAGES-R021.37 Model. Implement this contract and bind `test_structural_limits_model` in `tests/hooks/test_structural_limits.py`.
 - [ ] T226 PIPE-PAGES-R021.38 Behavior. Implement this contract and bind `test_structural_limits_behavior` in `tests/hooks/test_structural_limits.py`.
 - [ ] T227 PIPE-PAGES-R021.39 Wiring. Implement this contract and bind `test_structural_limits_wiring` in `tests/hooks/test_structural_limits.py`.
@@ -328,7 +328,7 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 
 - [ ] T380 PIPE-PAGES-R003 Present-tense docs with accessible embedded start. Bind the existing implementation to its verification.
 - [ ] T381 PIPE-PAGES-R007 Ecosystem flow diagram with exact names and project marks. Bind the existing implementation to its verification.
-- [ ] T382 PIPE-PAGES-R008 Correct ownership and quick start in consumer parity checks. Bind the existing implementation to its verification.
+- [x] T382 PIPE-PAGES-R008 Correct ownership and quick start in consumer parity checks. Bind the existing implementation to its verification.
 - [ ] T383 PIPE-PAGES-R011 Present-tense home page with screenshot and repo map. Bind the existing implementation to its verification.
 - [ ] T384 PIPE-PAGES-R025.3 Wiring. Bind the existing implementation to its verification.
 - [ ] T416 PIPE-PAGES-R044 The architecture page separates verified from delivered. Bind the existing implementation to its verification.
