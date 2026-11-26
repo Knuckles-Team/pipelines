@@ -320,12 +320,12 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R032.4 | PIPE-PAGES-R032.4 | Planned `tests/hooks/test_export_version.py::test_version_move_and_lost_condition_refuse_the_import`. |
 | T-PIPE-PAGES-R032.5 | PIPE-PAGES-R032.5 | Planned `tests/hooks/test_export_version.py::test_each_roundtrip_prints_its_comparison_evidence`. |
 | T-PIPE-PAGES-R032.6 | PIPE-PAGES-R032.6 | Planned `tests/hooks/test_export_version.py::test_export_import_cli_equal_older_and_newer`. |
-| T-PIPE-PAGES-R040.1 | PIPE-PAGES-R040.1 | Planned `tests/test_coverage_baseline.py::test_evidence_carries_baseline_candidate_and_revision`. |
-| T-PIPE-PAGES-R040.2 | PIPE-PAGES-R040.2 | Planned `tests/test_coverage_baseline.py::test_decrease_is_rejected_deterministically`. |
-| T-PIPE-PAGES-R040.3 | PIPE-PAGES-R040.3 | Planned `tests/test_coverage_baseline.py::test_gate_is_registered_and_binds_the_revision`. |
-| T-PIPE-PAGES-R040.4 | PIPE-PAGES-R040.4 | Planned `tests/test_coverage_baseline.py::test_missing_or_stale_evidence_fails_instead_of_passing`. |
-| T-PIPE-PAGES-R040.5 | PIPE-PAGES-R040.5 | Planned `tests/test_coverage_baseline.py::test_evidence_line_names_the_proposal_and_both_measurements`. |
-| T-PIPE-PAGES-R040.6 | PIPE-PAGES-R040.6 | Planned `tests/test_coverage_baseline.py::test_planted_decrease_exits_one`. |
+| T-PIPE-PAGES-R040.1 | PIPE-PAGES-R040.1 | `tests/hooks/test_coverage_admission.py::test_evidence_carries_baseline_candidate_and_revision`. |
+| T-PIPE-PAGES-R040.2 | PIPE-PAGES-R040.2 | `tests/hooks/test_coverage_admission.py::test_decrease_is_rejected_deterministically`. |
+| T-PIPE-PAGES-R040.3 | PIPE-PAGES-R040.3 | `tests/hooks/test_coverage_admission.py::test_gate_is_registered_and_binds_the_revision`. |
+| T-PIPE-PAGES-R040.4 | PIPE-PAGES-R040.4 | `tests/hooks/test_coverage_admission.py::test_missing_or_stale_evidence_fails_instead_of_passing`. |
+| T-PIPE-PAGES-R040.5 | PIPE-PAGES-R040.5 | `tests/hooks/test_coverage_admission.py::test_evidence_line_names_the_proposal_and_both_measurements`. |
+| T-PIPE-PAGES-R040.6 | PIPE-PAGES-R040.6 | `tests/hooks/test_coverage_admission.py::test_planted_decrease_exits_one`. |
 | T-PIPE-PAGES-R044 | PIPE-PAGES-R044 | Test: `tests/test_architecture_explorer.py::test_verified_and_delivered_counts_are_separate`. |
 | T-PIPE-PAGES-R046 | PIPE-PAGES-R046 | Test: `tests/test_architecture_explorer.py::test_section_panel_counts_own_rows_and_shares_fade`. |
 | T-PIPE-PAGES-R047 | PIPE-PAGES-R047 | Test: `tests/test_architecture_explorer.py::test_edges_carry_type_rows_and_legend`. |

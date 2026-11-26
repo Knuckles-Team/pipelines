@@ -471,6 +471,37 @@
   always_run: true
   require_serial: true
   stages: [manual]
+- id: harness-bundles-untracked
+  name: No generated coding harness bundle is committed (BUNDLE_COMMITTED)
+  entry: pipelines-hook harness-bundles-untracked
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+- id: upgrade-test
+  name: Stored data upgrades in place from the last production release
+  entry: pipelines-hook upgrade-test
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
+- id: consumer-gate
+  name: Each consumer's tests pass against the release candidate
+  entry: pipelines-hook consumer-gate
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
+- id: candidate-sandbox
+  name: A release candidate passes a sandbox smoke pass and publishes exactly the built artifacts
+  entry: pipelines-hook candidate-sandbox
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
 - id: role-closure
   name: Role closure (install each supported role from its frozen closure and measure imports)
   entry: pipelines-hook role-closure
