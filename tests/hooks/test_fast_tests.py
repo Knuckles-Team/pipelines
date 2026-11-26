@@ -62,3 +62,34 @@ def test_fast_tests_timeout_fails_the_hook(repo: Repo, capsys: pytest.CaptureFix
     repo.commit({"pkg/slow.py": "VALUE = 2\n"}, "change")
     assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg", "--timeout", "2") == 1
     assert "exceeded 2s" in capsys.readouterr().err
+
+
+# spec: PIPE-GATES-R065
+def test_a_run_with_zero_suites_fails(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    from pipelines_hooks.ci_replica.fast_tests import require_suites
+
+    assert require_suites(["pytest", "-q"], 0, 0) == 1
+    assert require_suites(["pytest", "-q"], 5, None) == 1
+    base = repo.commit(
+        {"pkg/mod.py": "VALUE = 1\n", "tests/test_mod.py": "from pkg import mod\n\nHELPER = mod.VALUE\n"}, "baseline"
+    )
+    repo.commit({"pkg/mod.py": "VALUE = 2\n"}, "change")
+    assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 1
+    assert "no test suites ran" in capsys.readouterr().err
+
+
+# spec: PIPE-GATES-R065
+def test_a_run_with_one_suite_passes() -> None:
+    from pipelines_hooks.ci_replica.fast_tests import require_suites
+
+    assert require_suites(["pytest"], 0, 1) == 0
+    assert require_suites(["pytest"], 1, 3) == 1
+    assert require_suites(["pytest"], 0, None) == 0
+
+
+# spec: PIPE-GATES-R065
+def test_the_failure_names_the_command(capsys: pytest.CaptureFixture[str]) -> None:
+    from pipelines_hooks.ci_replica.fast_tests import require_suites
+
+    assert require_suites(["uv", "run", "pytest", "tests/test_x.py"], 0, 0) == 1
+    assert "uv run pytest tests/test_x.py" in capsys.readouterr().err
