@@ -130,3 +130,55 @@ def test_evidence_reports_absolute_delta_exclusions_and_open_policy(tmp_path: Pa
     rec = receipts(tmp_path / "rec.json", (base.snapshot_digest, "pass"), (cand.snapshot_digest, "pass"))
     assert run_gate("repository-validation", [*args, "--adequacy", str(rec)]) == 0
     assert run_gate("repository-validation", args) == 2
+
+
+# spec: PIPE-PAGES-R021.69
+def test_measurement_is_published_with_the_identities_a_run_receipt_preserves(tmp_path: Path) -> None:
+    base, cand = measured(tmp_path)
+    rec = receipts(tmp_path / "rec.json", (base.snapshot_digest, "pass"), (cand.snapshot_digest, "pass"))
+    args = [
+        "--size-baseline",
+        str(tmp_path / "base"),
+        "--size-candidate",
+        str(tmp_path / "cand"),
+        "--size-scope",
+        "src",
+    ]
+    consumer = tmp_path / "allocation"
+    assert run_gate("repository-validation", [*args, "--adequacy", str(rec), "--size-publish", str(consumer)]) == 0
+    (published,) = consumer.glob("*.json")
+    record = json.loads(published.read_text())
+    assert record["decision"] == size.ALLOCATION_DECISION == "MEDULLA-DECISION-ENGINE-R136.4"
+    assert record["source"] == {"baseline": base.snapshot_digest, "candidate": cand.snapshot_digest}
+    assert record["counts"]["nonblank_lines"] == cand.nonblank_lines
+    result = size.compare(base, cand, json.loads(rec.read_text()))
+    assert record == json.loads(
+        json.dumps(size.allocation_record(result))
+    )  # a run receipt rebuilds the same identities
+    blocked = tmp_path / "blocked"
+    blocked.write_text("a file where the consumer directory belongs")
+    assert run_gate("repository-validation", [*args, "--adequacy", str(rec), "--size-publish", str(blocked)]) == 2
+
+
+# spec: PIPE-PAGES-R021.72
+def test_cli_measures_two_snapshots_and_refuses_changed_lines_alone(tmp_path: Path) -> None:
+    base, cand = measured(tmp_path)
+    args = [
+        "--size-baseline",
+        str(tmp_path / "base"),
+        "--size-candidate",
+        str(tmp_path / "cand"),
+        "--size-scope",
+        "src",
+    ]
+    failing = receipts(tmp_path / "fail.json", (base.snapshot_digest, "pass"), (cand.snapshot_digest, "fail"))
+    assert run_gate("repository-validation", [*args, "--adequacy", str(failing)]) == 1  # smaller but not adequate
+    passing = receipts(tmp_path / "pass.json", (base.snapshot_digest, "pass"), (cand.snapshot_digest, "pass"))
+    out_a, out_b = tmp_path / "a.json", tmp_path / "b.json"
+    for out in (out_a, out_b):
+        assert run_gate("repository-validation", [*args, "--adequacy", str(passing), "--size-report", str(out)]) == 0
+    assert out_a.read_text() == out_b.read_text()  # exact, reproducible counts
+    report = json.loads(out_a.read_text())
+    assert report["baseline"]["files"] == ["src/__init__.py", "src/a.py", "src/b.py"]  # unchanged modules are counted
+    assert report["delta"]["nonblank_lines"] == -2
+    assert run_gate("repository-validation", ["--changed-lines", "3"]) == 2  # changed lines alone fail the contract

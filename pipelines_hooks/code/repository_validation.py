@@ -317,6 +317,8 @@ def collect(
 
 
 def size_comparison(args: argparse.Namespace) -> int:
+    if args.changed_lines is not None and not (args.size_baseline and args.size_candidate):
+        raise CannotRun("repository-validation: a changed-line count is not solution size; measure both snapshots")
     if not (args.size_baseline and args.size_candidate and args.adequacy and args.size_scope):
         raise CannotRun("repository-validation: size comparison needs baseline, candidate, scope and adequacy receipts")
     scope = tuple(args.size_scope)
@@ -327,6 +329,10 @@ def size_comparison(args: argparse.Namespace) -> int:
     )
     if args.size_report:
         args.size_report.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.size_publish:
+        print(
+            f"repository-validation: size measurement published as {solution_size.publish(result, args.size_publish).stem}"
+        )
     delta = result["delta"]
     print(f"repository-validation: size eligible={str(result['eligible']).lower()} delta={delta}")  # type: ignore[index]
     return 0 if result["eligible"] else 1
@@ -347,10 +353,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--proposal-store", type=Path, help="owner proposal storage directory")
     parser.add_argument("--as-of", type=date.fromisoformat, default=None, help="date the advisory age is judged at")
     parser.add_argument("--install", action="store_true", help="refused: the audit path never installs")
+    parser.add_argument("--size-publish", type=Path, help="owner allocation consumer directory for the measurement")
+    parser.add_argument("--changed-lines", type=int, help="refused alone: a changed-line count is not solution size")
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
     args = parser.parse_args(argv)
-    if args.size_baseline or args.size_candidate:
+    if args.size_baseline or args.size_candidate or args.changed_lines is not None:
         return size_comparison(args)
     root = repo_root(args.root)
     if args.install:

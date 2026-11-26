@@ -117,3 +117,36 @@ def load_receipts(path: Path) -> dict[str, object]:
     if not isinstance(data, dict):
         raise CannotRun("adequacy receipts must be an object")
     return data
+
+
+ALLOCATION_DECISION = "MEDULLA-DECISION-ENGINE-R136.4"
+
+
+def _identity(value: object) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def allocation_record(result: dict[str, object]) -> dict[str, object]:
+    """The measurement the owner allocation consumer reads, with the identities a run receipt must preserve."""
+    baseline, candidate = result["baseline"], result["candidate"]
+    return {
+        "decision": ALLOCATION_DECISION,
+        "eligible": result["eligible"],
+        "source": {"baseline": baseline["snapshot_digest"], "candidate": candidate["snapshot_digest"]},  # type: ignore[index]
+        "evidence": {"baseline": _identity(baseline), "candidate": _identity(candidate)},
+        "counts": {k: candidate[k] for k in ("total_bytes", "nonblank_lines", "syntax_nodes")},  # type: ignore[index]
+        "delta": result["delta"],
+        "adequacy_receipts": result["adequacy_receipts"],
+    }
+
+
+def publish(result: dict[str, object], directory: Path) -> Path:
+    """Publish the measurement to the owner allocation consumer (a directory of identity-keyed records)."""
+    record = allocation_record(result)
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        target = directory / f"{_identity(record)}.json"
+        target.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+    except OSError as exc:
+        raise CannotRun(f"owner allocation consumer is unavailable: {exc}") from exc
+    return target
