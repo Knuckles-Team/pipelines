@@ -7,7 +7,9 @@ when:
 
 3. a commit touches a product path (anything outside ``specs/``, ``docs/``,
    ``.github/`` and ``*.md``) and no commit in the range carries a ``Spec:``
-   trailer at all (``Spec: none (<reason>)`` counts as carrying one);
+   trailer at all (``Spec: none (<reason>)`` counts as carrying one). A
+   configured dependency bot's commit that changes only manifests and locks is
+   treated as ``Spec: none (deps)`` (:mod:`pipelines_hooks.specs.dependency_bots`);
 4. a trailer names a requirement ID that is not a table row in any
    ``specs/*/requirements.md`` (a ``PREFIX-R001..R005``-shaped token expands
    to the individual IDs in that inclusive range first);
@@ -54,6 +56,7 @@ from pipelines_hooks.specs.aliases import (
     load_aliases,
     canonical_trailer_ids,
 )
+from pipelines_hooks.specs.dependency_bots import Bot, is_dependency_only_bot_commit, load_bots
 from pipelines_hooks.specs.git_log import reverted_shas
 from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN
 from pipelines_hooks.specs.withdrawal import withdrawals
@@ -62,7 +65,7 @@ from pipelines_hooks.specs.withdrawal import withdrawals
 #: then sha/trailer separator. Both are illegal in a sha or a trailer value.
 _RECORD = "\x01"
 _FIELD = "\x02"
-_LOG_FORMAT = f"{_RECORD}%H{_FIELD}%P{_FIELD}%T{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
+_LOG_FORMAT = f"{_RECORD}%H{_FIELD}%P{_FIELD}%T{_FIELD}%an{_FIELD}%ae{_FIELD}%(trailers:key=Spec,valueonly,separator={TRAILER_JOIN})"
 
 _EXEMPT_PREFIXES = ("specs/", "docs/", ".github/")
 _PULL_MERGE_REF = re.compile(r"^refs/pull/(?P<number>[1-9][0-9]*)/merge$")
@@ -85,6 +88,7 @@ class _Commit:
     tree: str
     trailer_raw: str
     paths: tuple[str, ...]
+    author: Bot = ("", "")
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
@@ -101,9 +105,9 @@ def _parse_log(raw: str) -> list[_Commit]:
             continue
         header, _, remainder = chunk.partition("\n")
         fields = header.split(_FIELD)
-        if len(fields) != 4:
+        if len(fields) != 6:
             raise CannotRun("spec-trailers: malformed git log record")
-        sha, parent_raw, tree, trailer_raw = fields
+        sha, parent_raw, tree, author_name, author_email, trailer_raw = fields
         paths = tuple(line for line in remainder.splitlines() if line)
         commits.append(
             _Commit(
@@ -112,6 +116,7 @@ def _parse_log(raw: str) -> list[_Commit]:
                 tree=tree,
                 trailer_raw=trailer_raw,
                 paths=paths,
+                author=(author_name, author_email),
             )
         )
     return commits
@@ -224,9 +229,17 @@ def _is_product_path(path: str) -> bool:
     return not path.startswith(_EXEMPT_PREFIXES)
 
 
-def _missing_trailer_failures(commits: list[_Commit]) -> list[str]:
-    """Item 3: a product-path commit exists, but no commit carries ``Spec:`` at all."""
-    touches_product = any(any(_is_product_path(path) for path in commit.paths) for commit in commits)
+def _missing_trailer_failures(commits: list[_Commit], bots: frozenset[Bot] = frozenset()) -> list[str]:
+    """Item 3: a product-path commit exists, but no commit carries ``Spec:`` at all.
+
+    A configured bot's dependency-only commit counts as ``Spec: none (deps)``:
+    it is not a product change, so it never demands a trailer of its own.
+    """
+    touches_product = any(
+        any(_is_product_path(path) for path in commit.paths)
+        for commit in commits
+        if not is_dependency_only_bot_commit(bots, commit.author, commit.paths)
+    )
     has_trailer = any(commit.trailer_raw.strip() for commit in commits)
     if touches_product and not has_trailer:
         return [
@@ -291,7 +304,7 @@ def main(argv: list[str]) -> int:
     aliases = load_aliases(root)
     named = canonical_trailer_ids([commit.trailer_raw for commit in commits if commit.sha not in reverted], aliases)
     known = set(canonical_ids(_known_requirement_ids(root), aliases))
-    failures = _missing_trailer_failures(commits)
+    failures = _missing_trailer_failures(commits, load_bots(root))
     failures += _unknown_id_failures(named, known)
     withdrawn, withdrawal_errors = withdrawals(
         root,

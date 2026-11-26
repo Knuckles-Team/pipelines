@@ -36,6 +36,7 @@ KNOWN_SETTINGS = {
     "PIPELINES_ARBORA_TOKEN": "bearer token for the arbora HTTP API (never logged)",
     "GITHUB_REPOSITORY": "GitHub Actions repository name, the repository of published records",
     "GITHUB_SHA": "GitHub Actions commit, the revision of published records",
+    "PIPELINES_SPEC_STATUS_ENDPOINT": "URL of the served spec.status answer spec-status compares generated state with (unset: no comparison)",
     "PIPELINES_WORKSPACE_ROOT": "root of the operator's multi-repository workspace (default ~/workspace)",
 }
 

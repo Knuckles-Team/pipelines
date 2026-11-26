@@ -1,0 +1,40 @@
+name: Engine release consumer import
+
+# PIPE-RELEASE-R024: after an engine release publishes, the newest released SDK must still import against it.
+
+on:
+  workflow_call:
+    inputs:
+      engine:
+        description: Requirement spec of the engine release just published, for example engine==1.2.3.
+        required: true
+        type: string
+      sdk:
+        description: Requirement spec of the newest released SDK, for example sdk-package.
+        required: true
+        type: string
+      package:
+        description: Top-level import name of the SDK.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  consumer-import:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout pipelines
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          persist-credentials: false
+
+      - name: Import the SDK against the new engine
+        env:
+          ENGINE: ${{ inputs.engine }}
+          SDK: ${{ inputs.sdk }}
+          PACKAGE: ${{ inputs.package }}
+        run: uv run --frozen python scripts/release_orchestrator.py check-consumer-import --engine "$ENGINE" --sdk "$SDK" --package "$PACKAGE"

@@ -17,6 +17,7 @@ from typing import Any
 from pipelines_hooks.core.errors import CannotRun
 from pipelines_hooks.core.gitenv import git_text, repo_root
 from pipelines_hooks.core.settings import setting
+from pipelines_hooks.specs.engine_state import generated_states
 from pipelines_hooks.specs.generator import generate
 from pipelines_hooks.verdict_publish import post_operation, target_from_environment
 
@@ -25,12 +26,8 @@ STATUS_OPERATION = "spec.status"
 
 
 def local_states(root: Path, head: str) -> dict[str, str]:
-    """The generator's state of every row at ``head``, by row ID."""
-    return {
-        str(row["id"]): str(row["delivery_state"])
-        for document in generate(root, head).values()
-        for row in document.get("requirements", ())
-    }
+    """The generator's state of every row at ``head``, by row ID (the reader of ``engine_state``)."""
+    return generated_states(generate(root, head))
 
 
 def engine_states(answer: Any) -> dict[str, str]:

@@ -12,13 +12,23 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from pipelines_hooks.specs.priority import Node, bundles, frontier, is_cq, is_functional, score, unserved  # noqa: E402
+from pipelines_hooks.specs.priority import (  # noqa: E402
+    Node,
+    bundles,
+    dependents,
+    frontier,
+    is_cq,
+    is_functional,
+    score,
+    transitive_open,
+    unserved,
+)
 
 TOP_BUNDLES = 8
 
 
 def aggregate(rows: list[dict]) -> dict:
-    """Return ``{questions, scores, frontier, unserved, bundles}`` for the given spec rows.
+    """Return ``{questions, scores, frontier, unserved, bundles, dependents}`` for the given spec rows.
 
     ``scores`` maps each open row ID to ``{priority, unblocks, cqs}``. ``questions`` lists the competency-question
     rows (ID prefix ``MEDULLA-CQ-``) that at least one other row reaches. ``frontier`` lists open rows with every
@@ -38,6 +48,8 @@ def aggregate(rows: list[dict]) -> dict:
     }
     scores = score(nodes)
     ready = sorted(frontier(nodes), key=lambda rid: (-scores[rid]["priority"], rid))
+    reverse = dependents(nodes)
+    unblocks = {rid: sorted(transitive_open(rid, nodes, reverse)) for rid in nodes}
     reached = {cq for v in scores.values() for cq in v["cqs"]}
     return {
         "questions": [{"id": rid, "title": nodes[rid].title} for rid in sorted(reached) if is_cq(rid)],
@@ -45,4 +57,5 @@ def aggregate(rows: list[dict]) -> dict:
         "frontier": ready,
         "unserved": unserved(nodes, scores),
         "bundles": bundles(nodes, scores)[:TOP_BUNDLES],
+        "dependents": {rid: ids for rid, ids in unblocks.items() if ids},
     }

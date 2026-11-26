@@ -243,6 +243,8 @@ Research that feeds a feature goes in the owning spec's `research.md`, never in 
 
 Git reads trailers only from the last paragraph of a commit message. Put `Spec: <ID>` directly above the `Co-Authored-By:` line, with no blank line between them. A blank line between them leaves no `Spec:` trailer and the `spec-trailers` gate fails. Every lane brief repeats this rule. *Gate*: `spec-trailers`.
 
+A dependency-update bot's commit needs no `Spec:` trailer when it changes only dependency manifests and lock files. The repository lists the bot as exact `name` and `email` in `.config/spec-bots.toml` (`[[dependency_bot]]` tables); the commit is treated as `Spec: none (deps)`. A commit from the same bot that touches any other path is checked like any other. *Gate*: `spec-trailers`.
+
 ## Registries keyed on spec directories
 
 A page, explorer model, index or dashboard that maps by spec directory name changes in the same pull request that adds, renames or removes a spec directory. A new directory with no entry fails the page build after the merge and blocks later changes to that page. *Gate*: the explorer-spec-families check (`PIPE-GATES-R061`) fails when a spec directory has no node in the architecture model.

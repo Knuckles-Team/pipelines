@@ -1,0 +1,46 @@
+{
+ "schema_version": 1,
+ "purpose": "Exact .github/workflows/pages.yml content of each core repository on its origin/main, with the commit that last touched it. The test replays the reference-caller predicate over these bytes without network access.",
+ "repos": {
+  "medulla": {
+   "main_sha": "0f330c8c13db96793e072e4ff8059528b4c80121",
+   "path": ".github/workflows/pages.yml",
+   "last_commit": "71ed39387a50cae791578965c219653530d22750",
+   "bytes": 1076,
+   "sha256": "e6963f07ecc4e43c01ee6b4376aa5580461fce4883707cf11c060dd6596fc200",
+   "content": "name: Pages\n\n# Pages deploys on version tags (v*): a tag push refreshes documentation and the\n# spec-delivery dashboard. The github-pages environment admits v* tags.\n# Keep this outside Release: its workflow-level concurrency queues all jobs,\n# including otherwise independent reusable-workflow calls, behind engine CI.\non:\n  push:\n    tags: ['v*']\n  workflow_dispatch:\n\n# Serialize only Pages deployments; finish the active deploy and retain the\n# latest pending revision.\nconcurrency:\n  group: pages-${{ github.ref }}\n  cancel-in-progress: false\n\npermissions:\n  contents: read\n\njobs:\n  pages:\n    name: Deploy GitHub Pages\n    # Deploy on version tags or manual dispatch; the github-pages environment\n    # admits v* tags.\n    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n    permissions:\n      contents: write\n      pages: write\n      id-token: write\n"
+  },
+  "meristem": {
+   "main_sha": "71c2550fbb869afb56bf6644bec11c3572058bd1",
+   "path": ".github/workflows/pages.yml",
+   "last_commit": "c314d1e8c5002a07b838363b8b361b1574e06403",
+   "bytes": 714,
+   "sha256": "f78595b0ffb0081b97b58a56f2069b0466c5b3400216fa5abb6f58a3b6679955",
+   "content": "name: Pages\n\n# Rebuild the canonical Pages snapshot on version tags (v*) and on demand.\n# The reusable publisher owns the dashboard rendering and deployment.\non:\n  push:\n    tags: ['v*']\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: pages-${{ github.ref }}\n  cancel-in-progress: false\n\njobs:\n  pages:\n    name: Deploy GitHub Pages\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@490076d94f465da0f9396f69d5f4193bd8c20d8c\n    with:\n      content_source: pages\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .config/spec-dashboard.json\n"
+  },
+  "arbora": {
+   "main_sha": "916d8ad86d293ccbb6383daca65e9606452b8aa8",
+   "path": ".github/workflows/pages.yml",
+   "last_commit": "887e5253d0464521e37a7394db21fae3f47c3d07",
+   "bytes": 503,
+   "sha256": "e3f241367a6c2ce91749024520f860f93407a125aa3800e6bb1e9f64a08d9855",
+   "content": "name: Pages\n\non:\n  push:\n    tags: ['v*']\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: pages-${{ github.ref }}\n  cancel-in-progress: false\n\njobs:\n  deploy:\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n"
+  },
+  "scion-sdk": {
+   "main_sha": "89a898a0ee8d7447d072427b24fcb46dea4db322",
+   "path": ".github/workflows/pages.yml",
+   "last_commit": "955ed6fce184c2f4e21d4f12e30a2424a33212c7",
+   "bytes": 445,
+   "sha256": "59be1a1be862105504591974e2f285b720a754bd55617ec5c0bab869d27d8401",
+   "content": "name: Pages\n\non:\n  push:\n    tags: ['v*']\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: pages-${{ github.ref }}\n  cancel-in-progress: false\n\njobs:\n  pages:\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n"
+  },
+  "overstory": {
+   "main_sha": "0d3711f5ef14569959c2161f5d30a1289a75de82",
+   "path": ".github/workflows/pages.yml",
+   "last_commit": "f93a7d94a73f925475e449ce4d64d0643f5339bf",
+   "bytes": 596,
+   "sha256": "9f100f82b46332de3fe276d9acd40c91333ca624c5e1e74cb6f90d6a2a26a152",
+   "content": "name: Documentation\n\non:\n  push:\n    tags: ['v*']\n  workflow_dispatch:\n\nconcurrency:\n  group: pages-${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: false\n\npermissions:\n  contents: read\n\njobs:\n  pages:\n    name: Build and deploy the shared documentation experience\n    permissions:\n      contents: read\n      pages: write\n      id-token: write\n    uses: Knuckles-Team/pipelines/.github/workflows/pages_pipeline.yml@main\n    with:\n      content_source: docs\n      shared_theme_enabled: true\n      spec_dashboard_enabled: true\n      spec_dashboard_config: .github/spec-dashboard.json\n"
+  }
+ }
+}

@@ -21,6 +21,25 @@ from pipelines_hooks.core.settings import process_environment
 _INDEX_ENV = "GIT_INDEX_FILE"
 GIT_TIMEOUT_SECONDS = 300
 
+#: Marks a tree a build runner extracted from a source archive: source without
+#: a ``.git`` directory, verified by content digest and never by Git.
+EXTRACTED_TREE_MARKER = ".tree-receipt.json"
+
+
+def _inside_extracted_tree(root: Path) -> bool:
+    """Whether the nearest enclosing marker of ``root`` is an extracted-tree receipt.
+
+    Walking up stops at the first ``.git`` (a working copy) or receipt marker,
+    so a tree extracted inside some other checkout is never read through it.
+    """
+    start = root.resolve()
+    for candidate in (start, *start.parents):
+        if (candidate / ".git").exists():
+            return False
+        if (candidate / EXTRACTED_TREE_MARKER).is_file():
+            return True
+    return False
+
 
 def sanitized_env(*, preserve_index: bool = False) -> dict[str, str]:
     """The process environment without any ambient repository selector."""
@@ -32,7 +51,16 @@ def sanitized_env(*, preserve_index: bool = False) -> dict[str, str]:
 
 
 def run_git(root: Path, args: Sequence[str], *, preserve_index: bool = False) -> subprocess.CompletedProcess[str]:
-    """Run git from ``root``; a process failure raises :class:`CannotRun`."""
+    """Run git from ``root``; a process failure raises :class:`CannotRun`.
+
+    Git never runs inside an extracted tree (PIPE-GATES-R084): there is no
+    working copy to ask, so the call is refused rather than answered from a
+    surrounding repository or an empty result.
+    """
+    if _inside_extracted_tree(root):
+        raise CannotRun(
+            f"git {' '.join(args)} refused: {root} is an extracted tree without a working copy; verify it by content digest"
+        )
     try:
         return subprocess.run(
             ["git", *args],

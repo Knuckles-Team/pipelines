@@ -40,6 +40,7 @@ def _golden_fleet_identities() -> frozenset[tuple[str, str]]:
     return frozenset((item["name"], item["email"]) for item in payload["identities"])
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.2")
 def test_p1_well_formed_allowlist_loads_and_validates(tmp_path: Path) -> None:
     path = write_identity_allowlist(tmp_path, [ALLOWED, OTHER])
     identities = load_allowlist(path)
@@ -64,11 +65,13 @@ def test_p1_well_formed_allowlist_loads_and_validates(tmp_path: Path) -> None:
         "not-even-a-mapping",
     ],
 )
+@pytest.mark.spec("PIPE-IDENTITY-R001.2")
 def test_n1_empty_or_schema_invalid_allowlist_is_rejected_before_any_commit_is_checked(payload: object) -> None:
     with pytest.raises(IdentityAllowlistError):
         validated_terms(payload)
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.2")
 def test_n1_oversized_allowlist_is_rejected(tmp_path: Path) -> None:
     path = tmp_path / "oversized.json"
     path.write_bytes(b" " * (MAX_ALLOWLIST_BYTES + 1))
@@ -102,6 +105,7 @@ def test_fleet_default_path_matches_the_packaged_resource() -> None:
     assert {(identity.name, identity.email) for identity in identities} == _golden_fleet_identities()
 
 
+@pytest.mark.spec("PIPE-IDENTITY-R001.2")
 def test_configured_path_resolution_order(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert configured_path(tmp_path, None) == FLEET_DEFAULT_PATH
     local_path = write_identity_allowlist(tmp_path, [ALLOWED])

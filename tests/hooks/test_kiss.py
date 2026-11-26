@@ -78,3 +78,48 @@ def test_gates_refuse_a_config_key_kiss_would_silently_drop(repo: Repo, gate: st
     repo.stage({"pkg/returns.py": "VALUE = 2\n"})
     assert repo.run(gate) == 2
     assert "global.orphan_module_enabled" in capsys.readouterr().err
+
+
+# spec: PIPE-GATES-R082
+def test_a_test_mod_declaration_resolves_to_its_child_file(tmp_path) -> None:
+    from pipelines_hooks.core.errors import CannotRun
+    from pipelines_hooks.kiss.modules import is_test_target_root, resolve_children
+
+    tests = tmp_path / "pkg" / "tests"
+    (tests / "support").mkdir(parents=True)
+    (tmp_path / "pkg" / "Cargo.toml").write_text("[package]\n", encoding="utf-8")
+    (tests / "it.rs").write_text("// mod ignored;\nmod support;\nmod flat;\n", encoding="utf-8")
+    (tests / "support" / "mod.rs").write_text("pub mod helpers;\n", encoding="utf-8")
+    (tests / "support" / "helpers.rs").write_text("pub fn help() {}\n", encoding="utf-8")
+    (tests / "flat.rs").write_text("mod inner;\n", encoding="utf-8")
+    (tests / "flat").mkdir()
+    (tests / "flat" / "inner.rs").write_text("", encoding="utf-8")
+    (tests / "shared").mkdir()
+    (tests / "shared" / "extra.rs").write_text("", encoding="utf-8")
+    (tests / "it.rs").write_text(
+        (tests / "it.rs").read_text(encoding="utf-8") + '#[path = "shared/extra.rs"]\nmod renamed;\n', encoding="utf-8"
+    )
+    assert is_test_target_root(tmp_path, "pkg/tests/it.rs")
+    assert not is_test_target_root(tmp_path, "pkg/src/tests/it.rs")
+    assert sorted(resolve_children(tmp_path, "pkg/tests/it.rs")) == [
+        "pkg/tests/flat.rs",
+        "pkg/tests/flat/inner.rs",
+        "pkg/tests/shared/extra.rs",
+        "pkg/tests/support/helpers.rs",
+        "pkg/tests/support/mod.rs",
+    ]
+    (tests / "flat" / "inner.rs").unlink()
+    with pytest.raises(CannotRun, match="mod inner;"):
+        resolve_children(tmp_path, "pkg/tests/it.rs")
+
+
+# spec: PIPE-GATES-R082
+@pytest.mark.scanner("kiss")
+def test_staged_hook_resolves_a_test_mod_declaration(repo: Repo) -> None:
+    config = repo.root / ".config" / "kiss.toml"
+    repo.stage({".config/kiss.toml": config.read_text(encoding="utf-8") + "\n[rust]\nreturns_per_function = 8\n"})
+    repo.stage({"pkg/Cargo.toml": '[package]\nname = "pkg"\n'})
+    repo.stage({"pkg/tests/it.rs": "mod support;\n\n#[test]\nfn works() {\n    support::run();\n}\n"})
+    assert repo.run("kiss-staged") == 2  # the declared child is not in the staged tree
+    repo.stage({"pkg/tests/support.rs": "pub fn run() {}\n"})
+    assert repo.run("kiss-staged") == 0
