@@ -67,6 +67,19 @@
   --l-server:#bae7df; --l-source:#dce5b2; --l-delivery:#f0d0bf; --l-unmapped:#ffd4cc;
   --p-verified:#69d7a0; --p-landed:#68b8ff; --p-specified:#ffd166; --p-retired:#c0a8c8;
   --s-verified:#bfe6d3; --s-landed:#c2e4f8; --s-specified:#ecd99f; --s-retired:#d0dde5; color-scheme:dark}
+.drawer{position:fixed;top:8px;right:8px;bottom:8px;width:min(460px,94vw);z-index:30;box-shadow:var(--glass-shadow);background:var(--surface)}
+.drawer .ph{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.drawer[hidden]{display:none}
+.drawer h2:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.drawer .tasklist{margin:0;padding-left:18px}
+.dr,.oq{font:500 11px var(--font-mono);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--accent);background:none;cursor:pointer;text-decoration:none}
+.chip:disabled{opacity:.55;cursor:default}
+.pstack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--line);transition:opacity .18s ease}
+.pstack i{display:block;height:100%}
+.pcounts{display:flex;flex-wrap:wrap;gap:6px 14px;font:500 12px var(--font-mono);font-variant-numeric:tabular-nums}
+.modes{display:inline-flex;flex-wrap:wrap;gap:4px}
+.modelegend{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-body);color:var(--muted)}
+noscript table{border-collapse:collapse;margin:8px}noscript th,noscript td{border:1px solid var(--line);padding:4px 8px;text-align:left}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 var(--font-body)}
@@ -372,6 +385,7 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
       </details>
     </div>
   </header>
+  <!--__NOSCRIPT__-->
   <div class="toolbar">
     <button class="btn" id="back" type="button" title="Return to the previous view">&#8592; Back</button>
     <button class="btn" id="up" type="button" title="Zoom out one level (Esc)">&#8593; Up</button>
@@ -387,6 +401,13 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
     <button class="btn" id="xjson" type="button" title="Download the rows of this view with their artifact paths as JSON">Export JSON</button>
     <button class="btn" id="xmd" type="button" title="Download the rows of this view with their artifact paths as Markdown">Export Markdown</button>
     <button class="btn" id="vrel" type="button" aria-pressed="false" title="Release bundles: phase, scenario state and scoped rows">Releases</button>
+    <div class="modes" id="modes" role="group" aria-label="Diagram mode">
+      <button class="btn" type="button" data-mode="architecture" aria-pressed="true">Architecture</button>
+      <button class="btn" type="button" data-mode="delivery" aria-pressed="false">Delivery state</button>
+      <button class="btn" type="button" data-mode="sdd" aria-pressed="false">SDD phase</button>
+      <button class="btn" type="button" data-mode="priority" aria-pressed="false">Priority</button>
+      <button class="btn" type="button" data-mode="dependency" aria-pressed="false">Dependency</button>
+    </div>
     <button class="btn" id="ocean-motion" type="button" aria-pressed="true" title="Pause or resume background ocean motion">Ocean motion: on</button>
     <button class="btn" id="theme" type="button" title="Switch light or dark">Theme</button>
   </div>
@@ -406,9 +427,11 @@ header.top,.toolbar{background:var(--glass-chrome);border:1px solid var(--glass-
     <section class="panel program" id="program" aria-label="Delivery program" hidden></section>
     <section class="panel reader" id="reader" aria-label="Document reader" hidden></section>
     <aside class="panel" id="panel" aria-live="polite"></aside>
+    <aside class="panel drawer" id="drawer" aria-labelledby="drawer-h" hidden></aside>
   </main>
   <div class="map-notes">
   <div class="legend" id="legend" aria-label="Layer colors"></div>
+  <div class="modelegend" id="modelegend" role="status" aria-live="polite"></div>
   </div>
 </div>
 
@@ -630,11 +653,12 @@ function drawEdges(n, alpha){ const L=n.layout, t=LT[n.id]; const lw=Math.max(0.
     caption(n,"flow",e.label,x+8,y-18,fs,alpha,{candidates,context:(nodes[e.from]?.label||e.from)+" → "+(nodes[e.to]?.label||e.to)});
   });
   ctx.globalAlpha=1; }
-function countsLine(n){ if(n.external) return [["external system",C.muted]]; const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
+function countsLine(n){ if(n.external) return [["external system",C.muted]]; if(mode!=="architecture"&&mode!=="dependency"&&!n.specs.length) return [["no own rows",C.muted]]; const c=n.count; return [[fmt(c.total)+" specs  ",C.fg],["V "+c.VERIFIED+"  ",C.st.VERIFIED],["L "+c.LANDED+"  ",C.st.LANDED],["S "+c.SPECIFIED,C.st.SPECIFIED]]; }
 function drawRich(parts, x, y, maxW){ let total=0; parts.forEach(p=>total+=ctx.measureText(p[0]).width); if(total>maxW) parts=[parts[0]]; let cx=x-Math.min(total,maxW)/2; ctx.textAlign="left";
   parts.forEach(([s,col])=>{ ctx.fillStyle=col; ctx.fillText(s,cx,y); cx+=ctx.measureText(s).width; }); }
 let hitList=[];
 function drawNode(n, alpha){
+  if(!relNode(n.id)) alpha*=0.35;
   const r=R[n.id]; if(!r) return; const [sx,sy]=toS(r[0],r[1]), sw=r[2]*cam.k, sh=r[3]*cam.k;
   if(sx>W||sy>H||sx+sw<0||sy+sh<0||sw<1.5) return;
   const col=C.layer[n.layer]||C.accent, op=openness(n,sw), radius=Math.min(22, sw*0.11,sh*0.24);
@@ -644,10 +668,14 @@ function drawNode(n, alpha){
   material.addColorStop(0,C.opaque?C.surface:C.nodeTop); material.addColorStop(1,C.opaque?C.surface:C.nodeBottom);
   ctx.fillStyle=material; rr(sx,sy,sw,sh,radius); ctx.fill();
   if(!C.opaque && C.tint[n.layer]){ctx.fillStyle=C.tint[n.layer];ctx.fill();}
+  const ms=modeStyle(n); if(ms.fill){ ctx.fillStyle=ms.fill; rr(sx,sy,sw,sh,radius); ctx.fill(); }
   ctx.strokeStyle=C.opaque?C.edge:C.nodeEdge; ctx.lineWidth=sw<40?0.8:1.2;
   if(n.unmapped) ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
   if(n.id===selected||n.id===hitId){ ctx.strokeStyle=C.accent; ctx.globalAlpha=alpha*0.6; ctx.lineWidth=1.8; rr(sx-2,sy-2,sw+4,sh+4,radius+2); ctx.stroke(); }
   if(pulse&&pulse.id===n.id){ const e=1-Math.pow(1-pulseP,3), g=e*Math.min(18,Math.max(6,sw*0.06)); ctx.strokeStyle=C.accent; ctx.globalAlpha=alpha*(1-pulseP)*0.8; ctx.lineWidth=2.4; rr(sx-g,sy-g,sw+2*g,sh+2*g,radius+g); ctx.stroke(); ctx.globalAlpha=alpha; }
+  if(ms.ring){ ctx.strokeStyle=C.accent; ctx.globalAlpha=alpha*0.8; ctx.lineWidth=ms.ring; rr(sx-1,sy-1,sw+2,sh+2,radius); ctx.stroke(); ctx.globalAlpha=alpha; }
+  { const rp=relProg(n.id), tag=rp?rp.verified+" of "+rp.rows+" verified":ms.badge; if(tag&&sw>90&&sh>30){ ctx.font="600 "+Math.max(9,Math.min(12,sw/14))+"px "+C.body; ctx.fillStyle=C.accent; ctx.textAlign="left"; ctx.textBaseline="top"; ctx.fillText(tag,sx+6,sy+4); ctx.textBaseline="alphabetic"; } }
+  { const oq=ownQuestions(n); if(oq&&sw>40&&sh>20){ const br=Math.max(7,Math.min(11,sw/18)), bx=sx+sw-br-3, by=sy+br+3; ctx.fillStyle=C.accent; ctx.beginPath(); ctx.arc(bx,by,br,0,6.2832); ctx.fill(); ctx.fillStyle=C.opaque?C.bg:C.surface; ctx.font="700 "+br*1.1+"px "+C.body; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(oq),bx,by+0.5); ctx.textBaseline="alphabetic"; } }
   hitList.push([n.id,sx,sy,sw,sh,op]);
   // Open containers reserve their title strip and boundary, not the whole child drawing area.
   if(op<.98)annotationRects.push([sx,sy,sw,sh]);
@@ -697,7 +725,7 @@ function frame(now){
   if(!!anim!==flightOn){ flightOn=!!anim; if(flightOn) rootEl.dataset.oceanFlight="on"; else { delete rootEl.dataset.oceanFlight;
     if(pendingPulse&&!reduced()){ pulse={id:pendingPulse,t0:now}; } pendingPulse=null; } }
   if(pulse){ pulseP=(now-pulse.t0)/700; if(pulseP>=1){ pulse=null; pulseP=0; } dirty=true; }
-  if(dirty){ dirty=false; hitList=[]; annotations=[]; annotationRects=[]; annotationSegments=[]; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H); if(C.opaque){ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);} drawInner(T,1);
+  if(dirty){ dirty=false; hitList=[]; annotations=[]; annotationRects=[]; annotationSegments=[]; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H); if(C.opaque){ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);} drawInner(T,1); if(mode==="dependency") drawDeps();
     // DOM chrome is also an obstacle; no caption may sit under the zoom controls or build/hint text.
     const origin=cv.getBoundingClientRect();
     for(const e of [document.querySelector(".zoom"),$("fresh"),$("hint")]){const r=e.getBoundingClientRect();annotationRects.push([r.left-origin.left,r.top-origin.top,r.width,r.height]);}
@@ -715,7 +743,9 @@ function settle(){ const f=focusAt(); if(f!==focus){ focus=f; renderCrumbs(); }
   const sp=pathTo(selected);
   if(!sp.includes(focus) || (selected!==focus && pathTo(focus).includes(selected))){ selected=focus; resetSpecs(); renderPanel(); }
   syncHash(); }
-function syncHash(push){ try{ const h=ArchSearch.hashFor(selected,activeQ,docRef())||location.pathname+location.search; if(push&&h!==location.hash){ window.history.pushState(null,"",h); docDepth++; } else window.history.replaceState(null,"",h); }catch(_){} }
+function hashRef(){ const d=docRef(), r={...(d||{}),row:drawerRow,mode:mode==="architecture"?"":mode,release:relF==="unscheduled"?"":relF,filter:[...nextF]};
+  return (d||r.row||r.mode||r.release||r.filter.length)?r:null; }
+function syncHash(push){ try{ const h=ArchSearch.hashFor(selected,activeQ,hashRef())||location.pathname+location.search; if(push&&h!==location.hash){ window.history.pushState(null,"",h); docDepth++; } else window.history.replaceState(null,"",h); }catch(_){} }
 function go(id, opts){ opts=opts||{}; const n=nodes[id]; if(!n) return; hist.push({...cam}); if(hist.length>60) hist.shift();
   selected=id; hitId=opts.hit?id:null; if(!opts.keepSpecs) resetSpecs(); setView("map",true);
   const m = n.layout ? 1.04 : (n.id==="root"?1.02:2.6);
@@ -758,7 +788,7 @@ document.addEventListener("keydown",e=>{ if(e.target===$("q")) return; if((e.key
 
 // ---------- panel ----------
 let scope="node", filt="ALL", limit=150, flashSpec=null, flashIds=new Set();
-let view="map", sortBy="default", goalF="", onlyUnserved=false, relF="";
+let view="map", sortBy="default", goalF="", onlyUnserved=false, relF="", mode="architecture", drawerRow="", depSegs=[];
 const nextF=new Set(); let lastRows=[];
 const NEXT_RULES={research:"Needs research: the spec family is still at the specified phase.",plan:"Needs plan: research is done and the plan is not accepted.",ready:"Ready to implement: the row is in Next up and its tasks are ready.",verify:"Needs verification: the row is LANDED."};
 // Download the rows of the current view with their artifact paths, read from the export written beside the page (PIPE-PAGES-R057.3).
@@ -836,7 +866,7 @@ function renderReleases(){
     (r.progress||[]).forEach(x=>box.append(el("div",{class:"step"},[el("b",{text:(nodes[x.node]||{label:x.node}).label}),el("span",{class:"muted",text:" "+x.verified+" of "+x.rows+" verified"})])));
     if(r.manifest) box.append(el("a",{class:"src",href:gh("pipelines")+"/blob/HEAD/"+r.manifest,target:"_blank",rel:"noopener",text:r.manifest}));
     const b=el("button",{class:"chip",type:"button","aria-pressed":String(relF===r.id),text:relF===r.id?"Filtering the map to "+r.id:"Filter the map to "+r.id});
-    b.onclick=()=>{ relF=(relF===r.id)?"":r.id; scope="tree"; filt="ALL"; limit=150; setView("map"); };
+    b.onclick=()=>{ relF=(relF===r.id)?"":r.id; scope="tree"; filt="ALL"; limit=150; dirty=true; setView("map"); syncHash(); };
     box.append(b); pb.append(box); });
 }
 function renderDelivery(){
@@ -865,6 +895,71 @@ const KINDS = ["spec","plan","tasks","test-spec","checklists","research","data-m
 const KFILE = {"spec":"spec.md","plan":"plan.md","tasks":"tasks.md","test-spec":"test-spec.md","checklists":"checklists","research":"research.md","data-model":"data-model.md","quickstart":"quickstart.md","contracts":"contracts"};
 const ROWNODE = {}, ROWSTATE = {}; Object.values(nodes).forEach(n=>n.specs.forEach(r=>{ ROWNODE[r.id]=n.id; ROWSTATE[r.id]=r.status; }));
 const PASSED = new Set(REL.releases.filter(r=>r.scenario_state==="passed").map(r=>r.id));
+
+// ---- release focus, diagram modes, open-question badges and the row drawer (PIPE-PAGES-R053, R054, R056, R058) ----
+const RELPROG={}; REL.releases.forEach(r=>{ const m={}, anc=new Set(); (r.progress||[]).forEach(x=>{ m[x.node]=x; pathTo(x.node).forEach(a=>anc.add(a)); }); RELPROG[r.id]={m,anc}; });
+const relActive=()=>!!relF&&!!RELPROG[relF];
+function relNode(id){ return !relActive()||RELPROG[relF].anc.has(id); }
+function relProg(id){ return relActive()?RELPROG[relF].m[id]||null:null; }
+const QCACHE={};
+function ownQuestions(n){ if(QCACHE[n.id]===undefined){ let c=0; famList([n]).forEach(f=>{ c+=cardOf(f.repo,f.family).q||0; }); QCACHE[n.id]=c; } return QCACHE[n.id]; }
+const SDD_LABELS=["no spec","specified","research-done","plan-accepted","tasks-ready","implementing","verified"];
+const SDD_COLORS=["#8a8f94","#b3562a","#c28a1e","#9aa83a","#3d9970","#2b7fb8","#176b46"];
+function modeStyle(n){ const neutral={fill:"",ring:0,badge:""};
+  if(mode==="architecture"||mode==="dependency") return neutral;
+  if(!n.specs.length) return {...neutral,badge:"no own rows"};
+  if(mode==="delivery"){ const v=n.specs.filter(x=>x.status==="VERIFIED").length/n.specs.length; return {fill:"rgba(23,107,70,"+(0.12+0.5*v).toFixed(2)+")",ring:0,badge:Math.round(100*v)+"% verified"}; }
+  if(mode==="sdd"){ const ph=Math.min(...famList([n]).map(f=>cardOf(f.repo,f.family).s||0)); return {fill:SDD_COLORS[ph]+"55",ring:0,badge:SDD_LABELS[ph]}; }
+  const pr=Math.max(0,...n.specs.map(x=>x.priority||0)); return {fill:"",ring:Math.min(6,1+pr/20),badge:"priority "+pr}; }
+function renderModeLegend(){ const lg=$("modelegend"); lg.textContent=""; lg.dataset.mode=mode;
+  if(mode==="sdd"){ const c={}; famList(Object.values(nodes)).forEach(f=>{ const ph=cardOf(f.repo,f.family).s||0; c[ph]=(c[ph]||0)+1; });
+    SDD_LABELS.forEach((l,i)=>{ if(c[i]) lg.append(el("span",{"data-phase":l,style:"color:var(--fg)",text:l+" "+c[i]})); }); }
+  else if(mode==="delivery") lg.append(el("span",{text:"Darker green means a larger share of the part's own rows is VERIFIED."}));
+  else if(mode==="priority") lg.append(el("span",{text:"A thicker ring means a higher priority among the part's own rows."}));
+  else if(mode==="dependency") lg.append(el("span",{text:"Each line joins a part with prerequisite rows to a part that they unblock. Hover a line to list the row pairs."})); }
+function setMode(m,quiet){ if(!VIEW_MODES.includes(m)) m="architecture"; mode=m;
+  document.querySelectorAll("#modes button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===m)));
+  renderModeLegend(); dirty=true; if(!quiet) syncHash(); }
+document.querySelectorAll("#modes button").forEach(b=>{ b.onclick=()=>setMode(b.dataset.mode); });
+function drawDeps(){ depSegs=[]; ctx.save(); ctx.strokeStyle=C.accent; ctx.fillStyle=C.accent;
+  (T.deps||[]).forEach(d=>{ const a=R[d[0]], b=R[d[1]]; if(!a||!b) return; const p=toS(a[0]+a[2]/2,a[1]+a[3]/2), t=toS(b[0]+b[2]/2,b[1]+b[3]/2);
+    ctx.globalAlpha=0.55; ctx.lineWidth=Math.min(4,1+Math.log2(1+d[2])); ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(t[0],t[1]); ctx.stroke(); arrow(p[0],p[1],t[0],t[1],8); depSegs.push([p,t,d]); });
+  ctx.restore(); }
+cv.addEventListener("pointermove",e=>{ if(mode!=="dependency"||!depSegs.length) return; const x=e.offsetX, y=e.offsetY; let best=null, bd=7;
+  depSegs.forEach(([p,t,d])=>{ const dx=t[0]-p[0], dy=t[1]-p[1], l2=dx*dx+dy*dy||1, u=Math.max(0,Math.min(1,((x-p[0])*dx+(y-p[1])*dy)/l2)), dist=Math.hypot(x-(p[0]+u*dx),y-(p[1]+u*dy)); if(dist<bd){ bd=dist; best=d; } });
+  if(best) qstat.textContent="Edge "+best[0]+" to "+best[1]+": "+best[3].map(pr=>pr[0]+" unblocks "+pr[1]).join("; "); });
+const ROWOBJ={}; Object.values(nodes).forEach(n=>n.specs.forEach(r=>{ ROWOBJ[r.id]=r; }));
+function drawerMissing(body,h,id,why){ h.textContent="Row not found"; body.textContent=""; body.append(el("p",{class:"muted",role:"status",text:"Row not found: "+id+". "+why+" The map is unchanged."})); }
+function openDrawer(id,quiet){ const d=$("drawer"); drawerRow=id; d.hidden=false; d.textContent="";
+  const close=el("button",{class:"btn",type:"button",text:"Close"}); close.onclick=()=>closeDrawer();
+  const h=el("h2",{id:"drawer-h",tabindex:"-1",text:id}), body=el("div",{class:"pb"});
+  d.append(el("div",{class:"ph"},[h,close]),body); const s=ROWOBJ[id];
+  if(!s) drawerMissing(body,h,id,"No part lists it.");
+  else fillDrawer(body,h,s);
+  h.focus(); if(!quiet) syncHash(true); }
+function closeDrawer(){ const id=drawerRow; if(!id) return; drawerRow=""; const d=$("drawer"); d.hidden=true; d.textContent=""; syncHash();
+  const b=document.querySelector('[data-spec="'+CSS.escape(id)+'"] .dr'); if(b) b.focus(); }
+function fillDrawer(body,h,s){ body.textContent=""; body.append(el("p",{class:"muted",role:"status",text:"Loading…"}));
+  loadDetail(s).then(det=>{ const r=det.rows[s.id]; if(!r) return drawerMissing(body,h,s.id,"The "+s.family+" family has no detail entry for it."); body.textContent=""; drawerBody(body,s,det,r); })
+    .catch(()=>{ body.textContent=""; const b=el("button",{class:"btn",type:"button",text:"Retry"}); b.onclick=()=>fillDrawer(body,h,s);
+      body.append(el("p",{class:"muted",role:"alert",text:"The "+s.family+" family could not be loaded. "}),b); }); }
+function drawerBody(body,s,det,r){ const dr=r.drawer||{excerpts:{},none:[],tasks:[],progress:[0,0],checklist:[],unblocks:[],cqs:[],priority:null,questions:[]};
+  body.append(el("div",{class:"ev"},[el("span",{class:"badge "+s.status,text:s.status}),el("span",{class:"muted",text:"priority "+(dr.priority===null||dr.priority===undefined?"none":dr.priority)}),goalBadges(dr.cqs)]));
+  body.append(sect("Requirement",r.req?mdBox(r.req):el("p",{class:"muted",text:"No requirement text."})));
+  Object.keys(dr.excerpts).forEach(k=>body.append(sect("Excerpt: "+k,mdBox(dr.excerpts[k]))));
+  if(dr.none.length) body.append(el("p",{class:"muted",text:"none: "+dr.none.join(", ")}));
+  const tl=el("ul",{class:"tasklist"}); dr.tasks.forEach(t=>tl.append(el("li",{text:(t.done?"[x] ":"[ ] ")+t.text})));
+  body.append(sect("Tasks: "+dr.progress[0]+" of "+dr.progress[1]+" tasks",tl));
+  if(dr.checklist.length){ const cl=el("ul",{class:"tasklist"}); dr.checklist.forEach(t=>cl.append(el("li",{text:(t.done?"[x] ":"[ ] ")+t.text}))); body.append(sect("Checklist",cl)); }
+  const ul=el("ul",{class:"plain unblocks","aria-label":"Rows it unblocks"}); dr.unblocks.forEach(id=>ul.append(el("li",{},[el("a",{href:"#row="+encodeURIComponent(id),text:id})])));
+  body.append(sect("Unblocks ("+dr.unblocks.length+")",dr.unblocks.length?ul:el("p",{class:"muted",text:"No open row waits on this one."})));
+  const qs=el("ul",{class:"plain questions"}); dr.questions.forEach(q=>qs.append(el("li",{},[linkEl(q.doc+":"+q.line,gh(s.repo)+"/blob/HEAD/specs/"+s.family+"/"+q.doc+"#L"+q.line),document.createTextNode(" "+q.text)])));
+  body.append(sect("Open research questions ("+dr.questions.length+")",dr.questions.length?qs:el("p",{class:"muted",text:"No open question names this row."})));
+  const ev=el("div",{class:"ev"}); (r.landed_in||[]).forEach(c=>ev.append(el("span",{class:"k",text:"landed_in"}),linkEl(c.label,c.url))); (r.verified_by||[]).forEach(t=>ev.append(el("span",{class:"k",text:"verified_by"}),linkEl(t.label,t.url)));
+  body.append(sect("Status and evidence",ev));
+  const files=el("ul",{class:"plain files"}); det.files.forEach(f=>files.append(el("li",{},[el("code",{text:"specs/"+s.family+"/"+f.name}),document.createTextNode(" "),linkEl("open on the default branch",f.url)])));
+  body.append(sect("Artifacts",files)); }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&drawerRow){ e.preventDefault(); e.stopImmediatePropagation(); closeDrawer(); } },true);
 const cardOf = (repo,fam) => (CARDS[repo]||{})[fam] || {t:fam,p:"",k:[0,0],d:0};
 const descNodes = n => { const o=[]; (function w(x){ x.children.forEach(c=>{ o.push(c); w(c); }); })(n); return o; };
 function famList(list){ const m=new Map();
@@ -890,7 +985,7 @@ function docLinks(nodeId, f, card){ const w=el("div",{class:"chips",role:"group"
 function cardEl(f, nodeId){ const c=cardOf(f.repo,f.family), box=el("div",{class:"step dcard","data-family":f.family});
   box.append(el("div",{class:"dh"},[el("b",{text:c.t}),c.p?el("span",{class:"prio",text:c.p}):null,c.w?warnBadge(c.w):null]),
     el("div",{class:"muted",text:f.repo+" · "+f.family}),el("div",{class:"dcount",text:countText(tally(f.rows))}),
-    taskBar(c.k),el("div",{class:"muted",text:taskText(c.k)}),docLinks(nodeId,f,c)); return box; }
+    taskBar(c.k),el("div",{class:"muted",text:taskText(c.k)}),c.q?el("span",{class:"oq",text:c.q+" open questions"}):null,docLinks(nodeId,f,c)); return box; }
 let dsort="phase", dlimit=30;
 function sortFams(fams){ const by={phase:f=>phaseNum(cardOf(f.repo,f.family).p), progress:f=>-taskPct(cardOf(f.repo,f.family).k)};
   return fams.slice().sort((a,b)=>(by[dsort](a)-by[dsort](b))||(a.family<b.family?-1:1)); }
@@ -984,9 +1079,12 @@ function renderPanel(){
   const pb=el("div",{class:"pb"}); p.append(pb);
   pb.append(el("section",{},[el("h3",{text:"Description"}),el("p",{class:"desc",text:n.description+(diagramContext(n).length?" Diagram context: "+diagramContext(n).join("; ")+".":"")}), n.tools?el("p",{class:"tools",text:n.tools+" served operation tools"}):null]));
   if(n.external){ pb.append(el("section",{},[el("h3",{text:"Outside the ecosystem"}),el("p",{class:"muted",text:"No spec rows are written for this box. The parts connected to it own the rows."})])); }
-  else pb.append(el("section",{},[el("h3",{text:"Spec rows in this part and below"}),...statBlock(n.count)]));
+  else{ const own=tally(n.specs), tot=own.SPECIFIED+own.LANDED+own.VERIFIED, bar=el("div",{class:"pstack",role:"img","aria-label":"Own rows: "+countText(own)});
+    [["SPECIFIED","specified"],["LANDED","landed"],["VERIFIED","verified"]].forEach(([k,l])=>{ if(own[k]&&tot) bar.append(el("i",{style:"width:"+(100*own[k]/tot)+"%;background:var(--p-"+l+")"})); });
+    pb.append(el("section",{id:"ownprog"},[el("h3",{text:"Progress of this part's own rows"}),bar,el("div",{class:"pcounts"},[el("span",{"data-k":"specified",text:"specified "+own.SPECIFIED}),el("span",{"data-k":"landed",text:"landed "+own.LANDED}),el("span",{"data-k":"verified",text:"verified "+own.VERIFIED}),el("span",{"data-k":"delivered",text:"delivered "+own.delivered})])]));
+    pb.append(el("section",{},[el("h3",{text:"Spec rows in this part and below"}),...statBlock(n.count)])); }
   if(n.children.length){ const ul=el("ul",{class:"plain kids"});
-    n.children.forEach(c=>{ const b=el("button",{type:"button"},[el("span",{text:c.label}),el("span",{class:"n",text:c.external?"external":fmt(c.count.total)+" · V"+c.count.VERIFIED})]); b.onclick=()=>go(c.id); ul.append(el("li",{},[b])); });
+    n.children.forEach(c=>{ const b=el("button",{type:"button"},[el("span",{text:c.label}),el("span",{class:"n",text:c.external?"external":fmt(c.count.total)+" · V"+c.count.VERIFIED+(ownQuestions(c)?" · "+ownQuestions(c)+" open questions":"")})]); b.onclick=()=>go(c.id); ul.append(el("li",{},[b])); });
     pb.append(el("section",{},[el("h3",{text:"Parts ("+n.children.length+")"}),ul])); }
   if(n.code.length){ const ul=el("ul",{class:"plain code"});
     n.code.forEach(c=>ul.append(el("li",{},[el("span",{class:"repo",text:n.repo}),el("a",{href:gh(n.repo)+"/tree/HEAD/"+c,target:"_blank",rel:"noopener",text:c})])));
@@ -1014,14 +1112,14 @@ function renderPanel(){
   const sel=el("select",{class:"sel","aria-label":"Filter by competency question"},[el("option",{value:"",text:"All competency questions"})]);
   DEL.questions.forEach(g=>sel.append(el("option",{value:g.id,text:g.id+" · "+(g.title||"").slice(0,48)}))); sel.value=goalF; sel.onchange=()=>{goalF=sel.value;limit=150;renderPanel();};
   const relSel=el("select",{class:"sel","aria-label":"Filter by release"},[el("option",{value:"",text:"All releases"})]);
-  REL.releases.forEach(r=>relSel.append(el("option",{value:r.id,text:r.id+" · "+r.name}))); relSel.append(el("option",{value:"unscheduled",text:"unscheduled"})); relSel.value=relF; relSel.onchange=()=>{relF=relSel.value;limit=150;renderPanel();};
+  REL.releases.forEach(r=>relSel.append(el("option",{value:r.id,text:r.id+" · "+r.name}))); relSel.append(el("option",{value:"unscheduled",text:"unscheduled"})); relSel.value=relF; relSel.onchange=()=>{relF=relSel.value;limit=150;dirty=true;renderPanel();syncHash();};
   gc.append(sortB,unB); if(REL.releases.length) gc.append(relSel); if(DEL.questions.length) gc.append(sel); sec.append(gc);
   let rows=all.filter(s=>filt==="ALL"||s.status===filt);
   if(goalF) rows=rows.filter(s=>(s.cqs||[]).includes(goalF));
   if(onlyUnserved) rows=rows.filter(s=>s.unserved);
   if(relF) rows=rows.filter(s=>s.release===relF);
   const nextCount=k=>rows.filter(s=>s.n===k).length, nc=el("div",{class:"chips",role:"group","aria-label":"Next step"});
-  Object.keys(NEXT_RULES).forEach(k=>{ const c=nextCount(k), b=el("button",{class:"chip",type:"button","aria-pressed":String(nextF.has(k)),title:NEXT_RULES[k],text:({research:"Needs research",plan:"Needs plan",ready:"Ready to implement",verify:"Needs verification"})[k]+" "+fmt(c)}); b.disabled=!c&&!nextF.has(k); b.onclick=()=>{ nextF.has(k)?nextF.delete(k):nextF.add(k); limit=150; renderPanel(); }; nc.append(b); }); sec.append(nc);
+  Object.keys(NEXT_RULES).forEach(k=>{ const c=nextCount(k), b=el("button",{class:"chip",type:"button","aria-pressed":String(nextF.has(k)),title:NEXT_RULES[k],text:({research:"Needs research",plan:"Needs plan",ready:"Ready to implement",verify:"Needs verification"})[k]+" "+fmt(c),"data-next":k}); b.disabled=!c&&!nextF.has(k); b.onclick=()=>{ nextF.has(k)?nextF.delete(k):nextF.add(k); limit=150; renderPanel(); syncHash(); }; nc.append(b); }); sec.append(nc,el("p",{class:"muted nextlegend",text:"Next step rules. "+Object.keys(NEXT_RULES).map(k=>NEXT_RULES[k]).join(" ")}));
   if(nextF.size) rows=rows.filter(s=>nextF.has(s.n));
   lastRows=rows;
   if(sortBy==="priority") rows=rows.slice().sort((a,b)=>(b.priority||0)-(a.priority||0)||(a.id<b.id?-1:1));
@@ -1045,6 +1143,8 @@ function renderPanel(){
     if(s.desc) li.append(el("span",{class:"de",text:s.desc}));
     li.append(el("span",{class:"fa",text:s.repo+" · "+s.family+(s.priority!==undefined?" · priority "+s.priority:"")}));
     if((s.cqs||[]).length) li.append(goalBadges(s.cqs)); else if(s.unserved) li.append(el("span",{class:"gb"},[el("span",{class:"goal none",title:"No competency question reaches this open functional requirement through CQ → Depends-on → requirement edges. This does not indicate missing architecture placement or implementation links.",text:"without a CQ dependency path"})]));
+    const dbtn=el("button",{class:"dr",type:"button","aria-label":"Open details of "+s.id,text:"Details"}); dbtn.onclick=e=>{ e.stopPropagation(); openDrawer(s.id); }; li.append(dbtn);
+    if(s.q) li.append(el("a",{class:"oq",href:"#row="+encodeURIComponent(s.id),"aria-label":s.q+" open questions",text:s.q+" open questions"}));
     const it={li,s,tg}; items.push(it); const flip=()=>{ setOpen(it,!openRows.has(s.id)); sync(); };
     tg.onclick=e=>{ e.stopPropagation(); flip(); };
     li.addEventListener("click",e=>{ if(e.target.closest("a,button,summary,details,.xbody")) return; const sel=window.getSelection&&window.getSelection(); if(sel&&String(sel)) return; flip(); });
@@ -1151,22 +1251,25 @@ function checkViewHash(h){ const bad=[];
   if(h.row&&!ROWNODE[h.row]) bad.push("row "+h.row);
   if(!h.q&&h.node&&!nodes[h.node]) bad.push("part "+h.node);
   if(bad.length) qstat.textContent="Unknown view value ignored: "+bad.join(", ")+". The view is unchanged.";
+  if(h.mode&&!VIEW_MODES.includes(h.mode)){ setMode("architecture",true); qstat.textContent+=" The diagram shows the Architecture mode."; }
   return bad.length===0; }
 function applyHash(instant){ const h=ArchSearch.parseHash(location.hash);
   if(!checkViewHash(h)) return;
-  nextF.clear(); (h.filter||[]).forEach(f=>nextF.add(f));
-  if(h.release){ relF=h.release; scope="tree"; filt="ALL"; setView("map",true); }
+  nextF.clear(); (h.filter||[]).forEach(f=>nextF.add(f)); setMode(h.mode||"architecture",true);
+  if(h.release){ relF=h.release; scope="tree"; filt="ALL"; dirty=true; setView("map",true); }
   if(h.row&&ROWNODE[h.row]&&!h.node) h.node=ROWNODE[h.row];
   if(h.q){ q.value=h.q; doSearch(); if(hits.length){ activeQ=h.q; const top=hits[0]; go(top.node,{hit:true,keepSpecs:true,open:true,instant}); showMatches(top); renderPanel(); } }
   if(h.node&&nodes[h.node]){ go(h.node,{hit:true,open:true,instant}); if(h.q&&hits.length){ const mine=hits.find(x=>x.node===h.node); if(mine){ showMatches(mine); renderPanel(); } } }
   showResults(!!(h.q&&hits.length));
+  if(h.row) openDrawer(h.row,true); else if(drawerRow) closeDrawer();
   if(h.doc){ const at=h.doc.indexOf("/"), fam=h.doc.slice(0,at), repo=repoFor(selected,fam,h.repo); if(at>0&&repo) openDoc({repo,family:fam,file:h.doc.slice(at+1),sec:h.sec||""},true); }
-  else if(doc){ doc=null; renderReader(); } }
+  else if(doc){ doc=null; renderReader(); }
+  renderPanel(); }
 cam=fitCam(R.root,1.01); selected="root"; resetSpecs(); renderPanel(); renderCrumbs();
 if(location.hash.length>1) applyHash(true);
-window.addEventListener("hashchange",()=>{ const h=ArchSearch.parseHash(location.hash); if((h.node||"root")!==selected||h.q!==activeQ||(h.doc||"")!==(doc?doc.family+"/"+doc.file:"")) applyHash(false); });
+window.addEventListener("hashchange",()=>{ const h=ArchSearch.parseHash(location.hash); if((h.node||"root")!==selected||h.q!==activeQ||(h.doc||"")!==(doc?doc.family+"/"+doc.file:"")||(h.row||"")!==drawerRow||(h.mode||"architecture")!==mode) applyHash(false); });
 scheduleSettle(); requestAnimationFrame(frame);
 window.__storyQA=()=>storyEvidence;
-window.__arch={ search:(...a)=>SX.search(...a), get hits(){return hits;}, get cam(){return cam;}, get focus(){return focus;}, get selected(){return selected;}, rect:id=>R[id], meta:META, go, up, hitAt, visible:()=>hitList.length, annotations:()=>({labels:annotationEvidence,rects:annotationRects,segments:annotationSegments}) };
+window.__arch={ modeStyle:id=>modeStyle(nodes[id]), get mode(){return mode;}, get drawerRow(){return drawerRow;}, relDim:()=>Object.keys(nodes).filter(id=>!relNode(id)), relProg:id=>relProg(id), ownQuestions:id=>ownQuestions(nodes[id]), setMode, openDrawer, search:(...a)=>SX.search(...a), get hits(){return hits;}, get cam(){return cam;}, get focus(){return focus;}, get selected(){return selected;}, rect:id=>R[id], meta:META, go, up, hitAt, visible:()=>hitList.length, annotations:()=>({labels:annotationEvidence,rects:annotationRects,segments:annotationSegments}) };
 })();
 </script>

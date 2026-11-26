@@ -14,6 +14,8 @@ import pytest
 ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.architecture_explorer import export  # noqa: E402
+import canopy_browser  # noqa: E402
+from canopy_browser import ADGUARD, NEEDS_BROWSER, PREFIX, build_site, drive, serve  # noqa: E402
 
 PKG = ROOT / "scripts/architecture_explorer"
 
@@ -150,3 +152,44 @@ def test_export_header_digest_is_stable_and_markdown_lists_paths(tmp_path: Path)
         in md
     )
     assert "specs/fam/plan.md, specs/fam/checklists/a.md" in md
+
+
+R030 = f"{PREFIX}-R030"
+
+
+@pytest.mark.spec("PIPE-PAGES-R057.6")
+@NEEDS_BROWSER
+def test_a_hash_restores_the_view_and_the_export_paths_exist(monkeypatch, tmp_path: Path) -> None:
+    site = build_site(monkeypatch, tmp_path)
+    target = f"{ADGUARD}-R002"
+    with serve(site) as url:
+        out = drive(
+            tmp_path,
+            url + f"#mode=sdd&filter=plan&row={target}",
+            """await new Promise(r=>setTimeout(r,800));
+return {mode:window.__arch.mode, drawer:window.__arch.drawerRow, pressed:Array.from(document.querySelectorAll('[aria-label="Next step"] [aria-pressed="true"]')).map(b=>b.dataset.next), hash:location.hash};
+""",
+        )
+    assert out["mode"] == "sdd" and out["drawer"] == target and out["pressed"] == ["plan"]
+    assert "mode=sdd" in out["hash"] and "row=" in out["hash"]
+    doc = json.loads((site / "export/rows.json").read_text())
+    tracked = {
+        f"specs/{fam}/{name}" for docs in canopy_browser.DOCS.values() for fam, files in docs.items() for name in files
+    } | {f"specs/{r['family']}/requirements.md" for rows in canopy_browser.ROWS.values() for r in rows}
+    paths = {
+        p for r in doc["rows"] for group in r["files"].values() for p in ([group] if isinstance(group, str) else group)
+    }
+    assert paths and paths <= tracked, paths - tracked
+
+
+@pytest.mark.spec("PIPE-PAGES-R057.7")
+@NEEDS_BROWSER
+def test_page_without_scripts_lists_parts_and_links_exports(monkeypatch, tmp_path: Path) -> None:
+    site = build_site(monkeypatch, tmp_path)
+    page = (site / "index.html").read_text()
+    block = page[page.index('<noscript><section id="noscript-parts"') : page.index("</noscript>") + 11]
+    assert 'href="export/rows.json"' in block and 'href="export/rows.md"' in block
+    assert "/blob/HEAD/specs/scion-connector-control/spec.md" in block and "<script" not in block
+    with serve(site) as url:
+        dom = drive(tmp_path, url, "", scripting=False)
+    assert "Parts and spec rows" in dom and "scion-connector-control" in dom

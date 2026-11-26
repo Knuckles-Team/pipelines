@@ -11,6 +11,7 @@ ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.architecture_explorer import sdd  # noqa: E402
 from scripts.architecture_explorer.sdd import SddPhase  # noqa: E402
+from canopy_browser import ADGUARD, NEEDS_BROWSER, PKG, PREFIX, build_site, drive, node_of, payload, serve  # noqa: E402
 
 SPEC = "# FAM - Fam\n\n## Purpose\n\nWhy.\n"
 TASKS_OPEN = "# Tasks\n\n- [ ] T001 FAM-R001 do it\n- [ ] T002 FAM-R002 do it\n"
@@ -82,3 +83,117 @@ def test_plan_conformance_wrapper_reports_findings_for_text() -> None:
     assert check_plan_text(good, template, {"FAM-X-R001"}) == []
     found = check_plan_text("# FAM-X — Implementation plan\n\n## Summary\n\nDone.\n", template, set())
     assert any("Build contract" in f for f in found)
+
+
+R030 = f"{PREFIX}-R030"
+GO = """
+const hit=(id)=>window.__arch.search(id)[0];
+const wait=(ms)=>new Promise(r=>setTimeout(r,ms));
+"""
+
+
+def _run(monkeypatch, tmp_path: Path, script: str, fragment: str = "") -> dict:
+    site = build_site(monkeypatch, tmp_path)
+    with serve(site) as url:
+        return drive(tmp_path, url + fragment, GO + script)
+
+
+@pytest.mark.spec("PIPE-PAGES-R054.3")
+@NEEDS_BROWSER
+def test_mode_switch_changes_node_style_without_moving_nodes(monkeypatch, tmp_path: Path) -> None:
+    out = _run(
+        monkeypatch,
+        tmp_path,
+        """
+const node=hit("%s").node, rects=()=>JSON.stringify([window.__arch.rect("root"),window.__arch.rect(node)]);
+const base=rects(), styles={}, pressed={};
+for (const b of document.querySelectorAll("#modes button")){ b.click(); await wait(80);
+  styles[b.dataset.mode]=window.__arch.modeStyle(node); pressed[b.dataset.mode]=document.querySelector('#modes [aria-pressed="true"]').dataset.mode;
+  if(rects()!==base) return {moved:b.dataset.mode}; }
+const group=document.getElementById("modes");
+return {moved:"", styles, pressed, role:group.getAttribute("role"), label:group.getAttribute("aria-label"), count:group.querySelectorAll("button").length};
+"""
+        % R030,
+    )
+    assert out["moved"] == "" and out["role"] == "group" and out["count"] == 5 and out["label"] == "Diagram mode"
+    assert out["styles"]["architecture"]["fill"] == "" and out["styles"]["delivery"]["fill"].startswith("rgba(")
+    assert out["styles"]["sdd"]["badge"] in {
+        "specified",
+        "research-done",
+        "plan-accepted",
+        "tasks-ready",
+        "implementing",
+        "verified",
+    }
+    assert out["styles"]["priority"]["ring"] >= 1 and set(out["pressed"].values()) == set(out["pressed"])
+
+
+@pytest.mark.spec("PIPE-PAGES-R054.4")
+@NEEDS_BROWSER
+def test_empty_nodes_stay_neutral_and_unknown_mode_falls_back(monkeypatch, tmp_path: Path) -> None:
+    out = _run(
+        monkeypatch,
+        tmp_path,
+        """
+window.__arch.setMode("delivery"); await wait(80);
+const empty=window.__arch.modeStyle("root");
+location.hash="#mode=bogus"; await wait(500);
+return {empty, mode:window.__arch.mode, status:document.getElementById("qstatus").textContent};
+""",
+    )
+    assert out["empty"] == {"fill": "", "ring": 0, "badge": "no own rows"}
+    assert out["mode"] == "architecture" and "Unknown view value ignored: mode bogus" in out["status"]
+    template = (PKG / "template.html").read_text()
+    assert "no own rows" in template and "prefers-reduced-motion" in template
+
+
+@pytest.mark.spec("PIPE-PAGES-R054.5")
+def test_dependency_edges_match_the_next_up_prerequisites(monkeypatch, tmp_path: Path) -> None:
+    site = build_site(monkeypatch, tmp_path)
+    tree = payload(site)["tree"]
+    source, target = node_of(site, R030), node_of(site, f"{ADGUARD}-R002")
+    assert source != target
+    assert [source, target, 1, [[R030, f"{ADGUARD}-R002"]]] in tree["deps"]
+    # Each pair is a prerequisite that is itself an open row, so it appears in the Next up or Delivery path views.
+    open_ids = {r["id"] for r in [s for n in _nodes(tree) for s in n["specs"]] if r["status"] != "VERIFIED"}
+    assert all(pre in open_ids for _, _, _, pairs in tree["deps"] for pre, _ in pairs)
+    assert "function drawDeps" in (PKG / "template.html").read_text()
+
+
+def _nodes(tree: dict):
+    yield tree
+    for child in tree["children"]:
+        yield from _nodes(child)
+
+
+@pytest.mark.spec("PIPE-PAGES-R054.6")
+@NEEDS_BROWSER
+def test_sdd_mode_legend_counts_match_the_computed_phases_in_a_browser(monkeypatch, tmp_path: Path) -> None:
+    site = build_site(monkeypatch, tmp_path)
+    cards = payload(site)["tree"]["cards"]
+    expected: dict[str, int] = {}
+    for fams in cards.values():
+        for card in fams.values():
+            label = [
+                "no spec",
+                "specified",
+                "research-done",
+                "plan-accepted",
+                "tasks-ready",
+                "implementing",
+                "verified",
+            ][card["s"]]
+            expected[label] = expected.get(label, 0) + 1
+    assert len(expected) >= 3, expected  # the fixture spans several phases
+    with serve(site) as url:
+        out = drive(
+            tmp_path,
+            url,
+            GO
+            + """
+document.querySelector('#modes [data-mode="sdd"]').click(); await wait(120);
+const counts={}; for (const s of document.querySelectorAll("#modelegend [data-phase]")){ const m=/^(.*) (\\d+)$/.exec(s.textContent); counts[m[1]]=+m[2]; }
+return {counts, mode:window.__arch.mode};
+""",
+        )
+    assert out["mode"] == "sdd" and out["counts"] == expected
