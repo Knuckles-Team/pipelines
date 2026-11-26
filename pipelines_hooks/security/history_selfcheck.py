@@ -7,6 +7,7 @@ assembled at runtime, so this module's own source contains no credential shape.
 from __future__ import annotations
 
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -71,10 +72,69 @@ def _repository_checks() -> dict[str, bool]:
     }
 
 
-def self_check() -> tuple[int, dict[str, object]]:
+def _exception_checks() -> dict[str, bool]:
+    """A pinned exception exempts its one occurrence and nothing else."""
+    from pipelines_hooks.security.history_exceptions import EXCEPTIONS, line_digest, load_exceptions, pin_problem
+    from pipelines_hooks.security.secret_history import check
+
+    line = _planted_lines()[0]
+    with tempfile.TemporaryDirectory(prefix="secret-history-exceptions-") as raw:
+        repo = Path(raw)
+        _git(repo, "init", "-q", "-b", "main")
+        (repo / "README.md").write_text("base\n", encoding="utf-8")
+        _git(repo, "add", "README.md")
+        _git(repo, "commit", "-q", "-m", "base")
+        _git(repo, "branch", "base")
+        for name in ("pinned.py", "other.py"):
+            (repo / name).write_text(line + "\n", encoding="utf-8")
+            _git(repo, "add", name)
+            _git(repo, "commit", "-q", "-m", name)
+        commits = subprocess.run(
+            ["git", "rev-list", "--reverse", "base..HEAD"],
+            cwd=str(repo),
+            env=sanitized_env(),
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.split()
+        entry = (
+            "[[exception]]\n"
+            f'commit = "{commits[0]}"\nfile = "pinned.py"\nline_digest = "{line_digest(line)}"\n'
+            'reason = "synthetic self-check line that stands in for a shape-based historical match only"\n'
+            'reviewed_on = "2026-01-01"\n'
+        )
+        (repo / ".config").mkdir()
+        (repo / EXCEPTIONS).write_text(entry, encoding="utf-8")
+        rc_only_other, only_other = check(repo, "base")
+        hits = only_other["credentialHits"]
+        files = {hit["file"].removeprefix("b/") for hit in hits} if isinstance(hits, list) else set()
+        (repo / EXCEPTIONS).write_text(entry.replace('"pinned.py"', '"renamed.py"'), encoding="utf-8")
+        rc_wrong_file, _wrong = check(repo, "base")
+        (repo / EXCEPTIONS).write_text(entry, encoding="utf-8")
+        problem = pin_problem(repo, load_exceptions(repo)[0])
+    return {
+        "exceptionExemptsOnlyItsPinnedOccurrence": rc_only_other == 1 and files == {"other.py"},
+        "exceptionWithAWrongPinExemptsNothing": rc_wrong_file == 1,
+        "exceptionPinVerifies": problem is None,
+    }
+
+
+def _repository_exception_checks(root: Path) -> dict[str, bool]:
+    """Every entry of ``root`` still points at a real credential-shaped occurrence."""
+    from pipelines_hooks.security.history_exceptions import load_exceptions, pin_problem
+
+    problems = [problem for entry in load_exceptions(root) if (problem := pin_problem(root, entry)) is not None]
+    for problem in problems:
+        print(f"secret-history --self-check: {problem}", file=sys.stderr)
+    return {"repositoryExceptionsMatchTheirPins": not problems}
+
+
+def self_check(root: Path | None = None) -> tuple[int, dict[str, object]]:
     text_hits = scan_text_for_credentials("Session log:\n" + _planted_lines()[3] + "\n", label="t.txt")
     checks = {
         **_repository_checks(),
+        **_exception_checks(),
+        **({} if root is None else _repository_exception_checks(root)),
         "textModeCaughtPlantedCredential": any(
             h["pattern"] == "engine_signer_credential_assignment" for h in text_hits
         ),

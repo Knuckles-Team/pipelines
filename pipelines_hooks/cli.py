@@ -59,6 +59,7 @@ GATES: dict[str, str] = {
     "env-sprawl": "pipelines_hooks.code.env_sprawl",
     "stdout-writes": "pipelines_hooks.code.stdout_writes",
     "public-surface": "pipelines_hooks.docs.public_surface",
+    "readme-deploy-block": "pipelines_hooks.docs.readme_deploy",
     "skill-grade": "pipelines_hooks.docs.skill_grade",
     "source-path-portability": "pipelines_hooks.hygiene.path_portability",
     "prompt-format": "pipelines_hooks.prompt_format",

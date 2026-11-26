@@ -62,6 +62,7 @@ KEPT = {
     "validate",
     "source-path-portability",
     "prompt-format",
+    "readme-deploy-block",
     "skill-grade",
     "test-layout",
     "workflow-step-honesty",
