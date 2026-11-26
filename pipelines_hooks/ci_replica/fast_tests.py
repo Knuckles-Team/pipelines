@@ -13,6 +13,8 @@ import argparse
 import shutil
 import subprocess
 import sys
+import tempfile
+import xml.etree.ElementTree as ET  # noqa: S405 - the file is written by our own pytest run
 from pathlib import Path
 
 from pipelines_hooks.ci_replica.test_scope import FULL, NONE, _python_scope
@@ -40,6 +42,24 @@ def _pytest_command(root: Path, tests: list[str]) -> list[str]:
     return [sys.executable, "-m", "pytest", "-q", "-x", *tests]
 
 
+def _suites_run(report: Path) -> int | None:
+    """Tests recorded in a junit report, or None when pytest wrote no readable report."""
+    try:
+        root = ET.parse(report).getroot()  # noqa: S314 - written by the pytest run above
+    except (OSError, ET.ParseError):
+        return None
+    suites = [root] if root.tag == "testsuite" else list(root.iter("testsuite"))
+    return sum(int(suite.get("tests", "0")) for suite in suites)
+
+
+def require_suites(command: list[str], returncode: int, suites: int | None) -> int:
+    """Fail a run that executed zero test suites, whatever the tool's own exit status."""
+    if suites == 0 or returncode == 5:  # 5: pytest collected nothing
+        print(f"fast-tests: no test suites ran: {' '.join(command)}", file=sys.stderr)
+        return 1
+    return returncode
+
+
 def main(argv: list[str]) -> int:
     args = _parse_args(argv)
     if args.timeout < 1:
@@ -54,8 +74,14 @@ def main(argv: list[str]) -> int:
     if scope == [FULL]:
         print("fast-tests: shared test infrastructure changed; the full suite runs in main CI")
         return 0
+    command = _pytest_command(root, scope)
     try:
-        return subprocess.run(_pytest_command(root, scope), cwd=root, timeout=args.timeout, check=False).returncode
+        with tempfile.TemporaryDirectory(prefix="fast-tests-") as tmp:
+            report = Path(tmp) / "junit.xml"
+            code = subprocess.run(
+                [*command, f"--junitxml={report}"], cwd=root, timeout=args.timeout, check=False
+            ).returncode
+            return require_suites(command, code, _suites_run(report))
     except subprocess.TimeoutExpired:
         print(f"fast-tests: exceeded {args.timeout}s; narrow the change or run the suite in CI", file=sys.stderr)
         return 1
