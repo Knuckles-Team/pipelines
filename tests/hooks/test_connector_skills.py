@@ -169,3 +169,44 @@ def test_a_connector_file_in_a_skill_fails(
     monkeypatch.chdir(root)
     assert skills.main([]) == 1
     assert "SKILL_HAS_CONNECTOR_FILE" in capsys.readouterr().out
+
+
+SPEC = """goal: Look up one demo record.
+outputs: [the record]
+required_tool_actions: [demo_get]
+forbidden_tool_actions: [demo_delete]
+target_agents: [claude]
+target_models: [standard-model]
+steps:
+  - objective: Read the record.
+    command: demo get <id>
+    verify: The output names the record.
+    on_failure: Run `demo list` and pick an id from it.
+"""
+
+
+def _compiled_repo(root: Path) -> Path:
+    from pipelines_hooks.connector.skill_checks import compile as skill_compile
+
+    _repo(root)
+    folder = root / "demo_mcp" / "skills" / "demo-skill"
+    (folder / "skill.spec.yml").write_text(SPEC, encoding="utf-8")
+    compiled = skill_compile.compile_skill(
+        skill_compile.parse_spec(SPEC), "demo-skill", (folder / "SKILL.md").read_text(encoding="utf-8")
+    )
+    (folder / "SKILL.md").write_text(compiled.skill_md, encoding="utf-8")
+    (folder / "evals").mkdir()
+    (folder / "evals" / "prompts.jsonl").write_text(compiled.prompts_jsonl, encoding="utf-8")
+    return folder
+
+
+@pytest.mark.spec("PIPE-GATES-R016.121")
+def test_a_stale_compiled_skill_fails_and_is_named(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _compiled_repo(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    assert skills.main([]) == 0
+    (folder / "skill.spec.yml").write_text(SPEC.replace("Look up one", "Find one"), encoding="utf-8")
+    assert skills.main([]) == 1
+    assert "SKILL_COMPILE_STALE: demo-skill" in capsys.readouterr().out

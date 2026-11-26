@@ -16,7 +16,14 @@ import sys
 from pathlib import Path
 
 from pipelines_hooks.connector import declaration, project
-from pipelines_hooks.connector.skill_checks import atomicity, budgets, frontmatter, paths, steps
+from pipelines_hooks.connector.skill_checks import (
+    atomicity,
+    budgets,
+    compile as skill_compile,
+    frontmatter,
+    paths,
+    steps,
+)
 
 MAX_PATH, MAX_NAME = 200, 100
 
@@ -55,6 +62,7 @@ def main(argv: list[str]) -> int:
         ("frontmatter-portability", frontmatter.main, [str(skills), "--max-violations", "0"]),
         ("skill-steps", steps.main, ["--root", str(skills)]),
         ("skill-budgets", budgets.main, ["--root", str(skills)]),
+        ("skill-compile", skill_compile.main, ["--root", str(skills)]),
         (
             "path-portability",
             paths.main,
