@@ -136,7 +136,7 @@ def test_major_upgrade_pre_pin_behavior(tmp_path: Path) -> None:
     assert [c["status"] for c in report["consumers"]] == ["applied", "applied"]
 
 
-# R001.9 stays unbound: the Scion SDK receipt producer is not served yet.
+# spec: PIPE-RELEASE-R001.9
 def test_major_upgrade_pre_pin_wiring(tmp_path: Path) -> None:
     from pipelines_hooks.cli import GATES
 
@@ -164,7 +164,7 @@ def test_major_upgrade_pre_pin_wiring(tmp_path: Path) -> None:
     ]  # fmt: skip
     command = [sys.executable, "-m", "pipelines_hooks", "release-phases", *base]
     env = {**ENV, "PYTHONPATH": str(Path(__file__).resolve().parents[2])}
-    # the Scion SDK receipt producer is not served here: no receipts, no pin, no bump
+    # no producer receipts: no pin, no bump
     unavailable = subprocess.run(command, capture_output=True, text=True, env=env, check=False)  # noqa: S603
     assert unavailable.returncode == 2 and "unavailable" in unavailable.stderr
     assert not marker.exists() and fixture.pins() == [f'dependencies = ["{PRIOR}"]\n'.encode()] * 2
@@ -252,7 +252,7 @@ def test_major_upgrade_pre_pin_evidence(tmp_path: Path) -> None:
     assert entries[0]["pin_digest_after"] != entries[0]["pin_digest_before"]
 
 
-# R001.12 stays unbound: the Scion SDK receipt producer is not served yet.
+# spec: PIPE-RELEASE-R001.12
 def test_major_upgrade_pre_pin_cli(tmp_path: Path) -> None:
     incompatible = Fixture(_mk(tmp_path, "incompatible"))
     incompatible.receipts["receipts"].pop(1)
