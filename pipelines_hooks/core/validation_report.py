@@ -150,6 +150,48 @@ class Counts(_Model):
     skipped: int = 0
 
 
+class HealthFix(_Model):
+    rank: int = Field(ge=1)
+    category: str
+    rule: str
+    severity: str
+    blocking: bool
+    path: str
+    line: int | None = None
+    suggestion: str
+
+
+class HealthCategory(_Model):
+    status: Literal["measured", "unchecked", "skipped"]
+    weight: int | None = None
+    findings: int = 0
+    penalty: int = 0
+    score: int | None = None
+    reason: str = ""
+
+
+class HealthSummary(_Model):
+    """Deterministic 0-100 health over the scored categories; lint, import-order and type are unscored."""
+
+    policy_version: int
+    weights: dict[str, int]
+    penalties: dict[str, int]
+    score: int | None = Field(default=None, ge=0, le=100)
+    score_available: bool
+    coverage: float = Field(ge=0, le=1)
+    categories: dict[str, HealthCategory]
+    unscored: dict[str, Counts | None]
+    fixes: tuple[HealthFix, ...] = ()
+
+    @model_validator(mode="after")
+    def _score_needs_every_scored_category(self) -> HealthSummary:
+        if self.score_available != (self.score is not None):
+            raise ValueError("score availability is inconsistent with the score")
+        if self.score_available and any(c.status != "measured" for c in self.categories.values()):
+            raise ValueError("an authoritative score needs every scored category measured")
+        return self
+
+
 def _tally(report_checks: tuple[CheckRecord, ...], skills: SkillInventory | None) -> dict[str, Counts]:
     tallies: dict[str, Counter[str]] = {}
     for check in report_checks:
@@ -192,6 +234,7 @@ class ValidationReport(_Model):
     counts: dict[str, Counts] = Field(default_factory=dict)
     verdict: Verdict = "pass"
     full_coverage: bool = True
+    health: HealthSummary | None = None
 
     @model_validator(mode="after")
     def _recomputed(self) -> ValidationReport:
@@ -214,6 +257,7 @@ class ValidationReport(_Model):
         snapshot: str,
         checks: list[CheckRecord] | tuple[CheckRecord, ...] = (),
         skills: SkillInventory | None = None,
+        health: HealthSummary | None = None,
     ) -> ValidationReport:
         """Assemble a report in stable order with recomputed counts and verdict."""
         ordered = tuple(
@@ -233,6 +277,7 @@ class ValidationReport(_Model):
                 counts=_tally(ordered, skills),
                 verdict=_verdict(ordered, skills),
                 full_coverage=_full_coverage(ordered, skills),
+                health=health,
             )
         except ValidationError as exc:
             raise CannotRun(f"validation-report: invalid record: {exc.errors()[0]['msg']}") from exc
