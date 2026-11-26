@@ -128,7 +128,7 @@ def test_spec_bundle_compatibility_evidence(repo: Repo, tmp_path, capsys: pytest
     }
 
 
-# R012.13 stays unbound: the real owner ingestion adapter that reads the bundle is not served yet.
+# spec: PIPE-PAGES-R012.13
 def test_spec_bundle_compatibility_cli(repo: Repo, tmp_path, capsys: pytest.CaptureFixture[str]) -> None:
     path = _commit_bundle(repo)
     assert repo.run("spec-artifacts") == 0  # discovers specs/*/spec-bundle.json
@@ -140,3 +140,14 @@ def test_spec_bundle_compatibility_cli(repo: Repo, tmp_path, capsys: pytest.Capt
     assert repo.run("spec-artifacts", "--manifest", path, "--consumer-receipt", str(stale)) == 1
     assert "read as" in capsys.readouterr().out
     assert repo.run("spec-artifacts", "--manifest", path, "--require-consumer") == 2
+    # an adapter receipt of the served shape (fixture of it) that read matching bytes is accepted unchanged
+    evidence = _evidence(capsys.readouterr().out)
+    served = tmp_path / "served.json"
+    served.write_text(json.dumps({"consumer": "owner-adapter", "revision": "r1", "digests": evidence["consumed"]}))
+    manifest_before = (repo.root / path).read_bytes()
+    assert repo.run("spec-artifacts", "--manifest", path, "--consumer-receipt", str(served)) == 0
+    assert (repo.root / path).read_bytes() == manifest_before
+    # an unknown version is refused
+    other = _commit_bundle(repo, _manifest(format="spec-bundle/9"), capability="beta-feature")
+    assert repo.run("spec-artifacts", "--manifest", other) == 1
+    assert "unknown format version" in capsys.readouterr().out
