@@ -1270,7 +1270,7 @@ def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
     assert terminal["repo"] == "tuig"
     assert terminal["role"] == "TUI / CLI"
     assert terminal["desc"].startswith("tuig is the single Rust/Ratatui CLI")
-    assert ["tui", "arbora", "A2A / REST"] in model["edges"]
+    assert ["tui", "arbora", "A2A / REST", "serves"] in model["edges"]
     edge = next(edge for edge in model["fixed_layout"]["edges"] if edge["from"] == "tui")
     assert (edge["to"], edge["label"]) == ("arbora", "A2A / REST")
     children = {node["id"]: node for node in terminal["children"]}
@@ -1286,7 +1286,7 @@ def test_tuig_preserves_identity_and_distinguishes_planned_runtime() -> None:
     assert "planned" in children["tui.coding"]["role"]
     assert "planned" in children["tui.chat"]["desc"]
     assert "not delivered" in children["tui.client"]["desc"]
-    assert ["tui.coding", "tui.client", "planned operations"] in terminal["edges"]
+    assert ["tui.coding", "tui.client", "planned operations", "serves"] in terminal["edges"]
     assert all(
         not path.startswith("agent_terminal_ui")
         for node in [terminal, *children.values()]
@@ -2599,7 +2599,12 @@ def test_canopy_is_a_part_inside_pipelines_and_owns_its_rows() -> None:
     assert tree.parent["pipe.canopy"] == "pipelines" and tree.nodes["pipe.canopy"]["label"] == "Canopy"
     assert "pipe.pages.explorer" not in tree.nodes and tree.parent["pipe.site"] == "pipelines"
     edges = {tuple(e) for e in tree.nodes["pipelines"]["edges"]}
-    assert ("pipe.site", "pipe.canopy", "serves") in edges and ("pipe.canopy", "pipe.release", "consumes") in edges
+    assert ("pipe.site", "pipe.canopy", "serves", "serves") in edges and (
+        "pipe.canopy",
+        "pipe.release",
+        "consumes",
+        "consumes",
+    ) in edges
     assert {"arbora", "eg", "connectors"} <= set(tree.nodes["pipe.canopy"]["links"])
     owned = [
         "PIPE-PAGES-R042",
