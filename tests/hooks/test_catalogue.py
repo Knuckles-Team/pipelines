@@ -72,6 +72,7 @@ KEPT = {
     "prompt-format",
     "readme-deploy-block",
     "skill-grade",
+    "changelog",
     "mutation-gaps",
     "export-version",
     "test-quality",
