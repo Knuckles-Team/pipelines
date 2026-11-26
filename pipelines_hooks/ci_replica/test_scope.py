@@ -27,6 +27,12 @@ change that only moves workspace-member versions (a release bump) maps to no
 crate: it changes no code any test compiles against, so it never forces the
 full workspace sweep onto the pull-request budget.
 
+``--shards N --shard I`` skips the diff: it prints shard ``I`` (zero-based) of the
+whole ``--tests-root`` tree, so a full-suite run can be split across parallel
+jobs. Every ``test_*.py`` and ``*_test.py`` file, sorted by posix path, goes to
+shard ``index % N``: the shards are disjoint, their union is the complete file
+set, and the split depends only on the tree. No test is dropped.
+
 Output contract (stdout, one token per line): ``NONE`` | ``FULL`` | a
 newline-separated, order-stable list of test paths (python) or crate names
 (rust). Exit status is always 0 once the diff could be read; an unreadable
@@ -56,12 +62,31 @@ _GLOBAL_RUST_TRIGGERS = ("Cargo.lock",)
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="pr-test-scope", description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument("--base-ref", "--diff", dest="base_ref", required=True)
+    parser.add_argument("--base-ref", "--diff", dest="base_ref", default=None)
     parser.add_argument("--lang", choices=("python", "rust"), default="python")
     parser.add_argument("--src-root", default="arbora", help="python only: the package under test")
     parser.add_argument("--tests-root", default="tests", help="python only: the mirrored test tree")
     parser.add_argument("--workspace-root", default=".", help="rust only: the Cargo workspace root")
-    return parser.parse_args(argv)
+    parser.add_argument("--shards", type=int, default=0, help="python only: split the whole tests tree into N shards")
+    parser.add_argument("--shard", type=int, default=0, help="with --shards: the zero-based shard to print")
+    args = parser.parse_args(argv)
+    if args.shards < 0 or (args.shards and not 0 <= args.shard < args.shards):
+        parser.error("--shard must satisfy 0 <= shard < shards")
+    if not args.shards and args.base_ref is None:
+        parser.error("--base-ref is required unless --shards is given")
+    return args
+
+
+def collect_test_files(root: Path, tests_root: str) -> list[str]:
+    """Every pytest-collectable file under ``tests_root``, sorted by posix path (the shard universe)."""
+    base = root / tests_root
+    found = {p.relative_to(root).as_posix() for pattern in ("test_*.py", "*_test.py") for p in base.rglob(pattern)}
+    return sorted(found)
+
+
+def shard_files(files: list[str], shards: int, index: int) -> list[str]:
+    """Shard ``index`` of ``shards``: the sorted files whose position modulo ``shards`` is ``index``."""
+    return [path for position, path in enumerate(sorted(files)) if position % shards == index]
 
 
 def _is_global_trigger(path: str, triggers: tuple[str, ...]) -> bool:
@@ -277,6 +302,9 @@ def _rust_scope(root: Path, changed: list[str], workspace_root: str, base_ref: s
 def main(argv: list[str]) -> int:
     args = _parse_args(argv)
     root = repo_root(args.root)
+    if args.shards:
+        print("\n".join(shard_files(collect_test_files(root, args.tests_root.rstrip("/")), args.shards, args.shard)))
+        return 0
     base_ref = args.base_ref or setting("PR_TEST_SCOPE_BASE_REF") or None
     changed = changed_paths(root, base_ref)
     if args.lang == "python":

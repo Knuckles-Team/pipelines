@@ -276,3 +276,4 @@
 - [ ] T264 PIPE-GATES-R103 A red nightly opens an issue in its repository, and a green one closes it.
 - [ ] T270 PIPE-GATES-R016.120 The skill step, recovery and budget checks are `connector-standard` members.
 - [ ] T271 PIPE-GATES-R016.121 The compiled-skill freshness check is a `connector-standard` member.
+- [ ] T272 PIPE-GATES-R105 A shared workflow starts in every caller: no dangling needs, no withheld permission.

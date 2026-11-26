@@ -37,6 +37,9 @@ jobs:
       setup-command: bash scripts/ci_setup.sh
       skip-hooks: ${{ github.event.pull_request.head.repo.fork && 'tracked-privacy' || '' }}
       scanners: dupehound
+      # A change to pyproject.toml or uv.lock runs the whole suite; five shards keep each
+      # under the job cap (PIPE-RELEASE-R007.17).
+      test-shards: 5
 
   main:
     if: github.event_name == 'push'

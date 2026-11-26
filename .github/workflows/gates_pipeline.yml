@@ -143,8 +143,17 @@ on:
         required: false
         type: boolean
         default: false
+      test-shards:
+        description: >-
+          Split a full-suite test run (a change to pyproject.toml, uv.lock or conftest.py,
+          or all-files) across this many parallel `tests` jobs, each a deterministic slice of
+          the sorted test files. 1 keeps the full suite inside the `gates` job. A subset of
+          affected tests always runs inside `gates`. Each shard obeys `timeout-minutes`.
+        required: false
+        type: number
+        default: 1
       timeout-minutes:
-        description: Wall-clock cap for the gates job (15 for pull requests, 60 for main).
+        description: Wall-clock cap for the gates job and for each test shard (15 for pull requests, 60 for main).
         required: false
         type: number
         default: 15
@@ -240,6 +249,73 @@ jobs:
           set -euo pipefail
           uvx --from "$PIPELINES_SOURCE" pipelines-hook pr-text
 
+  # PIPE-GATES-R064: every unit of a multi-unit Cargo workspace builds and tests alone with
+  # all features, beside the unified run in `gates`. The matrix comes from `cargo metadata`;
+  # a failing unit fails its own job, which names the unit, and so the caller's `CI required`
+  # aggregate through the caller's `gates` job.
+  rust-units:
+    name: rust-units
+    if: inputs.rust
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.units.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch the unit script
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/pipelines-src"
+          git init -q "$src"
+          git -C "$src" fetch -q --depth 1 "https://github.com/$PIPELINES_REPOSITORY" "$PIPELINES_SHA"
+          git -C "$src" checkout -q FETCH_HEAD
+      - name: Install Rust toolchain
+        run: rustup toolchain install stable --profile minimal
+      - name: List the workspace units
+        id: units
+        run: python3 "$RUNNER_TEMP/pipelines-src/scripts/rust_per_unit.py" matrix
+
+  per-unit:
+    name: per-unit ${{ matrix.unit }}
+    needs: rust-units
+    if: inputs.rust && needs.rust-units.outputs.matrix != '{"include":[]}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.rust-units.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch the unit script
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/pipelines-src"
+          git init -q "$src"
+          git -C "$src" fetch -q --depth 1 "https://github.com/$PIPELINES_REPOSITORY" "$PIPELINES_SHA"
+          git -C "$src" checkout -q FETCH_HEAD
+      - name: Install Rust toolchain
+        run: rustup toolchain install stable --profile minimal
+      - name: Build and test the unit alone
+        env:
+          UNIT: ${{ matrix.unit }}
+        run: python3 "$RUNNER_TEMP/pipelines-src/scripts/rust_per_unit.py" run --unit "$UNIT"
+
   gates:
     name: gates
     # Keep the opt-in path direct so it creates exactly one required check. Do
@@ -273,6 +349,8 @@ jobs:
     timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       contents: read
+    outputs:
+      shard-matrix: ${{ steps.affected.outputs.shard-matrix }}
     steps:
       - name: Checkout with full history for the diff range
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -601,12 +679,14 @@ jobs:
           done
 
       - name: Affected tests
+        id: affected
         if: inputs.test-scope != '' && steps.scope.outputs.scope != 'spec'
         env:
           TEST_SCOPE: ${{ inputs.test-scope }}
           SRC_ROOT: ${{ inputs.src-root }}
           ALL_FILES: ${{ inputs.all-files }}
           SETUP_COMMAND: ${{ inputs.setup-command }}
+          TEST_SHARDS: ${{ inputs.test-shards }}
           PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
         run: |
           set -euo pipefail
@@ -620,15 +700,25 @@ jobs:
           else
             uv sync --frozen
           fi
+          # A full-suite run is handed to the `tests` shard jobs when the caller asks for shards;
+          # every test file still runs, in exactly one shard.
+          full_suite() {
+            if (( TEST_SHARDS > 1 )); then
+              echo "full suite: deferred to $TEST_SHARDS parallel test shards"
+              echo "shard-matrix=$(python3 -c 'import json,sys;print(json.dumps(list(range(int(sys.argv[1])))))' "$TEST_SHARDS")" >> "$GITHUB_OUTPUT"
+            else
+              "${run[@]}" pytest -q "$TEST_SCOPE"
+            fi
+          }
           if [[ "$ALL_FILES" == "true" ]]; then
-            "${run[@]}" pytest -q "$TEST_SCOPE"
+            full_suite
             exit 0
           fi
           scope="$(uvx --from "$PIPELINES_SOURCE" pipelines-hook pr-test-scope --base-ref "$TEST_BASE" --src-root "$src" --tests-root "$TEST_SCOPE")"
           echo "pr-test-scope: $scope"
           case "$scope" in
             NONE) echo "no affected tests" ;;
-            FULL) "${run[@]}" pytest -q "$TEST_SCOPE" ;;
+            FULL) full_suite ;;
             *) mapfile -t tests <<<"$scope"; "${run[@]}" pytest -q "${tests[@]}" ;;
           esac
 
@@ -642,3 +732,142 @@ jobs:
         with:
           path: ${{ env.UV_CACHE_DIR }}
           key: ${{ steps.uv.outputs.cache-key }}
+
+  # A full-suite run split into `test-shards` deterministic slices (pr-test-scope --shards): the
+  # sorted test files, shard I taking those whose position modulo N is I. Every shard runs on
+  # the caller's runner under the caller's cap and the caller's `gates` result covers them all,
+  # so `CI required` needs every shard. Runs only when `gates` found a full-suite change.
+  tests:
+    name: tests (shard ${{ matrix.shard }}/${{ inputs.test-shards }})
+    needs: gates
+    if: needs.gates.outputs.shard-matrix != ''
+    runs-on: >-
+      ${{ fromJSON(
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner == '"arbora-ci-trusted"' &&
+          '{"group":"arbora-ci-trusted","labels":["self-hosted","linux","x64","homelab","avx2","rust-1.96"]}'
+        ) ||
+        (
+          (
+            (github.event_name == 'push' &&
+             github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+            (github.event_name == 'pull_request' &&
+             github.event.pull_request.head.repo.full_name == github.repository)
+          ) &&
+          inputs.runner != '"arbora-ci-trusted"' &&
+          inputs.runner
+        ) ||
+        '"ubuntu-latest"'
+      ) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.gates.outputs.shard-matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Use the runner's persistent caches
+        id: persist
+        if: runner.environment == 'self-hosted'
+        run: |
+          set -euo pipefail
+          root="${CI_CACHE_ROOT:-}"
+          if [[ -z "$root" || ! -d "$root" || ! -w "$root" ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p "$root/uv"
+          echo "UV_CACHE_DIR=$root/uv" >> "$GITHUB_ENV"
+          { echo "enabled=true"; echo "uv-cache=$root/uv"; } >> "$GITHUB_OUTPUT"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: ${{ inputs.python-version }}
+          enable-cache: ${{ steps.persist.outputs.enabled != 'true' }}
+          save-cache: false
+          cache-local-path: ${{ steps.persist.outputs.uv-cache || inputs.uv-cache-local-path }}
+          cache-dependency-glob: |
+            uv.lock
+            ${{ inputs.config }}
+            ${{ inputs.ci-config }}
+
+      - name: Install Rust toolchain
+        if: inputs.rust
+        run: rustup toolchain install stable --profile minimal
+
+      - name: Fetch the scanner recipes
+        id: scanner-src
+        if: inputs.scanners != ''
+        env:
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+          SCANNERS: ${{ inputs.scanners }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/pipelines-src"
+          git init -q "$src"
+          git -C "$src" fetch -q --depth 1 "https://github.com/$PIPELINES_REPOSITORY" "$PIPELINES_SHA"
+          git -C "$src" checkout -q FETCH_HEAD
+          key="$(cd "$src" && cat scripts/install_scanners.sh scripts/install_jscpd.py | sha256sum | cut -c1-64)"
+          echo "src=$src" >> "$GITHUB_OUTPUT"
+          echo "root=$RUNNER_TEMP/pipelines-scanners" >> "$GITHUB_OUTPUT"
+          echo "key=${key}-${SCANNERS// /-}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the scanner toolchain
+        if: inputs.scanners != ''
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.scanner-src.outputs.root }}
+          key: pipelines-scanners-${{ runner.os }}-${{ runner.arch }}-${{ steps.scanner-src.outputs.key }}
+
+      - name: Build the pinned scanners and put them on PATH
+        if: inputs.scanners != ''
+        env:
+          SRC: ${{ steps.scanner-src.outputs.src }}
+          ROOT: ${{ steps.scanner-src.outputs.root }}
+          SCANNERS: ${{ inputs.scanners }}
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086
+          bash "$SRC/scripts/install_scanners.sh" "$ROOT" $SCANNERS >> "$GITHUB_PATH"
+
+      - name: Caller setup
+        if: inputs.setup-command != ''
+        env:
+          SETUP_COMMAND: ${{ inputs.setup-command }}
+          PROHIBITED_IDENTITY_CATALOG: ${{ vars.PROHIBITED_IDENTITY_CATALOG }}
+          FORK_PULL_REQUEST: ${{ github.event.pull_request.head.repo.fork || false }}
+        run: bash -c "$SETUP_COMMAND"
+
+      - name: Test shard
+        env:
+          TEST_SCOPE: ${{ inputs.test-scope }}
+          SETUP_COMMAND: ${{ inputs.setup-command }}
+          TEST_SHARDS: ${{ inputs.test-shards }}
+          SHARD: ${{ matrix.shard }}
+          PIPELINES_SOURCE: git+https://github.com/${{ job.workflow_repository }}@${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          run=(uv run --frozen)
+          if [[ -n "$SETUP_COMMAND" ]]; then
+            run=(uv run --frozen --no-sync)
+          else
+            uv sync --frozen
+          fi
+          mapfile -t tests < <(uvx --from "$PIPELINES_SOURCE" pipelines-hook pr-test-scope --tests-root "$TEST_SCOPE" --shards "$TEST_SHARDS" --shard "$SHARD")
+          echo "shard $SHARD of $TEST_SHARDS: ${#tests[@]} test files"
+          "${run[@]}" pytest -q "${tests[@]}"

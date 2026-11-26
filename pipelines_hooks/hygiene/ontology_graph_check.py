@@ -7,6 +7,7 @@ machine-readable code (PIPE-GATES-R016):
 * ``PARSE_ERROR``: a Turtle file or the declaration does not parse.
 * ``PACK_IMPORTS_CORE``: a pack ``owl:imports`` an EG ontology (an antipattern, not a bridge).
 * ``NOT_ROLLED_UP_TO_CORE``: a pack class never reaches a class declared in an EG module.
+* ``SM-ONTOLOGY-NOT-CORE-ROLLED``: a state class never reaches a state-machine core class.
 * ``ORPHAN_CLASS`` (EG modules only): a class has no ``subClassOf``/``equivalentClass``/intersection path to the root.
 * ``ISLAND_MODULE`` / ``ISLAND_PACK``: a module or pack is outside the main connected component.
 * ``DANGLING_REFERENCE``: an IRI is used as a parent, domain, range, property, shape target or
@@ -92,7 +93,10 @@ CODES = (
     "CQ_PATH_BROKEN",
     "PACK_IMPORTS_CORE",
     "NOT_ROLLED_UP_TO_CORE",
+    "SM-ONTOLOGY-NOT-CORE-ROLLED",
 )
+STATE_PROPERTIES = frozenset({"hasState", "fromState", "toState", "firedBy", "guardedBy"})
+STATE_CORE = frozenset({"StateMachine", "State", "Transition", "TransitionEvent", "TransitionGuard"})
 EG_CATALOG_IRI = CORE_ONTOLOGY
 DEFAULT_CQ = Path(__file__).with_name("ontology_cqs.json")
 
@@ -483,6 +487,41 @@ def check_rollup(m: Model) -> None:
                 ln,
                 iri,
                 {"ancestors": [local(a) for a in top]},
+            )
+        )
+
+
+def check_state_machine_rollup(m: Model) -> None:
+    """SM-ONTOLOGY-NOT-CORE-ROLLED: a state class must reach a state-machine core class by subClassOf.
+
+    A state class is the domain or range of a state property, or the type of an instance
+    that uses one (PIPE-GATES-R086.6). An owl:imports edge never counts as reaching the core.
+    """
+    state_classes: set[str] = set()
+    for prop in set(m.domains) | set(m.ranges):
+        if local(prop) in STATE_PROPERTIES:
+            state_classes |= m.domains.get(prop, set()) | m.ranges.get(prop, set())
+    for subj, pred, obj in m.composed:
+        if isinstance(pred, URIRef) and local(str(pred)) in STATE_PROPERTIES:
+            for node in (subj, obj):
+                state_classes |= {str(t) for t in m.composed.objects(node, RDF.type)}
+    for iri in sorted(state_classes):
+        if iri not in m.class_mods or not _checkable(iri) or _eg_declared(m, iri):
+            continue
+        chain = {iri, *m.ancestors(iri)}
+        if any(local(c) in STATE_CORE and _eg_declared(m, c) for c in chain):
+            continue
+        mod = _module_of(m, iri)
+        f, ln = _file_for(m, mod, iri)
+        m.findings.append(
+            Finding(
+                "SM-ONTOLOGY-NOT-CORE-ROLLED",
+                f"{local(iri)} is a state class and never reaches {', '.join(sorted(STATE_CORE))} through subClassOf",
+                mod,
+                _pack_of(m, mod),
+                f,
+                ln,
+                iri,
             )
         )
 
@@ -1198,6 +1237,7 @@ def run(sources: list[Source], questions: list[dict[str, Any]], *, with_plan: bo
     check_orphans(m)
     check_pack_imports(m)
     check_rollup(m)
+    check_state_machine_rollup(m)
     check_dangling(m)
     check_properties(m)
     data_only = check_isolated(m)

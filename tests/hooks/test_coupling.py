@@ -95,11 +95,14 @@ def test_from_parent_does_not_allow_nonclient(repo):
     assert repo.run("coupling") == 1
 
 
-LAYER_POLICY = """[tool.pipelines_hooks]
-packages = ["app"]
-[tool.pipelines_hooks.coupling]
-layers = ["app.types", ["app.core", "app.store"], "app.api", "app"]
-"""
+def _policy(*entries):
+    tables = "".join(
+        f'[[tool.pipelines_hooks.coupling.layers]]\nname = "{n}"\nunits = {u!r}\n'.replace("'", '"') for n, u in entries
+    )
+    return '[tool.pipelines_hooks]\npackages = ["app"]\n' + tables
+
+
+LAYER_POLICY = _policy(("types", ["types"]), ("middle", ["core", "store"]), ("api", ["api"]), ("host", ["__init__"]))
 BASE = {
     "app/__init__.py": "",
     "app/types/__init__.py": "X = 1\n",
@@ -164,7 +167,7 @@ def test_private_module_reach_fails_and_own_unit_passes(repo, capsys, source):
 def test_unlayered_unit_is_a_finding(repo, capsys):
     code, out = _layers(repo, {"app/extra/m.py": "x = 1\n"}, capsys)
     assert code == 1
-    assert "app/extra/m.py:1: unit app.extra is named in no layer" in out
+    assert "app/extra/m.py:1: unit extra is named in no layer" in out
 
 
 # spec: PIPE-GATES-R088
@@ -175,18 +178,72 @@ def test_unit_cycle_is_reported_by_unit(repo, capsys):
         repo, {"app/core/m.py": "from app.store import a\n", "app/store/m.py": "from app.core import b\n"}, capsys, peer
     )
     assert code == 1
-    assert "import cycle among units app.core, app.store" in out
+    assert "import cycle among units core, store" in out
     assert "less stable" not in out
 
 
-# spec: PIPE-GATES-R088
-@pytest.mark.parametrize(
-    "layers", ['"app.types", "app.types"', '"not a name"', "3"], ids=["duplicate", "bad-name", "bad-type"]
-)
-def test_layers_policy_fault_refuses(repo, layers):
-    policy = f'[tool.pipelines_hooks]\npackages = ["app"]\n[tool.pipelines_hooks.coupling]\nlayers = [{layers}]\n'
+def _faulty(repo, tables, capsys):
+    policy = '[tool.pipelines_hooks]\npackages = ["app"]\n' + tables
     repo.stage({"pyproject.toml": policy, **BASE})
+    code = repo.run("coupling")
+    return code, capsys.readouterr()
+
+
+def _table(name, units, extra=""):
+    return f'[[tool.pipelines_hooks.coupling.layers]]\nname = "{name}"\nunits = {units}\n{extra}'
+
+
+# spec: PIPE-GATES-R088.1
+def test_layers_entry_needs_name_and_units(repo, capsys):
+    missing = '[[tool.pipelines_hooks.coupling.layers]]\nunits = ["types"]\n'
+    extra = _table("a", '["types"]', 'color = "red"\n')
+    empty = _table("a", "[]")
+    twice = _table("a", '["types"]') + _table("a", '["core"]')
+    badname = _table("Bad_Name", '["types"]')
+    for tables, fault in [(missing, "[0]"), (extra, "[0]"), (empty, "[0]"), (twice, "[1]"), (badname, "[0]")]:
+        code, out = _faulty(repo, tables, capsys)
+        assert code == 2, tables
+        assert fault in out.err + out.out, tables
+    ok, _ = _faulty(repo, _table("a", '["types", "core", "store", "api", "__init__"]'), capsys)
+    assert ok in (0, 1)
+
+
+# spec: PIPE-GATES-R088.1
+def test_layers_unit_in_two_entries_is_a_policy_fault(repo, capsys):
+    code, out = _faulty(repo, _table("a", '["types"]') + _table("b", '["types"]'), capsys)
+    assert code == 2
+    assert "[1]" in out.err + out.out and "types" in out.err + out.out
+
+
+# spec: PIPE-GATES-R088.1
+@pytest.mark.parametrize("value", ['["types", "core"]', '[["types", "core"]]', '"layers.toml"'])
+def test_layers_bare_string_list_is_a_policy_fault(repo, capsys, value):
+    code, _ = _faulty(repo, f"[tool.pipelines_hooks.coupling]\nlayers = {value}\n", capsys)
+    assert code == 2
+
+
+# spec: PIPE-GATES-R088.1
+def test_init_names_only_the_package_root(repo, capsys):
+    policy = _policy(("base", ["types", "core", "store", "api"]), ("host", ["__init__"]))
+    code, out = _layers(repo, {"app/core/m.py": "import app\n"}, capsys, policy)
+    assert code == 1 and "app/core/m.py:1:" in out and "less stable layer" in out
+    code, out = _layers(
+        repo,
+        {"app/core/m.py": "x = 1\n", "app/api/m.py": "x = 1\n", "app/__init__.py": "from app.api import m\n"},
+        capsys,
+        policy,
+    )
+    assert (code, out) == (0, "")
+    dotted = _policy(("base", ["core.sub"]))
+    repo.stage({"pyproject.toml": dotted, **BASE})
     assert repo.run("coupling") == 2
+
+
+# spec: PIPE-GATES-R088.1
+def test_layers_file_path_key_is_a_policy_fault(repo, capsys):
+    code, out = _faulty(repo, '[tool.pipelines_hooks.coupling]\nlayers_file = "layers.toml"\n', capsys)
+    assert code == 2
+    assert "layers_file" in out.err + out.out
 
 
 # spec: PIPE-GATES-R088
@@ -197,3 +254,28 @@ def test_import_direction_follows_layers(repo, capsys):
     repo.git("add", "--", "app/types/m.py")
     assert repo.run("coupling") == 1
     assert "app/types/m.py:1:" in capsys.readouterr().out
+
+
+# R088.3 stays unbound: consumer adoption is delivered in each consumer repository.
+def test_consumer_fixture_with_sdk_shaped_policy_passes(repo, capsys):
+    """A consumer-shaped policy (foundation, transport, ports, domain) on a clean tree exits 0."""
+    policy = _policy(
+        ("foundation", ["config", "connector_hooks"]),
+        ("transport", ["http", "auth"]),
+        ("ports", ["ports"]),
+        ("domain", ["domain"]),
+    ).replace('packages = ["app"]', 'packages = ["sdk"]')
+    files = {
+        "pyproject.toml": policy,
+        "sdk/__init__.py": "",
+        "sdk/config/__init__.py": "X = 1\n",
+        "sdk/connector_hooks.py": "from sdk.config import X\n",
+        "sdk/http/__init__.py": "from sdk.config import X\nfrom sdk import connector_hooks\n",
+        "sdk/auth.py": "from sdk.http import X\n",
+        "sdk/ports.py": "from sdk.auth import y\n",
+        "sdk/domain/__init__.py": "from sdk.ports import z\n",
+    }
+    repo.stage(files)
+    assert repo.run("coupling") in (0, 1)
+    out = capsys.readouterr().out
+    assert "less stable" not in out and "private module" not in out

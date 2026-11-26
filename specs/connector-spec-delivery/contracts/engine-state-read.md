@@ -20,3 +20,11 @@ Provider: medulla MEDULLA-SDLC-R005.3
 
 - Consumer side: `PIPE-CONNSPEC-R009.1` and `PIPE-CONNSPEC-R009.2`.
 - Provider side: `MEDULLA-SDLC-R005.3`.
+
+## Authoritative types
+
+The `spec.status` response of the arbora operation `ARBORA-OPS-R853`; the engine row `MEDULLA-SDLC-R005.3` owns the state names. The gate keeps no second state list.
+
+## Test vectors
+
+`tests/hooks/test_spec_status.py` holds the pipelines side: an unset endpoint, an unreachable endpoint and a differing row. The engine side is held by the tests bound to `MEDULLA-SDLC-R005.3`.

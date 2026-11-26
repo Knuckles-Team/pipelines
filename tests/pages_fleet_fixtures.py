@@ -11,6 +11,12 @@ from pipelines_hooks.core.gitenv import sanitized_env
 from scripts.sync_mkdocs_theme import THEME_FILES, sync_theme
 
 
+INDEX = (
+    "# Consumer\n\nThe delivery process is owned by pipelines. The front door is owned by the organization hub.\n\n"
+    '## Quick start\n\n```json\n{"command": "consumer-mcp", "transport": "stdio"}\n```\n'
+)
+
+
 def git(root: Path, *args: str) -> str:
     # Fixture commits must not leave detached housekeeping writers behind.
     return subprocess.check_output(
@@ -72,6 +78,7 @@ def fleet_fixture(root: Path) -> dict:
         repository(target)
         sync_theme(source_root=source, repository_root=target, content_source=content, mode="sync")
         (target / "mkdocs.yml").write_text(f"docs_dir: {content}\n")
+        (target / content / "index.md").write_text(INDEX)
         workflow(target, pipeline, content)
         pin(target, item)
         consumers.append(item)

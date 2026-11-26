@@ -40,6 +40,8 @@ PACK_A = (
 <http://x/packa> a owl:Ontology ; owl:imports <https://knuckles-team.github.io/ontology/core> .
 :Issue a owl:Class ; rdfs:label "Issue" .
 :Bug a owl:Class ; rdfs:subClassOf :Ticket , :Ghost .
+:Lifecycle a owl:Class ; rdfs:subClassOf :Concept .
+:hasState a owl:ObjectProperty ; rdfs:domain :Lifecycle ; rdfs:range :Person .
 :Server a owl:Class ; rdfs:subClassOf :Concept , :Thing2 .
 :Thing2 a owl:Class ; rdfs:subClassOf :Concept .
 :Twin1 a owl:Class ; rdfs:label "Twin" ; rdfs:subClassOf :Concept .
@@ -331,6 +333,34 @@ def test_rollup_requires_eg_class_not_bfo_or_pack_root() -> None:
     bad = {f["iri"].rsplit("#", 1)[1] for f in out["findings"] if f["code"] == "NOT_ROLLED_UP_TO_CORE"}
     assert bad == {"Root", "Leaf"}
     assert not [f for f in out["findings"] if f["code"] == "ORPHAN_CLASS"]
+
+
+@pytest.mark.spec("PIPE-GATES-R086.6")
+def test_graph_check_reports_a_state_class_that_does_not_roll_up_to_the_core() -> None:
+    core = HEAD + ":Doc a owl:Class ; rdfs:subClassOf owl:Thing .\n:State a owl:Class ; rdfs:subClassOf owl:Thing ."
+    pack = HEAD + (
+        ":Own a owl:Class ; rdfs:subClassOf :Doc .\n"
+        ":hasState a owl:ObjectProperty ; rdfs:domain :Own ; rdfs:range :Doc .\n"
+        ":Typed a owl:Class ; rdfs:subClassOf :Doc .\n:inst a :Typed ; :fromState :inst .\n"
+        ":FakeState a owl:Class ; rdfs:subClassOf :Doc .\n:toState rdfs:range :FakeState ."
+    )
+    srcs = [ogc.Source("eg:core", "eg", "a/core.ttl", core), ogc.Source("pk", "pack", "pk/ontology/p.ttl", pack)]
+    out = ogc.run(srcs, [], with_plan=False)
+    bad = {f["iri"].rsplit("#", 1)[1] for f in out["findings"] if f["code"] == "SM-ONTOLOGY-NOT-CORE-ROLLED"}
+    assert bad == {"Own", "Typed", "FakeState"}
+
+
+@pytest.mark.spec("PIPE-GATES-R086.6")
+def test_graph_check_passes_a_rolled_up_state_class() -> None:
+    core = HEAD + ":State a owl:Class ; rdfs:subClassOf owl:Thing ."
+    pack = HEAD + (
+        ":Phase a owl:Class ; rdfs:subClassOf :State .\n:DeepPhase a owl:Class ; rdfs:subClassOf :Phase .\n"
+        ":hasState a owl:ObjectProperty ; rdfs:domain :DeepPhase ; rdfs:range :Phase .\n"
+        ":inst a :DeepPhase ; :fromState :inst ."
+    )
+    srcs = [ogc.Source("eg:core", "eg", "a/core.ttl", core), ogc.Source("pk", "pack", "pk/ontology/p.ttl", pack)]
+    out = ogc.run(srcs, [], with_plan=False)
+    assert not [f for f in out["findings"] if f["code"] == "SM-ONTOLOGY-NOT-CORE-ROLLED"]
 
 
 def test_declaration_is_parsed_statically_and_never_imported() -> None:

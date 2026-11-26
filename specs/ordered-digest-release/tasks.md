@@ -66,6 +66,7 @@ commit).
 - PIPE-RELEASE-R007.13: Hook-cache save bound. Give each pre-commit cache save step `timeout-minutes: 3` and `continue-on-error: true`; bind the contract test.
 - PIPE-RELEASE-R007.14: uv cache save bound. Disable the setup-uv post save and add a bounded last save step; bind the contract test.
 - PIPE-RELEASE-R007.16: Medulla light gates change scope. Call `pipelines-hook change-scope` in job `changes`; bind the contract test.
+- PIPE-RELEASE-R007.17: Sharded full suite. Add input `test-shards`, job `tests` and the `--shards` split of `pr-test-scope`; bind the partition and workflow contract tests.
 - PIPE-RELEASE-R007.15: Persistent self-hosted caches. Use `CI_CACHE_ROOT` for the hook store and the uv cache, skip the cache actions, refresh the shared hooks; bind the contract test.
 - PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
 
@@ -182,6 +183,7 @@ commit).
 - [ ] T099 PIPE-RELEASE-R007.13 Hook-cache save bound.
 - [ ] T102 PIPE-RELEASE-R007.14 uv cache save bound.
 - [ ] T113 PIPE-RELEASE-R007.16 Medulla light gates change scope.
+- [ ] T116 PIPE-RELEASE-R007.17 A full-suite run is split across parallel shards by a deterministic file split.
 - [ ] T112 PIPE-RELEASE-R007.15 A self-hosted runner keeps the hook store and the uv cache on its host.
 - [ ] T098 PIPE-RELEASE-R027 Every merged version is published.
 - [ ] T103 PIPE-RELEASE-R028.1 Release proof of each declared bundle.

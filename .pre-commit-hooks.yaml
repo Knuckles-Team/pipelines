@@ -50,7 +50,7 @@
   always_run: true
   stages: [pre-push, manual]
 - id: spec
-  name: Spec - standard, decomposition, computed status (never tracked) and Spec trailers
+  name: Spec - standard, contract coverage, decomposition, computed status (never tracked) and Spec trailers
   entry: pipelines-hook spec
   language: python
   pass_filenames: false
@@ -64,9 +64,30 @@
   files: ^specs/[^/]+/plan\.md$
   pass_filenames: false
   stages: [pre-commit, manual]
+- id: spec-glossary
+  name: Spec glossary - specs use the repository glossary, its ontology classes and the typed row fields
+  entry: pipelines-hook spec-glossary
+  language: python
+  files: ^specs/
+  pass_filenames: false
+  stages: [pre-commit, manual]
 - id: spec-id-index
   name: Spec ID index - write the cross-repo row ID index plan-conformance resolves foreign IDs against
   entry: pipelines-hook spec-id-index --out .git/spec-id-index.json
+  language: python
+  always_run: true
+  pass_filenames: false
+  stages: [manual]
+- id: spec-artifacts
+  name: Spec artifacts - admit a spec-bundle/1 of one capability's spec files unchanged
+  entry: pipelines-hook spec-artifacts
+  language: python
+  files: ^specs/[^/]+/spec-bundle\.json$
+  pass_filenames: false
+  stages: [pre-commit, manual]
+- id: capability-coverage
+  name: Capability coverage - every function, test and MCP tool names the capability it serves
+  entry: pipelines-hook capability-coverage
   language: python
   always_run: true
   pass_filenames: false
@@ -130,6 +151,45 @@
   always_run: true
   require_serial: true
   stages: [pre-commit, pre-push]
+- id: config-inventory
+  name: Project configuration inventory - four standard roles per declared project
+  entry: pipelines-hook config-inventory --check
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: env-documentation
+  name: Runtime environment reads match the example file, README and launcher bindings
+  entry: pipelines-hook env-documentation
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: spec-artifact-schema
+  name: Generator-skill spec artifacts validate against schema version 1
+  entry: pipelines-hook spec-artifact-schema
+  language: python
+  pass_filenames: false
+  require_serial: true
+  stages: [manual]
+- id: lint-type
+  name: Lint, import-order and type diagnostics with zero exceptions
+  entry: pipelines-hook lint-type
+  language: python
+  types: [python]
+  pass_filenames: false
+  require_serial: true
+  stages: [pre-commit, pre-push]
+- id: repository-validation
+  name: Aggregate repository validation report (lint, import-order, type, skills)
+  entry: pipelines-hook repository-validation
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
 - id: mutation-gaps
   name: Scheduled mutation testing - surviving mutants reported as test gaps
   entry: pipelines-hook mutation-gaps
@@ -153,6 +213,14 @@
   pass_filenames: false
   always_run: false
   stages: [manual]
+- id: changelog
+  name: Changelog - dated, categorized releases with resolved comparison links
+  entry: pipelines-hook changelog
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [pre-commit, pre-push]
 - id: test-layout
   name: Test layout independence - isolated order and fixture inventory
   entry: pipelines-hook test-layout
@@ -168,7 +236,7 @@
 # published until every repository has dropped it; a final cleanup PR deletes
 # them. `secrets` replaces secret-history, security-sanitizer, tracked-privacy,
 # commit-identity and commit-identity-range; `spec` replaces spec-standard,
-# spec-decomposition, spec-status and spec-trailers; `tests-fast` replaces
+# contract-coverage, spec-decomposition, spec-status and spec-trailers; `tests-fast` replaces
 # fast-tests. Every other deprecated id is advisory (weekly report) or deleted.
 
 # --- complexity (cccc 1.6.0) ------------------------------------------------
@@ -408,6 +476,12 @@
   language: python
   pass_filenames: false
   always_run: true
+- id: contract-coverage
+  name: "DEPRECATED (contract-coverage): Contract coverage - a row citing another repository's row has a contract"
+  entry: pipelines-hook contract-coverage
+  language: python
+  pass_filenames: false
+  always_run: true
 - id: spec-standard
   name: "DEPRECATED (spec-standard): Spec standard - names, file set, title, index"
   entry: pipelines-hook spec-standard
@@ -450,6 +524,14 @@
 - id: dependency-readiness
   name: RELEASE dependency readiness (repository-manager)
   entry: pipelines-hook dependency-readiness
+  language: python
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages: [manual]
+- id: release-phases
+  name: RELEASE ordered phases with delays and major-upgrade admission
+  entry: pipelines-hook release-phases
   language: python
   pass_filenames: false
   always_run: true
