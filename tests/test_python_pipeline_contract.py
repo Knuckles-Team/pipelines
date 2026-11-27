@@ -218,6 +218,9 @@ def test_connector_release_signs_before_the_wheel_build(tmp_path: Path) -> None:
         "demo-connector",
     ]  # every argument the signing command requires, then the connector's stdio command
 
+    assert "UV_PROJECT_ENVIRONMENT" in sign["run"]  # the build creates .venv in the checkout; signing must not
+    assert not (args_file.parent.parent / ".venv").exists()
+
     assert _sign_step_run(tmp_path, ref, "release-key", 2)[0].returncode != 0  # a failed signing fails the release
     for key, key_id in (("", "release-key"), (ref, "")):  # unsigned: refused before the wheel is built
         unsigned = _sign_step_run(tmp_path, key, key_id, 0)[0]
