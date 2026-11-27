@@ -51,6 +51,23 @@ def test_public_wheel_checks_exact_inventory_and_bytes(guard):
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_accepts_only_well_formed_release_evidence(guard):
+    expected = {"demo/__init__.py": b"version = '1'"}
+    evidence = json.dumps({"key_id": "k", "digest": "d" * 64, "signature": "s"}).encode()
+    data = archive(expected | {"demo/release.json": evidence})
+    guard.verify_payload(data, hashlib.sha256(data).hexdigest(), expected, "demo")
+    for body in (
+        b"not json",
+        b"[]",
+        json.dumps({"key_id": "k"}).encode(),
+        json.dumps({"key_id": "k", "digest": "d", "signature": "s", "x": "y"}).encode(),
+    ):
+        bad = archive(expected | {"demo/release.json": body})
+        with pytest.raises(ValueError, match="release evidence"):
+            guard.verify_payload(bad, hashlib.sha256(bad).hexdigest(), expected, "demo")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
 def test_public_wheel_uses_committed_source_and_refuses_stale_pin(guard, tmp_path, monkeypatch):
     for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
         monkeypatch.delenv(name, raising=False)
