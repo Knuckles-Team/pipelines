@@ -256,6 +256,61 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
 
+  # PIPE-RELEASE-R001.16: a connector that declares [tool.pipelines.container.targets.<name>]
+  # publishes each target in this same run, after the primary image, through the same container
+  # pipeline (same tags with a -<name> suffix, digest verification and retries).
+  image-target-list:
+    name: image-target-list
+    needs: [auto-tag]
+    if: ${{ !cancelled() && inputs.container-enabled && inputs.render-connector && (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || needs.auto-tag.outputs.tag != '') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      targets: ${{ steps.list.outputs.targets }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: List the declared image targets
+        id: list
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          import tomllib
+
+          with open("pyproject.toml", "rb") as handle:
+              table = tomllib.load(handle).get("tool", {}).get("pipelines", {}).get("container", {})
+          print("targets=" + json.dumps(sorted(table.get("targets", {}))))
+          PY
+
+  docker-targets:
+    name: docker-targets
+    needs: [publish-docker, image-target-list, auto-tag]
+    if: ${{ !cancelled() && needs.publish-docker.result == 'success' && needs.image-target-list.outputs.targets != '' && needs.image-target-list.outputs.targets != '[]' }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        target: ${{ fromJSON(needs.image-target-list.outputs.targets) }}
+    permissions:
+      contents: read
+    uses: Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml@main
+    with:
+      render_connector: ${{ inputs.render-connector }}
+      stamp_version_from_tag: true
+      release_tag: ${{ needs.auto-tag.outputs.tag }}
+      image_target: ${{ matrix.target }}
+      dockerfile: docker/${{ matrix.target }}.Dockerfile
+      build_target: default
+    secrets:
+      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+
   # PIPE-RELEASE-R012.2: a connector that has ever published an image is deployed as a
   # container, so a tag must publish one. container-enabled: false on such a connector
   # would release green with no image; this job fails that tag instead.
@@ -319,7 +374,7 @@ jobs:
   ci-required:
     name: CI required
     if: always()
-    needs: [pr, org-site, main, auto-tag, release-gate, publish-pypi, publish-docker, image-required, publish-pages, sdk-rebuild]
+    needs: [pr, org-site, main, auto-tag, release-gate, publish-pypi, publish-docker, image-target-list, docker-targets, image-required, publish-pages, sdk-rebuild]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
