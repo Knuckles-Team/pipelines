@@ -272,8 +272,8 @@ def read_public(url: str) -> bytes:
         return response.read()
 
 
-def _rendered_dockerfile(root: Path, release_version: str = "") -> str:
-    """Render the canonical Dockerfile from the reviewed ``HEAD`` metadata."""
+def _rendered_files(root: Path, release_version: str = "") -> dict[str, str]:
+    """Render every connector container file from the reviewed ``HEAD`` metadata."""
     provider_root = Path(__file__).resolve().parents[3]
     if not (provider_root / "pipelines_hooks" / "connector" / "container.py").is_file():
         raise ValueError("Generated Dockerfile verification requires the provider renderer checkout")
@@ -312,19 +312,30 @@ def _rendered_dockerfile(root: Path, release_version: str = "") -> str:
             finally:
                 sys.path.pop(0)
             write_version(source, _release_version(release_version))
-        return render(source)["Dockerfile"]
+        return render(source)
 
 
-def _reviewed_dockerfile(root: Path, dockerfile: str, release_version: str = "") -> str:
-    """Read a tracked Dockerfile or the provider-rendered canonical one."""
+def _reviewed_dockerfile(root: Path, dockerfile: str, release_version: str = "") -> str | None:
+    """Read a tracked Dockerfile or the provider-rendered one; ``None`` for a rendered named image target.
+
+    A target image (``docker/<name>.Dockerfile``) is built from a pipelines template and does not install the
+    connector wheel, so there is no package pin to check; its wheel is still compared with the reviewed source.
+    """
     try:
         return subprocess.check_output(
             ["git", "show", f"HEAD:{dockerfile}"], cwd=root, text=True, stderr=subprocess.DEVNULL
         )
     except subprocess.CalledProcessError as error:
-        if dockerfile != "docker/Dockerfile":
-            raise ValueError(f"Reviewed Dockerfile is not tracked: {dockerfile}") from error
-        return _rendered_dockerfile(root, release_version)
+        if dockerfile == "docker/Dockerfile":
+            return _rendered_files(root, release_version)["Dockerfile"]
+        name = dockerfile.removeprefix("docker/")
+        try:
+            rendered = _rendered_files(root, release_version) if dockerfile.startswith("docker/") else {}
+        except Exception:  # an unrenderable source names no target, so the Dockerfile is simply not tracked
+            rendered = {}
+        if name in rendered and name.endswith(".Dockerfile") and name != "debug.Dockerfile":
+            return None
+        raise ValueError(f"Reviewed Dockerfile is not tracked: {dockerfile}") from error
 
 
 def _validate_legacy_dockerfile(docker: str) -> None:
@@ -399,7 +410,7 @@ def verify_release(
                 raise ValueError("Legacy Docker source metadata differs from the immutable package source")
     else:
         docker = _reviewed_dockerfile(docker_source, dockerfile, release_version)
-    if pin not in shlex.split(docker, comments=True):
+    if docker is not None and pin not in shlex.split(docker, comments=True):
         raise ValueError("Dockerfile must pin the reviewed package version")
     expected = reviewed_payload(root, module, legacy_profile=legacy_profile)
     metadata = json.loads(read_public(f"https://pypi.org/pypi/{distribution}/{version}/json"))

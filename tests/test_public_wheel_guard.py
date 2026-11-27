@@ -632,10 +632,36 @@ def test_public_wheel_refuses_a_missing_custom_dockerfile(guard, tmp_path, monke
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
+def test_public_wheel_needs_no_package_pin_for_a_rendered_image_target(guard, tmp_path, monkeypatch):
+    for name in subprocess.check_output(["git", "rev-parse", "--local-env-vars"], text=True).splitlines():
+        monkeypatch.delenv(name, raising=False)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "demo").mkdir()
+    (tmp_path / "demo/__init__.py").write_bytes(b"reviewed")
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo-dist"\nversion = "1.2.3"\ndependencies = ["scion-sdk>=1"]\n'
+        '[project.optional-dependencies]\nmcp = []\n[project.scripts]\ndemo-mcp = "demo:main"\n'
+        '[project.entry-points."scion_sdk.connector"]\ndemo-mcp = "demo"\n'
+        '[tool.pipelines.container.targets.viewer]\ntemplate = "gui-runtime"\nversion = "1.0"\nuid = 10001\n'
+        'home = "/var/lib/viewer"\ncommand = ["viewer"]\n',
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "--", "demo/__init__.py", "pyproject.toml"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+        cwd=tmp_path,
+        check=True,
+    )
+    assert guard._reviewed_dockerfile(tmp_path, "docker/viewer.Dockerfile") is None
+    with pytest.raises(ValueError, match="not tracked"):
+        guard._reviewed_dockerfile(tmp_path, "docker/other.Dockerfile")
+
+
+@pytest.mark.spec("PIPE-RELEASE-R012.1")
 def test_public_wheel_requires_the_provider_renderer_checkout(guard, tmp_path, monkeypatch):
     monkeypatch.setattr(guard, "__file__", str(tmp_path / "public_wheel.py"))
     with pytest.raises(ValueError, match="provider renderer checkout"):
-        guard._rendered_dockerfile(tmp_path)
+        guard._rendered_files(tmp_path)
 
 
 @pytest.mark.spec("PIPE-RELEASE-R012.1")
