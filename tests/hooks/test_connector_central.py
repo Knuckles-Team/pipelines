@@ -451,6 +451,12 @@ def test_python_release_workflow_generates_before_the_build() -> None:
     assert document[True]["workflow_call"]["inputs"]["connector"]["default"] is False
     steps = [s["name"] for s in document["jobs"]["publish-pypi"]["steps"]]
     assert steps.index("Generate the connector ontology artifacts") < steps.index("Build, publish and release")
+    generate_step = next(
+        s for s in document["jobs"]["publish-pypi"]["steps"] if s["name"] == "Generate the connector ontology artifacts"
+    )
+    assert (
+        "hashFiles('*/ontology/mappings/source.yaml') != ''" in generate_step["if"]
+    )  # no legacy mapping: nothing to generate
 
 
 # --- standard files are provided, not committed ----------------------------------------------------------------
