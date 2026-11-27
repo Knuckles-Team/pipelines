@@ -211,6 +211,8 @@ def test_connector_release_signs_before_the_wheel_build(tmp_path: Path) -> None:
         ref,
         "--lock",
         ".pipeline-contract/reference/connector-release.lock",
+        "--env",
+        "UV_PROJECT_ENVIRONMENT=env://UV_PROJECT_ENVIRONMENT",
         "--",
         "uv",
         "run",
