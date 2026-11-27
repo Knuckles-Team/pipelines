@@ -242,6 +242,15 @@ def _lines(prefix: str, items: list[str]) -> str:
     return "".join(f"{prefix}{item}\n" for item in items)
 
 
+def _files_block(entries: list[dict[str, str]]) -> str:
+    """COPY lines with explicit modes. ``COPY --chmod`` also applies to the directories it creates,
+    so every parent directory is created world-traversable first; a file mode of 0644 lets the
+    non-root runtime user read what root copied."""
+    parents = sorted({str(PurePosixPath(entry["target"]).parent) for entry in entries} - {"/"})
+    lines = f"RUN install -d -m 0755 {' '.join(parents)}\n" if parents else ""
+    return lines + "".join(f"COPY --chmod=0644 {entry['source']} {entry['target']}\n" for entry in entries)
+
+
 def render_target(name: str, target: dict[str, Any]) -> dict[str, str]:
     """``{file name: text}`` of one target: its Dockerfile and its entrypoint."""
     version = str(target.get("version", ""))
@@ -253,7 +262,7 @@ def render_target(name: str, target: dict[str, Any]) -> dict[str, str]:
         base_apt += ["x11vnc", "novnc", "websockify"]
     packages = base_apt + [p for p in target.get("apt", []) if p not in base_apt]
     setup = [_sub(step, version) for step in target.get("setup", [])]
-    files = "".join(f"COPY --chmod=0644 {entry['source']} {entry['target']}\n" for entry in target.get("files", []))
+    files = _files_block(target.get("files", []))
     env = {k: _sub(v, version) for k, v in sorted(target.get("env", {}).items())}
     env_lines = "".join(f"ENV {k}={shlex.quote(v)}\n" for k, v in env.items())
     notice = target.get("notice", [])

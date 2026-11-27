@@ -200,3 +200,16 @@ def test_the_viewer_mode_is_rendered_only_when_declared(tmp_path: Path) -> None:
     assert "-localhost" in script and "GUI_VNC_PASSWORD_FILE" in script and "authenticating gateway" in script
     assert "websockify --web /usr/share/novnc" in script
     assert script.count("viewer)") == 1
+
+
+@pytest.mark.spec("PIPE-RELEASE-R001.17")
+def test_every_file_the_runtime_user_reads_has_an_explicit_readable_mode(tmp_path: Path) -> None:
+    files = _target_files(tmp_path)
+    docker = files["studio.Dockerfile"]
+    lines = docker.splitlines()
+    mkdir = lines.index("RUN install -d -m 0755 /opt/gui")
+    copy = lines.index("COPY --chmod=0644 image/startup.py /opt/gui/startup.py")
+    assert mkdir < copy
+    assert "COPY --chmod=0755 docker/studio.entrypoint.sh /usr/local/bin/gui-entrypoint" in docker
+    assert not [line for line in lines if line.startswith("COPY ") and "--chmod=" not in line]
+    assert "ADDON" not in docker or "mkdir -p" in docker
