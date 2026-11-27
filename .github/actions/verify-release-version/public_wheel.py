@@ -231,32 +231,12 @@ def reviewed_payload(root: Path, module: str, *, legacy_profile: bool = False) -
     return _published_payload(root, module, legacy_profile=legacy_profile)
 
 
-def _check_release_evidence(raw: bytes) -> None:
-    """The signature file holds exactly the key id, the digest and the signature, as text."""
-    try:
-        document = json.loads(raw)
-    except ValueError as error:
-        raise ValueError("Public wheel release evidence is not JSON") from error
-    if (
-        not isinstance(document, dict)
-        or set(document) != {"key_id", "digest", "signature"}
-        or not all(isinstance(value, str) and value for value in document.values())
-    ):
-        raise ValueError("Public wheel release evidence must hold exactly key_id, digest and signature")
-
-
 def verify_payload(data: bytes, digest: str, expected: dict[str, bytes], module: str) -> None:
     if not re.fullmatch(r"[0-9a-f]{64}", digest) or hashlib.sha256(data).hexdigest() != digest:
         raise ValueError("Public wheel digest differs from the PyPI receipt")
     prefix = module.replace(".", "/") + "/"
     with ZipFile(io.BytesIO(data)) as wheel:
         entries = [name for name in wheel.namelist() if name.startswith(prefix) and not name.endswith("/")]
-        evidence = (
-            f"{prefix}release.json"  # the release signature (PIPE-RELEASE-R019) is added at release, never in source
-        )
-        if evidence in entries:
-            entries.remove(evidence)
-            _check_release_evidence(wheel.read(evidence))
         if len(entries) != len(set(entries)) or set(entries) != expected.keys():
             raise ValueError("Public wheel package inventory differs from reviewed source")
         for name in entries:

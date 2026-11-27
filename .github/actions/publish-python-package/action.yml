@@ -26,6 +26,12 @@ inputs:
       refuses any artifact whose digest differs from the recorded one. Empty publishes without that check.
     required: false
     default: ''
+  release-digests:
+    description: >-
+      Path to write the release digests to (PIPE-RELEASE-R019). When set, the wheel and sdist digests and the wheel
+      content digest are computed before publication and a failure stops the release. Empty skips the step.
+    required: false
+    default: ''
 runs:
   using: composite
   steps:
@@ -152,6 +158,20 @@ runs:
       run: |
         uvx --from "git+https://${{ job.workflow_repository }}@${{ job.workflow_sha }}" pipelines-hook candidate-sandbox verify \
           --digests "$CANDIDATE_DIGESTS"
+
+    # PIPE-RELEASE-R019: the pinned digests a runner verifies are computed from the exact files about to be
+    # published, before publication; no key or token takes part.
+    - name: Compute the release digests
+      if: inputs.release-digests != ''
+      shell: bash
+      env:
+        RELEASE_DIGESTS: ${{ inputs.release-digests }}
+      run: |
+        set -euo pipefail
+        wheels=(dist/*.whl)
+        sdists=(dist-sdist/*.tar.gz)
+        [ "${#wheels[@]}" -eq 1 ] && [ "${#sdists[@]}" -eq 1 ] || { echo "::error::expected exactly one wheel and one sdist" >&2; exit 1; }
+        uvx --from "scion-sdk>=0.13.0" connector-release-digest "${wheels[0]}" --sdist "${sdists[0]}" > "$RELEASE_DIGESTS"
 
     - name: Verify release tag before publication
       uses: ./.pipeline-contract/.github/actions/verify-release-source

@@ -53,20 +53,6 @@ on:
         required: false
         type: string
         default: ''
-      release-signing-key:
-        description: >-
-          Versioned secret-store key reference that signs the live connector declaration (PIPE-RELEASE-R019).
-          Required when connector is true; the release fails without it.
-        required: false
-        type: string
-        default: ''
-      release-signing-key-id:
-        description: >-
-          Signer name pinned in reference/connector-release.lock for the key above (PIPE-RELEASE-R019).
-          Required when connector is true.
-        required: false
-        type: string
-        default: ''
       release-record-url:
         description: >-
           HTTP endpoint of the arbora release.record operation (PIPE-RELEASE-R009.1). Empty skips
@@ -265,8 +251,6 @@ jobs:
             /pipelines_hooks/core/__init__.py
             /pipelines_hooks/core/errors.py
             /scripts/release_record.py
-            /scripts/release_sign_plan.py
-            /reference/connector-release.lock
           path: .pipeline-contract
           persist-credentials: false
 
@@ -336,40 +320,6 @@ jobs:
           python3 -m pip install --quiet uv
           uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector generate --root .
 
-      # PIPE-RELEASE-R019: the connector release signs its live declaration and ontology after they are generated
-      # and before the wheel is built, so release.json ships in the wheel. Signing is mandatory; a missing key or id,
-      # or a non-zero exit, fails the release. The signer comes from the shared SDK, not the connector's own lock,
-      # which may pin an older SDK. The key reference is scoped by its first path segment, the signing authority.
-      - name: Sign the live declaration
-        if: steps.version.outputs.published != 'true' && inputs.connector
-        env:
-          RELEASE_SIGNING_KEY: ${{ inputs.release-signing-key }}
-          RELEASE_SIGNING_KEY_ID: ${{ inputs.release-signing-key-id }}
-        run: |
-          set -euo pipefail
-          if [ -z "$RELEASE_SIGNING_KEY" ] || [ -z "$RELEASE_SIGNING_KEY_ID" ]; then
-            echo "::error::a connector release must be signed; pass release-signing-key (a versioned secret-store key reference) and release-signing-key-id."
-            exit 1
-          fi
-          command -v uv >/dev/null || python3 -m pip install --quiet uv
-          # The connector's environment lives outside the checkout (the signer hands it to the server it starts), so the build still creates its own .venv.
-          export UV_PROJECT_ENVIRONMENT="$(mktemp -d)/release-signing-venv"
-          plan=.pipeline-contract/scripts/release_sign_plan.py
-          package_root=$(python3 -I "$plan" . package-root)
-          script=$(python3 -I "$plan" . script)
-          scope="${RELEASE_SIGNING_KEY#*://}"
-          scope="${scope#*/}"
-          scope="${scope%%/*}"
-          uvx --from "scion-sdk[mcp]>=0.12.1" connector-release-sign \
-            --package-root "$package_root" \
-            --connector "$scope" \
-            --key-id "$RELEASE_SIGNING_KEY_ID" \
-            --key-ref "$RELEASE_SIGNING_KEY" \
-            --lock .pipeline-contract/reference/connector-release.lock \
-            --env UV_PROJECT_ENVIRONMENT=env://UV_PROJECT_ENVIRONMENT \
-            -- uv run --frozen "$script"
-          rm -rf "$(dirname "$UV_PROJECT_ENVIRONMENT")"
-
       - name: Download the candidate digests
         if: steps.version.outputs.published != 'true' && inputs.candidate-sandbox
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -386,6 +336,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           runtime-profiles: ${{ inputs.runtime-profiles }}
           role-contract: ${{ inputs.role-contract }}
+          release-digests: ${{ inputs.connector && 'release-digests.json' || '' }}
 
       # PIPE-RELEASE-R009.1: the last step records the release (artifact digests and the frozen commit). A failure
       # marks the run and never withdraws the release.
@@ -396,6 +347,7 @@ jobs:
           RELEASE_RECORD_URL: ${{ inputs.release-record-url }}
           RELEASE_REPOSITORY: ${{ github.repository }}
           RELEASE_TAG: ${{ inputs.release-tag != '' && inputs.release-tag || github.ref_name }}
+          RELEASE_DIGESTS_FILE: ${{ inputs.connector && 'release-digests.json' || '' }}
           SOURCE_COMMIT: ${{ github.sha }}
           EXPECTED_COMMIT: ${{ github.sha }}
           LATEST_COMMIT: ${{ github.sha }}
