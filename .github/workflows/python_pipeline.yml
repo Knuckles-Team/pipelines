@@ -352,7 +352,7 @@ jobs:
             exit 1
           fi
           command -v uv >/dev/null || python3 -m pip install --quiet uv
-          # The connector's environment lives outside the checkout, so the build still creates its own .venv.
+          # The connector's environment lives outside the checkout (the signer hands it to the server it starts), so the build still creates its own .venv.
           export UV_PROJECT_ENVIRONMENT="$(mktemp -d)/release-signing-venv"
           plan=.pipeline-contract/scripts/release_sign_plan.py
           package_root=$(python3 -I "$plan" . package-root)
@@ -366,6 +366,7 @@ jobs:
             --key-id "$RELEASE_SIGNING_KEY_ID" \
             --key-ref "$RELEASE_SIGNING_KEY" \
             --lock .pipeline-contract/reference/connector-release.lock \
+            --env UV_PROJECT_ENVIRONMENT=env://UV_PROJECT_ENVIRONMENT \
             -- uv run --frozen "$script"
           rm -rf "$(dirname "$UV_PROJECT_ENVIRONMENT")"
 
