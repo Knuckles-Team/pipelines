@@ -101,7 +101,7 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 
 | Test ID | Requirement | Expected observation |
 |---|---|---|
-| T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: `tests/test_python_pipeline_contract.py::test_connector_release_signs_before_the_wheel_build` asserts the step order and that an unsigned build fails. |
+| T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: `tests/test_python_pipeline_contract.py::test_connector_release_signs_before_the_wheel_build` asserts the step order, the full argument set and that an unsigned build fails; `tests/test_python_pipeline_contract.py::test_release_key_lock_pins_the_signer_the_org_variable_names` asserts the pinned signer. |
 | T-PIPE-RELEASE-R020 | PIPE-RELEASE-R020 | Test: `tests/test_release_bundle_gate.py::test_bundle_with_open_rows_or_failed_scenario_stops`. |
 | T-PIPE-RELEASE-R025.1 | PIPE-RELEASE-R025.1 | Test: `tests/test_release_scope.py::test_closure_follows_depends_on_and_contract_edges`. |
 | T-PIPE-RELEASE-R025.2 | PIPE-RELEASE-R025.2 | Test: `tests/test_release_scope.py::test_train_order_is_topological_and_not_hard_coded`. |
