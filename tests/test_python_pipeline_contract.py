@@ -62,8 +62,6 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
             "/pipelines_hooks/core/__init__.py\n"
             "/pipelines_hooks/core/errors.py\n"
             "/scripts/release_record.py\n"
-            "/scripts/release_sign_plan.py\n"
-            "/reference/connector-release.lock\n"
         ),
         "sparse-checkout-cone-mode": False,
         "path": ".pipeline-contract",
@@ -144,96 +142,27 @@ def test_publish_action_persists_uv_cache_in_tool_cache() -> None:
     assert "RUNNER_TOOL_CACHE" in cache["run"]
 
 
-def _sign_step_run(
-    tmp_path: Path, key: str, key_id: str, exit_code: int
-) -> tuple[subprocess.CompletedProcess[str], Path]:
-    """Run the signing step's script against a stub ``uvx`` inside a minimal connector checkout."""
-    document = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
-    sign = next(
-        step for step in document["jobs"]["publish-pypi"]["steps"] if step.get("name") == "Sign the live declaration"
-    )
-    work = tmp_path / f"work{exit_code}{bool(key)}{bool(key_id)}"
-    (work / "demo_connector").mkdir(parents=True)
-    (work / "pyproject.toml").write_text(
-        '[project]\nname = "demo-connector"\n[project.scripts]\ndemo-connector = "demo_connector.mcp_server:mcp_server"\n'
-        '[tool.pipelines_hooks]\npackages = ["demo_connector"]\n',
-        encoding="utf-8",
-    )
-    (work / ".pipeline-contract").symlink_to(ROOT)
-    bin_dir = work / "bin"
-    bin_dir.mkdir()
-    for tool in ("uv", "uvx"):
-        stub = bin_dir / tool
-        stub.write_text(f'#!/bin/sh\nfor a in "$@"; do echo "$a"; done > "{bin_dir}/{tool}.args"\nexit {exit_code}\n')
-        stub.chmod(0o755)
-    env = {
-        **os.environ,
-        "PATH": f"{bin_dir}:{os.environ['PATH']}",
-        "RELEASE_SIGNING_KEY": key,
-        "RELEASE_SIGNING_KEY_ID": key_id,
-    }
-    done = subprocess.run(["bash", "-c", sign["run"]], env=env, cwd=work, capture_output=True, text=True, check=False)
-    return done, bin_dir / "uvx.args"
-
-
-def test_connector_release_signs_before_the_wheel_build(tmp_path: Path) -> None:
+def test_connector_release_pins_digests_before_publication_and_holds_no_key() -> None:
     # spec: PIPE-RELEASE-R019
     document = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
-    steps = document["jobs"]["publish-pypi"]["steps"]
-    names = [step.get("name") for step in steps]
-    sign = steps[names.index("Sign the live declaration")]
-    assert names.index("Generate the connector ontology artifacts") < names.index("Sign the live declaration")
-    assert names.index("Verify release version") < names.index("Sign the live declaration")
-    assert names.index("Sign the live declaration") < names.index("Build, publish and release")
-    assert sign["if"] == "steps.version.outputs.published != 'true' && inputs.connector"
     inputs = (document.get("on", document.get(True)))["workflow_call"]["inputs"]
-    assert inputs["release-signing-key"]["default"] == ""
-    assert inputs["release-signing-key-id"]["default"] == ""
-    assert sign["env"] == {
-        "RELEASE_SIGNING_KEY": "${{ inputs.release-signing-key }}",
-        "RELEASE_SIGNING_KEY_ID": "${{ inputs.release-signing-key-id }}",
-    }
-
-    ref = "openbao://apps/release-signing/connectors#SIGNING_KEY@1"
-    signed, args_file = _sign_step_run(tmp_path, ref, "release-key", 0)
-    assert signed.returncode == 0, signed.stderr
-    assert args_file.read_text().split("\n")[:-1] == [
-        "--from",
-        "scion-sdk[mcp]>=0.12.1",
-        "connector-release-sign",
-        "--package-root",
-        "demo_connector",
-        "--connector",
-        "release-signing",
-        "--key-id",
-        "release-key",
-        "--key-ref",
-        ref,
-        "--lock",
-        ".pipeline-contract/reference/connector-release.lock",
-        "--env",
-        "UV_PROJECT_ENVIRONMENT=env://UV_PROJECT_ENVIRONMENT",
-        "--",
-        "uv",
-        "run",
-        "--frozen",
-        "demo-connector",
-    ]  # every argument the signing command requires, then the connector's stdio command
-
-    assert "UV_PROJECT_ENVIRONMENT" in sign["run"]  # the build creates .venv in the checkout; signing must not
-    assert not (args_file.parent.parent / ".venv").exists()
-
-    assert _sign_step_run(tmp_path, ref, "release-key", 2)[0].returncode != 0  # a failed signing fails the release
-    for key, key_id in (("", "release-key"), (ref, "")):  # unsigned: refused before the wheel is built
-        unsigned = _sign_step_run(tmp_path, key, key_id, 0)[0]
-        assert unsigned.returncode != 0 and "must be signed" in unsigned.stdout
-
-
-def test_release_key_lock_pins_the_signer_the_org_variable_names() -> None:
-    # spec: PIPE-RELEASE-R019
-    lock = yaml.safe_load((ROOT / "reference/connector-release.lock").read_text(encoding="utf-8"))
-    pins = {entry["signer"]: entry["signing_public_key"] for entry in lock.values()}
-    assert len(lock) == 1 and set(pins) == {"knuckles-connector-release-2026"}
-    assert len(pins["knuckles-connector-release-2026"]) == 43  # an unpadded base64url Ed25519 public key
+    assert not [name for name in inputs if "signing" in name]
     text = WORKFLOW.read_text(encoding="utf-8")
-    assert "/reference/connector-release.lock" in text and "/scripts/release_sign_plan.py" in text  # sparse-checked out
+    assert "connector-release-sign" not in text and "release_sign_plan" not in text
+    assert "connector-release.lock" not in text
+    step = next(
+        step for step in document["jobs"]["publish-pypi"]["steps"] if step.get("name") == "Build, publish and release"
+    )
+    assert step["with"]["release-digests"] == "${{ inputs.connector && 'release-digests.json' || '' }}"
+    record = next(s for s in document["jobs"]["publish-pypi"]["steps"] if s.get("name") == "Record the release")
+    assert record["env"]["RELEASE_DIGESTS_FILE"] == step["with"]["release-digests"]
+    action = yaml.safe_load((ROOT / ".github/actions/publish-python-package/action.yml").read_text(encoding="utf-8"))
+    names = [s.get("name") for s in action["runs"]["steps"]]
+    compute = action["runs"]["steps"][names.index("Compute the release digests")]
+    assert names.index("Compute the release digests") < names.index("Publish package")
+    assert compute["if"] == "inputs.release-digests != ''"
+    assert "connector-release-digest" in compute["run"] and "--sdist" in compute["run"]
+    caller = (ROOT / ".github/workflows/connector_pipeline.yml").read_text(encoding="utf-8")
+    assert "RELEASE_SIGNING_KEY" not in caller and "release-signing" not in caller
+    assert not (ROOT / "reference/connector-release.lock").exists()
+    assert not (ROOT / "scripts/release_sign_plan.py").exists()

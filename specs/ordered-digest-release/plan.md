@@ -313,4 +313,4 @@ Each row names its entry point and caller chain in its own `Caller chain:` sente
 
 ## Cross-repo seams
 
-none
+- Connector release digests: `PIPE-RELEASE-R019`, provider `SCION-CONNECTOR-CONTROL-R650.1.2`; see [contracts/release-digest.md](contracts/release-digest.md).

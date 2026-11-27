@@ -73,6 +73,7 @@ class _Sink(BaseHTTPRequestHandler):
 # spec: PIPE-RELEASE-R009.2
 def test_step_posts_release_with_digests(tmp_path: Path, monkeypatch) -> None:
     sha = _repo_at(tmp_path)
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "pkg"\nversion = "1.0.0"\n', encoding="utf-8")
     (tmp_path / "dist").mkdir()
     (tmp_path / "dist-sdist").mkdir()
     (tmp_path / "dist/pkg-1.0.0-py3-none-any.whl").write_bytes(b"wheel-bytes")
@@ -99,14 +100,40 @@ def test_step_posts_release_with_digests(tmp_path: Path, monkeypatch) -> None:
     body = _Sink.posted[0]
     assert body["op"] == "release.record"
     record = body["params"]
-    assert record["commit"] == sha and record["tag"] == "v1.0.0"
-    assert {a["name"]: a["sha256"] for a in record["artifacts"]} == {
-        "pkg-1.0.0-py3-none-any.whl": hashlib.sha256(b"wheel-bytes").hexdigest(),
-        "pkg-1.0.0.tar.gz": hashlib.sha256(b"sdist-bytes").hexdigest(),
-    }
+    assert (record["repo"], record["version"], record["git_ref"]) == ("pkg", "1.0.0", "refs/tags/v1.0.0")
+    assert record["changeset_head"] == sha and isinstance(record["published_at"], int)
+    assert record["artifact_digests"] == sorted(
+        [
+            f"sha256:{hashlib.sha256(b'wheel-bytes').hexdigest()}",
+            f"sha256:{hashlib.sha256(b'sdist-bytes').hexdigest()}",
+        ]
+    )
 
 
 def test_failure_marks_the_run_and_no_endpoint_skips(tmp_path: Path, capsys) -> None:
     assert release_record.main(environment={}, root=tmp_path) == 0
     assert "skipped" in capsys.readouterr().out
     assert release_record.main(environment={"RELEASE_RECORD_URL": "http://127.0.0.1:9/x"}, root=tmp_path) == 1
+
+
+# spec: PIPE-RELEASE-R019
+def test_connector_record_carries_the_content_digest_and_must_be_recorded(tmp_path: Path, capsys, monkeypatch) -> None:
+    sha = _repo_at(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "pkg"\n', encoding="utf-8")
+    (tmp_path / "dist").mkdir()
+    (tmp_path / "dist/pkg-1.0.0-py3-none-any.whl").write_bytes(b"wheel-bytes")
+    digests = tmp_path / "release-digests.json"
+    content = "content-sha256:" + "ab" * 32
+    digests.write_text(json.dumps({"artifact_digests": [content]}), encoding="utf-8")
+    env = {
+        "RELEASE_TAG": "v1.0.0",
+        "SOURCE_COMMIT": sha,
+        "EXPECTED_COMMIT": sha,
+        "LATEST_COMMIT": sha,
+        "RELEASE_DIGESTS_FILE": str(digests),
+    }
+    record = release_record.build_record(env, tmp_path)
+    assert content in record["artifact_digests"] and len(record["artifact_digests"]) == 2
+    assert release_record.main(environment=env, root=tmp_path) == 1  # no endpoint: refused, not skipped
+    assert "must be recorded" in capsys.readouterr().err
