@@ -325,8 +325,9 @@ jobs:
             npm run build
           fi
 
+      # A connector served by the SDK ships no legacy ontology mapping; it has nothing to generate.
       - name: Generate the connector ontology artifacts
-        if: steps.version.outputs.published != 'true' && (inputs.connector)
+        if: steps.version.outputs.published != 'true' && inputs.connector && hashFiles('*/ontology/mappings/source.yaml') != ''
         env:
           PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
           PIPELINES_SHA: ${{ job.workflow_sha }}
