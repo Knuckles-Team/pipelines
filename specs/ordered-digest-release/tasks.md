@@ -130,6 +130,9 @@ commit).
 - [ ] T048 PIPE-RELEASE-R001.12 Hot-path proof.
 - [ ] T049 PIPE-RELEASE-R001.13 Versions and container files are derived.
 - [ ] T050 PIPE-RELEASE-R001.14 A new Scion SDK release rebuilds connector images.
+- [ ] T118 PIPE-RELEASE-R001.15 A connector declares one additional named image as configuration.
+- [ ] T119 PIPE-RELEASE-R001.16 A declared image target publishes in the same run with the primary image's tags, verification and retries.
+- [ ] T120 PIPE-RELEASE-R001.17 The gui-runtime template runs a GUI application under a display as a non-root user, with the display as a switch.
 - [ ] T051 PIPE-RELEASE-R007 Shared gates workflow, tag-only publish guard and fast-tests hook.
 - [ ] T052 PIPE-RELEASE-R007.1 Model.
 - [ ] T053 PIPE-RELEASE-R007.2 Behavior.

@@ -1,0 +1,25 @@
+# syntax=docker/dockerfile:1
+# GENERATED at build time from pipelines_hooks/connector/templates/gui-runtime.Dockerfile.tmpl by
+# `pipelines-connector render` (target @@NAME@@). Never committed: change the template or the
+# connector's [tool.pipelines.container.targets.@@NAME@@] table in pyproject.toml.
+#
+# A GUI application under a display. The application archive is fetched from its pinned URL and
+# verified against its pinned SHA-256 before it is unpacked; the process runs as a fixed non-root
+# identity. The display is a switch (GUI_DISPLAY_MODE): a GPU-driven X server when the runtime
+# exposes a GPU display, software Xvfb otherwise. X is started directly by the entrypoint.
+FROM @@BASE@@
+ARG DEBIAN_FRONTEND=noninteractive
+@@APT@@@@APP@@@@SETUP@@@@FILES@@@@NOTICE@@COPY --chmod=0755 docker/@@NAME@@.entrypoint.sh /usr/local/bin/gui-entrypoint
+RUN groupadd --gid @@UID@@ app \
+    && useradd --uid @@UID@@ --gid @@UID@@ --create-home --home-dir @@HOME@@ --shell /usr/sbin/nologin app \
+    && install -d -m 1777 /tmp/.X11-unix
+ENV HOME=@@HOME@@ \
+    GUI_DISPLAY=@@DISPLAY@@ \
+    GUI_SCREEN=@@SCREEN@@ \
+    GUI_DISPLAY_MODE=@@MODE@@ \
+    GUI_VIEWER_PORT=@@VIEWER_PORT@@ \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
+    PYTHONUNBUFFERED=1
+@@ENV@@@@LABELS@@USER @@UID@@
+ENTRYPOINT ["/usr/local/bin/gui-entrypoint"]
+CMD ["app"]

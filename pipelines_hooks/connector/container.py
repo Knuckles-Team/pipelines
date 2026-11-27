@@ -13,6 +13,9 @@ image kinds; a repo that runs differently sets ``limits`` per kind, each key opt
 ``env_file_optional = true`` keeps ``../.env`` optional (compose starts without it) instead of required. A connector
 that must preserve an existing runtime may use ``env_file_mode = "none"`` and the explicit compose selectors below;
 their defaults remain the canonical secure form.
+``[tool.pipelines.container.targets.<name>]`` declares one additional image built from a template
+owned by pipelines (``connector/targets.py``); it renders ``<name>.Dockerfile`` and
+``<name>.entrypoint.sh`` next to the files above and is published as ``<image>:<version>-<name>``.
 Nothing is read from a committed Dockerfile; a connector commits none of these files.
 ``--check`` renders into memory and fails when a tracked copy exists under ``docker/``
 (a committed rendering is a second source of truth), printing nothing else.
@@ -38,6 +41,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from pipelines_hooks.connector import project
+from pipelines_hooks.connector import targets as image_targets
 from pipelines_hooks.core.distributions import SDK as SDK_ROLE
 from pipelines_hooks.core.distributions import distribution
 from pipelines_hooks.core.errors import CannotRun
@@ -439,6 +443,7 @@ def render(root: Path) -> dict[str, str]:
                 "@@HOSTNAME@@": _identity_line(table, "hostname", service),
             },
         )
+    files.update(image_targets.render_all(table))
     return files
 
 
@@ -450,9 +455,8 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     files = render(args.root)
     if args.check:
-        committed = [
-            name for name in OUTPUT_FILES if (args.root / "docker" / name).exists() and _tracked(args.root, name)
-        ]
+        declared = (*OUTPUT_FILES, *image_targets.output_files(project.container_table(project.load(args.root))))
+        committed = [name for name in declared if (args.root / "docker" / name).exists() and _tracked(args.root, name)]
         for name in committed:
             print(f"connector-render: docker/{name} is committed; it is rendered at build time", flush=True)
         return 1 if committed else 0

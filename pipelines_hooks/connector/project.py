@@ -8,6 +8,7 @@ import tomllib
 from pathlib import Path
 from typing import Any, Callable
 
+from pipelines_hooks.connector import targets as image_targets
 from pipelines_hooks.core.errors import CannotRun
 
 CONTAINER_KEYS = frozenset(
@@ -42,6 +43,7 @@ CONTAINER_KEYS = frozenset(
         "config_mounts",
         "state_volumes",
         "limits",
+        "targets",
     }
 )
 LIMIT_KEYS = frozenset({"memory_limit_env", "memory_limit", "cpu_limit_env", "cpu_limit"})
@@ -112,6 +114,7 @@ def container_table(pyproject: dict[str, Any]) -> dict[str, Any]:
             )
     compose_host(table)
     publish_port(table, table.get("port", 8000))
+    image_targets.validate(table.get("targets", {}))
     return dict(table)
 
 

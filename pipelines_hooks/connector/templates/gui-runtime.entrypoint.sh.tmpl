@@ -1,0 +1,161 @@
+#!/bin/sh
+# GENERATED at build time from pipelines_hooks/connector/templates/gui-runtime.entrypoint.sh.tmpl
+# by `pipelines-connector render` (target @@NAME@@). Never committed.
+#
+#   gui-entrypoint app      start the display, then exec the GUI process (default)
+#   gui-entrypoint viewer   attach a watch/drive session to the display of the app container
+#
+# Display mode (GUI_DISPLAY_MODE): auto picks a GPU-driven X server when the runtime exposes a
+# GPU with its X driver and falls back to software Xvfb with a note; nvidia requires the GPU
+# server and fails when it does not come up; xvfb always uses software. xvfb-run is never used:
+# it hangs when it is PID 1 of a container.
+set -eu
+
+DISPLAY_NAME="${GUI_DISPLAY:-:99}"
+SCREEN="${GUI_SCREEN:-1280x720x24}"
+MODE="${GUI_DISPLAY_MODE:-auto}"
+SOCKET="/tmp/.X11-unix/X${DISPLAY_NAME#:}"
+STATE="${HOME}/.cache/gui-runtime"
+WAIT_TICKS="${GUI_DISPLAY_WAIT_TICKS:-150}"
+
+note() { echo "gui-runtime: $*"; }
+
+wait_for_socket() {
+  i=0
+  while [ ! -S "$SOCKET" ] && [ "$i" -lt "$1" ]; do
+    sleep 0.2
+    i=$((i + 1))
+  done
+  [ -S "$SOCKET" ]
+}
+
+nvidia_module_dir() {
+  for dir in /usr/lib/x86_64-linux-gnu/nvidia/xorg /usr/lib/xorg/modules/drivers /usr/lib64/xorg/modules/drivers; do
+    if [ -e "$dir/nvidia_drv.so" ]; then
+      echo "$dir"
+      return 0
+    fi
+  done
+  return 1
+}
+
+nvidia_display_ready() {
+  [ -e /dev/nvidiactl ] || return 1
+  command -v nvidia-smi >/dev/null 2>&1 || return 1
+  [ -x /usr/lib/xorg/Xorg ] || return 1
+  nvidia_module_dir >/dev/null
+}
+
+# nvidia-smi reports 00000000:01:00.0 (hex); the X server wants PCI:1:0:0 (decimal).
+bus_id() {
+  full="$(nvidia-smi --query-gpu=pci.bus_id --format=csv,noheader | head -n 1 | tr -d ' ')"
+  rest="${full#*:}"
+  bus="${rest%%:*}"
+  slot_fn="${rest#*:}"
+  slot="${slot_fn%%.*}"
+  fn="${slot_fn#*.}"
+  echo "PCI:$((0x$bus)):$((0x$slot)):$fn"
+}
+
+start_nvidia() {
+  mkdir -p "$STATE"
+  width="${SCREEN%%x*}"
+  rest="${SCREEN#*x}"
+  height="${rest%%x*}"
+  depth="${rest#*x}"
+  modules="$(nvidia_module_dir)"
+  conf="$STATE/xorg.conf"
+  cat >"$conf" <<CONF
+Section "ServerFlags"
+    Option "AutoAddDevices" "false"
+    Option "AutoEnableDevices" "false"
+    Option "DontVTSwitch" "true"
+EndSection
+Section "Files"
+    ModulePath "$modules"
+    ModulePath "/usr/lib/xorg/modules"
+EndSection
+Section "Device"
+    Identifier "gpu0"
+    Driver "nvidia"
+    BusID "$(bus_id)"
+    Option "AllowEmptyInitialConfiguration" "true"
+    Option "UseDisplayDevice" "none"
+EndSection
+Section "Screen"
+    Identifier "screen0"
+    Device "gpu0"
+    DefaultDepth $depth
+    SubSection "Display"
+        Depth $depth
+        Virtual $width $height
+    EndSubSection
+EndSection
+CONF
+  /usr/lib/xorg/Xorg "$DISPLAY_NAME" -config "$conf" -noreset -nolisten tcp -novtswitch -sharevts \
+    -logfile "$STATE/Xorg.log" +extension GLX >/dev/null 2>&1 &
+  XPID=$!
+}
+
+start_xvfb() {
+  Xvfb "$DISPLAY_NAME" -screen 0 "$SCREEN" +extension GLX +render -noreset -nolisten tcp &
+  XPID=$!
+}
+
+start_display() {
+  case "$MODE" in
+    xvfb) note "display mode xvfb: software display"; start_xvfb ;;
+    nvidia)
+      nvidia_display_ready || { note "display mode nvidia requested but no GPU display is available"; exit 1; }
+      start_nvidia
+      wait_for_socket "$WAIT_TICKS" || { note "the GPU X server did not start; see $STATE/Xorg.log"; exit 1; }
+      note "display mode nvidia: GPU-driven X server"
+      return 0
+      ;;
+    auto)
+      if nvidia_display_ready; then
+        start_nvidia
+        if wait_for_socket "$WAIT_TICKS" && kill -0 "$XPID" 2>/dev/null; then
+          note "display mode auto: GPU-driven X server"
+          return 0
+        fi
+        note "display mode auto: the GPU X server did not start (see $STATE/Xorg.log); falling back to software"
+        kill "$XPID" 2>/dev/null || true
+        rm -f "$SOCKET"
+      else
+        note "display mode auto: no GPU display available; using software"
+      fi
+      start_xvfb
+      ;;
+    *) note "unknown GUI_DISPLAY_MODE: $MODE"; exit 2 ;;
+  esac
+  wait_for_socket "$WAIT_TICKS" || { note "the display did not start"; exit 1; }
+}
+
+run_viewer() {
+  wait_for_socket "${GUI_VIEWER_WAIT_TICKS:-1500}" || { note "no display at $SOCKET to attach to"; exit 1; }
+  port="${GUI_VIEWER_PORT:-6080}"
+  options="-display $DISPLAY_NAME -localhost -forever -shared -rfbport 5900 -quiet"
+  if [ "${GUI_VNC_VIEWONLY:-0}" = 1 ]; then
+    options="$options -viewonly"
+  fi
+  if [ -n "${GUI_VNC_PASSWORD_FILE:-}" ] && [ -s "$GUI_VNC_PASSWORD_FILE" ]; then
+    options="$options -passwdfile $GUI_VNC_PASSWORD_FILE"
+  else
+    options="$options -nopw"
+    note "no VNC password file: this session must sit behind an authenticating gateway"
+  fi
+  # shellcheck disable=SC2086
+  x11vnc $options &
+  exec websockify --web /usr/share/novnc "$port" localhost:5900
+}
+
+case "${1:-app}" in
+  app)
+    start_display
+    export DISPLAY="$DISPLAY_NAME"
+    exec @@COMMAND@@
+    ;;
+  viewer) run_viewer ;;
+  *) exec "$@" ;;
+esac
