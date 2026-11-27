@@ -60,6 +60,13 @@ on:
         required: false
         type: string
         default: ''
+      release-signing-key-id:
+        description: >-
+          Signer name pinned in reference/connector-release.lock for the key above (PIPE-RELEASE-R019).
+          Required when connector is true.
+        required: false
+        type: string
+        default: ''
       release-record-url:
         description: >-
           HTTP endpoint of the arbora release.record operation (PIPE-RELEASE-R009.1). Empty skips
@@ -254,9 +261,12 @@ jobs:
             /pipelines_hooks/__init__.py
             /pipelines_hooks/connector/__init__.py
             /pipelines_hooks/connector/project.py
+            /pipelines_hooks/connector/targets.py
             /pipelines_hooks/core/__init__.py
             /pipelines_hooks/core/errors.py
             /scripts/release_record.py
+            /scripts/release_sign_plan.py
+            /reference/connector-release.lock
           path: .pipeline-contract
           persist-credentials: false
 
@@ -273,20 +283,6 @@ jobs:
           version="${REF_NAME#v}"
           python3 -m pip install --quiet uv
           uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector version --root . set "$version"
-
-      # PIPE-RELEASE-R019: the connector release signs its live declaration before the wheel is built,
-      # so release.json ships in the wheel. Signing is mandatory; a missing key or a non-zero exit fails the release.
-      - name: Sign the live declaration
-        if: inputs.connector
-        env:
-          RELEASE_SIGNING_KEY: ${{ inputs.release-signing-key }}
-        run: |
-          set -euo pipefail
-          if [ -z "$RELEASE_SIGNING_KEY" ]; then
-            echo "::error::a connector release must be signed; pass release-signing-key (a versioned secret-store key reference)."
-            exit 1
-          fi
-          uv run --frozen connector-release-sign --key-ref "$RELEASE_SIGNING_KEY"
 
       # PIPE-RELEASE-R002: refuse a stale-version tag, a bumpversion mismatch or an
       # already-published version before any build time is spent. A version a maintainer
@@ -338,6 +334,36 @@ jobs:
           set -euo pipefail
           python3 -m pip install --quiet uv
           uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-connector generate --root .
+
+      # PIPE-RELEASE-R019: the connector release signs its live declaration and ontology after they are generated
+      # and before the wheel is built, so release.json ships in the wheel. Signing is mandatory; a missing key or id,
+      # or a non-zero exit, fails the release. The signer comes from the shared SDK, not the connector's own lock,
+      # which may pin an older SDK. The key reference is scoped by its first path segment, the signing authority.
+      - name: Sign the live declaration
+        if: steps.version.outputs.published != 'true' && inputs.connector
+        env:
+          RELEASE_SIGNING_KEY: ${{ inputs.release-signing-key }}
+          RELEASE_SIGNING_KEY_ID: ${{ inputs.release-signing-key-id }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RELEASE_SIGNING_KEY" ] || [ -z "$RELEASE_SIGNING_KEY_ID" ]; then
+            echo "::error::a connector release must be signed; pass release-signing-key (a versioned secret-store key reference) and release-signing-key-id."
+            exit 1
+          fi
+          command -v uv >/dev/null || python3 -m pip install --quiet uv
+          plan=.pipeline-contract/scripts/release_sign_plan.py
+          package_root=$(python3 -I "$plan" . package-root)
+          script=$(python3 -I "$plan" . script)
+          scope="${RELEASE_SIGNING_KEY#*://}"
+          scope="${scope#*/}"
+          scope="${scope%%/*}"
+          uvx --from "scion-sdk[mcp]>=0.12.1" connector-release-sign \
+            --package-root "$package_root" \
+            --connector "$scope" \
+            --key-id "$RELEASE_SIGNING_KEY_ID" \
+            --key-ref "$RELEASE_SIGNING_KEY" \
+            --lock .pipeline-contract/reference/connector-release.lock \
+            -- uv run --frozen "$script"
 
       - name: Download the candidate digests
         if: steps.version.outputs.published != 'true' && inputs.candidate-sandbox
