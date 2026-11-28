@@ -4,9 +4,10 @@ name: Release npm Package
 # workflow at @main. The gates run on every call; the publish runs only on a v* tag with `publish: true`.
 # The lane records no state: the tag and the registry hold it.
 #
-# Credential: the repository secret NPM_TOKEN when it is set, otherwise npm trusted publishing (OIDC, no
-# stored token). A caller that relies on trusted publishing must grant `id-token: write` to the calling job.
-# With neither, the publish step exits 1 with NPM_AUTH_MISSING and nothing publishes.
+# Credential: the repository secret NPM_TOKEN is used for one case only, the first publish of a package the
+# registry does not know yet. Every later publish uses npm trusted publishing (OIDC, no stored token) with the
+# token's environment empty. The caller's job must grant `id-token: write`.
+# With no credential for the case at hand, the publish step exits 1 with NPM_AUTH_MISSING and nothing publishes.
 
 on:
   workflow_call:
@@ -53,7 +54,7 @@ on:
         type: boolean
     secrets:
       NPM_TOKEN:
-        description: Registry token. Optional; when unset the lane uses trusted publishing.
+        description: Registry token for a package's first publish only. Optional; later publishes use trusted publishing.
         required: false
 
 permissions:
@@ -137,28 +138,75 @@ jobs:
           GATE_COMMAND: ${{ inputs.pre-publish }}
         run: bash -c "$GATE_COMMAND" || { echo "::error::GATE_FAILED pre-publish"; exit 1; }
 
-      # Trusted publishing needs npm 11.5.1 or newer; the runner's bundled npm may be older.
-      - name: Publish
+      # PIPE-RELEASE-R033.2 to R033.4: the registry decides the publish mode. A package the registry does not
+      # know yet (E404) gets its first publish with NPM_TOKEN and then a trusted-publisher registration.
+      # A package the registry knows publishes by OIDC only, with the token's environment empty.
+      # Trusted publishing needs npm 11.5.1 or newer, and `npm trust` needs 11.10.0 or newer.
+      - name: Detect the publish mode
+        id: mode
         if: inputs.publish && startsWith(github.ref, 'refs/tags/v')
+        env:
+          NODE_AUTH_TOKEN: ''
+        run: |
+          set -euo pipefail
+          npm install --global --quiet npm@^11.10.0
+          name=$(node -p "require('./package.json').name")
+          if out=$(npm view "$name" name 2>&1); then
+            echo "mode=oidc" >> "$GITHUB_OUTPUT"
+            echo "$name exists on the registry; publishing by trusted publishing only."
+          elif printf '%s' "$out" | grep -q 'E404'; then
+            echo "mode=first" >> "$GITHUB_OUTPUT"
+            echo "$name is not on the registry yet; this is its first publish."
+          else
+            echo "::error::REGISTRY_UNREADABLE: the registry lookup of $name failed. Nothing published."
+            exit 1
+          fi
+
+      - name: Publish the first release with the token
+        if: steps.mode.outputs.mode == 'first'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           HAVE_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
         run: |
           set -euo pipefail
-          npm install --global --quiet npm@^11.5.1
           if [ "$HAVE_TOKEN" != "true" ]; then
-            unset NODE_AUTH_TOKEN
-            if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
-              echo "::error::NPM_AUTH_MISSING: NPM_TOKEN is unset and the job has no id-token: write for trusted publishing. Nothing published."
-              exit 1
-            fi
-            echo "NPM_TOKEN is unset; publishing through npm trusted publishing."
+            echo "::error::NPM_AUTH_MISSING: the package is new and NPM_TOKEN is unset. Nothing published."
+            exit 1
           fi
           npm publish --provenance --access public || {
-            if [ "$HAVE_TOKEN" = "true" ]; then
-              echo "::error::PUBLISH_FAILED: the registry refused the publish with NPM_TOKEN. Nothing published."
-            else
-              echo "::error::PUBLISH_FAILED: with no NPM_TOKEN the package needs a trusted publisher registered on npmjs.com for this repository and calling workflow. Nothing published."
-            fi
+            echo "::error::PUBLISH_FAILED: the registry refused the first publish with NPM_TOKEN. Nothing published."
+            exit 1
+          }
+
+      # Registration never fails the release: the version is already published. When the registry refuses it,
+      # the lane warns, and the owner registers the trusted publisher once on npmjs.com.
+      - name: Register the trusted publisher
+        if: steps.mode.outputs.mode == 'first'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          name=$(node -p "require('./package.json').name")
+          path=${WORKFLOW_REF#"$REPOSITORY"/.github/workflows/}
+          file=${path%%@*}
+          if timeout 120 npm trust github "$name" --repo "$REPOSITORY" --file "$file" --yes < /dev/null; then
+            echo "Registered $REPOSITORY $file as the trusted publisher of $name."
+          else
+            echo "::warning::TRUSTED_PUBLISHER_UNREGISTERED: npm refused to register the trusted publisher with a token. On npmjs.com open $name, Settings, Trusted publishing, and add GitHub Actions for $REPOSITORY with workflow $file. Later releases need it."
+          fi
+
+      - name: Publish by trusted publishing
+        if: steps.mode.outputs.mode == 'oidc'
+        env:
+          NODE_AUTH_TOKEN: ''
+        run: |
+          set -euo pipefail
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "::error::NPM_AUTH_MISSING: the job has no id-token: write for trusted publishing. Nothing published."
+            exit 1
+          fi
+          npm publish --provenance --access public || {
+            echo "::error::PUBLISH_FAILED: the package needs a trusted publisher registered on npmjs.com for this repository and calling workflow. Nothing published."
             exit 1
           }

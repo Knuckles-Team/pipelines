@@ -720,11 +720,11 @@
 
 # A connector release publishes PyPI and Docker (PIPE-RELEASE-R013); warn level.
 - id: release-standard
-  name: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+  name: release standard (connector calls the shared container pipeline; npm package calls the shared npm lane; warns)
   entry: pipelines-hook release-standard
   language: python
   pass_filenames: false
-  files: (^|/)(docker/Dockerfile|\.github/workflows/.*\.ya?ml)$
+  files: (^|/)(docker/Dockerfile|package\.json|\.github/workflows/.*\.ya?ml)$
   stages: [pre-push]
 
 # --- spec-status lifecycle (SPEC-STATUS-LIFECYCLE.md S6) -------------------
