@@ -571,6 +571,13 @@
   always_run: true
   require_serial: true
   stages: [manual]
+- id: npm-tag-version
+  name: NPM release - the v tag equals the package.json version and the registry lacks it
+  entry: pipelines-hook npm-tag-version
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
 - id: packaging-roles
   name: Packaging role/extra closure (explicit contract and evidence paths)
   entry: pipelines-hook packaging-roles

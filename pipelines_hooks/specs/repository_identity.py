@@ -22,6 +22,7 @@ _OWNER_PREFIXES = {
     "TUI": "tuig",
     "WEBUI": "overstory",
     "AXIL": "axil",
+    "CITY": "arbora-city",
     "MEDULLA": "medulla",
     "MERISTEM": "meristem",
     "OVERSTORY": "overstory",

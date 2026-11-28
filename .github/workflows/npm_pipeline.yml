@@ -1,0 +1,164 @@
+name: Release npm Package
+
+# PIPE-RELEASE-R033: one shared lane for an npm package. A consumer's ci.yml and release.yml call this
+# workflow at @main. The gates run on every call; the publish runs only on a v* tag with `publish: true`.
+# The lane records no state: the tag and the registry hold it.
+#
+# Credential: the repository secret NPM_TOKEN when it is set, otherwise npm trusted publishing (OIDC, no
+# stored token). A caller that relies on trusted publishing must grant `id-token: write` to the calling job.
+# With neither, the publish step exits 1 with NPM_AUTH_MISSING and nothing publishes.
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version for the lane.
+        required: false
+        default: '22'
+        type: string
+      package-manager:
+        description: pnpm or npm; the lockfile is installed frozen.
+        required: false
+        default: pnpm
+        type: string
+      typecheck:
+        description: Command for the type check; empty skips the step.
+        required: false
+        default: ''
+        type: string
+      lint:
+        description: Command for the lint; empty skips the step.
+        required: false
+        default: ''
+        type: string
+      test:
+        description: Command for the tests; empty skips the step.
+        required: false
+        default: ''
+        type: string
+      build:
+        description: Command for the build; empty skips the step.
+        required: false
+        default: ''
+        type: string
+      pre-publish:
+        description: Command run after the gates and before publish; empty skips the step.
+        required: false
+        default: ''
+        type: string
+      publish:
+        description: Publish to the registry. Takes effect only on a v* tag.
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      NPM_TOKEN:
+        description: Registry token. Optional; when unset the lane uses trusted publishing.
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  npm:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install pnpm
+        if: inputs.package-manager == 'pnpm'
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ inputs.node-version }}
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        env:
+          PACKAGE_MANAGER: ${{ inputs.package-manager }}
+        run: |
+          set -euo pipefail
+          case "$PACKAGE_MANAGER" in
+            pnpm) pnpm install --frozen-lockfile ;;
+            npm) npm ci ;;
+            *) echo "::error::GATE_FAILED install: package-manager must be pnpm or npm, not $PACKAGE_MANAGER"; exit 1 ;;
+          esac
+
+      # Each gate runs in order. A non-zero exit stops the lane with GATE_FAILED and the step name.
+      - name: Typecheck
+        if: inputs.typecheck != ''
+        env:
+          GATE_COMMAND: ${{ inputs.typecheck }}
+        run: bash -c "$GATE_COMMAND" || { echo "::error::GATE_FAILED typecheck"; exit 1; }
+
+      - name: Lint
+        if: inputs.lint != ''
+        env:
+          GATE_COMMAND: ${{ inputs.lint }}
+        run: bash -c "$GATE_COMMAND" || { echo "::error::GATE_FAILED lint"; exit 1; }
+
+      - name: Test
+        if: inputs.test != ''
+        env:
+          GATE_COMMAND: ${{ inputs.test }}
+        run: bash -c "$GATE_COMMAND" || { echo "::error::GATE_FAILED test"; exit 1; }
+
+      - name: Build
+        if: inputs.build != ''
+        env:
+          GATE_COMMAND: ${{ inputs.build }}
+        run: bash -c "$GATE_COMMAND" || { echo "::error::GATE_FAILED build"; exit 1; }
+
+      # Publishing refuses before anything is written: the tag must be v plus the package version, and the
+      # registry must not hold the version yet.
+      - name: Verify the tag version
+        if: inputs.publish && startsWith(github.ref, 'refs/tags/v')
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          PIPELINES_REPOSITORY: ${{ job.workflow_repository }}
+          PIPELINES_SHA: ${{ job.workflow_sha }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet uv
+          uvx --from "git+https://github.com/${PIPELINES_REPOSITORY}@${PIPELINES_SHA}" pipelines-hook npm-tag-version --tag "$REF_NAME" --root .
+
+      - name: Pre-publish
+        if: inputs.publish && startsWith(github.ref, 'refs/tags/v') && inputs.pre-publish != ''
+        env:
+          GATE_COMMAND: ${{ inputs.pre-publish }}
+        run: bash -c "$GATE_COMMAND" || { echo "::error::GATE_FAILED pre-publish"; exit 1; }
+
+      # Trusted publishing needs npm 11.5.1 or newer; the runner's bundled npm may be older.
+      - name: Publish
+        if: inputs.publish && startsWith(github.ref, 'refs/tags/v')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          HAVE_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          npm install --global --quiet npm@^11.5.1
+          if [ "$HAVE_TOKEN" != "true" ]; then
+            unset NODE_AUTH_TOKEN
+            if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+              echo "::error::NPM_AUTH_MISSING: NPM_TOKEN is unset and the job has no id-token: write for trusted publishing. Nothing published."
+              exit 1
+            fi
+            echo "NPM_TOKEN is unset; publishing through npm trusted publishing."
+          fi
+          npm publish --provenance --access public || {
+            if [ "$HAVE_TOKEN" = "true" ]; then
+              echo "::error::PUBLISH_FAILED: the registry refused the publish with NPM_TOKEN. Nothing published."
+            else
+              echo "::error::PUBLISH_FAILED: with no NPM_TOKEN the package needs a trusted publisher registered on npmjs.com for this repository and calling workflow. Nothing published."
+            fi
+            exit 1
+          }
