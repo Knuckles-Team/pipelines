@@ -2828,7 +2828,16 @@ def test_arbora_city_is_a_core_front_end_part() -> None:
     registry = json.loads((PKG / "registry.json").read_text())
     city = next(node for node in model["children"] if node["id"] == "city")
     assert (city["label"], city["repo"], city["layer"], city["band"]) == ("Arbora City", "arbora-city", "entry", 1)
-    assert [c["id"] for c in city["children"]] == ["city.engine", "city.source", "city.embed", "city.assets"]
+    assert [c["id"] for c in city["children"]] == [
+        "city.engine",
+        "city.source",
+        "city.embed",
+        "city.assets",
+        "city.world",
+        "city.avatar",
+        "city.control",
+        "city.audio",
+    ]
     assert not city.get("code") and not any(c.get("code") for c in city["children"])
     for edge in (
         ["webui", "city", "built on", "dependsOn"],

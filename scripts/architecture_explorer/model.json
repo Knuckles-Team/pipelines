@@ -422,7 +422,8 @@
       "agent/overstory/apps/city"
      ],
      "fam": [
-      "arbora-city"
+      "arbora-city",
+      "city-host"
      ],
      "kw": "city|mapping registry|roads|traffic|hall of records|growth|seed|edit layer|budget",
      "links": [
@@ -676,28 +677,86 @@
      "label": "City engine",
      "role": "three.js renderer",
      "desc": "The engine draws the city, its roads and its traffic. It holds no network code.",
-     "kw": "engine|three|render|camera|districts"
+     "kw": "engine|three|render|camera|districts",
+     "fam": [
+      "render",
+      "runtime",
+      "performance",
+      "traffic"
+     ]
     },
     {
      "id": "city.source",
      "label": "Source contract",
      "role": "CitySource and demo simulation",
      "desc": "The source contract is how a host feeds the city. A labelled demo simulation runs when no host source is given.",
-     "kw": "source|contract|citysource|demo|simulation"
+     "kw": "source|contract|citysource|demo|simulation",
+     "fam": [
+      "source",
+      "mapping"
+     ]
     },
     {
      "id": "city.embed",
      "label": "Embed bundle",
      "role": "prebuilt bundle for hosts",
      "desc": "The embed bundle is a prebuilt build that web and desktop hosts load directly.",
-     "kw": "embed|bundle|host|web view"
+     "kw": "embed|bundle|host|web view",
+     "fam": [
+      "package"
+     ]
     },
     {
      "id": "city.assets",
      "label": "Asset kit",
      "role": "versioned building and prop assets",
      "desc": "The asset kit is a versioned set of models and textures for the city.",
-     "kw": "asset|kit|models|textures|version"
+     "kw": "asset|kit|models|textures|version",
+     "fam": [
+      "kit"
+     ]
+    },
+    {
+     "id": "city.world",
+     "label": "World and interiors",
+     "role": "districts, buildings, rooms",
+     "desc": "The world is the city the graph becomes: districts, buildings, streets and the rooms inside buildings, grown deterministically from the mapped content.",
+     "kw": "world|district|building|street|interior|room",
+     "fam": [
+      "world",
+      "interiors"
+     ]
+    },
+    {
+     "id": "city.avatar",
+     "label": "Avatars",
+     "role": "people and agents in the city",
+     "desc": "Avatars show people and agents moving through the city.",
+     "kw": "avatar|character|walk",
+     "fam": [
+      "avatar"
+     ]
+    },
+    {
+     "id": "city.control",
+     "label": "Controls and access",
+     "role": "navigation, input, accessibility",
+     "desc": "Controls move the viewer through the city by pointer, keyboard and touch. Accessibility keeps every control and every place reachable without a mouse or sight.",
+     "kw": "control|input|navigation|keyboard|accessib",
+     "fam": [
+      "control",
+      "accessibility"
+     ]
+    },
+    {
+     "id": "city.audio",
+     "label": "Audio",
+     "role": "city sound",
+     "desc": "Audio gives the city ambient and event sound, and it can be muted.",
+     "kw": "audio|sound|mute",
+     "fam": [
+      "audio"
+     ]
     }
    ]
   },
@@ -6503,6 +6562,16 @@
      "desc": "Spatial vocabulary under the shared ontology base (districts, buildings, rooms, streets and how they relate), the city layout derived from the connector catalog with reasoned manual overrides, and the one served spatial query.",
      "fam": [
       "world-view-ontology"
+     ]
+    },
+    {
+     "id": "eg.machine",
+     "label": "Machine inventory",
+     "role": "machines and hosts as records",
+     "desc": "The machine is the one host concept: its ontology, its records, its lifecycle and the normalizer that rebuilds hosts from a hosts file.",
+     "kw": "machine|host|inventory|lifecycle",
+     "fam": [
+      "machine"
      ]
     },
     {
