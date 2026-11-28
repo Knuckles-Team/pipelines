@@ -385,15 +385,11 @@ class Record:
     state: Phase
 
 
-def retire(records: dict, key: str) -> Record:
-    record = records[key]
+def retire(record: Record, key: str) -> Record:
     if record.state != Phase.LIVE:
         raise ValueError(key)
     return Record(state=Phase.GONE)
 """
-MAPPED_PY = REBUILT_PY.replace("record = records[key]", "record = lookup(key)").replace(
-    "def retire(records: dict, key: str)", "def retire(records: dict, key: str, other: Other)"
-).replace("record.state != Phase.LIVE", "other.state != Phase.LIVE") + ("\n\nclass Other:\n    state: str\n")
 
 
 @pytest.mark.spec("PIPE-GATES-R086.13")
@@ -410,3 +406,55 @@ def test_a_rust_record_rebuilt_in_a_function_that_reads_its_status_is_a_lifecycl
         "    Record { state: Phase::Gone }\n}\n"
     )
     assert "SM-NO-DECLARATION" in _codes(_census(tmp_path, {"src/record.rs": source}))
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_record_built_where_a_status_is_only_read_is_not_a_transition(tmp_path: Path) -> None:
+    source = REBUILT_PY.replace(
+        "if record.state != Phase.LIVE:", "if True:\n        print(record.state)\n    if not key:"
+    )
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/record.py": source})
+    assert "SM-NO-DECLARATION" not in _codes(lines), lines
+
+
+CATALOG_PY = """\
+from dataclasses import dataclass
+from enum import StrEnum
+
+
+class Phase(StrEnum):
+    LIVE = "live"
+    GONE = "gone"
+
+
+@dataclass(frozen=True)
+class Record:
+    state: Phase
+
+
+class Catalog:
+    def __init__(self) -> None:
+        self.records: dict[str, Record] = {}
+
+    def retire(self, key: str) -> Record:
+        record = self.records.get(key)
+        if record.state != Phase.LIVE:
+            raise ValueError(key)
+        return Record(state=Phase.GONE)
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_record_read_from_a_typed_container_field_resolves_to_its_element_type(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/catalog.py": CATALOG_PY})
+    assert "SM-NO-DECLARATION" in _codes(lines), lines
+    assert "SM-UNRESOLVED-RECEIVER" not in _codes(lines), lines
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_record_built_where_an_unresolved_status_is_compared_is_not_a_transition(tmp_path: Path) -> None:
+    source = REBUILT_PY.replace("def retire(record: Record, key: str)", "def retire(key: str)").replace(
+        "    if record.state", "    record = lookup(key)\n    if record.state"
+    )
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/record.py": source})
+    assert "SM-NO-DECLARATION" not in _codes(lines), lines

@@ -417,21 +417,24 @@ def _rebuilds(
     scope: dict[str, str | None],
     names: frozenset[str],
 ) -> list[Use]:
-    """A function that reads a status and builds ``T(..., status=v)`` moves ``T`` by replacement.
+    """A function that guards on a status and builds ``T(..., status=v)`` moves ``T`` by replacement.
 
-    The read must be of a ``T`` or of a receiver that does not resolve; a read of another
-    type is a mapping from that type to ``T``, not a transition of ``T``.
+    The guard is a comparison of the status of a ``T``; a comparison of another type's status, or
+    of a receiver that does not resolve, is a mapping from something else to ``T``, and a status
+    that is only read (passed on, printed) guards nothing.
     """
     read_types = {
-        resolver.type_of(node.value, owner, scope)
+        resolver.type_of(side.value, owner, scope)
         for node in ast.walk(function)
-        if isinstance(node, ast.Attribute) and node.attr in STATUS_FIELDS and isinstance(node.ctx, ast.Load)
+        if isinstance(node, ast.Compare)
+        for side in (node.left, *node.comparators)
+        if isinstance(side, ast.Attribute) and side.attr in STATUS_FIELDS
     }
     found: list[Use] = []
     for node in ast.walk(function):
         if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id[:1].isupper()):
             continue
-        if node.func.id not in read_types and None not in read_types:
+        if node.func.id not in read_types:
             continue
         label = f"{owner}.{function.name}" if owner else function.name
         found += [
@@ -452,6 +455,9 @@ def _functions(tree: ast.Module) -> list[tuple[str | None, ast.FunctionDef | ast
     return found
 
 
+MAPPINGS = frozenset({"dict", "Dict", "Mapping", "MutableMapping", "defaultdict", "OrderedDict"})
+CONTAINERS = MAPPINGS | frozenset({"list", "List", "Sequence", "set", "Set", "frozenset", "tuple", "Tuple"})
+ELEMENT_GETTERS = frozenset({"get", "pop", "setdefault"})
 OPAQUE_TYPES = frozenset({"Any", "object", ""})
 COPIERS = frozenset({"model_copy", "copy", "deepcopy", "replace", "clone"})
 
@@ -483,6 +489,8 @@ class _Resolver:
     def __init__(self, tree: ast.Module) -> None:
         self.returns: dict[str, str] = {}
         self.fields: dict[str, dict[str, str]] = {}
+        #: Class -> field -> the element type of a ``dict[K, V]`` or ``list[V]`` field.
+        self.elements: dict[str, dict[str, str]] = {}
         for owner, function in _functions(tree):
             found = _annotation_type(function.returns, owner)
             if found:
@@ -490,6 +498,35 @@ class _Resolver:
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
                 self.fields[node.name] = self._class_fields(node)
+                self.elements[node.name] = self._class_elements(node)
+
+    @staticmethod
+    def _class_elements(node: ast.ClassDef) -> dict[str, str]:
+        """Field name -> element type for ``x: dict[K, V]`` / ``x: list[V]`` (class level or ``self.x: ...``)."""
+        found: dict[str, str] = {}
+        for stmt in ast.walk(node):
+            if not (isinstance(stmt, ast.AnnAssign) and isinstance(stmt.annotation, ast.Subscript)):
+                continue
+            target = stmt.target
+            key = target.id if isinstance(target, ast.Name) and stmt in node.body else None
+            if isinstance(target, ast.Attribute) and _name(target.value) == "self":
+                key = target.attr
+            container = _name(stmt.annotation.value)
+            items = (
+                stmt.annotation.slice.elts if isinstance(stmt.annotation.slice, ast.Tuple) else [stmt.annotation.slice]
+            )
+            if key and container in CONTAINERS and items:
+                kind = _annotation_type(items[-1] if container in MAPPINGS else items[0], node.name)
+                if kind:
+                    found.setdefault(key, kind)
+        return found
+
+    def _element_of(self, node: ast.expr, owner: str | None, scope: dict[str, str | None]) -> str | None:
+        """The element type of ``self.records`` when it is a typed container field."""
+        if isinstance(node, ast.Attribute):
+            base = self.type_of(node.value, owner, scope)
+            return self.elements.get(base or "", {}).get(node.attr)
+        return None
 
     @staticmethod
     def _class_fields(node: ast.ClassDef) -> dict[str, str]:
@@ -556,6 +593,8 @@ class _Resolver:
         if isinstance(node, ast.Attribute):
             base = self.type_of(node.value, owner, scope)
             return self.fields.get(base or "", {}).get(node.attr)
+        if isinstance(node, ast.Subscript):
+            return self._element_of(node.value, owner, scope)
         if isinstance(node, ast.Call):
             return self._call_type(node, owner, scope)
         return None
@@ -574,6 +613,10 @@ class _Resolver:
                 if node.args and _name(func.value) in {"copy", "dataclasses"}
                 else self.type_of(func.value, owner, scope)
             )
+        if func.attr in ELEMENT_GETTERS:
+            element = self._element_of(func.value, owner, scope)
+            if element:
+                return element
         base = self.type_of(func.value, owner, scope)
         if base:
             return self.returns.get(f"{base}.{func.attr}")
