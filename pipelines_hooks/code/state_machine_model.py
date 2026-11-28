@@ -73,6 +73,9 @@ class Site:
     function: str
     #: The function whose result an assignment stores (``x.status = transition(..)``), if any.
     through: str = ""
+    #: ``recompute`` when the write replaces the status (``model_copy``, ``replace``) with a
+    #: value computed in the same function and the function never compares that type's status.
+    how: str = ""
 
 
 @dataclass(frozen=True)
@@ -137,6 +140,8 @@ class Machine:
     string_compares: list[Site] = field(default_factory=list)
     #: Lifecycle booleans and nullable lifecycle timestamps on the type.
     flags: tuple[str, ...] = ()
+    #: The flags some function other than a constructor assigns (PIPE-GATES-R086.27).
+    assigned_flags: set[str] = field(default_factory=set)
     #: Filled by ``bind_tests``: whether binding ran, the edges without a test
     #: as ``(from, event)``, and whether a refusal test names ``refusal``.
     bound: bool = False
@@ -155,7 +160,22 @@ class Machine:
     @property
     def is_value(self) -> bool:
         """An undeclared type whose status is set only at construction is a value, not a lifecycle."""
-        return self.status_field is not None and not self.declared and self.immutable
+        return self.status_field is not None and not self.declared and (self.immutable or self.derived)
+
+    @property
+    def derived(self) -> bool:
+        """A derived rollup (PIPE-GATES-R086.28): every write of the status replaces it with a recomputed value."""
+        return (
+            self.status_field is not None
+            and not self.declared
+            and bool(self.assigners)
+            and all(site.how == "recompute" for site in self.assigners)
+        )
+
+    def settle_flags(self) -> None:
+        """Called once every use is attached: a Python flag no function assigns after construction is a kind, not a lifecycle."""
+        if self.language == "python":
+            self.flags = tuple(flag for flag in self.flags if flag in self.assigned_flags)
 
     def settle_immutable(self) -> None:
         """Called once every use is attached: set ``immutable`` when no function but a constructor assigns."""
@@ -190,7 +210,10 @@ UNRESOLVED_TYPE = "<unresolved>"
 
 def attach(machine: Machine, use: Use) -> None:
     """Record one use on a machine; a compare in a module naming the enum is fine."""
-    if use.kind == "assign":
+    if use.kind == "flag":
+        if use.site.function.rsplit(".", 1)[-1] not in CONSTRUCTORS:
+            machine.assigned_flags.add(use.field)
+    elif use.kind == "assign":
         machine.assigners.append(use.site)
     elif machine.status_kind != "enum" or machine.status_type not in use.module_names:
         machine.string_compares.append(use.site)

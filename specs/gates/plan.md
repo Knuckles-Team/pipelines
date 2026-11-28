@@ -176,6 +176,8 @@ Two call sites. `algebra_findings` is reached from `main` through `findings` in 
 
 Order and sizing. R086.1 first, then R086.2 to R086.4 in parallel, then R086.5 and R086.6. The rollup is delivered last. Its census is red until the consumer machine rows are verified, so those rows land first. Each child scores 6 or less: one to three modules, one repository, and no more than two roots. R086.5 and R086.6 own the registration and the ontology wiring.
 
+Census precision (PIPE-GATES-R086.20 to R086.28). The census over arbora left 29 receivers `<unresolved>` and two false findings, and each had a cause in the resolver, not in the code it read. One `PackageIndex` (`state_machine_types.py`) is built once per run from every Python source and keyed by module path; the resolver reads classes, return annotations and imports through it, so chains, call results and tuple unpackings cross files (`.21`, `.22`). The scope binds comprehension clauses at their target (`.20`), displays and container returns give element types (`.24` to `.26`), and a union is split into arms (`.23`). Two rules remove findings that were never lifecycles: a flag nothing assigns after construction (`.27`) and a status that is only recomputed and copied (`.28`). No rule adds a baseline, allowance or suppression: every change makes the reader resolve more, or defines precisely what a lifecycle is.
+
 ### Layers policy and census adoption (PIPE-GATES-R086.7, R086.8, R088.1 to R088.3)
 
 Pre-untangled design for these rows, one line per answer.

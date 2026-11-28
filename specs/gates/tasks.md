@@ -268,6 +268,15 @@
 - [ ] T280 PIPE-GATES-R086.17 An assignment that stores the transition function's result is the transition. Size: S, 1 PR, 1 hour.
 - [ ] T281 PIPE-GATES-R086.18 A test binds an edge by listing it or by looping over the table. Size: S, 1 PR, 1 hour.
 - [ ] T282 PIPE-GATES-R086.19 A refusal test binds the cell its body names. Size: S, 1 PR, 1 hour.
+- [ ] T283 PIPE-GATES-R086.20 A comprehension or generator variable is bound to the element type of its iterable. Size: S, 1 PR, 1 hour.
+- [ ] T284 PIPE-GATES-R086.21 Field chains and imported classes resolve across the files of the scanned package. Size: M, 1 PR, 3 hours.
+- [ ] T285 PIPE-GATES-R086.22 A call result takes the callee's return annotation, and a tuple unpacking binds each element. Size: S, 1 PR, 2 hours.
+- [ ] T286 PIPE-GATES-R086.23 A union annotation is checked arm by arm, and only an arm that is a lifecycle type reports. Size: S, 1 PR, 1 hour.
+- [ ] T287 PIPE-GATES-R086.24 A tuple, list or set display has the element type its items share. Size: S, 1 PR, 1 hour.
+- [ ] T288 PIPE-GATES-R086.25 A container return annotation gives the element type of the call result. Size: S, 1 PR, 1 hour.
+- [ ] T289 PIPE-GATES-R086.26 A local assigned a display takes the display's element type. Size: S, 1 PR, 1 hour.
+- [ ] T290 PIPE-GATES-R086.27 A flag is a lifecycle flag only when some function assigns it after construction. Size: S, 1 PR, 2 hours.
+- [ ] T291 PIPE-GATES-R086.28 A status that is only recomputed and copied is a derived rollup, not a lifecycle. Size: S, 1 PR, 2 hours.
 - [ ] T242 PIPE-GATES-R091 A Rust dependency is never resolved from outside crates.io.
 - [ ] T243 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
 - [ ] T244 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.
