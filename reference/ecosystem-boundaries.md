@@ -19,6 +19,7 @@ remain unchanged. The Tuig executable is `tuig`.
 | scion-sdk | Connector contracts. Transports: REST, GraphQL, gRPC, MCP, the A2A protocol library and the others. The EG client adapter. Connector ontology pack generation. | Serving and routing (arbora); facts, storage and pushdown planning (EG). | `SCION-` | medulla client; protocol libraries. |
 | meristem | The in-run harness. The run loop, context assembly, fan-out, sandbox runs and replay. Trace event emission. Enforcement of a limit it receives. | An MCP server, server, gateway, API or A2A (arbora). A store, planner, selector, router, retriever or policy (EG). Contracts (SDK). | `MERISTEM-` | agent-connector-sdk; the model client library. No MCP, web server or storage package. |
 | overstory | What a person sees in the browser. | Data access other than through arbora; decisions (EG). | `OVERSTORY-` | `arbora.client`; agent-connector-sdk. |
+| arbora-city | The city engine, its data-source contract and its embeddable page, published as one npm package. The asset kit and its gates. | Data access (the host, through arbora); facts and decisions (EG); the host page shell (overstory, axil). | `CITY-` | `three` and `zod`; no ecosystem package. |
 | tuig | What a person sees in the terminal. | Data access other than through arbora; decisions (EG). | `TUIG-` | `arbora.client`; agent-connector-sdk. |
 | axil | What a person sees in the desktop and chat client. | Data access other than through arbora; decisions (EG). | `AXIL-` | `arbora.client`; agent-connector-sdk. |
 | Connectors (`*-mcp`, `*-api`, `*-agent`) | The behavior of one external system: its venue or API calls, mappings and MCP tools. | Domain maths and stores (EG); shared helpers (SDK); serving to other callers (arbora). | `CONN-<REPO>-` | agent-connector-sdk only. |
@@ -70,6 +71,7 @@ A decision is a choice (see the routing questions above), so Medulla owns it. Ev
 | Finance maths (emerald-exchange) | EG runs backtests, risk, signals and strategy maths as native Rust rows. The connector keeps venue calls, order routing and MCP tools, and reaches EG through the SDK adapter. |
 | Platform config directory | arbora owns `~/.config/arbora/` and the `ARBORA_CONFIG_DIR` override. Other repositories read config through arbora. |
 | Current-plan reads and tool-task dispatch (AU #302, #303) | The plan record and the work-item lease go to EG. The authorized read and the tool-task dispatch become arbora served operations. The request and snapshot models go to the SDK. AU keeps only the run that applies the plan it receives. |
+| City view | arbora-city owns the engine, the `CitySource` contract, the mapping catalog and the asset kit. arbora serves every read and stream the city shows. EG stores the facts and the observer log. overstory and axil host the page and bridge the source to arbora. |
 | Web search | Web search is a source category. The searxng connector is the reference connector. arbora selects search tools through it; EG refreshes data through it as a virtual graph. |
 
 ## Boundary contracts
