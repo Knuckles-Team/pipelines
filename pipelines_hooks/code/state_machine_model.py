@@ -40,6 +40,7 @@ class Rule(IntEnum):
     TESTS = 4
     NO_DECLARATION = 5
     ALGEBRA = 6
+    UNRESOLVED = 7
 
 
 #: Finding code -> rule.
@@ -56,6 +57,7 @@ CODES: dict[str, Rule] = {
     "SM-NONDETERMINISTIC": Rule.ALGEBRA,
     "SM-UNTESTED-REFUSAL": Rule.ALGEBRA,
     "SM-NO-INITIAL": Rule.ALGEBRA,
+    "SM-UNRESOLVED-RECEIVER": Rule.UNRESOLVED,
 }
 
 
@@ -143,13 +145,23 @@ class Machine:
 
 @dataclass(frozen=True)
 class Use:
-    """An assignment or string compare of a status field through a receiver."""
+    """An assignment or string compare of a status field through a receiver.
+
+    ``receiver`` is the type the receiver resolves to (``None`` when it does
+    not resolve); ``local`` is true when the receiver is ``self`` or a type
+    path, which the reader attaches itself.
+    """
 
     field: str
     kind: str
     site: Site
     receiver: str | None
     module_names: frozenset[str]
+    local: bool = False
+
+
+#: The type name a finding carries when the receiver of a use does not resolve.
+UNRESOLVED_TYPE = "<unresolved>"
 
 
 def attach(machine: Machine, use: Use) -> None:

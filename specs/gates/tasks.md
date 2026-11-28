@@ -259,6 +259,7 @@
 - [ ] T236 PIPE-GATES-R086.8 Census adoption order and expected baselines. Size: M, 5 PRs (one per consumer), 1 hour each.
 - [ ] T237 PIPE-GATES-R086.9 Algebraic checks over a declared transition table. Size: S, 1 PR, 3 hours.
 - [ ] T238 PIPE-GATES-R086.10 Algebraic checks: fixtures and hot-path proof. Size: S, 1 PR, 2 hours.
+- [ ] T274 PIPE-GATES-R086.11 Type-resolved attribution and the `<unresolved>` finding. Size: M, 1 PR, 4 hours.
 - [ ] T242 PIPE-GATES-R091 A Rust dependency is never resolved from outside crates.io.
 - [ ] T243 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
 - [ ] T244 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.

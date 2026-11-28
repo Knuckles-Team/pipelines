@@ -109,16 +109,16 @@ def test_python_setattr_and_replace_count_as_assignments() -> None:
         finished_at: Optional[str]
         is_running: bool
 
-    def a(job):
+    def a(job: Job):
         setattr(job, "status", "x")
 
-    def b(job):
+    def b(job: Job):
         return dataclasses.replace(job, status="y")
 
-    def c(job):
+    def c(job: Job):
         return job.model_copy(update={"status": "z"})
 
-    def d(job):
+    def d(job: Job):
         job.status = "w"
     """
     (machine,) = _read(source)

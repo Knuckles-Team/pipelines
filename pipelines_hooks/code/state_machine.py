@@ -3,8 +3,10 @@
 ``state-machine-shape`` (pre-commit and pre-push) reads every source and test
 file of the declared paths so it resolves types, assigners and tests, and
 reports a finding only for a type declared in, or assigned from, a changed
-file. ``state-machine-census`` (manual) reports the whole tree, with no
-baseline and no allowance. Each finding line is
+file. A use is counted against the type its receiver resolves to; one that
+does not resolve is a single ``<unresolved>`` finding (``SM-UNRESOLVED-RECEIVER``),
+never one per type sharing the field name. ``state-machine-census`` (manual)
+reports the whole tree, with no baseline and no allowance. Each finding line is
 ``<file>:<line> <type> <code> rule <n>``. Policy:
 ``[tool.pipelines_hooks.state_machine]`` with ``paths``, ``exclude``,
 ``languages`` and ``mode`` (``staged`` prints findings and exits 0,
@@ -21,7 +23,7 @@ from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
 
 from pipelines_hooks.code import state_machine_py, state_machine_rs
-from pipelines_hooks.code.state_machine_model import Finding, Machine, Use, attach
+from pipelines_hooks.code.state_machine_model import UNRESOLVED_TYPE, Finding, Machine, Use, attach
 from pipelines_hooks.code.state_machine_rules import findings
 from pipelines_hooks.code.state_machine_tests import bind_tests
 from pipelines_hooks.core.baseref import upstream_base
@@ -132,12 +134,16 @@ def _resolve_enum_machines(machines: list[Machine], declared: dict[str, Machine]
         machine.via_enum = True
 
 
-def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool]) -> tuple[list[Machine], list[str]]:
-    """Read every source; attach each loose use to the same-unit types that declare its field.
+def _machines(
+    root: Path, sources: list[str], must_parse: Callable[[str], bool]
+) -> tuple[list[Machine], list[str], list[Finding]]:
+    """Read every source; attach each use to the one type its receiver resolves to.
 
     A file ``must_parse`` names cannot run on a parse error. Any other Rust file
     is read from its error-recovered tree and listed as partial; any other
-    Python file with a syntax error is skipped.
+    Python file with a syntax error is skipped. A use whose receiver does not
+    resolve, or names a type declared twice in its unit, becomes one
+    ``<unresolved>`` finding; it is never attached to every type sharing the field.
     """
     machines: list[Machine] = []
     loose: list[Use] = []
@@ -159,12 +165,44 @@ def _machines(root: Path, sources: list[str], must_parse: Callable[[str], bool])
         if path.endswith(".rs"):
             declared |= _enum_declarations(path, source)
     _resolve_enum_machines(machines, declared)
+    return machines, partial, _attach_uses(root, machines, loose)
+
+
+def _attach_uses(root: Path, machines: list[Machine], loose: list[Use]) -> list[Finding]:
+    """Attach each non-``self`` use to its resolved type; return the unresolved ones as findings."""
+    by_name: dict[str, list[Machine]] = {}
+    by_field: dict[tuple[str, str | None], list[Machine]] = {}
+    for machine in machines:
+        by_name.setdefault(machine.type_name, []).append(machine)
+        by_field.setdefault((_unit(root, machine.file), machine.status_field), []).append(machine)
+    unresolved: dict[tuple[str, int, str, str], Finding] = {}
     for use in loose:
-        for machine in machines:
-            same_unit = _unit(root, use.site.file) == _unit(root, machine.file)
-            if use.site.file != machine.file and same_unit and use.field == machine.status_field:
-                attach(machine, use)
-    return machines, partial
+        unit = _unit(root, use.site.file)
+        peers = [m for m in by_field.get((unit, use.field), []) if m.status_field == use.field]
+        if not peers:
+            continue
+        reason = "receiver type unknown"
+        if use.receiver is not None:
+            named = [m for m in by_name.get(use.receiver, []) if m in peers]
+            if not named or any(m.file == use.site.file for m in named):
+                continue  # not a type with this field, or the reader already attached it
+            if len(named) == 1:
+                attach(named[0], use)
+                continue
+            reason = f"type {use.receiver} is declared {len(named)} times in the unit"
+        elif use.kind == "compare" and all(_enum_compare_ok(m, use) for m in peers):
+            continue
+        key = (use.site.file, use.site.line, use.field, use.kind)
+        detail = f"{use.kind} of .{use.field} in {use.site.function}: {reason}"
+        unresolved.setdefault(
+            key, Finding(use.site.file, use.site.line, UNRESOLVED_TYPE, "SM-UNRESOLVED-RECEIVER", detail)
+        )
+    return list(unresolved.values())
+
+
+def _enum_compare_ok(machine: Machine, use: Use) -> bool:
+    """A compare in a module that names the machine's status enum is not a string compare."""
+    return machine.status_kind == "enum" and machine.status_type in use.module_names
 
 
 def _enum_declarations(path: str, source: str) -> dict[str, Machine]:
@@ -197,12 +235,13 @@ def run(root: Path, *, census: bool) -> Report:
     policy = _load_policy(root)
     sources, tests = _files(root, policy)
     changed = set() if census else _changed(root)
-    machines, partial = _machines(root, sources, _must_parse_in_census if census else changed.__contains__)
+    machines, partial, unresolved = _machines(root, sources, _must_parse_in_census if census else changed.__contains__)
     test_files = [(path, _read(root, path)) for path in tests]
     for machine in machines:
         bind_tests(machine, test_files)
     kept = machines if census else [machine for machine in machines if _touches(machine, changed)]
-    return Report([finding for machine in kept for finding in findings(machine)], partial)
+    stray = [finding for finding in unresolved if census or finding.file in changed]
+    return Report([*(finding for machine in kept for finding in findings(machine)), *stray], partial)
 
 
 def main(argv: list[str]) -> int:
