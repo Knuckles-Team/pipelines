@@ -1795,13 +1795,6 @@ setTimeout(async()=>{
     page.write_text(source.replace("<script>", spy + "<script>", 1).replace("</body>", probe + "</body>"))
     name = f"count-track-{node}-{viewport.replace(',', 'x')}"
 
-    # Chrome's headless=new (the CI runner's browser) clamps a requested window narrower than 500 px to 500x757,
-    # while the Playwright headless shell honours 390 exactly. At a true 390 px every Overstory child card is under
-    # 60 px wide and by design paints no count text (the count font stays under 5.5 px), so the two-card paint
-    # evidence below can never exist there. Pin the viewport CI measures, in every browser, so the result does not
-    # depend on which binary `_chrome()` found (PIPE-PAGES-R042, R047).
-    pinned = int(viewport.split(",")[0]) < 500
-
     def capture_count(page_url: str, capture_name: str) -> str:
         result = subprocess.run(
             [
@@ -1809,9 +1802,8 @@ setTimeout(async()=>{
                 str(ROOT / "tests/architecture_count_capture.cjs"),
                 _chrome(),
                 page_url,
-                "500,757" if pinned else viewport,
+                viewport,
                 str(destination / (capture_name + ".png")),
-                *(["exact-viewport"] if pinned else []),
             ],
             capture_output=True,
             text=True,
