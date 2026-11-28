@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import networkx
 import pytest
 import yaml
 
@@ -394,8 +395,26 @@ def test_explorer_imports_from_only_declared_sparse_python_files(
             target = tmp_path / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(path, target)
+    # The workflow's `pip install networkx==3.6.1` step is the only third-party install the build runs
+    # with (PIPE-PAGES-R047 code view); provide exactly that package and nothing else from site-packages.
+    deps = tmp_path.parent / (tmp_path.name + "-deps")
+    shutil.copytree(Path(networkx.__file__).parent, deps / "networkx", dirs_exist_ok=True)
+    launcher = (
+        "import runpy,sys;sys.path.append(sys.argv[1]);script=sys.argv[2];sys.argv=[script,*sys.argv[3:]];"
+        "runpy.run_path(script,run_name='__main__')"
+    )
     result = subprocess.run(
-        [sys.executable, "-I", "-S", "-B", str(tmp_path / "scripts/architecture_explorer/build.py"), "--help"],
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-B",
+            "-c",
+            launcher,
+            str(deps),
+            str(tmp_path / "scripts/architecture_explorer/build.py"),
+            "--help",
+        ],  # fmt: skip
         cwd=tmp_path,
         capture_output=True,
         text=True,
