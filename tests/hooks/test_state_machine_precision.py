@@ -681,3 +681,20 @@ def test_an_untyped_assignment_in_a_method_of_the_type_with_the_field_is_that_ty
     assert "SM-MULTI-ASSIGN" in _codes(lines), lines
     unresolved = [line for line in lines if "SM-UNRESOLVED-RECEIVER" in line]
     assert len(unresolved) == 1 and "Registry.touch" in unresolved[0], lines
+
+
+WITHER_RS = """\
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ImportState { Importing, Ready }
+#[derive(Clone)]
+pub struct Import { pub state: ImportState }
+impl Import {
+    pub fn with_state(&self, state: ImportState) -> Self { Self { state, ..self.clone() } }
+}
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_shorthand_struct_update_of_the_status_is_an_assignment_of_the_type(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"src/import.rs": WITHER_RS})
+    assert "SM-NO-DECLARATION" in _codes(lines), lines

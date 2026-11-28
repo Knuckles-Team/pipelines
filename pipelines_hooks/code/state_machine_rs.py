@@ -632,7 +632,7 @@ def _node_uses(node: Node) -> list[tuple[Node, str, str, str]]:
 
 
 def _struct_update(node: Node) -> list[tuple[Node, str, str, str]]:
-    """``Type { status: v, ..base }`` sets the field on ``Type``."""
+    """``Type { status: v, ..base }`` or ``Type { status, ..base }`` sets the field on ``Type``."""
     body = node.child_by_field_name("body")
     children = body.named_children if body is not None else []
     if not any(c.type == "base_field_initializer" for c in children):
@@ -640,7 +640,9 @@ def _struct_update(node: Node) -> list[tuple[Node, str, str, str]]:
     owner = _text(node.child_by_field_name("name")).split("::")[-1]
     owner = "self" if owner == "Self" else owner
     return [
-        (node, _text(c.child_by_field_name("field")), owner, "assign")
+        (node, field, owner, "assign")
         for c in children
-        if c.type == "field_initializer" and _text(c.child_by_field_name("field")) in STATUS_FIELDS
+        if c.type in {"field_initializer", "shorthand_field_initializer"}
+        for field in [_text(c.child_by_field_name("field")) or _text(c).strip()]
+        if field in STATUS_FIELDS
     ]
