@@ -495,7 +495,50 @@ def _uses(path: str, items: list[Node], names: frozenset[str]) -> list[Use]:
                 owner if receiver == "self" else receiver if local else _receiver_type(receiver, scope, fields, owner)
             )
             uses.append(Use(field, kind, Site(path, node.start_point.row + 1, label), resolved, names, local=local))
+        uses += _rebuilds(path, item, label, owner, scope, fields, names)
     return uses
+
+
+def _rebuilds(
+    path: str,
+    item: Node,
+    label: str,
+    owner: str,
+    scope: dict[str, str | None],
+    fields: dict[str, dict[str, str]],
+    names: frozenset[str],
+) -> list[Use]:
+    """A function that reads a status and builds ``T { status: v, .. }`` moves ``T`` by replacement."""
+    nodes: list[Node] = []
+    stack = [item]
+    while stack:
+        node = stack.pop()
+        stack.extend(node.named_children)
+        nodes.append(node)
+    read_types = {
+        owner
+        if _text(n.child_by_field_name("value")) == "self"
+        else _receiver_type(_text(n.child_by_field_name("value")), scope, fields, owner)
+        for n in nodes
+        if n.type == "field_expression" and _text(n.child_by_field_name("field")) in STATUS_FIELDS
+    }
+    found: list[Use] = []
+    for node in (n for n in nodes if n.type == "struct_expression"):
+        built = _text(node.child_by_field_name("name")).split("::")[-1]
+        body = node.child_by_field_name("body")
+        children = body.named_children if body is not None else []
+        if built == "Self" or any(c.type == "base_field_initializer" for c in children):
+            continue  # a struct update is already an assignment
+        if built not in read_types and None not in read_types:
+            continue
+        found += [
+            Use(field, "assign", Site(path, node.start_point.row + 1, label), built, names)
+            for c in children
+            if c.type in {"field_initializer", "shorthand_field_initializer"}
+            for field in [_text(c.child_by_field_name("field")) or _text(c).strip()]
+            if field in STATUS_FIELDS
+        ]
+    return found
 
 
 def _field_of(node: Node | None) -> tuple[str, str] | None:

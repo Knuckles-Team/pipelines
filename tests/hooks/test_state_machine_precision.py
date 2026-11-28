@@ -368,3 +368,45 @@ def test_a_refusal_test_that_loops_a_helper_over_the_table_binds_every_missing_c
     lines = _census(tmp_path, {"src/defect.rs": DEFECT_RS})
     assert "SM-UNTESTED-REFUSAL" not in _codes(lines), lines
     assert "SM-NO-REFUSAL-TEST" not in _codes(lines), lines
+
+
+REBUILT_PY = """\
+from dataclasses import dataclass
+from enum import StrEnum
+
+
+class Phase(StrEnum):
+    LIVE = "live"
+    GONE = "gone"
+
+
+@dataclass(frozen=True)
+class Record:
+    state: Phase
+
+
+def retire(records: dict, key: str) -> Record:
+    record = records[key]
+    if record.state != Phase.LIVE:
+        raise ValueError(key)
+    return Record(state=Phase.GONE)
+"""
+MAPPED_PY = REBUILT_PY.replace("record = records[key]", "record = lookup(key)").replace(
+    "def retire(records: dict, key: str)", "def retire(records: dict, key: str, other: Other)"
+).replace("record.state != Phase.LIVE", "other.state != Phase.LIVE") + ("\n\nclass Other:\n    state: str\n")
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_record_rebuilt_with_a_new_status_in_a_function_that_reads_it_is_a_lifecycle(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/record.py": REBUILT_PY})
+    assert "SM-NO-DECLARATION" in _codes(lines), lines
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_rust_record_rebuilt_in_a_function_that_reads_its_status_is_a_lifecycle(tmp_path: Path) -> None:
+    source = (
+        "#[derive(Clone, Copy, PartialEq, Eq)]\npub enum Phase { Live, Gone }\npub struct Record { pub state: Phase }\n"
+        "pub fn retire(record: &Record) -> Record {\n    if record.state != Phase::Live { return Record { state: Phase::Live }; }\n"
+        "    Record { state: Phase::Gone }\n}\n"
+    )
+    assert "SM-NO-DECLARATION" in _codes(_census(tmp_path, {"src/record.rs": source}))
