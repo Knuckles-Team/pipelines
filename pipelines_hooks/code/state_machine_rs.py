@@ -237,18 +237,30 @@ def _definition_statics(path: str, items: list[Node]) -> list[Machine]:
         machine.edges = _definition_edges(fields["edges"])
         machine.initial = _token(fields["initial"])
         machine.terminals = tuple(_token(n) for n in _elements(fields.get("terminals")))
-        machine.states = tuple(_token(n) for n in _elements(fields.get("states")))
+        machine.states = tuple(_token(n) for n in _elements(fields.get("states"))) if machine.edges else ()
         found.append(machine)
     return found
 
 
 def _definition_edges(value: Node | None) -> tuple[Edge, ...]:
-    """``&[Edge { from: A, event: E, to: B, .. }, ..]``: one edge per struct literal."""
+    """One edge per entry of ``&[..]``: a struct literal ``Edge { from, event, to, .. }`` or a call ``edge(id, from, event, .., to)``.
+
+    A call is read by its scoped-path arguments (``State::Open``): the first is the source,
+    the second the event, the last the target; a guard that is not a scoped path is skipped.
+    """
     edges = []
     for element in _elements(value):
-        fields = _initialisers(element) if element.type == "struct_expression" else {}
-        if {"from", "event", "to"} <= set(fields):
-            edges.append((_token(fields["from"]), _token(fields["event"]), _token(fields["to"])))
+        if element.type == "struct_expression":
+            fields = _initialisers(element)
+            if {"from", "event", "to"} <= set(fields):
+                edges.append((_token(fields["from"]), _token(fields["event"]), _token(fields["to"])))
+        elif element.type == "call_expression":
+            arguments = element.child_by_field_name("arguments")
+            paths = [
+                a for a in (arguments.named_children if arguments is not None else []) if a.type == "scoped_identifier"
+            ]
+            if len(paths) >= 3:
+                edges.append((_token(paths[0]), _token(paths[1]), _token(paths[-1])))
     return tuple(edges)
 
 
