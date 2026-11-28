@@ -196,4 +196,10 @@ commit).
 - [ ] T113 PIPE-RELEASE-R031 Each consumer's tests pass against a release candidate before the producer tags.
 - [ ] T114 PIPE-RELEASE-R032 A release candidate passes a sandbox smoke pass, then publishes exactly those artifacts.
 - [x] T121 PIPE-RELEASE-R033 An npm package publishes on a green `v*` tag through one shared lane.
+- [x] T128 PIPE-RELEASE-R033.1 An org npm package is scoped, public and provenance-signed.
+- [x] T129 PIPE-RELEASE-R033.2 The token publishes a package's first release only.
+- [x] T130 PIPE-RELEASE-R033.3 The lane registers the trusted publisher right after a token publish.
+- [x] T131 PIPE-RELEASE-R033.4 A package the registry knows publishes by trusted publishing only.
+- [x] T132 PIPE-RELEASE-R033.5 A publishable npm package must call the shared lane.
+- [x] T133 PIPE-RELEASE-R033.6 A version is bumped with bump2version and tagged only on green CI.
 - [ ] T122 PIPE-RELEASE-R007.18 fast-tests covers the affected non-browser tests; browser tests are proved by their own workflow.
