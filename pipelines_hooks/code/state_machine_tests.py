@@ -106,7 +106,7 @@ def bind_tests(machine: Machine, test_files: Sequence[tuple[str, str]]) -> None:
         for case in refusals
         for state in machine.all_states()
         for event in {event for _, event, _ in machine.edges}
-        if names_edge(case, state, event)
+        if names_edge(case, state, event) or body_names(case, state, event)
     }
     helpers = product_helpers(test_files, machine.table)
     machine.product_refusal_test = any(
@@ -134,6 +134,11 @@ def product_helpers(test_files: Sequence[tuple[str, str]], table: str | None) ->
             if table in body and body.count("for ") >= 2:
                 found.append(match.group(1))
     return found
+
+
+def body_names(case: Case, state: str, event: str) -> bool:
+    """A refusal test whose body names both the state and the event of a cell, as words."""
+    return all(re.search(rf"\b{re.escape(token)}\b", case.body) for token in (state, event))
 
 
 def lists_edge(case: Case, source: str, event: str, target: str) -> bool:
