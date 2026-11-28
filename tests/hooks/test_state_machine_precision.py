@@ -316,3 +316,55 @@ def test_a_marker_below_the_header_does_not_exclude_a_file(tmp_path: Path) -> No
 def test_an_integer_status_on_a_value_is_a_protocol_code_and_reports_nothing(tmp_path: Path) -> None:
     source = "from dataclasses import dataclass\n\n\n@dataclass(frozen=True)\nclass Problem:\n    status: int\n"
     assert _census(tmp_path, {"pkg/__init__.py": "", "pkg/problem.py": source}) == []
+
+
+DEFECT_RS = """\
+pub struct TransitionRefused;
+pub enum TransitionRefusalReason { Illegal }
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum DefectStatus { New, Fixed }
+pub const TRANSITIONS: &[(DefectStatus, &str, DefectStatus)] = &[(DefectStatus::New, "fix", DefectStatus::Fixed)];
+pub struct Defect { pub status: DefectStatus }
+impl Defect {
+    pub fn apply(&mut self, event: &str) -> Result<(), TransitionRefused> {
+        self.status = DefectStatus::Fixed;
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn illegal_pairs() -> Vec<(DefectStatus, &'static str)> {
+        let machine = &TRANSITIONS;
+        let mut out = Vec::new();
+        for state in [DefectStatus::New, DefectStatus::Fixed] {
+            for event in ["fix"] {
+                if !machine.iter().any(|e| e.0 == state && e.1 == event) {
+                    out.push((state, event));
+                }
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn new_fix_is_legal() {}
+
+    #[test]
+    fn every_illegal_pair_is_refused() {
+        for (state, event) in illegal_pairs() {
+            let refused = Defect { status: state }.apply(event).unwrap_err();
+            let _ = TransitionRefusalReason::Illegal;
+        }
+    }
+}
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.16")
+def test_a_refusal_test_that_loops_a_helper_over_the_table_binds_every_missing_cell(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"src/defect.rs": DEFECT_RS})
+    assert "SM-UNTESTED-REFUSAL" not in _codes(lines), lines
+    assert "SM-NO-REFUSAL-TEST" not in _codes(lines), lines

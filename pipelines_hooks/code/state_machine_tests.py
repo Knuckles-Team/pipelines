@@ -78,8 +78,13 @@ def names_edge(case: Case, source: str, event: str) -> bool:
 
 
 def is_refusal_test(case: Case, refusal: str | None) -> bool:
+    """A test named for a refusal whose body names the refusal type or the reason type beside it.
+
+    A refusal ``TransitionRefused`` has the reason type ``TransitionRefusalReason``; both
+    share the stem ``TransitionRefus``.
+    """
     name = case.name.lower()
-    return ("refus" in name or "illegal" in name) and refusal is not None and refusal in case.body
+    return ("refus" in name or "illegal" in name) and refusal is not None and refusal.removesuffix("ed") in case.body
 
 
 def bind_tests(machine: Machine, test_files: Sequence[tuple[str, str]]) -> None:
@@ -101,8 +106,32 @@ def bind_tests(machine: Machine, test_files: Sequence[tuple[str, str]]) -> None:
         for event in {event for _, event, _ in machine.edges}
         if names_edge(case, state, event)
     }
-    machine.product_refusal_test = any(iterates_product(case, machine.table) for case in refusals)
+    helpers = product_helpers(test_files, machine.table)
+    machine.product_refusal_test = any(
+        iterates_product(case, machine.table) or any(f"{helper}(" in case.body for helper in helpers)
+        for case in refusals
+    )
     machine.bound = True
+
+
+_RUST_FN = re.compile(r"\n\s*(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+(\w+)")
+
+
+def product_helpers(test_files: Sequence[tuple[str, str]], table: str | None) -> list[str]:
+    """Rust helper functions that read the table constant and loop at least twice (states by events)."""
+    if table is None:
+        return []
+    found: list[str] = []
+    for path, source in test_files:
+        if not path.endswith(".rs"):
+            continue
+        matches = list(_RUST_FN.finditer(source))
+        ends = [m.start() for m in matches[1:]] + [len(source)]
+        for match, end in zip(matches, ends, strict=False):
+            body = source[match.end() : end]
+            if table in body and body.count("for ") >= 2:
+                found.append(match.group(1))
+    return found
 
 
 def iterates_product(case: Case, table: str | None) -> bool:
