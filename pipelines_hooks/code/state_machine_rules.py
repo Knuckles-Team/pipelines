@@ -39,15 +39,25 @@ def _first_sites(sites: list[Site]) -> dict[tuple[str, str], Site]:
     return first
 
 
+def _commits(machine: Machine, site: Site) -> bool:
+    """Whether an assignment stores the result of the machine's own transition function."""
+    return bool(site.through and machine.function and site.through == machine.function.rsplit(".", 1)[-1])
+
+
 def _multi_assign(machine: Machine) -> list[Finding]:
     """Rule 1: the status is assigned outside the one transition function.
 
     A holder whose enum owns the machine commits the enum's result in one
-    function of its own; a second assigning function is the finding.
+    function of its own; a second assigning function is the finding. An
+    assignment that stores the result of the machine's transition function
+    (``x.status = transition(x.status, event)``) is the transition, wherever it is written.
     """
-    first = _first_sites(machine.assigners)
+    committing = [site for site in machine.assigners if _commits(machine, site)]
+    first = _first_sites([site for site in machine.assigners if not _commits(machine, site)])
     if machine.function is not None and not machine.via_enum:
         stray = [site for (_, function), site in first.items() if function != machine.function]
+    elif committing:
+        stray = list(first.values())  # the commits are the one way in; any other write is stray
     else:
         stray = list(first.values()) if len(first) >= 2 else []
     return [
