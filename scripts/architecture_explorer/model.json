@@ -54,6 +54,24 @@
    "serves"
   ],
   [
+   "webui",
+   "city",
+   "built on",
+   "dependsOn"
+  ],
+  [
+   "geniusbot",
+   "city",
+   "built on",
+   "dependsOn"
+  ],
+  [
+   "city",
+   "arbora",
+   "typed operations",
+   "serves"
+  ],
+  [
    "messaging",
    "arbora",
    "messages",
@@ -398,7 +416,7 @@
      "id": "webui.city",
      "label": "Arbora City",
      "role": "the platform as a living city",
-     "desc": "A hosted app renders the knowledge graph as a city: graph content maps to places, relationships to roads and activity to traffic, through one declared mapping registry. Growth is seeded and deterministic, and user edits are a layer the regrowth never overwrites.",
+     "desc": "A hosted app renders the knowledge graph as a city: graph content maps to places, relationships to roads and activity to traffic, through one declared mapping registry. Growth is seeded and deterministic, and user edits are a layer the regrowth never overwrites. Overstory hosts the page. The city itself is the Arbora City part.",
      "code": [
       "src/apps/city",
       "agent/overstory/apps/city"
@@ -406,7 +424,10 @@
      "fam": [
       "arbora-city"
      ],
-     "kw": "city|mapping registry|roads|traffic|hall of records|growth|seed|edit layer|budget"
+     "kw": "city|mapping registry|roads|traffic|hall of records|growth|seed|edit layer|budget",
+     "links": [
+      "city"
+     ]
     }
    ],
    "band": 1
@@ -638,6 +659,45 @@
      "ids": [
       "AXIL-CLIENT-R020(\\.|$)"
      ]
+    }
+   ]
+  },
+  {
+   "id": "city",
+   "label": "Arbora City",
+   "role": "Ecosystem City",
+   "desc": "Arbora City shows the ecosystem as a living 3D city. Overstory and Axil embed it as one package. It gets its data only through Arbora, by way of a source the host provides.",
+   "layer": "entry",
+   "repo": "arbora-city",
+   "band": 1,
+   "children": [
+    {
+     "id": "city.engine",
+     "label": "City engine",
+     "role": "three.js renderer",
+     "desc": "The engine draws the city, its roads and its traffic. It holds no network code.",
+     "kw": "engine|three|render|camera|districts"
+    },
+    {
+     "id": "city.source",
+     "label": "Source contract",
+     "role": "CitySource and demo simulation",
+     "desc": "The source contract is how a host feeds the city. A labelled demo simulation runs when no host source is given.",
+     "kw": "source|contract|citysource|demo|simulation"
+    },
+    {
+     "id": "city.embed",
+     "label": "Embed bundle",
+     "role": "prebuilt bundle for hosts",
+     "desc": "The embed bundle is a prebuilt build that web and desktop hosts load directly.",
+     "kw": "embed|bundle|host|web view"
+    },
+    {
+     "id": "city.assets",
+     "label": "Asset kit",
+     "role": "versioned building and prop assets",
+     "desc": "The asset kit is a versioned set of models and textures for the city.",
+     "kw": "asset|kit|models|textures|version"
     }
    ]
   },
@@ -6662,7 +6722,7 @@
     150
    ],
    "messaging": [
-    2100,
+    2464,
     290,
     322,
     150
@@ -6720,6 +6780,12 @@
     1160,
     672,
     280
+   ],
+   "city": [
+    2100,
+    290,
+    322,
+    150
    ]
   },
   "edges": [
@@ -6812,16 +6878,16 @@
       245
      ],
      [
-      2261,
+      2625,
       245
      ],
      [
-      2261,
+      2625,
       290
      ]
     ],
     "lp": [
-     2016,
+     2166,
      232
     ]
    },
@@ -6883,9 +6949,52 @@
     ]
    },
    {
-    "from": "messaging",
+    "from": "webui",
+    "to": "city",
+    "label": "built on",
+    "pts": [
+     [
+      1100,
+      440
+     ],
+     [
+      1100,
+      462
+     ],
+     [
+      2161,
+      462
+     ],
+     [
+      2161,
+      440
+     ]
+    ],
+    "lp": [
+     1630,
+     462
+    ]
+   },
+   {
+    "from": "geniusbot",
+    "to": "city",
+    "label": "built on",
+    "pts": [
+     [
+      2058,
+      365
+     ],
+     [
+      2100,
+      365
+     ]
+    ],
+    "lp": null
+   },
+   {
+    "from": "city",
     "to": "arbora",
-    "label": "messages",
+    "label": "typed operations",
     "pts": [
      [
       2261,
@@ -6899,6 +7008,29 @@
     "lp": [
      2261,
      480
+    ]
+   },
+   {
+    "from": "messaging",
+    "to": "arbora",
+    "label": "messages",
+    "pts": [
+     [
+      2625,
+      440
+     ],
+     [
+      2625,
+      660
+     ],
+     [
+      2380,
+      660
+     ]
+    ],
+    "lp": [
+     2625,
+     560
     ]
    },
    {

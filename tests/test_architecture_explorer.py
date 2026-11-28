@@ -2819,3 +2819,35 @@ def test_code_view_reclusters_only_changed_items_and_links_rows(tmp_path: Path) 
     )
     assert doc["rows"]["X-R001"]["code_items"] == [f"c{n}" for n in range(6)]
     assert doc["code_view"]["item_rows"]["c0"] == ["X-R001"] and len(doc["code_view"]["communities"]) == 3
+
+
+@pytest.mark.spec("PIPE-PAGES-R061")
+def test_arbora_city_is_a_core_front_end_part() -> None:
+    """PIPE-PAGES-R061: Arbora City is a core front-end part that Overstory and Axil depend on."""
+    model = json.loads((PKG / "model.json").read_text())
+    registry = json.loads((PKG / "registry.json").read_text())
+    city = next(node for node in model["children"] if node["id"] == "city")
+    assert (city["label"], city["repo"], city["layer"], city["band"]) == ("Arbora City", "arbora-city", "entry", 1)
+    assert [c["id"] for c in city["children"]] == ["city.engine", "city.source", "city.embed", "city.assets"]
+    assert not city.get("code") and not any(c.get("code") for c in city["children"])
+    for edge in (
+        ["webui", "city", "built on", "dependsOn"],
+        ["geniusbot", "city", "built on", "dependsOn"],
+        ["city", "arbora", "typed operations", "serves"],
+    ):
+        assert edge in model["edges"]
+        assert any((e["from"], e["to"]) == (edge[0], edge[1]) for e in model["fixed_layout"]["edges"])
+    assert "city" in model["fixed_layout"]["kids"]
+    assert registry["pages_node"]["arbora-city"] == "city"
+    assert {
+        "name": "arbora-city",
+        "slug": "arbora-city",
+        "local": "agent-packages/arbora-city",
+        "kind": "core",
+    } in registry["repositories"]
+    host = next(
+        c for c in next(n for n in model["children"] if n["id"] == "webui")["children"] if c["id"] == "webui.city"
+    )
+    assert host["links"] == ["city"]
+    tree = Tree(model)
+    assert "city" in tree.nodes

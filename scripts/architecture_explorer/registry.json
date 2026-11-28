@@ -10,7 +10,8 @@
   "pipelines": "pipelines",
   "universal-skills": "skills",
   "skill-graphs": "skills",
-  "axil": "geniusbot"
+  "axil": "geniusbot",
+  "arbora-city": "city"
  },
  "repositories": [
   {
@@ -72,6 +73,12 @@
    "slug": "axil",
    "local": "agent-packages/geniusbot",
    "kind": "client"
+  },
+  {
+   "name": "arbora-city",
+   "slug": "arbora-city",
+   "local": "agent-packages/arbora-city",
+   "kind": "core"
   },
   {
    "name": "adguard-home-agent",

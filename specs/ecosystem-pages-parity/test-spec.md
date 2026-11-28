@@ -375,3 +375,4 @@ This test is planned; this documentation change does not implement it.
 | T-PIPE-PAGES-R058.6 | PIPE-PAGES-R058.6 | Run `tests/test_canopy_research.py::test_research_badge_and_drawer_list_in_a_browser`. |
 | T-PIPE-PAGES-R059 | PIPE-PAGES-R059 | Run `tests/test_pages_self_publish.py::test_a_rerun_deploy_uploads_and_deploys_its_own_attempt_artifact`. Upload and deploy use the same per-attempt artifact name. |
 | T-PIPE-PAGES-R060 | PIPE-PAGES-R060 | Run `tests/test_pages_self_publish.py::test_the_deploy_retries_once_and_fails_only_when_the_retry_fails`. The first deploy tolerates failure, the retry runs only after it failed, and the environment URL reads either step. |
+| T-PIPE-PAGES-R061 | PIPE-PAGES-R061 | Run `tests/test_architecture_explorer.py::test_arbora_city_is_a_core_front_end_part`. The part, its four children, its three edges, the registry entry and the fixed-layout box all exist, and the part has no code paths. |
