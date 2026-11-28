@@ -13,23 +13,26 @@ import json
 import sys
 from pathlib import Path
 
+from pipelines_hooks.specs.family_scope import family_dirs, is_owned, owned_families
+
 MODEL = Path(__file__).with_name("model.json")
+#: The repository whose own ``specs/`` tree this module checks; other repositories use
+#: ``pipelines-hook spec-family-coverage`` (PIPE-GATES-R061.1).
+REPOSITORY = "pipelines"
 
 
-def model_families(model: dict) -> set[str]:
-    families: set[str] = set(model.get("fam", []))
-    for child in model.get("children", []):
-        families |= model_families(child)
-    return families
+def model_families(model: dict, repository: str = REPOSITORY) -> set[str]:
+    """Every family a node of ``repository`` lists; another repository's ``fam`` entry never counts."""
+    return owned_families(model, repository)
 
 
 def spec_families(specs_dir: Path) -> list[str]:
-    return sorted(p.name for p in specs_dir.iterdir() if p.is_dir() and not p.name.startswith(("_", ".")))
+    return family_dirs(specs_dir)
 
 
-def unmapped(specs_dir: Path, model: dict) -> list[str]:
-    known = model_families(model)
-    return [name for name in spec_families(specs_dir) if name not in known]
+def unmapped(specs_dir: Path, model: dict, repository: str = REPOSITORY) -> list[str]:
+    known = model_families(model, repository)
+    return [name for name in spec_families(specs_dir) if not is_owned(known, name)]
 
 
 def main(argv: list[str]) -> int:

@@ -14,6 +14,8 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
+from pipelines_hooks.specs.family_scope import family_claims
+
 PATH_RE = re.compile(
     r"((?:crates|src|arbora|scion_sdk|agent_utilities|agent_terminal_ui|tests|scripts|native|"
     r"epistemic_graph|contract|clients|docker|packaging|\.github)/[A-Za-z0-9_./\-]+)"
@@ -124,10 +126,10 @@ class Placer:
             node = tree.nodes[nid]
             if node.get("external"):
                 continue
-            for fam in node.get("fam", []):
-                self.home[(node["repo"], fam)] = nid
             if node["repo"]:
                 self.repo_nodes[node["repo"]].append(nid)
+        for repo, fam, nid in family_claims(tree.root):
+            self.home[(repo, fam)] = nid
         self.external = {nid for nid in tree.order if tree.nodes[nid].get("external")}
         self.sub = {nid: tree.subtree(nid) - self.external for nid in tree.nodes}
         self.placed: dict[str, str] = {}

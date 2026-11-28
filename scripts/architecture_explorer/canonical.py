@@ -11,18 +11,14 @@ import re
 from collections import Counter
 
 from pipelines_hooks.specs.aliases import canonical_id
+from pipelines_hooks.specs.family_scope import canonical_family, prefix_aliases
 
 
 def tag_family_keys(snaps) -> None:
     """Give each row ``family_key``: its spec directory name with the repository's retired prefix replaced."""
     for snap in snaps:
         for row in snap.rows:
-            row["family_key"] = canonical_id(row["family"], prefix_aliases(snap.aliases))
-
-
-def prefix_aliases(aliases: dict[str, str]) -> dict[str, str]:
-    """Only the prefix entries; an exact row-ID alias must never rename a spec directory."""
-    return {k: v for k, v in aliases.items() if k.endswith("-")}
+            row["family_key"] = canonical_family(row["family"], snap.aliases)
 
 
 def merged_aliases(snaps) -> dict[str, str]:

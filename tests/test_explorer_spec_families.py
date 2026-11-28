@@ -26,3 +26,13 @@ def test_a_new_spec_directory_without_a_node_is_refused(tmp_path: Path, capsys: 
     assert spec_families.unmapped(tmp_path, model) == ["brand-new-family"]
     assert spec_families.main([str(tmp_path)]) == 1
     assert "brand-new-family" in capsys.readouterr().out
+
+
+@pytest.mark.spec("PIPE-GATES-R061.1")
+def test_the_explorer_placer_and_the_coverage_gate_share_one_matcher() -> None:
+    from pipelines_hooks.specs.family_scope import family_claims
+    from scripts.architecture_explorer.place import Placer, Tree
+
+    model = json.loads(spec_families.MODEL.read_text(encoding="utf-8"))
+    claims = {(repo, fam): nid for repo, fam, nid in family_claims(model)}
+    assert claims and Placer(Tree(model)).home == claims
