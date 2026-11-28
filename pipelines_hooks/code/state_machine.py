@@ -260,12 +260,25 @@ def _attach_uses(root: Path, machines: list[Machine], loose: list[Use]) -> list[
             reason = f"type {use.receiver} is declared {len(named)} times in the unit"
         elif use.kind == "compare" and all(_enum_compare_ok(m, use) for m in peers):
             continue
+        elif use.kind == "assign" and (owner := _method_of_peer(use, peers)) is not None:
+            attach(owner, use)
+            continue
         key = (use.site.file, use.site.line, use.field, use.kind)
         detail = f"{use.kind} of .{use.field} in {use.site.function}: {reason}"
         unresolved.setdefault(
             key, Finding(use.site.file, use.site.line, UNRESOLVED_TYPE, "SM-UNRESOLVED-RECEIVER", detail)
         )
     return list(unresolved.values())
+
+
+def _method_of_peer(use: Use, peers: list[Machine]) -> Machine | None:
+    """The type with this field whose own method makes an assignment through a receiver that does not resolve.
+
+    A method ``T.f`` that writes ``.status`` of a copy or a lookup it cannot type writes ``T``'s
+    own status; a method of a type with no such field stays unresolved.
+    """
+    owner = use.site.function.rpartition(".")[0]
+    return next((m for m in peers if owner and m.type_name == owner), None)
 
 
 def _enum_compare_ok(machine: Machine, use: Use) -> bool:

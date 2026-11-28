@@ -442,6 +442,14 @@ def _value_type(node: Node | None, scope: dict[str, str | None], owner: str) -> 
     if node.type == "identifier":
         return scope.get(_text(node))
     if node.type == "call_expression":
+        function = node.child_by_field_name("function")
+        if (
+            function is not None
+            and function.type == "field_expression"
+            and _text(function.child_by_field_name("field")) in {"clone", "cloned", "to_owned"}
+        ):
+            receiver = _text(function.child_by_field_name("value")).strip()
+            return owner or None if receiver == "self" else scope.get(receiver)
         parts = _text(node.child_by_field_name("function")).split("::")
         return _bare_type(parts[-2], owner) if len(parts) >= 2 and parts[-2][:1].isupper() else None
     return None

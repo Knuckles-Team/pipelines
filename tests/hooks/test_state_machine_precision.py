@@ -617,3 +617,67 @@ def test_a_refusal_test_whose_body_names_the_state_and_the_event_binds_that_cell
     lines = _census(tmp_path, files)
     assert not [line for line in lines if "SM-UNTESTED-REFUSAL" in line and "from=SHUT event=CLOSE" in line], lines
     assert [line for line in lines if "SM-UNTESTED-REFUSAL" in line and "from=OPEN event=REOPEN" in line], lines
+
+
+CLONED_RS = """\
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum DrainState { Running, Complete }
+#[derive(Clone)]
+pub struct Drain { pub state: DrainState, pub pages: u32 }
+impl Drain {
+    pub fn finish(&self) -> Drain {
+        let mut next = self.clone();
+        next.state = DrainState::Complete;
+        next
+    }
+    pub fn restart(&self) -> Drain {
+        let mut next = self.clone();
+        next.state = DrainState::Running;
+        next
+    }
+}
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_rust_clone_of_a_typed_value_resolves_to_its_type(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"src/drain.rs": CLONED_RS})
+    assert "SM-UNRESOLVED-RECEIVER" not in _codes(lines), lines
+    assert "SM-MULTI-ASSIGN" in _codes(lines), lines
+
+
+UNTYPED_COPY_PY = """\
+from enum import StrEnum
+
+
+class Phase(StrEnum):
+    LIVE = "live"
+    GONE = "gone"
+
+
+class Lease:
+    state: Phase
+
+    def retire(self, other) -> "Lease":
+        successor = other.copy()
+        successor.state = Phase.GONE
+        return successor
+
+    def revive(self, other) -> "Lease":
+        successor = other.copy()
+        successor.state = Phase.LIVE
+        return successor
+
+
+class Registry:
+    def touch(self, thing) -> None:
+        thing.state = Phase.LIVE
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_an_untyped_assignment_in_a_method_of_the_type_with_the_field_is_that_types(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/lease.py": UNTYPED_COPY_PY})
+    assert "SM-MULTI-ASSIGN" in _codes(lines), lines
+    unresolved = [line for line in lines if "SM-UNRESOLVED-RECEIVER" in line]
+    assert len(unresolved) == 1 and "Registry.touch" in unresolved[0], lines
