@@ -494,9 +494,25 @@ def _uses(path: str, items: list[Node], names: frozenset[str]) -> list[Use]:
             resolved = (
                 owner if receiver == "self" else receiver if local else _receiver_type(receiver, scope, fields, owner)
             )
-            uses.append(Use(field, kind, Site(path, node.start_point.row + 1, label), resolved, names, local=local))
+            site = Site(path, node.start_point.row + 1, label, _through(node) if kind == "assign" else "")
+            uses.append(Use(field, kind, site, resolved, names, local=local))
         uses += _rebuilds(path, item, label, owner, scope, fields, names)
     return uses
+
+
+_CALLED = re.compile(r"(\w+)\s*(?:::<[^>]*>)?\(")
+
+
+def _through(node: Node) -> str:
+    """The function an assignment stores the result of: ``self.status = state.apply(e)?`` gives ``apply``."""
+    right = node.child_by_field_name("right")
+    if node.type != "assignment_expression" or right is None:
+        return ""
+    while right.type in {"try_expression", "await_expression"} and right.named_children:
+        right = right.named_children[0]
+    call = right.child_by_field_name("function") if right.type == "call_expression" else None
+    found = _CALLED.search(_text(right).partition("(")[0] + "(") if call is not None else None
+    return found.group(1) if found else ""
 
 
 def _compared(node: Node) -> bool:

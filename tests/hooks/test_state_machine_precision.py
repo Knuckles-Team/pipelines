@@ -491,3 +491,27 @@ def test_a_receiver_read_from_a_typed_container_parameter_or_loop_resolves(tmp_p
     lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/steps.py": NODES_PY})
     assert "SM-UNRESOLVED-RECEIVER" not in _codes(lines), lines
     assert "SM-MULTI-ASSIGN" in _codes(lines), lines
+
+
+TWO_COMMITS = (
+    FLOW_PY
+    + """
+
+def reopen_all(doors: list[Door]) -> None:
+    for door in doors:
+        door.stage = move(door.stage, Step.REOPEN)
+"""
+)
+
+
+@pytest.mark.spec("PIPE-GATES-R086.17")
+def test_an_assignment_storing_the_transition_functions_result_is_the_transition(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/door.py": TWO_COMMITS})
+    assert "SM-MULTI-ASSIGN" not in _codes(lines), lines
+
+
+@pytest.mark.spec("PIPE-GATES-R086.17")
+def test_an_assignment_that_skips_the_transition_function_is_still_stray(tmp_path: Path) -> None:
+    stray = TWO_COMMITS + "\n\ndef force(door: Door) -> None:\n    door.stage = Stage.OPEN\n"
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/door.py": stray})
+    assert [line for line in lines if "SM-MULTI-ASSIGN" in line and "assigned in force" in line], lines

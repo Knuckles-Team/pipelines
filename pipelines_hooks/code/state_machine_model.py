@@ -71,6 +71,8 @@ class Site:
     file: str
     line: int
     function: str
+    #: The function whose result an assignment stores (``x.status = transition(..)``), if any.
+    through: str = ""
 
 
 @dataclass(frozen=True)

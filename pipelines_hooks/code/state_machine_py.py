@@ -403,6 +403,7 @@ def _uses(path: str, tree: ast.Module) -> list[Use]:
                     path,
                     getattr(node, "lineno", function.lineno),
                     f"{owner}.{function.name}" if owner else function.name,
+                    _through(node) if kind == "assign" else "",
                 )
                 uses.append(Use(field, kind, site, resolved, names, local=is_self))
         uses += _rebuilds(path, owner, function, resolver, scope, names)
@@ -443,6 +444,14 @@ def _rebuilds(
             if kw.arg in STATUS_FIELDS
         ]
     return found
+
+
+def _through(node: ast.AST) -> str:
+    """The function an assignment stores the result of: ``x.status = transition(..)`` gives ``transition``."""
+    value = node.value if isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)) else None
+    while isinstance(value, ast.Await):
+        value = value.value
+    return _name(value.func) if isinstance(value, ast.Call) else ""
 
 
 def _functions(tree: ast.Module) -> list[tuple[str | None, ast.FunctionDef | ast.AsyncFunctionDef]]:
