@@ -3,7 +3,7 @@
 Wraps ``pr-test-scope`` (CI-STANDARD pre-push): the base is the hook's
 ``PRE_COMMIT_FROM_REF`` (set by ``pre-commit --from-ref``) unless ``--base-ref``
 is given. ``NONE`` and ``FULL`` run nothing locally -- the full suite belongs to
-main CI -- and say so. A selected subset runs under ``--timeout`` seconds
+main CI -- and say so. A selected subset, minus tests marked ``browser``, runs under ``--timeout`` seconds
 (default 120); exceeding it fails the hook (exit 1) rather than hanging a push.
 """
 
@@ -36,10 +36,15 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+#: Browser tests drive a real headless browser and are slow by nature: a repository's own browser workflow proves them.
+DESELECT_MARKER = "not browser"
+
+
 def _pytest_command(root: Path, tests: list[str]) -> list[str]:
+    selection = ["-q", "-x", "-m", DESELECT_MARKER, *tests]
     if (root / "uv.lock").is_file() and shutil.which("uv"):
-        return ["uv", "run", "--frozen", "pytest", "-q", "-x", *tests]
-    return [sys.executable, "-m", "pytest", "-q", "-x", *tests]
+        return ["uv", "run", "--frozen", "pytest", *selection]
+    return [sys.executable, "-m", "pytest", *selection]
 
 
 def _suites_run(report: Path) -> int | None:
@@ -50,6 +55,13 @@ def _suites_run(report: Path) -> int | None:
         return None
     suites = [root] if root.tag == "testsuite" else list(root.iter("testsuite"))
     return sum(int(suite.get("tests", "0")) for suite in suites)
+
+
+def _only_browser_tests(command: list[str], root: Path) -> bool:
+    """True when the selection holds browser tests and nothing else (the ``-m`` deselection emptied it)."""
+    at = command.index(DESELECT_MARKER)  # the value of the ``-m`` option; the ``-m`` before it is the selector
+    probe = [*command[: at - 1], "--collect-only", "-q", "-m", "browser", *command[at + 1 :]]
+    return subprocess.run(probe, cwd=root, capture_output=True, check=False).returncode == 0
 
 
 def require_suites(command: list[str], returncode: int, suites: int | None) -> int:
@@ -81,6 +93,9 @@ def main(argv: list[str]) -> int:
             code = subprocess.run(
                 [*command, f"--junitxml={report}"], cwd=root, timeout=args.timeout, check=False
             ).returncode
+            if code == 5 and _only_browser_tests(command, root):
+                print("fast-tests: only browser tests are affected; the repository's browser workflow proves them")
+                return 0
             return require_suites(command, code, _suites_run(report))
     except subprocess.TimeoutExpired:
         print(f"fast-tests: exceeded {args.timeout}s; narrow the change or run the suite in CI", file=sys.stderr)

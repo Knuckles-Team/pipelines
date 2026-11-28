@@ -158,6 +158,7 @@ R030 = f"{PREFIX}-R030"
 
 
 @pytest.mark.spec("PIPE-PAGES-R057.6")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_a_hash_restores_the_view_and_the_export_paths_exist(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)
@@ -183,6 +184,7 @@ return {mode:window.__arch.mode, drawer:window.__arch.drawerRow, pressed:Array.f
 
 
 @pytest.mark.spec("PIPE-PAGES-R057.7")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_page_without_scripts_lists_parts_and_links_exports(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)

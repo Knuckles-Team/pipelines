@@ -82,6 +82,7 @@ WAIT = "const wait=(ms)=>new Promise(r=>setTimeout(r,ms));\n"
 
 
 @pytest.mark.spec("PIPE-PAGES-R058.3")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_badges_render_on_node_card_and_row_with_screen_reader_text(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)
@@ -107,6 +108,7 @@ return {node:window.__arch.ownQuestions(%r), row:row&&{label:row.getAttribute("a
 
 
 @pytest.mark.spec("PIPE-PAGES-R058.5")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_drawer_and_export_list_the_questions_with_document_and_line(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)
@@ -131,6 +133,7 @@ return {items};
 
 
 @pytest.mark.spec("PIPE-PAGES-R058.6")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_research_badge_and_drawer_list_in_a_browser(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)

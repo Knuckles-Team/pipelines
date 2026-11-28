@@ -83,6 +83,7 @@ def _site(monkeypatch, tmp_path: Path) -> Path:
 
 
 @pytest.mark.spec("PIPE-PAGES-R056.2")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_selecting_a_release_dims_other_nodes_and_shows_part_progress(monkeypatch, tmp_path: Path) -> None:
     site = _site(monkeypatch, tmp_path)
@@ -105,6 +106,7 @@ return {dim:window.__arch.relDim(), mine:window.__arch.relProg(%r), other:window
 
 
 @pytest.mark.spec("PIPE-PAGES-R056.5")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_release_card_links_manifest_and_unscheduled_count_matches_rows(monkeypatch, tmp_path: Path) -> None:
     site = _site(monkeypatch, tmp_path)
@@ -134,6 +136,7 @@ def _flat(tree: dict):
 
 
 @pytest.mark.spec("PIPE-PAGES-R056.6")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_release_hash_filters_the_map_in_a_browser(monkeypatch, tmp_path: Path) -> None:
     site = _site(monkeypatch, tmp_path)

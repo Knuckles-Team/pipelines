@@ -93,3 +93,37 @@ def test_the_failure_names_the_command(capsys: pytest.CaptureFixture[str]) -> No
 
     assert require_suites(["uv", "run", "pytest", "tests/test_x.py"], 0, 0) == 1
     assert "uv run pytest tests/test_x.py" in capsys.readouterr().err
+
+
+# spec: PIPE-RELEASE-R007.18
+def test_fast_tests_deselects_browser_tests_and_runs_the_rest(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    base = repo.commit(
+        {
+            "pkg/mod_b.py": "VALUE = 1\n",
+            "tests/test_b.py": (
+                "import pytest\nfrom pkg import mod_b\n\n\n"
+                "@pytest.mark.browser\ndef test_slow_browser() -> None:\n    raise AssertionError('browser tests never run here')\n\n\n"
+                "def test_fast() -> None:\n    assert mod_b.VALUE >= 1\n"
+            ),
+        },
+        "baseline",
+    )
+    repo.commit({"pkg/mod_b.py": "VALUE = 2\n"}, "change")
+    assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 0
+
+
+# spec: PIPE-RELEASE-R007.18
+def test_fast_tests_passes_when_only_browser_tests_are_affected(repo: Repo, capsys: pytest.CaptureFixture[str]) -> None:
+    base = repo.commit(
+        {
+            "pkg/mod_c.py": "VALUE = 1\n",
+            "tests/test_c.py": (
+                "import pytest\nfrom pkg import mod_c\n\n\n"
+                "@pytest.mark.browser\ndef test_only_browser() -> None:\n    assert mod_c.VALUE == 99\n"
+            ),
+        },
+        "baseline",
+    )
+    repo.commit({"pkg/mod_c.py": "VALUE = 2\n"}, "change")
+    assert repo.run("fast-tests", "--base-ref", base, "--src-root", "pkg") == 0
+    assert "only browser tests are affected" in capsys.readouterr().out

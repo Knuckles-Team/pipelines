@@ -87,6 +87,7 @@ def _run(monkeypatch, tmp_path: Path, script: str) -> dict:
 
 
 @pytest.mark.spec("PIPE-PAGES-R053.3")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_a_row_click_opens_the_drawer_and_sets_the_row_hash(monkeypatch, tmp_path: Path) -> None:
     out = _run(
@@ -112,6 +113,7 @@ return {opened,closed};
 
 
 @pytest.mark.spec("PIPE-PAGES-R053.4")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_missing_row_and_failed_family_load_are_reported_in_the_drawer(monkeypatch, tmp_path: Path) -> None:
     out = _run(
@@ -135,6 +137,7 @@ return {missing,failed,inert};
 
 
 @pytest.mark.spec("PIPE-PAGES-R053.5")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_drawer_lists_exact_paths_and_evidence_links(monkeypatch, tmp_path: Path) -> None:
     out = _run(
@@ -154,6 +157,7 @@ return {paths:Array.from(d.querySelectorAll(".files code")).map(c=>c.textContent
 
 
 @pytest.mark.spec("PIPE-PAGES-R053.6")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_the_drawer_opens_in_a_browser_with_tasks_and_unblocks(monkeypatch, tmp_path: Path) -> None:
     out = _run(
