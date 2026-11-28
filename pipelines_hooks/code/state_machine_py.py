@@ -405,7 +405,41 @@ def _uses(path: str, tree: ast.Module) -> list[Use]:
                     f"{owner}.{function.name}" if owner else function.name,
                 )
                 uses.append(Use(field, kind, site, resolved, names, local=is_self))
+        uses += _rebuilds(path, owner, function, resolver, scope, names)
     return uses
+
+
+def _rebuilds(
+    path: str,
+    owner: str | None,
+    function: ast.FunctionDef | ast.AsyncFunctionDef,
+    resolver: _Resolver,
+    scope: dict[str, str | None],
+    names: frozenset[str],
+) -> list[Use]:
+    """A function that reads a status and builds ``T(..., status=v)`` moves ``T`` by replacement.
+
+    The read must be of a ``T`` or of a receiver that does not resolve; a read of another
+    type is a mapping from that type to ``T``, not a transition of ``T``.
+    """
+    read_types = {
+        resolver.type_of(node.value, owner, scope)
+        for node in ast.walk(function)
+        if isinstance(node, ast.Attribute) and node.attr in STATUS_FIELDS and isinstance(node.ctx, ast.Load)
+    }
+    found: list[Use] = []
+    for node in ast.walk(function):
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id[:1].isupper()):
+            continue
+        if node.func.id not in read_types and None not in read_types:
+            continue
+        label = f"{owner}.{function.name}" if owner else function.name
+        found += [
+            Use(kw.arg, "assign", Site(path, node.lineno, label), node.func.id, names)
+            for kw in node.keywords
+            if kw.arg in STATUS_FIELDS
+        ]
+    return found
 
 
 def _functions(tree: ast.Module) -> list[tuple[str | None, ast.FunctionDef | ast.AsyncFunctionDef]]:
