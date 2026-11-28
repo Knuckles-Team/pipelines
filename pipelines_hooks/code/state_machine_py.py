@@ -11,6 +11,7 @@ resolve is reported once as ``<unresolved>``. Test files are skipped.
 from __future__ import annotations
 
 import ast
+import re
 from pathlib import PurePosixPath
 
 from pipelines_hooks.code.state_machine_model import (
@@ -41,13 +42,13 @@ def read_python(path: str, tree: ast.Module) -> list[Machine]:
     if is_test_file(path):
         return []
     enums = _enum_members(tree)
-    module_tables = _tables(tree.body)
-    module_function = _transition(tree.body, None)
+    context = _Context(enums, _aliases(tree.body, enums), _imported(tree))
+    module_tables = _tables(tree.body, context)
     machines = [
         machine
         for node in tree.body
         if isinstance(node, ast.ClassDef) and node.name not in enums
-        for machine in [_machine(path, node, enums, module_tables, module_function, _constants(tree.body))]
+        for machine in [_machine(path, node, context, (tree.body, module_tables), _constants(tree.body))]
         if machine is not None
     ]
     for use in _uses(path, tree):
@@ -55,6 +56,41 @@ def read_python(path: str, tree: ast.Module) -> list[Machine]:
             if use.field == machine.status_field and use.receiver == machine.type_name:
                 attach(machine, use)
     return machines
+
+
+def enum_names(tree: ast.Module) -> frozenset[str]:
+    """The enums and literal unions a module declares: the types that may be a state type."""
+    return frozenset(_enum_members(tree))
+
+
+def enum_declarations(path: str, tree: ast.Module) -> dict[str, Machine]:
+    """State enum -> a declaration-only ``Machine`` for each enum an edge table of this module is written over.
+
+    A table is recognised by its shape (``_edge_table``), under any name. The hook
+    copies the declaration onto every type, in any module, that holds the enum as
+    its status.
+    """
+    if is_test_file(path):
+        return {}
+    enums = _enum_members(tree)
+    context = _Context(enums, _aliases(tree.body, enums), _imported(tree))
+    found: dict[str, Machine] = {}
+    for table, edges, enum in _tables(tree.body, context):
+        if enum is None:
+            continue
+        machine = Machine("python", path, 0, enum, status_field="", status_type=enum, status_kind="enum")
+        machine.table, machine.edges = table, edges
+        _declare(machine, tree.body, enums.get(enum, ()))
+        found.setdefault(enum, machine)
+    return found
+
+
+def _declare(machine: Machine, body: list[ast.stmt], states: tuple[str, ...]) -> None:
+    function = _transition(body, None, machine.table)
+    if function is not None:
+        machine.function, machine.refusal = function
+    machine.states = states or _edge_states(machine.edges)
+    machine.initial, machine.terminals = _constants(body)
 
 
 def loose_sites(path: str, tree: ast.Module) -> list[Use]:
@@ -65,6 +101,9 @@ def loose_sites(path: str, tree: ast.Module) -> list[Use]:
 def _enum_members(tree: ast.Module) -> dict[str, tuple[str, ...]]:
     found: dict[str, tuple[str, ...]] = {}
     for node in tree.body:
+        alias = _literal_alias(node)
+        if alias is not None:
+            found[alias[0]] = alias[1]
         if isinstance(node, ast.ClassDef) and any(_name(base) in ENUM_BASES for base in node.bases):
             found[node.name] = tuple(
                 target.id
@@ -74,6 +113,51 @@ def _enum_members(tree: ast.Module) -> dict[str, tuple[str, ...]]:
                 if isinstance(target, ast.Name)
             )
     return found
+
+
+def _literal_alias(node: ast.stmt) -> tuple[str, tuple[str, ...]] | None:
+    """``Status = Literal["a", "b"]`` (or ``type Status = Literal[...]``): a literal union is a state type."""
+    if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+        name, value = node.targets[0].id, node.value
+    elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.value is not None:
+        name, value = node.target.id, node.value
+    elif isinstance(node, ast.TypeAlias) and isinstance(node.name, ast.Name):
+        name, value = node.name.id, node.value
+    else:
+        return None
+    if not (isinstance(value, ast.Subscript) and _name(value.value) == "Literal"):
+        return None
+    items = value.slice.elts if isinstance(value.slice, ast.Tuple) else [value.slice]
+    return name, tuple(str(item.value) for item in items if isinstance(item, ast.Constant))
+
+
+class _Context:
+    """What a module says about its enums: their members, the aliases of them, the names it imports."""
+
+    def __init__(self, enums: dict[str, tuple[str, ...]], aliases: dict[str, str], imported: frozenset[str]) -> None:
+        self.enums, self.aliases, self.imported = enums, aliases, imported
+
+
+def _aliases(body: list[ast.stmt], enums: dict[str, tuple[str, ...]]) -> dict[str, str]:
+    """``S = State`` and ``_S, _E = State, Event``: a short name for an enum."""
+    found: dict[str, str] = {}
+    for stmt in body:
+        if not (isinstance(stmt, ast.Assign) and len(stmt.targets) == 1):
+            continue
+        target, value = stmt.targets[0], stmt.value
+        pairs = (
+            list(zip(target.elts, value.elts, strict=False))
+            if isinstance(target, ast.Tuple) and isinstance(value, ast.Tuple)
+            else [(target, value)]
+        )
+        found |= {t.id: v.id for t, v in pairs if isinstance(t, ast.Name) and isinstance(v, ast.Name)}
+    return {alias: enum for alias, enum in found.items() if enum in enums}
+
+
+def _imported(tree: ast.Module) -> frozenset[str]:
+    return frozenset(
+        alias.asname or alias.name for node in tree.body if isinstance(node, ast.ImportFrom) for alias in node.names
+    )
 
 
 def _name(node: ast.AST | None) -> str:
@@ -111,6 +195,26 @@ def _kind(annotation: ast.expr, enums: dict[str, tuple[str, ...]]) -> tuple[str,
     return name, ""
 
 
+def _frozen(node: ast.ClassDef) -> bool:
+    """A frozen dataclass, a frozen pydantic model (``model_config`` or ``Config``) or a ``NamedTuple``."""
+    for decorator in node.decorator_list:
+        if isinstance(decorator, ast.Call) and any(
+            kw.arg == "frozen" and isinstance(kw.value, ast.Constant) and kw.value.value is True
+            for kw in decorator.keywords
+        ):
+            return True
+    if any(_name(base) == "NamedTuple" for base in node.bases):
+        return True
+    for stmt in node.body:
+        if isinstance(stmt, (ast.Assign, ast.AnnAssign)) and "model_config" in ast.unparse(stmt):
+            if re.search(r"frozen\W+True", ast.unparse(stmt)):
+                return True
+        if isinstance(stmt, ast.ClassDef) and stmt.name == "Config":
+            if any("frozen" in ast.unparse(inner) and "True" in ast.unparse(inner) for inner in stmt.body):
+                return True
+    return False
+
+
 def _fields(node: ast.ClassDef) -> list[ast.AnnAssign]:
     return [stmt for stmt in node.body if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name)]
 
@@ -125,28 +229,35 @@ def _flag(stmt: ast.AnnAssign) -> bool:
 def _machine(
     path: str,
     node: ast.ClassDef,
-    enums: dict[str, tuple[str, ...]],
-    module_tables: list[tuple[str, tuple[Edge, ...]]],
-    module_function: tuple[str, str] | None,
+    context: _Context,
+    module: tuple[list[ast.stmt], list[tuple[str, tuple[Edge, ...], str | None]]],
     module_constants: tuple[str | None, tuple[str, ...]],
 ) -> Machine | None:
+    enums = context.enums
     fields = _fields(node)
     status = next((stmt for stmt in fields if _name(stmt.target) in STATUS_FIELDS), None)
     flags = tuple(_name(stmt.target) for stmt in fields if _flag(stmt))
     if status is None and not flags:
         return None
-    machine = Machine("python", path, node.lineno, node.name, flags=flags)
+    machine = Machine("python", path, node.lineno, node.name, flags=flags, frozen=_frozen(node))
     if status is not None:
         machine.status_field = _name(status.target)
         machine.status_type, machine.status_kind = _kind(status.annotation, enums)
-        tables = _tables(node.body) or module_tables
+        machine.guessed_enum = machine.status_kind == "enum" and machine.status_type not in enums
+        module_body, module_tables = module
+        tables = [
+            table
+            for table in [*_tables(node.body, context), *module_tables]
+            if table[2] is None or table[2] == machine.status_type
+        ]
         if tables:
-            machine.table, machine.edges = tables[0]
-        function = _transition(node.body, node.name) or module_function
+            machine.table, machine.edges = tables[0][:2]
+        function = _transition(node.body, node.name, machine.table) or _transition(module_body, None, machine.table)
         own = _constants(node.body)
         constants = (own[0] or module_constants[0], own[1] or module_constants[1])
         if function is not None:
             machine.function, machine.refusal = function
+            machine.via_enum = bool(tables) and tables[0][2] is not None and not function[0].startswith(node.name + ".")
         machine.states = enums.get(machine.status_type or "", ()) or _edge_states(machine.edges)
         machine.initial, machine.terminals = constants
     return machine
@@ -173,15 +284,64 @@ def _edge_states(edges: tuple[Edge, ...]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(state for source, _, target in edges for state in (source, target)))
 
 
-def _tables(body: list[ast.stmt]) -> list[tuple[str, tuple[Edge, ...]]]:
+def _tables(body: list[ast.stmt], context: _Context) -> list[tuple[str, tuple[Edge, ...], str | None]]:
+    """``(name, edges, state enum)`` of each edge table in ``body``.
+
+    A table is a constant named ``LEGAL``, ``TRANSITIONS``, ``EDGES`` or ``edges``, or
+    any constant whose value is an edge table over an enum (``_edge_table``).
+    """
     found = []
     for stmt in body:
         target = stmt.targets[0] if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1 else None
         target = stmt.target if isinstance(stmt, ast.AnnAssign) else target
         value = stmt.value if isinstance(stmt, (ast.Assign, ast.AnnAssign)) else None
-        if isinstance(target, ast.Name) and target.id in TABLE_NAMES and value is not None:
-            found.append((target.id, _edges(value)))
+        if not (isinstance(target, ast.Name) and value is not None):
+            continue
+        annotation = stmt.annotation if isinstance(stmt, ast.AnnAssign) else None
+        edges = _edges(value)
+        enum = _edge_table_enum(value, annotation, context) if edges else None
+        if target.id in TABLE_NAMES or enum is not None:
+            found.append((target.id, edges, enum if target.id not in TABLE_NAMES or enum else None))
     return found
+
+
+def _from_nodes(value: ast.expr) -> list[ast.expr]:
+    """The source-state expression of each entry of an edge table."""
+    if isinstance(value, ast.Call) and value.args:
+        return _from_nodes(value.args[0])
+    nodes: list[ast.expr] = []
+    if isinstance(value, ast.Dict):
+        for key in value.keys:
+            if key is not None:
+                nodes.append(key.elts[0] if isinstance(key, ast.Tuple) and key.elts else key)
+    elif isinstance(value, (ast.Set, ast.List, ast.Tuple)):
+        nodes = [item.elts[0] for item in value.elts if isinstance(item, ast.Tuple) and item.elts]
+    return [node for node in nodes if node is not None]
+
+
+def _edge_table_enum(value: ast.expr, annotation: ast.expr | None, context: _Context) -> str | None:
+    """The state enum an edge table is written over, or ``None`` when the value is not an edge table.
+
+    Structure, not a name: every source state is ``Enum.MEMBER`` of one enum of the
+    module (or an imported type), reached directly or through an alias; or the
+    annotation of a mapping names its value type, an enum of the module.
+    """
+    sources = _from_nodes(value)
+    if not sources:
+        return None
+    bases = {
+        context.aliases.get(node.value.id, node.value.id)
+        for node in sources
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name)
+    }
+    if len(bases) == 1 and len(sources) == sum(isinstance(n, ast.Attribute) for n in sources):
+        (base,) = bases
+        if base in context.enums or base in context.imported:
+            return base
+    if isinstance(annotation, ast.Subscript) and isinstance(annotation.slice, ast.Tuple) and annotation.slice.elts:
+        last = _name(annotation.slice.elts[-1])
+        return last if last in context.enums else None
+    return None
 
 
 def _edges(value: ast.expr) -> tuple[Edge, ...]:
@@ -209,14 +369,23 @@ def _edges(value: ast.expr) -> tuple[Edge, ...]:
     return tuple(edges)
 
 
-def _transition(body: list[ast.stmt], owner: str | None) -> tuple[str, str] | None:
-    """The transition function and the ``*Refused`` class it raises."""
+def _transition(body: list[ast.stmt], owner: str | None, table: str | None = None) -> tuple[str, str] | None:
+    """The transition function and the refusal it raises.
+
+    A function named ``transition``, ``apply`` or ``step`` that raises a class named ``*Refused``;
+    or, for a declared ``table``, any function that reads the table and raises: the class it
+    raises is the refusal, whatever it is called.
+    """
     for stmt in body:
-        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef)) and stmt.name in FUNCTION_NAMES:
-            for raise_node in (n for n in ast.walk(stmt) if isinstance(n, ast.Raise)):
-                refusal = _name(raise_node.exc.func if isinstance(raise_node.exc, ast.Call) else raise_node.exc)
-                if refusal.endswith("Refused"):
-                    return (f"{owner}.{stmt.name}" if owner else stmt.name), refusal
+        if not (isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef))):
+            continue
+        reads_table = table is not None and any(isinstance(n, ast.Name) and n.id == table for n in ast.walk(stmt))
+        if stmt.name not in FUNCTION_NAMES and not reads_table:
+            continue
+        for raise_node in (n for n in ast.walk(stmt) if isinstance(n, ast.Raise) and n.exc is not None):
+            refusal = _name(raise_node.exc.func if isinstance(raise_node.exc, ast.Call) else raise_node.exc)
+            if refusal.endswith("Refused") or reads_table:
+                return (f"{owner}.{stmt.name}" if owner else stmt.name), refusal
     return None
 
 
@@ -404,7 +573,7 @@ def _call_uses(node: ast.Call) -> list[tuple[str, ast.expr | None, str]]:
     """``setattr(x, 'status', v)``, ``replace(x, status=v)`` and ``x.model_copy(update={'status': v})``."""
     name = _name(node.func)
     receiver = node.args[0] if node.args else None
-    if name == "setattr" and len(node.args) >= 2 and _name(node.args[1]) in STATUS_FIELDS:
+    if name in {"setattr", "__setattr__"} and len(node.args) >= 2 and _name(node.args[1]) in STATUS_FIELDS:
         return [(_name(node.args[1]), receiver, "assign")]
     if name == "replace":
         return [(kw.arg, receiver, "assign") for kw in node.keywords if kw.arg in STATUS_FIELDS]

@@ -12,6 +12,8 @@ from enum import IntEnum
 
 #: Field names that hold a lifecycle.
 STATUS_FIELDS = ("status", "state", "phase", "stage", "lifecycle")
+#: Functions that build an instance; a status set in one is set at construction.
+CONSTRUCTORS = frozenset({"__init__", "__post_init__", "__new__", "model_post_init"})
 #: Nullable timestamps that encode a lifecycle step.
 LIFECYCLE_TIMESTAMPS = frozenset(
     {
@@ -47,6 +49,7 @@ class Rule(IntEnum):
 CODES: dict[str, Rule] = {
     "SM-MULTI-ASSIGN": Rule.MULTI_ASSIGN,
     "SM-STRING-STATUS": Rule.STRING_STATUS,
+    "SM-STRING-VALUE": Rule.STRING_STATUS,
     "SM-LIFECYCLE-FLAGS": Rule.LIFECYCLE_FLAGS,
     "SM-UNTESTED-EDGE": Rule.TESTS,
     "SM-NO-REFUSAL-TEST": Rule.TESTS,
@@ -118,6 +121,16 @@ class Machine:
     #: True when the declaration was resolved from the status enum, which lives
     #: in another file: the holder type then has one commit function of its own.
     via_enum: bool = False
+    #: The machine-definition type (a static of it is the table) of a declaration.
+    def_type: str | None = None
+    #: True when the type is immutable by declaration (a frozen dataclass or model).
+    frozen: bool = False
+    #: True when the status type is called an enum only by its name suffix; the
+    #: hook settles it against the enums and literal unions that exist.
+    guessed_enum: bool = False
+    #: Set by ``settle_immutable`` once the hook has attached every use: the
+    #: status is never assigned outside construction. Hand-built records stay False.
+    immutable: bool = False
     assigners: list[Site] = field(default_factory=list)
     string_compares: list[Site] = field(default_factory=list)
     #: Lifecycle booleans and nullable lifecycle timestamps on the type.
@@ -136,6 +149,15 @@ class Machine:
         """Declared states, then table states, then terminal states, without repeats."""
         edge_states = (state for source, _, target in self.edges for state in (source, target))
         return list(dict.fromkeys([*self.states, *edge_states, *self.terminals]))
+
+    @property
+    def is_value(self) -> bool:
+        """An undeclared type whose status is set only at construction is a value, not a lifecycle."""
+        return self.status_field is not None and not self.declared and self.immutable
+
+    def settle_immutable(self) -> None:
+        """Called once every use is attached: set ``immutable`` when no function but a constructor assigns."""
+        self.immutable = all(site.function.rsplit(".", 1)[-1] in CONSTRUCTORS for site in self.assigners)
 
     @property
     def declared(self) -> bool:

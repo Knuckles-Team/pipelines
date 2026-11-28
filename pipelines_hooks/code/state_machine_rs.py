@@ -160,7 +160,96 @@ def enum_declarations(path: str, source: str, *, strict: bool = True) -> dict[st
         _declare(machine, consts, function.get(name), enums)
         if machine.declared:
             found[name] = machine
+    for machine in _definition_statics(path, items):
+        found.setdefault(machine.type_name, machine)
     return found
+
+
+def enum_names(path: str, source: str, *, strict: bool = True) -> frozenset[str]:
+    """The ``enum`` items of a file: the types that may be a state type."""
+    if _skipped(path):
+        return frozenset()
+    tree = parse(path, source.encode("utf-8"), strict=strict)
+    return frozenset(_text(i.child_by_field_name("name")) for i in _items(tree.root_node) if i.type == "enum_item")
+
+
+def definition_refusals(path: str, source: str, *, strict: bool = True) -> dict[str, tuple[str, str]]:
+    """Machine-definition type -> (transition function, the error it returns).
+
+    A machine-definition type is a struct with the fields ``initial`` and ``edges``; its
+    transition function takes a reference to one and returns ``Result<_, E>``. ``E`` is the
+    refusal, whatever it is called.
+    """
+    if _skipped(path):
+        return {}
+    items = list(_items(parse(path, source.encode("utf-8"), strict=strict).root_node))
+    types = {name for name, fields in _struct_field_names(items).items() if {"initial", "edges"} <= fields}
+    found: dict[str, tuple[str, str]] = {}
+    for item in (i for i in items if i.type == "function_item"):
+        result = re.search(
+            r"Result<.*,\s*(?:[\w:]+::)?(\w+)\s*>\s*$", _text(item.child_by_field_name("return_type")), re.S
+        )
+        params = item.child_by_field_name("parameters")
+        for param in params.named_children if params is not None else []:
+            kind = _bare_type(_text(param.child_by_field_name("type")), "") if param.type == "parameter" else None
+            if result and kind in types:
+                found.setdefault(kind, (_text(item.child_by_field_name("name")), result.group(1)))
+    return found
+
+
+def _struct_field_names(items: list[Node]) -> dict[str, set[str]]:
+    found: dict[str, set[str]] = {}
+    for item in (i for i in items if i.type == "struct_item"):
+        body = item.child_by_field_name("body")
+        found[_text(item.child_by_field_name("name"))] = {
+            _text(f.child_by_field_name("name"))
+            for f in (body.named_children if body is not None else [])
+            if f.type == "field_declaration"
+        }
+    return found
+
+
+def _initialisers(node: Node | None) -> dict[str, Node]:
+    """Field name -> value of a struct expression."""
+    body = node.child_by_field_name("body") if node is not None else None
+    found: dict[str, Node] = {}
+    for c in body.named_children if body is not None else []:
+        value = c.child_by_field_name("value") if c.type == "field_initializer" else None
+        if value is not None:
+            found[_text(c.child_by_field_name("field"))] = value
+    return found
+
+
+def _definition_statics(path: str, items: list[Node]) -> list[Machine]:
+    """A ``const`` or ``static`` that is a machine definition: a struct literal with ``initial`` and ``edges``."""
+    found: list[Machine] = []
+    for item in (i for i in items if i.type in {"const_item", "static_item"}):
+        value = item.child_by_field_name("value")
+        fields = _initialisers(value) if value is not None and value.type == "struct_expression" else {}
+        if "initial" not in fields or "edges" not in fields:
+            continue
+        generic = re.match(r"\s*[\w:]+\s*<\s*([\w:]+)", _text(item.child_by_field_name("type")))
+        state = generic.group(1).split("::")[-1] if generic else _text(fields["initial"]).split("::")[0]
+        machine = Machine("rust", path, item.start_point.row + 1, state, status_field="", status_type=state)
+        machine.status_kind = "enum"
+        machine.table = _text(item.child_by_field_name("name"))
+        machine.def_type = _text(value.child_by_field_name("name")).split("::")[-1] if value is not None else None
+        machine.edges = _definition_edges(fields["edges"])
+        machine.initial = _token(fields["initial"])
+        machine.terminals = tuple(_token(n) for n in _elements(fields.get("terminals")))
+        machine.states = tuple(_token(n) for n in _elements(fields.get("states")))
+        found.append(machine)
+    return found
+
+
+def _definition_edges(value: Node | None) -> tuple[Edge, ...]:
+    """``&[Edge { from: A, event: E, to: B, .. }, ..]``: one edge per struct literal."""
+    edges = []
+    for element in _elements(value):
+        fields = _initialisers(element) if element.type == "struct_expression" else {}
+        if {"from", "event", "to"} <= set(fields):
+            edges.append((_token(fields["from"]), _token(fields["event"]), _token(fields["to"])))
+    return tuple(edges)
 
 
 def loose_sites(path: str, source: str, *, strict: bool = True) -> list[Use]:
@@ -212,6 +301,7 @@ def _machine(
     if status is not None:
         machine.status_field = status[0]
         machine.status_type, machine.status_kind, _ = _kind(status[1], enums)
+        machine.guessed_enum = machine.status_kind == "enum" and machine.status_type not in enums
         _declare(machine, consts, function.get(name), enums)
     return machine
 
@@ -222,7 +312,9 @@ def _declare(
     function: tuple[str, str] | None,
     enums: dict[str, tuple[str, ...]],
 ) -> None:
-    table = next((n for n in ("TRANSITIONS", "LEGAL", "EDGES") if n in consts), None)
+    table: str | None = next((n for n in ("TRANSITIONS", "LEGAL", "EDGES") if n in consts), None)
+    if table is None:
+        table = _edge_table_of(consts, enums, machine.status_type)
     if table is not None:
         machine.table, machine.edges = table, _edges(consts[table])
     if function is not None:
@@ -232,6 +324,19 @@ def _declare(
     terminal = consts.get("TERMINALS", consts.get("TERMINAL"))
     machine.terminals = tuple(_token(n) for n in _elements(terminal)) if terminal is not None else ()
     machine.states = enums.get(machine.status_type or "", ())
+
+
+def _edge_table_of(consts: dict[str, Node | None], enums: dict[str, tuple[str, ...]], state: str | None) -> str | None:
+    """A ``const`` or ``static`` under any name whose value is an array of ``(from, to)`` or
+    ``(from, event, to)`` tuples over the enum ``state``: ``Enum::Variant`` paths in the source slot."""
+    for name, value in consts.items():
+        elements = _elements(value)
+        if not elements or not all(e.type == "tuple_expression" and len(e.named_children) in {2, 3} for e in elements):
+            continue
+        sources = {_text(e.named_children[0]).partition("::")[0] for e in elements}
+        if sources == {state} and state in enums and _edges(value):
+            return name
+    return None
 
 
 def _elements(node: Node | None) -> list[Node]:
@@ -425,6 +530,12 @@ def _node_uses(node: Node) -> list[tuple[Node, str, str, str]]:
         return [(node, hit[0], hit[1], "assign")] if hit else []
     if node.type == "struct_expression":
         return _struct_update(node)
+    if node.type == "reference_expression" and any(c.type == "mutable_specifier" for c in node.children):
+        caller = node.parent.parent if node.parent is not None and node.parent.type == "arguments" else None
+        if caller is not None and _text(caller.child_by_field_name("function")).endswith("replace"):
+            return []  # the call itself is the use
+        hit = _field_of(node.child_by_field_name("value"))
+        return [(node, hit[0], hit[1], "assign")] if hit else []
     return []
 
 
