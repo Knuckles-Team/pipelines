@@ -7,6 +7,8 @@ Pure functions over ``Machine``; no file reads. Rules 1 to 5 are in plan.md
 
 from __future__ import annotations
 
+import re
+
 from pipelines_hooks.code.state_machine_algebra import algebra_findings
 from pipelines_hooks.code.state_machine_model import Finding, Machine, Site
 
@@ -54,19 +56,30 @@ def _multi_assign(machine: Machine) -> list[Finding]:
 
 
 def _string_status(machine: Machine) -> list[Finding]:
-    """Rule 2: a string-typed status field, or a string-literal compare of it."""
-    found = [_finding(machine, "SM-STRING-STATUS", detail=f"{machine.status_field}: {machine.status_type}")]
+    """Rule 2: a string-typed status field, or a string-literal compare of it.
+
+    On a value (a status set only at construction) the finding is the softer
+    ``SM-STRING-VALUE``: the type is not a lifecycle, but an enum still belongs there.
+    """
+    if machine.is_value and _integer(machine.status_type):
+        return []  # a protocol code (an HTTP status) on a value: no enum belongs there
+    code = "SM-STRING-VALUE" if machine.is_value else "SM-STRING-STATUS"
+    found = [_finding(machine, code, detail=f"{machine.status_field}: {machine.status_type}")]
     found = found if machine.status_kind == "string" else []
     found += [
-        _finding(machine, "SM-STRING-STATUS", site.line, f"string compare in {site.function}", site.file)
+        _finding(machine, code, site.line, f"string compare in {site.function}", site.file)
         for site in machine.string_compares
     ]
     return found
 
 
+def _integer(type_text: str | None) -> bool:
+    return bool(type_text) and re.fullmatch(r"int|[iu](8|16|32|64|128|size)", type_text or "") is not None
+
+
 def _lifecycle_flags(machine: Machine) -> list[Finding]:
     """Rule 3: two or more lifecycle flags or timestamps on one type."""
-    if len(machine.flags) < 2:
+    if len(machine.flags) < 2 or machine.frozen or machine.is_value:
         return []
     return [_finding(machine, "SM-LIFECYCLE-FLAGS", detail=", ".join(machine.flags))]
 
@@ -86,6 +99,6 @@ def _untested(machine: Machine) -> list[Finding]:
 
 def _no_declaration(machine: Machine) -> list[Finding]:
     """Rule 5: an enum-typed status field with no table and no function."""
-    if machine.status_kind != "enum" or machine.declared:
+    if machine.status_kind != "enum" or machine.declared or machine.is_value:
         return []
     return [_finding(machine, "SM-NO-DECLARATION", detail=f"{machine.status_field}: {machine.status_type}")]

@@ -260,6 +260,11 @@
 - [ ] T237 PIPE-GATES-R086.9 Algebraic checks over a declared transition table. Size: S, 1 PR, 3 hours.
 - [ ] T238 PIPE-GATES-R086.10 Algebraic checks: fixtures and hot-path proof. Size: S, 1 PR, 2 hours.
 - [ ] T274 PIPE-GATES-R086.11 Type-resolved attribution and the `<unresolved>` finding. Size: M, 1 PR, 4 hours.
+- [ ] T275 PIPE-GATES-R086.12 A declared machine is recognised by its structure, under any name. Size: M, 1 PR, 4 hours.
+- [ ] T276 PIPE-GATES-R086.13 A type whose status is set only at construction is a value, not a lifecycle. Size: S, 1 PR, 2 hours.
+- [ ] T277 PIPE-GATES-R086.14 A `*State` or `*Status` suffix does not make a state type. Size: S, 1 PR, 2 hours.
+- [ ] T278 PIPE-GATES-R086.15 Generated code is not read. Size: S, 1 PR, 1 hour.
+- [ ] T279 PIPE-GATES-R086.16 A refusal test may name the reason type and loop a helper over the table. Size: S, 1 PR, 1 hour.
 - [ ] T242 PIPE-GATES-R091 A Rust dependency is never resolved from outside crates.io.
 - [ ] T243 PIPE-GATES-R092 Rust formatting is checked only for the files a change touches.
 - [ ] T244 PIPE-GATES-R093 A Rust dependency advisory is accepted only with a dated, justified entry.
