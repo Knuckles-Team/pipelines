@@ -97,6 +97,12 @@ allow_files = ["pipelines_hooks/core/settings.py"]
 [tool.pipelines_hooks.ste]
 exempt = ["specs/*", "specs/**/*"]
 
+[tool.pipelines_hooks.state_machine]
+paths = ["pipelines_hooks", "scripts"]
+exclude = ["**/fixtures/**"]
+languages = ["python"]
+mode = "staged"
+
 [[tool.mypy.overrides]]
 module = ["rdflib", "rdflib.*"]
 ignore_missing_imports = true

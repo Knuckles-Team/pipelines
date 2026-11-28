@@ -2,9 +2,10 @@
 
 Built on a tree-sitter syntax tree. Every ``struct`` with a status field or a
 lifecycle flag becomes one ``Machine``; ``enum`` items give the states. A
-``self`` receiver resolves to the ``impl`` type; any other receiver counts
-against each type of the file that declares the field, and ``loose_sites``
-hands those to the hook for the rest of the crate. ``#[cfg(test)]`` modules,
+``self`` receiver resolves to the ``impl`` type; any other receiver resolves
+through parameter and ``let`` types and counts only against that type.
+``loose_sites`` hands those to the hook for the types of other files; a
+receiver that does not resolve is reported once as ``<unresolved>``. ``#[cfg(test)]`` modules,
 ``tests/`` and ``target/`` are skipped. A parse error cannot run (exit 2).
 """
 
@@ -121,7 +122,7 @@ def read_rust(path: str, source: str, *, strict: bool = True) -> list[Machine]:
     machines = [m for i in items if i.type == "struct_item" for m in [_machine(path, i, enums, consts, function)] if m]
     for use in _uses(path, items, frozenset(re.findall(r"\w+", source))):
         for machine in machines:
-            if use.field == machine.status_field and use.receiver in {None, machine.type_name}:
+            if use.field == machine.status_field and use.receiver == machine.type_name:
                 attach(machine, use)
     return machines
 
@@ -163,13 +164,13 @@ def enum_declarations(path: str, source: str, *, strict: bool = True) -> dict[st
 
 
 def loose_sites(path: str, source: str, *, strict: bool = True) -> list[Use]:
-    """The uses whose receiver is not ``self``: the hook matches them crate-wide."""
+    """The uses whose receiver is not ``self``: the hook matches them by resolved type, crate-wide."""
     if _skipped(path):
         return []
     data = source.encode("utf-8")
     tree = parse(path, data, strict=strict)
     items = list(_items(tree.root_node))
-    return [use for use in _uses(path, items, frozenset(re.findall(r"\w+", source))) if use.receiver is None]
+    return [use for use in _uses(path, items, frozenset(re.findall(r"\w+", source))) if not use.local]
 
 
 def _kind(type_text: str, enums: dict[str, tuple[str, ...]]) -> tuple[str, str, bool]:
@@ -278,15 +279,117 @@ def _impl_type(node: Node) -> str:
     return _text(parent.child_by_field_name("type")).split("<")[0] if parent is not None else ""
 
 
+_WRAPPERS = frozenset({"Option", "Box", "Arc", "Rc", "Cell", "RefCell", "Mutex", "RwLock", "MutexGuard"})
+_LEADING = re.compile(r"^(?:&\s*(?:'\w+\s+)?|mut\s+|dyn\s+|\*\s*|\(\s*)+")
+
+
+def _bare_type(text: str, owner: str) -> str | None:
+    """The one type a Rust type text names: references, ``Option``, ``Box`` and ``Arc`` peeled."""
+    text = text.strip()
+    while True:
+        text = _LEADING.sub("", text).rstrip(") ")
+        head, _, rest = text.partition("<")
+        if head.split("::")[-1] in _WRAPPERS and rest.endswith(">"):
+            text = rest[:-1]
+            continue
+        break
+    name = head.split("::")[-1].strip()
+    if name == "Self":
+        return owner or None
+    return name if name[:1].isalpha() else None
+
+
+def _struct_fields(items: list[Node]) -> dict[str, dict[str, str]]:
+    found: dict[str, dict[str, str]] = {}
+    for item in (i for i in items if i.type == "struct_item"):
+        body = item.child_by_field_name("body")
+        name = _text(item.child_by_field_name("name"))
+        found[name] = {
+            _text(f.child_by_field_name("name")): kind
+            for f in (body.named_children if body is not None else [])
+            if f.type == "field_declaration"
+            for kind in [_bare_type(_text(f.child_by_field_name("type")), name)]
+            if kind
+        }
+    return found
+
+
+def _value_type(node: Node | None, scope: dict[str, str | None], owner: str) -> str | None:
+    """The type of a ``let`` initialiser: a struct literal, ``Type::new(..)`` or a copy of a typed local."""
+    while node is not None and node.type in {"try_expression", "await_expression", "reference_expression"}:
+        node = node.named_children[0] if node.type != "reference_expression" else node.child_by_field_name("value")
+    if node is None:
+        return None
+    if node.type == "struct_expression":
+        return _bare_type(_text(node.child_by_field_name("name")), owner)
+    if node.type == "identifier":
+        return scope.get(_text(node))
+    if node.type == "call_expression":
+        parts = _text(node.child_by_field_name("function")).split("::")
+        return _bare_type(parts[-2], owner) if len(parts) >= 2 and parts[-2][:1].isupper() else None
+    return None
+
+
+def _scope(item: Node, owner: str) -> dict[str, str | None]:
+    """Local name -> type from parameters and ``let``; a name bound twice to different types maps to ``None``."""
+    scope: dict[str, str | None] = {}
+
+    def bind(name: str, kind: str | None) -> None:
+        name = name.removeprefix("mut ").strip()
+        if name.isidentifier():
+            scope[name] = kind if scope.get(name, kind) == kind else None
+
+    params = item.child_by_field_name("parameters")
+    for param in params.named_children if params is not None else []:
+        if param.type == "parameter":
+            bind(
+                _text(param.child_by_field_name("pattern")), _bare_type(_text(param.child_by_field_name("type")), owner)
+            )
+    lets: list[Node] = []
+    stack = [item]
+    while stack:
+        node = stack.pop()
+        stack.extend(node.named_children)
+        if node.type == "let_declaration":
+            lets.append(node)
+    for let in sorted(lets, key=lambda n: n.start_byte):
+        declared = let.child_by_field_name("type")
+        kind = (
+            _bare_type(_text(declared), owner)
+            if declared is not None
+            else _value_type(let.child_by_field_name("value"), scope, owner)
+        )
+        bind(_text(let.child_by_field_name("pattern")), kind)
+    return scope
+
+
+def _receiver_type(
+    text: str, scope: dict[str, str | None], fields: dict[str, dict[str, str]], owner: str
+) -> str | None:
+    """Resolve ``job``, ``self.job`` or ``self.inner.job`` to a type; anything else is unresolved."""
+    parts = _LEADING.sub("", text.strip()).rstrip(") ").split(".")
+    if not all(part.isidentifier() for part in parts):
+        return None
+    kind = (owner or None) if parts[0] == "self" else scope.get(parts[0])
+    for part in parts[1:]:
+        kind = fields.get(kind or "", {}).get(part)
+    return kind
+
+
 def _uses(path: str, items: list[Node], names: frozenset[str]) -> list[Use]:
     uses: list[Use] = []
+    fields = _struct_fields(items)
     for item in (i for i in items if i.type == "function_item"):
         owner = _impl_type(item)
         name = _text(item.child_by_field_name("name"))
         label = f"{owner}.{name}" if owner else name
+        scope = _scope(item, owner)
         for node, field, receiver, kind in _walk_uses(item):
-            cls = owner if receiver == "self" else (receiver if receiver[:1].isupper() else None)
-            uses.append(Use(field, kind, Site(path, node.start_point.row + 1, label), cls, names))
+            local = receiver == "self" or receiver[:1].isupper()
+            resolved = (
+                owner if receiver == "self" else receiver if local else _receiver_type(receiver, scope, fields, owner)
+            )
+            uses.append(Use(field, kind, Site(path, node.start_point.row + 1, label), resolved, names, local=local))
     return uses
 
 
