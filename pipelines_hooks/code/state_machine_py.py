@@ -12,8 +12,19 @@ from __future__ import annotations
 
 import ast
 import re
+from collections.abc import Callable
 from pathlib import PurePosixPath
+from typing import NamedTuple
 
+from pipelines_hooks.code.state_machine_types import (
+    ClassInfo,
+    PackageIndex,
+    Signature,
+    annotation_element,
+    annotation_type,
+    functions,
+    name as _name,
+)
 from pipelines_hooks.code.state_machine_model import (
     LIFECYCLE_TIMESTAMPS,
     STATUS_FIELDS,
@@ -37,8 +48,12 @@ def is_test_file(path: str) -> bool:
     return "tests" in parts[:-1] or name.startswith("test_") or name == "conftest.py"
 
 
-def read_python(path: str, tree: ast.Module) -> list[Machine]:
-    """One ``Machine`` per class with a status field or lifecycle flag."""
+def read_python(path: str, tree: ast.Module, index: PackageIndex | None = None) -> list[Machine]:
+    """One ``Machine`` per class with a status field or lifecycle flag.
+
+    ``index`` is the package-wide class index (``PackageIndex``) of the run; without it the
+    reader knows only the classes of this one module.
+    """
     if is_test_file(path):
         return []
     enums = _enum_members(tree)
@@ -51,9 +66,9 @@ def read_python(path: str, tree: ast.Module) -> list[Machine]:
         for machine in [_machine(path, node, context, (tree.body, module_tables), _constants(tree.body))]
         if machine is not None
     ]
-    for use in _uses(path, tree):
+    for use in _uses(path, tree, index):
         for machine in machines:
-            if use.field == machine.status_field and use.receiver == machine.type_name:
+            if use.kind != "flag" and use.field == machine.status_field and use.receiver == machine.type_name:
                 attach(machine, use)
     return machines
 
@@ -93,9 +108,9 @@ def _declare(machine: Machine, body: list[ast.stmt], states: tuple[str, ...]) ->
     machine.initial, machine.terminals = _constants(body)
 
 
-def loose_sites(path: str, tree: ast.Module) -> list[Use]:
-    """The uses whose receiver is not ``self``: the hook matches them by resolved type, package-wide."""
-    return [] if is_test_file(path) else [use for use in _uses(path, tree) if not use.local]
+def loose_sites(path: str, tree: ast.Module, index: PackageIndex | None = None) -> list[Use]:
+    """The uses whose receiver is not ``self``, and every flag use: the hook matches them by resolved type, package-wide."""
+    return [] if is_test_file(path) else [use for use in _uses(path, tree, index) if not use.local]
 
 
 def _enum_members(tree: ast.Module) -> dict[str, tuple[str, ...]]:
@@ -158,18 +173,6 @@ def _imported(tree: ast.Module) -> frozenset[str]:
     return frozenset(
         alias.asname or alias.name for node in tree.body if isinstance(node, ast.ImportFrom) for alias in node.names
     )
-
-
-def _name(node: ast.AST | None) -> str:
-    if isinstance(node, ast.Name):
-        return node.id
-    if isinstance(node, ast.Attribute):
-        return node.attr
-    if isinstance(node, ast.Subscript):
-        return _name(node.value)
-    if isinstance(node, ast.Constant) and isinstance(node.value, str):
-        return node.value
-    return ast.unparse(node) if node is not None else ""
 
 
 def _strip_optional(node: ast.expr) -> tuple[ast.expr, bool]:
@@ -389,25 +392,92 @@ def _transition(body: list[ast.stmt], owner: str | None, table: str | None = Non
     return None
 
 
-def _uses(path: str, tree: ast.Module) -> list[Use]:
+class _Hit(NamedTuple):
+    """One status or flag use found at a node: the field, the receiver expression, the kind and the stored value."""
+
+    field: str
+    receiver: ast.expr | None
+    kind: str
+    value: ast.expr | None = None
+    replaces: bool = False
+
+
+def _flag_name(field: str) -> bool:
+    """A name that may be a lifecycle flag: ``is_*``, ``*_requested``, ``terminal`` or a lifecycle timestamp."""
+    return (
+        field.startswith("is_") or field.endswith("_requested") or field == "terminal" or field in LIFECYCLE_TIMESTAMPS
+    )
+
+
+def _field_kind(field: str) -> str | None:
+    """``assign`` for a status field, ``flag`` for a lifecycle flag name, ``None`` for any other field."""
+    if field in STATUS_FIELDS:
+        return "assign"
+    return "flag" if _flag_name(field) else None
+
+
+def _uses(path: str, tree: ast.Module, index: PackageIndex | None = None) -> list[Use]:
     names = frozenset(_name(node) for node in ast.walk(tree) if isinstance(node, (ast.Name, ast.Attribute)))
-    resolver = _Resolver(tree)
+    resolver = _Resolver(path, index or PackageIndex({path: tree}))
     uses: list[Use] = []
-    for owner, function in _functions(tree):
-        scope = resolver.scope(owner, function)
-        for node in ast.walk(function):
-            for field, receiver, kind in _status_uses(node):
-                is_self = isinstance(receiver, ast.Name) and receiver.id in {"self", "cls"} and owner is not None
-                resolved = owner if is_self else resolver.type_of(receiver, owner, scope)
+    for owner, function in functions(tree):
+        scoped = resolver.scoped(owner, function)
+        guards = _guards(resolver, owner, scoped)
+        for node, scope in scoped:
+            for hit in _status_uses(node):
+                is_self = (
+                    isinstance(hit.receiver, ast.Name) and hit.receiver.id in {"self", "cls"} and owner is not None
+                )
+                resolved = resolver.own(owner) if is_self else resolver.type_of(hit.receiver, owner, scope)
+                arms = resolved.split("|") if resolved else [None]
+                recomputed = hit.replaces and _recomputed(hit.value, function)
+                guarded = None in guards or any(arm in guards for arm in arms)
                 site = Site(
                     path,
                     getattr(node, "lineno", function.lineno),
                     f"{owner}.{function.name}" if owner else function.name,
-                    _through(node) if kind == "assign" else "",
+                    _through(node) if hit.kind == "assign" else "",
+                    "recompute" if recomputed and not guarded else "",
                 )
-                uses.append(Use(field, kind, site, resolved, names, local=is_self))
-        uses += _rebuilds(path, owner, function, resolver, scope, names)
+                local = is_self and hit.kind == "assign"
+                uses += [Use(hit.field, hit.kind, site, arm, names, local=local) for arm in arms]
+        uses += _rebuilds(path, owner, function, resolver, scoped, names)
     return uses
+
+
+def _guards(
+    resolver: _Resolver, owner: str | None, scoped: list[tuple[ast.AST, dict[str, str | None]]]
+) -> set[str | None]:
+    """The types whose status a function compares or matches on; ``None`` stands for a receiver that does not resolve."""
+    found: set[str | None] = set()
+    for node, scope in scoped:
+        sides = [node.left, *node.comparators] if isinstance(node, ast.Compare) else []
+        sides += [node.subject] if isinstance(node, ast.Match) else []
+        for side in sides:
+            if isinstance(side, ast.Attribute) and side.attr in STATUS_FIELDS:
+                resolved = resolver.type_of(side.value, owner, scope)
+                found.update(resolved.split("|") if resolved else [None])
+    return found
+
+
+def _recomputed(value: ast.expr | None, function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """True when a stored value is computed (PIPE-GATES-R086.28): a call, or a local bound to a call in ``function``."""
+    while isinstance(value, ast.Await):
+        value = value.value
+    if isinstance(value, ast.Call):
+        return True
+    if not isinstance(value, ast.Name):
+        return False
+    for node in ast.walk(function):
+        bound = (
+            node.targets if isinstance(node, ast.Assign) else [node.target] if isinstance(node, ast.AnnAssign) else []
+        )
+        stored = node.value if isinstance(node, (ast.Assign, ast.AnnAssign)) else None
+        while isinstance(stored, ast.Await):
+            stored = stored.value
+        if isinstance(stored, ast.Call) and any(isinstance(t, ast.Name) and t.id == value.id for t in bound):
+            return True
+    return False
 
 
 def _rebuilds(
@@ -415,7 +485,7 @@ def _rebuilds(
     owner: str | None,
     function: ast.FunctionDef | ast.AsyncFunctionDef,
     resolver: _Resolver,
-    scope: dict[str, str | None],
+    scoped: list[tuple[ast.AST, dict[str, str | None]]],
     names: frozenset[str],
 ) -> list[Use]:
     """A function that guards on a status and builds ``T(..., status=v)`` moves ``T`` by replacement.
@@ -426,13 +496,13 @@ def _rebuilds(
     """
     read_types = {
         resolver.type_of(side.value, owner, scope)
-        for node in ast.walk(function)
+        for node, scope in scoped
         if isinstance(node, ast.Compare)
         for side in (node.left, *node.comparators)
         if isinstance(side, ast.Attribute) and side.attr in STATUS_FIELDS
     }
     found: list[Use] = []
-    for node in ast.walk(function):
+    for node, _ in scoped:
         if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id[:1].isupper()):
             continue
         if node.func.id not in read_types:
@@ -454,118 +524,70 @@ def _through(node: ast.AST) -> str:
     return _name(value.func) if isinstance(value, ast.Call) else ""
 
 
-def _functions(tree: ast.Module) -> list[tuple[str | None, ast.FunctionDef | ast.AsyncFunctionDef]]:
-    found: list[tuple[str | None, ast.FunctionDef | ast.AsyncFunctionDef]] = []
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            found.append((None, node))
-        elif isinstance(node, ast.ClassDef):
-            found += [(node.name, s) for s in node.body if isinstance(s, (ast.FunctionDef, ast.AsyncFunctionDef))]
-    return found
-
-
-MAPPINGS = frozenset({"dict", "Dict", "Mapping", "MutableMapping", "defaultdict", "OrderedDict"})
-CONTAINERS = MAPPINGS | frozenset({"list", "List", "Sequence", "set", "Set", "frozenset", "tuple", "Tuple"})
+#: A call that returns its first argument's elements (``sorted(xs)`` has the element type of ``xs``).
+PASSTHROUGH = frozenset({"sorted", "list", "tuple", "set", "frozenset", "reversed"})
 ELEMENT_GETTERS = frozenset({"get", "pop", "setdefault"})
-OPAQUE_TYPES = frozenset({"Any", "object", ""})
 COPIERS = frozenset({"model_copy", "copy", "deepcopy", "replace", "clone"})
+#: ``asyncio.run(coro)`` and its kin return what the coroutine returns.
+AWAITERS = frozenset({"run", "run_until_complete", "wait_for"})
+COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
 
 
-def _annotation_type(annotation: ast.expr | None, owner: str | None) -> str | None:
-    """The single type an annotation names, or ``None`` for a union, container or ``Any``."""
-    if annotation is None:
-        return None
-    inner, _ = _strip_optional(annotation)
-    if isinstance(inner, ast.Constant) and isinstance(inner.value, str):
-        try:
-            return _annotation_type(ast.parse(inner.value, mode="eval").body, owner)
-        except SyntaxError:
-            return None
-    if isinstance(inner, ast.Subscript) and _name(inner.value) == "Annotated":
-        first = inner.slice.elts[0] if isinstance(inner.slice, ast.Tuple) and inner.slice.elts else inner.slice
-        return _annotation_type(first, owner)
-    if not isinstance(inner, (ast.Name, ast.Attribute)):
-        return None
-    name = _name(inner)
-    if name == "Self":
-        return owner
-    return None if name in OPAQUE_TYPES else name
-
-
-def _annotation_element(annotation: ast.expr | None, owner: str | None) -> str | None:
-    """The element type of ``dict[K, V]`` (``V``) or ``list[V]``, ``set[V]``, ``Sequence[V]`` (``V``)."""
-    if not isinstance(annotation, ast.Subscript):
-        return None
-    container = _name(annotation.value)
-    if container not in CONTAINERS:
-        return None
-    items = annotation.slice.elts if isinstance(annotation.slice, ast.Tuple) else [annotation.slice]
-    return _annotation_type(items[-1] if container in MAPPINGS else items[0], owner) if items else None
+def _display(node: ast.expr) -> bool:
+    return isinstance(node, (ast.Tuple, ast.List, ast.Set))
 
 
 class _Resolver:
-    """Resolve the type of a receiver from annotations, constructors, copies and return types."""
+    """Resolve the type of a receiver from annotations, constructors, copies and return types.
 
-    def __init__(self, tree: ast.Module) -> None:
-        self.returns: dict[str, str] = {}
-        self.fields: dict[str, dict[str, str]] = {}
-        #: Class -> field -> the element type of a ``dict[K, V]`` or ``list[V]`` field.
-        self.elements: dict[str, dict[str, str]] = {}
-        for owner, function in _functions(tree):
-            found = _annotation_type(function.returns, owner)
-            if found:
-                self.returns[f"{owner}.{function.name}" if owner else function.name] = found
-        for node in tree.body:
-            if isinstance(node, ast.ClassDef):
-                self.fields[node.name] = self._class_fields(node)
-                self.elements[node.name] = self._class_elements(node)
+    A type is its bare class name. ``home`` records which module of the package index a
+    name stands for in this run, so a field chain or a return type can cross files
+    (PIPE-GATES-R086.21); two modules that define the same name in one function make that
+    name ambiguous, and an ambiguous name resolves to nothing.
+    """
 
-    @staticmethod
-    def _class_elements(node: ast.ClassDef) -> dict[str, str]:
-        """Field name -> element type for ``x: dict[K, V]`` / ``x: list[V]`` (class level or ``self.x: ...``)."""
-        found: dict[str, str] = {}
-        for stmt in ast.walk(node):
-            if not (isinstance(stmt, ast.AnnAssign) and isinstance(stmt.annotation, ast.Subscript)):
-                continue
-            target = stmt.target
-            key = target.id if isinstance(target, ast.Name) and stmt in node.body else None
-            if isinstance(target, ast.Attribute) and _name(target.value) == "self":
-                key = target.attr
-            kind = _annotation_element(stmt.annotation, node.name)
-            if key and kind:
-                found.setdefault(key, kind)
-        return found
+    def __init__(self, path: str, index: PackageIndex) -> None:
+        self.path, self.index = path, index
+        self.home: dict[str, str] = {}
 
-    def _element_of(self, node: ast.expr, owner: str | None, scope: dict[str, str | None]) -> str | None:
-        """The element type of a typed container: a ``self.records`` field or a local or parameter."""
-        if isinstance(node, ast.Name):
-            return scope.get(f"{node.id}[]")
-        if isinstance(node, ast.Attribute):
-            base = self.type_of(node.value, owner, scope)
-            return self.elements.get(base or "", {}).get(node.attr)
-        return None
+    def adopt(self, kind: str | None, context: str) -> str | None:
+        """Canonical form of a type name read in module ``context``; a union is adopted arm by arm."""
+        if not kind:
+            return None
+        if "|" in kind:
+            arms = dict.fromkeys(arm for part in kind.split("|") if (arm := self.adopt(part, context)))
+            return "|".join(arms) or None
+        hit = self.index.resolve(context, kind)
+        if hit is None or hit[1] not in hit[0].classes:
+            return kind
+        return hit[1] if self.home.setdefault(hit[1], hit[0].path) == hit[0].path else None
 
-    @staticmethod
-    def _class_fields(node: ast.ClassDef) -> dict[str, str]:
-        """Field name -> type from class-level and ``self.x: T`` annotations."""
-        found: dict[str, str] = {}
-        for stmt in ast.walk(node):
-            if not isinstance(stmt, ast.AnnAssign):
-                continue
-            target = stmt.target
-            if isinstance(target, ast.Name) and stmt in node.body:
-                key = target.id
-            elif isinstance(target, ast.Attribute) and _name(target.value) == "self":
-                key = target.attr
-            else:
-                continue
-            kind = _annotation_type(stmt.annotation, node.name)
-            if kind:
-                found.setdefault(key, kind)
-        return found
+    def own(self, owner: str | None) -> str | None:
+        """The class a method belongs to: it is this module's, whatever another module calls the same."""
+        if owner:
+            self.home[owner] = self.path
+        return owner
+
+    def _field_type(self, base: str | None, attribute: str) -> str | None:
+        """The type of ``attribute`` on ``base``; on a union, the types the arms that have it give (PIPE-GATES-R086.23)."""
+        found: dict[str, None] = {}
+        for arm in (base or "").split("|"):
+            info = self._class(arm)
+            if info is not None and (kind := self.adopt(info.fields.get(attribute), info.module)):
+                found.update(dict.fromkeys(kind.split("|")))
+        return "|".join(found) or None
+
+    def _class(self, kind: str | None) -> ClassInfo | None:
+        if not kind or "|" in kind:
+            return None
+        module = self.home.get(kind)
+        if module is None:
+            hit = self.index.resolve(self.path, kind)
+            module = hit[0].path if hit and hit[1] in hit[0].classes else None
+        return self.index.modules[module].classes.get(kind) if module else None
 
     def scope(self, owner: str | None, function: ast.FunctionDef | ast.AsyncFunctionDef) -> dict[str, str | None]:
-        """Local name -> type; a name bound to two types, or by a loop or ``with``, maps to ``None``."""
+        """Local name -> type; ``name[]`` -> element type. A name bound to two types maps to ``None``."""
         scope: dict[str, str | None] = {}
 
         def bind(name: str, kind: str | None) -> None:
@@ -575,25 +597,23 @@ class _Resolver:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 args = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
                 for arg in args:
-                    bind(arg.arg, _annotation_type(arg.annotation, owner))
-                    bind(f"{arg.arg}[]", _annotation_element(arg.annotation, owner))
+                    bind(arg.arg, self.adopt(annotation_type(arg.annotation, owner), self.path))
+                    bind(f"{arg.arg}[]", self.adopt(annotation_element(arg.annotation, owner), self.path))
         for node in sorted(
             (n for n in ast.walk(function) if hasattr(n, "lineno")),
-            key=lambda n: (getattr(n, "lineno", 0), getattr(n, "col_offset", 0)),
+            key=_position,
         ):
             if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-                kind = _annotation_type(node.annotation, owner)
+                kind = self.adopt(annotation_type(node.annotation, owner), self.path)
                 bind(node.target.id, kind or (self.type_of(node.value, owner, scope) if node.value else None))
-                bind(f"{node.target.id}[]", _annotation_element(node.annotation, owner))
+                element = self.adopt(annotation_element(node.annotation, owner), self.path)
+                bind(
+                    f"{node.target.id}[]",
+                    element or (self._element_of(node.value, owner, scope) if node.value else None),
+                )
             elif isinstance(node, ast.Assign):
-                kind = self.type_of(node.value, owner, scope)
-                for target in node.targets:
-                    if isinstance(target, ast.Name):
-                        bind(target.id, kind)
-                    elif isinstance(target, (ast.Tuple, ast.List)):
-                        for name in _bound_names(target):
-                            bind(name, None)
-            elif isinstance(node, (ast.For, ast.AsyncFor, ast.comprehension)):
+                self._assign(node, owner, scope, bind)
+            elif isinstance(node, (ast.For, ast.AsyncFor)):
                 element = self._iterated(node.iter, owner, scope)
                 direct = isinstance(node.target, ast.Name)
                 for name in _bound_names(node.target):
@@ -606,6 +626,76 @@ class _Resolver:
                     bind(name, None)
         return scope
 
+    def scoped(
+        self, owner: str | None, function: ast.FunctionDef | ast.AsyncFunctionDef
+    ) -> list[tuple[ast.AST, dict[str, str | None]]]:
+        """Every node of ``function`` with the scope that applies to it.
+
+        A comprehension clause binds its variable inside that comprehension only, so two
+        comprehensions that reuse a name for different types do not clash (PIPE-GATES-R086.20).
+        """
+        found: list[tuple[ast.AST, dict[str, str | None]]] = []
+        stack: list[tuple[ast.AST, dict[str, str | None]]] = [(function, self.scope(owner, function))]
+        while stack:
+            node, view = stack.pop()
+            found.append((node, view))
+            if isinstance(node, COMPREHENSIONS):
+                view = self._comprehension_view(node, owner, view)
+            stack.extend((child, view) for child in reversed(list(ast.iter_child_nodes(node))))
+        return found
+
+    def _comprehension_view(
+        self,
+        node: ast.ListComp | ast.SetComp | ast.DictComp | ast.GeneratorExp,
+        owner: str | None,
+        view: dict[str, str | None],
+    ) -> dict[str, str | None]:
+        inner = dict(view)
+        for clause in node.generators:
+            element = self._iterated(clause.iter, owner, inner)
+            names = _bound_names(clause.target)
+            for name in names:
+                inner[name] = element if isinstance(clause.target, ast.Name) or name == names[-1] else None
+                inner[f"{name}[]"] = None
+        return inner
+
+    def _assign(
+        self, node: ast.Assign, owner: str | None, scope: dict[str, str | None], bind: Callable[..., None]
+    ) -> None:
+        kind = self.type_of(node.value, owner, scope)
+        element = self._element_of(node.value, owner, scope)
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                bind(target.id, kind)
+                if element:
+                    bind(f"{target.id}[]", element)
+            elif isinstance(target, (ast.Tuple, ast.List)):
+                items = self._unpacked(node.value, len(target.elts), owner, scope)
+                for position, item in enumerate(target.elts):
+                    if isinstance(item, ast.Name):
+                        bind(item.id, items[position] if items else None)
+                    else:
+                        for name in _bound_names(item):
+                            bind(name, None)
+
+    def _unpacked(
+        self, value: ast.expr, count: int, owner: str | None, scope: dict[str, str | None]
+    ) -> tuple[str | None, ...]:
+        """The element types of ``a, b = value``: a tuple display, or the callee's tuple return annotation (R086.22)."""
+        while isinstance(value, ast.Await):
+            value = value.value
+        if (
+            isinstance(value, ast.Tuple)
+            and len(value.elts) == count
+            and not any(isinstance(e, ast.Starred) for e in value.elts)
+        ):
+            return tuple(self.type_of(element, owner, scope) for element in value.elts)
+        if isinstance(value, ast.Call):
+            found = self._signature(value, owner, scope)
+            if found is not None and len(found[0].items) == count:
+                return tuple(self.adopt(kind, found[1]) for kind in found[0].items)
+        return ()
+
     def _iterated(self, node: ast.expr, owner: str | None, scope: dict[str, str | None]) -> str | None:
         """The element type a ``for`` over ``node`` yields: a typed container, its ``values()`` or ``items()``."""
         if (
@@ -616,15 +706,64 @@ class _Resolver:
             node = node.func.value
         return self._element_of(node, owner, scope)
 
+    def _element_of(self, node: ast.expr | None, owner: str | None, scope: dict[str, str | None]) -> str | None:
+        """The element type of a container expression: a typed name or field, a display, or a call that returns one."""
+        if isinstance(node, ast.Await):
+            return self._element_of(node.value, owner, scope)
+        if isinstance(node, ast.Name):
+            return scope.get(f"{node.id}[]")
+        if isinstance(node, ast.Attribute):
+            info = self._class(self.type_of(node.value, owner, scope))
+            return self.adopt(info.elements.get(node.attr), info.module) if info else None
+        if isinstance(node, (ast.Tuple, ast.List, ast.Set)):
+            return self._display_element(node, owner, scope)
+        if isinstance(node, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+            kind = self.type_of(node.elt, owner, self._comprehension_view(node, owner, scope))
+            return kind if kind and "|" not in kind else None
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name) and node.func.id in PASSTHROUGH and node.args:
+                return self._element_of(node.args[0], owner, scope)
+            found = self._signature(node, owner, scope)
+            return self.adopt(found[0].element, found[1]) if found else None
+        return None
+
+    def _display_element(
+        self, node: ast.Tuple | ast.List | ast.Set, owner: str | None, scope: dict[str, str | None]
+    ) -> str | None:
+        """The one type every element of a display has (PIPE-GATES-R086.24); a mixed or unresolved display has none."""
+        if not node.elts or any(isinstance(element, ast.Starred) for element in node.elts):
+            return None
+        kinds = {self.type_of(element, owner, scope) for element in node.elts}
+        found = kinds.pop() if len(kinds) == 1 else None
+        return found if found and "|" not in found else None
+
+    def _signature(
+        self, node: ast.Call, owner: str | None, scope: dict[str, str | None]
+    ) -> tuple[Signature, str] | None:
+        """The callee's signature and the module that defines it: a function, a method of a typed receiver, or ``mod.func``."""
+        func = node.func
+        if isinstance(func, ast.Name):
+            hit = self.index.resolve(self.path, func.id)
+            return (hit[0].functions[hit[1]], hit[0].path) if hit and hit[1] in hit[0].functions else None
+        if not isinstance(func, ast.Attribute):
+            return None
+        info = self._class(self.type_of(func.value, owner, scope))
+        if info is not None:
+            return (info.methods[func.attr], info.module) if func.attr in info.methods else None
+        if isinstance(func.value, ast.Name):
+            module = self.index.module_named(self.path, func.value.id)
+            if module is not None and func.attr in module.functions:
+                return module.functions[func.attr], module.path
+        return None
+
     def type_of(self, node: ast.expr | None, owner: str | None, scope: dict[str, str | None]) -> str | None:
         """The type ``node`` resolves to, or ``None``."""
         if isinstance(node, ast.Await):
             return self.type_of(node.value, owner, scope)
         if isinstance(node, ast.Name):
-            return owner if node.id in {"self", "cls"} and owner else scope.get(node.id)
+            return self.own(owner) if node.id in {"self", "cls"} and owner else scope.get(node.id)
         if isinstance(node, ast.Attribute):
-            base = self.type_of(node.value, owner, scope)
-            return self.fields.get(base or "", {}).get(node.attr)
+            return self._field_type(self.type_of(node.value, owner, scope), node.attr)
         if isinstance(node, ast.Subscript):
             return self._element_of(node.value, owner, scope)
         if isinstance(node, ast.Call):
@@ -636,9 +775,20 @@ class _Resolver:
         if isinstance(func, ast.Name):
             if func.id in COPIERS and node.args:
                 return self.type_of(node.args[0], owner, scope)
-            return self.returns.get(func.id) or (func.id if func.id[:1].isupper() else None)
+            found = self._signature(node, owner, scope)
+            if found is not None and found[0].returns:
+                return self.adopt(found[0].returns, found[1])
+            return self.adopt(func.id, self.path) if func.id[:1].isupper() else None
         if not isinstance(func, ast.Attribute):
             return None
+        if (
+            func.attr in AWAITERS
+            and node.args
+            and _name(func.value) == "asyncio"
+            or func.attr == "run_until_complete"
+            and node.args
+        ):
+            return self.type_of(node.args[0], owner, scope)
         if func.attr in COPIERS:
             return (
                 self.type_of(node.args[0], owner, scope)
@@ -649,25 +799,36 @@ class _Resolver:
             element = self._element_of(func.value, owner, scope)
             if element:
                 return element
-        base = self.type_of(func.value, owner, scope)
-        if base:
-            return self.returns.get(f"{base}.{func.attr}")
+        found = self._signature(node, owner, scope)
+        if found is not None and found[0].returns:
+            return self.adopt(found[0].returns, found[1])
+        if self.type_of(func.value, owner, scope):
+            return None
         head = func.value
         if isinstance(head, ast.Name) and head.id[:1].isupper():
-            return head.id
-        return func.attr if func.attr[:1].isupper() else None  # ``module.Type(..)`` builds a ``Type``
+            return self.adopt(head.id, self.path)
+        return (
+            self.adopt(func.attr, self.path) if func.attr[:1].isupper() else None
+        )  # ``module.Type(..)`` builds a ``Type``
+
+
+def _position(node: ast.AST) -> tuple[int, int]:
+    """Source position of a statement or expression."""
+    return getattr(node, "lineno", 0), getattr(node, "col_offset", 0)
 
 
 def _bound_names(target: ast.expr) -> list[str]:
     return [n.id for n in ast.walk(target) if isinstance(n, ast.Name)]
 
 
-def _status_uses(node: ast.AST) -> list[tuple[str, ast.expr | None, str]]:
-    """``(field, receiver expression, kind)`` for each status assignment or string compare at ``node``."""
+def _status_uses(node: ast.AST) -> list[_Hit]:
+    """Each status assignment, flag assignment or string compare at ``node``."""
     if isinstance(node, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
         return [
-            (t.attr, t.value, "assign") for t in targets if isinstance(t, ast.Attribute) and t.attr in STATUS_FIELDS
+            _Hit(t.attr, t.value, kind, node.value)
+            for t in targets
+            if isinstance(t, ast.Attribute) and (kind := _field_kind(t.attr))
         ]
     if isinstance(node, ast.Call):
         return _call_uses(node)
@@ -675,21 +836,32 @@ def _status_uses(node: ast.AST) -> list[tuple[str, ast.expr | None, str]]:
         sides = [node.left, *node.comparators]
         if any(isinstance(s, ast.Constant) and isinstance(s.value, str) for s in sides):
             return [
-                (s.attr, s.value, "compare") for s in sides if isinstance(s, ast.Attribute) and s.attr in STATUS_FIELDS
+                _Hit(s.attr, s.value, "compare")
+                for s in sides
+                if isinstance(s, ast.Attribute) and s.attr in STATUS_FIELDS
             ]
     return []
 
 
-def _call_uses(node: ast.Call) -> list[tuple[str, ast.expr | None, str]]:
+def _call_uses(node: ast.Call) -> list[_Hit]:
     """``setattr(x, 'status', v)``, ``replace(x, status=v)`` and ``x.model_copy(update={'status': v})``."""
     name = _name(node.func)
     receiver = node.args[0] if node.args else None
-    if name in {"setattr", "__setattr__"} and len(node.args) >= 2 and _name(node.args[1]) in STATUS_FIELDS:
-        return [(_name(node.args[1]), receiver, "assign")]
+    if name in {"setattr", "__setattr__"} and len(node.args) >= 2 and _field_kind(_name(node.args[1])):
+        field = _name(node.args[1])
+        return [_Hit(field, receiver, _field_kind(field) or "", node.args[2] if len(node.args) > 2 else None)]
     if name == "replace":
-        return [(kw.arg, receiver, "assign") for kw in node.keywords if kw.arg in STATUS_FIELDS]
+        return [
+            _Hit(kw.arg, receiver, kind, kw.value, True)
+            for kw in node.keywords
+            if kw.arg and (kind := _field_kind(kw.arg))
+        ]
     if name == "model_copy" and isinstance(node.func, ast.Attribute):
         update = next((kw.value for kw in node.keywords if kw.arg == "update"), None)
-        keys = update.keys if isinstance(update, ast.Dict) else []
-        return [(_name(key), node.func.value, "assign") for key in keys if _name(key) in STATUS_FIELDS]
+        pairs = zip(update.keys, update.values, strict=False) if isinstance(update, ast.Dict) else []
+        return [
+            _Hit(_name(key), node.func.value, kind, value, True)
+            for key, value in pairs
+            if key is not None and (kind := _field_kind(_name(key)))
+        ]
     return []

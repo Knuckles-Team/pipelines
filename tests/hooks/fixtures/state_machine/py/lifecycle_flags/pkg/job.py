@@ -31,3 +31,7 @@ class Job:
         if target is None:
             raise TransitionRefused(event)
         self.status = target
+        if target is JobStatus.RUNNING:
+            self.started_at = datetime.now()
+        else:
+            self.finished_at = datetime.now()

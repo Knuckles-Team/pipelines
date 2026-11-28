@@ -26,6 +26,7 @@ from pathlib import Path, PurePosixPath
 from pipelines_hooks.code import state_machine_py, state_machine_rs
 from pipelines_hooks.code.state_machine_model import UNRESOLVED_TYPE, Finding, Machine, Use, attach
 from pipelines_hooks.code.state_machine_rules import findings
+from pipelines_hooks.code.state_machine_types import PackageIndex
 from pipelines_hooks.code.state_machine_tests import bind_tests
 from pipelines_hooks.core.baseref import upstream_base
 from pipelines_hooks.core.config import load_config, string_tuple
@@ -125,7 +126,9 @@ def _enum_names(path: str, source: str) -> frozenset[str]:
         return frozenset()
 
 
-def _parse(path: str, source: str, *, strict: bool = True) -> tuple[list[Machine], list[Use]]:
+def _parse(
+    path: str, source: str, *, strict: bool = True, index: PackageIndex | None = None
+) -> tuple[list[Machine], list[Use]]:
     if path.endswith(".rs"):
         machines = state_machine_rs.read_rust(path, source, strict=strict)
         return machines, state_machine_rs.loose_sites(path, source, strict=strict)
@@ -133,7 +136,7 @@ def _parse(path: str, source: str, *, strict: bool = True) -> tuple[list[Machine
         tree = ast.parse(source, filename=path)
     except SyntaxError as exc:
         raise CannotRun(f"{path}: Python source does not parse: {exc.msg}") from exc
-    return state_machine_py.read_python(path, tree), state_machine_py.loose_sites(path, tree)
+    return state_machine_py.read_python(path, tree, index), state_machine_py.loose_sites(path, tree, index)
 
 
 @dataclass(frozen=True)
@@ -142,6 +145,18 @@ class Report:
 
     findings: list[Finding]
     partial: list[str]
+
+
+def _package_index(root: Path, sources: list[str]) -> PackageIndex:
+    """The class index of every Python source of the run, built once (PIPE-GATES-R086.21); a file that does not parse is left out."""
+    trees: dict[str, ast.Module] = {}
+    for path in sources:
+        if path.endswith(".py"):
+            try:
+                trees[path] = ast.parse(_read(root, path), filename=path)
+            except SyntaxError:
+                continue
+    return PackageIndex(trees)
 
 
 def _resolve_enum_machines(machines: list[Machine], declared: dict[str, Machine]) -> None:
@@ -182,10 +197,11 @@ def _machines(
     declared: dict[str, Machine] = {}
     enums: set[str] = set()
     refusals: dict[str, tuple[str, str]] = {}
+    index = _package_index(root, sources)
     for path in sources:
         source = _read(root, path)
         try:
-            found, uses = _parse(path, source)
+            found, uses = _parse(path, source, index=index)
         except CannotRun:
             if must_parse(path):
                 raise
@@ -206,6 +222,7 @@ def _machines(
     unresolved = _attach_uses(root, machines, loose)
     for machine in machines:
         machine.settle_immutable()
+        machine.settle_flags()
     return machines, partial, unresolved
 
 
@@ -240,12 +257,18 @@ def _attach_uses(root: Path, machines: list[Machine], loose: list[Use]) -> list[
     """Attach each non-``self`` use to its resolved type; return the unresolved ones as findings."""
     by_name: dict[str, list[Machine]] = {}
     by_field: dict[tuple[str, str | None], list[Machine]] = {}
+    by_flag: dict[tuple[str, str], list[Machine]] = {}
     for machine in machines:
         by_name.setdefault(machine.type_name, []).append(machine)
         by_field.setdefault((_unit(root, machine.file), machine.status_field), []).append(machine)
+        for flag in machine.flags:
+            by_flag.setdefault((_unit(root, machine.file), flag), []).append(machine)
     unresolved: dict[tuple[str, int, str, str], Finding] = {}
     for use in loose:
         unit = _unit(root, use.site.file)
+        if use.kind == "flag":
+            _attach_flag(use, by_flag.get((unit, use.field), []))
+            continue
         peers = [m for m in by_field.get((unit, use.field), []) if m.status_field == use.field]
         if not peers:
             continue
@@ -269,6 +292,17 @@ def _attach_uses(root: Path, machines: list[Machine], loose: list[Use]) -> list[
             key, Finding(use.site.file, use.site.line, UNRESOLVED_TYPE, "SM-UNRESOLVED-RECEIVER", detail)
         )
     return list(unresolved.values())
+
+
+def _attach_flag(use: Use, holders: list[Machine]) -> None:
+    """A flag assignment moves every type of the unit that holds the flag, except one it resolves to another holder.
+
+    An assignment whose receiver does not resolve, or resolves to a type that is not a holder (a
+    subclass, a copy), counts for every holder: a flag is dropped only when nothing can assign it.
+    """
+    named = [m for m in holders if m.type_name == use.receiver]
+    for machine in named or holders:
+        attach(machine, use)
 
 
 def _method_of_peer(use: Use, peers: list[Machine]) -> Machine | None:
