@@ -219,7 +219,7 @@ Gates:
 - `connector-graphql`: Connector GraphQL is declared via the SDK graphql extra (warns)
 - `sdk-conformance`: Connector uses SDK capabilities instead of its own copies (warns)
 - `connector-surface-audit`: Connector accounts for its MCP surface: typed tools, resources, agent prompts, skills, core-rolled ontology with contracts, links and data locations (reports)
-- `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+- `release-standard`: release standard (connector calls the shared container pipeline; npm package calls the shared npm lane; warns)
 <!-- generated:end -->
 
 Standards and tests:
@@ -391,7 +391,7 @@ Gates:
 - `packaging-roles`: Packaging role/extra closure (explicit contract and evidence paths)
 - `uv-lock-check`: uv.lock is current (uv lock --check; never mutates)
 - `supply-chain`: Immutable workflow, container and dependency sources
-- `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+- `release-standard`: release standard (connector calls the shared container pipeline; npm package calls the shared npm lane; warns)
 <!-- generated:end -->
 
 Standards and tests:
@@ -464,7 +464,7 @@ A release is a `v*` tag pushed by a maintainer. The tag runs the publish jobs. A
 Gates:
 
 <!-- generated:begin constitution hooks: release-standard, project-version-sync, supply-chain -->
-- `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+- `release-standard`: release standard (connector calls the shared container pipeline; npm package calls the shared npm lane; warns)
 - `project-version-sync`: Project version sync - metadata, source and documentation agree with one canonical bump configuration
 - `supply-chain`: Immutable workflow, container and dependency sources
 <!-- generated:end -->
@@ -571,7 +571,7 @@ Gates:
 
 <!-- generated:begin constitution hooks: project-version-sync, release-standard -->
 - `project-version-sync`: Project version sync - metadata, source and documentation agree with one canonical bump configuration
-- `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+- `release-standard`: release standard (connector calls the shared container pipeline; npm package calls the shared npm lane; warns)
 <!-- generated:end -->
 
 Standards and tests:
@@ -698,7 +698,7 @@ A change reaches `main` only through a pull request that passed `CI required`, a
 Gates:
 
 <!-- generated:begin constitution hooks: release-standard, project-version-sync -->
-- `release-standard`: release standard (connector has docker/Dockerfile and calls the shared container pipeline; warns)
+- `release-standard`: release standard (connector calls the shared container pipeline; npm package calls the shared npm lane; warns)
 - `project-version-sync`: Project version sync - metadata, source and documentation agree with one canonical bump configuration
 <!-- generated:end -->
 

@@ -2,9 +2,11 @@
 
     pipelines-hook npm-tag-version --tag v1.2.3 [--root R] [--skip-registry]
 
-PIPE-RELEASE-R033. Two refusals, each exit status 1 with a stable code:
+PIPE-RELEASE-R033. Three refusals, each exit status 1 with a stable code:
 
 - ``TAG_VERSION_MISMATCH``: the tag is not ``v`` plus the ``package.json`` version.
+- ``BUMPVERSION_MISMATCH``: a bump2version config is present and its ``current_version`` is not the
+  ``package.json`` version (PIPE-RELEASE-R033.6).
 - ``VERSION_EXISTS``: the registry already holds that version of the package.
 
 The check modelled on the tag check of ``python_pipeline.yml``: the tag carries the version.
@@ -61,11 +63,31 @@ def registry_has(name: str, version: str) -> bool:
     raise CannotRun(f"the registry lookup of {name}@{version} failed: {result.stderr.strip()[:300]}")
 
 
+_BUMP_FILES = (".bumpversion.cfg", ".config/bumpversion.cfg")
+_CURRENT = re.compile(r"^\s*current_version\s*=\s*(\S+)\s*$", re.MULTILINE)
+
+
+def bumpversion_current(root: Path) -> str | None:
+    """The ``current_version`` of the bump2version config at ``root``, or None when none is configured."""
+    for name in _BUMP_FILES:
+        path = root / name
+        if path.is_file():
+            found = _CURRENT.search(path.read_text(encoding="utf-8", errors="replace"))
+            return found.group(1) if found else ""
+    return None
+
+
 def check(root: Path, tag: str, *, lookup: RegistryLookup | None = registry_has) -> tuple[str, str] | None:
     """None when the release may proceed, else ``(code, message)``."""
     name, version = read_package(root)
     if tag != f"v{version}":
         return "TAG_VERSION_MISMATCH", f"tag {tag!r} is not v{version} (package.json version of {name})"
+    bump = bumpversion_current(root)
+    if bump is not None and bump != version:
+        return (
+            "BUMPVERSION_MISMATCH",
+            f"bump2version current_version {bump!r} is not the package.json version {version}",
+        )
     if lookup is not None and lookup(name, version):
         return "VERSION_EXISTS", f"{name}@{version} is already published; nothing changes"
     return None

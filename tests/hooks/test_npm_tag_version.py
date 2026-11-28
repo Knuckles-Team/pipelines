@@ -45,3 +45,13 @@ def test_an_unreadable_package_cannot_run(tmp_path: Path) -> None:
 
     with pytest.raises(CannotRun):
         npm_tag_version.check(tmp_path, "v1.0.0", lookup=None)
+
+
+def test_a_bumpversion_config_must_agree_with_package_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    # spec: PIPE-RELEASE-R033.6
+    _package(tmp_path, "0.1.0")
+    (tmp_path / ".bumpversion.cfg").write_text("[bumpversion]\ncurrent_version = 0.0.9\n", encoding="utf-8")
+    assert npm_tag_version.main(["--tag", "v0.1.0", "--root", str(tmp_path), "--skip-registry"]) == 1
+    assert "BUMPVERSION_MISMATCH" in capsys.readouterr().out
+    (tmp_path / ".bumpversion.cfg").write_text("[bumpversion]\ncurrent_version = 0.1.0\n", encoding="utf-8")
+    assert npm_tag_version.main(["--tag", "v0.1.0", "--root", str(tmp_path), "--skip-registry"]) == 0

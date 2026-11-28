@@ -6,11 +6,16 @@ track ``docker/Dockerfile`` or use the provider's canonical renderer, and must h
 workflow whose job calls the shared ``container_pipeline.yml`` with the Docker publish
 enabled (the job is not switched off by a literal ``if: false``). An explicitly selected
 custom Dockerfile must remain tracked. ``--strict`` makes the findings blocking.
+
+An npm package (a tracked ``package.json`` without ``"private": true``) must be scoped ``@knuckles-team/``,
+set ``publishConfig.access`` to ``public``, and be published by a workflow job that calls the shared
+``npm_pipeline.yml`` with ``publish: true`` (PIPE-RELEASE-R033.1 and R033.5).
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import tomllib
 from pathlib import Path
 
@@ -21,6 +26,8 @@ from pipelines_hooks.core.tracked import tracked_paths
 
 ENTRY_POINT_GROUP = "scion_sdk.connector"
 CONTAINER = "Knuckles-Team/pipelines/.github/workflows/container_pipeline.yml"
+NPM_LANE = "Knuckles-Team/pipelines/.github/workflows/npm_pipeline.yml"
+NPM_SCOPE = "@knuckles-team/"
 
 
 def is_connector(root: Path, paths: list[str]) -> bool:
@@ -49,6 +56,11 @@ def publishes_docker(root: Path, paths: list[str]) -> bool:
 
 def _container_jobs(root: Path, paths: list[str]) -> list[dict]:
     """Enabled shared container jobs, retaining their input contract for recipe checks."""
+    return _lane_jobs(root, paths, CONTAINER)
+
+
+def _lane_jobs(root: Path, paths: list[str], lane: str) -> list[dict]:
+    """Enabled workflow jobs that call the shared workflow ``lane``."""
     jobs: list[dict] = []
     for path in paths:
         if not (path.startswith(".github/workflows/") and path.endswith((".yml", ".yaml"))):
@@ -59,7 +71,7 @@ def _container_jobs(root: Path, paths: list[str]) -> list[dict]:
             continue
         workflow_jobs = document.get("jobs") if isinstance(document, dict) else None
         for job in (workflow_jobs or {}).values() if isinstance(workflow_jobs, dict) else ():
-            if isinstance(job, dict) and str(job.get("uses", "")).startswith(CONTAINER) and _enabled(job):
+            if isinstance(job, dict) and str(job.get("uses", "")).startswith(lane) and _enabled(job):
                 jobs.append(job)
     return jobs
 
@@ -100,11 +112,50 @@ def _has_container_recipe(root: Path, paths: list[str], jobs: list[dict]) -> boo
     return all(recipes)
 
 
-def inspect(root: Path, paths: list[str]) -> list[str]:
-    """Every finding for one repository (empty means conformant or not a connector)."""
-    if not is_connector(root, paths):
+def _publishable_packages(root: Path, paths: list[str]) -> list[tuple[str, dict]]:
+    """Each tracked ``package.json`` that is not ``"private": true``, outside ``node_modules``."""
+    found: list[tuple[str, dict]] = []
+    for path in paths:
+        if path.rsplit("/", 1)[-1] != "package.json" or "node_modules/" in path:
+            continue
+        try:
+            document = json.loads((root / path).read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if isinstance(document, dict) and document.get("private") is not True:
+            found.append((path, document))
+    return found
+
+
+def _publishes(job: dict) -> bool:
+    raw = job.get("with")
+    value = raw.get("publish") if isinstance(raw, dict) else None
+    return value is True or str(value).strip().lower() == "true"
+
+
+def npm_findings(root: Path, paths: list[str]) -> list[str]:
+    """PIPE-RELEASE-R033.1 and R033.5: a publishable package is scoped, public, and published by the shared lane."""
+    packages = _publishable_packages(root, paths)
+    if not packages:
         return []
     findings: list[str] = []
+    for path, document in packages:
+        name = document.get("name")
+        if not isinstance(name, str) or not name.startswith(NPM_SCOPE):
+            findings.append(f"{path}: the package name must be scoped {NPM_SCOPE}<name>, not {name!r}")
+        config = document.get("publishConfig")
+        if not isinstance(config, dict) or config.get("access") != "public":
+            findings.append(f'{path}: publishConfig.access must be "public"')
+    if not any(_publishes(job) for job in _lane_jobs(root, paths, NPM_LANE)):
+        findings.append(f"no enabled workflow job calls {NPM_LANE} with publish: true (an npm package publishes there)")
+    return findings
+
+
+def inspect(root: Path, paths: list[str]) -> list[str]:
+    """Every finding for one repository (empty means conformant or neither a connector nor an npm package)."""
+    findings = npm_findings(root, paths)
+    if not is_connector(root, paths):
+        return findings
     jobs = _container_jobs(root, paths)
     if not _has_container_recipe(root, paths, jobs):
         findings.append("docker/Dockerfile is not tracked (a release publishes the <version>-mcp image)")
@@ -121,10 +172,10 @@ def main(argv: list[str]) -> int:
     root = repo_root(arguments.root)
     findings = inspect(root, tracked_paths(root))
     if not findings:
-        print("release-standard: conformant (or not a connector)")
+        print("release-standard: conformant (or neither a connector nor an npm package)")
         return 0
     level = "FAIL" if arguments.strict else "WARN"
-    print(f"{level}: release-standard (specs/ordered-digest-release, PIPE-RELEASE-R013):")
+    print(f"{level}: release-standard (specs/ordered-digest-release, PIPE-RELEASE-R013, R033.1, R033.5):")
     for finding in findings:
         print(f"  {finding}")
     return 1 if arguments.strict else 0

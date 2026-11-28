@@ -76,3 +76,38 @@ def test_a_connector_is_detected_by_entry_point_or_sources_module_not_by_depende
     assert repo.run("release-standard", "--strict") == 1
     repo.commit({".github/workflows/pipeline.yml": PIPELINE})
     assert repo.run("release-standard", "--strict") == 0
+
+
+NPM_LANE = (
+    "jobs:\n  release:\n    uses: Knuckles-Team/pipelines/.github/workflows/npm_pipeline.yml@main\n"
+    "    with:\n      publish: true\n"
+)
+GOOD_PACKAGE = '{"name": "@knuckles-team/x", "version": "0.1.0", "publishConfig": {"access": "public"}}'
+
+
+@pytest.mark.spec("PIPE-RELEASE-R033.1")
+def test_an_npm_package_must_be_scoped_and_public(repo: Repo, capsys) -> None:
+    repo.commit({"package.json": '{"name": "x", "version": "0.1.0"}', ".github/workflows/r.yml": NPM_LANE})
+    assert repo.run("release-standard", "--strict") == 1
+    out = capsys.readouterr().out
+    assert "must be scoped @knuckles-team/" in out and 'publishConfig.access must be "public"' in out
+    repo.commit({"package.json": GOOD_PACKAGE})
+    assert repo.run("release-standard", "--strict") == 0
+
+
+@pytest.mark.spec("PIPE-RELEASE-R033.5")
+def test_a_publishable_npm_package_must_call_the_shared_lane(repo: Repo, capsys) -> None:
+    repo.commit({"package.json": GOOD_PACKAGE})
+    assert repo.run("release-standard") == 0
+    assert "no enabled workflow job calls" in capsys.readouterr().out
+    assert repo.run("release-standard", "--strict") == 1
+    repo.commit({".github/workflows/r.yml": NPM_LANE.replace("publish: true", "publish: false")})
+    assert repo.run("release-standard", "--strict") == 1
+    repo.commit({".github/workflows/r.yml": NPM_LANE})
+    assert repo.run("release-standard", "--strict") == 0
+
+
+@pytest.mark.spec("PIPE-RELEASE-R033.5")
+def test_a_private_package_is_exempt(repo: Repo) -> None:
+    repo.commit({"package.json": '{"name": "app", "private": true}'})
+    assert repo.run("release-standard", "--strict") == 0
