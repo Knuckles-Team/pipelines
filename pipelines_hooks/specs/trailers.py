@@ -24,6 +24,9 @@ parents, its incoming second parent is reachable from trusted ``origin/main``
 or the pushed-over base, and its tree is exactly Git's clean ``merge-tree``
 result. Merge commits with conflict-resolution edits remain in the check.
 
+Commits reachable from a declared imported parent are excluded too
+(:mod:`pipelines_hooks.specs.imported_history`); the merge itself is checked.
+
 A repository's ``.config/spec-aliases.toml`` (see :mod:`pipelines_hooks.specs.aliases`)
 maps retired ID prefixes to canonical ones: a trailer or binding with a retired
 prefix counts for the canonical ID, and a trailer in the range that still uses a
@@ -58,6 +61,7 @@ from pipelines_hooks.specs.aliases import (
 )
 from pipelines_hooks.specs.dependency_bots import Bot, is_dependency_only_bot_commit, load_bots
 from pipelines_hooks.specs.git_log import reverted_shas
+from pipelines_hooks.specs.imported_history import Boundary, load_boundaries
 from pipelines_hooks.specs.trailer_ids import TRAILER_JOIN
 from pipelines_hooks.specs.withdrawal import withdrawals
 
@@ -203,7 +207,7 @@ def _github_synthetic_merge(root: Path, base: str | None) -> str | None:
     return head
 
 
-def _load_commits(root: Path, base: str | None) -> list[_Commit]:
+def _load_commits(root: Path, base: str | None, boundaries: tuple[Boundary, ...] = ()) -> list[_Commit]:
     rev_range = f"{base}..HEAD" if base else "HEAD"
     arguments = ["log", "--diff-merges=first-parent", f"--format={_LOG_FORMAT}", "--name-only", rev_range]
     # PRE_COMMIT_FROM_REF can be older than a freshly advanced origin/main. A
@@ -212,14 +216,26 @@ def _load_commits(root: Path, base: str | None) -> list[_Commit]:
     # Exclude the current main reachability independently of the pushed-over
     # base, while retaining every commit unique to the branch.
     current_main = commit(root, "origin/main")
-    if current_main is not None:
-        arguments.extend(("--not", current_main))
+    # ``--not`` toggles, so one flag negates every ref that follows it.
+    negated = [*([current_main] if current_main is not None else []), *(boundary.parent for boundary in boundaries)]
+    if negated:
+        arguments.extend(("--not", *negated))
     raw = git_text(root, tuple(arguments))
     commits = _parse_log(raw)
     synthetic_merge = _github_synthetic_merge(root, base)
     if synthetic_merge is not None:
         commits = [commit for commit in commits if commit.sha != synthetic_merge]
     return [commit for commit in commits if not _is_pure_upstream_merge(root, commit, base)]
+
+
+def _imported_count(root: Path, base: str | None, boundary: Boundary) -> int:
+    """How many commits of the checked range this boundary removes."""
+    rev_range = f"{base}..HEAD" if base else "HEAD"
+    current_main = commit(root, "origin/main")
+    excluded = (current_main,) if current_main is not None else ()
+    whole = git_text(root, ("rev-list", "--count", rev_range, *(("--not", *excluded) if excluded else ()))).strip()
+    kept = git_text(root, ("rev-list", "--count", rev_range, "--not", *excluded, boundary.parent)).strip()
+    return int(whole) - int(kept)
 
 
 def _is_product_path(path: str) -> bool:
@@ -297,7 +313,13 @@ def main(argv: list[str]) -> int:
     args = _parse_args(argv)
     root = repo_root(args.root)
     base = upstream_base(root, args.base_ref)
-    commits = _load_commits(root, base)
+    boundaries = load_boundaries(root)
+    commits = _load_commits(root, base, boundaries)
+    for boundary in boundaries:
+        print(
+            f"spec-trailers: imported history: {_imported_count(root, base, boundary)} commit(s) excluded, "
+            f"imported from {boundary.source} before merge {boundary.merge[:12]} (declared in pyproject.toml)"
+        )
     # A delivery that was reverted in the same range delivers nothing: its
     # ``Spec:`` trailer must not demand a bound test for work that is gone.
     reverted = reverted_shas(root, "HEAD")

@@ -419,3 +419,4 @@ The per-connector children (PIPE-CONNSPEC-R101.1 and following) are the work ord
 - [ ] T392 PIPE-CONNSPEC-R101.1 Verify `ansible-tower-mcp` has a `specs/` tree whose status computes with `pipelines-hook spec-status` and is never tracked.
 - [ ] T393 PIPE-CONNSPEC-R017 Credit the real landing commit of a delivered row through a proved attribution.
 - [x] T394 PIPE-CONNSPEC-R018 Map the `CITY` prefix to arbora-city.
+- [ ] T395 PIPE-CONNSPEC-R001.3 Imported-history boundary for `spec-trailers`.

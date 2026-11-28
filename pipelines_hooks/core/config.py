@@ -22,6 +22,7 @@ SECTIONS: dict[str, frozenset[str]] = {
     "kiss": frozenset({"paths", "structural"}),
     "env_sprawl": frozenset({"allow_files"}),
     "stdout_writes": frozenset({"served_paths"}),
+    "spec_trailers": frozenset({"imported_history"}),
     "ste": frozenset({"paths", "exempt", "code_paths", "staleness"}),
     # No longer read (the public-surface gate needs no identity); still accepted.
     "public_surface": frozenset({"repository", "distribution", "pages_url", "mcp_server"}),
