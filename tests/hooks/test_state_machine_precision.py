@@ -597,3 +597,23 @@ def test_an_edge_no_test_lists_names_or_loops_is_still_untested(tmp_path: Path) 
         "let _ = Planned;",
     )
     assert "SM-UNTESTED-EDGE" in _codes(_census(tmp_path, {"src/mv.rs": source}))
+
+
+CELL_TEST_PY = """\
+import pytest
+
+from pkg.door import Blocked, Stage, Step, move
+
+
+def test_a_closed_door_cannot_close_again_is_refused() -> None:
+    with pytest.raises(Blocked):
+        move(Stage.SHUT, Step.CLOSE)
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.19")
+def test_a_refusal_test_whose_body_names_the_state_and_the_event_binds_that_cell(tmp_path: Path) -> None:
+    files = {"pkg/__init__.py": "", "pkg/door.py": FLOW_PY, "tests/test_door.py": CELL_TEST_PY}
+    lines = _census(tmp_path, files)
+    assert not [line for line in lines if "SM-UNTESTED-REFUSAL" in line and "from=SHUT event=CLOSE" in line], lines
+    assert [line for line in lines if "SM-UNTESTED-REFUSAL" in line and "from=OPEN event=REOPEN" in line], lines
