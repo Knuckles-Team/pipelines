@@ -653,7 +653,9 @@ class _Resolver:
         if base:
             return self.returns.get(f"{base}.{func.attr}")
         head = func.value
-        return head.id if isinstance(head, ast.Name) and head.id[:1].isupper() else None
+        if isinstance(head, ast.Name) and head.id[:1].isupper():
+            return head.id
+        return func.attr if func.attr[:1].isupper() else None  # ``module.Type(..)`` builds a ``Type``
 
 
 def _bound_names(target: ast.expr) -> list[str]:

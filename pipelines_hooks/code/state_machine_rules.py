@@ -14,7 +14,14 @@ from pipelines_hooks.code.state_machine_model import Finding, Machine, Site
 
 
 def findings(machine: Machine) -> list[Finding]:
-    """Every finding of rules 1 to 6 for one machine."""
+    """Every finding of rules 1 to 6 for one machine.
+
+    A type that holds a declared machine's state enum but is never assigned after
+    construction (a view, a request, a filter) is a holder, not the machine: the tests and
+    the algebra of that machine are reported once, on the type that moves it.
+    """
+    if machine.declared and machine.immutable:
+        return []
     return [
         *_multi_assign(machine),
         *_string_status(machine),

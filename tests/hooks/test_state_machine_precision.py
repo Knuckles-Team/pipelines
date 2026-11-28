@@ -698,3 +698,61 @@ impl Import {
 def test_a_shorthand_struct_update_of_the_status_is_an_assignment_of_the_type(tmp_path: Path) -> None:
     lines = _census(tmp_path, {"src/import.rs": WITHER_RS})
     assert "SM-NO-DECLARATION" in _codes(lines), lines
+
+
+HOLDER_RS = """\
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum GapState { Open, Closed }
+pub struct Refused;
+pub const TRANSITIONS: &[(GapState, &str, GapState)] = &[(GapState::Open, "close", GapState::Closed)];
+impl GapState {
+    pub fn apply(self, event: &str) -> Result<GapState, Refused> { Err(Refused) }
+}
+pub struct Gap { pub state: GapState }
+impl Gap {
+    pub fn close(&mut self) { self.state = self.state.apply("close").unwrap(); }
+}
+pub struct GapView { pub state: GapState }
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_view_holding_a_machines_enum_reports_nothing_the_owner_does_not(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"src/gap.rs": HOLDER_RS})
+    assert [line for line in lines if " Gap SM-" in line], lines
+    assert not [line for line in lines if " GapView SM-" in line], lines
+
+
+QUALIFIED_PY = """\
+from enum import StrEnum
+
+
+class Phase(StrEnum):
+    LIVE = "live"
+    GONE = "gone"
+
+
+class Lease:
+    state: Phase
+"""
+QUALIFIED_USER_PY = """\
+from pkg import lease
+
+
+def retire() -> None:
+    record = lease.Lease()
+    record.state = lease.Phase.GONE
+
+
+def revive() -> None:
+    record = lease.Lease()
+    record.state = lease.Phase.LIVE
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_module_qualified_constructor_gives_the_type_of_the_receiver(tmp_path: Path) -> None:
+    files = {"pkg/__init__.py": "", "pkg/lease.py": QUALIFIED_PY, "pkg/user.py": QUALIFIED_USER_PY}
+    lines = _census(tmp_path, files)
+    assert "SM-UNRESOLVED-RECEIVER" not in _codes(lines), lines
+    assert "SM-MULTI-ASSIGN" in _codes(lines), lines
