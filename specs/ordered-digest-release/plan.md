@@ -314,3 +314,4 @@ Each row names its entry point and caller chain in its own `Caller chain:` sente
 ## Cross-repo seams
 
 - Connector release digests: `PIPE-RELEASE-R019`, provider `SCION-CONNECTOR-CONTROL-R650.1.2`; see [contracts/release-digest.md](contracts/release-digest.md).
+- npm package lane: `PIPE-RELEASE-R033`, consumer `CITY-PACKAGE-R001.6` in arbora-city; see [contracts/npm-lane.md](contracts/npm-lane.md).

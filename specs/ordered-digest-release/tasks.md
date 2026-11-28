@@ -195,3 +195,4 @@ commit).
 - [ ] T112 PIPE-RELEASE-R030 A release stays blocked until stored data upgrades from the last production release.
 - [ ] T113 PIPE-RELEASE-R031 Each consumer's tests pass against a release candidate before the producer tags.
 - [ ] T114 PIPE-RELEASE-R032 A release candidate passes a sandbox smoke pass, then publishes exactly those artifacts.
+- [ ] T121 PIPE-RELEASE-R033 An npm package publishes on a green `v*` tag through one shared lane.
