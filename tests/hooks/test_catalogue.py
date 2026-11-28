@@ -62,6 +62,7 @@ KEPT = {
     "dependency-readiness",
     "packaging-roles",
     "release-phases",
+    "npm-tag-version",
     "harness-bundles-untracked",
     "upgrade-test",
     "consumer-gate",

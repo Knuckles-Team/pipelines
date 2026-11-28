@@ -16,8 +16,8 @@ A consumer calls `Knuckles-Team/pipelines/.github/workflows/npm_pipeline.yml@mai
 
 ## Authoritative types
 
-The `on.workflow_call.inputs` block of `.github/workflows/npm_pipeline.yml` (planned by `PIPE-RELEASE-R033`).
+The `on.workflow_call.inputs` block of `.github/workflows/npm_pipeline.yml`.
 
 ## Test vectors
 
-`tests/hooks/test_npm_tag_version.py` and `tests/workflows/test_npm_pipeline.py` (planned by `PIPE-RELEASE-R033`).
+`tests/hooks/test_npm_tag_version.py` and `tests/workflows/test_npm_pipeline.py`.

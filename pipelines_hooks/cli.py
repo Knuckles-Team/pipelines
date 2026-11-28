@@ -92,6 +92,7 @@ GATES: dict[str, str] = {
     "contract-coverage": "pipelines_hooks.specs.contracts",
     "spec-glossary": "pipelines_hooks.specs.glossary",
     "spec-id-index": "pipelines_hooks.specs.id_index",
+    "npm-tag-version": "pipelines_hooks.release.npm_tag_version",
     "spec-artifacts": "pipelines_hooks.specs.spec_bundle",
     "capability-coverage": "pipelines_hooks.specs.capability_inventory",
     "ste-staged": "pipelines_hooks.ste.staged",
