@@ -56,11 +56,12 @@ function buildSourceView(input,baselineRows,options){
   const scored=Object.values(refs).filter(r=>r.priority),ranked=scored.filter(r=>!r.rollup).sort((a,b)=>b.priority.value-a.priority.value||a.key.localeCompare(b.key));
   const graphKeys=[...new Set(edges.flatMap(e=>[e.source,e.target]))].sort();
   // This bounded view is complete only when all connected rows fit. No silent graph truncation.
-  const graph=graphKeys.length<=8&&edges.length<=10?{nodes:graphKeys.map(k=>refs[k]),edges}:null;
+  const GRAPH_ROWS=8,GRAPH_EDGES=10;
+  const graph=graphKeys.length<=GRAPH_ROWS&&edges.length<=GRAPH_EDGES?{nodes:graphKeys.map(k=>refs[k]),edges}:null;
   return {
     schema:'architecture-source-view/1',scope:{kind:s.kind,selectedRows:selected.size,closureRows:closure.size,scoreRows:keys.length,familyCount:families.length,freeze:options.builtAt,fleetComplete:false,modelMapping:input.modelMapping.state,excludedGapCount:s.excludedDependencyGaps.length},
     title:'Selected source families',scopeLabel:families.length+' families · '+selected.size+' rows + '+closure.size+' prerequisites',
-    families,graph,graphDeferredReason:graph?null:'complete connected graph exceeds readable budget',
+    families,graph,graphDeferredReason:graph?null:'complete connected graph exceeds its readable budget of '+GRAPH_ROWS+' rows and '+GRAPH_EDGES+' edges ('+graphKeys.length+' rows, '+edges.length+' edges)',
     priorities:ranked.filter(r=>r.priority.value>0).slice(0,5),priorityScale:Math.max(0,...ranked.map(r=>r.priority.value)),
     priorityCounts:{scoredNonRollup:ranked.length,zeroScore:ranked.filter(r=>r.priority.value===0).length,positiveOmitted:Math.max(0,ranked.filter(r=>r.priority.value>0).length-5),rollupExcluded:scored.filter(r=>r.rollup).length,notApplicable:keys.length-scored.length},
     refs,evidenceOnly,activity:null,accessibility:'Frozen source scope: '+selected.size+' selected requirements and '+closure.size+' prerequisite rows; not whole-node or fleet ranking. Dependency arrows point from dependent to prerequisite. Readiness excludes rollups. Scores use goal-weighted/1 within this scope; not effort, health or completion.'

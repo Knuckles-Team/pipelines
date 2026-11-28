@@ -154,11 +154,11 @@ const results=[];
   }finally{for(const page of pages)await call('Target.closeTarget',{targetId:page.targetId});}
  }
  // The source view draws the prerequisite graph only when the complete connected graph fits its readable budget and
- // otherwise records that deferral in the page itself (story_view.cjs: no silent truncation). Live data decides which
- // applies, so a deferred graph is proven by its recorded reason and every other kind still needs a real reveal.
+ // otherwise records that deferral in the page itself (PIPE-PAGES-R062). Live data decides which applies, so a deferred
+ // graph is proven by a recorded reason that names the budget; a missing graph without that reason fails and every other kind still needs a real reveal.
  const preview=readFileSync(join(output,'preview.html'),'utf8'),viewStart=preview.indexOf('const SOURCE_VIEW=')+'const SOURCE_VIEW='.length;
  const sourceView=JSON.parse(preview.slice(viewStart,preview.indexOf(';\n',viewStart)));
- const deferred=!sourceView.graph&&typeof sourceView.graphDeferredReason==='string'&&sourceView.graphDeferredReason.length>0;
+ const deferred=!sourceView.graph&&typeof sourceView.graphDeferredReason==='string'&&/readable budget of [0-9]+ rows and [0-9]+ edges \([0-9]+ rows, [0-9]+ edges\)/.test(sourceView.graphDeferredReason);
  for(const kind of ['priority','dependencies'])if(!(kind==='dependencies'&&deferred)&&!results.some(r=>r.device==='desktop'&&r.node==='webui'&&r.story?.owner==='webui'&&r.story?.placement==='canvas'&&r.story.kind===kind))throw Error('No actual native '+kind+' reveal; context count is not rich proof');
  if(!results.some(r=>r.device==='mobile'&&r.node==='arbora'&&r.route==='center'&&r.story?.placement==='canvas'&&r.story.context?.visibleChildren.length>0))throw Error('Mobile Arbora central context-preserving reveal absent');
  for(const device of ['desktop','mobile'])for(const node of ['arbora','webui','eg.decide'])if(!results.some(r=>r.device===device&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas'))throw Error('No trusted mouse-wheel chart reveal on '+device+' / '+node+'; not visual proof');

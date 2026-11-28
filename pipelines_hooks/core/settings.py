@@ -34,6 +34,7 @@ KNOWN_SETTINGS = {
     "PIPELINES_SPEC_ID_INDEX": "path of the cross-repo spec ID index plan-conformance resolves foreign IDs against",
     "PIPELINES_ARBORA_ENDPOINT": "base URL of the arbora HTTP API that verdicts and states publish to; empty skips the publish",
     "PIPELINES_ARBORA_TOKEN": "bearer token for the arbora HTTP API (never logged)",
+    "GITHUB_ACTIONS": "set by GitHub Actions: spec-family-coverage fails closed when the architecture model cannot be fetched",
     "GITHUB_REPOSITORY": "GitHub Actions repository name, the repository of published records",
     "GITHUB_SHA": "GitHub Actions commit, the revision of published records",
     "PIPELINES_SPEC_STATUS_ENDPOINT": "URL of the served spec.status answer spec-status compares generated state with (unset: no comparison)",

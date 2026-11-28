@@ -15,9 +15,9 @@ from scripts.architecture_explorer.story_render import prepare_models, render_st
 pytestmark = pytest.mark.spec("PIPE-PAGES-R042")
 
 
-def fixture():
+def fixture(count=2):
     repo, commit, built = "R_TEST", "a" * 40, "2026-10-26T14:00:00Z"
-    ids = ["PIPE-TEST-R001", "PIPE-TEST-R002"]
+    ids = [f"PIPE-TEST-R{n:03d}" for n in range(1, count + 1)]
     keys = [repo + ":" + rid for rid in ids]
     rows = {}
     public = []
@@ -28,7 +28,7 @@ def fixture():
             "path": "specs/demo/requirements.md",
             "fragment": rid,
         }
-        title = ["First requirement", "Second requirement"][index]
+        title = ["First requirement", "Second requirement"][index] if count == 2 else f"Requirement {index}"
         rows[key] = {
             "key": key,
             "id": rid,
@@ -40,7 +40,10 @@ def fixture():
             "rollup": False,
             "provenance": provenance,
             "sourceEvidence": {"rollupOf": []},
-            "dependencies": {"keys": [] if index == 0 else [keys[0]], "provenance": provenance},
+            "dependencies": {
+                "keys": [] if index == 0 else [keys[0] if count == 2 else keys[index - 1]],
+                "provenance": provenance,
+            },
             "priority": {
                 "state": "scored",
                 "value": 2 if index == 0 else 0,
@@ -54,12 +57,12 @@ def fixture():
         "schema": "architecture-source-chart/1",
         "scope": {
             "kind": "selected-family-prerequisite-closure",
-            "capturedRowCount": 2,
+            "capturedRowCount": count,
             "excludedDependencyGaps": [],
             "repositories": [
                 {"repositoryId": repo, "fullName": "Knuckles-Team/pipelines", "commit": commit, "families": ["demo"]}
             ],
-            "scoreRowCount": 2,
+            "scoreRowCount": count,
             "evidenceOnlyRowCount": 0,
             "selectedFamilyKeys": [repo + ":demo"],
             "selectedRowKeys": keys,
@@ -70,9 +73,9 @@ def fixture():
             {
                 "key": repo + ":demo",
                 "rowKeys": keys,
-                "statusCounts": {"VERIFIED": 0, "LANDED": 0, "SPECIFIED": 2, "RETIRED": 0},
+                "statusCounts": {"VERIFIED": 0, "LANDED": 0, "SPECIFIED": count, "RETIRED": 0},
                 "readyRowKeys": [keys[0]],
-                "blockedRowKeys": [keys[1]],
+                "blockedRowKeys": keys[1:],
             }
         ],
         "rows": rows,
@@ -94,7 +97,7 @@ def fixture():
     }
     meta = {
         "built_at": built,
-        "rows": 2,
+        "rows": count,
         "nodes": 2,
         "heads": {"pipelines": commit[:10]},
         "slugs": {"pipelines": "pipelines"},
@@ -186,3 +189,13 @@ const c={module:{exports:{}},Intl,C:{st:{VERIFIED:'text-color'},progress:{VERIFI
 assert.equal(c.palette('comparison').VERIFIED,'semantic-fill');assert.equal(c.palette('concentration').VERIFIED,'semantic-fill');assert.equal(c.palette('priority').VERIFIED,'text-color');assert.equal(c.palette('frontier').VERIFIED,'text-color');
 """
     subprocess.run(["node", "-e", js, str(path)], check=True, capture_output=True, text=True)
+
+
+@pytest.mark.spec("PIPE-PAGES-R062")
+def test_a_prerequisite_graph_over_its_budget_is_deferred_with_a_recorded_reason():
+    view = prepare_models(fixture(count=12), require_source=True)["sourceViews"]["webui"]
+    assert view["graph"] is None
+    assert view["graphDeferredReason"] == (
+        "complete connected graph exceeds its readable budget of 8 rows and 10 edges (12 rows, 11 edges)"
+    )
+    assert prepare_models(fixture(), require_source=True)["sourceViews"]["webui"]["graphDeferredReason"] is None

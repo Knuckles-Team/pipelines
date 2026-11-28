@@ -68,6 +68,7 @@ def _export_rows(site: Path) -> list[dict]:
 
 
 @pytest.mark.spec("PIPE-PAGES-R055.3")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_chips_combine_with_status_and_release_filters(monkeypatch, tmp_path: Path) -> None:
     out, _ = _run(
@@ -89,6 +90,7 @@ return {before, ready, combined:listed(), hasLanded:!!status};
 
 
 @pytest.mark.spec("PIPE-PAGES-R055.4")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_empty_chips_are_disabled_and_unknown_names_are_ignored(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)
@@ -118,6 +120,7 @@ return {state, status:document.getElementById("qstatus").textContent, after:chip
 
 
 @pytest.mark.spec("PIPE-PAGES-R055.5")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_chip_counts_and_export_next_step_agree(monkeypatch, tmp_path: Path) -> None:
     out, site = _run(
@@ -132,6 +135,7 @@ def test_chip_counts_and_export_next_step_agree(monkeypatch, tmp_path: Path) -> 
 
 
 @pytest.mark.spec("PIPE-PAGES-R055.6")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_the_ready_filter_lists_only_next_up_rows_in_a_browser(monkeypatch, tmp_path: Path) -> None:
     out, site = _run(monkeypatch, tmp_path, "return {listed:listed(), chips:chips()};", fragment="#filter=ready")

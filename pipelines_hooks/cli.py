@@ -87,6 +87,7 @@ GATES: dict[str, str] = {
     "test-layout": "pipelines_hooks.ci_replica.test_layout",
     "spec-decomposition": "pipelines_hooks.specs.decomposition",
     "spec-standard": "pipelines_hooks.specs.standard",
+    "spec-family-coverage": "pipelines_hooks.specs.family_coverage",
     "ingest-worker-policy": "pipelines_hooks.specs.worker_policy",
     "plan-conformance": "pipelines_hooks.specs.plan_conformance",
     "contract-coverage": "pipelines_hooks.specs.contracts",
@@ -125,6 +126,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "secrets": ("security-sanitizer", "secret-history", "tracked-privacy", "commit-identity", "commit-identity-range"),
     "spec": (
         "spec-standard",
+        "spec-family-coverage",
         "ingest-worker-policy",
         "plan-conformance",
         "contract-coverage",

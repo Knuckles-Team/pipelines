@@ -53,6 +53,7 @@ KEPT = {
     "spec-bind-suggest",
     "spec-prefix-rename",
     "spec-id-index",
+    "spec-family-coverage",
     "spec-glossary",
     "spec-artifacts",
     "capability-coverage",
@@ -124,6 +125,7 @@ def test_a_group_honours_skip_and_reports_the_worst_status(monkeypatch, capsys) 
     assert main(["spec"]) == 1
     assert calls == [
         "spec-standard",
+        "spec-family-coverage",
         "ingest-worker-policy",
         "plan-conformance",
         "contract-coverage",

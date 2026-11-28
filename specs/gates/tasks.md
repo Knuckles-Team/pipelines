@@ -296,3 +296,5 @@
 - [ ] T271 PIPE-GATES-R016.121 The compiled-skill freshness check is a `connector-standard` member.
 - [ ] T272 PIPE-GATES-R105 A shared workflow starts in every caller: no dangling needs, no withheld permission.
 - [ ] T273 PIPE-GATES-R106 One shared `complexity` hook reads `[tool.complexity]`; the two old ids are retired.
+- [ ] T274 PIPE-GATES-R061.1 Fail an unmapped spec family in the repository that adds it, with one matcher shared with the explorer build.
+- [ ] T275 PIPE-GATES-R061.2 Fail closed in CI and warn once locally when the architecture model cannot be fetched.

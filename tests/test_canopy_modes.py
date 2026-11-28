@@ -99,6 +99,7 @@ def _run(monkeypatch, tmp_path: Path, script: str, fragment: str = "") -> dict:
 
 
 @pytest.mark.spec("PIPE-PAGES-R054.3")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_mode_switch_changes_node_style_without_moving_nodes(monkeypatch, tmp_path: Path) -> None:
     out = _run(
@@ -129,6 +130,7 @@ return {moved:"", styles, pressed, role:group.getAttribute("role"), label:group.
 
 
 @pytest.mark.spec("PIPE-PAGES-R054.4")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_empty_nodes_stay_neutral_and_unknown_mode_falls_back(monkeypatch, tmp_path: Path) -> None:
     out = _run(
@@ -168,6 +170,7 @@ def _nodes(tree: dict):
 
 
 @pytest.mark.spec("PIPE-PAGES-R054.6")
+@pytest.mark.browser
 @NEEDS_BROWSER
 def test_sdd_mode_legend_counts_match_the_computed_phases_in_a_browser(monkeypatch, tmp_path: Path) -> None:
     site = build_site(monkeypatch, tmp_path)

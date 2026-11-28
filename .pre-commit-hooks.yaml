@@ -64,6 +64,13 @@
   files: ^specs/[^/]+/plan\.md$
   pass_filenames: false
   stages: [pre-commit, manual]
+- id: spec-family-coverage
+  name: Spec family coverage - every specs/ directory with requirement rows has a node in the Canopy architecture model
+  entry: pipelines-hook spec-family-coverage
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-push, manual]
 - id: spec-glossary
   name: Spec glossary - specs use the repository glossary, its ontology classes and the typed row fields
   entry: pipelines-hook spec-glossary

@@ -78,6 +78,9 @@ testpaths = ["tests"]
 # tests import their shared fixtures as `tests.hooks...`; the bare `pytest` entry point needs the root on sys.path.
 pythonpath = ["."]
 addopts = "-p no:cacheprovider"
+markers = [
+    "browser: drives a real headless browser; slow, proved by the architecture visual validation workflow, not by the fast-tests hook",
+]
 
 # Configuration of the shared hooks for THIS repository. Every consumer carries
 # the same table; see README.md "Shared pre-commit hooks".

@@ -6,13 +6,20 @@ on:
       - scripts/architecture_explorer/**
       - tests/test_architecture*.py
       - .github/workflows/architecture_visual.yml
+  # main gets a real result even when a pull request was merged before this workflow finished (PIPE-RELEASE-R007.18).
+  push:
+    branches: [main]
+    paths:
+      - scripts/architecture_explorer/**
+      - tests/test_architecture*.py
+      - .github/workflows/architecture_visual.yml
 
 permissions:
   contents: read
 
 concurrency:
-  group: architecture-visual-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: architecture-visual-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   preview:

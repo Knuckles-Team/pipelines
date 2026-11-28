@@ -663,6 +663,7 @@ def _chrome() -> str | None:
 
 @pytest.mark.spec("PIPE-PAGES-R042.4")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 def test_a_q_deep_link_lands_on_the_owning_part_in_a_browser(monkeypatch, tmp_path: Path) -> None:
     import subprocess
@@ -965,6 +966,7 @@ def test_search_matches_a_description_only_after_title_and_id_matches() -> None:
 
 @pytest.mark.spec("PIPE-PAGES-R042.7")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 def test_expanding_a_row_fetches_its_family_once_and_renders_it_safely(monkeypatch, tmp_path: Path) -> None:
     import functools
@@ -1379,6 +1381,7 @@ def test_axil_parts_survive_generation_without_changing_rows_or_statuses(monkeyp
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 @pytest.mark.parametrize("viewport", ["1440,1000", "390,844"])
 def test_ocean_browser_keyboard_zoom_pan_search_and_camera_history(monkeypatch, tmp_path: Path, viewport: str) -> None:
@@ -1474,6 +1477,7 @@ def test_explorer_display_names_preserve_existing_knowledge_and_dashboard_identi
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 def test_ocean_browser_motion_controls_and_composited_wave_phases(monkeypatch, tmp_path: Path) -> None:
     """Validate motion controls; unforced elapsed-time rendering is captured separately via CDP."""
@@ -1538,6 +1542,7 @@ setTimeout(()=>{
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 def test_ocean_browser_candidate_model_subtitles_paint_without_overlap(monkeypatch, tmp_path: Path) -> None:
     """Actual candidate-model fixture, explicitly not the live-payload visual snapshot."""
@@ -1697,6 +1702,7 @@ def test_primary_part_display_labels_use_reviewed_title_case() -> None:
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 @pytest.mark.parametrize(
     "node,viewport",
@@ -1852,6 +1858,7 @@ setTimeout(async()=>{
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 @pytest.mark.parametrize(
     "camera,viewport",
@@ -2048,6 +2055,7 @@ def test_count_capture_uses_real_frame_scheduling_and_handles_browser_exit(tmp_p
 
 @pytest.mark.spec("PIPE-PAGES-R042")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 @pytest.mark.parametrize(
     "viewport,theme",
@@ -2439,6 +2447,7 @@ def test_outline_anchors_every_plan_heading() -> None:
 @pytest.mark.spec("PIPE-PAGES-R051.5")
 @pytest.mark.spec("PIPE-PAGES-R051.7")
 @_NEEDS_LAYOUT
+@pytest.mark.browser
 @pytest.mark.skipif(_chrome() is None, reason="no headless Chromium available")
 def test_the_reader_opens_a_plan_section_and_links_row_ids_in_a_browser(monkeypatch, tmp_path: Path) -> None:
     import functools

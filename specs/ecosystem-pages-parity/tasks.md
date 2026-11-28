@@ -395,3 +395,4 @@ PIPE-PAGES-R011 (ecosystem flow diagram, present-tense home page) are already `L
 - [ ] T476 PIPE-PAGES-R010 Bind the existing implementation to its verification.
 - [x] T478 PIPE-PAGES-R060 The Pages deploy retries once on the artifact-lookup race.
 - [x] T479 PIPE-PAGES-R061 Arbora City appears as a core part.
+- [x] T480 PIPE-PAGES-R062 A source graph over its readable budget is deferred, and the page records why.
