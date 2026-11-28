@@ -70,9 +70,6 @@ commit).
 - PIPE-RELEASE-R007.15: Persistent self-hosted caches. Use `CI_CACHE_ROOT` for the hook store and the uv cache, skip the cache actions, refresh the shared hooks; bind the contract test.
 - PIPE-RELEASE-R008: Publish the source distribution with the wheel. Implement this contract and bind `tests/test_python_sdist_output.py`.
 
-- **PIPE-RELEASE-R009:** Release records publish to the engine (rollup).
-- **PIPE-RELEASE-R009.1:** Wiring.
-- **PIPE-RELEASE-R009.2:** Hot-path proof.
 - PIPE-RELEASE-R010: Named per-repository source-build allowance. Bind the existing allowance tests in `tests/test_wheel_readiness.py`.
 - PIPE-RELEASE-R011: Connector pull request workflow. Bind the two tests in `tests/test_connector_release_pipeline.py`.
 - PIPE-RELEASE-R012: Post-release verification of PyPI and Docker. Bind the verification tests in `tests/test_connector_release_pipeline.py`.
@@ -142,9 +139,6 @@ commit).
 - [ ] T057 PIPE-RELEASE-R007.6 Hot-path proof.
 - [ ] T058 PIPE-RELEASE-R007.7 Release bumps keep the Rust scope narrow.
 - [ ] T059 PIPE-RELEASE-R008 Python release publishes the wheel and the source distribution together.
-- [ ] T060 PIPE-RELEASE-R009 Release records publish to the engine (rollup).
-- [ ] T061 PIPE-RELEASE-R009.1 Wiring.
-- [ ] T062 PIPE-RELEASE-R009.2 Hot-path proof.
 - [ ] T063 PIPE-RELEASE-R010 Named per-repository source-build allowance.
 - [ ] T064 PIPE-RELEASE-R011 Connector pull request workflow.
 - [ ] T065 PIPE-RELEASE-R012 A connector release publishes PyPI and Docker, and verifies both.

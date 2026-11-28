@@ -159,8 +159,8 @@ runs:
         uvx --from "git+https://${{ job.workflow_repository }}@${{ job.workflow_sha }}" pipelines-hook candidate-sandbox verify \
           --digests "$CANDIDATE_DIGESTS"
 
-    # PIPE-RELEASE-R019: the pinned digests a runner verifies are computed from the exact files about to be
-    # published, before publication; no key or token takes part.
+    # PIPE-RELEASE-R019: the digests of the exact files about to be published are computed before publication and
+    # printed in the job summary. Nothing is posted: arbora records the release itself from the package index.
     - name: Compute the release digests
       if: inputs.release-digests != ''
       shell: bash
@@ -172,6 +172,12 @@ runs:
         sdists=(dist-sdist/*.tar.gz)
         [ "${#wheels[@]}" -eq 1 ] && [ "${#sdists[@]}" -eq 1 ] || { echo "::error::expected exactly one wheel and one sdist" >&2; exit 1; }
         uvx --from "scion-sdk>=0.13.0" connector-release-digest "${wheels[0]}" --sdist "${sdists[0]}" > "$RELEASE_DIGESTS"
+        {
+          echo "### Release digests"
+          echo '```json'
+          cat "$RELEASE_DIGESTS"
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Verify release tag before publication
       uses: ./.pipeline-contract/.github/actions/verify-release-source

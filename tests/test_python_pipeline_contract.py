@@ -61,7 +61,6 @@ def test_python_workflow_bootstraps_contract_before_external_local_action() -> N
             "/pipelines_hooks/connector/targets.py\n"
             "/pipelines_hooks/core/__init__.py\n"
             "/pipelines_hooks/core/errors.py\n"
-            "/scripts/release_record.py\n"
         ),
         "sparse-checkout-cone-mode": False,
         "path": ".pipeline-contract",
@@ -154,14 +153,17 @@ def test_connector_release_pins_digests_before_publication_and_holds_no_key() ->
         step for step in document["jobs"]["publish-pypi"]["steps"] if step.get("name") == "Build, publish and release"
     )
     assert step["with"]["release-digests"] == "${{ inputs.connector && 'release-digests.json' || '' }}"
-    record = next(s for s in document["jobs"]["publish-pypi"]["steps"] if s.get("name") == "Record the release")
-    assert record["env"]["RELEASE_DIGESTS_FILE"] == step["with"]["release-digests"]
+    steps = document["jobs"]["publish-pypi"]["steps"]
+    assert "Record the release" not in [s.get("name") for s in steps]
+    assert "release-record-url" not in inputs and "release_record" not in text
+    assert not (ROOT / "scripts/release_record.py").exists()
     action = yaml.safe_load((ROOT / ".github/actions/publish-python-package/action.yml").read_text(encoding="utf-8"))
     names = [s.get("name") for s in action["runs"]["steps"]]
     compute = action["runs"]["steps"][names.index("Compute the release digests")]
     assert names.index("Compute the release digests") < names.index("Publish package")
     assert compute["if"] == "inputs.release-digests != ''"
     assert "connector-release-digest" in compute["run"] and "--sdist" in compute["run"]
+    assert "GITHUB_STEP_SUMMARY" in compute["run"]
     caller = (ROOT / ".github/workflows/connector_pipeline.yml").read_text(encoding="utf-8")
     assert "RELEASE_SIGNING_KEY" not in caller and "release-signing" not in caller
     assert not (ROOT / "reference/connector-release.lock").exists()
