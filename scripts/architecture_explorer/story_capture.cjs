@@ -31,6 +31,10 @@ function call(method,params={},sessionId){return new Promise((resolve,reject)=>{
   pending.set(id,{resolve,reject,timer});browser.stdio[3].write(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})})+'\0');
 });}
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+// A phone stacks the header and toolbar above the map, so the map can start below the first screen. A person scrolls
+// it into view before touching it; do the same (a no-op wherever the whole map is already visible), then settle.
+const revealMap=`new Promise(resolve=>{document.querySelector('#cv').scrollIntoView({block:'nearest'});requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true)))})`;
+const resetScroll=`new Promise(resolve=>{scrollTo(0,0);requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true)))})`;
 const results=[];
 (async()=>{
  for(const device of [{name:'desktop',width:1440,height:1000},{name:'mobile',width:390,height:844}])for(const node of ['arbora','webui','eg.decide'])for(const route of ['center','left-gap','right-gap','child-focus']){
@@ -56,6 +60,7 @@ const results=[];
     const parentButton=await evaluate(`(()=>{let parent;const walk=n=>{if(n.children.some(c=>c.id===${JSON.stringify(node)}))parent=n;n.children.forEach(walk)};walk(PAYLOAD.tree);const b=[...document.querySelectorAll('#crumbs button')].find(b=>b.textContent===parent.label);if(!b)throw Error('Native parent breadcrumb absent');const r=b.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2,id:parent.id}})()`);
     await command('Input.dispatchMouseEvent',{type:'mousePressed',x:parentButton.x,y:parentButton.y,button:'left',clickCount:1});
     await command('Input.dispatchMouseEvent',{type:'mouseReleased',x:parentButton.x,y:parentButton.y,button:'left',clickCount:1});await delay(500);
+    await evaluate(revealMap);
     const target=await evaluate(`(()=>{const r=__arch.rect(${JSON.stringify(node)}),c=__arch.cam,b=document.querySelector('#cv').getBoundingClientRect(),x=(r[0]+r[2]*.5-c.x)*c.k,y=(r[1]+r[3]*.04-c.y)*c.k;if(x<0||x>b.width||y<0||y>b.height||__arch.hitAt(x,y)!==${JSON.stringify(node)})throw Error('Original target card not natively hittable');return {x:b.x+x,y:b.y+y}})()`);
     await command('Input.dispatchMouseEvent',{type:'mousePressed',...target,button:'left',clickCount:1});
     await command('Input.dispatchMouseEvent',{type:'mouseReleased',...target,button:'left',clickCount:1});await delay(500);
@@ -69,6 +74,7 @@ const results=[];
      await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))))');
      await delay(150);
      {
+      await page.evaluate(revealMap);
       const fraction=route==='center'?.5:route==='left-gap'?.2:.8;
       // Supplement the original center/side sweeps with native zoom aimed at
       // a visible child, rather than an empty center that loses all child context.
@@ -123,6 +129,7 @@ const results=[];
      hashes.push(await page.evaluate(`(()=>{const c=document.querySelector('#cv'),a=c.getContext('2d').getImageData(0,0,c.width,c.height).data,r=${JSON.stringify(mask)},ratio=c.width/c.getBoundingClientRect().width;let h=2166136261;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){if(r&&x>=(r[0]-2)*ratio&&x<=(r[0]+r[2]+2)*ratio&&y>=(r[1]-2)*ratio&&y<=(r[1]+r[3]+2)*ratio)continue;const i=(y*c.width+x)*4;for(let k=0;k<4;k++)h=Math.imul(h^a[i+k],16777619)}return h>>>0})()`));
      const shot=await page.command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(join(output,`${device.name}-${node}-${route}-${step}-${page.variant}.png`),Buffer.from(shot.data,'base64'));
      if(device.name==='mobile'&&mask&&!fullPageCaptured){
+      await page.evaluate(resetScroll);
       const beforeScroll=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
       await page.command('Input.dispatchMouseEvent',{type:'mouseWheel',x:20,y:20,deltaX:0,deltaY:350});await delay(600);
       const scrolled=await page.evaluate('({cam:{...__arch.cam},scrollY,rect:(()=>{const r=document.querySelector("#cv").getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()})');
@@ -146,7 +153,13 @@ const results=[];
    }
   }finally{for(const page of pages)await call('Target.closeTarget',{targetId:page.targetId});}
  }
- for(const kind of ['priority','dependencies'])if(!results.some(r=>r.device==='desktop'&&r.node==='webui'&&r.story?.owner==='webui'&&r.story?.placement==='canvas'&&r.story.kind===kind))throw Error('No actual native '+kind+' reveal; context count is not rich proof');
+ // The source view draws the prerequisite graph only when the complete connected graph fits its readable budget and
+ // otherwise records that deferral in the page itself (story_view.cjs: no silent truncation). Live data decides which
+ // applies, so a deferred graph is proven by its recorded reason and every other kind still needs a real reveal.
+ const preview=readFileSync(join(output,'preview.html'),'utf8'),viewStart=preview.indexOf('const SOURCE_VIEW=')+'const SOURCE_VIEW='.length;
+ const sourceView=JSON.parse(preview.slice(viewStart,preview.indexOf(';\n',viewStart)));
+ const deferred=!sourceView.graph&&typeof sourceView.graphDeferredReason==='string'&&sourceView.graphDeferredReason.length>0;
+ for(const kind of ['priority','dependencies'])if(!(kind==='dependencies'&&deferred)&&!results.some(r=>r.device==='desktop'&&r.node==='webui'&&r.story?.owner==='webui'&&r.story?.placement==='canvas'&&r.story.kind===kind))throw Error('No actual native '+kind+' reveal; context count is not rich proof');
  if(!results.some(r=>r.device==='mobile'&&r.node==='arbora'&&r.route==='center'&&r.story?.placement==='canvas'&&r.story.context?.visibleChildren.length>0))throw Error('Mobile Arbora central context-preserving reveal absent');
  for(const device of ['desktop','mobile'])for(const node of ['arbora','webui','eg.decide'])if(!results.some(r=>r.device===device&&r.node===node&&r.story?.owner===node&&r.story?.placement==='canvas'))throw Error('No trusted mouse-wheel chart reveal on '+device+' / '+node+'; not visual proof');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{

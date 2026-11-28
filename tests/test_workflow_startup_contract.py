@@ -10,7 +10,10 @@ import yaml
 WORKFLOW_DIR = Path(__file__).parents[1] / ".github/workflows"
 WORKFLOWS = sorted(WORKFLOW_DIR.glob("*.yml"))
 #: Jobs that publish or deploy and are reached only from callers that grant the write scope in the same file.
-PUBLISHING_JOBS = {"auto-tag", "deploy", "publish", "publish-pages", "publish-pypi", "publish-release", "services"}
+#: `npm` requests `id-token: write` for trusted publishing (PIPE-RELEASE-R033); its callers grant it beside the call.
+PUBLISHING_JOBS = {
+    "auto-tag", "deploy", "npm", "publish", "publish-pages", "publish-pypi", "publish-release", "services",
+}  # fmt: skip
 CALLER_GRANT = {"contents": "read"}
 
 

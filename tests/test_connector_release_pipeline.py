@@ -84,7 +84,7 @@ def _run_verify(tmp_path: Path, missing: str, **overrides: str) -> subprocess.Co
         "PATH": f"{bin_dir}:/usr/bin:/bin",
         "VERSION": "1.2.3", "BUILD_CONTEXT": ".", "DOCKER_USER": "knucklessg1",
         "REPO_NAME": "demo-mcp", "VERIFY_ATTEMPTS": "1", "VERIFY_DELAY": "0",
-        "PUSHED_DIGEST": DIGEST, "REGISTRY_DIGEST": DIGEST, "SDK_VERSION": "",
+        "PUSHED_DIGEST": DIGEST, "REGISTRY_DIGEST": DIGEST, "SDK_VERSION": "", "IMAGE_SUFFIX": "",
     }  # fmt: skip
     env.update(overrides)
     return subprocess.run(
@@ -98,6 +98,15 @@ def test_verification_passes_when_both_artifacts_exist(tmp_path: Path) -> None:
     result = _run_verify(tmp_path, "")
     assert result.returncode == 0, result.stdout + result.stderr
     assert f"knucklessg1/demo-mcp:1.2.3@{DIGEST} is published" in result.stdout
+
+
+# spec: PIPE-RELEASE-R001.15
+@pytest.mark.spec("PIPE-RELEASE-R001.15")
+def test_verification_checks_the_named_image_target_tag(tmp_path: Path) -> None:
+    """An additional named image target publishes as <version>-<name> and is verified at that tag."""
+    result = _run_verify(tmp_path, "", IMAGE_SUFFIX="-gui")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert f"knucklessg1/demo-mcp:1.2.3-gui@{DIGEST} is published" in result.stdout
 
 
 # spec: PIPE-RELEASE-R012
