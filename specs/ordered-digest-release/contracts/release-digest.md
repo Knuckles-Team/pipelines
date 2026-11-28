@@ -2,6 +2,7 @@
 
 Provider: scion-sdk SCION-CONNECTOR-CONTROL-R650
 Provider: scion-sdk SCION-CONNECTOR-CONTROL-R650.1.2
+Provider: arbora ARBORA-HOST-R037
 Consumer: pipelines PIPE-RELEASE-R019
 
 ## Wire shape
@@ -24,4 +25,5 @@ The release workflow runs `connector-release-digest WHEEL --sdist FILE` from the
 ## Owner rows
 
 - Provider: scion-sdk SCION-CONNECTOR-CONTROL-R650 and SCION-CONNECTOR-CONTROL-R650.1.2.
+- Provider: arbora ARBORA-HOST-R037, which records the release from the package index.
 - Consumer: pipelines PIPE-RELEASE-R019.
