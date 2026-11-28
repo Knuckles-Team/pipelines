@@ -499,6 +499,19 @@ def _uses(path: str, items: list[Node], names: frozenset[str]) -> list[Use]:
     return uses
 
 
+def _compared(node: Node) -> bool:
+    """Whether a field read is a side of ``==``/``!=`` or the subject of a ``match``/``matches!``/``if let``."""
+    parent = node.parent
+    if parent is None:
+        return False
+    if parent.type == "binary_expression":
+        return _text(parent.child_by_field_name("operator")) in {"==", "!="}
+    return parent.type in {"match_expression", "let_condition", "reference_expression"} and (
+        parent.type != "reference_expression"
+        or (parent.parent is not None and parent.parent.type == "match_expression")
+    )
+
+
 def _rebuilds(
     path: str,
     item: Node,
@@ -508,7 +521,7 @@ def _rebuilds(
     fields: dict[str, dict[str, str]],
     names: frozenset[str],
 ) -> list[Use]:
-    """A function that reads a status and builds ``T { status: v, .. }`` moves ``T`` by replacement."""
+    """A function that guards on a status and builds ``T { status: v, .. }`` moves ``T`` by replacement."""
     nodes: list[Node] = []
     stack = [item]
     while stack:
@@ -520,7 +533,7 @@ def _rebuilds(
         if _text(n.child_by_field_name("value")) == "self"
         else _receiver_type(_text(n.child_by_field_name("value")), scope, fields, owner)
         for n in nodes
-        if n.type == "field_expression" and _text(n.child_by_field_name("field")) in STATUS_FIELDS
+        if n.type == "field_expression" and _text(n.child_by_field_name("field")) in STATUS_FIELDS and _compared(n)
     }
     found: list[Use] = []
     for node in (n for n in nodes if n.type == "struct_expression"):
@@ -529,7 +542,7 @@ def _rebuilds(
         children = body.named_children if body is not None else []
         if built == "Self" or any(c.type == "base_field_initializer" for c in children):
             continue  # a struct update is already an assignment
-        if built not in read_types and None not in read_types:
+        if built not in read_types:
             continue
         found += [
             Use(field, "assign", Site(path, node.start_point.row + 1, label), built, names)
