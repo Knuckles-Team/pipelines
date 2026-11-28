@@ -92,10 +92,12 @@ def bind_tests(machine: Machine, test_files: Sequence[tuple[str, str]]) -> None:
     if not machine.declared:
         return
     cases = [case for path, source in test_files for case in read_cases(path, source)]
+    looped = any(loops_table(case, machine.table) for case in cases)
     machine.untested_edges = [
         (source, event)
-        for source, event, _ in machine.edges
-        if not any(names_edge(case, source, event) for case in cases)
+        for source, event, target in machine.edges
+        if not looped
+        and not any(names_edge(case, source, event) or lists_edge(case, source, event, target) for case in cases)
     ]
     refusals = [case for case in cases if is_refusal_test(case, machine.refusal)]
     machine.refusal_tested = bool(refusals)
@@ -132,6 +134,21 @@ def product_helpers(test_files: Sequence[tuple[str, str]], table: str | None) ->
             if table in body and body.count("for ") >= 2:
                 found.append(match.group(1))
     return found
+
+
+def lists_edge(case: Case, source: str, event: str, target: str) -> bool:
+    """A test body that lists the edge as a literal triple ``(From, Event, To)``, with paths or quotes."""
+    token = r"""(?:\w+::)*["']?{}["']?"""
+    parts = [token.format(re.escape(part)) for part in (source, event, target)]
+    return re.search(r"\b" + r"\s*,\s*".join(parts) + r"\b", case.body) is not None
+
+
+def loops_table(case: Case, table: str | None) -> bool:
+    """A test that loops over the declared table (``for edge in TABLE.edges``, ``for .. in TABLE``).
+
+    It runs every edge, so it binds each one without naming it.
+    """
+    return table is not None and re.search(rf"\bfor\b[^\n{{]*\b{re.escape(table)}\b", case.body) is not None
 
 
 def iterates_product(case: Case, table: str | None) -> bool:

@@ -515,3 +515,85 @@ def test_an_assignment_that_skips_the_transition_function_is_still_stray(tmp_pat
     stray = TWO_COMMITS + "\n\ndef force(door: Door) -> None:\n    door.stage = Stage.OPEN\n"
     lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/door.py": stray})
     assert [line for line in lines if "SM-MULTI-ASSIGN" in line and "assigned in force" in line], lines
+
+
+CALL_EDGES_RS = """\
+pub struct Edge<S, E> { pub id: &'static str, pub from: S, pub event: E, pub to: S }
+pub struct MachineDef<S, E> { pub states: &'static [S], pub initial: S, pub edges: &'static [Edge<S, E>] }
+pub struct Refused;
+pub fn fire<S, E>(def: &MachineDef<S, E>, from: S, event: E) -> Result<S, Refused> { Err(Refused) }
+const fn edge<S, E>(id: &'static str, from: S, event: E, to: S) -> Edge<S, E> { Edge { id, from, event, to } }
+"""
+CALL_STATIC_RS = """\
+use crate::def::{edge, Edge, MachineDef};
+pub enum PlacementState { Hot, Cold }
+pub enum Move { Chill, Warm }
+use PlacementState as St;
+use Move as Ev;
+pub static PLACEMENT: MachineDef<PlacementState, Move> = MachineDef {
+    states: &[St::Hot, St::Cold],
+    initial: St::Hot,
+    edges: &[edge("P1", St::Hot, Ev::Chill, St::Cold), edge("P2", St::Cold, Ev::Warm, St::Hot)],
+};
+"""
+CALL_HOLDER_RS = """\
+use crate::lamp::PlacementState;
+pub struct Shard { pub state: PlacementState }
+impl Shard { pub fn commit(&mut self, next: PlacementState) { self.state = next; } }
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.12")
+def test_edges_written_as_calls_are_read_from_their_scoped_path_arguments(tmp_path: Path) -> None:
+    lines = _census(
+        tmp_path, {"src/def.rs": CALL_EDGES_RS, "src/lamp.rs": CALL_STATIC_RS, "src/shard.rs": CALL_HOLDER_RS}
+    )
+    assert "SM-UNREACHABLE" not in _codes(lines) and "SM-DEAD-END" not in _codes(lines), lines
+    assert "from=Hot event=Chill" in "\n".join(lines), lines
+
+
+LEGAL_LIST_RS = """\
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Stage { Planned, Moving }
+pub struct Refused;
+pub const TRANSITIONS: &[(Stage, &str, Stage)] = &[(Stage::Planned, "start", Stage::Moving)];
+pub struct Move { pub stage: Stage }
+impl Move {
+    pub fn apply(&mut self, event: &str) -> Result<(), Refused> { self.stage = Stage::Moving; Ok(()) }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn every_legal_transition_applies() {
+        use Stage::*;
+        let legal = [(Planned, "start", Moving)];
+        assert_eq!(legal.len(), TRANSITIONS.len());
+    }
+}
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.18")
+def test_a_test_that_lists_the_edge_as_a_literal_triple_binds_it(tmp_path: Path) -> None:
+    assert "SM-UNTESTED-EDGE" not in _codes(_census(tmp_path, {"src/mv.rs": LEGAL_LIST_RS}))
+
+
+@pytest.mark.spec("PIPE-GATES-R086.18")
+def test_a_test_that_loops_over_the_table_binds_every_edge(tmp_path: Path) -> None:
+    source = LEGAL_LIST_RS.replace(
+        'let legal = [(Planned, "start", Moving)];\n        assert_eq!(legal.len(), TRANSITIONS.len());',
+        "for row in TRANSITIONS.iter() { let _ = row; }",
+    )
+    assert "SM-UNTESTED-EDGE" not in _codes(_census(tmp_path, {"src/mv.rs": source}))
+
+
+@pytest.mark.spec("PIPE-GATES-R086.18")
+def test_an_edge_no_test_lists_names_or_loops_is_still_untested(tmp_path: Path) -> None:
+    source = LEGAL_LIST_RS.replace(
+        'let legal = [(Planned, "start", Moving)];\n        assert_eq!(legal.len(), TRANSITIONS.len());',
+        "let _ = Planned;",
+    )
+    assert "SM-UNTESTED-EDGE" in _codes(_census(tmp_path, {"src/mv.rs": source}))
