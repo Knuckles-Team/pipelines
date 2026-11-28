@@ -53,13 +53,6 @@ on:
         required: false
         type: string
         default: ''
-      release-record-url:
-        description: >-
-          HTTP endpoint of the arbora release.record operation (PIPE-RELEASE-R009.1). Empty skips
-          the record step; a failed post marks the run and never withdraws the release.
-        required: false
-        type: string
-        default: ''
       upgrade-test:
         description: Run the upgrade-test gate (PIPE-RELEASE-R030) before publication.
         required: false
@@ -250,7 +243,6 @@ jobs:
             /pipelines_hooks/connector/targets.py
             /pipelines_hooks/core/__init__.py
             /pipelines_hooks/core/errors.py
-            /scripts/release_record.py
           path: .pipeline-contract
           persist-credentials: false
 
@@ -337,18 +329,3 @@ jobs:
           runtime-profiles: ${{ inputs.runtime-profiles }}
           role-contract: ${{ inputs.role-contract }}
           release-digests: ${{ inputs.connector && 'release-digests.json' || '' }}
-
-      # PIPE-RELEASE-R009.1: the last step records the release (artifact digests and the frozen commit). A failure
-      # marks the run and never withdraws the release.
-      - name: Record the release
-        if: steps.version.outputs.published != 'true' && (startsWith(github.ref, 'refs/tags/v') || inputs.release-tag != '')
-        continue-on-error: true
-        env:
-          RELEASE_RECORD_URL: ${{ inputs.release-record-url }}
-          RELEASE_REPOSITORY: ${{ github.repository }}
-          RELEASE_TAG: ${{ inputs.release-tag != '' && inputs.release-tag || github.ref_name }}
-          RELEASE_DIGESTS_FILE: ${{ inputs.connector && 'release-digests.json' || '' }}
-          SOURCE_COMMIT: ${{ github.sha }}
-          EXPECTED_COMMIT: ${{ github.sha }}
-          LATEST_COMMIT: ${{ github.sha }}
-        run: python3 -I .pipeline-contract/scripts/release_record.py

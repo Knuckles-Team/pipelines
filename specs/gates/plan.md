@@ -96,13 +96,13 @@ The implementation runs this repository's own gates: format, hygiene, secrets, t
   environment has not bound. The task window is half-open: a task opened
   exactly at the window edge does not open it.
 
-### Engine records (PIPE-GATES-R004, PIPE-CONNSPEC-R009, PIPE-RELEASE-R009)
+### Engine records (PIPE-GATES-R004, PIPE-CONNSPEC-R009)
 
-Three pipelines steps write lifecycle records to the engine. Each step uses plain HTTP to the
+Two pipelines steps write lifecycle records to the engine. Each step uses plain HTTP to the
 arbora operations and imports no ecosystem package. Gate runs publish verdicts (MEDULLA-SCM-R008).
 The status generator compares its output with the engine-derived state (MEDULLA-SDLC-R005). The
-release workflow records each release (MEDULLA-SDLC-R002). A failed post never changes a verdict,
-a status file or a published release.
+release workflow posts no release record: arbora records each connector release from the package
+index (ARBORA-HOST-R037). A failed post never changes a verdict or a status file.
 ### Migration waves (R006)
 
 Repositories move to engine changesets one wave at a time. The order runs from the lowest risk to the highest: webarchiver, small connectors, the other connectors, skills with pipelines and the user interfaces, the Scion SDK with the harness, arbora, and Medulla last. RM-SCM-R001 and RM-SCM-R002 import history and keep the GitHub mirror in sync. A wave exits only when the mirror matches every landed changeset for 7 days. Wave 7 also needs two restores of the engine source from the mirror.

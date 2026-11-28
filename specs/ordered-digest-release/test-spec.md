@@ -74,9 +74,6 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 
 | Row | Proving test |
 |---|---|
-| `PIPE-RELEASE-R009` | See each child. |
-| `PIPE-RELEASE-R009.1` | Test: `tests/test_release_record_step.py::test_workflow_has_record_step_after_publish` |
-| `PIPE-RELEASE-R009.2` | Test: `tests/test_release_record_step.py::test_step_posts_release_with_digests` |
 | T-PIPE-RELEASE-R010 | PIPE-RELEASE-R010 | Run the `test_source_build_allowance_*` and `test_published_package_cannot_be_its_own_source_build` tests in `tests/test_wheel_readiness.py`; observe the empty default, the named list, the refusals and the recorded receipt list. |
 | T-PIPE-RELEASE-R011 | PIPE-RELEASE-R011 | Run `tests/test_connector_release_pipeline.py::test_connector_pr_workflow_is_fast_commit_stage_and_never_publishes`. Assert the commit-stage-only, 10-minute, no-publish contract. |
 | T-PIPE-RELEASE-R012 | PIPE-RELEASE-R012 | Run `tests/test_connector_release_pipeline.py::test_verification_fails_naming_the_missing_artifact`. Assert the step fails naming the missing tag or version. |
@@ -101,7 +98,7 @@ Contract tests inspect immutable workflow/action pins, source binding, least-pri
 
 | Test ID | Requirement | Expected observation |
 |---|---|---|
-| T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: `tests/test_python_pipeline_contract.py::test_connector_release_pins_digests_before_publication_and_holds_no_key` asserts the step order and that no signing input, script or lock remains; `tests/test_release_record_step.py::test_connector_record_carries_the_content_digest_and_must_be_recorded` asserts the record and the mandatory recording. |
+| T-PIPE-RELEASE-R019 | PIPE-RELEASE-R019 | Test: `tests/test_python_pipeline_contract.py::test_connector_release_pins_digests_before_publication_and_holds_no_key` asserts the step order, the job summary, and that no signing input, record step, record input or record script remains. |
 | T-PIPE-RELEASE-R020 | PIPE-RELEASE-R020 | Test: `tests/test_release_bundle_gate.py::test_bundle_with_open_rows_or_failed_scenario_stops`. |
 | T-PIPE-RELEASE-R025.1 | PIPE-RELEASE-R025.1 | Test: `tests/test_release_scope.py::test_closure_follows_depends_on_and_contract_edges`. |
 | T-PIPE-RELEASE-R025.2 | PIPE-RELEASE-R025.2 | Test: `tests/test_release_scope.py::test_train_order_is_topological_and_not_hard_coded`. |
