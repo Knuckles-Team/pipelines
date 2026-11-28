@@ -483,6 +483,17 @@ def _annotation_type(annotation: ast.expr | None, owner: str | None) -> str | No
     return None if name in OPAQUE_TYPES else name
 
 
+def _annotation_element(annotation: ast.expr | None, owner: str | None) -> str | None:
+    """The element type of ``dict[K, V]`` (``V``) or ``list[V]``, ``set[V]``, ``Sequence[V]`` (``V``)."""
+    if not isinstance(annotation, ast.Subscript):
+        return None
+    container = _name(annotation.value)
+    if container not in CONTAINERS:
+        return None
+    items = annotation.slice.elts if isinstance(annotation.slice, ast.Tuple) else [annotation.slice]
+    return _annotation_type(items[-1] if container in MAPPINGS else items[0], owner) if items else None
+
+
 class _Resolver:
     """Resolve the type of a receiver from annotations, constructors, copies and return types."""
 
@@ -511,18 +522,15 @@ class _Resolver:
             key = target.id if isinstance(target, ast.Name) and stmt in node.body else None
             if isinstance(target, ast.Attribute) and _name(target.value) == "self":
                 key = target.attr
-            container = _name(stmt.annotation.value)
-            items = (
-                stmt.annotation.slice.elts if isinstance(stmt.annotation.slice, ast.Tuple) else [stmt.annotation.slice]
-            )
-            if key and container in CONTAINERS and items:
-                kind = _annotation_type(items[-1] if container in MAPPINGS else items[0], node.name)
-                if kind:
-                    found.setdefault(key, kind)
+            kind = _annotation_element(stmt.annotation, node.name)
+            if key and kind:
+                found.setdefault(key, kind)
         return found
 
     def _element_of(self, node: ast.expr, owner: str | None, scope: dict[str, str | None]) -> str | None:
-        """The element type of ``self.records`` when it is a typed container field."""
+        """The element type of a typed container: a ``self.records`` field or a local or parameter."""
+        if isinstance(node, ast.Name):
+            return scope.get(f"{node.id}[]")
         if isinstance(node, ast.Attribute):
             base = self.type_of(node.value, owner, scope)
             return self.elements.get(base or "", {}).get(node.attr)
@@ -559,6 +567,7 @@ class _Resolver:
                 args = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
                 for arg in args:
                     bind(arg.arg, _annotation_type(arg.annotation, owner))
+                    bind(f"{arg.arg}[]", _annotation_element(arg.annotation, owner))
         for node in sorted(
             (n for n in ast.walk(function) if hasattr(n, "lineno")),
             key=lambda n: (getattr(n, "lineno", 0), getattr(n, "col_offset", 0)),
@@ -566,6 +575,7 @@ class _Resolver:
             if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
                 kind = _annotation_type(node.annotation, owner)
                 bind(node.target.id, kind or (self.type_of(node.value, owner, scope) if node.value else None))
+                bind(f"{node.target.id}[]", _annotation_element(node.annotation, owner))
             elif isinstance(node, ast.Assign):
                 kind = self.type_of(node.value, owner, scope)
                 for target in node.targets:
@@ -575,14 +585,27 @@ class _Resolver:
                         for name in _bound_names(target):
                             bind(name, None)
             elif isinstance(node, (ast.For, ast.AsyncFor, ast.comprehension)):
+                element = self._iterated(node.iter, owner, scope)
+                direct = isinstance(node.target, ast.Name)
                 for name in _bound_names(node.target):
-                    bind(name, None)
+                    # ``for x in records`` / ``records.values()`` binds x; ``for k, v in records.items()`` binds v.
+                    bind(name, element if direct or name == _bound_names(node.target)[-1] else None)
             elif isinstance(node, ast.NamedExpr):
                 bind(node.target.id, None)
             elif isinstance(node, ast.withitem) and node.optional_vars is not None:
                 for name in _bound_names(node.optional_vars):
                     bind(name, None)
         return scope
+
+    def _iterated(self, node: ast.expr, owner: str | None, scope: dict[str, str | None]) -> str | None:
+        """The element type a ``for`` over ``node`` yields: a typed container, its ``values()`` or ``items()``."""
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr in {"values", "items"}
+        ):
+            node = node.func.value
+        return self._element_of(node, owner, scope)
 
     def type_of(self, node: ast.expr | None, owner: str | None, scope: dict[str, str | None]) -> str | None:
         """The type ``node`` resolves to, or ``None``."""

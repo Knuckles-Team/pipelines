@@ -458,3 +458,36 @@ def test_a_record_built_where_an_unresolved_status_is_compared_is_not_a_transiti
     )
     lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/record.py": source})
     assert "SM-NO-DECLARATION" not in _codes(lines), lines
+
+
+NODES_PY = """\
+from enum import StrEnum
+
+from pydantic import BaseModel
+
+
+class Phase(StrEnum):
+    QUEUED = "queued"
+    DONE = "done"
+
+
+class Step(BaseModel):
+    status: Phase
+
+
+def finish(nodes: dict[str, Step], key: str) -> None:
+    node = nodes[key]
+    node.status = Phase.DONE
+
+
+def finish_all(nodes: dict[str, Step]) -> None:
+    for step in nodes.values():
+        step.status = Phase.DONE
+"""
+
+
+@pytest.mark.spec("PIPE-GATES-R086.13")
+def test_a_receiver_read_from_a_typed_container_parameter_or_loop_resolves(tmp_path: Path) -> None:
+    lines = _census(tmp_path, {"pkg/__init__.py": "", "pkg/steps.py": NODES_PY})
+    assert "SM-UNRESOLVED-RECEIVER" not in _codes(lines), lines
+    assert "SM-MULTI-ASSIGN" in _codes(lines), lines
